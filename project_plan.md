@@ -30,13 +30,13 @@ ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: —                 # מזהה המשימה מתוך מדור 5
 CRITIC_ROUNDS_ON_TASK: 0          # מתאפס בכל משימה חדשה. תקרה: 3
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-08-05T19:38:00Z
+LAST_HANDOFF_AT: 2026-08-05T20:38:30Z
 HUMAN_DECISION_REQUIRED: false
 BUDGET_NOTE: ""                   # למשל: "מתקרבים לתקרת ה-500MB של Supabase"
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"               # "" | PM | DEV | CRITIC
-LOCK_AT: "2026-08-05T20:38:30Z"   # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
+LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
+LOCK_AT: ""                       # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
 LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
 ```
 
@@ -50,6 +50,7 @@ LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
 |---|---|---|---|---|---|
 | C-0000 | — | PM | — | אתחול הפרויקט | — |
 | C-0000 | DEV | PM | 19:38Z | טיק שקט: אין משימה כשירה — T-001/T-002 ללא תוכנית UX ב-4.2, T-003..T-006 חסומות ב-R-001 | — |
+| C-0000 | DEV | PM | 20:38Z | טיק שקט שני, אותה סיבה. אימות בריאות הריפו עבר: typecheck ✓ · check:core ✓ · 3 בדיקות ✓ · build ✓. הלופ ממתין ל-PM (08:00) — R-001 ותוכנית UX ל-T-001 | — |
 
 ---
 
