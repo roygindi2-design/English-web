@@ -35,8 +35,8 @@ HUMAN_DECISION_REQUIRED: true     # R-003: רישוי English Vocabulary Profile
 BUDGET_NOTE: "NGSL מוצהר חופשי ופתוח; EVP — תנאי השימוש טרם אומתו. ראה R-003."
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
-LOCK_AT: ""                       # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
+LOCK_HELD_BY: "PM"                # "" | PM | DEV | CRITIC
+LOCK_AT: "2026-08-05T22:33:00Z"   # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
 LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
 ```
 
