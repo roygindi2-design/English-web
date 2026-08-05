@@ -1,0 +1,52 @@
+flowchart TD
+    START([טיק מתוזמן מתחיל]) --> READ[קריאת project_plan.md<br/>מדור 0 — בקרת לופ]
+    READ --> GATE{NEXT_AGENT = ?}
+
+    GATE -->|PM| PM_BLOCK{יש 🔴 BLOCKER<br/>פתוח במדור 2?}
+    PM_BLOCK -->|כן| PM_RESEARCH[מחקר רשת אקטיבי<br/>דרגה א׳/ב׳ בלבד]
+    PM_BLOCK -->|לא| PM_PLAN[תוכנית UX + משימות חדשות]
+    PM_RESEARCH --> PM_FOUND{נמצא מקור אמין?}
+    PM_FOUND -->|כן| PM_WRITE[כתיבה למדור 1<br/>+ סגירת ה-BLOCKER]
+    PM_FOUND -->|לא| PM_ESC[השארת החסימה<br/>+ תיעוד מה חסר]
+    PM_WRITE --> PM_PLAN
+    PM_ESC --> HUMAN
+    PM_PLAN --> TO_DEV[/NEXT_AGENT = DEV/]
+
+    GATE -->|DEV| DEV_PICK{יש ממצא<br/>CRITICAL / HIGH?}
+    DEV_PICK -->|כן| DEV_FIX[תיקון הממצא]
+    DEV_PICK -->|לא| DEV_TASK{יש משימה כשירה<br/>לא חסומה + תוכנית UX?}
+    DEV_TASK -->|לא| TO_PM[/NEXT_AGENT = PM/]
+    DEV_TASK -->|כן| DEV_BUILD[מימוש · typecheck · build · בדיקות]
+    DEV_FIX --> DEV_VERIFY{הבנייה עוברת?}
+    DEV_BUILD --> DEV_VERIFY
+    DEV_VERIFY -->|לא| DEV_RETRY[תיקון בתוך אותו טיק]
+    DEV_RETRY --> DEV_VERIFY
+    DEV_VERIFY -->|כן| DEV_PUSH[קומיט + דחיפה ל-GitHub<br/>Vercel מעלה לאוויר]
+    DEV_PUSH --> TO_CRITIC[/NEXT_AGENT = CRITIC/]
+
+    GATE -->|CRITIC| CR_REVIEW[סקירת דיף לפי 5 הצירים<br/>+ הרצת בדיקות בפועל]
+    CR_REVIEW --> CR_SAME{אותם ממצאים<br/>כמו בטיק הקודם?}
+    CR_SAME -->|כן| CR_NP[CONSECUTIVE_NO_PROGRESS++]
+    CR_SAME -->|לא| CR_SEV{חומרת הממצא הגבוהה ביותר}
+    CR_NP --> CR_NPCHK{הגיע ל-2?}
+    CR_NPCHK -->|כן| HUMAN
+    CR_NPCHK -->|לא| CR_SEV
+    CR_SEV -->|CRITICAL / HIGH| CR_ROUNDS{CRITIC_ROUNDS<br/>על המשימה = 3?}
+    CR_SEV -->|נקי / MEDIUM / LOW| CR_CLOSE[סגירת המשימה ✅<br/>MEDIUM+LOW לתור סוף-אבן-דרך]
+    CR_ROUNDS -->|כן| HUMAN
+    CR_ROUNDS -->|לא| CR_BACK[רישום ממצאים במדור 6<br/>ROUNDS++]
+    CR_BACK --> TO_DEV2[/NEXT_AGENT = DEV/]
+    CR_CLOSE --> CR_MS{אבן הדרך הושלמה?}
+    CR_MS -->|כן| MS[STATE = MILESTONE_DONE<br/>NEXT_AGENT = PM · CYCLE_ID++]
+    CR_MS -->|לא| TO_PM2[/NEXT_AGENT = PM/]
+
+    GATE -->|HUMAN| HUMAN[[⏸ עצירה<br/>HUMAN_DECISION_REQUIRED = true<br/>דיווח לרוי · הלופ ממתין]]
+
+    TO_DEV --> COMMIT
+    TO_PM --> COMMIT
+    TO_CRITIC --> COMMIT
+    TO_DEV2 --> COMMIT
+    TO_PM2 --> COMMIT
+    MS --> COMMIT
+    COMMIT[עדכון מדור 0 + שורה ב-0.1<br/>קומיט לגיט] --> END([סוף הטיק])
+    HUMAN --> END
