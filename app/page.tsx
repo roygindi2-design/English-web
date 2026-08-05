@@ -1,35 +1,38 @@
+import Link from 'next/link';
+import InstallPrompt from '@/components/InstallPrompt';
+
+/**
+ * Landing screen — UX plan T-001 (project_plan.md 4.2).
+ *
+ * Exactly three things on the screen: one heading, one explanatory sentence,
+ * one primary action. Anything else is cognitive load competing with the only
+ * action we care about (D-002: a student under deadline pressure).
+ *
+ * NOTE (depends on T-002): the "returning learner skips the marketing screen"
+ * edge case cannot be implemented yet — there is no session mechanism until
+ * auth lands in T-002. Deliberately not faked with a local flag.
+ */
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-5 py-10">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-slate-500">מסלול ראשון: אמיר״ם</p>
-        <h1 className="text-3xl font-bold leading-tight">לימוד אנגלית שמתאים את עצמו אליך</h1>
-        <p className="text-base leading-relaxed text-slate-600">
-          השלד עלה לאוויר. מכאן לופ הסוכנים בונה את המוצר — מסך אחר מסך, על בסיס
-          תוכניות לימוד מאומתות בלבד.
+    <>
+      <div className="flex flex-1 flex-col justify-center gap-4">
+        <h1 className="text-3xl font-bold leading-tight text-balance">
+          אנגלית שמתאימה את עצמה אליך
+        </h1>
+        <p className="text-lg leading-relaxed text-slate-600">
+          תרגול יומי קצר שמתכוונן לרמה שלך ולתאריך המבחן שלך.
         </p>
-      </header>
+      </div>
 
-      <section
-        aria-label="סטטוס המערכת"
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      {/* Primary action sits in the lower half of the screen — MF-5, thumb reach. */}
+      <Link
+        href="/onboarding"
+        className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white active:bg-slate-700"
       >
-        <h2 className="mb-3 text-lg font-semibold">מצב ההקמה</h2>
-        <ul className="space-y-2 text-sm text-slate-700">
-          <li>✅ שלד <span className="ltr-inline">Next.js</span> + <span className="ltr-inline">TypeScript</span></li>
-          <li>✅ <span className="ltr-inline">Mobile-First</span> ו-<span className="ltr-inline">RTL</span> מלא</li>
-          <li>✅ <span className="ltr-inline">PWA</span> — ניתן לשמירה למסך הבית</li>
-          <li>✅ הפרדת <span className="ltr-inline">API-First</span></li>
-          <li>⏳ מבחן רמה אדפטיבי — ממתין למחקר ה-PM</li>
-        </ul>
-      </section>
+        בואו נתחיל
+      </Link>
 
-      <a
-        href="/api/health"
-        className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 text-base font-medium text-white"
-      >
-        בדיקת תקינות השרת
-      </a>
-    </main>
+      <InstallPrompt />
+    </>
   );
 }

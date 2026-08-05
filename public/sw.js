@@ -1,33 +1,87 @@
-// Minimal, honest service worker: app shell + offline fallback.
-// The Dev agent extends this as real routes land.
-const CACHE = 'english-web-v1';
-const OFFLINE_URL = '/offline.html';
+// App shell + offline fallback. Extended by the Dev agent as real routes land.
+//
+// Precache is deliberately tiny: the landing screen and the offline screen.
+// API responses are never cached — stale learning data is worse than no data.
+const CACHE = 'english-web-v2';
+const OFFLINE_ROUTE = '/offline';
+const OFFLINE_FALLBACK = '/offline.html';
+const PRECACHE = ['/', OFFLINE_ROUTE, OFFLINE_FALLBACK];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(['/', OFFLINE_URL])).then(() => self.skipWaiting())
+    caches
+      .open(CACHE)
+      // addAll() rejects the whole batch if one request fails; cache each
+      // entry on its own so a single miss cannot leave us with no offline page.
+      .then((cache) =>
+        Promise.all(PRECACHE.map((url) => cache.add(new Request(url, { cache: 'reload' })).catch(() => {})))
+      )
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-  if (new URL(req.url).pathname.startsWith('/api/')) return; // never cache API responses
+async function offlineResponse() {
+  const cache = await caches.open(CACHE);
+  return (
+    (await cache.match(OFFLINE_ROUTE)) ||
+    (await cache.match(OFFLINE_FALLBACK)) ||
+    new Response('אין חיבור כרגע.', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
+  );
+}
 
-  if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).catch(() => caches.match(OFFLINE_URL)));
+// Network-first for navigations: the learner should always get the live screen
+// when online, and a real Hebrew offline screen — never a browser error — when not.
+async function handleNavigation(request) {
+  try {
+    const fresh = await fetch(request);
+    const cache = await caches.open(CACHE);
+    cache.put(request, fresh.clone()).catch(() => {});
+    return fresh;
+  } catch {
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(request, { ignoreSearch: true });
+    return hit || offlineResponse();
+  }
+}
+
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/')) return; // never cache API responses
+
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request));
     return;
   }
 
+  // Static assets: cache-first, then network. Next.js hashes its filenames.
   event.respondWith(
-    caches.match(req).then((hit) => hit || fetch(req))
+    caches.match(request).then(
+      (hit) =>
+        hit ||
+        fetch(request)
+          .then((res) => {
+            if (res.ok && res.type === 'basic') {
+              caches.open(CACHE).then((c) => c.put(request, res.clone()).catch(() => {}));
+            }
+            return res;
+          })
+          .catch(() => offlineResponse())
+    )
   );
 });

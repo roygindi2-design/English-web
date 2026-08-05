@@ -8,6 +8,9 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+  # playwright is a devDependency used only by `npm run check:mobile`.
+  # Without this flag its postinstall downloads ~200MB of browsers on every deploy.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 
 [[headers]]
   for = "/sw.js"
