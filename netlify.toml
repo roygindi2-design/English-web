@@ -5,6 +5,13 @@
   command = "npm run build"
   publish = ".next"
 
+  # ── שמירה על מכסת דקות הבנייה (300 דק'/חודש; חריגה משעה את האתר) ──────────
+  # קוד יציאה 0 = דלג על הבנייה · 1 = בְּנֵה.
+  # דילוג כשהשינוי נגע אך ורק בתיעוד ובקובץ המצב. הסוכנים כותבים ל-project_plan.md
+  # בכל טיק — 14 מתוך 15 הקומיטים הראשונים לא נגעו בקוד כלל.
+  # CACHED_COMMIT_REF ריק בבנייה ראשונה → הפקודה נכשלת → נבנה. כישלון בטוח.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md' ':(exclude)docs/' ':(exclude)project_plan.md'"
+
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
