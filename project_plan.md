@@ -35,8 +35,8 @@ HUMAN_DECISION_REQUIRED: false
 BUDGET_NOTE: ""                   # למשל: "מתקרבים לתקרת ה-500MB של Supabase"
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
-LOCK_AT: ""                       # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
+LOCK_HELD_BY: "DEV"               # "" | PM | DEV | CRITIC
+LOCK_AT: "2026-08-05T19:36:44Z"   # ISO-8601. נעילה בת יותר מ-20 דקות נחשבת נטושה וניתן לדרוס אותה
 LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
 ```
 
