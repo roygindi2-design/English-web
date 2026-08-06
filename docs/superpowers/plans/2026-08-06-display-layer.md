@@ -115,7 +115,7 @@ text pairing through the WCAG 2.1 relative-luminance formula. Recorded results:
     `ink-muted`, `border-subtle`, `border-strong`, `brand`, `brand-surface`, `brand-on`,
     `success`, `danger`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/palette.test.ts`:
 
@@ -194,12 +194,12 @@ describe('no raw slate left in the screens the product ships', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 Run: `npx vitest run lib/core/palette.test.ts`
 Expected: FAIL — `Failed to resolve import "./palette"`.
 
-- [ ] **Step 3: Write `lib/core/palette.ts`**
+- [x] **Step 3: Write `lib/core/palette.ts`**
 
 ```ts
 /**
@@ -296,13 +296,13 @@ export function tokenValue(cssVar: string, mode: ThemeMode): string {
 }
 ```
 
-- [ ] **Step 4: Run the test — the floors pass, the CSS assertions still fail**
+- [x] **Step 4: Run the test — the floors pass, the CSS assertions still fail**
 
 Run: `npx vitest run lib/core/palette.test.ts`
 Expected: the `contrastRatio` and `CONTRAST_FLOORS` blocks PASS; `globals.css stays in sync`
 and `no raw slate` FAIL. That order is the point — the numbers are right before the wiring is.
 
-- [ ] **Step 5: Write the tokens into `app/globals.css`**
+- [x] **Step 5: Write the tokens into `app/globals.css`**
 
 Replace the whole file with:
 
@@ -365,7 +365,7 @@ body {
 }
 ```
 
-- [ ] **Step 6: Map the tokens in `tailwind.config.ts`**
+- [x] **Step 6: Map the tokens in `tailwind.config.ts`**
 
 ```ts
 import type { Config } from 'tailwindcss';
@@ -402,7 +402,7 @@ const config: Config = {
 export default config;
 ```
 
-- [ ] **Step 7: Convert `app/layout.tsx`**
+- [x] **Step 7: Convert `app/layout.tsx`**
 
 Two edits, nothing else:
 
@@ -425,7 +425,7 @@ export const viewport: Viewport = {
 
 and in the header, `text-slate-500` → `text-ink-muted`.
 
-- [ ] **Step 8: Convert the three remaining screens, and kill the onboarding dead band (F-016)**
+- [x] **Step 8: Convert the three remaining screens, and kill the onboarding dead band (F-016)**
 
 In `app/page.tsx`: `text-slate-600` → `text-ink-muted`, `text-slate-700` → `text-ink`,
 `bg-slate-900 text-white` (the ✓ bullet) → `bg-brand-surface text-brand-on`,
@@ -441,7 +441,7 @@ In `app/onboarding/page.tsx:34`, delete `flex-1 justify-center` from the heading
 leave `flex flex-col gap-4`. This is F-016 — the same anti-pattern F-011 measured on the home
 screen, never carried across to the sibling file.
 
-- [ ] **Step 9: Add the dark-mode measurement to `scripts/verify-mobile.mjs`**
+- [x] **Step 9: Add the dark-mode measurement to `scripts/verify-mobile.mjs`**
 
 A declared dark mode that never renders is F-007 in a new costume. After the existing
 per-route loop closes, add:
@@ -480,13 +480,13 @@ per-route loop closes, add:
   }
 ```
 
-- [ ] **Step 10: Full verification**
+- [x] **Step 10: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all green, including the three new dark-mode checks and the palette suite. Paste the
 tail of the output into the tick report — a claim without fresh output is not a claim.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add lib/core/palette.ts lib/core/palette.test.ts app/globals.css tailwind.config.ts \

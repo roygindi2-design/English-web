@@ -143,10 +143,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   return (
     <>
-      <div className="flex flex-1 flex-col justify-center gap-6">
+      <div className="flex flex-1 flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold leading-tight">{copy.title}</h1>
-          <p className="text-lg leading-relaxed text-slate-600">{copy.lead}</p>
+          <p className="text-lg leading-relaxed text-ink-muted">{copy.lead}</p>
         </div>
 
         {offline && (
@@ -162,7 +162,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
         <form id="auth-form" className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
           <label className="flex flex-col gap-1.5">
-            <span className="text-base font-medium text-slate-700">אימייל</span>
+            <span className="text-base font-medium text-ink">אימייל</span>
             {/* Latin content inside a Hebrew UI — dir="ltr" so the caret and the
                 @ sign sit where the learner expects them (MF-3, bidi). */}
             <input
@@ -176,13 +176,13 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               aria-invalid={Boolean(fieldErrors.email)}
-              className="min-h-touch rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-lg text-slate-900 outline-none focus:border-slate-900"
+              className="min-h-touch rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-left text-lg text-ink outline-none focus:border-brand"
             />
             {fieldErrors.email && <span className="text-base text-red-700">{fieldErrors.email}</span>}
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-base font-medium text-slate-700">סיסמה</span>
+            <span className="text-base font-medium text-ink">סיסמה</span>
             <div className="relative">
               <input
                 type={passwordInputType(passwordVisible)}
@@ -194,7 +194,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 aria-invalid={Boolean(fieldErrors.password)}
-                className="min-h-touch w-full rounded-xl border border-slate-300 bg-white py-3 pl-4 pr-16 text-left text-lg text-slate-900 outline-none focus:border-slate-900"
+                className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised py-3 pl-4 pr-16 text-left text-lg text-ink outline-none focus:border-brand"
               />
               {/* Physical right, not logical end: the field is dir="ltr" inside
                   an RTL page, so the typed characters run towards the right and
@@ -207,7 +207,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                 onClick={() => setPasswordVisible((visible) => !visible)}
                 aria-pressed={passwordVisible}
                 aria-label={passwordToggleLabel(passwordVisible)}
-                className="absolute inset-y-0 right-0 flex min-h-touch w-14 items-center justify-center rounded-xl text-base font-medium text-slate-600 active:text-slate-900"
+                className="absolute inset-y-0 right-0 flex min-h-touch w-14 items-center justify-center rounded-xl text-base font-medium text-ink-muted active:text-ink"
               >
                 {passwordVisible ? 'הסתר' : 'הצג'}
               </button>
@@ -216,7 +216,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               <span className="text-base text-red-700">{fieldErrors.password}</span>
             ) : (
               mode === 'signup' && (
-                <span className="text-base text-slate-500">8 תווים לפחות. בלי כללים נוספים.</span>
+                <span className="text-base text-ink-muted">8 תווים לפחות. בלי כללים נוספים.</span>
               )
             )}
           </label>
@@ -242,17 +242,18 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         <button
           type="submit"
           form="auth-form"
+          data-primary-action="true"
           disabled={busy}
-          className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white active:bg-slate-700 disabled:bg-slate-400"
+          className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
         >
           {busy ? copy.busy : copy.submit}
         </button>
 
-        <p className="text-center text-base text-slate-600">
+        <p className="text-center text-base text-ink-muted">
           {mode === 'signup' ? 'כבר יש לך חשבון? ' : 'אין לך עדיין חשבון? '}
           <Link
             href={otherHref}
-            className="inline-flex min-h-touch items-center font-semibold text-slate-900 underline"
+            className="inline-flex min-h-touch items-center font-semibold text-ink underline"
           >
             {mode === 'signup' ? 'התחברות' : 'יצירת חשבון'}
           </Link>

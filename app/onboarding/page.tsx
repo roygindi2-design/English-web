@@ -31,9 +31,9 @@ export default async function OnboardingPage() {
 
   return (
     <>
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold leading-tight">כמעט מוכן</h1>
-        <p className="text-lg leading-relaxed text-slate-600">
+        <p className="text-lg leading-relaxed text-ink-muted">
           כאן ייבנה השלב שבו נשאל אותך למה אתה לומד, באיזה מוסד אתה, מה ציון
           היעד שלך ומתי המבחן. השלב הזה עוד בבנייה.
         </p>
@@ -44,7 +44,7 @@ export default async function OnboardingPage() {
       <form action="/logout" method="post">
         <button
           type="submit"
-          className="flex w-full min-h-touch items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-lg font-semibold text-slate-900 active:bg-slate-100"
+          className="flex w-full min-h-touch items-center justify-center rounded-xl border border-border-strong bg-surface-raised px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
         >
           יציאה מהחשבון
         </button>

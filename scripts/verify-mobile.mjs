@@ -205,7 +205,12 @@ try {
       // interactive content above the call to action (T-027's preview card),
       // "the first link in main" stops meaning "the primary action" — so the
       // page marks it, and we fall back to the old rule only if it does not.
-      if (route === '/' || route === '/onboarding') {
+      // T-028 widened this too. /login and /signup were never checked, and
+      // /onboarding only passed because AuthForm's `flex-1 justify-center`
+      // pushed the whole form below the fold — the fallback selector was
+      // returning the password-visibility toggle, not the submit button.
+      // Both auth screens now mark their real primary action.
+      if (route === '/' || route === '/onboarding' || route === '/login' || route === '/signup') {
         const y = await page.evaluate(() => {
           const el =
             document.querySelector('main [data-primary-action]') ??
@@ -219,7 +224,11 @@ try {
       // its heading inside the whole flexible area, leaving a 267px dead band
       // above it; a regression here is invisible in a diff but obvious on a
       // phone. Measured against the header, not the viewport top.
-      if (route === '/') {
+      // T-028: widened from `/` to EVERY screen that has a heading. Scoping it
+      // to one route is why F-016 survived in /onboarding and why AuthForm sat
+      // at a measured 139px band on /login and 109px on /signup — the same
+      // `flex-1 justify-center` wrapper, in a file nobody re-measured.
+      {
         const gap = await page.evaluate(() => {
           const h1 = document.querySelector('main h1');
           if (!h1) return -1;
@@ -227,7 +236,9 @@ try {
           const top = header ? header.getBoundingClientRect().bottom : 0;
           return h1.getBoundingClientRect().top - top;
         });
-        check(gap >= 0 && gap <= 48, `${at} heading anchored to top`, `dead band of ${Math.round(gap)}px above the heading`);
+        if (gap >= 0) {
+          check(gap <= 48, `${at} heading anchored to top`, `dead band of ${Math.round(gap)}px above the heading`);
+        }
       }
 
       // Password visibility (F-013). Email confirmation is off (Q-001 ⓑ), so
@@ -297,6 +308,39 @@ try {
     }
 
     await context.close();
+  }
+
+  // ---- 2b. dark mode is measured, not declared (T-028) --------------------
+  // Dark mode is a claim about pixels, so measure pixels. One route, one width:
+  // the tokens are global, so if `/` flips, every screen flips.
+  {
+    const darkCtx = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      colorScheme: 'dark',
+    });
+    const darkPage = await darkCtx.newPage();
+    await darkPage.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    const dark = await darkPage.evaluate(() => {
+      const s = getComputedStyle(document.body);
+      return { bg: s.backgroundColor, fg: s.color };
+    });
+    await darkCtx.close();
+
+    const lightCtx = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      colorScheme: 'light',
+    });
+    const lightPage = await lightCtx.newPage();
+    await lightPage.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    const light = await lightPage.evaluate(() => {
+      const s = getComputedStyle(document.body);
+      return { bg: s.backgroundColor, fg: s.color };
+    });
+    await lightCtx.close();
+
+    check(dark.bg !== light.bg, 'dark mode changes the page background', `both are ${dark.bg}`);
+    check(dark.fg !== light.fg, 'dark mode changes the body text colour', `both are ${dark.fg}`);
+    check(dark.bg === 'rgb(15, 23, 42)', 'dark surface is the --surface token', `got ${dark.bg}`);
   }
 
   // ---- 3. install offer timing (UX plan T-001) ----------------------------

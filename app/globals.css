@@ -2,7 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
+/* tokens:light */
+/* The source of truth is lib/core/palette.ts; palette.test.ts fails if either
+   block below drifts from COLOR_TOKENS. The marker comments above and below are
+   load-bearing — the test anchors on them exactly. */
+:root {
+  color-scheme: light dark;
+  --surface: #f8fafc;
+  --surface-raised: #ffffff;
+  --ink: #0f172a;
+  --ink-muted: #475569;
+  --border-subtle: #e2e8f0;
+  --border-strong: #64748b;
+  --brand: #2a78d6;
+  --brand-surface: #1d4ed8;
+  --brand-on: #ffffff;
+  --success: #047857;
+  --danger: #b91c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* tokens:dark */
+  :root {
+    --surface: #0f172a;
+    --surface-raised: #1e293b;
+    --ink: #f8fafc;
+    --ink-muted: #cbd5e1;
+    --border-subtle: #334155;
+    --border-strong: #94a3b8;
+    --brand: #3987e5;
+    --brand-surface: #7dabf8;
+    --brand-on: #0f172a;
+    --success: #4ade80;
+    --danger: #f87171;
+  }
+}
 
 html, body { max-width: 100vw; overflow-x: hidden; }
 
@@ -11,5 +45,14 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Latin text inside Hebrew paragraphs must not break RTL flow. */
+/* Latin text inside Hebrew paragraphs must not break RTL flow. Written by
+   components/EnWord.tsx only — see its guard test. */
 .ltr-inline { unicode-bidi: isolate; direction: ltr; display: inline-block; }
+
+/* T-041: the reveal is an affordance, never a delay. Any motion is opt-out. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

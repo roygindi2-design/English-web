@@ -30,18 +30,18 @@ export default function HomePage() {
     <>
       <section className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold leading-tight text-balance">{LANDING_HEADLINE}</h1>
-        <p className="text-lg leading-relaxed text-slate-600">{LANDING_SUBHEAD}</p>
+        <p className="text-lg leading-relaxed text-ink-muted">{LANDING_SUBHEAD}</p>
 
         <ul className="mt-2 flex flex-col gap-3">
           {LANDING_VALUE_POINTS.map((point) => (
             <li key={point} className="flex items-start gap-3">
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-surface text-sm font-bold text-brand-on"
               >
                 ✓
               </span>
-              <span className="text-base leading-relaxed text-slate-700">{point}</span>
+              <span className="text-base leading-relaxed text-ink">{point}</span>
             </li>
           ))}
         </ul>
@@ -55,19 +55,19 @@ export default function HomePage() {
       {preview ? (
         <section
           aria-label="דוגמה לכרטיסייה"
-          className="rounded-2xl border border-slate-200 bg-white p-5"
+          className="rounded-2xl border border-border-subtle bg-surface-raised p-5"
         >
-          <p className="text-sm text-slate-500">נסה מילה אחת עכשיו</p>
+          <p className="text-sm text-ink-muted">נסה מילה אחת עכשיו</p>
           <p className="mt-1 text-2xl font-bold">
             <span className="ltr-inline" lang="en">
               {preview.headword}
             </span>
           </p>
-          <p className="text-sm text-slate-500">{preview.pos}</p>
+          <p className="text-sm text-ink-muted">{preview.pos}</p>
           <ul className="mt-4 flex flex-col gap-2">
             {preview.options.map((option) => (
               <li key={option}>
-                <span className="flex min-h-touch items-center rounded-xl border border-slate-200 px-4 text-base">
+                <span className="flex min-h-touch items-center rounded-xl border border-border-subtle px-4 text-base">
                   {option}
                 </span>
               </li>
@@ -81,13 +81,13 @@ export default function HomePage() {
         <Link
           href="/signup"
           data-primary-action="true"
-          className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white active:bg-slate-700"
+          className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
         >
           בואו נתחיל
         </Link>
         <Link
           href="/login"
-          className="flex min-h-touch items-center justify-center text-base text-slate-600 underline underline-offset-4 active:text-slate-900"
+          className="flex min-h-touch items-center justify-center text-base text-ink-muted underline underline-offset-4 active:text-ink"
         >
           כבר יש לך חשבון? התחברות
         </Link>

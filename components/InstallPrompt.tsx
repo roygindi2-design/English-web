@@ -109,9 +109,9 @@ export default function InstallPrompt() {
   return (
     <aside
       aria-label="הוספה למסך הבית"
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-2xl border border-border-subtle bg-surface-raised p-4 shadow-sm"
     >
-      <p className="text-base leading-relaxed text-slate-700">
+      <p className="text-base leading-relaxed text-ink">
         {offer === 'native'
           ? 'רוצה גישה מהירה? אפשר להוסיף את האפליקציה למסך הבית.'
           : 'להוספה למסך הבית: כפתור השיתוף למטה, ואז "הוסף למסך הבית".'}
@@ -122,7 +122,7 @@ export default function InstallPrompt() {
           <button
             type="button"
             onClick={install}
-            className="flex min-h-touch flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 text-base font-semibold text-white active:bg-slate-700"
+            className="flex min-h-touch flex-1 items-center justify-center rounded-xl bg-brand-surface px-4 text-base font-semibold text-brand-on active:opacity-90"
           >
             הוסף למסך הבית
           </button>
@@ -131,7 +131,7 @@ export default function InstallPrompt() {
         <button
           type="button"
           onClick={dismiss}
-          className="flex min-h-touch min-w-touch items-center justify-center rounded-xl border border-slate-300 px-4 text-base font-medium text-slate-700 active:bg-slate-100"
+          className="flex min-h-touch min-w-touch items-center justify-center rounded-xl border border-border-strong px-4 text-base font-medium text-ink active:opacity-90"
         >
           לא עכשיו
         </button>

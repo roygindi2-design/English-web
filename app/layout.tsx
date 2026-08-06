@@ -13,7 +13,11 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#0f172a',
+  // The browser chrome follows the mode too, otherwise a dark page sits under a light bar.
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
 };
 
 /**
@@ -26,10 +30,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl">
-      <body className="bg-slate-50 text-slate-900 antialiased">
+      <body className="bg-surface text-ink antialiased">
         <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
           <header className="flex items-center px-5 py-4">
-            <span className="text-sm font-semibold text-slate-500">
+            <span className="text-sm font-semibold text-ink-muted">
               אנגלית · מסלול אמיר״ם
             </span>
           </header>
