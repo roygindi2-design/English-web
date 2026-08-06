@@ -4,6 +4,7 @@ import {
   PASSWORD_MIN_LENGTH,
   checkCredentials,
   destinationAfterAuth,
+  isCredentialPayload,
   isPlausibleEmail,
   mapAuthError,
   normalizeEmail,
@@ -115,5 +116,30 @@ describe('signup outcome', () => {
   it('routes a pending confirmation to the login screen, not into the product', () => {
     expect(signupOutcome(false)).toBe('awaiting_email_confirmation');
     expect(destinationAfterAuth(signupOutcome(false))).toBe('/login');
+  });
+});
+
+/**
+ * F-004 — `await request.json()` returns `null` for the body `null` without
+ * throwing, so the try/catch never fired and `payload.email` crashed the route
+ * to HTTP 500 with a stack trace in the log. Cheap log-flooding primitive for
+ * an unauthenticated attacker, and a broken response contract for everyone.
+ */
+describe('F-004: request body shape guard', () => {
+  it('rejects the bodies that used to reach a property access', () => {
+    for (const body of [null, undefined, [], ['a'], 'null', 7, true]) {
+      expect(isCredentialPayload(body)).toBe(false);
+    }
+  });
+
+  it('accepts a plain object, even one missing the fields', () => {
+    expect(isCredentialPayload({})).toBe(true);
+    expect(isCredentialPayload({ email: 'roy@example.com', password: 'x'.repeat(8) })).toBe(true);
+  });
+
+  it('a rejected body still reads as a credential object once guarded', () => {
+    const body: unknown = null;
+    // This is exactly the sequence in the route handlers: guard, then read.
+    expect(isCredentialPayload(body) ? String(body.email ?? '') : 'guarded').toBe('guarded');
   });
 });

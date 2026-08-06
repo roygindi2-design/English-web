@@ -1,18 +1,27 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { type AuthErrorCode, checkCredentials, mapAuthError, messageFor } from '@/lib/core/auth';
+import {
+  type AuthErrorCode,
+  checkCredentials,
+  isCredentialPayload,
+  mapAuthError,
+  messageFor,
+} from '@/lib/core/auth';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
 
 /** POST /api/auth/login — see docs/api-contract.md */
 export async function POST(request: Request) {
-  let payload: { email?: unknown; password?: unknown };
+  let payload: unknown;
   try {
     payload = await request.json();
   } catch {
     return fail('unavailable', 400);
   }
+  // F-004: `null`, an array or a bare primitive parses fine and would crash the
+  // next line with a 500 instead of returning the documented contract.
+  if (!isCredentialPayload(payload)) return fail('unavailable', 400);
 
   const check = checkCredentials(
     { email: String(payload.email ?? ''), password: String(payload.password ?? '') },

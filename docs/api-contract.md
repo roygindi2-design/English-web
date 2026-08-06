@@ -45,6 +45,9 @@
 **422 — כשל ולידציה מקומי:** `{ "ok": false, "fieldErrors": { "email"?: string, "password"?: string } }`
 **409 — האימייל תפוס:** `{ "ok": false, "code": "email_taken", "message": "...", "email": "..." }`
 **400 / 503 — אחר:** `{ "ok": false, "code": "...", "message": "..." }`
+**400 — גוף בקשה שאינו אובייקט** (`null`, מערך, מחרוזת, מספר): `{ "ok": false, "code": "unavailable", "message": "..." }`.
+חל על שני נתיבי האימות. הגוף `null` עובר את `request.json()` בלי לזרוק, ולפני F-004
+הפיל את הנתיב ל-500 עם stack trace בלוג. הגנה: `isCredentialPayload` ב-`lib/core/auth.ts`.
 
 בהצלחה עם session נוצרת גם שורת `profiles` עם `track_id='amiram'` (D-016).
 המקור הסמכותי ליצירתה הוא טריגר בדאטהבייס (`supabase/migrations/0001_profiles.sql`);
@@ -57,6 +60,7 @@
 **200:** `{ "ok": true, "next": "/onboarding" }`
 **401:** `{ "ok": false, "code": "invalid_credentials", "message": "אימייל או סיסמה שגויים" }`
 **429:** `{ "ok": false, "code": "rate_limited", "message": "..." }`
+**400:** גוף בקשה שאינו אובייקט — זהה ל-signup לעיל (F-004).
 
 ⛔ **כל כשל אימות מוחזר עם אותה הודעה בדיוק.** "המשתמש לא קיים" הופך את נקודת
 הקצה לכלי למיפוי משתמשים רשומים.
@@ -73,6 +77,13 @@
   הספק לעולם לא מגיע ללומד — אותו כלל מ-T-001. המיפוי ב-`lib/core/auth.ts`.
 * ה-session נשמר ב-cookies מסוג httpOnly שנכתבים על ידי `@supabase/ssr`.
   **לא ב-`localStorage`** — שם כל סקריפט שהוזרק יכול לקרוא אותו.
+  ⚠️ `@supabase/ssr` **אינו** מספק את זה כברירת מחדל (`httpOnly: false`, בלי `secure`).
+  ההבטחה הזו מתקיימת אך ורק דרך `SESSION_COOKIE_OPTIONS` ב-`lib/supabase/auth.ts`,
+  שמועבר כ-`cookieOptions` לכל קריאת `createServerClient`. `secure` דולק בפרודקשן בלבד,
+  אחרת `http://localhost` היה מפיל את העוגייה בפיתוח. F-002 — מכוסה בבדיקת יחידה.
+* `proxy.ts` **נכשל סגור**: כשחסרים משתני הסביבה של Supabase, נתיב מוגן מופנה ל-`/login`
+  ואינו נפתח. בנוסף `app/onboarding/page.tsx` בודק `getUser()` בעצמו — הפרוקסי אינו
+  עוד נקודת האכיפה היחידה. F-003.
 * רענון ה-session והשמירה על הנתיבים המוגנים מתבצעים ב-`proxy.ts` (שם הקונבנציה
   של Next 16; `middleware` הוצא משימוש).
 

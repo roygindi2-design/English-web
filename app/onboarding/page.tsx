@@ -9,8 +9,26 @@
  * anyone without a live session to /login before this renders. The sign-out
  * control lives here because this is currently the only screen a signed-in
  * learner can be on — /logout is an action, not a screen (UX plan T-002).
+ *
+ * F-003 added a second lock on the same door: this screen now checks the
+ * session itself, so the proxy is no longer the single point of enforcement.
  */
-export default function OnboardingPage() {
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
+
+export const dynamic = 'force-dynamic';
+
+export default async function OnboardingPage() {
+  const env = readSupabaseEnv();
+  if (!env) redirect('/login?expired=1');
+
+  const supabase = createRouteClient(env, await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login?expired=1');
+
   return (
     <>
       <div className="flex flex-1 flex-col justify-center gap-4">

@@ -16,6 +16,24 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 export type SupabaseEnv = { url: string; anonKey: string };
 
+/**
+ * F-002 — the session cookie hardening, in one place.
+ *
+ * `@supabase/ssr` ships `DEFAULT_COOKIE_OPTIONS` with `httpOnly: false` and no
+ * `secure`, so omitting this argument hands the access token *and* a 400-day
+ * refresh token to any script that can read `document.cookie`. Every
+ * `createServerClient` call in this file must pass it.
+ *
+ * `secure` is off outside production only because `http://localhost` would
+ * otherwise drop the cookie and no one could sign in locally.
+ */
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+} as const satisfies CookieOptions;
+
 /** Reads env at request time, never at module load: a missing key must produce a
  *  Hebrew "we could not connect" at runtime, not a failed production build. */
 export function readSupabaseEnv(): SupabaseEnv | null {
@@ -37,6 +55,7 @@ type CookieStore = {
  */
 export function createRouteClient(env: SupabaseEnv, cookieStore: CookieStore) {
   return createServerClient(env.url, env.anonKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet: CookieToSet[]) => {
@@ -63,6 +82,7 @@ export function createProxyClient(
   response: NextResponse
 ) {
   return createServerClient(env.url, env.anonKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet: CookieToSet[]) => {

@@ -65,6 +65,21 @@ export function isAcceptablePassword(raw: string): boolean {
 }
 
 /**
+ * F-004 — the shape guard the route handlers were missing.
+ *
+ * `await request.json()` on the body `null` does not throw: it returns `null`,
+ * slips past the try/catch, and the next property access crashes the handler
+ * to a 500 with a full stack trace in the Netlify log. Arrays and bare
+ * primitives (`"x"`, `7`, `true`) reach the same dead end. Anything that is not
+ * a plain object is rejected here, before a single field is read.
+ */
+export function isCredentialPayload(
+  value: unknown
+): value is { email?: unknown; password?: unknown } {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
  * Validates a credential pair before it costs a network round-trip.
  * On login we only require non-empty fields: an account created under older
  * rules must still be able to get in, and length feedback on a login screen

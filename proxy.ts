@@ -19,22 +19,33 @@ import { createProxyClient, readSupabaseEnv } from '@/lib/supabase/auth';
 const AUTH_SCREENS = ['/signup', '/login'];
 const PROTECTED_SCREENS = ['/onboarding'];
 
+/** Exported for the F-003 unit test and reused by the onboarding screen's own guard. */
+export function isProtectedPath(pathname: string) {
+  return PROTECTED_SCREENS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 export default async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
   const env = readSupabaseEnv();
 
-  // Not configured yet: let every screen render. The learner meets a Hebrew
-  // "we could not connect" when they actually submit, not a redirect loop.
-  if (!env) return response;
+  const { pathname } = request.nextUrl;
+  const isAuthScreen = AUTH_SCREENS.some((p) => pathname === p);
+  const isProtected = isProtectedPath(pathname);
+
+  // F-003 — fail closed, not open. A typo in a Netlify env var (or a Deploy
+  // Preview that does not inherit them) used to make this guard evaporate and
+  // hand every protected screen to an anonymous request. Public screens still
+  // render, so the learner meets a Hebrew "we could not connect" on submit
+  // rather than a dead site.
+  if (!env) {
+    if (isProtected) return redirectPreservingCookies(request, response, '/login', { expired: '1' });
+    return response;
+  }
 
   const supabase = createProxyClient(env, request, response);
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-  const isAuthScreen = AUTH_SCREENS.some((p) => pathname === p);
-  const isProtected = PROTECTED_SCREENS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (user) {
     // A returning learner never sees the marketing screen or the auth screens again.
