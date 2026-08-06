@@ -14,12 +14,12 @@
 
 ```yaml
 CYCLE_ID: C-0004                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
-NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — T-001 ו-T-002 שתיהן 🟣 וממתינות לסקירה.
-                                  # Q-001 במדור 6 היא שאלת הגדרה ל-PM, לא חוסמת את הסקירה.
-STATE: REVIEWING                  # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
+NEXT_AGENT: DEV                   # PM | DEV | CRITIC | HUMAN — רוי ביצע סקירה ידנית: 2×🔴 CRITICAL פתוחים
+                                  # (F-002 עוגיות לא httpOnly, F-004 קריסת 500). Dev מתקן לפני כל דבר אחר.
+STATE: BUILDING                   # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: T-002             # מזהה המשימה מתוך מדור 5
-CRITIC_ROUNDS_ON_TASK: 0          # מתאפס בכל משימה חדשה. תקרה: 3
+ACTIVE_TASK_ID: T-022             # תיקוני אבטחת Auth — F-002/F-003/F-004
+CRITIC_ROUNDS_ON_TASK: 1          # סבב הביקורת הידני של רוי נספר כסבב 1 על T-001+T-002
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
 LAST_HANDOFF_AT: 2026-08-06T01:50:12Z
 HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 נפתרות במדידה ולא בהחלטה — אין החלטה עסקית תלויה.
@@ -29,7 +29,7 @@ BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי 
 LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
 LOCK_AT: ""                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
                                   # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
-LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
+LAST_REVIEWED_COMMIT: "e86f23edce4976ca03a7337357c368e880559e36"  # נסקר ידנית ע"י רוי — Critic, אל תחזור על זה
 
 # --- כלכלת בנייה: 300 דקות בנייה בחודש. חריגה = השעיית האתר עד סוף החודש ---
 WORKING_BRANCH: dev               # כל הסוכנים דוחפים לכאן. Netlify לא בונה ענף זה.
@@ -37,6 +37,11 @@ DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק
 LAST_PROMOTED_AT: ""              # ISO-8601 של הקידום האחרון ל-main
 PROMOTIONS_THIS_MONTH: 0          # תקרה רכה: 30. מעבר לזה — התראה לרוי
 ```
+
+> 🧑‍⚖️ **ביקורת רוי — 2026-08-06T06:57:35Z.** נכתבו 10 ממצאים ל-`plan/60-findings.md` (F-001..F-010),
+> ונוספו T-020..T-024. **סדר העבודה שנקבע: T-022 (אבטחה 🔴) → T-021 → T-023 (המסלול הקריטי).**
+> `main` ו-`dev` יושרו — ראה F-001. `NEXT_AGENT=DEV` כי יש שני ממצאי CRITICAL פתוחים.
+> **PM: T-020 דחופה** — התמצית חסרה סעיפים ש-4 משימות פנויות מצטטות.
 
 > **תזמון בפועל:** Dev רץ כל שעה בדקה :30 · PM יומי ב-08:00 · Critic יומי ב-20:00.
 > כל סוכן קורא את `NEXT_AGENT` כאיתות עדיפות, אך אינו נחסם בגללו — הוא בודק אם
@@ -49,9 +54,9 @@ PROMOTIONS_THIS_MONTH: 0          # תקרה רכה: 30. מעבר לזה — ה�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0002 | DEV | CRITIC | 00:40Z | T-001 (שלד Next.js/RTL/PWA) אומתה מקצה לקצה: typecheck · check:core · 10 בדיקות · build · 75 בדיקות מובייל/PWA ב-320/375/414px — הכל ירוק. סומנה 🟣, מדור 3 עודכן. | 3.1–3.4 · T-001 🟣 |
 | C-0003 | PM | DEV | 01:10Z | טיק תכנון. אין מחקר חדש: R-005/R-006 פתוחות אך נפתרות במדידה של Dev (T-013/T-016/T-018), ומרחב המקורות כבר נסרק ב-C-0001. נכתבה תוכנית UX ל-T-002 (4.2) + D-015/D-016, ותוקן פער EVP→CEFR-J בתמצית. | 4.2 · D-015..16 · 1.3.2 |
 | C-0004 | DEV | CRITIC | 01:50Z | T-002 נבנתה: `/signup`·`/login`·`/logout`, שלושה route handlers, `proxy.ts` לרענון session ושמירת נתיבים, `profiles` + RLS במיגרציה. verify ירוק (32 בדיקות) + 105 בדיקות מובייל ב-320/375/414. נפתחה Q-001 — Supabase לא תומך בצירוף אימות-אימייל שהתוכנית ביקשה. | T-002 🟣 · Q-001 · TD-4..6 |
+| C-0004 | רוי | DEV | 01:5xZ | ביקורת ידנית: `main`/`dev` יושרו ו-`0561f9d` שוחזר (F-001). 10 ממצאים F-001..F-010, 2 מהם 🔴. T-020..T-024 נוספו | 60-findings · 50-tasks · digest |
 
 ---
 
