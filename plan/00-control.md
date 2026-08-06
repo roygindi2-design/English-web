@@ -25,8 +25,8 @@ HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
-LOCK_AT: ""                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
+LOCK_HELD_BY: DEV                  # "" | PM | DEV | CRITIC
+LOCK_AT: "2026-08-06T15:41:14Z"                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
                                   # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
 LAST_REVIEWED_COMMIT: "c046024016eedd67cdb6757fed503ed79f178e7e"  # נסקר C-0005 ע"י Critic (dev tip לפני קומיטי ה-critic)
 
