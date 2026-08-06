@@ -61,7 +61,7 @@
 4. גש ל-**Project Settings** ← **API** והעתק לפנקס שלושה דברים:
    * `Project URL`
    * `anon public` key
-   * `service_role` key ← **זה סוד. לא לשתף בשום מקום פומבי.**
+   * ~~`service_role` key~~ ← **לא נדרש.** אין קובץ שקורא אותו (T-024/F-010), ולכן אין להעתיק אותו לשום מקום. אם בכל זאת ראית אותו על המסך — הוא סוד, ואין לשתף אותו.
 
 ### צעד 4 — Vercel (העלאה לאוויר)  *(5 דק')*
 1. <https://vercel.com/signup> ← **Continue with GitHub**.
@@ -89,7 +89,7 @@ Supabase URL: https://XXXX.supabase.co
 Supabase anon key: eyJXXXX
 ```
 
-*(את ה-service_role לא צריך לתת לי — הוא חי רק בתוך Vercel.)*
+*(את ה-service_role לא צריך לתת לי, ולמעשה לא צריך להגדיר אותו בכלל — ראה טבלת משתני הסביבה למטה.)*
 
 מרגע זה אני:
 * מקים את שלד הפרויקט (Next.js + Tailwind + PWA + חיבור ל-Supabase),
@@ -172,7 +172,7 @@ Supabase Dashboard ← **Authentication** ← **Sign In / Providers** ← **Emai
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | שרת + לקוח | |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | שרת + לקוח | המפתח היחיד שנוגע בנתיב בקשה של לומד |
-| `SUPABASE_SERVICE_ROLE_KEY` | שרת בלבד | **אינו מיובא בשום קובץ של T-002.** לא בקוד לקוח, לא בקומיט |
+| `SUPABASE_SERVICE_ROLE_KEY` | ⛔ **אל תגדיר אותו כלל** | אף קובץ במוצר אינו קורא אותו (T-024 סגרה את F-010), ובדיקת יחידה חוסמת את החזרתו. סוד שעוקף RLS ואין לו צרכן = סיכון בלי תמורה |
 
 בלי שני הראשונים האתר עולה ונטען כרגיל, ומסכי ההרשמה/התחברות מציגים
 "לא הצלחנו להתחבר כרגע" בעת שליחה — במקום ליפול בבנייה.

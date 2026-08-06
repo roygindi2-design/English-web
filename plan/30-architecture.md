@@ -8,7 +8,7 @@
 
 | # | הכלל | סטטוס | אימות אחרון |
 |---|---|---|---|
-| AR-1 | אפס גישה ישירה לדאטהבייס מרכיבי ממשק. הכל דרך `/api/*` או שכבת שירות מוגדרת | ✅ | C-0003 · `AuthForm` מדבר רק דרך `apiPost` → `/api/auth/*`. `@supabase/*` מיובא אך ורק ב-`lib/supabase/auth.ts`, ב-route handlers וב-`proxy.ts` — אף רכיב ממשק |
+| AR-1 | אפס גישה ישירה לדאטהבייס מרכיבי ממשק. הכל דרך `/api/*` או שכבת שירות מוגדרת | ✅ | C-0005 · `AuthForm` מדבר רק דרך `apiPost` → `/api/auth/*`. `@supabase/*` מיובא אך ורק ב-`lib/supabase/auth.ts`, ב-route handlers וב-`proxy.ts`. **`lib/supabase/server.ts` נמחק (T-024/F-010)** — לא נותר בעץ אף לקוח שעוקף RLS, ו-`lib/supabase/serviceRole.test.ts` נכשל אם `SUPABASE_SERVICE_ROLE_KEY` נקרא מ-`app/`, `components/`, `lib/` או `proxy.ts` |
 | AR-2 | כל לוגיקה עסקית (ריווח חזרות, ניקוד, בחירת מסיחים) חיה ב-`/lib/core/` — **טהורה, ללא React, ללא DOM** | ✅ | C-0003 · כללי האימות ומיפוי השגיאות ב-`lib/core/auth.ts`; 32 בדיקות עוברות בלי דפדפן |
 | AR-3 | חוזה ה-API מתועד ב-`/docs/api-contract.md` ומעודכן בכל שינוי | ✅ | C-0004 · תגובת 400 לגוף שאינו אובייקט (F-004) והבהרת `httpOnly`/fail-closed (F-002/F-003) נכתבו באותו קומיט |
 | AR-4 | אין `window`/`document`/`localStorage` בתוך `/lib/core/` — קוד זה חייב לרוץ כמות שהוא ב-React Native | ✅ | C-0004 · נאכף אוטומטית; ה-session חי ב-cookies שהם httpOnly **בפועל** מ-C-0004 (`SESSION_COOKIE_OPTIONS`, F-002) ולא ב-`localStorage` |
