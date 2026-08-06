@@ -6,7 +6,7 @@
 
 | id | אבן דרך | המשימה | מקור פדגוגי | סטטוס | סבבי ביקורת | קבצים |
 |---|---|---|---|---|---|---|
-| T-001 | M0 | שלד Next.js + Tailwind + RTL + PWA בסיסי | — | ⬜ | 0 | — |
+| T-001 | M0 | שלד Next.js + Tailwind + RTL + PWA בסיסי | — | 🟣 | 0 | `app/*` · `components/InstallPrompt.tsx` · `components/ServiceWorkerRegistrar.tsx` · `lib/core/{health,installPrompt}.ts` · `lib/api/client.ts` · `public/{sw.js,manifest.webmanifest,offline.html}` · `scripts/{check-core-purity,verify-mobile}.mjs` |
 | T-002 | M0 | חיבור Supabase + הרשמה/התחברות | — | ⬜ | 0 | — |
 | T-003 | M1 | Onboarding: מטרה, מוסד, ציון יעד, תאריך מבחן | A7 | ⛔ | 0 | — |
 | T-004 | M1 | מבחן רמה אדפטיבי (מדמה את A1 — מתחיל בבינוני ומסתעף) | A1, A2, A3 · A8 | ⬜ | 0 | — |

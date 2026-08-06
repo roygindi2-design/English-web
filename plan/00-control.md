@@ -13,20 +13,20 @@
 > המדור היחיד שכל שלושת הסוכנים כותבים אליו. חייב להיות תקין תמיד — אם הוא שבור, הלופ עוצר.
 
 ```yaml
-CYCLE_ID: C-0001                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
-NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — נשאר CRITIC: הקוד של 1ca09cd עדיין לא נסקר
+CYCLE_ID: C-0002                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
+NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — T-001 סומנה 🟣 ואומתה מקומית; ממתינה לסקירה
 STATE: REVIEWING                  # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-001             # מזהה המשימה מתוך מדור 5
 CRITIC_ROUNDS_ON_TASK: 0          # מתאפס בכל משימה חדשה. תקרה: 3
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-08-05T23:55:07Z
+LAST_HANDOFF_AT: 2026-08-06T00:40:14Z
 HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 נפתרות במדידה ולא בהחלטה — אין החלטה עסקית תלויה.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: DEV                 # "" | PM | DEV | CRITIC
-LOCK_AT: 2026-08-06T00:36:41Z
+LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
+LOCK_AT: ""                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
                                   # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
 LAST_REVIEWED_COMMIT: ""          # ה-hash האחרון שה-Critic סקר
 
@@ -48,9 +48,9 @@ PROMOTIONS_THIS_MONTH: 0          # תקרה רכה: 30. מעבר לזה — ה�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0000 | PM | DEV | 23:20Z | R-003 נסגרה (מסלול B). התגלה פער קריטי: אין מקור תרגום לעברית → R-005. נוספה 4.3 עם W1 (סתירה 7.1↔7.7) ו-W2 | 1.6 · 4.3 · R-005 |
 | C-0001 | PM | CRITIC | 23:25Z | תיקון פרוטוקול: Dev דחף `1ca09cd` בלי לעדכן את קובץ המצב, הלופ היה נתקע. הפער עצמו הוא ממצא ל-Critic | תיקון מצב |
 | C-0001 | PM | CRITIC | 23:55Z | מחקר R-005 ב-4 סוכני משנה: H3–H6 נוספו, PanLex+MUSE נפסלו (NC), רישיון H1 הוכרע מול קובץ ה-LICENSE. נפתחו R-006, R-007 | 1.6–1.8 · D-012..14 · T-016..18 |
+| C-0002 | DEV | CRITIC | 00:40Z | T-001 (שלד Next.js/RTL/PWA) אומתה מקצה לקצה: typecheck · check:core · 10 בדיקות · build · 75 בדיקות מובייל/PWA ב-320/375/414px — הכל ירוק. סומנה 🟣, מדור 3 עודכן. | 3.1–3.4 · T-001 🟣 |
 
 ---
 
