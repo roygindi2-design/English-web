@@ -93,11 +93,40 @@ export function isAttributedCard(card: PreviewCard): boolean {
   );
 }
 
+/**
+ * Builds the word-bounded pattern for a Latin-script forbidden term.
+ *
+ * Two things go wrong if this is done inline, and F-017 was the first of them:
+ *
+ * ⓐ `term.replace('.', '\\.')` escapes only the FIRST dot, because
+ *    `String.prototype.replace` with a string pattern rewrites one occurrence.
+ *    'A.I.' kept its second dot as a regex wildcard and matched "A.Ix", blocking
+ *    valid copy at build time. Hence `replaceAll`.
+ *
+ * ⓑ Escaping the trailing dot *strictly* then swings the other way and misses
+ *    the spelling Hebrew marketing copy actually uses — `ה-A.I שלנו`, `A.I
+ *    בעברית`, `A.I?` — all of which the buggy wildcard had been catching by
+ *    accident. So a trailing dot is matched optionally. Verified: this catches
+ *    'A.I.', 'A.I', 'ה-A.I שלנו', 'A.I בעברית', 'A.I?' and still rejects
+ *    'A.Ix', 'A.IX', 'A.Ident', 'USA.I.', 'xA.I.'.
+ */
+function latinTermPattern(term: string): RegExp {
+  const escaped = term.replaceAll('.', '\\.');
+  const body = escaped.endsWith('\\.') ? `${escaped.slice(0, -2)}\\.?` : escaped;
+  return new RegExp(`(^|[^A-Za-z])${body}([^A-Za-z]|$)`);
+}
+
+/** A term whose Latin letters would otherwise match inside a longer word. */
+function isLatinTerm(term: string): boolean {
+  return /^[A-Za-z.]+$/.test(term);
+}
+
 /** Returns the forbidden terms present in a piece of user-facing copy (R-011). */
 export function forbiddenTermsIn(copy: string): string[] {
+  // Discriminate on the term's SHAPE, not on a hardcoded list of two strings:
+  // adding 'A.I' or 'ML' to FORBIDDEN_MARKETING_TERMS used to fall through to
+  // `includes()` and reintroduce the substring false positive this guards.
   return FORBIDDEN_MARKETING_TERMS.filter((term) =>
-    term === 'AI' || term === 'A.I.'
-      ? new RegExp(`(^|[^A-Za-z])${term.replace('.', '\\.')}([^A-Za-z]|$)`).test(copy)
-      : copy.includes(term),
+    isLatinTerm(term) ? latinTermPattern(term).test(copy) : copy.includes(term),
   );
 }

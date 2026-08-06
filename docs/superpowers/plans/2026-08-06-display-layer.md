@@ -515,7 +515,7 @@ git push origin dev
   - `export function EnText(props: { readonly segments: readonly EnTextSegment[]; readonly className?: string }): JSX.Element`
   - Task 3 renders every English string through exactly these two.
 
-- [ ] **Step 0: Close F-017 — `term.replace('.', …)` escapes only the first dot**
+- [x] **Step 0: Close F-017 — `term.replace('.', …)` escapes only the first dot**
 
 This is a one-character fix in a file this task already touches, so it rides along rather than
 burning a tick of its own. In `lib/core/landing.ts:100`, `forbiddenTermsIn` builds its regex
@@ -536,7 +536,7 @@ it('does not flag a term that merely matches the unescaped wildcard (F-017)', ()
 Run `npx vitest run lib/core/landing.test.ts` — expect FAIL on the first assertion. Then change
 `replace` to `replaceAll` and re-run — expect PASS. Fold this into the Task 2 commit.
 
-- [ ] **Step 1: Extend the Vitest include**
+- [x] **Step 1: Extend the Vitest include**
 
 In `vitest.config.ts`:
 
@@ -547,7 +547,7 @@ In `vitest.config.ts`:
     include: ['lib/**/*.test.ts', 'proxy.test.ts', 'scripts/**/*.test.ts', 'components/**/*.test.ts'],
 ```
 
-- [ ] **Step 2: Write the failing guard test**
+- [x] **Step 2: Write the failing guard test**
 
 Create `components/EnWord.test.ts`:
 
@@ -592,13 +592,13 @@ describe('every English string in the product goes through <EnWord> (T-009)', ()
 });
 ```
 
-- [ ] **Step 3: Run it and confirm it fails**
+- [x] **Step 3: Run it and confirm it fails**
 
 Run: `npx vitest run components/EnWord.test.ts`
 Expected: FAIL — `ENOENT … components/EnWord.tsx`, and `app/page.tsx` listed as an offender on
 both scans (it hand-writes `className="ltr-inline" lang="en"` today).
 
-- [ ] **Step 4: Write `components/EnWord.tsx`**
+- [x] **Step 4: Write `components/EnWord.tsx`**
 
 ```tsx
 /**
@@ -664,7 +664,7 @@ export function EnText({
 }
 ```
 
-- [ ] **Step 5: Route `app/page.tsx` through it**
+- [x] **Step 5: Route `app/page.tsx` through it**
 
 Replace the hand-written span in the preview block:
 
@@ -676,18 +676,18 @@ import EnWord from '@/components/EnWord';
           </p>
 ```
 
-- [ ] **Step 6: Run the guard test and confirm it passes**
+- [x] **Step 6: Run the guard test and confirm it passes**
 
 Run: `npx vitest run components/EnWord.test.ts`
 Expected: PASS, 3 tests.
 
-- [ ] **Step 7: Full verification**
+- [x] **Step 7: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all green. `check:mobile`'s existing RTL assertions on `/` must still pass — they are
 what proves the wrapper did not break the page direction.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add components/EnWord.tsx components/EnWord.test.ts vitest.config.ts app/page.tsx
@@ -696,6 +696,14 @@ git push origin dev
 ```
 
 ---
+
+
+> **Executed C-0014. Three deviations from the plan as written, each forced by a measurement — Task 3 inherits all three:**
+> 1. `EnText`'s target mark is `font-bold underline decoration-2` with **no `text-brand`**. Measured with the repo's own `contrastRatio`: `--brand` is 4.42:1 on `--surface-raised` light, 4.22:1 on `--surface` light, 4.02:1 on `--surface-raised` dark — all under the 4.5:1 body-text floor, while the unmarked English around it is 7.58:1. `palette.ts` holds `--brand` to 3:1 *because it is accent UI, not text*; colouring the target word broke that distinction. Do not add colour to the mark in Task 3 without a new `--brand-text` token and a `CONTRAST_FLOORS` row.
+> 2. `.ltr-inline` is `display: inline`, **not** `inline-block`. Measured in Chromium at 375px / 295px content: `אחת <en>alpha … theta</en> שתיים` is 104px as inline-block, 52px as inline — an inline-block is shrink-to-fit against the containing block, so a wrapping English sentence cannot share a line with Hebrew. Single words are identical either way, which is why the plan did not catch it.
+> 3. **`EnTextSegment.text` carries its own whitespace.** `EnText` concatenates verbatim and inserts nothing. Step 3a's `exampleSegments` must satisfy `segments.map(s => s.text).join('') === example`, and `flashcard.test.ts` must assert that round-trip. A producer that word-splits or trims renders "HeranswerwasdeliberateXX" on the card.
+>
+> Also: `preview.pos` is English and was rendering bare — the negative source scan cannot see missing markup, so the guard now asserts `headword` and `pos` positively, per-field (TD-14). Any new English field in Task 3 needs its own line there.
 
 ### Task 3: The flashcard screen (T-041) and TD-11
 

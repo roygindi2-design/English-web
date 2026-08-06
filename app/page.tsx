@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EnWord from '@/components/EnWord';
 import InstallPrompt from '@/components/InstallPrompt';
 import {
   LANDING_HEADLINE,
@@ -59,11 +60,14 @@ export default function HomePage() {
         >
           <p className="text-sm text-ink-muted">נסה מילה אחת עכשיו</p>
           <p className="mt-1 text-2xl font-bold">
-            <span className="ltr-inline" lang="en">
-              {preview.headword}
-            </span>
+            <EnWord>{preview.headword}</EnWord>
           </p>
-          <p className="text-sm text-ink-muted">{preview.pos}</p>
+          {/* `pos` is English too ("noun", "adjective") — PreviewCard documents it
+              as "part of speech, as recorded by the source". Bare inside lang=he,
+              a Hebrew screen reader pronounces it with Hebrew phonetics. */}
+          <p className="text-sm text-ink-muted">
+            <EnWord>{preview.pos}</EnWord>
+          </p>
           <ul className="mt-4 flex flex-col gap-2">
             {preview.options.map((option) => (
               <li key={option}>

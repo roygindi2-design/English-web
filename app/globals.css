@@ -46,8 +46,19 @@ body {
 }
 
 /* Latin text inside Hebrew paragraphs must not break RTL flow. Written by
-   components/EnWord.tsx only — see its guard test. */
-.ltr-inline { unicode-bidi: isolate; direction: ltr; display: inline-block; }
+   components/EnWord.tsx only — see its guard test.
+
+   `display: inline`, not `inline-block`: an inline-block is shrink-to-fit
+   against the CONTAINING BLOCK, not against the space left on the current line,
+   so a wrapping English sentence becomes one atomic 295px box that cannot share
+   a line with the Hebrew around it. Measured in Chromium at the product's real
+   geometry (375px viewport, 295px content column): `אחת <en>alpha … theta</en>
+   שתיים` is 104px as inline-block and 52px as inline — two wasted line boxes.
+   Single words are identical either way (26px, same x-offset), which is why the
+   defect was invisible until EnText started carrying whole sentences.
+   `unicode-bidi: isolate` is what does the isolation work here; an inline-block
+   was isolating as a side effect of being atomic. */
+.ltr-inline { unicode-bidi: isolate; direction: ltr; }
 
 /* T-041: the reveal is an affordance, never a delay. Any motion is opt-out. */
 @media (prefers-reduced-motion: reduce) {

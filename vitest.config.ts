@@ -8,6 +8,17 @@ export default defineConfig({
   test: {
     environment: 'node',
     // scripts/ holds the build-pipeline guards (F-007).
-    include: ['lib/**/*.test.ts', 'proxy.test.ts', 'scripts/**/*.test.ts'],
+    // components/ holds source-scanning guards only (T-009). The environment is
+    // node, so a React render test does not belong here — add jsdom first if that
+    // ever changes.
+    // The {ts,tsx} brace is not decoration: a `components/*.test.tsx` render
+    // test under a `*.test.ts`-only glob is silently NOT COLLECTED, and
+    // `npm test` stays green while the test never runs.
+    include: [
+      'lib/**/*.test.ts',
+      'proxy.test.ts',
+      'scripts/**/*.test.ts',
+      'components/**/*.test.{ts,tsx}',
+    ],
   },
 });

@@ -40,6 +40,24 @@ describe('landing copy — R-011', () => {
     expect(forbiddenTermsIn('MAINTAIN plaid')).toEqual([]);
   });
 
+  it('does not flag a term that merely matches the unescaped wildcard (F-017)', () => {
+    // Verified in the finding: the old regex escaped only the FIRST dot, so the
+    // second one stayed a regex wildcard and "the A.Ix thing" matched — blocking
+    // valid copy at build time.
+    expect(forbiddenTermsIn('the A.Ix thing')).toEqual([]);
+    expect(forbiddenTermsIn('שיווק עם A.I. בכותרת')).toContain('A.I.');
+    for (const near of ['A.Ix', 'A.IX', 'A.Ident', 'USA.I.', 'xA.I.'])
+      expect(forbiddenTermsIn(near), `${near} is not the forbidden term`).toEqual([]);
+  });
+
+  it('still catches the dotless "A.I" spelling the wildcard used to catch by accident', () => {
+    // Escaping the trailing dot strictly is the OTHER half of F-017: it would
+    // have silently stopped catching the spelling Hebrew marketing copy actually
+    // uses, and R-011-forbidden copy would have shipped green.
+    for (const copy of ['ה-A.I שלנו', 'A.I בעברית', 'לומדים עם A.I', 'A.I?', 'A.I, ואז'])
+      expect(forbiddenTermsIn(copy), `missed A.I in "${copy}"`).toContain('A.I.');
+  });
+
   it('keeps the rendered screens free of forbidden terms', () => {
     for (const file of ['app/page.tsx', 'app/layout.tsx']) {
       const src = readFileSync(file, 'utf8');
