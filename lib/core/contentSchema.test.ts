@@ -253,3 +253,115 @@ describe('gateSense', () => {
     expect(r.reasons.join()).toContain('xylophone');
   });
 });
+
+// F-020 (C-0011, deep review) — the bare suffixes `d`/`r`/`st`/`es`/`er` in inflections()
+// were added to every token unconditionally, so real unrelated words were treated as
+// "an inflection of the headword": car+d=card, be+st=best, care+er=career. That exempted
+// them from the level check (false accept — the shipping failure) and rejected valid
+// distractors (false reject). Each test below fails against the pre-fix function.
+describe('gateSense · inflections are morphologically constrained (F-020)', () => {
+  const carSense = {
+    ...ok,
+    headword: 'car',
+    pos: 'noun' as const,
+    translationHe: 'מכונית',
+    definitionEn: 'a road vehicle with four wheels',
+    examples: { supportive: 'She made a car choice.', neutral: 'The car was her answer.' },
+    items: ['His ____ was silence.', 'She made a ____ effort.', 'It was no accident — a ____.'],
+    distractors: [
+      { word: 'accidental', relationType: 'semantic' as const },
+      { word: 'delicate', relationType: 'orthographic' as const },
+      { word: 'wooden', relationType: 'unrelated' as const },
+      { word: 'careless', relationType: 'semantic' as const },
+    ],
+  };
+  const carOpts = { allowedWords: new Set([...allowed, 'the', 'and', 'car']) };
+
+  it('reports an out-of-level word that merely looks like headword+d (car → card)', () => {
+    // The shipping failure: "card" is absent from allowedWords, so the learner would be
+    // shown a word above their level. Pre-fix this returned { ok: true, reasons: [] }.
+    const r = gateSense({ ...carSense, examples: { ...carSense.examples, neutral: 'The card was her answer.' } }, carOpts);
+    expect(r.ok).toBe(false);
+    expect(r.reasons.join()).toContain('"card"');
+  });
+
+  it('reports an out-of-level word that merely looks like headword+st (be → best)', () => {
+    const beSense = {
+      ...carSense,
+      headword: 'be',
+      pos: 'verb' as const,
+      translationHe: 'להיות',
+      definitionEn: 'to exist',
+      examples: { supportive: 'It was a choice, not an accident to be.', neutral: 'Her answer was best.' },
+    };
+    const r = gateSense(beSense, { allowedWords: new Set([...allowed, 'the', 'to']) });
+    expect(r.reasons.join()).toContain('"best"');
+  });
+
+  it('accepts a distractor that is a different word sharing the headword prefix (care → career)', () => {
+    const careSense = {
+      ...carSense,
+      headword: 'care',
+      pos: 'noun' as const,
+      translationHe: 'אכפתיות',
+      definitionEn: 'serious attention given to avoiding damage',
+      examples: { supportive: 'She made a care choice.', neutral: 'Her answer was care.' },
+      distractors: [
+        { word: 'career', relationType: 'semantic' as const },
+        { word: 'delicate', relationType: 'orthographic' as const },
+        { word: 'wooden', relationType: 'unrelated' as const },
+        { word: 'accidental', relationType: 'semantic' as const },
+      ],
+    };
+    const r = gateSense(careSense, { allowedWords: new Set([...allowed, 'care']) });
+    expect(r.reasons.join()).not.toContain('career');
+  });
+
+  it('still treats the real inflections of an e-final headword as the target (care → cared/cares/caring)', () => {
+    const careOpts = { allowedWords: new Set([...allowed, 'care']) };
+    for (const form of ['cared', 'cares', 'caring']) {
+      const r = gateSense({
+        ...carSense,
+        headword: 'care',
+        pos: 'verb' as const,
+        translationHe: 'לדאוג',
+        definitionEn: 'to feel concern',
+        examples: { supportive: 'It was a choice, she cared.', neutral: `Her answer ${form} for it.` },
+      }, careOpts);
+      expect(r.reasons.join(), form).not.toContain('headword missing');
+      expect(r.reasons.join(), form).not.toContain(`"${form}"`);
+    }
+  });
+
+  it('keeps the -ing form of a two-letter e-final headword (be → being, see → seeing)', () => {
+    // The stem-length guard that kills be→b+est=BEST must not also kill "being".
+    const r = gateSense({
+      ...carSense,
+      headword: 'be',
+      pos: 'verb' as const,
+      translationHe: 'להיות',
+      definitionEn: 'to exist',
+      examples: { supportive: 'It was a choice, not an accident to be.', neutral: 'Her answer was being made.' },
+    }, { allowedWords: new Set([...allowed, 'the', 'to', 'made']) });
+    expect(r.reasons.join()).not.toContain('headword missing');
+    expect(r.reasons.join()).not.toContain('"being"');
+  });
+
+  it('still treats a sibilant plural as the target (box → boxes) and does not invent one (car → cares)', () => {
+    const boxOpts = { allowedWords: new Set([...allowed, 'the']) };
+    const boxes = gateSense({
+      ...carSense,
+      headword: 'box',
+      pos: 'noun' as const,
+      translationHe: 'קופסה',
+      definitionEn: 'a container with flat sides',
+      examples: { supportive: 'It was a box, not an accident.', neutral: 'Her answer was boxes.' },
+    }, boxOpts);
+    expect(boxes.reasons.join()).not.toContain('headword missing');
+    expect(boxes.reasons.join()).not.toContain('"boxes"');
+
+    // "cares" is not a form of the noun "car" — it must be reported as drift.
+    const cares = gateSense({ ...carSense, examples: { ...carSense.examples, neutral: 'The car and cares.' } }, carOpts);
+    expect(cares.reasons.join()).toContain('"cares"');
+  });
+});

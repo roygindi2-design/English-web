@@ -68,8 +68,6 @@ const LATIN = /[A-Za-z]/;
 const HEBREW_TEXT_ALLOWED = /^[א-ת׳״־ \-–,.()/"']+$/;
 
 const MAX_DRIFT_REPORTED = 3;
-/** Below this length a prefix match is meaningless: "be" prefixes "behaved". */
-const MIN_PREFIX_STEM = 4;
 
 const tokens = (s: string): string[] => s.toLowerCase().match(/[a-z']+/g) ?? [];
 
@@ -90,20 +88,48 @@ function normalise(token: string): string {
   return t;
 }
 
+/** English spells `-es` only after a sibilant: box→boxes, watch→watches, buzz→buzzes. */
+const SIBILANT_FINAL = /(?:s|x|z|ch|sh)$/;
+/** Shortest remainder after dropping a silent `e` that still behaves like a stem. */
+const MIN_INFLECTION_STEM = 3;
+
 /**
  * The regular inflections of one token. A CLOSED set on purpose: the previous open
  * prefix match ("startsWith(stem)") let `note` match "not" and let `be` exempt every
  * b-word from the level check. Irregular forms (gave, went) are not generated and will
  * be rejected — a regeneration, not bad content.
+ *
+ * F-020: every suffix is now conditioned on the stem's shape. Bare `${w}d` `${w}r`
+ * `${w}st` `${w}es` used to be added to EVERY token, so unrelated real words were
+ * claimed as inflections — car+d=card, be+st=best, care+er=career. Because
+ * `isTargetToken` drives both the presence check and the level exemption, that was a
+ * false ACCEPT: an out-of-level word inside the target's own sentence was waved
+ * through to the learner. The `e`-final branch already produces the correct forms
+ * (care→cared/carer/carest via base+ed/er/est), so the bare variants bought nothing.
+ * The rule: a suffix starting with a vowel drops a final silent `e`; a suffix starting
+ * with a consonant does not.
  */
 function inflections(token: string): Set<string> {
   const w = token.toLowerCase();
   const out = new Set<string>([w]);
   const add = (...xs: string[]) => xs.forEach((x) => out.add(x));
-  add(`${w}s`, `${w}es`, `${w}ed`, `${w}ing`, `${w}er`, `${w}est`, `${w}ly`, `${w}d`, `${w}r`, `${w}st`);
+  add(`${w}s`, `${w}ly`);
+  if (SIBILANT_FINAL.test(w)) add(`${w}es`);
   if (w.endsWith('e')) {
+    // `-ing` never collides here (careing, useing, heing are not words) and it rescues
+    // the two-letter stems below: be→being, see→seeing.
+    add(`${w}ing`);
     const base = w.slice(0, -1);
-    add(`${base}ing`, `${base}ed`, `${base}er`, `${base}est`, `${base}y`);
+    // A one- or two-letter remainder is not an English stem, and dropping the `e` from
+    // one turns the word into an unrelated one: be→b+est=BEST, see→se+ed=SEED / se+ing=SING.
+    // Those are the same false-accept as F-020, so the branch is gated on stem length.
+    // Cost: an e-final headword of 3 letters (use, age) loses used/using/user — a false
+    // REJECT, which per this file's bias costs one regeneration. See TD-12.
+    if (base.length >= MIN_INFLECTION_STEM) {
+      add(`${base}ing`, `${base}ed`, `${base}er`, `${base}est`, `${base}y`);
+    }
+  } else {
+    add(`${w}ed`, `${w}ing`, `${w}er`, `${w}est`);
   }
   if (w.endsWith('y')) {
     const base = w.slice(0, -1);
