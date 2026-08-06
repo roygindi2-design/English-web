@@ -90,3 +90,38 @@ Dev רץ כל שעה. PM ו-Critic רצים פעם ביום, וריצותיהם 
 
 ---
 
+---
+
+### 0.6 סקילים של superpowers — מתי כל אחד חובה
+
+הסקילים האלה אינם המלצה. כשהרגע שלהם מגיע, **מפעילים אותם לפני כל פעולה אחרת** —
+לפני חקירת קוד, לפני שאלות הבהרה, ולפני כתיבת שורה ראשונה.
+מכריזים "מפעיל את [סקיל] כדי [מטרה]", ואז עוקבים אחריו בדיוק.
+
+| הרגע | הסקיל | מי |
+|---|---|---|
+| לפני **כל** טענה של "עובד / עבר / הושלם / תוקן" | `superpowers:verification-before-completion` | **שלושתם** |
+| לפני כתיבת קוד למשימה | `superpowers:test-driven-development` | Dev |
+| באג, טסט נופל, או התנהגות לא צפויה | `superpowers:systematic-debugging` | Dev |
+| משימה שאינה טריוויאלית — לפני קוד | `superpowers:writing-plans` | Dev |
+| ביצוע תוכנית קיימת מ-`docs/superpowers/plans/` | `superpowers:executing-plans` | Dev |
+| סיום משימה, לפני העברה ל-Critic | `superpowers:requesting-code-review` | Dev |
+| קבלת ממצאי Critic | `superpowers:receiving-code-review` | Dev |
+| לפני עיצוב פיצ׳ר או שינוי התנהגות | `superpowers:brainstorming` | PM |
+| 2+ משימות עצמאיות במקביל | `superpowers:dispatching-parallel-agents` | PM · Critic |
+| הקוד מוכן והבדיקות עוברות — איך ממזגים | `superpowers:finishing-a-development-branch` | Critic |
+
+**החוק הקשה מכולם — `verification-before-completion`:**
+> אם לא הרצת את פקודת האימות **בהודעה הזו**, אינך רשאי לטעון שהיא עוברת.
+
+זה חל על ניסוח מפורש, על פרפרזה, ועל כל רמז להצלחה. "אמור לעבוד", "נראה תקין",
+"הסוכן דיווח הצלחה" — כולם פסולים. גם דיווח של סוכן משנה מאומת מול `git diff`, לא מול המילה שלו.
+Critic: טענת "עובר" בלי פלט טרי היא ממצא 🔴 CRITICAL בפני עצמה.
+
+**היחס בין תור המשימות לתוכנית:**
+`plan/50-tasks.md` הוא **תור עבודה**, לא תוכנית מימוש. אין בו קוד בדיקה, חתימות, או צעדים.
+לכן, למשימה לא טריוויאלית: Dev מפעיל `writing-plans`, שומר ל-`docs/superpowers/plans/YYYY-MM-DD-<שם>.md`,
+ואז מבצע. **דוגמה עובדת מלאה: `docs/superpowers/plans/2026-08-06-review-queue-brake.md`** (T-031).
+
+**אם הסקילים אינם זמינים בסשן** — אל תמציא אותם ואל תעצור. עבוד לפי הכללים למעלה, וציין בדיווח
+שהסקילים לא היו זמינים.
