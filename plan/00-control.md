@@ -13,14 +13,14 @@
 > המדור היחיד שכל שלושת הסוכנים כותבים אליו. חייב להיות תקין תמיד — אם הוא שבור, הלופ עוצר.
 
 ```yaml
-CYCLE_ID: C-0009                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
-NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — T-030 · T-031 · T-038 · T-039 · T-040 נבנו ומחכות לביקורת. ⚠️ T-020 (PM) חוסמת 4 משימות, P-001 חוסמת T-034 (חסר מקור עברי R-005).
-STATE: REVIEWING                  # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
+CYCLE_ID: C-0010                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
+NEXT_AGENT: DEV                   # PM | DEV | CRITIC | HUMAN — טיק תכנון הופק; שלוש משימות מוכנות לביצוע. ⚠️ T-030/T-031/T-038/T-039/T-040 עדיין 🟣 וממתינות ל-Critic (הוא רץ בלוח שלו). T-020 (PM) חוסמת 4 משימות, P-001 חוסמת T-034.
+STATE: BUILDING                    # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: T-040             # מודל הכרטיסייה — נבנה. T-030/T-031/T-038/T-039 גם הן 🟣 בהמתנה ל-Critic
+ACTIVE_TASK_ID: T-028             # ראשונה ברצף התצוגה: docs/superpowers/plans/2026-08-06-display-layer.md (T-028 → T-009 → T-041)
 CRITIC_ROUNDS_ON_TASK: 1          # סבב הביקורת הידני של רוי נספר כסבב 1 על T-001+T-002
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-08-06T17:50:00Z
+LAST_HANDOFF_AT: 2026-08-06T18:46:00Z
 HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 נפתרות במדידה ולא בהחלטה — אין החלטה עסקית תלויה.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 
@@ -53,9 +53,9 @@ PROMOTIONS_THIS_MONTH: 0          # תקרה רכה: 30. מעבר לזה — ה�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
+| C-0010 | DEV | DEV | 18:46Z | **טיק תכנון — לא נגע בקוד.** נכתבה `docs/superpowers/plans/2026-08-06-display-layer.md`: רצף שכבת התצוגה T-028 → T-009 → T-041 (+TD-11). הפלטה נמדדה בפועל מול `validate_palette.js` ומול WCAG, והכשל שנמדד (ירוק↔אדום ΔE 4.1 לדאוטן) הוא הנימוק לכך שכפתורי הדירוג לא ייצבעו לבד. | תוכנית · ACTIVE=T-028 |
 | C-0009 | DEV | CRITIC | 17:50Z | T-040 נבנתה: `lib/core/flashcard.ts` — מודל הכרטיסייה, 30 בדיקות במקום 7. סקירת סוכן משנה תפסה 6 פגמים מוכחים; המכריע: נסיגת הדוגמה שבתוכנית חזרה לאותו ענף שנבחר, ולכן כרטיס היכרות עם `supportive` ריק נשאר בלי דוגמה כלל. | T-040 🟣 · TD-11 |
 | C-0008 | DEV | CRITIC | 16:54Z | T-039 נבנתה: `lib/core/contentSchema.ts` — השער הדטרמיניסטי (R-014), 32 בדיקות במקום 12. סקירת סוכן משנה תפסה 15 פגמים מוכחים בהרצה; המכריע: התאמת כותרת בתחילית פתוחה **קיבלה** תוכן שגוי (`note` התאים ל-"not"; `be` פטר כל מילה ב-b מבדיקת הרמה). הוחלפה בקבוצת נטיות סגורה. | T-039 🟣 · TD-9 · TD-10 |
-| C-0007 | DEV | CRITIC | 15:55Z | T-038 נבנתה: `supabase/migrations/0002_content_bank.sql` — שש טבלאות המאגר עם RLS. **הורצה מול Postgres 16 חי** (לא lint): CHECK · UNIQUE · CASCADE · RLS נמדדו בפועל. סקירת סוכן משנה תפסה 6 פגמים אמיתיים, כולם תוקנו — החמור: טבלאות הבת דלפו את תוכן המשמעות בביטחון נמוך שה-D-013 מסתיר. | T-038 🟣 · TD-8 |
 
 ---
 
