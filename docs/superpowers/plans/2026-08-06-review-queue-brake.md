@@ -230,3 +230,31 @@ git push origin dev
 **3. Type consistency.** `planDailyQueue`, `QueuePlanInput`, `QueuePlan`, `STEADY_STATE_REVIEW_RATIO` are spelled identically in the Interfaces block, the tests, and the implementation. `deferredReviews` — not `backlog` — is the field name everywhere.
 
 **One thing this plan deliberately does not do:** it does not spread the deferred backlog across future days. `deferredReviews` is reported so a screen can say "725 more waiting", and those cards simply stay due. Spreading them is a separate, larger decision (SuperMemo's `Postpone` does this; we could not verify its mechanism). YAGNI until a real learner has a real backlog.
+
+---
+
+## Amendment — C-0005, after subagent code review (implemented in the same tick)
+
+The plan as written shipped a brake that fires with no backlog. Three real defects,
+each reproduced before being fixed:
+
+1. **Rule 4 was too eager.** `{ dueReviewCount: 11, newCardsPerDay: 1, dailyMinutesGoal: 10,
+   secondsPerCard: 8 }` returned `newCardsPaused: true, reason: 'backlog_recovery'` while
+   `deferredReviews` was `0` and 64 of 75 capacity slots went unused — a self-contradictory
+   plan, and a learner on 1 new card/day is frozen from 11 due cards onward. **Amended rule 4:**
+   `newCardsPaused = newCardsPerDay > 0 && dueReviewCount > steadyStateLoad && dueReviewCount > capacity`.
+   The 1:10 ratio stays the trigger; the day's capacity decides whether it is really a backlog.
+2. **Rule 1 accepted fractional card counts.** `dueReviewCount: 100.5` produced
+   `deferredReviews: 25.5` — a screen would render "25.5 more waiting". `dueReviewCount` and
+   `newCardsPerDay` now require whole numbers; `dailyMinutesGoal` and `secondsPerCard` stay
+   fractional-tolerant, since minutes are floored into a card count and never shown as one.
+3. **The suite passed with the brake deleted.** The only paused test had zero spare capacity,
+   so `newCardsToShow: 0` proved nothing. Added: the clearing case, the non-clearing case, a
+   `Math.floor` case (10 min / 7 s → capacity 85), NaN/Infinity coverage on all four fields,
+   and a grid test over 880 input combinations pinning the invariants — whole non-negative
+   counts, `paused ⟹ deferredReviews > 0 ∧ newCardsToShow === 0`, `reason` matching `paused`,
+   `reviewsToShow + deferredReviews === dueReviewCount`, and the session staying inside capacity.
+
+Result: 27 tests in `lib/core/queue.test.ts`, 94 in the suite. Step 6's `[skip ci]` tag was
+**not** used — it was abolished in F-018 / `plan/RULES.md` § 0.7 because it silently blocked
+every Netlify deploy.
