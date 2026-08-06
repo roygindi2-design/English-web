@@ -1,7 +1,7 @@
 {
-  "name": "English Web — לימוד אנגלית אדפטיבי",
+  "name": "English Web — אנגלית לאמיר״ם",
   "short_name": "English Web",
-  "description": "לימוד אנגלית אדפטיבי לדוברי עברית. מסלול ראשון: אמיר״ם.",
+  "description": "תרגול אנגלית יומי קצר לדוברי עברית. מסלול ראשון: אמיר״ם.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

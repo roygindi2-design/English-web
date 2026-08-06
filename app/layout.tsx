@@ -3,8 +3,8 @@ import './globals.css';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 
 export const metadata: Metadata = {
-  title: 'English Web — לימוד אנגלית אדפטיבי',
-  description: 'אפליקציית לימוד אנגלית אדפטיבית לדוברי עברית. מסלול ראשון: אמיר״ם.',
+  title: 'English Web — אנגלית לאמיר״ם',
+  description: 'תרגול אנגלית יומי קצר לדוברי עברית — 10 דקות ביום, עד תאריך המבחן. מסלול ראשון: אמיר״ם.',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'English Web' },
 };

@@ -201,14 +201,33 @@ try {
       }, MIN_TAP);
       check(small.length === 0, `${at} all tap targets >= ${MIN_TAP}px`, `too small: ${small.join(' · ')}`);
 
-      // Primary action reachable by thumb (MF-5): first action sits in the
-      // lower half of the first viewport.
+      // Primary action reachable by thumb (MF-5). Once a screen carries
+      // interactive content above the call to action (T-027's preview card),
+      // "the first link in main" stops meaning "the primary action" — so the
+      // page marks it, and we fall back to the old rule only if it does not.
       if (route === '/' || route === '/onboarding') {
         const y = await page.evaluate(() => {
-          const el = document.querySelector('main a[href], main button');
+          const el =
+            document.querySelector('main [data-primary-action]') ??
+            document.querySelector('main a[href], main button');
           return el ? el.getBoundingClientRect().top : -1;
         });
         check(y >= 780 / 2, `${at} primary action in thumb zone`, `sits at y=${Math.round(y)}`);
+      }
+
+      // Content anchored to the top (F-011). The landing screen used to centre
+      // its heading inside the whole flexible area, leaving a 267px dead band
+      // above it; a regression here is invisible in a diff but obvious on a
+      // phone. Measured against the header, not the viewport top.
+      if (route === '/') {
+        const gap = await page.evaluate(() => {
+          const h1 = document.querySelector('main h1');
+          if (!h1) return -1;
+          const header = document.querySelector('header');
+          const top = header ? header.getBoundingClientRect().bottom : 0;
+          return h1.getBoundingClientRect().top - top;
+        });
+        check(gap >= 0 && gap <= 48, `${at} heading anchored to top`, `dead band of ${Math.round(gap)}px above the heading`);
       }
 
       // A 404 route legitimately logs a 404; every other route must be silent.

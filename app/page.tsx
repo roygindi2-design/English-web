@@ -1,36 +1,97 @@
 import Link from 'next/link';
 import InstallPrompt from '@/components/InstallPrompt';
+import {
+  LANDING_HEADLINE,
+  LANDING_SUBHEAD,
+  LANDING_VALUE_POINTS,
+  landingPreviewCard,
+} from '@/lib/core/landing';
 
 /**
- * Landing screen — UX plan T-001 (project_plan.md 4.2).
+ * Landing screen — T-027 (docs/ui-proposal.html), replacing the T-001 version.
  *
- * Exactly three things on the screen: one heading, one explanatory sentence,
- * one primary action. Anything else is cognitive load competing with the only
- * action we care about (D-002: a student under deadline pressure).
+ * F-011 measured this screen at 375x812 and found two dead bands of 267px and
+ * 275px — 67% of the viewport empty — because `flex-1 justify-center` centred
+ * two lines of text inside the whole flexible area. The text is now anchored to
+ * the top and the space carries three lines of what the learner actually gets.
  *
- * T-002 closed the edge case T-001 had to leave open: a learner with a live
- * session never reaches this screen — proxy.ts sends them to /onboarding
- * before it renders. The check lives there so this page stays static.
+ * F-012 (no way to see the product before handing over an email) is only half
+ * addressed here: the slot for a real flashcard exists and renders the moment
+ * `PREVIEW_CARDS` has a row, but no licensed Hebrew source has been ingested
+ * yet (R-005), and inventing a word pair is forbidden. See plan/20-alerts.md.
+ *
+ * A learner with a live session never reaches this screen — proxy.ts sends them
+ * to /onboarding first, which is what keeps this page static.
  */
 export default function HomePage() {
+  const preview = landingPreviewCard();
+
   return (
     <>
-      <div className="flex flex-1 flex-col justify-center gap-4">
-        <h1 className="text-3xl font-bold leading-tight text-balance">
-          אנגלית שמתאימה את עצמה אליך
-        </h1>
-        <p className="text-lg leading-relaxed text-slate-600">
-          תרגול יומי קצר שמתכוונן לרמה שלך ולתאריך המבחן שלך.
-        </p>
-      </div>
+      <section className="flex flex-col gap-4">
+        <h1 className="text-3xl font-bold leading-tight text-balance">{LANDING_HEADLINE}</h1>
+        <p className="text-lg leading-relaxed text-slate-600">{LANDING_SUBHEAD}</p>
 
-      {/* Primary action sits in the lower half of the screen — MF-5, thumb reach. */}
-      <Link
-        href="/signup"
-        className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white active:bg-slate-700"
-      >
-        בואו נתחיל
-      </Link>
+        <ul className="mt-2 flex flex-col gap-3">
+          {LANDING_VALUE_POINTS.map((point) => (
+            <li key={point} className="flex items-start gap-3">
+              <span
+                aria-hidden="true"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white"
+              >
+                ✓
+              </span>
+              <span className="text-base leading-relaxed text-slate-700">{point}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/*
+        TODO:CONTENT-PLACEHOLDER — the taste-before-signup card (T-027 ⓑ/ⓒ).
+        Renders only when a licensed source has been ingested; today the array
+        is empty on purpose, so nothing invented ships to production.
+      */}
+      {preview ? (
+        <section
+          aria-label="דוגמה לכרטיסייה"
+          className="rounded-2xl border border-slate-200 bg-white p-5"
+        >
+          <p className="text-sm text-slate-500">נסה מילה אחת עכשיו</p>
+          <p className="mt-1 text-2xl font-bold">
+            <span className="ltr-inline" lang="en">
+              {preview.headword}
+            </span>
+          </p>
+          <p className="text-sm text-slate-500">{preview.pos}</p>
+          <ul className="mt-4 flex flex-col gap-2">
+            {preview.options.map((option) => (
+              <li key={option}>
+                <span className="flex min-h-touch items-center rounded-xl border border-slate-200 px-4 text-base">
+                  {option}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {/* Primary action stays in the lower half of the screen — MF-5, thumb reach. */}
+      <div className="mt-auto flex flex-col gap-2">
+        <Link
+          href="/signup"
+          data-primary-action="true"
+          className="flex min-h-touch items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-lg font-semibold text-white active:bg-slate-700"
+        >
+          בואו נתחיל
+        </Link>
+        <Link
+          href="/login"
+          className="flex min-h-touch items-center justify-center text-base text-slate-600 underline underline-offset-4 active:text-slate-900"
+        >
+          כבר יש לך חשבון? התחברות
+        </Link>
+      </div>
 
       <InstallPrompt />
     </>

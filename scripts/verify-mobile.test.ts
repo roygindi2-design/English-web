@@ -42,3 +42,17 @@ describe('the harness resolves a browser that exists on disk (F-007)', () => {
     expect(source).toContain('startServer');
   });
 });
+
+describe('the harness guards the landing layout it just fixed (F-011 · T-027)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const page = readFileSync('app/page.tsx', 'utf8');
+
+  it('measures the dead band above the heading', () => {
+    expect(source).toContain('heading anchored to top');
+  });
+
+  it('locates the primary action by marker, not by document order', () => {
+    expect(source).toContain('main [data-primary-action]');
+    expect(page).toContain('data-primary-action');
+  });
+});
