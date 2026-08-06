@@ -2,10 +2,21 @@
 //
 // Precache is deliberately tiny: the landing screen and the offline screen.
 // API responses are never cached — stale learning data is worse than no data.
-const CACHE = 'english-web-v2';
+const CACHE = 'english-web-v3';
 const OFFLINE_ROUTE = '/offline';
 const OFFLINE_FALLBACK = '/offline.html';
 const PRECACHE = ['/', OFFLINE_ROUTE, OFFLINE_FALLBACK];
+
+// Auth screens and everything behind the session wall are never cached
+// (UX plan T-002). A cached /onboarding would survive a sign-out and show the
+// next person on the phone a screen they are not signed in to, and a cached
+// auth screen can be served against a session that no longer exists.
+// Offline navigation to these paths gets the real Hebrew offline screen.
+const NEVER_CACHE = ['/signup', '/login', '/logout', '/onboarding'];
+
+function isPrivateRoute(pathname) {
+  return NEVER_CACHE.some((p) => pathname === p || pathname.startsWith(p + '/'));
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -44,12 +55,16 @@ async function offlineResponse() {
 // Network-first for navigations: the learner should always get the live screen
 // when online, and a real Hebrew offline screen — never a browser error — when not.
 async function handleNavigation(request) {
+  const isPrivate = isPrivateRoute(new URL(request.url).pathname);
   try {
     const fresh = await fetch(request);
-    const cache = await caches.open(CACHE);
-    cache.put(request, fresh.clone()).catch(() => {});
+    if (!isPrivate) {
+      const cache = await caches.open(CACHE);
+      cache.put(request, fresh.clone()).catch(() => {});
+    }
     return fresh;
   } catch {
+    if (isPrivate) return offlineResponse();
     const cache = await caches.open(CACHE);
     const hit = await cache.match(request, { ignoreSearch: true });
     return hit || offlineResponse();

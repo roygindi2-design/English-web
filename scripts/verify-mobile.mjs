@@ -12,7 +12,7 @@ import { chromium } from 'playwright';
 
 const BASE = process.argv[2] || 'http://localhost:3000';
 const WIDTHS = [320, 375, 414];
-const ROUTES = ['/', '/onboarding', '/offline', '/does-not-exist'];
+const ROUTES = ['/', '/signup', '/login', '/onboarding', '/offline', '/does-not-exist'];
 const MIN_TAP = 44;
 
 const failures = [];

@@ -25,6 +25,57 @@
 `placeholder_content_blocked` נכשל כאשר `NEXT_PUBLIC_ALLOW_PLACEHOLDER=true` —
 כלומר תוכן לימודי לא מאומת חשוף למשתמשים. זהו מצב אסור ב-production.
 
+
+---
+
+## POST /api/auth/signup
+
+יצירת חשבון. **גוף הבקשה:** `{ "email": string, "password": string }`
+
+**200 — הצלחה:**
+
+```json
+{ "ok": true, "outcome": "session_active", "next": "/onboarding", "email": "roy@example.com" }
+```
+
+`outcome` הוא `session_active` כשהתקבל session (אימות אימייל כבוי ב-Supabase),
+או `awaiting_email_confirmation` כשנשלח מייל אישור ואין session. אז `next` הוא
+`/login`. הקוד תומך בשתי ההגדרות ואינו מניח אף אחת מהן — ראה `docs/SETUP.md` נספח ב-2.
+
+**422 — כשל ולידציה מקומי:** `{ "ok": false, "fieldErrors": { "email"?: string, "password"?: string } }`
+**409 — האימייל תפוס:** `{ "ok": false, "code": "email_taken", "message": "...", "email": "..." }`
+**400 / 503 — אחר:** `{ "ok": false, "code": "...", "message": "..." }`
+
+בהצלחה עם session נוצרת גם שורת `profiles` עם `track_id='amiram'` (D-016).
+המקור הסמכותי ליצירתה הוא טריגר בדאטהבייס (`supabase/migrations/0001_profiles.sql`);
+הכתיבה מכאן היא רשת ביטחון לפרויקט שהמיגרציה טרם הורצה בו.
+
+## POST /api/auth/login
+
+התחברות. **גוף הבקשה:** `{ "email": string, "password": string }`
+
+**200:** `{ "ok": true, "next": "/onboarding" }`
+**401:** `{ "ok": false, "code": "invalid_credentials", "message": "אימייל או סיסמה שגויים" }`
+**429:** `{ "ok": false, "code": "rate_limited", "message": "..." }`
+
+⛔ **כל כשל אימות מוחזר עם אותה הודעה בדיוק.** "המשתמש לא קיים" הופך את נקודת
+הקצה לכלי למיפוי משתמשים רשומים.
+
+## POST /logout
+
+פעולה, לא מסך (תוכנית UX של T-002). נשלחת מ-`<form method="post">` רגיל, כך
+שהיציאה עובדת גם בלי JavaScript ולא ניתנת להפעלה על ידי תגית `<img>` זרה כמו
+יציאה מבוססת GET. **תמיד** מסתיימת ב-`303` ל-`/`, גם אם ה-signOut נכשל.
+
+## שדות משותפים לכל נקודות הקצה של האימות
+
+* `message` הוא **תמיד עברית מוכנה להצגה**. קוד שגיאה גולמי או טקסט אנגלי של
+  הספק לעולם לא מגיע ללומד — אותו כלל מ-T-001. המיפוי ב-`lib/core/auth.ts`.
+* ה-session נשמר ב-cookies מסוג httpOnly שנכתבים על ידי `@supabase/ssr`.
+  **לא ב-`localStorage`** — שם כל סקריפט שהוזרק יכול לקרוא אותו.
+* רענון ה-session והשמירה על הנתיבים המוגנים מתבצעים ב-`proxy.ts` (שם הקונבנציה
+  של Next 16; `middleware` הוצא משימוש).
+
 ---
 
 ## נקודות קצה מתוכננות (טרם מומשו)
