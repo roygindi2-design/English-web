@@ -230,6 +230,62 @@ try {
         check(gap >= 0 && gap <= 48, `${at} heading anchored to top`, `dead band of ${Math.round(gap)}px above the heading`);
       }
 
+      // Password visibility (F-013). Email confirmation is off (Q-001 ⓑ), so
+      // there is no recovery path: one unseen typo is an account the learner
+      // can never enter again. That makes the toggle a measured guarantee and
+      // not a styling detail — the tap-target check above already holds the
+      // new button to 44px on its own.
+      if (route === '/signup' || route === '/login') {
+        const toggle = page.locator('[data-password-toggle]');
+        const present = (await toggle.count()) === 1;
+        check(present, `${at} password toggle present`, 'no [data-password-toggle] button');
+        if (present) {
+          const field = page.locator('input[name="password"]');
+          const typeNow = () => field.getAttribute('type');
+          check(
+            (await typeNow()) === 'password',
+            `${at} password hidden by default`,
+            `type is "${await typeNow()}"`,
+          );
+          await toggle.click();
+          check(
+            (await typeNow()) === 'text',
+            `${at} toggle reveals the password`,
+            `type stayed "${await typeNow()}"`,
+          );
+          // The button must fit inside the padding the field reserves for it,
+          // in BOTH label states — "הסתר" is wider than "הצג", and an
+          // auto-width button in the wider state lands on top of the last
+          // typed characters. Measured, because it is invisible in a diff.
+          for (const state of ['revealed', 'hidden']) {
+            const fit = await page.evaluate(() => {
+              const input = document.querySelector('input[name="password"]');
+              const button = document.querySelector('[data-password-toggle]');
+              if (!input || !button) return null;
+              return {
+                reserved: parseFloat(getComputedStyle(input).paddingRight),
+                width: button.getBoundingClientRect().width,
+                label: (button.textContent || '').trim(),
+              };
+            });
+            check(
+              fit !== null && fit.width + 4 <= fit.reserved,
+              `${at} toggle fits its reserved space (${state})`,
+              fit === null
+                ? 'field or button missing'
+                : `"${fit.label}" is ${Math.round(fit.width)}px wide but only ${Math.round(fit.reserved)}px is reserved`,
+            );
+            if (state === 'revealed') await toggle.click();
+          }
+
+          check(
+            (await typeNow()) === 'password',
+            `${at} toggle hides it again`,
+            `type stayed "${await typeNow()}"`,
+          );
+        }
+      }
+
       // A 404 route legitimately logs a 404; every other route must be silent.
       if (route !== '/does-not-exist') {
         check(

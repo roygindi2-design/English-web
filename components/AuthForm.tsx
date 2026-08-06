@@ -9,6 +9,9 @@ import {
   AUTH_MESSAGES_HE,
   type FieldErrors,
   checkCredentials,
+  confirmationNoticeHe,
+  passwordInputType,
+  passwordToggleLabel,
 } from '@/lib/core/auth';
 
 /**
@@ -52,6 +55,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   const [email, setEmail] = useState(params.get('email') ?? '');
   const [password, setPassword] = useState('');
+  // F-013: hidden by default, because a shoulder-surfer is the likelier threat
+  // on a bus than a typo — but one tap away, because the typo has no recovery
+  // path while email confirmation is off (Q-001 ⓑ).
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -104,8 +111,11 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       if (result.ok) {
         if (result.outcome === 'awaiting_email_confirmation') {
-          setNotice('שלחנו לך מייל לאישור הכתובת. אחרי האישור אפשר להתחבר.');
+          // Name the address back (F-013). This screen is the last place the
+          // learner can still notice that they typed it wrong.
+          setNotice(confirmationNoticeHe(result.email ?? check.email));
           setPassword('');
+          setPasswordVisible(false);
           return;
         }
         router.replace(result.next ?? '/onboarding');
@@ -173,18 +183,35 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
           <label className="flex flex-col gap-1.5">
             <span className="text-base font-medium text-slate-700">סיסמה</span>
-            <input
-              type="password"
-              name="password"
-              dir="ltr"
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-              autoCapitalize="none"
-              spellCheck={false}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={Boolean(fieldErrors.password)}
-              className="min-h-touch rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-lg text-slate-900 outline-none focus:border-slate-900"
-            />
+            <div className="relative">
+              <input
+                type={passwordInputType(passwordVisible)}
+                name="password"
+                dir="ltr"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                autoCapitalize="none"
+                spellCheck={false}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={Boolean(fieldErrors.password)}
+                className="min-h-touch w-full rounded-xl border border-slate-300 bg-white py-3 pl-4 pr-16 text-left text-lg text-slate-900 outline-none focus:border-slate-900"
+              />
+              {/* Physical right, not logical end: the field is dir="ltr" inside
+                  an RTL page, so the typed characters run towards the right and
+                  the button must not sit on top of them. Fixed w-14 rather than
+                  auto width — "הסתר" is wider than "הצג" and an auto-width
+                  button in the wider state ate into the field's pr-16. */}
+              <button
+                type="button"
+                data-password-toggle
+                onClick={() => setPasswordVisible((visible) => !visible)}
+                aria-pressed={passwordVisible}
+                aria-label={passwordToggleLabel(passwordVisible)}
+                className="absolute inset-y-0 right-0 flex min-h-touch w-14 items-center justify-center rounded-xl text-base font-medium text-slate-600 active:text-slate-900"
+              >
+                {passwordVisible ? 'הסתר' : 'הצג'}
+              </button>
+            </div>
             {fieldErrors.password ? (
               <span className="text-base text-red-700">{fieldErrors.password}</span>
             ) : (

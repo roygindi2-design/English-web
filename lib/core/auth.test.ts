@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   AUTH_MESSAGES_HE,
   PASSWORD_MIN_LENGTH,
+  PASSWORD_TOGGLE_LABELS_HE,
   checkCredentials,
+  confirmationNoticeHe,
   destinationAfterAuth,
   isCredentialPayload,
   isPlausibleEmail,
   mapAuthError,
   normalizeEmail,
+  passwordInputType,
+  passwordToggleLabel,
   signupOutcome,
 } from './auth';
 
@@ -141,5 +145,39 @@ describe('F-004: request body shape guard', () => {
     const body: unknown = null;
     // This is exactly the sequence in the route handlers: guard, then read.
     expect(isCredentialPayload(body) ? String(body.email ?? '') : 'guarded').toBe('guarded');
+  });
+});
+
+/**
+ * F-013. Email confirmation is off (Q-001 ⓑ), so a mistyped password is an
+ * account that can never be entered again and a mistyped address is an account
+ * that can never be recovered. Both need to be visible before submit.
+ */
+describe('F-013: password visibility', () => {
+  it('maps visibility to the input type', () => {
+    expect(passwordInputType(false)).toBe('password');
+    expect(passwordInputType(true)).toBe('text');
+  });
+
+  it('labels the toggle by what it will do next', () => {
+    expect(passwordToggleLabel(false)).toBe(PASSWORD_TOGGLE_LABELS_HE.show);
+    expect(passwordToggleLabel(true)).toBe(PASSWORD_TOGGLE_LABELS_HE.hide);
+    expect(PASSWORD_TOGGLE_LABELS_HE.show).not.toBe(PASSWORD_TOGGLE_LABELS_HE.hide);
+  });
+});
+
+describe('F-013: confirmationNoticeHe', () => {
+  it('names the address the learner actually registered', () => {
+    expect(confirmationNoticeHe('Roy@Example.COM')).toContain('roy@example.com');
+  });
+
+  it('offers a way out when the address is wrong', () => {
+    expect(confirmationNoticeHe('roy@example.com')).toContain('לא הכתובת שלך');
+  });
+
+  it('falls back to a generic sentence when no address came back', () => {
+    const notice = confirmationNoticeHe('  ');
+    expect(notice.length).toBeGreaterThan(0);
+    expect(notice).not.toContain('  ');
   });
 });

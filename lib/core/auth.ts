@@ -150,3 +150,31 @@ export function signupOutcome(hasSession: boolean): SignupOutcome {
 export function destinationAfterAuth(outcome: SignupOutcome): '/onboarding' | '/login' {
   return outcome === 'session_active' ? '/onboarding' : '/login';
 }
+
+/**
+ * F-013 — while email confirmation is off (Q-001 ⓑ) there is no recovery path,
+ * so a single unseen typo is a permanently lost account. The eye toggle is the
+ * mobile standard and beats a second "confirm password" field on a phone.
+ */
+export const PASSWORD_TOGGLE_LABELS_HE = {
+  show: 'הצגת הסיסמה',
+  hide: 'הסתרת הסיסמה',
+} as const;
+
+export function passwordInputType(visible: boolean): 'text' | 'password' {
+  return visible ? 'text' : 'password';
+}
+
+/** Named for the action the button performs next, not for the current state —
+ *  that is what a screen reader announces when it reaches the button. */
+export function passwordToggleLabel(visible: boolean): string {
+  return visible ? PASSWORD_TOGGLE_LABELS_HE.hide : PASSWORD_TOGGLE_LABELS_HE.show;
+}
+
+/** Repeats the registered address back, so a mistyped one is caught while the
+ *  learner is still on the screen that can fix it. */
+export function confirmationNoticeHe(email: string): string {
+  const address = normalizeEmail(email);
+  if (!address) return 'שלחנו מייל לאישור הכתובת. אחרי האישור אפשר להתחבר.';
+  return `שלחנו מייל לאישור הכתובת ${address}. אחרי האישור אפשר להתחבר. לא הכתובת שלך? אפשר להירשם שוב.`;
+}
