@@ -7,13 +7,91 @@
  * are measured here directly, against the production build.
  *
  * Usage: node scripts/verify-mobile.mjs [baseUrl]
+ *
+ * With no baseUrl it boots `next start` against the existing production build
+ * and shuts it down afterwards, so it can run unattended inside `npm run
+ * verify` (F-007: while it sat outside `verify`, every 375px/44px/RTL claim in
+ * this repo was an unmeasured assertion).
  */
+import { existsSync, readdirSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import path from 'node:path';
 import { chromium } from 'playwright';
 
-const BASE = process.argv[2] || 'http://localhost:3000';
+const BASE_ARG = process.argv[2];
+const PORT = Number(process.env.PORT) || 3000;
+const BASE = BASE_ARG || `http://localhost:${PORT}`;
 const WIDTHS = [320, 375, 414];
 const ROUTES = ['/', '/signup', '/login', '/onboarding', '/offline', '/does-not-exist'];
 const MIN_TAP = 44;
+
+/**
+ * Playwright pins a browser build number (1234 today); the sandbox and CI both
+ * ship a different one (1194) and set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, so
+ * chromium.executablePath() points at a directory that does not exist. Probe
+ * for whatever Chromium is actually on disk instead of trusting the pin.
+ */
+function resolveChromiumPath() {
+  const candidates = [];
+  if (process.env.CHROME_PATH) candidates.push(process.env.CHROME_PATH);
+
+  const root = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (root && existsSync(root)) {
+    candidates.push(path.join(root, 'chromium'));
+    const subPaths = [
+      'chrome-linux/chrome',
+      'chrome-linux64/chrome',
+      'chrome-headless-shell-linux64/chrome-headless-shell',
+      'chrome-linux/headless_shell',
+    ];
+    // Full Chromium before the headless shell — the shell cannot run the
+    // service-worker and install-prompt checks below.
+    const dirs = readdirSync(root)
+      .filter((e) => e.startsWith('chromium'))
+      .sort((a, b) => Number(a.includes('headless')) - Number(b.includes('headless')));
+    for (const dir of dirs) for (const sub of subPaths) candidates.push(path.join(root, dir, sub));
+  }
+
+  try {
+    candidates.push(chromium.executablePath());
+  } catch {
+    /* playwright has no registry entry at all — the probes below still apply */
+  }
+  candidates.push('/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome');
+
+  return candidates.find((c) => c && existsSync(c)) ?? null;
+}
+
+async function isUp(url) {
+  try {
+    await fetch(url, { signal: AbortSignal.timeout(2000) });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Boots `next start` on PORT and resolves once it answers. */
+async function startServer() {
+  const bin = path.resolve('node_modules/next/dist/bin/next');
+  if (!existsSync(bin)) throw new Error('next is not installed — run npm install first');
+  const child = spawn(process.execPath, [bin, 'start', '-p', String(PORT)], {
+    stdio: ['ignore', 'ignore', 'inherit'],
+    env: { ...process.env, NODE_ENV: 'production' },
+  });
+  let exited = false;
+  child.on('exit', () => {
+    exited = true;
+  });
+
+  for (let i = 0; i < 60; i += 1) {
+    if (exited) throw new Error(`next start exited before serving ${BASE}`);
+    if (await isUp(BASE)) return child;
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  child.kill('SIGTERM');
+  throw new Error(`next start did not answer on ${BASE} within 30s`);
+}
 
 const failures = [];
 const notes = [];
@@ -28,9 +106,20 @@ function check(ok, label, onFailure) {
   else failures.push(`${label} — ${onFailure}`);
 }
 
+const executablePath = resolveChromiumPath();
+if (!executablePath) {
+  console.error(
+    '✗ no Chromium executable found. Set CHROME_PATH, or install one with `npx playwright install chromium`.',
+  );
+  process.exit(1);
+}
+
+// Only own the server if the caller did not point us at one.
+const server = BASE_ARG || (await isUp(BASE)) ? null : await startServer();
+if (server) console.log(`  ..   started next start on ${BASE} (pid ${server.pid})`);
+
 const browser = await chromium.launch({
-  // CHROME_PATH lets CI reuse a preinstalled Chromium instead of downloading one.
-  ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}),
+  executablePath,
   args: ['--no-sandbox', '--disable-dev-shm-usage'],
 });
 
@@ -190,6 +279,7 @@ try {
   }
 } finally {
   await browser.close();
+  if (server) server.kill('SIGTERM');
 }
 
 console.log(notes.join('\n'));

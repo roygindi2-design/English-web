@@ -11,7 +11,7 @@
     "test": "vitest run",
     "check:core": "node scripts/check-core-purity.mjs",
     "check:mobile": "node scripts/verify-mobile.mjs",
-    "verify": "npm run typecheck && npm run check:core && npm test && npm run build"
+    "verify": "npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
