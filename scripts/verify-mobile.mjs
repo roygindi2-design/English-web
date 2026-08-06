@@ -22,7 +22,23 @@ const BASE_ARG = process.argv[2];
 const PORT = Number(process.env.PORT) || 3000;
 const BASE = BASE_ARG || `http://localhost:${PORT}`;
 const WIDTHS = [320, 375, 414];
-const ROUTES = ['/', '/signup', '/login', '/onboarding', '/offline', '/does-not-exist'];
+const ROUTES = [
+  '/',
+  '/signup',
+  '/login',
+  '/onboarding',
+  '/offline',
+  '/study',
+  // T-041 layout fixtures. noindex, unlinked, and deliberately not learning
+  // content — they exist so the card is measured at 320/375/414 like every
+  // other screen instead of being declared correct. BOTH directions, because a
+  // review found the recognition-only fixture never put the answer input or its
+  // submit button in the DOM while the 44px scan was running.
+  '/dev/card',
+  '/dev/card/typed',
+  '/dev/card/swap',
+  '/does-not-exist',
+];
 const MIN_TAP = 44;
 
 /**
@@ -210,7 +226,17 @@ try {
       // pushed the whole form below the fold — the fallback selector was
       // returning the password-visibility toggle, not the submit button.
       // Both auth screens now mark their real primary action.
-      if (route === '/' || route === '/onboarding' || route === '/login' || route === '/signup') {
+      // T-041 added `/dev/card*`: the card's own comment claims "actions live in the
+      // lower half for thumb reach", and that claim was false — `mt-auto` inside a
+      // section with no `flex-1` has no free space to consume, so the reveal button
+      // measured y=243 on a 780px screen. An unchecked claim is how it got there.
+      if (
+        route === '/' ||
+        route === '/onboarding' ||
+        route === '/login' ||
+        route === '/signup' ||
+        route.startsWith('/dev/card')
+      ) {
         const y = await page.evaluate(() => {
           const el =
             document.querySelector('main [data-primary-action]') ??
@@ -293,6 +319,92 @@ try {
             (await typeNow()) === 'password',
             `${at} toggle hides it again`,
             `type stayed "${await typeNow()}"`,
+          );
+        }
+      }
+
+      // T-041: the card is anchored, the reveal is instant, and the grade
+      // controls never rely on colour (measured deutan ΔE 4.1 — see palette.ts).
+      if (route.startsWith('/dev/card')) {
+        const before = await page.locator('[data-card-back]').count();
+        check(before === 0, `${at} answer hidden before reveal`, 'the back was in the DOM already');
+
+        // Measured against the CARD, not the heading text above it: the previous
+        // version measured [data-card-front], which sits ~44px lower because of the
+        // fixture's own note line, and then allowed 120px — so it had 23px of slack
+        // and was calibrated on chrome that does not exist in production. Same 48px
+        // rule every other screen is held to.
+        const gap = await page.evaluate(() => {
+          const header = document.querySelector('header');
+          const card = document.querySelector('[data-flashcard]');
+          if (!header || !card) return Number.NaN;
+          return card.getBoundingClientRect().top - header.getBoundingClientRect().bottom;
+        });
+        check(gap >= 0 && gap <= 48, `${at} card anchored to top`, `dead band of ${Math.round(gap)}px`);
+
+        if (route === '/dev/card/swap') {
+          // Reveal card A, grade it, and demand that card B arrives HIDDEN. The
+          // fixture deliberately passes no `key`, so this measures the component's
+          // own reset and not the consumer's discipline. Before the fix, card B
+          // rendered revealed with no reveal button.
+          await page.locator('[data-reveal]').click();
+          const aFront = await page.locator('[data-card-front]').innerText();
+          await page.locator('[data-grade="good"]').click();
+
+          const bFront = await page.locator('[data-card-front]').innerText();
+          check(bFront.trim() !== aFront.trim(), `${at} grading advances to the next card`, `still on "${bFront}"`);
+          check(
+            (await page.locator('[data-card-back]').count()) === 0,
+            `${at} the next card arrives hidden`,
+            'card B was revealed before the learner tried to recall it',
+          );
+          check(
+            (await page.locator('[data-reveal]').count()) === 1,
+            `${at} the next card can be revealed`,
+            'no reveal button on card B — the learner is stuck',
+          );
+        } else if (route === '/dev/card') {
+          await page.locator('[data-reveal]').click();
+          const back = await page.locator('[data-card-back]').count();
+          check(back === 1, `${at} reveal shows the answer`, 'still hidden after clicking');
+
+          // allInnerTexts(), not innerText(): when the target cannot be located core
+          // degrades to an unmarked segment ON PURPOSE, and innerText() then waited
+          // 30s and threw a bare TimeoutError — losing every ok line printed so far
+          // and naming neither route nor width.
+          const marks = await page.locator('[data-card-back] strong').allInnerTexts();
+          check(
+            marks.length === 1 && (marks[0] ?? '').trim() === 'Lorem',
+            `${at} target word marked in the example`,
+            `marked ${JSON.stringify(marks)}`,
+          );
+
+          for (const grade of ['again', 'good']) {
+            const label = (await page.locator(`[data-grade="${grade}"]`).allInnerTexts()).join('');
+            check(
+              label.replace(/[✓✕\s]/g, '').length > 0,
+              `${at} grade "${grade}" carries a text label, not colour alone`,
+              `label was "${label}"`,
+            );
+          }
+        } else {
+          // The typed direction is auto-graded, so the ONLY way the learner learns
+          // anything is the verdict on screen. Before this ran, submitting left a
+          // screen with zero controls and no correct/incorrect state at all.
+          await page.locator('input[id]').fill('wrong');
+          await page.locator('button[type="submit"]').click();
+
+          const verdict = await page.locator('[data-verdict]').allInnerTexts();
+          check(verdict.length === 1, `${at} typed answer produces a verdict`, 'no [data-verdict]');
+          check(
+            (verdict[0] ?? '').replace(/[✓✕\s]/g, '').length > 0,
+            `${at} verdict carries a text label, not colour alone`,
+            `verdict was ${JSON.stringify(verdict)}`,
+          );
+          check(
+            (await page.locator('[data-continue]').count()) === 1,
+            `${at} there is a way forward after answering`,
+            'no [data-continue] button — the card dead-ends',
           );
         }
       }

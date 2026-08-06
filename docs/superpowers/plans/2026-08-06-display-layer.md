@@ -735,7 +735,7 @@ git push origin dev
 
 #### 3a — Return the target span from core
 
-- [ ] **Step 1: Write the failing tests for `locateTarget`**
+- [x] **Step 1: Write the failing tests for `locateTarget`**
 
 Append to `lib/core/contentSchema.test.ts`:
 
@@ -784,12 +784,12 @@ describe('locateTarget (TD-11)', () => {
 });
 ```
 
-- [ ] **Step 2: Run and confirm they fail**
+- [x] **Step 2: Run and confirm they fail**
 
 Run: `npx vitest run lib/core/contentSchema.test.ts -t locateTarget`
 Expected: FAIL — `locateTarget is not exported by ./contentSchema`.
 
-- [ ] **Step 3: Implement in `lib/core/contentSchema.ts`**
+- [x] **Step 3: Implement in `lib/core/contentSchema.ts`**
 
 Change `function targetForms` to `export function targetForms`, then add below it:
 
@@ -841,12 +841,12 @@ export function locateTarget(sentence: string, headword: string): TextSpan | nul
 }
 ```
 
-- [ ] **Step 4: Run and confirm they pass**
+- [x] **Step 4: Run and confirm they pass**
 
 Run: `npx vitest run lib/core/contentSchema.test.ts`
 Expected: PASS — the 32 existing tests plus the 8 new ones.
 
-- [ ] **Step 5: Write the failing tests for `exampleSegments`**
+- [x] **Step 5: Write the failing tests for `exampleSegments`**
 
 Append to `lib/core/flashcard.test.ts`:
 
@@ -892,12 +892,12 @@ describe('exampleSegments (TD-11)', () => {
 });
 ```
 
-- [ ] **Step 6: Run and confirm they fail**
+- [x] **Step 6: Run and confirm they fail**
 
 Run: `npx vitest run lib/core/flashcard.test.ts -t exampleSegments`
 Expected: FAIL — `exampleSegments` is undefined on `CardFace`.
 
-- [ ] **Step 7: Implement in `lib/core/flashcard.ts`**
+- [x] **Step 7: Implement in `lib/core/flashcard.ts`**
 
 Change the import line to `import { locateTarget, type GeneratedSense } from './contentSchema';`
 then:
@@ -970,7 +970,7 @@ In `buildCard`, replace the face construction:
       };
 ```
 
-- [ ] **Step 8: Run the core suites and commit 3a on its own**
+- [x] **Step 8: Run the core suites and commit 3a on its own**
 
 Run: `npm run typecheck && npm run check:core && npm test`
 Expected: PASS — every existing flashcard and contentSchema test still green.
@@ -983,7 +983,7 @@ git commit -m "loop(DEV): C-XXXX TD-11 — locateTarget in core, exampleSegments
 
 #### 3b — The screen
 
-- [ ] **Step 9: Write `components/Flashcard.tsx`**
+- [x] **Step 9: Write `components/Flashcard.tsx`**
 
 ```tsx
 'use client';
@@ -1124,7 +1124,7 @@ export default function Flashcard({
 > to `components/EnWord.test.ts` — `components/Flashcard.tsx` in the `lang="en"` scan only, with
 > the reason in a comment. Do **not** widen the `ltr-inline` scan; that one stays absolute.
 
-- [ ] **Step 10: Write `app/study/page.tsx`**
+- [x] **Step 10: Write `app/study/page.tsx`**
 
 ```tsx
 import Link from 'next/link';
@@ -1157,7 +1157,7 @@ export default function StudyPage() {
 }
 ```
 
-- [ ] **Step 11: Write `app/dev/card/page.tsx` — the layout fixture**
+- [x] **Step 11: Write `app/dev/card/page.tsx` — the layout fixture**
 
 ```tsx
 'use client';
@@ -1210,7 +1210,7 @@ export default function DevCardLayout({ children }: { children: React.ReactNode 
 (Remove the unused `Metadata` import from `page.tsx` — metadata cannot be exported from a
 client component, which is why it lives in the layout.)
 
-- [ ] **Step 12: Extend `scripts/verify-mobile.mjs`**
+- [x] **Step 12: Extend `scripts/verify-mobile.mjs`**
 
 Add `'/study'` and `'/dev/card'` to `ROUTES`, so both inherit every existing width, overflow,
 RTL, tap-target and console-error check. Then add inside the per-route loop:
@@ -1248,19 +1248,19 @@ RTL, tap-target and console-error check. Then add inside the per-route loop:
       }
 ```
 
-- [ ] **Step 13: Full verification**
+- [x] **Step 13: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all green. `check:mobile` now covers 8 routes × 3 widths plus the card assertions and
 the dark-mode pass from Task 1. Record the final counts in the tick report.
 
-- [ ] **Step 14: Update `docs/api-contract.md`**
+- [x] **Step 14: Update `docs/api-contract.md`**
 
 No endpoint changed in this task, so add one line under the review-queue section noting that
 `/study` renders an empty state until a queue endpoint exists. If you find yourself adding an
 endpoint, it belongs in the same commit as the contract change — that rule has no exceptions.
 
-- [ ] **Step 15: Commit**
+- [x] **Step 15: Commit**
 
 ```bash
 git add components/Flashcard.tsx components/EnWord.test.ts app/study/page.tsx \
@@ -1304,3 +1304,36 @@ design — `EnText` accepts anything with `{ text, isTarget }`, so core does not
 **What this plan deliberately does not do.** It ships no learning content and no review queue.
 `/study` is honest about being empty because P-001 is real: there is no licensed English↔Hebrew
 source yet, and the fixture at `/dev/card` is a ruler, not a lesson.
+
+---
+
+> **Executed C-0015 — Task 3, and with it this whole plan. Four defects a subagent review
+> caught after every step was ticked and all five verification commands were green; each is
+> recorded because "the plan said so" was true in all four cases:**
+> 1. **The typed direction dead-ended.** After a submit `revealed=true` and `input==='typed'`
+>    matched none of the three JSX conditionals in Step 9's code as written — measured
+>    `controls: []`, and `gradeTypedAnswer`'s verdict was computed and thrown away without the
+>    learner ever seeing it. The auto-graded direction exists to *give feedback*. A
+>    `revealed && input==='typed'` branch now shows the verdict (label + glyph, never colour
+>    alone), the learner's own string, and a `המשך` button that carries `onGrade`.
+> 2. **`revealed` was never keyed to the card.** A parent rendering card *n+1* in the same slot
+>    without `key` handed the learner an already-revealed card with no reveal button — measured.
+>    Fixed with React's adjust-state-on-prop-change pattern inside the component, because a leaf
+>    shipped as "complete and measured" must not depend on an unwritten rule in a consumer that
+>    does not exist yet. `/dev/card/swap` makes it permanent.
+> 3. **Step 9's `mt-auto` was inert.** The section had no `flex-1`, so there was no free space
+>    to push against: the reveal button measured **y=243 on a 780px screen** — F-011 upside
+>    down, and no check looked, because the thumb-zone rule listed four routes and not the card.
+> 4. **The TD-14 positive assertion was skipped**, exactly as the C-0014 note above forbade.
+>    Proven: swapping `<EnWord>` for a bare `<span>` left 222 tests, the build and 219 mobile
+>    checks green with the headword rendering without `lang`, `dir` or `unicode-bidi`.
+>
+> Also changed from the plan as written: `locateTarget` bounds the span it will mark
+> (`"Please give the book to the man up there."` bolded 27 characters), strips wrapping quotes,
+> and the harness uses `allInnerTexts()` — `innerText()` **crashed** with a bare 30s
+> `TimeoutError` on precisely the degraded path `splitAroundTarget` documents, losing every
+> `ok` line printed before it. The `/dev/card` anchor check now measures `[data-flashcard]`
+> against the same 48px every other screen uses, instead of `[data-card-front]` against 120px,
+> which was calibrated on fixture chrome that does not exist in production.
+>
+> Final: **229 unit tests · 288 mobile checks** (from 219). Every fix above is mutation-verified.

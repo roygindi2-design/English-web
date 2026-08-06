@@ -153,7 +153,17 @@ export interface TextSpan {
   readonly end: number;
 }
 
-/** Tokens with their offsets. Mirrors `tokens()` exactly; only the spans are extra. */
+/**
+ * Tokens with their offsets. Mirrors `tokens()` on every input reachable through
+ * real content — with exactly two known exceptions, found by sweeping the BMP:
+ * U+0130 `İ` and U+212A `K` (Kelvin sign) lowercase INTO the ASCII range, so
+ * `tokens()` sees them and this does not. They are left divergent on purpose:
+ * matching them would mean lowercasing before scanning, and `'İ'.toLowerCase()`
+ * is two code points, which shifts every offset after it — the span would then
+ * point at the wrong characters, which is worse than not marking. Neither code
+ * point survives the drift check against an NGSL lemma set, so neither reaches a
+ * learner. Do not read the "identical walks" note below as covering them.
+ */
 function tokensWithSpans(s: string): { raw: string; start: number; end: number }[] {
   const out: { raw: string; start: number; end: number }[] = [];
   const re = /[A-Za-z']+/g;
@@ -162,6 +172,30 @@ function tokensWithSpans(s: string): { raw: string; start: number; end: number }
     out.push({ raw: m[0].toLowerCase(), start: m.index, end: m.index + m[0].length });
   }
   return out;
+}
+
+/**
+ * How many tokens a marked span may cover beyond the headword's own token count.
+ *
+ * This is a DISPLAY bound, not a pedagogical one: `containsHeadword` deliberately
+ * never resets on a mismatch so a separable phrasal verb still counts ("give it
+ * up"), and the object between the verb and its particle is one to three words in
+ * practice. Without a bound the same walk reports the whole stretch as "the target
+ * word" — a review measured "Please give the book to the man up there." bolding 27
+ * characters. Over the bound we fall back to no highlight, which is the degraded
+ * card `splitAroundTarget` already handles; a wrong highlight teaches a wrong
+ * collocation, a missing one teaches nothing.
+ */
+const MAX_TARGET_SPAN_EXTRA_TOKENS = 3;
+
+/** Mirrors `normalise`'s outer-apostrophe strip, on the SPAN instead of the text, so a
+ *  quoted word marks as `bank` and not as `'bank'`. Inner clitics ("teacher's") stay. */
+function trimQuotes(sentence: string, start: number, end: number): TextSpan {
+  let s = start;
+  let e = end;
+  while (s < e && sentence[s] === "'") s += 1;
+  while (e > s && sentence[e - 1] === "'") e -= 1;
+  return { start: s, end: e };
 }
 
 /**
@@ -177,18 +211,34 @@ export function locateTarget(sentence: string, headword: string): TextSpan | nul
   const forms = targetForms(headword);
   const first = forms[0];
   if (!first) return null;
+  const maxTokens = forms.length + MAX_TARGET_SPAN_EXTRA_TOKENS;
+  const all = tokensWithSpans(sentence);
   let next = 0;
   let start = -1;
-  for (const t of tokensWithSpans(sentence)) {
+  let startIdx = -1;
+  for (let i = 0; i < all.length; i += 1) {
+    const t = all[i];
+    if (!t) continue;
     const w = normalise(t.raw);
     const expected = forms[next];
     if (expected?.has(w)) {
-      if (next === 0) start = t.start;
+      if (next === 0) {
+        start = t.start;
+        startIdx = i;
+      }
       next += 1;
-      if (next === forms.length) return { start, end: t.end };
+      if (next === forms.length) {
+        // Too far apart to be one phrase: abandon THIS match and keep scanning, so a
+        // tighter occurrence later in the sentence is still found.
+        if (i - startIdx + 1 <= maxTokens) return trimQuotes(sentence, start, t.end);
+        next = 0;
+        start = -1;
+        startIdx = -1;
+      }
     } else if (next > 0 && first.has(w)) {
       next = 1;
       start = t.start;
+      startIdx = i;
     }
   }
   return null;

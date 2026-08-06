@@ -413,3 +413,31 @@ describe('locateTarget (TD-11)', () => {
     expect(targetForms('run')[0]?.has('running')).toBe(true);
   });
 });
+
+describe('locateTarget bounds what it dares call "the target word" (review C-0015)', () => {
+  const at = (sentence: string, headword: string) => {
+    const span = locateTarget(sentence, headword);
+    return span ? sentence.slice(span.start, span.end) : null;
+  };
+
+  it('refuses to mark a stretch too wide to be one phrase', () => {
+    // The gate ACCEPTS this sentence (containsHeadword never resets on a mismatch),
+    // so it is reachable content. Measured before the bound: 27 characters bolded
+    // as "the target word" — "give the book to the man up".
+    expect(at('Please give the book to the man up there.', 'give up')).toBeNull();
+  });
+
+  it('keeps scanning after abandoning a too-wide match', () => {
+    expect(at('Give the book to the man up, then give it up.', 'give up')).toBe('give it up');
+  });
+
+  it('excludes surrounding quote marks but keeps an inner clitic', () => {
+    expect(at("He said 'bank' loudly.", 'bank')).toBe('bank');
+    expect(at("The teacher's desk was clean.", 'teacher')).toBe("teacher's");
+  });
+
+  it('still marks a normal separable phrasal verb', () => {
+    expect(at('Please give it up now.', 'give up')).toBe('give it up');
+    expect(at('Turn the small light off.', 'turn off')).toBe('Turn the small light off');
+  });
+});
