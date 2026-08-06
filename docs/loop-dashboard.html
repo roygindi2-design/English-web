@@ -1,0 +1,184 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>לוח בקרה — לופ English-web</title><style>
+:root{--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--bg:#f8fafc;--card:#fff;--surf:#fcfcfb;
+ --done:#047857;--review:#1d4ed8;--block:#b45309;--todo:#94a3b8;
+ --bs:#eff6ff;--oks:#ecfdf5;--warns:#fffbeb;--crits:#fef2f2;--crit:#b91c1c}
+@media(prefers-color-scheme:dark){:root{--ink:#e2e8f0;--mut:#94a3b8;--line:#1e293b;--bg:#0b1220;
+ --card:#0f172a;--surf:#1a1a19;--done:#0d9488;--review:#6366f1;--block:#d97706;--todo:#64748b;
+ --bs:#0c1a33;--oks:#062a1e;--warns:#2a1f05;--crits:#2b0d0d;--crit:#f87171}}
+*{box-sizing:border-box}
+html,body{max-width:100vw;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,'Segoe UI',Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 18px 70px}
+h1{font-size:1.55rem;margin:0 0 3px;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:.85rem;margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:16px}
+h2{font-size:1.02rem;margin:0 0 3px;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+h2 .n{color:var(--mut);font-weight:500;font-size:.81rem}
+.hint{color:var(--mut);font-size:.8rem;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.kpi .v{font-size:1.75rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.kpi .l{color:var(--mut);font-size:.76rem;margin-top:4px}
+.kpi.bad{border-color:var(--crit)} .kpi.bad .v{color:var(--crit)}
+.kpi.good .v{color:var(--done)} .kpi.mid .v{color:var(--block)}
+.bar{display:flex;height:13px;border-radius:99px;overflow:hidden;margin:12px 0 9px;gap:2px;background:var(--line)}
+.bar i{display:block}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:.79rem;color:var(--mut)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stage{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.stage.now{border-color:var(--review);background:var(--bs)}
+.stage .t{font-weight:700;font-size:.87rem} .stage .d{color:var(--mut);font-size:.75rem;margin-top:3px}
+.stage .c{font-size:1.35rem;font-weight:800;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+.card table{table-layout:fixed}
+td,th{overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:640px){
+  .wrap{padding:18px 12px 60px}
+  .card{padding:14px}
+  table{font-size:.78rem} th,td{padding:7px 5px}
+  .hide-sm{display:none}
+  .kpi .v{font-size:1.45rem}
+}
+th,td{text-align:right;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.71rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.p-crit{background:var(--crits);color:var(--crit)} .p-high{background:var(--warns);color:var(--block)}
+.p-med{background:var(--bs);color:var(--review)} .p-low{background:var(--bg);color:var(--mut)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:.78rem;color:var(--mut);direction:ltr;unicode-bidi:isolate}
+.who{display:inline-block;width:9px;height:9px;border-radius:99px;margin-inline-end:6px;vertical-align:0}
+.tl{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:11px}
+.tl th{position:sticky;top:0;background:var(--card)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.alert{border-radius:12px;padding:14px 16px;font-size:.87rem;margin-bottom:16px;border:1px solid}
+.alert.stop{background:var(--crits);border-color:var(--crit)}
+.alert.warn{background:var(--warns);border-color:var(--block)}
+.alert b{display:block;margin-bottom:3px;font-size:.95rem}
+.foot{color:var(--mut);font-size:.78rem;border-top:1px solid var(--line);padding-top:13px;margin-top:6px}
+details summary{cursor:pointer;font-weight:700;font-size:.87rem}
+</style></head><body><div class="wrap">
+<h1>לוח בקרה — לופ הפיתוח</h1>
+<p class="sub">English-web · מסלול אמיר״ם · נוצר 2026-08-06 14:25Z · HEAD <span class="mono">362fd0b</span></p>
+<div class="alert stop"><b>הצוואר הבקבוק כרגע: ה-Critic</b>
+7 משימות <b>נבנו במלואן</b> ועברו את כל הבדיקות — אבל אף אחת לא נסקרה ונסגרה,
+ולכן <b>שום דבר לא עלה לאוויר</b>. ה-Critic רץ פעם ביום ורק הוא רשאי לקדם.
+עד שהוא יסגור אותן, המונה "הושלמו" יישאר 0 גם כשהעבודה נעשית.</div>
+<div class="kpis">
+ <div class="kpi mid"><div class="v">7</div><div class="l">נבנו · ממתינות לביקורת</div></div>
+ <div class="kpi good"><div class="v">67</div><div class="l">בדיקות עוברות</div></div>
+ <div class="kpi bad"><div class="v">3</div><div class="l">חסימות 🔴 פתוחות</div></div>
+ <div class="kpi good"><div class="v">0</div><div class="l">ממצאי CRITICAL</div></div>
+ <div class="kpi bad"><div class="v">0</div><div class="l">קידומים לאוויר</div></div>
+</div>
+<div class="card"><h2>צינור העבודה <span class="n">איפה כל משימה עומדת</span></h2>
+<p class="hint">משימה זזה משמאל לימין. "חסום" אינו כישלון — זו משימה שממתינה למחקר או להחלטה.</p><div class="pipe">
+<div class="stage"><div class="t">ממתין</div><div class="d">בתור, לא חסום</div><div class="c">23</div></div>
+<div class="stage"><div class="t">חסום</div><div class="d">ממתין לחסימה</div><div class="c">4</div></div>
+<div class="stage"><div class="t">בעבודה</div><div class="d">Dev כותב קוד</div><div class="c">0</div></div>
+<div class="stage now"><div class="t">נבנה</div><div class="d">ממתין ל-Critic</div><div class="c">7</div></div>
+<div class="stage"><div class="t">נסגר</div><div class="d">נסקר ואושר</div><div class="c">0</div></div>
+</div>
+<div class="bar">
+ <i style="width:0.0%;background:var(--done)"></i>
+ <i style="width:20.58823529411765%;background:var(--review)"></i>
+ <i style="width:11.764705882352942%;background:var(--block)"></i>
+ <i style="width:67.6470588235294%;background:var(--todo)"></i></div>
+<div class="legend">
+ <span><b style="background:var(--done)"></b>נסגר 0</span>
+ <span><b style="background:var(--review)"></b>נבנה וממתין 7</span>
+ <span><b style="background:var(--block)"></b>חסום 4</span>
+ <span><b style="background:var(--todo)"></b>ממתין 23</span></div></div>
+<div class="card"><h2>חסימות פתוחות <span class="n">מה עוצר את הלופ</span></h2>
+<p class="hint">🔴 עוצרת פיתוח · 🟠 מותרת להמשך, חייבת תיעוד ותיקון.</p>
+<table><thead><tr><th style="width:8%">#</th><th style="width:9%">חומרה</th><th style="width:44%">הבעיה</th><th class="hide-sm">מה צריך לקרות</th></tr></thead><tbody>
+<tr><td class="mono">R-005</td><td><span class="pill p-crit">חוסם</span></td><td>אין למוצר שום מקור תרגום לעברית</td><td class="hide-sm">לא נדרשת החלטה של רוי — נדרשת מדידה. נמצאו שני מועמדים מורשים (1.6: H1 Hebrew Wordnet ברישיון WordNet, H2 ויקימילון ב-CC BY-SA). T-013 ימדוד כיסוי בפועל מול 2,809 מילות NGSL, ואז ה-PM יכריע. עד אז T-005 חסומה. עדכון C-00</td></tr>
+<tr><td class="mono">R-006</td><td><span class="pill p-crit">חוסם</span></td><td>בחירת התרגום היחיד שיוצג ללומד — מתוך רשימת התרגומים שמחזיר כל מילון</td><td class="hide-sm">לא נדרשת החלטה של רוי — נדרשת אכיפה ומדידה. (א) כלל הקליטה המחייב ב-1.7.1 אינו המלצה: פריט ב-confidence='low' אינו מוצג ללומד. (ב) T-018 מודד את דיוק הפייפליין בפועל מול 5,448 ה-synsets של H1 כ-gold set — לפני שכרטיסייה </td></tr>
+<tr><td class="mono">R-010</td><td><span class="pill p-crit">חוסם</span></td><td>שימוש בשאלות תרגול של מאל"ו כמאגר פריטים</td><td class="hide-sm">⛔ אסור להעתיק, לגרד או לגזור פריטים ממאל"ו — גם לא "בהשראה". כל פריט תרגול במוצר חייב להיות מקורי, ולחקות פורמט בלבד (השלמת משפטים · ניסוח מחדש · הבנת הנקרא). זו חסימה על מנוע 7.6 ועל כל משימת תוכן</td></tr>
+<tr><td class="mono">R-002</td><td><span class="pill p-high">אזהרה</span></td><td>"טווח ציון אמיר״ם מקביל לכל רמת אוצר מילים"</td><td class="hide-sm">(א) אין להציג למשתמש שום טענת שקילות בין רמה לציון (ראה D-005). (ב) לחזור על החיפוש בעוד 90 יום</td></tr>
+<tr><td class="mono">R-007</td><td><span class="pill p-high">אזהרה</span></td><td>איכות הנתונים של Hebrew Wordnet (H1) — 6,872 הרשומות אינן שוות ערך</td><td class="hide-sm">⛔ כלל מחייב: רשומת GAP אינה נטענת. רשומת ! נטענת עם translation_confidence='low' ואסורה בהצגה כתרגום ראשי — לכל היותר רמז משני מסומן. ניקוד מוסר בשלב נרמול, והצורה המנוקדת נשמרת בשדה נפרד. ראה T-017</td></tr>
+<tr><td class="mono">R-008</td><td><span class="pill p-high">אזהרה</span></td><td>ההנחה ש-NGSL "מספיק" ללומד אמיר"ם</td><td class="hide-sm">(א) אסור להבטיח בממשק שסיום NGSL = מוכנות למבחן. (ב) לתכנן שכבת אוצר מילים שנייה (מועמד: NAWL, מאותו פרויקט ובאותו רישיון CC BY-SA) — אחרי שאבן הדרך הראשונה עובדת מקצה לקצה. (ג) E10: הקשר לינארי, אין מצוק — מותר להציג הת</td></tr>
+<tr><td class="mono">R-011</td><td><span class="pill p-high">אזהרה</span></td><td>ההנחה ש"מנוע אדפטיבי" ו"מורה AI" הם הבידול שלנו</td><td class="hide-sm">ⓐ אל תמכור "אדפטיבי" ו"AI" — זה כבר רעש בשוק. ⓑ המיצוב הפנוי: מובייל אמיתי + הערכת מוכנות אמינה. ⓒ עוגן מחיר: ₪250–400 לחלון של חודש–שלושה, לא מנוי מתגלגל</td></tr>
+<tr><td class="mono">R-012</td><td><span class="pill p-high">אזהרה</span></td><td>Onboarding שמבקש ציון יעד כמניע</td><td class="hide-sm">שנה את שאלת ה-Onboarding מ"לאיזה ציון אתה שואף" ל"כמה דקות ביום". תאריך המבחן נשאר (הוא מזין את 7.1). ציון יעד יורד לשדה רשות ואינו מוצג כמניע. ראה T-029</td></tr>
+</tbody></table></div>
+<div class="card"><h2>ממצאים פתוחים <span class="n">מה שבור או חסר בקוד</span></h2>
+<p class="hint">ממצא נרשם רק עם קובץ:שורה ותרחיש כשל מדויק. "נראה בעייתי" אינו ממצא.</p>
+<table><thead><tr><th style="width:8%">#</th><th style="width:9%">חומרה</th><th style="width:26%" class="hide-sm">איפה</th><th>מה</th></tr></thead><tbody>
+<tr><td class="mono">F-006</td><td><span class="pill p-high">גבוה</span></td><td class="mono">plan/15-syllabus-digest.md</td><td>התמצית אינה עומדת בחוזה שלה, וזה חוסם ארבע משימות פנויות. היא אמורה לייתר את 10-pedagogy.md עבור Dev, אך חסרים בה: 1.7.1 (כלל הקליטה המחייב — מסומן במקור ⛔ סטייה ממנו = תוכן לימודי מומצא), כללי הסינון</td></tr>
+<tr><td class="mono">F-008</td><td><span class="pill p-med">בינוני</span></td><td class="mono">app/api/auth/signup/route.ts:43-49</td><td>מדף מנייה של כתובות מייל. נתיב ה-login משטח בכוונה כל כשל להודעה אחת (lib/core/auth.ts:33), ואז ה-signup מוסר את אותו מידע בחינם: כתובת שקיימת מחזירה 409 email_taken, כתובת שאינה קיימת מחזירה 200. אין</td></tr>
+<tr><td class="mono">F-009</td><td><span class="pill p-med">בינוני</span></td><td class="mono">lib/core/auth.ts:111</td><td>שגיאת סיסמה ארוכה מדי מוצגת כשגיאת אימייל. validation_failed ממופה ל-invalid_email, אבל GoTrue משתמש בקוד הזה גם לתקרת 72 התווים של bcrypt</td></tr>
+<tr><td class="mono">F-014</td><td><span class="pill p-med">בינוני</span></td><td class="mono">app/page.tsx · app/globals.css</td><td>אין שום זהות חזותית. המסך כולו slate-900 על slate-50. אין לוגו, אין צבע מותג, אין איור, אין מצב כהה</td></tr>
+<tr><td class="mono">F-016</td><td><span class="pill p-med">בינוני</span></td><td class="mono">app/onboarding/page.tsx:34</td><td>חלל מת חוזר — אותו אנטי-דפוס של F-011 לא הועבר לקובץ האח. מסך ה-onboarding עוטף את הכותרת ב-flex flex-1 flex-col justify-center, בדיוק הפריסה שנפסלה ב-F-011 ותוקנה ב-app/page.tsx ל-flex flex-col gap-4</td></tr>
+<tr><td class="mono">F-015</td><td><span class="pill p-low">נמוך</span></td><td class="mono">components/AuthForm.tsx:159,177</td><td>חסר enterKeyHint בשדות. שאר תכונות הקלט מצוינות — dir="ltr", inputMode="email", autoComplete, autoCapitalize="none", spellCheck={false}, aria-invalid. עבודה טובה של Dev</td></tr>
+</tbody></table></div>
+<div class="two"><div class="card"><h2>משימות חסומות <span class="n">ומי חוסם</span></h2><table><thead><tr><th style="width:14%">#</th><th>המשימה</th><th style="width:32%">החוסם</th></tr></thead><tbody>
+<tr><td class="mono">T-003</td><td>Onboarding: מטרה, מוסד, ציון יעד, תאריך מבחן</td><td>⛔ ממתין לתוכנית UX מה-PM</td></tr>
+<tr><td class="mono">T-005</td><td>כרטיסיות: ידעתי / לא ידעתי + מעקב חשיפה למילה. חובה לכלול את שדו</td><td>⛔ R-005 (אין תרגום לעברית)</td></tr>
+<tr><td class="mono">T-019</td><td>בדיקת RLS מול פרויקט Supabase חי: משתמש א׳ מנסה לקרוא את שורת ה-</td><td>⛔ אין פרויקט Supabase בסביבת הלופ</td></tr>
+<tr><td class="mono">T-034</td><td>מסלול "נסה בלי חשבון" (T-027 ⓒ) — שוחרר מ-T-027 כי הוא חסום בתוכ</td><td>⛔ חסום ב-P-001 (אין תוכן מורשה)</td></tr>
+</tbody></table></div>
+<div class="card"><h2>מה בנוי בפועל <span class="n">קוד חי</span></h2><table><tbody>
+<tr><td class="mono" style="width:44%">/</td><td>מסך פתיחה</td></tr>
+<tr><td class="mono" style="width:44%">/login</td><td>התחברות</td></tr>
+<tr><td class="mono" style="width:44%">/offline</td><td>מסך אופליין</td></tr>
+<tr><td class="mono" style="width:44%">/onboarding</td><td>Onboarding (שלד)</td></tr>
+<tr><td class="mono" style="width:44%">/signup</td><td>הרשמה</td></tr>
+<tr><td class="mono" style="width:44%">/api/auth/login</td><td>API התחברות</td></tr>
+<tr><td class="mono" style="width:44%">/api/auth/signup</td><td>API הרשמה</td></tr>
+<tr><td class="mono" style="width:44%">/api/health</td><td>API בדיקת תקינות</td></tr>
+</tbody></table><div class="alert warn" style="margin:12px 0 0"><b>מה עוד לא קיים</b>מבחן רמה · כרטיסיות · דשבורד לומד · מנוע חזרות. כולם ממתינים לחסימות התרגום (R-005 · R-006).</div></div></div>
+<div class="card"><h2>מה קרה לאחרונה <span class="n">40 הפעולות האחרונות</span></h2>
+<p class="hint"><span class="who" style="background:var(--review)"></span>Dev · כל שעה &nbsp;<span class="who" style="background:#8b5cf6"></span>PM · 08:00 &nbsp;<span class="who" style="background:var(--block)"></span>Critic · 20:00 &nbsp;<span class="who" style="background:var(--done)"></span>רוי</p>
+<div class="tl"><table><thead><tr><th style="width:12%">מתי</th><th style="width:15%">מי</th><th>מה</th></tr></thead><tbody>
+<tr><td class="mono">08-06 14:24</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0005 drop — it was silently blocking every deploy</td></tr>
+<tr><td class="mono">08-06 13:53</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 password visibility toggle + named confirmation address (F-013 / T-030)</td></tr>
+<tr><td class="mono">08-06 13:38</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 lock for T-030 (F-013)</td></tr>
+<tr><td class="mono">08-06 13:23</td><td><span class="who" style="background:var(--block)"></span>Critic</td><td>C-0005 סקירת T-027 — עברה, F-016/F-017 נפתחו, אין קידום ל-main</td></tr>
+<tr><td class="mono">08-06 13:08</td><td><span class="who" style="background:var(--block)"></span>Critic</td><td>C-0005 נעילת CRITIC — סקירת T-027 וקוד M0</td></tr>
+<tr><td class="mono">08-06 13:01</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0005 adopt superpowers skills across the loop</td></tr>
+<tr><td class="mono">08-06 12:52</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 T-027 ⓐ+ⓑ — מסך פתיחה מעוגן למעלה, 3 שורות ערך, וחריץ טעימה ריק מוגן (F-011)</td></tr>
+<tr><td class="mono">08-06 12:43</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 נעילת DEV — T-027</td></tr>
+<tr><td class="mono">08-06 12:41</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0004 docs/ui-proposal.html — rendered before/after for T-027</td></tr>
+<tr><td class="mono">08-06 12:39</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0004 research sweep — market, learning science, display audit</td></tr>
+<tr><td class="mono">08-06 09:41</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 T-024 — מחיקת lib/supabase/server.ts + בדיקת רגרסיה שחוסמת החזרת service_role</td></tr>
+<tr><td class="mono">08-06 09:36</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 lock</td></tr>
+<tr><td class="mono">08-06 08:42</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 T-021 — check:mobile מתוקן ונכנס ל-verify (F-007)</td></tr>
+<tr><td class="mono">08-06 08:37</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 נעילה — T-021</td></tr>
+<tr><td class="mono">08-06 07:43</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0005 T-022 — סגירת F-002/F-003/F-004: עוגיות session httpOnly+secure, שומר סשן שנכשל סגור + getUser ב-onboar</td></tr>
+<tr><td class="mono">08-06 07:36</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0004 lock</td></tr>
+<tr><td class="mono">08-06 07:09</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0004 Q-001 closed by Roy — email confirmation stays off</td></tr>
+<tr><td class="mono">08-06 06:58</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0004 operator audit — 10 findings, branch divergence repaired</td></tr>
+<tr><td class="mono">08-06 01:50</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0004 T-002 — Supabase auth: signup/login/logout, proxy session guard, profiles+RLS</td></tr>
+<tr><td class="mono">08-06 01:37</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0003 נעילת DEV לתחילת עבודה על T-002</td></tr>
+<tr><td class="mono">08-06 01:11</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0003 תוכנית UX ל-T-002 + D-015/D-016 + תיקון EVP→CEFR-J בתמצית</td></tr>
+<tr><td class="mono">08-06 00:40</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0002 T-001 אומתה מקצה לקצה ועברה לביקורת</td></tr>
+<tr><td class="mono">08-06 00:36</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0001 acquire lock</td></tr>
+<tr><td class="mono">08-06 00:04</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0001 token economy — split shared memory into plan/</td></tr>
+<tr><td class="mono">08-05 23:56</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0001 R-005 מרחב מקורות התרגום נסרק — H1 אומת, H3-H6 נוספו, PanLex+MUSE נפסלו (NC); R-006/R-007 נפתחו; 1.7 מת</td></tr>
+<tr><td class="mono">08-05 23:34</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0001 acquire lock</td></tr>
+<tr><td class="mono">08-05 23:20</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0001 parallel research — engines 7.1/7.4/7.5/7.7 corrected, W1 resolved, R-006..R-009 opened</td></tr>
+<tr><td class="mono">08-05 23:17</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0001 concurrency backoff + subagent policy</td></tr>
+<tr><td class="mono">08-05 23:13</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0001 acquire lock</td></tr>
+<tr><td class="mono">08-05 23:05</td><td><span class="who" style="background:var(--done)"></span>רוי</td><td>C-0001 build economy — dev/main split, ignore command, policy</td></tr>
+<tr><td class="mono">08-05 22:59</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0001 hand off to Critic after Dev pushed code without updating the plan</td></tr>
+<tr><td class="mono">08-05 22:57</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 R-003 closed (track B), R-005 opened (no Hebrew source), 4.3 strengths/weaknesses analysis, T-013..T-01</td></tr>
+<tr><td class="mono">08-05 22:55</td><td><span class="who" style="background:var(--review)"></span>Dev</td><td>C-0001 T-001 app shell — RTL/PWA scaffold, 6 screens, measured mobile guarantees</td></tr>
+<tr><td class="mono">08-05 22:51</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 acquire lock</td></tr>
+<tr><td class="mono">08-05 22:46</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 park MoE curriculum portal + bagrut/elementary tracks until amiram ships</td></tr>
+<tr><td class="mono">08-05 22:44</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 licensing research — NGSL CC BY-SA verified, EVP blocked, CEFR-J fallback documented</td></tr>
+<tr><td class="mono">08-05 22:32</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 acquire lock</td></tr>
+<tr><td class="mono">08-05 22:26</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 D-003..D-005, UX plan for T-001, tasks T-007..T-009</td></tr>
+<tr><td class="mono">08-05 22:24</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 R-001 resolved — CEFR/NGSL/EVP level map sourced; UX plan for T-001; T-007..T-009 queued</td></tr>
+<tr><td class="mono">08-05 22:17</td><td><span class="who" style="background:#8b5cf6"></span>PM</td><td>C-0000 acquire lock</td></tr>
+</tbody></table></div></div>
+<div class="card"><h2>איך לקרוא את הלוח</h2>
+<details><summary>מה עושה כל סוכן, ומתי</summary><table style="margin-top:10px"><tbody>
+<tr><td style="width:24%"><b>Dev</b> · כל שעה ב-:30</td><td>לוקח משימה אחת. אין משימה כשירה → יוצא מיד. רוב הטיקים שקטים, וזה תקין.</td></tr>
+<tr><td><b>PM</b> · 08:00</td><td>חוקר ברשת רק כשיש חסימה 🔴. אחרת כותב תוכנית UX או יוצא בשורה. אסור לו להמציא חומר לימודי.</td></tr>
+<tr><td><b>Critic</b> · 20:00</td><td>סוקר קוד חדש, ורק הוא רשאי להעלות לאוויר — אחרי סקירה נקייה ובדיקות עוברות.</td></tr>
+</tbody></table></details>
+<div class="foot">הלוח נבנה מקבצי <span class="mono">plan/</span> בריפו — מה שהסוכנים באמת כתבו, לא סיכום.
+צבעי הסרגל אומתו מול בודק הנגישות של סקיל <span class="mono">dataviz</span> (הפרדת CVD וניגודיות), במצב בהיר וכהה.
+לרענון: בקש ממני "עדכן את לוח הבקרה".</div></div></div></body></html>
