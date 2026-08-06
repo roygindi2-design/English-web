@@ -217,3 +217,46 @@ describe('directionFor — direction follows mastery, not a global setting', () 
     expect(() => directionFor({ consecutiveCorrectRecognition: -1 }, opts)).toThrow(RangeError);
   });
 });
+
+describe('exampleSegments (TD-11)', () => {
+  // Deliberately NOT named `sense`: the module-level fixture above is a full
+  // GeneratedSense, and shadowing it here would let a future deletion silently
+  // fall through to a different sentence.
+  const segSense = {
+    headword: 'deliberate',
+    translationHe: 'לשקול בכובד ראש',
+    examples: { supportive: 'They deliberated all night.', neutral: 'We must deliberate first.' },
+  };
+
+  it('splits the example around the inflected target', () => {
+    const card = buildCard(segSense, 'recognition', { isFirstEncounter: true });
+    expect(card.back.exampleSegments).toEqual([
+      { text: 'They ', isTarget: false },
+      { text: 'deliberated', isTarget: true },
+      { text: ' all night.', isTarget: false },
+    ]);
+  });
+
+  it('always reassembles into exactly the example string', () => {
+    const card = buildCard(segSense, 'production', { isFirstEncounter: false });
+    expect(card.back.exampleSegments.map((s) => s.text).join('')).toBe(card.back.example);
+  });
+
+  it('marks exactly one segment', () => {
+    const card = buildCard(segSense, 'recognition', { isFirstEncounter: false });
+    expect(card.back.exampleSegments.filter((s) => s.isTarget)).toHaveLength(1);
+  });
+
+  it('falls back to one unmarked segment when the word cannot be located', () => {
+    const irregular = { ...segSense, headword: 'go', examples: { supportive: 'He went home.', neutral: '' } };
+    const card = buildCard(irregular, 'recognition', { isFirstEncounter: true });
+    expect(card.back.exampleSegments).toEqual([{ text: 'He went home.', isTarget: false }]);
+  });
+
+  it('is empty on a face with no example, and on the front', () => {
+    const card = buildCard(segSense, 'recognition', { isFirstEncounter: true });
+    expect(card.front.exampleSegments).toEqual([]);
+    const bare = { ...segSense, examples: { supportive: '', neutral: '' } };
+    expect(buildCard(bare, 'recognition', { isFirstEncounter: true }).back.exampleSegments).toEqual([]);
+  });
+});

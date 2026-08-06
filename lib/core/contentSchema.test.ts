@@ -1,6 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BLANK, gateSense, POS_VALUES, RELATION_TYPES } from './contentSchema';
+import {
+  BLANK,
+  gateSense,
+  locateTarget,
+  POS_VALUES,
+  RELATION_TYPES,
+  targetForms,
+} from './contentSchema';
 
 const ok = {
   headword: 'deliberate',
@@ -363,5 +370,46 @@ describe('gateSense · inflections are morphologically constrained (F-020)', () 
     // "cares" is not a form of the noun "car" — it must be reported as drift.
     const cares = gateSense({ ...carSense, examples: { ...carSense.examples, neutral: 'The car and cares.' } }, carOpts);
     expect(cares.reasons.join()).toContain('"cares"');
+  });
+});
+
+describe('locateTarget (TD-11)', () => {
+  const at = (sentence: string, headword: string) => {
+    const span = locateTarget(sentence, headword);
+    return span ? sentence.slice(span.start, span.end) : null;
+  };
+
+  it('finds the exact headword', () => {
+    expect(at('The bank was closed.', 'bank')).toBe('bank');
+  });
+
+  it('finds a regular inflection, not the lemma', () => {
+    expect(at('She deliberated for hours.', 'deliberate')).toBe('deliberated');
+    expect(at('He is running late.', 'run')).toBe('running');
+  });
+
+  it('is case-insensitive but returns the surface form as written', () => {
+    expect(at('Bank on it.', 'bank')).toBe('Bank');
+  });
+
+  it('spans a separable phrasal verb from first token to last', () => {
+    expect(at('Please give it up now.', 'give up')).toBe('give it up');
+  });
+
+  it('does not match a word that merely starts the same — the T-039 prefix bug', () => {
+    expect(at('That is not true.', 'note')).toBeNull();
+    expect(at('The behaviour was odd.', 'be')).toBeNull();
+  });
+
+  it('returns null for an irregular form, which the gate rejects anyway', () => {
+    expect(at('He went home.', 'go')).toBeNull();
+  });
+
+  it('returns null when the word is absent', () => {
+    expect(at('Nothing here.', 'bank')).toBeNull();
+  });
+
+  it('exposes the same forms the gate uses, so the two can never disagree', () => {
+    expect(targetForms('run')[0]?.has('running')).toBe(true);
   });
 });

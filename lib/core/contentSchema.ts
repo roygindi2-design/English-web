@@ -144,8 +144,54 @@ function inflections(token: string): Set<string> {
 
 /** Every surface form that counts as "the target word" — used for BOTH the presence
  *  check and the level exemption, so the two can never disagree. */
-function targetForms(headword: string): Set<string>[] {
+export function targetForms(headword: string): Set<string>[] {
   return tokens(headword).map(inflections);
+}
+
+export interface TextSpan {
+  readonly start: number;
+  readonly end: number;
+}
+
+/** Tokens with their offsets. Mirrors `tokens()` exactly; only the spans are extra. */
+function tokensWithSpans(s: string): { raw: string; start: number; end: number }[] {
+  const out: { raw: string; start: number; end: number }[] = [];
+  const re = /[A-Za-z']+/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s)) !== null) {
+    out.push({ raw: m[0].toLowerCase(), start: m.index, end: m.index + m[0].length });
+  }
+  return out;
+}
+
+/**
+ * Where the target word sits inside a sentence — TD-11.
+ *
+ * The walk is deliberately identical to `containsHeadword`, including its one
+ * subtlety: a mismatch does NOT reset progress, because phrasal verbs separate
+ * ("give it up"). Two walks that disagree would mean the gate accepts a sentence
+ * the card then cannot mark, so they share `targetForms` and the same loop shape.
+ * If you change one, change both, and the tests here and there will tell you.
+ */
+export function locateTarget(sentence: string, headword: string): TextSpan | null {
+  const forms = targetForms(headword);
+  const first = forms[0];
+  if (!first) return null;
+  let next = 0;
+  let start = -1;
+  for (const t of tokensWithSpans(sentence)) {
+    const w = normalise(t.raw);
+    const expected = forms[next];
+    if (expected?.has(w)) {
+      if (next === 0) start = t.start;
+      next += 1;
+      if (next === forms.length) return { start, end: t.end };
+    } else if (next > 0 && first.has(w)) {
+      next = 1;
+      start = t.start;
+    }
+  }
+  return null;
 }
 
 /**

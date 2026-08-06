@@ -25,7 +25,7 @@
  * gets this wrong on "OK" and on any Hebrew gloss containing a Latin abbreviation.
  */
 
-import type { GeneratedSense } from './contentSchema';
+import { locateTarget, type GeneratedSense } from './contentSchema';
 
 export type CardDirection = 'recognition' | 'production';
 
@@ -42,6 +42,11 @@ export type CardGrade = (typeof BINARY_GRADES)[number];
 
 export type FaceLang = 'en' | 'he';
 
+export interface ExampleSegment {
+  readonly text: string;
+  readonly isTarget: boolean;
+}
+
 export interface CardFace {
   readonly primary: string;
   readonly primaryLang: FaceLang;
@@ -49,6 +54,16 @@ export interface CardFace {
   /** Always the English sentence, whatever `primaryLang` is. Null when none is usable. */
   readonly example: string | null;
   readonly exampleLang: 'en';
+  /**
+   * The example split around the target word — TD-11. Always joins back to
+   * `example` exactly, so the UI can render segments without ever owning the
+   * question of which word is the target. Empty when there is no example.
+   *
+   * Each segment carries its own whitespace and `EnText` concatenates verbatim
+   * (C-0014 deviation 3): `segments.map(s => s.text).join('') === example` is a
+   * contract, asserted below, not an accident.
+   */
+  readonly exampleSegments: readonly ExampleSegment[];
 }
 
 interface CardBase {
@@ -115,12 +130,26 @@ function usableSentence(value: string | undefined): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
+/** One marked segment at most. An unlocatable word yields one unmarked segment, never a throw:
+ *  a card that renders without the highlight is a degraded card; a crash is no card. */
+function splitAroundTarget(sentence: string | null, headword: string): ExampleSegment[] {
+  if (sentence === null) return [];
+  const span = locateTarget(sentence, headword);
+  if (!span) return [{ text: sentence, isTarget: false }];
+  const out: ExampleSegment[] = [];
+  if (span.start > 0) out.push({ text: sentence.slice(0, span.start), isTarget: false });
+  out.push({ text: sentence.slice(span.start, span.end), isTarget: true });
+  if (span.end < sentence.length) out.push({ text: sentence.slice(span.end), isTarget: false });
+  return out;
+}
+
 function face(
   primary: string,
   primaryLang: FaceLang,
   example: string | null,
+  exampleSegments: readonly ExampleSegment[],
 ): CardFace {
-  return { primary, primaryLang, secondary: null, example, exampleLang: 'en' };
+  return { primary, primaryLang, secondary: null, example, exampleLang: 'en', exampleSegments };
 }
 
 export function buildCard(sense: CardSense, direction: CardDirection, ctx: CardContext): Card {
@@ -139,21 +168,22 @@ export function buildCard(sense: CardSense, direction: CardDirection, ctx: CardC
   const [preferred, fallback] = ctx.isFirstEncounter ? [supportive, neutral] : [neutral, supportive];
   const example = preferred ?? fallback ?? null;
 
-  const en = face(headword, 'en', null);
-  const he = face(translationHe, 'he', null);
+  const segments = splitAroundTarget(example, headword);
+  const en = face(headword, 'en', null, []);
+  const he = face(translationHe, 'he', null, []);
 
   return direction === 'recognition'
     ? {
         direction,
         front: en,
-        back: { ...he, example },
+        back: { ...he, example, exampleSegments: segments },
         input: 'self',
         grades: BINARY_GRADES,
       }
     : {
         direction,
         front: he,
-        back: { ...en, example },
+        back: { ...en, example, exampleSegments: segments },
         input: 'typed',
         grades: BINARY_GRADES,
       };
