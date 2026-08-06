@@ -17,7 +17,7 @@ CYCLE_ID: C-0005                  # מזהה רץ. עולה ב-1 בכל מעבר
 NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — T-030 (F-013) נבנתה ומחכה לביקורת. ⚠️ T-020 (PM) חוסמת 4 משימות, P-001 חוסמת T-034 (חסר מקור עברי R-005).
 STATE: REVIEWING                  # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: T-030             # F-013 — הצגת סיסמה. ההיבט של onboarding נשאר ב-T-026
+ACTIVE_TASK_ID: T-031             # בלם עומס לתור החזרות. T-030 נשארת 🟣 בהמתנה ל-Critic
 CRITIC_ROUNDS_ON_TASK: 1          # סבב הביקורת הידני של רוי נספר כסבב 1 על T-001+T-002
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
 LAST_HANDOFF_AT: 2026-08-06T13:52:00Z
@@ -25,8 +25,8 @@ HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
-LOCK_AT: ""                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
+LOCK_HELD_BY: DEV                 # "" | PM | DEV | CRITIC
+LOCK_AT: "2026-08-06T14:37:57Z"   # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
                                   # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
 LAST_REVIEWED_COMMIT: "c046024016eedd67cdb6757fed503ed79f178e7e"  # נסקר C-0005 ע"י Critic (dev tip לפני קומיטי ה-critic)
 
