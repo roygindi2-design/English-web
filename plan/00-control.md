@@ -14,21 +14,21 @@
 
 ```yaml
 CYCLE_ID: C-0005                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
-NEXT_AGENT: CRITIC                # PM | DEV | CRITIC | HUMAN — T-027 (ⓐ+ⓑ) נבנתה. F-011 נסגר, F-012 חצי. ⚠️ T-020 (PM) עדיין חוסמת 4 משימות, ו-P-001 חוסמת את T-034.
-STATE: REVIEWING                  # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
+NEXT_AGENT: PM                    # PM | DEV | CRITIC | HUMAN — T-027 (ⓐ+ⓑ) נסקרה ועברה: אין CRITICAL/HIGH חדש, כל השערים ירוקים. נוספו F-016 (🟡 onboarding dead-space) ו-F-017 (⚪ landing lint) — נאספים לסוף M0, לא מחזירים מקל. ⚠️ T-020 (PM) חוסמת 4 משימות, P-001 חוסמת T-034 (חסר מקור עברי R-005).
+STATE: PLANNING                   # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-027             # ⓒ (טעימה לפני הרשמה) הופרדה ל-T-034 וחסומה ב-P-001 — אין מקור תרגום עברי
 CRITIC_ROUNDS_ON_TASK: 1          # סבב הביקורת הידני של רוי נספר כסבב 1 על T-001+T-002
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-08-06T12:51:34Z
+LAST_HANDOFF_AT: 2026-08-06T13:21:13Z
 HUMAN_DECISION_REQUIRED: false    # R-003 נסגרה (D-009). R-005/R-006/R-007 נפתרות במדידה ולא בהחלטה — אין החלטה עסקית תלויה.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CRITIC"                  # "" | PM | DEV | CRITIC
-LOCK_AT: "2026-08-06T13:08:25Z"                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
+LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC
+LOCK_AT: ""                       # ISO-8601. חובה לקרוא שעה אמיתית: date -u +%Y-%m-%dT%H:%M:%SZ
                                   # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
-LAST_REVIEWED_COMMIT: "e86f23edce4976ca03a7337357c368e880559e36"  # נסקר ידנית ע"י רוי — Critic, אל תחזור על זה
+LAST_REVIEWED_COMMIT: "c046024016eedd67cdb6757fed503ed79f178e7e"  # נסקר C-0005 ע"י Critic (dev tip לפני קומיטי ה-critic)
 
 # --- כלכלת בנייה: 300 דקות בנייה בחודש. חריגה = השעיית האתר עד סוף החודש ---
 WORKING_BRANCH: dev               # כל הסוכנים דוחפים לכאן. Netlify לא בונה ענף זה.
@@ -53,8 +53,8 @@ PROMOTIONS_THIS_MONTH: 0          # תקרה רכה: 30. מעבר לזה — ה�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
+| C-0005 | CRITIC | PM | 13:21Z | T-027 ⓐ+ⓑ עברה סקירה: 5 שערים ירוקים (typecheck·core·62 tests·build·108 mobile), 5 צירים מקביליים → רק F-016 (🟡 חלל מת ב-onboarding) ו-F-017 (⚪ landing lint). **לא קודם ל-main** — F-012/F-013 (🟠 HIGH) פתוחים + TD-1/4/6/7 ידניים. | F-016 · F-017 · אין קידום |
 | C-0005 | DEV | CRITIC | 12:51Z | T-027 ⓐ+ⓑ נבנתה: `flex-1 justify-center` הוסר, הכותרת מעוגנת למעלה ושלוש שורות "מה מקבלים" ממלאות את החלל (F-011 נסגר). קופי המסך עבר ל-`lib/core/landing.ts` ונאכף מול R-011. **108 בדיקות מובייל ירוקות; בדיקת העיגון החדשה אומתה שנכשלת מול הפריסה הישנה.** | F-011 ✅ · F-012 🟡 · P-001 · T-034 |
-| C-0005 | DEV | CRITIC | 08:42Z | T-021 נבנתה: `check:mobile` הודבק לדפדפן שקיים בפועל (`resolveChromiumPath` — ה-pin של playwright ל-1234 מול 1194 בסביבה), מרים `next start` בעצמו, ונוסף לסוף `verify`. **105 בדיקות מובייל רצו בפועל לראשונה — ירוקות.** TD-3 נסגר. | F-007 ✅ · T-021 🟣 |
 | C-0005 | DEV | CRITIC | 09:41Z | T-024 נבנתה: `lib/supabase/server.ts` נמחק — הלקוח היחיד בעץ שיכול היה לעקוף RLS. `serviceRole.test.ts` (3 בדיקות) סורק `app`/`components`/`lib`/`proxy.ts` ונכשל על כל קריאה של `SUPABASE_SERVICE_ROLE_KEY`; אומת שנכשל מול הקוד הישן. המפתח הוסר גם מ-`.env.example` ומ-`docs/SETUP.md`. 53 בדיקות + verify מלא ירוקים. | F-010 ✅ · T-024 🟣 |
 
 ---
