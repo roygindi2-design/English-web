@@ -451,7 +451,9 @@ export function measureCoverage(
 
 This one function serves **both** T-013 (H1, H2) and T-016 (H3, H4). The tasks differ only in which sources are in the array, which is why they are one file and not two.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
+
+> ⚠️ **תוקן בביצוע C-0022 — הקוד למטה כתוב כאן כפי שתוכנן, אך אינו מתקמפל בריפו הזה.** `tsconfig.json` מפעיל `noUncheckedIndexedAccess`, ולכן `r.perSource[0]` הוא `SourceCoverage | undefined` ו-`tsc --noEmit` נפל על **20 שגיאות TS2532, כולן בקובץ הבדיקה בלבד** (המימוש עבר נקי). התיקון שנבחר אינו `!`: נוספה `source(r, i)` שזורקת שגיאה בעלת שם (`no perSource[i] — report has N source(s)`) במקום להשאיר `cannot read properties of undefined` שלוש שורות אחר כך. שלוש המוטציות של שלב 5 הורצו **שוב** מול הבדיקה המתוקנת והפילו אותה זהה.
 
 Create `lib/core/coverage.test.ts`:
 
@@ -603,12 +605,12 @@ describe('measureCoverage', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and confirm it fails**
+- [x] **Step 2: Run the test and confirm it fails**
 
 Run: `npx vitest run lib/core/coverage.test.ts`
 Expected: FAIL — `Failed to resolve import "./coverage"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `lib/core/coverage.ts`:
 
@@ -759,12 +761,12 @@ export function measureCoverage(
 }
 ```
 
-- [ ] **Step 4: Run the test and confirm it passes**
+- [x] **Step 4: Run the test and confirm it passes**
 
 Run: `npx vitest run lib/core/coverage.test.ts`
 Expected: PASS, 14 tests.
 
-- [ ] **Step 5: Prove the tests can fail — three mutations**
+- [x] **Step 5: Prove the tests can fail — three mutations**
 
 1. In `accepts`, delete the `if (v.kind === 'drop') return false;` line.
    Expected: **`a GAP gloss is not coverage` fails** — covered becomes 1.
@@ -775,12 +777,12 @@ Expected: PASS, 14 tests.
 
 Record the real output of each. A mutation that stays green means the test is not measuring what it claims.
 
-- [ ] **Step 6: Run the full gate**
+- [x] **Step 6: Run the full gate**
 
 Run: `npm run typecheck && npm run check:core && npm test`
 Expected: typecheck clean · `/lib/core purity: OK` · suite green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/coverage.ts lib/core/coverage.test.ts
