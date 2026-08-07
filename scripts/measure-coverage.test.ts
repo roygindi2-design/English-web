@@ -21,9 +21,13 @@ describe('measure-coverage wiring', () => {
     expect(RUNNER).not.toMatch(/https?:\/\//);
   });
 
-  it('pins the NGSL row count to 2,809, not 2,801 (F-005)', () => {
-    expect(RUNNER).toContain('2809');
-    expect(RUNNER).not.toContain('2801');
+  it('routes the row count through the T-012 guard instead of re-stating the number', () => {
+    // The number itself is pinned to 2,809 in lib/core/provenance.ts and asserted
+    // in lib/core/provenance.test.ts (F-005). What this test protects is that the
+    // runner does not grow a SECOND copy of it: two copies drift, and the copy
+    // that drifts is the one nobody unit tests.
+    expect(RUNNER).toContain('checkNgslRowCount');
+    expect(RUNNER).not.toMatch(/\b280\d\b/);
   });
 
   it('measures BOTH policies so F-021 cannot block the number', () => {

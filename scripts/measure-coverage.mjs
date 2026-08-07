@@ -54,10 +54,12 @@ const {
   renderReportMarkdown,
   skipRate,
 } = await import('../lib/core/sources.ts');
+// T-012 — the expected row count, and the reason a wrong one is fatal, live in
+// lib/core/provenance.ts. Asserted once there, unit tested there, printed here.
+const { checkNgslRowCount } = await import('../lib/core/provenance.ts');
 
 const DATA = 'data';
 const OUT = join('docs', 'coverage-report.md');
-const NGSL_EXPECTED_ROWS = 2809;
 
 const SOURCES = [
   { id: 'H1', label: 'Hebrew Wordnet', file: 'h1-hebrew-wordnet.tsv', parse: parsePairsTsv },
@@ -81,11 +83,11 @@ if (!existsSync(ngslPath)) {
 }
 
 const ngsl = parseNgslCsv(readFileSync(ngslPath, 'utf8'));
-if (ngsl.rows !== NGSL_EXPECTED_ROWS) {
-  fail(
-    `${ngslPath} has ${ngsl.rows} rows, expected exactly ${NGSL_EXPECTED_ROWS} (NGSL v1.2).\n` +
-      `  The early 2,80x version comes from the domain we do not control (R-004 · F-005).`,
-  );
+// A MISSING file and a WRONG file are different failures and stay distinguishable:
+// the block above names T-043 (a human action), this one names R-004 (a bad source).
+const rowVerdict = checkNgslRowCount(ngsl.rows);
+if (!rowVerdict.ok) {
+  fail(`${ngslPath}: ${rowVerdict.reason}`);
 }
 
 const loaded = [];

@@ -664,7 +664,7 @@ git commit -m "loop(DEV): C-XXXX T-011 /sources page + footer attribution link"
 
 **Why a verdict object and not a thrown error:** the coverage runner already turns problems into a non-zero exit with a named reason. A verdict keeps the reason string in one place (`lib/core`, pure and testable) and lets the caller decide whether to exit or to collect. `checkNgslRowCount` returning `{ok:false, reason}` is directly printable.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/provenance.test.ts`:
 
@@ -746,12 +746,12 @@ describe('source host — R-004', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/provenance.test.ts`
 Expected: FAIL — `Failed to resolve import "./provenance"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `lib/core/provenance.ts`:
 
@@ -821,12 +821,12 @@ export function checkNgslRowCount(rows: number): ProvenanceVerdict {
 }
 ```
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `npx vitest run lib/core/provenance.test.ts`
 Expected: all 11 PASS.
 
-- [ ] **Step 5: Mutate the host check to prove the test measures it**
+- [x] **Step 5: Mutate the host check to prove the test measures it**
 
 Run:
 ```bash
@@ -835,7 +835,7 @@ npx vitest run lib/core/provenance.test.ts
 ```
 Expected: FAIL on `rejects a host that merely ENDS with the domain`. Restore the line exactly as written in Step 3 and re-run to green.
 
-- [ ] **Step 6: Route the existing runner check through it**
+- [x] **Step 6: Route the existing runner check through it**
 
 In `scripts/measure-coverage.mjs`, find the block that currently enforces the 2,809-row count (it prints `expected exactly 2809`). Replace its inline comparison with the imported guard so there is one definition of the number:
 
@@ -852,17 +852,17 @@ if (!verdict.ok) {
 
 Keep the existing `T-043` message for the *missing file* case untouched — a missing file and a wrong file are different failures and must stay distinguishable.
 
-- [ ] **Step 7: Re-run the runner's own tests**
+- [x] **Step 7: Re-run the runner's own tests**
 
 Run: `npx vitest run scripts/measure-coverage.test.ts`
 Expected: PASS. If a test asserted the exact old wording of the row-count error, update that assertion to the new message — the message improved, the behaviour did not change.
 
-- [ ] **Step 8: Full verification**
+- [x] **Step 8: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: all four green, `check:core` prints `/lib/core purity: OK` (the new file imports only from `lib/core`, and `new URL()` is a language built-in, not I/O).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add lib/core/provenance.ts lib/core/provenance.test.ts scripts/measure-coverage.mjs scripts/measure-coverage.test.ts
