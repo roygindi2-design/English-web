@@ -821,7 +821,7 @@ export function renderReportMarkdown(strict: CoverageReport, lenient: CoverageRe
 
 **The honesty rule this task exists to enforce.** TD-17 means no agent has ever seen these files. A parser written blind against an unseen format fails in exactly one way — it silently yields zero entries and the report announces "0% coverage", which reads like a finding about Hebrew and is actually a finding about our parser. So every parser counts the lines it could not use, and the runner **refuses to print a percentage** for a source whose skip rate exceeds `MAX_SKIP_RATE` (0.5%). A missing file prints `unavailable`, never `0%`.
 
-- [ ] **Step 1: Write the failing parser test**
+- [x] **Step 1: Write the failing parser test**
 
 Create `lib/core/sources.test.ts`:
 
@@ -1000,12 +1000,12 @@ describe('renderReportMarkdown', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 Run: `npx vitest run lib/core/sources.test.ts`
 Expected: FAIL — `Failed to resolve import "./sources"`.
 
-- [ ] **Step 3: Write `lib/core/sources.ts`**
+- [x] **Step 3: Write `lib/core/sources.ts`**
 
 ```ts
 /**
@@ -1205,12 +1205,12 @@ ${strict.uncovered.length === 0 ? '_אין._' : strict.uncovered.map((w) => `- $
 }
 ```
 
-- [ ] **Step 4: Run the parser test and confirm it passes**
+- [x] **Step 4: Run the parser test and confirm it passes**
 
 Run: `npx vitest run lib/core/sources.test.ts`
 Expected: PASS, 20 tests.
 
-- [ ] **Step 5: Write `data/README.md` — the contract for the files Roy has to add**
+- [x] **Step 5: Write `data/README.md` — the contract for the files Roy has to add**
 
 ```markdown
 # data/ — source files that agents cannot fetch
@@ -1244,7 +1244,7 @@ Every source here carries an attribution obligation. `T-011` builds
 `/docs/data-licenses.md` and the in-product `/sources` page from this table.
 ```
 
-- [ ] **Step 6: Write the runner `scripts/measure-coverage.mjs`**
+- [x] **Step 6: Write the runner `scripts/measure-coverage.mjs`**
 
 ```js
 #!/usr/bin/env node
@@ -1345,6 +1345,8 @@ console.log(`uncovered (STRICT): ${strict.uncovered.length}`);
 console.log(`\nWrote ${OUT}`);
 ```
 
+> ⚠️ **שונה בביצוע C-0024 — `tsx` לא הותקן.** נמדד: Node v22.22.2 מפשיט טיפוסים מעצמו, אבל **אינו פותר מפרט חסר-סיומת** — `import ... from './lexicon'` בתוך `coverage.ts` נפל ב-`ERR_MODULE_NOT_FOUND`. לכן במקום `createRequire('tsx/cjs')` נרשם וו-רזולוציה יחיד (`registerHooks` מ-`node:module`, Node ≥ 22.15) שמוסיף `.ts` למפרט יחסי חסר-סיומת, ומצהיר `format: 'module-typescript'` כדי לחסום את אזהרת `MODULE_TYPELESS_PACKAGE_JSON` שהייתה מזהמת כל ריצה. **אפס תלויות חדשות.** דרישת ה-Node מתועדת ב-`data/README.md`.
+
 **Note on `require_('tsx/cjs')`:** the runner needs to import TypeScript from a
 `.mjs` file. `tsx` is **not** currently a dependency. If `npm ls tsx` shows it
 absent, install it as a **devDependency** (`npm i -D tsx`) in this task and say
@@ -1353,7 +1355,7 @@ Node version in the environment (`node --version`), prefer it and delete the
 `createRequire` block — fewer dependencies is better. **Verify which one works
 by running it**; do not assume.
 
-- [ ] **Step 7: Write the wiring guard `scripts/measure-coverage.test.ts`**
+- [x] **Step 7: Write the wiring guard `scripts/measure-coverage.test.ts`**
 
 Same shape as `scripts/verify-mobile.test.ts`: it guards the wiring, not the arithmetic.
 
@@ -1414,7 +1416,7 @@ Add to `package.json` scripts, immediately after `check:mobile`:
 
 ⛔ **Do not add it to `verify`.** `verify` must pass on a clean checkout, and these files are not in the repo.
 
-- [ ] **Step 8: Run it against a synthetic `data/` and confirm it behaves**
+- [x] **Step 8: Run it against a synthetic `data/` and confirm it behaves**
 
 The point is to prove the runner's failure paths are real before any real data exists.
 
@@ -1474,14 +1476,14 @@ and never called at request time. It reads `data/` and writes
 coverage numbers come from does not go hunting for a route.
 ```
 
-- [ ] **Step 9: Run the full gate**
+- [x] **Step 9: Run the full gate**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: typecheck clean · `/lib/core purity: OK` · suite green · build succeeds.
 
 ⚠️ `check:core` is the one most likely to bite here: `lib/core/sources.ts` must contain **no** `readFileSync`, no path handling, no `fetch`. If it flags anything, the I/O has leaked into core — move it into the runner, do not weaken the checker.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add lib/core/sources.ts lib/core/sources.test.ts \
@@ -1496,11 +1498,11 @@ git commit -m "loop(DEV): T-013/T-016 source parsers + coverage runner (data pen
 
 After Task 3, in the same tick as the last commit:
 
-- [ ] `plan/50-tasks.md`: T-017 → ✅ (fully delivered — the filter exists and is enforced by type). T-013 and T-016 → 🟣 **with an explicit caveat**: *"קוד המדידה נבנה ונבדק; המספר עצמו ממתין ל-T-043"*. ⛔ Do **not** mark them ✅ — the task text asks for a number and there is no number yet.
-- [ ] `plan/50-tasks.md` T-043: extend the file list to the four translation sources as well as the three level sources. Today it names only NGSL/CEFR-J/Octanove, so even if Roy acts on it exactly as written, the coverage measurement still cannot run.
-- [ ] `plan/60-findings.md`: **F-021 was already opened in the planning tick (C-0020)** — do not open it a second time. Mark it טופל only if the PM has answered by then.
-- [ ] `plan/30-architecture.md`: record that `lib/core/{lexicon,coverage,sources}.ts` is the measurement layer and that `scripts/` owns all file I/O for it.
-- [ ] `plan/00-control.md`: bump `CYCLE_ID`, set `ACTIVE_TASK_ID`, `NEXT_AGENT=CRITIC`, release the lock, add the handoff row.
+- [x] `plan/50-tasks.md`: T-017 → ✅ (fully delivered — the filter exists and is enforced by type). T-013 and T-016 → 🟣 **with an explicit caveat**: *"קוד המדידה נבנה ונבדק; המספר עצמו ממתין ל-T-043"*. ⛔ Do **not** mark them ✅ — the task text asks for a number and there is no number yet.
+- [x] `plan/50-tasks.md` T-043: extend the file list to the four translation sources as well as the three level sources. Today it names only NGSL/CEFR-J/Octanove, so even if Roy acts on it exactly as written, the coverage measurement still cannot run.
+- [x] `plan/60-findings.md`: **F-021 was already opened in the planning tick (C-0020)** — do not open it a second time. Mark it טופל only if the PM has answered by then.
+- [x] `plan/30-architecture.md`: record that `lib/core/{lexicon,coverage,sources}.ts` is the measurement layer and that `scripts/` owns all file I/O for it.
+- [x] `plan/00-control.md`: bump `CYCLE_ID`, set `ACTIVE_TASK_ID`, `NEXT_AGENT=CRITIC`, release the lock, add the handoff row.
 
 ### F-021 — to be opened against the PM
 

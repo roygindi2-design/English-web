@@ -135,3 +135,10 @@
 
 **למה זה קיים:** Lighthouse 13 הסיר את קטגוריית ה-PWA ואת audit ה-tap-targets,
 כך שמדד ההצלחה של T-001 לא ניתן היה למדוד דרכו. הסקריפט מודד את מה שהובטח בפועל.
+
+## Not an endpoint: `npm run measure:coverage`
+
+A local batch script (`scripts/measure-coverage.mjs`), never reachable over HTTP
+and never called at request time. It reads `data/` and writes
+`docs/coverage-report.md`. Documented here so a future reader looking for where
+coverage numbers come from does not go hunting for a route.

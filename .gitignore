@@ -6,3 +6,10 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Source data for npm run measure:coverage — arrives by hand (T-043, data/README.md).
+# data/README.md itself stays tracked: it IS the contract.
+data/*.csv
+data/*.tsv
+data/*.jsonl
+docs/coverage-report.md
