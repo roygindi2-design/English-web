@@ -90,7 +90,7 @@ export function addDaysIso(isoDate: string, days: number): string;
 3. **טריאז' נגזר ואינו מוכתב:** `usableHorizon = daysUntilExam − preExamGapDays(daysUntilExam)`. אם `usableHorizon < policy.triageMinUsableDays` → `triage: true`, ו-`nextReviewDate` הוא **היום** (`today`) — במצב טריאז' אין לאן לדחות, המילה חוזרת עוד היום. זו גם ההדק ש-7.7 מקשיב לו.
 4. **מבחן שעבר (`daysUntilExam <= 0`) אינו טריאז' אלא היעדר מבחן.** התאריך מאחורינו אינו יעד, ולכן המצב חוזר ל-`classic`. ⛔ בלי הכלל הזה, לומד שהמבחן שלו עבר נתקע בטריאז' לנצח וכל מילה חוזרת כל יום.
 
-- [ ] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/scheduler.test.ts`
+- [x] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/scheduler.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -323,12 +323,12 @@ describe('the unstudied heuristic is marked as such in the source', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ כדי לראות אותן נופלות**
+- [x] **Step 2: הרץ כדי לראות אותן נופלות**
 
 Run: `npx vitest run lib/core/scheduler.test.ts`
 Expected: FAIL — `Failed to resolve import "@/lib/core/scheduler"`.
 
-- [ ] **Step 3: כתוב את המימוש** — `lib/core/scheduler.ts`
+- [x] **Step 3: כתוב את המימוש** — `lib/core/scheduler.ts`
 
 ```ts
 /**
@@ -517,12 +517,12 @@ export function scheduleReview(input: ScheduleInput): ReviewSchedule {
 }
 ```
 
-- [ ] **Step 4: הרץ עד ירוק**
+- [x] **Step 4: הרץ עד ירוק**
 
 Run: `npx vitest run lib/core/scheduler.test.ts`
 Expected: PASS, כל הבדיקות.
 
-- [ ] **Step 5: הרץ שתי מוטציות והוכח שהבדיקות מודדות**
+- [x] **Step 5: הרץ שתי מוטציות והוכח שהבדיקות מודדות**
 
 הרץ אחת בכל פעם, אשר שהיא **נופלת**, והחזר:
 
@@ -531,7 +531,7 @@ Expected: PASS, כל הבדיקות.
 
 ⛔ אם מוטציה **לא** מפילה בדיקה — הבדיקה דקורטיבית, תקן אותה לפני שממשיכים.
 
-- [ ] **Step 6: אימות מלא + קומיט**
+- [x] **Step 6: אימות מלא + קומיט**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
