@@ -923,7 +923,7 @@ export function checkBatchGate(input: GateInput): GateResult;
 4. **`unlocked` הוא `exposurePct === 100`** ולא `>= 99.5`. ‏`missingWordIds` ריק **אם ורק אם** נעול=לא — שתי הצהרות על אותו דבר, ובדיקה נועלת אותן יחד.
 5. **בעקיפה `unlocked: true` אבל `exposurePct` ממשיך לדווח את האמת.** אחוז שמזייף 100 כדי להצדיק פתיחה הוא בדיוק השקר שהופך מדד למראה.
 
-- [ ] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/levelGate.test.ts`
+- [x] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/levelGate.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -1044,12 +1044,12 @@ describe('unlocked and missingWordIds can never disagree', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ כדי לראות אותן נופלות**
+- [x] **Step 2: הרץ כדי לראות אותן נופלות**
 
 Run: `npx vitest run lib/core/levelGate.test.ts`
 Expected: FAIL — `Failed to resolve import "@/lib/core/levelGate"`.
 
-- [ ] **Step 3: כתוב את המימוש** — `lib/core/levelGate.ts`
+- [x] **Step 3: כתוב את המימוש** — `lib/core/levelGate.ts`
 
 ```ts
 /**
@@ -1136,17 +1136,17 @@ export function checkBatchGate(input: GateInput): GateResult {
 }
 ```
 
-- [ ] **Step 4: הרץ עד ירוק**
+- [x] **Step 4: הרץ עד ירוק**
 
 Run: `npx vitest run lib/core/levelGate.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: הרץ שתי מוטציות**
+- [x] **Step 5: הרץ שתי מוטציות**
 
 1. החלף את תנאי העקיפה ב-`input.triageActive ? 'exam_triage' : 'none'` — אמורה להפיל את `does NOT bypass on triage alone with no exam date`.
 2. החלף `exposurePct` ב-`bypass === 'exam_triage' ? 100 : exposurePct` — אמורה להפיל את `keeps reporting the TRUE exposure while bypassing` עם `expected 100 to be 10`.
 
-- [ ] **Step 6: אימות מלא + קומיט**
+- [x] **Step 6: אימות מלא + קומיט**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
