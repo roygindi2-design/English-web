@@ -192,4 +192,15 @@ describe('every English string in the product goes through <EnWord> (T-009)', ()
       /<EnWord[^>]*>\s*\{email\}\s*<\/EnWord>/,
     );
   });
+
+  it('the source names and licences on /sources are wrapped at their call site (TD-14)', () => {
+    // Latin runs inside a Hebrew RTL table. `CC BY-SA 4.0` rendered bare puts
+    // the version number on the wrong side of the cell, and every negative scan
+    // in this file stays green because there is no markup to scan for.
+    const src = readFileSync(join('app', 'sources', 'page.tsx'), 'utf8');
+    for (const field of ['name', 'licence', 'host']) {
+      const re = new RegExp(`<EnWord>\\s*\\{source\\.${field}\\}\\s*</EnWord>`);
+      expect(src, `source.${field} is Latin text and must render inside <EnWord>`).toMatch(re);
+    }
+  });
 });

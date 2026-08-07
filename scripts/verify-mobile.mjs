@@ -28,6 +28,7 @@ const ROUTES = [
   '/login',
   '/onboarding',
   '/offline',
+  '/sources',
   '/study',
   // T-041 layout fixtures. noindex, unlinked, and deliberately not learning
   // content — they exist so the card is measured at 320/375/414 like every

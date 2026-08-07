@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
@@ -38,6 +39,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </span>
           </header>
           <main className="flex flex-1 flex-col gap-6 px-5 pb-8">{children}</main>
+          {/*
+            T-011: the attribution link has to be reachable from every screen,
+            because the obligation attaches to the product and not to one page.
+            min-h-touch keeps it at the 44px floor check:mobile enforces.
+          */}
+          <footer className="px-5 pb-6 pt-2">
+            <Link
+              href="/sources"
+              className="inline-flex min-h-touch items-center text-sm text-ink-muted underline"
+            >
+              מקורות הנתונים והרישיונות
+            </Link>
+          </footer>
         </div>
         <ServiceWorkerRegistrar />
       </body>
