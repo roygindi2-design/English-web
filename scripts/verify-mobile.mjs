@@ -276,6 +276,18 @@ try {
       // not a styling detail — the tap-target check above already holds the
       // new button to 44px on its own.
       if (route === '/signup' || route === '/login') {
+        // F-015: the mobile keyboard's action key. Invisible in a screenshot and
+        // in a diff — the attribute is read off the live DOM or it is not known.
+        const hints = await page.evaluate(() => ({
+          email: document.querySelector('input[name="email"]')?.getAttribute('enterkeyhint') ?? null,
+          password:
+            document.querySelector('input[name="password"]')?.getAttribute('enterkeyhint') ?? null,
+          emailDir: document.querySelector('input[name="email"]')?.getAttribute('dir') ?? null,
+        }));
+        check(hints.email === 'next', `${at} email keyboard offers "next"`, `enterkeyhint=${hints.email}`);
+        check(hints.password === 'go', `${at} password keyboard offers "go"`, `enterkeyhint=${hints.password}`);
+        check(hints.emailDir === 'ltr', `${at} email field is still ltr after the refactor`, `dir=${hints.emailDir}`);
+
         const toggle = page.locator('[data-password-toggle]');
         const present = (await toggle.count()) === 1;
         check(present, `${at} password toggle present`, 'no [data-password-toggle] button');

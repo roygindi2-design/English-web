@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
 import {
   type AuthMode,
@@ -161,46 +162,38 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         )}
 
         <form id="auth-form" className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base font-medium text-ink">אימייל</span>
-            {/* Latin content inside a Hebrew UI — dir="ltr" so the caret and the
-                @ sign sit where the learner expects them (MF-3, bidi). */}
-            <input
-              type="email"
-              name="email"
-              dir="ltr"
-              inputMode="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={Boolean(fieldErrors.email)}
-              className="min-h-touch rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-left text-lg text-ink outline-none focus:border-brand"
-            />
-            {fieldErrors.email && <span className="text-base text-red-700">{fieldErrors.email}</span>}
-          </label>
+          <LatinField
+            name="email"
+            label="אימייל"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            enterKeyHint="next"
+            value={email}
+            onChange={setEmail}
+            invalid={Boolean(fieldErrors.email)}
+            footer={
+              fieldErrors.email ? (
+                <span className="text-base text-red-700">{fieldErrors.email}</span>
+              ) : null
+            }
+          />
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base font-medium text-ink">סיסמה</span>
-            <div className="relative">
-              <input
-                type={passwordInputType(passwordVisible)}
-                name="password"
-                dir="ltr"
-                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                autoCapitalize="none"
-                spellCheck={false}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={Boolean(fieldErrors.password)}
-                className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised py-3 pl-4 pr-16 text-left text-lg text-ink outline-none focus:border-brand"
-              />
-              {/* Physical right, not logical end: the field is dir="ltr" inside
-                  an RTL page, so the typed characters run towards the right and
-                  the button must not sit on top of them. Fixed w-14 rather than
-                  auto width — "הסתר" is wider than "הצג" and an auto-width
-                  button in the wider state ate into the field's pr-16. */}
+          <LatinField
+            name="password"
+            label="סיסמה"
+            type={passwordInputType(passwordVisible)}
+            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            enterKeyHint="go"
+            value={password}
+            onChange={setPassword}
+            invalid={Boolean(fieldErrors.password)}
+            // Physical right, not logical end: the field is dir="ltr" inside an
+            // RTL page, so typed characters run rightwards and the button must
+            // not sit on top of them. pr-16 reserves the space; the button is a
+            // fixed w-14 because "הסתר" is wider than "הצג" (C-0005, measured).
+            inputClassName="pr-16"
+            adornment={
               <button
                 type="button"
                 data-password-toggle
@@ -211,15 +204,17 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               >
                 {passwordVisible ? 'הסתר' : 'הצג'}
               </button>
-            </div>
-            {fieldErrors.password ? (
-              <span className="text-base text-red-700">{fieldErrors.password}</span>
-            ) : (
-              mode === 'signup' && (
-                <span className="text-base text-ink-muted">8 תווים לפחות.</span>
+            }
+            footer={
+              fieldErrors.password ? (
+                <span className="text-base text-red-700">{fieldErrors.password}</span>
+              ) : (
+                mode === 'signup' && (
+                  <span className="text-base text-ink-muted">8 תווים לפחות.</span>
+                )
               )
-            )}
-          </label>
+            }
+          />
 
           {error && (
             <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-base text-red-800">

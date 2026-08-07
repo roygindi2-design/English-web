@@ -723,7 +723,7 @@ next call site forgets. `<EnWord>` cannot take this job — it is a `<span>` tha
 **Keyboard values (F-015):** `next` on the email field (there is a field after it), `go` on the
 password field (submitting is what comes next). Nothing else in this product takes Latin input.
 
-- [ ] **Step 1: Write the failing source-scan test**
+- [x] **Step 1: Write the failing source-scan test**
 
 Create `components/LatinField.test.ts`:
 
@@ -789,13 +789,13 @@ describe('every Latin text input goes through <LatinField> (TD-5)', () => {
 });
 ```
 
-- [ ] **Step 2: Run and confirm it fails**
+- [x] **Step 2: Run and confirm it fails**
 
 Run: `npx vitest run components/LatinField.test.ts`
 Expected: FAIL — `ENOENT: components/LatinField.tsx`, and the AuthForm test fails because no
 `enterKeyHint` exists anywhere yet.
 
-- [ ] **Step 3: Write the component**
+- [x] **Step 3: Write the component**
 
 Create `components/LatinField.tsx`:
 
@@ -874,7 +874,7 @@ export default function LatinField({
 }
 ```
 
-- [ ] **Step 4: Rewrite the two fields in `AuthForm`**
+- [x] **Step 4: Rewrite the two fields in `AuthForm`**
 
 Replace both `<label>` blocks (`components/AuthForm.tsx:164-222`) with:
 
@@ -939,12 +939,12 @@ Add `import LatinField from '@/components/LatinField';` at the top.
 resolves the later class, and `inputClassName` is appended after the base — so `pr-16` wins over
 the `px-4` right side. Step 6 measures this rather than trusting it.
 
-- [ ] **Step 5: Run the unit tests**
+- [x] **Step 5: Run the unit tests**
 
 Run: `npx vitest run components/LatinField.test.ts`
 Expected: PASS, 4 tests.
 
-- [ ] **Step 6: Measure the keyboards and the padding that Step 4 assumed**
+- [x] **Step 6: Measure the keyboards and the padding that Step 4 assumed**
 
 In `scripts/verify-mobile.mjs`, inside the existing `if (route === '/signup' || route ===
 '/login')` block (the one starting at :275), add before the toggle checks:
@@ -966,13 +966,13 @@ In `scripts/verify-mobile.mjs`, inside the existing `if (route === '/signup' || 
 The existing "toggle fits its reserved space" checks (:297-316) already measure `padding-right`
 against the button width and will fail on their own if `pr-16` lost to `px-4`.
 
-- [ ] **Step 7: Prove the new checks can fail**
+- [x] **Step 7: Prove the new checks can fail**
 
 Temporarily change `enterKeyHint="go"` to `enterKeyHint="next"` on the password field, run
 `npm run build && npm run check:mobile`, and confirm **3 failures** (`password keyboard offers
 "go"` at 320/375/414) plus a failing `AuthForm asks for the two keyboards` unit test. Restore it.
 
-- [ ] **Step 8: Full verification**
+- [x] **Step 8: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all five green; unit total ≥ 247; mobile total ≥ 309.
@@ -980,7 +980,7 @@ Expected: all five green; unit total ≥ 247; mobile total ≥ 309.
 refactor. If `toggle fits its reserved space` fails, the class merge in Step 4 lost; fix by
 removing `px-4` from `BASE_INPUT` and passing `px-4` explicitly per field, then re-measure.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add components/LatinField.tsx components/LatinField.test.ts components/AuthForm.tsx \

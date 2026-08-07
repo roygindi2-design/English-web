@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|---|
 | T-001 | M0 | שלד Next.js + Tailwind + RTL + PWA בסיסי | — | 🟣 | 0 | `app/*` · `components/InstallPrompt.tsx` · `components/ServiceWorkerRegistrar.tsx` · `lib/core/{health,installPrompt}.ts` · `lib/api/client.ts` · `public/{sw.js,manifest.webmanifest,offline.html}` · `scripts/{check-core-purity,verify-mobile}.mjs` |
 | T-002 | M0 | חיבור Supabase + הרשמה/התחברות | — | 🟣 | 0 | `app/{signup,login}/page.tsx` · `app/logout/route.ts` · `app/api/auth/{signup,login}/route.ts` · `components/AuthForm.tsx` · `lib/core/{auth,profile}.ts` · `lib/supabase/auth.ts` · `lib/api/client.ts` · `proxy.ts` · `supabase/migrations/0001_profiles.sql` · `public/sw.js` |
-| T-003 | M1 | Onboarding: מטרה, מוסד, ציון יעד, תאריך מבחן | A7 | ⛔ ממתין לתוכנית UX מה-PM | 0 | — |
+| T-003 | M1 | Onboarding: מטרה, מוסד, ציון יעד, תאריך מבחן | A7 | ⛔ ממתין לתוכנית UX מה-PM | 0 | — · **C-0019: `components/LatinField.tsx` זמין — כל שדה קלט לטיני ב-onboarding חייב לעבור דרכו (TD-5 נסגר, `enterKeyHint` הוא prop חובה)** |
 | T-004 | M1 | מבחן רמה אדפטיבי (מדמה את A1 — מתחיל בבינוני ומסתעף) | A1, A2, A3 · A8 | ⬜ | 0 | — |
 | T-005 | M2 | כרטיסיות: ידעתי / לא ידעתי + מעקב חשיפה למילה. **חובה לכלול את שדות הטלמטריה של D-010** (`time_to_first_correct`, `attempts_to_mastery`) | D-010 · 1.6 | ⬜ **שוחררה — D-020 (מאגר זרע)** | 0 | — |
 | T-006 | M3 | **שער עליית רמה** — ✅ **W1 נפתרה.** המפרט המתוקן ב-`plan/70-engines.md` § 7.7 (שוחזר מ-`0561f9d`, ראה F-001) מכריע את הסתירה מול 7.1. האכיפה בצד השרת בכל מקרה | 7.7 (מתוקן) | ⬜ **שוחררה** | 0 | — |
