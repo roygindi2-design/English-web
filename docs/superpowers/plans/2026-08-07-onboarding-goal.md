@@ -901,7 +901,7 @@ git commit -m "feat(onboarding): profiles columns + POST /api/profile (T-029, T-
 
 **Why the exam date is a native `<input type="date">` and not a Latin field.** A date input is a control with its own locale-aware UI, not a Latin text run — `dir="ltr"` on it fights the browser's own layout, and `inputMode` does nothing. It stays plain, with `min` set so the mobile picker cannot even offer a past day.
 
-- [ ] **Step 1: Widen `LatinField`**
+- [x] **Step 1: Widen `LatinField`**
 
 In `components/LatinField.tsx`, change exactly two lines inside `LatinFieldProps`:
 
@@ -914,7 +914,7 @@ In `components/LatinField.tsx`, change exactly two lines inside `LatinFieldProps
 
 Nothing else in the file changes: `enterKeyHint` stays required, `dir="ltr"`, `autoCapitalize="none"` and the class list are already correct for digits.
 
-- [ ] **Step 2: Write the failing EnWord assertion**
+- [x] **Step 2: Write the failing EnWord assertion**
 
 TD-14: a negative scan cannot see markup that is absent, so the new Latin field needs a *positive* assertion. Add to `components/EnWord.test.ts`:
 
@@ -934,12 +934,12 @@ it('routes the onboarding target-score input through LatinField, not a bare inpu
 
 If `readFileSync` is not already imported at the top of `components/EnWord.test.ts`, add `import { readFileSync } from 'node:fs';` — `lib/core/dataSources.test.ts` uses the same import for the same reason.
 
-- [ ] **Step 3: Run it and watch it fail**
+- [x] **Step 3: Run it and watch it fail**
 
 Run: `npx vitest run components/EnWord.test.ts`
 Expected: FAIL — `ENOENT ... components/OnboardingForm.tsx`.
 
-- [ ] **Step 4: Write the form**
+- [x] **Step 4: Write the form**
 
 Create `components/OnboardingForm.tsx`:
 
@@ -949,6 +949,9 @@ Create `components/OnboardingForm.tsx`:
 import { useState } from 'react';
 import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
+// CORRECTED C-0033 — the plan's import list omitted `LEARNER_TIME_ZONE` and
+// `toIsoDateInZone`, which the body two blocks below calls. As written the file
+// did not compile. Both are added here.
 import {
   DAILY_MINUTES_HELP_HE,
   DAILY_MINUTES_LABELS_HE,
@@ -957,9 +960,11 @@ import {
   DEFAULT_DAILY_MINUTES,
   EXAM_DATE_HELP_HE,
   EXAM_DATE_QUESTION_HE,
+  LEARNER_TIME_ZONE,
   ONBOARDING_SUBMIT_HE,
   TARGET_SCORE_HELP_HE,
   TARGET_SCORE_QUESTION_HE,
+  toIsoDateInZone,
   type DailyMinutes,
   type OnboardingFieldErrors,
 } from '@/lib/core/onboarding';
@@ -1079,8 +1084,16 @@ export default function OnboardingForm() {
         enterKeyHint="go"
         inputMode="numeric"
         invalid={Boolean(fieldErrors.targetScore)}
+        // CORRECTED C-0033 — the plan rendered the VALIDATION ERROR in
+        // `text-ink-muted`, the same colour as the help text it replaces. The
+        // learner would see "הזן מספר שלם." styled exactly like "הסולם הוא
+        // 50–150." and have no signal that anything was rejected, while
+        // `aria-invalid` (set by `invalid`) told a screen reader that it was.
+        // Colour is not the only channel — the string itself changes too.
         footer={
-          <span className="text-base text-ink-muted">
+          <span
+            className={fieldErrors.targetScore ? 'text-base text-danger' : 'text-base text-ink-muted'}
+          >
             {fieldErrors.targetScore ?? TARGET_SCORE_HELP_HE}
           </span>
         }
@@ -1102,7 +1115,7 @@ export default function OnboardingForm() {
 
 ⚠️ Before writing this, open `components/LatinField.tsx` and confirm the `footer` prop renders its node **below** the input and that `invalid` drives the border colour. If the current signature differs, match the file — the plan's job is the shape, the file is the authority.
 
-- [ ] **Step 5: Wire it into the screen**
+- [x] **Step 5: Wire it into the screen**
 
 In `app/onboarding/page.tsx`, replace the placeholder `<div className="flex flex-col gap-4">…</div>` block with:
 
@@ -1118,12 +1131,12 @@ Add the two imports (`OnboardingForm` from `@/components/OnboardingForm`, `ONBOA
 
 The sign-out `<form>` stays exactly where it is, below.
 
-- [ ] **Step 6: Run the tests**
+- [x] **Step 6: Run the tests**
 
 Run: `npx vitest run components/EnWord.test.ts && npm test`
 Expected: PASS. `lib/core/palette.test.ts` also passes — every class used above is a semantic token.
 
-- [ ] **Step 7: Prove the TD-5 assertion bears load**
+- [x] **Step 7: Prove the TD-5 assertion bears load**
 
 ```bash
 # Swap LatinField for the bare input it exists to prevent.
@@ -1134,12 +1147,12 @@ npx vitest run components/EnWord.test.ts   # expect: "routes the onboarding targ
 git checkout components/OnboardingForm.tsx
 ```
 
-- [ ] **Step 8: Run the full verification**
+- [x] **Step 8: Run the full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: all four green.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add components/LatinField.tsx components/OnboardingForm.tsx \

@@ -1,9 +1,11 @@
 /**
- * Placeholder screen for the real onboarding flow (T-003, blocked).
+ * The onboarding screen — a real question now, not a placeholder.
  *
- * UX plan T-001 is explicit: the primary button must not lead to a 404.
- * A 404 here counts as a bug, so this screen exists deliberately and says
- * plainly what happens next — no fake progress bars, no invented content.
+ * T-029 landed the goal question here: minutes per day (the primary question,
+ * R-012), the exam date (the input to engine 7.1), and an optional target score
+ * that is never presented as a motivator. **The "at which institution" question
+ * (A7) is still T-003 and is deliberately absent** — this screen asks only what
+ * there is a column to store.
  *
  * T-002 made it the first screen behind the session wall: proxy.ts sends
  * anyone without a live session to /login before this renders. The sign-out
@@ -12,10 +14,16 @@
  *
  * F-003 added a second lock on the same door: this screen now checks the
  * session itself, so the proxy is no longer the single point of enforcement.
+ *
+ * TD-13: because that check needs Supabase env and check:mobile runs without
+ * it, this route answers 307 in the harness. The form is measured through the
+ * `/dev/onboarding` fixture instead.
  */
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import OnboardingForm from '@/components/OnboardingForm';
 import RegisteredAddress from '@/components/RegisteredAddress';
+import { ONBOARDING_TITLE_HE } from '@/lib/core/onboarding';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -33,12 +41,9 @@ export default async function OnboardingPage() {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold leading-tight">כמעט מוכן</h1>
-        <p className="text-lg leading-relaxed text-ink-muted">
-          כאן ייבנה השלב שבו נשאל אותך למה אתה לומד, באיזה מוסד אתה, מה ציון
-          היעד שלך ומתי המבחן. השלב הזה עוד בבנייה.
-        </p>
+        <h1 className="text-3xl font-bold leading-tight">{ONBOARDING_TITLE_HE}</h1>
         {user.email && <RegisteredAddress email={user.email} />}
+        <OnboardingForm />
       </div>
 
       {/* A plain form, so signing out works with JavaScript disabled and cannot

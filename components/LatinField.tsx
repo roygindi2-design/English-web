@@ -15,14 +15,14 @@
  * and unicode-bidi: isolate on a control the learner types into is not wanted.
  */
 export interface LatinFieldProps {
-  readonly name: 'email' | 'password';
+  readonly name: 'email' | 'password' | 'target_score';
   readonly label: string;
   readonly type: 'email' | 'text' | 'password';
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly autoComplete: string;
   readonly enterKeyHint: 'next' | 'go';
-  readonly inputMode?: 'email';
+  readonly inputMode?: 'email' | 'numeric';
   readonly invalid: boolean;
   readonly inputClassName?: string;
   readonly adornment?: React.ReactNode;

@@ -203,4 +203,16 @@ describe('every English string in the product goes through <EnWord> (T-009)', ()
       expect(src, `source.${field} is Latin text and must render inside <EnWord>`).toMatch(re);
     }
   });
+
+  it('routes the onboarding target-score input through LatinField, not a bare input', () => {
+    // TD-5: LatinField is the ONLY Latin input. A bare <input dir="ltr"> here
+    // would compile, render, and pass every other test in the suite while
+    // quietly dropping enterKeyHint and autoCapitalize on a numeric keyboard.
+    const source = readFileSync(join('components', 'OnboardingForm.tsx'), 'utf8');
+    expect(source).toContain('<LatinField');
+    expect(source).toContain('name="target_score"');
+    expect(source).toContain('inputMode="numeric"');
+    // The screen must not hand-roll a second Latin input beside it.
+    expect(source).not.toMatch(/<input[^>]*dir="ltr"/);
+  });
 });
