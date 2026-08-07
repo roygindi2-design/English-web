@@ -120,6 +120,8 @@
 
 ⚠️ **`isExposed` הוא `attempts >= 1` — "נחשף" אינו "שלט" (7.7).** תשובה שגויה יחידה היא חשיפה. זו הפונקציה היחידה ששער עליית הרמה (משימה 3) יצרוך, ולכן ההבחנה הזו חייבת לחיות כאן ולא בשער.
 
+**אימות Critic C-0038 (עומק):** ‏`scheduler.ts` ו-`progress.ts` **טהורים** — אומת ב-grep (אין React/window/document/localStorage/fetch/process.env/Date.now) וב-`check:core` (`/lib/core purity: OK`). הנוסחאות (SM-2, פער-טרום-מבחן, write-once של שני שדות D-010, ספירת הרצף על recognition בלבד) תואמות את 7.1 ואת המפרט. **שלושה פערים רדומים נפתחו** — כולם ב-lib/core שאין לו עדיין צרכן, ולכן אינם מגיעים ללומד ואינם חוסמים קידום, אך **חובה לסגור לפני משימה 4 של T-005 (חיווט ההתמדה):** ‏F-022 (‏`time_to_first_correct` int4 גולש מעל ~25 יום → יש להעביר ל-bigint), F-023 (`consecutiveCorrectRecognition` בלי עמודה ב-`word_progress` ולא נגזר → אובד בטעינה מחדש), F-024 (‏`daysUntilExam=0` נופל ל-classic במקום triage — שאלת מפרט 7.1). onboarding (T-029) נסקר ונמצא **נקי** (timezone, ברירת מחדל, גבולות ציון, session-before-write, ארבעת האנטי-דפוסים, צבע שגיאה≠עזרה).
+
 ### 3.2 PWA
 
 | # | הכלל | סטטוס |
