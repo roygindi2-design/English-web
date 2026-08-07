@@ -155,6 +155,19 @@ Supabase anon key: eyJXXXX
 > הבדיקה `lib/supabase/rls.test.ts` שומרת על נוסח המיגרציה, אך **אינה יכולה
 > לדעת אם הרצת אותה בפרויקט שלך.** הצעד הזה ידני ואין לו תחליף.
 
+### ב-1ב — הרצת מיגרציות התוכן והטלמטריה
+באותו SQL Editor, לפי הסדר:
+
+1. `supabase/migrations/0002_content_bank.sql` — טבלאות בנק התוכן (`words`, `senses` ועוד).
+2. `supabase/migrations/0003_provenance_telemetry.sql` — זורע את `data_sources`,
+   מוסיף עמודות מקור (`track_id` / `source_id` / `origin`) ל-`words` ול-`senses`,
+   ויוצר את `word_progress` עם RLS. **הרצה חוזרת בטוחה** — הכול `if not exists`.
+
+> `word_progress` היא **שורה מצטברת אחת לכל צמד (לומד, מילה)** ולא שורה לכל
+> אירוע חזרה — זו הגנת התקציב W4 על השכבה החינמית של Supabase.
+> `lib/supabase/telemetry.test.ts` שומר על נוסח המיגרציה, אך **אינו יכול לדעת
+> אם הרצת אותה בפרויקט שלך.** הצעד הזה ידני ואין לו תחליף.
+
 ### ב-2 — הגדרת אימות אימייל
 Supabase Dashboard ← **Authentication** ← **Sign In / Providers** ← **Email**:
 
