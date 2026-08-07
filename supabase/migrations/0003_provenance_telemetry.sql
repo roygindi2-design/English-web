@@ -7,7 +7,9 @@
 -- `word_progress` is deliberately ONE ROW PER PAIR and not one row per review
 -- event. W4 records the free Supabase tier as a budget risk, and an event log on
 -- a spaced-repetition app grows without a ceiling. Everything the level gate
--- (7.7) needs is derivable from the aggregate.
+-- (7.7) needs is derivable from the aggregate — with one exception this file
+-- originally got wrong (F-023): the recognition STREAK is not derivable from
+-- attempts/correct_attempts, so it is carried as its own column below.
 --
 -- Idempotent: `if not exists` throughout, so re-applying is safe.
 
@@ -75,14 +77,33 @@ create table if not exists public.word_progress (
 
   -- D-010, both names verbatim. Nullable on purpose: until the learner answers
   -- correctly once, the value is UNKNOWN, and 0 would be a measurement.
-  time_to_first_correct int,  -- milliseconds from first exposure to first correct answer
-  attempts_to_mastery   int,  -- attempts counted at the moment mastery was reached
+  -- F-022: bigint, not int. int4 tops out at 2,147,483,647 ms ~= 24.85 days, and
+  -- an SRS whose intervals reach weeks produces larger gaps routinely; the upsert
+  -- would fail `integer out of range` and lose the WHOLE progress row, not a field.
+  time_to_first_correct bigint,  -- milliseconds from first exposure to first correct answer
+  attempts_to_mastery   int,     -- attempts counted at the moment mastery was reached
+
+  -- F-023: the recognition streak is STATE, not an aggregate. attempts and
+  -- correct_attempts cannot reconstruct it (10 correct out of 12 says nothing
+  -- about the tail), so without this column the streak resets to 0 on every
+  -- reload and directionFor() sends an already-promoted word back to recognition.
+  -- NOT NULL, unlike the two D-010 fields above: a learner who never answered
+  -- correctly has a streak of exactly zero, and that is a measurement.
+  consecutive_correct_recognition int not null default 0,
 
   mastered_at timestamptz,
   updated_at  timestamptz not null default now(),
 
   primary key (user_id, word_id)
 );
+
+-- Re-runnability (property 3 of this file): `create table if not exists` is a
+-- no-op against a project that already ran an earlier 0003, so the F-022/F-023
+-- corrections have to exist as their own statements or they never land there.
+alter table public.word_progress
+  alter column time_to_first_correct type bigint;
+alter table public.word_progress
+  add column if not exists consecutive_correct_recognition int not null default 0;
 
 create index if not exists word_progress_user_idx on public.word_progress (user_id);
 

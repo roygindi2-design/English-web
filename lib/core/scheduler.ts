@@ -144,8 +144,13 @@ export function scheduleReview(input: ScheduleInput): ReviewSchedule {
 
   // An exam date behind us is not a target. Without this line a learner whose exam
   // has passed is stuck in triage forever and every word comes back daily.
+  //
+  // F-024: the boundary is `>= 0`, not `> 0`. Exam day itself (daysUntilExam=0)
+  // is the nearest horizon there is, and 7.1 sends a too-near exam to triage —
+  // `> 0` lumped it in with exams already over and scheduled the next review
+  // for after the exam, on the one morning that matters most.
   const horizonDays = examDate === null ? null : daysUntilExam(examDate, today);
-  const hasFutureExam = horizonDays !== null && horizonDays > 0;
+  const hasFutureExam = horizonDays !== null && horizonDays >= 0;
 
   let triage = false;
   let examCompressed = false;

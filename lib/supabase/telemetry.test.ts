@@ -79,8 +79,12 @@ describe('word_progress — D-010 telemetry', () => {
   });
 
   it('leaves both D-010 fields nullable — unknown is not zero', () => {
-    expect(SQL).not.toMatch(/time_to_first_correct[^,]*not null/);
-    expect(SQL).not.toMatch(/attempts_to_mastery[^,]*not null/);
+    // Line-scoped on purpose: `[^,]*` alone spans statements (an ALTER carries no
+    // comma), so the streak column's legitimate NOT NULL two statements below was
+    // read as a NOT NULL on time_to_first_correct. The claim is about the column
+    // DECLARATION, and a declaration lives on one line.
+    expect(SQL).not.toMatch(/time_to_first_correct[^,\n]*not null/);
+    expect(SQL).not.toMatch(/attempts_to_mastery[^,\n]*not null/);
   });
 
   it('enables row level security', () => {
@@ -105,5 +109,45 @@ describe('word_progress — D-010 telemetry', () => {
     for (const verb of ['select', 'insert', 'update']) {
       expect(SQL).toContain(`for ${verb}`);
     }
+  });
+});
+
+/**
+ * F-022 / F-023 — the TS↔SQL contract of lib/core/progress.ts.
+ * These are schema-shape guards, not behaviour guards: the loop has no live
+ * project (TD-4/TD-8), so what we can prove is what we ship.
+ */
+describe('word_progress matches the WordProgress type it persists', () => {
+  it('F-022: time_to_first_correct is bigint — ms overflows int4 after ~25 days', () => {
+    // int4 max is 2,147,483,647 ms ≈ 24.85 days. An SRS whose intervals reach
+    // weeks WILL produce a larger value, and the upsert would fail whole-row.
+    expect(SQL).toMatch(/time_to_first_correct\s+bigint/);
+    expect(SQL, 'no int4 declaration may survive').not.toMatch(
+      /time_to_first_correct\s+int\b(?!\w)/,
+    );
+  });
+
+  it('F-022: the widening is re-runnable on a project that already ran 0003', () => {
+    // `create table if not exists` is a no-op on an existing table, so the type
+    // change has to be its own statement or the fix never reaches that project.
+    expect(SQL).toMatch(
+      /alter\s+table\s+public\.word_progress\s+alter\s+column\s+time_to_first_correct\s+type\s+bigint/,
+    );
+  });
+
+  it('F-023: consecutive_correct_recognition has a column — it is not derivable', () => {
+    // attempts/correct_attempts cannot reconstruct a streak. Without this column
+    // the streak resets to 0 on every reload and directionFor() sends a mastered
+    // word back to recognition.
+    expect(SQL).toContain('consecutive_correct_recognition');
+    expect(SQL).toMatch(
+      /add\s+column\s+if\s+not\s+exists\s+consecutive_correct_recognition\s+int\s+not\s+null\s+default\s+0/,
+    );
+  });
+
+  it('F-023: the streak column is NOT NULL — 0 is a real streak, not unknown', () => {
+    // The opposite of the two D-010 fields above, and deliberately so: a learner
+    // who never answered correctly has a streak of exactly zero.
+    expect(SQL).not.toMatch(/consecutive_correct_recognition[^;]*\bdefault\s+null/);
   });
 });

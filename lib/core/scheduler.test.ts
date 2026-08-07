@@ -167,6 +167,29 @@ describe('scheduleReview — triage', () => {
     expect(scheduleReview({ ...input, policy: { triageMinUsableDays: 30 } }).triage).toBe(true);
   });
 
+  it('F-024: exam day itself triages — it is the nearest horizon there is', () => {
+    // daysUntilExam=0. The old `horizonDays > 0` lumped exam day in with exams
+    // already behind us, so the learner opening the app on the morning of the
+    // exam got mode 'classic' and a next review 15 days out — after the exam.
+    const out = scheduleReview({
+      state: { easiness: 2.5, intervalDays: 6, repetition: 2 },
+      grade: 'good', today: '2026-09-01', examDate: '2026-09-01', policy: POLICY,
+    });
+    expect(out.triage).toBe(true);
+    expect(out.mode).toBe('triage');
+    expect(out.nextReviewDate).toBe('2026-09-01');
+  });
+
+  it('F-024: the boundary is exam day, not the day after — yesterday is classic', () => {
+    // Guards the fix from over-shooting: only a strictly past exam is "no exam".
+    const past = scheduleReview({
+      state: { easiness: 2.5, intervalDays: 6, repetition: 2 },
+      grade: 'good', today: '2026-09-01', examDate: '2026-08-31', policy: POLICY,
+    });
+    expect(past.mode).toBe('classic');
+    expect(past.triage).toBe(false);
+  });
+
   it('still advances the SM-2 state in triage — the learner answered', () => {
     const out = scheduleReview({
       state: { easiness: 2.5, intervalDays: 6, repetition: 2 },
