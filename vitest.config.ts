@@ -7,6 +7,15 @@ export default defineConfig({
   // (F-003) has to be picked up from there too.
   test: {
     environment: 'node',
+    // The suite runs in the learners' timezone, not the container's.
+    // Measured C-0031: with TZ unset the container is UTC, which has no DST, so
+    // `lib/core/onboarding.test.ts` > "counts calendar days across a DST boundary"
+    // stayed GREEN after `daysUntilExam` was mutated to local-component
+    // `new Date(y, m - 1, d)` arithmetic — the exact bug it exists to catch
+    // (2.958… days across 2026-03-27 → floor 2). Under Asia/Jerusalem the same
+    // mutation fails with `expected 2 to be 3`. Pinning the zone is what turns
+    // that assertion from decoration into a measurement.
+    env: { TZ: 'Asia/Jerusalem' },
     // scripts/ holds the build-pipeline guards (F-007).
     // components/ holds source-scanning guards only (T-009). The environment is
     // node, so a React render test does not belong here — add jsdom first if that

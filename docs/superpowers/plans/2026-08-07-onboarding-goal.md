@@ -132,7 +132,7 @@ Every product decision below traces to a line already in the repo. Nothing here 
 1. **There is no option above 20 minutes.** E3 is not "offer a modest default among ambitious options" — the measured harm came from learners *choosing* the intensive goal. An option that exists will be chosen by the people most at risk of quitting. If a learner wants more, nothing stops them studying longer; the goal is a floor, not a cap.
 2. **`today` is a parameter, never `new Date()`.** A date-dependent function that reads the clock is a test that passes until the day it doesn't, and engine 7.1 will want to ask "how many days were left *at the time*" anyway. The route passes the clock in; `lib/core` stays a function of its arguments.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/onboarding.test.ts`:
 
@@ -326,12 +326,12 @@ describe('the whole payload', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and watch it fail for the right reason**
+- [x] **Step 2: Run the test and watch it fail for the right reason**
 
 Run: `npx vitest run lib/core/onboarding.test.ts`
 Expected: FAIL — `Failed to resolve import "./onboarding"`. Not a type error, not an assertion error: the module does not exist yet.
 
-- [ ] **Step 3: Write the module**
+- [x] **Step 3: Write the module**
 
 Create `lib/core/onboarding.ts`:
 
@@ -515,12 +515,12 @@ export function checkOnboarding(raw: OnboardingRaw, today: string): OnboardingCh
 }
 ```
 
-- [ ] **Step 4: Run the test and verify it passes**
+- [x] **Step 4: Run the test and verify it passes**
 
 Run: `npx vitest run lib/core/onboarding.test.ts`
 Expected: PASS, all cases.
 
-- [ ] **Step 5: Prove the two load-bearing tests actually bear load**
+- [x] **Step 5: Prove the two load-bearing tests actually bear load**
 
 Apply each mutation, run the suite, confirm the **named** test fails, then revert.
 
@@ -531,17 +531,25 @@ npx vitest run lib/core/onboarding.test.ts   # expect: "defaults to the SMALLEST
 git checkout lib/core/onboarding.ts
 
 # (b) Naive day arithmetic on local Dates — the DST bug.
-#     Replace the body of daysUntilExam with:
-#       return Math.floor((new Date(examDate).getTime() - new Date(today).getTime()) / 86_400_000);
-#     then run; expect: "counts calendar days across a DST boundary".
+#     ⚠️ CORRECTED IN C-0031. As written below, this mutation does NOT fail, twice over:
+#       1. `new Date('2026-03-27')` is the date-only form, which ECMA-262 parses as UTC.
+#          It is already DST-safe. The real hazard is the local-component constructor.
+#       2. Even the correct mutation passed, because the container's TZ is UTC and UTC
+#          has no DST at all. `vitest.config.ts` now pins `TZ: 'Asia/Jerusalem'`.
+#     The mutation that actually bears load — replace the body of daysUntilExam with:
+#       const [ey, em, ed] = examDate.split('-').map(Number);
+#       const [ty, tm, td] = today.split('-').map(Number);
+#       return Math.floor((new Date(ey ?? 0, (em ?? 1) - 1, ed ?? 1).getTime()
+#         - new Date(ty ?? 0, (tm ?? 1) - 1, td ?? 1).getTime()) / 86_400_000);
+#     then run; expect: "counts calendar days across a DST boundary" → expected 2 to be 3.
 ```
 
-- [ ] **Step 6: Run the full verification**
+- [x] **Step 6: Run the full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: typecheck clean · `/lib/core purity: OK` · every test green · `Compiled successfully`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/onboarding.ts lib/core/onboarding.test.ts
