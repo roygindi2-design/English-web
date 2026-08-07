@@ -11,11 +11,21 @@
  *  worse passwords and higher abandonment, and a stressed learner abandons happily. */
 export const PASSWORD_MIN_LENGTH = 8;
 
+/**
+ * F-009 — bcrypt hashes at most 72 **bytes**, and GoTrue rejects anything longer
+ * with `validation_failed`: the same code it returns for a malformed address.
+ * That collision is the finding — a rejected password was displayed under the
+ * email field, so the learner corrected a perfectly good address forever. We cap
+ * on our side so that ambiguous provider code never has to be interpreted.
+ */
+export const PASSWORD_MAX_BYTES = 72;
+
 export type AuthMode = 'signup' | 'login';
 
 export type AuthErrorCode =
   | 'invalid_email'
   | 'weak_password'
+  | 'password_too_long'
   | 'email_taken'
   | 'invalid_credentials'
   | 'rate_limited'
@@ -37,6 +47,7 @@ export type CredentialCheck =
 export const AUTH_MESSAGES_HE: Record<AuthErrorCode, string> = {
   invalid_email: 'כתובת האימייל לא נראית תקינה',
   weak_password: `הסיסמה צריכה להיות באורך ${PASSWORD_MIN_LENGTH} תווים לפחות`,
+  password_too_long: `הסיסמה ארוכה מדי — עד ${PASSWORD_MAX_BYTES} תווים באנגלית (או 36 בעברית)`,
   email_taken: 'האימייל הזה כבר רשום',
   invalid_credentials: 'אימייל או סיסמה שגויים',
   rate_limited: 'יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות',
@@ -60,8 +71,22 @@ export function isPlausibleEmail(raw: string): boolean {
   return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(email);
 }
 
+export type PasswordLengthProblem = 'weak_password' | 'password_too_long' | null;
+
+/** UTF-8 bytes, because that is the unit bcrypt truncates on. `TextEncoder` is a
+ *  WHATWG global present in Node and in every browser — no DOM, no polyfill. */
+export function passwordByteLength(raw: string): number {
+  return new TextEncoder().encode(raw).length;
+}
+
+export function passwordLengthProblem(raw: string): PasswordLengthProblem {
+  if (raw.length < PASSWORD_MIN_LENGTH) return 'weak_password';
+  if (passwordByteLength(raw) > PASSWORD_MAX_BYTES) return 'password_too_long';
+  return null;
+}
+
 export function isAcceptablePassword(raw: string): boolean {
-  return raw.length >= PASSWORD_MIN_LENGTH;
+  return passwordLengthProblem(raw) === null;
 }
 
 /**
@@ -98,9 +123,8 @@ export function checkCredentials(
   }
 
   if (mode === 'signup') {
-    if (!isAcceptablePassword(password)) {
-      fieldErrors.password = AUTH_MESSAGES_HE.weak_password;
-    }
+    const problem = passwordLengthProblem(password);
+    if (problem) fieldErrors.password = AUTH_MESSAGES_HE[problem];
   } else if (password.length === 0) {
     fieldErrors.password = AUTH_MESSAGES_HE.invalid_credentials;
   }
@@ -123,7 +147,12 @@ export function mapAuthError(raw: { code?: string | null; status?: number | null
     return 'email_taken';
   }
   if (code === 'weak_password') return 'weak_password';
-  if (code === 'email_address_invalid' || code === 'validation_failed') return 'invalid_email';
+  if (code === 'email_address_invalid') return 'invalid_email';
+  // `validation_failed` is GoTrue's code for a malformed address AND for a
+  // password over the bcrypt ceiling. It names no field, so neither do we —
+  // `unavailable` is the honest answer and it renders as a form-level message
+  // instead of an accusation under a field the learner did not get wrong.
+  if (code === 'validation_failed') return 'unavailable';
   if (code === 'invalid_credentials' || code === 'invalid_grant') return 'invalid_credentials';
   if (code.includes('rate_limit') || status === 429) return 'rate_limited';
   if (status === 400 || status === 401) return 'invalid_credentials';

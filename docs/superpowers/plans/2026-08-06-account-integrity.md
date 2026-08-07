@@ -127,7 +127,7 @@ password of 40 Hebrew letters is 40 characters and 80 bytes — `String.length` 
 40 while the provider rejects it. Counting characters here would leave exactly the bug F-009
 describes, just further away.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `lib/core/auth.test.ts` (and add `AUTH_MESSAGES_HE` is already imported; add
 `passwordByteLength`, `passwordLengthProblem` to the import block at the top of the file):
@@ -201,7 +201,7 @@ describe('mapAuthError — validation_failed is ambiguous (F-009)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests and confirm they fail for the stated reason**
+- [x] **Step 2: Run the tests and confirm they fail for the stated reason**
 
 Run: `npx vitest run lib/core/auth.test.ts`
 Expected: failures naming `passwordByteLength is not a function`,
@@ -211,7 +211,7 @@ Expected: failures naming `passwordByteLength is not a function`,
 ⚠️ If the last one *passes* before the implementation, stop: the mapping was already changed and
 this plan is out of date.
 
-- [ ] **Step 3: Add the constant, the two functions and the message**
+- [x] **Step 3: Add the constant, the two functions and the message**
 
 In `lib/core/auth.ts`, after `PASSWORD_MIN_LENGTH`:
 
@@ -254,7 +254,7 @@ export function isAcceptablePassword(raw: string): boolean {
 }
 ```
 
-- [ ] **Step 4: Use the new rule in `checkCredentials`**
+- [x] **Step 4: Use the new rule in `checkCredentials`**
 
 Replace the signup branch (currently `lib/core/auth.ts:100-106`):
 
@@ -267,7 +267,7 @@ Replace the signup branch (currently `lib/core/auth.ts:100-106`):
   }
 ```
 
-- [ ] **Step 5: Stop `mapAuthError` from guessing**
+- [x] **Step 5: Stop `mapAuthError` from guessing**
 
 In `lib/core/auth.ts:126`, split the line that currently maps two codes to one:
 
@@ -280,12 +280,12 @@ In `lib/core/auth.ts:126`, split the line that currently maps two codes to one:
   if (code === 'validation_failed') return 'unavailable';
 ```
 
-- [ ] **Step 6: Run the tests and confirm they pass**
+- [x] **Step 6: Run the tests and confirm they pass**
 
 Run: `npx vitest run lib/core/auth.test.ts`
 Expected: PASS, with the file's count up by 9 from its C-0015 value.
 
-- [ ] **Step 7: Stop the signup hint from lying**
+- [x] **Step 7: Stop the signup hint from lying**
 
 `components/AuthForm.tsx:219` currently reads `8 תווים לפחות. בלי כללים נוספים.` — there is now
 one more rule. Change that string to:
@@ -294,18 +294,18 @@ one more rule. Change that string to:
                 <span className="text-base text-ink-muted">8 תווים לפחות.</span>
 ```
 
-- [ ] **Step 8: Mutation-check the ceiling before believing it**
+- [x] **Step 8: Mutation-check the ceiling before believing it**
 
 Temporarily change `PASSWORD_MAX_BYTES` to `7200`, run `npx vitest run lib/core/auth.test.ts`,
 and confirm **two** tests fail (`one byte over the ceiling`, `short in characters and long in
 bytes`). Restore `72`. A test that passes under a broken constant is not testing the constant.
 
-- [ ] **Step 9: Full verification**
+- [x] **Step 9: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all five green; unit total ≥ 238; mobile total unchanged at 288.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add lib/core/auth.ts lib/core/auth.test.ts components/AuthForm.tsx

@@ -10,7 +10,9 @@ import {
   isPlausibleEmail,
   mapAuthError,
   normalizeEmail,
+  passwordByteLength,
   passwordInputType,
+  passwordLengthProblem,
   passwordToggleLabel,
   signupOutcome,
 } from './auth';
@@ -179,5 +181,72 @@ describe('F-013: confirmationNoticeHe', () => {
     const notice = confirmationNoticeHe('  ');
     expect(notice.length).toBeGreaterThan(0);
     expect(notice).not.toContain('  ');
+  });
+});
+
+describe('passwordByteLength — bcrypt counts bytes, not characters (F-009)', () => {
+  it('counts an ASCII password by characters', () => {
+    expect(passwordByteLength('a'.repeat(72))).toBe(72);
+  });
+
+  it('counts a Hebrew password by UTF-8 bytes', () => {
+    // 'סיסמה' is 5 characters and 10 bytes. Eight of them is 40 characters —
+    // which String.length reports as comfortably short — and 80 bytes, which
+    // bcrypt truncates and GoTrue rejects.
+    expect('סיסמה'.repeat(8)).toHaveLength(40);
+    expect(passwordByteLength('סיסמה'.repeat(8))).toBe(80);
+  });
+});
+
+describe('passwordLengthProblem', () => {
+  it('reports the 8 character floor', () => {
+    expect(passwordLengthProblem('1234567')).toBe('weak_password');
+  });
+
+  it('accepts a password sitting exactly on the ceiling', () => {
+    expect(passwordLengthProblem('a'.repeat(72))).toBe(null);
+  });
+
+  it('reports one byte over the ceiling', () => {
+    expect(passwordLengthProblem('a'.repeat(73))).toBe('password_too_long');
+  });
+
+  it('reports a password that is short in characters and long in bytes', () => {
+    expect(passwordLengthProblem('סיסמה'.repeat(8))).toBe('password_too_long');
+  });
+});
+
+describe('checkCredentials — the ceiling names the right field (F-009)', () => {
+  it('blames the password field and leaves the email field alone', () => {
+    const result = checkCredentials(
+      { email: 'roy@example.com', password: 'a'.repeat(73) },
+      'signup',
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.fieldErrors.password).toBe(AUTH_MESSAGES_HE.password_too_long);
+    expect(result.fieldErrors.email).toBeUndefined();
+  });
+
+  it('never applies the ceiling on login', () => {
+    // bcrypt truncates at 72 bytes, so an account created under other rules with
+    // a longer password still authenticates on its first 72 bytes. Enforcing the
+    // ceiling on the login screen would lock a learner out of an account that
+    // works — the exact shape of harm F-009 is about, pointed the other way.
+    const result = checkCredentials(
+      { email: 'roy@example.com', password: 'a'.repeat(200) },
+      'login',
+    );
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('mapAuthError — validation_failed is ambiguous (F-009)', () => {
+  it('does not blame the address for a code GoTrue also uses for password length', () => {
+    expect(mapAuthError({ code: 'validation_failed', status: 422 })).toBe('unavailable');
+  });
+
+  it('still blames the address when the provider actually names it', () => {
+    expect(mapAuthError({ code: 'email_address_invalid', status: 400 })).toBe('invalid_email');
   });
 });

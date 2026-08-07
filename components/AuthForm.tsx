@@ -216,7 +216,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               <span className="text-base text-red-700">{fieldErrors.password}</span>
             ) : (
               mode === 'signup' && (
-                <span className="text-base text-ink-muted">8 תווים לפחות. בלי כללים נוספים.</span>
+                <span className="text-base text-ink-muted">8 תווים לפחות.</span>
               )
             )}
           </label>
