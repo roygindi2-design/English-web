@@ -11,6 +11,8 @@ import {
   daysUntilExamHe,
   isDailyMinutes,
   isIsoDate,
+  LEARNER_TIME_ZONE,
+  toIsoDateInZone,
   type OnboardingAnswers,
 } from './onboarding';
 
@@ -186,5 +188,36 @@ describe('the whole payload', () => {
     const beforeLength: number = DAILY_MINUTES_OPTIONS.length;
     checkOnboarding({ dailyMinutes: 5, examDate: '', targetScore: '' }, TODAY);
     expect(DAILY_MINUTES_OPTIONS.length).toBe(beforeLength);
+  });
+});
+
+describe("the learner's calendar date", () => {
+  it('reads the Israeli day, not the UTC day, in the hours they differ', () => {
+    // 2026-09-09T21:30Z is 2026-09-10T00:30 in Jerusalem (UTC+3). The UTC slice
+    // the plan originally specified returns the day BEFORE, which would let a
+    // learner save an exam date already behind them on the morning of the exam.
+    const justAfterLocalMidnight = new Date('2026-09-09T21:30:00Z');
+    expect(justAfterLocalMidnight.toISOString().slice(0, 10)).toBe('2026-09-09');
+    expect(toIsoDateInZone(justAfterLocalMidnight, LEARNER_TIME_ZONE)).toBe('2026-09-10');
+  });
+
+  it('agrees with the UTC slice during the rest of the day', () => {
+    expect(toIsoDateInZone(new Date('2026-09-10T09:00:00Z'), LEARNER_TIME_ZONE)).toBe('2026-09-10');
+  });
+
+  it('emits a date isIsoDate accepts, in winter and in summer alike', () => {
+    // Israel is UTC+2 in winter and UTC+3 under DST; both must round-trip into
+    // checkOnboarding, which only ever accepts YYYY-MM-DD.
+    for (const instant of ['2026-01-15T12:00:00Z', '2026-07-15T12:00:00Z']) {
+      const iso = toIsoDateInZone(new Date(instant), LEARNER_TIME_ZONE);
+      expect(isIsoDate(iso), `${instant} -> ${iso}`).toBe(true);
+    }
+  });
+
+  it('is a pure function of its arguments — same instant, same answer', () => {
+    const instant = new Date('2026-03-27T23:30:00Z');
+    expect(toIsoDateInZone(instant, LEARNER_TIME_ZONE)).toBe(
+      toIsoDateInZone(instant, LEARNER_TIME_ZONE),
+    );
   });
 });

@@ -94,6 +94,35 @@ export function daysUntilExam(examDate: string, today: string): number {
   return Math.round((utcMidnight(examDate) - utcMidnight(today)) / 86_400_000);
 }
 
+/**
+ * The learners sit the exam on the Israeli calendar, so "today" is the Israeli
+ * calendar day — not the server's.
+ *
+ * Measured C-0032: the plan had the route derive today as
+ * `new Date().toISOString().slice(0, 10)`. Israel is UTC+2/+3, so for the first
+ * two-to-three hours of every local day the UTC date is still YESTERDAY: at
+ * 2026-09-09T21:30Z the UTC slice reads `2026-09-09` while the learner's phone
+ * reads `2026-09-10`. A learner filling the form just after midnight on exam day
+ * could therefore save an exam date already behind them, and engine 7.1 would
+ * later be handed a negative day count. This is the same rule vitest.config.ts
+ * pins TZ for — the learners' zone, not the container's.
+ *
+ * The clock stays OUT of this module: the caller passes the instant, so the
+ * conversion itself is a pure function of its arguments and can be tested.
+ */
+export const LEARNER_TIME_ZONE = 'Asia/Jerusalem';
+
+/** The calendar date at `instant`, as seen in `timeZone`, as YYYY-MM-DD. */
+export function toIsoDateInZone(instant: Date, timeZone: string): string {
+  // 'en-CA' formats as YYYY-MM-DD, which is exactly the shape isIsoDate wants.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant);
+}
+
 export function daysUntilExamHe(days: number): string {
   if (days <= 0) return 'המבחן היום';
   if (days === 1) return 'המבחן מחר';

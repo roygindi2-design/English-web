@@ -567,7 +567,7 @@ git commit -m "feat(onboarding): the answer model — minutes/day, exam date, op
 - Modify: `docs/api-contract.md`
 
 **Interfaces:**
-- Consumes: `checkOnboarding`, `DAILY_MINUTES_OPTIONS`, `TARGET_SCORE_MIN`, `TARGET_SCORE_MAX` from `lib/core/onboarding` (Task 1); `createRouteClient`, `readSupabaseEnv` from `lib/supabase/auth`.
+- Consumes: `checkOnboarding`, `toIsoDateInZone`, `LEARNER_TIME_ZONE`, `DAILY_MINUTES_OPTIONS`, `TARGET_SCORE_MIN`, `TARGET_SCORE_MAX` from `lib/core/onboarding` (Task 1 + the C-0032 correction); `createRouteClient`, `readSupabaseEnv` from `lib/supabase/auth`.
 - Produces:
   ```ts
   // POST /api/profile
@@ -580,7 +580,7 @@ git commit -m "feat(onboarding): the answer model — minutes/day, exam date, op
 
 **Why the migration is tested at all.** `lib/supabase/*.test.ts` cannot reach a live project — it asserts what we *ship*, exactly like `rls.test.ts` and `telemetry.test.ts`. The specific thing worth asserting here is the **cross-file** one: the SQL `check (daily_minutes in (5,10,20))` and `DAILY_MINUTES_OPTIONS` are the same fact written twice, and the day someone adds a 30-minute option in TypeScript, inserts start failing in production with a constraint violation nobody can trace. The test makes them fail in CI instead.
 
-- [ ] **Step 1: Write the failing migration-contract test**
+- [x] **Step 1: Write the failing migration-contract test**
 
 Create `lib/supabase/onboarding.test.ts`:
 
@@ -599,7 +599,24 @@ import {
  * proves what we ship, not what was applied. Applying it is a step in
  * docs/SETUP.md.
  */
-const MIGRATION = readFileSync('supabase/migrations/0004_onboarding_answers.sql', 'utf8');
+const SOURCE = readFileSync('supabase/migrations/0004_onboarding_answers.sql', 'utf8');
+
+/**
+ * CORRECTED C-0032 — the plan originally scanned the raw file. Every assertion
+ * below runs on the STATEMENTS, never on the file text, for two reasons:
+ *  a. the migration's own header comment explains why `daily_minutes smallint
+ *     not null` is forbidden, and therefore MATCHED the regex forbidding it —
+ *     the suite went red on a correct migration (measured C-0032).
+ *  b. the mirror image is the dangerous one: on raw text, the positive
+ *     `alter table public.profiles ... daily_minutes` assertion is satisfied by
+ *     a migration that only MENTIONS the column in a comment and never adds it.
+ *     A guard a comment can satisfy guards nothing — that is F-007's shape.
+ */
+function withoutComments(sql: string): string {
+  return sql.replace(/--[^\n]*/g, '');
+}
+
+const MIGRATION = withoutComments(SOURCE);
 const SQL = MIGRATION.toLowerCase();
 
 describe('the onboarding columns', () => {
@@ -655,12 +672,12 @@ describe('the onboarding columns', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/supabase/onboarding.test.ts`
 Expected: FAIL — `ENOENT ... supabase/migrations/0004_onboarding_answers.sql`.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 Create `supabase/migrations/0004_onboarding_answers.sql`:
 
@@ -711,19 +728,19 @@ begin
 end $$;
 ```
 
-- [ ] **Step 4: Run the migration test and verify it passes**
+- [x] **Step 4: Run the migration test and verify it passes**
 
 Run: `npx vitest run lib/supabase/onboarding.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Write the route**
+- [x] **Step 5: Write the route**
 
 Create `app/api/profile/route.ts`:
 
 ```ts
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { checkOnboarding } from '@/lib/core/onboarding';
+import { LEARNER_TIME_ZONE, checkOnboarding, toIsoDateInZone } from '@/lib/core/onboarding';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -754,7 +771,14 @@ export async function POST(request: Request) {
   // about which fields we accept.
   if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
 
-  const today = new Date().toISOString().slice(0, 10);
+  // CORRECTED C-0032 — was `new Date().toISOString().slice(0, 10)`. Israel is
+  // UTC+2/+3, so for the first two-to-three hours of every local day the UTC
+  // date is still YESTERDAY (2026-09-09T21:30Z reads `2026-09-09` while the
+  // learner's phone reads `2026-09-10`). A learner filling the form after
+  // midnight on exam day could save a date already behind them, and engine 7.1
+  // would be handed a negative day count. The clock is still read here, at the
+  // edge — `toIsoDateInZone` is a pure function of its arguments.
+  const today = toIsoDateInZone(new Date(), LEARNER_TIME_ZONE);
   const check = checkOnboarding(
     {
       dailyMinutes: body.dailyMinutes,
@@ -789,7 +813,7 @@ export async function POST(request: Request) {
 }
 ```
 
-- [ ] **Step 6: Document the endpoint in the same commit**
+- [x] **Step 6: Document the endpoint in the same commit**
 
 Append to `docs/api-contract.md`, after the `POST /api/auth/login` section:
 
@@ -827,7 +851,7 @@ Append to `docs/api-contract.md`, after the `POST /api/auth/login` section:
 **503 — סביבה לא מוגדרת או כתיבה נכשלה:** `{ "ok": false, "code": "unavailable" }`
 ```
 
-- [ ] **Step 7: Prove the cross-file test bears load**
+- [x] **Step 7: Prove the cross-file test bears load**
 
 ```bash
 # Add a fourth option in TypeScript only — the drift the test exists for.
@@ -838,12 +862,12 @@ git checkout lib/core/onboarding.ts
 
 (The `DailyMinutes` union will also need `| 30` for this to typecheck; revert both. If `git checkout` restores the file wholesale, nothing else is needed.)
 
-- [ ] **Step 8: Run the full verification**
+- [x] **Step 8: Run the full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: all four green.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add supabase/migrations/0004_onboarding_answers.sql lib/supabase/onboarding.test.ts \
@@ -968,8 +992,11 @@ export default function OnboardingForm() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // The date picker must not offer a day the server will reject.
-  const todayIso = new Date().toISOString().slice(0, 10);
+  // The date picker must not offer a day the server will reject. CORRECTED
+  // C-0032: with the UTC slice this comment was false for the first hours of
+  // every local day — the picker floor sat a day BEHIND the server's floor and
+  // offered exactly the day the route rejects. Same helper as the route.
+  const todayIso = toIsoDateInZone(new Date(), LEARNER_TIME_ZONE);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
