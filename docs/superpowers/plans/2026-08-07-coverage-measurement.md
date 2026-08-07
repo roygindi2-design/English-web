@@ -97,7 +97,7 @@ export function displayableGloss(raw: RawGloss): string | null;
 
 **Why `RawGloss` is a branded type and not `string`:** T-017 demands *"בדיקת יחידה שנכשלת אם רשומת `GAP` או `!` הגיעה לשכבת התצוגה"*. A runtime test can only catch a display path that already exists, and none does yet. A brand catches it at **compile time**: a React component handed a `RawGloss` cannot render it, because the only function that turns one into a plain `string` is `displayableGloss()`, which returns `null` for `GAP` and for `!`. This is the same barrier shape as the mandatory `enterKeyHint` prop from C-0019 — a rule the compiler enforces instead of a reviewer.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/lexicon.test.ts`:
 
@@ -247,12 +247,12 @@ describe('displayableGloss — D-013 display gate', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and confirm it fails for the right reason**
+- [x] **Step 2: Run the test and confirm it fails for the right reason**
 
 Run: `npx vitest run lib/core/lexicon.test.ts`
 Expected: FAIL — `Failed to resolve import "./lexicon"`. If it fails with anything else, stop and read the error.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `lib/core/lexicon.ts`:
 
@@ -372,12 +372,12 @@ export function displayableGloss(raw: RawGloss): string | null {
 }
 ```
 
-- [ ] **Step 4: Run the test and confirm it passes**
+- [x] **Step 4: Run the test and confirm it passes**
 
 Run: `npx vitest run lib/core/lexicon.test.ts`
 Expected: PASS, 17 tests.
 
-- [ ] **Step 5: Prove the tests can actually fail — three mutations**
+- [x] **Step 5: Prove the tests can actually fail — three mutations**
 
 A test that never goes red is decoration. Apply each mutation, run, revert.
 
@@ -390,12 +390,12 @@ A test that never goes red is decoration. Apply each mutation, run, revert.
 
 Record the actual failure output for each in the commit message. If a mutation does **not** produce a failure, the corresponding test is not measuring anything — fix the test before continuing.
 
-- [ ] **Step 6: Run the full gate**
+- [x] **Step 6: Run the full gate**
 
 Run: `npm run typecheck && npm run check:core && npm test`
 Expected: typecheck clean · `/lib/core purity: OK` · the whole suite green (252 before this task).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/lexicon.ts lib/core/lexicon.test.ts
