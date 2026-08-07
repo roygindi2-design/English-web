@@ -41,6 +41,11 @@ const ROUTES = [
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
+  // T-029 layout fixture, same reasoning as /dev/identity: /onboarding redirects
+  // without Supabase env (TD-13), so the goal form would otherwise be measured
+  // on the login screen — every "ok /onboarding" line in this harness is really
+  // the login screen, verified live in C-0013.
+  '/dev/onboarding',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -209,14 +214,36 @@ try {
       // Touch targets (MF-2) — real interactive elements only.
       const small = await page.evaluate((min) => {
         const sel = 'a[href], button, input, select, textarea, [role="button"]';
+        // C-0034: the tap target is the region that ACTIVATES the control, and
+        // that is not always the control's own box. Clicking anywhere in a
+        // radio's or checkbox's label toggles it — the browser does this, we do
+        // not implement it — so a 20px dot inside a 44px row is a 44px target,
+        // and measuring the dot reported a false failure on T-029's goal group.
+        // The substitution is deliberately limited to those two input types: a
+        // text field is only reachable by hitting the field itself, so
+        // measuring ITS label (help text and all) would overstate the target
+        // and silently weaken this scan on every form in the product.
+        const tapRect = (el) => {
+          if (el instanceof HTMLInputElement && (el.type === 'radio' || el.type === 'checkbox')) {
+            const label =
+              el.closest('label') ??
+              (el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null);
+            if (label) return { rect: label.getBoundingClientRect(), viaLabel: true };
+          }
+          return { rect: el.getBoundingClientRect(), viaLabel: false };
+        };
         return [...document.querySelectorAll(sel)]
           .filter((el) => {
-            const r = el.getBoundingClientRect();
-            return r.width > 0 && r.height > 0 && (r.width < min || r.height < min);
+            const own = el.getBoundingClientRect();
+            // A control with no box of its own is hidden, not undersized.
+            if (own.width <= 0 || own.height <= 0) return false;
+            const { rect } = tapRect(el);
+            return rect.width < min || rect.height < min;
           })
           .map((el) => {
-            const r = el.getBoundingClientRect();
-            return `${el.tagName.toLowerCase()}"${(el.textContent || '').trim().slice(0, 20)}" ${Math.round(r.width)}x${Math.round(r.height)}`;
+            const { rect, viaLabel } = tapRect(el);
+            const via = viaLabel ? ' (its label)' : '';
+            return `${el.tagName.toLowerCase()}"${(el.textContent || '').trim().slice(0, 20)}"${via} ${Math.round(rect.width)}x${Math.round(rect.height)}`;
           });
       }, MIN_TAP);
       check(small.length === 0, `${at} all tap targets >= ${MIN_TAP}px`, `too small: ${small.join(' · ')}`);
@@ -383,6 +410,57 @@ try {
             'no submit button inside the band',
           );
         }
+      }
+
+      // T-029 / TD-13: the goal question is the one screen where the DEFAULT is
+      // the product decision (R-012 · E3), so it is measured, not asserted.
+      if (route === '/dev/onboarding') {
+        const group = page.locator('[data-daily-minutes]');
+        const present = (await group.count()) === 1;
+        check(present, `${at} daily-minutes group present`, 'no [data-daily-minutes]');
+        if (present) {
+          const radios = group.locator('input[type="radio"]');
+          const count = await radios.count();
+          check(count === 3, `${at} three goal options`, `found ${count}`);
+
+          const checkedValue = await page.evaluate(() => {
+            const el = document.querySelector(
+              '[data-daily-minutes] input[type="radio"]:checked',
+            );
+            return el instanceof HTMLInputElement ? el.value : null;
+          });
+          check(
+            checkedValue === '5',
+            `${at} the modest goal is preselected`,
+            `preselected value was ${checkedValue === null ? 'nothing' : `"${checkedValue}"`}`,
+          );
+
+          // The clickable row, not the 20px radio dot, is the tap target — so
+          // measure the label the learner actually hits.
+          const rows = group.locator('label');
+          const rowCount = await rows.count();
+          for (let i = 0; i < rowCount; i += 1) {
+            const box = await rows.nth(i).boundingBox();
+            check(
+              box !== null && box.height >= MIN_TAP,
+              `${at} goal option ${i + 1} is >= ${MIN_TAP}px tall`,
+              box === null ? 'no box' : `height ${Math.round(box.height)}px`,
+            );
+          }
+        }
+
+        const scoreLabel = await page.evaluate(() => {
+          const input = document.querySelector('input[name="target_score"]');
+          if (!(input instanceof HTMLInputElement)) return null;
+          return { dir: input.getAttribute('dir'), inputMode: input.getAttribute('inputmode') };
+        });
+        check(
+          scoreLabel !== null && scoreLabel.dir === 'ltr' && scoreLabel.inputMode === 'numeric',
+          `${at} the optional score field is a Latin numeric input`,
+          scoreLabel === null
+            ? 'no input[name="target_score"]'
+            : `dir=${scoreLabel.dir} inputmode=${scoreLabel.inputMode}`,
+        );
       }
 
       // T-041: the card is anchored, the reveal is instant, and the grade

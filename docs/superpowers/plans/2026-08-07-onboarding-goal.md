@@ -1178,7 +1178,7 @@ git commit -m "feat(onboarding): the minutes-per-day screen (T-029)"
 
 **What this does and does not close.** It measures the **form**: the radio group, the default selection, tap targets, heading anchoring, no horizontal scroll, clean console, both colour schemes. It does **not** measure the session-guarded shell around it (the address band is already measured on `/dev/identity`). TD-13's row is updated to say precisely that rather than being deleted.
 
-- [ ] **Step 1: Create the fixture**
+- [x] **Step 1: Create the fixture**
 
 Create `app/dev/onboarding/layout.tsx`:
 
@@ -1222,7 +1222,7 @@ export default function DevOnboardingPage() {
 }
 ```
 
-- [ ] **Step 2: Add the route to the harness**
+- [x] **Step 2: Add the route to the harness**
 
 In `scripts/verify-mobile.mjs`, extend `ROUTES` immediately after `'/dev/identity',`:
 
@@ -1234,7 +1234,7 @@ In `scripts/verify-mobile.mjs`, extend `ROUTES` immediately after `'/dev/identit
   '/dev/onboarding',
 ```
 
-- [ ] **Step 3: Add the route-specific assertions**
+- [x] **Step 3: Add the route-specific assertions**
 
 In `scripts/verify-mobile.mjs`, beside the existing `if (route === '/dev/identity')` block, add:
 
@@ -1291,14 +1291,17 @@ In `scripts/verify-mobile.mjs`, beside the existing `if (route === '/dev/identit
       }
 ```
 
-- [ ] **Step 4: Run the harness**
+- [x] **Step 4: Run the harness**
 
 ```bash
 npm run build && (npm run start & sleep 5) && npm run check:mobile
 ```
 Expected: `/dev/onboarding` reports `ok` at 320, 375 and 414 px in both colour schemes, and the total check count rises above the current `351`. Record the exact new number — it goes in the handoff line.
 
-- [ ] **Step 5: Prove the harness bears load**
+
+> **C-0034 — הפגם שהמדידה חשפה, ולא בטופס אלא בהארנס.** צעד 4 נפל שלוש פעמים: `all tap targets >= 44px — too small: input"" 20x20` בכל רוחב. הסריקה הגנרית מדדה את הפקד עצמו, אך אזור ההפעלה של `input[type=radio]` הוא ה-`<label>` העוטף — הדפדפן עושה זאת, לא אנחנו — כלומר נקודה בת 20px בתוך שורה בת 44px היא יעד של 44px. הכיוון הנפסל היה לנפח את הרדיו. `tapRect()` מציב את התווית **רק** ל-`radio`/`checkbox`. אומת שהסריקה עדיין נושאת עומס: כיווץ שורת האפשרות → `input"" (its label) 335x22`.
+
+- [x] **Step 5: Prove the harness bears load**
 
 ```bash
 # Make the default the intensive option — the exact regression this exists for.
@@ -1309,18 +1312,18 @@ git checkout lib/core/onboarding.ts
 
 Two independent guards must fire on this one mutation: the unit test from Task 1 **and** this pixel check. If only one fires, say so in the handoff.
 
-- [ ] **Step 6: Close TD-13 in the architecture file**
+- [x] **Step 6: Close TD-13 in the architecture file**
 
 Rewrite the TD-13 row in `plan/30-architecture.md` to state exactly what is now measured and what is not:
 
 > ✅ **נסגר C-XXXX.** `/dev/onboarding` נוסף ל-`ROUTES` ומודד את טופס T-029 בשלושה רוחבים ובשני מצבי צבע: קיום קבוצת הרדיו · **ברירת המחדל 5 נמדדת בפיקסלים** · שלוש שורות ≥44px · שדה הציון כקלט לטיני מספרי. מוטציה של ברירת המחדל ל-20 הפילה גם את בדיקת היחידה וגם את `check:mobile`. ⚠️ **מה שעדיין אינו נמדד:** המעטפת מוגנת-הסשן של `/onboarding` עצמו — ההארנס עדיין רץ בלי משתני סביבה של Supabase. רצועת הכתובת מכוסה ב-`/dev/identity`.
 
-- [ ] **Step 7: Run the full verification**
+- [x] **Step 7: Run the full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all five green. Paste the real output lines into the handoff — a claim without a fresh run is not a claim (RULES § 0.6).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add app/dev/onboarding scripts/verify-mobile.mjs plan/30-architecture.md

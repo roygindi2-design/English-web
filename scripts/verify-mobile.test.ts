@@ -56,3 +56,37 @@ describe('the harness guards the landing layout it just fixed (F-011 · T-027)',
     expect(page).toContain('data-primary-action');
   });
 });
+
+/**
+ * C-0034. The scan measured every control's own box, so T-029's goal group —
+ * a 20px radio dot centred in a 44px clickable row — reported three failures on
+ * a layout that is correct: the browser activates a radio from anywhere in its
+ * label, so the row IS the target. The danger in relaxing a barrier is that the
+ * relaxation quietly covers more than it was meant to, which is why the
+ * narrowing is asserted here and not only the substitution.
+ */
+describe('the tap-target scan measures the region that activates the control (C-0034)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  // Line comments are stripped before scanning. C-0032 measured this exact
+  // hazard on the migration test: over raw text, the comment that EXPLAINS a
+  // rule satisfies the assertion meant to prove the rule is implemented.
+  const code = source.replace(/^[^\S\n]*\/\/.*$/gm, '');
+
+  it('substitutes the enclosing label for a radio or checkbox', () => {
+    expect(code).toContain("el.type === 'radio' || el.type === 'checkbox'");
+    expect(code).toContain("el.closest('label')");
+  });
+
+  it('never lets a label stand in for a text-entry field', () => {
+    const start = code.indexOf('const tapRect');
+    const body = code.slice(start, code.indexOf('};', start));
+    expect(start).toBeGreaterThan(-1);
+    for (const widened of ['text', 'email', 'date', 'number', 'password']) {
+      expect(body).not.toContain(`'${widened}'`);
+    }
+  });
+
+  it('measures the substituted region, not the control, against the 44px floor', () => {
+    expect(code).toContain('rect.width < min || rect.height < min');
+  });
+});
