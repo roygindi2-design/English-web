@@ -588,7 +588,7 @@ export function isExposed(progress: WordProgress): boolean;
 4. **`masteryConsecutiveCorrect` הוא פרמטר חובה בלי ברירת מחדל**, מאותה סיבה בדיוק.
 5. **`isExposed` הוא `attempts >= 1`** — "נחשף" ≠ "שלט" (7.7). זו הפונקציה היחידה שהשער של משימה 3 יצרוך.
 
-- [ ] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/progress.test.ts`
+- [x] **Step 1: כתוב את הבדיקות הנופלות** — `lib/core/progress.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -729,12 +729,12 @@ describe('isExposed — "seen" is not "mastered" (7.7)', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ כדי לראות אותן נופלות**
+- [x] **Step 2: הרץ כדי לראות אותן נופלות**
 
 Run: `npx vitest run lib/core/progress.test.ts`
 Expected: FAIL — `Failed to resolve import "@/lib/core/progress"`.
 
-- [ ] **Step 3: כתוב את המימוש** — `lib/core/progress.ts`
+- [x] **Step 3: כתוב את המימוש** — `lib/core/progress.ts`
 
 ```ts
 /**
@@ -856,17 +856,17 @@ export function isExposed(progress: WordProgress): boolean {
 }
 ```
 
-- [ ] **Step 4: הרץ עד ירוק**
+- [x] **Step 4: הרץ עד ירוק**
 
 Run: `npx vitest run lib/core/progress.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: הרץ שתי מוטציות**
+- [x] **Step 5: הרץ שתי מוטציות**
 
 1. הפוך את `timeToFirstCorrectMs` לדריסה: `correct ? event.answeredAtMs - current.firstSeenAtMs : current.timeToFirstCorrectMs` — אמורה להפיל את `is never overwritten by a later correct answer` עם `expected 900000 to be 12000`.
 2. החלף `attemptsToMastery: reachedMastery ? attempts : ...` ב-`consecutiveCorrectRecognition` — אמורה להפיל את `records the TOTAL attempts at the moment mastery is reached` עם `expected 3 to be 6`.
 
-- [ ] **Step 6: אימות מלא + קומיט**
+- [x] **Step 6: אימות מלא + קומיט**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
