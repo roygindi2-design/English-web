@@ -182,4 +182,14 @@ describe('every English string in the product goes through <EnWord> (T-009)', ()
       expect(src, `preview.${field} is English and must render inside <EnWord>`).toMatch(re);
     }
   });
+
+  it('the registered address is English and is wrapped at its call site (TD-14)', () => {
+    // Same lesson as the flashcard headword: a bare <span>{email}</span> renders
+    // an address with no lang, no dir and no isolation, and every negative scan
+    // in this file stays green because there is nothing to scan for.
+    const src = readFileSync(join('components', 'RegisteredAddress.tsx'), 'utf8');
+    expect(src, 'the registered address is Latin text in a Hebrew sentence').toMatch(
+      /<EnWord[^>]*>\s*\{email\}\s*<\/EnWord>/,
+    );
+  });
 });

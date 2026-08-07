@@ -15,6 +15,7 @@
  */
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import RegisteredAddress from '@/components/RegisteredAddress';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,7 @@ export default async function OnboardingPage() {
           כאן ייבנה השלב שבו נשאל אותך למה אתה לומד, באיזה מוסד אתה, מה ציון
           היעד שלך ומתי המבחן. השלב הזה עוד בבנייה.
         </p>
+        {user.email && <RegisteredAddress email={user.email} />}
       </div>
 
       {/* A plain form, so signing out works with JavaScript disabled and cannot

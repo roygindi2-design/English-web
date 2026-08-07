@@ -37,6 +37,9 @@ const ROUTES = [
   '/dev/card',
   '/dev/card/typed',
   '/dev/card/swap',
+  // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
+  // env, so the address band would otherwise be measured on the login screen.
+  '/dev/identity',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -319,6 +322,52 @@ try {
             (await typeNow()) === 'password',
             `${at} toggle hides it again`,
             `type stayed "${await typeNow()}"`,
+          );
+        }
+      }
+
+      // T-026: the address band is the only thing standing between a typo and a
+      // permanently lost account while email confirmation is off (Q-001 ⓑ), so
+      // it is measured rather than asserted. Measured on the fixture route
+      // because /onboarding redirects without Supabase env (TD-13).
+      if (route === '/dev/identity') {
+        const band = page.locator('[data-registered-email]');
+        const present = (await band.count()) === 1;
+        check(present, `${at} registered address band present`, 'no [data-registered-email]');
+        if (present) {
+          // allInnerTexts(), not innerText(): C-0015 measured innerText() timing
+          // out on exactly this shape of node.
+          const shown = (await band.allInnerTexts()).join(' ');
+          check(
+            shown.includes('fixture@example.com'),
+            `${at} the address itself is on screen`,
+            `band read "${shown.trim().replace(/\s+/g, ' ')}"`,
+          );
+          const wrapped = await page.evaluate(() => {
+            const el = document.querySelector('[data-registered-email] [lang="en"]');
+            if (!el) return null;
+            const style = getComputedStyle(el);
+            return {
+              dir: el.getAttribute('dir'),
+              bidi: style.unicodeBidi,
+              text: (el.textContent || '').trim(),
+            };
+          });
+          check(
+            wrapped !== null &&
+              wrapped.dir === 'ltr' &&
+              wrapped.bidi.includes('isolate') &&
+              wrapped.text === 'fixture@example.com',
+            `${at} the address travels through <EnWord>`,
+            wrapped === null
+              ? 'no [lang="en"] element inside the band'
+              : `dir=${wrapped.dir} unicode-bidi=${wrapped.bidi} text="${wrapped.text}"`,
+          );
+          const fix = page.locator('[data-registered-email] form button[type="submit"]');
+          check(
+            (await fix.count()) === 1,
+            `${at} one-tap correction present`,
+            'no submit button inside the band',
           );
         }
       }

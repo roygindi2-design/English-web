@@ -207,3 +207,27 @@ export function confirmationNoticeHe(email: string): string {
   if (!address) return 'שלחנו מייל לאישור הכתובת. אחרי האישור אפשר להתחבר.';
   return `שלחנו מייל לאישור הכתובת ${address}. אחרי האישור אפשר להתחבר. לא הכתובת שלך? אפשר להירשם שוב.`;
 }
+
+/**
+ * T-026 — the name of the hidden field that tells /logout where the learner is
+ * going. Exported so the form and the route cannot drift apart on a string.
+ */
+export const LOGOUT_DESTINATION_FIELD = 'destination';
+
+export const REGISTERED_ADDRESS_LABEL_HE = 'נרשמת עם הכתובת';
+export const FIX_ADDRESS_CTA_HE = 'לא הכתובת שלי — להירשם מחדש';
+
+/**
+ * Where a sign-out ends. Deliberately a two-value enum rather than a path: the
+ * field arrives in an unauthenticated POST body, so accepting a path would make
+ * /logout an open redirect. Only `fix_address` does anything, and even then the
+ * URL is built here from an address we read from the session ourselves.
+ */
+export function logoutRedirectPath(
+  destination: string | null | undefined,
+  email: string | null | undefined,
+): string {
+  if (destination !== 'fix_address') return '/';
+  const address = email ? normalizeEmail(email) : '';
+  return address ? `/signup?email=${encodeURIComponent(address)}` : '/signup';
+}

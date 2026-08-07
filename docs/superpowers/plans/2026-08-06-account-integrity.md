@@ -348,7 +348,7 @@ of our two tokens collapses to `/`.
 `getUser()` returns nothing, so the address the learner is disowning is only knowable while they
 are still signed in. Reading it afterwards would silently produce a bare `/signup`.
 
-- [ ] **Step 1: Write the failing tests for the destination rule**
+- [x] **Step 1: Write the failing tests for the destination rule**
 
 Append to `lib/core/auth.test.ts` (add `logoutRedirectPath` to the import block):
 
@@ -389,12 +389,12 @@ describe('logoutRedirectPath (T-026)', () => {
 });
 ```
 
-- [ ] **Step 2: Run and confirm it fails**
+- [x] **Step 2: Run and confirm it fails**
 
 Run: `npx vitest run lib/core/auth.test.ts`
 Expected: FAIL — `logoutRedirectPath is not a function`.
 
-- [ ] **Step 3: Implement the destination rule**
+- [x] **Step 3: Implement the destination rule**
 
 Append to `lib/core/auth.ts`:
 
@@ -424,12 +424,12 @@ export function logoutRedirectPath(
 }
 ```
 
-- [ ] **Step 4: Run and confirm it passes**
+- [x] **Step 4: Run and confirm it passes**
 
 Run: `npx vitest run lib/core/auth.test.ts`
 Expected: PASS, 4 more tests than Step 2.
 
-- [ ] **Step 5: Build the band**
+- [x] **Step 5: Build the band**
 
 Create `components/RegisteredAddress.tsx`:
 
@@ -481,7 +481,7 @@ export default function RegisteredAddress({ email }: { readonly email: string })
 }
 ```
 
-- [ ] **Step 6: Add the positive TD-14 assertion**
+- [x] **Step 6: Add the positive TD-14 assertion**
 
 Append inside the existing `describe` block in `components/EnWord.test.ts` (after the preview-card
 test at :174):
@@ -498,7 +498,7 @@ test at :174):
   });
 ```
 
-- [ ] **Step 7: Render it on the real screen**
+- [x] **Step 7: Render it on the real screen**
 
 In `app/onboarding/page.tsx`, import the component and insert it directly under the heading
 block, inside the existing top-anchored `flex flex-col gap-4` wrapper (do **not** reintroduce
@@ -511,7 +511,7 @@ block, inside the existing top-anchored `flex flex-col gap-4` wrapper (do **not*
 `user.email` is optional on the Supabase `User` type; a session without one (future phone auth)
 renders no band rather than an empty one.
 
-- [ ] **Step 8: Teach `/logout` the token**
+- [x] **Step 8: Teach `/logout` the token**
 
 Replace the body of `POST` in `app/logout/route.ts`:
 
@@ -550,7 +550,7 @@ export async function POST(request: Request) {
 Add `LOGOUT_DESTINATION_FIELD` and `logoutRedirectPath` to the imports from `@/lib/core/auth`.
 The existing sign-out form sends no field → `destination === null` → `/`, exactly as before.
 
-- [ ] **Step 9: Update the contract in the same commit**
+- [x] **Step 9: Update the contract in the same commit**
 
 In `docs/api-contract.md`, replace the last sentence of `## POST /logout` (line 72):
 
@@ -561,7 +561,7 @@ In `docs/api-contract.md`, replace the last sentence of `## POST /logout` (line 
 מסתיים ב-`303` ל-`/` — הגוף מגיע מבקשה לא מאומתת, ולכן הוא אסימון ולא יעד.
 ```
 
-- [ ] **Step 10: Create the measurement fixture**
+- [x] **Step 10: Create the measurement fixture**
 
 `app/dev/identity/layout.tsx`:
 
@@ -601,7 +601,7 @@ export default function DevIdentityPage() {
 }
 ```
 
-- [ ] **Step 11: Measure it**
+- [x] **Step 11: Measure it**
 
 In `scripts/verify-mobile.mjs`, add `'/dev/identity',` to `ROUTES` (after the `/dev/card/*`
 entries), and add this block beside the other route-specific checks (after the password-toggle
@@ -655,7 +655,7 @@ block that ends at :324):
       }
 ```
 
-- [ ] **Step 12: Prove the new checks can fail**
+- [x] **Step 12: Prove the new checks can fail**
 
 Temporarily replace `<EnWord className="font-semibold text-ink">{email}</EnWord>` in
 `RegisteredAddress.tsx` with `<span className="font-semibold text-ink">{email}</span>`, then run
@@ -665,13 +665,13 @@ Expected: **3 mobile failures** (`the address travels through <EnWord>` at 320/3
 This is the step that proves TD-14's positive rule is actually being enforced here — C-0015
 measured a bare `<span>` leaving 222 unit tests and 219 mobile checks green.
 
-- [ ] **Step 13: Full verification**
+- [x] **Step 13: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all five green; unit total ≥ 243; mobile total ≥ 300 (one new route contributes the
 standard per-route checks plus 4 band checks × 3 widths).
 
-- [ ] **Step 14: Commit**
+- [x] **Step 14: Commit**
 
 ```bash
 git add lib/core/auth.ts lib/core/auth.test.ts components/RegisteredAddress.tsx \

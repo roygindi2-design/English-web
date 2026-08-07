@@ -8,6 +8,7 @@ import {
   destinationAfterAuth,
   isCredentialPayload,
   isPlausibleEmail,
+  logoutRedirectPath,
   mapAuthError,
   normalizeEmail,
   passwordByteLength,
@@ -248,5 +249,40 @@ describe('mapAuthError — validation_failed is ambiguous (F-009)', () => {
 
   it('still blames the address when the provider actually names it', () => {
     expect(mapAuthError({ code: 'email_address_invalid', status: 400 })).toBe('invalid_email');
+  });
+});
+
+describe('logoutRedirectPath (T-026)', () => {
+  it('sends an ordinary sign-out home', () => {
+    expect(logoutRedirectPath('home', 'roy@example.com')).toBe('/');
+    expect(logoutRedirectPath(null, null)).toBe('/');
+    expect(logoutRedirectPath(undefined, undefined)).toBe('/');
+  });
+
+  it('carries the mistyped address back into the signup form, normalised', () => {
+    expect(logoutRedirectPath('fix_address', 'ROY@Example.com')).toBe(
+      '/signup?email=roy%40example.com',
+    );
+  });
+
+  it('falls back to a bare signup form when the address is unknown', () => {
+    expect(logoutRedirectPath('fix_address', null)).toBe('/signup');
+    expect(logoutRedirectPath('fix_address', '')).toBe('/signup');
+  });
+
+  it('never turns a supplied destination into a redirect', () => {
+    // The field arrives in a POST body, and a POST body is not a trusted input:
+    // /logout is reachable by anyone. An enum is the entire defence — nothing
+    // that is not one of our two tokens can produce anything but '/'.
+    for (const hostile of [
+      'https://evil.example',
+      '//evil.example',
+      '/\\evil.example',
+      '/signup',
+      'fix_address ',
+      'FIX_ADDRESS',
+    ]) {
+      expect(logoutRedirectPath(hostile, 'roy@example.com')).toBe('/');
+    }
   });
 });
