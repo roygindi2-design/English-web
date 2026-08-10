@@ -1,25 +1,28 @@
 # English Web
 
-אפליקציית לימוד אנגלית אדפטיבית לדוברי עברית. מסלול ראשון: **אמיר״ם**.
+אפליקציית לימוד אנגלית אדפטיבית לדוברי עברית. מסלול ראשון: **אמיר"ם**.
 
-הפרויקט נבנה על ידי לופ סוכנים אוטונומי (PM · Dev · Critic) שמתקשרים אך ורק
-דרך `project_plan.md`. לפני שנוגעים בקוד — קוראים את `docs/AGENT_BLUEPRINT.md`.
+הפרויקט נבנה על ידי לופ סוכנים אוטונומי בן ארבעה סוכנים — PM · Dev · Critic · Content —
+שמתקשרים אך ורק דרך הקבצים שבתיקיית `plan/`. לפני שנוגעים בקוד: `docs/AGENT_BLUEPRINT.md`
+ו-`plan/RULES.md`.
 
 ## הרצה מקומית
 
 ```bash
 npm install
-cp .env.example .env.local   # מלא את מפתחות Supabase
+cp .env.example .env.local
 npm run dev
 ```
 
 ## אימות לפני כל קומיט
 
 ```bash
-npm run typecheck && npm run check:core && npm test && npm run build
+npm run verify
 ```
 
+מריץ: `typecheck` · `check:core` · `test` · `build` · `check:mobile`.
 `check:core` אוכף את טוהר `/lib/core/` — הקוד שיעבור לאפליקציית המובייל כמות שהוא.
+נכשלה פקודה אחת — לא דוחפים כלל, גם לא ל-`dev`.
 
 ## ארכיטקטורה
 
@@ -29,8 +32,32 @@ npm run typecheck && npm run check:core && npm test && npm run build
 | `app/api/` | נקודות קצה HTTP | ולידציה, הרשאות, קריאה ל-core |
 | `lib/api/` | לקוח HTTP דק | השכבה היחידה שתוחלף ב-React Native |
 | `components/` | ממשק בלבד | לעולם לא ניגש לדאטהבייס |
+| `plan/` | זיכרון הלופ | לכל קובץ בעלים אחד. ראה `plan/RULES.md` |
+
+## ענפים
+
+| ענף | מי דוחף | Netlify |
+|---|---|---|
+| `dev` | ארבעת הסוכנים | לא בונה |
+| `main` | ה-Critic בלבד, ב-`git merge --ff-only` | בונה ומפרסם |
+
+⛔ אין למזג `dev→main` דרך ממשק GitHub. כפתור המיזוג יוצר merge commit,
+הענפים מתפצלים, וכל קידום עתידי נכשל (F-001).
 
 ## פריסה
 
-Netlify מקושר ל-`main` ומעלה כל דחיפה אוטומטית. הגדרות הבנייה ב-`netlify.toml`,
-לא בלוח הבקרה.
+Netlify בונה **אך ורק** את `main`. הגדרות הבנייה ב-`netlify.toml`, לא בלוח הבקרה.
+
+התקציב הוא **קרדיטים**, לא דקות: 300 בחודש, 15 לפריסה, כלומר כ-20 פריסות.
+נמדד 08/2026: 18 פריסות שרפו 270 קרדיטים בחמישה ימים.
+
+שכבה 1 (הסוכנים דוחפים רק ל-`dev`) תקפה **רק** כאשר ב-Netlify:
+Branch deploys = None, Deploy Previews = Off. PR פתוח מ-`dev` פותח דלת צדדית
+שמפעילה בנייה על כל דחיפה.
+
+⚠️ `netlify.toml` **חייב** להצהיר על `[[plugins]] package = "@netlify/plugin-nextjs"`.
+בלעדיו Netlify מעלה את `.next` כתיקייה סטטית, אפס פונקציות נפרסות, וכל נתיב
+מחזיר 404 — כולל ה-API. הכשל הזה שרד 18 פריסות (08/2026).
+
+**בדיקת עשן אחרי כל פריסה:** למשוך `/api/health` ולוודא `"ok": true`.
+פריסה שלא נבדקה מקצה לקצה אינה פריסה.
