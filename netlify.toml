@@ -12,6 +12,9 @@
   # CACHED_COMMIT_REF ריק בבנייה ראשונה → הפקודה נכשלת → נבנה. כישלון בטוח.
   ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md' ':(exclude)docs/' ':(exclude)project_plan.md'"
 
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
