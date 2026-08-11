@@ -27,11 +27,11 @@ BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי 
 LOCK_HELD_BY: ""                    # "" | PM | DEV | CRITIC | CONTENT
 LOCK_AT: ""
 MILESTONE_TICKS: 0
-PAUSED_BY_HUMAN: true
-DEPLOYS_THIS_MONTH: 18
-LAST_DEPLOYED_AT: ""                                  # אסור לנחש חותמת זמן. נעילה עם זמן עתידי חוסמת את הלופ.
-LAST_REVIEWED_COMMIT: "f0bd4c5"  # נסקר C-0038: עומק, C-0032..C-0037. ארבע פקודות טרי. main==dev אחרי קידום #5 — הכל אצל המשתמש
-# --- כלכלת בנייה: 300 דקות בנייה בחודש. חריגה = השעיית האתר עד סוף החודש ---
+PAUSED_BY_HUMAN: false
+DEPLOYS_THIS_MONTH: 0
+LAST_DEPLOYED_AT: ""
+LAST_REVIEWED_COMMIT: "f0bd4c5"
+# --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1.1 ---
 WORKING_BRANCH: dev               # כל הסוכנים דוחפים לכאן. Netlify לא בונה ענף זה.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
 LAST_PROMOTED_AT: "2026-08-07T19:21:15Z"  # ISO-8601 של הקידום האחרון ל-main
