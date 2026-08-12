@@ -51,6 +51,20 @@ const ROUTES = [
 const MIN_TAP = 44;
 
 /**
+ * F-027 — the screens a learner walks through to reach the product, in order:
+ * landing, the two auth screens, the goal question, the study screen. Every one
+ * of them must offer a marked way forward that a thumb can actually reach.
+ *
+ * `/dev/onboarding` and not `/onboarding`: the real route answers 307 without
+ * Supabase env (TD-13), so naming it here measured the login screen instead —
+ * one of the three reasons roy's dead end was invisible to this harness.
+ *
+ * `/sources` and `/offline` are deliberately absent: they are destinations, not
+ * steps, and neither is on the path to first study.
+ */
+const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study'];
+
+/**
  * Playwright pins a browser build number (1234 today); the sandbox and CI both
  * ship a different one (1194) and set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, so
  * chromium.executablePath() points at a directory that does not exist. Probe
@@ -129,6 +143,19 @@ const notes = [];
 function check(ok, label, onFailure) {
   if (ok) notes.push(`  ok   ${label}`);
   else failures.push(`${label} — ${onFailure}`);
+}
+
+/**
+ * A measurement that is printed but does not gate the run. F-027 needs one: how
+ * far below the fold the primary action starts is the number the whole finding
+ * turns on, and the moment it lives only in a comment it stops being true.
+ * `check` cannot carry it — a threshold here would encode a product decision
+ * Dev is not the one making.
+ *
+ * @param line the measurement, already formatted
+ */
+function report(line) {
+  notes.push(`  ..   ${line}`);
 }
 
 const executablePath = resolveChromiumPath();
@@ -261,9 +288,12 @@ try {
       // lower half for thumb reach", and that claim was false — `mt-auto` inside a
       // section with no `flex-1` has no free space to consume, so the reveal button
       // measured y=243 on a 780px screen. An unchecked claim is how it got there.
+      // F-027 cause 1: `/onboarding` answers 307 without Supabase env (TD-13),
+      // so naming it here measured /login twice and the goal form never once.
+      // The fixture is the only place the onboarding layout exists in this run.
       if (
         route === '/' ||
-        route === '/onboarding' ||
+        route === '/dev/onboarding' ||
         route === '/login' ||
         route === '/signup' ||
         route.startsWith('/dev/card')
@@ -275,6 +305,99 @@ try {
           return el ? el.getBoundingClientRect().top : -1;
         });
         check(y >= 780 / 2, `${at} primary action in thumb zone`, `sits at y=${Math.round(y)}`);
+      }
+
+      // F-027 — the connectivity guarantee roy asked for after signing up on the
+      // live site and finding the onboarding screen had no way forward and no
+      // way out: "verify-mobile at 375 must require that every screen in the
+      // flow contains an accessible primary action, otherwise the bug comes
+      // back." Three separate failures can produce that dead end, so three
+      // separate things are measured — a screen that passes one and fails
+      // another is still a dead end to the learner standing in front of it.
+      //
+      // What is deliberately NOT asserted here: that the action is visible in
+      // the first viewport. It is not, on onboarding — measured firstPaintTop
+      // 852/375px against a 780px viewport — and moving it there means either
+      // a sticky action bar or a shorter screen. Both are product decisions
+      // (40-decisions), not Dev's, so the number is reported on every run and
+      // F-027 carries it to the PM instead of being quietly redesigned here.
+      if (FLOW_ROUTES.includes(route)) {
+        const primary = await page.evaluate(() => {
+          const all = document.querySelectorAll('main [data-primary-action]');
+          if (all.length !== 1) return { count: all.length };
+          const el = all[0];
+
+          // ORDER IS LOAD-BEARING. Reachability is measured first, from a page
+          // nothing has scrolled yet — an earlier version measured it after the
+          // hit-test's scrollIntoView and was therefore reading a position it
+          // had just produced itself. See the mutation recorded in
+          // verify-mobile.test.ts.
+          window.scrollTo(0, 0);
+          const atRest = el.getBoundingClientRect();
+          const firstPaintTop = Math.round(atRest.top);
+          const belowTheFold = atRest.bottom > window.innerHeight;
+
+          // A finger scrolls the document; `scrollIntoView` scrolls it even when
+          // it is pinned, so the clip has to be read and not inferred. This pair
+          // — `overflow-y: hidden` with a viewport-height root — is what turns
+          // "below the fold" into "does not exist" for a learner.
+          const clipY = (node) => {
+            const value = getComputedStyle(node).overflowY;
+            return value === 'hidden' || value === 'clip';
+          };
+          const clipped = clipY(document.documentElement) || clipY(document.body);
+
+          window.scrollTo(0, document.documentElement.scrollHeight);
+          const afterScroll = el.getBoundingClientRect();
+          const scrolledIntoView =
+            afterScroll.top >= 0 && afterScroll.bottom <= window.innerHeight;
+          const reachable = !belowTheFold || (!clipped && scrolledIntoView);
+
+          // Hit-testing, not rectangle-reading: a control can hold a perfectly
+          // good box and still be unclickable behind an overlay, and a box says
+          // nothing about an ancestor that painted over it.
+          el.scrollIntoView({ block: 'center' });
+          const box = el.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            Math.round(box.left + box.width / 2),
+            Math.round(box.top + box.height / 2),
+          );
+          window.scrollTo(0, 0);
+
+          return {
+            count: all.length,
+            firstPaintTop,
+            belowTheFold,
+            clipped,
+            hitTested: hit !== null && (hit === el || el.contains(hit)),
+            reachable,
+            text: (el.textContent || '').trim().slice(0, 24),
+          };
+        });
+
+        check(
+          primary.count === 1,
+          `${at} exactly one primary action`,
+          `found ${primary.count} elements matching main [data-primary-action]`,
+        );
+        if (primary.count === 1) {
+          check(
+            primary.hitTested,
+            `${at} primary action is hit-testable`,
+            `"${primary.text}" is covered or clipped at its own centre point`,
+          );
+          check(
+            primary.reachable,
+            `${at} primary action reachable by scrolling`,
+            primary.clipped
+              ? `"${primary.text}" starts below the fold and the document is clipped (overflow-y), so a finger can never bring it in`
+              : `"${primary.text}" never enters the viewport, even scrolled to the bottom`,
+          );
+          report(
+            `${at} primary action "${primary.text}" firstPaintTop=${primary.firstPaintTop}px` +
+              (primary.belowTheFold ? ' (below the fold — scroll required)' : ''),
+          );
+        }
       }
 
       // Content anchored to the top (F-011). The landing screen used to centre

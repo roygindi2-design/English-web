@@ -90,3 +90,142 @@ describe('the tap-target scan measures the region that activates the control (C-
     expect(code).toContain('rect.width < min || rect.height < min');
   });
 });
+
+/**
+ * F-027 — roy measured the bug on the live site: he signed up, landed on the
+ * onboarding screen, and found no way forward and no way out. The screen was
+ * not broken; it was 1090px tall at a 780px viewport, and BOTH controls sat
+ * below the fold (submit y=852, sign-out y=928 at 375px). A learner who does
+ * not think to scroll is stopped at the front door of the product.
+ *
+ * That defect was invisible to this harness for three compounding reasons, and
+ * each one is asserted separately below, because fixing only the visible one
+ * leaves the hole open:
+ *
+ *   1. The thumb-zone check names `/onboarding`, and `/onboarding` answers 307
+ *      without Supabase env (TD-13) — so it has always measured `/login`. The
+ *      file's own comment says "every ok /onboarding line is really the login
+ *      screen", and the check was never moved to the fixture anyway.
+ *   2. `/dev/onboarding` rendered the form ALONE. The real screen also renders
+ *      the address band above it and the sign-out form below it, so the fixture
+ *      was 126px shorter than the screen it stands for — measured: submit at
+ *      y=726 in the old fixture vs y=852 in the real composition.
+ *   3. The onboarding submit carries no `[data-primary-action]`, so the
+ *      fallback selector (`main a[href], main button`) would have returned the
+ *      address band's correction link, not the button that moves the learner
+ *      forward. That exact substitution already fooled this check once on
+ *      `/login`, where it returned the password-visibility toggle.
+ *
+ * roy's requirement, verbatim: "verify-mobile at 375 must require that every
+ * screen in the flow contains an accessible primary action, otherwise the bug
+ * comes back."
+ */
+describe('every flow screen carries one reachable primary action (F-027)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const code = source.replace(/^[^\S\n]*\/\/.*$/gm, '');
+
+  it('names the flow screens as a set instead of an inline route disjunction', () => {
+    expect(code).toContain('const FLOW_ROUTES');
+    expect(code).toContain('FLOW_ROUTES.includes(route)');
+  });
+
+  it('measures the onboarding fixture, not the route that redirects to login', () => {
+    const start = code.indexOf('const FLOW_ROUTES');
+    const set = code.slice(start, code.indexOf(']', start));
+    expect(set).toContain("'/dev/onboarding'");
+    expect(set).not.toContain("'/onboarding'");
+  });
+
+  it('requires exactly one marked primary action, so the fallback cannot pick a decoy', () => {
+    expect(code).toContain('exactly one primary action');
+    expect(code).toContain("main [data-primary-action]");
+  });
+
+  it('hit-tests the primary action rather than trusting its rectangle', () => {
+    expect(code).toContain('elementFromPoint');
+    expect(code).toContain('primary action is hit-testable');
+  });
+
+  it('proves the action is reachable by scrolling when it starts below the fold', () => {
+    expect(code).toContain('primary action reachable by scrolling');
+    expect(code).toContain('scrollTo');
+  });
+
+  /**
+   * A mutation caught this, and it is why the check has its present shape. The
+   * first version ran `scrollIntoView` for the hit-test and only afterwards
+   * asked whether the action could be scrolled to — reading a position its own
+   * earlier line had produced. Pinning the document with
+   * `overflow-y: hidden; height: 100dvh` on html and body, the exact CSS that
+   * turns "below the fold" into "does not exist" for a finger, left all 30
+   * reachability checks green. So the order is load-bearing: reachability is
+   * measured from a scroll-reset page before anything scrolls it, and the clip
+   * is read from computed style rather than inferred from a position, because
+   * `scrollIntoView` moves a clipped document perfectly well and a thumb cannot.
+   */
+  it('reads the clip from computed style, since programmatic scrolling ignores it', () => {
+    expect(code).toContain('overflowY');
+    expect(code).toContain('clipped');
+  });
+
+  it('measures reachability before anything else scrolls the page', () => {
+    const start = code.indexOf('FLOW_ROUTES.includes(route)');
+    expect(start).toBeGreaterThan(-1);
+    const block = code.slice(start, code.indexOf('report(`', start));
+    expect(block).toContain('scrollIntoView');
+    expect(block.indexOf('const reachable')).toBeLessThan(block.indexOf('scrollIntoView'));
+  });
+
+  it('reports the first-paint offset so the number is in the log, not in a comment', () => {
+    expect(code).toContain('firstPaintTop');
+  });
+});
+
+/**
+ * F-027 cause 2. A fixture shorter than the screen it stands for is worse than
+ * no fixture: it reports "ok" for a layout nobody has measured. The two files
+ * are compared by the elements they render, not by text, because the real page
+ * additionally carries the session gate the fixture must not have (TD-13).
+ */
+describe('the onboarding fixture renders everything the real screen renders (F-027)', () => {
+  const real = readFileSync('app/onboarding/page.tsx', 'utf8');
+  const fixture = readFileSync('app/dev/onboarding/page.tsx', 'utf8');
+
+  for (const element of ['RegisteredAddress', 'OnboardingForm', 'ONBOARDING_TITLE_HE']) {
+    it(`renders <${element}> like the real screen does`, () => {
+      expect(real).toContain(element);
+      expect(fixture).toContain(element);
+    });
+  }
+
+  it('carries the sign-out control that sits below the form on the real screen', () => {
+    expect(real).toContain('action="/logout"');
+    expect(fixture).toContain('action="/logout"');
+  });
+
+  it('still refuses the session gate, which is what makes it a fixture', () => {
+    expect(real).toContain('createRouteClient');
+    expect(fixture).not.toContain('createRouteClient');
+  });
+});
+
+/**
+ * F-027 cause 3. The marker is what tells the harness which control moves the
+ * learner forward. Every other flow screen already carries it; onboarding was
+ * skipped, which is why the check had nothing correct to grab.
+ */
+describe('the onboarding submit is marked as the primary action (F-027)', () => {
+  const form = readFileSync('components/OnboardingForm.tsx', 'utf8');
+
+  it('marks the submit button', () => {
+    expect(form).toContain('data-primary-action');
+  });
+
+  it('marks the submit and not the optional-score field beside it', () => {
+    const marker = form.indexOf('data-primary-action');
+    const submit = form.indexOf('type="submit"');
+    expect(marker).toBeGreaterThan(-1);
+    expect(submit).toBeGreaterThan(-1);
+    expect(Math.abs(marker - submit)).toBeLessThan(200);
+  });
+});

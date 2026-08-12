@@ -146,8 +146,14 @@ export default function OnboardingForm() {
 
       {formError && <p className="text-base text-danger">{formError}</p>}
 
+      {/* F-027: the marker, not document order, is what tells check:mobile which
+          control moves the learner forward. Without it the harness falls back to
+          the first button in <main> — here the address band's correction link,
+          the same substitution that made it measure the password toggle on
+          /login. */}
       <button
         type="submit"
+        data-primary-action="true"
         disabled={saving}
         className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
       >

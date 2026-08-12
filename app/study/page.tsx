@@ -17,8 +17,13 @@ export default function StudyPage() {
       <p className="text-lg leading-relaxed text-ink-muted">
         עוד לא נטענו מילים למאגר. ברגע שיהיו — הן יופיעו כאן, עשר דקות ביום.
       </p>
+      {/* F-027: an empty state is still a screen in the flow, and the way out of
+          it is the only action on it. Marked so check:mobile measures this link
+          and not whatever comes first in the DOM once the queue endpoint lands
+          and <Flashcard> renders above it. */}
       <Link
         href="/"
+        data-primary-action="true"
         className="mt-2 flex min-h-touch items-center justify-center rounded-xl border border-border-strong px-5 py-3 text-base text-ink active:opacity-90"
       >
         חזרה למסך הבית
