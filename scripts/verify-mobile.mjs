@@ -315,12 +315,8 @@ try {
       // separate things are measured — a screen that passes one and fails
       // another is still a dead end to the learner standing in front of it.
       //
-      // What is deliberately NOT asserted here: that the action is visible in
-      // the first viewport. It is not, on onboarding — measured firstPaintTop
-      // 852/375px against a 780px viewport — and moving it there means either
-      // a sticky action bar or a shorter screen. Both are product decisions
-      // (40-decisions), not Dev's, so the number is reported on every run and
-      // F-027 carries it to the PM instead of being quietly redesigned here.
+      // D-028 (40-decisions § 4.2ג) settled the half that used to be reported
+      // and not asserted: the action must paint inside the first viewport.
       if (FLOW_ROUTES.includes(route)) {
         const primary = await page.evaluate(() => {
           const all = document.querySelectorAll('main [data-primary-action]');
@@ -371,6 +367,7 @@ try {
             clipped,
             hitTested: hit !== null && (hit === el || el.contains(hit)),
             reachable,
+            viewportHeight: window.innerHeight,
             text: (el.textContent || '').trim().slice(0, 24),
           };
         });
@@ -393,9 +390,48 @@ try {
               ? `"${primary.text}" starts below the fold and the document is clipped (overflow-y), so a finger can never bring it in`
               : `"${primary.text}" never enters the viewport, even scrolled to the bottom`,
           );
+          // F-027, the half that was a PM decision until D-028 settled it: the
+          // action must be IN the first viewport, not merely reachable from it.
+          // roy measured 852 against 780 on /onboarding and read the product as
+          // broken. The lower bound (`y >= 780/2`, thumb reach) is still checked
+          // above; this is the upper bound, and a bar that satisfies both can
+          // only be bottom-anchored.
+          check(
+            primary.firstPaintTop < primary.viewportHeight,
+            `${at} primary action visible without scrolling`,
+            `"${primary.text}" first paints at y=${primary.firstPaintTop} on a ${primary.viewportHeight}px viewport`,
+          );
           report(
             `${at} primary action "${primary.text}" firstPaintTop=${primary.firstPaintTop}px` +
               (primary.belowTheFold ? ' (below the fold — scroll required)' : ''),
+          );
+        }
+
+        // The bar is `fixed`, so it covers a strip of the document. The rejected
+        // alternative — a spacer inside <main> — moves that strip onto <footer>
+        // instead of clearing it, because the footer holding the /sources link
+        // (T-011, required on every screen) is a sibling AFTER <main>. This is
+        // the check that makes the difference measurable rather than argued.
+        const footer = await page.evaluate(() => {
+          const bar = document.querySelector('[data-action-bar]');
+          if (!bar) return { noBar: true };
+          window.scrollTo(0, document.documentElement.scrollHeight);
+          const link = document.querySelector('footer a[href="/sources"]');
+          if (!link) return { noLink: true };
+          const l = link.getBoundingClientRect();
+          const b = bar.getBoundingClientRect();
+          window.scrollTo(0, 0);
+          return {
+            clear: Math.round(l.bottom) <= Math.round(b.top) + 1,
+            linkBottom: Math.round(l.bottom),
+            barTop: Math.round(b.top),
+          };
+        });
+        if (!footer.noBar && !footer.noLink) {
+          check(
+            footer.clear,
+            `${at} action bar does not cover the licence link`,
+            `link bottom ${footer.linkBottom} vs bar top ${footer.barTop}`,
           );
         }
       }

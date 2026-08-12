@@ -134,7 +134,7 @@ body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-
 
 **Done when:** on `/`, `/signup`, `/login`, `/dev/onboarding` and `/study`, at 320/375/414, the single `data-primary-action` element paints inside the first viewport, the `/sources` link is still reachable, and the harness fails if either stops being true.
 
-- [ ] **1.1 (2 min) — Make the harness demand it, and watch it fail.** In `scripts/verify-mobile.mjs`, inside the `FLOW_ROUTES` block: add `viewportHeight: window.innerHeight` to the object returned by `page.evaluate`, then add, next to the existing `reachable` check:
+- [x] **1.1 (2 min) — Make the harness demand it, and watch it fail.** In `scripts/verify-mobile.mjs`, inside the `FLOW_ROUTES` block: add `viewportHeight: window.innerHeight` to the object returned by `page.evaluate`, then add, next to the existing `reachable` check:
 
 ```js
           // F-027, the half that was a PM decision until D-028 settled it: the
@@ -152,11 +152,11 @@ body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-
 
   Replace the paragraph at `:319-325` that says this is deliberately not asserted with one line pointing at D-028. Run `npm run build && npm run check:mobile`. **Expected failure, recorded verbatim in the tick report:** `/dev/onboarding` (and any other screen taller than the fold) fails with a real `y=` number. ⛔ If nothing fails, stop — the check is not measuring anything and the rest of this task is unfalsifiable.
 
-- [ ] **1.2 (3 min) — `components/ActionBar.tsx`,** exactly the shape in *Interfaces*. Header comment: D-028, why fixed and not sticky (see 1.3), why the hairline is always on (conflict 3 above).
+- [x] **1.2 (3 min) — `components/ActionBar.tsx`,** exactly the shape in *Interfaces*. Header comment: D-028, why fixed and not sticky (see 1.3), why the hairline is always on (conflict 3 above).
 
-- [ ] **1.3 (2 min) — The document padding, in `app/globals.css`,** exactly the two rules in *Interfaces* (add the `[data-tab-bar]` rule now, unused until Task 2 — one place, one concept). Comment records the rejected alternative **with its measurement**: a spacer `<div>` at the end of `<main>` shifts the covered strip onto `<footer>`, which is a sibling after `<main>`, so the `/sources` link — the one link T-011 requires on every screen — ends up under the bar at full scroll.
+- [x] **1.3 (2 min) — The document padding, in `app/globals.css`,** exactly the two rules in *Interfaces* (add the `[data-tab-bar]` rule now, unused until Task 2 — one place, one concept). Comment records the rejected alternative **with its measurement**: a spacer `<div>` at the end of `<main>` shifts the covered strip onto `<footer>`, which is a sibling after `<main>`, so the `/sources` link — the one link T-011 requires on every screen — ends up under the bar at full scroll.
 
-- [ ] **1.4 (2 min) — `components/ActionBar.test.ts`,** the file in *Interfaces*:
+- [x] **1.4 (2 min) — `components/ActionBar.test.ts`,** the file in *Interfaces*:
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -194,9 +194,9 @@ describe('the flow-screen action bar (D-028 · F-027)', () => {
 });
 ```
 
-- [ ] **1.5 (3 min) — Wire the four screens.** `components/AuthForm.tsx`: wrap the submit button in `<ActionBar>` (it already carries `form="auth-form"`, so it may leave the `<form>`; the secondary link below it stays where it is). `components/OnboardingForm.tsx`: give the form `id="onboarding-form"`, move the submit into `<ActionBar>` with `form="onboarding-form"`. `app/study/page.tsx`: move the existing `<Link data-primary-action>` into `<ActionBar>`. `app/page.tsx`: wrap the `בואו נתחיל` link (keep the secondary `/login` link outside the bar — one action per bar).
-- [ ] **1.6 (2 min) — Mirror it into the fixture.** `app/dev/onboarding/page.tsx` renders `<OnboardingForm />`, so the bar arrives for free; verify by reading the file, and add `'ActionBar'` to the mirrored-element list in `scripts/verify-mobile.test.ts:194` **only if** the real screen names it directly. If it does not, leave that list alone — a false mirror assertion is worse than none.
-- [ ] **1.7 (2 min) — Footer-not-covered check** in the same `FLOW_ROUTES` block:
+- [x] **1.5 (3 min) — Wire the four screens.** `components/AuthForm.tsx`: wrap the submit button in `<ActionBar>` (it already carries `form="auth-form"`, so it may leave the `<form>`; the secondary link below it stays where it is). `components/OnboardingForm.tsx`: give the form `id="onboarding-form"`, move the submit into `<ActionBar>` with `form="onboarding-form"`. `app/study/page.tsx`: move the existing `<Link data-primary-action>` into `<ActionBar>`. `app/page.tsx`: wrap the `בואו נתחיל` link (keep the secondary `/login` link outside the bar — one action per bar).
+- [x] **1.6 (2 min) — Mirror it into the fixture.** `app/dev/onboarding/page.tsx` renders `<OnboardingForm />`, so the bar arrives for free; verify by reading the file, and add `'ActionBar'` to the mirrored-element list in `scripts/verify-mobile.test.ts:194` **only if** the real screen names it directly. If it does not, leave that list alone — a false mirror assertion is worse than none.
+- [x] **1.7 (2 min) — Footer-not-covered check** in the same `FLOW_ROUTES` block:
 
 ```js
         const footer = await page.evaluate(() => {
@@ -215,7 +215,7 @@ describe('the flow-screen action bar (D-028 · F-027)', () => {
         }
 ```
 
-- [ ] **1.8 (4 min) — Verify + two mutations.** Run all five commands. Then: ⓐ delete the `body:has([data-action-bar])` rule → **1.7 must fail** with real numbers; ⓑ change `fixed` to `static` in `ActionBar` → **1.1's new check must fail** on the tall screen. Restore, re-run, record both failure lines. A mutation that kills nothing means the check is decorative — say so in the report instead of hiding it.
+- [x] **1.8 (4 min) — Verify + two mutations.** Run all five commands. Then: ⓐ delete the `body:has([data-action-bar])` rule → **1.7 must fail** with real numbers; ⓑ change `fixed` to `static` in `ActionBar` → **1.1's new check must fail** on the tall screen. Restore, re-run, record both failure lines. A mutation that kills nothing means the check is decorative — say so in the report instead of hiding it.
 
 ---
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import ActionBar from '@/components/ActionBar';
 import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
 import {
@@ -232,17 +233,22 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </form>
       </div>
 
-      {/* Primary action in the lower half of the screen — MF-5, thumb reach. */}
+      {/* D-028 · F-027: the primary action is anchored to the window, not to the
+          end of the content. The button already carried `form="auth-form"`, so
+          leaving the <form> element costs it nothing — submission is by form id.
+          The secondary link stays in normal flow: one action per bar. */}
       <div className="flex flex-col gap-4">
-        <button
-          type="submit"
-          form="auth-form"
-          data-primary-action="true"
-          disabled={busy}
-          className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
-        >
-          {busy ? copy.busy : copy.submit}
-        </button>
+        <ActionBar>
+          <button
+            type="submit"
+            form="auth-form"
+            data-primary-action="true"
+            disabled={busy}
+            className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+          >
+            {busy ? copy.busy : copy.submit}
+          </button>
+        </ActionBar>
 
         <p className="text-center text-base text-ink-muted">
           {mode === 'signup' ? 'כבר יש לך חשבון? ' : 'אין לך עדיין חשבון? '}

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ActionBar from '@/components/ActionBar';
 import EnWord from '@/components/EnWord';
 import InstallPrompt from '@/components/InstallPrompt';
 import {
@@ -80,8 +81,9 @@ export default function HomePage() {
         </section>
       ) : null}
 
-      {/* Primary action stays in the lower half of the screen — MF-5, thumb reach. */}
-      <div className="mt-auto flex flex-col gap-2">
+      {/* D-028 · F-027: the primary action is anchored to the window. The
+          secondary link stays in normal flow — one action per bar. */}
+      <ActionBar>
         <Link
           href="/signup"
           data-primary-action="true"
@@ -89,6 +91,9 @@ export default function HomePage() {
         >
           בואו נתחיל
         </Link>
+      </ActionBar>
+
+      <div className="mt-auto flex flex-col gap-2">
         <Link
           href="/login"
           className="flex min-h-touch items-center justify-center text-base text-ink-muted underline underline-offset-4 active:text-ink"

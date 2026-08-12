@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ActionBar from '@/components/ActionBar';
 import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
 import {
@@ -84,7 +85,12 @@ export default function OnboardingForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-6" data-onboarding-form>
+    <form
+      id="onboarding-form"
+      onSubmit={onSubmit}
+      className="flex flex-col gap-6"
+      data-onboarding-form
+    >
       <fieldset className="flex flex-col gap-2 border-0 p-0" data-daily-minutes>
         <legend className="text-lg font-semibold text-ink">{DAILY_MINUTES_QUESTION_HE}</legend>
         <p className="text-base text-ink-muted">{DAILY_MINUTES_HELP_HE}</p>
@@ -151,14 +157,21 @@ export default function OnboardingForm() {
           the first button in <main> — here the address band's correction link,
           the same substitution that made it measure the password toggle on
           /login. */}
-      <button
-        type="submit"
-        data-primary-action="true"
-        disabled={saving}
-        className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
-      >
-        {saving ? 'שומר…' : ONBOARDING_SUBMIT_HE}
-      </button>
+      {/* D-028 · F-027: this is the exact button roy could not find — measured at
+          y=852 on a 780px viewport. It leaves the <form> element and gains
+          `form="onboarding-form"`, which is how a submit control outside its
+          form still submits it (the same wiring AuthForm already used). */}
+      <ActionBar>
+        <button
+          type="submit"
+          form="onboarding-form"
+          data-primary-action="true"
+          disabled={saving}
+          className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+        >
+          {saving ? 'שומר…' : ONBOARDING_SUBMIT_HE}
+        </button>
+      </ActionBar>
     </form>
   );
 }

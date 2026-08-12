@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ActionBar from '@/components/ActionBar';
 
 /**
  * The study screen — T-041.
@@ -21,13 +22,15 @@ export default function StudyPage() {
           it is the only action on it. Marked so check:mobile measures this link
           and not whatever comes first in the DOM once the queue endpoint lands
           and <Flashcard> renders above it. */}
-      <Link
-        href="/"
-        data-primary-action="true"
-        className="mt-2 flex min-h-touch items-center justify-center rounded-xl border border-border-strong px-5 py-3 text-base text-ink active:opacity-90"
-      >
-        חזרה למסך הבית
-      </Link>
+      <ActionBar>
+        <Link
+          href="/"
+          data-primary-action="true"
+          className="flex min-h-touch items-center justify-center rounded-xl border border-border-strong px-5 py-3 text-base text-ink active:opacity-90"
+        >
+          חזרה למסך הבית
+        </Link>
+      </ActionBar>
     </section>
   );
 }

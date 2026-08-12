@@ -60,6 +60,20 @@ body {
    was isolating as a side effect of being atomic. */
 .ltr-inline { unicode-bidi: isolate; direction: ltr; }
 
+/* Document padding for a bottom-anchored bar (D-028 · § 4.2ג).
+
+   It belongs to the SCROLL CONTAINER and not to <main>. Measured: the footer
+   holding the /sources link (T-011, required on every screen) is a sibling
+   AFTER <main> — `app/layout.tsx:41` vs `:47` — so the rejected alternative, a
+   spacer <div> at the end of <main>, does not clear the covered strip at all;
+   it shifts it onto that link, which then sits under the bar at full scroll.
+   `body:has(...)` costs nothing when no bar is present and needs no JS.
+
+   [data-tab-bar] is the four-tab shell (D-027, Task 2 of this plan). Its rule
+   lives here beside its twin: one place, one concept. */
+body:has([data-action-bar]) { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
 /* T-041: the reveal is an affordance, never a delay. Any motion is opt-out. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
