@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ActionBar from '@/components/ActionBar';
+import StudyEmptyState from '@/components/StudyEmptyState';
 
 /**
  * The study screen — T-041.
@@ -14,10 +15,10 @@ import ActionBar from '@/components/ActionBar';
 export default function StudyPage() {
   return (
     <section className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold leading-tight">אין כרטיסיות כרגע</h1>
-      <p className="text-lg leading-relaxed text-ink-muted">
-        עוד לא נטענו מילים למאגר. ברגע שיהיו — הן יופיעו כאן, עשר דקות ביום.
-      </p>
+      {/* T-051: the heading and the paragraph moved into a shared component so
+          `/study` and `/cards` cannot describe the same empty queue in two
+          different ways. The action stays here — the two screens differ. */}
+      <StudyEmptyState />
       {/* F-027: an empty state is still a screen in the flow, and the way out of
           it is the only action on it. Marked so check:mobile measures this link
           and not whatever comes first in the DOM once the queue endpoint lands

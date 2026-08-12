@@ -223,7 +223,7 @@ describe('the flow-screen action bar (D-028 · F-027)', () => {
 
 **Done when:** `/studies` and `/cards` exist, carry the four-tab bar, and carry **no** action bar.
 
-- [ ] **2.1 (3 min) — `components/TabBar.test.ts` first** (fails: no such file):
+- [x] **2.1 (3 min) — `components/TabBar.test.ts` first** (fails: no such file):
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -266,11 +266,11 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
 });
 ```
 
-- [ ] **2.2 (5 min) — `components/TabBar.tsx`.** `'use client'`. `TABS` exactly as in *Interfaces*. Each tab: `<Link>` for the three real ones, `<button type="button" aria-disabled="true">` for העולם. Active = `pathname === href` → `aria-current="page"` + a 2px top indicator bar **and** a font-weight change (two non-colour channels). Lock icon: inline SVG, ⛔ never an emoji. Tapping העולם opens a bottom sheet: one sentence — `העולם ייפתח כשיהיה בו תוכן.` — and one `סגירה` button. ⛔ No date, no "בקרוב" screen.
-- [ ] **2.3 (2 min) — `app/(tabs)/layout.tsx`:** `<>{children}<TabBar /></>`. The route group is the structural guarantee that flow screens can never receive it.
-- [ ] **2.4 (3 min) — `components/StudyEmptyState.tsx` + `app/(tabs)/cards/page.tsx`.** Move the heading and paragraph out of `app/study/page.tsx` into the shared component; both routes render it. `/study` keeps its `חזרה למסך הבית` action inside `<ActionBar>` (flow screen). `/cards` renders `<Link href="/studies" data-primary-action="true">התחלת מנה יומית</Link>` **without** an ActionBar — D-028 forbids two bars, and § 4.2ב question 6 says a tab is a final destination that needs no "back". Record this label choice in the tick report: it reuses the `/studies` action's own label rather than minting new copy.
-- [ ] **2.5 (4 min) — `app/(tabs)/studies/page.tsx`.** Server component, same session pattern as `app/onboarding/page.tsx` (`readSupabaseEnv` → `createRouteClient` → `getUser`, redirect to `/login?expired=1` when either is missing). Read `exam_date` from `profiles`; render `daysUntilExamHe(daysUntilExam(examDate, todayIso))` when it is set, and the neutral line when it is not (⛔ no invented estimate). One action: `<Link href="/cards" data-primary-action="true">התחלת מנה יומית</Link>`. Top-anchored, ⛔ no `justify-center`.
-- [ ] **2.6 (2 min) — Verify.** Five commands. `/studies` and `/cards` are not in `ROUTES` yet, so `check:mobile` cannot see them — that is Task 4, and until then ⛔ no claim about their geometry.
+- [x] **2.2 (5 min) — `components/TabBar.tsx`.** `'use client'`. `TABS` exactly as in *Interfaces*. Each tab: `<Link>` for the three real ones, `<button type="button" aria-disabled="true">` for העולם. Active = `pathname === href` → `aria-current="page"` + a 2px top indicator bar **and** a font-weight change (two non-colour channels). Lock icon: inline SVG, ⛔ never an emoji. Tapping העולם opens a bottom sheet: one sentence — `העולם ייפתח כשיהיה בו תוכן.` — and one `סגירה` button. ⛔ No date, no "בקרוב" screen.
+- [x] **2.3 (2 min) — `app/(tabs)/layout.tsx`:** `<>{children}<TabBar /></>`. The route group is the structural guarantee that flow screens can never receive it.
+- [x] **2.4 (3 min) — `components/StudyEmptyState.tsx` + `app/(tabs)/cards/page.tsx`.** Move the heading and paragraph out of `app/study/page.tsx` into the shared component; both routes render it. `/study` keeps its `חזרה למסך הבית` action inside `<ActionBar>` (flow screen). `/cards` renders `<Link href="/studies" data-primary-action="true">התחלת מנה יומית</Link>` **without** an ActionBar — D-028 forbids two bars, and § 4.2ב question 6 says a tab is a final destination that needs no "back". Record this label choice in the tick report: it reuses the `/studies` action's own label rather than minting new copy.
+- [x] **2.5 (4 min) — `app/(tabs)/studies/page.tsx`.** Server component, same session pattern as `app/onboarding/page.tsx` (`readSupabaseEnv` → `createRouteClient` → `getUser`, redirect to `/login?expired=1` when either is missing). Read `exam_date` from `profiles`; render `daysUntilExamHe(daysUntilExam(examDate, todayIso))` when it is set, and the neutral line when it is not (⛔ no invented estimate). One action: `<Link href="/cards" data-primary-action="true">התחלת מנה יומית</Link>`. Top-anchored, ⛔ no `justify-center`.
+- [x] **2.6 (2 min) — Verify.** Five commands. `/studies` and `/cards` are not in `ROUTES` yet, so `check:mobile` cannot see them — that is Task 4, and until then ⛔ no claim about their geometry.
 
 ---
 
