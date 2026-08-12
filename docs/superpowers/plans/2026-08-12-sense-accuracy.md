@@ -914,7 +914,9 @@ git commit -m "loop(DEV): T-018 gold set from Hebrew Wordnet, D-025 applied via 
 4. Rule 5 as corrected by D-024 — `needsHumanReview` is true when `confidence === 'low'`, or `tagCount === 0` on the chosen sense, or the ambiguity class is `multi_pos`. `scorable` is `confidence !== 'low'`: a `low` item is shown as a marked card but never used as a scored item.
 5. An unknown (lemma, POS) → `route: 'no_candidate'`, `synsetId: null`, `confidence: 'low'`, `scorable: false`. ⛔ It never falls back to another POS.
 
-- [ ] **Step 1: Write the failing tests**
+⚠️ **Amended while executing (C-0054) — one deviation, recorded here so it is not a surprise at review.** The rule-4 branch returned `two_signal_disagree` when the second signal returned `null` for *every* candidate, i.e. when it had **no opinion at all**. That charges a **coverage** gap in the second source to the **accuracy** of rule 4 — the same conflation F-026 was (an R-005 gap scored as an R-006 miss). `SelectionRoute` gains `'no_second_signal'`; `confidence`, `needsHumanReview` and `scorable` are byte-for-byte unchanged, so nothing the learner sees moves. Task 5 is unaffected: `AccuracyReport` buckets by `Ambiguity` and CEFR band, never by `route`.
+
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/senseSelection.test.ts
@@ -1007,12 +1009,12 @@ describe('selectSense', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/senseSelection.test.ts`
 Expected: FAIL — `Failed to resolve import "./senseSelection"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ⚠️ **Measured C-0050 while executing Task 1: `tsconfig.json` sets `noUncheckedIndexedAccess: true`.** The snippet below indexes three times — `senses[0]` (twice) and `covered[0]` — and each yields `SenseRecord | undefined`, which `finish(chosen: SenseRecord | null, …)` rejects. `npm run typecheck` caught exactly this shape in Task 1's test. Widen `finish` to accept `SenseRecord | undefined` (and keep `?? null` on the way out), or narrow with an explicit guard. ⛔ Do not reach for `!` — a non-null assertion is the one fix that removes the check without answering it.
 
@@ -1108,18 +1110,18 @@ export function selectSense(
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/senseSelection.test.ts`
 Expected: PASS, 8 tests.
 
-- [ ] **Step 5: Prove two branches are measured, not assumed**
+- [x] **Step 5: Prove two branches are measured, not assumed**
 
 Mutation A: in the rule 3 branch, change `covered[0]` to `covered[covered.length - 1]`. Re-run. Expected: `prefers the lower sense number when H1 covers two candidates` FAILS.
 Mutation B: in `finish`, change `scorable` to `chosen !== null`. Re-run. Expected: `is low and keeps sense #1 when the signals disagree` FAILS.
 Restore both and re-run to green. **A mutation that does not turn a test red means that behaviour is currently unmeasured — add the test before moving on.**
 
-- [ ] **Step 6: Verify purity and commit**
+- [x] **Step 6: Verify purity and commit**
 
 ```bash
 npm run check:core && npx tsc --noEmit
