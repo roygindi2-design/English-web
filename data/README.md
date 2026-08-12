@@ -15,6 +15,8 @@ It never reports `0%` for a missing file — those mean opposite things.
 | `h2-wiktionary-en-he.tsv` | English Wiktionary EN→HE | CC BY-SA | same 2-column TSV as above. |
 | `h3-kaikki-en.jsonl` | kaikki.org / wiktextract | CC BY-SA | JSON Lines. One object per line with `word` and `translations: [{ lang_code, word }]`. |
 | `h4-word2word-en-he.tsv` | word2word | Apache-2.0 | same 2-column TSV as above. |
+| `wordnet-sense-index.tsv` | Princeton WordNet 3.1 `index.sense` + `cntlist`, converted locally | WordNet licence (permissive, attribution) | 5 columns, tab separated: `lemma<TAB>pos<TAB>synset_id<TAB>sense_number<TAB>tag_count`. `pos` uses the nine values of `POS_VALUES` in `lib/core/contentSchema.ts`. **Without this file the accuracy number cannot exist** — § 1.7.1 rule 4 needs sense order and tag counts. |
+| `h1-hebrew-wordnet-synsets.tsv` | Hebrew Wordnet, Univ. of Haifa — the synset-bearing export | permissive, no share-alike (verified C-0001, H1g) | 3 columns, tab separated: `synset_id<TAB>english<TAB>hebrew`. The 2-column file already in the repo has no synset ids, so rule 3 currently degrades to a lemma-level match. `GAP` and `!` markers preserved verbatim — the filter is ours (T-017). |
 
 ## Converting a source to the 2-column TSV
 

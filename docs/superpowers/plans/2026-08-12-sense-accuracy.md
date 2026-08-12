@@ -1171,7 +1171,7 @@ git commit -m "loop(DEV): T-018 sense selection — 1.7.1 rules 2/3/4/7"
 - `no_gold` items are excluded from every denominator and reported once as `noGold`.
 - `meetsThreshold` is `overall.accuracy !== null && overall.accuracy >= RELEASE_THRESHOLD`. A `null` accuracy is **not** a pass.
 
-- [ ] **Step 1: Write the failing tests for the arithmetic**
+- [x] **Step 1: Write the failing tests for the arithmetic**
 
 ```ts
 // lib/core/senseAccuracy.test.ts
@@ -1255,12 +1255,12 @@ describe('renderAccuracyMarkdown', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/senseAccuracy.test.ts`
 Expected: FAIL — `Failed to resolve import "./senseAccuracy"`.
 
-- [ ] **Step 3: Write the arithmetic**
+- [x] **Step 3: Write the arithmetic**
 
 ```ts
 // lib/core/senseAccuracy.ts
@@ -1397,12 +1397,12 @@ export function renderAccuracyMarkdown(
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/senseAccuracy.test.ts`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: Write the runner**
+- [x] **Step 5: Write the runner**
 
 ```js
 // scripts/measure-sense-accuracy.mjs
@@ -1516,7 +1516,7 @@ console.log(renderAccuracyMarkdown(report, provenance));
 console.log(`\nwritten to ${OUT}`);
 ```
 
-- [ ] **Step 6: Write the wiring test**
+- [x] **Step 6: Write the wiring test**
 
 ```ts
 // scripts/measure-sense-accuracy.test.ts
@@ -1551,7 +1551,7 @@ describe('measure-sense-accuracy.mjs', () => {
 });
 ```
 
-- [ ] **Step 7: Add the npm script and the two data/README rows**
+- [x] **Step 7: Add the npm script and the two data/README rows**
 
 In `package.json`, next to `"measure:coverage"`:
 
@@ -1566,7 +1566,7 @@ In `data/README.md`, append to the file table:
 | `h1-hebrew-wordnet-synsets.tsv` | Hebrew Wordnet, Univ. of Haifa — the synset-bearing export | permissive, no share-alike (verified C-0001, H1g) | 3 columns, tab separated: `synset_id<TAB>english<TAB>hebrew`. The 2-column file already in the repo has no synset ids, so rule 3 currently degrades to a lemma-level match. `GAP` and `!` markers preserved verbatim — the filter is ours (T-017). |
 ```
 
-- [ ] **Step 8: Run the runner and the full verification**
+- [x] **Step 8: Run the runner and the full verification**
 
 ```bash
 npm run measure:sense
@@ -1576,7 +1576,7 @@ npm run typecheck && npm run check:core && npm test && npm run build
 Expected from `measure:sense`: a report whose accuracy cells all read `unavailable`, whose provenance block names `h1-hebrew-wordnet.tsv` with **17,564** lines / **702** GAP / **3,301** low, and both CEFR files with `0 skipped`. **A run that prints a percentage today is a bug** — there is no sense inventory to select from.
 Expected from the four commands: all green. Paste the real tail of each into the commit message. ⛔ No completion claim without this output in the same message.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add lib/core/senseAccuracy.ts lib/core/senseAccuracy.test.ts \

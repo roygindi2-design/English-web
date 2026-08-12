@@ -1,0 +1,152 @@
+/**
+ * T-018 — accuracy of the § 1.7.1 selection rule against the Hebrew Wordnet
+ * gold set, in the three breakdowns the task asks for.
+ *
+ * ⛔ An empty bucket reports null, which renders as `unavailable`. 0% and
+ * "nothing to measure" are different facts and must never share a rendering.
+ *
+ * ⚠️ Two counters that must never be summed, for the reason F-026 measured:
+ * `no_gold` is a coverage fact (R-005) and lives outside every denominator;
+ * `miss` is an accuracy fact (R-006) and lives inside them.
+ */
+import type { Pos } from './contentSchema';
+import { BAND_ORDER, levelOf, type CefrBand, type LevelMap } from './cefrLevels';
+import { judge, type GoldSet } from './senseGold';
+import { classifyAmbiguity, type Ambiguity, type SenseInventory } from './senseInventory';
+
+/** Digest § 4: release gate ≥ 90% on the core. */
+export const RELEASE_THRESHOLD = 0.9;
+/** M4 baseline the number is compared against. */
+export const BASELINE_F1 = 65.2;
+
+export interface AccuracyCell {
+  readonly evaluated: number;
+  readonly hits: number;
+  readonly hitsLow: number;
+  readonly accuracy: number | null;
+}
+
+export interface AccuracyItem {
+  readonly lemma: string;
+  readonly pos: Pos;
+  readonly hebrew: string;
+}
+
+export interface AccuracyInput {
+  readonly items: readonly AccuracyItem[];
+  readonly inv: SenseInventory;
+  readonly gold: GoldSet;
+  readonly levels: LevelMap;
+}
+
+export type BandKey = CefrBand | 'unknown';
+
+export interface AccuracyReport {
+  readonly overall: AccuracyCell;
+  readonly byAmbiguity: Readonly<Record<Ambiguity, AccuracyCell>>;
+  readonly byBand: Readonly<Record<BandKey, AccuracyCell>>;
+  readonly noGold: number;
+  readonly meetsThreshold: boolean;
+}
+
+interface Tally { evaluated: number; hits: number; hitsLow: number }
+
+const blank = (): Tally => ({ evaluated: 0, hits: 0, hitsLow: 0 });
+
+function seal(t: Tally): AccuracyCell {
+  return {
+    evaluated: t.evaluated,
+    hits: t.hits,
+    hitsLow: t.hitsLow,
+    accuracy: t.evaluated === 0 ? null : (t.hits + t.hitsLow) / t.evaluated,
+  };
+}
+
+const AMBIGUITIES: readonly Ambiguity[] = ['monosemous', 'polysemous', 'multi_pos'];
+const BAND_KEYS: readonly BandKey[] = [...BAND_ORDER, 'unknown'];
+
+export function measureAccuracy(input: AccuracyInput): AccuracyReport {
+  const overall = blank();
+  // Full records rather than Maps + `!`: every key is present by construction,
+  // and a band added to BAND_ORDER later fails to compile here until it is
+  // given a bucket, instead of failing at runtime on a missing one.
+  const byAmbiguity: Record<Ambiguity, Tally> = {
+    monosemous: blank(), polysemous: blank(), multi_pos: blank(),
+  };
+  const byBand: Record<BandKey, Tally> = {
+    A1: blank(), A2: blank(), B1: blank(), B2: blank(),
+    C1: blank(), C2: blank(), unknown: blank(),
+  };
+  let noGold = 0;
+
+  for (const item of input.items) {
+    const verdict = judge(input.gold, item.lemma, item.hebrew);
+    // Before any bucket is touched: an item outside the gold set is outside the
+    // measurement entirely, not a zero inside it.
+    if (verdict === 'no_gold') { noGold += 1; continue; }
+
+    const ambiguity = classifyAmbiguity(input.inv, item.lemma, item.pos);
+    const hit = levelOf(input.levels, item.lemma, item.pos);
+    const buckets: Tally[] = [overall, byBand[hit?.band ?? 'unknown']];
+    // A lemma the sense inventory does not carry has no ambiguity class. It is
+    // still scored in `overall`; it is simply absent from this breakdown, which
+    // is why the three ambiguity rows need not sum to the overall row.
+    if (ambiguity !== null) buckets.push(byAmbiguity[ambiguity]);
+
+    for (const b of buckets) {
+      b.evaluated += 1;
+      if (verdict === 'hit') b.hits += 1;
+      else if (verdict === 'hit_low') b.hitsLow += 1;
+    }
+  }
+
+  const sealedOverall = seal(overall);
+  return {
+    overall: sealedOverall,
+    byAmbiguity: Object.freeze({
+      monosemous: seal(byAmbiguity.monosemous),
+      polysemous: seal(byAmbiguity.polysemous),
+      multi_pos: seal(byAmbiguity.multi_pos),
+    }),
+    byBand: Object.freeze({
+      A1: seal(byBand.A1), A2: seal(byBand.A2), B1: seal(byBand.B1),
+      B2: seal(byBand.B2), C1: seal(byBand.C1), C2: seal(byBand.C2),
+      unknown: seal(byBand.unknown),
+    }),
+    noGold,
+    meetsThreshold:
+      sealedOverall.accuracy !== null && sealedOverall.accuracy >= RELEASE_THRESHOLD,
+  };
+}
+
+function pct(cell: AccuracyCell): string {
+  return cell.accuracy === null ? 'unavailable' : `${(cell.accuracy * 100).toFixed(1)}%`;
+}
+
+function row(label: string, cell: AccuracyCell): string {
+  return `| ${label} | ${cell.evaluated} | ${cell.hits} | ${cell.hitsLow} | ${pct(cell)} |`;
+}
+
+export function renderAccuracyMarkdown(
+  r: AccuracyReport, provenance: readonly string[],
+): string {
+  const lines: string[] = [
+    '# Sense-selection accuracy — T-018 · R-006',
+    '',
+    '> Generated by `npm run measure:sense`. ⛔ Do not edit by hand.',
+    '> Gold answer: Hebrew Wordnet, **lemma level** — the export in `data/` carries no synset ids.',
+    '',
+    `**Release gate:** ≥ ${(RELEASE_THRESHOLD * 100).toFixed(0)}% · **M4 baseline:** ${BASELINE_F1} F1`,
+    `**Verdict:** ${r.meetsThreshold ? 'PASS' : 'not met'} · items with no gold answer: ${r.noGold}`,
+    '',
+    '| bucket | evaluated | hits | hits (low) | accuracy |',
+    '|---|---:|---:|---:|---:|',
+    row('**overall**', r.overall),
+  ];
+  for (const a of AMBIGUITIES) lines.push(row(a, r.byAmbiguity[a]));
+  for (const b of BAND_KEYS) lines.push(row(b, r.byBand[b]));
+  lines.push('', '## Provenance', '');
+  for (const p of provenance) lines.push(`- ${p}`);
+  lines.push('');
+  return lines.join('\n');
+}

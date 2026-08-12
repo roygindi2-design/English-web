@@ -12,6 +12,7 @@
     "check:core": "node scripts/check-core-purity.mjs",
     "check:mobile": "node scripts/verify-mobile.mjs",
     "measure:coverage": "node scripts/measure-coverage.mjs",
+    "measure:sense": "node scripts/measure-sense-accuracy.mjs",
     "verify": "npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile"
   },
   "dependencies": {
