@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans (or superpowers:subagent-driven-development) to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **סטטוס ביצוע (C-0057):** משימות 1 ו-2 ✅ בוצעו יחד — הן כותבות לאותו קובץ ולאותה טרנזקציה, ופיצולן היה משאיר מיגרציה שידוע שאין להחילה. משימות 3 (0007, T-049) ו-4 (שומר ההיגיינה) פתוחות.
+
 **Goal:** Land the three schema changes that `plan/01-vision.md` § "שכבה 2" marks as *cheap today, impossible retroactively* — track/exam fields on content rows, the two assembly-bank fields, and the world tables — **as empty columns and empty tables only**. Every existing row stays `NULL`. ⛔ No UI, no track-selection logic, no closed lists of function words or age ranges, and not one content row is classified.
 
 **Loop tasks covered:** **T-047** (Task 1), **T-048** (Task 2), **T-049** (Task 3). Task 4 is a hygiene guard on the migration directory itself, justified by a measured defect (two files share the `0003_` prefix) that this plan's own numbering would otherwise inherit.
@@ -117,11 +119,11 @@ public.world_messages      (id, user_id, conversation_id, author,
 
 **Files:** `supabase/migrations/0006_layer2_track_and_bank.sql` (create) · `lib/supabase/layer2.test.ts` (create)
 
-- [ ] Create `supabase/migrations/0006_layer2_track_and_bank.sql` with the header comment (what, why now, and "apply after 0005"), `begin;`, and the six `alter table … add column if not exists` statements exactly as in the Interfaces block.
-- [ ] Add the three named `exam_type` check constraints inside a single `do $$ … end $$` block, each guarded by `if not exists (select 1 from pg_constraint where conname = '…')`.
-- [ ] Add `create index if not exists words_exam_type_idx on public.words (exam_type) where exam_type is not null;` — partial, so it occupies nothing while every row is `NULL`.
-- [ ] Add `comment on column public.words.grade_level` stating in one line that the closed list is deliberately absent and needs a pedagogical source. Close with `commit;`.
-- [ ] Create `lib/supabase/layer2.test.ts` with the code below and run `npx vitest run lib/supabase/layer2.test.ts`.
+- [x] Create `supabase/migrations/0006_layer2_track_and_bank.sql` with the header comment (what, why now, and "apply after 0005"), `begin;`, and the six `alter table … add column if not exists` statements exactly as in the Interfaces block.
+- [x] Add the three named `exam_type` check constraints inside a single `do $$ … end $$` block, each guarded by `if not exists (select 1 from pg_constraint where conname = '…')`.
+- [x] Add `create index if not exists words_exam_type_idx on public.words (exam_type) where exam_type is not null;` — partial, so it occupies nothing while every row is `NULL`.
+- [x] Add `comment on column public.words.grade_level` stating in one line that the closed list is deliberately absent and needs a pedagogical source. Close with `commit;`.
+- [x] Create `lib/supabase/layer2.test.ts` with the code below and run `npx vitest run lib/supabase/layer2.test.ts`.
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -192,7 +194,7 @@ describe('0006 — T-047 track fields', () => {
 });
 ```
 
-- [ ] **Self-check by mutation, run each and record the failing test name:** ⓐ change one `add column if not exists exam_type` to `… not null default 'amiram'` → *"adds every new column as nullable"* must fail. ⓑ add `check (grade_level in ('1','2'))` → *"does NOT constrain grade_level"* must fail. ⓒ drop `'bagrut'` from one check → *"constrains exam_type to the three names"* must fail. ⓓ move the whole `words_exam_type_check` block into a `--` comment → the constraint test must fail (this is what stripping comments buys). Revert all four.
+- [x] **Self-check by mutation, run each and record the failing test name:** ⓐ change one `add column if not exists exam_type` to `… not null default 'amiram'` → *"adds every new column as nullable"* must fail. ⓑ add `check (grade_level in ('1','2'))` → *"does NOT constrain grade_level"* must fail. ⓒ drop `'bagrut'` from one check → *"constrains exam_type to the three names"* must fail. ⓓ move the whole `words_exam_type_check` block into a `--` comment → the constraint test must fail (this is what stripping comments buys). Revert all four.
 
 ---
 
@@ -200,13 +202,13 @@ describe('0006 — T-047 track fields', () => {
 
 **Files:** `supabase/migrations/0006_layer2_track_and_bank.sql` (modify — append before `commit;`) · `lib/supabase/layer2.test.ts` (modify) · `plan/03-for-roy.md` (modify)
 
-- [ ] Append to 0006, **inside the existing transaction**, before `commit;`:
+- [x] Append to 0006, **inside the existing transaction**, before `commit;`:
   `alter table public.word_progress add column if not exists is_active_this_week boolean not null default false;`
   and `alter table public.words add column if not exists lexical_class text;`
-- [ ] Append the two named check constraints (`words_lexical_class_check`, `words_lexical_class_agrees`) to the existing `do $$ … end $$` block, each with its own `if not exists (select 1 from pg_constraint …)` guard.
-- [ ] Add `comment on column public.words.lexical_class` and `comment on column public.words.is_function_word` — the first says NULL means *unknown* and the closed list of function words is not part of this task; the second says it is **superseded** by `lexical_class`, kept because dropping a column is destructive and is not Dev's call.
-- [ ] Add `comment on column public.word_progress.is_active_this_week` — one line: this is the assembly-bank flag, it stays on the **existing aggregate row** (W4: the free Supabase tier), and it is emphatically not a new events table.
-- [ ] Append the block below to `lib/supabase/layer2.test.ts` and run the file.
+- [x] Append the two named check constraints (`words_lexical_class_check`, `words_lexical_class_agrees`) to the existing `do $$ … end $$` block, each with its own `if not exists (select 1 from pg_constraint …)` guard.
+- [x] Add `comment on column public.words.lexical_class` and `comment on column public.words.is_function_word` — the first says NULL means *unknown* and the closed list of function words is not part of this task; the second says it is **superseded** by `lexical_class`, kept because dropping a column is destructive and is not Dev's call.
+- [x] Add `comment on column public.word_progress.is_active_this_week` — one line: this is the assembly-bank flag, it stays on the **existing aggregate row** (W4: the free Supabase tier), and it is emphatically not a new events table.
+- [x] Append the block below to `lib/supabase/layer2.test.ts` and run the file.
 
 ```ts
 describe('0006 — T-048 assembly-bank fields', () => {
@@ -250,8 +252,8 @@ describe('0006 — T-048 assembly-bank fields', () => {
 });
 ```
 
-- [ ] Add one row to the **פתוח** table in `plan/03-for-roy.md`: next free number, requester `DEV (C-00XX)`, today's date from `date -u`, asking PM/Roy to decide whether `is_function_word` is dropped in favour of `lexical_class` or kept as the canonical boolean — with the measured note that `not null default false` cannot express *unknown*. **חוסם? לא.**
-- [ ] **Self-check by mutation:** ⓐ make `lexical_class` `not null default 'content'` → *"adds lexical_class as NULLABLE"* must fail. ⓑ delete the `words_lexical_class_agrees` constraint → *"forbids … from contradicting each other"* must fail. ⓒ add `update public.words set lexical_class = 'content' where is_function_word = false;` → *"does not classify a single existing row"* must fail. ⓓ drop `not null` from the weekly flag → *"makes the weekly flag not-null"* must fail. Revert all four.
+- [x] Add one row to the **פתוח** table in `plan/03-for-roy.md`: next free number, requester `DEV (C-00XX)`, today's date from `date -u`, asking PM/Roy to decide whether `is_function_word` is dropped in favour of `lexical_class` or kept as the canonical boolean — with the measured note that `not null default false` cannot express *unknown*. **חוסם? לא.**
+- [x] **Self-check by mutation:** ⓐ make `lexical_class` `not null default 'content'` → *"adds lexical_class as NULLABLE"* must fail. ⓑ delete the `words_lexical_class_agrees` constraint → *"forbids … from contradicting each other"* must fail. ⓒ add `update public.words set lexical_class = 'content' where is_function_word = false;` → *"does not classify a single existing row"* must fail. ⓓ drop `not null` from the weekly flag → *"makes the weekly flag not-null"* must fail. Revert all four.
 
 ---
 
