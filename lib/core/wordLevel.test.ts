@@ -16,7 +16,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { buildLevelMap, type LevelEntry } from './cefrLevels';
-import { assignWordLevels, formatLevelReport } from './wordLevel';
+import { assignWordLevels, formatLevelReport, profileSourceOf } from './wordLevel';
 
 const map = buildLevelMap([
   { lemma: 'mean', pos: 'verb', band: 'A1' },
@@ -116,6 +116,27 @@ describe('assignWordLevels', () => {
       { headword: 'obfuscate', pos: 'verb', ownBand: 'C1' }, // profile harder
     ]);
     expect(r.words.map((w) => w.agreement)).toEqual(['profile_lower', 'profile_higher']);
+  });
+});
+
+describe('profileSourceOf', () => {
+  /**
+   * Added beyond the plan, and the emitter no longer decides this. The content bank
+   * currently holds no C1/C2 word, so collapsing the rule to a constant
+   * `() => 'cefr-j-1.5'` passed every emitter-level test — the corpus cannot reach the
+   * Octanove branch. Here it can.
+   */
+  it('attributes C1 and C2 to Octanove, every lower band to CEFR-J', () => {
+    expect((['A1', 'A2', 'B1', 'B2'] as const).map(profileSourceOf)).toEqual([
+      'cefr-j-1.5',
+      'cefr-j-1.5',
+      'cefr-j-1.5',
+      'cefr-j-1.5',
+    ]);
+    expect((['C1', 'C2'] as const).map(profileSourceOf)).toEqual([
+      'octanove-1.0',
+      'octanove-1.0',
+    ]);
   });
 });
 

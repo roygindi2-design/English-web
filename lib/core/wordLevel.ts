@@ -94,6 +94,21 @@ export function assignWordLevels(
   return { words: out, total: words.length, exactPos, lemmaOnly, unmatched, agree, disagree };
 }
 
+export type ProfileSource = 'cefr-j-1.5' | 'octanove-1.0';
+
+/**
+ * Which published profile a band came from. CEFR-J 1.5 stops at B2 and Octanove 1.0
+ * starts at C1, so the band alone determines the file.
+ *
+ * ⚠️ This lives here, pure, rather than inline in the emitter, because measured
+ * 2026-08-12 the content bank holds no C1/C2 word at all — an emitter-level test can
+ * only ever see the cefr-j branch, and a mutation collapsing this to a constant
+ * survived the whole suite. A rule no input can exercise is a rule no test protects.
+ */
+export function profileSourceOf(band: CefrBand): ProfileSource {
+  return band === 'C1' || band === 'C2' ? 'octanove-1.0' : 'cefr-j-1.5';
+}
+
 export function formatLevelReport(r: LevelReport): string {
   return (
     `${r.total} words · ${r.exactPos} exact_pos · ${r.lemmaOnly} lemma_only · ` +
