@@ -64,6 +64,18 @@ export interface CardFace {
    * contract, asserted below, not an accident.
    */
   readonly exampleSegments: readonly ExampleSegment[];
+  /**
+   * True only on the back of a card built from an unverified sense — D-024,
+   * `senses.needs_human_review` (migration `0003_low_confidence_is_visible.sql`).
+   *
+   * It lives here rather than being read off the sense inside the component for
+   * the reason TD-11 records, and the failure would be worse than TD-11's: the
+   * front of a production card is the Hebrew prompt, so a marker there tells the
+   * learner the QUESTION is unreliable before they have answered. Putting the
+   * flag on the face makes "back only" a property of the model that a test pins
+   * in both directions, instead of a habit of one JSX block.
+   */
+  readonly unverified: boolean;
 }
 
 interface CardBase {
@@ -82,7 +94,16 @@ export type Card =
   | (CardBase & { readonly direction: 'production'; readonly input: 'typed' });
 
 /** The parts of a stored sense a card actually renders. Tied to the stored shape on purpose. */
-export type CardSense = Pick<GeneratedSense, 'headword' | 'translationHe' | 'examples'>;
+export type CardSense = Pick<GeneratedSense, 'headword' | 'translationHe' | 'examples'> & {
+  /**
+   * `senses.needs_human_review` — the same boolean `parseBatchRecord` derives and the
+   * seed SQL writes. **Required, with no default on purpose.** An optional field
+   * defaulting to `false` means a sense nobody classified renders as *verified*: the
+   * exact shape of the `is_function_word` defect the layer-2 plan measured, and the
+   * inverse of what D-024 asks for. Every caller states it, or does not compile.
+   */
+  readonly needsHumanReview: boolean;
+};
 
 export interface CardContext {
   /** True the first time this learner meets the word — it selects the supportive sentence. */
@@ -148,8 +169,17 @@ function face(
   primaryLang: FaceLang,
   example: string | null,
   exampleSegments: readonly ExampleSegment[],
+  unverified: boolean,
 ): CardFace {
-  return { primary, primaryLang, secondary: null, example, exampleLang: 'en', exampleSegments };
+  return {
+    primary,
+    primaryLang,
+    secondary: null,
+    example,
+    exampleLang: 'en',
+    exampleSegments,
+    unverified,
+  };
 }
 
 export function buildCard(sense: CardSense, direction: CardDirection, ctx: CardContext): Card {
@@ -169,21 +199,29 @@ export function buildCard(sense: CardSense, direction: CardDirection, ctx: CardC
   const example = preferred ?? fallback ?? null;
 
   const segments = splitAroundTarget(example, headword);
-  const en = face(headword, 'en', null, []);
-  const he = face(translationHe, 'he', null, []);
+  // Both faces are built unverified:false. The flag is set once, on the back, in the
+  // same spread that already attaches the example — so there is exactly one line in
+  // this module where a face can become marked, whichever direction the card is in.
+  const en = face(headword, 'en', null, [], false);
+  const he = face(translationHe, 'he', null, [], false);
+  const backOnly = {
+    example,
+    exampleSegments: segments,
+    unverified: sense.needsHumanReview === true,
+  };
 
   return direction === 'recognition'
     ? {
         direction,
         front: en,
-        back: { ...he, example, exampleSegments: segments },
+        back: { ...he, ...backOnly },
         input: 'self',
         grades: BINARY_GRADES,
       }
     : {
         direction,
         front: he,
-        back: { ...en, example, exampleSegments: segments },
+        back: { ...en, ...backOnly },
         input: 'typed',
         grades: BINARY_GRADES,
       };

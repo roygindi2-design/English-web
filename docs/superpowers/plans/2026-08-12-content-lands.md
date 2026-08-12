@@ -530,7 +530,7 @@ export interface CardFace {
 
 **The decision this task makes, and why it is behaviour and not styling:** `needsHumanReview` could be read straight off the sense inside `Flashcard.tsx`. It must not be. TD-11 is the recorded lesson — the target-word highlight was reimplemented in React and drifted from core. The same failure here is worse: the marker would appear on the **front** of a production card, where the front is the Hebrew prompt, telling the learner the question is unreliable before they have answered. Putting `unverified` on `CardFace` makes "back only" a property of the model that a test can pin, in both directions.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // appended to lib/core/flashcard.test.ts
@@ -575,20 +575,20 @@ it('carries a text label, never colour alone', () => {
 });
 ```
 
-- [ ] **Step 2: Run and confirm they fail**
+- [x] **Step 2: Run and confirm they fail**
 
 Run: `npx vitest run lib/core/flashcard.test.ts components/Flashcard.test.ts`
 Expected: FAIL — `unverified` is not a property of `CardFace`; the marker string is absent.
 
-- [ ] **Step 3: Make `needsHumanReview` required on `CardSense`, and fix every existing call site**
+- [x] **Step 3: Make `needsHumanReview` required on `CardSense`, and fix every existing call site**
 
 ⚠️ This breaks existing callers on purpose. An optional field defaulting to `false` means a sense that nobody classified renders as *verified* — the exact shape of the `is_function_word` defect the layer-2 plan measured, and the inverse of D-024. Every existing fixture in `flashcard.test.ts`, `contentSchema.test.ts` and `app/dev/card/page.tsx` gets an explicit `needsHumanReview: false`.
 
-- [ ] **Step 4: Add `unverified` to `CardFace` and set it in `buildCard`**
+- [x] **Step 4: Add `unverified` to `CardFace` and set it in `buildCard`**
 
 `face()` takes a new final parameter. In `buildCard`, both `en` and `he` are built with `false`, and the **back** face is spread with `unverified: sense.needsHumanReview` — the same single place that already spreads `example` and `exampleSegments` onto the back.
 
-- [ ] **Step 5: Render the marker in `components/Flashcard.tsx`**
+- [x] **Step 5: Render the marker in `components/Flashcard.tsx`**
 
 Inside the existing `data-card-back` div, after the answer paragraph:
 
@@ -606,12 +606,12 @@ Inside the existing `data-card-back` div, after the answer paragraph:
 
 ⛔ No new colour, no new token, no `--warning`: the palette has 11 tokens and none of them means "warning". `text-ink-muted` is the discreet register T-045 asks for, the symbol is a second channel so colour is never alone, and `aria-hidden` keeps the screen reader on the sentence rather than on a decorative glyph.
 
-- [ ] **Step 6: Run everything and confirm pass**
+- [x] **Step 6: Run everything and confirm pass**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile`
 Expected: all pass; suite grows by 6 tests; `check:mobile` reports no horizontal scroll at 375px with the marker present.
 
-- [ ] **Step 7: Mutation check**
+- [x] **Step 7: Mutation check**
 
 | # | mutation | test that must fail |
 |---|---|---|
@@ -620,7 +620,7 @@ Expected: all pass; suite grows by 6 tests; `check:mobile` reports no horizontal
 | 3 | move the marker outside the `data-card-back` div | *renders the marker inside the back block* |
 | 4 | replace the text with a coloured dot only | *carries a text label, never colour alone* |
 
-- [ ] **Step 8: Update the plan files and commit**
+- [x] **Step 8: Update the plan files and commit**
 
 `plan/50-tasks.md`: T-045 → ✅ with the two halves named (schema already in `0003`, UI here). `plan/30-architecture.md`: a 3.1.x entry for the `unverified` face field.
 

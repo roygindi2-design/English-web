@@ -75,6 +75,23 @@ export default function Flashcard({
                 <EnText segments={card.back.exampleSegments} />
               </p>
             ) : null}
+            {/*
+              D-024: a translation that has not been checked by a human is SHOWN,
+              and marked. Back only — `card.back.unverified` is the single place
+              that decides, and on a production card the front is the Hebrew
+              prompt, where this sentence would read as "the question is wrong".
+              No new colour and no new token: the palette has 11 and none of them
+              means "warning" (lib/core/palette.ts). `text-ink-muted` is the
+              discreet register T-045 asks for, the glyph is a second channel so
+              colour is never alone, and aria-hidden keeps the screen reader on
+              the sentence rather than on decoration.
+            */}
+            {card.back.unverified ? (
+              <p className="flex items-center gap-2 text-sm text-ink-muted" data-card-unverified>
+                <span aria-hidden="true">◇</span>
+                טרם אומת — התרגום ממתין לאישור אנושי
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

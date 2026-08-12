@@ -519,6 +519,29 @@ try {
             `marked ${JSON.stringify(marks)}`,
           );
 
+          // T-045 · D-024. This fixture is the only one built from an unverified
+          // sense, and this is the only place in the whole suite where a real
+          // engine paints the marker: the unit tests measure the boolean and the
+          // source, neither of which can see a paragraph that renders empty or
+          // lands outside the revealed block.
+          const flag = page.locator('[data-card-back] [data-card-unverified]');
+          check(
+            (await flag.count()) === 1,
+            `${at} the unverified translation is marked on the back`,
+            'no [data-card-unverified] inside the revealed block',
+          );
+          const flagText = (await flag.allInnerTexts()).join('').replace(/[◇\s]/g, '');
+          check(
+            flagText.length > 0,
+            `${at} the unverified marker carries text, not a glyph alone`,
+            `marker read "${flagText}"`,
+          );
+          check(
+            (await page.locator('[data-card-front] [data-card-unverified]').count()) === 0,
+            `${at} the marker never appears on the front`,
+            'the learner is told the QUESTION is unreliable',
+          );
+
           for (const grade of ['again', 'good']) {
             const label = (await page.locator(`[data-grade="${grade}"]`).allInnerTexts()).join('');
             check(

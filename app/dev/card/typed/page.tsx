@@ -22,6 +22,8 @@ const FIXTURE = buildCard(
     headword: 'Lorem',
     translationHe: 'טקסט לדוגמה',
     examples: { supportive: 'The Lorem is only a layout fixture.', neutral: '' },
+    // false, unlike /dev/card: the unmarked back has to be measured too.
+    needsHumanReview: false,
   },
   'production',
   { isFirstEncounter: true },

@@ -10,7 +10,10 @@ import {
 } from './flashcard';
 import type { GeneratedSense } from './contentSchema';
 
-const sense: GeneratedSense = {
+// GeneratedSense plus the one field CardSense adds. Typed as the intersection rather
+// than as CardSense so the fixture still fails typecheck if a required field of the
+// stored shape is dropped — the reason it was pinned to GeneratedSense in the first place.
+const sense: GeneratedSense & { readonly needsHumanReview: boolean } = {
   headword: 'deliberate',
   pos: 'adjective',
   translationHe: 'מכוון',
@@ -21,6 +24,7 @@ const sense: GeneratedSense = {
   },
   items: [],
   distractors: [],
+  needsHumanReview: false,
 };
 
 const BOTH: readonly CardDirection[] = ['recognition', 'production'];
@@ -226,6 +230,7 @@ describe('exampleSegments (TD-11)', () => {
     headword: 'deliberate',
     translationHe: 'לשקול בכובד ראש',
     examples: { supportive: 'They deliberated all night.', neutral: 'We must deliberate first.' },
+    needsHumanReview: false,
   };
 
   it('splits the example around the inflected target', () => {
@@ -258,5 +263,45 @@ describe('exampleSegments (TD-11)', () => {
     expect(card.front.exampleSegments).toEqual([]);
     const bare = { ...segSense, examples: { supportive: '', neutral: '' } };
     expect(buildCard(bare, 'recognition', { isFirstEncounter: true }).back.exampleSegments).toEqual([]);
+  });
+});
+
+describe('unverified marker (T-045 · D-024)', () => {
+  // The one boolean the SQL of Task 3 writes to `senses.needs_human_review`, on its way
+  // to the card. It lives on CardFace and not on the sense the component reads, because
+  // "back only" has to be a property a test can pin — TD-11 is the recorded cost of
+  // re-deriving a card property inside React.
+  const UNVERIFIED = { ...sense, needsHumanReview: true };
+
+  it('marks the back, and only the back, of an unverified recognition card', () => {
+    const card = buildCard(UNVERIFIED, 'recognition', { isFirstEncounter: true });
+    expect(card.back.unverified).toBe(true);
+    expect(card.front.unverified).toBe(false);
+  });
+
+  it('marks the back, and only the back, of an unverified production card', () => {
+    // The front here is the Hebrew prompt. Marking it would tell the learner the
+    // QUESTION is unreliable before they have answered — the inverse of D-024,
+    // which asks for the unverified TRANSLATION to be flagged, not the prompt.
+    const card = buildCard(UNVERIFIED, 'production', { isFirstEncounter: false });
+    expect(card.back.unverified).toBe(true);
+    expect(card.front.unverified).toBe(false);
+  });
+
+  it('leaves both faces unmarked for a verified sense', () => {
+    for (const d of BOTH) {
+      const card = buildCard({ ...sense, needsHumanReview: false }, d, { isFirstEncounter: true });
+      expect(card.back.unverified).toBe(false);
+      expect(card.front.unverified).toBe(false);
+    }
+  });
+
+  it('does not let the flag leak into any other face field', () => {
+    // A spread in the wrong order would carry `needsHumanReview` itself onto the
+    // face, giving the component a second, unpinned way to read the same claim.
+    const card = buildCard(UNVERIFIED, 'recognition', { isFirstEncounter: true });
+    expect(Object.keys(card.back).sort()).toEqual(
+      ['example', 'exampleLang', 'exampleSegments', 'primary', 'primaryLang', 'secondary', 'unverified'].sort(),
+    );
   });
 });
