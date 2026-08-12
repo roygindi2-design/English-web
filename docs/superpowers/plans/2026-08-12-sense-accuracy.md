@@ -35,7 +35,7 @@ Run in this repo on 2026-08-12 (`awk -F'\t' '{print NF}' | sort | uniq -c`, `cut
 | English strings carrying more than one Hebrew gloss | **3,920** |
 | lines whose Hebrew side starts with `!` | **3,301** |
 | lines whose Hebrew side is a `GAP` record | **702** |
-| `data/cefrj-vocabulary-profile-1.5.csv` | 7,798 rows + header, columns `headword,pos,CEFR,…`, bands A1–B2 |
+| `data/cefrj-vocabulary-profile-1.5.csv` | **7,799** rows + header, columns `headword,pos,CEFR,…`, bands A1–B2 — ⚠️ **corrected during Task 2 (C-0051); the plan said 7,798.** The file's last line (`zoom,noun,B2,,,`) carries **no trailing newline**, so `wc -l` reports 7,799 total and a header-subtraction undercounts the data rows by one. The parser counts 7,799, and the four band counters sum to exactly that: A1 1,164 · A2 1,411 · B1 2,446 · B2 2,778. |
 | `data/octanove-vocabulary-profile-c1c2-1.0.csv` | 2,136 rows + header, same first three columns, bands C1–C2 |
 | Node in the loop environment | v22.22.2 |
 
@@ -338,7 +338,7 @@ git commit -m "loop(DEV): sense inventory + (lemma,POS) key for 1.7.1 rule 1"
 - **Band conflict → the lowest band wins.** If a lemma is both A2 and B2, the learner meets it at A2; the earlier band is the honest label for "when does this word become relevant". `BAND_ORDER` is the single ordering.
 - The header line (`headword,pos,CEFR,…`) is dropped by checking that column 3 parses as a band, not by counting lines.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/cefrLevels.test.ts
@@ -424,12 +424,12 @@ describe('levelOf', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/cefrLevels.test.ts`
 Expected: FAIL — `Failed to resolve import "./cefrLevels"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```ts
 // lib/core/cefrLevels.ts
@@ -566,12 +566,12 @@ export function levelOf(map: LevelMap, lemma: string, pos: Pos): LevelHit {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/cefrLevels.test.ts`
 Expected: PASS, 11 tests.
 
-- [ ] **Step 5: Run the parser over the two real files and record the counts**
+- [x] **Step 5: Run the parser over the two real files and record the counts**
 
 ```bash
 node --input-type=module -e "
@@ -585,7 +585,22 @@ for (const f of ['data/cefrj-vocabulary-profile-1.5.csv','data/octanove-vocabula
 
 Expected: `skipped` is **0** for both files, and `unknownPos` is small (CEFR-J: the `number` / `infinitive-to` rows; Octanove: 2). **If `skipped` is non-zero, stop — the parser is losing real rows, and that is a bug, not a data property.** Paste the real output into the commit message.
 
-- [ ] **Step 6: Verify purity and commit**
+⚠️ **The command as written above does not run.** Two corrections, both measured in C-0051, and both of which Task 3/5 will hit again:
+- Node cannot resolve `lib/core/`'s extensionless relative imports (`from './contentSchema'`), so the bare `--input-type=module -e` form dies with `ERR_MODULE_NOT_FOUND`. The `registerHooks` resolve shim from `scripts/measure-coverage.mjs` (lines 21–31) is **required**, not optional.
+- That shim's `withTsFormat` must set `format: **'module-typescript'**`, not `'module'`. With `'module'` Node skips type stripping and the import dies with `SyntaxError: Unexpected identifier 'Pos'` on `import { POS_VALUES, type Pos }`.
+
+**Real output (C-0051, Node v22.22.2):**
+
+```
+data/cefrj-vocabulary-profile-1.5.csv        | rows 7799 | entries 7974 | skipped 0 | unknownPos 31
+data/octanove-vocabulary-profile-c1c2-1.0.csv | rows 2136 | entries 2182 | skipped 0 | unknownPos 2
+merged: byLemmaPos 9948 | byLemma 8843
+band histogram (byLemma): {"A1":1083,"A2":1272,"B1":2174,"B2":2489,"C1":929,"C2":896}
+```
+
+`skipped` is **0 on both files** — the parser loses nothing. `unknownPos` 31 = the 30 `number` rows + the single `infinitive-to` row; Octanove's 2 = `remonstrate,vern` and `batter,` (empty). All 33 stay reachable through the lemma-only route, which is the whole reason they are `null` rather than dropped.
+
+- [x] **Step 6: Verify purity and commit**
 
 ```bash
 npm run check:core && npx tsc --noEmit
