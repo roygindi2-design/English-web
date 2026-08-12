@@ -84,6 +84,29 @@ describe('classifyGloss — R-007 damaged records', () => {
     expect(gape.kind).toBe('keep');
   });
 
+  it('drops GAP! — the spelling the real Hebrew Wordnet export actually uses', () => {
+    // Measured on data/h1-hebrew-wordnet.tsv, 2026-08-12 (C-0052): the file
+    // contains **702** lines whose Hebrew side is exactly `GAP!` and **zero**
+    // lines spelled `GAP` or `GAP <note>`. The synthetic fixture this suite was
+    // written against never existed in the data, so D-025's "GAP is not loaded"
+    // was passing 702 records through as high-confidence Hebrew glosses.
+    expect(classifyGloss(asRawGloss('GAP!'))).toEqual({
+      kind: 'drop',
+      reason: 'gap_record',
+    });
+  });
+
+  it('drops PSEUDOGAP! separately from GAP, and still not a word starting with GAP', () => {
+    // 3 lines in the same file. Not named by D-025, so it gets its own reason
+    // rather than being folded into GAP's 702 — but it carries zero Hebrew
+    // characters, so loading it could only ever produce a fabricated gloss.
+    expect(classifyGloss(asRawGloss('PSEUDOGAP!'))).toEqual({
+      kind: 'drop',
+      reason: 'pseudo_gap',
+    });
+    expect(classifyGloss(asRawGloss('גַּפְרוּר')).kind).toBe('keep');
+  });
+
   it('drops an empty or whitespace-only gloss', () => {
     expect(classifyGloss(asRawGloss('   ')).kind).toBe('drop');
     expect(classifyGloss(asRawGloss('!')).kind).toBe('drop');

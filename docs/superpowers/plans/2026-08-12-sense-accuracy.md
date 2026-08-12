@@ -644,7 +644,36 @@ git commit -m "loop(DEV): T-010 pure half — CEFR band map from CEFR-J + Octano
 - `hit_low` is a hit against a `!` record only. It is reported as a separate column, never folded into `hit` silently, because a `!` gold answer is itself flagged as uncertain by the source.
 - A line without exactly two tab-separated columns increments `malformed` and is skipped. Measured today: **0 such lines out of 17,564** — so a non-zero count in a future export is a signal, not noise.
 
-- [ ] **Step 1: Write the failing tests**
+> 🔴 **Corrected during Task 3 (C-0052) — the plan's own fixture hid a live defect.**
+> The fixture line above is `nothing\tGAP no lexical item`. **That spelling does not
+> occur in the file even once.** Measured on `data/h1-hebrew-wordnet.tsv`:
+> **702** lines whose Hebrew side is exactly `GAP!`, **3** exactly `PSEUDOGAP!`,
+> and **0** matching `GAP` or `GAP <note>` — and those 705 lines are precisely the
+> set of lines carrying zero Hebrew characters.
+> `lexicon.ts`'s `GAP_RECORD = /^GAP(\s|$)/` therefore matched **none** of them, so
+> D-025's "GAP is not loaded" was loading all 702 as **`confidence: 'high'`** glosses
+> (the `!` is trailing, so they were not even marked `low`). The first real run of
+> this module printed `gap: 0`, not 702 — the discrepancy against the plan's own
+> measured table is what surfaced it.
+> **Fixed in `lib/core/lexicon.ts`, where D-025 lives:** `/^GAP(!|\s|$)/`, plus a
+> separate `PSEUDO_GAP_RECORD` with its own drop reason `pseudo_gap` (D-025 names
+> `GAP` and only `GAP`, so the 3 are counted apart from the 702 and never summed in).
+> `GoldSet` gained `droppedPseudoGap` accordingly. **After the fix the real run
+> reproduces the plan's table exactly:** `lines 17564 · gap 702 · low 3301 ·
+> malformed 0`. ⚠️ **Tasks 4 and 5 inherit this:** `judge()` would have returned
+> `miss` — never `no_gold` — for 500 lemmas whose only gold answer was the literal
+> string `GAP!`, charging R-005's coverage gap straight to R-006's accuracy, which
+> is the exact failure the `miss`/`no_gold` split exists to prevent.
+> 📌 Recorded as **F-026** for the PM: confirm that `PSEUDOGAP!` drops (it cannot
+> be shown either way — it holds no Hebrew) and whether it belongs under D-025.
+
+> ⚠️ **Task 4 trap, carried over from Tasks 1–2 and hit again here:** the plan's
+> implementation writes `normalizeEnglish(cols[0])` / `asRawGloss(cols[1])`. Under
+> `noUncheckedIndexedAccess` both are `string | undefined` and `tsc` rejects them
+> (`TS2532`) **even after** the `cols.length !== 2` guard — length checks do not
+> narrow an index signature. Bind to locals and test them for `undefined`.
+
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/senseGold.test.ts
@@ -712,12 +741,12 @@ describe('judge', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/senseGold.test.ts`
 Expected: FAIL — `Failed to resolve import "./senseGold"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```ts
 // lib/core/senseGold.ts
@@ -808,24 +837,36 @@ export function judge(gold: GoldSet, lemma: string, hebrew: string): GoldVerdict
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/senseGold.test.ts`
 Expected: PASS, 8 tests.
 
-- [ ] **Step 5: Run it over the real 17,564-line file**
+- [x] **Step 5: Run it over the real 17,564-line file**
+
+⚠️ **The command as written does not run** — flaws ⓑ+ⓒ from Task 2, exactly as predicted
+there. Node cannot resolve `lib/core/`'s extensionless imports (`ERR_MODULE_NOT_FOUND`) and
+will not strip types without `format: 'module-typescript'`. Copy the `registerHooks` shim
+from `scripts/measure-coverage.mjs` into a throwaway `.mjs` **at the repo root** (a file in
+`scripts/` resolves `./lib/core/...` relative to itself and fails), run it, delete it:
 
 ```bash
-node --input-type=module -e "
-import { readFileSync } from 'node:fs';
+# measure-gold-tmp.mjs at the repo root — registerHooks shim + withTsFormat,
+# copied verbatim from scripts/measure-coverage.mjs, then:
 const { buildGoldSet } = await import('./lib/core/senseGold.ts');
 const g = buildGoldSet(readFileSync('data/h1-hebrew-wordnet.tsv','utf8'));
-console.log({ lines: g.lines, lemmas: g.byLemma.size, gap: g.droppedGap, empty: g.droppedEmpty, low: g.lowGlosses, malformed: g.malformed });"
+console.log({ lines: g.lines, lemmas: g.byLemma.size, gap: g.droppedGap,
+             pseudoGap: g.droppedPseudoGap, empty: g.droppedEmpty,
+             low: g.lowGlosses, malformed: g.malformed });
 ```
 
+**Actual output, C-0052, after the `GAP!` fix:** `lines 17564 · lemmas 10049 · gap 702 ·
+pseudoGap 3 · empty 0 · low 3301 · malformed 0` — plus `acceptedGlosses 13460` and
+`lemmasWithOnlyLowGlosses 2185`. **`lemmas` fell 10,549 → 10,049 when the fix landed:**
+500 lemmas whose *only* record was a `GAP!` correctly left the measurable set.
 Expected, from the counts measured on 2026-08-12: `lines` 17564 · `gap` 702 · `low` 3301 · `malformed` 0. `lemmas` will be **below** the 10,611 distinct English strings, because `GAP`-only lemmas disappear. **If `malformed` is not 0, the splitter is wrong — every line in that file has exactly two columns.** Paste the real output into the commit message.
 
-- [ ] **Step 6: Verify purity and commit**
+- [x] **Step 6: Verify purity and commit**
 
 ```bash
 npm run check:core && npx tsc --noEmit

@@ -24,7 +24,10 @@ export function asRawGloss(s: string): RawGloss {
 }
 
 export type GlossVerdict =
-  | { readonly kind: 'drop'; readonly reason: 'gap_record' | 'empty' }
+  | {
+      readonly kind: 'drop';
+      readonly reason: 'gap_record' | 'pseudo_gap' | 'empty';
+    }
   | {
       readonly kind: 'keep';
       readonly confidence: TranslationConfidence;
@@ -75,12 +78,31 @@ export function normalizeEnglish(s: string): string {
 /**
  * `GAP` as a standalone token — not a word that merely starts with those
  * letters. "GAPE" is a legitimate gloss; "GAP no lexical item" is not.
+ *
+ * ⚠️ `!` is part of the terminator set, and that is not cosmetic. Measured on
+ * the real export (`data/h1-hebrew-wordnet.tsv`, 2026-08-12, C-0052): the file
+ * carries **702** lines spelled exactly `GAP!` and **zero** spelled `GAP` or
+ * `GAP <note>`. Without the `!`, D-025's "GAP is not loaded" silently loaded
+ * all 702 as high-confidence Hebrew — and the trailing `!` is not a leading
+ * one, so they were not even marked `low`.
  */
-const GAP_RECORD = /^GAP(\s|$)/;
+const GAP_RECORD = /^GAP(!|\s|$)/;
+
+/**
+ * The wordnet's second marker, 3 lines in the same file. Kept as its own reason
+ * rather than folded into `gap_record`: D-025 names `GAP` and only `GAP`, so
+ * the counts must stay separable for the PM to rule on it. It is dropped either
+ * way — measured, it carries zero Hebrew characters, so the only alternative is
+ * putting the literal string "PSEUDOGAP!" in front of a learner.
+ */
+const PSEUDO_GAP_RECORD = /^PSEUDOGAP(!|\s|$)/;
 
 export function classifyGloss(raw: RawGloss): GlossVerdict {
   const trimmed = String(raw).trim();
   if (trimmed === '') return { kind: 'drop', reason: 'empty' };
+  if (PSEUDO_GAP_RECORD.test(trimmed)) {
+    return { kind: 'drop', reason: 'pseudo_gap' };
+  }
   if (GAP_RECORD.test(trimmed)) return { kind: 'drop', reason: 'gap_record' };
 
   const flags: GlossFlag[] = [];
