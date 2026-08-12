@@ -23,6 +23,14 @@
 | `lib/core/coverage.ts` | חשבון הכיסוי, אגנוסטי למקור. `measureCoverage(headwords, sources, policy)` | ✅ |
 | `lib/core/sources.ts` | טקסט → רשומות. הפונקציות מקבלות **תוכן** של קובץ, לעולם לא נתיב | ✅ |
 | `scripts/measure-coverage.mjs` | **השכבה הבלתי-טהורה היחידה.** קוראת `data/`, כותבת `docs/coverage-report.md` | ⛔ בכוונה |
+| `lib/core/senseInventory.ts` | 📐 **מתוכנן C-0047** (T-018, משימה 1) — מפתח (lemma, POS) של כלל 1 ב-1.7.1 + סיווג monosemous/polysemous/multi_pos | ✅ |
+| `lib/core/cefrLevels.ts` | 📐 **מתוכנן C-0047** (T-010, החצי הטהור) — CSV → `(lemma, POS) → רמת CEFR`. פיצול CSV מודע-מרכאות · POS לא מזוהה נשמר `null` ולא מנוחש · התנגשות רמות → הרמה **הנמוכה** | ✅ |
+| `lib/core/senseGold.ts` | 📐 **מתוכנן C-0047** (T-018, משימה 3) — Hebrew Wordnet → תשובה ידועה. D-025 מיושם **אך ורק** דרך `classifyGloss` מ-`lexicon.ts` | ✅ |
+| `lib/core/senseSelection.ts` | 📐 **מתוכנן C-0047** (T-018, משימה 4) — כללי 2/3/4/7 של 1.7.1. כל הקלטים מוזרקים, ולכן הכלל מוכח לפני שקובץ המקור נוחת | ✅ |
+| `lib/core/senseAccuracy.ts` | 📐 **מתוכנן C-0047** (T-018, משימה 5) — חשבון הדיוק בשלושת הפילוחים + רינדור. שער שחרור 90%, בסיס השוואה 65.2 F1 | ✅ |
+| `scripts/measure-sense-accuracy.mjs` | 📐 **מתוכנן C-0047** — השכבה הבלתי-טהורה השנייה. קוראת `data/`, כותבת `docs/sense-accuracy-report.md`. ⛔ מדפיסה `unavailable` כשאין מלאי משמעויות, לעולם לא 0% | ⛔ בכוונה |
+
+> 🔴 **חוב שנרשם C-0047 ואינו מטופל בתוכנית המדידה:** `lib/core/lexicon.ts:110` (`displayableGloss`) מחזיר `null` ל-`low` לפי D-013, בעוד D-024/D-025 קובעים ש-`low` **כן** מוצג ככרטיסייה מסומנת ומוחרג מ**ניקוד** בלבד. אותה סתירה בדיוק חיה ב-SQL: `supabase/migrations/0002_content_bank.sql:154-175` מסננת `translation_confidence <> 'low'` (סומן על ידי סוכן התוכן ב-C-0042/C-0043). שניהם שייכים ל-T-045; תיקון מתוך תוכנית מדידה הוא דליפת היקף, ולכן התוכנית עוקפת אותם בכך שהיא צורכת את `classifyGloss` ישירות ואינה קוראת ל-`displayableGloss` כלל.
 
 שלושה כללים שנקבעו כאן ומחייבים כל שכבת מדידה עתידית:
 
