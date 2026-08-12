@@ -105,15 +105,25 @@ export function parseAnkiNote(note: AnkiNote): NoteResult {
 
   const audio = slots.find((s) => s.audio !== null)?.audio ?? undefined;
 
+  // F-028: the TRANSLIT_NAME filter is applied ALWAYS, on both sides. The old
+  // `length === 1` shortcut skipped it, so a lone transliteration field was promoted
+  // to a role it can never fill. A field the deck itself named as a pronunciation aid
+  // is not the meaning side and is not the English side — in either script.
   const hebrew = slots.filter((s) => s.script === 'hebrew' || s.script === 'mixed');
   if (hebrew.length === 0) return { ok: false, reason: 'no_hebrew_field' };
-  const back = pickSingle(hebrew.length === 1 ? hebrew : hebrew.filter((s) => !TRANSLIT_NAME.test(s.name)));
+  const hebrewMeaning = hebrew.filter((s) => !TRANSLIT_NAME.test(s.name));
+  if (hebrewMeaning.length === 0) return { ok: false, reason: 'no_hebrew_field' };
+  const back = pickSingle(hebrewMeaning);
   if (back === null) return { ok: false, reason: 'ambiguous_latin_fields' };
 
   const latin = slots.filter((s) => s.script === 'latin');
   if (latin.length === 0) return { ok: false, reason: 'no_latin_field' };
   const named = latin.filter((s) => TRANSLIT_NAME.test(s.name));
-  const front = pickSingle(latin.length === 1 ? latin : latin.filter((s) => !TRANSLIT_NAME.test(s.name)));
+  const english = latin.filter((s) => !TRANSLIT_NAME.test(s.name));
+  // A deck of Hebrew + romanisation only has no English side at all. That is a missing
+  // field, not an ambiguous one — and it must never become `front` (ApkgCard: "English, always").
+  if (english.length === 0) return { ok: false, reason: 'no_latin_field' };
+  const front = pickSingle(english);
   if (front === null) return { ok: false, reason: 'ambiguous_latin_fields' };
 
   // Defensive: a slot whose text is empty classifies as `empty` and never reaches

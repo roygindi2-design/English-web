@@ -395,6 +395,18 @@
 
 **‏23 בדיקות חדשות; הסוויטה 687 (מ-664), 46 קבצים.** ⛔ אפס תלויות חדשות · `check:core` עובר (‏`wordLevel.ts` טהור) · ⛔ `senses.cefr_level` לא נגעו בה, ובדיקה נועלת שהמילה `senses` אינה מופיעה בקובץ שנוצר.
 
+### 3.1.23 סגירת F-028 — סינון התעתיק חל תמיד, בשני הכתבים (C-0069)
+
+**שורש הפגם היה קיצור ולא כלל.** `pickSingle(latin.length === 1 ? latin : latin.filter(!TRANSLIT_NAME))` דילג על הסינון בדיוק במקרה שבו הוא הכרחי: חפיסה שיש בה שדה עברי ושדה תעתיק ו**אין בה שדה אנגלית כלל**. **שוחזר חי לפני התיקון:** `parseAnkiNote({fieldNames:['עברית','תעתיק'], flds:'בית␟bayit'})` → `{ok:true, front:'bayit', translit:'bayit'}` — אותו ערך בשני התפקידים, כלומר רומניזציה שמוצגת כמילה האנגלית, בסתירה להגדרת `ApkgCard` ("English, always"); ובחפיסה שהתעתיק בה ראשון, `apkgIngestDecision(deck,'permitted')` החזיר **`{ingest:true, reasons:[]}`** — קליטה של חפיסה עברית דרך השער שנבנה כדי לסרב לה.
+
+**התיקון הוא הסרת הקיצור בשני הצדדים, ולא טלאי בצד הלטיני.** הסינון חל **תמיד**: `english = latin.filter(!TRANSLIT_NAME)`, ו-`english.length === 0` → `no_latin_field` — **שדה חסר, לא שדה דו-משמעי**. הצד העברי קיבל את אותו טיפול (`hebrewMeaning`), כי שדה שהחפיסה עצמה כינתה "תעתיק"/"הגייה" אינו צד המשמעות — בשום כתב.
+
+**⚠️ מה שנמדד אחרי התיקון, ונשאר במכוון:** אותה חפיסה מחזירה עדיין `direction='en_to_he'`, משום ש-`classifyDeck` קורא כיוון מ**כתב** שדה המיון ולא משמו. אבל היא כבר אינה נקלטת: `parsed=0`, `rejected.no_latin_field=1`, ולכן `{ingest:false, reasons:['parse_rate_too_low']}`. הפער הנותר הוא **בשם הנימוק**, לא בהכרעה. הרחבת `classifyDeck` לקרוא שמות שדות היא שינוי התנהגות מעבר למה ש-F-028 ביקש, ולכן לא נעשה כאן.
+
+**ארבע מוטציות רצו; שתיים הפילו בדיקה בשמה ושתיים הן מוטציות שקולות.** החזרת הקיצור `latin.length === 1` (מוטציה 1) ו-`hebrew.length === 1` (מוטציה 3) **אינן משנות התנהגות** אחרי התיקון: שומר ה-`length === 0` שקודם להן מחזיר `no_latin_field`/`no_hebrew_field` לפני ש-`pickSingle` בכלל רץ, וכשהשומר אינו יורה שתי הרשימות זהות. הריגה: מחיקת השומר (מוטציה 2) → *rejects a deck whose only Latin field is the transliteration* + *refuses a translit-first deck end to end* · הסרת הסינון כליל (מוטציה 4) → **5 בדיקות**, כולל בקרת חפיסת F-019 בת 4 השדות.
+
+**חמש בדיקות חדשות** (`describe('F-028 …')`), ובהן בקרה מפורשת שחפיסת F-019 האמיתית עדיין נקראת נכון (`direction='he_to_en'`, `front='good morning'`, `translit='boker tov'`) ובדיקה ש-`front` ו-`translit` לעולם אינם אותו ערך. **ארבע הפקודות רצו טרי:** typecheck ✅ · check:core `/lib/core purity: OK` ✅ · **692 בדיקות ✅ (מ-687, 46 קבצים)** · build ✅ `Compiled successfully in 1955ms`.
+
 ### 3.2 PWA
 
 | # | הכלל | סטטוס |

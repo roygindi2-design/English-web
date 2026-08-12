@@ -250,3 +250,48 @@ describe('apkgIngestDecision', () => {
     expect(MIN_PARSE_RATE).toBe(0.95);
   });
 });
+
+/**
+ * F-028 (C-0067 depth review) — false-accept, closed in C-0069.
+ * `latin.length === 1` skipped the TRANSLIT_NAME filter, so a deck with a Hebrew
+ * field and a transliteration field and NO English field promoted the romanisation
+ * to `front` — which ApkgCard defines as "English, always". Reproduced live before
+ * the fix: parseAnkiNote(['עברית','תעתיק'] / 'BAYIT|bayit') returned
+ * {ok:true, front:'bayit', translit:'bayit'}, and a translit-first deck reached
+ * {ingest:true, reasons:[]} with a permitted licence.
+ */
+describe('F-028 — a romanisation is never an English front', () => {
+  it('rejects a deck whose only Latin field is the transliteration', () => {
+    expect(parseAnkiNote({ fieldNames: ['עברית', 'תעתיק'], flds: f('בית', 'bayit'), tags: '' }))
+      .toEqual({ ok: false, reason: 'no_latin_field' });
+  });
+
+  it('rejects symmetrically when the only Hebrew-script field is named as a transliteration', () => {
+    expect(parseAnkiNote({ fieldNames: ['תעתיק', 'English'], flds: f('בית', 'house'), tags: '' }))
+      .toEqual({ ok: false, reason: 'no_hebrew_field' });
+  });
+
+  it('never returns the same field as both front and translit', () => {
+    const r = parseAnkiNote(teachMeHebrew);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.card.front).not.toBe(r.card.translit);
+  });
+
+  it('refuses a translit-first deck end to end, even with a permitted licence', () => {
+    const deck = classifyDeck([{ fieldNames: ['תעתיק', 'עברית'], flds: f('bayit', 'בית'), tags: '' }]);
+    expect(deck.parsed).toBe(0);
+    expect(deck.rejected.no_latin_field).toBe(1);
+    const d = apkgIngestDecision(deck, 'permitted');
+    expect(d.ingest).toBe(false);
+    expect(d.reasons).toContain('parse_rate_too_low');
+  });
+
+  it('still reads the four-field F-019 deck correctly — the control that must not regress', () => {
+    const s = classifyDeck(f019);
+    expect(s.direction).toBe('he_to_en');
+    expect(s.parsed).toBe(3);
+    expect(s.cards[0]?.front).toBe('good morning');
+    expect(s.cards[0]?.translit).toBe('boker tov');
+  });
+});
