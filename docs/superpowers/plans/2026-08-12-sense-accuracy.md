@@ -115,7 +115,7 @@ This is the same shape as the coverage plan: build against fixtures now, and the
 - `classifyAmbiguity` precedence is **multi_pos first**: rule 5 names "מילה רב-POS" as its own risk category, so a lemma living under two POS is `multi_pos` even when each individual POS has one sense. Then `polysemous` when that (lemma, POS) has > 1 sense, else `monosemous`. Returns `null` when the lemma is absent from the inventory — the caller must not treat an unknown word as monosemous.
 - Senses are stored sorted by `senseNumber` ascending, so `sensesFor(...)[0]` is WordNet sense #1 and Task 4 never re-sorts.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/senseInventory.test.ts
@@ -148,7 +148,10 @@ describe('buildInventory', () => {
       rec('bank', 'noun', '08420278-n', 1, 40),
     ]);
     expect(sensesFor(inv, 'bank', 'noun').map((s) => s.senseNumber)).toEqual([1, 2]);
-    expect(sensesFor(inv, 'bank', 'noun')[0].synsetId).toBe('08420278-n');
+    // Mapped, not indexed: `[0].synsetId` does not compile under
+    // noUncheckedIndexedAccess, and the mapped form asserts the whole order.
+    expect(sensesFor(inv, 'bank', 'noun').map((s) => s.synsetId))
+      .toEqual(['08420278-n', '09213565-n']);
   });
 
   it('reports size as the number of distinct (lemma, POS) keys, not records', () => {
@@ -191,12 +194,12 @@ describe('classifyAmbiguity', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/senseInventory.test.ts`
 Expected: FAIL — `Failed to resolve import "./senseInventory"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```ts
 // lib/core/senseInventory.ts
@@ -276,16 +279,18 @@ export function classifyAmbiguity(
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/senseInventory.test.ts`
 Expected: PASS, 8 tests.
 
-- [ ] **Step 5: Prove the multi_pos precedence test measures something**
+- [x] **Step 5: Prove the multi_pos precedence test measures something**
 
-Temporarily swap the last two lines of `classifyAmbiguity` so that the sense-count check runs before the POS check. Re-run. Expected: the `multi_pos even when each POS is individually monosemous` test FAILS (`'monosemous'` received). Restore the order and re-run to green. **If it does not fail, the test is decorative — fix the test, not the code.**
+⚠️ **Executed C-0050, and the plan's prediction was wrong.** Swapping the two branches so the sense-count check runs first left all 8 tests green. Reason: in `multi_pos even when each POS is individually monosemous` each POS holds exactly one sense, so `senses.length > 1` is false under *both* orderings and control reaches the POS check either way. That test proves multi-POS detection; it cannot prove the **precedence**.
 
-- [ ] **Step 6: Verify purity and commit**
+A ninth test was added — `is multi_pos, not polysemous, when the lemma is both` (`bank` with two noun senses plus one verb sense), the only shape where the two orderings diverge. The same mutation now fails with `expected 'polysemous' to be 'multi_pos'`. Mutation B (reversing the sort comparator) fails `sorts senses by sense number…` with `expected [ 2, 1 ] to deeply equal [ 1, 2 ]`. Both restored to green.
+
+- [x] **Step 6: Verify purity and commit**
 
 ```bash
 npm run check:core && npx tsc --noEmit
@@ -952,6 +957,8 @@ Run: `npx vitest run lib/core/senseSelection.test.ts`
 Expected: FAIL — `Failed to resolve import "./senseSelection"`.
 
 - [ ] **Step 3: Write the implementation**
+
+⚠️ **Measured C-0050 while executing Task 1: `tsconfig.json` sets `noUncheckedIndexedAccess: true`.** The snippet below indexes three times — `senses[0]` (twice) and `covered[0]` — and each yields `SenseRecord | undefined`, which `finish(chosen: SenseRecord | null, …)` rejects. `npm run typecheck` caught exactly this shape in Task 1's test. Widen `finish` to accept `SenseRecord | undefined` (and keep `?? null` on the way out), or narrow with an explicit guard. ⛔ Do not reach for `!` — a non-null assertion is the one fix that removes the check without answering it.
 
 ```ts
 // lib/core/senseSelection.ts
