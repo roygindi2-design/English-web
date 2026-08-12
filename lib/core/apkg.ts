@@ -136,3 +136,78 @@ export function parseAnkiNote(note: AnkiNote): NoteResult {
 function pickSingle(list: readonly Slot[]): Slot | null {
   return list.length === 1 ? (list[0] ?? null) : null;
 }
+
+export type DeckDirection = 'en_to_he' | 'he_to_en' | 'unknown';
+export type CommercialLicence = 'permitted' | 'forbidden' | 'unknown';
+
+const REJECT_REASONS: readonly NoteReject[] = [
+  'field_count_mismatch', 'no_hebrew_field', 'no_latin_field',
+  'ambiguous_latin_fields', 'empty_after_markup',
+];
+
+export interface DeckSummary {
+  readonly notes: number;
+  readonly parsed: number;
+  readonly rejected: Readonly<Record<NoteReject, number>>;
+  readonly direction: DeckDirection;
+  readonly cards: readonly ApkgCard[];
+}
+
+/**
+ * Direction is read from the FIRST field of the note type — Anki's sort field, i.e.
+ * what the deck's author put on the front. It is a fact about the SOURCE;
+ * `parseAnkiNote` still normalises every card to English-front regardless.
+ */
+export function classifyDeck(notes: readonly AnkiNote[]): DeckSummary {
+  const rejected = Object.fromEntries(REJECT_REASONS.map((r) => [r, 0])) as Record<NoteReject, number>;
+  const cards: ApkgCard[] = [];
+  const directions = new Set<DeckDirection>();
+
+  for (const note of notes) {
+    const first = splitFields(note.flds)[0] ?? '';
+    const script = detectScript(first);
+    directions.add(
+      script === 'hebrew' || script === 'mixed' ? 'he_to_en'
+        : script === 'latin' ? 'en_to_he'
+          : 'unknown',
+    );
+    const r = parseAnkiNote(note);
+    if (r.ok) cards.push(r.card);
+    else rejected[r.reason] += 1;
+  }
+
+  const only = [...directions][0];
+  const direction = directions.size === 1 && only !== undefined ? only : 'unknown';
+  return { notes: notes.length, parsed: cards.length, rejected, direction, cards };
+}
+
+export type IngestRefusal =
+  'wrong_direction' | 'licence_unknown' | 'licence_forbidden' | 'parse_rate_too_low';
+
+export interface IngestDecision {
+  readonly ingest: boolean;
+  readonly reasons: readonly IngestRefusal[];
+}
+
+/** A deck we can only half read is a deck we do not understand. */
+export const MIN_PARSE_RATE = 0.95;
+
+/**
+ * Every applicable ground is reported at once — a caller must not fix one refusal
+ * and re-run to discover the next.
+ * ⛔ `licence` has NO default. 'unknown' refuses (R-010): a source with no visible
+ * commercial licence is not a source we may ingest.
+ */
+export function apkgIngestDecision(
+  summary: DeckSummary,
+  licence: CommercialLicence,
+): IngestDecision {
+  const reasons: IngestRefusal[] = [];
+  if (summary.direction !== 'en_to_he') reasons.push('wrong_direction');
+  if (licence === 'unknown') reasons.push('licence_unknown');
+  if (licence === 'forbidden') reasons.push('licence_forbidden');
+  if (summary.notes === 0 || summary.parsed / summary.notes < MIN_PARSE_RATE) {
+    reasons.push('parse_rate_too_low');
+  }
+  return { ingest: reasons.length === 0, reasons };
+}
