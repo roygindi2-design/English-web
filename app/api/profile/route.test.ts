@@ -39,3 +39,52 @@ describe('POST /api/profile — the post-onboarding destination (§ 4.2ב)', () 
     expect(CONTRACT).not.toContain('"next": "/study"');
   });
 });
+
+/**
+ * T-003 · § 4.2ד — the institution travels body → checkOnboarding → column.
+ *
+ * ⚠️ Deviation from the plan, and a deliberate strengthening: the plan asserts
+ * against the raw source (`SRC`). These assertions run on `CODE`, the
+ * comment-stripped source, for the reason C-0032 recorded — a comment that
+ * merely *mentions* `institution: body.institution` would satisfy a raw-text
+ * guard while the route reads nothing. The negative assertions gain the most:
+ * a `...body` written inside an explanatory comment must not be able to fail a
+ * test about what the route actually spreads.
+ */
+describe('the institution reaches the column (T-003 · § 4.2ד)', () => {
+  it('passes the submitted key into checkOnboarding by name', () => {
+    expect(CODE).toMatch(/institution:\s*body\.institution/);
+  });
+
+  it('writes the validated value and ⛔ never the raw body', () => {
+    expect(CODE).toMatch(/institution:\s*check\.answers\.institution/);
+    expect(CODE).not.toMatch(/institution:\s*body\.institution[\s\S]{0,200}\.update\(/);
+  });
+
+  /**
+   * A spread would hand Postgres whatever the caller invented. The route names
+   * every key it reads and every column it writes — that is the property, not
+   * the specific field.
+   */
+  it('still spreads nothing from the request body', () => {
+    expect(CODE).not.toContain('...body');
+    expect(CODE).not.toContain('...payload');
+  });
+
+  /**
+   * ⚠️ Second deviation from the plan: it slices from the heading to the END of
+   * the contract, so the word `institution` appearing anywhere in the five
+   * sections that follow — `POST /api/review`, the planned-endpoints table —
+   * would satisfy a test whose whole claim is "documented *here*". The slice is
+   * bounded by the next `## ` heading instead.
+   */
+  it('is documented in the same contract the route claims to implement', () => {
+    const start = CONTRACT.indexOf('## POST /api/profile');
+    expect(start).toBeGreaterThan(-1);
+    const rest = CONTRACT.slice(start + 1);
+    const end = rest.indexOf('\n## ');
+    const section = end === -1 ? rest : rest.slice(0, end);
+    expect(section).toContain('institution');
+    expect(section).toContain('120');
+  });
+});

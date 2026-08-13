@@ -43,6 +43,8 @@ export async function POST(request: Request) {
       dailyMinutes: body.dailyMinutes,
       examDate: body.examDate,
       targetScore: body.targetScore,
+      // § 4.2ד: optional free text, truncated (not rejected) by lib/core.
+      institution: body.institution,
     },
     today
   );
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
       daily_minutes: check.answers.dailyMinutes,
       exam_date: check.answers.examDate,
       target_score: check.answers.targetScore,
+      institution: check.answers.institution,
       onboarded_at: now,
       updated_at: now,
     })

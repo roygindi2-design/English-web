@@ -103,8 +103,16 @@
 **גוף הבקשה:**
 
 ```json
-{ "dailyMinutes": 5, "examDate": "2026-09-10", "targetScore": "" }
+{ "dailyMinutes": 5, "examDate": "2026-09-10", "targetScore": "", "institution": "אוניברסיטת חיפה" }
 ```
+
+`institution` הוא **טקסט חופשי רשות** (T-003 · § 4.2ד). ריק, רווחים בלבד, חסר או
+ערך שאינו מחרוזת — כולם נשמרים כ-`NULL`. מחרוזת ארוכה מ-120 תווים **נחתכת** ב-
+`lib/core/onboarding.ts` ו⛔אינה מוחזרת כשגיאה: אין תשובה שגויה בשדה חופשי, ולכן
+הוא לעולם אינו מופיע ב-`fieldErrors`. אותם 120 נאכפים שוב במסד דרך
+`profiles_institution_length_check` ב-`0009_onboarding_institution.sql`, ובדיקת
+יחידה נכשלת אם השתיים נפרדות. ⛔ **אין צרכן לשדה מלבד התצוגה ב-`/me`** — אין
+לוגיקת סף, אין הערכת מוכנות ואין השוואה בין לומדים.
 
 `examDate` ו-`targetScore` ריקים (`""`) פירושם "דילג" ונשמרים כ-`NULL`.
 `dailyMinutes` חייב להיות אחד מ-`5 | 10 | 20` (‏`DAILY_MINUTES_OPTIONS` ב-
