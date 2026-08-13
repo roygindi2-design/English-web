@@ -591,7 +591,7 @@ git commit -m "loop(DEV): C-XXXX T-003 institution field on the onboarding form"
 
 ---
 
-## Task 4: The "המטרה שלך" block on `/me`
+## Task 4: The "המטרה שלך" block on `/me` ✅ C-0083
 
 **Files:**
 - Modify: `components/MeScreen.tsx:27-31` (props) and the body

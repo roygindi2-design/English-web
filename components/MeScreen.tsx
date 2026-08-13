@@ -24,11 +24,28 @@ const PROGRESS_UNAVAILABLE_HE = 'לא הצלחנו לטעון את ההתקדמ�
 const RETRY_HE = 'נסה שוב';
 const SOURCES_HE = 'מקורות הנתונים והרישיונות';
 const SIGN_OUT_HE = 'יציאה מהחשבון';
+const GOAL_HEADING_HE = 'המטרה שלך';
+const GOAL_SCORE_LABEL_HE = 'ציון יעד';
+const GOAL_DATE_LABEL_HE = 'תאריך המבחן';
+
+/**
+ * The three onboarding answers § 4.2ד puts on this tab, exactly as stored —
+ * ⛔ nothing is computed from them (4.4.3). Every field is nullable because
+ * every one of them is optional in the form, and `null` reads "not answered"
+ * and never "zero".
+ */
+export type LearnerGoal = {
+  readonly institution: string | null;
+  readonly targetScore: number | null;
+  readonly examDate: string | null;
+};
 
 export default function MeScreen({
   wordsLearned,
+  goal,
 }: {
   wordsLearned: number | null;
+  goal: LearnerGoal;
 }): React.JSX.Element {
   return (
     <section className="flex flex-col gap-6">
@@ -51,6 +68,36 @@ export default function MeScreen({
           <p className="text-4xl font-bold leading-none">{wordsLearned}</p>
           <p className="text-lg text-ink-muted">{WORDS_LEARNED_HE}</p>
         </div>
+      )}
+
+      {/* § 4.2ד. ⛔ Hidden when institution AND score are both empty — a heading
+          over an empty area is F-011 under another name. The exam date alone
+          does NOT open it: that is the rule as written, and the countdown
+          already has a home in <StudiesScreen>. Recorded as measured conflict 2
+          in the plan rather than widened here on Dev's authority.
+          ⛔ Nothing computes anything from these three values (4.4.3). */}
+      {(goal.institution !== null || goal.targetScore !== null) && (
+        <section className="flex flex-col gap-1" data-goal-block>
+          <h2 className="text-lg font-semibold text-ink">{GOAL_HEADING_HE}</h2>
+          {goal.institution !== null && (
+            // `truncate` and ⛔ not a wrap: a long institution name is one line
+            // with overflow, so the block's height cannot depend on the length
+            // of something the learner typed.
+            <p className="truncate text-lg text-ink" title={goal.institution}>
+              {goal.institution}
+            </p>
+          )}
+          {goal.targetScore !== null && (
+            <p className="text-lg text-ink-muted">
+              {GOAL_SCORE_LABEL_HE}: {goal.targetScore}
+            </p>
+          )}
+          {goal.examDate !== null && (
+            <p className="text-lg text-ink-muted">
+              {GOAL_DATE_LABEL_HE}: {goal.examDate}
+            </p>
+          )}
+        </section>
       )}
 
       {/* D-007 · T-011. The attribution link also sits in the global footer, on

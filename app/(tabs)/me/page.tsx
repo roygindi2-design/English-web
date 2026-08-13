@@ -47,7 +47,27 @@ export default async function MePage() {
     .eq('user_id', user.id)
     .not('mastered_at', 'is', null);
 
+  // § 4.2ד. ⛔ `maybeSingle` and not `single`: 0001's trigger creates the row,
+  // but a screen that throws because a row is missing tells the learner nothing
+  // and costs them the whole tab. A failed read yields an empty goal, which
+  // renders as no block at all — the same honest silence `wordsLearned === null`
+  // uses. ⛔ Three stored answers, nothing computed from them (4.4.3).
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('institution, target_score, exam_date')
+    .eq('id', user.id)
+    .maybeSingle();
+
   // ⛔ `null` on failure and never `0`: a failed read and a learner who has
   // learned nothing look identical on screen, and only one of them is true.
-  return <MeScreen wordsLearned={error ? null : (count ?? 0)} />;
+  return (
+    <MeScreen
+      wordsLearned={error ? null : (count ?? 0)}
+      goal={{
+        institution: profile?.institution ?? null,
+        targetScore: profile?.target_score ?? null,
+        examDate: profile?.exam_date ?? null,
+      }}
+    />
+  );
 }

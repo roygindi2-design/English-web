@@ -19,10 +19,22 @@ import TabBar from '@/components/TabBar';
  */
 const SAMPLE_WORDS_LEARNED = 128;
 
+/**
+ * A fixed sample goal, ⛔ not a read. The values are chosen to measure the
+ * TALLEST and WIDEST realistic composition at once: a long Hebrew institution
+ * name (which is what the one-line overflow rule exists for), a score and a
+ * date all present together.
+ */
+const SAMPLE_GOAL = {
+  institution: 'המכללה האקדמית להנדסה אורט בראודה',
+  targetScore: 120,
+  examDate: '2026-09-10',
+} as const;
+
 export default function DevTabsMePage() {
   return (
     <>
-      <MeScreen wordsLearned={SAMPLE_WORDS_LEARNED} />
+      <MeScreen wordsLearned={SAMPLE_WORDS_LEARNED} goal={SAMPLE_GOAL} />
       <TabBar />
     </>
   );
