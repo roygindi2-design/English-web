@@ -24,8 +24,8 @@ LAST_HANDOFF_AT: 2026-08-13T07:11:30Z
 HUMAN_DECISION_REQUIRED: false    # אין החלטה עסקית תלויה. שלוש פעולות אנושיות ממתינות ואינן עוצרות את הלופ: T-043 (קובצי מקור) · T-046 (טוקן Netlify) · אישור ידני של R-015
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC | CONTENT — שוחררה בסוף C-0082
-LOCK_AT: ""
+LOCK_HELD_BY: DEV                 # "" | PM | DEV | CRITIC | CONTENT — נתפסה C-0083
+LOCK_AT: "2026-08-13T07:37:55Z"
 MILESTONE_TICKS: 36
 PAUSED_BY_HUMAN: false
 DEPLOYS_THIS_MONTH: 1
