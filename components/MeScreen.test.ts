@@ -58,8 +58,13 @@ describe('<MeScreen> — the learner tab body (T-051 · § 4.2ב)', () => {
    */
   it('shows a Hebrew sentence and a retry when the read failed, ⛔ not a silent zero', () => {
     expect(CODE).toMatch(/wordsLearned === null/);
-    expect(CODE).toContain('לא הצלחנו לטעון את ההתקדמות כרגע.');
-    expect(CODE).toContain('נסה שוב');
+    // T-056: the sentence and the button label are imported, ⛔ not restated here.
+    // Asserting on the literal is what let this screen carry the third of four
+    // rival wordings for one event; `lib/core/failure.test.ts` owns the wording
+    // itself, and this file owns the fact that the failure branch renders it.
+    expect(CODE).toMatch(/import \{[^}]*FAILURE_HE[^}]*\} from '@\/lib\/core\/failure'/);
+    expect(CODE).toContain('{FAILURE_HE.load}');
+    expect(CODE).toContain('{RETRY_HE}');
     // A plain <a>, so the retry reaches the server instead of the router cache.
     expect(CODE).toMatch(/<a href="\/me"/);
   });

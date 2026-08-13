@@ -18,10 +18,10 @@
  */
 import Link from 'next/link';
 
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+
 const HEADING_HE = 'אני';
 const WORDS_LEARNED_HE = 'מילים שנלמדו';
-const PROGRESS_UNAVAILABLE_HE = 'לא הצלחנו לטעון את ההתקדמות כרגע.';
-const RETRY_HE = 'נסה שוב';
 const SOURCES_HE = 'מקורות הנתונים והרישיונות';
 const SIGN_OUT_HE = 'יציאה מהחשבון';
 const GOAL_HEADING_HE = 'המטרה שלך';
@@ -56,7 +56,7 @@ export default function MeScreen({
         // A plain <a> and ⛔ not <Link>: the retry has to reach the server
         // again, and the client router would be free to answer from its cache.
         <div className="flex flex-col gap-2">
-          <p className="text-lg leading-relaxed text-ink">{PROGRESS_UNAVAILABLE_HE}</p>
+          <p className="text-lg leading-relaxed text-ink">{FAILURE_HE.load}</p>
           <a href="/me" className="inline-flex min-h-touch items-center text-lg text-ink underline">
             {RETRY_HE}
           </a>

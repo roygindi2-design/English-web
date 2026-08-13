@@ -790,7 +790,7 @@ git commit -m "loop(DEV): C-XXXX T-003 goal block on /me"
 
 ---
 
-## Task 5: One Hebrew failure sentence (T-056)
+## Task 5: One Hebrew failure sentence (T-056) ✅ C-0084
 
 **Files:**
 - Create: `lib/core/failure.ts`, `lib/core/failure.test.ts`
@@ -814,7 +814,7 @@ git commit -m "loop(DEV): C-XXXX T-003 goal block on /me"
   ```
   ⛔ `AUTH_MESSAGES_HE` in `lib/core/auth.ts` is **not** touched — see measured conflict 3.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/failure.test.ts`:
 
@@ -886,12 +886,12 @@ describe('the failure copy is one sentence, in one place (T-056 · constitution 
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails for the right reason**
+- [x] **Step 2: Run it and confirm it fails for the right reason**
 
 Run: `npx vitest run lib/core/failure.test.ts`
 Expected: FAIL on the import (module does not exist). After Step 3 it must fail again — this time listing `app/error.tsx`, `app/global-error.tsx`, `components/MeScreen.tsx`, `components/OnboardingForm.tsx` as offenders. **Both failures go in the tick report**; the second is the one that proves the scan works.
 
-- [ ] **Step 3: Write the module**
+- [x] **Step 3: Write the module**
 
 Create `lib/core/failure.ts`:
 
@@ -931,7 +931,7 @@ export const FAILURE_TITLE_HE = Object.freeze({
 });
 ```
 
-- [ ] **Step 4: Rewrite the four consumers**
+- [x] **Step 4: Rewrite the four consumers**
 
 - `components/OnboardingForm.tsx`: replace both `'השמירה נכשלה. נסה שוב.'` literals with `FAILURE_HE.save` and `'אין חיבור לרשת. התשובות לא נשמרו.'` with `FAILURE_HE.offline`.
 - `components/MeScreen.tsx`: delete the local `PROGRESS_UNAVAILABLE_HE` and `RETRY_HE` constants; import `FAILURE_HE` and `RETRY_HE`, render `FAILURE_HE.load` and `RETRY_HE`.
@@ -940,17 +940,17 @@ export const FAILURE_TITLE_HE = Object.freeze({
 
 ⚠️ `app/global-error.tsx` renders its own `<html>` and must stay importable from the root boundary — `lib/core/failure.ts` is a plain constants module with zero imports, so this is safe. Confirm with `npm run build`, which fails loudly if it is not.
 
-- [ ] **Step 5: Run everything**
+- [x] **Step 5: Run everything**
 
 Run: `npx vitest run lib/core/failure.test.ts` → PASS.
 Run: `npm run typecheck && npm run check:core && npm test && npm run build` → PASS. `check:core` must still print `/lib/core purity: OK`.
 
-- [ ] **Step 6: Mutation check**
+- [x] **Step 6: Mutation check**
 
 Re-add the literal `'נסה שוב'` to `app/error.tsx` in place of the imported constant and run `npx vitest run lib/core/failure.test.ts`.
 Expected: FAIL on "⛔ no screen restates the retry label as a literal", naming `app/error.tsx`. Revert.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/failure.ts lib/core/failure.test.ts app/error.tsx app/global-error.tsx components/MeScreen.tsx components/OnboardingForm.tsx

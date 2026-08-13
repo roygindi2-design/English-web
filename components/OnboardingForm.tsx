@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
+import { FAILURE_HE } from '@/lib/core/failure';
 import {
   DAILY_MINUTES_HELP_HE,
   DAILY_MINUTES_LABELS_HE,
@@ -77,13 +78,9 @@ export default function OnboardingForm() {
         return;
       }
       if (result.fieldErrors) setFieldErrors(result.fieldErrors);
-      else setFormError('השמירה נכשלה. נסה שוב.');
+      else setFormError(FAILURE_HE.save);
     } catch (error) {
-      setFormError(
-        error instanceof ApiUnreachableError
-          ? 'אין חיבור לרשת. התשובות לא נשמרו.'
-          : 'השמירה נכשלה. נסה שוב.',
-      );
+      setFormError(error instanceof ApiUnreachableError ? FAILURE_HE.offline : FAILURE_HE.save);
     } finally {
       setSaving(false);
     }
