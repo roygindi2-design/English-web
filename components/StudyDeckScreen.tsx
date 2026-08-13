@@ -1,0 +1,268 @@
+'use client';
+
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import ActionBar from '@/components/ActionBar';
+import CardDeck from '@/components/CardDeck';
+import StudyEmptyState from '@/components/StudyEmptyState';
+import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
+import type { DeckName, QueueCardInput } from '@/lib/core/deck';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import type { CardGrade } from '@/lib/core/flashcard';
+import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
+
+/**
+ * The screen that owns the network for `/study` — T-065 part ב׳, plan
+ * `2026-08-13-study-queue.md` task 6.
+ *
+ * `<CardDeck>` deliberately fetches nothing: it is renderable with no Supabase env at all,
+ * which is what lets `/dev/deck` measure its geometry (task 8). Everything the deck cannot
+ * know — which endpoint a grade goes to, what a 503 means, what the learner reads when the
+ * request never left the phone — lives here.
+ *
+ * Four decisions here are measurements, not taste:
+ *
+ * 1. **The endpoint is chosen by the deck, and that choice IS D-033.** `unknown` grades go
+ *    to `POST /api/practice`, which moves two counters and ⛔ never `next_review_at`; `due`
+ *    grades go to `POST /api/review`, which is the only route in the product that
+ *    schedules. The deck keeps «תרגול — לא משנה את מועד החזרה» on screen the entire time a
+ *    learner is drilling. Crossing these two wires would not be a typo — it would make the
+ *    product's own on-screen promise false, and `StudyDeckScreen.test.ts` measures the
+ *    branch by brace containment rather than by proximity for exactly that reason.
+ *
+ * 2. **A grade that did not reach the server RE-THROWS.** `<CardDeck>` keeps a card in the
+ *    DOM exactly when `onGraded` rejects. Catching the failure here and returning quietly
+ *    would slide the card off screen as if it had been saved, and the learner would not see
+ *    that word again today — ⛔ a swallowed grade is a lost answer. The message belongs
+ *    here and not in the deck because only this layer knows whether it was the network
+ *    (`ApiUnreachableError`) or the server.
+ *
+ * 3. **`schema_missing` gets its own sentence, ⛔ never the empty state.** «אין כרטיסיות»
+ *    tells a learner they are done for today. An empty bank is a fault on our side, and
+ *    reporting it as a finished session would send them away happy from a broken product.
+ *    Same reasoning in the other direction: a genuinely empty queue is 200 with zero cards
+ *    and ⛔ is not an error (the contract in `docs/api-contract.md` fixes both).
+ *
+ * 4. **Loading is a skeleton in the shape of a card and ⛔ not a spinner** (constitution
+ *    § 5). A spinner says "something is happening"; a skeleton says what is about to
+ *    arrive, and it does not shift the layout when it does.
+ *
+ * ⚠️ **`elapsed_ms` is an approximation, and it is labelled as one.** It is measured from
+ * the previous grade (or from the moment the queue landed, for the first card), ⛔ not from
+ * the moment the card entered the viewport — `<CardDeck>` does not report that today, and
+ * with one card per screen and an immediate scroll after each grade the two differ by the
+ * scroll. Recorded as TD-28 in `plan/30-architecture.md` rather than left as a silent
+ * assumption inside a telemetry field D-010 depends on.
+ */
+
+const HEADING_HE = 'מנת היום';
+const PRACTICE_HEADING_HE = 'לא ידעתי';
+const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
+const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
+const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
+const LOADING_HE = 'טוען את הכרטיסיות…';
+
+type QueueResponse =
+  | {
+      readonly ok: true;
+      readonly deck: DeckName;
+      readonly total: number;
+      readonly cards: readonly QueueCardInput[];
+    }
+  | { readonly ok: false; readonly code: string };
+
+type GradeResponse = { readonly ok: boolean };
+
+type ScreenState =
+  | { readonly kind: 'loading' }
+  | { readonly kind: 'cards'; readonly cards: readonly QueueCardInput[] }
+  | { readonly kind: 'empty' }
+  | { readonly kind: 'schema_missing' }
+  | { readonly kind: 'session_expired' }
+  | { readonly kind: 'error' };
+
+/**
+ * The one function in the product that decides where a grade goes. Kept at module scope and
+ * out of the component so the branch is a flat, readable pair of calls rather than a
+ * closure that a later reader has to unwrap before they can check D-033 holds.
+ *
+ * It throws on every failure — including a server that answered `{ok:false}` — because its
+ * caller is `<CardDeck>`'s `onGraded`, whose whole contract is that a rejection keeps the
+ * card on screen.
+ */
+async function sendGrade(
+  deck: DeckName,
+  card: QueueCardInput,
+  grade: CardGrade,
+  elapsedMs: number,
+): Promise<void> {
+  if (deck === 'unknown') {
+    // D-033: two counters, ⛔ no scheduling fields. The route rejects a word with no
+    // progress row with 404 rather than inventing one, so a failure here is real.
+    const practice = await apiPost<GradeResponse>('/api/practice', {
+      word_id: card.word_id,
+      grade,
+    });
+    if (!practice.ok) throw new Error('practice rejected');
+    return;
+  }
+
+  const review = await apiPost<GradeResponse>('/api/review', {
+    word_id: card.word_id,
+    grade,
+    direction: card.direction,
+    elapsed_ms: elapsedMs,
+  });
+  if (!review.ok) throw new Error('review rejected');
+}
+
+/**
+ * `elapsed_ms` as the route will accept it: a non-negative INTEGER at or below the ceiling.
+ * `Math.round` and not a raw difference because `checkReviewPayload` rejects a fractional
+ * value with 400, and `Math.min` against the imported `MAX_ELAPSED_MS` because it rejects
+ * anything above the ceiling too — ⛔ we do not send a value we know the server refuses,
+ * and ⛔ we do not re-type the number here where it could drift from the route's copy.
+ */
+function boundElapsed(ms: number): number {
+  if (!Number.isFinite(ms) || ms < 0) return 0;
+  return Math.min(Math.round(ms), MAX_ELAPSED_MS);
+}
+
+export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
+  const [state, setState] = useState<ScreenState>({ kind: 'loading' });
+  const [gradeError, setGradeError] = useState('');
+  const shownAt = useRef(0);
+
+  const load = useCallback(async () => {
+    setState({ kind: 'loading' });
+    try {
+      const body = await apiGet<QueueResponse>(`/api/study/queue?deck=${deck}`);
+      shownAt.current = Date.now();
+      if (!body.ok) {
+        if (body.code === 'session_expired') setState({ kind: 'session_expired' });
+        else if (body.code === 'schema_missing') setState({ kind: 'schema_missing' });
+        else setState({ kind: 'error' });
+        return;
+      }
+      setState(body.cards.length === 0 ? { kind: 'empty' } : { kind: 'cards', cards: body.cards });
+    } catch {
+      // `apiGet` only rejects when the answer never arrived or was not JSON — either way
+      // there is no code to act on, so this is the generic failure and not a lie about why.
+      setState({ kind: 'error' });
+    }
+  }, [deck]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const onGraded = useCallback(
+    async (wordId: string, grade: CardGrade) => {
+      if (state.kind !== 'cards') return;
+      const card = state.cards.find((candidate) => candidate.word_id === wordId);
+      if (card === undefined) return;
+      try {
+        await sendGrade(deck, card, grade, boundElapsed(Date.now() - shownAt.current));
+        shownAt.current = Date.now();
+        setGradeError('');
+      } catch (error) {
+        setGradeError(
+          error instanceof ApiUnreachableError ? FAILURE_HE.offline : FAILURE_HE.save,
+        );
+        // Re-thrown on purpose: this is the signal that keeps the card in the deck.
+        throw error;
+      }
+    },
+    [deck, state],
+  );
+
+  if (state.kind === 'cards') {
+    return (
+      <>
+        {gradeError !== '' && (
+          // Above the deck and ⛔ not a toast: the card the grade belongs to is still on
+          // screen and still gradable, so the message has to stay until the retry lands.
+          <p role="status" className="px-1 pb-2 text-base text-danger">
+            {gradeError}
+          </p>
+        )}
+        {/* ⛔ No <ActionBar> in this state: it is `fixed` to the bottom edge and would sit
+            directly on top of the two grade buttons — the only controls this screen exists
+            for. The way forward here IS grading. */}
+        <CardDeck deck={deck} cards={state.cards} onGraded={onGraded} />
+      </>
+    );
+  }
+
+  return (
+    <section className="flex flex-col gap-4">
+      <h1 className="text-3xl font-bold leading-tight">
+        {deck === 'due' ? HEADING_HE : PRACTICE_HEADING_HE}
+      </h1>
+
+      {state.kind === 'loading' && (
+        // The shape of what is coming, ⛔ not a spinner (constitution § 5). `aria-hidden` on
+        // the boxes with the sentence carried by a live region: a screen reader gets the
+        // word "loading", not four empty rectangles.
+        <div className="flex flex-col gap-3" data-deck-skeleton>
+          <p className="sr-only" role="status">
+            {LOADING_HE}
+          </p>
+          <div aria-hidden className="h-40 rounded-xl bg-surface-raised" />
+          <div aria-hidden className="h-6 w-2/3 rounded-lg bg-surface-raised" />
+          <div aria-hidden className="h-12 rounded-xl bg-surface-raised" />
+        </div>
+      )}
+
+      {state.kind === 'schema_missing' && (
+        <p className="text-lg leading-relaxed text-ink">{SCHEMA_MISSING_HE}</p>
+      )}
+
+      {state.kind === 'error' && <p className="text-lg leading-relaxed text-ink">{FAILURE_HE.load}</p>}
+
+      {state.kind === 'session_expired' && (
+        <p className="text-lg leading-relaxed text-ink">{FAILURE_HE.load}</p>
+      )}
+
+      {state.kind === 'empty' && <StudyEmptyState />}
+
+      <ActionBar>
+        {state.kind === 'session_expired' ? (
+          // A plain <a> and ⛔ not <Link>: the session is gone, so the next request has to
+          // reach the server and be allowed to redirect — the client router may answer from
+          // its cache. Same reasoning as the retry in <MeScreen>.
+          <a
+            href="/login"
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            {SIGN_IN_AGAIN_HE}
+          </a>
+        ) : state.kind === 'empty' ? (
+          // ⚠️ Deck-dependent, and the deviation is reported in the plan: the action the
+          // task names («…התחל מילים חדשות») is the way out of an empty DUE deck. On the
+          // practice deck it would be a link to the screen the learner is already looking
+          // at, which is the dead end F-027 was opened for. The practice deck reuses the
+          // deck's own existing way out rather than inventing a second wording.
+          <Link
+            href={deck === 'due' ? '/study?deck=unknown' : '/cards'}
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+          >
+            {deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void load()}
+            data-primary-action="true"
+            className="flex w-full min-h-touch items-center justify-center rounded-xl border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
+          >
+            {RETRY_HE}
+          </button>
+        )}
+      </ActionBar>
+    </section>
+  );
+}

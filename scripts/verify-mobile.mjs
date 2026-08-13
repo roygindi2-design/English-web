@@ -81,6 +81,25 @@ const MIN_GAP = 8;
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study'];
 
 /**
+ * The console lines a route is ALLOWED to produce, per route and per exact request.
+ *
+ * Added C-0102 (T-065 task 6), and deliberately as narrow as it can be written. This
+ * harness runs `next start` with no Supabase env, so `GET /api/study/queue` answers 503 by
+ * its own contract, and Chromium logs every non-2xx resource as a console error. That log
+ * is not a defect in the screen — the failure state it produces is precisely what this
+ * harness measures on `/study` — but a blanket exemption for the route would also hide a
+ * real uncaught exception, which is the whole reason the clean-console check exists.
+ *
+ * So the allowance is keyed to the one URL and the one status: anything else on `/study`,
+ * including a 401 or a 500 from the same endpoint, still fails.
+ * ⛔ Do NOT add an entry here to silence a screen. An entry is only correct when the harness
+ * itself is the reason the request cannot succeed.
+ */
+const EXPECTED_CONSOLE = {
+  '/study': [/status of 503[\s\S]*@\S*\/api\/study\/queue/],
+};
+
+/**
  * D-027 · § 4.2ב — the four-tab shell's screens, the other half of D-028.
  *
  * A flow screen carries a bottom-anchored ACTION bar and a tab screen carries
@@ -245,8 +264,11 @@ try {
     const page = await context.newPage();
 
     let consoleErrors = [];
+    // The URL travels with the text: Chromium's "Failed to load resource" message names the
+    // status but NOT the resource, and the allowance below has to be able to say WHICH
+    // request is expected to fail rather than "any error on this screen".
     page.on('console', (m) => {
-      if (m.type() === 'error') consoleErrors.push(m.text());
+      if (m.type() === 'error') consoleErrors.push(`${m.text()} @${m.location().url}`);
     });
     page.on('requestfailed', (r) => consoleErrors.push(`request failed: ${r.url()}`));
 
@@ -872,13 +894,13 @@ try {
         }
       }
 
-      // A 404 route legitimately logs a 404; every other route must be silent.
+      // A 404 route legitimately logs a 404; every other route must be silent — except for
+      // the one request this harness itself makes impossible (see EXPECTED_CONSOLE).
       if (route !== '/does-not-exist') {
-        check(
-          consoleErrors.length === 0,
-          `${at} clean console`,
-          `errors: ${consoleErrors.join(' · ')}`,
+        const unexpected = consoleErrors.filter(
+          (line) => !(EXPECTED_CONSOLE[route] ?? []).some((allowed) => allowed.test(line)),
         );
+        check(unexpected.length === 0, `${at} clean console`, `errors: ${unexpected.join(' · ')}`);
       }
     }
 

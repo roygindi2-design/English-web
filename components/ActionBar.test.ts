@@ -57,7 +57,17 @@ describe('every flow screen routes its primary action through the bar', () => {
   for (const file of [
     'components/AuthForm.tsx',
     'components/OnboardingForm.tsx',
-    'app/study/page.tsx',
+    // ⚠️ MOVED C-0102 (T-065 task 6) from `app/study/page.tsx`. `/study` is still the flow
+    // screen `FLOW_ROUTES` measures; what changed is that its bar now lives with the states
+    // it belongs to, inside the client component that knows which one the learner is in —
+    // retry on a failure, sign-in again on an expired session, the way out of an empty
+    // queue. Naming the page file here after that move would assert the bar is in a file
+    // that no longer renders one, i.e. it would go red on correct code; deleting the entry
+    // instead would drop `/study` out of the F-027 guard entirely, which is the exact
+    // failure that guard exists to prevent.
+    // ⛔ The card state deliberately has no bar: `ActionBar` is `fixed` to the bottom edge
+    // and would sit on top of the two grade buttons, which ARE that state's way forward.
+    'components/StudyDeckScreen.tsx',
     'app/page.tsx',
   ]) {
     it(`${file} wraps its primary action in <ActionBar>`, () => {
