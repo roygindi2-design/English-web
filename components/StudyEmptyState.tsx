@@ -1,18 +1,20 @@
 /**
- * The empty state of the card queue — shared by `/study` (flow) and `/cards`
- * (tab), so the two cannot drift into two different explanations of the same
- * situation.
+ * The empty state of the card queue — the sentence a learner reads when the deck they
+ * opened has nothing in it.
  *
- * ⛔ The action is deliberately NOT part of this component: the two screens do
- * not share one. `/study` is a flow screen whose way out is `חזרה למסך הבית`
- * inside an `<ActionBar>` (D-028), while `/cards` is a tab — § 4.2ב question 6
- * says a tab is a final destination that needs no "back" — and D-028 forbids an
- * action bar on a screen that already carries the tab bar.
+ * ⚠️ **Sole caller since C-0103 (T-065 task 7): `<StudyDeckScreen>`.** It was shared with
+ * `<CardsScreen>` while `/cards` had no queue behind it; the כרטיסיות tab now reads the
+ * two decks and shows a count each, so «אין כרטיסיות» there would have been a claim about
+ * the whole product made from no measurement at all. ⛔ Do not re-add a second caller
+ * without the same check — the reason this component exists is that two screens must not
+ * grow two different explanations of one situation, ⛔ not that every screen shows it.
  *
- * This is an honest state and not a placeholder: an empty queue is what a
- * learner reaches every time they finish a session, and it exists either way.
- * Today it is also the only state, because there is no licensed content in the
- * bank yet (P-001).
+ * ⛔ The action is deliberately NOT part of this component: a flow screen's way out is an
+ * `<ActionBar>` (D-028) and a tab is a final destination that needs no "back"
+ * (§ 4.2ב question 6), so the two callers could never have shared one.
+ *
+ * This is an honest state and not a placeholder: an empty queue is what a learner reaches
+ * every time they finish a session, and it exists either way.
  */
 export default function StudyEmptyState(): React.JSX.Element {
   return (

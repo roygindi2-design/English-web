@@ -13,6 +13,13 @@ import TabBar from '@/components/TabBar';
  * cause 1 exactly. The new `tab bar is present` check is what caught it.
  *
  * `<TabBar />` is named here because the fixture lives outside `app/(tabs)`.
+ *
+ * ⚠️ Since C-0103 (T-065 task 7) `<CardsScreen>` reads both decks from
+ * `GET /api/study/queue`. This fixture has no session and the harness has no Supabase env,
+ * so both requests answer 503 by the route's own contract and the screen lands in its
+ * «—» state — which IS the failure state the task names, and therefore the right thing to
+ * measure. The two 503 lines are allowed in `EXPECTED_CONSOLE` (scripts/verify-mobile.mjs)
+ * by exact URL and status, ⛔ not by exempting the route.
  */
 export default function DevTabsCardsPage() {
   return (

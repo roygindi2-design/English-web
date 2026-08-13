@@ -97,6 +97,16 @@ const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study'];
  */
 const EXPECTED_CONSOLE = {
   '/study': [/status of 503[\s\S]*@\S*\/api\/study\/queue/],
+  // C-0103 (T-065 task 7): `<CardsScreen>` became the deck selector and now reads both
+  // decks for their counts. Same situation and same narrowness as `/study` above — the
+  // fixture has no session and the harness has no Supabase env, so the queue answers 503
+  // by its own contract and the browser logs it. Keyed to the two exact URLs the screen
+  // requests and to that one status: a 401, a 500, or any other request on this route
+  // still fails the check.
+  '/dev/tabs/cards': [
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
+  ],
 };
 
 /**
