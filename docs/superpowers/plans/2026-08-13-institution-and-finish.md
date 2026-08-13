@@ -122,7 +122,7 @@ Run in this repo on 2026-08-13 (`grep -n`, `sed -n`, `node -e`):
   - `OnboardingAnswers` gains `readonly institution: string | null`
   - `OnboardingFieldErrors` — ⛔ **unchanged.** There is no institution error, by design.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `lib/core/onboarding.test.ts`:
 
@@ -199,12 +199,12 @@ describe('the institution (A7 — optional, free text, read by nothing but the d
 });
 ```
 
-- [ ] **Step 2: Run them and confirm they fail for the stated reason**
+- [x] **Step 2: Run them and confirm they fail for the stated reason**
 
 Run: `npx vitest run lib/core/onboarding.test.ts`
 Expected: FAIL — `INSTITUTION_MAX_LENGTH` is not exported (import error), and once that is added, `answers.institution` is `undefined`. Paste the real output into the tick report.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 Create `supabase/migrations/0009_onboarding_institution.sql`:
 
@@ -244,7 +244,7 @@ begin
 end $$;
 ```
 
-- [ ] **Step 4: Add the constants and the types**
+- [x] **Step 4: Add the constants and the types**
 
 In `lib/core/onboarding.ts`, after `ONBOARDING_SUBMIT_HE` (`:139`):
 
@@ -284,7 +284,7 @@ export type OnboardingAnswers = {
 };
 ```
 
-- [ ] **Step 5: Implement the rule inside `checkOnboarding`**
+- [x] **Step 5: Implement the rule inside `checkOnboarding`**
 
 Immediately before the final `if (Object.keys(fieldErrors).length > 0 …)` block:
 
@@ -300,17 +300,17 @@ Immediately before the final `if (Object.keys(fieldErrors).length > 0 …)` bloc
 
 and add `institution` to the returned `answers` object.
 
-- [ ] **Step 6: Run the full four commands**
+- [x] **Step 6: Run the full four commands**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: PASS. `check:core` must still print `/lib/core purity: OK` — the new code reads no clock, no env and no DOM.
 
-- [ ] **Step 7: Mutation check — prove the tests bite**
+- [x] **Step 7: Mutation check — prove the tests bite**
 
 Change `.slice(0, INSTITUTION_MAX_LENGTH)` to `.slice(0, INSTITUTION_MAX_LENGTH + 1)` and run `npx vitest run lib/core/onboarding.test.ts`.
 Expected: FAIL on "truncates past the limit instead of rejecting the whole form". Revert the mutation. Record both the mutation and its failure line in the tick report.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add supabase/migrations/0009_onboarding_institution.sql lib/core/onboarding.ts lib/core/onboarding.test.ts
