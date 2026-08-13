@@ -229,3 +229,135 @@ describe('the onboarding submit is marked as the primary action (F-027)', () => 
     expect(Math.abs(marker - submit)).toBeLessThan(200);
   });
 });
+
+/**
+ * Task 4 of the navigation-shell plan — the harness has to be able to SEE the
+ * tab shell before any claim about its geometry means anything.
+ *
+ * `/studies` and `/me` read the session, so they answer 307 without Supabase
+ * env (TD-13) and the harness would silently measure `/login` instead — F-027
+ * cause 1, the reason roy's dead end was invisible for weeks. Two fixtures
+ * stand in for them.
+ *
+ * ⚠️ Declared deviation from plan step 4.1, which said the fixtures "render the
+ * same components as the real screens": at plan time neither screen HAD a
+ * component — both were inline JSX inside a session-gated server component, so
+ * "the same components" did not exist to render. Copying the JSX into a fixture
+ * is F-027 cause 2 by construction (a fixture that drifts from the screen it
+ * stands for reports "ok" for a layout nobody measured), so the presentation
+ * was extracted into `components/StudiesScreen.tsx` and `components/MeScreen.tsx`
+ * and BOTH the real screen and the fixture render it. The mirror below is then
+ * a single symbol instead of a list of copied elements, and drift is impossible
+ * rather than merely detectable. ⛔ No screen, label, route or flow changed.
+ */
+describe('the tab fixtures render what the real tab screens render (F-027 cause 2)', () => {
+  const cases = [
+    {
+      name: 'studies',
+      real: 'app/(tabs)/studies/page.tsx',
+      fixture: 'app/dev/tabs/studies/page.tsx',
+      component: 'StudiesScreen',
+    },
+    {
+      name: 'cards',
+      real: 'app/(tabs)/cards/page.tsx',
+      fixture: 'app/dev/tabs/cards/page.tsx',
+      component: 'CardsScreen',
+      // ⚠️ Not in the plan. Step 4.3 named `/cards` as a directly measurable
+      // route; measured in C-0075 it answers 307 → /login?expired=1, because
+      // C-0073 added it to `PROTECTED_SCREENS`. It gets a fixture like the
+      // other two, and `sessionGated` records which file holds the gate.
+      sessionGated: 'proxy.ts',
+    },
+    {
+      name: 'me',
+      real: 'app/(tabs)/me/page.tsx',
+      fixture: 'app/dev/tabs/me/page.tsx',
+      component: 'MeScreen',
+    },
+  ];
+
+  for (const { name, real, fixture, component, sessionGated } of cases) {
+    describe(`/dev/tabs/${name}`, () => {
+      it(`renders <${component}>, the same component the real screen renders`, () => {
+        expect(readFileSync(real, 'utf8')).toContain(component);
+        expect(readFileSync(fixture, 'utf8')).toContain(component);
+      });
+
+      it('still refuses the session gate, which is what makes it a fixture', () => {
+        // Two gates exist: the screen's own `createRouteClient` read (F-003),
+        // and `proxy.ts`'s PROTECTED_SCREENS list. `/cards` has only the second
+        // — which is exactly as redirecting as the first, and was measured that
+        // way. Either one makes the real route unmeasurable and the fixture
+        // necessary; the fixture must carry neither.
+        const realSrc = readFileSync(sessionGated ?? real, 'utf8');
+        expect(realSrc).toMatch(sessionGated ? /PROTECTED_SCREENS/ : /createRouteClient/);
+        if (sessionGated) expect(realSrc).toContain(`'/${name}'`);
+        expect(readFileSync(fixture, 'utf8')).not.toContain('createRouteClient');
+      });
+
+      /**
+       * The real screens sit inside `app/(tabs)`, so the bar arrives from the
+       * route group's layout. The fixtures sit under `app/dev`, OUTSIDE that
+       * group — which is the point of the group — so they have to name it. A
+       * fixture without the bar measures a screen 4.5rem shorter than the one
+       * the learner sees, and the tab-bar checks would have nothing to find.
+       */
+      it('carries the tab bar the route group gives the real screen for free', () => {
+        expect(readFileSync(fixture, 'utf8')).toContain('TabBar');
+        expect(readFileSync('app/(tabs)/layout.tsx', 'utf8')).toContain('TabBar');
+      });
+
+    });
+  }
+
+  /** One layout for both fixtures — a harness route must never be a search result. */
+  it('is kept out of the index, like every other harness fixture', () => {
+    const layout = readFileSync('app/dev/tabs/layout.tsx', 'utf8');
+    expect(layout).toContain('robots');
+    expect(layout).toContain('index: false');
+  });
+});
+
+/**
+ * Task 4.4 — the wiring itself, which is the part a refactor breaks silently.
+ * D-028 ("a screen never carries both bars") is the one rule TWO separate
+ * features can break from opposite directions, so it has to be greppable: the
+ * check's own label is asserted here by name.
+ */
+describe('the harness measures the tab shell (T-051 · D-027 · D-028)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('declares TAB_ROUTES beside FLOW_ROUTES', () => {
+    expect(code).toMatch(/const TAB_ROUTES = \[/);
+  });
+
+  for (const route of ['/dev/tabs/studies', '/dev/tabs/cards', '/dev/tabs/me']) {
+    it(`visits ${route}`, () => {
+      const routes = code.slice(code.indexOf('const ROUTES = ['), code.indexOf('const MIN_TAP'));
+      expect(routes).toContain(`'${route}'`);
+    });
+
+    it(`treats ${route} as a tab screen`, () => {
+      const tabRoutes = code.slice(
+        code.indexOf('const TAB_ROUTES = ['),
+        code.indexOf('];', code.indexOf('const TAB_ROUTES = [')),
+      );
+      expect(tabRoutes).toContain(`'${route}'`);
+    });
+  }
+
+  it('asserts the tab bar is present, complete and thumb-sized', () => {
+    expect(code).toContain('tab bar is present');
+    expect(code).toContain('exactly four tabs');
+    expect(code).toContain('every tab >= 44px');
+  });
+
+  it('asserts D-028 from the tab side — no action bar where the tab bar is', () => {
+    expect(code).toContain('no action bar on a tab screen');
+  });
+
+  it('asserts D-028 from the flow side — no tab bar where a flow screen is', () => {
+    expect(code).toContain('no tab bar on a flow screen');
+  });
+});

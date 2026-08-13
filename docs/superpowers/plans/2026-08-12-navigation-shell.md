@@ -286,9 +286,9 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
 
 ## Task 4 — T-051 · make the harness see the shell
 
-- [ ] **4.1 (3 min) — Fixtures.** `app/dev/tabs/studies/page.tsx` and `app/dev/tabs/me/page.tsx`: `noindex`, no `createRouteClient`, rendering the same components as the real screens with a fixed sample exam date. This is the F-027 cause-1 lesson: a session-gated route answers 307 and the harness silently measures `/login` instead.
-- [ ] **4.2 (2 min) — Mirror tests** in `scripts/verify-mobile.test.ts`, copied from the `/dev/onboarding` block at `:190-210`: each fixture renders what the real screen renders, and **must not** contain `createRouteClient`.
-- [ ] **4.3 (4 min) — `scripts/verify-mobile.mjs`:** add `/cards`, `/dev/tabs/studies`, `/dev/tabs/me` to `ROUTES`; add `const TAB_ROUTES = ['/cards', '/dev/tabs/studies', '/dev/tabs/me'];` beside `FLOW_ROUTES` with a comment naming D-027. In the per-route loop:
+- [x] **4.1 (3 min) — Fixtures.** `app/dev/tabs/studies/page.tsx` and `app/dev/tabs/me/page.tsx`: `noindex`, no `createRouteClient`, rendering the same components as the real screens with a fixed sample exam date. This is the F-027 cause-1 lesson: a session-gated route answers 307 and the harness silently measures `/login` instead.
+- [x] **4.2 (2 min) — Mirror tests** in `scripts/verify-mobile.test.ts`, copied from the `/dev/onboarding` block at `:190-210`: each fixture renders what the real screen renders, and **must not** contain `createRouteClient`.
+- [x] **4.3 (4 min) — `scripts/verify-mobile.mjs`:** ⚠️ **C-0075, מדידה ששינתה את הצעד:** `/cards` נכנס ל-`PROTECTED_SCREENS` במשימה 3 ולכן מחזיר **307 → `/login?expired=1`** — נמדד חי. נוספו `/dev/tabs/studies`, `/dev/tabs/cards`, `/dev/tabs/me` ל-`ROUTES` (⛔ ולא `/cards` עצמו); add `const TAB_ROUTES = ['/cards', '/dev/tabs/studies', '/dev/tabs/me'];` beside `FLOW_ROUTES` with a comment naming D-027. In the per-route loop:
 
 ```js
       if (TAB_ROUTES.includes(route)) {
@@ -320,8 +320,8 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
       }
 ```
 
-- [ ] **4.4 (2 min) — Guard the wiring** in `scripts/verify-mobile.test.ts`: `TAB_ROUTES` exists, contains the three routes, and the source contains `no action bar on a tab screen` — the D-028 rule has to be greppable, because it is the one rule two separate features can break.
-- [ ] **4.5 (4 min) — Verify + two mutations.** Five commands. Then: ⓐ render `<TabBar />` from `app/layout.tsx` instead of `app/(tabs)/layout.tsx` → the flow-screen check must fail on `/`, `/signup`, `/login`, `/study`; ⓑ delete one entry from `TABS` → `exactly four tabs` and the unit test both fail. Restore, re-run, record.
+- [x] **4.4 (2 min) — Guard the wiring** in `scripts/verify-mobile.test.ts`: `TAB_ROUTES` exists, contains the three routes, and the source contains `no action bar on a tab screen` — the D-028 rule has to be greppable, because it is the one rule two separate features can break.
+- [x] **4.5 (4 min) — Verify + two mutations.** Five commands. Then: ⓐ render `<TabBar />` from `app/layout.tsx` instead of `app/(tabs)/layout.tsx` → the flow-screen check must fail on `/`, `/signup`, `/login`, `/study`; ⓑ delete one entry from `TABS` → `exactly four tabs` and the unit test both fail. Restore, re-run, record.
 
 ---
 

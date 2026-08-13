@@ -46,6 +46,15 @@ const ROUTES = [
   // on the login screen — every "ok /onboarding" line in this harness is really
   // the login screen, verified live in C-0013.
   '/dev/onboarding',
+  // T-051 tab shell, through fixtures. All three real tab routes (`/studies`,
+  // `/cards`, `/me`) are in `PROTECTED_SCREENS` (proxy.ts) and answer 307 to
+  // `/login?expired=1` without Supabase env — measured live in C-0075, after
+  // `tab bar is present` failed on `/cards` and the redirect turned out to be
+  // the reason. Naming them here would print "ok /cards" for the login screen,
+  // which is F-027 cause 1 (TD-13).
+  '/dev/tabs/studies',
+  '/dev/tabs/cards',
+  '/dev/tabs/me',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -63,6 +72,21 @@ const MIN_TAP = 44;
  * steps, and neither is on the path to first study.
  */
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study'];
+
+/**
+ * D-027 · § 4.2ב — the four-tab shell's screens, the other half of D-028.
+ *
+ * A flow screen carries a bottom-anchored ACTION bar and a tab screen carries
+ * the TAB bar, and ⛔ no screen ever carries both: two bars stacked at the
+ * bottom of a 375px phone is a learner who cannot tell which one moves them
+ * forward. That rule is breakable from two directions — rendering `<TabBar />`
+ * too high in the tree, or dropping an `<ActionBar>` into a tab screen — so it
+ * is asserted from both sides, here and in the FLOW_ROUTES block below.
+ *
+ * `/dev/tabs/*` and not the real routes: all three are session-gated in
+ * `proxy.ts` and answer 307 without Supabase env (TD-13, F-027 cause 1).
+ */
+const TAB_ROUTES = ['/dev/tabs/studies', '/dev/tabs/cards', '/dev/tabs/me'];
 
 /**
  * Playwright pins a browser build number (1234 today); the sandbox and CI both
@@ -433,6 +457,41 @@ try {
             `${at} action bar does not cover the licence link`,
             `link bottom ${footer.linkBottom} vs bar top ${footer.barTop}`,
           );
+        }
+
+        // D-028, from the flow side. The tab bar is rendered by
+        // `app/(tabs)/layout.tsx` and the route group is what makes that
+        // structural — but a future hand can still move it into the root layout,
+        // and a `<TabBar />` on `/signup` is a learner offered four destinations
+        // while they are supposed to be finishing one form.
+        const strayTabBar = await page.evaluate(
+          () => document.querySelectorAll('[data-tab-bar]').length,
+        );
+        check(strayTabBar === 0, `${at} no tab bar on a flow screen`, `found ${strayTabBar}`);
+      }
+
+      // D-027 · § 4.2ב — the tab shell itself: present, complete, thumb-sized,
+      // and alone at the bottom of the screen.
+      if (TAB_ROUTES.includes(route)) {
+        const tabs = await page.evaluate(() => {
+          const bar = document.querySelector('[data-tab-bar]');
+          if (!bar) return { present: false };
+          const items = [...bar.querySelectorAll('a,button')];
+          return {
+            present: true,
+            count: items.length,
+            small: items
+              .map((el) => el.getBoundingClientRect())
+              .filter((r) => r.width < 44 || r.height < 44).length,
+            actionBars: document.querySelectorAll('[data-action-bar]').length,
+          };
+        });
+        check(tabs.present, `${at} tab bar is present`, 'no [data-tab-bar] in the document');
+        if (tabs.present) {
+          check(tabs.count === 4, `${at} exactly four tabs`, `found ${tabs.count}`);
+          check(tabs.small === 0, `${at} every tab >= 44px`, `${tabs.small} tabs below the floor`);
+          // D-028: a screen never carries both bars.
+          check(tabs.actionBars === 0, `${at} no action bar on a tab screen`, `found ${tabs.actionBars}`);
         }
       }
 

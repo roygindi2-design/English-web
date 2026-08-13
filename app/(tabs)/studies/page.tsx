@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import StudiesScreen from '@/components/StudiesScreen';
 import {
   LEARNER_TIME_ZONE,
   daysUntilExam,
@@ -20,7 +20,9 @@ import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
  * The session is checked here and not only in `proxy.ts` — the F-003 lesson,
  * that one lock on a door is a single point of failure. TD-13 follows from it:
  * this route needs Supabase env, so it answers 307 under `check:mobile`, and
- * the geometry is measured through a `/dev/tabs/studies` fixture instead.
+ * the geometry is measured through a `/dev/tabs/studies` fixture instead. That
+ * fixture renders `<StudiesScreen>`, the same component this file renders — the
+ * markup exists once, so the fixture cannot drift from the screen (F-027).
  */
 export const dynamic = 'force-dynamic';
 
@@ -51,19 +53,5 @@ export default async function StudiesPage() {
   // claim about the learner's exam that nobody made.
   const headline = examDate ? daysUntilExamHe(daysUntilExam(examDate, today)) : NO_EXAM_DATE_HE;
 
-  return (
-    <section className="flex flex-col gap-4">
-      {/* ⛔ Nothing between the counter and the button: § 4.2ב question 1 says
-          the three-second read is the day count and one action, and any line I
-          added here would be product copy Dev does not get to write. */}
-      <h1 className="text-3xl font-bold leading-tight">{headline}</h1>
-      <Link
-        href="/cards"
-        data-primary-action="true"
-        className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
-      >
-        התחלת מנה יומית
-      </Link>
-    </section>
-  );
+  return <StudiesScreen headline={headline} />;
 }

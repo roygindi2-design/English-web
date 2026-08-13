@@ -7,8 +7,13 @@ import { describe, expect, it } from 'vitest';
  * A source guard and not a render test: the screen reads the session and the
  * learner's own rows, so it cannot run in this suite's node environment
  * (vitest.config.ts explains why jsdom is not installed). Geometry is measured
- * by `check:mobile` through the `/dev/tabs/me` fixture — task 4 of the
- * navigation-shell plan, ⛔ not this one.
+ * by `check:mobile` through the `/dev/tabs/me` fixture.
+ *
+ * ⚠️ C-0075: the markup moved to `components/MeScreen.tsx` so the fixture and
+ * the real screen render the SAME component instead of two copies (F-027 cause
+ * 2). The guards that describe markup moved with it, to `MeScreen.test.ts` —
+ * ⛔ none were dropped. What stays here is what this file still owns: the
+ * session gate, the read, and the shape of the value handed to the component.
  */
 const SRC = readFileSync('app/(tabs)/me/page.tsx', 'utf8');
 const ONBOARDING = readFileSync('app/onboarding/page.tsx', 'utf8');
@@ -36,31 +41,24 @@ describe('the אני tab (T-051 · § 4.2ב)', () => {
     expect(CODE).toContain('mastered_at');
   });
 
-  it('shows a count and ⛔ never a readiness estimate or a predicted score (4.4.3)', () => {
-    for (const forbidden of ['מוכנות', 'ציון חזוי', 'צפוי לקבל', '%']) {
-      expect(CODE, `"${forbidden}" is a claim nobody measured`).not.toContain(forbidden);
-    }
+  it('renders the same component the harness fixture renders (F-027 cause 2)', () => {
+    expect(CODE).toContain('MeScreen');
+    expect(readFileSync('app/dev/tabs/me/page.tsx', 'utf8')).toContain('MeScreen');
   });
 
-  it('carries the sign-out form, in plain HTML so it works without JavaScript', () => {
-    expect(CODE).toMatch(/<form[^>]*action="\/logout"[^>]*method="post"/);
-  });
-
-  it('marks the sign-out as the screen\'s single primary action', () => {
-    expect(CODE).toContain('data-primary-action="true"');
-    expect(CODE.match(/data-primary-action/g)?.length).toBe(1);
+  /**
+   * The one thing this file decides about the screen, and the reason the prop is
+   * `number | null` rather than `number`: a failed read and a learner who has
+   * learned nothing look identical once the failure is flattened to `0`, and
+   * only one of them is true. `count ?? 0` applies ONLY on the success branch.
+   */
+  it('hands the component null on a failed read, ⛔ never a zero', () => {
+    expect(CODE).toMatch(/error\s*\?\s*null/);
+    expect(CODE).toContain('count ?? 0');
   });
 
   it('carries ⛔ no ActionBar — D-028 forbids two bottom bars on one screen', () => {
     expect(CODE).not.toContain('ActionBar');
-  });
-
-  it('links to the sources page, the attribution home § 4.2ב assigns to this tab', () => {
-    expect(CODE).toContain('/sources');
-  });
-
-  it('anchors its column to the top and never centres it (F-011 · F-016)', () => {
-    expect(CODE).not.toMatch(/flex-1[^"'`]*justify-center/);
   });
 
   it('leaves /onboarding a way out, so an unfinished learner is not trapped', () => {
