@@ -398,3 +398,87 @@ describe('page containers are anchored to the top, never centred (F-011 · F-016
     expect(markupOnly('const u = "https://x.example/a";')).toContain('https://x.example/a');
   });
 });
+
+/**
+ * T-057 — constitution § 4. `MIN_TAP = 44` alone lets two perfectly sized
+ * controls sit flush against each other: the thumb that means the second one
+ * lands on the first, and the harness prints green. The gap is what the learner
+ * actually aims into, so it has to be measured, not assumed from the box size.
+ */
+describe('adjacent tap targets are separated, not merely large (T-057 · constitution § 4)', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('declares the floor as a named constant beside MIN_TAP', () => {
+    expect(SRC).toMatch(/const MIN_GAP = 8;/);
+  });
+
+  it('measures the gap on the flow screens, where the mis-taps happen', () => {
+    expect(SRC).toMatch(/FLOW_ROUTES\.includes\(route\)/);
+    expect(SRC).toContain('adjacent tap targets');
+  });
+
+  /**
+   * The trap this test exists for: two controls that OVERLAP have a NEGATIVE
+   * gap, which is the worst case there is — one control painted over another.
+   * `Math.abs()` anywhere on that number turns the worst case into the
+   * safest-looking one (a -100px overlap reads as 100px of clearance), so the
+   * subtraction and both comparisons stay signed.
+   *
+   * ⚠️ Measured, not assumed (C-0085): the guard the plan shipped —
+   * `not.toMatch(/Math\.abs\([^)]*gap[^)]*\)\s*>=/)` — only covers the `>=`
+   * break line. The mutation that actually hides an overlap is
+   * `if (Math.abs(gap) < min)` on the REPORT line, and that form walks straight
+   * past a `>=`-anchored regex. `Math.abs` on the gap is banned outright here.
+   */
+  it('compares a signed gap, so an overlap can never read as a pass', () => {
+    expect(SRC).not.toMatch(/Math\.abs\(\s*gap/);
+    expect(SRC).toMatch(/const gap = b\.r\.top - a\.r\.bottom;/);
+    expect(SRC).toMatch(/gap\s*<\s*min\b/);
+  });
+
+  /**
+   * The scan runs inside the page, where the module scope does not exist, so it
+   * takes its floor as an argument. A literal there would be a second, silent
+   * floor that `MIN_GAP = 8` no longer governs — and the mutation in step 8
+   * (set `MIN_GAP = 0`) would stop reaching the code it is meant to test.
+   */
+  it('hands the named constant to the in-page scan, never a literal', () => {
+    expect(SRC).toMatch(/\}, MIN_GAP\);/);
+  });
+
+  it('ignores pairs that do not overlap on the cross axis', () => {
+    expect(SRC).toContain('overlapsHorizontally');
+  });
+
+  /**
+   * ⚠️ Measured, not assumed (C-0085). Run exactly as the plan wrote it, the
+   * scan reported 13 failures and every one was a NEGATIVE gap — an overlap,
+   * never a tight gap — from one of two structural pairs:
+   *
+   *   `a"מקורות הנתונים ו" ↔ a"בואו נתחיל" -40px`  (footer licence link vs the
+   *   primary action inside `ActionBar`, which is `fixed inset-x-0 bottom-0`)
+   *   `input"" ↔ button"הצג" -54px`  (the password toggle, `absolute inset-y-0
+   *   right-0`, inside the field it belongs to)
+   *
+   * Neither is a spacing defect and neither has a `gap-*` to widen. Comparing a
+   * fixed bar's rectangle at scroll 0 against the document underneath it
+   * measures the overlay, which is the bar's whole purpose; whether it CLEARS
+   * that content is asserted separately, from a scrolled page, by "action bar
+   * does not cover the licence link". These two tests are what keep the two
+   * exclusions honest — each names the property it turns on, so an exclusion
+   * cannot later widen into "skip the pairs that fail".
+   */
+  it('never compares a fixed overlay against the document beneath it', () => {
+    expect(SRC).toContain('overlayRoot');
+    expect(SRC).toMatch(/p === 'fixed' \|\| p === 'sticky'/);
+    expect(SRC).toMatch(/a\.overlay !== b\.overlay/);
+  });
+
+  it('treats an absolute control lying inside a field as that field, not a neighbour', () => {
+    expect(SRC).toContain('encloses');
+    // The exclusion is granted to `position: absolute` alone. Widening it to any
+    // enclosed pair would hide a real control painted over another.
+    expect(SRC).toMatch(/a\.absolute && encloses/);
+    expect(SRC).toMatch(/b\.absolute && encloses/);
+  });
+});

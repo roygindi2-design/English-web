@@ -959,7 +959,7 @@ git commit -m "loop(DEV): C-XXXX T-056 one Hebrew failure sentence"
 
 ---
 
-## Task 6: Measured spacing between adjacent tap targets (T-057)
+## Task 6: Measured spacing between adjacent tap targets (T-057) ✅ C-0085
 
 **Files:**
 - Modify: `scripts/verify-mobile.mjs` (constant beside `MIN_TAP` at `:60`; new scan inside the `FLOW_ROUTES` block near `:344`)
@@ -970,7 +970,7 @@ git commit -m "loop(DEV): C-XXXX T-056 one Hebrew failure sentence"
 - Consumes: nothing.
 - Produces: `MIN_GAP = 8` in the harness and one new check line per flow route per width.
 
-- [ ] **Step 1: Write the failing wiring test**
+- [x] **Step 1: Write the failing wiring test**
 
 Append to `scripts/verify-mobile.test.ts`:
 
@@ -1003,12 +1003,12 @@ describe('adjacent tap targets are separated, not merely large (T-057 · constit
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 Run: `npx vitest run scripts/verify-mobile.test.ts`
 Expected: FAIL on all four — `MIN_GAP` does not exist.
 
-- [ ] **Step 3: Add the constant**
+- [x] **Step 3: Add the constant**
 
 Beside `MIN_TAP` (`:60`):
 
@@ -1021,7 +1021,7 @@ Beside `MIN_TAP` (`:60`):
 const MIN_GAP = 8;
 ```
 
-- [ ] **Step 4: Add the scan inside the `FLOW_ROUTES` block**
+- [x] **Step 4: Add the scan inside the `FLOW_ROUTES` block**
 
 ```js
         // T-057. Only vertically stacked pairs that actually share horizontal
@@ -1065,28 +1065,28 @@ const MIN_GAP = 8;
         );
 ```
 
-- [ ] **Step 5: Run the harness and read what it reports**
+- [x] **Step 5: Run the harness and read what it reports**
 
 ```bash
 pkill -f '[n]ext-server' ; pgrep -af next ; rm -rf .next && npm run build && npm run check:mobile
 ```
 Expected: the total rises by **15** (5 flow routes × 3 widths). Some of those 15 may FAIL — that is the finding, not a problem. **Paste every failing pair into the tick report before changing a single class.**
 
-- [ ] **Step 6: Fix only what the scan reported, with spacing only**
+- [x] **Step 6: Fix only what the scan reported, with spacing only**
 
 For each reported pair, widen the container's `gap-*` on the 4px scale (e.g. `gap-1.5` → `gap-2`). ⛔ Do not change a colour, a font size, a radius or a border. ⛔ Do not delete a control to make the pair disappear. If a pair cannot be separated without a layout decision (moving a control to another place on the screen), ⛔ stop: that is a PM screen decision, and it goes to `plan/60-findings.md` as a finding with `file:line`, not into this commit.
 
-- [ ] **Step 7: Re-run everything**
+- [x] **Step 7: Re-run everything**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build` → PASS.
 Run the harness again (with the TD-26 preamble) → PASS, and record the final total.
 
-- [ ] **Step 8: Mutation check**
+- [x] **Step 8: Mutation check**
 
 Set `MIN_GAP = 0` and re-run `npx vitest run scripts/verify-mobile.test.ts`.
 Expected: FAIL on "declares the floor as a named constant beside MIN_TAP". Restore `8`. Then, as a second mutation, tighten one fixed container back to its old `gap-*` and confirm the harness reports that exact pair by name.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add scripts/verify-mobile.mjs scripts/verify-mobile.test.ts
@@ -1097,10 +1097,10 @@ git commit -m "loop(DEV): C-XXXX T-057 measured gap between adjacent tap targets
 
 ## Closing the plan (the tick that finishes Task 6)
 
-- [ ] `plan/30-architecture.md` — one numbered subsection describing the institution field's single consumer, the failure-copy module, and the gap scan.
-- [ ] `plan/50-tasks.md` — T-003, T-056, T-057 marked with the measured evidence (test counts, mutation results, harness total).
-- [ ] `plan/00-control.md` — `CYCLE_ID`, `ACTIVE_TASK_ID`, `NEXT_AGENT=CRITIC`, lock released, `MILESTONE_TICKS` +1, and a handoff-log row.
-- [ ] `plan/03-for-roy.md` — nothing new is required, but **item 16 (should we ask about the institution at all?) is now built and can be answered by looking at it.**
+- [x] `plan/30-architecture.md` — one numbered subsection describing the institution field's single consumer, the failure-copy module, and the gap scan.
+- [x] `plan/50-tasks.md` — T-003, T-056, T-057 marked with the measured evidence (test counts, mutation results, harness total).
+- [x] `plan/00-control.md` — `CYCLE_ID`, `ACTIVE_TASK_ID`, `NEXT_AGENT=CRITIC`, lock released, `MILESTONE_TICKS` +1, and a handoff-log row.
+- [x] `plan/03-for-roy.md` — nothing new is required, but **item 16 (should we ask about the institution at all?) is now built and can be answered by looking at it.**
 
 ---
 

@@ -60,6 +60,13 @@ const ROUTES = [
 const MIN_TAP = 44;
 
 /**
+ * T-057: 44px targets that touch each other are still one mis-tap. 8px is the
+ * floor the task row names, and it is the second step of the 4px scale the
+ * constitution fixes (§ 4).
+ */
+const MIN_GAP = 8;
+
+/**
  * F-027 — the screens a learner walks through to reach the product, in order:
  * landing, the two auth screens, the goal question, the study screen. Every one
  * of them must offer a marked way forward that a thumb can actually reach.
@@ -468,6 +475,81 @@ try {
           () => document.querySelectorAll('[data-tab-bar]').length,
         );
         check(strayTabBar === 0, `${at} no tab bar on a flow screen`, `found ${strayTabBar}`);
+
+        // T-057. Only vertically stacked pairs that actually share horizontal
+        // space are compared: two controls side by side in a row are separated
+        // by their own layout, and treating them as "adjacent" would report a
+        // failure the learner's thumb never meets.
+        const tooClose = await page.evaluate((min) => {
+          const sel = 'a[href], button, input, select, textarea, [role="button"]';
+
+          // The nearest `fixed`/`sticky` ancestor, or null for flow content.
+          // Two controls are neighbours only inside the SAME layer: a fixed bar
+          // is painted over the document on purpose, so its viewport rectangle
+          // at scroll 0 says nothing about what a thumb can reach.
+          const overlayRoot = (el) => {
+            for (let n = el; n; n = n.parentElement) {
+              const p = getComputedStyle(n).position;
+              if (p === 'fixed' || p === 'sticky') return n;
+            }
+            return null;
+          };
+
+          const boxes = [...document.querySelectorAll(sel)]
+            .map((el) => ({
+              el,
+              r: el.getBoundingClientRect(),
+              overlay: overlayRoot(el),
+              absolute: getComputedStyle(el).position === 'absolute',
+              label: `${el.tagName.toLowerCase()}"${(el.textContent || '').trim().slice(0, 16)}"`,
+            }))
+            .filter(({ r }) => r.width > 0 && r.height > 0)
+            .sort((a, b) => a.r.top - b.r.top);
+
+          const overlapsHorizontally = (a, b) =>
+            Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0;
+          // 1px of tolerance: sub-pixel layout, not a licence to swallow a real
+          // neighbour — an adornment sits wholly inside the field it belongs to.
+          const encloses = (outer, inner) =>
+            inner.left >= outer.left - 1 &&
+            inner.right <= outer.right + 1 &&
+            inner.top >= outer.top - 1 &&
+            inner.bottom <= outer.bottom + 1;
+
+          const found = [];
+          for (let i = 0; i < boxes.length - 1; i += 1) {
+            for (let j = i + 1; j < boxes.length; j += 1) {
+              const a = boxes[i];
+              const b = boxes[j];
+              // Nested controls (a button inside a label inside a link) are one
+              // target, not two — a contained box is never its own neighbour.
+              if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+              // Different layers. Whether the fixed bar clears the content under
+              // it is a real question, and it is measured by its own check
+              // ("action bar does not cover the licence link") from a page that
+              // has been scrolled — which is the only position where the answer
+              // means anything.
+              if (a.overlay !== b.overlay) continue;
+              // An absolutely positioned control lying wholly inside another
+              // control's box is that control's adornment — the password
+              // visibility toggle inside its input (C-0005), one composite
+              // target. Separating them would be undoing the design, not fixing
+              // a gap.
+              if ((a.absolute && encloses(b.r, a.r)) || (b.absolute && encloses(a.r, b.r)))
+                continue;
+              if (!overlapsHorizontally(a.r, b.r)) continue;
+              const gap = b.r.top - a.r.bottom;
+              if (gap >= min) break; // sorted by top: everything later is further
+              if (gap < min) found.push(`${a.label} ↔ ${b.label} ${Math.round(gap)}px`);
+            }
+          }
+          return found;
+        }, MIN_GAP);
+        check(
+          tooClose.length === 0,
+          `${at} adjacent tap targets >= ${MIN_GAP}px apart`,
+          `too close: ${tooClose.join(' · ')}`,
+        );
       }
 
       // D-027 · § 4.2ב — the tab shell itself: present, complete, thumb-sized,
