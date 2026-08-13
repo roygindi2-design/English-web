@@ -81,3 +81,38 @@ describe('no raw slate left in the screens the product ships', () => {
     expect(raw ?? [], `raw palette classes left in ${file}`).toEqual([]);
   });
 });
+
+/**
+ * F-036 — the blind spot that let a 4.42:1 button pass CI green.
+ *
+ * CONTRAST_FLOORS pins `--brand-on on --brand-surface` (6.70:1), which is the pair the
+ * primary button is SUPPOSED to use. It never pinned `--brand-on on --brand` (4.42:1),
+ * because that pair is not supposed to exist — and so the one screen that did use it
+ * (OnboardingForm's submit button, the screen every new learner passes) was measured by
+ * nothing. A floor for a pair we forbid would be the wrong fix; the right one is to forbid
+ * the pair in the markup, where the defect actually lived.
+ *
+ * `--brand` is the MARK colour: it carries a 3:1 non-text floor and is legal as an icon,
+ * a border or a line. ⛔ It is never a fill behind text.
+ */
+describe('F-036 — the mark colour is never a text fill', () => {
+  const walkTsx = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) return walkTsx(full);
+      return entry.name.endsWith('.tsx') ? [full] : [];
+    });
+  const SCREENS = [...walkTsx('app'), ...walkTsx('components')].sort();
+
+  it('finds the screens at all, so an empty sweep cannot pass silently', () => {
+    expect(SCREENS.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it.each(SCREENS)('%s never fills with bg-brand (4.42:1) — bg-brand-surface is the fill', (file) => {
+    const src = readFileSync(file, 'utf8');
+    // `bg-brand` exactly: `bg-brand-surface` and `bg-brand-soft` are different tokens and
+    // are not what this guard is about.
+    const bare = src.match(/\bbg-brand(?![-\w])/g);
+    expect(bare ?? [], `bg-brand is a 4.42:1 fill; use bg-brand-surface in ${file}`).toEqual([]);
+  });
+});

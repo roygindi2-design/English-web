@@ -135,3 +135,99 @@ describe('החוזה מתעדכן באותו קומיט (RULES, Dev § 5)', () =
     expect(CONTRACT).toContain('PROMOTE_AFTER_CONSECUTIVE_CORRECT');
   });
 });
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * C-0099 — משימה 3 של `docs/superpowers/plans/2026-08-13-study-queue.md` (מילים
+ * חדשות במנת היום) + תיקון **F-034** (סדר בשאילתה) ו-**F-035** (החוזה מול הקוד).
+ *
+ * ⚠️ `SRC` הוא המקור **עם** ההערות, ומשמש אך ורק לבדיקה אחת: שהערת `HEURISTIC`
+ * נמצאת מעל שני פרמטרי המוצר. כל שאר הבדיקות רצות על `CODE` המנוקה — הערה אינה
+ * הגנה, וזו בדיוק הסיבה שהניקוי קיים.
+ */
+const SRC = readFileSync('app/api/study/queue/route.ts', 'utf8');
+
+describe('F-034 — סדר בשאילתה, ⛔ ולא 200 שורות שרירותיות', () => {
+  it('יש order לפני התקרה — Postgres אינו מבטיח סדר שורות בלי order', () => {
+    const orderAt = CODE.indexOf(".order('next_review_at'");
+    const limitAt = CODE.indexOf('.limit(MAX_QUEUE_ROWS)');
+    expect(orderAt).toBeGreaterThan(-1);
+    expect(limitAt).toBeGreaterThan(orderAt);
+  });
+
+  it('שובר שוויון דטרמיניסטי — שתי בקשות זהות חותכות את אותן שורות', () => {
+    expect(CODE).toContain(".order('word_id'");
+  });
+
+  it('תנאי «לא ידעתי» נדחף ל-SQL, כך שהתקרה חותכת את האוכלוסייה הנכונה', () => {
+    expect(CODE).toMatch(/deck === 'unknown'[\s\S]{0,300}\.gt\('attempts', 0\)/);
+    expect(CODE).toContain(".eq('repetition', 0)");
+  });
+});
+
+describe('משימה 3 — מילים חדשות במנת היום (⛔ בלעדיה deck=due ריק לנצח ללומד חדש)', () => {
+  it('שני פרמטרי המוצר קבועים במסלול עם הערת HEURISTIC, ⛔ ולא ב-/lib/core', () => {
+    expect(CODE).toMatch(/NEW_CARDS_PER_DAY\s*=\s*5/);
+    expect(CODE).toMatch(/SECONDS_PER_CARD\s*=\s*20/);
+    expect(SRC).toMatch(/HEURISTIC[\s\S]{0,900}NEW_CARDS_PER_DAY/);
+  });
+
+  it('הבלם של planDailyQueue הוא שמחליט כמה מילים חדשות, ⛔ ולא מספר קשיח כאן', () => {
+    expect(CODE).toMatch(/from\s+'@\/lib\/core\/queue'/);
+    expect(CODE).toContain('planDailyQueue(');
+  });
+
+  it('daily_minutes נקרא מהפרופיל, ו-null הוא ברירת מחדל 10 ⛔ ולא "אפס דקות"', () => {
+    expect(CODE).toContain("select('daily_minutes')");
+    expect(CODE).toMatch(/DEFAULT_DAILY_MINUTES\s*=\s*10/);
+  });
+
+  it('המועמדים נשלפים בסדר רמה ואז תדירות — ⛔ לא בסדר שרירותי', () => {
+    expect(CODE).toMatch(/\.order\('cefr_profile_band'[\s\S]{0,140}\.order\('ngsl_rank'/);
+  });
+
+  it('⛔ בלי not.in מרשימת מזהים — הסינון נעשה ב-excludeSeen הטהור', () => {
+    expect(CODE).toContain('excludeSeen(');
+    expect(CODE).not.toMatch(/\.not\(/);
+  });
+
+  // ⚠️ נמדד כסדר ולא כקרבה: בין מסנן השאילתה לבלם יושבים מיפוי השגיאות ושיטוח השורות,
+  // ולכן בדיקת חלון-תווים על `deck === 'due'` הייתה נכשלת על קוד תקין. מה שבאמת נאכף
+  // כאן הוא ש«לא ידעתי» חוזרת **לפני** שהבלם רץ — חפיסה של מילים שכבר נפגשו.
+  it('רק deck=due מקבל מילים חדשות — ענף «לא ידעתי» חוזר לפני שהבלם בכלל רץ', () => {
+    const planAt = CODE.indexOf('planDailyQueue(');
+    expect(planAt).toBeGreaterThan(-1);
+    const unknownGuard = CODE.lastIndexOf("if (deck === 'unknown')", planAt);
+    expect(unknownGuard).toBeGreaterThan(-1);
+    const earlyReturn = CODE.indexOf('return NextResponse.json({ ok: true', unknownGuard);
+    expect(earlyReturn).toBeGreaterThan(unknownGuard);
+    expect(earlyReturn).toBeLessThan(planAt);
+  });
+
+  it('כשל בשליפת המילים החדשות ⛔ אינו מפיל את התור — חצי תור עדיף על מסך שגיאה', () => {
+    const at = CODE.indexOf('newWordsError');
+    expect(at).toBeGreaterThan(-1);
+    const branch = CODE.slice(at, at + 400);
+    expect(branch).toContain('console.error');
+    expect(branch).not.toContain('NextResponse');
+  });
+});
+
+describe('החוזה מול הקוד — F-035', () => {
+  it('החוזה מתאר את המילים החדשות ואת מקור מספרן', () => {
+    for (const claim of ['NEW_CARDS_PER_DAY', 'planDailyQueue', 'daily_minutes']) {
+      expect(CONTRACT).toContain(claim);
+    }
+  });
+
+  // ⚠️ נמדד כ«אין שורה שמבטיחה 400 על limit» ולא כ«המחרוזת נעלמה»: התיקון עצמו **מסביר**
+  // ש-`limit` פסול אינו מפיק 400, ולכן הצירוף מופיע בחוזה — בכוונה. בדיקה על היעלמות
+  // המחרוזת הייתה מרשיעה בדיוק את התיעוד שסוגר את הממצא.
+  it('⛔ אין בחוזה שורה שמבטיחה 400 על limit פסול — הקוד חותך אותו לברירת המחדל', () => {
+    const promises400 = CONTRACT.split('\n').filter(
+      (line) => line.includes('400') && line.includes('`limit`'),
+    );
+    expect(promises400).toEqual([]);
+    expect(CONTRACT).toMatch(/limit[^\n]{0,120}נחתך/);
+  });
+});
