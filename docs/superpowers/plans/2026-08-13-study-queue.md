@@ -367,19 +367,26 @@ describe('POST /api/practice — D-033, ההגנה שמונעת נזק שקט', 
 - [x] מימוש: session → `checkPracticePayload` → `select('attempts, correct_attempts')` על `(user_id, word_id)` → `maybeSingle()`; `null` ⇒ 404. אחרת `applyPractice` → `.update({attempts, correct_attempts, updated_at})` → 200.
 - [x] `docs/api-contract.md`: סעיף חדש שאומר **במפורש** ש-`next_review_at` אינו משתנה, וש-`/api/review` הוא המסלול היחיד שמזיז אותו.
 
-## משימה 5 — `CardDeck` (T-065, חלק א׳)
+## משימה 5 — `CardDeck` (T-065, חלק א׳) — ✅ **בוצעה C-0101**
 
 **קבצים:** `components/CardDeck.tsx` (חדש) · `components/CardDeck.test.ts` (חדש)
 **סקיל:** `ui-styling`. ⛔ לא `design-taste-frontend` (§ 4.2ו, שאלה 5).
 
-- [ ] `'use client'`. Props: `{ deck: DeckName; cards: readonly QueueCardInput[]; onGraded: (wordId: string, grade: CardGrade) => Promise<void> }`. ⛔ **הרכיב אינו קורא `fetch` בעצמו** — העמוד מזרים לו.
-- [ ] מכולה: `snap-y snap-mandatory overflow-y-auto` · כל כרטיס `h-dvh snap-start` ⇒ כרטיס אחד למסך. ⛔ **בלי `justify-center` בעטיפת העמוד** (F-011/F-016 — `scripts/verify-mobile.test.ts` דוחה אותו סטטית).
-- [ ] מרנדר את **הנותרים בלבד**: `cards.filter((c) => !graded.has(c.word_id))`. סימון ⇒ הכרטיס יורד מה-DOM ⇒ ⛔ אין גלילה אחורה לכרטיס שסומן, בלי שום קוד שחוסם גלילה.
-- [ ] כל כרטיס: `<Flashcard key={c.word_id} card={buildCard(sense, c.direction, {isFirstEncounter: c.is_first_encounter})} onGrade={...} />`. ⛔ **אפס שינוי ב-`Flashcard.tsx`** — הוא כבר מייצר את שני הכפתורים עם תווית וגליף.
-- [ ] אחרי סימון: `scrollIntoView({block:'start', behavior:'auto'})` על הכרטיס הבא. ⛔ `behavior:'smooth'` אסור — הוא מתעלם מ-`prefers-reduced-motion`.
-- [ ] `deck='unknown'` ⇒ תווית דביקה בראש המסך, גלויה תמיד: **«תרגול — לא משנה את מועד החזרה»** (§ 4.2ו; ה-⛔ במסמך הוא סימון הדגשה של התוכנית, ⛔ ואינו חלק מהמחרוזת שהלומד רואה).
-- [ ] מונה נותרים ליד התווית, יורד בזמן אמת. הרשימה מתרוקנת ⇒ `onFinished` (מסך הסיום עצמו הוא **T-055 וחסום ב-F-032** — ⛔ אל תמציא אותו; כרגע: כותרת «סיימת» + קישור ל-`/cards`).
-- [ ] `components/CardDeck.test.ts` בדפוס `Flashcard.test.ts`: (1) המכולה נושאת `snap-mandatory` · (2) המחרוזת «לא משנה את מועד החזרה» מופיעה **רק** בענף `unknown` · (3) ⛔ אין `behavior: 'smooth'` · (4) ⛔ אין `justify-center`.
+- [x] `'use client'`. Props: `{ deck: DeckName; cards: readonly QueueCardInput[]; onGraded: (wordId: string, grade: CardGrade) => Promise<void> }`. ⛔ **הרכיב אינו קורא `fetch` בעצמו** — העמוד מזרים לו.
+- [x] מכולה: `snap-y snap-mandatory overflow-y-auto` · כל כרטיס `h-dvh snap-start` ⇒ כרטיס אחד למסך. ⛔ **בלי `justify-center` בעטיפת העמוד** (F-011/F-016 — `scripts/verify-mobile.test.ts` דוחה אותו סטטית).
+- [x] מרנדר את **הנותרים בלבד**: `cards.filter((c) => !graded.has(c.word_id))`. סימון ⇒ הכרטיס יורד מה-DOM ⇒ ⛔ אין גלילה אחורה לכרטיס שסומן, בלי שום קוד שחוסם גלילה.
+- [x] כל כרטיס: `<Flashcard key={c.word_id} card={buildCard(sense, c.direction, {isFirstEncounter: c.is_first_encounter})} onGrade={...} />`. ⛔ **אפס שינוי ב-`Flashcard.tsx`** — הוא כבר מייצר את שני הכפתורים עם תווית וגליף.
+- [x] אחרי סימון: `scrollIntoView({block:'start', behavior:'auto'})` על הכרטיס הבא. ⛔ `behavior:'smooth'` אסור — הוא מתעלם מ-`prefers-reduced-motion`.
+- [x] `deck='unknown'` ⇒ תווית דביקה בראש המסך, גלויה תמיד: **«תרגול — לא משנה את מועד החזרה»** (§ 4.2ו; ה-⛔ במסמך הוא סימון הדגשה של התוכנית, ⛔ ואינו חלק מהמחרוזת שהלומד רואה).
+- [x] מונה נותרים ליד התווית, יורד בזמן אמת. הרשימה מתרוקנת ⇒ `onFinished` (מסך הסיום עצמו הוא **T-055 וחסום ב-F-032** — ⛔ אל תמציא אותו; כרגע: כותרת «סיימת» + קישור ל-`/cards`).
+- [x] `components/CardDeck.test.ts` בדפוס `Flashcard.test.ts`: (1) המכולה נושאת `snap-mandatory` · (2) המחרוזת «לא משנה את מועד החזרה» מופיעה **רק** בענף `unknown` · (3) ⛔ אין `behavior: 'smooth'` · (4) ⛔ אין `justify-center`.
+
+⚠️ **סטייה מדווחת (C-0101): `onFinished` לא נכתב.** בלוק ה-Props של המשימה מונה שלושה
+props בדיוק, והשורה על התרוקנות הרשימה מבקשת רביעי — שני חצאים של אותה משימה שאינם
+מסתדרים. הוכרע לפי החתימה: החפיסה מרנדרת את מצב הסיום **בעצמה** (כותרת «סיימת» + קישור
+ל-`/cards`, בדיוק כפי שהמשימה מכתיבה), ⛔ בלי prop רביעי. הנימוק אינו סגנון — למשימות
+6–8 אין קורא ל-`onFinished`, ולכן הוא היה prop מת שאיש אינו מעביר ואף בדיקה אינה מודדת.
+ביום שמסך הסיום ייפתח (T-055, חסומה ב-F-032) הוא ייכתב עם הקורא שלו.
 
 ## משימה 6 — `/study` מתחבר לתור (T-065, חלק ב׳)
 
