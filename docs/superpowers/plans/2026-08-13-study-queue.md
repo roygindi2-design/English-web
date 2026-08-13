@@ -318,11 +318,11 @@ const PROMOTE_AFTER_CONSECUTIVE_CORRECT = 3;
 - [ ] המילים החדשות מצטרפות **אחרי** שורות החזרה (`reviewsToShow` תחילה), ו-`total` נספר עליהן גם הוא.
 - [ ] אם השאילתה השנייה נכשלת — ⛔ **אל תפיל את כל התור**: החזר את שורות החזרה עם `console.error`. חצי תור עדיף על מסך שגיאה.
 
-## משימה 4 — `POST /api/practice` (T-064, חלק ד׳)
+## משימה 4 — `POST /api/practice` (T-064, חלק ד׳) — ✅ **בוצעה C-0100**
 
 **קבצים:** `app/api/practice/route.ts` (חדש) · `app/api/practice/route.test.ts` (חדש) · `docs/api-contract.md`
 
-- [ ] כתוב **קודם** את טסט המקור, והרץ אותו — חייב להיכשל על קובץ חסר:
+- [x] כתוב **קודם** את טסט המקור, והרץ אותו — חייב להיכשל על קובץ חסר:
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -364,8 +364,8 @@ describe('POST /api/practice — D-033, ההגנה שמונעת נזק שקט', 
 });
 ```
 
-- [ ] מימוש: session → `checkPracticePayload` → `select('attempts, correct_attempts')` על `(user_id, word_id)` → `maybeSingle()`; `null` ⇒ 404. אחרת `applyPractice` → `.update({attempts, correct_attempts, updated_at})` → 200.
-- [ ] `docs/api-contract.md`: סעיף חדש שאומר **במפורש** ש-`next_review_at` אינו משתנה, וש-`/api/review` הוא המסלול היחיד שמזיז אותו.
+- [x] מימוש: session → `checkPracticePayload` → `select('attempts, correct_attempts')` על `(user_id, word_id)` → `maybeSingle()`; `null` ⇒ 404. אחרת `applyPractice` → `.update({attempts, correct_attempts, updated_at})` → 200.
+- [x] `docs/api-contract.md`: סעיף חדש שאומר **במפורש** ש-`next_review_at` אינו משתנה, וש-`/api/review` הוא המסלול היחיד שמזיז אותו.
 
 ## משימה 5 — `CardDeck` (T-065, חלק א׳)
 
