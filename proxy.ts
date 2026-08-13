@@ -17,7 +17,14 @@ import { createProxyClient, readSupabaseEnv } from '@/lib/supabase/auth';
  */
 
 const AUTH_SCREENS = ['/signup', '/login'];
-const PROTECTED_SCREENS = ['/onboarding'];
+/**
+ * Every screen that reads the learner's own rows. The three tab routes joined
+ * in C-0073 (T-051 · § 4.2ב): `/studies` reads `profiles`, `/me` reads
+ * `word_progress`, and `/cards` is the queue's home. ⛔ The `/dev/*` fixtures
+ * are deliberately absent — a session-gated fixture answers 307 and
+ * `check:mobile` silently measures `/login` instead (the F-027 cause-1 lesson).
+ */
+const PROTECTED_SCREENS = ['/onboarding', '/studies', '/cards', '/me'];
 
 /** Exported for the F-003 unit test and reused by the onboarding screen's own guard. */
 export function isProtectedPath(pathname: string) {

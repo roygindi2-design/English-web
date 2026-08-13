@@ -276,11 +276,11 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
 
 ## Task 3 — T-051 · `/me`, the guard, and the one endpoint value
 
-- [ ] **3.1 (3 min) — `app/(tabs)/me/page.tsx`.** Same session pattern. Contents, exactly what § 4.2ב assigns to אני: one progress line (words learned — `0` today, read from `word_progress`; ⛔ no predicted score, ⛔ no readiness estimate, 4.4.3), the `/sources` link, and the sign-out form moved from `app/onboarding/page.tsx`. The sign-out submit carries `data-primary-action="true"` — it is the only action on the screen — and, per D-028, sits in normal flow, not in an ActionBar.
-- [ ] **3.2 (2 min) — `proxy.ts`:** `PROTECTED_SCREENS = ['/onboarding', '/studies', '/cards', '/me']`. `isProtectedPath` already prefix-matches, and `proxy.test.ts` already exercises it — extend that test with one case per new route.
-- [ ] **3.3 (2 min) — `app/api/profile/route.ts`:** `next: '/studies'`. Update `docs/api-contract.md` **in the same commit**. Add the assertion to the route's existing test file so the string cannot drift back.
-- [ ] **3.4 (2 min) — The landing after onboarding.** `components/OnboardingForm.tsx` already navigates to `result.next`, so 3.3 is the whole change. ⛔ Do not add a second redirect and ⛔ do not touch `proxy.ts`'s `/` → `/onboarding` rule: sending a signed-in learner past onboarding requires reading `onboarded_at` per request, which is a DB call in the proxy and a PM-scale decision. Record it as one line of debt in `plan/30-architecture.md`.
-- [ ] **3.5 (2 min) — Verify.** Five commands.
+- [x] **3.1 (3 min) — `app/(tabs)/me/page.tsx`.** ⚠️ **C-0073, סטייה מוצהרת אחת:** טופס היציאה **הועתק** ולא הועבר — `proxy.ts` שולח כל לומד מחובר מ-`/` ל-`/onboarding`, שיושב מחוץ ל-`(tabs)` ואין בו סרגל, ולכן מחיקת הטופס שם משאירה לומד שלא סיים את המסך בלי שום דרך החוצה — 🔴 F-027 מחדש. ⚠️ **`פס רמה` (§ 4.2ב שאלה 4) ⛔ לא נבנה:** אין ללומד רמה (T-004 מחוץ לתחולה) — נרשם ל-PM ולא הוכרע ביד. Same session pattern. Contents, exactly what § 4.2ב assigns to אני: one progress line (words learned — `0` today, read from `word_progress`; ⛔ no predicted score, ⛔ no readiness estimate, 4.4.3), the `/sources` link, and the sign-out form moved from `app/onboarding/page.tsx`. The sign-out submit carries `data-primary-action="true"` — it is the only action on the screen — and, per D-028, sits in normal flow, not in an ActionBar.
+- [x] **3.2 (2 min) — `proxy.ts`:** `PROTECTED_SCREENS = ['/onboarding', '/studies', '/cards', '/me']`. `isProtectedPath` already prefix-matches, and `proxy.test.ts` already exercises it — extend that test with one case per new route.
+- [x] **3.3 (2 min) — `app/api/profile/route.ts`:** `next: '/studies'`. Update `docs/api-contract.md` **in the same commit**. Add the assertion to the route's existing test file so the string cannot drift back.
+- [x] **3.4 (2 min) — The landing after onboarding.** `components/OnboardingForm.tsx` already navigates to `result.next`, so 3.3 is the whole change. ⛔ Do not add a second redirect and ⛔ do not touch `proxy.ts`'s `/` → `/onboarding` rule: sending a signed-in learner past onboarding requires reading `onboarded_at` per request, which is a DB call in the proxy and a PM-scale decision. Record it as one line of debt in `plan/30-architecture.md`.
+- [x] **3.5 (2 min) — Verify.** Five commands.
 
 ---
 

@@ -23,11 +23,18 @@ export default defineConfig({
     // The {ts,tsx} brace is not decoration: a `components/*.test.tsx` render
     // test under a `*.test.ts`-only glob is silently NOT COLLECTED, and
     // `npm test` stays green while the test never runs.
+    // app/ holds source-scanning guards for a route handler and a screen whose
+    // behaviour cannot be reached without Supabase env and a live session
+    // (`app/api/profile/route.test.ts`, `app/(tabs)/me/page.test.ts`). Added
+    // C-0073: without this line those files are silently NOT COLLECTED and
+    // `npm test` stays green while nothing in them ever runs — the same trap
+    // the brace above documents, one directory over.
     include: [
       'lib/**/*.test.ts',
       'proxy.test.ts',
       'scripts/**/*.test.ts',
       'components/**/*.test.{ts,tsx}',
+      'app/**/*.test.{ts,tsx}',
     ],
   },
 });

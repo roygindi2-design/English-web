@@ -69,5 +69,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
   }
 
-  return NextResponse.json({ ok: true, next: '/study' });
+  // § 4.2ב flow 1: onboarding ends on the לימודים tab, ⛔ not on `/study` —
+  // that is a flow screen with no tab bar, and a learner who landed there had
+  // no way to reach the other three. `components/OnboardingForm.tsx` navigates
+  // to whatever arrives here, so this string is the whole decision.
+  return NextResponse.json({ ok: true, next: '/studies' });
 }
