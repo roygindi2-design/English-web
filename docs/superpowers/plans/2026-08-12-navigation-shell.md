@@ -327,7 +327,7 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
 
 ## Task 5 — T-058 · the last two `justify-center` containers
 
-- [ ] **5.1 (2 min) — Failing guard first,** appended to `scripts/verify-mobile.test.ts`:
+- [x] **5.1 (2 min) — Failing guard first,** appended to `scripts/verify-mobile.test.ts`:
 
 ```ts
 describe('page containers are anchored to the top, never centred (F-011 · F-016)', () => {
@@ -343,8 +343,8 @@ describe('page containers are anchored to the top, never centred (F-011 · F-016
 });
 ```
 
-- [ ] **5.2 (2 min) — Fix both files:** `flex flex-1 flex-col justify-center gap-4` → `flex flex-1 flex-col gap-4` in `app/loading.tsx:10` and `app/error.tsx:10`.
-- [ ] **5.3 (3 min) — Verify.** Five commands, and confirm the harness's existing `heading anchored to top` check still passes on every route (it already covers every screen with an `h1`, T-028).
+- [x] **5.2 (2 min) — Fix both files:** `flex flex-1 flex-col justify-center gap-4` → `flex flex-1 flex-col gap-4` in `app/loading.tsx:10` and `app/error.tsx:10`.
+- [x] **5.3 (3 min) — Verify.** Five commands, and confirm the harness's existing `heading anchored to top` check still passes on every route (it already covers every screen with an `h1`, T-028).
 
 ---
 

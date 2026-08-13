@@ -7,7 +7,7 @@
 export default function RouteError({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-1 flex-col gap-4">
         <h1 className="text-2xl font-bold leading-tight">משהו נתקע</h1>
         <p className="text-lg leading-relaxed text-ink-muted">
           התקלה אצלנו, לא אצלך. ההתקדמות שלך לא נפגעה.

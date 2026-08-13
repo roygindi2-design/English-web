@@ -361,3 +361,40 @@ describe('the harness measures the tab shell (T-051 · D-027 · D-028)', () => {
     expect(code).toContain('no tab bar on a flow screen');
   });
 });
+
+/**
+ * Comments are prose, not markup. `app/page.tsx` and `app/sources/page.tsx` both
+ * document the F-011 defect by quoting the offending class pair verbatim — the
+ * measurement below has to read the JSX these files render, or it convicts a file
+ * for describing the bug it was fixed for. Stripping is deliberately narrow: block
+ * comments, and `//` only where it opens a line, so a `https://` inside a string
+ * survives untouched.
+ */
+function markupOnly(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+}
+
+describe('page containers are anchored to the top, never centred (F-011 · F-016)', () => {
+  const files = ['app/loading.tsx', 'app/error.tsx', 'app/page.tsx', 'app/study/page.tsx'];
+  for (const file of files) {
+    it(`${file} does not centre its page container`, () => {
+      const src = markupOnly(readFileSync(file, 'utf8'));
+      // `items-center justify-center` inside a button/link centres a LABEL and is fine;
+      // `flex-1 … justify-center` on the page column is the dead-band defect.
+      expect(src).not.toMatch(/flex-1[^"'`]*justify-center/);
+    });
+  }
+
+  it('strips prose without blinding itself to markup', () => {
+    expect(markupOnly('/* `flex-1 justify-center` was the bug */')).not.toMatch(
+      /flex-1[^"'`]*justify-center/,
+    );
+    expect(markupOnly('  // `flex-1 justify-center` was the bug')).not.toMatch(
+      /flex-1[^"'`]*justify-center/,
+    );
+    expect(markupOnly('<div className="flex flex-1 flex-col justify-center" />')).toMatch(
+      /flex-1[^"'`]*justify-center/,
+    );
+    expect(markupOnly('const u = "https://x.example/a";')).toContain('https://x.example/a');
+  });
+});

@@ -7,7 +7,7 @@ export default function Loading() {
     <div aria-busy="true" aria-live="polite" className="flex flex-1 flex-col">
       <span className="sr-only">טוען</span>
 
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-1 flex-col gap-4">
         <div className="h-9 w-4/5 rounded-lg bg-border-subtle" />
         <div className="space-y-2">
           <div className="h-5 w-full rounded bg-border-subtle" />
