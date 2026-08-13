@@ -12,6 +12,9 @@ import {
   DEFAULT_DAILY_MINUTES,
   EXAM_DATE_HELP_HE,
   EXAM_DATE_QUESTION_HE,
+  INSTITUTION_HELP_HE,
+  INSTITUTION_MAX_LENGTH,
+  INSTITUTION_QUESTION_HE,
   LEARNER_TIME_ZONE,
   ONBOARDING_SUBMIT_HE,
   TARGET_SCORE_HELP_HE,
@@ -45,6 +48,7 @@ export default function OnboardingForm() {
   const [dailyMinutes, setDailyMinutes] = useState<DailyMinutes>(DEFAULT_DAILY_MINUTES);
   const [examDate, setExamDate] = useState('');
   const [targetScore, setTargetScore] = useState('');
+  const [institution, setInstitution] = useState('');
   const [fieldErrors, setFieldErrors] = useState<OnboardingFieldErrors>({});
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -66,6 +70,7 @@ export default function OnboardingForm() {
         dailyMinutes,
         examDate,
         targetScore,
+        institution,
       });
       if (result.ok && result.next) {
         window.location.assign(result.next);
@@ -129,6 +134,31 @@ export default function OnboardingForm() {
           className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
         />
         {fieldErrors.examDate && <span className="text-base text-danger">{fieldErrors.examDate}</span>}
+      </label>
+
+      {/* § 4.2ד: free text, optional, Hebrew. ⛔ Not <LatinField> — TD-5 covers
+          LATIN input, and "אוניברסיטת חיפה" is neither. ⛔ No <datalist> and no
+          autocomplete: a list of institutions with exemption thresholds is a
+          pedagogical claim, and A7 itself says no national list exists.
+          Placement is measured conflict 1 in the plan — it sits ABOVE the score
+          because the score owns enterKeyHint="go", the typed claim that it is
+          the last field (F-015 · TD-5).
+          ⛔ No fieldErrors branch here, and that is deliberate: the rule in
+          lib/core/onboarding.ts truncates at INSTITUTION_MAX_LENGTH instead of
+          rejecting, so OnboardingFieldErrors has no institution key to render. */}
+      <label className="flex flex-col gap-1.5">
+        <span className="text-lg font-semibold text-ink">{INSTITUTION_QUESTION_HE}</span>
+        <span className="text-base text-ink-muted">{INSTITUTION_HELP_HE}</span>
+        <input
+          type="text"
+          name="institution"
+          value={institution}
+          maxLength={INSTITUTION_MAX_LENGTH}
+          autoComplete="off"
+          enterKeyHint="next"
+          onChange={(event) => setInstitution(event.target.value)}
+          className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
+        />
       </label>
 
       <LatinField

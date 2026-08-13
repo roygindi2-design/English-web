@@ -509,6 +509,20 @@
 
 **שתי מוטציות על הקוד, כל אחת הרגה את הבדיקה בשמה:** ⓐ מחיקת `institution: check.answers.institution` הפילה את `writes the validated value and ⛔ never the raw body` · ⓑ המוטנט של ההערה לעיל הפיל את `passes the submitted key…`. **ארבע פקודות טרי:** typecheck ✅ · check:core `OK` ✅ · **789 בדיקות ✅ (מ-785, 52 קבצים)** · build ✅ `Compiled successfully in 283ms`. ⛔ TD-24/TD-19 בעינם: `0009` טרם הורצה על פרויקט חי, ולכן קריאה אמיתית ל-`POST /api/profile` תיפול ב-503 על עמודה חסרה עד שרוי יחיל אותה.
 
+### 3.1.32 השדה על המסך — ושני שומרים שהתוכנית עצמה כתבה חלולים (T-003, משימה 3) — C-0081
+
+**הפיסה עצמה:** שדה טקסט עברי אחד ב-`components/OnboardingForm.tsx`, **מעל** `<LatinField>` של ציון היעד ובאותה קבוצה איתו, עם `maxLength={INSTITUTION_MAX_LENGTH}` · `autoComplete="off"` · `enterKeyHint="next"` · `min-h-touch` · ו-`institution` נוסף לגוף ה-`apiPost`. ⛔ לא `<LatinField>` ו⛔לא `dir="ltr"` — TD-5 חל על קלט **לטיני**, ו"אוניברסיטת חיפה" אינו כזה. ⛔ אין `<datalist>`, אין `autoComplete="organization"`, ואין ענף `fieldErrors` — ומדובר בהיעדר מכוון: הכלל של משימה 1 **חותך** ב-120 במקום לדחות, ולכן ל-`OnboardingFieldErrors` אין מפתח `institution` להציג. המיקום הוא הכרעת סתירה 1 בתוכנית: לשדה הציון יש `enterKeyHint="go"`, טענה מוטיפסת (F-015 · TD-5) שהוא האחרון, ומוסד אחריו היה מכריח את הציון חזרה ל-`next` — כלומר פתיחה מחדש של שדה T-029.
+
+**⚠️ שתי סתירות בתוך התוכנית עצמה, שתיהן נמדדו ולא שוערו, ושתיהן היו הופכות שומר לחלול.**
+ⓐ **חלון ה-`±600` תווים סביב הסמן אינו ניתן לספק על ידי המימוש שהתוכנית עצמה מכתיבה.** התוכנית חותכת `indexOf('name="institution"') ± 600` וטוענת `not.toContain('LatinField')` — אבל כשהשדה יושב במקום שהתוכנית קובעת לו, החלון הזה **מגיע אל ה-`<LatinField>` שמתחתיו**, והבדיקה נופלת על המימוש **הנכון**. החלון הוא כעת רכיב ה-`<label>` של השדה עצמו (`lastIndexOf('<label')` → `indexOf('</label>')`), שזו הטענה שהבדיקה תמיד עסקה בה.
+ⓑ **`maxLength={120}` מול `maxLength={INSTITUTION_MAX_LENGTH}` — התוכנית דורשת את שניהם.** צעד 4 בתוכנית כותב את הקבוע; הבדיקה בצעד 1 דורשת את הליטרל. נמדד: המימוש שהתוכנית מכתיבה מקבל `1 failed | 6 passed` מהבדיקה שהתוכנית מכתיבה. הוכרע לצד **הקבוע**, כי הליטרל הוא השומר החלש: `120` ברכיב הוא עותק שני של תקרת השרת שיכול לסחוף ממנה בשקט, וההפניה לקבוע ⛔ אינה יכולה. הסכמת המספר עצמו עם המיגרציה נשמרת ממילא ב-`lib/core/onboarding.test.ts`.
+
+**⚠️ והפגם החמור של הטיק: שומר שלישי היה חלול, ונמדד חלול.** הרג'קס של התוכנית לגוף הבקשה — ``apiPost<SaveResponse>\('/api/profile',\s*\{[\s\S]*?institution[\s\S]*?\}`` — משתמש ב-`[\s\S]*?`, ולכן הוא **יוצא מהאובייקט** ומוצא את המילה `institution` בתוך ה-markup שישים שורות מתחת. מוטציה שמוחקת את `institution,` מגוף הבקשה — כלומר הערך שהלומד הקליד ⛔אינו נשלח לעולם — קיבלה **`7 passed`**. הגוף נלכד עכשיו ב-`[^}]*`, שאינו יכול לעזוב את הסוגריים שפתח, ואותה מוטציה נופלת בשם הבדיקה.
+
+**ארבע מוטציות ריצות, כל אחת הרגה בדיקה בשמה:** ⓐ העברת ה-`<label>` מתחת ל-`<LatinField>` → `sits above the target-score field, which owns enterKeyHint="go"` · ⓑ הנמכת הסמן להערה (`// name="institution"`) → **3 נופלות** · ⓒ מחיקת `institution,` מגוף ה-`apiPost` → `sends the value under the key the route reads` (אחרי התיקון; **לפניו — 7 עוברות**) · ⓓ הסרת `min-h-touch` → `is a 44px target like every other control on the screen`.
+
+**חמש פקודות טרי:** typecheck ✅ · check:core `/lib/core purity: OK` ✅ · **796 בדיקות ✅ (מ-789, 53 קבצים)** · build ✅ · **check:mobile ✅ 594 בדיקות — בדיוק כפי שהתוכנית חזתה** (0 חדשות: השדה נמדד בסריקות הקיימות, לא בסריקה חדשה), כולל `/dev/onboarding` `all tap targets >= 44px` · `primary action in thumb zone` · `primary action visible without scrolling` בשלושת הרוחבים 320/375/414. ⛔ הפיקסטורה לא נגעה — `scripts/verify-mobile.test.ts:190-210` משווה את שני הקבצים לפי הרכיבים שהם מרנדרים, ושניהם מרנדרים `<OnboardingForm>`. ⛔ TD-19/TD-24 בעינם: `0009` טרם הורצה על פרויקט חי, ולכן שמירה אמיתית תיפול ב-503 עד שרוי יחיל אותה.
+
 ### 3.2 PWA
 
 | # | הכלל | סטטוס |

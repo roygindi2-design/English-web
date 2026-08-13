@@ -427,7 +427,7 @@ git commit -m "loop(DEV): C-XXXX T-003 institution through POST /api/profile"
 
 ---
 
-## Task 3: The field on the onboarding screen
+## Task 3: The field on the onboarding screen ✅ C-0081
 
 **Files:**
 - Modify: `components/OnboardingForm.tsx` (state near `:46-49`, markup between `:132` and `:134`)
@@ -438,7 +438,7 @@ git commit -m "loop(DEV): C-XXXX T-003 institution through POST /api/profile"
 - Consumes: `INSTITUTION_QUESTION_HE`, `INSTITUTION_HELP_HE`, `INSTITUTION_MAX_LENGTH` from Task 1; the `institution` key from Task 2.
 - Produces: nothing later tasks import.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `components/OnboardingForm.test.ts`:
 
@@ -509,12 +509,12 @@ describe('the institution field (T-003 · § 4.2ד)', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails**
+- [x] **Step 2: Run it and confirm it fails**
 
 Run: `npx vitest run components/OnboardingForm.test.ts`
 Expected: FAIL — `name="institution"` is nowhere in the file, so `indexOf` returns `-1` and the slice checks blow up on the missing marker. Paste the output.
 
-- [ ] **Step 3: Add the state**
+- [x] **Step 3: Add the state**
 
 Beside the other `useState` calls (`:46-49`):
 
@@ -524,7 +524,7 @@ Beside the other `useState` calls (`:46-49`):
 
 Add `INSTITUTION_HELP_HE`, `INSTITUTION_MAX_LENGTH` and `INSTITUTION_QUESTION_HE` to the existing import block from `@/lib/core/onboarding`.
 
-- [ ] **Step 4: Add the markup above the score field**
+- [x] **Step 4: Add the markup above the score field**
 
 Insert between the exam-date `</label>` (`:132`) and `<LatinField …>` (`:134`):
 
@@ -552,7 +552,7 @@ Insert between the exam-date `</label>` (`:132`) and `<LatinField …>` (`:134`)
       </label>
 ```
 
-- [ ] **Step 5: Send it**
+- [x] **Step 5: Send it**
 
 In `onSubmit`, add `institution` to the `apiPost` body:
 
@@ -565,24 +565,24 @@ In `onSubmit`, add `institution` to the `apiPost` body:
       });
 ```
 
-- [ ] **Step 6: Run the unit tests and the four commands**
+- [x] **Step 6: Run the unit tests and the four commands**
 
 Run: `npx vitest run components/OnboardingForm.test.ts` → PASS.
 Run: `npm run typecheck && npm run check:core && npm test && npm run build` → PASS.
 
-- [ ] **Step 7: Measure the geometry**
+- [x] **Step 7: Measure the geometry**
 
 ```bash
 pkill -f '[n]ext-server' ; pgrep -af next ; rm -rf .next && npm run build && npm run check:mobile
 ```
 Expected: all checks pass, including `all tap targets >= 44px` and `primary action in thumb zone` on `/dev/onboarding` at 320/375/414. **Record the new total** — it will be ≥ 594 only if new assertions were added; here it should stay **594**, because the field is measured by the existing scans rather than by a new one. If the primary action fails the thumb-zone check because the form grew, ⛔ do **not** shrink the field — record it and stop: the action bar is fixed (D-028) and a failure there means something else regressed.
 
-- [ ] **Step 8: Mutation check**
+- [x] **Step 8: Mutation check**
 
 Move the institution `<label>` block below `<LatinField>` and run `npx vitest run components/OnboardingForm.test.ts`.
 Expected: FAIL on "sits above the target-score field, which owns enterKeyHint='go'". Move it back.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add components/OnboardingForm.tsx components/OnboardingForm.test.ts
