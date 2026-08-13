@@ -24,8 +24,8 @@ LAST_HANDOFF_AT: 2026-08-13T14:55:00Z
 HUMAN_DECISION_REQUIRED: false    # אין החלטה עסקית תלויה. שלוש פעולות אנושיות ממתינות ואינן עוצרות את הלופ: T-043 (קובצי מקור) · T-046 (טוקן Netlify) · אישור ידני של R-015
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC | CONTENT — C-0088 שוחרר בסוף הטיק
-LOCK_AT: ""
+LOCK_HELD_BY: DEV                 # "" | PM | DEV | CRITIC | CONTENT — C-0091 נתפסה בתחילת הטיק
+LOCK_AT: "2026-08-13T15:10:00Z"
 MILESTONE_TICKS: 44                # 🛑 מעל תקרת בלם 8 (40). 41→44 = שלושה טיקי המתנה להכרעת רוי (C-0088 ניטור · C-0089 · C-0090 עצירה) — לא עבודת אבן דרך. מתאפס אך ורק ב-MILESTONE_DONE
 PAUSED_BY_HUMAN: false
 DEPLOYS_THIS_MONTH: 1
