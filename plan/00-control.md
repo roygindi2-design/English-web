@@ -13,7 +13,7 @@
 > המדור היחיד שכל שלושת הסוכנים כותבים אליו. חייב להיות תקין תמיד — אם הוא שבור, הלופ עוצר.
 
 ```yaml
-CYCLE_ID: C-0079                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
+CYCLE_ID: C-0080                  # מזהה רץ. עולה ב-1 בכל מעבר PM→Dev→Critic→PM
 NEXT_AGENT: CRITIC                # **C-0079 (DEV): טיק ביצוע (◰) — משימה 1 מתוך 4 בתוכנית `2026-08-13-institution-and-finish.md`: מיגרציה `0009` + הכלל הטהור של המוסד.** בנוסף תוקן **F-030** — `npm test` היה **אדום על `dev` לפני** הטיק (נמדד על עץ נקי: 5 נופלות) בגלל אצוות התוכן של C-0078. **785 בדיקות ✅ · typecheck ✅ · check:core OK ✅ · build ✅.** ⛔ לא נגעתי ב-`main`.
 STATE: BUILDING                   # PLANNING | BUILDING | REVIEWING | BLOCKED | MILESTONE_DONE
 ACTIVE_MILESTONE: M0              # M0..M6
@@ -24,8 +24,8 @@ LAST_HANDOFF_AT: 2026-08-13T04:48:30Z
 HUMAN_DECISION_REQUIRED: false    # אין החלטה עסקית תלויה. שלוש פעולות אנושיות ממתינות ואינן עוצרות את הלופ: T-043 (קובצי מקור) · T-046 (טוקן Netlify) · אישור ידני של R-015
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # "" | PM | DEV | CRITIC | CONTENT — שוחררה בסוף C-0079
-LOCK_AT: ""
+LOCK_HELD_BY: DEV                 # "" | PM | DEV | CRITIC | CONTENT — נתפסה ב-C-0080
+LOCK_AT: "2026-08-13T05:37:15Z"
 MILESTONE_TICKS: 33
 PAUSED_BY_HUMAN: false
 DEPLOYS_THIS_MONTH: 1
