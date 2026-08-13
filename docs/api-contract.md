@@ -7,7 +7,8 @@
 
 ## GET /api/health
 
-בדיקת תקינות סביבה. משמשת גם את סוכן ה-Critic כדי לזהות סביבה שגויה.
+בדיקת תקינות סביבה **ובדיקת סכמה חיה**. משמשת גם את סוכן ה-Critic כדי לזהות סביבה שגויה,
+ואת בדיקת העשן שאחרי כל קידום (`plan/RULES.md` § 0.1.1 ד׳).
 
 **תגובה — 200 כשתקין, 503 כשלא:**
 
@@ -17,13 +18,26 @@
   "checks": [
     { "name": "supabase_url",                "ok": true, "detail": "configured" },
     { "name": "supabase_anon_key",           "ok": true, "detail": "configured" },
-    { "name": "placeholder_content_blocked", "ok": true, "detail": "blocked" }
+    { "name": "placeholder_content_blocked", "ok": true, "detail": "blocked" },
+    { "name": "database_schema",             "ok": true, "detail": "word_progress reachable" }
   ]
 }
 ```
 
 `placeholder_content_blocked` נכשל כאשר `NEXT_PUBLIC_ALLOW_PLACEHOLDER=true` —
 כלומר תוכן לימודי לא מאומת חשוף למשתמשים. זהו מצב אסור ב-production.
+
+**ENV תקין אינו מספיק: `ok:true` מחייב שהמיגרציות הורצו.** `database_schema` מריץ
+`select` על `word_progress` עם `head:true` — הוא אינו קורא אף שורה של אף לומד, ואפס
+שורות תחת RLS הן **הצלחה** (הן מוכיחות ש-PostgREST ענה ושהטבלה קיימת). ⛔ מחרוזת
+השגיאה הגולמית של Supabase לעולם אינה נכנסת ל-JSON; `detail` מוגבל לארבע המחרוזות:
+
+| מצב | `detail` |
+|---|---|
+| הטבלה נגישה | `word_progress reachable` |
+| קוד שגיאה `42P01` / `PGRST205` | `word_progress missing — migrations not applied` |
+| כל שגיאה אחרת, חריגה, או timeout (3 שניות) | `database unreachable` |
+| אין ENV של Supabase — לא נוסתה בדיקה כלל | `not probed — supabase env missing` |
 
 
 ---
