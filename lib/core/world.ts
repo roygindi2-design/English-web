@@ -101,6 +101,42 @@ export function uniqueHeadwords(rows: readonly { readonly headword: string | nul
 }
 
 /**
+ * «מילים שהפקת» — the number of DISTINCT words the learner has published, § 4.2ה.
+ *
+ * ⛔ Not the number of posts, and ⛔ not the number of words inside them: a learner who
+ * wrote "I like my car." twice produced four words and not eight, and a label that said
+ * otherwise would be a wrong number under an honest title (the `<MeScreen>` rule).
+ *
+ * ⚠️ It lives HERE and not inside `<WorldFeed>` even though the plan derives it "in the
+ * client", and the reason is mechanical rather than stylistic: this is the inverse of
+ * `renderDraft` — it un-does exactly the join and the punctuation-attachment that function
+ * performs, ten lines above. The day the draft renderer learns a third punctuation mark,
+ * both halves have to move together, and a copy in React would be the half that does not.
+ * `PUNCTUATION_TOKENS` is read and ⛔ not re-typed for the same reason.
+ *
+ * `normaliseToken` does the folding, so this counter agrees with `draftContainsTarget` and
+ * `uniqueHeadwords` about what "the same word" means — one definition, three callers.
+ */
+export function producedWordCount(bodies: readonly string[]): number {
+  const produced = new Set<string>();
+  for (const body of bodies) {
+    if (typeof body !== 'string') continue;
+    for (const chunk of body.split(/\s+/)) {
+      let word = normaliseToken(chunk);
+      // Trailing marks only: `renderDraft` attaches them to the end of the word before
+      // them, so that is the only place they can be. ⛔ No general strip — "don't" and
+      // "well-known" are single produced words and losing their marks would merge two
+      // different headwords into one count.
+      while (word.length > 0 && PUNCTUATION_TOKENS.includes(word.slice(-1))) {
+        word = word.slice(0, -1);
+      }
+      if (word !== '') produced.add(word);
+    }
+  }
+  return produced.size;
+}
+
+/**
  * Today's target word.
  *
  * ⚠️ § 4.2ה fixes that there IS one target, drawn from the learner's active words, and does

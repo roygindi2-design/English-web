@@ -9,6 +9,7 @@ import {
   isWorldUnlocked,
   normaliseToken,
   pickTargetWord,
+  producedWordCount,
   renderDraft,
   uniqueHeadwords,
 } from './world';
@@ -187,5 +188,37 @@ describe('checkPostPayload — the server decides, ⛔ not the button', () => {
   it('checks the shape BEFORE the target, so a malformed body never reports target_missing', () => {
     expect(checkPostPayload({ target: 'car', tokens: ['<script>car</script>'] }))
       .toEqual({ ok: false, reason: 'malformed' });
+  });
+});
+
+describe('producedWordCount — «מילים שהפקת», ⛔ not posts and ⛔ not words-in-posts', () => {
+  it('counts DISTINCT words and ⛔ not the number of posts', () => {
+    expect(producedWordCount(['I like my car.', 'I like my car.'])).toBe(4);
+  });
+
+  it('counts a word once across two different posts', () => {
+    expect(producedWordCount(['I like my car.', 'My car is here.'])).toBe(6);
+  });
+
+  it('⛔ never counts punctuation as a produced word', () => {
+    expect(producedWordCount(['car.', 'car?', '. ?'])).toBe(1);
+  });
+
+  it('is case-insensitive — "Car" and "car" are one produced word', () => {
+    expect(producedWordCount(['Car is here.', 'car is HERE.'])).toBe(3);
+  });
+
+  it('is 0 for an empty feed — a learner who wrote nothing produced nothing', () => {
+    expect(producedWordCount([])).toBe(0);
+    expect(producedWordCount(['', '   '])).toBe(0);
+  });
+
+  it('is the exact inverse of renderDraft on the tokens that produced the sentence', () => {
+    const tokens = ['i', 'like', 'my', 'car', '.'];
+    expect(producedWordCount([renderDraft(tokens)])).toBe(4);
+  });
+
+  it('⛔ does not split a hyphenated headword into two produced words', () => {
+    expect(producedWordCount(['well-known people'])).toBe(2);
   });
 });
