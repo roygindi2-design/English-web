@@ -113,7 +113,26 @@ export default function CardDeck({
   }
 
   return (
-    <section className="flex h-dvh flex-col" data-card-deck={deck}>
+    // ⛔ NOT `h-dvh`, and ⛔ not `flex-1` either. Both were measured by `/dev/deck` at
+    // 320/375/414 the first time this component was ever rendered by the harness (C-0104):
+    //
+    //   `h-dvh`  ⇒ card 1 occupied y=105..832 of a 780px viewport. The deck does NOT own the
+    //             viewport — the root layout puts a header above it and the licence footer
+    //             below it — so a 100dvh box starting at y=52 carried the two grade buttons
+    //             52px below the fold. Answer buttons off screen are the F-027 dead end.
+    //   `flex-1` ⇒ card 1 collapsed to its own content, 215px, and card 2 sat visible right
+    //             under it. The root column is `min-h-dvh`, i.e. its height is INDEFINITE, so
+    //             nothing in this subtree can stretch and no `h-full` below can resolve.
+    //
+    // A scroll-snap deck needs a definite height, so it states one: the viewport minus the
+    // chrome the root layout renders around it — header 52px (py-4 + a text-sm line) + main's
+    // pb-8 32px + footer 76px (pt-2 + a 44px touch target + pb-6) = 160px = 10rem. ⚠️ It is a
+    // number about ANOTHER file, which is exactly why `/dev/deck` measures the result at all
+    // three widths instead of trusting it: change the chrome and the harness goes red.
+    <section
+      className="flex h-[calc(100dvh-10rem)] flex-col"
+      data-card-deck={deck}
+    >
       <header className="flex flex-none items-center justify-between gap-3 border-b border-border-subtle bg-surface py-2 text-sm text-ink-muted">
         {deck === 'unknown' ? (
           <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
@@ -126,7 +145,7 @@ export default function CardDeck({
       {/* The scroll container. `h-dvh` lives on the section above, so one card fills exactly
           what is left under the label — a card taller than the viewport would put the grade
           buttons below the fold on the very screen they exist for. */}
-      <div className="snap-y snap-mandatory flex-1 overflow-y-auto">
+      <div className="snap-y snap-mandatory min-h-0 flex-1 overflow-y-auto" data-deck-scroll>
         {remaining.map((card) => (
           <article
             key={card.word_id}

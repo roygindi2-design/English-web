@@ -450,23 +450,38 @@ props בדיוק, והשורה על התרוקנות הרשימה מבקשת ר�
 
 **אימות טרי C-0103:** typecheck ✅ · check:core `OK` ✅ · **991/991 ב-63 קבצים ✅** (מ-980/62) · build ✅ `Compiled successfully in 303ms` · `check:mobile` **609/609 ✅** בשלושת הרוחבים.
 
-## משימה 8 — המדידה (T-065, חלק ד׳)
+## משימה 8 — המדידה (T-065, חלק ד׳) — ✅ **בוצעה C-0104**
 
 **קבצים:** `app/dev/deck/page.tsx` + `layout.tsx` (חדשים) · `scripts/verify-mobile.mjs`
 
-- [ ] פיקסצ'ר `/dev/deck` שמרנדר `<CardDeck>` עם **שני כרטיסים קבועים בקוד** ו-`onGraded` ריק — אותו נימוק כמו `/dev/card` ו-`/dev/tabs/*`: `/study` בלי ENV של Supabase מציג מצב שגיאה, וההארנס היה מודד אותו במקום את החפיסה.
-- [ ] הוסף `'/dev/deck'` לרשימת המסכים ב-`scripts/verify-mobile.mjs` (ליד `/dev/card`), עם הערה בת שורה שמסבירה למה.
-- [ ] הרץ `npm run check:mobile` ודרוש בשלושת הרוחבים: אפס גלילה אופקית · שני כפתורי הסימון ≥44×44px עם מרווח ≥8px · כרטיס אחד לכל מסך.
-- [ ] ⛔ אם `check:mobile` נופל — זה ממצא על הקוד, ⛔ ולא סיבה להוריד את הפיקסצ'ר מהרשימה.
+- [x] פיקסצ'ר `/dev/deck` שמרנדר `<CardDeck>` עם **שני כרטיסים קבועים בקוד** ו-`onGraded` ריק — אותו נימוק כמו `/dev/card` ו-`/dev/tabs/*`: `/study` בלי ENV של Supabase מציג מצב שגיאה, וההארנס היה מודד אותו במקום את החפיסה.
+- [x] הוסף `'/dev/deck'` לרשימת המסכים ב-`scripts/verify-mobile.mjs` (ליד `/dev/card`), עם הערה בת שורה שמסבירה למה.
+- [x] הרץ `npm run check:mobile` ודרוש בשלושת הרוחבים: אפס גלילה אופקית · שני כפתורי הסימון ≥44×44px עם מרווח ≥8px · כרטיס אחד לכל מסך.
+- [x] ⛔ אם `check:mobile` נופל — זה ממצא על הקוד, ⛔ ולא סיבה להוריד את הפיקסצ'ר מהרשימה.
+
+⚠️ **`check:mobile` נפל, והכלל האחרון קוים כלשונו: הכשל היה ממצא על הקוד.** שתי ריצות אדומות
+ברצף, ושתיהן על `components/CardDeck.tsx` — הקובץ שנכתב במשימה 5 ושאף בדיקה לא יכלה לראות
+עד עכשיו, כי `/study` מרנדר את מצב הכשל בלי ENV: ⓐ `h-dvh` הוריד את שני כפתורי הסימון 52px
+מתחת לקו הקיפול (`y=105..832` במסך 780px), כי החפיסה אינה בעלת המסך · ⓑ `flex-1` הקריס את
+הכרטיס ל-215px, כי עמודת השורש היא `min-h-dvh` וגובהה בלתי-מוגדר. החפיסה מצהירה עכשיו על
+`h-[calc(100dvh-10rem)]`, המספר נרשם כ-TD-30, וההארנס מודד את התוצאה בשלושת הרוחבים.
+המדידה נכתבה מול **מכולת ה-snap** ו⛔ לא מול החלון, ויחידת המדידה היא ה-`<article>` ו⛔ לא
+`[data-flashcard]` שבתוכו (הנוסח הראשון הרשיע את החפיסה על `pt-4` שהעיצוב מבקש).
+⚠️ **סטייה מדווחת:** `components/CardDeck.tsx` ו-`CardDeck.test.ts` נגעו — הם ברשימת הקבצים של
+T-065 אך לא של משימה 8. בדיקת המקור שדרשה `h-dvh` הוחלפה בבדיקה שדורשת גובה מוגדר, כי
+המחרוזת שהיא הגנה עליה היא בדיוק הפגם שנמדד.
+
+**אימות טרי C-0104:** typecheck ✅ · check:core `OK` ✅ · **1008/1008 ב-63 קבצים ✅** (מ-991/63) ·
+build ✅ · `check:mobile` **645/645 ✅** (מ-609) בשלושת הרוחבים.
 
 ---
 
 ## בדיקה עצמית — לפני קומיט הסיום
 
-- [ ] `npm run typecheck && npm run check:core && npm test && npm run build` — **ריצה טרייה באותה הודעה שבה נטענת ההצלחה.** ⛔ «עבר קודם» אינו ראיה.
-- [ ] `grep -n "senses(cefr_level\|cefr_level" app/api/study/queue/route.ts lib/core/deck.ts` ⇒ **אפס** (D-034).
-- [ ] `grep -n "next_review_at\|easiness\|interval_days" app/api/practice/route.ts` ⇒ **אפס** (D-033).
-- [ ] `grep -rn "'use client'" lib/core/deck.ts` ⇒ אפס · `npm run check:core` ירוק.
-- [ ] `docs/api-contract.md` עודכן **באותו קומיט** של שני המסלולים (RULES, Dev § 5).
-- [ ] ⛔ אין `[skip ci]` · ⛔ הדחיפה ל-`dev` בלבד · ⛔ לא נגעת ב-`Flashcard.tsx` · ⛔ לא הומצא מסך סיום (T-055 חסומה ב-F-032).
-- [ ] `plan/30-architecture.md` · `50-tasks` · `60-findings` · `00-control` עודכנו, ו-`MILESTONE_TICKS` עלה ב-1.
+- [x] `npm run typecheck && npm run check:core && npm test && npm run build` — **ריצה טרייה באותה הודעה שבה נטענת ההצלחה.** ⛔ «עבר קודם» אינו ראיה.
+- [x] `grep` על `cefr_level` ⇒ שתי שורות, **שתיהן הערות שמנסחות את האיסור עצמו** ב-`lib/core/deck.ts`; אפס קוד (D-034).
+- [x] `grep -n "next_review_at\|easiness\|interval_days" app/api/practice/route.ts` ⇒ **אפס** (D-033).
+- [x] `grep -rn "'use client'" lib/core/deck.ts` ⇒ אפס · `npm run check:core` ירוק.
+- [x] `docs/api-contract.md` — ⛔ לא נגעה ולא נדרשה: משימה 8 אינה משנה אף נקודת קצה (שני המסלולים תועדו במשימות 2 ו-4).
+- [x] ⛔ אין `[skip ci]` · ⛔ הדחיפה ל-`dev` בלבד · ⛔ לא נגעת ב-`Flashcard.tsx` · ⛔ לא הומצא מסך סיום (T-055 חסומה ב-F-032).
+- [x] `plan/30-architecture.md` (סעיף חדש + TD-30) · `50-tasks` · `00-control` עודכנו, ו-`MILESTONE_TICKS` עלה ב-1. `60-findings` — ⛔ אין ממצא חדש: הפגם נמצא **ותוקן באותו טיק** בידי Dev, ומתועד בארכיטקטורה ובתוכנית.

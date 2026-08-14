@@ -482,3 +482,110 @@ describe('adjacent tap targets are separated, not merely large (T-057 · constit
     expect(SRC).toMatch(/b\.absolute && encloses/);
   });
 });
+
+/**
+ * T-065 task 8 — the deck's geometry is measured, not declared.
+ *
+ * `/study` is already in `ROUTES`, and that is exactly why this fixture is needed: with no
+ * Supabase env the queue answers 503 by its own contract, so every `ok /study` line this
+ * harness has ever printed described the FAILURE state — the scrolling deck itself has
+ * never once been rendered at 320/375/414. Same reasoning that produced `/dev/card` and
+ * `/dev/tabs/*` (TD-13), and the same rule applies: ⛔ a red run here is a finding on the
+ * component, ⛔ never a reason to drop the route from the list.
+ */
+describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const fixture = readFileSync('app/dev/deck/page.tsx', 'utf8');
+
+  it('visits /dev/deck, beside the other card fixtures', () => {
+    const routes = code.slice(code.indexOf('const ROUTES = ['), code.indexOf('const MIN_TAP'));
+    expect(routes).toContain("'/dev/deck'");
+    expect(routes.indexOf("'/dev/deck'")).toBeGreaterThan(routes.indexOf("'/dev/card'"));
+  });
+
+  it('renders <CardDeck>, the same component /study renders', () => {
+    expect(fixture).toContain('CardDeck');
+    expect(readFileSync('components/StudyDeckScreen.tsx', 'utf8')).toContain('CardDeck');
+  });
+
+  /**
+   * The fixture exists BECAUSE the real screen cannot render without env. A fixture that
+   * fetched would land in the same 503 state it was written to escape, and the harness
+   * would print `ok /dev/deck` for a screen with no deck on it.
+   */
+  it('touches no network and no session, which is what makes it measurable', () => {
+    expect(fixture).not.toContain('createRouteClient');
+    expect(fixture).not.toContain('apiGet');
+    expect(fixture).not.toContain('StudyDeckScreen');
+    expect(fixture).not.toMatch(/\bfetch\(/);
+  });
+
+  /**
+   * Two cards and not one: «one card per screen» is unfalsifiable on a deck that only ever
+   * held one card, and the snap container's height is only wrong when there is a second
+   * card to push out of the viewport.
+   */
+  it('hard-codes exactly two cards', () => {
+    expect(fixture.match(/word_id:/g) ?? []).toHaveLength(2);
+  });
+
+  /**
+   * Same non-content as the sibling fixtures — R-010/R-013 forbid sourced content and the
+   * loop forbids invented content.
+   *
+   * ⛔ And ⛔ no note paragraph above the deck, unlike `/dev/card`: `<CardDeck>` is `h-dvh`,
+   * so one line of chrome the real route does not have pushes the card down and this harness
+   * starts measuring the fixture instead of the component. The declaration lives in the doc
+   * comment, where it costs no pixels.
+   */
+  it('teaches nothing, and renders nothing but the deck', () => {
+    expect(fixture).toContain('אינו תוכן לימודי');
+    expect(fixture).not.toMatch(/<p[\s>]/);
+  });
+
+  it('is kept out of the index, like every other harness fixture', () => {
+    const layout = readFileSync('app/dev/deck/layout.tsx', 'utf8');
+    expect(layout).toContain('robots');
+    expect(layout).toContain('index: false');
+  });
+
+  /**
+   * The three measurements the task names, asserted by the label the harness prints. A
+   * check nobody can grep for is a check the next hand deletes by accident.
+   */
+  it('measures one card per screen', () => {
+    expect(code).toContain('one card per screen');
+  });
+
+  it('measures both grade buttons at the tap floor', () => {
+    expect(code).toContain('both grade buttons');
+  });
+
+  it('measures the gap between the two grade buttons', () => {
+    expect(code).toContain('grade buttons are separated');
+  });
+
+  /**
+   * The deck block is keyed to the exact route. `startsWith('/dev/card')` owns the reveal /
+   * marker / verdict assertions, and `/dev/deck` must not fall into them — nor they into it.
+   */
+  it('keys the deck block to the exact route, not a prefix', () => {
+    expect(code).toContain("route === '/dev/deck'");
+    expect(code).toMatch(/route\.startsWith\('\/dev\/card'\)/);
+  });
+
+  /**
+   * The floors are the named constants, ⛔ never re-typed literals that can drift apart.
+   *
+   * ⚠️ The first version of this test asserted only that `MIN_TAP` and `MIN_GAP` appear in
+   * the block — and stayed GREEN when the argument was mutated to `[44, 8]`, because both
+   * names still appear in the check LABELS. It now measures the argument itself, and the
+   * same mutation turns it red.
+   */
+  it('hands the named floors to the in-page scan', () => {
+    const start = code.indexOf("route === '/dev/deck'");
+    const block = code.slice(start, code.indexOf('clean console', start));
+    expect(block).toMatch(/\[MIN_TAP, MIN_GAP\]/);
+    expect(block).not.toMatch(/\[\s*44\s*,\s*8\s*\]/);
+  });
+});

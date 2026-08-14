@@ -38,6 +38,12 @@ const ROUTES = [
   '/dev/card',
   '/dev/card/typed',
   '/dev/card/swap',
+  // T-065 task 8, and the same reason as the three above one level up: `/study` IS in this
+  // list, but `next start` has no Supabase env, so the queue answers 503 by its own
+  // contract and every `ok /study` line here has described the FAILURE state. The scrolling
+  // deck — snap container, one card per viewport, the two grade buttons — has never been
+  // rendered at 320/375/414 until this fixture.
+  '/dev/deck',
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
@@ -900,6 +906,112 @@ try {
             (await page.locator('[data-continue]').count()) === 1,
             `${at} there is a way forward after answering`,
             'no [data-continue] button — the card dead-ends',
+          );
+        }
+      }
+
+      // T-065 · § 4.2ו — the scrolling deck. Three promises, measured on the component and
+      // ⛔ not on the screen above it: one card fills the screen, and the two grade buttons
+      // are both thumb-sized AND separated. `/dev/deck` and not `/study`: the real route
+      // renders its failure state without Supabase env (TD-13), so the deck itself would
+      // never be in the DOM while this ran.
+      if (route === '/dev/deck') {
+        const deck = await page.evaluate(() => {
+          const scroller = document.querySelector('[data-deck-scroll]');
+          const cards = [...document.querySelectorAll('[data-flashcard]')];
+          if (!scroller || cards.length < 2) return { count: cards.length, scroller: Boolean(scroller) };
+          const box = scroller.getBoundingClientRect();
+          // The snap UNIT is the scroller's own child, ⛔ not `[data-flashcard]` inside it:
+          // the card sits under the article's `pt-4`, so measuring the inner section reported
+          // 567px inside a 583px viewport and convicted the deck of a 16px gutter that is the
+          // spacing the design asks for. What must fill the viewport is the thing that snaps.
+          const items = [...scroller.children];
+          const first = items[0].getBoundingClientRect();
+          const second = items[1].getBoundingClientRect();
+          return {
+            count: cards.length,
+            scroller: true,
+            // Rounded: sub-pixel layout is not a defect, and comparing raw floats turns a
+            // 0.5px rounding into a red run nobody can act on.
+            top: Math.round(box.top),
+            bottom: Math.round(box.bottom),
+            height: Math.round(box.height),
+            firstHeight: Math.round(first.height),
+            secondTop: Math.round(second.top),
+            viewportHeight: window.innerHeight,
+          };
+        });
+        check(
+          deck.count === 2 && deck.scroller,
+          `${at} the deck holds both fixture cards`,
+          `found ${deck.count} cards and ${deck.scroller ? 'a' : 'no'} [data-deck-scroll]`,
+        );
+        if (deck.count === 2 && deck.scroller) {
+          // Measured against the SNAP VIEWPORT and ⛔ not against the window: the container
+          // clips, so a card whose rectangle runs past `innerHeight` may be perfectly
+          // invisible while a card 40px short of it is half on screen. Three properties,
+          // and «one card per screen» is only true when all three hold.
+          //
+          // ⓐ The snap viewport itself is entirely on screen — otherwise its bottom edge,
+          //    where the two grade buttons live, is below the fold (F-027 by another route).
+          check(
+            deck.top >= 0 && deck.bottom <= deck.viewportHeight,
+            `${at} the deck fits on screen`,
+            `the snap viewport occupies ${deck.top}..${deck.bottom} of a ${deck.viewportHeight}px viewport`,
+          );
+          // ⓑ Card 1 FILLS it. 1px of tolerance for sub-pixel layout, and no more: a card
+          //    shorter than its viewport is the `min-h-dvh`/`flex-1` collapse measured in
+          //    C-0104, where card 2 sat visible under card 1 and snapping meant nothing.
+          check(
+            deck.firstHeight >= deck.height - 1,
+            `${at} one card per screen`,
+            `card 1 is ${deck.firstHeight}px inside a ${deck.height}px snap viewport`,
+          );
+          // ⓒ Card 2 begins at or after that bottom edge — the other half of the same claim.
+          check(
+            deck.secondTop >= deck.bottom - 1,
+            `${at} the next card waits off screen`,
+            `card 2 starts at y=${deck.secondTop}, above the snap viewport's bottom edge at ${deck.bottom}`,
+          );
+        }
+
+        // The grade buttons only exist after the answer is revealed — measuring the front of
+        // the card would have printed green on a screen with no controls at all.
+        await page.locator('[data-reveal]').first().click();
+        const grades = await page.evaluate(
+          ([minTap, minGap]) => {
+            const buttons = [...document.querySelectorAll('[data-grade]')].slice(0, 2);
+            if (buttons.length < 2) return { count: buttons.length };
+            const boxes = buttons
+              .map((el) => el.getBoundingClientRect())
+              .sort((a, b) => a.left - b.left);
+            return {
+              count: buttons.length,
+              small: boxes.filter((r) => r.width < minTap || r.height < minTap).length,
+              // The pair sits side by side in a two-column grid, so the gap that a thumb
+              // aims into is the HORIZONTAL one — the flow-screen scan measures vertical
+              // neighbours and would have had nothing to say about this pair.
+              gap: Math.round(boxes[1].left - boxes[0].right),
+              floors: { minTap, minGap },
+            };
+          },
+          [MIN_TAP, MIN_GAP],
+        );
+        check(
+          grades.count === 2,
+          `${at} both grade buttons are on the revealed card`,
+          `found ${grades.count} [data-grade] controls`,
+        );
+        if (grades.count === 2) {
+          check(
+            grades.small === 0,
+            `${at} both grade buttons >= ${MIN_TAP}px`,
+            `${grades.small} of the two are below the floor`,
+          );
+          check(
+            grades.gap >= MIN_GAP,
+            `${at} grade buttons are separated by >= ${MIN_GAP}px`,
+            `they sit ${grades.gap}px apart — one thumb, two answers`,
           );
         }
       }

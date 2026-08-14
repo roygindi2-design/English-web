@@ -77,7 +77,38 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(CODE).toContain('snap-y');
     expect(CODE).toContain('snap-mandatory');
     expect(CODE).toContain('snap-start');
-    expect(CODE).toContain('h-dvh');
+  });
+
+  /**
+   * ⚠️ This test used to demand `h-dvh`, and `/dev/deck` falsified it the first time the deck
+   * was ever rendered by the harness (C-0104, T-065 task 8). Both obvious heights were
+   * measured wrong at 320/375/414:
+   *
+   *   `h-dvh`  ⇒ card 1 occupied y=105..832 of a 780px viewport. The deck does not own the
+   *             viewport — the root layout gives it a header above and the licence footer
+   *             below — so 52px of the card, and both grade buttons with it, sat below the
+   *             fold. Answer buttons off screen are the F-027 dead end by another route.
+   *   `flex-1` ⇒ card 1 collapsed to 215px of content and card 2 sat visible under it. The
+   *             root column is `min-h-dvh`: its height is INDEFINITE, so nothing in this
+   *             subtree stretches and no `h-full` below it resolves.
+   *
+   * So the deck states a definite height — the viewport minus the 10rem of chrome the root
+   * layout renders around it. That number is about another file, and it is not trusted here:
+   * `/dev/deck` measures the RESULT at all three widths, which is what makes changing the
+   * chrome a red run instead of a silent 16px.
+   *
+   * `min-h-0` on the scroll container is not decoration either — without it a flex child
+   * refuses to shrink below its content and the `overflow-y-auto` never scrolls.
+   */
+  it('states a definite height, ⛔ neither the full viewport nor a stretch', () => {
+    expect(CODE).not.toContain('h-dvh');
+    expect(CODE).toMatch(/h-\[calc\(100dvh-10rem\)\]/);
+    expect(CODE).toContain('min-h-0');
+  });
+
+  /** The snap viewport is marked, because `/dev/deck` measures the deck against it and ⛔ not against the window. */
+  it('marks the snap viewport for the harness', () => {
+    expect(CODE).toContain('data-deck-scroll');
   });
 
   it('⛔ never centres a flex column — the F-011 · F-016 dead band', () => {
