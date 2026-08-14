@@ -1244,12 +1244,27 @@ git commit -m "loop(DEV): C-XXXX the world tab unlocks from the server"
   }): React.JSX.Element;
 
   // components/ComposeDraft.tsx
-  export default function ComposeDraft(props: {
-    readonly target: string | null;
-    readonly functionWords: readonly string[];
-    readonly activeWords: readonly string[];
+  // ⚠️ CORRECTED C-0128 (F-042). The signature this block used to declare —
+  // `{ target, functionWords, activeWords }` as REQUIRED props — has no possible caller:
+  // step 5 below says this component holds the bank data and the publish call, and step 6
+  // says `app/world/compose/page.tsx` is a Server Component with ⛔ no data access. A page
+  // that reads nothing cannot fill those props. The component reads the bank itself; the ONE
+  // optional prop below exists for the `/dev/world` fixture in task 9 — see there.
+  export default function ComposeDraft(props?: {
+    /** ⛔ Fixture-only (task 9). When present the component starts READY on this bank and
+     *  performs no fetch, so `check:mobile` measures the real chips and the real action bar
+     *  instead of the 503 state the env-less harness would otherwise render (C-0104). */
+    readonly initialBank?: {
+      readonly target: string | null;
+      readonly functionWords: readonly string[];
+      readonly activeWords: readonly string[];
+    };
   }): React.JSX.Element;
   ```
+
+  ⚠️ **Task 8 as built (C-0128) takes no props at all, and that is not an omission.**
+  `initialBank` is task 9's to add together with its test — a prop with no consumer and no
+  test is a prop that drifts.
 
 **⛔ The path is `app/world/compose`, OUTSIDE the `(tabs)` group.** This is structural, not stylistic: § 4.2ה calls it a flow screen, D-028 forbids a tab bar and an action bar on one screen, and the route group is what makes that unbreakable by forgetting a conditional.
 
@@ -1426,7 +1441,7 @@ describe('world screens are measured, not assumed', () => {
 
 - [ ] **Step 2: Run and watch them fail** — `npx vitest run scripts/verify-mobile.test.ts`.
 
-- [ ] **Step 3: Write the fixture** — `app/dev/world/layout.tsx` with `robots: { index: false, follow: false }` (copy `app/dev/deck/layout.tsx`), and `app/dev/world/page.tsx` rendering `<ComposeDraft target="car" functionWords={[...12 fixed]} activeWords={[...12 fixed]} />`. ⛔ **No explanatory line above the component** — C-0104: a note pushes the component down and the harness then measures the fixture instead of the component.
+- [ ] **Step 3: Write the fixture** — `app/dev/world/layout.tsx` with `robots: { index: false, follow: false }` (copy `app/dev/deck/layout.tsx`), and `app/dev/world/page.tsx` rendering `<ComposeDraft initialBank={{ target: 'car', functionWords: [...12 fixed], activeWords: [...12 fixed] }} />`. ⚠️ **CORRECTED C-0128 (F-042):** the three separate props this step used to pass do not exist on the component and never could (see the `Interfaces` block of task 8), so this line would not have compiled. Adding the optional `initialBank` prop — one prop, one branch: present ⇒ start in the READY state and ⛔ do not fetch — is part of THIS task, with a test in `ComposeDraft.test.ts` that measures the branch (`useEffect` does not call `apiGet` when the prop is supplied), because a fixture that renders anything other than the real component measures the fixture (C-0104). ⛔ **No explanatory line above the component** — C-0104: a note pushes the component down and the harness then measures the fixture instead of the component.
 
 - [ ] **Step 4: Add the three routes** to `ROUTES` / `FLOW_ROUTES` with a comment naming the reason (the 503 contract) — ⛔ not "for coverage".
 
