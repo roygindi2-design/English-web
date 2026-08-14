@@ -74,7 +74,7 @@ Copied verbatim from the governing documents. Every task's requirements implicit
 
 **Why this column exists, and why it must be in the file as a comment:** `0007` designed `world_posts` for **generated** content — every row carries `generation_run_id` and `needs_human_review` so a bad batch can be revoked (R-014). D-030 now puts rows the *learner* wrote into the same table. ⛔ `character_id is null` is **not** a sufficient signal: `0007` itself documents that "an unattributed post is valid content", so an implicit distinction breaks the first time a character lands. The table is **empty**, so `not null` is safe today and will never be safe again.
 
-- [ ] **Step 1: Write the failing guard test**
+- [x] **Step 1: Write the failing guard test**
 
 ```ts
 // lib/supabase/worldAuthorKind.test.ts
@@ -120,12 +120,12 @@ describe('0010 — world_posts.author_kind', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/supabase/worldAuthorKind.test.ts`
 Expected: FAIL — `ENOENT: no such file or directory, open 'supabase/migrations/0010_world_author_kind.sql'`.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 ```sql
 -- 0010_world_author_kind.sql — T-061 ⓐ · D-030
@@ -164,25 +164,25 @@ comment on column public.world_posts.author_kind is
 commit;
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `npx vitest run lib/supabase/worldAuthorKind.test.ts`
 Expected: PASS, 6 tests.
 
-- [ ] **Step 5: Mutation-check the guard (do not skip)**
+- [x] **Step 5: Mutation-check the guard (do not skip)**
 
 Temporarily change `default 'learner'` to `default 'character'` in the SQL and re-run. Expected: the second test goes RED. Restore the file and re-run to green. A guard that survives its own mutation is decoration.
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: all four pass; the test count rises by exactly 6.
 
-- [ ] **Step 7: Add a line to `plan/03-for-roy.md`**
+- [x] **Step 7: Add a line to `plan/03-for-roy.md`**
 
 Roy has to run migrations by hand — `0010` joins the list. One line, beside the existing migration items: «`supabase/migrations/0010_world_author_kind.sql` — עמודה אחת ב-`world_posts`. עד שתורץ, `/world` ו-`/world/compose` יחזירו 503 בעברית ולא ייכשלו.»
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add supabase/migrations/0010_world_author_kind.sql lib/supabase/worldAuthorKind.test.ts plan/03-for-roy.md
