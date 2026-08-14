@@ -21,8 +21,8 @@ LAST_HANDOFF_AT: 2026-08-14T19:17:31Z
 HUMAN_DECISION_REQUIRED: false    # אין החלטה עסקית תלויה. שלוש פעולות אנושיות ממתינות ואינן עוצרות את הלופ: T-043 (קובצי מקור) · T-046 (טוקן Netlify) · אישור ידני של R-015
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # C-0124 שחרר בסיום הטיק
-LOCK_AT: ""
+LOCK_HELD_BY: "DEV"               # C-0126 נעל בפתיחת הטיק
+LOCK_AT: 2026-08-14T19:37:44Z
 MILESTONE_TICKS: 78                # C-0125(CRITIC) 77→78, +1 «בסוף כל טיק». 78/120 (תקרה RULES § 0.1.1 ו׳).
 PAUSED_BY_HUMAN: false
 DEPLOYS_THIS_MONTH: 1
