@@ -624,7 +624,7 @@ git commit -m "loop(DEV): C-XXXX lib/core/world — unlock, tokens, publish rule
 
 **The one thing that is easy to get wrong:** D-031 ⓐ counts **unique headwords**, and `words` is `unique (headword, pos)` — the same word can hold several rows. Measured C-0092: 121 unique headwords across 139 senses. PostgREST cannot express `count(distinct headword)`, so the route selects the headword column under a ceiling and lets `uniqueHeadwords` do the dedupe. ⛔ A `head: true` exact count would report rows and overstate the bank.
 
-- [ ] **Step 1: Write the failing source test**
+- [x] **Step 1: Write the failing source test**
 
 ```ts
 // app/api/world/status/route.test.ts
@@ -663,7 +663,11 @@ describe('GET /api/world/status', () => {
   });
 
   it('counts UNIQUE headwords — words is unique(headword,pos), so rows overstate the bank', () => {
-    expect(CODE).toContain('uniqueHeadwords');
+    // ⚠️ MEASURED in C-0120, ⛔ not assumed: `toContain('uniqueHeadwords')` is BLIND —
+    // replacing the call with `(bank.data ?? []).length` leaves the IMPORT line untouched,
+    // so the file still "contains" the name and the assertion stayed green through the
+    // mutation. Read the count off the CALL SITE. ⛔ Tasks 4-5 must not copy the weak form.
+    expect(CODE).toMatch(/functionWords:\s*uniqueHeadwords\(/);
     expect(CODE).toMatch(/\.eq\('is_function_word',\s*true\)/);
   });
 
@@ -697,12 +701,12 @@ describe('GET /api/world/status', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run app/api/world/status/route.test.ts`
 Expected: FAIL — `ENOENT ... app/api/world/status/route.ts`.
 
-- [ ] **Step 3: Write the route**
+- [x] **Step 3: Write the route**
 
 Follow `app/api/study/queue/route.ts` exactly for the guard block. The body:
 
@@ -789,20 +793,22 @@ function schemaAwareFailure(where: string, error: { message: string; code?: stri
 }
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `npx vitest run app/api/world/status/route.test.ts`
 Expected: PASS, 9 tests.
 
-- [ ] **Step 5: Mutation-check the unlock guard**
+- [x] **Step 5: Mutation-check the unlock guard**
 
 Replace `isWorldUnlocked(...)` with `unlocked: true`. Expected: the second test goes RED. Restore, re-run green.
 
-- [ ] **Step 6: Write the contract section — same commit**
+✅ **Measured C-0120.** Mutation ⓐ (`unlocked: true`) killed exactly the named test — `expected … not to match /unlocked\s*[:=]\s*(true|false)/`. Mutation ⓑ (`uniqueHeadwords(...)` ⇒ `(bank.data ?? []).length`) **SURVIVED 9/9 green** against the assertion as written in this plan, because the import line still carried the name; the assertion was strengthened to the call site above and the same mutation then went RED. ⛔ The route was restored byte-for-byte and re-run green both times.
+
+- [x] **Step 6: Write the contract section — same commit**
 
 Add `## GET /api/world/status` to `docs/api-contract.md`, after `## GET /api/study/queue`, matching the existing sections' shape: request (no parameters), the 200 body with all four fields, and every failure — 401 `session_expired`, 503 `schema_missing` (with the Hebrew sentence), 503 `unavailable`. State plainly that `unlocked` is **computed from the two counts on every call** and is ⛔ not cached, ⛔ not a flag, and ⛔ not a date.
 
-- [ ] **Step 7: Full verification and commit**
+- [x] **Step 7: Full verification and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
