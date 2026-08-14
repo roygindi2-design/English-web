@@ -2,6 +2,11 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { pickTargetWord, uniqueHeadwords } from '@/lib/core/world';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
+import {
+  flattenJoinedHeadwords,
+  type HeadwordRow,
+  type JoinedHeadwordRow,
+} from '@/lib/supabase/postgrest';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,20 +20,8 @@ const MAX_BANK_ROWS = 2000;
  *  have already produced. A ceiling, ⛔ not a product limit — the feed itself is task 5. */
 const MAX_USED_ROWS = 500;
 
-type HeadwordRow = { headword: string | null };
-type ProgressRow = { words: HeadwordRow | HeadwordRow[] | null };
-
-/** PostgREST returns an embedded `words!inner(...)` as an object or, depending on the
- *  inferred cardinality, as a one-element array. Flatten both shapes and ⛔ never assume. */
-function flattenJoined(rows: readonly ProgressRow[]): HeadwordRow[] {
-  const out: HeadwordRow[] = [];
-  for (const row of rows) {
-    const joined = row.words;
-    if (Array.isArray(joined)) out.push(...joined);
-    else if (joined) out.push(joined);
-  }
-  return out;
-}
+/** ⚠️ Moved to lib/supabase/postgrest.ts in C-0126: /api/world/status needed the identical
+ *  flatten to fix F-040, and a second copy is how the two readers of the same join drift. */
 
 function schemaAwareFailure(where: string, error: { message: string; code?: string }) {
   // The raw string goes to the log and ⛔ never into the body — a PostgREST message names
@@ -74,7 +67,9 @@ export async function GET() {
 
   if (active.error) return schemaAwareFailure('active', active.error);
 
-  const activeWords = uniqueHeadwords(flattenJoined((active.data ?? []) as ProgressRow[]));
+  const activeWords = uniqueHeadwords(
+    flattenJoinedHeadwords((active.data ?? []) as JoinedHeadwordRow[]),
+  );
 
   // ⚠️ This third read steers the target and nothing else. If it fails, `usedWords` becomes
   // [] and pickTargetWord falls back to the alphabetically first active word: a learner who

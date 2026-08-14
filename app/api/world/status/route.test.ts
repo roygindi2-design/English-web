@@ -46,6 +46,36 @@ describe('GET /api/world/status', () => {
     expect(CODE).toMatch(/\.eq\('user_id',\s*user\.id\)/);
   });
 
+  it('counts DISTINCT active headwords — a row count opens the gate early (F-040)', () => {
+    // ⚠️ The unit on both sides of the predicate has to be the same one, and `word_progress`
+    // is per-SENSE: a learner holding both senses of `can` has two rows and one headword.
+    // `activeWords` used to be `active.count` off a `head: true` read, which is rows — and
+    // the direction of that error is always inflation (count ≥ distinct), so the gate opened
+    // BEFORE the learner knew MIN_ACTIVE_WORDS distinct words.
+    //
+    // ⚠️ Read off the CALL SITE, ⛔ not `toContain('uniqueHeadwords')` — F-039: the import
+    // survives that mutation and a name-only assertion stays green through it.
+    expect(CODE).toMatch(/activeWords:\s*uniqueHeadwords\(/);
+    expect(CODE).toContain('words!inner(headword)');
+  });
+
+  it('⛔ never counts rows — no exact/head count survives in this file', () => {
+    expect(CODE).not.toMatch(/head:\s*true/);
+    expect(CODE).not.toMatch(/count:\s*'exact'/);
+    expect(CODE).not.toMatch(/\.count\b/);
+  });
+
+  it('bounds BOTH reads — an unbounded row read is the price of counting distinctly', () => {
+    // Two `.limit(MAX_BANK_ROWS)`, one per read. ⚠️ Truncation here can only UNDERSTATE a
+    // learner far above the threshold, ⛔ never open the gate early, so the direction is safe.
+    expect(CODE.match(/\.limit\(MAX_BANK_ROWS\)/g) ?? []).toHaveLength(2);
+  });
+
+  it('shares one flattener with app/api/world/bank/route.ts and ⛔ does not re-declare it', () => {
+    expect(CODE).toContain('flattenJoinedHeadwords');
+    expect(CODE).not.toMatch(/function\s+flattenJoined/);
+  });
+
   it('⛔ never reads senses.cefr_level (D-034)', () => {
     expect(CODE).not.toContain('cefr_level');
   });

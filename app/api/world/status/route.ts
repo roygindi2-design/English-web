@@ -2,6 +2,11 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { isWorldUnlocked, uniqueHeadwords } from '@/lib/core/world';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
+import {
+  flattenJoinedHeadwords,
+  type HeadwordRow,
+  type JoinedHeadwordRow,
+} from '@/lib/supabase/postgrest';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,11 +22,17 @@ const MIN_FUNCTION_WORDS = 100;
 const MIN_ACTIVE_WORDS = 12;
 
 /**
- * HEURISTIC ceiling. `words` is `unique (headword, pos)`, so one headword can hold several
- * rows and a row count would OVERSTATE the bank (measured C-0092: 121 headwords across 139
- * senses). PostgREST cannot express `count(distinct headword)`, so the dedupe happens in the
- * pure layer and this is the ceiling on what we are willing to read to do it. ⛔ A
- * `head: true` exact count would report rows, ⛔ not headwords.
+ * HEURISTIC ceiling, and it binds BOTH reads. `words` is `unique (headword, pos)`, so one
+ * headword can hold several rows and a row count would OVERSTATE the bank (measured C-0092:
+ * 121 headwords across 139 senses). PostgREST cannot express `count(distinct headword)`, so
+ * the dedupe happens in the pure layer and this is the ceiling on what we are willing to
+ * read to do it. ⛔ A `head: true` exact count would report rows, ⛔ not headwords.
+ *
+ * ⚠️ The learner side is bounded by the same number for the same reason (F-040), and the
+ * truncation is safe in ONE direction only: a learner with more than 2000 active progress
+ * rows is far past MIN_ACTIVE_WORDS, so a truncated read can only UNDERSTATE them and ⛔
+ * can never open the gate early. The inverse — an unbounded read — is how a route starts
+ * paging a learner's whole history to answer a boolean.
  */
 const MAX_BANK_ROWS = 2000;
 
@@ -63,17 +74,24 @@ export async function GET() {
 
   if (bank.error) return schemaAwareFailure('bank', bank.error);
 
+  // `words!inner` is deliberate and copied from app/api/world/bank/route.ts on purpose: the
+  // two endpoints have to agree on what the learner's bank IS, and a progress row whose word
+  // was deleted is ⛔ not a word the learner knows. Rows, ⛔ not a count: `word_progress` is
+  // per-SENSE, and the threshold on the other side of the predicate is in headwords (F-040).
   const active = await supabase
     .from('word_progress')
-    .select('word_id', { count: 'exact', head: true })
+    .select('words!inner(headword)')
     .eq('user_id', user.id)
-    .eq('is_active_this_week', true);
+    .eq('is_active_this_week', true)
+    .limit(MAX_BANK_ROWS);
 
   if (active.error) return schemaAwareFailure('active', active.error);
 
   const counts = {
-    functionWords: uniqueHeadwords((bank.data ?? []) as { headword: string | null }[]).length,
-    activeWords: active.count ?? 0,
+    functionWords: uniqueHeadwords((bank.data ?? []) as HeadwordRow[]).length,
+    activeWords: uniqueHeadwords(
+      flattenJoinedHeadwords((active.data ?? []) as JoinedHeadwordRow[]),
+    ).length,
   };
 
   // ⛔ Computed on every call. A cached unlock state is a wrong unlock state: the learner
