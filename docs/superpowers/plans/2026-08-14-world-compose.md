@@ -228,7 +228,7 @@ export function checkPostPayload(body: unknown): PostCheck;
 1. **The unlock numbers (100 and 12) are NOT exported from `/lib/core`.** They are policy, and the repo has a rule about that: `PROMOTE_AFTER_CONSECUTIVE_CORRECT`, `NEW_CARDS_PER_DAY` and `SECONDS_PER_CARD` all live in their route with a `HEURISTIC` comment, precisely so a later reader cannot cite the pure layer as if it had *derived* them. D-031 is explicit that 12 "אינו מספר פדגוגי ואינו מתחזה לכזה". So `isWorldUnlocked` takes thresholds as an argument, and task 3's route owns the values.
 2. **`MAX_DRAFT_TOKENS` is a wire guard, not the "תקרה מלאכותית" § 4.2ה forbids.** The spec's sentence is about the *screen*: the draft scrolls, no counter is shown, nothing is disabled at a length. 200 tokens is ~20× the median approved sentence (10 words) and exists so a hand-rolled POST cannot hand PostgREST an unbounded string. The UI must **not** display it, count toward it, or mention it.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/world.test.ts
@@ -424,12 +424,12 @@ describe('checkPostPayload — the server decides, ⛔ not the button', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/world.test.ts`
 Expected: FAIL — `Failed to resolve import "./world"`.
 
-- [ ] **Step 3: Write `lib/core/world.ts`**
+- [x] **Step 3: Write `lib/core/world.ts`**
 
 ```ts
 /**
@@ -587,22 +587,22 @@ export function checkPostPayload(body: unknown): PostCheck {
 }
 ```
 
-- [ ] **Step 4: Run the tests and watch them pass**
+- [x] **Step 4: Run the tests and watch them pass**
 
 Run: `npx vitest run lib/core/world.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Mutation-check two assertions (do not skip)**
+- [x] **Step 5: Mutation-check two assertions (do not skip)**
 
 (a) Change `draftContainsTarget` to `tokens.join(' ').includes(wanted)`. Expected: the `"car" is not in "card"` test goes RED. Restore.
 (b) Change `renderDraft` to capitalise the first character. Expected: the `⛔ does NOT capitalise` test goes RED. Restore. Re-run to green.
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: `check:core` prints `/lib/core purity: OK`; the test count rises by the number of cases added.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/core/world.ts lib/core/world.test.ts
