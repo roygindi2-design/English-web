@@ -61,6 +61,20 @@ const ROUTES = [
   '/dev/tabs/studies',
   '/dev/tabs/cards',
   '/dev/tabs/me',
+  // T-063 task 9. The two real world routes are NOT in PROTECTED_SCREENS (proxy.ts), so
+  // unlike the tabs above they DO render here — but with no Supabase env
+  // `/api/world/posts` and `/api/world/bank` answer 503 by their own contract, so what
+  // these two lines measure is the FAILURE state of each screen: the Hebrew message and
+  // the way out. That is a state a learner can meet, so it is measured on purpose and
+  // ⛔ not "for coverage".
+  '/world',
+  '/world/compose',
+  // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
+  // punctuation row, the publish bar — is never once on screen on either route above. It
+  // is handed its bank as a prop and asks the server for nothing, which is why it needs no
+  // EXPECTED_CONSOLE entry and why an entry appearing there later would mean this
+  // measurement has silently gone back to reading the failure screen.
+  '/dev/world',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -83,8 +97,14 @@ const MIN_GAP = 8;
  *
  * `/sources` and `/offline` are deliberately absent: they are destinations, not
  * steps, and neither is on the path to first study.
+ *
+ * `/world/compose` joined C-0129 (T-063 task 9): § 4.2ה calls it a flow screen, D-028 gives
+ * a flow screen an `<ActionBar>` and ⛔ no tab bar, and it is the only screen in the world
+ * feature a learner walks THROUGH rather than lands on. Here it renders its 503 state, so
+ * what this block asserts on it is that the failure state still offers exactly one marked
+ * way out and puts it where a thumb can reach — which is precisely the F-027 dead end.
  */
-const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study'];
+const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
 /**
  * The console lines a route is ALLOWED to produce, per route and per exact request.
@@ -123,6 +143,19 @@ const EXPECTED_CONSOLE = {
   // (a real session that expired) or a 500 on the same URL still fails the check.
   '/dev/tabs/studies': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
   '/dev/tabs/me': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
+  // C-0129 (T-063 task 9): the two real world routes. `/world` sits inside the `(tabs)`
+  // group, so it makes BOTH requests — `<WorldFeed>` reads the feed and `<TabBar>` asks
+  // whether the tab is unlocked — and `/world/compose` sits outside the group, so it makes
+  // exactly one. Each entry is keyed to the URL and to the 503 the missing env forces, like
+  // every entry above: a 401 or a 500 on the same URL still fails the check.
+  // ⛔ There is deliberately NO entry for `/dev/world`: the fixture receives its bank as a
+  // prop and issues no request at all, and that silence is what proves the harness is
+  // measuring the bank rather than the failure screen.
+  '/world': [
+    /status of 503[\s\S]*@\S*\/api\/world\/posts/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
+  '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
 };
 
 /**

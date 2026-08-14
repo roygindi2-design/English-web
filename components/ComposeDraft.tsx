@@ -93,11 +93,25 @@ type PublishResponse =
   | { readonly ok: true; readonly usedWord: string }
   | { readonly ok: false; readonly code: string; readonly message?: string };
 
-type Bank = {
+export type Bank = {
   readonly functionWords: readonly string[];
   readonly activeWords: readonly string[];
   readonly target: string | null;
 };
+
+/**
+ * The ONLY prop, and it exists for one measurable reason (task 9 · the C-0104 lesson).
+ *
+ * `check:mobile` runs `next start` with no Supabase env, so `GET /api/world/bank` answers
+ * 503 by its own contract and this screen resolves to its ERROR state — which means the
+ * 44px scan, the horizontal-scroll check and the fold check would never once have run over
+ * the bank, the draft chips or the publish bar. Handing the bank in lets the `/dev/world`
+ * fixture render THIS component instead of a look-alike that measures itself.
+ *
+ * ⛔ Optional, and ⛔ never passed by the real route: `/world/compose` supplies nothing and
+ * keeps fetching. One prop, one branch — present ⇒ start READY and ⛔ do not fetch.
+ */
+export type ComposeDraftProps = { readonly initialBank?: Bank };
 
 type ScreenState =
   | { readonly kind: 'loading' }
@@ -119,8 +133,10 @@ const CHIP_CLASS =
 const DRAFT_CHIP_CLASS =
   'inline-flex min-h-touch min-w-touch items-center justify-center rounded-md bg-brand-surface px-3 py-2 text-lg text-brand-on active:opacity-90';
 
-export default function ComposeDraft(): React.JSX.Element {
-  const [state, setState] = useState<ScreenState>({ kind: 'loading' });
+export default function ComposeDraft({ initialBank }: ComposeDraftProps = {}): React.JSX.Element {
+  const [state, setState] = useState<ScreenState>(
+    initialBank === undefined ? { kind: 'loading' } : { kind: 'ready', bank: initialBank },
+  );
   const [tokens, setTokens] = useState<readonly string[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState('');
@@ -151,8 +167,12 @@ export default function ComposeDraft(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
+    // The fixture path, and the only reason the guard is here rather than inside `load`:
+    // `load` opens by setting `loading`, so a version that fetched and then ignored the
+    // answer would still repaint the skeleton — and the harness would measure THAT.
+    if (initialBank !== undefined) return;
     void load();
-  }, [load]);
+  }, [initialBank, load]);
 
   const append = useCallback((token: string) => {
     setPublishError('');

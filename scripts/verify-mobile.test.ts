@@ -622,3 +622,71 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(block).not.toMatch(/\[\s*44\s*,\s*8\s*\]/);
   });
 });
+
+/**
+ * T-063 task 9 — the world screens enter the harness.
+ *
+ * ⚠️ **The assertions below are deliberately NOT the ones the plan prints.** F-039: a
+ * `toContain("'/world'")` on the whole file is green when the string appears in a comment,
+ * in a console allowance, or in a route that was added and then commented out. Each check
+ * here parses the array it is about and compares EXACT entries, so a mutation that moves a
+ * route out of `ROUTES` (or into a comment) turns it red.
+ */
+describe('the world screens are measured and not assumed (T-063 task 9)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  /** The entries of a top-level array literal, with comment lines stripped first. */
+  function entriesOf(name: string): readonly string[] {
+    const body = code.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n?\\];`))?.[1] ?? '';
+    const withoutComments = body
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    return [...withoutComments.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
+  }
+
+  it('walks the two real world routes, so their failure state is measured like every other screen', () => {
+    const routes = entriesOf('ROUTES');
+    expect(routes).toContain('/world');
+    expect(routes).toContain('/world/compose');
+  });
+
+  it('walks the /dev/world fixture, which is where the bank and the draft are actually rendered', () => {
+    expect(entriesOf('ROUTES')).toContain('/dev/world');
+  });
+
+  it('treats /world/compose as a FLOW screen — one primary action, reachable', () => {
+    expect(entriesOf('FLOW_ROUTES')).toContain('/world/compose');
+  });
+
+  /**
+   * The console allowance is the one place where "this screen is broken" and "this harness
+   * cannot let it succeed" look identical, so the entry has to name the request AND the
+   * status. An allowance keyed to the route alone would also swallow a 500 or an uncaught
+   * exception on the same screen.
+   */
+  it('allows the world routes only the documented 503, keyed to the request that makes it', () => {
+    const block = code.match(/const EXPECTED_CONSOLE = \{([\s\S]*?)\n\};/)?.[1] ?? '';
+    const worldEntries = [...block.matchAll(/'(\/world[^']*)':\s*\[([\s\S]*?)\],/g)];
+    expect(worldEntries.length).toBeGreaterThan(0);
+    // Both real world routes have to appear — an allowance on one and silence on the other
+    // would leave the second screen's console unmeasured or permanently red.
+    expect(worldEntries.map(([, route]) => route)).toEqual(['/world', '/world/compose']);
+    for (const [, route, allowances] of worldEntries) {
+      // The allowances are regex literals, so their path separators arrive escaped.
+      const named = `${route} ${allowances}`.replace(/\\/g, '');
+      expect(named).toContain('503');
+      expect(named).toMatch(/\/api\/world\//);
+    }
+  });
+
+  /**
+   * The fixture is handed its bank as a prop and therefore asks the server for NOTHING. If
+   * it ever needs an allowance, it has started fetching — which means the harness went back
+   * to measuring the 503 failure state instead of the bank (the C-0104 lesson this whole
+   * task exists for), and this test is the alarm.
+   */
+  it('⛔ grants the /dev/world fixture no console allowance at all — it makes no request', () => {
+    const block = code.match(/const EXPECTED_CONSOLE = \{([\s\S]*?)\n\};/)?.[1] ?? '';
+    expect(block).not.toContain("'/dev/world'");
+  });
+});

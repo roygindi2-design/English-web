@@ -1416,7 +1416,7 @@ git commit -m "loop(DEV): C-XXXX /world/compose — the closed bank and the draf
 
 **Why the fixture is mandatory and not optional polish — this is the C-0104 lesson, one feature over.** The harness runs `next start` with **no Supabase env**, so `/world` and `/world/compose` answer 503 by their own contract and every `ok /world` line the harness prints describes the **failure** state. Without a fixture that renders the bank and the draft with fixed props, ⛔ the 44px grid, the horizontal-scroll check and the fold check will never once have run against the real components. C-0104 measured exactly this and the deck failed **twice** on defects in already-reviewed code.
 
-- [ ] **Step 1: Write the failing harness tests**
+- [x] **Step 1: Write the failing harness tests**
 
 ```ts
 // added to scripts/verify-mobile.test.ts
@@ -1439,17 +1439,17 @@ describe('world screens are measured, not assumed', () => {
 });
 ```
 
-- [ ] **Step 2: Run and watch them fail** — `npx vitest run scripts/verify-mobile.test.ts`.
+- [x] **Step 2: Run and watch them fail** — `npx vitest run scripts/verify-mobile.test.ts`.
 
-- [ ] **Step 3: Write the fixture** — `app/dev/world/layout.tsx` with `robots: { index: false, follow: false }` (copy `app/dev/deck/layout.tsx`), and `app/dev/world/page.tsx` rendering `<ComposeDraft initialBank={{ target: 'car', functionWords: [...12 fixed], activeWords: [...12 fixed] }} />`. ⚠️ **CORRECTED C-0128 (F-042):** the three separate props this step used to pass do not exist on the component and never could (see the `Interfaces` block of task 8), so this line would not have compiled. Adding the optional `initialBank` prop — one prop, one branch: present ⇒ start in the READY state and ⛔ do not fetch — is part of THIS task, with a test in `ComposeDraft.test.ts` that measures the branch (`useEffect` does not call `apiGet` when the prop is supplied), because a fixture that renders anything other than the real component measures the fixture (C-0104). ⛔ **No explanatory line above the component** — C-0104: a note pushes the component down and the harness then measures the fixture instead of the component.
+- [x] **Step 3: Write the fixture** — `app/dev/world/layout.tsx` with `robots: { index: false, follow: false }` (copy `app/dev/deck/layout.tsx`), and `app/dev/world/page.tsx` rendering `<ComposeDraft initialBank={{ target: 'car', functionWords: [...12 fixed], activeWords: [...12 fixed] }} />`. ⚠️ **CORRECTED C-0128 (F-042):** the three separate props this step used to pass do not exist on the component and never could (see the `Interfaces` block of task 8), so this line would not have compiled. Adding the optional `initialBank` prop — one prop, one branch: present ⇒ start in the READY state and ⛔ do not fetch — is part of THIS task, with a test in `ComposeDraft.test.ts` that measures the branch (`useEffect` does not call `apiGet` when the prop is supplied), because a fixture that renders anything other than the real component measures the fixture (C-0104). ⛔ **No explanatory line above the component** — C-0104: a note pushes the component down and the harness then measures the fixture instead of the component.
 
-- [ ] **Step 4: Add the three routes** to `ROUTES` / `FLOW_ROUTES` with a comment naming the reason (the 503 contract) — ⛔ not "for coverage".
+- [x] **Step 4: Add the three routes** to `ROUTES` / `FLOW_ROUTES` with a comment naming the reason (the 503 contract) — ⛔ not "for coverage".
 
-- [ ] **Step 5: Run the harness** — `npm run check:mobile`. Expected: green at 320 / 375 / 414. **A red run here is the point of the task: fix the component, ⛔ never the fixture and ⛔ never by exempting the route.**
+- [x] **Step 5: Run the harness** — `npm run check:mobile`. Expected: green at 320 / 375 / 414. **A red run here is the point of the task: fix the component, ⛔ never the fixture and ⛔ never by exempting the route.**
 
-- [ ] **Step 6: Mutation-check the measurement** — remove `min-h-touch` from one bank chip. Expected: the 44px scan goes RED at all three widths. Restore.
+- [x] **Step 6: Mutation-check the measurement.** ⚠️ **CORRECTED C-0129 (F-043):** the mutation this step used to name — remove `min-h-touch` from one bank chip — stays **GREEN**, measured live. The chip's height is fixed twice over: `py-2` (16px) plus the `text-lg` line box (28px) is **exactly 44px**, so the class is a belt on top of braces and removing it changes no measured pixel. The mutation that does bite: `px-3 py-2 text-lg` ⇒ `px-3 py-0 text-sm` in `components/WordBank.tsx`. Expected, and measured: RED at 320/375/414 naming all 24 fixture chips (`button"Lorem" 70x22 … button"Consequat" 101x22`), and ⛔ NO failure on `/world/compose` — which is the measurement proving the fixture is the only place the bank is ever on screen. Restore and verify with `cmp`.
 
-- [ ] **Step 7: Full verification and commit**
+- [x] **Step 7: Full verification and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile

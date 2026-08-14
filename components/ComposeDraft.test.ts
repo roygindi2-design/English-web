@@ -129,3 +129,39 @@ describe('<ComposeDraft>', () => {
     }
   });
 });
+
+/**
+ * T-063 task 9 — the `initialBank` escape hatch, and why it is measured here rather than
+ * trusted.
+ *
+ * `check:mobile` runs `next start` with no Supabase env, so `GET /api/world/bank` answers
+ * 503 by its own contract and this screen resolves to its ERROR state. A fixture that
+ * rendered anything other than this component would measure the fixture (C-0104), so the
+ * fixture renders THIS component and hands it the bank directly. That is one prop and one
+ * branch, and the branch is the whole point: with the prop present the component must start
+ * READY and must ⛔ NOT fetch — otherwise the harness is back to measuring the 503 screen
+ * while printing "ok /dev/world".
+ *
+ * ⚠️ Written as call-site assertions (F-039): a `toContain('initialBank')` on the file is
+ * green when the prop is declared and never read.
+ */
+describe('<ComposeDraft initialBank> — the measured fixture path', () => {
+  it('takes the bank as an OPTIONAL prop, so the real route still renders with no props', () => {
+    expect(CODE).toMatch(/initialBank\?:/);
+  });
+
+  it('starts in the READY state when the bank is handed to it, ⛔ not in loading', () => {
+    const initial = CODE.match(/useState<ScreenState>\(([\s\S]*?)\n {2}\);/)?.[1] ?? '';
+    expect(initial).toContain('initialBank');
+    expect(initial).toContain("'ready'");
+  });
+
+  it('⛔ does not call the bank endpoint when the bank was handed to it', () => {
+    const effect = CODE.match(/useEffect\(\(\) => \{([\s\S]*?)\n {2}\}, \[/)?.[1] ?? '';
+    expect(effect).toContain('load()');
+    const guard = effect.search(/if \([^)]*initialBank[^)]*\)[^\n]*return/);
+    expect(guard).toBeGreaterThanOrEqual(0);
+    // The guard has to come BEFORE the call, not merely exist in the same block.
+    expect(guard).toBeLessThan(effect.indexOf('load()'));
+  });
+});
