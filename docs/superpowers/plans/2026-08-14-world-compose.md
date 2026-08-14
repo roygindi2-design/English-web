@@ -1160,7 +1160,7 @@ git commit -m "loop(DEV): C-XXXX /world — the private feed"
 
 **The sheet sentence becomes measurable** — § 4.2ה, verbatim: «העולם ייפתח כשיהיו לך 12 מילים פעילות. יש לך <n>.» ⛔ No date · ⛔ no bare «בקרוב» as the sentence · ⛔ no "request access" button. While the count is still loading, the sentence shows the current text and ⛔ never «יש לך 0» — 0 and "not yet known" are different facts, and only one of them is true.
 
-- [ ] **Step 1: Extend `components/TabBar.test.ts` with the failing cases**
+- [x] **Step 1: Extend `components/TabBar.test.ts` with the failing cases**
 
 ```ts
 describe('<TabBar> — the world tab, D-031', () => {
@@ -1178,7 +1178,12 @@ describe('<TabBar> — the world tab, D-031', () => {
 
   it('keeps aria-disabled + sheet while locked (§ 4.2ב) and ⛔ adds no "coming soon" screen', () => {
     expect(CODE).toContain('aria-disabled');
-    expect(CODE).not.toContain('disabled=');
+    // ⚠️ CORRECTED C-0127 — F-041. `not.toContain('disabled=')` is UNSATISFIABLE: the
+    // `aria-disabled=` the line above requires contains that substring, so the assertion is
+    // red for correct code and green for no code at all. What § 4.2ב forbids is the BARE
+    // attribute (it would swallow the tap that opens the sheet). ⛔ Do not restore the old
+    // line in tasks 8–9.
+    expect(CODE).not.toMatch(/(?<!aria-)disabled=/);
   });
 
   it('states the measurable sentence, with the count interpolated', () => {
@@ -1200,15 +1205,15 @@ describe('<TabBar> — the world tab, D-031', () => {
 });
 ```
 
-- [ ] **Step 2: Run and watch the new cases fail** — `npx vitest run components/TabBar.test.ts`, the new block RED, the old block still green.
+- [x] **Step 2: Run and watch the new cases fail** — `npx vitest run components/TabBar.test.ts`, the new block RED, the old block still green.
 
-- [ ] **Step 3: Implement.** `TabBar` already carries `'use client'` and `useState`. Add one `useEffect` that calls `apiGet('/api/world/status')`, holds `{ unlocked, activeWords } | null`, and branches. A failed call ⇒ **stay locked** — an unlock we could not confirm is not an unlock.
+- [x] **Step 3: Implement.** `TabBar` already carries `'use client'` and `useState`. Add one `useEffect` that calls `apiGet('/api/world/status')`, holds `{ unlocked, activeWords } | null`, and branches. A failed call ⇒ **stay locked** — an unlock we could not confirm is not an unlock.
 
-- [ ] **Step 4: Run the whole file and watch it pass.**
+- [x] **Step 4: Run the whole file and watch it pass.**
 
-- [ ] **Step 5: Mutation-check** — hard-code `unlocked = true`. Expected: the second test RED. Restore.
+- [x] **Step 5: Mutation-check** — hard-code `unlocked = true`. Expected: the second test RED. Restore.
 
-- [ ] **Step 6: Verify (mobile too) and commit**
+- [x] **Step 6: Verify (mobile too) and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile

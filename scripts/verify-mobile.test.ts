@@ -332,6 +332,39 @@ describe('the harness measures the tab shell (T-051 · D-027 · D-028)', () => {
     expect(code).toMatch(/const TAB_ROUTES = \[/);
   });
 
+  /**
+   * C-0127 (task 7). `<TabBar>` renders on all three tab fixtures and now asks
+   * `/api/world/status` whether the world tab is unlocked; with no Supabase env the endpoint
+   * answers 503 by contract and Chromium logs it, so all three routes needed an
+   * `EXPECTED_CONSOLE` entry. The allowance is the dangerous part of this change, ⛔ not the
+   * fetch: an entry written one character wider — dropping the status, or matching the whole
+   * route — would silence a real uncaught exception on three of the app's four screens, and
+   * the clean-console check exists for nothing else. So the WIDTH is what is measured here.
+   */
+  for (const route of ['/dev/tabs/studies', '/dev/tabs/cards', '/dev/tabs/me']) {
+    it(`allows the world-status 503 on ${route}, and ⛔ nothing wider`, () => {
+      const block = code.slice(
+        code.indexOf('const EXPECTED_CONSOLE = {'),
+        code.indexOf('};', code.indexOf('const EXPECTED_CONSOLE = {')),
+      );
+      // ⚠️ The path inside a regex literal is written with escaped slashes (`api\/world\/`),
+      // so a filter on the plain URL matches NOTHING and every assertion below it would
+      // then be vacuously true over an empty string. Measured in this tick: that is exactly
+      // what the first draft of this test did, and it failed loudly only because of the
+      // `not.toBe('')` guard on the line beneath. That guard is the test's own F-039 check —
+      // ⛔ do not remove it.
+      const allowances = block
+        .split('\n')
+        .filter((line) => line.includes(String.raw`api\/world\/status`));
+      expect(allowances.join('\n')).not.toBe('');
+      // Every world-status allowance names the status, so a 401 or a 500 on the same URL is
+      // still a failure. A route-wide wildcard would carry no path at all and would fall out
+      // of the filter above, failing the guard.
+      for (const line of allowances) expect(line).toContain('status of 503');
+      expect(block).toContain(`'${route}'`);
+    });
+  }
+
   for (const route of ['/dev/tabs/studies', '/dev/tabs/cards', '/dev/tabs/me']) {
     it(`visits ${route}`, () => {
       const routes = code.slice(code.indexOf('const ROUTES = ['), code.indexOf('const MIN_TAP'));

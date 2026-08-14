@@ -112,7 +112,17 @@ const EXPECTED_CONSOLE = {
   '/dev/tabs/cards': [
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
+  // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
+  // EVERY tab fixture makes this one request and the harness — which runs with no Supabase
+  // env — answers 503 by the endpoint's own contract. ⚠️ This is the failure path the
+  // component is written for and the harness therefore MEASURES it: a 503 leaves the tab
+  // locked, and the 44px/no-scroll checks on these three routes are passing over exactly
+  // that locked bar. Keyed to the one URL and the one status, like every entry above: a 401
+  // (a real session that expired) or a 500 on the same URL still fails the check.
+  '/dev/tabs/studies': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
+  '/dev/tabs/me': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
 };
 
 /**
