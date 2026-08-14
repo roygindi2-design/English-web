@@ -831,7 +831,7 @@ git commit -m "loop(DEV): C-XXXX GET /api/world/status + contract"
 
 **⚠️ Reported deviation, to be repeated in the tick's handoff line:** this endpoint is **not** in T-061's file list. It is required anyway, and by a rule the task list does not get to waive — a UI component may never reach the database, so `/world/compose` cannot obtain the bank without a route. It is added here rather than inside T-063 so that all three world endpoints and their contract sections land together.
 
-- [ ] **Step 1: Write the failing source test**
+- [x] **Step 1: Write the failing source test**
 
 ```ts
 // app/api/world/bank/route.test.ts
@@ -850,8 +850,13 @@ describe('GET /api/world/bank', () => {
     expect(query).toBeGreaterThan(session);
   });
 
-  it('groups the bank by headword and ⛔ not by sense (§ 4.2ה — 12 measured duplicates)', () => {
-    expect(CODE).toContain('uniqueHeadwords');
+  it('groups BOTH bank groups by headword and ⛔ not by sense (§ 4.2ה — 12 measured duplicates)', () => {
+    // ⚠️ MEASURED C-0120 and re-confirmed C-0122, ⛔ not assumed: `toContain('uniqueHeadwords')`
+    // is BLIND — the `import` line alone satisfies it. Read the dedupe off the CALL SITES,
+    // one per group. ⛔ Task 5 must not copy the weak form either.
+    expect(CODE).toMatch(/functionWords:\s*uniqueHeadwords\(/);
+    expect(CODE).toMatch(/activeWords\s*=\s*uniqueHeadwords\(/);
+    expect(CODE).toMatch(/\.eq\('is_function_word',\s*true\)/);
   });
 
   it('reads the learner group from is_active_this_week, ⛔ not the whole vocabulary', () => {
@@ -860,7 +865,7 @@ describe('GET /api/world/bank', () => {
   });
 
   it('picks the target in the pure layer — deterministic, ⛔ no Math.random and ⛔ no clock', () => {
-    expect(CODE).toContain('pickTargetWord');
+    expect(CODE).toMatch(/target:\s*pickTargetWord\(/);
     expect(CODE).not.toContain('Math.random');
     expect(CODE).not.toContain('Date.now');
     expect(CODE).not.toContain('new Date');
@@ -883,9 +888,9 @@ describe('GET /api/world/bank', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `npx vitest run app/api/world/bank/route.test.ts`, ENOENT.
+- [x] **Step 2: Run it and watch it fail** — `npx vitest run app/api/world/bank/route.test.ts`, ENOENT.
 
-- [ ] **Step 3: Write the route**
+- [x] **Step 3: Write the route**
 
 Same guard block as task 3. Three reads, then the pure layer:
 
@@ -897,13 +902,15 @@ Same guard block as task 3. Three reads, then the pure layer:
 
 Then `target: pickTargetWord(activeWords, usedWords)`.
 
-- [ ] **Step 4: Run the test and watch it pass** — 7 tests green.
+- [x] **Step 4: Run the test and watch it pass** — **11 tests green** (7 planned + 4 added at execution: the `words!inner` join, the non-fatal third read, `force-dynamic`, and scoping `world_posts` to `author_kind = 'learner'`).
 
-- [ ] **Step 5: Mutation-check the dedupe** — replace `uniqueHeadwords(rows)` with `rows.map((r) => r.headword)`. Expected: the second test goes RED. Restore.
+- [x] **Step 5: Mutation-check the dedupe** — replace `uniqueHeadwords(rows)` with `rows.map((r) => r.headword)`. Expected: the second test goes RED. Restore.
 
-- [ ] **Step 6: Contract section, same commit** — `## GET /api/world/bank`, including the sentence that `target` is `null` **only** when the learner has no active words, and that the selection rule is deterministic and stated in `lib/core/world.ts`.
+✅ **Measured C-0122 — four mutations, four named failures, ⛔ none survived.** ⓐ `functionWords` dedupe ⇒ `.map((r) => r.headword)` killed *groups BOTH bank groups by headword*. ⓑ the same drop on `activeWords` killed the same test — which is why the assertion names **both** call sites: with a single assertion ⓑ would have survived. ⓒ making the third (`world_posts`) read fatal — `return schemaAwareFailure('used', …)` — killed *⛔ does NOT fail the request when the usedWords read fails*, so the "a 503 blanks a screen over an optimisation" rule is **measured** and not merely written here. ⓓ `words!inner(headword)` ⇒ `words(headword)` killed the orphan-chip test. The route was restored **byte-for-byte** (`diff` against a pre-mutation copy, clean) and re-run green 11/11 after each.
 
-- [ ] **Step 7: Verify and commit**
+- [x] **Step 6: Contract section, same commit** — `## GET /api/world/bank`, including the sentence that `target` is `null` **only** when the learner has no active words, and that the selection rule is deterministic and stated in `lib/core/world.ts`.
+
+- [x] **Step 7: Verify and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
