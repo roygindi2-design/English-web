@@ -55,13 +55,30 @@ describe('<WordBank>', () => {
     }
   });
 
-  it('hands the tapped token back through onPick — ⛔ no local mutation', () => {
-    expect(CODE).toMatch(/onClick=\{\(\)\s*=>\s*onPick\(/);
+  /**
+   * ⚠️ ADDED C-0142 (F-039). Both assertions below used to locate the call site and ⛔ never
+   * read what it carries, and two mutations proved it (recorded in `plan/30-architecture.md`):
+   * `onPick(word)` ⇒ `onPick('the')` — every chip publishes the same word — stayed GREEN, and
+   * `<EnWord>{word}</EnWord>` ⇒ `<EnWord>{'—'}</EnWord>` — a bank of dashes — stayed GREEN too.
+   * The binding is therefore read out of the `.map(` that creates the chip rather than
+   * hard-coded here: renaming the loop variable stays green (⛔ not the F-041 class of
+   * assertion no correct implementation can satisfy), while a literal in either place is red.
+   */
+  const WORD_BINDING = CODE.match(/\.words\.map\(\(\s*([A-Za-z_$][\w$]*)\s*\)/)?.[1] ?? '';
+
+  it('maps the group words to chips, so the binding below is a real one', () => {
+    expect(WORD_BINDING, 'no `.words.map((x) =>` — the chips are not built from the prop').not.toBe(
+      '',
+    );
+  });
+
+  it('hands the TAPPED token back through onPick — ⛔ not a constant, ⛔ no local mutation', () => {
+    expect(CODE).toMatch(new RegExp(`onClick=\\{\\(\\)\\s*=>\\s*onPick\\(\\s*${WORD_BINDING}\\s*\\)\\}`));
     expect(CODE).not.toContain('useState');
   });
 
-  it('wraps every English word in the bidi wrapper', () => {
-    expect(CODE).toMatch(/<EnWord>\{[^}]*\}<\/EnWord>/);
+  it('wraps every English word in the bidi wrapper — the WORD, ⛔ not a literal', () => {
+    expect(CODE).toMatch(new RegExp(`<EnWord>\\{\\s*${WORD_BINDING}\\s*\\}</EnWord>`));
   });
 
   it('⛔ has no input, no keyboard and no drag', () => {

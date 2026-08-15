@@ -75,7 +75,19 @@ describe('<ComposeDraft>', () => {
   });
 
   it('names the target word inside the guidance, from the bank and ⛔ not a placeholder', () => {
-    expect(CODE).toMatch(/כדי לפרסם[\s\S]{0,200}?target|target[\s\S]{0,200}?כדי לפרסם/);
+    // ⚠️ TIGHTENED C-0142 (F-039). The previous form — `toMatch(/כדי לפרסם[\s\S]{0,200}?target/)`
+    // — was blind, and the mutation that proved it is recorded in `plan/30-architecture.md`:
+    // deleting `<EnWord>{target}</EnWord>` from the sentence, so the screen reads «הוסף את
+    // המילה של היום כדי לפרסם», stayed GREEN. The `target !== null` guard two lines above the
+    // sentence is inside the 200-character window, so the assertion was reading the guard and
+    // ⛔ not the word on screen. Measured instead: the identifier the publish gate checks is
+    // read out of the file, and the guidance sentence itself must render THAT identifier —
+    // the label and the thing it names are then one fact, not two.
+    const targetId = CODE.match(/draftContainsTarget\(\s*tokens\s*,\s*([A-Za-z_$][\w$]*)\s*\)/)?.[1] ?? '';
+    expect(targetId, 'the publish gate does not read a named target').not.toBe('');
+    const guidance = CODE.match(/הוסף את[\s\S]{0,160}?כדי לפרסם/)?.[0] ?? '';
+    expect(guidance, 'the guidance sentence is not on screen').not.toBe('');
+    expect(guidance).toMatch(new RegExp(`<EnWord>\\{\\s*${targetId}\\s*\\}</EnWord>`));
   });
 
   it('labels the result factually, from the word the SERVER reported', () => {
