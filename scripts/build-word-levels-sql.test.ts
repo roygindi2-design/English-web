@@ -22,15 +22,29 @@
  * rather than documented, because there it CAN be exercised.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 const OUT = 'supabase/seed/0002_word_cefr_levels.sql';
+
+/** F-048ⓑ · see the long note in scripts/build-ingest-sql.test.ts — same defect, same fix. */
+const OUT_DIR = mkdtempSync(join(tmpdir(), 'seed-levels-'));
+const FRESH = join(OUT_DIR, '0002_word_cefr_levels.sql');
+const run = (): string =>
+  execFileSync('node', ['scripts/build-word-levels-sql.mjs'], {
+    encoding: 'utf8',
+    env: { ...process.env, SEED_OUT_DIR: OUT_DIR },
+  });
+
 let sql = '';
 
 beforeAll(() => {
-  execFileSync('node', ['scripts/build-word-levels-sql.mjs'], { stdio: 'pipe' });
-  sql = readFileSync(OUT, 'utf8');
+  run();
+  // ⛔ Guarded, not bare — see the note in build-ingest-sql.test.ts: a throw here takes
+  // the suite down before the SEED_OUT_DIR assertion can fire by name.
+  sql = existsSync(FRESH) ? readFileSync(FRESH, 'utf8') : '';
 }, 120_000);
 
 describe('build-word-levels-sql', () => {
@@ -104,8 +118,8 @@ describe('build-word-levels-sql', () => {
 
   it('is byte-identical across two runs', () => {
     const first = sql;
-    execFileSync('node', ['scripts/build-word-levels-sql.mjs'], { stdio: 'pipe' });
-    expect(readFileSync(OUT, 'utf8')).toBe(first);
+    run();
+    expect(readFileSync(FRESH, 'utf8')).toBe(first);
   });
 
   /**
@@ -139,13 +153,24 @@ describe('build-word-levels-sql', () => {
   });
 
   it('prints the measured report to stdout', () => {
-    const out = execFileSync('node', ['scripts/build-word-levels-sql.mjs'], { encoding: 'utf8' });
-    expect(out).toMatch(
+    expect(run()).toMatch(
       /\d+ words · \d+ exact_pos · \d+ lemma_only · \d+ unmatched · \d+ agree · \d+ disagree/,
     );
   });
 
   it('leaves the output file in the repo', () => {
     expect(existsSync(OUT)).toBe(true);
+  });
+
+  it('writes only where SEED_OUT_DIR points — `npm test` never dirties the repo (F-048ⓑ)', () => {
+    // Drop the override in the generator and this path is never created.
+    expect(existsSync(FRESH), `${FRESH} — generator ignored SEED_OUT_DIR`).toBe(true);
+  });
+
+  it('keeps the committed seed in step with data/generated — a stale seed is content no learner ever sees (F-048ⓐ)', () => {
+    expect(
+      readFileSync(OUT).equals(readFileSync(FRESH)),
+      `${OUT} is behind data/generated — run \`npm run build:levels\` and commit it in the same commit as the batch`,
+    ).toBe(true);
   });
 });

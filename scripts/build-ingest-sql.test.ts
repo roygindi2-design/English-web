@@ -1,11 +1,33 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { spotCheckPlan } from '@/lib/core/spotCheck';
 
 const SQL = 'supabase/seed/0001_content_batches.sql';
 const DATA = join('data', 'generated');
+
+/**
+ * F-048ⓑ · this suite used to run the generator with no output redirection, so every
+ * `npm test` — by ANY agent — rewrote the git-managed seed in place. Two harms, both
+ * measured 2026-08-15: a pure verification run left the working tree dirty, and
+ * because the generator repairs the file on every run, a seed that had fallen behind
+ * `data/generated/` produced NO failing test — the gap closed itself silently and
+ * could ride into an unrelated commit through `git add -A`. That is exactly how the
+ * 66 senses of C-0136 sat outside every `insert` for a full cycle (F-048ⓐ).
+ *
+ * The generator now writes wherever SEED_OUT_DIR points. This suite points it at a
+ * throwaway directory, asserts everything against THAT output, and then asserts the
+ * committed file is byte-identical to it. Staleness is a red test from here on.
+ */
+const OUT_DIR = mkdtempSync(join(tmpdir(), 'seed-ingest-'));
+const FRESH = join(OUT_DIR, '0001_content_batches.sql');
+const run = (): string =>
+  execFileSync('node', ['scripts/build-ingest-sql.mjs'], {
+    encoding: 'utf8',
+    env: { ...process.env, SEED_OUT_DIR: OUT_DIR },
+  });
 
 /**
  * The counts are MEASURED from the batch files, ⛔ not restated as literals.
@@ -37,8 +59,29 @@ const ROWS_FLOOR = 403;
 const FILES_FLOOR = 7;
 
 describe('build-ingest-sql', () => {
-  const out = execFileSync('node', ['scripts/build-ingest-sql.mjs'], { encoding: 'utf8' });
-  const sql = readFileSync(SQL, 'utf8');
+  const out = run();
+  // ⛔ NOT a bare readFileSync: if the generator ignored SEED_OUT_DIR the file is absent,
+  // and an ENOENT at collect time kills the whole suite before the named assertion below
+  // ever runs — a guard that cannot fire by name is a guard nobody reads. Measured under
+  // mutation 2026-08-15: bare read ⇒ "Test Files 1 failed / Tests no tests".
+  const sql = existsSync(FRESH) ? readFileSync(FRESH, 'utf8') : '';
+
+  it('writes only where SEED_OUT_DIR points — `npm test` never dirties the repo (F-048ⓑ)', () => {
+    // If the override were dropped, the generator would emit into supabase/seed/ and
+    // this path would not exist. That is the whole mutation, and this is what kills it.
+    expect(existsSync(FRESH), `${FRESH} — generator ignored SEED_OUT_DIR`).toBe(true);
+  });
+
+  it('keeps the committed seed in step with data/generated — a stale seed is content no learner ever sees (F-048ⓐ)', () => {
+    // ⛔ NOT a re-run of the generator into the repo. The committed file is read as a
+    // BYTE ARRAY and compared to the fresh output; the two disagree exactly when a
+    // batch shipped without its seed. Measured 2026-08-15: batch-2026-08-15.jsonl was
+    // committed at 0b3ebb4 and left this file 157 lines behind.
+    expect(
+      readFileSync(SQL).equals(readFileSync(FRESH)),
+      `${SQL} is behind data/generated — run \`npm run build:ingest\` and commit it in the same commit as the batch`,
+    ).toBe(true);
+  });
 
   it('lands every row of every batch file — a drop is a regression, not a detail', () => {
     expect(RECORDS.length).toBeGreaterThanOrEqual(ROWS_FLOOR);
@@ -117,9 +160,9 @@ describe('build-ingest-sql', () => {
   });
 
   it('is deterministic — a second run produces a byte-identical file', () => {
-    const first = readFileSync(SQL);
-    execFileSync('node', ['scripts/build-ingest-sql.mjs']);
-    expect(readFileSync(SQL).equals(first)).toBe(true);
+    const first = readFileSync(FRESH);
+    run();
+    expect(readFileSync(FRESH).equals(first)).toBe(true);
   });
 
   it('emits batches in sorted filename order, not in readdir order', () => {

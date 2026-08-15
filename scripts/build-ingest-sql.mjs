@@ -51,7 +51,15 @@ const { spotCheckPlan, selectForSpotCheck } = await import('../lib/core/spotChec
 const { gateSense } = await import('../lib/core/contentSchema.ts');
 
 const DATA = join('data', 'generated');
-const OUT_DIR = join('supabase', 'seed');
+/**
+ * F-048ⓑ · the committed seed is the DEFAULT target, never the only one. A test that
+ * runs this generator must not overwrite a git-managed file: every agent's `npm test`
+ * was dirtying the working tree, and 157 lines of content SQL could ride into an
+ * unrelated commit through `git add -A`. Given a target of its own the test COMPARES
+ * instead of clobbering, which turns silent staleness into a failing assertion.
+ * ⛔ Not read anywhere but here — the emitted SQL is identical either way.
+ */
+const OUT_DIR = process.env.SEED_OUT_DIR || join('supabase', 'seed');
 const OUT = join(OUT_DIR, '0001_content_batches.sql');
 const ALLOWED_WORDS_FILE = 'allowed-words-2026-08-07.txt';
 

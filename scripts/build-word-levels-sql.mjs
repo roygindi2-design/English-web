@@ -49,7 +49,8 @@ const { parseCefrCsv, buildLevelMap } = await import('../lib/core/cefrLevels.ts'
 const { assignWordLevels, formatLevelReport, profileSourceOf } = await import('../lib/core/wordLevel.ts');
 const { parseBatchFile } = await import('../lib/core/batchRecord.ts');
 
-const OUT_DIR = join('supabase', 'seed');
+/** F-048ⓑ · same override, same reason as build-ingest-sql.mjs — see the note there. */
+const OUT_DIR = process.env.SEED_OUT_DIR || join('supabase', 'seed');
 const OUT = join(OUT_DIR, '0002_word_cefr_levels.sql');
 const q = (v) => (v === null || v === undefined ? 'null' : `'${String(v).replaceAll("'", "''")}'`);
 
