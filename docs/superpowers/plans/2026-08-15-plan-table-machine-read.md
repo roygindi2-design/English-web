@@ -75,7 +75,7 @@ Every number below was produced by a command in cycle **C-0151** on the `dev` wo
   ```
   `splitRow` returns **content cells only** — the empty strings before the leading `|` and after the trailing `|` are dropped, so `splitRow('| a | b |')` is `['a','b']`, ⛔ not `['','a','b','']`. Cells are trimmed. A `\|` inside a cell is a literal pipe and is **unescaped in the returned cell** (`'a \| b'` → `'a | b'`). `rowShape` returns `null` for a line that is not a register row (no `| X-NNN |` at the start).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/planTable.test.ts`:
 
@@ -133,12 +133,12 @@ describe('rowShape', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/planTable.test.ts`
 Expected: FAIL — `Failed to resolve import "./planTable"`.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 Create `lib/core/planTable.ts`:
 
@@ -210,12 +210,12 @@ export function rowShape(line: string, expected: number): RowShape | null {
 }
 ```
 
-- [ ] **Step 4: Run the test and the purity gate**
+- [x] **Step 4: Run the test and the purity gate**
 
 Run: `npx vitest run lib/core/planTable.test.ts && npm run check:core`
 Expected: `5 passed` (3 in `splitRow`, 5 in `rowShape` — **8 passed** total) and `/lib/core purity: OK`.
 
-- [ ] **Step 5: Prove the splitter on the real files without asserting on them**
+- [x] **Step 5: Prove the splitter on the real files without asserting on them**
 
 Run:
 ```bash
@@ -229,7 +229,7 @@ for (const [f, n] of [['plan/50-tasks.md',8],['plan/60-findings.md',8]]) {
 ```
 Expected, and **write the two numbers you actually see into Task 3 Step 3 as the floors**: `plan/50-tasks.md` reports a small count including `T-042:6`, and `plan/60-findings.md` reports a count including `F-046:5` and `F-047:5`. ⚠️ The escape-aware splitter will report **fewer** malformed rows than M3/M4's naive `awk`, because M3/M4 counted escaped pipes as breaks. ⛔ Do not copy M3/M4's numbers forward — copy what this command prints.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/core/planTable.ts lib/core/planTable.test.ts
@@ -266,7 +266,7 @@ git commit -m "loop(DEV): C-XXXX planTable — escape-aware row splitter for the
   ```
   `TASK_STATUS_INDEX` is the 0-based index of `סטטוס` in the 8-column task header (`id · אבן דרך · המשימה · מקור פדגוגי · **סטטוס** · סבבי ביקורת · קבצים · סקיל`). `FINDING_STATUS_INDEX` is the 0-based index of `סטטוס` in the 8-column findings header (`# · חומרה · קובץ:שורה · הממצא · תרחיש הכשל · תיקון מוצע · **סטטוס** · סבב`). Both are read **only** from rows where `shape.ok` is true — a malformed row has no trustworthy status column and is reported as such, ⛔ never guessed.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `lib/core/planTable.test.ts`:
 
@@ -372,12 +372,12 @@ describe('column indices', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/planTable.test.ts`
 Expected: FAIL — `classifyStatus is not a function` (or an import error naming the new exports). ⚠️ If instead it fails on `TASK_STATUS_INDEX`, you appended the import to the wrong file.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 Append to `lib/core/planTable.ts`:
 
@@ -471,17 +471,17 @@ export function eligibleTaskIds(tasks: readonly RowShape[]): string[] {
 }
 ```
 
-- [ ] **Step 4: Run the tests, the purity gate, and typecheck**
+- [x] **Step 4: Run the tests, the purity gate, and typecheck**
 
 Run: `npx vitest run lib/core/planTable.test.ts && npm run check:core && npm run typecheck`
 Expected: all green; `/lib/core purity: OK`; zero TS errors.
 
-- [ ] **Step 5: Mutate to prove the order rule is load-bearing**
+- [x] **Step 5: Mutate to prove the order rule is load-bearing**
 
 Temporarily reorder `STATE_GLYPHS` so `['⛔','blocked']` sits first, and change `classifyStatus` to return on first match instead of first *position*. Run `npx vitest run lib/core/planTable.test.ts`.
 Expected: the `reads the first glyph in the cell, not the last` case FAILS on `T-050` (`'blocked'` received, `'done'` expected). Restore the file and re-run to green. ⛔ Do not commit the mutation.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/core/planTable.ts lib/core/planTable.test.ts
@@ -503,7 +503,7 @@ git commit -m "loop(DEV): C-XXXX planTable — status classification and stale-b
 - Consumes: every export from Tasks 1–2.
 - Produces: the CLI honours `PLAN_TABLES_OUT` to redirect its output file, exactly as `measure-gate.mjs` honours `GATE_REPORT_OUT` (`scripts/measure-gate.mjs:42`), so the test can run it without touching the committed report. Stdout is four lines: `tasks: N rows, M malformed`, `findings: N rows, M malformed`, `eligible: <ids or none>`, `stale blockers: <taskId cites findingId (closed)>` (one line per stale block, or `stale blockers: none`).
 
-- [ ] **Step 1: Write the reporter**
+- [x] **Step 1: Write the reporter**
 
 Create `scripts/measure-plan-tables.mjs`. The `registerHooks` block is copied verbatim from `scripts/measure-gate.mjs:16-34` — it is what lets a `.mjs` import a `.ts` module in this repo.
 
@@ -611,12 +611,12 @@ for (const s of stale) console.log(`stale blockers: ${s.taskId} cites ${s.findin
 console.log(`wrote ${OUT}`);
 ```
 
-- [ ] **Step 2: Run it and read the real numbers**
+- [x] **Step 2: Run it and read the real numbers**
 
 Run: `node scripts/measure-plan-tables.mjs`
 Expected: four-plus lines of stdout and `wrote docs/plan-tables.md`. **Write down `tasks: N rows, M malformed`, `findings: N rows, M malformed`, and the eligible/stale lines verbatim** — Step 3 turns them into floors, and Step 8 quotes them into the finding. ⚠️ Expect `stale blockers: T-066 cites F-020 (closed)`. If that line is absent, ⛔ do not proceed: either `F-020`'s row is malformed and its status was skipped, or `classifyStatus` disagrees with the register. Diagnose with `superpowers:systematic-debugging` before writing the guard.
 
-- [ ] **Step 3: Write the ratchet test**
+- [x] **Step 3: Write the ratchet test**
 
 Create `scripts/measure-plan-tables.test.ts`, substituting the numbers Step 2 printed for `<…>`:
 
@@ -682,13 +682,13 @@ describe('scripts/measure-plan-tables.mjs', () => {
 });
 ```
 
-- [ ] **Step 4: Run it and watch the ratchet bite**
+- [x] **Step 4: Run it and watch the ratchet bite**
 
 Run: `npx vitest run scripts/measure-plan-tables.test.ts`
 Expected: PASS. Then temporarily lower `MALFORMED_TASKS_CEILING` by 1 and re-run.
 Expected: FAIL on `never lets the malformed-row count grow`. Restore it. ⛔ Do not commit the mutation.
 
-- [ ] **Step 5: Wire the npm script**
+- [x] **Step 5: Wire the npm script**
 
 In `package.json`, add after `"measure:gate"`:
 
@@ -698,17 +698,17 @@ In `package.json`, add after `"measure:gate"`:
 
 ⛔ Do **not** add it to `"verify"`: `verify` is the gate that decides whether code ships, and a report over someone else's prose is not that. The vitest file above already runs inside `npm test`.
 
-- [ ] **Step 6: Regenerate and commit the report**
+- [x] **Step 6: Regenerate and commit the report**
 
 Run: `npm run measure:plan`
 Expected: `wrote docs/plan-tables.md`.
 
-- [ ] **Step 7: Run the full gate**
+- [x] **Step 7: Run the full gate**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: typecheck clean · `/lib/core purity: OK` · **1,236 + the tests added by Tasks 1–3** (count the delta against 1,236 and state the exact number in the journal — ⛔ "all passed" is not a measurement) · `build` exit 0.
 
-- [ ] **Step 8: Open one finding, ⛔ and repair nothing**
+- [x] **Step 8: Open one finding, ⛔ and repair nothing**
 
 Append **one** row to `plan/60-findings.md` — a correctly-shaped 8-cell row, escaping every literal `|` as `\|`:
 
@@ -723,7 +723,7 @@ Append **one** row to `plan/60-findings.md` — a correctly-shaped 8-cell row, e
 | סטטוס | `🔓 פתוח → PM + CRITIC` |
 | סבב | `C-XXXX` |
 
-- [ ] **Step 9: Commit and close the tick**
+- [x] **Step 9: Commit and close the tick**
 
 Update `plan/30-architecture.md` (a line under the new cycle), `plan/50-tasks.md` (⛔ **only** if the PM has minted a task ID for this work — otherwise leave it alone and say so in the journal), `plan/00-control.md` (`CYCLE_ID`, `NEXT_AGENT=CRITIC`, release the lock, `MILESTONE_TICKS` +1).
 
