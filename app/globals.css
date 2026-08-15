@@ -60,6 +60,20 @@ body {
    was isolating as a side effect of being atomic. */
 .ltr-inline { unicode-bidi: isolate; direction: ltr; }
 
+/* T-069 · constitution § 1 · § 6 · RULES § 0.1.1 ז׳ — the keyboard learner's only
+   position indicator. `--brand` and not `--brand-surface`: CONTRAST_FLOORS holds
+   --brand at 3:1 against BOTH surfaces (light and dark), which is the WCAG floor for
+   a non-text UI boundary, and a focus ring is a boundary and not text.
+
+   `:focus-visible` and ⛔ never `:focus` — the bare pseudo-class rings a mouse tap as
+   well, which is the reason the browsers introduced the -visible variant at all.
+   The offset is what keeps the ring off the control's own border: without it the ring
+   and a `border-border-strong` edge sit on the same pixels and neither reads. */
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
 /* Document padding for a bottom-anchored bar (D-028 · § 4.2ג).
 
    It belongs to the SCROLL CONTAINER and not to <main>. Measured: the footer
@@ -81,3 +95,4 @@ body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-
     transition-duration: 0.01ms !important;
   }
 }
+
