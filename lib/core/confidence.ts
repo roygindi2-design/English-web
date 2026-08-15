@@ -168,3 +168,107 @@ export function summarizeCalibration(
  * lib/core/confidence.test.ts sweeps the reachable state space to prove it holds.
  */
 export const HYPERCORRECTION_MAX_DAYS = 6;
+
+export interface LevelPenalty {
+  readonly n: number;
+  /** Points LOST on wrong answers, as a positive magnitude. */
+  readonly penalty: number;
+  /** Points FORGONE on correct answers: what a 'high' report would have earned, minus what was earned. */
+  readonly forgone: number;
+}
+
+export interface PenaltyDistribution {
+  readonly n: number;
+  readonly totalPenalty: number;
+  readonly totalForgone: number;
+  readonly penaltyPerAnswer: number;
+  /** Share of all lost points that came from wrong answers reported 'high'. */
+  readonly overconfidenceShare: number;
+  /** Share of all forgone points that came from correct answers reported 'low'. */
+  readonly underconfidenceShare: number;
+  readonly byLevel: Readonly<Record<ConfidenceLevel, LevelPenalty>>;
+}
+
+const MAX_CORRECT_SCORE = CBM_MATRIX.high.correct;
+
+/**
+ * 7.4, fairness: Rainsford & Foster 2025 found gender explained 17.2% of the
+ * variance in confidence reporting, and the loss ran through BOTH channels —
+ * over-confidence on errors and under-confidence on correct answers. A single
+ * "total points" figure hides that, so the two are counted separately and split
+ * by level. This function does not know about the learner; grouping by any
+ * demographic attribute is the caller's job, on data this module never sees.
+ */
+export function summarizePenalties(
+  observations: readonly ConfidenceObservation[],
+): PenaltyDistribution {
+  if (observations.length === 0) {
+    throw new RangeError('summarizePenalties needs at least one observation');
+  }
+
+  const byLevel: Record<ConfidenceLevel, { n: number; penalty: number; forgone: number }> = {
+    low: { n: 0, penalty: 0, forgone: 0 },
+    medium: { n: 0, penalty: 0, forgone: 0 },
+    high: { n: 0, penalty: 0, forgone: 0 },
+  };
+
+  for (const observation of observations) {
+    const bucket = byLevel[requireLevel(observation.level)];
+    const score = scoreConfidence(observation);
+    bucket.n += 1;
+    if (observation.correct) {
+      bucket.forgone += MAX_CORRECT_SCORE - score;
+    } else {
+      bucket.penalty += -score;
+    }
+  }
+
+  const totalPenalty = byLevel.low.penalty + byLevel.medium.penalty + byLevel.high.penalty;
+  const totalForgone = byLevel.low.forgone + byLevel.medium.forgone + byLevel.high.forgone;
+
+  return {
+    n: observations.length,
+    totalPenalty,
+    totalForgone,
+    penaltyPerAnswer: totalPenalty / observations.length,
+    // A clean sample divides by zero. 0 is the honest answer: there is no share
+    // of nothing. NaN would silently poison every downstream comparison.
+    overconfidenceShare: totalPenalty === 0 ? 0 : byLevel.high.penalty / totalPenalty,
+    underconfidenceShare: totalForgone === 0 ? 0 : byLevel.low.forgone / totalForgone,
+    byLevel: Object.freeze({
+      low: Object.freeze({ ...byLevel.low }),
+      medium: Object.freeze({ ...byLevel.medium }),
+      high: Object.freeze({ ...byLevel.high }),
+    }),
+  };
+}
+
+export interface ExposurePolicy {
+  /**
+   * How many real answers must be measured before the score may reach a learner.
+   * Required, with NO default: 7.4 mandates the measurement and names no number.
+   */
+  readonly minObservations: number;
+}
+
+/**
+ * THE GATE. 40-decisions 4.4.3: no readiness estimate is shown before it is
+ * calibrated on real data. Hendriks et al. 2019 found no effect of this score on
+ * outcomes, so exposing it early would show a learner a number that costs them
+ * something and buys them nothing. Any future UI reads this before rendering.
+ */
+export function canExposeConfidenceScore(
+  distribution: PenaltyDistribution,
+  policy: ExposurePolicy,
+): { readonly ok: boolean; readonly reasons: readonly string[] } {
+  if (!Number.isInteger(policy.minObservations) || policy.minObservations < 1) {
+    throw new RangeError(
+      `policy.minObservations must be a whole number >= 1, got ${policy.minObservations}`,
+    );
+  }
+  const reasons: string[] = [];
+  if (distribution.n < policy.minObservations) {
+    reasons.push(`sample too small: ${distribution.n} < ${policy.minObservations}`);
+  }
+  return { ok: reasons.length === 0, reasons: Object.freeze(reasons) };
+}

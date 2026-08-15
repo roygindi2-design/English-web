@@ -5,10 +5,13 @@ import {
   CONFIDENCE_LEVELS,
   expectedScore,
   scoreConfidence,
+  canExposeConfidenceScore,
   HYPERCORRECTION_MAX_DAYS,
   summarizeCalibration,
+  summarizePenalties,
   type CalibrationPolicy,
   type ConfidenceLevel,
+  type ConfidenceObservation,
 } from './confidence';
 import { addDaysIso, MIN_EASINESS, scheduleReview, type SchedulerState } from './scheduler';
 
@@ -211,5 +214,75 @@ describe('7.4 hypercorrection deadline — a wrong answer returns in under a wee
       policy: { triageMinUsableDays: 3 },
     });
     expect(schedule.nextReviewDate > addDaysIso(TODAY, HYPERCORRECTION_MAX_DAYS)).toBe(true);
+  });
+});
+
+// One of each cell, plus one more correct answer, so every branch is exercised.
+const SAMPLE: readonly ConfidenceObservation[] = [
+  { correct: false, level: 'high' }, // -6  => penalty 6
+  { correct: false, level: 'medium' }, // -2  => penalty 2
+  { correct: false, level: 'low' }, //  0  => penalty 0
+  { correct: true, level: 'low' }, // +1  => forgone 3 - 1 = 2
+  { correct: true, level: 'medium' }, // +2  => forgone 3 - 2 = 1
+  { correct: true, level: 'high' }, // +3  => forgone 0
+];
+
+describe('summarizePenalties — the fairness measurement 7.4 demands before exposure', () => {
+  it('separates points LOST on errors from points FORGONE by under-confidence', () => {
+    const dist = summarizePenalties(SAMPLE);
+    expect(dist.n).toBe(6);
+    expect(dist.totalPenalty).toBe(8);
+    expect(dist.totalForgone).toBe(3);
+    expect(dist.penaltyPerAnswer).toBeCloseTo(8 / 6, 10);
+  });
+
+  it('breaks both figures down by level, which is where a group gap would show', () => {
+    const dist = summarizePenalties(SAMPLE);
+    expect(dist.byLevel.high).toEqual({ n: 2, penalty: 6, forgone: 0 });
+    expect(dist.byLevel.medium).toEqual({ n: 2, penalty: 2, forgone: 1 });
+    expect(dist.byLevel.low).toEqual({ n: 2, penalty: 0, forgone: 2 });
+  });
+
+  it('reports the two shares Rainsford & Foster measured separately', () => {
+    const dist = summarizePenalties(SAMPLE);
+    expect(dist.overconfidenceShare).toBeCloseTo(6 / 8, 10);
+    expect(dist.underconfidenceShare).toBeCloseTo(2 / 3, 10);
+  });
+
+  it('returns 0 and not NaN for a flawless sample with nothing to divide by', () => {
+    const dist = summarizePenalties([
+      { correct: true, level: 'high' },
+      { correct: true, level: 'high' },
+    ]);
+    expect(dist.totalPenalty).toBe(0);
+    expect(dist.totalForgone).toBe(0);
+    expect(dist.overconfidenceShare).toBe(0);
+    expect(dist.underconfidenceShare).toBe(0);
+  });
+
+  it('refuses an empty sample', () => {
+    expect(() => summarizePenalties([])).toThrow(RangeError);
+  });
+});
+
+describe('canExposeConfidenceScore — closed until the measurement exists', () => {
+  it('refuses on a sample too small to measure a group gap', () => {
+    const verdict = canExposeConfidenceScore(summarizePenalties(SAMPLE), { minObservations: 200 });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.reasons).toContain('sample too small: 6 < 200');
+  });
+
+  it('opens once the sample is large enough', () => {
+    const many: ConfidenceObservation[] = [];
+    for (let i = 0; i < 200; i += 1) many.push({ correct: i % 2 === 0, level: 'medium' });
+    const verdict = canExposeConfidenceScore(summarizePenalties(many), { minObservations: 200 });
+    expect(verdict.ok).toBe(true);
+    expect(verdict.reasons).toEqual([]);
+  });
+
+  it('rejects a policy with no real threshold', () => {
+    expect(() =>
+      canExposeConfidenceScore(summarizePenalties(SAMPLE), { minObservations: 0 }),
+    ).toThrow(RangeError);
   });
 });
