@@ -107,6 +107,63 @@ const MIN_GAP = 8;
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
 /**
+ * T-067 — where the primary action LEADS. `02-inbox` י׳, and the other half of F-027.
+ *
+ * Two thirds of the connectivity guarantee already exist above: every flow screen holds
+ * exactly one marked primary action, it is hit-testable, and it paints inside the first
+ * viewport. What was never measured is the tap itself — a button that is beautifully
+ * placed and does nothing is the same dead end roy hit on the live site.
+ *
+ * ⛔ NOT "the page changed". Each route declares ONE destination and it is named:
+ *   navigates — the URL becomes `to` and a marker only that screen holds is present.
+ *   announces — an exact Hebrew sentence that was ABSENT before the tap is present after.
+ *   refetches — the tap re-issues one named request (this is what «נסה שוב» is FOR).
+ *
+ * The kind is not a preference. `navigates` is the strong form and it is used wherever it
+ * is reachable — which, measured and not assumed, is one route: this harness runs
+ * `next start` with no Supabase env, so `/onboarding` answers 307 (TD-13) and every study
+ * and world endpoint answers 503 by its own contract. ⛔ An entry may not weaken its kind
+ * to make a screen pass: a screen whose tap produces NOTHING fails on every kind, which is
+ * the whole point.
+ */
+const FLOW_ARRIVAL = {
+  '/': {
+    kind: 'navigates',
+    to: '/signup',
+    marker: 'input[name="email"]',
+    why: 'the only flow screen whose primary action is a plain <Link> and needs no session',
+  },
+  '/signup': {
+    kind: 'announces',
+    text: 'כתובת האימייל לא נראית תקינה',
+    why: 'AUTH_MESSAGES_HE.invalid_email — checkCredentials rejects the empty form client-side, so the tap is measurable without ever reaching Supabase',
+  },
+  '/login': {
+    kind: 'announces',
+    text: 'כתובת האימייל לא נראית תקינה',
+    why: 'same client-side rejection as /signup; the harness has no account to log in with',
+  },
+  '/dev/onboarding': {
+    kind: 'announces',
+    text: 'השמירה נכשלה. נסה שוב.',
+    why: 'FAILURE_HE.save — the tap reaches POST /api/profile, which answers 503 without env (route.ts:24), and the form paints one Hebrew sentence',
+    // The request THIS tap causes. See the settle loop below: naming it is what keeps the
+    // 503 it logs inside this route instead of leaking onto the next one.
+    settles: '/api/profile',
+  },
+  '/study': {
+    kind: 'refetches',
+    request: '/api/study/queue',
+    why: 'without env the screen is in its failure state and its primary action is «נסה שוב», whose entire job is to re-issue this one request',
+  },
+  '/world/compose': {
+    kind: 'refetches',
+    request: '/api/world/bank',
+    why: 'same failure state and same «נסה שוב», one route down',
+  },
+};
+
+/**
  * The console lines a route is ALLOWED to produce, per route and per exact request.
  *
  * Added C-0102 (T-065 task 6), and deliberately as narrow as it can be written. This
@@ -156,6 +213,11 @@ const EXPECTED_CONSOLE = {
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
+  // T-067: the arrival block TAPS the onboarding fixture's submit, which reaches
+  // POST /api/profile — and that route answers 503 without Supabase env by its own
+  // contract (`app/api/profile/route.ts:24`). Keyed to the one URL and the one status
+  // like every entry above: a 401 or a 500 on the same URL still fails the check.
+  '/dev/onboarding': [/status of 503[\s\S]*@\S*\/api\/profile/],
 };
 
 /**
@@ -1056,6 +1118,95 @@ try {
             `${at} grade buttons are separated by >= ${MIN_GAP}px`,
             `they sit ${grades.gap}px apart — one thumb, two answers`,
           );
+        }
+      }
+
+      // T-067 — the third of the three connectivity checks: the tap ARRIVES somewhere.
+      // Last in the route block on purpose: `navigates` leaves this URL behind, and every
+      // measurement above has to happen on the screen it names.
+      const arrival = FLOW_ARRIVAL[route];
+      if (arrival) {
+        const action = page.locator('main [data-primary-action]');
+        if ((await action.count()) === 1) {
+          // The request this tap causes, and how many times its failure has ALREADY been
+          // logged on this screen. `/study` and `/world/compose` both fetch on load and are
+          // sitting in their 503 failure state, so "has the message arrived" is false from
+          // the start — the only honest question is whether ONE MORE has arrived since.
+          const settles = arrival.request ?? arrival.settles;
+          const loggedBefore = settles
+            ? consoleErrors.filter((line) => line.includes(settles)).length
+            : 0;
+          if (arrival.kind === 'navigates') {
+            await action.click();
+            await page.waitForURL(`**${arrival.to}`, { timeout: 5000 }).catch(() => {});
+            const url = new URL(page.url()).pathname;
+            check(url === arrival.to, `${at} tap arrives at ${arrival.to}`, `landed on ${url}`);
+            // The URL alone is a claim about the router; the marker is a claim about the
+            // screen. A route that renders an error boundary has the right URL too.
+            const marker = await page.locator(arrival.marker).count();
+            check(
+              marker > 0,
+              `${at} ${arrival.to} really rendered`,
+              `no element matching ${arrival.marker}`,
+            );
+          } else if (arrival.kind === 'announces') {
+            const said = () => page.locator('main').innerText();
+            const before = await said();
+            check(
+              !before.includes(arrival.text),
+              `${at} the answer is not on screen before the tap`,
+              'the assertion below would pass without the tap',
+            );
+            await action.click();
+            await page
+              .locator('main', { hasText: arrival.text })
+              .waitFor({ timeout: 5000 })
+              .catch(() => {});
+            const after = await said();
+            check(
+              after.includes(arrival.text),
+              `${at} tap answers with "${arrival.text}"`,
+              'the tap produced no visible answer — this is the F-027 dead end',
+            );
+          } else {
+            // The RESPONSE and not the request: a response proves the request went out, so
+            // the assertion is strictly stronger, and it is also the first half of keeping
+            // the 503 inside this route (see the settle loop below).
+            const seen = page.waitForResponse((r) => r.url().includes(arrival.request), {
+              timeout: 5000,
+            });
+            await action.click();
+            const fired = await seen.then(() => true).catch(() => false);
+            check(
+              fired,
+              `${at} tap re-issues ${arrival.request}`,
+              'the retry button issued no request at all',
+            );
+          }
+          // ⚠️ Measured C-0134, and ⛔ not a precaution. A tap starts work that outlives this
+          // iteration unless it is waited for, and the loop rebinds `consoleErrors` at the
+          // top of the next one — so anything late is logged against the WRONG route. Both
+          // halves were observed, and both were intermittent, which is worse than wrong:
+          //   · Chromium delivers the console message for a failed resource on its own event,
+          //     AFTER the response promise resolves ⇒ the harness blamed `/dev/card` for
+          //     `/study`'s queue, and `/dev/world` — the fixture that requests nothing at
+          //     all — for `/world/compose`'s bank.
+          //   · The tap on `/` lands on `/signup`, whose favicon was still in flight when the
+          //     next `goto` aborted it ⇒ the abort was logged against `/signup`.
+          // ⛔ The fix is NOT an EXPECTED_CONSOLE entry on the innocent route: an entry on
+          // `/dev/world` would silence the exact alarm its comment above exists to raise.
+          // So the tap waits here, inside the route that caused it, until the page is quiet
+          // and the message it is responsible for has actually been delivered — condition
+          // based and bounded, and ⛔ never a blind sleep.
+          await page.waitForLoadState('networkidle').catch(() => {});
+          if (settles) {
+            for (let i = 0; i < 100; i += 1) {
+              const logged = consoleErrors.filter((line) => line.includes(settles)).length;
+              if (logged > loggedBefore) break;
+              await page.waitForTimeout(20);
+            }
+          }
+          report(`${at} arrival: ${arrival.kind} — ${arrival.why}`);
         }
       }
 

@@ -391,7 +391,7 @@ Expected: five green. `check:mobile` matters here for one measured reason: a sma
 
 The one thing every kind asserts in common: **something declared happens.** Silence is the F-027 dead end and fails on every route.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `scripts/verify-mobile.test.ts`:
 
@@ -464,12 +464,12 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run scripts/verify-mobile.test.ts`
 Expected: FAIL — six of the seven new tests fail (`FLOW_ARRIVAL` does not exist, so `block()` returns `''` and `arrivalRoutes()` is `[]`); *measures the tap* may pass by accident on the password-toggle `.click(` already in the file, which is why the `FLOW_ARRIVAL[route]` half of it is there.
 
-- [ ] **Step 3: Add the table**
+- [x] **Step 3: Add the table**
 
 In `scripts/verify-mobile.mjs`, immediately after the `FLOW_ROUTES` line:
 
@@ -529,7 +529,7 @@ const FLOW_ARRIVAL = {
 };
 ```
 
-- [ ] **Step 4: Add the console allowance the tap creates**
+- [x] **Step 4: Add the console allowance the tap creates**
 
 In `EXPECTED_CONSOLE`, add:
 
@@ -541,7 +541,7 @@ In `EXPECTED_CONSOLE`, add:
   '/dev/onboarding': [/status of 503[\s\S]*@\S*\/api\/profile/],
 ```
 
-- [ ] **Step 5: Add the assertion block**
+- [x] **Step 5: Add the assertion block**
 
 In `scripts/verify-mobile.mjs`, immediately **before** the `if (route !== '/does-not-exist')` clean-console check:
 
@@ -603,7 +603,7 @@ In `scripts/verify-mobile.mjs`, immediately **before** the `if (route !== '/does
       }
 ```
 
-- [ ] **Step 6: Run the harness**
+- [x] **Step 6: Run the harness**
 
 ```bash
 npm run build && npm run check:mobile
@@ -611,14 +611,14 @@ npm run build && npm run check:mobile
 
 Expected: green, with 3 widths × 6 routes of new `arrival:` lines and ~21 new checks. If `/signup` fails *the answer is not on screen before the tap*, the copy moved — fix `text` from `AUTH_MESSAGES_HE`, ⛔ never by loosening the assertion to a substring that was already there.
 
-- [ ] **Step 7: Prove the assertions can fail (mutation)**
+- [x] **Step 7: Prove the assertions can fail (mutation)**
 
 1. In `app/page.tsx`, change the primary `<Link href="/signup">` to `href="/login"` ⇒ `npm run build && npm run check:mobile` ⇒ expect FAIL ×3 (one per width) on *tap arrives at /signup — landed on /login*. Restore.
 2. In `FLOW_ARRIVAL['/dev/onboarding']`, change `text` to a sentence the screen never says ⇒ re-run ⇒ expect FAIL ×3 on *tap answers with…*. Restore.
 3. In `components/StudyDeckScreen.tsx`, replace the retry `onClick={() => void load()}` with `onClick={() => {}}` ⇒ re-run ⇒ expect FAIL ×3 on *tap re-issues /api/study/queue*. Restore.
 4. Re-run clean. Record all three failure lines verbatim in the tick report.
 
-- [ ] **Step 8: Verify and commit**
+- [x] **Step 8: Verify and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile

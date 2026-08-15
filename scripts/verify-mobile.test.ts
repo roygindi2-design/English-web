@@ -690,3 +690,81 @@ describe('the world screens are measured and not assumed (T-063 task 9)', () => 
     expect(block).not.toContain("'/dev/world'");
   });
 });
+
+describe('every flow screen declares where its primary action leads (T-067)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  function block(name: string): string {
+    return (
+      code
+        .match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n\\};`))?.[1]
+        ?.replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^[ \t]*\/\/[^\n]*$/gm, '') ?? ''
+    );
+  }
+
+  /** The entries of a top-level array literal, comments stripped. */
+  function entriesOf(name: string): readonly string[] {
+    const body = code.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n?\\];`))?.[1] ?? '';
+    const withoutComments = body
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    return [...withoutComments.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
+  }
+
+  /** Route keys of the FLOW_ARRIVAL object — the keys only, never a value. */
+  function arrivalRoutes(): string[] {
+    return [...block('FLOW_ARRIVAL').matchAll(/^\s*'([^']+)':\s*\{/gm)].map((m) => m[1] ?? '');
+  }
+
+  it('declares an arrival for EVERY flow route — a new screen cannot arrive unmeasured', () => {
+    expect(arrivalRoutes().sort()).toEqual([...entriesOf('FLOW_ROUTES')].sort());
+  });
+
+  it('gives each entry one of the three kinds, and a reason', () => {
+    const entries = [...block('FLOW_ARRIVAL').matchAll(/'([^']+)':\s*\{([\s\S]*?)\n\s*\},/g)];
+    expect(entries.length).toBe(arrivalRoutes().length);
+    for (const [, route, body] of entries) {
+      expect(`${route} ${body}`).toMatch(/kind:\s*'(navigates|announces|refetches)'/);
+      // ⛔ An entry without a reason is an exemption wearing a table's clothes.
+      expect(`${route} ${body}`).toMatch(/why:/);
+    }
+  });
+
+  it('asserts the one screen that CAN reach the next one actually does', () => {
+    const landing = block('FLOW_ARRIVAL').match(/'\/':\s*\{([\s\S]*?)\n\s*\},/)?.[1] ?? '';
+    expect(landing).toContain("kind: 'navigates'");
+    expect(landing).toContain("to: '/signup'");
+  });
+
+  it('measures the tap and not the markup — the block clicks', () => {
+    expect(code).toMatch(/FLOW_ARRIVAL\[route\]/);
+    expect(code).toMatch(/\.click\(/);
+  });
+
+  it('runs the arrival block BEFORE the clean-console check, so the tap’s own errors are judged', () => {
+    // A tap that fires a request the harness cannot satisfy produces a console error. If
+    // the console were read first, that error would be invisible — and an invisible error
+    // is how a 500 hides behind a documented 503.
+    expect(code.indexOf('FLOW_ARRIVAL[route]')).toBeLessThan(code.indexOf('clean console'));
+  });
+
+  /**
+   * C-0134 regression guard. `waitForRequest` resolves before the response exists, so the
+   * console error the tap causes was attributed to the NEXT route in `ROUTES` — the harness
+   * blamed `/dev/card` and `/dev/world` for requests they never made. ⛔ Reverting to
+   * `waitForRequest` here re-opens that cross-route leak silently, so it is asserted.
+   */
+  it('waits for the refetch RESPONSE, so the tap’s 503 is judged on the route that caused it', () => {
+    expect(code).toContain('page.waitForResponse((r) => r.url().includes(arrival.request)');
+    expect(code).not.toContain('page.waitForRequest');
+  });
+
+  it('allows /dev/onboarding exactly the 503 its own tap causes, keyed to that request', () => {
+    const allowed = block('EXPECTED_CONSOLE');
+    const entry = allowed.match(/'\/dev\/onboarding':\s*\[([\s\S]*?)\],/)?.[1] ?? '';
+    const named = entry.replace(/\\/g, '');
+    expect(named).toContain('503');
+    expect(named).toContain('/api/profile');
+  });
+});
