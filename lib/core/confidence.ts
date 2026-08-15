@@ -76,3 +76,83 @@ export function bestLevelFor(trueProbability: number): ConfidenceLevel {
   }
   return best;
 }
+
+/**
+ * The forecast probability f that a reported level stands for. 7.4 fixes the BAND
+ * edges (2/3 and 0.8) and no source fixes a point inside a band, so the midpoint is
+ * used and named: low = mid[0, 2/3] = 1/3 · medium = mid[2/3, 0.8] = 11/15 ·
+ * high = mid[0.8, 1] = 0.9. It is a CalibrationPolicy field, so a measurement on
+ * real answers replaces it in exactly one place without touching this module.
+ */
+export const BAND_MIDPOINT_PROBABILITY: Readonly<Record<ConfidenceLevel, number>> = Object.freeze({
+  low: 1 / 3,
+  medium: 11 / 15,
+  high: 0.9,
+});
+
+export interface CalibrationPolicy {
+  readonly levelProbability: Readonly<Record<ConfidenceLevel, number>>;
+  /**
+   * How far |bias| may drift before a learner is called mis-calibrated. Required,
+   * with NO default: no published number fixes it, and a constant invented here
+   * would later be cited as if it were evidence. Same reasoning as
+   * SchedulingPolicy.triageMinUsableDays.
+   */
+  readonly biasTolerance: number;
+}
+
+export type CalibrationDirection = 'overconfident' | 'underconfident' | 'calibrated';
+
+export interface CalibrationSummary {
+  readonly n: number;
+  readonly brier: number;
+  readonly meanConfidence: number;
+  readonly accuracy: number;
+  /** mean(confidence) - mean(accuracy). POSITIVE = overconfident. */
+  readonly bias: number;
+  readonly direction: CalibrationDirection;
+}
+
+export function summarizeCalibration(
+  observations: readonly ConfidenceObservation[],
+  policy: CalibrationPolicy,
+): CalibrationSummary {
+  if (observations.length === 0) {
+    throw new RangeError('summarizeCalibration needs at least one observation');
+  }
+  if (!Number.isFinite(policy.biasTolerance) || policy.biasTolerance < 0) {
+    throw new RangeError(
+      `policy.biasTolerance must be a finite number >= 0, got ${policy.biasTolerance}`,
+    );
+  }
+  for (const level of CONFIDENCE_LEVELS) {
+    requireProbability(policy.levelProbability[level], `policy.levelProbability.${level}`);
+  }
+
+  let squaredError = 0;
+  let confidenceSum = 0;
+  let correctCount = 0;
+  for (const observation of observations) {
+    const f = policy.levelProbability[requireLevel(observation.level)];
+    const d = observation.correct ? 1 : 0;
+    squaredError += (d - f) ** 2;
+    confidenceSum += f;
+    correctCount += d;
+  }
+
+  const n = observations.length;
+  const meanConfidence = confidenceSum / n;
+  const accuracy = correctCount / n;
+  const bias = meanConfidence - accuracy;
+
+  // Brier alone never reveals the DIRECTION of the miss, and the direction is
+  // exactly what an over-confidence intervention needs (7.4).
+  const direction: CalibrationDirection =
+    Math.abs(bias) <= policy.biasTolerance
+      ? 'calibrated'
+      : bias > 0
+        ? 'overconfident'
+        : 'underconfident';
+
+  return { n, brier: squaredError / n, meanConfidence, accuracy, bias, direction };
+}
