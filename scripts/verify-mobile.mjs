@@ -48,6 +48,9 @@ const ROUTES = [
   // ungraded cards, so the finish branch is unreachable there; this fixture renders it
   // directly. Measured and ⛔ not asserted: "not blank" is a claim about pixels.
   '/dev/deck/done',
+  // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
+  // `schema_missing` here (no Supabase env), so the loading state has never been measured.
+  '/dev/deck/skeleton',
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
@@ -1163,6 +1166,40 @@ try {
             done.exitWidth >= MIN_TAP && done.exitHeight >= MIN_TAP,
             `${at} the way out clears ${MIN_TAP}px`,
             `${done.exitWidth}×${done.exitHeight}`,
+          );
+        }
+      }
+
+      // T-054 — the loading state. «שלד בצורת הכרטיס ולא מסך לבן» is a claim about pixels:
+      // three boxes that paint, and ⛔ no element that spins.
+      if (route === '/dev/deck/skeleton') {
+        const skeleton = await page.evaluate(() => {
+          const node = document.querySelector('[data-deck-skeleton]');
+          if (!node) return { present: false };
+          const boxes = [...node.querySelectorAll('[aria-hidden]')].map((box) => {
+            const rect = box.getBoundingClientRect();
+            return { w: Math.round(rect.width), h: Math.round(rect.height) };
+          });
+          return {
+            present: true,
+            boxes: boxes.length,
+            // The tallest box stands for the card itself. A skeleton whose boxes all
+            // collapse to 0 is a blank screen wearing the right attribute.
+            tallest: boxes.reduce((max, box) => Math.max(max, box.h), 0),
+            painted: boxes.filter((box) => box.w > 0 && box.h > 0).length,
+          };
+        });
+        check(skeleton.present, `${at} the skeleton is in the DOM`, 'no [data-deck-skeleton]');
+        if (skeleton.present) {
+          check(
+            skeleton.boxes === 3 && skeleton.painted === 3,
+            `${at} the skeleton paints three boxes`,
+            `${skeleton.boxes} boxes, ${skeleton.painted} with area`,
+          );
+          check(
+            skeleton.tallest >= 100,
+            `${at} the skeleton is card-shaped, ⛔ not a bar`,
+            `tallest box ${skeleton.tallest}px`,
           );
         }
       }

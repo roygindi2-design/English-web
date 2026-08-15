@@ -149,9 +149,16 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
   });
 
   /** All five states the plan names, each one reachable in the code. */
-  it('carries the loading skeleton — ⛔ not a spinner (constitution § 5)', () => {
-    expect(CODE).toContain('data-deck-skeleton');
-    expect(CODE).not.toContain('animate-spin');
+  it('delegates loading to <CardSkeleton> — ⛔ never a spinner (T-054 · חוקה § 5)', () => {
+    // The shape itself is guarded in components/CardSkeleton.test.ts. What this file owns is
+    // the wiring: that the `loading` state renders that component and ⛔ nothing else, so a
+    // spinner cannot creep back in beside it.
+    expect(CODE).toContain("import CardSkeleton from '@/components/CardSkeleton'");
+    const loading = braceRegion(CODE, "{state.kind === 'loading' &&");
+    expect(loading).toContain('<CardSkeleton />');
+    expect(loading).not.toContain('animate-spin');
+    // ⛔ Nothing else in the branch: no second element, no sentence, no retry.
+    expect(loading.match(/</g)?.length, 'exactly one element in the loading branch').toBe(1);
   });
 
   it('tells the truth about schema_missing — ⛔ never "no cards"', () => {

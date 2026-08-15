@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import CardDeck from '@/components/CardDeck';
+import CardSkeleton from '@/components/CardSkeleton';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
@@ -61,7 +62,6 @@ const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
 const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
-const LOADING_HE = 'טוען את הכרטיסיות…';
 
 type QueueResponse =
   | {
@@ -201,19 +201,10 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
         {deck === 'due' ? HEADING_HE : PRACTICE_HEADING_HE}
       </h1>
 
-      {state.kind === 'loading' && (
-        // The shape of what is coming, ⛔ not a spinner (constitution § 5). `aria-hidden` on
-        // the boxes with the sentence carried by a live region: a screen reader gets the
-        // word "loading", not four empty rectangles.
-        <div className="flex flex-col gap-3" data-deck-skeleton>
-          <p className="sr-only" role="status">
-            {LOADING_HE}
-          </p>
-          <div aria-hidden className="h-40 rounded-2xl bg-surface-raised" />
-          <div aria-hidden className="h-6 w-2/3 rounded-lg bg-surface-raised" />
-          <div aria-hidden className="h-12 rounded-2xl bg-surface-raised" />
-        </div>
-      )}
+      {/* The shape of what is coming, ⛔ not a spinner (constitution § 5). The markup lives
+          in its own file so `/dev/deck/skeleton` can hold this state still while the harness
+          measures it — this screen fetches on mount and would not stay in it. */}
+      {state.kind === 'loading' && <CardSkeleton />}
 
       {state.kind === 'schema_missing' && (
         <p className="text-lg leading-relaxed text-ink">{SCHEMA_MISSING_HE}</p>

@@ -594,12 +594,12 @@ and, after the `/dev/deck/done` block from task 1 (or after the `/dev/deck` bloc
 - [ ] **Step 11: Run the harness**
 
 Run: `npm run check:mobile`
-Expected: **PASS**, count **+9** over whatever task 1 left (three checks × three widths). Record the actual number; ⛔ do not report the predicted one.
+Expected: **PASS**. ⚠️ **Measured in C-0139: 801 ⇒ 825 = +24, ⛔ not the +9 this step first predicted (F-049).** A new route earns the five generic per-width checks too — `no horizontal scroll` · `dir=rtl` · `lang=he` · `all tap targets >= 44px` · `clean console` — so it is 8 lines per width × 3 widths, not 3. `heading anchored to top` does ⛔ not run: the fixture has no heading. Record the actual number; ⛔ do not report a predicted one.
 
 - [ ] **Step 12: Prove the harness check can fail**
 
 In `components/CardSkeleton.tsx`, change `h-40` to `h-1`. Run `npm run check:mobile`.
-Expected: **FAIL ×3** on `the skeleton is card-shaped, ⛔ not a bar` — `tallest box 4px`. Restore by re-editing (⛔ not `git checkout`), re-run: **PASS**.
+⚠️ `next start` serves the **built** output, so run `npm run build` before `check:mobile` or the mutation will not be on screen. Expected: **FAIL ×3** on `the skeleton is card-shaped, ⛔ not a bar` — **measured in C-0139: `tallest box 48px`, ⛔ not the `4px` first predicted (F-049)**: shrinking `h-40` makes `h-12` the tallest box, and 48 < 100 is what fails. Restore by re-editing (⛔ not `git checkout`), re-run: **PASS**.
 
 - [ ] **Step 13: Update the plan files**
 
