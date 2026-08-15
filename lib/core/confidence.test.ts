@@ -5,10 +5,12 @@ import {
   CONFIDENCE_LEVELS,
   expectedScore,
   scoreConfidence,
+  HYPERCORRECTION_MAX_DAYS,
   summarizeCalibration,
   type CalibrationPolicy,
   type ConfidenceLevel,
 } from './confidence';
+import { addDaysIso, MIN_EASINESS, scheduleReview, type SchedulerState } from './scheduler';
 
 describe('scoreConfidence — the Gardner-Medwin CBM matrix, verbatim from 7.4', () => {
   it('scores the three correct answers +1 / +2 / +3', () => {
@@ -156,5 +158,58 @@ describe('summarizeCalibration — Brier plus the signed bias 7.4 demands', () =
       biasTolerance: -1,
     };
     expect(() => summarizeCalibration([{ correct: true, level: 'low' }], bad)).toThrow(RangeError);
+  });
+});
+
+const TODAY = '2026-08-15';
+
+describe('7.4 hypercorrection deadline — a wrong answer returns in under a week', () => {
+  it('states the deadline as whole days below seven', () => {
+    expect(HYPERCORRECTION_MAX_DAYS).toBe(6);
+    expect(HYPERCORRECTION_MAX_DAYS).toBeLessThan(7);
+  });
+
+  it('holds for every reachable scheduler state, exam or no exam', () => {
+    const easinesses = [MIN_EASINESS, 1.8, 2.5, 3.4];
+    const intervals = [0, 1, 6, 30, 365];
+    const repetitions = [0, 1, 2, 9];
+    const exams = [null, TODAY, '2026-08-16', '2026-09-15', '2027-08-15'];
+    const latest = addDaysIso(TODAY, HYPERCORRECTION_MAX_DAYS);
+
+    let checked = 0;
+    for (const easiness of easinesses) {
+      for (const intervalDays of intervals) {
+        for (const repetition of repetitions) {
+          for (const examDate of exams) {
+            const state: SchedulerState = { easiness, intervalDays, repetition };
+            const schedule = scheduleReview({
+              state,
+              grade: 'again',
+              today: TODAY,
+              examDate,
+              policy: { triageMinUsableDays: 3 },
+            });
+            // String comparison is exact for YYYY-MM-DD: it is lexicographically ordered.
+            expect(schedule.nextReviewDate <= latest).toBe(true);
+            checked += 1;
+          }
+        }
+      }
+    }
+    // 4 easinesses x 5 intervals x 4 repetitions x 5 exam dates.
+    expect(checked).toBe(400);
+  });
+
+  // The mirror case: this deadline is about ERRORS. A correct answer is free to be
+  // pushed far out, and a test that forbade that would be wrong about the spec.
+  it('does NOT constrain a correct answer', () => {
+    const schedule = scheduleReview({
+      state: { easiness: 2.5, intervalDays: 30, repetition: 5 },
+      grade: 'good',
+      today: TODAY,
+      examDate: null,
+      policy: { triageMinUsableDays: 3 },
+    });
+    expect(schedule.nextReviewDate > addDaysIso(TODAY, HYPERCORRECTION_MAX_DAYS)).toBe(true);
   });
 });

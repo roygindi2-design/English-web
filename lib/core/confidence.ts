@@ -156,3 +156,15 @@ export function summarizeCalibration(
 
   return { n, brier: squaredError / n, meanConfidence, accuracy, bias, direction };
 }
+
+/**
+ * 7.4: "a high-confidence error must return to the review queue in under a week,
+ * otherwise the gain is erased" (Butler, Fazio & Marsh 2011 — the correction rate
+ * decays from 86% to 56% across one week). "Under a week" in whole days is 6.
+ *
+ * There is deliberately NO capping function here. lib/core/scheduler.ts already
+ * resets a lapse to FIRST_INTERVAL_DAYS = 1 and the exam branch only shortens it,
+ * so a cap would be dead code. This constant exists to be ASSERTED against, and
+ * lib/core/confidence.test.ts sweeps the reachable state space to prove it holds.
+ */
+export const HYPERCORRECTION_MAX_DAYS = 6;
