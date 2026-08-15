@@ -640,7 +640,7 @@ Two M0 rows carried a ⛔ whose blocker was already gone — one of them for **3
 
 ⛔ **The Dev does not declare `MILESTONE_DONE`.** This task produces the evidence and hands it over; the milestone call and the counter reset are the Critic's.
 
-- [ ] **Step 1: List every M0 row from the file, ⛔ not from memory**
+- [x] **Step 1: List every M0 row from the file, ⛔ not from memory**
 
 Run:
 
@@ -650,7 +650,7 @@ awk -F'|' '/^\| T-/ && $3 ~ /M0/ {gsub(/^ +| +$/,"",$2); print $2, substr($6,1,4
 
 Expected: 18 rows. Write the list down before checking anything — the audit is against this list, and a row that is missing from it is itself a finding.
 
-- [ ] **Step 2: Prove each ✅ row against the code**
+- [x] **Step 2: Prove each ✅ row against the code**
 
 For every row the table calls ✅, run one command that would fail if the claim were false, and record the command **and** its output. The pattern is `ls`/`grep`/`npx vitest run <the row's own guard>` — for example:
 
@@ -663,16 +663,16 @@ grep -n "word_progress" app/api/health/route.ts   # T-053
 
 ⚠️ A row whose claim no command can check is **not** ✅ — it is a row with no guard, and that is a 🟡 finding against whoever closed it. Record it as such; ⛔ do not quietly accept it.
 
-- [ ] **Step 3: Confirm the two ⛔ rows that remain are Roy's and not the loop's**
+- [x] **Step 3: Confirm the two ⛔ rows that remain are Roy's and not the loop's**
 
 - T-019 (RLS against a live Supabase project): confirm no test credentials exist in the environment — `grep -c SUPABASE .env.example` and the absence of any `.env.test`. It is unrunnable **here**, and that is a fact about the loop, ⛔ not a defect.
 - T-046 (Netlify token): confirm the repo secret is still absent. Both are already listed in `plan/03-for-roy.md` — verify they are, and add them if not.
 
-- [ ] **Step 4: Confirm the 🟣 rows are genuinely in the Critic's court**
+- [x] **Step 4: Confirm the 🟣 rows are genuinely in the Critic's court**
 
 T-001 and T-002 are 🟣 (בביקורת). Run `git log --oneline -5 -- plan/60-findings.md` and confirm no open finding names either. A 🟣 row with an open 🔴/🟠 finding against it is not «in review», it is blocked — and that would be a finding.
 
-- [ ] **Step 5: Write the audit block into `plan/50-tasks.md`**
+- [x] **Step 5: Write the audit block into `plan/50-tasks.md`**
 
 Directly under the task table, add:
 
@@ -689,13 +689,13 @@ Directly under the task table, add:
 **המלצה ל-Critic:** <MILESTONE_DONE כשיר / אינו כשיר, ולמה>. ⛔ ההכרעה והאיפוס אינם של ה-Dev.
 ```
 
-- [ ] **Step 6: Open a finding on the stale-gate class, ⛔ not on the two instances**
+- [x] **Step 6: Open a finding on the stale-gate class, ⛔ not on the two instances**
 
 In `plan/60-findings.md`, open one 🟡 finding: **a ⛔ cell records a blocker but records no way to notice it has lifted.** The failure scenario is the measured one — F-032 was written at `15:49:54Z` and answered at `15:53:21Z`, and the row it blocked stayed ⛔ for ~35 cycles while the counter climbed 60→87. The proposed fix is a rule, not a patch: **every ⛔ cell names the command that decides whether it still holds**, so the next agent can re-run it in seconds instead of trusting the cell.
 
 ⚠️ Brake 10 caps **design** findings at 2 per milestone. This is a process finding — the same class as F-032 itself — and ⛔ does not return the stick. Confirm against `plan/RULES.md § 0.1.1 ו׳` before writing it.
 
-- [ ] **Step 7: Verify and commit**
+- [x] **Step 7: Verify and commit**
 
 No product code changed in this task, but the suite still runs — the audit is worthless if it is written against a red tree:
 
