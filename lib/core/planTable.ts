@@ -63,3 +63,91 @@ export function rowShape(line: string, expected: number): RowShape | null {
   const cells = splitRow(line);
   return { id, cells, expected, ok: cells.length === expected };
 }
+
+export type TaskState =
+  | 'done'
+  | 'awaiting-review'
+  | 'open'
+  | 'blocked'
+  | 'cancelled'
+  | 'unknown';
+
+/** 0-based index of `סטטוס` in each 8-column header. Read only when `shape.ok`. */
+export const TASK_STATUS_INDEX = 4;
+export const FINDING_STATUS_INDEX = 6;
+
+const STATE_GLYPHS: ReadonlyArray<readonly [string, TaskState]> = [
+  ['✅', 'done'],
+  ['🟣', 'awaiting-review'],
+  ['⬜', 'open'],
+  ['🔓', 'open'],
+  ['⛔', 'blocked'],
+  ['🚫', 'cancelled'],
+];
+
+/**
+ * The FIRST glyph in the cell decides. Measured: `T-050` opens `✅` and then carries a `⛔`
+ * caveat about what it did not cover, while `T-066` opens `⛔` and cites the reason. Both
+ * cells contain both glyphs; a "contains ⛔ ⇒ blocked" rule marks a finished task blocked,
+ * and a "contains ✅ ⇒ done" rule marks a blocked task finished. Only the order separates
+ * them, because the register states its verdict before its caveats.
+ */
+export function classifyStatus(cell: string): TaskState {
+  let best: TaskState = 'unknown';
+  let bestAt = Number.POSITIVE_INFINITY;
+  for (const [glyph, state] of STATE_GLYPHS) {
+    const at = cell.indexOf(glyph);
+    if (at !== -1 && at < bestAt) {
+      bestAt = at;
+      best = state;
+    }
+  }
+  return best;
+}
+
+const FINDING_REF = /\bF-\d{3}\b/g;
+
+export function citedFindings(cell: string): string[] {
+  // A Set, because a cell is allowed to argue its case twice and a duplicate citation
+  // would otherwise become a duplicate stale-block report.
+  return [...new Set(cell.match(FINDING_REF) ?? [])];
+}
+
+export interface StaleBlock {
+  readonly taskId: string;
+  readonly findingId: string;
+  readonly findingState: TaskState;
+}
+
+/**
+ * F-050's rule, mechanised: a ⛔ cell that cites a finding the findings register calls
+ * closed is a blocker that has already lifted. ⛔ Silent on a citation we cannot resolve —
+ * an unknown ID means the registers disagree about which findings exist, which is a
+ * different defect and is reported separately by the CLI.
+ */
+export function staleBlocks(
+  tasks: readonly RowShape[],
+  findingStates: ReadonlyMap<string, TaskState>,
+): StaleBlock[] {
+  const out: StaleBlock[] = [];
+  for (const row of tasks) {
+    if (!row.ok) continue;
+    const cell = row.cells[TASK_STATUS_INDEX];
+    if (cell === undefined || classifyStatus(cell) !== 'blocked') continue;
+    for (const findingId of citedFindings(cell)) {
+      const state = findingStates.get(findingId);
+      if (state === 'done') out.push({ taskId: row.id, findingId, findingState: state });
+    }
+  }
+  return out;
+}
+
+export function eligibleTaskIds(tasks: readonly RowShape[]): string[] {
+  return tasks
+    .filter((row) => {
+      if (!row.ok) return false;
+      const cell = row.cells[TASK_STATUS_INDEX];
+      return cell !== undefined && classifyStatus(cell) === 'open';
+    })
+    .map((row) => row.id);
+}
