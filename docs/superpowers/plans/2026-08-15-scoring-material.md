@@ -470,7 +470,7 @@ git commit -m "loop(DEV): C-XXXX D-035 ⓑ — re-gate every sentence, report th
 
 **Files:**
 - Create: `supabase/migrations/0011_content_read_policies.sql`
-- Modify: `scripts/migration-hygiene.test.ts` (append two `describe` blocks; ⛔ do not edit the existing ones)
+- Modify: `scripts/migration-hygiene.test.ts` (append ONE `describe` block of four tests plus its module-level helpers; ⛔ do not edit the existing ones — ⚠️ corrected C-0145 from «two `describe` blocks», which the code block below never contained)
 - Modify: `plan/03-for-roy.md` (one line: a migration is waiting)
 
 **Interfaces:**
@@ -495,7 +495,7 @@ Equivalence, table by table, so the migration is provably a no-op at runtime:
 | `sense_items` | `content_items_select` (≠low) **OR** `read verified items` (≠low) | `read verified items` (≠low) | none — the two predicates are identical |
 | `sense_distractors` | `content_distractors_select` (≠low) **OR** `read verified distractors` (≠low) | `read verified distractors` (≠low) | none — same |
 
-- [ ] **Step 1: Write the failing test — append to `scripts/migration-hygiene.test.ts`**
+- [x] **Step 1: Write the failing test — append to `scripts/migration-hygiene.test.ts`**
 
 ```ts
 /**
@@ -595,12 +595,12 @@ describe('supabase/migrations — policy replacement', () => {
 
 ⚠️ `readFileSync` and `join` must be added to the existing imports at the top of the file — it currently imports `readdirSync` only.
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run scripts/migration-hygiene.test.ts`
 Expected: the first test PASSES (the three real no-ops are grandfathered), and **"leaves exactly one live SELECT policy on each content table" FAILS** with `senses carries 2 read rules: content_senses_select, read all senses`. ⛔ Any other failure means the replay is wrong, not the migrations — fix the test first.
 
-- [ ] **Step 3: Write `supabase/migrations/0011_content_read_policies.sql`**
+- [x] **Step 3: Write `supabase/migrations/0011_content_read_policies.sql`**
 
 ```sql
 -- F-051 — one read rule per content table.
@@ -642,20 +642,20 @@ drop policy if exists "content_distractors_select" on public.sense_distractors;
 commit;
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `npx vitest run scripts/migration-hygiene.test.ts`
 Expected: PASS — every test in the file green, including the four new ones.
 
-- [ ] **Step 5: Mutation-check one assertion**
+- [x] **Step 5: Mutation-check one assertion**
 
 Delete the `drop policy if exists "content_senses_select"` line from `0011` ⇒ "leaves exactly one live SELECT policy on each content table" goes RED **by name**, reporting `senses carries 2 read rules`. Restore the line.
 
-- [ ] **Step 6: Tell Roy the migration is waiting**
+- [x] **Step 6: Tell Roy the migration is waiting**
 
 Append one line to `plan/03-for-roy.md`, in the same shape as the existing items: `0011_content_read_policies.sql` is ready to apply, it changes no row's visibility, and it can ride with whatever else is queued — ⛔ it is not urgent and ⛔ it does not block Task 3, which emits SQL and does not touch the database.
 
-- [ ] **Step 7: Verify and commit**
+- [x] **Step 7: Verify and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
