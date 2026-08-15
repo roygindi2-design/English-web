@@ -680,7 +680,7 @@ git commit -m "loop(DEV): C-XXXX F-051 — one read rule per content table"
 - Consumes: `interface BatchRecord { readonly sense: GeneratedSense; readonly senseIndex: number; … }` from `lib/core/batchRecord.ts:28`; `type RelationType` from `lib/core/contentSchema.ts:31`. The array of passing records is `batch.passing` in `scripts/build-ingest-sql.mjs:107`.
 - Produces: `scoringRowsFor(records: readonly BatchRecord[]): ScoringRows` · `scoringCounts(rows: ScoringRows): ScoringCounts` · `interface ScoringRows` · `interface ExampleRow` · `interface ItemRow` · `interface DistractorRow` · `interface ScoringCounts`.
 
-- [ ] **Step 1: Write the failing test — `lib/core/scoringSeed.test.ts`**
+- [x] **Step 1: Write the failing test — `lib/core/scoringSeed.test.ts`**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -776,12 +776,12 @@ describe('scoringCounts', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/scoringSeed.test.ts`
 Expected: FAIL — `Failed to resolve import "./scoringSeed"` (ENOENT).
 
-- [ ] **Step 3: Write `lib/core/scoringSeed.ts`**
+- [x] **Step 3: Write `lib/core/scoringSeed.ts`**
 
 ```ts
 import type { BatchRecord } from './batchRecord';
@@ -883,12 +883,12 @@ export function scoringCounts(rows: ScoringRows): ScoringCounts {
 }
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `npx vitest run lib/core/scoringSeed.test.ts`
 Expected: PASS — 7 tests green.
 
-- [ ] **Step 5: Emit the second seed file from `scripts/build-ingest-sql.mjs`**
+- [x] **Step 5: Emit the second seed file from `scripts/build-ingest-sql.mjs`**
 
 Add the import beside the three existing ones (`scripts/build-ingest-sql.mjs:49-51`):
 
@@ -987,6 +987,16 @@ scoringLines.push('commit;');
 scoringLines.push('');
 
 writeFileSync(SCORING_OUT, scoringLines.join('\n'), 'utf8');
+```
+
+⚠️ **F-055 (⚪, C-0146) — the `console.log` belongs to section 6, ⛔ not to this block.**
+Step 6 below states the expected output as "the existing five report lines, **then**
+`wrote …0003_scoring_material.sql — …`". Pasting the log call here puts it *before*
+`wrote ${OUT}`, so the literal code and the literal expectation of the next step
+contradict each other. The line below is therefore appended in section 6, immediately
+after `console.log(\`wrote ${OUT}\`)`:
+
+```js
 console.log(
   `wrote ${SCORING_OUT} — ${counts.examples} examples · ${counts.items} items · ${counts.distractors} distractors`,
 );
@@ -994,12 +1004,12 @@ console.log(
 
 ⚠️ The `relation_type` emitted is the **snake_case** value the `check` constraint in `0002_content_bank.sql:108-110` accepts (`semantic` · `orthographic` · `collocational` · `unrelated` · `near_synonym`). `RelationType` already carries exactly those strings — ⛔ do not map or rename them.
 
-- [ ] **Step 6: Run the generator**
+- [x] **Step 6: Run the generator**
 
 Run: `npm run build:ingest`
 Expected: the existing five report lines, then `wrote supabase/seed/0003_scoring_material.sql — N examples · N items · N distractors`. **Record those three numbers**; they are what "~2,400 rows behind a single review" turns out to actually be.
 
-- [ ] **Step 7: Write the failing test — append to `scripts/build-ingest-sql.test.ts`**
+- [x] **Step 7: Write the failing test — append to `scripts/build-ingest-sql.test.ts`**
 
 ```ts
 describe('supabase/seed/0003_scoring_material.sql', () => {
@@ -1047,21 +1057,21 @@ describe('supabase/seed/0003_scoring_material.sql', () => {
 });
 ```
 
-- [ ] **Step 8: Run the whole file and watch it pass**
+- [x] **Step 8: Run the whole file and watch it pass**
 
 Run: `npx vitest run scripts/build-ingest-sql.test.ts`
 Expected: PASS — the pre-existing tests plus the five new ones. ⛔ A red pre-existing test means step 5 touched the `0001` emission; revert that part.
 
-- [ ] **Step 9: Mutation-check two assertions**
+- [x] **Step 9: Mutation-check two assertions**
 
 (a) In `scoringSeed.ts` change `for (const kind of EXAMPLE_KINDS)` to `for (const kind of ['supportive'] as const)` ⇒ "emits both D-022 example kinds" goes RED **by name**, and so does the odd-count assertion in the seed suite.
 (b) In `build-ingest-sql.mjs` change `scoringRowsFor(passing)` to `scoringRowsFor(batches.flatMap((b) => b.records))` ⇒ the committed-vs-fresh test goes RED (rejected rows would have leaked into the seed). ⚠️ If it stays green, **no row is currently rejected** — say so in the report and add a unit assertion in `scoringSeed.test.ts` that the caller's filtering is what excludes them, rather than leaving the claim untested.
 
-- [ ] **Step 10: Tell Roy the seed file is waiting**
+- [x] **Step 10: Tell Roy the seed file is waiting**
 
 Append one line to `plan/03-for-roy.md`: `supabase/seed/0003_scoring_material.sql` applies after `0001_content_batches.sql`, it is re-runnable, and until it is applied the scoring tables stay empty — ⛔ which is not a bug and ⛔ not a reason to open the sentences deck.
 
-- [ ] **Step 11: Verify and commit**
+- [x] **Step 11: Verify and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build

@@ -173,3 +173,47 @@ describe('build-ingest-sql', () => {
     expect(emitted).toEqual([...emitted].sort());
   });
 });
+
+describe('supabase/seed/0003_scoring_material.sql', () => {
+  const FRESH_SCORING = join(OUT_DIR, '0003_scoring_material.sql');
+  const COMMITTED_SCORING = 'supabase/seed/0003_scoring_material.sql';
+  const fresh = (): string => {
+    run();
+    return readFileSync(FRESH_SCORING, 'utf8');
+  };
+
+  it('inserts into all three scoring tables', () => {
+    const sql = fresh();
+    expect(sql).toContain('insert into public.sense_examples');
+    expect(sql).toContain('insert into public.sense_items');
+    expect(sql).toContain('insert into public.sense_distractors');
+  });
+
+  it('emits exactly two examples per PASSING sense — D-022, measured against 0001, ⛔ not a literal', () => {
+    const sql = fresh();
+    // 0001 states "N of M rows pass the gate" per batch. Summing N is the passing count,
+    // measured from the sibling output — ⛔ never restated here, where a content tick
+    // would redden it for growing.
+    const passing = [...readFileSync(FRESH, 'utf8').matchAll(/— (\d+) of \d+ rows pass the gate/g)]
+      .reduce((total, m) => total + Number(m[1]), 0);
+    expect(passing).toBeGreaterThanOrEqual(ROWS_FLOOR);
+    expect(Number(/(\d+) examples/.exec(sql)?.[1] ?? -1)).toBe(passing * 2);
+  });
+
+  it('joins on (headword, pos, sense_index) and ⛔ invents no id', () => {
+    const sql = fresh();
+    expect(sql).toContain('join public.senses s on s.word_id = w.id and s.sense_index = i.sense_index');
+    expect(sql).not.toContain('gen_random_uuid()');
+  });
+
+  it('is re-runnable — every insert names its unique key in an on-conflict clause', () => {
+    const sql = fresh();
+    expect(sql).toContain('on conflict (sense_id, kind) do nothing;');
+    expect(sql).toContain('on conflict (sense_id, item_index) do nothing;');
+    expect(sql).toContain('on conflict (sense_id, distractor) do nothing;');
+  });
+
+  it('leaves the committed seed identical to a fresh run — staleness is red (F-048ⓑ)', () => {
+    expect(readFileSync(COMMITTED_SCORING, 'utf8')).toBe(fresh());
+  });
+});
