@@ -113,10 +113,43 @@ export function citedFindings(cell: string): string[] {
   return [...new Set(cell.match(FINDING_REF) ?? [])];
 }
 
+const TASK_REF = /\bT-\d{3}\b/g;
+
+/**
+ * The declared-blocker marker. ⛔ Everything before it is prose and is ⛔ not read.
+ *
+ * Measured C-0158, on this function's own first draft: reading the whole cell reported
+ * `T-035 waits on T-038 (done)` — but `T-035` names `T-038`/`T-039` as the *evidence* that
+ * half its scope is already delivered, ⛔ not as what it waits for. A citation in prose
+ * cannot be told apart from a dependency, so the dependency is declared instead of guessed.
+ */
+export const BLOCKER_MARKER = 'חסם:';
+
+/**
+ * Task IDs a ⛔ cell declares as its blockers, minus the row's own ID. A cell with no
+ * marker declares no task blocker — those rows name a human or the PM as the owner, and
+ * `eligibleTaskIds` already keeps every ⛔ row out of the queue either way.
+ *
+ * The self-exclusion is not cosmetic: `T-043`'s prose lists the five rows it releases, so a
+ * self-citation would turn that row into its own blocker the moment it is marked ✅.
+ */
+export function citedTasks(cell: string, selfId: string): string[] {
+  const at = cell.indexOf(BLOCKER_MARKER);
+  if (at === -1) return [];
+  const declared = cell.slice(at + BLOCKER_MARKER.length);
+  return [...new Set(declared.match(TASK_REF) ?? [])].filter((id) => id !== selfId);
+}
+
 export interface StaleBlock {
   readonly taskId: string;
   readonly findingId: string;
   readonly findingState: TaskState;
+}
+
+export interface StaleTaskBlock {
+  readonly taskId: string;
+  readonly blockerId: string;
+  readonly blockerState: TaskState;
 }
 
 /**
@@ -137,6 +170,40 @@ export function staleBlocks(
     for (const findingId of citedFindings(cell)) {
       const state = findingStates.get(findingId);
       if (state === 'done') out.push({ taskId: row.id, findingId, findingState: state });
+    }
+  }
+  return out;
+}
+
+/**
+ * The same rule as `staleBlocks`, aimed at the other kind of blocker a ⛔ cell can name:
+ * another task. Measured C-0158 — eight ⬜ rows advertised themselves as Dev-eligible while
+ * every one of them waited on `T-043` (source files, a human action) or on a missing PM
+ * spec, and five consecutive cycles reported the same phantom queue. Writing the blocker
+ * into the cell fixes today's lie; this function is what stops it from becoming tomorrow's,
+ * because a blocker that has been delivered stops being invisible the moment it flips.
+ *
+ * `done` and `cancelled` are the two states that lift a block. `awaiting-review` does ⛔ not:
+ * a task in the Critic's queue has not shipped yet.
+ */
+export function staleTaskBlocks(tasks: readonly RowShape[]): StaleTaskBlock[] {
+  const states = new Map<string, TaskState>();
+  for (const row of tasks) {
+    if (!row.ok) continue;
+    const cell = row.cells[TASK_STATUS_INDEX];
+    if (cell !== undefined) states.set(row.id, classifyStatus(cell));
+  }
+
+  const out: StaleTaskBlock[] = [];
+  for (const row of tasks) {
+    if (!row.ok) continue;
+    const cell = row.cells[TASK_STATUS_INDEX];
+    if (cell === undefined || classifyStatus(cell) !== 'blocked') continue;
+    for (const blockerId of citedTasks(cell, row.id)) {
+      const blockerState = states.get(blockerId);
+      if (blockerState === 'done' || blockerState === 'cancelled') {
+        out.push({ taskId: row.id, blockerId, blockerState });
+      }
     }
   }
   return out;

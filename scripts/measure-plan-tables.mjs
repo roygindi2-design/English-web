@@ -33,6 +33,7 @@ const {
   rowShape,
   classifyStatus,
   staleBlocks,
+  staleTaskBlocks,
   eligibleTaskIds,
   TASK_COLUMNS,
   FINDING_COLUMNS,
@@ -63,6 +64,7 @@ const badTasks = taskRows.filter((r) => !r.ok);
 const badFindings = findingRows.filter((r) => !r.ok);
 const eligible = eligibleTaskIds(taskRows);
 const stale = staleBlocks(taskRows, findingStates);
+const staleTasks = staleTaskBlocks(taskRows);
 
 const shapeLine = (r) => `| \`${r.id}\` | ${r.cells.length} | ${r.expected} |`;
 const report = [
@@ -89,6 +91,14 @@ const report = [
     ? '⛔ אין.'
     : stale.map((s) => `- \`${s.taskId}\` מצטטת \`${s.findingId}\`, שסטטוסה \`done\``).join('\n'),
   '',
+  '## חסמים ⛔ שמצטטים משימה שכבר נמסרה',
+  '',
+  staleTasks.length === 0
+    ? '⛔ אין.'
+    : staleTasks
+        .map((s) => `- \`${s.taskId}\` ממתינה ל-\`${s.blockerId}\`, שסטטוסה \`${s.blockerState}\``)
+        .join('\n'),
+  '',
 ].join('\n');
 
 writeFileSync(OUT, report, 'utf8');
@@ -98,4 +108,8 @@ console.log(`findings: ${findingRows.length} rows, ${badFindings.length} malform
 console.log(`eligible: ${eligible.length === 0 ? 'none' : eligible.join(' ')}`);
 if (stale.length === 0) console.log('stale blockers: none');
 for (const s of stale) console.log(`stale blockers: ${s.taskId} cites ${s.findingId} (closed)`);
+if (staleTasks.length === 0) console.log('stale task blockers: none');
+for (const s of staleTasks) {
+  console.log(`stale task blockers: ${s.taskId} waits on ${s.blockerId} (${s.blockerState})`);
+}
 console.log(`wrote ${OUT}`);

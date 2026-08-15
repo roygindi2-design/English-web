@@ -53,7 +53,9 @@ describe('rowShape', () => {
 import {
   classifyStatus,
   citedFindings,
+  citedTasks,
   staleBlocks,
+  staleTaskBlocks,
   eligibleTaskIds,
   TASK_STATUS_INDEX,
   FINDING_STATUS_INDEX,
@@ -127,6 +129,83 @@ describe('staleBlocks', () => {
   it('ignores a non-blocked row that happens to mention a closed finding', () => {
     const findings = new Map<string, TaskState>([['F-020', 'done']]);
     expect(staleBlocks([taskRow('T-070', '✅ נסגר — סוגר את F-020')], findings)).toEqual([]);
+  });
+});
+
+describe('citedTasks', () => {
+  it('reads only what the cell declares after the חסם: marker', () => {
+    expect(
+      citedTasks('⛔ חסום — `data/ngsl-1.2.csv` חסר. חסם: **פעולה אנושית T-043**', 'T-007'),
+    ).toEqual(['T-043']);
+    expect(citedTasks('⛔ חסום. חסם: **T-037 · T-043**', 'T-036')).toEqual(['T-037', 'T-043']);
+  });
+
+  it('ignores a task named before the marker — prose is evidence, not dependency', () => {
+    // The live T-035 case, measured C-0158: it names T-038/T-039 as proof that half its
+    // scope already shipped. Reading the whole cell called those two its blockers.
+    const cell = '⛔ החצי הסכמתי נמסר ב-T-038/T-039 (אושרו C-0011). חסם: **T-037**';
+    expect(citedTasks(cell, 'T-035')).toEqual(['T-037']);
+  });
+
+  it('returns nothing for a cell that declares no marker at all', () => {
+    expect(citedTasks('⛔ **חסום — פעולה אנושית**', 'T-043')).toEqual([]);
+    expect(citedTasks('⛔ חסומה — F-052 (אנטומיית מסך חסרה)', 'T-066')).toEqual([]);
+  });
+
+  it('never reports the row as its own blocker', () => {
+    expect(citedTasks('⛔ חסום. חסם: **T-043**', 'T-043')).toEqual([]);
+  });
+
+  it('does not report the same task twice', () => {
+    expect(citedTasks('⛔ חסום. חסם: T-043 ועוד T-043', 'T-007')).toEqual(['T-043']);
+  });
+});
+
+describe('staleTaskBlocks', () => {
+  const blocked = (id: string, blockers: string) => taskRow(id, `⛔ חסום. חסם: ${blockers}`);
+
+  it('flags a ⛔ cell whose declared blocker is finished — the block has already lifted', () => {
+    const rows = [blocked('T-007', '**T-043**'), taskRow('T-043', '✅ הקבצים נחתו')];
+    expect(staleTaskBlocks(rows)).toEqual([
+      { taskId: 'T-007', blockerId: 'T-043', blockerState: 'done' },
+    ]);
+  });
+
+  it('flags a declared blocker that was cancelled — a dead blocker blocks nothing', () => {
+    const rows = [blocked('T-036', 'T-008'), taskRow('T-008', '🚫 בוטלה')];
+    expect(staleTaskBlocks(rows)).toEqual([
+      { taskId: 'T-036', blockerId: 'T-008', blockerState: 'cancelled' },
+    ]);
+  });
+
+  it('stays silent while the declared blocker is still blocked or open', () => {
+    const rows = [
+      blocked('T-007', 'T-043'),
+      taskRow('T-043', '⛔ **חסום — פעולה אנושית**'),
+      blocked('T-036', 'T-037'),
+      taskRow('T-037', '⬜'),
+    ];
+    expect(staleTaskBlocks(rows)).toEqual([]);
+  });
+
+  it('stays silent for a blocker in review — 🟣 is not yet delivered', () => {
+    const rows = [blocked('T-036', 'T-037'), taskRow('T-037', '🟣 ממתין לסקירה')];
+    expect(staleTaskBlocks(rows)).toEqual([]);
+  });
+
+  it('stays silent for an unknown task rather than guessing it closed', () => {
+    expect(staleTaskBlocks([blocked('T-007', 'T-999')])).toEqual([]);
+  });
+
+  it('ignores a row that is not blocked but declares a finished task', () => {
+    const rows = [taskRow('T-070', '✅ נסגרה. חסם: T-043'), taskRow('T-043', '✅')];
+    expect(staleTaskBlocks(rows)).toEqual([]);
+  });
+
+  it('never reads a malformed row, as either side of the pair', () => {
+    const malformed: RowShape = { id: 'T-042', cells: ['T-042'], expected: 8, ok: false };
+    expect(staleTaskBlocks([malformed, taskRow('T-043', '✅')])).toEqual([]);
+    expect(staleTaskBlocks([blocked('T-007', 'T-042'), malformed])).toEqual([]);
   });
 });
 
