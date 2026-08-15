@@ -48,3 +48,51 @@ describe('plan/50-tasks.md — the task register', () => {
     expect(numbers).toEqual(expected);
   });
 });
+
+/**
+ * The same rule, one register over — `plan/30-architecture.md` § technical debt.
+ *
+ * The task register above is machine-checked since F-025; the debt register never
+ * was, and it collided anyway: `TD-28` was minted twice — C-0102 for `elapsed_ms`
+ * (`components/StudyDeckScreen`) and C-0145 for migration `0011` not yet applied.
+ * Two unrelated debts under one ID is not cosmetic: a journal line reading
+ * "TD-28 נסגר" closes an ambiguous item, and a `grep -n TD-28` hands the next
+ * agent someone else's debt. Measured C-0150: 31 rows, exactly one collision.
+ */
+const ARCHITECTURE = readFileSync('plan/30-architecture.md', 'utf8');
+
+/** Only the ID cell of a real table row — `| TD-28 | **…** | …`. */
+const DEBT_ROW_ID = /^\|\s*(TD-\d{1,3})\s*\|/gm;
+
+function debtIds(): string[] {
+  // Filtered rather than asserted, for the same noUncheckedIndexedAccess reason
+  // as `taskIds()`: an unmatched shape becomes a missing row, never `undefined`.
+  return [...ARCHITECTURE.matchAll(DEBT_ROW_ID)]
+    .map((m) => m[1])
+    .filter((id): id is string => id !== undefined);
+}
+
+describe('plan/30-architecture.md — the technical-debt register', () => {
+  it('has rows at all (guards the regex, not just the file)', () => {
+    // Without this, a change to the table format turns every assertion below
+    // into a vacuous pass over an empty list.
+    expect(debtIds().length).toBeGreaterThan(20);
+  });
+
+  it('mints every debt ID exactly once', () => {
+    const seen = new Map<string, number>();
+    for (const id of debtIds()) seen.set(id, (seen.get(id) ?? 0) + 1);
+    const duplicates = [...seen.entries()].filter(([, n]) => n > 1).map(([id, n]) => `${id}×${n}`);
+    expect(duplicates, 'two debts under one ID make "TD-nn נסגר" ambiguous').toEqual([]);
+  });
+
+  it('leaves no gap in the ID sequence — a gap means an ID was lost, not freed', () => {
+    // A closed debt keeps its row and its ID (see the ✅ rows); IDs are never
+    // recycled, because a plan written two weeks ago still points at the old one.
+    const numbers = debtIds()
+      .map((id) => Number(id.slice(3)))
+      .sort((a, b) => a - b);
+    const expected = Array.from({ length: numbers.length }, (_, i) => i + 1);
+    expect(numbers).toEqual(expected);
+  });
+});
