@@ -152,12 +152,12 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </div>
 
         {offline && (
-          <p role="status" className="rounded-xl bg-amber-50 px-4 py-3 text-base text-amber-900">
+          <p role="status" className="rounded-md bg-amber-50 px-4 py-3 text-base text-amber-900">
             צריך חיבור כדי להיכנס
           </p>
         )}
         {notice && (
-          <p role="status" className="rounded-xl bg-sky-50 px-4 py-3 text-base text-sky-900">
+          <p role="status" className="rounded-md bg-sky-50 px-4 py-3 text-base text-sky-900">
             {notice}
           </p>
         )}
@@ -201,7 +201,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                 onClick={() => setPasswordVisible((visible) => !visible)}
                 aria-pressed={passwordVisible}
                 aria-label={passwordToggleLabel(passwordVisible)}
-                className="absolute inset-y-0 right-0 flex min-h-touch w-14 items-center justify-center rounded-xl text-base font-medium text-ink-muted active:text-ink"
+                className="absolute inset-y-0 right-0 flex min-h-touch w-14 items-center justify-center rounded-lg text-base font-medium text-ink-muted active:text-ink"
               >
                 {passwordVisible ? 'הסתר' : 'הצג'}
               </button>
@@ -218,7 +218,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           />
 
           {error && (
-            <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-base text-red-800">
+            <p role="alert" className="rounded-md bg-red-50 px-4 py-3 text-base text-red-800">
               {error}
               {showLoginLink && (
                 <>
@@ -244,7 +244,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
             form="auth-form"
             data-primary-action="true"
             disabled={busy}
-            className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+            className="flex w-full min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
           >
             {busy ? copy.busy : copy.submit}
           </button>

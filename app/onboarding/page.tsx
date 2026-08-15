@@ -51,7 +51,7 @@ export default async function OnboardingPage() {
       <form action="/logout" method="post">
         <button
           type="submit"
-          className="flex w-full min-h-touch items-center justify-center rounded-xl border border-border-strong bg-surface-raised px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
+          className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong bg-surface-raised px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
         >
           יציאה מהחשבון
         </button>

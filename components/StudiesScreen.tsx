@@ -25,7 +25,7 @@ export default function StudiesScreen({ headline }: { headline: string }): React
       <Link
         href="/cards"
         data-primary-action="true"
-        className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+        className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
       >
         התחלת מנה יומית
       </Link>

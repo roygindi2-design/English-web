@@ -209,9 +209,9 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <p className="sr-only" role="status">
             {LOADING_HE}
           </p>
-          <div aria-hidden className="h-40 rounded-xl bg-surface-raised" />
+          <div aria-hidden className="h-40 rounded-2xl bg-surface-raised" />
           <div aria-hidden className="h-6 w-2/3 rounded-lg bg-surface-raised" />
-          <div aria-hidden className="h-12 rounded-xl bg-surface-raised" />
+          <div aria-hidden className="h-12 rounded-2xl bg-surface-raised" />
         </div>
       )}
 
@@ -235,7 +235,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <a
             href="/login"
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {SIGN_IN_AGAIN_HE}
           </a>
@@ -248,7 +248,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <Link
             href={deck === 'due' ? '/study?deck=unknown' : '/cards'}
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
           >
             {deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE}
           </Link>
@@ -257,7 +257,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
             type="button"
             onClick={() => void load()}
             data-primary-action="true"
-            className="flex w-full min-h-touch items-center justify-center rounded-xl border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
+            className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
           >
             {RETRY_HE}
           </button>

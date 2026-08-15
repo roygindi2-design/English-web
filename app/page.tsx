@@ -39,7 +39,7 @@ export default function HomePage() {
             <li key={point} className="flex items-start gap-3">
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-surface text-sm font-bold text-brand-on"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-surface text-sm font-bold text-brand-on"
               >
                 ✓
               </span>
@@ -72,7 +72,7 @@ export default function HomePage() {
           <ul className="mt-4 flex flex-col gap-2">
             {preview.options.map((option) => (
               <li key={option}>
-                <span className="flex min-h-touch items-center rounded-xl border border-border-subtle px-4 text-base">
+                <span className="flex min-h-touch items-center rounded-md border border-border-subtle px-4 text-base">
                   {option}
                 </span>
               </li>
@@ -87,7 +87,7 @@ export default function HomePage() {
         <Link
           href="/signup"
           data-primary-action="true"
-          className="flex min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
         >
           בואו נתחיל
         </Link>

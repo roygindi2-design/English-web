@@ -167,7 +167,7 @@ export default function CardsScreen(): React.JSX.Element {
                 <Link
                   href={entry.href}
                   data-primary-action={entry.key === 'due' ? 'true' : undefined}
-                  className="flex min-h-touch items-center justify-between gap-3 rounded-xl border border-border-strong px-5 py-3 text-ink active:opacity-90"
+                  className="flex min-h-touch items-center justify-between gap-3 rounded-lg border border-border-strong px-5 py-3 text-ink active:opacity-90"
                 >
                   {body}
                 </Link>
@@ -181,7 +181,7 @@ export default function CardsScreen(): React.JSX.Element {
                   type="button"
                   aria-disabled="true"
                   data-primary-action={entry.key === 'due' ? 'true' : undefined}
-                  className="flex w-full min-h-touch items-center justify-between gap-3 rounded-xl border border-border-subtle px-5 py-3 text-ink-muted"
+                  className="flex w-full min-h-touch items-center justify-between gap-3 rounded-lg border border-border-subtle px-5 py-3 text-ink-muted"
                 >
                   {body}
                 </button>

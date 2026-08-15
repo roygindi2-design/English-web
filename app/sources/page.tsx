@@ -30,7 +30,7 @@ export default function SourcesPage() {
         {DATA_SOURCES.map((source) => (
           <li
             key={source.id}
-            className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-raised p-4"
+            className="flex flex-col gap-2 rounded-2xl border border-border-subtle bg-surface-raised p-4"
           >
             <h2 className="text-base font-semibold text-ink">
               <EnWord>{source.name}</EnWord>

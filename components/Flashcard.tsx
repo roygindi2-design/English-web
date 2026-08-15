@@ -124,11 +124,11 @@ export default function Flashcard({
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="go"
-              className="min-h-touch rounded-xl border border-border-strong bg-surface-raised px-4 text-lg text-ink"
+              className="min-h-touch rounded-lg border border-border-strong bg-surface-raised px-4 text-lg text-ink"
             />
             <button
               type="submit"
-              className="min-h-touch rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+              className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
             >
               בדיקה
             </button>
@@ -140,7 +140,7 @@ export default function Flashcard({
             type="button"
             onClick={reveal}
             data-reveal
-            className="min-h-touch rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             הצג תשובה
           </button>
@@ -170,7 +170,7 @@ export default function Flashcard({
               type="button"
               onClick={() => onGrade(grade ?? 'again')}
               data-continue
-              className="min-h-touch rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+              className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
             >
               המשך
             </button>
@@ -183,7 +183,7 @@ export default function Flashcard({
               type="button"
               onClick={() => onGrade('again')}
               data-grade="again"
-              className="min-h-touch rounded-xl border-2 border-danger px-4 py-3 text-base font-semibold text-danger active:opacity-90"
+              className="min-h-touch rounded-lg border-2 border-danger px-4 py-3 text-base font-semibold text-danger active:opacity-90"
             >
               <span aria-hidden="true">✕ </span>לא ידעתי
             </button>
@@ -191,7 +191,7 @@ export default function Flashcard({
               type="button"
               onClick={() => onGrade('good')}
               data-grade="good"
-              className="min-h-touch rounded-xl border-2 border-success px-4 py-3 text-base font-semibold text-success active:opacity-90"
+              className="min-h-touch rounded-lg border-2 border-success px-4 py-3 text-base font-semibold text-success active:opacity-90"
             >
               <span aria-hidden="true">✓ </span>ידעתי
             </button>

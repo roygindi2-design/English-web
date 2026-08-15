@@ -30,7 +30,7 @@ export interface LatinFieldProps {
 }
 
 const BASE_INPUT =
-  'min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-left text-lg text-ink outline-none focus:border-brand';
+  'min-h-touch w-full rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-left text-lg text-ink outline-none focus:border-brand';
 
 export default function LatinField({
   name,

@@ -228,7 +228,7 @@ Expected: all five green. `check:mobile` is included because a 3px outline with 
 | `app/dev/onboarding/page.tsx:40` | sign-out submit button (fixture) | ⓐ | `rounded-lg` |
 | `components/TabBar.tsx:212` | sheet, `rounded-t-2xl` | ⓔ | **unchanged** |
 
-- [ ] **Step 1: Write the failing guard**
+- [x] **Step 1: Write the failing guard**
 
 Create `scripts/radius-hygiene.test.ts`:
 
@@ -320,43 +320,43 @@ describe('radius hygiene (T-068 · constitution § 3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and read the fix list**
+- [x] **Step 2: Run it and read the fix list**
 
 Run: `npx vitest run scripts/radius-hygiene.test.ts`
 Expected: FAIL on *uses only the three radii*, with an array of **38** entries — 37 × `rounded-xl` plus `app/page.tsx: rounded-full`. Compare that list against the mapping table above; if a file appears in one and not the other, ⛔ stop and reconcile before editing anything.
 
-- [ ] **Step 3: Rewrite the components (batch 1 of 3)**
+- [x] **Step 3: Rewrite the components (batch 1 of 3)**
 
 `components/Flashcard.tsx` · `components/InstallPrompt.tsx` · `components/OnboardingForm.tsx` · `components/AuthForm.tsx` · `components/LatinField.tsx` — per the mapping table. ⛔ Radius utilities only: no other token on any of those lines changes.
 
 Run: `npx vitest run scripts/radius-hygiene.test.ts` — expect the offender list to shrink to 21.
 
-- [ ] **Step 4: Rewrite the components (batch 2 of 3)**
+- [x] **Step 4: Rewrite the components (batch 2 of 3)**
 
 `components/CardDeck.tsx` · `components/StudiesScreen.tsx` · `components/RegisteredAddress.tsx` · `components/StudyDeckScreen.tsx` · `components/CardsScreen.tsx`.
 
 Run: `npx vitest run scripts/radius-hygiene.test.ts` — expect the offender list to shrink to 11.
 
-- [ ] **Step 5: Rewrite the app routes (batch 3 of 3)**
+- [x] **Step 5: Rewrite the app routes (batch 3 of 3)**
 
 `app/loading.tsx` · `app/error.tsx` · `app/global-error.tsx` · `app/not-found.tsx` · `app/page.tsx` (three, including the `rounded-full` badge) · `app/sources/page.tsx` · `app/onboarding/page.tsx` · `app/dev/onboarding/page.tsx`.
 
 Run: `npx vitest run scripts/radius-hygiene.test.ts`
 Expected: PASS, 5 tests, empty offender list.
 
-- [ ] **Step 6: Prove the guard can fail (mutation)**
+- [x] **Step 6: Prove the guard can fail (mutation)**
 
 1. Change one `rounded-lg` back to `rounded-xl` ⇒ re-run ⇒ expect FAIL naming that exact `file: rounded-xl`.
 2. Restore. Add `rounded-full` to a different file ⇒ re-run ⇒ expect FAIL naming it.
 3. Restore. Put the string `rounded-xl` inside a `//` comment ⇒ re-run ⇒ expect **PASS** (this is the comment-stripping claim, and it has to be proved in the direction that would otherwise be a false failure).
 4. Restore. Re-run ⇒ 5 pass. Record all three outcomes in the tick report.
 
-- [ ] **Step 7: Check the sibling guards still hold**
+- [x] **Step 7: Check the sibling guards still hold**
 
 Run: `npx vitest run components/ app/`
 Expected: PASS. Several component tests assert on class strings (`ActionBar.test.ts`, `LatinField.test.ts`, `WordBank.test.ts`); if one of them pinned `rounded-xl`, it fails here and the **test** is what gets corrected — the constitution is frozen and does not bend to a test that encoded the old value.
 
-- [ ] **Step 8: Update the register, verify and commit**
+- [x] **Step 8: Update the register, verify and commit**
 
 In `plan/50-tasks.md`, correct the stale count in the T-068 row: 38 occurrences in 22 files (37 × `rounded-xl` + 1 × `rounded-full`), measured 2026-08-14, ⛔ not the C-0105 numbers.
 

@@ -100,7 +100,7 @@ export default function OnboardingForm() {
           {DAILY_MINUTES_OPTIONS.map((option) => (
             <label
               key={option}
-              className="flex min-h-touch cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink"
+              className="flex min-h-touch cursor-pointer items-center gap-3 rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink"
             >
               <input
                 type="radio"
@@ -128,7 +128,7 @@ export default function OnboardingForm() {
           value={examDate}
           min={todayIso}
           onChange={(event) => setExamDate(event.target.value)}
-          className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
+          className="min-h-touch w-full rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
         />
         {fieldErrors.examDate && <span className="text-base text-danger">{fieldErrors.examDate}</span>}
       </label>
@@ -154,7 +154,7 @@ export default function OnboardingForm() {
           autoComplete="off"
           enterKeyHint="next"
           onChange={(event) => setInstitution(event.target.value)}
-          className="min-h-touch w-full rounded-xl border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
+          className="min-h-touch w-full rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink outline-none focus:border-brand"
         />
       </label>
 
@@ -194,7 +194,7 @@ export default function OnboardingForm() {
           form="onboarding-form"
           data-primary-action="true"
           disabled={saving}
-          className="flex w-full min-h-touch items-center justify-center rounded-xl bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+          className="flex w-full min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
         >
           {saving ? 'שומר…' : ONBOARDING_SUBMIT_HE}
         </button>

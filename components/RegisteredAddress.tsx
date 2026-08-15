@@ -23,7 +23,7 @@ export default function RegisteredAddress({ email }: { readonly email: string })
   return (
     <div
       data-registered-email
-      className="flex flex-col gap-2 rounded-xl border border-border-strong bg-surface-raised px-4 py-3"
+      className="flex flex-col gap-2 rounded-2xl border border-border-strong bg-surface-raised px-4 py-3"
     >
       <p className="text-base text-ink-muted">
         {REGISTERED_ADDRESS_LABEL_HE}{' '}

@@ -122,7 +122,7 @@ export default function InstallPrompt() {
           <button
             type="button"
             onClick={install}
-            className="flex min-h-touch flex-1 items-center justify-center rounded-xl bg-brand-surface px-4 text-base font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch flex-1 items-center justify-center rounded-lg bg-brand-surface px-4 text-base font-semibold text-brand-on active:opacity-90"
           >
             הוסף למסך הבית
           </button>
@@ -131,7 +131,7 @@ export default function InstallPrompt() {
         <button
           type="button"
           onClick={dismiss}
-          className="flex min-h-touch min-w-touch items-center justify-center rounded-xl border border-border-strong px-4 text-base font-medium text-ink active:opacity-90"
+          className="flex min-h-touch min-w-touch items-center justify-center rounded-lg border border-border-strong px-4 text-base font-medium text-ink active:opacity-90"
         >
           לא עכשיו
         </button>
