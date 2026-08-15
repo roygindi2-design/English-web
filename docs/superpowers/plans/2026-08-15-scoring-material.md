@@ -40,7 +40,7 @@
 - Consumes: `gateSense(input: GeneratedSense, opts: GateOptions): GateResult` and `type GateResult = { readonly ok: boolean; readonly reasons: readonly string[] }` from `lib/core/contentSchema.ts:282,57`. `parseBatchFile(text: string): BatchRecord[]` and `interface BatchRecord { readonly sense: GeneratedSense; … }` from `lib/core/batchRecord.ts:174,28`.
 - Produces: `reasonFamily(reason: string): string` · `summarizeGate(outcomes: readonly GateOutcome[], counts: GatedCounts): GateReport` · `formatGateReport(report: GateReport): string` · `interface GateOutcome` · `interface GatedCounts` · `interface GateReport`. Task 3 consumes none of these; they exist so the number D-035 asks for is produced by tested code rather than by a `console.log`.
 
-- [ ] **Step 1: Write the failing test — `lib/core/gateReport.test.ts`**
+- [x] **Step 1: Write the failing test — `lib/core/gateReport.test.ts`**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -123,7 +123,9 @@ describe('summarizeGate', () => {
   });
 
   it('reports zero rejections as an empty histogram — ⛔ "no rejects" is a measurement, not a missing report', () => {
-    const report = summarizeGate([OUTCOMES[0]], { sentencesGated: 2, itemStemsGated: 3 });
+    // `.slice(0, 1)` and ⛔ not `[OUTCOMES[0]]`: noUncheckedIndexedAccess types the
+    // index access as `GateOutcome | undefined`. Same single passing row either way.
+    const report = summarizeGate(OUTCOMES.slice(0, 1), { sentencesGated: 2, itemStemsGated: 3 });
     expect(report.rowsRejected).toBe(0);
     expect(report.reasonHistogram).toEqual([]);
   });
@@ -145,12 +147,12 @@ describe('formatGateReport', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/gateReport.test.ts`
 Expected: FAIL — `Failed to resolve import "./gateReport"` (ENOENT). ⛔ Do not proceed on any other failure message.
 
-- [ ] **Step 3: Write `lib/core/gateReport.ts`**
+- [x] **Step 3: Write `lib/core/gateReport.ts`**
 
 ```ts
 /**
@@ -203,7 +205,9 @@ export function reasonFamily(reason: string): string {
   const generalized = reason
     .replace(/^example (supportive|neutral)\b/, 'example')
     .replace(/^item \d+\b/, 'item');
-  const [head] = generalized.split('"');
+  // `?? generalized` is unreachable in practice — String.split always yields index 0 —
+  // and exists only because tsconfig sets noUncheckedIndexedAccess. ⛔ no `!` assertion.
+  const head = generalized.split('"')[0] ?? generalized;
   const trimmed = head.replace(/\s+on\s*$/, '').replace(/[\s:]+$/, '').trim();
   return trimmed === '' ? generalized.trim() : trimmed;
 }
@@ -271,12 +275,12 @@ export function formatGateReport(report: GateReport): string {
 }
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `npx vitest run lib/core/gateReport.test.ts`
-Expected: PASS — 12 tests green.
+Expected: PASS — 11 tests green (4 `reasonFamily` + 5 `summarizeGate` + 2 `formatGateReport`).
 
-- [ ] **Step 5: Write `scripts/measure-gate.mjs`**
+- [x] **Step 5: Write `scripts/measure-gate.mjs`**
 
 The `registerHooks` preamble is copied **verbatim** from `scripts/build-ingest-sql.mjs:27-47` — ⛔ do not re-derive it, and ⛔ do not add a build step or a dependency.
 
@@ -368,7 +372,7 @@ for (const entry of report.reasonHistogram) console.log(`  ${entry.count} × ${e
 console.log(`wrote ${OUT}`);
 ```
 
-- [ ] **Step 6: Add the npm script and run it for real**
+- [x] **Step 6: Add the npm script and run it for real**
 
 Add to `package.json` `scripts`, after `"measure:sense"`:
 
@@ -379,7 +383,7 @@ Add to `package.json` `scripts`, after `"measure:sense"`:
 Run: `npm run measure:gate`
 Expected: it prints the four lines above and writes `docs/gate-recheck.md`. **Record the printed reject count in the commit message and in `plan/30-architecture.md` — that number is condition ⓑ of D-035.** ⛔ If any row is rejected, it is reported and left alone; ⛔ repairing content is a Content-agent tick.
 
-- [ ] **Step 7: Write the staleness test — `scripts/measure-gate.test.ts`**
+- [x] **Step 7: Write the staleness test — `scripts/measure-gate.test.ts`**
 
 Same shape as `scripts/build-ingest-sql.test.ts` (F-048ⓑ): run the generator into a throwaway directory, assert against *that*, then assert the committed file is byte-identical. A report that has fallen behind `data/generated/` must be a red test, ⛔ not a file that silently repairs itself on the next run.
 
@@ -436,19 +440,19 @@ describe('scripts/measure-gate.mjs', () => {
 });
 ```
 
-- [ ] **Step 8: Run it and watch it pass**
+- [x] **Step 8: Run it and watch it pass**
 
 Run: `npx vitest run scripts/measure-gate.test.ts`
 Expected: PASS — 4 tests green. If the fourth fails, `npm run measure:gate` was not re-run after the last content tick; run it, commit the report, re-run.
 
-- [ ] **Step 9: Mutation-check two assertions**
+- [x] **Step 9: Mutation-check two assertions**
 
 Each mutation is reverted immediately after the observation. An assertion that stays green under its mutation is measuring nothing — fix the assertion in the same step.
 
 (a) In `gateReport.ts` change `rowsPassed: outcomes.length - rejectedRows.length` to `rowsPassed: outcomes.length` ⇒ `summarizeGate` "counts rows read, passed and rejected" goes RED **by name**.
 (b) In `measure-gate.mjs` change `sentencesGated += Object.keys(record.sense.examples).length` to `+= 1` ⇒ the "two example sentences per row" test goes RED **by name**.
 
-- [ ] **Step 10: Verify and commit**
+- [x] **Step 10: Verify and commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
