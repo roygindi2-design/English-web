@@ -96,11 +96,25 @@ export default function CardDeck({
 
   if (remaining.length === 0) {
     return (
-      // ⛔ NOT the finish screen. T-055 is blocked on F-032 — the PM has not decided what
-      // the end of a session says, and a deck that invented a streak or a score would be
-      // answering a design question nobody asked it. A heading and the way out, no more.
+      // The finish state — T-055, § 4.2ו («בסוף המחזור מסך סיום» · «יוצאים — מסך הסיום,
+      // ומשם חזרה לבורר» · «המילה האחרונה — מסך סיום ולא מסך לבן»).
+      //
+      // Two decisions here are quotations, ⛔ not taste:
+      //
+      // 1. **The deck says which deck it was, using the two strings already in this file.**
+      //    The scrolling header carries «מנת היום» or the D-033 practice notice; dropping
+      //    both at remaining=0 made the two decks end on one identical screen, and D-033's
+      //    promise is required to hold on the screen the learner is looking at. ⛔ No new
+      //    sentence is minted: T-055 says «טקסט קיים בלבד», so this reuses the header's own.
+      //
+      // 2. **One way out, and it goes to the בורר.** § 4.2ו q6 fixes the exit as `/cards`.
+      //    ⛔ No count, no streak, no score, no readiness (`לא בתחולה` · T-032) — the finish
+      //    state is a closure, and a number here would be a claim no decision makes.
       <section className="flex flex-col gap-4" data-card-deck={deck} data-deck-done>
-        <h1 className="text-2xl font-bold text-ink">סיימת</h1>
+        <p className="text-base text-ink-muted">
+          {deck === 'unknown' ? 'תרגול — לא משנה את מועד החזרה' : 'מנת היום'}
+        </p>
+        <h1 className="text-3xl font-bold leading-tight text-ink">סיימת</h1>
         <Link
           href="/cards"
           data-primary-action="true"

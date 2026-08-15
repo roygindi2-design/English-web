@@ -95,7 +95,7 @@ The branch today renders `סיימת` + a link to `/cards`, under a comment that
 
 ⛔ **Not in this task:** any sentence not already in `components/CardDeck.tsx`; any number; any streak, score, percentage or readiness claim (§ 4.2ו `לא בתחולה` · T-032); any change to `Flashcard.tsx`; any change to `StudyEmptyState.tsx`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Replace the test at `components/CardDeck.test.ts:169–176` (`ends with a heading and a way out, and ⛔ invents no finish screen (T-055 · F-032)`) with:
 
@@ -132,12 +132,12 @@ Replace the test at `components/CardDeck.test.ts:169–176` (`ends with a headin
 
 ⚠️ `PRACTICE_LABEL` is already defined at the top of `components/CardDeck.test.ts` (it is used by the `unknown`-branch containment test). Do not redeclare it. If `braceRegion`'s first argument does not match the source exactly, the helper's own `expect` reports `expected to find … in CardDeck.tsx` — copy the opening line from `components/CardDeck.tsx` verbatim.
 
-- [ ] **Step 2: Run the test and watch it fail**
+- [x] **Step 2: Run the test and watch it fail**
 
 Run: `npx vitest run components/CardDeck.test.ts -t 'IS the finish state'`
 Expected: **FAIL** on ⓑ — the current branch contains neither `מנת היום` nor the practice label. The reported line is the `expect(done).toContain(PRACTICE_LABEL)` assertion.
 
-- [ ] **Step 3: Rewrite the completion branch**
+- [x] **Step 3: Rewrite the completion branch**
 
 In `components/CardDeck.tsx`, replace the whole `if (remaining.length === 0) { … }` block (currently lines 98–113) with:
 
@@ -177,22 +177,22 @@ In `components/CardDeck.tsx`, replace the whole `if (remaining.length === 0) { �
 
 ⚠️ The literal `'תרגול — לא משנה את מועד החזרה'` now appears **twice** in the file. `components/CardDeck.test.ts` contains a containment test asserting the practice label is reachable only from the `unknown` branch — it extracts `{deck === 'unknown' ? …}` by braces, and the new occurrence is inside its own `deck === 'unknown' ? …` ternary, so it stays inside a gated region. **Run the whole file, not just the new test** (step 4) — if that guard goes red, the containment claim it makes is the one to re-read, ⛔ not to relax.
 
-- [ ] **Step 4: Run the whole test file**
+- [x] **Step 4: Run the whole test file**
 
 Run: `npx vitest run components/CardDeck.test.ts`
 Expected: **PASS**, every test in the file.
 
-- [ ] **Step 5: Prove the new guard can fail — mutation 1 of 2**
+- [x] **Step 5: Prove the new guard can fail — mutation 1 of 2**
 
 Delete the `<p>` identity line from the branch. Run `npx vitest run components/CardDeck.test.ts -t 'IS the finish state'`.
 Expected: **FAIL** naming `toContain(PRACTICE_LABEL)`. Restore by re-adding the line (⛔ not `git checkout`).
 
-- [ ] **Step 6: Prove the new guard can fail — mutation 2 of 2**
+- [x] **Step 6: Prove the new guard can fail — mutation 2 of 2**
 
 Change the link to `href="/study"`. Run the same command.
 Expected: **FAIL** naming `toContain('href="/cards"')`. Restore. Re-run: **PASS**.
 
-- [ ] **Step 7: Create the harness fixture**
+- [x] **Step 7: Create the harness fixture**
 
 Create `app/dev/deck/done/page.tsx`:
 
@@ -226,7 +226,7 @@ export default function DevDeckDonePage() {
 }
 ```
 
-- [ ] **Step 8: Add the route and its measurement to the harness**
+- [x] **Step 8: Add the route and its measurement to the harness**
 
 In `scripts/verify-mobile.mjs`, add `'/dev/deck/done'` to `ROUTES` immediately after `'/dev/deck'` (line 46), with this comment above it:
 
@@ -285,23 +285,23 @@ Then, immediately after the closing brace of the existing `if (route === '/dev/d
 
 ⚠️ `check`, `at` and `MIN_TAP` already exist in this file — `MIN_TAP` at line 80. ⛔ Do not re-declare any of them.
 
-- [ ] **Step 9: Run the harness**
+- [x] **Step 9: Run the harness**
 
 Run: `npm run check:mobile`
 Expected: **PASS**, and the total test count **rises by 12** — four checks × three widths — from the C-0134 baseline of 771 to **783**. ⚠️ If the number differs, the deviation is reported in the tick report and investigated with `superpowers:systematic-debugging` ⛔ before any fix is proposed. Record the actual number either way; ⛔ do not report the predicted one.
 
-- [ ] **Step 10: Prove the harness check can fail**
+- [x] **Step 10: Prove the harness check can fail**
 
 In `app/dev/deck/done/page.tsx`, temporarily return `<section data-deck-done />` instead of the `<CardDeck>`. Run `npm run check:mobile`.
 Expected: **FAIL ×3** (once per width) on `the finish state is not a blank screen`. Restore the file by re-editing it (⛔ not `git checkout`), and re-run: **PASS**.
 
-- [ ] **Step 11: Update the plan files**
+- [x] **Step 11: Update the plan files**
 
 - `plan/50-tasks.md`, T-055 row: status ⛔ → ✅, and the status cell states **why the ⛔ was wrong**, with the evidence: «⛔ הוסר C-XXXX — החסם היה F-032, ו-§ 4.2ו נכתבה ב-`5a86a28` ב-2026-08-13T15:53:21Z, **שלוש וחצי דקות אחרי** ש-F-032 נפתחה ב-`c4f40df` ב-15:49:54Z. השורה נשאה חסם מת ~35 מחזורים.»
 - `plan/60-findings.md`, F-032 row: status 🔓 → ✅, with the same two commit hashes and timestamps. ⛔ Do not delete the row; the finding was **true when it was written** and that is part of the record.
 - `plan/30-architecture.md`: one line recording that `/dev/deck/done` is the second deck fixture and why a fixture — and not a scripted grade-through — reaches the branch.
 
-- [ ] **Step 12: Verify and commit**
+- [x] **Step 12: Verify and commit**
 
 Run, in one command, and paste the real output into the tick report:
 

@@ -44,6 +44,10 @@ const ROUTES = [
   // deck — snap container, one card per viewport, the two grade buttons — has never been
   // rendered at 320/375/414 until this fixture.
   '/dev/deck',
+  // T-055 · § 4.2ו — «המילה האחרונה — מסך סיום ולא מסך לבן». `/dev/deck` holds two
+  // ungraded cards, so the finish branch is unreachable there; this fixture renders it
+  // directly. Measured and ⛔ not asserted: "not blank" is a claim about pixels.
+  '/dev/deck/done',
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
@@ -1117,6 +1121,48 @@ try {
             grades.gap >= MIN_GAP,
             `${at} grade buttons are separated by >= ${MIN_GAP}px`,
             `they sit ${grades.gap}px apart — one thumb, two answers`,
+          );
+        }
+      }
+
+      // T-055 — the finish state. Three properties, and «מסך סיום ולא מסך לבן» is only true
+      // when all three hold: the node is there, it actually paints something, and the one
+      // way out is a real touch target rather than a link the thumb cannot land on.
+      if (route === '/dev/deck/done') {
+        const done = await page.evaluate(() => {
+          const node = document.querySelector('[data-deck-done]');
+          if (!node) return { present: false };
+          const box = node.getBoundingClientRect();
+          const exits = [...node.querySelectorAll('[data-primary-action="true"]')];
+          const exit = exits[0]?.getBoundingClientRect();
+          return {
+            present: true,
+            // Rounded: sub-pixel layout is not a defect (same rule as the deck block above).
+            height: Math.round(box.height),
+            // The rendered text, ⛔ not the markup: a section full of empty boxes has height
+            // and would pass a height-only check while showing the learner nothing.
+            text: (node.textContent ?? '').trim().length,
+            exits: exits.length,
+            exitWidth: exit ? Math.round(exit.width) : 0,
+            exitHeight: exit ? Math.round(exit.height) : 0,
+          };
+        });
+        check(done.present, `${at} the finish state is in the DOM`, 'no [data-deck-done]');
+        if (done.present) {
+          check(
+            done.height > 0 && done.text > 0,
+            `${at} the finish state is not a blank screen`,
+            `height ${done.height}px, ${done.text} chars of text`,
+          );
+          check(
+            done.exits === 1,
+            `${at} the finish state offers exactly one way out`,
+            `found ${done.exits} [data-primary-action]`,
+          );
+          check(
+            done.exitWidth >= MIN_TAP && done.exitHeight >= MIN_TAP,
+            `${at} the way out clears ${MIN_TAP}px`,
+            `${done.exitWidth}×${done.exitHeight}`,
           );
         }
       }

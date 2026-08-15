@@ -64,6 +64,39 @@ function braceRegion(source: string, open: string): string {
   throw new Error(`unbalanced braces after ${open} in CardDeck.tsx`);
 }
 
+/**
+ * Every balanced-brace region opened by `open` — the plural of `braceRegion`.
+ *
+ * C-0137 measured why the singular is not enough: the finish state (T-055) gates the D-033
+ * notice behind its own `deck === 'unknown'` ternary, so the file legitimately holds two
+ * gates. `indexOf` sees only the first, and the containment guard read the second gated copy
+ * as a leak. Subtracting ALL gated regions is the same containment question asked of a file
+ * that is allowed to grow gates — ⛔ it does not weaken the claim: a copy that sits behind no
+ * gate at all still survives the subtraction and still turns the guard red.
+ */
+function braceRegions(source: string, open: string): string[] {
+  const regions: string[] = [];
+  for (let from = 0; ; ) {
+    const start = source.indexOf(open, from);
+    if (start === -1) return regions;
+    let depth = 0;
+    let end = -1;
+    for (let i = start; i < source.length; i += 1) {
+      if (source[i] === '{') depth += 1;
+      else if (source[i] === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end === -1) throw new Error(`unbalanced braces after ${open} in CardDeck.tsx`);
+    regions.push(source.slice(start, end + 1));
+    from = end + 1;
+  }
+}
+
 const PRACTICE_LABEL = 'לא משנה את מועד החזרה';
 /** The gate the label is allowed to live behind, and the only one. */
 const UNKNOWN_GATE = "{deck === 'unknown'";
@@ -133,16 +166,27 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
    * are about to press does NOT do; a copy of it on today's dose would be a lie, and its
    * absence from the practice deck would be a silent schedule change.
    */
-  it('shows the practice label in the unknown branch and ⛔ nowhere else', () => {
-    const branch = braceRegion(CODE, UNKNOWN_GATE);
-    expect(branch, 'the label must be inside the unknown branch').toContain(PRACTICE_LABEL);
+  it('shows the practice label behind unknown gates and ⛔ nowhere else', () => {
+    // C-0137: the file carries TWO gates since T-055 — the scrolling header and the finish
+    // state — and each holds one copy. «exactly one copy in the file» was a proxy for the
+    // claim while there was one gate; the claim itself is containment, so it is asked of
+    // every gate. ⛔ Not a relaxation: an ungated copy still survives the subtraction below.
+    const gates = braceRegions(CODE, UNKNOWN_GATE);
+    expect(gates.length, 'at least one unknown gate').toBeGreaterThan(0);
 
-    const outside = CODE.split(branch).join('');
-    expect(outside, 'the label leaked outside the unknown branch').not.toContain(PRACTICE_LABEL);
+    const gated = gates.filter((gate) => gate.includes(PRACTICE_LABEL));
+    expect(gated.length, 'the label must be inside an unknown gate').toBeGreaterThan(0);
+
+    let outside = CODE;
+    for (const gate of gates) outside = outside.split(gate).join('');
+    expect(outside, 'the label leaked outside the unknown gates').not.toContain(PRACTICE_LABEL);
+
+    // Every copy is accounted for by a gate — no copy hides in a region the subtraction
+    // happened to remove for another reason.
     expect(
       CODE.match(new RegExp(PRACTICE_LABEL, 'g'))?.length,
-      'exactly one copy of the label',
-    ).toBe(1);
+      'every copy of the label sits behind a gate',
+    ).toBe(gated.length);
   });
 
   it('renders the remaining cards only — a graded card leaves the DOM', () => {
@@ -166,14 +210,33 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
     }
   });
 
-  it('ends with a heading and a way out, and ⛔ invents no finish screen (T-055 · F-032)', () => {
-    expect(CODE).toContain('סיימת');
-    expect(CODE).toContain('href="/cards"');
-    // The claims a finish screen would make. T-055 is blocked in the PM's court on F-032;
-    // a deck that shipped them would be answering a design question nobody decided.
+  it('IS the finish state now — deck identity, one way out to the בורר (T-055 · § 4.2ו)', () => {
+    // F-032 was opened 2026-08-13T15:49:54Z and the PM's § 4.2ו landed 15:53:21Z — three
+    // minutes later. The finish state is decided: «בסוף המחזור מסך סיום», «יוצאים — מסך
+    // הסיום, ומשם חזרה לבורר», «המילה האחרונה — מסך סיום ולא מסך לבן».
+    const done = braceRegion(CODE, 'if (remaining.length === 0) {');
+
+    // ⓐ Distinguishable from `empty` in the DOM — that is literally F-032's question.
+    expect(done).toContain('data-deck-done');
+    expect(done).toContain('סיימת');
+
+    // ⓑ Deck identity, built from the two strings this file ALREADY renders in its header.
+    //    A learner who finished תרגול and one who finished מנת היום must not read the same
+    //    screen, and D-033's promise has to hold on the screen the learner is looking at.
+    expect(done).toContain(PRACTICE_LABEL);
+    expect(done).toContain('מנת היום');
+
+    // ⓒ Exactly one way out, and it goes to the בורר (§ 4.2ו q6).
+    expect(done).toContain('href="/cards"');
+    expect(done.match(/data-primary-action/g)?.length, 'exactly one primary action').toBe(1);
+
+    // ⓓ ⛔ Still nothing the PM did not decide. T-055: «אין מספרים חדשים ואין הבטחה».
     for (const invented of ['רצף', 'ניקוד', 'מוכנות', 'כל הכבוד', '%']) {
-      expect(CODE, `"${invented}" is a screen the PM has not designed`).not.toContain(invented);
+      expect(done, `"${invented}" is a claim no decision makes`).not.toContain(invented);
     }
+    // ⛔ No count either: `data-remaining` belongs to the scrolling header, and a "0 נותרו"
+    //    on the finish state would be a new number on a screen that forbids new numbers.
+    expect(done).not.toContain('data-remaining');
   });
 
   it('shows a live remaining counter beside the deck label', () => {
@@ -196,5 +259,26 @@ describe('the brace extractor itself is measured, so the guard above is not vacu
     const src = `<p>${PRACTICE_LABEL}</p> {deck === 'unknown' ? (<p>${PRACTICE_LABEL}</p>) : null}`;
     const branch = braceRegion(src, UNKNOWN_GATE);
     expect(src.split(branch).join('')).toContain(PRACTICE_LABEL);
+  });
+
+  /**
+   * C-0137. `braceRegion` takes the FIRST match and only it, so a file with two gates had
+   * its second gate counted as "outside" — measured: `CardDeck.tsx` carries gates at two
+   * offsets, one label inside each, and the single-region guard called that a leak. The
+   * containment claim never changed; the "there is exactly one gate" proxy expired.
+   */
+  it('extracts EVERY gate and not only the first (the two-gate file)', () => {
+    const src = `{deck === 'unknown' ? (<p>a</p>) : null} x {deck === 'unknown' ? (<p>b</p>) : null}`;
+    const regions = braceRegions(src, UNKNOWN_GATE);
+    expect(regions.length, 'both gates').toBe(2);
+    expect(regions[0]).toBe("{deck === 'unknown' ? (<p>a</p>) : null}");
+    expect(regions[1]).toBe("{deck === 'unknown' ? (<p>b</p>) : null}");
+  });
+
+  it('would still catch a label planted outside EVERY gate', () => {
+    const src = `<p>${PRACTICE_LABEL}</p> {deck === 'unknown' ? (<p>${PRACTICE_LABEL}</p>) : null}`;
+    let outside = src;
+    for (const region of braceRegions(src, UNKNOWN_GATE)) outside = outside.split(region).join('');
+    expect(outside, 'the ungated copy survives the subtraction').toContain(PRACTICE_LABEL);
   });
 });
