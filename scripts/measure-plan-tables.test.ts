@@ -46,11 +46,16 @@ describe('scripts/measure-plan-tables.mjs', () => {
     expect(numberAfter('findings')).toBeLessThanOrEqual(MALFORMED_FINDINGS_CEILING);
   });
 
-  it('detects the live stale blocker — T-066 is blocked by a closed F-020', () => {
-    // ⚠️ This assertion is expected to STOP being true, and that is the success case:
-    // when the PM rewrites T-066's ⛔ cell, delete this test in the same commit and say
-    // so in the journal. ⛔ Do not weaken it to a regex that also passes on "none".
-    expect(stdout).toContain('stale blockers: T-066 cites F-020 (closed)');
+  it('holds every ⛔ cell to a blocker that has not already lifted', () => {
+    // ⚠️ C-0157 replaced the previous assertion, which pinned the live defect
+    // (`stale blockers: T-066 cites F-020 (closed)`) and told the next agent to DELETE
+    // this test once T-066's ⛔ cell was rewritten. Deleting it would have retired the
+    // only mechanised copy of F-050's rule the moment it first paid out, so the
+    // assertion was inverted instead of dropped. This is STRICTLY STRONGER than the
+    // old one — it fails on T-066 citing a closed F-020 exactly as before, and also on
+    // any OTHER row that starts citing a closed finding — ⛔ and it is not the weakened
+    // regex the old comment warned about, because "none" is the only string it accepts.
+    expect(stdout).toContain('stale blockers: none');
   });
 
   it('writes a report that names the malformed rows', () => {
