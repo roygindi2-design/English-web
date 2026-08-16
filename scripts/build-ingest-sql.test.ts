@@ -58,13 +58,52 @@ const SOURCE_LOW = RECORDS.filter((r) => r.translation_confidence === 'low').len
 const ROWS_FLOOR = 403;
 const FILES_FLOOR = 7;
 
+/**
+ * F-062ⓑ · `manifest.json` is a MUTABLE "latest batch" pointer: every CONTENT tick
+ * overwrites it. Until 2026-08-16 it was also the only manifest that declared
+ * `batch-2026-08-13.jsonl`, so C-0164 destroyed that batch's provenance by doing
+ * nothing worse than writing its own. The generator then threw at import time and
+ * took the whole suite with it — `Test Files 1 failed / Tests no tests`, the exact
+ * unnamed-failure mode the F-048ⓑ note above was written about.
+ *
+ * The claim: every batch file is declared by a manifest of its OWN name, so no
+ * batch's provenance depends on a pointer another agent is expected to overwrite.
+ * ⛔ `manifest.json` is deliberately NOT accepted as coverage here.
+ */
+const UNDECLARED = SOURCE.filter((batchFile) => {
+  const dated = batchFile.replace(/^batch-(.*)\.jsonl$/, 'manifest-$1.json');
+  if (!existsSync(join(DATA, dated))) return true;
+  const parsed = JSON.parse(readFileSync(join(DATA, dated), 'utf8')) as { batch_file?: string };
+  return parsed.batch_file !== batchFile;
+});
+
 describe('build-ingest-sql', () => {
-  const out = run();
+  // ⛔ NOT a bare `run()`: a generator that throws at collect time kills every named
+  // assertion below with it (F-062ⓑ, measured). The throw is captured and asserted on
+  // by name instead, so the suite reports WHICH input is missing rather than dying.
+  let out = '';
+  let crash: Error | null = null;
+  try {
+    out = run();
+  } catch (error) {
+    crash = error as Error;
+  }
   // ⛔ NOT a bare readFileSync: if the generator ignored SEED_OUT_DIR the file is absent,
   // and an ENOENT at collect time kills the whole suite before the named assertion below
   // ever runs — a guard that cannot fire by name is a guard nobody reads. Measured under
   // mutation 2026-08-15: bare read ⇒ "Test Files 1 failed / Tests no tests".
   const sql = existsSync(FRESH) ? readFileSync(FRESH, 'utf8') : '';
+
+  it('runs to completion — a missing input is a named failure, not a dead suite (F-062ⓑ)', () => {
+    expect(crash?.message ?? null, 'scripts/build-ingest-sql.mjs threw').toBe(null);
+  });
+
+  it('gives every batch file a manifest of its own name — `manifest.json` is overwritten every content tick (F-062ⓑ)', () => {
+    expect(
+      UNDECLARED,
+      'these batch files have no manifest-<date>.json declaring them; their model/prompt_version survive only in the mutable manifest.json',
+    ).toEqual([]);
+  });
 
   it('writes only where SEED_OUT_DIR points — `npm test` never dirties the repo (F-048ⓑ)', () => {
     // If the override were dropped, the generator would emit into supabase/seed/ and

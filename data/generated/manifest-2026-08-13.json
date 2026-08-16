@@ -1,0 +1,109 @@
+{
+  "batch_file": "batch-2026-08-13.jsonl",
+  "generated_at": "2026-08-13T04:07:04Z",
+  "model": "claude-opus-5",
+  "prompt_version": "content-agent/2026-08-13",
+  "requested_headwords": 45,
+  "senses_written": 60,
+  "accepted": 60,
+  "rejected": 0,
+  "repaired_once_then_accepted": 18,
+  "translation_confidence_counts": {
+    "high": 58,
+    "medium": 0,
+    "low": 2
+  },
+  "low_confidence_headwords": [
+    "least",
+    "within"
+  ],
+  "medium_confidence_headwords": [],
+  "rejection_reasons": {},
+  "repair_reasons": {
+    "level drift on a spelled-out numeral or a proper noun": 9,
+    "level drift on an out-of-list content word (centre, flour, oven, wool, gloves, million, thousands)": 7,
+    "example over 14 words": 2
+  },
+  "gate": {
+    "module": "lib/core/contentSchema.ts",
+    "function": "gateSense",
+    "ran": true,
+    "how": "node --experimental-strip-types with registerHooks, importing gateSense directly; all 60 rows passed through it on both passes",
+    "allowed_words_file": "allowed-words-2026-08-07.txt (reused, frozen; unchanged this run)",
+    "result": "pass 1: 42/60 ok, 18 rejected. one repair round applied. pass 2: 60/60 ok, 0 rejected, 0 discarded.",
+    "pre_write_check": "Rule A'1: candidate content words were grep-checked against allowed-words in seven batches BEFORE drafting. That check rejected in advance: classroom, english, homework, airport, practise, birthday, accent, ladder, ceiling, bench, queue, rope, thread, drum, basket, lamp, onion, deaf, copper, cotton, wool, brick, mud, flame, tunnel, luggage, thief, punish, sadness, shy, lever, labour, width. It was NOT run on the supportive sentences of nine items, and that is exactly where all 18 rejections landed - see lesson 9.",
+    "post_gate_check": "Every stem was scanned for a quantifier immediately before the blank (lesson 8). Two hits, both verified as false positives: 'The baby cried all ____ .' (all + singular night is correct) and 'Many people ____ the idea...' (plural subject takes the bare verb, which IS the headword). No stem was rewritten after the gate this run."
+  },
+  "spot_check": {
+    "standard": "ISO 2859-1 AQL 1.0",
+    "required": 80,
+    "note": "batch is smaller than 80, so every sense is marked spot_check=true",
+    "marked": 60
+  },
+  "headword_source": {
+    "list": "NGSL v1.2",
+    "license": "CC BY-SA 4.0",
+    "canonical_domain": "newgeneralservicelist.com",
+    "fetched_from": "https://static1.squarespace.com/static/64336926d7c6bb38965fdf3b/t/644e0be4ad7bae3d45b9e62a/1682836452194/NGSL_1.2_stats.csv (the canonical redirect target recorded in manifest-2026-08-12)",
+    "columns_read": "Lemma and SFI Rank only",
+    "caveat": "The 2,809 vs 2,800 row-count discrepancy raised on 08-12 is still UNRESOLVED and still a Critic item. It does not touch ranks 261-305.",
+    "allowed_words_provenance_gap": "allowed-words-2026-08-07.txt is still derived from the GitHub mirror (2,818 lemmas) and was NOT rebuilt this run. Rebuilding it from the canonical list belongs to T-042/T-043, not to a content tick."
+  },
+  "selection_rule": "ascending NGSL SFI rank from the canonical stats file, skipping any headword that already has a row in data/generated/. The six earlier batches covered 270 headwords; the 45 most frequent still-uncovered headwords sit at ranks 261-305 (258 spend, 259 head, 260 car were already covered by batch-2026-08-12).",
+  "sense_policy": "D-021 - one row per sense. 13 of the 45 headwords carry more than one sense (experience, once, support, line, present x3, term, age, public, train, view, hard, party, control, lose), so 45 headwords produced 60 rows.",
+  "ngsl_rank_range": [
+    261,
+    305
+  ],
+  "headword_ranks": {
+    "learn": 261,
+    "level": 262,
+    "person": 263,
+    "experience": 264,
+    "once": 265,
+    "member": 266,
+    "enough": 267,
+    "bad": 268,
+    "city": 269,
+    "night": 270,
+    "able": 271,
+    "support": 272,
+    "whether": 273,
+    "line": 274,
+    "present": 275,
+    "side": 276,
+    "quite": 277,
+    "although": 278,
+    "sure": 279,
+    "term": 280,
+    "least": 281,
+    "age": 282,
+    "low": 283,
+    "speak": 284,
+    "within": 285,
+    "process": 286,
+    "public": 287,
+    "often": 288,
+    "train": 289,
+    "possible": 290,
+    "actually": 291,
+    "rather": 292,
+    "view": 293,
+    "together": 294,
+    "consider": 295,
+    "price": 296,
+    "parent": 297,
+    "hard": 298,
+    "party": 299,
+    "local": 300,
+    "control": 301,
+    "already": 302,
+    "concern": 303,
+    "product": 304,
+    "lose": 305
+  },
+  "distractor_policy": "D-023 plus lessons 6 and 7 of plan/80-content-lessons.md: every row is 2 semantic + 1 orthographic + 1 unrelated, zero near_synonym, zero antonyms. Each of the 240 distractors was substituted into all three of its own stems before it was written; that check discarded teach/study/read for learn, size for level, group/family for person, money/training/interest/practice/knowledge/effort for experience, wall/door/window/ground/street/shelf/corner for the dropped level#2 sense, again/later/slowly/alone/aloud for once, drop/carry/borrow/hide/break/sell for lose, dry for hard#2, and clearly/perhaps/hardly/always/already for actually.",
+  "dropped_senses": {
+    "level#2 (a floor of a building)": "drafted then discarded before writing: no set of three stems survived the lesson-7 substitution check without at least one distractor being a valid answer."
+  }
+}
