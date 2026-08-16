@@ -37,11 +37,27 @@ export default function HomePage() {
         <ul className="mt-2 flex flex-col gap-3">
           {LANDING_VALUE_POINTS.map((point) => (
             <li key={point} className="flex items-start gap-3">
+              {/* T-077 · constitution § 6 («SVG בלבד») · § 2. A character used to
+                  sit here as the marker. A character-as-icon takes its weight,
+                  height and optical centre from whichever font resolves it, and
+                  this one has no coverage in Heebo or Assistant — inside a fixed
+                  h-6 w-6 box it fell through to a system font. The shape is code
+                  now, in the `LockIcon` pattern: currentColor, no fill. */}
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-surface text-sm font-bold text-brand-on"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-surface text-brand-on"
               >
-                ✓
+                <svg
+                  viewBox="0 0 16 16"
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3.5 8.5 6.5 11.5 12.5 5" />
+                </svg>
               </span>
               <span className="text-base leading-relaxed text-ink">{point}</span>
             </li>

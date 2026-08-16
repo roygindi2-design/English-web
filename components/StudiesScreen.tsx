@@ -22,10 +22,14 @@ export default function StudiesScreen({ headline }: { headline: string }): React
           the three-second read is the day count and one action, and any line
           added here would be product copy Dev does not get to write. */}
       <h1 className="text-3xl font-bold leading-tight">{headline}</h1>
+      {/* T-074 · constitution § 4: `text-lg`, the one size a primary action has in
+          this product — `WorldFeed`'s PRIMARY_ACTION_CLASS, `ComposeDraft`,
+          `app/error.tsx` and `app/not-found.tsx` all ship it. This screen's
+          button was the only primary action left at `text-base`. */}
       <Link
         href="/cards"
         data-primary-action="true"
-        className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+        className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
       >
         התחלת מנה יומית
       </Link>

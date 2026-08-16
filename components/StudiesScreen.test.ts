@@ -53,4 +53,26 @@ describe('<StudiesScreen> — the route tab body (T-051 · § 4.2ב)', () => {
   it('anchors its column to the top and never centres it (F-011 · F-016)', () => {
     expect(CODE).not.toMatch(/flex-1[^"'`]*justify-center/);
   });
+
+  /**
+   * T-074. «התחלת מנה יומית» is the primary action of the product's primary
+   * screen, and it was the only primary action shipping at `text-base` while
+   * `WorldFeed` (`PRIMARY_ACTION_CLASS`), `ComposeDraft`, `app/error.tsx` and
+   * `app/not-found.tsx` all ship `text-lg`. One size per role — constitution § 4.
+   *
+   * ⚠️ Asserted on the class attribute of the action itself and ⛔ not on the
+   * file: `text-base` is legitimate elsewhere in this product (secondary links,
+   * option rows), so a file-wide `not.toContain('text-base')` would be a rule
+   * about the wrong thing.
+   */
+  it('sizes its primary action like every other primary action (T-074)', () => {
+    const action = CODE.match(/data-primary-action="true"[\s\S]{0,300}?className="([^"]*)"/)?.[1];
+    expect(action, 'the primary action className was not found').toBeDefined();
+    expect(action).toContain('text-lg');
+    expect(action).not.toContain('text-base');
+    expect(action).toContain('font-semibold');
+    // ⛔ The change is one class. The target and the shape stay where they were.
+    expect(action).toContain('min-h-touch');
+    expect(action).toContain('rounded-lg');
+  });
 });

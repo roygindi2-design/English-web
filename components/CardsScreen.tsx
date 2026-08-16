@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
 
 /**
@@ -157,7 +158,16 @@ export default function CardsScreen(): React.JSX.Element {
           const body = (
             <>
               <span className="text-lg font-semibold">{entry.label}</span>
-              <span className="text-lg text-ink-muted">{entry.note}</span>
+              {/* T-078: «נעול» gets the same mark the locked world tab wears, from the
+                  same component. The word alone was the only signal here, and one
+                  concept in two forms is constitution § 6 — and § 1, since a muted
+                  grey word is a single channel. ⛔ The condition is the note the row
+                  already carries, ⛔ not a new flag: `enabled: false` is also true of
+                  an empty deck, which shows a NUMBER and is not locked (§ 4.2ו). */}
+              <span className="inline-flex items-center gap-1 text-lg text-ink-muted">
+                {entry.note === LOCKED_HE ? <LockIcon /> : null}
+                {entry.note}
+              </span>
             </>
           );
 

@@ -66,7 +66,37 @@ describe('<MeScreen> — the learner tab body (T-051 · § 4.2ב)', () => {
     expect(CODE).toContain('{FAILURE_HE.load}');
     expect(CODE).toContain('{RETRY_HE}');
     // A plain <a>, so the retry reaches the server instead of the router cache.
-    expect(CODE).toMatch(/<a href="\/me"/);
+    // ⚠️ Whitespace-tolerant since C-0163: T-075 gave this anchor a className long
+    // enough to push `href` onto its own line, and the old `/<a href="\/me"/`
+    // failed on the line break — a formatting fact, ⛔ not the rule. The rule is
+    // «a bare <a>, aimed at /me», and both halves are still asserted: the `<a`
+    // tag itself, and ⛔ the absence of a <Link> to the same route.
+    expect(CODE).toMatch(/<a\s[^>]*href="\/me"/);
+    expect(CODE).not.toMatch(/<Link[^>]*href="\/me"/);
+  });
+
+  /**
+   * T-075. `RETRY_HE` is one constant standing for one action in one state, and
+   * it shipped in two shapes: a bordered 44px button in `WorldFeed:182`, and
+   * here an underlined run of text. A learner who meets both cannot tell that
+   * they are the same thing, and the underline is the one that is hard to hit.
+   * Constitution § 4 (44px target) · § 6 (one component per role).
+   *
+   * ⚠️ ⛔ The element stays an `<a href="/me">` — asserted above, and again by
+   * omission here. The screen is a Server Component and the retry has to be a
+   * full request; turning it into a `<button>` to match `WorldFeed`'s tag would
+   * trade a real behaviour for a cosmetic match.
+   */
+  it('gives the retry the bordered shape the rest of the product uses (T-075)', () => {
+    const retry = CODE.match(/<a\s[^>]*href="\/me"[^>]*className="([^"]*)"/)?.[1];
+    expect(retry, 'the retry className was not found').toBeDefined();
+    expect(retry).toContain('min-h-touch');
+    expect(retry).toContain('rounded-lg');
+    expect(retry).toContain('border-border-strong');
+    expect(retry).toContain('px-5');
+    expect(retry).toContain('py-3');
+    // ⛔ Not both: a bordered button that is also underlined is a third shape.
+    expect(retry).not.toContain('underline');
   });
 });
 

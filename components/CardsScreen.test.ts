@@ -157,4 +157,34 @@ describe('<CardsScreen> — the deck selector (T-065 · § 4.2ו)', () => {
     expect(CODE).not.toMatch(/flex-1[^"]*justify-center/);
     expect(CODE).not.toMatch(/justify-center[^"]*flex-1/);
   });
+
+  /**
+   * T-078. «locked» is one concept and it shipped in two forms: the world tab in
+   * `TabBar` carries an inline `LockIcon` beside its label, while the sentences deck
+   * here carried the bare word «נעול». Constitution § 1 — colour (or here, a lone muted
+   * word) is never the only channel — and § 6, one component per role.
+   *
+   * ⚠️ Asserted as an *import of the shared component* and ⛔ not as `<svg`: pasting a
+   * second copy of the path data into this file would satisfy a `toContain('<svg')`
+   * assertion while creating exactly the divergence the task exists to remove.
+   */
+  it('marks the locked deck with the shared lock icon, ⛔ not by word alone (T-078)', () => {
+    expect(CODE).toMatch(/import LockIcon from '@\/components\/LockIcon'/);
+    expect(CODE).toContain('<LockIcon />');
+    // ⛔ No second copy of the artwork.
+    expect(CODE).not.toContain('<svg');
+    expect(CODE).not.toContain('viewBox');
+  });
+
+  /**
+   * The icon is decoration for a word that is already there. ⛔ The Hebrew stays
+   * `LOCKED_HE`, and the enabling rule is untouched — the icon renders off the same
+   * `entry.enabled` flag the row already had, and introduces no second source of truth.
+   */
+  it('keeps «נעול» as text beside the icon, and ⛔ adds no new state (T-078)', () => {
+    expect(CODE).toContain("const LOCKED_HE = 'נעול'");
+    expect(CODE).toContain('note: LOCKED_HE');
+    expect(CODE).toMatch(/entry\.enabled/);
+    expect(CODE).not.toMatch(/locked:\s*(true|false)/);
+  });
 });

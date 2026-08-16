@@ -55,9 +55,16 @@ export default function MeScreen({
         // § 4.2ב, the error edge case: a Hebrew sentence and a retry.
         // A plain <a> and ⛔ not <Link>: the retry has to reach the server
         // again, and the client router would be free to answer from its cache.
+        //
+        // T-075: the bordered shape is `WorldFeed`'s, for the same constant in
+        // the same state. One action, one form — and an underline is not a 44px
+        // target (constitution § 4 · § 6).
         <div className="flex flex-col gap-2">
           <p className="text-lg leading-relaxed text-ink">{FAILURE_HE.load}</p>
-          <a href="/me" className="inline-flex min-h-touch items-center text-lg text-ink underline">
+          <a
+            href="/me"
+            className="inline-flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
+          >
             {RETRY_HE}
           </a>
         </div>

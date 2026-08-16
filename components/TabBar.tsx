@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
 
 /**
@@ -98,22 +99,9 @@ const ITEM_BASE =
  */
 const ITEM_INACTIVE = 'border-t-2 border-transparent font-normal text-ink-muted';
 
-/** Inline SVG, ⛔ never an emoji as an icon (constitution § 6). */
-function LockIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 16 16"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
-      <path d="M5.75 7V5a2.25 2.25 0 0 1 4.5 0v2" />
-    </svg>
-  );
-}
+/* T-078: `LockIcon` moved to `components/LockIcon.tsx` — unchanged artwork, one
+   home. `CardsScreen` needed the same mark beside its own «נעול» and could not
+   reach it here. Inline SVG, ⛔ never an emoji as an icon (constitution § 6). */
 
 export default function TabBar(): React.JSX.Element {
   const pathname = usePathname();

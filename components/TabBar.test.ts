@@ -32,6 +32,19 @@ describe('the four-tab shell (D-027 · § 4.2ב)', () => {
     expect(src.match(/labelHe:/g)?.length).toBe(4);
   });
 
+  /**
+   * T-078 moved `LockIcon` out of this file into `components/LockIcon.tsx` so
+   * `CardsScreen` could show the same mark beside its own «נעול». ⛔ The tab
+   * itself is unchanged — it still renders the icon beside the label, from the
+   * one place the artwork now lives.
+   */
+  it('renders the lock from the shared component, ⛔ never a local copy (T-078)', () => {
+    expect(src).toMatch(/import LockIcon from '@\/components\/LockIcon'/);
+    expect(src).toContain('<LockIcon />');
+    expect(src).not.toMatch(/function LockIcon/);
+    expect(src).not.toContain('<svg');
+  });
+
   it('marks the active tab by state and shape, never by colour alone (constitution § 1)', () => {
     expect(src).toContain('aria-current');
     expect(src).toMatch(/aria-current[\s\S]{0,400}(border-t-2|h-1|rounded-full)/);
