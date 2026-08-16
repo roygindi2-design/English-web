@@ -10,6 +10,7 @@ import {
   signupOutcome,
 } from '@/lib/core/auth';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
+import { checkAuthRateLimit } from '@/lib/supabase/authRateLimit';
 import { DEFAULT_TRACK_ID } from '@/lib/core/profile';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,21 @@ export async function POST(request: Request) {
   if (!env) return fail('unavailable', 503);
 
   const supabase = createRouteClient(env, await cookies());
+
+  // F-008ⓑ — the volume half. Runs AFTER the shape and credential guards (a junk
+  // body must not cost a database call) and BEFORE the provider is asked anything:
+  // a status oracle answered late is still an oracle.
+  const rate = await checkAuthRateLimit(
+    supabase,
+    { headers: request.headers, email: check.email, mode: 'signup' },
+    Date.now()
+  );
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { ok: false, code: 'rate_limited', message: messageFor('rate_limited') },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfterSeconds) } }
+    );
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email: check.email,
