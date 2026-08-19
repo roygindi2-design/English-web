@@ -271,7 +271,7 @@ git commit -m "loop(DEV): T-107 מיגרציה 0015 — arcade_collected_words �
 
 **T-108 קורא ל-`gameLevelAt` ול-`describeLevel`. T-116 קורא ל-`isVictory` ול-`applyWin` ומייבא את `ARCADE_ENEMY_HP` ואת `ARCADE_AMMO` מכאן.**
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 צור `lib/core/arcadeLadder.test.ts`:
 
@@ -370,12 +370,12 @@ describe('D-061 — עלייה = 3 ניצחונות, ⛔ ואין ירידה', (
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 Run: `npx vitest run lib/core/arcadeLadder.test.ts`
 Expected: FAIL — `Failed to resolve import "./arcadeLadder"`
 
-- [ ] **Step 3: כתוב את המימוש**
+- [x] **Step 3: כתוב את המימוש**
 
 צור `lib/core/arcadeLadder.ts`:
 
@@ -476,17 +476,17 @@ export function applyWin(
 }
 ```
 
-- [ ] **Step 4: הרץ ואמת שהיא עוברת**
+- [x] **Step 4: הרץ ואמת שהיא עוברת**
 
 Run: `npx vitest run lib/core/arcadeLadder.test.ts`
 Expected: PASS — 14 בדיקות ירוקות.
 
-- [ ] **Step 5: אמת שהטוהר לא נשבר**
+- [x] **Step 5: אמת שהטוהר לא נשבר**
 
 Run: `npm run check:core`
 Expected: PASS — הקובץ אינו מייבא React, DOM, רשת או env.
 
-- [ ] **Step 6: אימות מלא וקומיט**
+- [x] **Step 6: אימות מלא וקומיט**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 
