@@ -9,10 +9,12 @@
  * הגרלה שאינה ניתנת לשחזור היא סיבוב שאי-אפשר לכתוב עליו בדיקה. ה-seed מגיע
  * מהנתיב.
  */
+import { ARCADE_AMMO, ARCADE_MIN_WORDS_PER_LEVEL, gameLevelAt } from './arcadeLadder';
 import type { CefrBand } from './cefrLevels';
 
-export const ARCADE_MIN_WORDS = 12;
-export const ARCADE_ROUND_SIZE = 8;
+export const ARCADE_MIN_WORDS = ARCADE_MIN_WORDS_PER_LEVEL;
+/** ⛔ שם היסטורי. גודל הסיבוב הוא התחמושת (D-059) — ⛔ אין כאן מספר משלו. */
+export const ARCADE_ROUND_SIZE = ARCADE_AMMO;
 export const ARCADE_OPTION_COUNT = 4;
 
 export interface ArcadeCandidate {
@@ -32,8 +34,14 @@ export interface ArcadeQuestion {
 }
 
 export type ArcadeRound =
-  | { readonly ok: true; readonly level: CefrBand; readonly questions: readonly ArcadeQuestion[] }
-  | { readonly ok: false; readonly reason: 'level_too_small'; readonly eligible: number; readonly required: number };
+  | {
+      readonly ok: true;
+      readonly band: CefrBand;
+      readonly gameLevel: number;
+      readonly questions: readonly ArcadeQuestion[];
+    }
+  | { readonly ok: false; readonly reason: 'level_too_small'; readonly eligible: number; readonly required: number }
+  | { readonly ok: false; readonly reason: 'no_such_level' };
 
 function usableDistractors(c: ArcadeCandidate): string[] {
   const seen = new Set<string>([c.translationHe]);
@@ -85,21 +93,31 @@ function shuffle<T>(items: readonly T[], rnd: () => number): T[] {
 }
 
 export function buildRound(input: {
-  readonly level: CefrBand;
+  readonly gameLevel: number;
   readonly candidates: readonly ArcadeCandidate[];
   readonly seed: number;
-  readonly arcadeLevel?: number;
 }): ArcadeRound {
-  const pool = eligibleCandidates(input.candidates, input.level);
+  // ⛔ הרמה נגזרת מהסולם ⛔ ולא מהלומד (D-052). רמה שאינה בטבלה אינה נופלת ל-A1.
+  const rung = gameLevelAt(input.gameLevel);
+  if (rung === null) return { ok: false, reason: 'no_such_level' };
+
+  const pool = eligibleCandidates(input.candidates, rung.band);
   if (pool.length < ARCADE_MIN_WORDS) {
     return { ok: false, reason: 'level_too_small', eligible: pool.length, required: ARCADE_MIN_WORDS };
   }
   const byRank = pool
     .slice()
     .sort((a, b) => (a.ngslRank ?? Number.MAX_SAFE_INTEGER) - (b.ngslRank ?? Number.MAX_SAFE_INTEGER) || a.wordId.localeCompare(b.wordId));
-  const depth = Math.max(0, (input.arcadeLevel ?? 1) - 1);
-  const offset = Math.min(depth * ARCADE_ROUND_SIZE, Math.max(0, byRank.length - ARCADE_ROUND_SIZE));
-  const window = byRank.slice(offset, offset + Math.max(ARCADE_ROUND_SIZE, ARCADE_MIN_WORDS));
+
+  // הפרוסה: הרמה מחולקת ל-`slicesInBand` חלקים שווים לפי תדירות יורדת, והרמה הזאת
+  // לוקחת את החלק שלה. ⛔ החלון לעולם אינו קטן מ-`ARCADE_ROUND_SIZE` — פרוסה חשבונית
+  // דקה מהתחמושת הייתה מחזירה קרב בן חמש שאלות עם חמש-עשרה תחמושת, כלומר ניצחון
+  // שאי-אפשר להשיג (סף הניצחון הוא 10). ⛔ והרצפה היא התחמושת ⛔ ולא `ARCADE_MIN_WORDS`:
+  // 12 < 15 היה משאיר בדיוק את אותו חור בשלוש שאלות.
+  const sliceSize = Math.max(ARCADE_ROUND_SIZE, Math.ceil(byRank.length / rung.slicesInBand));
+  const offset = Math.min(rung.sliceIndex * sliceSize, Math.max(0, byRank.length - sliceSize));
+  const window = byRank.slice(offset, offset + sliceSize);
+
   const rnd = mulberry32(input.seed);
   const picked = shuffle(window, rnd).slice(0, ARCADE_ROUND_SIZE);
   const questions = picked.map((c) => {
@@ -111,5 +129,5 @@ export function buildRound(input: {
       options: shuffle([c.translationHe, ...wrong], rnd),
     };
   });
-  return { ok: true, level: input.level, questions };
+  return { ok: true, band: rung.band, gameLevel: rung.level, questions };
 }

@@ -22,8 +22,8 @@ import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
  * uses, chosen for LENGTH rather than meaning: what this harness measures is pixels, and the
  * options' job here is to wrap, to hold 44px, and to not scroll sideways at 320px.
  *
- * Eight questions and ⛔ not two: `ARCADE_ROUND_SIZE` is 8, and a 2×2 grid that is never
- * filled cannot fail a wrap check.
+ * Fifteen questions and ⛔ not two: `ARCADE_ROUND_SIZE` is 15 (the ammo, D-059), and a 2×2
+ * grid that is never filled cannot fail a wrap check.
  */
 function question(n: number): ArcadeQuestion {
   return {
@@ -45,6 +45,13 @@ const FIXTURE: ArenaRound = {
     question(6),
     question(7),
     question(8),
+    question(9),
+    question(10),
+    question(11),
+    question(12),
+    question(13),
+    question(14),
+    question(15),
   ],
 };
 

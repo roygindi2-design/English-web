@@ -683,23 +683,18 @@ character_id=null, needs_human_review=false)`.
 
 ⛔ **הנתיב אינו כותב דבר.** אין בו `.insert(` · `.update(` · `.upsert(` · `.delete(`,
 ו⛔ הוא אינו נוגע ב-`word_progress` — לא בקריאה ולא בכתיבה. זהו גבול D-044: הזירה
-⛔ אינה מזיזה את מנוע החזרות. שלוש הטבלאות שהוא קורא הן בדיוק `profiles` ·
-`arcade_progress` · `words`, ושלושתן בקריאה. הכל נאכף בבדיקות ב-`route.test.ts`.
+⛔ אינה מזיזה את מנוע החזרות. הטבלאות שהוא קורא הן `arcade_progress` · `words`,
+שתיהן בקריאה. ⛔ **`profiles` ⛔ אינה נקראת** (D-052, נאכף בסריקת מקור ב-`route.test.ts`).
 
-**200 — הלומד טרם בחר רמה:**
+⛔ **אין יותר מצב «טרם בחר רמה» — רמת המשחק מתחילה ב-1 לכל לומד (D-052).**
 
-```json
-{ "ok": true, "level": null, "round": null }
-```
-
-⛔ **אין נפילה שקטה ל-A1** (D-037 — הלומד בוחר). המסך שולח למפת הרמה.
-
-**200 — יש רמה ויש קרב:**
+**200 — יש קרב:**
 
 ```json
 {
   "ok": true,
-  "level": "A1",
+  "gameLevel": 1,
+  "band": "A1",
   "seed": 1755573412,
   "round": {
     "questions": [
@@ -712,9 +707,13 @@ character_id=null, needs_human_review=false)`.
 
 | השדה | ההגדרה |
 |---|---|
-| `level` | `profiles.current_level` — **בקריאה בלבד**, ⛔ הזירה אינה משנה אותו |
+| `gameLevel` | רמת המשחק, מספר **1–12** מ-`arcade_progress.arcade_level`. ⛔ **בקריאה בלבד** בנתיב הזה, ו⛔ אינה רמת הלומד (D-052 · D-061) |
+| `band` | ה-`CefrBand` שהסולם ב-`lib/core/arcadeLadder.ts` גוזר מ-`gameLevel`. ⛔ ⛔ אינו נקרא מהפרופיל |
 | `seed` | ה-seed שממנו נגזרה ההגרלה. מוחזר כדי שסיבוב יהיה ניתן לשחזור מהתשובה עצמה |
-| `questions` | 8 שאלות (`ARCADE_ROUND_SIZE`), כל אחת עם **בדיוק 4** אפשרויות ⛔ בלי כפילות, והנכונה ביניהן |
+| `questions` | 15 שאלות (`ARCADE_AMMO`), כל אחת עם **בדיוק 4** אפשרויות ⛔ בלי כפילות, והנכונה ביניהן |
+
+⚠️ רמת משחק שאינה בסולם (שורה פגומה בדאטהבייס) ⛔ אינה 503 ו⛔ אינה שגיאה ללומד —
+הנתיב נופל לרמה 1. הזירה אינה כלי אבחון.
 
 **הבחירה, מילה במילה:** הסינון הוא `words.cefr_profile_band` ⛔ **ולעולם לא**
 `senses.cefr_level` (D-034 — השתיים חלוקות על 125 מתוך 343 שורות). ארבע האפשרויות
@@ -730,8 +729,8 @@ character_id=null, needs_human_review=false)`.
 **200 — הרמה קטנה מדי לקרב:**
 
 ```json
-{ "ok": true, "level": "A1", "round": null,
-  "reason": "level_too_small", "eligible": 8, "required": 12 }
+{ "ok": true, "gameLevel": 1, "band": "A1", "round": null,
+  "reason": "level_too_small", "unlocked": false, "eligible": 8, "required": 12 }
 ```
 
 ⚠️ **זה מצב תקין ו⛔ לא שגיאה:** ⛔ לא 404 ו⛔ לא מסך ריק (D-046). `eligible` סופר

@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { describeLevel, gameLevelAt } from '@/lib/core/arcadeLadder';
 import { buildRound, type ArcadeCandidate } from '@/lib/core/arcadeRound';
+// ⛔ `parseLevel` כאן ממפה את `words.cefr_profile_band` של המועמדים בלבד — ⛔ ולא פרופיל.
 import { parseLevel } from '@/lib/core/levelSummary';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -40,20 +42,6 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('current_level')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (profileError) {
-    console.error('[api/arcade/round] profile read failed:', profileError.message);
-    return isSchemaMissing((profileError as { code?: string }).code) ? schemaMissing() : unavailable();
-  }
-
-  // ⛔ אין נפילה שקטה ל-A1. «טרם בחר» הוא מצב אמיתי (D-037), והמסך שולח למפת הרמה.
-  const level = parseLevel((profile as { current_level?: unknown } | null)?.current_level);
-  if (level === null) return NextResponse.json({ ok: true, level: null, round: null });
-
   // ⛔ **קריאה בלבד.** אין בקובץ הזה `.update(`, `.insert(`, `.upsert(` — נאכף בבדיקה.
   const { data: progressRow, error: progressError } = await supabase
     .from('arcade_progress')
@@ -65,10 +53,16 @@ export async function GET() {
     return isSchemaMissing((progressError as { code?: string }).code) ? schemaMissing() : unavailable();
   }
 
+  const gameLevel = (progressRow as { arcade_level?: number } | null)?.arcade_level ?? 1;
+  const rung = gameLevelAt(gameLevel);
+  // ⛔ רמה מחוץ לסולם היא שורה פגומה בדאטהבייס, ⛔ לא מצב לומד: נופלים לרמה 1 ⛔ ולא
+  // ל-503, כי הזירה אינה כלי אבחון ולומד ⛔ אינו רואה מסך שגיאה על מונה.
+  const band = (rung ?? gameLevelAt(1))?.band ?? 'A1';
+
   const { data, error } = await supabase
     .from('words')
     .select(ROUND_SELECT)
-    .eq('cefr_profile_band', level)
+    .eq('cefr_profile_band', band)
     .order('ngsl_rank', { nullsFirst: false })
     .order('id')
     .limit(MAX_LEVEL_ROWS);
@@ -101,19 +95,19 @@ export async function GET() {
   // ⛔ הנתיב אינו מסנן ואינו מגריל: הוא מוסר מועמדים ומקבל סיבוב. ⛔ ואין כאן `Math.random`
   // — ה-seed נגזר מהשעה, כך שהסיבוב ניתן לשחזור מהתשובה עצמה.
   const seed = Date.now() >>> 0;
-  const round = buildRound({
-    level,
-    candidates,
-    seed,
-    arcadeLevel: (progressRow as { arcade_level?: number } | null)?.arcade_level ?? 1,
-  });
+  const round = buildRound({ gameLevel: rung === null ? 1 : gameLevel, candidates, seed });
 
   if (!round.ok) {
+    const eligible = round.reason === 'level_too_small' ? round.eligible : 0;
     // ⛔ לא מסך ריק ו⛔ לא בשקט: מספר (D-046 · § 4.2י «נדרשות 12 מילים ברמה, יש 8»).
     return NextResponse.json({
-      ok: true, level, round: null,
-      reason: round.reason, eligible: round.eligible, required: round.required,
+      ok: true, gameLevel, band, round: null,
+      ...describeLevel(gameLevel, eligible),
+      reason: round.reason,
     });
   }
-  return NextResponse.json({ ok: true, level, seed, round: { questions: round.questions } });
+  return NextResponse.json({
+    ok: true, gameLevel: round.gameLevel, band: round.band, seed,
+    round: { questions: round.questions },
+  });
 }
