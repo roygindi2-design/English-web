@@ -67,10 +67,24 @@ export async function GET() {
 
   const posts = (feed.data ?? []) as { id: string; body_en: string; created_at: string }[];
 
+  // T-106 — «כמה משפטים כתבתי אי-פעם» is a DIFFERENT question from «what is in this
+  // response», and one number cannot honestly answer both: `total` is capped by
+  // MAX_FEED_ROWS, so a screen that prints it as "ever" starts lying on the learner's
+  // 101st sentence. A HEAD read with `count: 'exact'` transfers no rows and is scoped by
+  // the same two filters as the feed — ⛔ dropping `author_kind` here would count a
+  // character's post as a sentence the learner wrote (0010).
+  const written = await supabase
+    .from('world_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('author_kind', 'learner');
+
+  if (written.error) return schemaAwareFailure('written count', written.error);
+
   // `total` is the size of THIS response, ⛔ not a table count: the screen's «מילים שהפקת»
-  // counter is derived from the posts it holds, and a second count query here would be a
-  // number the feed cannot explain.
-  return NextResponse.json({ ok: true, posts, total: posts.length });
+  // counter is derived from the posts it holds. `count` is the table count and is
+  // ADDITIVE — ⛔ no existing field changed meaning and none disappeared.
+  return NextResponse.json({ ok: true, posts, total: posts.length, count: written.count ?? 0 });
 }
 
 /**

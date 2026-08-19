@@ -92,6 +92,30 @@ describe('GET /api/world/posts — the private feed', () => {
     expect(get).not.toContain('404');
   });
 
+  it('answers `count` — an EXACT table count, ⛔ not the size of this response (T-106)', () => {
+    const get = braceRegion(CODE, 'export async function GET');
+    // ⚠️ `toContain('count')` alone is BLIND — a type name satisfies it. Read it off the
+    // query that produces it: a HEAD read with `count: 'exact'` is the only shape that can
+    // answer "ever" without the MAX_FEED_ROWS ceiling silently capping the number.
+    expect(get).toMatch(/count:\s*'exact'/);
+    expect(get).toMatch(/head:\s*true/);
+    // ⛔ And it is scoped exactly like the feed read — both filters, twice. Dropping
+    // `author_kind` from the counting query would count a character's post as the
+    // learner's own sentence, which is the very thing 0010 exists to prevent.
+    expect([...get.matchAll(/\.eq\('author_kind',\s*'learner'\)/g)]).toHaveLength(2);
+    expect([...get.matchAll(/\.eq\('user_id',\s*user\.id\)/g)]).toHaveLength(2);
+  });
+
+  it('⛔ `total` did NOT change meaning — it is still the size of THIS response', () => {
+    const get = braceRegion(CODE, 'export async function GET');
+    const body = get.slice(get.lastIndexOf('NextResponse.json('));
+    expect(body).toMatch(/total:\s*posts\.length/);
+    // The new field is ADDITIVE: both are in the same answer, and ⛔ neither replaces the
+    // other. A consumer reading `total` on the day this shipped reads the same number it
+    // read the day before.
+    expect(body).toMatch(/\bcount\b/);
+  });
+
   it('⛔ never puts the database message in the response body', () => {
     for (const line of CODE.split('\n')) {
       if (line.includes('error.message')) expect(line).toContain('console.error');

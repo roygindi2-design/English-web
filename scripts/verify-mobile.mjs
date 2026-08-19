@@ -76,6 +76,11 @@ const ROUTES = [
   // ⛔ not "for coverage".
   '/world',
   '/world/compose',
+  // C-0205 (T-106) — «שרשרת הכתיבה». ⛔ אין לה פיקסטורה, וזו הכרעה ⛔ ולא חיסכון:
+  // בלי env של Supabase `GET /api/world/posts` עונה 503 בחוזה שלו עצמו, ולכן מה שנמדד
+  // כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי והדרך
+  // החוצה. זה מצב שלומד פוגש, ⛔ ולא מסך שגיאה שהומצא להרמוניה.
+  '/world/chain',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
@@ -258,6 +263,15 @@ const EXPECTED_CONSOLE = {
     /status of 503[\s\S]*@\S*\/api\/world\/recall/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
+  // C-0205 (T-106): «שרשרת הכתיבה» יושבת בתוך `(tabs)` בדיוק כמו `/world`, ולכן היא
+  // מבקשת **שתי** בקשות — `<WritingChain>` קורא את הפיד, ו-`<TabBar>` שואל אם הלשונית
+  // פתוחה. ⚠️ התוכנית ניבאה רשומה **אחת**; השנייה נמדדה בהרצה ⛔ ולא הונחה, והיא
+  // תולדה של המסלול שיושב בקבוצת הלשוניות. כתובת אחת וסטטוס אחד לכל רשומה, כמו כל
+  // רשומה כאן: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
+  '/world/chain': [
+    /status of 503[\s\S]*@\S*\/api\/world\/posts/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two
   // world routes above — no Supabase env, so `GET /api/arcade/round` answers 503 by its own
   // contract and the browser logs it. Keyed to the one URL and the one status: a 401, a 500

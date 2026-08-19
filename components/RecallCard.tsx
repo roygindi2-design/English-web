@@ -44,6 +44,8 @@ import type { RecallCard as RecallCardData } from '@/lib/core/worldRecall';
  */
 
 const TITLE_HE = 'מה שכתבת';
+const CHAIN_HE = 'שרשרת הכתיבה';
+const CHAIN_HREF = '/world/chain';
 const REMEMBERED_HE = 'וזכרת';
 const THE_WORD_WAS_HE = 'המילה הייתה';
 const EMPTY_HE = 'עוד אין משפט להיזכר בו.';
@@ -73,6 +75,22 @@ const RETRY_CLASS =
   'inline-flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';
 const OPTION_CLASS =
   'flex w-full min-h-touch items-center justify-start rounded-lg border border-border-strong bg-surface-raised px-4 py-3 text-lg text-ink active:opacity-90';
+
+/**
+ * היציאה היחידה מהכרטיס, ומיקומה ⛔ אינו טעם: § 4.2יב נוקבת בה במפורש — «יוצאים —
+ * «שרשרת הכתיבה» ⇒ T-106» **מתוך הכרטיס**, ⛔ ולא מרשת האפליקציות. הגדרה אחת ושני
+ * שימושים — ⛔ לא שני עותקים של אותו JSX.
+ */
+function ChainLink(): React.JSX.Element {
+  return (
+    <Link
+      href={CHAIN_HREF}
+      className="inline-flex min-h-touch items-center self-start text-lg text-ink-muted underline underline-offset-4 active:opacity-90"
+    >
+      {CHAIN_HE}
+    </Link>
+  );
+}
 
 /**
  * המסגרת: `inline-block` בגובה השורה עם רוחב מינימלי, ⛔ ולא `border-b`. «קו תחתון
@@ -155,6 +173,8 @@ export function RecallCardView({ card }: { readonly card: RecallCardData }): Rea
           </li>
         ))}
       </ul>
+
+      <ChainLink />
     </section>
   );
 }
@@ -238,6 +258,11 @@ export default function RecallCard(): React.JSX.Element {
           </a>
         </div>
       )}
+
+      {/* ⛔ לא כשהסשן פג: שם הדרך היחידה קדימה היא ההתחברות, וקישור שני היה מתחרה
+          בה — זה בדיוק המבוי הסתום של F-027. בכל שאר המצבים היציאה קיימת, כי
+          «שרשרת הכתיבה» עומדת בפני עצמה גם כשאין כרטיס להיזכר בו. */}
+      {state.kind !== 'session_expired' && <ChainLink />}
     </section>
   );
 }

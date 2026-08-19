@@ -644,10 +644,12 @@ describe('the world screens are measured and not assumed (T-063 task 9)', () => 
     return [...withoutComments.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
   }
 
-  it('walks the two real world routes, so their failure state is measured like every other screen', () => {
+  it('walks the real world routes, so their failure state is measured like every other screen', () => {
     const routes = entriesOf('ROUTES');
     expect(routes).toContain('/world');
     expect(routes).toContain('/world/compose');
+    // C-0205 (T-106) — «שרשרת הכתיבה», the third real route in the feature.
+    expect(routes).toContain('/world/chain');
   });
 
   it('walks the /dev/world fixture, which is where the bank and the draft are actually rendered', () => {
@@ -668,9 +670,16 @@ describe('the world screens are measured and not assumed (T-063 task 9)', () => 
     const block = code.match(/const EXPECTED_CONSOLE = \{([\s\S]*?)\n\};/)?.[1] ?? '';
     const worldEntries = [...block.matchAll(/'(\/world[^']*)':\s*\[([\s\S]*?)\],/g)];
     expect(worldEntries.length).toBeGreaterThan(0);
-    // Both real world routes have to appear — an allowance on one and silence on the other
-    // would leave the second screen's console unmeasured or permanently red.
-    expect(worldEntries.map(([, route]) => route)).toEqual(['/world', '/world/compose']);
+    // ⚠️ C-0205 (T-106): this used to be the literal list `['/world', '/world/compose']`,
+    // and a third real world route made it fail — ⛔ a hand-kept list is a guard that has
+    // to be edited every time it is right. It is DERIVED now, and that is strictly
+    // stronger, ⛔ not weaker: every walked `/world*` route must carry an allowance (silence
+    // on one leaves that screen's console permanently red or unmeasured), and an allowance
+    // may ⛔ not exist for a route the harness never walks (a rule nobody was checking
+    // before). `/dev/world*` fixtures are excluded by their own prefix and stay silent.
+    const walked = entriesOf('ROUTES').filter((route) => route.startsWith('/world'));
+    expect(walked.length).toBeGreaterThan(2);
+    expect(worldEntries.map(([, route]) => route).sort()).toEqual([...walked].sort());
     for (const [, route, allowances] of worldEntries) {
       // The allowances are regex literals, so their path separators arrive escaped.
       const named = `${route} ${allowances}`.replace(/\\/g, '');

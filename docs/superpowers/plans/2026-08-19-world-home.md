@@ -615,26 +615,26 @@ describe('buildRecallCard', () => {
 
 ### צעדים
 
-- [ ] **4.1** הוסף ל-`app/api/world/posts/route.ts` שאילתת `head:true` שנייה ושדה `count`
+- [x] **4.1** הוסף ל-`app/api/world/posts/route.ts` שאילתת `head:true` שנייה ושדה `count`
       בתשובה. עדכן את `## GET /api/world/posts` ב-`docs/api-contract.md` **באותו עריכה**,
       כולל המשפט «`total` הוא גודל התשובה · `count` הוא ספירת הטבלה».
-- [ ] **4.2** הוסף ל-`app/api/world/posts/route.test.ts` שתי בדיקות: `count` קיים בתשובה,
+- [x] **4.2** הוסף ל-`app/api/world/posts/route.test.ts` שתי בדיקות: `count` קיים בתשובה,
       ו-`total` ⛔ **לא שינה משמעות** (עדיין `posts.length`).
-- [ ] **4.3** צור `components/WritingChain.tsx`: `'use client'`, `apiGet('/api/world/posts')`,
+- [x] **4.3** צור `components/WritingChain.tsx`: `'use client'`, `apiGet('/api/world/posts')`,
       מציג את `count` עם התווית «משפטים שכתבת» ואת הרשימה `created_at` יורד, כל משפט ב-
       `<EnWord>`. מצב ריק ⇒ «כתוב את המשפט הראשון שלך» + קישור ל-`/world/compose`.
       ⛔ אין גרף · ⛔ אין רצף יומי · ⛔ אין שיתוף · ⛔ אין משתמש אחר.
-- [ ] **4.4** צור `components/WritingChain.test.ts`: ⛔ אפס `streak`/«רצף» ·
+- [x] **4.4** צור `components/WritingChain.test.ts`: ⛔ אפס `streak`/«רצף» ·
       ⛔ אפס `svg`/`chart`/`bar`/`Recharts` (⛔ לא `dataviz`) · ⛔ אפס `share`/«שיתוף» ·
       `expect(CODE).toContain('count')` · «—» ⛔ ולא «0» במצב לא ידוע.
-- [ ] **4.5** צור `app/(tabs)/world/chain/page.tsx` שמחזיר `<WritingChain />` בלבד, בהערה
+- [x] **4.5** צור `app/(tabs)/world/chain/page.tsx` שמחזיר `<WritingChain />` בלבד, בהערה
       שמפנה ל-§ 4.2יב. הוסף באריח/בכרטיס קישור «שרשרת הכתיבה» ⇒ `/world/chain`
       ⚠️ ⛔ **רק אם § 4.2יב נוקבת במיקומו** — היא נוקבת: «יוצאים — «שרשרת הכתיבה» ⇒ T-106»
       מתוך **הכרטיס**. ⇒ הקישור נוסף ב-`RecallCard.tsx`, ⛔ לא ברשת.
-- [ ] **4.6** הוסף `'/world/chain'` ל-`ROUTES` וב-`EXPECTED_CONSOLE` רשומה אחת
+- [x] **4.6** הוסף `'/world/chain'` ל-`ROUTES` וב-`EXPECTED_CONSOLE` רשומה אחת
       (`/api/world/posts`, 503). ⛔ אין פיקסטורה — המצב הריק **הוא** מה שנמדד, והוא מצב
       שלומד פוגש.
-- [ ] **4.7** **מוטציה** — הוסף `<svg>` ל-`WritingChain.tsx` ⇒ בדיקת «⛔ לא dataviz» חייבת
+- [x] **4.7** **מוטציה** — הוסף `<svg>` ל-`WritingChain.tsx` ⇒ בדיקת «⛔ לא dataviz» חייבת
       ליפול. שחזר. שער אימות מלא + `measure:plan` אחרון + קומיט.
 
 ---
