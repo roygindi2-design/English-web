@@ -558,11 +558,11 @@ describe('buildRecallCard', () => {
 
 ### צעדים
 
-- [ ] **3.1** צור `components/RecallCard.tsx`: `'use client'`, `apiGet` ל-`/api/world/recall`.
+- [x] **3.1** צור `components/RecallCard.tsx`: `'use client'`, `apiGet` ל-`/api/world/recall`.
       ⚠️ **חתימה כפולה במכוון:** `export default function RecallCard()` קורא לשרת, ומייצא גם
       `export function RecallCardView({ card }: { card: RecallCardData })` שמצייר בלבד —
       הפיקסטורה מרנדרת את השני. ⛔ **אין עותק שני של ה-JSX.**
-- [ ] **3.2** המסך, בדיוק כפי ש-§ 4.2יב קובעת ⛔ ולא כפי שנוח:
+- [x] **3.2** המסך, בדיוק כפי ש-§ 4.2יב קובעת ⛔ ולא כפי שנוח:
       שורה עברית «כתבת את זה לפני N ימים» (N מ-`daysAgo`) · המשפט ב-`<EnText segments=…>`
       כאשר מקטע היעד מוחלף ב**מסגרת ריקה בגובה השורה** — `<span className="inline-block
       min-w-[4ch] rounded-md border border-border-strong align-baseline">` עם
@@ -573,7 +573,7 @@ describe('buildRecallCard', () => {
       ⛔ אפס עונש · `card === null` ⇒ **מושבת עם המספר**: «כתוב את המשפט הראשון שלך» +
       קישור ל-`/world/compose` · טעינה ⇒ שלד **בצורת הכרטיס** ⛔ לא ספינר · כשל ⇒
       `FAILURE_HE.load`.
-- [ ] **3.3** צור `components/RecallCard.test.ts` כשומר מקור. הבדיקות המחייבות:
+- [x] **3.3** צור `components/RecallCard.test.ts` כשומר מקור. הבדיקות המחייבות:
       `expect(CODE).not.toMatch(/apiPost/)` ← **מדד ⓐ: מחזור מלא ⛔ אינו כותב** ·
       `expect(CODE).not.toMatch(/easiness|interval_days|repetition|next_review_at|self_marked_known|word_progress/)` ·
       `expect(CODE).not.toMatch(/\bxp\b|\bscore\b|\bpoints\b|\bcoin\b|\bstreak\b/i)` ·
@@ -581,20 +581,20 @@ describe('buildRecallCard', () => {
       «⛔ לא קו תחתון דק», נופלת בשם · `expect(CODE).not.toMatch(/setTimeout|setInterval/)`
       (D-049) · `expect(CODE).not.toMatch(/נסה שוב.*אפשרות|ניסיון שני/)` ·
       `expect(CODE).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)`.
-- [ ] **3.4** צור `app/dev/world/recall/page.tsx` — כרטיס קבוע בקוד (`daysAgo: 3`, משפט
+- [x] **3.4** צור `app/dev/world/recall/page.tsx` — כרטיס קבוע בקוד (`daysAgo: 3`, משפט
       אנגלי אחד, ארבע אפשרויות), `export const metadata = { robots: { index: false } }`
       בדיוק כמו יתר `app/dev/*`. ⛔ אפס `fetch`.
-- [ ] **3.5** הוסף `'/dev/world/recall'` ל-`ROUTES` ב-`verify-mobile.mjs` עם הערת נימוק בת
+- [x] **3.5** הוסף `'/dev/world/recall'` ל-`ROUTES` ב-`verify-mobile.mjs` עם הערת נימוק בת
       שלוש שורות, והוסף ל-`EXPECTED_CONSOLE['/world']` את
       `/status of 503[\s\S]*@\S*\/api\/world\/recall/`. ⛔ **אל תוסיף רשומה לפיקסטורה.**
-- [ ] **3.6** ערוך את `app/(tabs)/world/page.tsx`: `<><RecallCard /><AppGrid /><WorldFeed /></>`
+- [x] **3.6** ערוך את `app/(tabs)/world/page.tsx`: `<><RecallCard /><AppGrid /><WorldFeed /></>`
       — הכרטיס **בראש**, מעל הרשת (§ 4.2יב קישוריות 6).
-- [ ] **3.7** ב-`components/AppGrid.tsx` — ⛔ **אל תיגע.** «חיוב פתוח» ל«הרכבה» נשאר פתוח
+- [x] **3.7** ב-`components/AppGrid.tsx` — ⛔ **אל תיגע.** «חיוב פתוח» ל«הרכבה» נשאר פתוח
       ב-F-072 עד שיוכרע, ו⛔ אין להסיק אותו מהכרטיס.
-- [ ] **3.8** **מוטציה 1** — הוסף `void apiPost('/api/review', {});` לרכיב ⇒ «⛔ אינו כותב»
+- [x] **3.8** **מוטציה 1** — הוסף `void apiPost('/api/review', {});` לרכיב ⇒ «⛔ אינו כותב»
       חייבת ליפול. שחזר.
-- [ ] **3.9** **מוטציה 2** — החלף את המסגרת ב-`border-b` ⇒ הבדיקה חייבת ליפול בשם. שחזר.
-- [ ] **3.10** `npm run check:mobile` ⇒ הפיקסטורה חייבת להופיע בפלט **בלי** שורת קונסול
+- [x] **3.9** **מוטציה 2** — החלף את המסגרת ב-`border-b` ⇒ הבדיקה חייבת ליפול בשם. שחזר.
+- [x] **3.10** `npm run check:mobile` ⇒ הפיקסטורה חייבת להופיע בפלט **בלי** שורת קונסול
       מותרת. שער אימות מלא + `measure:plan` אחרון + קומיט.
 
 ---

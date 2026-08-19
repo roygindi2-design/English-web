@@ -82,6 +82,12 @@ const ROUTES = [
   // EXPECTED_CONSOLE entry and why an entry appearing there later would mean this
   // measurement has silently gone back to reading the failure screen.
   '/dev/world',
+  // C-0203 (T-105) — ואותו נימוק בדיוק, רכיב אחד הלאה: בלי env של Supabase
+  // `GET /api/world/recall` עונה 503 בחוזה שלו עצמו, ולכן הכרטיס עצמו — המשפט של הלומד,
+  // המסגרת הריקה במקום מילת היעד, ארבע האפשרויות שתיים-ושתיים ונחיתת המילה — מעולם לא
+  // היה על המסך ב-320/375/414, ו-`/world` מדד עד היום את מצב הכשל שלו בלבד. הפיקסטורה
+  // מקבלת כרטיס כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE.
+  '/dev/world/recall',
   // T-095 · § 4.2י. `/arcade` יושב מחוץ ל-`PROTECTED_SCREENS` ולכן הוא **כן** מרונדר כאן,
   // אבל בלי env של Supabase `GET /api/arcade/round` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה
   // הזאת מודדת הוא מצב **הכשל**: המשפט העברי והדרך החוצה. מצב שלומד יכול לפגוש בו.
@@ -246,6 +252,10 @@ const EXPECTED_CONSOLE = {
     /status of 503[\s\S]*@\S*\/api\/world\/posts/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
     /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
+    // C-0203 (T-105): `<RecallCard>` יושב **מעל** הרשת ומבקש את הכרטיס של היום, ולכן
+    // `/world` מבקש בקשה רביעית. כתובת אחת וסטטוס אחד כמו כל רשומה כאן — וזו בדיוק
+    // המדידה שמוכיחה שהכרטיס באמת נטען ובאמת מבקש.
+    /status of 503[\s\S]*@\S*\/api\/world\/recall/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two

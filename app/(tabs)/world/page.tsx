@@ -1,4 +1,5 @@
 import AppGrid from '@/components/AppGrid';
+import RecallCard from '@/components/RecallCard';
 import WorldFeed from '@/components/WorldFeed';
 
 /**
@@ -26,10 +27,17 @@ import WorldFeed from '@/components/WorldFeed';
  * `/world/compose`; whether the feed stays at all is item 29 in `plan/03-for-roy.md` and is
  * NOT decided here. So this file gains exactly one child and loses none — a removed feed
  * would be a product decision taken in a Dev tick, which is precisely what ⛔ is forbidden.
+ *
+ * T-105 · § 4.2יב — `<RecallCard>` sits ABOVE the grid, and that order is the decision, not
+ * a layout taste: § 4.2יב asks for "something waiting for the learner when they come back
+ * tomorrow", and a thing that waits has to be the first thing seen. The card asks
+ * `GET /api/world/recall`, which ⛔ writes nothing (D-051), so this screen still performs no
+ * write of any kind. Again exactly one child gained and none lost.
  */
 export default function WorldPage() {
   return (
     <>
+      <RecallCard />
       <AppGrid />
       <WorldFeed />
     </>
