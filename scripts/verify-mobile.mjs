@@ -82,6 +82,14 @@ const ROUTES = [
   // EXPECTED_CONSOLE entry and why an entry appearing there later would mean this
   // measurement has silently gone back to reading the failure screen.
   '/dev/world',
+  // T-095 · § 4.2י. `/arcade` יושב מחוץ ל-`PROTECTED_SCREENS` ולכן הוא **כן** מרונדר כאן,
+  // אבל בלי env של Supabase `GET /api/arcade/round` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה
+  // הזאת מודדת הוא מצב **הכשל**: המשפט העברי והדרך החוצה. מצב שלומד יכול לפגוש בו.
+  '/arcade',
+  // ...והפיקסטורה, כי אותו 503 אומר שהמילה, ארבע האפשרויות ומד חיי היריב לעולם אינם על
+  // המסך בשורה שמעל. היא מקבלת את הסיבוב כ-prop ואינה מבקשת מהשרת דבר — ולכן ⛔ אין לה
+  // רשומה ב-EXPECTED_CONSOLE, והשקט הזה הוא מה שמוכיח שהמדידה אינה על מסך הכשל.
+  '/dev/arcade',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -227,6 +235,14 @@ const EXPECTED_CONSOLE = {
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
+  // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two
+  // world routes above — no Supabase env, so `GET /api/arcade/round` answers 503 by its own
+  // contract and the browser logs it. Keyed to the one URL and the one status: a 401, a 500
+  // or any other request on this route still fails the check. ⛔ There is deliberately NO
+  // entry for `/dev/arcade`: the fixture is handed its round as a prop and issues no request
+  // at all, and that silence is what proves the harness measures the battle rather than the
+  // failure screen.
+  '/arcade': [/status of 503[\s\S]*@\S*\/api\/arcade\/round/],
   // T-067: the arrival block TAPS the onboarding fixture's submit, which reaches
   // POST /api/profile — and that route answers 503 without Supabase env by its own
   // contract (`app/api/profile/route.ts:24`). Keyed to the one URL and the one status
