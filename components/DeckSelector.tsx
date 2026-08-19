@@ -6,8 +6,13 @@ import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
 
 /**
- * The body of the כרטיסיות tab — the deck selector, T-065 part ג׳, plan
+ * The «דרכים לתרגל» block of the כרטיסיות tab — the deck selector, T-065 part ג׳, plan
  * `2026-08-13-study-queue.md` task 7.
+ *
+ * ⛔ This component is NOT the screen. Since T-081 the screen is `<LevelMapScreen>` (§ 4.2ז),
+ * and this block is its fourth row. It therefore carries ⛔ no `<h1>` of its own — the screen
+ * owns the single `<h1>` («הרמה שלך») and hands this block an `<h2>`. Two `<h1>` on one screen
+ * break the heading hierarchy for a screen reader.
  *
  * It replaces the shared empty state this screen used to render. That state was honest
  * while `/study` had no queue behind it; now that `GET /api/study/queue` answers, «אין
@@ -50,7 +55,6 @@ import { apiGet } from '@/lib/api/client';
  * does not name. Recorded in `plan/30-architecture.md` rather than added here.
  */
 
-const HEADING_HE = 'כרטיסיות';
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
 const LOCKED_HE = 'נעול';
@@ -113,7 +117,7 @@ function toEntry(input: {
     : { key, label, note, enabled: false, href };
 }
 
-export default function CardsScreen(): React.JSX.Element {
+export default function DeckSelector(): React.JSX.Element {
   const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null });
   const [loading, setLoading] = useState(true);
 
@@ -146,8 +150,6 @@ export default function CardsScreen(): React.JSX.Element {
 
   return (
     <section className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
-
       {/* `aria-busy` and ⛔ not a spinner or a skeleton: the three cards are already in the
           DOM at their final size, so nothing shifts when the numbers land. */}
       <ul aria-busy={loading} data-deck-selector className="flex list-none flex-col gap-3 p-0">

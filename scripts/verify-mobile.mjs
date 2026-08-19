@@ -197,6 +197,13 @@ const EXPECTED_CONSOLE = {
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
+    // C-0176 (T-081): the fixture now renders `<LevelMapScreen>`, which asks for the level
+    // summary on mount. The fixture has no session and the harness has no Supabase env, so
+    // `GET /api/levels/summary` answers 503 by its own contract — and that failure branch,
+    // the Hebrew sentence rather than «0 מילים», is exactly what this route measures. Keyed
+    // to the one URL and the one status like every entry above: a 401 or a 500 on the same
+    // URL still fails the check.
+    /status of 503[\s\S]*@\S*\/api\/levels\/summary/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase

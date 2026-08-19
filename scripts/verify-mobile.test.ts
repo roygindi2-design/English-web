@@ -262,7 +262,7 @@ describe('the tab fixtures render what the real tab screens render (F-027 cause 
       name: 'cards',
       real: 'app/(tabs)/cards/page.tsx',
       fixture: 'app/dev/tabs/cards/page.tsx',
-      component: 'CardsScreen',
+      component: 'LevelMapScreen',
       // ⚠️ Not in the plan. Step 4.3 named `/cards` as a directly measurable
       // route; measured in C-0075 it answers 307 → /login?expired=1, because
       // C-0073 added it to `PROTECTED_SCREENS`. It gets a fixture like the

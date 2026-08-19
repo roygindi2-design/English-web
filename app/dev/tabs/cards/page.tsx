@@ -1,4 +1,4 @@
-import CardsScreen from '@/components/CardsScreen';
+import LevelMapScreen from '@/components/LevelMapScreen';
 import TabBar from '@/components/TabBar';
 
 /**
@@ -14,9 +14,17 @@ import TabBar from '@/components/TabBar';
  *
  * `<TabBar />` is named here because the fixture lives outside `app/(tabs)`.
  *
- * ⚠️ Since C-0103 (T-065 task 7) `<CardsScreen>` reads both decks from
- * `GET /api/study/queue`. This fixture has no session and the harness has no Supabase env,
- * so both requests answer 503 by the route's own contract and the screen lands in its
+ * ⚠️ Since C-0176 (T-081) the fixture renders `<LevelMapScreen>` — the level map (§ 4.2ז) —
+ * and therefore measures a THIRD failure state too: it has no session and the harness has no
+ * Supabase env, so `GET /api/levels/summary` answers 503 by its own contract and the screen
+ * lands in the «המאגר עדיין לא הוקם» / «לא הצלחנו לטעון» branch. That IS the state the task
+ * names for a missing schema, and it is what the map was written for. The 503 line is allowed
+ * in `EXPECTED_CONSOLE` (scripts/verify-mobile.mjs) by exact URL and status, ⛔ not by
+ * exempting the route.
+ *
+ * ⚠️ Since C-0103 (T-065 task 7) `<DeckSelector>` — now the «דרכים לתרגל» block inside the
+ * map — reads both decks from `GET /api/study/queue`. This fixture has no session and the harness has no Supabase env,
+ * so both requests answer 503 by the route's own contract and the block lands in its
  * «—» state — which IS the failure state the task names, and therefore the right thing to
  * measure. The two 503 lines are allowed in `EXPECTED_CONSOLE` (scripts/verify-mobile.mjs)
  * by exact URL and status, ⛔ not by exempting the route.
@@ -24,7 +32,7 @@ import TabBar from '@/components/TabBar';
 export default function DevTabsCardsPage() {
   return (
     <>
-      <CardsScreen />
+      <LevelMapScreen />
       <TabBar />
     </>
   );

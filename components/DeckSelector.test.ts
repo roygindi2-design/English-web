@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
- * `<CardsScreen>` — the כרטיסיות selector, T-065 part ג׳, plan
+ * `<DeckSelector>` — the כרטיסיות selector, T-065 part ג׳, plan
  * `2026-08-13-study-queue.md` task 7.
  *
  * A source guard, in the same shape and for the same reason as `CardDeck.test.ts` and
@@ -31,7 +31,7 @@ import { describe, expect, it } from 'vitest';
  * requests actually return, that the disabled card is truly unclickable in an engine, or
  * that the numbers on screen match the database.
  */
-const SRC = readFileSync('components/CardsScreen.tsx', 'utf8');
+const SRC = readFileSync('components/DeckSelector.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
 function withoutComments(source: string): string {
@@ -51,7 +51,7 @@ const CODE = withoutComments(SRC);
  */
 function braceRegion(source: string, open: string): string {
   const start = source.indexOf(open);
-  expect(start, `expected to find ${open} in CardsScreen.tsx`).toBeGreaterThan(-1);
+  expect(start, `expected to find ${open} in DeckSelector.tsx`).toBeGreaterThan(-1);
   let depth = 0;
   for (let i = start; i < source.length; i += 1) {
     if (source[i] === '{') depth += 1;
@@ -60,13 +60,13 @@ function braceRegion(source: string, open: string): string {
       if (depth === 0) return source.slice(start, i + 1);
     }
   }
-  throw new Error(`unbalanced braces after ${open} in CardsScreen.tsx`);
+  throw new Error(`unbalanced braces after ${open} in DeckSelector.tsx`);
 }
 
 /** The three entries, by the key each one is built under. */
 const SENTENCES_ENTRY = "key: 'sentences'";
 
-describe('<CardsScreen> — the deck selector (T-065 · § 4.2ו)', () => {
+describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   it('is a client component', () => {
     expect(CODE).toContain("'use client'");
   });
