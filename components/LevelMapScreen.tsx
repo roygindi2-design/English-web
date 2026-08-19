@@ -6,6 +6,7 @@ import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
 
@@ -144,9 +145,11 @@ export default function LevelMapScreen(): React.JSX.Element {
       ) : null}
 
       {state.kind === 'failed' ? (
+        // T-124 · D-065: כל ענף כשל נושא יציאה. קודם לכן `schema_missing`
+        // הופיע בלי שום כפתור ו-`session_expired` בלי קישור ל-/login.
         <div className="flex flex-col gap-3">
           <p className="text-lg">{failureText(state.code)}</p>
-          {state.code === 'unavailable' ? (
+          {isRetryable(state.code) ? (
             <button
               type="button"
               onClick={() => void load()}
@@ -155,6 +158,18 @@ export default function LevelMapScreen(): React.JSX.Element {
               {RETRY_HE}
             </button>
           ) : null}
+          {/* ⛔ `<a>` ולא `<Link>`: כשהסשן מת הבקשה הבאה חייבת להגיע לשרת
+              ולקבל רשות להפנות — הראוטר של הלקוח עלול לענות מהמטמון. */}
+          {/* ⚠️ ⛔ בלי `justify-center`, וזו ⛔ אינה קפידה: `LevelMapScreen.test.ts`
+              אוסר את המחרוזת בקובץ הזה כולו (F-011 · F-016), ושאר הכפתורים כאן
+              מסתפקים ב-`items-center`. החלשת השומר כדי להתאים לקטע מהתוכנית
+              הייתה מוחקת בדיקה שנמדדה. */}
+          <a
+            href={failureExit(state.code).href}
+            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            {failureExit(state.code).labelHe}
+          </a>
         </div>
       ) : null}
 

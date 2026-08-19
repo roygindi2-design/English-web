@@ -167,8 +167,12 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
   });
 
   it('sends an expired session to /login and offers a retry otherwise', () => {
+    // ⚠️ **האסרציה תוקנה ב-T-124 ⛔ ולא נמחקה.** היעד `/login` כבר אינו מחרוזת
+    // קשיחה בקובץ הזה — הוא שורה אחת בטבלה `lib/core/failureExit.ts`, שנועלת
+    // אותו בבדיקת יחידה אמיתית (`failureExit('session_expired').href`). בדיקה
+    // שממשיכה לדרוש `'/login'` **כאן** הייתה מחזירה את הכפילות שהמשימה מחקה.
     expect(CODE).toContain('session_expired');
-    expect(CODE).toContain('/login');
+    expect(CODE).toContain("failureExit('session_expired')");
     expect(CODE).toContain('RETRY_HE');
   });
 
@@ -185,5 +189,51 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
 
   it('⛔ never centres a flex column — the F-011 · F-016 dead band', () => {
     expect(CODE).not.toMatch(/flex-1[^"'`]*justify-center/);
+  });
+});
+
+/**
+ * T-124 · D-065 — «⛔ אין מסך כשל בלי יציאה», ובמסך הזה: ⛔ אין «נסה שוב» על
+ * תקלה שלעולם אינה חולפת. `schema_missing` נפל קודם לענף ברירת המחדל, וקיבל
+ * כפתור ניסיון חוזר שלא היה יכול להצליח לעולם — מיגרציה שלא רצה ⛔ לא תרוץ
+ * מפני שהלומד לחץ.
+ */
+describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שוב»', () => {
+  it('יש ענף schema_missing נפרד ב-ActionBar', () => {
+    expect(CODE).toMatch(/state\.kind === 'schema_missing' \?/);
+  });
+
+  it('הטבלה מיובאת ⛔ והיעדים אינם קשיחים כאן', () => {
+    expect(CODE).toContain('failureExit');
+    expect(CODE).not.toMatch(/href="\/login"/);
+    expect(CODE).not.toMatch(/href="\/studies"/);
+  });
+
+  it('⛔ «נסה שוב» אינו ענף ברירת המחדל שתופס גם את schema_missing', () => {
+    // זה היה הבאג: `: (` תפס schema_missing והציע כפתור שלעולם לא יצליח.
+    const retry = CODE.indexOf('RETRY_HE}');
+    const schema = CODE.indexOf("state.kind === 'schema_missing' ?");
+    expect(schema).toBeGreaterThan(-1);
+    expect(schema).toBeLessThan(retry);
+  });
+
+  it('ענף התקלה החולפת נושא גם יציאה — «נסה שוב» לבדו הוא מסך ללא דרך החוצה', () => {
+    const start = CODE.indexOf("state.kind === 'error' ?");
+    expect(start).toBeGreaterThan(-1);
+    expect(CODE.slice(start, start + 700)).toMatch(/<a\s/);
+  });
+
+  it('⛔ סימון פעולה ראשית אחד בדיוק לכל ענף (F-027 · check:mobile)', () => {
+    // `/study` הוא FLOW_ROUTE, והארנס סופר `main [data-primary-action]` ודורש
+    // **בדיוק 1**. ⇒ ב-`<ActionBar>` יש ארבע חלופות זרות (session_expired ·
+    // schema_missing · empty · ניסיון חוזר), וארבעה סימונים בסך הכל — אחד לכל
+    // חלופה. היציאה שנוספה לענף התקלה החולפת היא משנית **במכוון**, ולכן ⛔ אינה
+    // מסומנת: סימון חמישי היה מפיל את הארנס על `found 2 elements`.
+    const bar = CODE.slice(CODE.indexOf('<ActionBar>'), CODE.indexOf('</ActionBar>'));
+    expect((bar.match(/data-primary-action/g) ?? []).length).toBe(4);
+
+    const errorBranch = bar.slice(bar.indexOf("state.kind === 'error' ?"));
+    expect(errorBranch).toMatch(/<a\s/);
+    expect(errorBranch).not.toContain('data-primary-action');
   });
 });

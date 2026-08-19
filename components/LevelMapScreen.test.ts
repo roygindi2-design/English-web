@@ -103,3 +103,35 @@ describe('מצבי הקצה שהמפרט נוקב בהם', () => {
     for (const button of buttons) expect(button).toContain('min-h-touch');
   });
 });
+
+/**
+ * T-124 · D-065 — כל ענף כשל נושא יציאה.
+ *
+ * ⚠️ **סטייה מוצהרת מנוסח התוכנית, והקוד הוא שכפה אותה:** התוכנית מוסיפה
+ * `data-primary-action="true"` לקישור היציאה כאן. ⛔ אסור. `<DeckSelector>`
+ * במסך הזה מרונדר **ללא תנאי** (⛔ לא בתוך ענף מצב), הוא כבר נושא את הסימון
+ * מאז T-123, ולכן במצב `failed` היו נספרים **שני** סימונים באותו מסך.
+ */
+describe('T-124 · D-065 — כל ענף כשל נושא יציאה', () => {
+  it('הטבלה מיובאת ⛔ והכלל אינו משוכפל כאן', () => {
+    expect(CODE).toContain('failureExit');
+    expect(CODE).toContain('isRetryable');
+  });
+
+  it('⛔ «נסה שוב» כבר אינו מותנה בקוד קשיח בקובץ הזה', () => {
+    expect(CODE).not.toMatch(/state\.code === 'unavailable' \?/);
+  });
+
+  it('בלוק הכשל מכיל <a> — יציאה, ⛔ ולא רק משפט', () => {
+    const start = CODE.indexOf("state.kind === 'failed'");
+    expect(start).toBeGreaterThan(-1);
+    const block = CODE.slice(start, start + 1400);
+    expect(block).toMatch(/<a\s/);
+  });
+
+  it('⛔ אין סימון פעולה ראשית שני — DeckSelector כבר נושא אותו במסך הזה', () => {
+    const start = CODE.indexOf("state.kind === 'failed'");
+    const block = CODE.slice(start, start + 1400);
+    expect(block).not.toContain('data-primary-action');
+  });
+});

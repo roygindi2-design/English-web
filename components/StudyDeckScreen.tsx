@@ -9,6 +9,7 @@ import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import type { CardGrade } from '@/lib/core/flashcard';
 import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
 
@@ -224,11 +225,23 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           // reach the server and be allowed to redirect — the client router may answer from
           // its cache. Same reasoning as the retry in <MeScreen>.
           <a
-            href="/login"
+            href={failureExit('session_expired').href}
             data-primary-action="true"
             className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {SIGN_IN_AGAIN_HE}
+          </a>
+        ) : state.kind === 'schema_missing' ? (
+          // T-124 · D-065 · ⓒ במשימה: ⛔ אין «נסה שוב» כאן. המיגרציה לא תרוץ
+          // מפני שהלומד לחץ על כפתור, ולכן הכפתור ההוא לעולם לא היה מצליח —
+          // הוא היה ענף ברירת המחדל שתפס גם את המצב הזה. יש ניווט ללשונית
+          // שכן עובדת, ⛔ ולא ניסיון חוזר על תקלה שאינה חולפת מעצמה.
+          <a
+            href={failureExit('schema_missing').href}
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            {failureExit('schema_missing').labelHe}
           </a>
         ) : state.kind === 'empty' ? (
           // ⚠️ Deck-dependent, and the deviation is reported in the plan: the action the
@@ -244,14 +257,31 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
             {deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE}
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={() => void load()}
-            data-primary-action="true"
-            className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
-          >
-            {RETRY_HE}
-          </button>
+          // ⚠️ סטייה מוצהרת מנוסח הצעד בתוכנית, והכרעה 4 של אותה תוכנית היא
+          // שכפתה אותה: «נסה שוב» לבדו הוא מסך ללא דרך החוצה כשהתקלה מתמידה.
+          // ⇒ במצב `error` נוספת יציאה לצד הניסיון החוזר. ⛔ היא ⛔ אינה נושאת
+          // `data-primary-action` — `/study` הוא FLOW_ROUTE, ו-`check:mobile`
+          // סופר בדיוק סימון אחד למסך (F-027).
+          <div className="flex flex-col gap-2">
+            {isRetryable('unavailable') ? (
+              <button
+                type="button"
+                onClick={() => void load()}
+                data-primary-action="true"
+                className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
+              >
+                {RETRY_HE}
+              </button>
+            ) : null}
+            {state.kind === 'error' ? (
+              <a
+                href={failureExit('unavailable').href}
+                className="flex w-full min-h-touch items-center justify-center rounded-lg px-5 py-3 text-base text-ink-muted active:opacity-90"
+              >
+                {failureExit('unavailable').labelHe}
+              </a>
+            ) : null}
+          </div>
         )}
       </ActionBar>
     </section>

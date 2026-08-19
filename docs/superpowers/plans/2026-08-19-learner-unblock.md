@@ -728,7 +728,7 @@ git commit -m "loop(DEV): C-XXXX T-123 — מאגר ריק מפסיק לחסום
 4. **`unavailable` ⇒ `retryable: true` ו**בנוסף** יציאה.** «נסה שוב» לבדו הוא מסך ללא דרך החוצה כשהתקלה מתמידה.
 5. **היציאה היא `<a>` ⛔ ולא `<Link>` עבור `session_expired`** — הנימוק כבר כתוב ב-`StudyDeckScreen.tsx:242-244` (הראוטר של הלקוח עלול לענות מהמטמון), ואותו כלל נשמר.
 
-- [ ] **Step 1: כתוב את בדיקת היחידה שנופלת**
+- [x] **Step 1: כתוב את בדיקת היחידה שנופלת**
 
 צור `lib/core/failureExit.test.ts`:
 
@@ -784,7 +784,7 @@ describe('unavailable', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 ```bash
 npm test -- lib/core/failureExit.test.ts
@@ -792,7 +792,7 @@ npm test -- lib/core/failureExit.test.ts
 
 צפוי: FAIL — `Cannot find module './failureExit'`.
 
-- [ ] **Step 3: כתוב את המימוש הטהור**
+- [x] **Step 3: כתוב את המימוש הטהור**
 
 צור `lib/core/failureExit.ts`:
 
@@ -842,7 +842,7 @@ export function isRetryable(code: FailureCode): boolean {
 }
 ```
 
-- [ ] **Step 4: הרץ ואמת שהיא עוברת**
+- [x] **Step 4: הרץ ואמת שהיא עוברת**
 
 ```bash
 npm test -- lib/core/failureExit.test.ts && npm run check:core
@@ -850,7 +850,7 @@ npm test -- lib/core/failureExit.test.ts && npm run check:core
 
 צפוי: PASS · `check:core` OK.
 
-- [ ] **Step 5: חבר את `LevelMapScreen.tsx` (ⓐ · ⓑ)**
+- [x] **Step 5: חבר את `LevelMapScreen.tsx` (ⓐ · ⓑ)**
 
 הוסף לייבוא:
 
@@ -888,7 +888,7 @@ import { failureExit, isRetryable } from '@/lib/core/failureExit';
       ) : null}
 ```
 
-- [ ] **Step 6: חבר את `StudyDeckScreen.tsx` (ⓒ)**
+- [x] **Step 6: חבר את `StudyDeckScreen.tsx` (ⓒ)**
 
 הוסף לייבוא:
 
@@ -941,7 +941,7 @@ import { failureExit, isRetryable } from '@/lib/core/failureExit';
 
 ⚠️ אם `ActionBar` אינו מסוגל להכיל שני ילדים, השאר את מבנה הענף היחיד כפי שהוא כאן — כל ענף מפיק אלמנט אחד בדיוק. ⛔ אל תוסיף שני כפתורים לתוך `ActionBar` בלי לבדוק את `components/ActionBar.tsx` תחילה; `ActionBar.test.ts` נועל את המבנה שלו.
 
-- [ ] **Step 7: חבר את `app/error.tsx` (ⓓ)**
+- [x] **Step 7: חבר את `app/error.tsx` (ⓓ)**
 
 ```tsx
 'use client';
@@ -987,7 +987,7 @@ export default function RouteError({ reset }: { error: Error; reset: () => void 
 }
 ```
 
-- [ ] **Step 8: כתוב את שומרי המקור — הבדיקה שהמשימה נוקבת בה**
+- [x] **Step 8: כתוב את שומרי המקור — הבדיקה שהמשימה נוקבת בה**
 
 צור `app/error.test.ts`:
 
@@ -1061,7 +1061,7 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
 });
 ```
 
-- [ ] **Step 9: אימות מלא**
+- [x] **Step 9: אימות מלא**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
@@ -1070,7 +1070,7 @@ npm run typecheck && npm run check:core && npm test && npm run build
 צפוי: `typecheck` 0 · `check:core` OK · הכל ירוק (כ-17 בדיקות נוספות) · `build` 0.
 ⚠️ אם בדיקה קיימת ב-`StudyDeckScreen.test.ts` נועלת את המבנה הישן של `ActionBar` — **אל תמחק אותה. תקן את הטענה** כך שתתאר את הכלל החדש, ורשום את השינוי בהודעת הקומיט.
 
-- [ ] **Step 10: קומיט**
+- [x] **Step 10: קומיט**
 
 ```bash
 git add lib/core/failureExit.ts lib/core/failureExit.test.ts components/LevelMapScreen.tsx components/LevelMapScreen.test.ts components/StudyDeckScreen.tsx components/StudyDeckScreen.test.ts app/error.tsx app/error.test.ts
