@@ -6,10 +6,12 @@
  * `word_progress` זהה בית-בבית לפני ואחרי. פונקציה שקוראת ל-supabase בעצמה אינה
  * ניתנת למדידה הזאת, וזה בדיוק מה שמדד ההצלחה ⓐ דורש.
  *
- * ⛔ הפסד אינו מוריד דבר (הכרעת רוי) · ⛔ אין ניקוד, אין מטבע ואין XP (D-050:
+ * ⛔ «היריב שרד» אינו מוריד דבר (הכרעת רוי · D-059) · ⛔ אין ניקוד, מטבע ו-XP (D-050:
  * ניקוד g=0.340 מול בלי ניקוד g=0.840, p=0.013) · ⛔ «המילים שהפילו אותך» הוא
  * ערך מוחזר לתצוגה ⛔ ואינו שורה שנכתבת (D-047).
  */
+import { applyWin, isVictory } from './arcadeLadder';
+
 export interface ArcadeAnswer {
   readonly wordId: string;
   readonly correct: boolean;
@@ -25,6 +27,9 @@ export interface ArcadeWriteRow {
 export interface ArcadeWritePlan {
   readonly rows: readonly ArcadeWriteRow[];
   readonly enemyDefeated: boolean;
+  /** ⛔ שני מוצאים בלבד (D-059). «הפסד» ⛔ אינו ערך אפשרי. */
+  readonly outcome: 'victory' | 'survived';
+  readonly leveledUp: boolean;
   readonly unlocked: string | null;
   readonly missed: readonly { readonly wordId: string; readonly answer: string; readonly chosen: string }[];
 }
@@ -36,16 +41,19 @@ export const ARCADE_ITEMS = Object.freeze(['helmet', 'cape', 'lantern', 'boots',
 export function planArcadeWrites(input: {
   readonly userId: string;
   readonly answers: readonly ArcadeAnswer[];
-  readonly before: { readonly arcadeLevel: number; readonly wins: number; readonly unlockedItems: readonly string[] };
-  readonly enemyHp: number;
+  readonly before: { readonly gameLevel: number; readonly wins: number; readonly unlockedItems: readonly string[] };
   readonly finishedAt: string;
 }): ArcadeWritePlan {
   const correct = input.answers.filter((a) => a.correct).length;
-  const enemyDefeated = correct >= input.enemyHp;
-  const wins = input.before.wins + (enemyDefeated ? 1 : 0);
-  const arcadeLevel = enemyDefeated ? input.before.arcadeLevel + 1 : input.before.arcadeLevel;
+  // ⛔ הסף מגיע מהקבוע ⛔ ולא מהלקוח: שדה בגוף הבקשה היה מאפשר ניצחון בתשובה אחת.
+  const won = isVictory(correct);
+  const after = won
+    ? applyWin({ level: input.before.gameLevel, wins: input.before.wins })
+    : { level: input.before.gameLevel, wins: input.before.wins, leveledUp: false };
+
   const held = new Set(input.before.unlockedItems);
-  const next = enemyDefeated ? ARCADE_ITEMS.find((i) => !held.has(i)) ?? null : null;
+  // ⛔ פריט נפתח בעליית **רמה**, ⛔ ולא בכל ניצחון (D-061).
+  const next = after.leveledUp ? ARCADE_ITEMS.find((i) => !held.has(i)) ?? null : null;
   const unlockedItems = next ? [...input.before.unlockedItems, next] : [...input.before.unlockedItems];
 
   const missed = input.answers
@@ -59,8 +67,8 @@ export function planArcadeWrites(input: {
         table: 'arcade_progress',
         values: {
           user_id: input.userId,
-          arcade_level: arcadeLevel,
-          wins,
+          arcade_level: after.level,
+          wins: after.wins,
           unlocked_items: unlockedItems,
           updated_at: input.finishedAt,
         },
@@ -72,11 +80,13 @@ export function planArcadeWrites(input: {
           finished_at: input.finishedAt,
           words_seen: input.answers.length,
           words_correct: correct,
-          enemy_defeated: enemyDefeated,
+          enemy_defeated: won,
         },
       },
     ],
-    enemyDefeated,
+    enemyDefeated: won,
+    outcome: won ? 'victory' : 'survived',
+    leveledUp: after.leveledUp,
     unlocked: next,
     missed,
   };

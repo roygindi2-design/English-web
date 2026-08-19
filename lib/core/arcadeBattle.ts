@@ -10,17 +10,18 @@
  * ⛔ **אין כאן ניקוד** (D-050 — ניקוד g=0.340 מול בלי ניקוד g=0.840, p=0.013), ו⛔ אין
  * כאן חיים ללומד: תשובה שגויה ⛔ אינה מורידה דבר ⛔ ואינה מסיימת דבר.
  */
+import { ARCADE_ENEMY_HP } from './arcadeLadder';
 import type { ArcadeAnswer } from './arcadeResult';
 import type { ArcadeQuestion } from './arcadeRound';
 
 /**
- * ⚠️ **המקור של המספר, ⛔ ולא ניחוש:** `docs/api-contract.md` מקבע 5 בדוגמת הבקשה של
- * `POST /api/arcade/result`, ו-`lib/core/arcadeResult.test.ts` מריץ את כל מקרי הניצחון
- * וההפסד שלו מול `enemyHp: 5`. `ARCADE_ROUND_SIZE` הוא 8 ⇒ לומד עם 5 נכונות מתוך 8 מנצח.
- * ⛔ קבוע, ⛔ אינו נגזר מהלומד ו⛔ אינו עולה עם הרמה — «קושי שגדל» הוא החלטת PM,
- * ⛔ לא ברירת מחדל של Dev (F-066, נפתחה בטיק התכנון C-0183).
+ * ⛔ הקבוע חי ב-`arcadeLadder` (D-059) — זהו ייצוא מחדש לתאימות של `components/ArenaBoard.tsx`.
+ * ⛔ שני מקומות למספר אחד הם עותק שני של החוק, והשני תמיד סוטה.
  */
-export const ARCADE_ENEMY_HP = 5;
+export { ARCADE_ENEMY_HP };
+
+/** ⛔ שני מוצאים, ⛔ ואין שלישי. «הפסד» אינו מצב במוצר הזה. */
+export type BattleOutcome = 'running' | 'victory' | 'survived';
 
 export interface BattleState {
   readonly questions: readonly ArcadeQuestion[];
@@ -65,4 +66,14 @@ export function isFinished(state: BattleState): boolean {
 
 export function enemyDefeated(state: BattleState): boolean {
   return state.enemyHp === 0;
+}
+
+/**
+ * ⛔ שני מוצאים בלבד: «ניצחון» או «היריב שרד» (D-059).
+ * ⛔ תשובה שגויה אינה מסיימת דבר ואינה מרפאת דבר — היא קליע שבוזבז.
+ */
+export function battleOutcome(state: BattleState): BattleOutcome {
+  if (state.enemyHp === 0) return 'victory';
+  if (state.index >= state.questions.length) return 'survived';
+  return 'running';
 }

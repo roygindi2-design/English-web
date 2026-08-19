@@ -3,11 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   ARCADE_ENEMY_HP,
   advance,
+  battleOutcome,
   chooseOption,
   enemyDefeated,
   isFinished,
   startBattle,
+  type BattleState,
 } from './arcadeBattle';
+import { ARCADE_AMMO } from './arcadeLadder';
 import type { ArcadeQuestion } from './arcadeRound';
 
 /** ⛔ אינן מילים אמיתיות ואינן תרגומים: פיקסטורה ⛔ אינה תוכן לימודי (R-010 · R-013). */
@@ -19,7 +22,8 @@ function q(n: number): ArcadeQuestion {
     options: [`אפשרות ${n}`, `מסיח ${n}א`, `מסיח ${n}ב`, `מסיח ${n}ג`],
   };
 }
-const QUESTIONS: readonly ArcadeQuestion[] = [q(1), q(2), q(3), q(4), q(5), q(6), q(7), q(8)];
+/** ⛔ `ARCADE_AMMO` ⛔ ולא 8: התחמושת היא הקבוע, והפיקסטורה חייבת להכיל אותה במלואה. */
+const QUESTIONS: readonly ArcadeQuestion[] = Array.from({ length: ARCADE_AMMO }, (_, i) => q(i + 1));
 
 describe('arcadeBattle', () => {
   it('פותח קרב עם חיי היריב הקבועים ובשאלה הראשונה', () => {
@@ -101,5 +105,42 @@ describe('arcadeBattle', () => {
     for (const banned of [/word_progress/, /easiness/, /interval_days/, /next_review_at/]) {
       expect(code, `${banned} אסור — D-044`).not.toMatch(banned);
     }
+  });
+});
+
+describe('D-059 — שני מוצאים בלבד מהקרב', () => {
+  /** משחק קרב שלם: `correctCount` תשובות נכונות ואז מסיחים עד סוף התחמושת. */
+  function play(correctCount: number): BattleState {
+    let s = startBattle(QUESTIONS);
+    for (const [i, question] of QUESTIONS.entries()) {
+      s = advance(chooseOption(s, i < correctCount ? question.answer : (question.options[1] ?? '')));
+    }
+    return s;
+  }
+
+  it('היריב מתחיל עם 10 חיים, ⛔ לא 5', () => {
+    expect(startBattle(QUESTIONS).enemyHp).toBe(ARCADE_ENEMY_HP);
+    expect(ARCADE_ENEMY_HP).toBe(10);
+  });
+
+  it('10 נכונות מתוך 15 ⇒ ניצחון', () => {
+    expect(battleOutcome(play(10))).toBe('victory');
+  });
+
+  it('9 נכונות מתוך 15 ⇒ «היריב שרד», ⛔ ולא «הפסד»', () => {
+    expect(battleOutcome(play(9))).toBe('survived');
+  });
+
+  it('⛔ תשובה שגויה ⛔ אינה מרפאת את היריב ו⛔ אינה מסיימת את הקרב', () => {
+    let s = startBattle(QUESTIONS);
+    s = advance(chooseOption(s, 'אפשרות 1'));
+    const hpAfterHit = s.enemyHp;
+    s = advance(chooseOption(s, 'מסיח 2א'));
+    expect(s.enemyHp).toBe(hpAfterHit);
+    expect(battleOutcome(s)).toBe('running');
+  });
+
+  it('הקרב באמצע ⇒ running', () => {
+    expect(battleOutcome(startBattle(QUESTIONS))).toBe('running');
   });
 });

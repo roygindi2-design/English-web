@@ -85,3 +85,50 @@ describe('החוזה מתעדכן באותו קומיט', () => {
     expect(CONTRACT).toContain('POST /api/arcade/result');
   });
 });
+
+describe('D-059 — ⛔ המילה «הפסדת» אינה קיימת במוצר', () => {
+  const files = [
+    'components/ArenaBoard.tsx', 'components/ArenaResult.tsx', 'components/ArenaAvatar.tsx',
+    'components/ArcadeEntry.tsx', 'lib/core/arcadeBattle.ts', 'lib/core/arcadeResult.ts',
+  ];
+
+  /**
+   * ⚠️ **הלבנה גם כאן, ⛔ ולא `readFileSync` גולמי כפי שהתוכנית כתבה** (F-039 · F-065):
+   * `components/ArenaResult.tsx` מתעד בהערה «קרב שלא נוצח ⛔ אינו «הפסדת»», והמדידה
+   * הגולמית הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת. ⛔ מחיקת ההערה אינה הפתרון.
+   */
+  it.each(files)('⛔ %s אינו מכיל «הפסדת» בקוד', (file) => {
+    expect(withoutComments(readFileSync(file, 'utf8'))).not.toContain('הפסדת');
+  });
+
+  /**
+   * ⚠️ **`/הפסד\b/` של התוכנית ⛔ אינו מודד דבר:** ‏`\b` ב-JS נשען על `\w` = `[A-Za-z0-9_]`,
+   * ואות עברית אינה `\w` ⇒ «הפסד » ⛔ אינו גבול מזהה והביטוי ⛔ לעולם אינו נתפס.
+   * המחרוזת עצמה היא המדידה: כל נגזרת («הפסד» · «הפסדת» · «הפסדים») מכילה אותה.
+   */
+  it('⛔ ואין בקוד אף נגזרת של «הפסד»', () => {
+    for (const file of files) {
+      expect(withoutComments(readFileSync(file, 'utf8')), file).not.toContain('הפסד');
+    }
+  });
+});
+
+describe('T-116 — הסף הוא קבוע שרת, ⛔ ולא שדה בגוף הבקשה', () => {
+  it('⛔ `enemyHp` ⛔ אינו נקרא מהגוף', () => {
+    expect(CODE).not.toContain('body.enemyHp');
+    expect(CODE).not.toContain('enemyHp');
+  });
+
+  it('הנתיב מחזיר `outcome` ו-`leveledUp`', () => {
+    const tail = CODE.slice(CODE.lastIndexOf('return NextResponse.json'));
+    expect(tail).toContain('outcome: plan.outcome');
+    expect(tail).toContain('leveledUp: plan.leveledUp');
+  });
+
+  it('החוזה מתעד את שני השדות ואת ההתעלמות מ-`enemyHp`', () => {
+    const section = CONTRACT.slice(CONTRACT.indexOf('POST /api/arcade/result'));
+    expect(section).toContain('outcome');
+    expect(section).toContain('leveledUp');
+    expect(section).toContain('ARCADE_ENEMY_HP');
+  });
+});

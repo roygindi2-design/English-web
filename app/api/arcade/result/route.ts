@@ -57,11 +57,9 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
 
   // ולידציה אחרי בדיקת ה-session (דפוס C-0032).
+  // ⛔ הסף ⛔ אינו מגיע מהגוף (D-059): לקוח ששלח 1 היה מנצח בתשובה נכונה אחת.
   const answers = parseAnswers(body.answers);
-  const enemyHp = typeof body.enemyHp === 'number' && Number.isInteger(body.enemyHp) && body.enemyHp > 0
-    ? body.enemyHp
-    : null;
-  if (answers === null || enemyHp === null) {
+  if (answers === null) {
     return NextResponse.json(
       { ok: false, fieldErrors: { answers: 'הקרב לא נשמר. נסה שוב.' } },
       { status: 422 },
@@ -85,11 +83,10 @@ export async function POST(request: Request) {
     userId: user.id,
     answers,
     before: {
-      arcadeLevel: row?.arcade_level ?? 1,
+      gameLevel: row?.arcade_level ?? 1,
       wins: row?.wins ?? 0,
       unlockedItems: row?.unlocked_items ?? [],
     },
-    enemyHp,
     finishedAt: new Date().toISOString(),
   });
 
@@ -107,6 +104,8 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     enemyDefeated: plan.enemyDefeated,
+    outcome: plan.outcome,
+    leveledUp: plan.leveledUp,
     unlocked: plan.unlocked,
     missed: plan.missed,
   });

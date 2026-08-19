@@ -8,7 +8,7 @@ import {
 } from './arcadeResult';
 
 const FINISHED_AT = '2026-08-19T01:00:00.000Z';
-const BEFORE = { arcadeLevel: 1, wins: 0, unlockedItems: [] as string[] };
+const BEFORE = { gameLevel: 1, wins: 0, unlockedItems: [] as string[] };
 
 function answers(pattern: readonly boolean[]): ArcadeAnswer[] {
   return pattern.map((correct, i) => ({
@@ -58,7 +58,6 @@ describe('⛔ מדד ההצלחה ⓐ של § 4.2י — הבידוד של D-044 
       userId: 'u-1',
       answers: answers([true, false, true, true, false, true, true, true]),
       before: BEFORE,
-      enemyHp: 5,
       finishedAt: FINISHED_AT,
     });
     applyPlan(store, plan);
@@ -74,8 +73,7 @@ describe('⛔ מדד ההצלחה ⓐ של § 4.2י — הבידוד של D-044 
         userId: 'u-1',
         answers: answers([false, false, false, false, false, false, false, false]),
         before: BEFORE,
-        enemyHp: 5,
-        finishedAt: FINISHED_AT,
+          finishedAt: FINISHED_AT,
       }),
     );
     expect(JSON.stringify(store.profiles)).toBe(before);
@@ -86,7 +84,6 @@ describe('⛔ מדד ההצלחה ⓐ של § 4.2י — הבידוד של D-044 
       userId: 'u-1',
       answers: answers([true, true, true, true, true, true, true, true]),
       before: BEFORE,
-      enemyHp: 5,
       finishedAt: FINISHED_AT,
     });
     expect([...new Set(plan.rows.map((r) => r.table))].sort()).toEqual([...ARCADE_WRITE_TABLES].sort());
@@ -105,7 +102,6 @@ describe('⛔ מדד ההצלחה ⓐ של § 4.2י — הבידוד של D-044 
       userId: 'u-1',
       answers: answers([true, false, true, false, true, true, true, true]),
       before: BEFORE,
-      enemyHp: 5,
       finishedAt: FINISHED_AT,
     });
     const keys = plan.rows.flatMap((r) => Object.keys(r.values));
@@ -113,37 +109,66 @@ describe('⛔ מדד ההצלחה ⓐ של § 4.2י — הבידוד של D-044 
   });
 });
 
-describe('מה הקרב כן משנה', () => {
-  it('ניצחון מעלה רמת משחק, מוסיף ניצחון ופותח פריט אחד', () => {
-    const plan = planArcadeWrites({
+describe('D-061 — ניצחון מקדם מונה, ⛔ ולא רמה', () => {
+  const wonAnswers = (correct: number) =>
+    answers(Array.from({ length: 15 }, (_, i) => i < correct));
+
+  const plan = (correct: number, before: { gameLevel: number; wins: number }) =>
+    planArcadeWrites({
       userId: 'u-1',
-      answers: answers([true, true, true, true, true, true, true, true]),
-      before: BEFORE,
-      enemyHp: 5,
+      answers: wonAnswers(correct),
+      before: { ...before, unlockedItems: [] },
       finishedAt: FINISHED_AT,
     });
-    const progress = plan.rows.find((r) => r.table === 'arcade_progress')!.values;
-    expect(plan.enemyDefeated).toBe(true);
-    expect(progress.arcade_level).toBe(2);
-    expect(progress.wins).toBe(1);
-    expect(plan.unlocked).not.toBeNull();
-    expect(progress.unlocked_items).toEqual([plan.unlocked]);
+
+  it('ניצחון ראשון: המונה עולה, הרמה ⛔ לא', () => {
+    const p = plan(10, { gameLevel: 2, wins: 0 });
+    expect(p.outcome).toBe('victory');
+    expect(p.leveledUp).toBe(false);
+    expect(p.rows[0]?.values).toMatchObject({ arcade_level: 2, wins: 1 });
   });
 
-  it('⛔ הפסד אינו מוריד דבר — רמת משחק, ניצחונות ופריטים נשארים כמו שהיו', () => {
-    const before = { arcadeLevel: 4, wins: 3, unlockedItems: ['helmet', 'cape'] };
-    const plan = planArcadeWrites({
+  it('ניצחון שלישי: הרמה עולה והמונה מתאפס', () => {
+    const p = plan(12, { gameLevel: 2, wins: 2 });
+    expect(p.leveledUp).toBe(true);
+    expect(p.rows[0]?.values).toMatchObject({ arcade_level: 3, wins: 0 });
+  });
+
+  it('⛔ פריט נפתח בעליית רמה בלבד, ⛔ ולא בכל ניצחון', () => {
+    expect(plan(10, { gameLevel: 2, wins: 0 }).unlocked).toBeNull();
+    expect(plan(10, { gameLevel: 2, wins: 2 }).unlocked).not.toBeNull();
+  });
+
+  it('⛔ «היריב שרד» ⛔ אינו מוריד דבר — לא רמה, לא מונה, לא פריטים', () => {
+    const p = planArcadeWrites({
       userId: 'u-1',
-      answers: answers([false, false, true, false, false, false, false, false]),
-      before,
-      enemyHp: 5,
+      answers: wonAnswers(9),
+      before: { gameLevel: 5, wins: 2, unlockedItems: ['helmet', 'cape'] },
       finishedAt: FINISHED_AT,
     });
-    const progress = plan.rows.find((r) => r.table === 'arcade_progress')!.values;
-    expect(plan.enemyDefeated).toBe(false);
-    expect(progress.arcade_level).toBe(4);
-    expect(progress.wins).toBe(3);
-    expect(progress.unlocked_items).toEqual(['helmet', 'cape']);
+    expect(p.outcome).toBe('survived');
+    expect(p.enemyDefeated).toBe(false);
+    expect(p.leveledUp).toBe(false);
+    expect(p.unlocked).toBeNull();
+    expect(p.rows[0]?.values).toMatchObject({
+      arcade_level: 5,
+      wins: 2,
+      unlocked_items: ['helmet', 'cape'],
+    });
+  });
+
+  it('⛔ הכתיבה עדיין נוגעת בשתי טבלאות הזירה בלבד (D-044)', () => {
+    const p = plan(10, { gameLevel: 1, wins: 0 });
+    expect([...new Set(p.rows.map((r) => r.table))].sort()).toEqual(['arcade_progress', 'arcade_runs']);
+  });
+
+  it('⛔ הסף הוא הקבוע ⛔ ולא שדה מהלקוח — 9 נכונות ⛔ אינן ניצחון בשום נתיב', () => {
+    expect(planArcadeWrites({
+      userId: 'u-1',
+      answers: wonAnswers(9),
+      before: BEFORE,
+      finishedAt: FINISHED_AT,
+    }).outcome).toBe('survived');
   });
 });
 
@@ -153,7 +178,6 @@ describe('«המילים שהפילו אותך» (D-047) — תצוגה בלבד
       userId: 'u-1',
       answers: answers([false, false, false, false, false, false, true]),
       before: BEFORE,
-      enemyHp: 5,
       finishedAt: FINISHED_AT,
     });
     expect(plan.missed).toHaveLength(ARCADE_MISSED_LIMIT);
@@ -166,7 +190,6 @@ describe('«המילים שהפילו אותך» (D-047) — תצוגה בלבד
       userId: 'u-1',
       answers: answers([false, true, true, true, true, true, true, true]),
       before: BEFORE,
-      enemyHp: 5,
       finishedAt: FINISHED_AT,
     });
     const keys = plan.rows.flatMap((r) => Object.keys(r.values));
