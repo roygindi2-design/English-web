@@ -1,3 +1,4 @@
+import AppGrid from '@/components/AppGrid';
 import WorldFeed from '@/components/WorldFeed';
 
 /**
@@ -19,7 +20,18 @@ import WorldFeed from '@/components/WorldFeed';
  *
  * ⛔ No `<ActionBar>` anywhere below this file: the route is inside `(tabs)`, so it already
  * has the tab bar, and D-028 allows exactly one bar per screen.
+ *
+ * T-098 · § 4.2יא — `<AppGrid>` sits ABOVE the feed and does NOT replace it. § 4.2יא words
+ * the app grid as "a layer on top of what exists", and T-098 explicitly does not touch
+ * `/world/compose`; whether the feed stays at all is item 29 in `plan/03-for-roy.md` and is
+ * NOT decided here. So this file gains exactly one child and loses none — a removed feed
+ * would be a product decision taken in a Dev tick, which is precisely what ⛔ is forbidden.
  */
 export default function WorldPage() {
-  return <WorldFeed />;
+  return (
+    <>
+      <AppGrid />
+      <WorldFeed />
+    </>
+  );
 }

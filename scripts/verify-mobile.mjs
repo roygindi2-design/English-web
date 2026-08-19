@@ -239,9 +239,13 @@ const EXPECTED_CONSOLE = {
   // ⛔ There is deliberately NO entry for `/dev/world`: the fixture receives its bank as a
   // prop and issues no request at all, and that silence is what proves the harness is
   // measuring the bank rather than the failure screen.
+  // C-0200 (T-098): `<AppGrid>` now sits ABOVE the feed and asks the arena for its round, so
+  // `/world` makes a third request. One URL, one status, like every entry above — and this
+  // line is exactly the measurement that proves the grid really mounts and really asks.
   '/world': [
     /status of 503[\s\S]*@\S*\/api\/world\/posts/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
+    /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two
@@ -767,13 +771,35 @@ try {
       // to one route is why F-016 survived in /onboarding and why AuthForm sat
       // at a measured 139px band on /login and 109px on /signup — the same
       // `flex-1 justify-center` wrapper, in a file nobody re-measured.
+      // C-0200 (T-098): the measurement is now the DEAD BAND, not the <h1>'s
+      // ordinal position. It used to read `main h1`.top, which silently assumed
+      // the heading is the first thing painted — true on every screen built so
+      // far. `/world` broke that assumption honestly: § 4.2יא puts the app grid
+      // ABOVE the feed, so 256px of REAL CONTENT now sits above `<WorldFeed>`'s
+      // h1 and the old proxy reported it as a dead band. Content is not a dead
+      // band; F-011's own words are "fill the space with content that does work".
+      // ⚠️ So the rule is NARROWED to what F-011 actually forbids and is NOT
+      // weakened: it measures the first PAINTED TEXT inside main. A centred
+      // `flex-1 justify-center` wrapper still fails, because its wrapper box
+      // starts at the top while its text does not — that mutation was re-run on
+      // `app/page.tsx` in C-0200 and still fails at 267px. The gate still only
+      // applies to routes that carry a `main h1`, exactly as before.
       {
         const gap = await page.evaluate(() => {
-          const h1 = document.querySelector('main h1');
-          if (!h1) return -1;
+          const main = document.querySelector('main');
+          if (!main || !main.querySelector('h1')) return -1;
           const header = document.querySelector('header');
           const top = header ? header.getBoundingClientRect().bottom : 0;
-          return h1.getBoundingClientRect().top - top;
+          for (const el of main.querySelectorAll('*')) {
+            const paints =
+              ['IMG', 'SVG', 'CANVAS', 'VIDEO'].includes(el.tagName) ||
+              [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim() !== '');
+            if (!paints) continue;
+            const box = el.getBoundingClientRect();
+            if (box.height === 0 || box.width === 0) continue;
+            return box.top - top;
+          }
+          return -1;
         });
         if (gap >= 0) {
           check(gap <= 48, `${at} heading anchored to top`, `dead band of ${Math.round(gap)}px above the heading`);
