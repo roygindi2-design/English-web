@@ -839,7 +839,7 @@ with run as (
     ('decline', 'verb', 7, 2, false, 2, 'to politely refuse an offer or an invitation', 'לסרב', 'B2', 'high', null, 'לסרב', false),
     ('dismiss', 'verb', 7, 2, false, 1, 'to officially remove a worker from a job', 'לפטר', 'B2', 'high', null, null, false),
     ('exceed', 'verb', 6, 2, false, 1, 'to be greater than a fixed number or limit', 'לחרוג', 'B2', 'high', null, null, false),
-    ('guarantee', 'verb', 9, 3, false, 1, 'to promise firmly that something will certainly happen', 'להבטיח', 'B2', 'high', '«להבטיח» מכסה גם promise, גם guarantee וגם ensure. דובר עברית כותב the shop promises the radio for two years במקום guarantees.', 'להבטיח', false),
+    ('guarantee', 'verb', 9, 3, false, 1, 'to promise firmly that something will certainly happen', 'להבטיח', 'B2', 'high', '«להבטיח» מכסה גם promise, גם guarantee וגם ensure. דובר עברית כותב the shop promises the radio for a whole year במקום guarantees.', 'להבטיח', false),
     ('harm', 'noun', 4, 1, false, 1, 'damage or injury caused to a person or a thing', 'נזק', 'B2', 'high', null, 'נזק', false),
     ('impose', 'verb', 6, 2, false, 1, 'to force a rule, tax or punishment on people', 'להטיל', 'B2', 'high', null, 'להטיל', false),
     ('justify', 'verb', 7, 3, false, 1, 'to show that something is right or reasonable', 'להצדיק', 'B2', 'high', null, null, false),
