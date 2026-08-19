@@ -389,10 +389,10 @@ describe('RLS — מוצהרת פעם אחת על שתי טבלאות חדשות
 
 ### 1.3 · צעדים
 
-- [ ] כתוב את `supabase/migrations/0014_arcade.sql` מ-1.1 מילה במילה. **2 דק׳**
-- [ ] כתוב את `lib/supabase/arcade.test.ts` מ-1.2. הרץ `npx vitest run lib/supabase/arcade.test.ts` — צפוי **25 ירוקות**. **3 דק׳**
-- [ ] הרץ מוטציה ⓕ (הוסף `word_id uuid references public.word_progress (word_id),` ל-`arcade_runs`) ואמת **ארבע** נפילות בשם; שחזר ואמת ב-`git diff` שהקובץ חזר. **3 דק׳**
-- [ ] הוסף ל-`plan/03-for-roy.md` פריט: «מיגרציה 0014 מוכנה להרצה» — ⛔ **הפריט 33 כבר קיים**, עדכן אותו ⛔ ואל תפתח שני. **2 דק׳**
+- [x] כתוב את `supabase/migrations/0014_arcade.sql` מ-1.1 מילה במילה. **2 דק׳**
+- [x] כתוב את `lib/supabase/arcade.test.ts` מ-1.2. הרץ `npx vitest run lib/supabase/arcade.test.ts` — צפוי **25 ירוקות**. **3 דק׳**
+- [x] הרץ מוטציה ⓕ (הוסף `word_id uuid references public.word_progress (word_id),` ל-`arcade_runs`) ואמת **ארבע** נפילות בשם; שחזר ואמת ב-`git diff` שהקובץ חזר. **3 דק׳**
+- [x] הוסף ל-`plan/03-for-roy.md` פריט: «מיגרציה 0014 מוכנה להרצה» — ⛔ **הפריט 33 כבר קיים**, עדכן אותו ⛔ ואל תפתח שני. **2 דק׳**
 
 ⚠️ **T-092 מסתיימת כאן.** הרצת המיגרציה בייצור היא פעולה של רוי. ⛔ אל תסמן את המשימה
 כחסומה ואל תעצור — T-093 ⛔ אינה תלויה בהרצה (הנתיבים עונים 503 מוסבר עד שתרוץ).
