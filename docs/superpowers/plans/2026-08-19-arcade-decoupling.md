@@ -43,7 +43,7 @@ T-107ⓐ מבקשת עמודה חדשה `arcade_progress.game_level`. **נמדד
 
 ⚠️ `times_correct` נכנס **עכשיו** ולא במיגרציה נפרדת: D-062 מחייב מונה נכונות באותה טבלה («⛔ אפס טבלה חדשה»), ומיגרציה 0016 שמוסיפה עמודה בודדת היא הרצה ידנית שנייה של רוי בלי תמורה.
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 צור `lib/supabase/arcadeDecoupling.test.ts`:
 
@@ -130,12 +130,12 @@ describe('RLS — בעלות עצמית על טבלה חדשה', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 Run: `npx vitest run lib/supabase/arcadeDecoupling.test.ts`
 Expected: FAIL — `ENOENT: no such file or directory, open 'supabase/migrations/0015_arcade_decoupling.sql'`
 
-- [ ] **Step 3: כתוב את המיגרציה**
+- [x] **Step 3: כתוב את המיגרציה**
 
 צור `supabase/migrations/0015_arcade_decoupling.sql`:
 
@@ -227,12 +227,12 @@ grant select, insert, update on public.arcade_collected_words to authenticated;
 commit;
 ```
 
-- [ ] **Step 4: הרץ ואמת שהיא עוברת**
+- [x] **Step 4: הרץ ואמת שהיא עוברת**
 
 Run: `npx vitest run lib/supabase/arcadeDecoupling.test.ts`
 Expected: PASS — כל הבדיקות ירוקות.
 
-- [ ] **Step 5: הוסף שורה ל-`plan/03-for-roy.md`**
+- [x] **Step 5: הוסף שורה ל-`plan/03-for-roy.md`**
 
 המיגרציה אינה רצה מעצמה. הוסף פריט חדש בסוף הרגיסטר, בנוסח של פריט 33:
 
@@ -240,7 +240,7 @@ Expected: PASS — כל הבדיקות ירוקות.
 | 40 | **להריץ את `supabase/migrations/0015_arcade_decoupling.sql`** בעורך ה-SQL של Supabase | «המילים שאספתי» (T-109 · T-110) ו«סיבוב שטף» (T-118) מחזירים 503 עד שתריץ. ⛔ אין נזק בהמתנה — הקרב עצמו אינו תלוי בטבלה הזאת | ⏳ פתוח |
 ```
 
-- [ ] **Step 6: אימות מלא וקומיט**
+- [x] **Step 6: אימות מלא וקומיט**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: כל ארבע עוברות.
