@@ -1368,10 +1368,30 @@ npm run typecheck && npm run check:core && npm test && npm run build
 
 ואז שבע השאלות. **כל אחת נענית במדידה, ⛔ לא בזיכרון:**
 
-- [ ] `grep -rn "word_progress" supabase/migrations/0014_arcade.sql app/api/arcade/ lib/core/arcade*.ts` ⇒ **אפס שורות**. זה הגבול של D-044, וזו המדידה היחידה שמוכיחה אותו.
-- [ ] `grep -rn "setTimeout\|setInterval" app/api/arcade/ lib/core/arcade*.ts` ⇒ **אפס**. (D-045 · R-020 — ⛔ אין שעון.)
-- [ ] `grep -rn "cefr_level" app/api/arcade/` ⇒ **אפס**. הרמה היא `words.cefr_profile_band` (D-034).
-- [ ] `grep -rn "Math.random" lib/core/arcade*.ts` ⇒ **אפס**. סיבוב שאינו ניתן לשחזור אינו ניתן לבדיקה.
+> 🔴 **F-065 — תוקן ב-C-0182, והנוסח כאן הוא הנוסח המחייב.** ארבע השורות הבאות היו
+> `grep` גולמי על הקובץ כולו, ולכן **פגעו בהערה שמתעדת את האיסור ובאסרציה שאוכפת אותו**
+> — false-reject, התאום המשלים של F-039. נמדד ב-C-0180 על מימוש T-093 **שאין בו ולו
+> הפרה אחת**: חמש משבע השאלות החזירו «הפרה». ⛔ **הפעולה הזולה — למחוק את ההערות שמתעדות
+> את D-044 ואת D-034 — אסורה.** המדידה היא שמתוקנת: מלבינים הערות, ומחריגים `*.test.ts`
+> מסריקת המקור. הסקריפט מריץ את שמונת הטוקנים; **פלט ריק = אפס הפרות.**
+
+```bash
+node -e '
+const fs=require("fs"),path=require("path");
+const white=(s,sql)=>s.replace(/\/\*[\s\S]*?\*\//g,"").replace(/^[ \t]*\/\/[^\n]*$/gm,"")
+  .replace(sql?/^[ \t]*--[^\n]*$/gm:/(?!)/g,"");
+const files=["supabase/migrations/0014_arcade.sql","lib/core/arcadeRound.ts","lib/core/arcadeResult.ts",
+  "app/api/arcade/round/route.ts","app/api/arcade/result/route.ts"].filter(f=>fs.existsSync(f));
+const tokens=["word_progress","setTimeout","setInterval","cefr_level","Math.random",
+  "easiness","interval_days","next_review_at"];
+for(const f of files){const src=white(fs.readFileSync(f,"utf8"),f.endsWith(".sql"));
+  for(const t of tokens) if(src.includes(t)) console.log("HIT",f,t);}
+' </dev/null
+```
+
+- [ ] הסקריפט ⇒ **פלט ריק**. זה הגבול של D-044 (`word_progress` · עמודות SM-2), של D-045 · R-020 (⛔ אין שעון), של D-034 (`cefr_profile_band` ⛔ ולא `cefr_level`) ושל שחזוריות ההגרלה (⛔ אפס `Math.random`).
+- [ ] ⚠️ **פגיעה בהערה או בשם בדיקה ⛔ אינה הפרה** — היא כשל של המדידה. ⛔ **בשום מקרה: מחיקת ההערות.**
+- [ ] ⚠️ **ובכיוון השני, נמדד ב-C-0182:** `toContain` על טוקן קצר הוא אותו פגם — `xp` יושב בתוך `export` בכל קובץ TypeScript, ולכן אסרציית D-050 ב-3.4 חייבת להיות **גבול מזהה** (`\bxp\b`) ⛔ ולא substring.
 - [ ] `docs/api-contract.md` מכיל את **שני** הנתיבים **ואת תשובת הרמה הקטנה**, ובאותו קומיט של הקוד.
 - [ ] הרצת **שלוש** מוטציות לפחות (⓪ⓐ/ⓑ/ⓒ/ⓓ/ⓕ), כל אחת מפילה בדיקה **בשמה**, וכל שחזור מאומת ב-`git diff` ⛔ ולא בזיכרון.
 - [ ] `plan/00-control.md` · `50-tasks.md` · `30-architecture.md` עודכנו, ו-`npm run measure:plan` הוא **הפקודה האחרונה לפני הקומיט** (לקח C-0172: הצהרה שקדמה לעריכה היא הצהרה שגויה).
