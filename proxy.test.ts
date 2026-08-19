@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import proxy, { isProtectedPath } from './proxy';
@@ -98,5 +99,40 @@ describe('the tab routes are behind the session wall (T-051 · § 4.2ב)', () =>
     // it names in its own report.
     expect(isProtectedPath('/dev/tabs/studies')).toBe(false);
     expect(isProtectedPath('/dev/tabs/me')).toBe(false);
+  });
+});
+
+/**
+ * T-122 · TD-25 — שומר מקור, ולא בדיקת התנהגות.
+ *
+ * ⛔ מה שהוא ⛔ אינו מוכיח, ונאמר כאן כדי שאיש לא יטעה בירוק הזה לכיסוי:
+ * שהניתוב באמת קורה מול Supabase חי. ההחלטה עצמה נמדדת ב-
+ * `lib/core/entryRoute.test.ts`, וזה הקובץ שבו התנהגות נבדקת.
+ * מה שהוא כן מוכיח: ש-`proxy.ts` מאציל לפונקציה הטהורה ⛔ ואינו משכפל אותה,
+ * ושהיעד הקשיח `/onboarding` נעלם מענף המשתמש המחובר.
+ */
+describe('T-122: הלומד החוזר ⛔ אינו נזרק לטופס', () => {
+  const SRC = readFileSync('proxy.ts', 'utf8');
+  const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+
+  it('ההחלטה מואצלת ל-lib/core ⛔ ואינה משוכפלת כאן', () => {
+    expect(CODE).toContain('signedInRedirect');
+    expect(CODE).toContain('onboardedFromRow');
+  });
+
+  it('⛔ אין עוד יעד /onboarding קשיח בענף המשתמש המחובר', () => {
+    // זו השורה עצמה: `redirectPreservingCookies(request, response, '/onboarding')`.
+    expect(CODE).not.toMatch(/redirectPreservingCookies\([^)]*['"]\/onboarding['"]/);
+  });
+
+  it('onboarded_at נקרא — הבדיקה שהמסך היה חייב לעשות ומעולם לא עשה', () => {
+    expect(CODE).toContain('onboarded_at');
+  });
+
+  it('⛔ הקריאה למאגר צרה: היא מותנית בנתיב ⛔ ואינה רצה על כל בקשה', () => {
+    const guard = CODE.indexOf('needsOnboardingState');
+    const query = CODE.indexOf(".from('profiles')");
+    expect(guard).toBeGreaterThan(-1);
+    expect(query).toBeGreaterThan(guard);
   });
 });

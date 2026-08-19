@@ -23,6 +23,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import OnboardingForm from '@/components/OnboardingForm';
 import RegisteredAddress from '@/components/RegisteredAddress';
+import { ONBOARDING_PATH, onboardedFromRow, signedInRedirect } from '@/lib/core/entryRoute';
 import { ONBOARDING_TITLE_HE } from '@/lib/core/onboarding';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -37,6 +38,17 @@ export default async function OnboardingPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect('/login?expired=1');
+
+  // T-122 · TD-25 — המנעול השני על אותה דלת, ואותה פונקציה טהורה שהפרוקסי
+  // קורא לה. בלעדיו הכתובת הישירה `/onboarding` עדיין מציגה את הטופס ללומד
+  // שמילא אותו לפני שבוע — ניתוב לבדו ⛔ אינו סוגר מסך.
+  const { data } = await supabase
+    .from('profiles')
+    .select('onboarded_at')
+    .eq('id', user.id)
+    .maybeSingle();
+  const target = signedInRedirect(ONBOARDING_PATH, onboardedFromRow(data));
+  if (target !== null) redirect(target);
 
   return (
     <>

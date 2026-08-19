@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { ONBOARDING_PATH, onboardedFromRow, signedInRedirect } from '@/lib/core/entryRoute';
 import { createProxyClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 /**
@@ -55,11 +56,23 @@ export default async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (user) {
-    // A returning learner never sees the marketing screen or the auth screens again.
-    if (isAuthScreen || pathname === '/') {
-      return redirectPreservingCookies(request, response, '/onboarding');
-    }
-    return response;
+    // ⚠️ TD-25 · T-122: קודם כאן ישב `/onboarding` ללא תנאי, וכל לומד חוזר
+    // נזרק לטופס שמילא לפני שבוע. הקריאה למאגר מתבצעת אך ורק בנתיבים
+    // שההחלטה נוגעת בהם — ⛔ לא בכל בקשה. `proxy` רץ על כל ניווט, ושאילתה
+    // קבועה בכל בקשה היא מס על מוצר שלם עבור החלטה שנוגעת לארבעה נתיבים.
+    const needsOnboardingState = isAuthScreen || pathname === '/' || pathname === ONBOARDING_PATH;
+    if (!needsOnboardingState) return response;
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('onboarded_at')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    // `data` הוא `unknown` מבחינתנו — `onboardedFromRow` הוא שמחליט, ⛔ לא cast.
+    const target = signedInRedirect(pathname, onboardedFromRow(data));
+    if (target === null) return response;
+    return redirectPreservingCookies(request, response, target);
   }
 
   if (isProtected) {
