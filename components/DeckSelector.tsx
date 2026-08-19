@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
+import {
+  DECK_ALL_EMPTY_ACTION_HE,
+  DECK_ALL_EMPTY_BODY_HE,
+  DECK_ALL_EMPTY_HREF,
+  DECK_ALL_EMPTY_TITLE_HE,
+  allTilesDead,
+} from '@/lib/core/deckTiles';
 
 /**
  * The «דרכים לתרגל» block of the כרטיסיות tab — the deck selector, T-065 part ג׳, plan
@@ -148,8 +155,29 @@ export default function DeckSelector(): React.JSX.Element {
     { key: 'sentences', label: SENTENCES_LABEL_HE, href: null, note: LOCKED_HE, enabled: false },
   ];
 
+  // T-123 · D-064: ⛔ בזמן טעינה אין מצב ריק. שלושת האריחים מציגים «—» וזה
+  // נכון; «אין מה לתרגל» חצי שנייה לפני שהמספרים נוחתים הוא שקר קצר.
+  const dead = !loading && allTilesDead(entries);
+
   return (
     <section className="flex flex-col gap-4">
+      {dead && (
+        // ⛔ אינו מחליף את שלושת האריחים: «מושבת עם המספר» הוא מידע (§ 4.2ו),
+        // ומחיקתו הופכת מסך שנראה זהה בשני מצבים שונים. זו פעולה נוספת,
+        // ⛔ לא החלפה.
+        <div data-deck-empty className="flex flex-col gap-2">
+          <h3 className="text-xl font-semibold">{DECK_ALL_EMPTY_TITLE_HE}</h3>
+          <p className="text-base text-ink-muted">{DECK_ALL_EMPTY_BODY_HE}</p>
+          <Link
+            href={DECK_ALL_EMPTY_HREF}
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            {DECK_ALL_EMPTY_ACTION_HE}
+          </Link>
+        </div>
+      )}
+
       {/* `aria-busy` and ⛔ not a spinner or a skeleton: the three cards are already in the
           DOM at their final size, so nothing shifts when the numbers land. */}
       <ul aria-busy={loading} data-deck-selector className="flex list-none flex-col gap-3 p-0">
@@ -178,7 +206,7 @@ export default function DeckSelector(): React.JSX.Element {
               {entry.enabled ? (
                 <Link
                   href={entry.href}
-                  data-primary-action={entry.key === 'due' ? 'true' : undefined}
+                  data-primary-action={entry.key === 'due' && entry.enabled ? 'true' : undefined}
                   className="flex min-h-touch items-center justify-between gap-3 rounded-lg border border-border-strong px-5 py-3 text-ink active:opacity-90"
                 >
                   {body}
@@ -192,7 +220,7 @@ export default function DeckSelector(): React.JSX.Element {
                 <button
                   type="button"
                   aria-disabled="true"
-                  data-primary-action={entry.key === 'due' ? 'true' : undefined}
+                  data-primary-action={entry.key === 'due' && entry.enabled ? 'true' : undefined}
                   className="flex w-full min-h-touch items-center justify-between gap-3 rounded-lg border border-border-subtle px-5 py-3 text-ink-muted"
                 >
                   {body}

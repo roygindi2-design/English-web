@@ -188,3 +188,27 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
     expect(CODE).not.toMatch(/locked:\s*(true|false)/);
   });
 });
+
+describe('T-123 · D-064 — מסך שכל האריחים בו מושבתים ⛔ אינו חוקי', () => {
+  it('הכלל מואצל ל-lib/core ⛔ ואינו משוכפל כאן', () => {
+    expect(CODE).toContain('allTilesDead');
+  });
+
+  it('⛔ אין מצב ריק בזמן טעינה — «אין מה לתרגל» לפני שהמספרים נוחתים הוא שקר', () => {
+    expect(CODE).toMatch(/!loading\s*&&\s*allTilesDead/);
+  });
+
+  it('המצב הריק נושא פעולה אחת שמנווטת ⛔ ולא כפתור מת', () => {
+    expect(CODE).toContain('DECK_ALL_EMPTY_HREF');
+    expect(CODE).toContain('data-deck-empty');
+  });
+
+  it('⛔ שלושת האריחים לא נמחקו — «מושבת עם המספר» הוא מידע (§ 4.2ו)', () => {
+    expect(CODE).toContain('data-deck-selector');
+    expect(CODE.indexOf('data-deck-empty')).toBeLessThan(CODE.indexOf('data-deck-selector'));
+  });
+
+  it('פעולה ראשית אחת בדיוק: היא עוברת לאריח due רק כשהוא פעיל', () => {
+    expect(CODE).toMatch(/entry\.key === 'due' && entry\.enabled/);
+  });
+});
