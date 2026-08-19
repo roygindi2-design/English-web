@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import ArcadeEntry from '@/components/ArcadeEntry';
 import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -185,10 +186,14 @@ export default function LevelMapScreen(): React.JSX.Element {
         </div>
       ) : null}
 
-      {/* שורה 4 — שלושת כרטיסי החפיסה, אותו רכיב בדיוק, בבלוק משלו. */}
+      {/* שורה 4 — **שתי** דרכים לתרגל (§ 4.2ז): שלושת כרטיסי החפיסה, ומתחתיהם
+          «משחק» — הכניסה לזירה (T-097). ⚠️ סטייה מוצהרת: אין כותרת-משנה «כרטיסיות»
+          מעל `<DeckSelector>`, כי הוספתה היא שינוי מבנה בקוד ש-T-080/T-081 יושבות
+          בתור הסקירה שלו. תוספת בלבד — נרשם ב-`plan/30-architecture.md` § 3.1.45. */}
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">{PRACTICE_HE}</h2>
         <DeckSelector />
+        <ArcadeEntry />
       </section>
     </section>
   );

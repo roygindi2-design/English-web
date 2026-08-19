@@ -217,6 +217,10 @@ const EXPECTED_CONSOLE = {
     // to the one URL and the one status like every entry above: a 401 or a 500 on the same
     // URL still fails the check.
     /status of 503[\s\S]*@\S*\/api\/levels\/summary/,
+    // T-097: `<LevelMapScreen>` מחזיק עכשיו גם את `<ArcadeEntry>`, שמבקש סיבוב בעלייה.
+    // בלי env של Supabase הנתיב עונה 503 בחוזה שלו עצמו, וזו בדיוק השורה המושבתת
+    // שהמדידה עוברת עליה. מקושר לכתובת אחת ולסטטוס אחד, כמו כל רשומה כאן.
+    /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase
