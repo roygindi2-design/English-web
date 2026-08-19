@@ -8,7 +8,7 @@
 --
 -- ⛔ near_synonym distractors are STORED and excluded when an item is served (D-023).
 -- ⛔ Scoring material on a low-confidence sense is withheld by RLS, not by omission
---    (0003_low_confidence_is_visible.sql). The row exists; the learner cannot read it.
+--    (0003a_low_confidence_is_visible.sql). The row exists; the learner cannot read it.
 
 begin;
 

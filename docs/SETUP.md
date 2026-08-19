@@ -159,7 +159,7 @@ Supabase anon key: eyJXXXX
 באותו SQL Editor, לפי הסדר:
 
 1. `supabase/migrations/0002_content_bank.sql` — טבלאות בנק התוכן (`words`, `senses` ועוד).
-2. `supabase/migrations/0003_provenance_telemetry.sql` — זורע את `data_sources`,
+2. `supabase/migrations/0003b_provenance_telemetry.sql` — זורע את `data_sources`,
    מוסיף עמודות מקור (`track_id` / `source_id` / `origin`) ל-`words` ול-`senses`,
    ויוצר את `word_progress` עם RLS. **הרצה חוזרת בטוחה** — הכול `if not exists`.
 

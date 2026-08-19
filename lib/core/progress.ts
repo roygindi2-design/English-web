@@ -2,7 +2,7 @@
  * PURE. No React, no DOM, no clock, no env. Every timestamp is supplied by the caller.
  *
  * The aggregate half of T-005. One row per (user, word) — never one row per review
- * event; supabase/migrations/0003_provenance_telemetry.sql records W4 (the free
+ * event; supabase/migrations/0003b_provenance_telemetry.sql records W4 (the free
  * Supabase tier) as the reason, and everything gate 7.7 needs is derivable here —
  * except consecutiveCorrectRecognition, which is STATE and not an aggregate
  * (F-023): it has its own column in 0003 because attempts/correctAttempts cannot

@@ -66,7 +66,7 @@ export interface CardFace {
   readonly exampleSegments: readonly ExampleSegment[];
   /**
    * True only on the back of a card built from an unverified sense — D-024,
-   * `senses.needs_human_review` (migration `0003_low_confidence_is_visible.sql`).
+   * `senses.needs_human_review` (migration `0003a_low_confidence_is_visible.sql`).
    *
    * It lives here rather than being read off the sense inside the component for
    * the reason TD-11 records, and the failure would be worse than TD-11's: the

@@ -5,21 +5,35 @@ import { describe, expect, it } from 'vitest';
 /**
  * The apply order of supabase/migrations/ is its filename order, and nothing
  * else records it. Two files under one number is not a typo — it is an
- * undefined order between two DDL scripts, and 0003_ has been in exactly that
- * state since C-0029. Same reasoning as scripts/plan-hygiene.test.ts (F-025):
- * a human reading a directory will not catch the next collision either.
+ * undefined order between two DDL scripts, and 0003_ was in exactly that state
+ * from C-0029 until the rename on 2026-08-19 (see ORDER_TOKEN below). Same
+ * reasoning as scripts/plan-hygiene.test.ts (F-025): a human reading a
+ * directory will not catch the next collision either.
  */
 const FILES = readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')).sort();
 
 /**
- * The one collision that already shipped. Both files only ALTER `senses`, which
- * 0002 creates, and they touch different columns (needs_human_review vs origin),
- * so their order does not matter TODAY — that is why this is an exemption and
- * not a rename. ⛔ Nothing may be added to this list: a rename is a filename
- * change that `supabase db push` records in its own table, and re-hashing an
- * already-applied migration is a bigger risk than one documented pair.
+ * ⚠️ The 0003 collision was RESOLVED by rename on 2026-08-19, on Roy's live
+ * instruction, and the exemption is gone. The reason it stood for so long —
+ * "`supabase db push` records the filename in its own table, so re-hashing an
+ * applied migration is worse than one documented pair" — was **measured and
+ * found not to apply to this project**: there is no `supabase/config.toml` and
+ * no linked CLI project, and `docs/SETUP.md` documents every migration as a
+ * manual paste into the Supabase SQL editor. With no CLI bookkeeping there is
+ * no hash to invalidate, so the rename costs nothing that the collision was
+ * being tolerated to protect. Roy confirmed both files had already been run.
+ *
+ * The invariant is now stated as what it always meant: apply order is filename
+ * order, so every file needs a UNIQUE ORDERING TOKEN — not merely a unique
+ * number. `0003a_` and `0003b_` are distinct tokens that both still sort
+ * between `0002_` and `0004_`, which is what an in-place ordering fix requires
+ * when every later number is taken.
  */
-const GRANDFATHERED = new Set(['0003_low_confidence_is_visible.sql', '0003_provenance_telemetry.sql']);
+const ORDER_TOKEN = /^(\d{4}[a-z]?)_[a-z0-9_]+\.sql$/;
+
+function orderTokens(files: string[]): string[] {
+  return files.map((f) => ORDER_TOKEN.exec(f)?.[1] ?? f);
+}
 
 function prefixes(files: string[]): number[] {
   return files.map((f) => Number(f.slice(0, 4)));
@@ -31,22 +45,27 @@ describe('supabase/migrations — apply order', () => {
     expect(FILES.length).toBeGreaterThanOrEqual(6);
   });
 
-  it('names every file NNNN_snake_case.sql', () => {
-    for (const f of FILES) expect(f, `${f} is misnamed`).toMatch(/^\d{4}_[a-z0-9_]+\.sql$/);
+  it('names every file NNNN[a-z]_snake_case.sql', () => {
+    for (const f of FILES) expect(f, `${f} is misnamed`).toMatch(ORDER_TOKEN);
   });
 
-  it('uses each number at most once, outside the one grandfathered pair', () => {
-    const seen = new Map<number, number>();
-    for (const n of prefixes(FILES.filter((f) => !GRANDFATHERED.has(f)))) {
-      seen.set(n, (seen.get(n) ?? 0) + 1);
-    }
-    const dupes = [...seen.entries()].filter(([, c]) => c > 1).map(([n, c]) => `${n}×${c}`);
-    expect(dupes, 'two DDL scripts under one number have no defined order').toEqual([]);
+  it('uses each ordering token at most once — ⛔ no exemptions left', () => {
+    const seen = new Map<string, number>();
+    for (const t of orderTokens(FILES)) seen.set(t, (seen.get(t) ?? 0) + 1);
+    const dupes = [...seen.entries()].filter(([, c]) => c > 1).map(([t, c]) => `${t}×${c}`);
+    expect(dupes, 'two DDL scripts under one token have no defined order').toEqual([]);
   });
 
-  it('keeps the exemption honest — every grandfathered name still exists', () => {
-    // An exemption for a file that was since renamed is a hole nobody sees.
-    for (const f of GRANDFATHERED) expect(FILES, `${f} is exempted but absent`).toContain(f);
+  it('a lettered token still sorts inside its own number, ⛔ not after the next one', () => {
+    // The whole point of 0003a/0003b: an in-place fix when 0004+ are all taken.
+    // If this ever stopped holding, the rename would have silently REORDERED the
+    // schema instead of merely disambiguating it.
+    expect(['0004_x.sql', '0003b_x.sql', '0003a_x.sql', '0002_x.sql'].sort()).toEqual([
+      '0002_x.sql',
+      '0003a_x.sql',
+      '0003b_x.sql',
+      '0004_x.sql',
+    ]);
   });
 
   it('leaves no gap in the sequence', () => {
@@ -105,15 +124,17 @@ function livePolicies(): PolicyRef[] {
 }
 
 /**
- * The three no-ops that already shipped in 0003 and CANNOT be removed: editing an applied
- * migration re-hashes it in supabase's own bookkeeping, which the directory rule already
- * refuses to do (see GRANDFATHERED above). 0011 fixes the CONSEQUENCE; this list stops a
- * fourth one being written. ⛔ Nothing may be added here.
+ * The three no-ops that already shipped in 0003a. ⚠️ The old justification here cited
+ * supabase's bookkeeping hash — the same claim the rename above measured and discarded —
+ * so the honest reason is the narrower one: these three drops are no-ops, deleting them
+ * changes no behaviour on a fresh rebuild and changes nothing on the live database either,
+ * which makes the edit pure churn against an applied file. 0011 fixes the CONSEQUENCE.
+ * This list exists to stop a FOURTH no-op drop being written. ⛔ Nothing may be added here.
  */
 const GRANDFATHERED_NOOP_DROPS = new Set([
-  '0003_low_confidence_is_visible.sql:senses.read approved content',
-  '0003_low_confidence_is_visible.sql:sense_distractors.read distractors',
-  '0003_low_confidence_is_visible.sql:sense_items.read items',
+  '0003a_low_confidence_is_visible.sql:senses.read approved content',
+  '0003a_low_confidence_is_visible.sql:sense_distractors.read distractors',
+  '0003a_low_confidence_is_visible.sql:sense_items.read items',
 ]);
 
 const CONTENT_TABLES = ['senses', 'sense_examples', 'sense_items', 'sense_distractors'];

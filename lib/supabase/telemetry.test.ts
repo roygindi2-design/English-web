@@ -7,7 +7,7 @@ import { DATA_SOURCES } from '../core/dataSources';
  * Same approach and same limits as lib/supabase/rls.test.ts — this proves what
  * we ship, not what was applied. Applying it is a step in docs/SETUP.md.
  */
-const MIGRATION = readFileSync('supabase/migrations/0003_provenance_telemetry.sql', 'utf8');
+const MIGRATION = readFileSync('supabase/migrations/0003b_provenance_telemetry.sql', 'utf8');
 const SQL = MIGRATION.toLowerCase();
 
 describe('provenance columns', () => {
