@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
+import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -216,6 +217,25 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     void send({ enemyHp: ARCADE_ENEMY_HP, answers: battle.answers });
   }, [battle, submitted, send]);
 
+  /**
+   * «עוד קרב» — ⛔ אינו ניווט: הוא מנקה את המצב המקומי ומושך סיבוב חדש מאותה נקודת קצה.
+   * ניווט אל `/arcade` היה משאיר את הרכיב על המסך ומסתמך על אתחול שאינו מובטח.
+   * במסלול הפיקסטורה ⛔ אין רשת, ולכן הוא מתחיל מחדש מאותן שאלות.
+   */
+  const again = useCallback(() => {
+    setOutcome(null);
+    setPendingResult(null);
+    setSendError('');
+    setSubmitted(false);
+    if (initialRound !== undefined) {
+      setBattle(startBattle(initialRound.questions));
+      setScreen({ kind: 'ready', level: initialRound.level });
+      return;
+    }
+    setBattle(null);
+    void load();
+  }, [initialRound, load]);
+
   useEffect(() => {
     if (pendingResult === null) return;
     const retry = () => {
@@ -321,7 +341,31 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
   const question = battle.questions[battle.index];
 
   if (finished || question === undefined) {
-    // ⚠️ מסך ביניים: `<ArenaResult>` של T-096 יחליף אותו, והתשובה כבר שמורה ב-`outcome`.
+    if (outcome !== null && outcome.ok) {
+      // ⛔ אין קריאה שנייה לשרת: `missed` של החוזה נושא `wordId` ⛔ ולא את המילה האנגלית,
+      // והשאלות כבר בידנו — ההצלבה נעשית כאן ולא בבקשה נוספת.
+      const headwords = new Map<string, string>(
+        battle.questions.map((q) => [q.wordId, q.headword] as const),
+      );
+      const missed: readonly ArenaMissed[] = outcome.missed.map((row) => ({
+        wordId: row.wordId,
+        headword: headwords.get(row.wordId) ?? row.wordId,
+        answer: row.answer,
+        chosen: row.chosen,
+      }));
+      return (
+        <ArenaResult
+          enemyDefeated={outcome.enemyDefeated}
+          unlocked={outcome.unlocked}
+          // ⚠️ החוזה מחזיר את הפריט **שנפתח עכשיו** ⛔ ולא את כל מה שברשות הלומד, ולכן
+          // הדמות לובשת אחד. הרחבת החוזה היא הכרעה שמחוץ לתוכנית הזאת (אילוץ 14) — F-070.
+          items={outcome.unlocked === null ? [] : [outcome.unlocked]}
+          missed={missed}
+          onAgain={again}
+        />
+      );
+    }
+    // מסך ביניים: כל עוד התוצאה בדרך, או שהשליחה נכשלה והיא ממתינה לשליחה חוזרת.
     return (
       <section className="flex min-h-[100dvh] flex-col gap-4 pb-28">
         {topBar(outcome === null && sendError === '' ? SAVING_HE : FINISHED_HE)}
