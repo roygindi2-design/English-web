@@ -580,6 +580,70 @@
 
 ---
 
+## GET /api/world/recall
+
+הכרטיס «מה שכתבת אתמול» (T-104 · D-051 · § 4.2יב). דורש סשן חי, ואותו סדר שומרים קבוע
+`readSupabaseEnv()` → `getUser()` → קריאות (דפוס C-0032).
+
+**פרמטרים: אין.** הצרכן המתוכנן הוא `/world` (T-105), והוא ⛔ טרם קיים בזמן כתיבת השורה.
+
+⛔ **הנתיב אינו כותב דבר.** אין בקובץ `.insert(` · `.update(` · `.upsert(` · `.delete(` —
+נאכף בסריקת מקור ב-`app/api/world/recall/route.test.ts`. הוא ⛔ אינו נוגע בעמודות מנוע
+החזרות לא בכתיבה ולא בקריאה; מ-`word_progress` הוא קורא **מילים בלבד**, דרך
+`words!inner(...)`, בדיוק כמו `/api/world/bank`.
+
+**שתי קריאות בדיוק, ⛔ ואין שלישית:**
+ⓐ `world_posts` — `select('id, body_en, created_at')`, `user_id = user.id` **וגם**
+`author_kind = 'learner'`, ממוין `created_at` יורד, תקרת `MAX_RECALL_POSTS = 100`.
+⚠️ ‏`author_kind` הוא **הגנה ⛔ ולא ניקוי**: בלעדיו פוסט מיוצר היה מוצג ללומד כמשפט
+שהוא עצמו כתב (הלקח של C-0123).
+ⓑ `word_progress` — `select('words!inner(headword, cefr_profile_band, ngsl_rank,
+is_function_word)')` של הקורא בלבד, תקרת `MAX_LEARNER_WORDS = 2000`.
+
+⚠️ **כל ההחלטה בשכבה הטהורה** (`lib/core/worldRecall.ts`) — הנתיב ⛔ אינו מסנן, אינו
+מדרג ואינו מגריל ב-SQL. ה-`seed` נגזר מ-`Date.now() >>> 0` **בנתיב**, בדיוק כמו
+`/api/arcade/round`, כדי שהשכבה הטהורה תישאר בלי שעון ובלי `Math.random`.
+
+הבחירה: משפט מהיום ⛔ אינו נבחר; המשפטים ממוינים לפי `RECALL_AGE_PREFERENCE_DAYS`
+(‏`[3, 7, 1]` — מרחק מוחלט מ-3, אחריו מ-7, אחריו מ-1); נבחר הראשון שיש בו **מילת יעד**
+(המילה הנדירה ביותר לפי `ngsl_rank` מבין מילות הלומד שבמשפט, ⛔ ולעולם לא מילת תפקוד)
+**וגם** ‏4 מילות לומד כשירות לפחות לאפשרויות. אין כזה ⇒ `card: null`.
+
+**200 — יש כרטיס:**
+
+```json
+{ "ok": true,
+  "card": { "postId": "…", "bodyEn": "the garden is quiet.", "daysAgo": 3,
+            "answer": "garden", "options": ["garden", "table", "river", "market"],
+            "segments": [{ "text": "the ", "isTarget": false },
+                         { "text": "garden", "isTarget": true },
+                         { "text": " is quiet.", "isTarget": false }] } }
+```
+
+**200 — אין כרטיס היום.** ⛔ **`card: null` ⛔ ואינו 404** (§ 4.2יב): «אין מה להיזכר בו
+היום» אינו שגיאה, ומסך שמקבל 404 מצייר כשל.
+
+```json
+{ "ok": true, "card": null }
+```
+
+`segments` מתחברים חזרה ל-`bodyEn` **בית-בבית**, ובדיוק אחד מהם `isTarget`.
+`options` — ארבע, ⛔ ללא כפילות, כולן מילות הלומד, והתשובה ביניהן.
+`daysAgo` — מספר שלם כלפי מטה, ⛔ ולא תאריך: הנוסח נבנה במסך.
+
+**401 — אין סשן:** `{ "ok": false, "code": "session_expired" }`
+**503 — אין ENV של Supabase, או כל שגיאת דאטהבייס אחרת:**
+`{ "ok": false, "code": "unavailable" }`
+**503 — הסכמה לא הורצה** (`42P01` / `PGRST205` / `42703` / `PGRST204`):
+
+```json
+{ "ok": false, "code": "schema_missing", "message": "המאגר עדיין לא הוקם" }
+```
+
+⛔ **מחרוזת השגיאה של Supabase לעולם אינה נכנסת ל-JSON** — `console.error` בלבד.
+
+---
+
 ## GET /api/world/posts
 
 הפיד הפרטי של הלומד (T-061 · § 4.2ה). דורש סשן חי, ואותו סדר שומרים קבוע
