@@ -4,6 +4,7 @@ import {
   WORLD_APP_ORDER,
   WORLD_APP_LABEL_HE,
   WORLD_APP_HREF,
+  LEARNING_PRIORITY,
   featuredAppId,
   levelTooSmallNoteHe,
   openAppCount,
@@ -51,13 +52,32 @@ describe('worldApps', () => {
     expect(note).not.toContain('בקרוב');
   });
 
-  it('הגדול = הראשון עם חיוב פתוח; אין ⇒ **האחרון הפתוח** (§ 4.2יא)', () => {
+  it('הגדול = הראשון עם חיוב פתוח; אין ⇒ הראשון בסדר `LEARNING_PRIORITY` (D-071ⓐ)', () => {
+    // חיוב מנצח סדר עדיפויות
     expect(
       featuredAppId([app({ id: 'compose' }), app({ id: 'arcade', hasActiveTask: true })]),
     ).toBe('arcade');
-    // אין חיוב ⇒ האחרון שנפתח, ⛔ ולא הראשון ברשימה
-    expect(featuredAppId([app({ id: 'compose' }), app({ id: 'arcade' })])).toBe('arcade');
-    // חיוב על אריח **נעול** ⛔ אינו מגדיל אותו — אי-אפשר להיכנס אליו
+    // שלושה פתוחים בלי חיוב ⇒ הראשון ב-LEARNING_PRIORITY = arcade
+    expect(
+      featuredAppId([app({ id: 'compose' }), app({ id: 'arcade' }), app({ id: 'collected' })]),
+    ).toBe('arcade');
+    // רק compose ו-collected פתוחים ⇒ compose
+    expect(
+      featuredAppId([
+        app({ id: 'compose' }),
+        app({ id: 'arcade', state: { kind: 'locked', noteHe: 'נדרשות 12 מילים ברמה, יש 8' } }),
+        app({ id: 'collected' }),
+      ]),
+    ).toBe('compose');
+    // רק collected פתוח ⇒ collected
+    expect(
+      featuredAppId([
+        app({ id: 'compose', state: { kind: 'locked', noteHe: 'נדרשות 12 מילים ברמה, יש 8' } }),
+        app({ id: 'arcade', state: { kind: 'unknown' } }),
+        app({ id: 'collected' }),
+      ]),
+    ).toBe('collected');
+    // חיוב על אריח **נעול** ⛔ אינו מגדיל אותו — נופל לסדר העדיפויות (D-046)
     expect(
       featuredAppId([
         app({ id: 'compose' }),
@@ -68,12 +88,25 @@ describe('worldApps', () => {
         }),
       ]),
     ).toBe('compose');
+    // כלום פתוח ⇒ null
     expect(
       featuredAppId([
         app({ id: 'compose', state: { kind: 'unknown' } }),
         app({ id: 'arcade', state: { kind: 'unknown' } }),
       ]),
     ).toBeNull();
+  });
+
+  it('סדר `WORLD_APP_ORDER` ⛔ אינו משפיע על `featuredAppId` (F-084 · D-071ⓐ)', () => {
+    // גם אם הרשת הפוכה בקלט — הבחירה מונחית `LEARNING_PRIORITY`
+    const inputs = [app({ id: 'collected' }), app({ id: 'compose' }), app({ id: 'arcade' })];
+    expect(featuredAppId(inputs)).toBe('arcade');
+  });
+
+  it('`LEARNING_PRIORITY` הוא בדיוק שלושת מזהי `WORLD_APP_ORDER` בסדר D-071ⓐ', () => {
+    expect([...LEARNING_PRIORITY]).toEqual(['arcade', 'compose', 'collected']);
+    expect(new Set(LEARNING_PRIORITY).size).toBe(LEARNING_PRIORITY.length);
+    for (const id of LEARNING_PRIORITY) expect(WORLD_APP_ORDER).toContain(id);
   });
 
   it('«מספר האפליקציות הפתוחות» סופר `open` בלבד ⛔ ולא `unknown`', () => {

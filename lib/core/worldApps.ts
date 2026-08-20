@@ -21,8 +21,9 @@
  *    אחד בלבד, `ARCADE_MIN_WORDS` ב-`lib/core/arcadeRound.ts`.
  *
  * 3. **הגדול נבחר ⛔ ואינו מוגרל.** הראשון שיש בו חיוב פתוח **וגם** הוא פתוח; אין
- *    ⇒ האחרון הפתוח בסדר הרשת (= «האחרון שנפתח»); אין פתוח בכלל ⇒ `null`. ⛔ אין
- *    הגרלה ואין שעון — סדר הרשת הוא סדר הפתיחה ⛔ ולא «הכי בשימוש».
+ *    ⇒ הראשון בסדר הפדגוגי `LEARNING_PRIORITY` שהוא פתוח; אין פתוח בכלל ⇒ `null`.
+ *    ⛔ סדר הרשת (`WORLD_APP_ORDER`) ⛔ אינו קלט לבחירה הזאת (D-071ⓐ) — הוספת אריח
+ *    חדש לרשת ⛔ אינה מרעילה את הבחירה כפי שקרה ב-T-110. ⛔ אין הגרלה ואין שעון.
  *
  * ⛔ אפס מדדי משחק מסוג D-050 — הבדיקה סורקת את **המקור עצמו**, ולכן גם ההערה
  * הזאת ⛔ אינה מזכירה את השמות האסורים בשמם.
@@ -50,6 +51,9 @@ export interface WorldApp {
 /** סדר הרשת = סדר הפתיחה, ו⛔ לא «הכי בשימוש» (ספירת שימוש היא עמודה חדשה — נדחתה). */
 export const WORLD_APP_ORDER: readonly WorldAppId[] = ['compose', 'arcade', 'collected'];
 
+/** בחירת האריח הגדול (⛔ ⛔ סדר הרשת) — «תרגול > הפקה > השתקפות» (D-071ⓐ). */
+export const LEARNING_PRIORITY: readonly WorldAppId[] = ['arcade', 'compose', 'collected'];
+
 export const WORLD_APP_LABEL_HE: Readonly<Record<WorldAppId, string>> = {
   compose: 'הרכבה',
   arcade: 'זירה',
@@ -67,13 +71,18 @@ export function levelTooSmallNoteHe(required: number, eligible: number): string 
   return `נדרשות ${required} מילים ברמה, יש ${eligible}`;
 }
 
-/** האריח הגדול: הראשון עם `hasActiveTask` שגם `open`; אין ⇒ **האחרון הפתוח** בסדר
- *  הרשת (= «האחרון שנפתח»); אין פתוח בכלל ⇒ `null`. ⛔ אין הגרלה ואין שעון. */
+/** האריח הגדול: הראשון עם `hasActiveTask` שגם `open`; אין ⇒ הראשון בסדר הפדגוגי
+ *  `LEARNING_PRIORITY` שהוא `open` (⛔ ⛔ סדר הרשת · D-071ⓐ); אין פתוח בכלל ⇒ `null`.
+ *  ⛔ אין הגרלה ואין שעון. */
 export function featuredAppId(apps: readonly WorldApp[]): WorldAppId | null {
   const busy = apps.find((a) => a.hasActiveTask && a.state.kind === 'open');
   if (busy !== undefined) return busy.id;
-  const lastOpen = [...apps].reverse().find((a) => a.state.kind === 'open');
-  return lastOpen?.id ?? null;
+  const byId = new Map(apps.map((a) => [a.id, a] as const));
+  for (const id of LEARNING_PRIORITY) {
+    const cand = byId.get(id);
+    if (cand?.state.kind === 'open') return cand.id;
+  }
+  return null;
 }
 
 /** מדד ההצלחה ⓐ של § 4.2יא: «מה מתקדם = מספר האפליקציות הפתוחות». */

@@ -69,12 +69,12 @@ type CollectedResponseOk = {
 
 ### צעדים (2–5 דק׳ כל אחד)
 
-- [ ] **1.1** ‏`LEARNING_PRIORITY` נוסף אחרי `WORLD_APP_ORDER` (‏שורה 51):
+- [x] **1.1** ‏`LEARNING_PRIORITY` נוסף אחרי `WORLD_APP_ORDER` (‏שורה 51):
   ```ts
   /** בחירת האריח הגדול (⛔ ⛔ סדר הרשת) — «תרגול > הפקה > השתקפות» (D-071ⓐ). */
   export const LEARNING_PRIORITY: readonly WorldAppId[] = ['arcade', 'compose', 'collected'];
   ```
-- [ ] **1.2** גוף `featuredAppId` מוחלף — הכלל השני קורא את `LEARNING_PRIORITY`:
+- [x] **1.2** גוף `featuredAppId` מוחלף — הכלל השני קורא את `LEARNING_PRIORITY`:
   ```ts
   export function featuredAppId(apps: readonly WorldApp[]): WorldAppId | null {
     const busy = apps.find((a) => a.hasActiveTask && a.state.kind === 'open');
@@ -87,10 +87,10 @@ type CollectedResponseOk = {
     return null;
   }
   ```
-- [ ] **1.3** הערה בראש הקובץ (‏סעיף 3) מתעדכנת מ«האחרון שנפתח» ל־«הראשון בסדר
+- [x] **1.3** הערה בראש הקובץ (‏סעיף 3) מתעדכנת מ«האחרון שנפתח» ל־«הראשון בסדר
       הפדגוגי `LEARNING_PRIORITY`; סדר הרשת ⛔ אינו קלט». ⛔ בלי `xp/score/points/gem` —
       הבדיקה סורקת את המקור עצמו.
-- [ ] **1.4** ‏`lib/core/worldApps.test.ts` — הבדיקה בשורות 54–78 מתעדכנת:
+- [x] **1.4** ‏`lib/core/worldApps.test.ts` — הבדיקה בשורות 54–78 מתעדכנת:
   ```ts
   it('הגדול = הראשון עם חיוב פתוח; אין ⇒ הראשון בסדר `LEARNING_PRIORITY` (D-071ⓐ)', () => {
     // חיוב מנצח סדר עדיפויות
@@ -137,7 +137,7 @@ type CollectedResponseOk = {
     ).toBeNull();
   });
   ```
-- [ ] **1.5** בדיקה חדשה — סדר הרשת ⛔ אינו קלט:
+- [x] **1.5** בדיקה חדשה — סדר הרשת ⛔ אינו קלט:
   ```ts
   it('סדר `WORLD_APP_ORDER` ⛔ אינו משפיע על `featuredAppId` (F-084 · D-071ⓐ)', () => {
     // גם אם הרשת הפוכה בקלט — הבחירה מונחית `LEARNING_PRIORITY`
@@ -145,7 +145,7 @@ type CollectedResponseOk = {
     expect(featuredAppId(inputs)).toBe('arcade');
   });
   ```
-- [ ] **1.6** בדיקת מקור: `LEARNING_PRIORITY` = ‏`['arcade', 'compose', 'collected']`
+- [x] **1.6** בדיקת מקור: `LEARNING_PRIORITY` = ‏`['arcade', 'compose', 'collected']`
       **בדיוק**, ⛔ לא מכיל id כפול, ⛔ לא כולל מזהה שאינו ב־`WORLD_APP_ORDER`:
   ```ts
   it('`LEARNING_PRIORITY` הוא בדיוק שלושת מזהי `WORLD_APP_ORDER` בסדר D-071ⓐ', () => {
