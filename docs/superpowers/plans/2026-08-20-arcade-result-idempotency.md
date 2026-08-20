@@ -26,7 +26,7 @@
 
 ## שתי סטיות מוצהרות מנוסח הממצא, ⛔ ולא השמטות
 
-**סטייה 1 — הקובץ הוא `0018_arcade_run_id.sql`, ⛔ ולא `0017`.** הממצא נקב ב-`0017`, אבל `0017_stories.sql` כבר **הובטח לרוי בכתב** ב-`plan/03-for-roy.md` פריט 42 (C-0239, T-134). שני קבצים באותו מספר הם שתי הוראות סותרות למי שמריץ אותן ידנית. שתי המיגרציות נוגעות בטבלאות **זרות זו לזו** (`stories` מול `arcade_runs`) ⇒ סדר ההרצה ביניהן ⛔ אינו משנה, והרווח המספרי ⛔ אינו פגם.
+**סטייה 1 — ⛔ בוטלה במדידה בטיק הביצוע (C-0241 · F-093). הקובץ הוא `0017_arcade_run_id.sql`, כלשון הממצא.** התוכנית קבעה `0018` כדי לשריין את `0017` ל-`0017_stories.sql` שהובטח לרוי, וטענה ש«הרווח המספרי ⛔ אינו פגם». ⛔ **הטענה שגויה, והיא נמדדת בשורה אחת:** `scripts/migration-hygiene.test.ts:74` הוא שער חי בשם «leaves no gap in the sequence», והוא **נפל** על 0018 (`expected 17, received 18`). ⛔ **ו-`0017_stories.sql` טרם נכתב** (T-134 ⬜) ⇒ הפער היה מאדים את `npm test` לכל סוכן עד שייכתב, כלומר ימים. ⇒ המיגרציה הזאת לוקחת את `0017`, ומיגרציית הסיפורים עברה ל-`0018_stories.sql` ב-T-134 ובפריט 42 — ⛔ **ואין הוראה שרוי כבר ביצע ושבוטלה:** הקובץ ההוא מעולם לא היה קיים.
 
 **סטייה 2 — `run_id` הוא `uuid` **null-אפשרי** עם **אינדקס ייחודי חלקי**, ⛔ ולא `not null unique`.** הסיבה נמדדת: `0014_arcade.sql` הוחלה בייצור, ולכן `alter table … add column run_id uuid not null` **ייכשל** על כל שורת `arcade_runs` היסטורית. `not null` נאכף בשכבת הנתיב (422 על גוף בלי `runId`) ו⛔ לא בסכמה, והנימוק כתוב בקובץ המיגרציה עצמו.
 
@@ -36,7 +36,7 @@
 
 | הקובץ | האחריות |
 |---|---|
-| `supabase/migrations/0018_arcade_run_id.sql` | **חדש.** `run_id uuid` · `response_snapshot jsonb` · אינדקס ייחודי חלקי על `run_id`. |
+| `supabase/migrations/0017_arcade_run_id.sql` | **חדש.** `run_id uuid` · `response_snapshot jsonb` · אינדקס ייחודי חלקי על `run_id`. |
 | `lib/supabase/arcadeRunId.test.ts` | **חדש.** שומר על מה שהמיגרציה **אומרת** (⛔ לא שהורצה) — תבנית `arcadeDecoupling.test.ts`. |
 | `lib/core/arcadeResult.ts` | **שינוי.** `planArcadeWrites` מקבל `runId`, מחזיר `response` (גוף התשובה), ומזיז את `arcade_runs` **לראש** `rows` עם `run_id` + `response_snapshot`. |
 | `lib/core/arcadeResult.test.ts` | **שינוי.** בדיקות לסדר, למפתח ולתצלום. |
@@ -51,14 +51,14 @@
 ## Task 1: המיגרציה — המפתח והתצלום בסכמה
 
 **Files:**
-- Create: `supabase/migrations/0018_arcade_run_id.sql`
+- Create: `supabase/migrations/0017_arcade_run_id.sql`
 - Create: `lib/supabase/arcadeRunId.test.ts`
 
 **Interfaces:**
 - Consumes: `supabase/migrations/0014_arcade.sql` — הטבלה `public.arcade_runs (id, user_id, finished_at, words_seen, words_correct, enemy_defeated)`.
 - Produces: שתי עמודות חדשות ב-`public.arcade_runs` — `run_id uuid` (null-אפשרי) ו-`response_snapshot jsonb` (null-אפשרי); אינדקס ייחודי `arcade_runs_run_id_key` על `(run_id) where run_id is not null`. שם האינדקס הוא שם האילוץ שהנתיב יראה בשגיאת `23505` ב-Task 3.
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 צור `lib/supabase/arcadeRunId.test.ts`:
 
@@ -67,14 +67,14 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
- * שומר על `0018_arcade_run_id.sql` (F-092). כמו `arcadeDecoupling.test.ts`:
+ * שומר על `0017_arcade_run_id.sql` (F-092). כמו `arcadeDecoupling.test.ts`:
  * מוכיח מה הקובץ **אומר**, ⛔ לא שהוא הורץ (הרצה = פעולת רוי).
  * ההערות מולבנות לפני כל טענה — אילוץ שהוער החוצה אינו אילוץ.
  */
-const SQL = readFileSync('supabase/migrations/0018_arcade_run_id.sql', 'utf8');
+const SQL = readFileSync('supabase/migrations/0017_arcade_run_id.sql', 'utf8');
 const BODY = SQL.replace(/--[^\n]*$/gm, '');
 
-describe('0018 — אידמפוטנטיות של המיגרציה עצמה', () => {
+describe('0017 — אידמפוטנטיות של המיגרציה עצמה', () => {
   it('רצה בטרנזקציה אחת', () => {
     expect(BODY).toMatch(/^\s*begin;/im);
     expect(BODY).toMatch(/commit;\s*$/im);
@@ -121,23 +121,22 @@ describe('⛔ הבידוד של D-052 שרד את המיגרציה', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 Run: `npx vitest run lib/supabase/arcadeRunId.test.ts`
-Expected: FAIL — `ENOENT: no such file or directory, open 'supabase/migrations/0018_arcade_run_id.sql'`
+Expected: FAIL — `ENOENT: no such file or directory, open 'supabase/migrations/0017_arcade_run_id.sql'`
 
-- [ ] **Step 3: כתוב את המיגרציה**
+- [x] **Step 3: כתוב את המיגרציה**
 
-צור `supabase/migrations/0018_arcade_run_id.sql`:
+צור `supabase/migrations/0017_arcade_run_id.sql`:
 
 ```sql
--- 0018_arcade_run_id.sql — מפתח אידמפוטנטיות לסוף הקרב (F-092).
+-- 0017_arcade_run_id.sql — מפתח אידמפוטנטיות לסוף הקרב (F-092).
 --
 -- מוחל בעורך ה-SQL של Supabase (או `supabase db push`) אחרי 0014.
 --
--- ⚠️ **למה 0018 ו⛔ לא 0017:** `0017_stories.sql` כבר הובטח לרוי בכתב
--- (`plan/03-for-roy.md` פריט 42 · T-134). שני קבצים באותו מספר הם שתי הוראות
--- סותרות למי שמריץ אותן ביד. הטבלאות זרות זו לזו ⇒ סדר ההרצה ⛔ אינו משנה.
+-- ⚠️ **למה 0017 (F-093):** השער `scripts/migration-hygiene.test.ts:74` נופל על
+-- כל דילוג במספור, ו-`stories` טרם נכתבה ⇒ היא לוקחת את `0018`.
 --
 -- ⚠️ **למה `run_id` null-אפשרית ו⛔ לא `not null`:** `0014_arcade.sql` הוחלה
 -- בייצור, ולכן `add column … not null` בלי ברירת מחדל **נופל** על כל שורת
@@ -172,16 +171,16 @@ create unique index if not exists arcade_runs_run_id_key
 commit;
 ```
 
-- [ ] **Step 4: הרץ ואמת שהיא עוברת**
+- [x] **Step 4: הרץ ואמת שהיא עוברת**
 
 Run: `npx vitest run lib/supabase/arcadeRunId.test.ts`
 Expected: PASS — כל הבדיקות ירוקות.
 
-- [ ] **Step 5: קומיט**
+- [x] **Step 5: קומיט**
 
 ```bash
-git add supabase/migrations/0018_arcade_run_id.sql lib/supabase/arcadeRunId.test.ts
-git commit -m "feat(arcade): 0018 — run_id + response_snapshot on arcade_runs (F-092 task 1)"
+git add supabase/migrations/0017_arcade_run_id.sql lib/supabase/arcadeRunId.test.ts
+git commit -m "feat(arcade): 0017 — run_id + response_snapshot on arcade_runs (F-092 task 1)"
 ```
 
 ---
@@ -654,7 +653,7 @@ type ResultPayload = {
 ⛔ **`arcade_runs` היא הכתיבה הראשונה מבין השלוש, ⛔ ולא השנייה.** זה ⛔ אינו פרט
 מימוש: התנגשות `23505` על המפתח עוצרת את הרצף **לפני** ש-`arcade_progress` ניפח את
 `wins`. סדר הפוך היה משאיר את הפגם בשני שידורים בו-זמנית. המיגרציה היא
-`0018_arcade_run_id.sql`.
+`0017_arcade_run_id.sql`.
 ```
 
 ⓑ בבלוק ה-JSON של הבקשה, הוסף את השדה:

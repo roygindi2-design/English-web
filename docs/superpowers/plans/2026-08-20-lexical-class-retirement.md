@@ -4,7 +4,7 @@
 
 **Goal:** להוציא את `words.is_function_word` מכל קוד המוצר ומצינור הקליטה, ואז למחוק את העמודה — בלי שהבנק של מילות התפקוד (`/api/world/bank` · `/api/world/status`) יתרוקן ולו לרגע אחד בייצור.
 
-**Architecture:** שלוש שכבות ברצף שאסור להפוך: ⓐ **מיגרציית מילוי** `0016` מעבירה את הידע מהעמודה הישנה לחדשה ומורצת ידנית על ידי רוי **לפני** שהקוד מוחלף; ⓑ הקוד מפסיק לקרוא את העמודה הישנה וקורא את `lexical_class`; ⓒ **מיגרציית מחיקה** `0017` מורצת ידנית **אחרי** שהקוד החדש בייצור. הפוך את הסדר — והבנק ריק, או ש-`/api/world/*` מחזיר 503.
+**Architecture:** שלוש שכבות ברצף שאסור להפוך: ⓐ **מיגרציית מילוי** `0016` מעבירה את הידע מהעמודה הישנה לחדשה ומורצת ידנית על ידי רוי **לפני** שהקוד מוחלף; ⓑ הקוד מפסיק לקרוא את העמודה הישנה וקורא את `lexical_class`; ⓒ **מיגרציית מחיקה** `0019` מורצת ידנית **אחרי** שהקוד החדש בייצור. הפוך את הסדר — והבנק ריק, או ש-`/api/world/*` מחזיר 503.
 
 **Tech Stack:** Next.js App Router · Supabase (PostgREST) · Postgres · Vitest · Node ESM scripts.
 
@@ -94,7 +94,7 @@ describe('0016 — מילוי lexical_class מהעמודה הפורשת (T-120�
     for (const u of updates) expect(u).toMatch(/lexical_class\s+is\s+null/);
   });
 
-  it('⛔ אינה מוחקת דבר — המחיקה היא 0017 בלבד', () => {
+  it('⛔ אינה מוחקת דבר — המחיקה היא 0019 בלבד', () => {
     expect(SQL).not.toMatch(/drop\s+column/i);
     expect(SQL).not.toMatch(/drop\s+constraint/i);
   });
@@ -128,7 +128,7 @@ describe('0016 — מילוי lexical_class מהעמודה הפורשת (T-120�
 --    בלי הקובץ הזה, T-120 מרוקנת את הבנק של מילות התפקוד בייצור.
 --
 -- ⛔ מה שהקובץ ⛔ אינו עושה: אינו מוחק עמודה, אינו מוריד מגבלה, ואינו יוצר עמודה.
---    המחיקה היא 0017_drop_is_function_word.sql בלבד, ורק אחרי שהקוד החדש בייצור.
+--    המחיקה היא 0019_drop_is_function_word.sql בלבד, ורק אחרי שהקוד החדש בייצור.
 --
 -- ⛔ ולמה זה ⛔ אינו case when … then 'function' else 'content':
 --    is_function_word הוא not null default false (0002:53), ולכן כל שורה שאיש לא
@@ -145,7 +145,7 @@ update public.words
 -- ⓑ הטענה השלילית, ורק כשהיא מפורשת. origin = 'generated' מסמן שורה שנכנסה דרך
 --    צינור הקליטה, ושם lib/core/batchRecord.ts:170 דורש את השדה ⇒ false הוא
 --    טענה של סוכן התוכן ⛔ ולא היעדר סיווג. שורות 'seed' ו-'ngsl' נשארות NULL.
---    ⛔ זו ההזדמנות האחרונה לשמר אותן: 0017 מוחק את המקור לתמיד.
+--    ⛔ זו ההזדמנות האחרונה לשמר אותן: 0019 מוחק את המקור לתמיד.
 update public.words
    set lexical_class = 'content'
  where is_function_word is false
@@ -457,7 +457,7 @@ git push origin dev
 
 ---
 
-### Task 4: מיגרציית המחיקה `0017_drop_is_function_word.sql` (T-121)
+### Task 4: מיגרציית המחיקה `0019_drop_is_function_word.sql` (T-121)
 
 ⛔ **שער כניסה — שלושה תנאים, וכולם נמדדים ⛔ ולא מונחים:**
 
@@ -469,7 +469,7 @@ git push origin dev
 
 **Files:**
 
-* Create: `supabase/migrations/0017_drop_is_function_word.sql`
+* Create: `supabase/migrations/0019_drop_is_function_word.sql`
 * Create: `lib/supabase/dropIsFunctionWord.test.ts`
 * Modify: `plan/03-for-roy.md` (פריט **42** חדש)
 * Modify: `plan/30-architecture.md` (רישום החוב שנסגר)
@@ -479,7 +479,7 @@ git push origin dev
 * Consumes: משימה 1 (הידע כבר ב-`lexical_class`) ומשימות 2–3 (אפס קוראים).
 * Produces: `public.words` בלי `is_function_word` ובלי המגבלה `words_lexical_class_agrees`. ⛔ `lexical_class` והמגבלה `words_lexical_class_check` **נשארות**.
 
-⚠️ **המספר הוא `0017` ⛔ ולא `0016` כפי ששורת T-121 נוקבת.** `0016` נתפס בידי מיגרציית המילוי, ושתי מיגרציות באותו מספר הן שני מקורות אמת לסדר ההרצה. הסטייה מוצהרת ונרשמת בשורת המשימה.
+⚠️ **המספר הוא `0019` ⛔ ולא `0016` כפי ששורת T-121 נוקבת, ו⛔ לא `0017` כפי שגרסה קודמת של התוכנית קבעה (עודכן C-0241 · F-093).** `0017` נתפס בידי `0017_arcade_run_id.sql` שכבר **נכתבה ונדחפה**, ו-`0018` שמור למיגרציית הסיפורים (T-134 · פריט 42). ⚠️ **הלקח:** מספר שייך לקובץ ש**קיים** — שריון מראש לקובץ שטרם נכתב הוא בדיוק מה שייצר את ההתנגשות המשולשת הזאת. `0016` נתפס בידי מיגרציית המילוי, ושתי מיגרציות באותו מספר הן שני מקורות אמת לסדר ההרצה. הסטייה מוצהרת ונרשמת בשורת המשימה.
 
 - [ ] **Step 1: כתוב את הבדיקה הנופלת**
 
@@ -489,9 +489,9 @@ git push origin dev
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const SQL = readFileSync('supabase/migrations/0017_drop_is_function_word.sql', 'utf8');
+const SQL = readFileSync('supabase/migrations/0019_drop_is_function_word.sql', 'utf8');
 
-describe('0017 — מחיקת words.is_function_word (T-121)', () => {
+describe('0019 — מחיקת words.is_function_word (T-121)', () => {
   it('המגבלה יורדת לפני העמודה — סדר, ⛔ לא צירוף מקרים', () => {
     const constraint = SQL.indexOf('words_lexical_class_agrees');
     const column = SQL.search(/drop\s+column\s+if\s+exists\s+is_function_word/i);
@@ -524,12 +524,12 @@ describe('0017 — מחיקת words.is_function_word (T-121)', () => {
 - [ ] **Step 2: הרץ ואמת שהיא נופלת**
 
 הרץ: `npx vitest run lib/supabase/dropIsFunctionWord.test.ts`
-צפוי: **FAIL** — `ENOENT` על `0017_drop_is_function_word.sql`.
+צפוי: **FAIL** — `ENOENT` על `0019_drop_is_function_word.sql`.
 
 - [ ] **Step 3: כתוב את המיגרציה**
 
 ```sql
--- 0017_drop_is_function_word.sql — T-121 · פריט 38 · פריט 8.
+-- 0019_drop_is_function_word.sql — T-121 · פריט 38 · פריט 8.
 --
 -- ⛔ אל תריץ את הקובץ הזה לפני 0016_lexical_class_backfill.sql. 0016 מעביר את
 --    הידע; זה מוחק את המקור. סדר הפוך = איבוד סיווג מילות התפקוד לתמיד.
@@ -548,7 +548,7 @@ alter table public.words
   drop column if exists is_function_word;
 
 comment on column public.words.lexical_class is
-  'function | content | NULL (לא ידוע). המקור היחיד מאז 0017 — is_function_word נמחקה (T-121). מולאה מ-0016: true ⇒ function; false בשורות origin = generated ⇒ content; כל השאר נשאר NULL.';
+  'function | content | NULL (לא ידוע). המקור היחיד מאז 0019 — is_function_word נמחקה (T-121). מולאה מ-0016: true ⇒ function; false בשורות origin = generated ⇒ content; כל השאר נשאר NULL.';
 
 commit;
 ```
@@ -570,10 +570,10 @@ commit;
 פריט 42, באותן שש עמודות: `| # | מי ביקש | מתי | מה נדרש מרוי | למה זה חשוב | חוסם? |`
 
 ```
-| 42 | DEV (C-…) | 2026-08-… | **להריץ את `supabase/migrations/0017_drop_is_function_word.sql`** בעורך ה-SQL של Supabase | ⛔ **רק אחרי שפריט 41 בוצע וקוד T-120 נמצא בייצור.** מוחק את `words.is_function_word` ואת המגבלה `words_lexical_class_agrees`. ⛔ הרצה מוקדמת מפילה את `/api/world/bank` ואת `/api/world/status` | ⏳ פתוח · ⛔ אינו חוסם את הלופ |
+| 42 | DEV (C-…) | 2026-08-… | **להריץ את `supabase/migrations/0019_drop_is_function_word.sql`** בעורך ה-SQL של Supabase | ⛔ **רק אחרי שפריט 41 בוצע וקוד T-120 נמצא בייצור.** מוחק את `words.is_function_word` ואת המגבלה `words_lexical_class_agrees`. ⛔ הרצה מוקדמת מפילה את `/api/world/bank` ואת `/api/world/status` | ⏳ פתוח · ⛔ אינו חוסם את הלופ |
 ```
 
-וב-`plan/30-architecture.md`, בסעיף החוב הטכני: שורה אחת שהחוב «שתי עמודות לאותה עובדה» (0006) נסגר, עם הפניה ל-`0016` ול-`0017`.
+וב-`plan/30-architecture.md`, בסעיף החוב הטכני: שורה אחת שהחוב «שתי עמודות לאותה עובדה» (0006) נסגר, עם הפניה ל-`0016` ול-`0019`.
 
 - [ ] **Step 7: אימות מלא + קומיט**
 
@@ -581,8 +581,8 @@ commit;
 צפוי: ארבע הפקודות ירוקות.
 
 ```bash
-git add supabase/migrations/0017_drop_is_function_word.sql lib/supabase/dropIsFunctionWord.test.ts plan/03-for-roy.md plan/30-architecture.md
-git commit -m "loop(DEV): T-121 מיגרציית 0017 — is_function_word והמגבלה הכפולה יורדות"
+git add supabase/migrations/0019_drop_is_function_word.sql lib/supabase/dropIsFunctionWord.test.ts plan/03-for-roy.md plan/30-architecture.md
+git commit -m "loop(DEV): T-121 מיגרציית 0019 — is_function_word והמגבלה הכפולה יורדות"
 git push origin dev
 ```
 
@@ -604,7 +604,7 @@ git push origin dev
 | T-121 «המגבלה `words_lexical_class_agrees` יורדת באותה מיגרציה» | משימה 4 צעד 3, ובדיקת סדר במפורש |
 | T-121 «אידמפוטנטית, טרנזקציה אחת» | משימה 4 צעדים 1 ו-3 |
 | T-121 «אינה נכנסת לייצור עד שרוי מריץ ידנית — פריט חדש ב-`03-for-roy`» | משימה 4 צעד 6, פריט 42 |
-| T-121 שם הקובץ `0016_drop_is_function_word.sql` | ⚠️ **סטייה מוצהרת** — `0017`, כי `0016` נתפס בידי המילוי |
+| T-121 שם הקובץ `0016_drop_is_function_word.sql` | ⚠️ **סטייה מוצהרת** — `0019` (עודכן C-0241), כי `0016` נתפס בידי המילוי |
 
 **2. סריקת מציין-מקום.** אין `TODO`, אין «טיפול בשגיאות מתאים», אין «בדיקות כמו במשימה N». כל בלוק קוד מלא. שלושה מקומות מורים במפורש **לקרוא את הקוד בפועל לפני העריכה** (משימה 1 צעד 6, משימה 3 צעדים 1 ו-3) — ⛔ אלה אינם מציינֵי מקום אלא הודאה מדודה: מבנה טבלת `03-for-roy` ומבנה מחרוזת ה-`values` ב-`build-ingest-sql.mjs` ארוכים מכדי להעתיק בבטחה לתוך תוכנית, ותוכנית שמנחשת אותם גרועה מתוכנית שמורה לקרוא.
 
