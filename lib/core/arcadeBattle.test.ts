@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ARCADE_ENEMY_HP,
   advance,
+  ammoLeft,
   battleOutcome,
   chooseOption,
   enemyDefeated,
@@ -162,5 +163,30 @@ describe('D-067ⓑ — חיי היריב נגזרים מהסיבוב שנשלח'
     const s = chooseOption(startBattle(QUESTIONS), 'אפשרות 1');
     expect(s.enemyHp).toBe(9);
     expect(s.enemyHpMax).toBe(10);
+  });
+});
+
+describe('D-070 — התחמושת שנותרה, כדי שלמהירות יהיה מחיר', () => {
+  it('בתחילת הקרב נשארו כל הקליעים', () => {
+    expect(ammoLeft(startBattle(QUESTIONS))).toBe(ARCADE_AMMO);
+  });
+
+  it('⛔ הקליע נשרף ברגע ההקשה ⛔ ולא ב«הבא» — אחרת המחיר מגיע באיחור', () => {
+    const chosen = chooseOption(startBattle(QUESTIONS), 'אפשרות 1');
+    expect(ammoLeft(chosen)).toBe(ARCADE_AMMO - 1);
+    expect(ammoLeft(advance(chosen))).toBe(ARCADE_AMMO - 1);
+  });
+
+  it('הקשה שגויה מורידה את התחמושת ⛔ ואינה נוגעת בחיי היריב', () => {
+    const before = startBattle(QUESTIONS);
+    const after = chooseOption(before, 'מסיח 1א');
+    expect(ammoLeft(after)).toBe(ammoLeft(before) - 1);
+    expect(after.enemyHp).toBe(before.enemyHp);
+  });
+
+  it('בסוף הקרב ⛔ אין תחמושת שלילית', () => {
+    let s = startBattle(QUESTIONS);
+    for (let i = 0; i < QUESTIONS.length; i += 1) s = advance(chooseOption(s, 'מסיח 1א'));
+    expect(ammoLeft(s)).toBe(0);
   });
 });

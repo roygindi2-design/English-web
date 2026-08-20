@@ -153,3 +153,43 @@ describe('<ArenaBoard>', () => {
     expect(CODE).toMatch(/if \(initialRound !== undefined\) return;/);
   });
 });
+
+/** גוף `statusHe` — הנוסח היחיד של שורת המצב (D-070). */
+const AMMO_WORDING = CODE.slice(CODE.indexOf('const statusHe'), CODE.indexOf('const MISSING_NUMBER_HE'));
+
+describe('D-070 · T-130 — שורת המצב נושאת את שני המספרים', () => {
+  it('הנוסח הוא של D-070, מילה במילה', () => {
+    expect(CODE).toContain('קליעים');
+    expect(CODE).toContain('ליריב');
+    expect(CODE).toMatch(/נשארו לך \$\{ammo\} קליעים · ליריב \$\{hp\} חיים/);
+  });
+
+  it('היחיד ⛔ אינו «1 קליעים»', () => {
+    expect(CODE).toContain('קליע אחד');
+  });
+
+  it('שני המספרים באים מהחוק ⛔ ולא מחישוב מקומי', () => {
+    expect(CODE).toMatch(/ammoLeft\(battle\)/);
+    expect(CODE).not.toMatch(/questions\.length\s*-\s*battle\.index/);
+  });
+
+  it('⛔ אין ספירה לאחור, שעון, מכפיל וניקוד (D-050 · D-070)', () => {
+    for (const banned of [/countdown/i, /\bscore\b/i, /multiplier/i, /ניקוד/, /שניות/]) {
+      expect(CODE).not.toMatch(banned);
+    }
+  });
+
+  /**
+   * ⚠️ **נוסח התוכנית לאסרציה הזאת ⛔ אינו יכול לעבור, והמדידה הראתה זאת:** הוא דרש
+   * את המחרוזת «קליעים» **בתוך** תבנית ה-`aria-label`, בעוד המימוש שהתוכנית עצמה
+   * כותבת מרכיב את הנוסח ב-`statusHe(...)` ⇒ המילה ⛔ אינה שם. אסרציה שמכריחה
+   * לשכפל את הנוסח בשני מקומות סותרת את הסיבה שבגללה `statusHe` קיימת.
+   * הנמדד כאן הוא הדבר עצמו: **מד הצבע נושא את אותו נוסח עברי** ⛔ ולא צבע בלבד.
+   */
+  it('חוקה § 1 — המספרים נגישים גם בלי צבע', () => {
+    const label = CODE.match(/aria-label=\{`[^`]*`\}/);
+    expect(label, 'מד ה-pips חייב aria-label').not.toBeNull();
+    expect(label?.[0], 'התווית נבנית מאותו נוסח ⛔ ולא משוכפלת').toContain('statusHe(');
+    expect(AMMO_WORDING, '⛔ והנוסח עצמו נושא את המילה').toContain('קליעים');
+  });
+});

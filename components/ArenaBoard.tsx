@@ -9,6 +9,7 @@ import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import {
   advance,
+  ammoLeft,
   chooseOption,
   isFinished,
   startBattle,
@@ -112,6 +113,15 @@ const TOO_SMALL_HE = 'ברמה הזאת עוד אין מספיק מילים לק
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הזירה…';
+
+/**
+ * D-070 — ⛔ שני המספרים באותה שורה, כי המתח הוא **היחס ביניהם**: תחמושת שנשרפת
+ * מהר מול יריב שעוד עומד. ⛔ אין כאן ספירה לאחור, שעון, מכפיל וניקוד (D-045 · D-050).
+ * ⛔ והיחיד ⛔ אינו «1 קליעים» — נאמנות דקדוקית לאותו נוסח, ⛔ ולא נוסח שני.
+ */
+const AMMO_ONE_HE = 'נשאר לך קליע אחד';
+const statusHe = (ammo: number, hp: number): string =>
+  ammo === 1 ? `${AMMO_ONE_HE} · ליריב ${hp} חיים` : `נשארו לך ${ammo} קליעים · ליריב ${hp} חיים`;
 
 /** `—` ⛔ אינו `0` (`DeckSelector.tsx:58`): מספר שאין לנו אינו מספר אפס. */
 const MISSING_NUMBER_HE = '—';
@@ -408,15 +418,16 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     <section className="flex min-h-[100dvh] flex-col gap-6 pb-28">
       {topBar(null)}
 
-      {/* מד חיי היריב — בקרת מצב ו⛔ לא תצוגת נתונים (§ 4.2י שאלה 5): ⛔ אין כאן גרף.
-          התווית העברית והמספר הולכים עם הצבע, כי צבע לעולם אינו הערוץ היחיד (חוקה § 1). */}
+      {/* שורת המצב — בקרה, ⛔ ולא תצוגת נתונים (§ 4.2י שאלה 5): ⛔ אין כאן גרף.
+          התווית העברית והמספר הולכים עם הצבע, כי צבע לעולם אינו הערוץ היחיד (חוקה § 1).
+          ⛔ שני המספרים באותה שורה (D-070) — התחמושת נותנת למהירות מחיר. */}
       <div className="flex flex-col gap-2">
         <p className="text-base font-semibold text-ink">
-          {ENEMY_HP_HE}: {battle.enemyHp}
+          {statusHe(ammoLeft(battle), battle.enemyHp)}
         </p>
         <div
           role="img"
-          aria-label={`${ENEMY_HP_HE}: ${battle.enemyHp} מתוך ${battle.enemyHpMax}`}
+          aria-label={`${statusHe(ammoLeft(battle), battle.enemyHp)}, ${ENEMY_HP_HE} מתוך ${battle.enemyHpMax}`}
           className="flex flex-row gap-1"
         >
           {hpPips(battle.enemyHpMax).map((pip) => (

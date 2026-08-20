@@ -60,6 +60,16 @@ export function chooseOption(state: BattleState, option: string): BattleState {
   };
 }
 
+/**
+ * D-070 — כמה קליעים נשארו. ⛔ הקליע נשרף ב-`chooseOption` ⛔ ולא ב-`advance`:
+ * הלומד רואה את המחיר של הבחירה **בזמן שהוא רואה את התשובה**, ⛔ ולא אחריה.
+ * ⛔ `Math.max(0, …)` — תחמושת שלילית היא מצב שאין לו ציור.
+ */
+export function ammoLeft(state: BattleState): number {
+  const spent = state.index + (state.chosen === null ? 0 : 1);
+  return Math.max(0, state.questions.length - spent);
+}
+
 export function advance(state: BattleState): BattleState {
   if (state.chosen === null) return state;
   return { ...state, index: state.index + 1, chosen: null };
