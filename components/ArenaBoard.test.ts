@@ -121,7 +121,10 @@ describe('<ArenaBoard>', () => {
   it('⛔ אינו שולח סף כלל — הסף חי בשרת (D-067ⓑ)', () => {
     // D-067ⓑ — הסף חי בשרת. ⛔ שדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
     expect(CODE).not.toMatch(/enemyHp\s*:/);
-    expect(CODE).toMatch(/send\(\s*\{\s*answers:\s*battle\.answers\s*\}\s*\)/);
+    // ⚠️ F-092 עדכן את הגוף: `runId` **וגם** `answers`. הטענה ⛔ לא נמחקה — היא הורחבה,
+    // וההנחה שהיא נועדה לשמור עליה (⛔ אפס שדה סף) נאכפת בשורה שמעליה ובטענה שמתחת.
+    expect(CODE).toMatch(/send\(\s*\{\s*runId:\s*crypto\.randomUUID\(\),\s*answers:\s*battle\.answers\s*\}\s*\)/);
+    expect(CODE).not.toMatch(/send\(\s*\{[^}]*(?:threshold|required|hp)\s*:/i);
   });
 
   it('שש התשובות של החוזה מטופלות, ⛔ ולא ארבע', () => {
@@ -222,5 +225,24 @@ describe('T-117 · T-041 — התנועה נכלאת בבמה', () => {
 
   it('⛔ הרכיב ⛔ אינו מחשב תנוחה בעצמו', () => {
     expect(CODE).not.toMatch(/answers\[[^\]]*\]\.correct/);
+  });
+});
+
+describe('F-092 — מפתח הקרב נוצר פעם אחת ונישא בשידור החוזר', () => {
+  it('המפתח נוצר ב-`crypto.randomUUID`', () => {
+    expect(CODE).toMatch(/crypto\.randomUUID\(\)/);
+  });
+
+  it('הוא נשלח בגוף, לצד `answers`', () => {
+    expect(CODE).toMatch(/send\(\s*\{[^}]*runId[^}]*answers:\s*battle\.answers[^}]*\}\s*\)/s);
+  });
+
+  it('⛔ המפתח ⛔ אינו נוצר בתוך `send` — שידור חוזר היה מקבל מפתח חדש', () => {
+    const send = CODE.slice(CODE.indexOf('const send = useCallback'), CODE.indexOf('useEffect(() => {\n    if (battle === null)'));
+    expect(send).not.toContain('randomUUID');
+  });
+
+  it('השידור החוזר משדר את `pendingResult` כמות שהוא', () => {
+    expect(CODE).toMatch(/send\(pendingResult\)/);
   });
 });

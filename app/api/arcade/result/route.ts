@@ -35,6 +35,16 @@ function parseAnswers(value: unknown): ArcadeAnswer[] | null {
   return out;
 }
 
+/**
+ * F-092 · ⛔ «מחרוזת כלשהי» ⛔ אינה מפתח. הצורה נבדקת כדי שהאינדקס הייחודי
+ * יקבל בדיוק סוג ערך אחד, ולא יתפוצץ ב-`22P02` (invalid input syntax for uuid)
+ * שהיה מוחזר ללומד כ-503 במקום כ-422.
+ */
+const RUN_ID_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function parseRunId(value: unknown): string | null {
+  return typeof value === 'string' && RUN_ID_UUID_RE.test(value) ? value : null;
+}
+
 /** POST /api/arcade/result — see docs/api-contract.md */
 export async function POST(request: Request) {
   let payload: unknown;
@@ -67,6 +77,29 @@ export async function POST(request: Request) {
     );
   }
 
+  const runId = parseRunId(body.runId);
+  if (runId === null) {
+    return NextResponse.json(
+      { ok: false, fieldErrors: { runId: 'הקרב לא נשמר. נסה שוב.' } },
+      { status: 422 },
+    );
+  }
+
+  // F-092 · הגנה ⓐ — המסלול הנפוץ: שידור חוזר אחרי נפילת רשת. התשובה שנשלחה
+  // בפעם הראשונה מוחזרת כמות שהיא, ⛔ בלי אף כתיבה ו⛔ בלי חישוב שני.
+  const { data: priorRun, error: priorError } = await supabase
+    .from('arcade_runs')
+    .select('response_snapshot')
+    .eq('user_id', user.id)
+    .eq('run_id', runId)
+    .maybeSingle();
+  if (priorError) {
+    console.error('[api/arcade/result] prior run read failed:', priorError.message);
+    return isSchemaMissing((priorError as { code?: string }).code) ? schemaMissing() : unavailable();
+  }
+  const priorSnapshot = (priorRun as { response_snapshot?: unknown } | null)?.response_snapshot;
+  if (priorSnapshot) return NextResponse.json(priorSnapshot);
+
   const { data: current, error: readError } = await supabase
     .from('arcade_progress')
     .select('arcade_level, wins, unlocked_items')
@@ -98,6 +131,7 @@ export async function POST(request: Request) {
   // ו-`ArcadeWriteRow['table']` הוא הטיפוס שאינו מרשה שם טבלה שלישי.
   const plan = planArcadeWrites({
     userId: user.id,
+    runId,
     answers,
     before: {
       gameLevel: row?.arcade_level ?? 1,
@@ -117,18 +151,27 @@ export async function POST(request: Request) {
         ? await supabase.from('arcade_collected_words').upsert(write.values, { onConflict: 'user_id,word_id' })
         : await supabase.from('arcade_runs').insert(write.values);
     if (error) {
+      // F-092 · הגנה ⓑ — שני שידורים **בו-זמנית**, שבהם הגנה ⓐ קוראת ריק בשניהם.
+      // `arcade_runs` היא הכתיבה **הראשונה** (‏`planArcadeWrites`), ולכן התנגשות כאן
+      // עוצרת לפני ש-`arcade_progress` ניפח את `wins`. ⛔ `continue` היה מותיר בדיוק
+      // את הפגם המקורי.
+      if ((error as { code?: string }).code === '23505') {
+        const { data: winner } = await supabase
+          .from('arcade_runs')
+          .select('response_snapshot')
+          .eq('user_id', user.id)
+          .eq('run_id', runId)
+          .maybeSingle();
+        const snapshot = (winner as { response_snapshot?: unknown } | null)?.response_snapshot;
+        return NextResponse.json(snapshot ?? plan.response);
+      }
       console.error(`[api/arcade/result] ${write.table} write failed:`, error.message);
       return isSchemaMissing((error as { code?: string }).code) ? schemaMissing() : unavailable();
     }
   }
 
   // ⛔ «המילים שהפילו אותך» חוזר ללקוח ⛔ ואינו נשמר (D-047).
-  return NextResponse.json({
-    ok: true,
-    enemyDefeated: plan.enemyDefeated,
-    outcome: plan.outcome,
-    leveledUp: plan.leveledUp,
-    unlocked: plan.unlocked,
-    missed: plan.missed,
-  });
+  // F-092 · ⛔ הגוף ⛔ אינו נבנה כאן: הוא **אותו אובייקט** שנשמר ב-`response_snapshot`,
+  // ולכן שידור ראשון ושידור חוזר מחזירים בית-בבית את אותו דבר.
+  return NextResponse.json(plan.response);
 }

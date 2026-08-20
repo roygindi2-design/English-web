@@ -73,6 +73,15 @@ type ResultBody =
  * ושדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
  */
 type ResultPayload = {
+  // F-092 · מפתח האידמפוטנטיות. ⛔ **נוצר פעם אחת, ברגע השליחה, ו⛔ לא בתוך `send`** —
+  // `send` היא בדיוק הפונקציה שרצה שוב אחרי `online`, ומפתח שנוצר בתוכה היה מפתח
+  // חדש בכל שידור, כלומר קרב שני. הוא נישא בתוך `pendingResult`, ⇒ השידור החוזר
+  // נושא אותו מעצמו.
+  // ⚠️ **סטייה מדודה מנוסח התוכנית:** התוכנית כתבה כאן בלוק `/** … */`, ו⛔ הוא ⛔ אינו
+  // ניתן למימוש בקובץ הזה — מלבן ההלבנה של הבדיקה (`ArenaBoard.test.ts:5`) הוא
+  // `/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, ולכן בלוק שנפתח מיד אחרי `{` נסגר על `*/ }` מאוחר
+  // ונבלע 8,232 תווים מהמקור — נמדד. הערת שורה נותנת בדיוק את אותו תיעוד בלי הבליעה.
+  readonly runId: string;
   readonly answers: readonly ArcadeAnswer[];
 };
 
@@ -232,7 +241,7 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     if (!isFinished(battle) || battle.chosen !== null) return;
     if (submitted) return;
     setSubmitted(true);
-    void send({ answers: battle.answers });
+    void send({ runId: crypto.randomUUID(), answers: battle.answers });
   }, [battle, submitted, send]);
 
   /**
