@@ -362,7 +362,7 @@ git push origin dev
 * Consumes: `lib/core/batchRecord.ts:46` — `isFunctionWord: boolean` (שדה **חובה** ברשומת האצווה). ⛔ שם שדה ה-jsonl `is_function_word` ⛔ אינו משתנה.
 * Produces: כל הרצה של `npm run build:ingest` מייצרת `insert into public.words (…, lexical_class)`. ⛔ אין יותר `is_function_word` בפלט. **משימה 4 מסתמכת על כך שאף כותב פעיל אינו נשאר.**
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 הוסף בסוף `scripts/build-ingest-sql.test.ts` (הקובץ כבר מחזיק `FRESH` — הרצה טרייה לתיקייה זמנית):
 
@@ -392,12 +392,12 @@ describe('T-120ⓒ — הקליטה כותבת lexical_class ⛔ ולא את ה�
 
 ⚠️ **קרא את ראש הקובץ לפני שאתה מוסיף** — `FRESH` ו-`SQL` כבר מוגדרים שם (שורות 8 ו-25), וההרצה הטרייה מופעלת ב-`beforeAll` קיים. ⛔ אל תשכפל אותם.
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 הרץ: `npx vitest run scripts/build-ingest-sql.test.ts`
 צפוי: **FAIL** — `is_function_word` עדיין בפלט, ו-`lexical_class` אינו.
 
-- [ ] **Step 3: החלף את שלוש השורות במחולל**
+- [x] **Step 3: החלף את שלוש השורות במחולל**
 
 `scripts/build-ingest-sql.mjs:170` — שם העמודה ב-CTE `incoming`:
 
@@ -421,26 +421,26 @@ q(r.isFunctionWord ? 'function' : 'content')
 ⚠️ **קרא את הבלוק בפועל לפני העריכה** — הוא מרכיב מחרוזת אחת ארוכה, ומיקום הביטוי בתוכה חייב להישאר **חמישי**, בדיוק כמו סדר העמודות ב-`incoming`. ⛔ עמודה שזזה בלי שהכותרת זזה איתה היא באג שקט.
 ⚠️ `'content'` כאן הוא **טענה מפורשת** של סוכן התוכן (`batchRecord.ts:170` דורש את השדה) ⛔ ולא ברירת מחדל — ולכן הוא לגיטימי כאן ו⛔ אינו לגיטימי במיגרציית המילוי על שורות `origin <> 'generated'`.
 
-- [ ] **Step 4: צור מחדש את התוצר הנגזר — באותו קומיט**
+- [x] **Step 4: צור מחדש את התוצר הנגזר — באותו קומיט**
 
 הרץ: `npm run build:ingest`
 צפוי: `wrote supabase/seed/0001_content_batches.sql` ואחריו שורת `0003_scoring_material.sql`.
 הרץ: `git diff --stat supabase/seed/`
 צפוי: `0001_content_batches.sql` השתנה. ⛔ אם הוא ⛔ לא השתנה — המחולל לא נערך בפועל, עצור וחזור לצעד 3.
 
-- [ ] **Step 5: הרץ ואמת שהכל עובר**
+- [x] **Step 5: הרץ ואמת שהכל עובר**
 
 הרץ: `npx vitest run scripts/build-ingest-sql.test.ts`
 צפוי: **PASS**, כולל בדיקת הזהות בית-בבית.
 
-- [ ] **Step 6: מוטציה — אמת ששער הישנוּן אינו קישוט**
+- [x] **Step 6: מוטציה — אמת ששער הישנוּן אינו קישוט**
 
 הרץ: `git checkout supabase/seed/0001_content_batches.sql` (מחזיר את התוצר הישן מול מחולל חדש).
 הרץ: `npx vitest run scripts/build-ingest-sql.test.ts`
 צפוי: **FAIL** על `leaves the committed seed identical to a fresh run` ועל `⛔ is_function_word ⛔ אינו מופיע`.
 הרץ שוב `npm run build:ingest` והרץ את הבדיקות — ירוק.
 
-- [ ] **Step 7: אימות מלא + קומיט**
+- [x] **Step 7: אימות מלא + קומיט**
 
 הרץ: `npm run typecheck && npm run check:core && npm test && npm run build`
 צפוי: ארבע הפקודות ירוקות.
@@ -451,7 +451,7 @@ git commit -m "loop(DEV): T-120 צינור הקליטה כותב lexical_class, 
 git push origin dev
 ```
 
-- [ ] **Step 8: סמן את T-120 בטבלה**
+- [x] **Step 8: סמן את T-120 בטבלה**
 
 ב-`plan/50-tasks.md` שורת `T-120`: סטטוס `🟣` עם המשפט «הושלמה C-…, שלוש משימות התוכנית» + **הסטייה המוצהרת** (מיגרציית המילוי, F-086). ⛔ אל תסמן `✅` — הסימון הזה הוא סמכות ה-Critic.
 

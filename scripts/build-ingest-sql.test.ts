@@ -256,3 +256,31 @@ describe('supabase/seed/0003_scoring_material.sql', () => {
     expect(readFileSync(COMMITTED_SCORING, 'utf8')).toBe(fresh());
   });
 });
+
+/**
+ * T-120ⓒ · the ingest pipeline stops writing the retiring column.
+ *
+ * ⚠️ The plan for this task listed a FOURTH assertion here — the byte-for-byte
+ * identity of the committed seed against a fresh run. It is ⛔ NOT repeated below,
+ * because it already exists by name at line 113 of this file ("keeps the committed
+ * seed in step with data/generated"), and a second copy of a live gate is a gate
+ * nobody maintains (F-064). Measured: reverting the seed reddens the existing one.
+ */
+describe('T-120ⓒ — הקליטה כותבת lexical_class ⛔ ולא את העמודה הפורשת', () => {
+  it('⛔ is_function_word ⛔ אינו מופיע ב-SQL שנוצר', () => {
+    expect(readFileSync(FRESH, 'utf8')).not.toContain('is_function_word');
+  });
+
+  it('העמודה החדשה נכנסת ל-insert של words', () => {
+    expect(readFileSync(FRESH, 'utf8')).toMatch(
+      /insert into public\.words \([^)]*lexical_class[^)]*\)/,
+    );
+  });
+
+  it("הבוליאני מתורגם לשתי המחרוזות בלבד — ⛔ ולא ל-true/false", () => {
+    const generated = readFileSync(FRESH, 'utf8');
+    const values = [...generated.matchAll(/'(function|content)'/g)].map((m) => m[1]);
+    expect(values.length).toBeGreaterThan(0);
+    expect([...new Set(values)].sort()).toEqual(expect.arrayContaining(['content']));
+  });
+});

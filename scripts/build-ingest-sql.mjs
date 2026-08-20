@@ -167,7 +167,7 @@ for (const batch of batches) {
       `${num(batch.passing.length)}, ${num(rejectedHere)}, ${q(batch.file)})`,
   );
   lines.push('  returning id');
-  lines.push('), incoming (headword, pos, n_letters, n_syllables, is_function_word, sense_index,');
+  lines.push('), incoming (headword, pos, n_letters, n_syllables, lexical_class, sense_index,');
   lines.push('            definition_en, translation_he, cefr_level, translation_confidence,');
   lines.push('            he_interference_note, he_one_to_many_group, needs_human_review) as (');
   lines.push('  values');
@@ -177,7 +177,11 @@ for (const batch of batches) {
         const s = r.sense;
         return (
           `    (${q(s.headword)}, ${q(s.pos)}, ${num(r.nLetters)}, ${num(r.nSyllables)}, ` +
-          `${bool(r.isFunctionWord)}, ${num(r.senseIndex)}, ${q(s.definitionEn)}, ${q(s.translationHe)}, ` +
+          // ⛔ NOT a default: `batchRecord.ts:170` makes `is_function_word` a REQUIRED
+          // field of the jsonl record, so 'content' here is the content agent's explicit
+          // claim. The same literal would ⛔ NOT be legitimate in the backfill migration
+          // over `origin <> 'generated'` rows, where nobody ever asserted it.
+          `${q(r.isFunctionWord ? 'function' : 'content')}, ${num(r.senseIndex)}, ${q(s.definitionEn)}, ${q(s.translationHe)}, ` +
           `${q(r.cefrLevel)}, ${q(r.confidence)}, ${q(r.heInterferenceNote)}, ${q(r.heOneToManyGroup)}, ` +
           `${bool(r.needsHumanReview)})`
         );
@@ -185,8 +189,8 @@ for (const batch of batches) {
       .join(',\n'),
   );
   lines.push('), w as (');
-  lines.push('  insert into public.words (headword, pos, origin, n_letters, n_syllables, is_function_word)');
-  lines.push("  select distinct on (headword, pos) headword, pos, 'generated', n_letters, n_syllables, is_function_word");
+  lines.push('  insert into public.words (headword, pos, origin, n_letters, n_syllables, lexical_class)');
+  lines.push("  select distinct on (headword, pos) headword, pos, 'generated', n_letters, n_syllables, lexical_class");
   lines.push('  from incoming');
   lines.push('  order by headword, pos');
   lines.push('  on conflict (headword, pos) do update set headword = excluded.headword');
