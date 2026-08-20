@@ -51,6 +51,15 @@ describe('חמש השורות של § 4.2ז, בסדרן', () => {
     expect(CODE).toContain('UnknownList');
     expect(CODE.indexOf('דרכים לתרגל')).toBeLessThan(CODE.indexOf('<UnknownList'));
   });
+
+  it('שורה 6 — מפת שש הרמות, אחרי שורה 5', () => {
+    expect(CODE).toContain('LevelPath');
+    expect(CODE.indexOf('UnknownList')).toBeLessThan(CODE.indexOf('<LevelPath'));
+  });
+
+  it('שורה 6 משתמשת באותו choose ⛔ ולא בכותב שני', () => {
+    expect(CODE).toContain('onChoose={(band) => void choose(band)}');
+  });
 });
 
 describe('⛔ מה שאסור להופיע במסך הזה', () => {

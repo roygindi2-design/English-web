@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ArcadeEntry from '@/components/ArcadeEntry';
 import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
+import LevelPath from '@/components/LevelPath';
 import UnknownList from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
@@ -34,14 +35,14 @@ const PRACTICE_HE = 'דרכים לתרגל';
 const NO_NUMBER_HE = '—';
 
 type SummaryResponse =
-  | ({ readonly ok: true } & LevelSummary)
+  | ({ readonly ok: true; readonly levels?: readonly LevelSummary[] } & LevelSummary)
   | { readonly ok: true; readonly level: null }
   | { readonly ok: false; readonly code: string };
 
 type ScreenState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'choose' }
-  | { readonly kind: 'ready'; readonly summary: LevelSummary }
+  | { readonly kind: 'ready'; readonly summary: LevelSummary; readonly levels: readonly LevelSummary[] }
   | { readonly kind: 'failed'; readonly code: 'schema_missing' | 'session_expired' | 'unavailable' };
 
 /**
@@ -76,7 +77,9 @@ export default function LevelMapScreen(): React.JSX.Element {
         setState({ kind: 'choose' });
         return;
       }
-      setState({ kind: 'ready', summary: body });
+      // ⛔ `?? []` ⛔ ואינו קריסה: שרת ישן (לפני T-102) אינו נושא את השדה, ומסלול
+      // שנופל על `undefined.map` היה הופך תוספת תואמת-אחורה לשבירה.
+      setState({ kind: 'ready', summary: body, levels: body.levels ?? [] });
     } catch {
       setState({ kind: 'failed', code: 'unavailable' });
     }
@@ -216,6 +219,18 @@ export default function LevelMapScreen(): React.JSX.Element {
           למעלה כבר מציג את המספר כאריח. מוצגת רק כשיש רמה — בלי רמה המסך הוא מצב
           בחירה, ורשימה מתחת לשש הרמות הייתה תשובה לשאלה שהלומד עוד לא שאל. */}
       {state.kind === 'ready' ? <UnknownList /> : null}
+
+      {/* שורה 6 — מפת שש הרמות (T-084 · § 4.2ז). כולן ניתנות להקשה ומחליפות את
+          `profiles.current_level` דרך **אותו** `choose` שמצב הבחירה משתמש בו —
+          ⛔ ולא כותב שני לאותה עמודה. */}
+      {state.kind === 'ready' ? (
+        <LevelPath
+          levels={state.levels}
+          current={state.summary.level}
+          onChoose={(band) => void choose(band)}
+          busy={saving}
+        />
+      ) : null}
     </section>
   );
 }

@@ -1,0 +1,96 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+
+/** `<LevelPath>` — שורה 6 של § 4.2ז (T-084). שומר מקור. */
+const SRC = readFileSync('components/LevelPath.tsx', 'utf8');
+const SCREEN = readFileSync('components/LevelMapScreen.tsx', 'utf8');
+
+function withoutComments(source: string): string {
+  return source
+    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+}
+
+const CODE = withoutComments(SRC);
+
+describe('חוקה § 1 — צבע לעולם אינו הערוץ היחיד', () => {
+  it('לכל שבב תווית מספרית לצד הטבעת', () => {
+    expect(CODE).toContain('{chip.known}');
+    expect(CODE).toContain('{chip.totalInLevel}');
+  });
+
+  it('לכל שבב גם תווית עברית ⛔ ולא אות בלבד', () => {
+    expect(CODE).toContain('LEVEL_LABELS_HE');
+  });
+
+  it('הרמה הנוכחית מסומנת גם בטקסט ⛔ ולא רק במסגרת', () => {
+    expect(CODE).toContain('aria-current');
+    expect(CODE).toContain('הרמה שלך');
+  });
+
+  it('האחוז מגיע מהשכבה הטהורה ⛔ ואינו מחושב כאן', () => {
+    expect(CODE).toContain('chip.percent');
+    expect(CODE).not.toMatch(/\/\s*totalInLevel/);
+  });
+});
+
+describe('D-037 · R-017 — ⛔ אין נעילה ואין סף', () => {
+  it.each(['נעול', 'LockIcon', 'שולט', 'עדיין לא', 'מוכן', 'ניקוד', 'רצף', 'אחוז שליטה'])(
+    '⛔ «%s» אינו מופיע',
+    (needle) => {
+      expect(CODE).not.toContain(needle);
+    },
+  );
+
+  it('כל שבב שיש בו מילים ניתן להקשה — הכתיבה היא הנתיב הקיים', () => {
+    expect(CODE).toContain('onChoose(');
+    expect(CODE).not.toContain('/api/levels/current');
+  });
+
+  it('רמה ריקה מושבתת עם המספר ⛔ ולא מוסתרת', () => {
+    expect(CODE).toContain('chip.isEmpty');
+    expect(CODE).toContain('aria-disabled');
+    expect(CODE).not.toMatch(/isEmpty\s*\?\s*null/);
+  });
+});
+
+describe('חוקת העיצוב', () => {
+  it('⛔ אין hex גולמי — אסימונים בלבד (חוקה § 6)', () => {
+    expect(CODE).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+
+  it('הטבעת היא SVG ⛔ ולא אמוג\'י ולא תמונה (חוקה § 6)', () => {
+    expect(CODE).toContain('<svg');
+    expect(CODE).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+  });
+
+  it('הטבעת נצבעת דרך currentColor ⛔ ולא דרך ערך צבע בקובץ', () => {
+    expect(CODE).toContain('currentColor');
+  });
+
+  it('⛔ אין מרכוז אנכי על מכולה ראשית ואין h-screen', () => {
+    expect(CODE).not.toContain('justify-center');
+    expect(CODE).not.toContain('h-screen');
+  });
+
+  it('כל שבב הוא יעד מגע ≥44px', () => {
+    expect(CODE).toContain('min-h-touch');
+  });
+
+  it('⛔ אין גישה ישירה לדאטהבייס', () => {
+    expect(CODE).not.toContain('supabase');
+    expect(CODE).not.toMatch(/\bfetch\(/);
+  });
+});
+
+describe('הרכיב הוא שורה 6 של המסך, ⛔ ואינו יתום', () => {
+  it('‏<LevelMapScreen> מרנדר אותו אחרי שורה 5', () => {
+    expect(SCREEN).toContain('LevelPath');
+    expect(SCREEN.indexOf('UnknownList')).toBeLessThan(SCREEN.indexOf('<LevelPath'));
+  });
+
+  it('המסך מוסר לו את levels מהשרת ⛔ ואינו בונה אותם בעצמו', () => {
+    expect(SCREEN).toContain('levels={');
+  });
+});
