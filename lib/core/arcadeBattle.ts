@@ -23,6 +23,9 @@ export { ARCADE_ENEMY_HP };
 /** ⛔ שני מוצאים, ⛔ ואין שלישי. «הפסד» אינו מצב במוצר הזה. */
 export type BattleOutcome = 'running' | 'victory' | 'survived';
 
+/** ⛔ שלוש תנוחות, ⛔ ואין רביעית. «הפסד» אינו מצב במוצר הזה (D-059). */
+export type StagePhase = 'idle' | 'hit' | 'dodge';
+
 export interface BattleState {
   readonly questions: readonly ArcadeQuestion[];
   readonly index: number;
@@ -73,6 +76,17 @@ export function ammoLeft(state: BattleState): number {
 export function advance(state: BattleState): BattleState {
   if (state.chosen === null) return state;
   return { ...state, index: state.index + 1, chosen: null };
+}
+
+/**
+ * D-060 — מה הבמה מציירת. ⛔ הרכיב ⛔ אינו מחשב את זה בעצמו: תנוחה שנגזרת בשני
+ * מקומות סוטה בשלישי. ⛔ שגיאה היא **התחמקות שמצליחה תמיד** ⛔ ולא פגיעה בלומד.
+ */
+export function stagePhase(state: BattleState): StagePhase {
+  if (state.chosen === null) return 'idle';
+  const last = state.answers[state.answers.length - 1];
+  if (last === undefined) return 'idle';
+  return last.correct ? 'hit' : 'dodge';
 }
 
 export function isFinished(state: BattleState): boolean {

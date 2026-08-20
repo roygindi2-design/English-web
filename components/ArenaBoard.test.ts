@@ -193,3 +193,34 @@ describe('D-070 · T-130 — שורת המצב נושאת את שני המספר
     expect(AMMO_WORDING, '⛔ והנוסח עצמו נושא את המילה').toContain('קליעים');
   });
 });
+
+describe('T-117 · T-041 — התנועה נכלאת בבמה', () => {
+  it('הבמה מצוירת, והתנוחה מגיעה מהחוק', () => {
+    expect(CODE).toMatch(/<ArenaStage\b/);
+    expect(CODE).toMatch(/phase=\{stagePhase\(battle\)\}/);
+  });
+
+  /**
+   * ⚠️ **נוסח התוכנית לאסרציה הזאת היה קישוט, והמדידה הראתה זאת:** הוא חתך את המקור
+   * מ-`data-arena-options` והלאה — ושם יושב **רק שם המחלקה** `OPTION_CLASS`, בעוד
+   * הגדרתה יושבת **למעלה**. כלומר `transition-opacity duration-200` שכבר קיים בה
+   * ⛔ לא היה נמדד, ומוטציה שמוסיפה תנועה להגדרה **שורדת**.
+   * ⛔ הנמדד כאן הוא **המחלקות בפועל**, דרך `classesOf` שכבר פורש קבועים (F-041).
+   */
+  it('⛔ אפס תנועה של **תזוזה** על אזור השאלה', () => {
+    const list = CODE.match(/<ul[^>]*data-arena-options[\s\S]*?>/);
+    const option = CODE.match(/<button[^>]*data-arena-option[\s\S]*?>/);
+    expect(list, 'המכולה חייבת לשאת data-arena-options').not.toBeNull();
+    expect(option, 'האפשרות חייבת לשאת data-arena-option').not.toBeNull();
+    for (const tag of [list?.[0] ?? '', option?.[0] ?? '']) {
+      const classes = classesOf(tag);
+      for (const banned of [/\banimate-/, /transition-transform\b/, /\btranslate-/, /\bscale-/]) {
+        expect(classes, `${banned} אסור על אזור השאלה — T-041`).not.toMatch(banned);
+      }
+    }
+  });
+
+  it('⛔ הרכיב ⛔ אינו מחשב תנוחה בעצמו', () => {
+    expect(CODE).not.toMatch(/answers\[[^\]]*\]\.correct/);
+  });
+});

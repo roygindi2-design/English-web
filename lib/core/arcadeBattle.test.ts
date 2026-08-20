@@ -8,6 +8,7 @@ import {
   chooseOption,
   enemyDefeated,
   isFinished,
+  stagePhase,
   startBattle,
   type BattleState,
 } from './arcadeBattle';
@@ -188,5 +189,24 @@ describe('D-070 — התחמושת שנותרה, כדי שלמהירות יהי�
     let s = startBattle(QUESTIONS);
     for (let i = 0; i < QUESTIONS.length; i += 1) s = advance(chooseOption(s, 'מסיח 1א'));
     expect(ammoLeft(s)).toBe(0);
+  });
+});
+
+describe('D-060 — הבמה יודעת מה לצייר מהחוק ⛔ ולא מהרכיב', () => {
+  it('לפני הקשה — המתנה', () => {
+    expect(stagePhase(startBattle(QUESTIONS))).toBe('idle');
+  });
+
+  it('תשובה נכונה ⇒ מכה', () => {
+    expect(stagePhase(chooseOption(startBattle(QUESTIONS), 'אפשרות 1'))).toBe('hit');
+  });
+
+  it('תשובה שגויה ⇒ התחמקות, ⛔ ולא «פגיעה בלומד»', () => {
+    expect(stagePhase(chooseOption(startBattle(QUESTIONS), 'מסיח 1א'))).toBe('dodge');
+  });
+
+  it('אחרי «הבא» הבמה חוזרת להמתנה', () => {
+    const s = advance(chooseOption(startBattle(QUESTIONS), 'אפשרות 1'));
+    expect(stagePhase(s)).toBe('idle');
   });
 });

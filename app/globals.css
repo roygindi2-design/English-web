@@ -107,3 +107,16 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   }
 }
 
+
+/* arena-stage — T-117 · D-060 · חוקה § 5. ⛔ מעבר, ⛔ ולא לולאה: אין `infinite`
+   ואין `alternate`. `prefers-reduced-motion` (למעלה) מאפס את המשכים.
+   ⛔ אין כאן כלל ל-`idle`: המתנה היא היעדר תזוזה, ⛔ ולא תנועה שלישית. */
+[data-arena-stage] [data-arena-figure] {
+  transition: transform 200ms ease-out;
+}
+[data-arena-phase='hit'] [data-arena-figure='enemy'] {
+  transform: translateX(0.75rem);
+}
+[data-arena-phase='dodge'] [data-arena-figure='hero'] {
+  transform: translateX(-0.75rem);
+}

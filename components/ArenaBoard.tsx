@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
+import ArenaStage from '@/components/ArenaStage';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -12,6 +13,7 @@ import {
   ammoLeft,
   chooseOption,
   isFinished,
+  stagePhase,
   startBattle,
   type BattleState,
 } from '@/lib/core/arcadeBattle';
@@ -417,6 +419,12 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     // על הרצועה ש-`<ActionBar>` הקבוע מכסה.
     <section className="flex min-h-[100dvh] flex-col gap-6 pb-28">
       {topBar(null)}
+
+      {/* הבמה — T-117 · D-060. ⛔ **התנועה חיה כאן ובלבד**: אזור השאלה שמתחת ⛔ לעולם
+          אינו זז (T-041, עקרון הקוהרנטיות של Mayer). התנוחה מגיעה מ-`stagePhase` שבחוק
+          ⛔ ואינה מחושבת כאן. ⛔ `items={[]}` — הפריטים שנפתחו ⛔ אינם ב-`ArenaBoard`
+          היום (`/api/arcade/result` מחזיר `unlocked` בסוף הקרב בלבד) ⇒ F-083. */}
+      <ArenaStage phase={stagePhase(battle)} items={[]} />
 
       {/* שורת המצב — בקרה, ⛔ ולא תצוגת נתונים (§ 4.2י שאלה 5): ⛔ אין כאן גרף.
           התווית העברית והמספר הולכים עם הצבע, כי צבע לעולם אינו הערוץ היחיד (חוקה § 1).
