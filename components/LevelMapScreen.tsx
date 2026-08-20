@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ArcadeEntry from '@/components/ArcadeEntry';
 import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
+import UnknownList from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
@@ -13,9 +14,9 @@ import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
 /**
  * לשונית «כרטיסיות» כמפת הרמה — T-081 · § 4.2ז.
  *
- * ארבע השורות הראשונות של המפרט, בסדרן: כותרת רמה · המספר · שלוש הספירות · דרכים
- * לתרגל. שורה 5 («לא ידעתי», T-083) ושורה 6 (מפת שש הרמות, T-084) הן משימות נפרדות
- * ו⛔ אינן ממומשות כאן.
+ * חמש השורות הראשונות של המפרט, בסדרן: כותרת רמה · המספר · שלוש הספירות · דרכים
+ * לתרגל · רשימת «לא ידעתי» (T-083). שורה 6 (מפת שש הרמות, T-084) היא משימה נפרדת
+ * ו⛔ אינה ממומשת כאן.
  *
  * ⛔ שלושת כרטיסי החפיסה של § 4.2ו לא נמחקו — הם `<DeckSelector>`, אותו קוד בדיוק,
  * שירד לבלוק «דרכים לתרגל» ואיבד רק את הכותרת שלו.
@@ -210,6 +211,11 @@ export default function LevelMapScreen(): React.JSX.Element {
         <DeckSelector />
         <ArcadeEntry />
       </section>
+
+      {/* שורה 5 — «לא ידעתי» (T-083 · § 4.2ז). ⛔ רשימה ולא מונה: `<DeckSelector>`
+          למעלה כבר מציג את המספר כאריח. מוצגת רק כשיש רמה — בלי רמה המסך הוא מצב
+          בחירה, ורשימה מתחת לשש הרמות הייתה תשובה לשאלה שהלומד עוד לא שאל. */}
+      {state.kind === 'ready' ? <UnknownList /> : null}
     </section>
   );
 }

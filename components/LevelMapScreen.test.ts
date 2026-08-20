@@ -20,7 +20,7 @@ function withoutComments(source: string): string {
 
 const CODE = withoutComments(SRC);
 
-describe('ארבע השורות של § 4.2ז, בסדרן', () => {
+describe('חמש השורות של § 4.2ז, בסדרן', () => {
   it('שורה 1 — כותרת רמה עם תווית עברית ⛔ ולא אות בלבד (חוקה § 1)', () => {
     expect(CODE).toContain('LEVEL_LABELS_HE');
     expect(CODE).toContain('הרמה שלך');
@@ -40,6 +40,16 @@ describe('ארבע השורות של § 4.2ז, בסדרן', () => {
   it('שורה 4 — שלושת כרטיסי החפיסה ⛔ לא נמחקו, הם ירדו לבלוק «דרכים לתרגל»', () => {
     expect(CODE).toContain('DeckSelector');
     expect(CODE).toContain('דרכים לתרגל');
+  });
+
+  it('שורה 5 — רשימת «לא ידעתי», אחרי בלוק «דרכים לתרגל»', () => {
+    // ⚠️ **סטייה מנוסח התוכנית, והיא מדידה ⛔ ולא העדפה.** התוכנית נוקבת ב-
+    // `CODE.indexOf('UnknownList')`, וההופעה הראשונה שלה בקובץ היא **שורת הייבוא**
+    // בראשו — שקודמת ל-`PRACTICE_HE`, ולכן האסרציה נכשלת גם על חיבור תקין ומודדת
+    // סדר ייבוא ולא סדר שורות. אותה מחלקה כמו סטייה ⓑ של C-0227; מודדים באתר
+    // הקריאה, `<UnknownList`.
+    expect(CODE).toContain('UnknownList');
+    expect(CODE.indexOf('דרכים לתרגל')).toBeLessThan(CODE.indexOf('<UnknownList'));
   });
 });
 
