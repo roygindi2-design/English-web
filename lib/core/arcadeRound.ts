@@ -113,7 +113,7 @@ export function buildRound(input: {
   // לוקחת את החלק שלה. ⛔ החלון לעולם אינו קטן מ-`ARCADE_ROUND_SIZE` — פרוסה חשבונית
   // דקה מהתחמושת הייתה מחזירה קרב בן חמש שאלות עם חמש-עשרה תחמושת, כלומר ניצחון
   // שאי-אפשר להשיג (סף הניצחון הוא 10). ⛔ והרצפה היא התחמושת ⛔ ולא `ARCADE_MIN_WORDS`:
-  // 12 < 15 היה משאיר בדיוק את אותו חור בשלוש שאלות.
+  // השער הועלה ל-`ARCADE_AMMO` ב-T-126 (D-067ⓐ) ⇒ החור נסגר בבריכה עצמה, ⛔ ולא כאן.
   const sliceSize = Math.max(ARCADE_ROUND_SIZE, Math.ceil(byRank.length / rung.slicesInBand));
   const offset = Math.min(rung.sliceIndex * sliceSize, Math.max(0, byRank.length - sliceSize));
   const window = byRank.slice(offset, offset + sliceSize);

@@ -8,7 +8,6 @@ import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import {
-  ARCADE_ENEMY_HP,
   advance,
   chooseOption,
   isFinished,
@@ -65,9 +64,12 @@ type ResultBody =
     }
   | { readonly ok: false; readonly code?: string; readonly message?: string };
 
-/** גוף הבקשה של סוף הקרב. ⛔ `enemyHp` מגיע מהקבוע ו⛔ לא כמספר בקוד. */
+/**
+ * גוף הבקשה של סוף הקרב — **`answers` ובלבד** (D-067ⓑ).
+ * ⛔ אין כאן שדה סף: השרת גוזר אותו ב-`requiredHits(max(answers.length, ARCADE_AMMO))`,
+ * ושדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
+ */
 type ResultPayload = {
-  readonly enemyHp: number;
   readonly answers: readonly ArcadeAnswer[];
 };
 
@@ -128,8 +130,12 @@ const OPTION_CLASS =
 const PIP_ON_CLASS = 'h-3 w-6 rounded-md bg-danger';
 const PIP_OFF_CLASS = 'h-3 w-6 rounded-md bg-surface-raised border border-border-strong';
 
-/** ⛔ `Array.from` אסור כאן: הבדיקה אוסרת `.from(` כדי לחסום גישה לדאטהבייס מרכיב ממשק. */
-const HP_PIPS: readonly number[] = [...Array(ARCADE_ENEMY_HP).keys()];
+/**
+ * ⛔ `Array.from` אסור כאן: הבדיקה אוסרת `.from(` כדי לחסום גישה לדאטהבייס מרכיב ממשק.
+ * ⛔ ו⛔ אינו קבוע מודול יותר (D-067ⓑ): המקסימום נגזר מאורך הסיבוב, ולכן הוא נבנה
+ * מתוך המצב בכל רנדר ⛔ ולא פעם אחת מ-`ARCADE_ENEMY_HP`.
+ */
+const hpPips = (max: number): readonly number[] => [...Array(max).keys()];
 
 export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
@@ -214,7 +220,7 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     if (!isFinished(battle) || battle.chosen !== null) return;
     if (submitted) return;
     setSubmitted(true);
-    void send({ enemyHp: ARCADE_ENEMY_HP, answers: battle.answers });
+    void send({ answers: battle.answers });
   }, [battle, submitted, send]);
 
   /**
@@ -410,10 +416,10 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
         </p>
         <div
           role="img"
-          aria-label={`${ENEMY_HP_HE}: ${battle.enemyHp} מתוך ${ARCADE_ENEMY_HP}`}
+          aria-label={`${ENEMY_HP_HE}: ${battle.enemyHp} מתוך ${battle.enemyHpMax}`}
           className="flex flex-row gap-1"
         >
-          {HP_PIPS.map((pip) => (
+          {hpPips(battle.enemyHpMax).map((pip) => (
             <span
               key={pip}
               aria-hidden

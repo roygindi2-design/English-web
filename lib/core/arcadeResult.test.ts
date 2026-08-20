@@ -197,3 +197,40 @@ describe('«המילים שהפילו אותך» (D-047) — תצוגה בלבד
     expect(keys).not.toContain('missed_words');
   });
 });
+
+describe('D-067ⓑ — הסף נגזר, ⛔ והלקוח ⛔ אינו יכול להנמיך אותו', () => {
+  const answer = (correct: boolean, i: number) => ({
+    wordId: `w-${i}`, correct, chosen: 'א', answer: correct ? 'א' : 'ב',
+  });
+  const before = { gameLevel: 1, wins: 0, unlockedItems: [] as string[] };
+
+  it('קרב מלא: 10 נכונות מתוך 15 ⇒ ניצחון · 9 ⇒ היריב שרד', () => {
+    const win = planArcadeWrites({
+      userId: 'u', finishedAt: '2026-01-01T00:00:00.000Z', before,
+      answers: Array.from({ length: 15 }, (_, i) => answer(i < 10, i)),
+    });
+    expect(win.outcome).toBe('victory');
+    const lose = planArcadeWrites({
+      userId: 'u', finishedAt: '2026-01-01T00:00:00.000Z', before,
+      answers: Array.from({ length: 15 }, (_, i) => answer(i < 9, i)),
+    });
+    expect(lose.outcome).toBe('survived');
+  });
+
+  it('⛔ תשובה אחת נכונה ⛔ אינה ניצחון — הרצפה היא התחמושת', () => {
+    const plan = planArcadeWrites({
+      userId: 'u', finishedAt: '2026-01-01T00:00:00.000Z', before,
+      answers: [answer(true, 0)],
+    });
+    expect(plan.enemyDefeated).toBe(false);
+    expect(plan.outcome).toBe('survived');
+  });
+
+  it('סיום מוקדם: 10 תשובות שכולן נכונות ⛔ עדיין ניצחון', () => {
+    const plan = planArcadeWrites({
+      userId: 'u', finishedAt: '2026-01-01T00:00:00.000Z', before,
+      answers: Array.from({ length: 10 }, (_, i) => answer(true, i)),
+    });
+    expect(plan.outcome).toBe('victory');
+  });
+});

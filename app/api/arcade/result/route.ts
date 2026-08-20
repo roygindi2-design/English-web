@@ -57,7 +57,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
 
   // ולידציה אחרי בדיקת ה-session (דפוס C-0032).
-  // ⛔ הסף ⛔ אינו מגיע מהגוף (D-059): לקוח ששלח 1 היה מנצח בתשובה נכונה אחת.
+  // ⛔ הסף ⛔ אינו מגיע מהגוף (D-059), ⛔ וגם ⛔ אינו קבוע (D-067ⓑ): לקוח ששלח 1 היה
+  // מנצח בתשובה נכונה אחת. `planArcadeWrites` גוזר אותו מ-`max(answers.length, ARCADE_AMMO)`.
   const answers = parseAnswers(body.answers);
   if (answers === null) {
     return NextResponse.json(

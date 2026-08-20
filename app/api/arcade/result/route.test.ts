@@ -125,10 +125,17 @@ describe('T-116 — הסף הוא קבוע שרת, ⛔ ולא שדה בגוף ה
     expect(tail).toContain('leveledUp: plan.leveledUp');
   });
 
-  it('החוזה מתעד את שני השדות ואת ההתעלמות מ-`enemyHp`', () => {
+  /**
+   * ⚠️ **האסרציה השלישית כוונה מחדש ב-T-126 ⛔ ולא נמחקה.** היא נעלה את המחרוזת
+   * `ARCADE_ENEMY_HP` ככיסוי ל«הסף הוא קבוע שרת» — ו-D-067ⓑ הפך את הסף ל**נגזרת**,
+   * ולכן השם הזה ⛔ אינו מופיע עוד בפסקת הבקשה. מחיקה הייתה משאירה את החוזה בלי
+   * שום נעילה על מקור הסף; לכן הנעילה עברה לשם החדש ולרצפה שלו.
+   */
+  it('החוזה מתעד את שני השדות ואת הסף הנגזר בשרת', () => {
     const section = CONTRACT.slice(CONTRACT.indexOf('POST /api/arcade/result'));
     expect(section).toContain('outcome');
     expect(section).toContain('leveledUp');
-    expect(section).toContain('ARCADE_ENEMY_HP');
+    expect(section).toContain('requiredHits');
+    expect(section).toContain('ARCADE_AMMO');
   });
 });

@@ -10,7 +10,7 @@
  * ניקוד g=0.340 מול בלי ניקוד g=0.840, p=0.013) · ⛔ «המילים שהפילו אותך» הוא
  * ערך מוחזר לתצוגה ⛔ ואינו שורה שנכתבת (D-047).
  */
-import { applyWin, isVictory } from './arcadeLadder';
+import { ARCADE_AMMO, applyWin, isVictory } from './arcadeLadder';
 
 export interface ArcadeAnswer {
   readonly wordId: string;
@@ -45,8 +45,12 @@ export function planArcadeWrites(input: {
   readonly finishedAt: string;
 }): ArcadeWritePlan {
   const correct = input.answers.filter((a) => a.correct).length;
-  // ⛔ הסף מגיע מהקבוע ⛔ ולא מהלקוח: שדה בגוף הבקשה היה מאפשר ניצחון בתשובה אחת.
-  const won = isVictory(correct);
+  // ⛔ מספר השאלות ⛔ אינו מגיע מהגוף (D-059 · D-067ⓑ): לקוח ששלח «שלחו לי שאלה אחת»
+  // היה מנצח בתשובה אחת. `Math.max` מול התחמושת חוסם **בדיוק** את זה, ועדיין מתיר
+  // סיום מוקדם (10 תשובות ⇒ הסף נשאר 10) וגם סיבוב עתידי ארוך מ-15.
+  // ⛔ הכיוון היחיד שהלקוח יכול להזיז בו את הסף הוא **למעלה**, וזה ⛔ אינו רווח לו.
+  const served = Math.max(input.answers.length, ARCADE_AMMO);
+  const won = isVictory(correct, served);
   const after = won
     ? applyWin({ level: input.before.gameLevel, wins: input.before.wins })
     : { level: input.before.gameLevel, wins: input.before.wins, leveledUp: false };

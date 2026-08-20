@@ -144,3 +144,23 @@ describe('D-059 — שני מוצאים בלבד מהקרב', () => {
     expect(battleOutcome(startBattle(QUESTIONS))).toBe('running');
   });
 });
+
+describe('D-067ⓑ — חיי היריב נגזרים מהסיבוב שנשלח', () => {
+  it('15 שאלות ⇒ 10 חיים, והמקסימום נשמר במצב', () => {
+    const s = startBattle(QUESTIONS);
+    expect(s.enemyHp).toBe(10);
+    expect(s.enemyHpMax).toBe(10);
+  });
+
+  it('סיבוב בן 12 ⇒ 8 חיים ⛔ ולא 10 — קרב שאפשר לנצח בו', () => {
+    const s = startBattle(QUESTIONS.slice(0, 12));
+    expect(s.enemyHp).toBe(8);
+    expect(s.enemyHpMax).toBe(8);
+  });
+
+  it('⛔ המקסימום ⛔ אינו זז כשהחיים יורדים', () => {
+    const s = chooseOption(startBattle(QUESTIONS), 'אפשרות 1');
+    expect(s.enemyHp).toBe(9);
+    expect(s.enemyHpMax).toBe(10);
+  });
+});

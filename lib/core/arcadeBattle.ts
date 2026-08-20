@@ -10,7 +10,7 @@
  * ⛔ **אין כאן ניקוד** (D-050 — ניקוד g=0.340 מול בלי ניקוד g=0.840, p=0.013), ו⛔ אין
  * כאן חיים ללומד: תשובה שגויה ⛔ אינה מורידה דבר ⛔ ואינה מסיימת דבר.
  */
-import { ARCADE_ENEMY_HP } from './arcadeLadder';
+import { ARCADE_ENEMY_HP, requiredHits } from './arcadeLadder';
 import type { ArcadeAnswer } from './arcadeResult';
 import type { ArcadeQuestion } from './arcadeRound';
 
@@ -27,12 +27,17 @@ export interface BattleState {
   readonly questions: readonly ArcadeQuestion[];
   readonly index: number;
   readonly enemyHp: number;
+  /** ⛔ המקסימום נשמר, כי הוא נגזר: המסך מצייר «M מתוך N» ו⛔ אינו רשאי לגזור שוב. */
+  readonly enemyHpMax: number;
   readonly answers: readonly ArcadeAnswer[];
   readonly chosen: string | null;
 }
 
 export function startBattle(questions: readonly ArcadeQuestion[]): BattleState {
-  return { questions, index: 0, enemyHp: ARCADE_ENEMY_HP, answers: [], chosen: null };
+  // ⛔ הנגזרת ⛔ ולא הקבוע (D-067ⓑ): סיבוב קצר מהתחמושת חייב יריב חלש יותר,
+  // אחרת הוא קרב שאי-אפשר לנצח בו. ⛔ והמקסימום נשמר, כי המסך מצייר «M מתוך N».
+  const hp = requiredHits(questions.length);
+  return { questions, index: 0, enemyHp: hp, enemyHpMax: hp, answers: [], chosen: null };
 }
 
 export function chooseOption(state: BattleState, option: string): BattleState {

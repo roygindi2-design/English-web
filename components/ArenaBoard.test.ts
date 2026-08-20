@@ -118,8 +118,10 @@ describe('<ArenaBoard>', () => {
     expect(CODE, '⛔ רכיב ממשק אינו ניגש לדאטהבייס').not.toMatch(/supabase|\.from\(/);
   });
 
-  it('שולח את חיי היריב מהקבוע ⛔ ולא כמספר בקוד', () => {
-    expect(CODE).toMatch(/enemyHp:\s*ARCADE_ENEMY_HP/);
+  it('⛔ אינו שולח סף כלל — הסף חי בשרת (D-067ⓑ)', () => {
+    // D-067ⓑ — הסף חי בשרת. ⛔ שדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
+    expect(CODE).not.toMatch(/enemyHp\s*:/);
+    expect(CODE).toMatch(/send\(\s*\{\s*answers:\s*battle\.answers\s*\}\s*\)/);
   });
 
   it('שש התשובות של החוזה מטופלות, ⛔ ולא ארבע', () => {
