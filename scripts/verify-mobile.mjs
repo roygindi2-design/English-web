@@ -470,7 +470,20 @@ try {
     page.on('console', (m) => {
       if (m.type() === 'error') consoleErrors.push(`${m.text()} @${m.location().url}`);
     });
-    page.on('requestfailed', (r) => consoleErrors.push(`request failed: ${r.url()}`));
+    // ⚠️ C-0220 (T-131): the URL alone ⛔ cannot decide fixture-vs-defect, and every
+    // EXPECTED_CONSOLE entry is shaped `status of NNN`, so a `request failed:` line could
+    // never match one in any case. `errorText` is the missing measurement, ⛔ not noise.
+    page.on('requestfailed', (r) => {
+      const why = r.failure()?.errorText ?? 'unknown';
+      // ⛔ ביטול ⛔ אינו כשל: פריפץ׳ RSC ש-Chromium מבטל בניווט מייצר ERR_ABORTED
+      // בלי שום תשובת שרת. רישום שלו כשגיאת קונסולה מודד את מנוע הפריפץ׳ של Next,
+      // ⛔ לא את המסך. כל שאר ה-errorText ממשיכים להיכשל בדיוק כמו קודם.
+      // ⛔ הסינון הוא על errorText בלבד ⛔ ולא על הכתובת — סינון לפי `/study` היה
+      // משתיק גם כשל אמיתי באותו נתיב. נמדד C-0220 (T-131):
+      // `request failed: http://localhost:3000/study?_rsc=… — net::ERR_ABORTED`, ×2, ×3 רוחבים.
+      if (why === 'net::ERR_ABORTED') return;
+      consoleErrors.push(`request failed: ${r.url()} — ${why}`);
+    });
 
     for (const route of ROUTES) {
       consoleErrors = [];
