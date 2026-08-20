@@ -217,8 +217,17 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     expect(schema).toBeLessThan(retry);
   });
 
+  /**
+   * ⚠️ FIXED C-0214 (F-082) ו⛔ לא הוחלש. `"state.kind === 'error' ?"` הפך
+   * ל**דו-משמעי** ברגע ש-`layout={state.kind === 'error' ? 'stacked' : 'single'}`
+   * נכנס לתג הפתיחה, והמופע הראשון הוא עכשיו התכונה ⛔ ולא ענף ה-JSX. שתי
+   * האסרציות שהשתמשו בו נעלו מאותו רגע על קטע קוד אחר משמן — האחת המשיכה לעבור
+   * במקרה, והשנייה נפלה. המאתר להלן דורש את `? (` שרק ענף ה-JSX נושא.
+   */
+  const ERROR_BRANCH = /state\.kind === 'error' \?\s*\(/;
+
   it('ענף התקלה החולפת נושא גם יציאה — «נסה שוב» לבדו הוא מסך ללא דרך החוצה', () => {
-    const start = CODE.indexOf("state.kind === 'error' ?");
+    const start = CODE.search(ERROR_BRANCH);
     expect(start).toBeGreaterThan(-1);
     expect(CODE.slice(start, start + 700)).toMatch(/<a\s/);
   });
@@ -229,10 +238,16 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     // schema_missing · empty · ניסיון חוזר), וארבעה סימונים בסך הכל — אחד לכל
     // חלופה. היציאה שנוספה לענף התקלה החולפת היא משנית **במכוון**, ולכן ⛔ אינה
     // מסומנת: סימון חמישי היה מפיל את הארנס על `found 2 elements`.
-    const bar = CODE.slice(CODE.indexOf('<ActionBar>'), CODE.indexOf('</ActionBar>'));
+    // ⚠️ FIXED C-0214 (F-082) ו⛔ לא הוחלש: הביטוי היה `'<ActionBar>'` מילולי,
+    // והחזיר -1 ברגע שהסרגל קיבל את התכונה `layout` שהממצא חייב. מה שהאסרציה
+    // שומרת — ארבעה סימונים, אחד לכל חלופה — ⛔ לא זז; רק תג הפתיחה רשאי כעת
+    // לשאת מאפיינים.
+    const open = CODE.search(/<ActionBar[\s>]/);
+    expect(open).toBeGreaterThan(-1);
+    const bar = CODE.slice(open, CODE.indexOf('</ActionBar>'));
     expect((bar.match(/data-primary-action/g) ?? []).length).toBe(4);
 
-    const errorBranch = bar.slice(bar.indexOf("state.kind === 'error' ?"));
+    const errorBranch = bar.slice(bar.search(ERROR_BRANCH));
     expect(errorBranch).toMatch(/<a\s/);
     expect(errorBranch).not.toContain('data-primary-action');
   });

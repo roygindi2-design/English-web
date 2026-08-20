@@ -219,7 +219,12 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
 
       {state.kind === 'empty' && <StudyEmptyState />}
 
-      <ActionBar>
+      {/* 🟠 F-082 · `layout` is a MEASUREMENT and ⛔ not a style: only the
+          `error` branch below puts two controls on two rows («נסה שוב» plus the
+          way out that T-124 added), and that bar measures 135px against a 77px
+          single-row one. The document reservation in `app/globals.css` keys off
+          this value; without it the /sources link sits under the bar. */}
+      <ActionBar layout={state.kind === 'error' ? 'stacked' : 'single'}>
         {state.kind === 'session_expired' ? (
           // A plain <a> and ⛔ not <Link>: the session is gone, so the next request has to
           // reach the server and be allowed to redirect — the client router may answer from

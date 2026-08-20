@@ -26,16 +26,31 @@
  * sign-out form on `/onboarding` is a plain `<form>`. What that sentence
  * forbids is a heavy shadow; a one-pixel token border satisfies it.
  *
+ * 🟠 F-082 · `layout` — the bar declares its own shape, because the document
+ * padding that pays for the covered strip is a CONSTANT and the bar's height is
+ * ⛔ not. Measured C-0214 at 320 · 375 · 414 (width-independent): a single-row
+ * bar is **77px** and the `5rem = 80px` reservation covers it; the two-row bar
+ * C-0211 introduced on `/study` is **135px** and the same reservation ⛔ leaves
+ * 55px of the document under it — which is exactly the `/sources` link the
+ * `check:mobile` gate names. ⛔ A bar cannot measure itself without JS, and this
+ * component has to render with JavaScript disabled, so the shape travels in the
+ * attribute the padding rule already keys off and `app/globals.css` carries one
+ * reservation per shape. `ActionBar.test.ts` asserts every emitted value has a
+ * rule — a third shape fails at `npm test`, ⛔ not silently three ticks later.
+ *
  * ⛔ No 'use client'. No state, no effects.
  */
 export default function ActionBar({
   children,
+  layout = 'single',
 }: {
   children: React.ReactNode;
+  /** `stacked` = more than one control on its own row. See F-082 above. */
+  layout?: 'single' | 'stacked';
 }): React.JSX.Element {
   return (
     <div
-      data-action-bar="true"
+      data-action-bar={layout}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-border-subtle bg-surface"
     >
       <div className="mx-auto w-full max-w-md px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
