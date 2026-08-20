@@ -1,5 +1,7 @@
 # Arcade Result Idempotency Implementation Plan
 
+> ✅ **הושלמה C-0242 (DEV).** Task 1 בוצעה ב-C-0241; **Task 2 ו-Task 3 בוצעו יחד ב-C-0242**, ⛔ ולא בשני טיקים — ⛔ **ולא מטעם נוחות:** Task 2 הופך את `runId` לשדה **חובה** בחתימה, ולכן ברגע שהוא נדחף לבדו `app/api/arcade/result/route.ts:99` ⛔ אינו עובר `tsc` (‏`Property 'runId' is missing`) — כלומר סגירת Task 2 לבדה הייתה דוחפת עץ אדום, ו-`RULES § 0.2` אוסר זאת מפורשות. Task 3 הוא התיקון היחיד לכך.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** לגרום ל-`POST /api/arcade/result` להיות אידמפוטנטי, כך שרצף `retry-on-online` על אותו קרב ⛔ לא ינפח `wins`, ⛔ לא יכפיל שורת `arcade_runs`, ו⛔ לא יעלה `times_missed`/`times_correct` פעמיים (F-092 🟠).
@@ -224,7 +226,7 @@ export function planArcadeWrites(input: {
 
   ⚠️ **‏`rows[0].table === 'arcade_runs'` הוא חלק מהחוזה**, ⛔ ולא פרט מימוש: Task 3 מסתמך על כך שהכתיבה הראשונה היא זו שמתנגשת.
 
-- [ ] **Step 1: כתוב את הבדיקות הנופלות**
+- [x] **Step 1: כתוב את הבדיקות הנופלות**
 
 הוסף לסוף `lib/core/arcadeResult.test.ts`:
 
@@ -283,13 +285,13 @@ describe('F-092 — מפתח אידמפוטנטיות, תצלום תשובה, ו
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהן נופלות**
+- [x] **Step 2: הרץ ואמת שהן נופלות**
 
 Run: `npx vitest run lib/core/arcadeResult.test.ts`
 Expected: FAIL — הראשונה נופלת עם `expected 'arcade_progress' to be 'arcade_runs'`, והשאר עם `expected undefined to be …`.
 ⚠️ אם `tsc` בתוך vitest מתלונן על `runId` שאינו בחתימה — זו בדיוק הנפילה הצפויה.
 
-- [ ] **Step 3: כתוב את המימוש המינימלי**
+- [x] **Step 3: כתוב את המימוש המינימלי**
 
 ב-`lib/core/arcadeResult.ts`:
 
@@ -393,7 +395,7 @@ export interface ArcadeResultResponse {
   };
 ```
 
-- [ ] **Step 4: הרץ ואמת שהן עוברות**
+- [x] **Step 4: הרץ ואמת שהן עוברות**
 
 Run: `npx vitest run lib/core/arcadeResult.test.ts && npm run check:core`
 Expected: PASS · `/lib/core purity: OK`
@@ -402,7 +404,7 @@ Expected: PASS · `/lib/core purity: OK`
 1. קריאה ל-`planArcadeWrites` בלי `runId` ⇒ שגיאת טיפוס. **הוסף** `runId: 'run-test'` לכל קריאה קיימת בקובץ הבדיקה. ⛔ אל תהפוך את השדה לרשות.
 2. בדיקה שמניחה `rows[0].table === 'arcade_progress'` או אינדקס מספרי. **החלף** לחיפוש לפי שם: `plan.rows.find((r) => r.table === 'arcade_progress')`. ⛔ אל תשנה את סדר הכתיבות בחזרה.
 
-- [ ] **Step 5: קומיט**
+- [x] **Step 5: קומיט**
 
 ```bash
 git add lib/core/arcadeResult.ts lib/core/arcadeResult.test.ts
@@ -423,7 +425,7 @@ git commit -m "feat(arcade): runId + response snapshot in planArcadeWrites, arca
 - Consumes: מ-Task 2 — `planArcadeWrites({ userId, runId, answers, before, collectedBefore, finishedAt })`, השדה `plan.response`, והחוזה `plan.rows[0].table === 'arcade_runs'`. מ-Task 1 — האינדקס `arcade_runs_run_id_key` והעמודה `response_snapshot`.
 - Produces: גוף בקשה עם `runId: string` (uuid v4 בייצוג קנוני). תשובת 200 זהה בשידור ראשון ובכל שידור חוזר.
 
-- [ ] **Step 1: כתוב את בדיקות הנתיב הנופלות**
+- [x] **Step 1: כתוב את בדיקות הנתיב הנופלות**
 
 הוסף לסוף `app/api/arcade/result/route.test.ts` (הקובץ כבר מגדיר `CODE` ו-`CONTRACT` בראשו — ⛔ אל תגדיר אותם שוב):
 
@@ -506,12 +508,12 @@ describe('F-092 — מפתח הקרב נוצר פעם אחת ונישא בשיד
 
 ⚠️ **בדיקה קיימת שתיפול, והיא מתעדכנת ⛔ ולא נמחקת:** `components/ArenaBoard.test.ts:124` טוענת `send({ answers: battle.answers })` בדיוק. החלף אותה בטענה החדשה שלמעלה (`runId` **וגם** `answers`).
 
-- [ ] **Step 2: הרץ ואמת שהן נופלות**
+- [x] **Step 2: הרץ ואמת שהן נופלות**
 
 Run: `npx vitest run app/api/arcade/result/route.test.ts components/ArenaBoard.test.ts`
 Expected: FAIL — `parseRunId` לא נמצא במקור; `crypto.randomUUID` לא נמצא; החוזה בלי `runId`.
 
-- [ ] **Step 3: כתוב את הנתיב**
+- [x] **Step 3: כתוב את הנתיב**
 
 ב-`app/api/arcade/result/route.ts`:
 
@@ -608,7 +610,7 @@ function parseRunId(value: unknown): string | null {
   return NextResponse.json(plan.response);
 ```
 
-- [ ] **Step 4: כתוב את הלקוח**
+- [x] **Step 4: כתוב את הלקוח**
 
 ב-`components/ArenaBoard.tsx`:
 
@@ -636,7 +638,7 @@ type ResultPayload = {
 ⛔ **אל תיגע** ב-`useEffect` של `online` — הוא כבר משדר `send(pendingResult)`, ו-`pendingResult` נושא את המפתח.
 ⛔ **אל תיצור את המפתח ב-`useState` initializer** — הוא רץ גם ברינדור השרת, ומפתח שונה בין שרת ללקוח הוא אי-התאמת הידרציה.
 
-- [ ] **Step 5: עדכן את החוזה**
+- [x] **Step 5: עדכן את החוזה**
 
 ב-`docs/api-contract.md`, § `POST /api/arcade/result`:
 
@@ -685,18 +687,18 @@ type ResultPayload = {
 ```
 ```
 
-- [ ] **Step 6: הרץ את אימות המשימה**
+- [x] **Step 6: הרץ את אימות המשימה**
 
 Run: `npx vitest run app/api/arcade/result/route.test.ts components/ArenaBoard.test.ts lib/core/arcadeResult.test.ts lib/supabase/arcadeRunId.test.ts`
 Expected: PASS — כל הקבצים ירוקים.
 
-- [ ] **Step 7: הרץ את אימות הלופ המלא**
+- [x] **Step 7: הרץ את אימות הלופ המלא**
 
 Run: `npm run typecheck && npm run check:core && npm test && npm run build`
 Expected: `tsc` 0 שגיאות · `/lib/core purity: OK` · **כל** הבדיקות עוברות · `next build` יוצא 0.
 ⛔ ⛔ אל תטען הצלחה בלי הפלט הזה בהודעה שבה אתה טוען אותה.
 
-- [ ] **Step 8: קומיט**
+- [x] **Step 8: קומיט**
 
 ```bash
 git add app/api/arcade/result/route.ts app/api/arcade/result/route.test.ts \
