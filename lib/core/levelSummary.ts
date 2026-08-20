@@ -87,6 +87,44 @@ export function summarizeLevel(input: {
 }
 
 /**
+ * שורת התקדמות עם הרמה של המילה שלה. T-102.
+ *
+ * ‏`band: null` הוא מילה ש-`cefr_profile_band` שלה NULL או ערך לא מוכר — היא ⛔ אינה
+ * מנוחשת לרמה (D-034) ולכן ⛔ אינה נספרת באף אחת מהשש. אותה הכרעה בדיוק שבה `bandRank`
+ * ב-`lib/core/deck.ts` שולח מילה כזאת לסוף התור במקום לרמה מומצאת.
+ */
+export interface BandedProgressFacts extends ProgressFacts {
+  readonly band: CefrBand | null;
+}
+
+/**
+ * שש הרמות בבת אחת — הקלט של טבעות המילוי ב-T-084.
+ *
+ * ⛔ **תוספת, ⛔ ולא החלפה.** `summarizeLevel` נשארת בדיוק כפי שהיא, ושתיהן חולקות את
+ * `classifyProgress` — שהיא **ההגדרה היחידה** של «ידוע / ברשימת החזרה / טרם נראה».
+ * ⛔ סיווג שני כאן היה בדיוק מה ש-§ 4.2ז אוסר.
+ *
+ * ⛔ **תמיד שש רשומות, בסדר `BAND_ORDER`.** רמה בלי מילים במאגר (C1/C2 היום) חוזרת
+ * כאפסים ⛔ ואינה נעדרת: המסך מציג אותה מושבתת **עם המספר 0**, ⛔ ולא מסתיר אותה
+ * (§ 4.2ז שורה 6). מערך באורך משתנה היה מסך שמשנה את מספר השבבים שלו כשהמאגר גדל,
+ * ולומד לא היה יכול לדעת אם המוצר השתנה או הוא.
+ */
+export function summarizeAllLevels(input: {
+  readonly totals: Readonly<Record<CefrBand, number>>;
+  readonly rows: readonly BandedProgressFacts[];
+}): readonly LevelSummary[] {
+  const grouped = new Map<CefrBand, ProgressFacts[]>();
+  for (const band of BAND_ORDER) grouped.set(band, []);
+  for (const row of input.rows) {
+    if (row.band === null) continue;
+    grouped.get(row.band)?.push(row);
+  }
+  return BAND_ORDER.map((band) =>
+    summarizeLevel({ level: band, totalInLevel: input.totals[band] ?? 0, rows: grouped.get(band) ?? [] }),
+  );
+}
+
+/**
  * ⚠️ תווית סידורית ו⛔ לא שם איכותי. § 4.2ז ממחיש «מתחילים» ל-A1 בלבד, ולחמש
  * האחיות אין מקור בפרויקט — המצאתן היא טענה פדגוגית, בדיוק מה ש-R-017 נפתחה נגדו.
  * מה שיש לו מקור: `plan/15-syllabus-digest.md:42` — «שש רמות בלבד, L1..L6 = A1..C2;

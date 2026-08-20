@@ -4,6 +4,7 @@ import {
   LEVEL_LABELS_HE,
   classifyProgress,
   parseLevel,
+  summarizeAllLevels,
   summarizeLevel,
   type ProgressFacts,
 } from './levelSummary';
@@ -111,5 +112,73 @@ describe('LEVEL_LABELS_HE — תווית עובדתית, ⛔ בלי טענת מ�
     for (const band of BAND_ORDER) {
       for (const word of forbidden) expect(LEVEL_LABELS_HE[band]).not.toContain(word);
     }
+  });
+});
+
+describe('T-102 — שש רשומות, בסדר, וסכום שלוש הספירות בכל אחת הוא הסך', () => {
+  const EMPTY_TOTALS = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 } as const;
+
+  it('מחזיר בדיוק שש רשומות בסדר A1…C2, גם על מאגר ריק לגמרי', () => {
+    const levels = summarizeAllLevels({ totals: EMPTY_TOTALS, rows: [] });
+    expect(levels.map((l) => l.level)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  });
+
+  it('רמה בלי מילים במאגר היא 0 בכל השדות, ⛔ ולא נעדרת מהמערך (C1/C2 היום)', () => {
+    const levels = summarizeAllLevels({ totals: EMPTY_TOTALS, rows: [] });
+    const c2 = levels.find((l) => l.level === 'C2');
+    expect(c2).toEqual({ level: 'C2', totalInLevel: 0, known: 0, inReviewList: 0, unseen: 0 });
+  });
+
+  it('שורה מקובצת לרמה שלה ⛔ ולא לרמה הנוכחית', () => {
+    const levels = summarizeAllLevels({
+      totals: { ...EMPTY_TOTALS, A1: 5, B1: 3 },
+      rows: [
+        { band: 'A1', attempts: 0, repetition: 0, selfMarkedKnown: true },
+        { band: 'B1', attempts: 2, repetition: 0, selfMarkedKnown: false },
+      ],
+    });
+    expect(levels.find((l) => l.level === 'A1')).toMatchObject({ known: 1, inReviewList: 0, unseen: 4 });
+    expect(levels.find((l) => l.level === 'B1')).toMatchObject({ known: 0, inReviewList: 1, unseen: 2 });
+  });
+
+  it('⛔ שורה עם band = null ⛔ אינה מנוחשת לרמה — היא מושמטת מכל שש הספירות', () => {
+    const levels = summarizeAllLevels({
+      totals: { ...EMPTY_TOTALS, A1: 2 },
+      rows: [{ band: null, attempts: 3, repetition: 0, selfMarkedKnown: false }],
+    });
+    expect(levels.find((l) => l.level === 'A1')).toMatchObject({ known: 0, inReviewList: 0, unseen: 2 });
+  });
+
+  it('⛔ הספירה הכפולה נתפסת גם כאן: אותה מילה גם סומנה וגם נוסתה נספרת פעם אחת', () => {
+    const levels = summarizeAllLevels({
+      totals: { ...EMPTY_TOTALS, A1: 1 },
+      rows: [{ band: 'A1', attempts: 4, repetition: 0, selfMarkedKnown: true }],
+    });
+    const a1 = levels.find((l) => l.level === 'A1');
+    expect(a1).toMatchObject({ known: 1, inReviewList: 0, unseen: 0 });
+    expect((a1?.known ?? 0) + (a1?.inReviewList ?? 0) + (a1?.unseen ?? 0)).toBe(a1?.totalInLevel);
+  });
+
+  it('סכום שלוש הספירות = הסך, בכל אחת משש הרמות', () => {
+    const levels = summarizeAllLevels({
+      totals: { A1: 10, A2: 7, B1: 4, B2: 2, C1: 0, C2: 0 },
+      rows: [
+        { band: 'A1', attempts: 1, repetition: 2, selfMarkedKnown: false },
+        { band: 'A1', attempts: 1, repetition: 0, selfMarkedKnown: false },
+        { band: 'A2', attempts: 0, repetition: 0, selfMarkedKnown: true },
+      ],
+    });
+    for (const level of levels) {
+      expect(level.known + level.inReviewList + level.unseen).toBe(level.totalInLevel);
+    }
+  });
+
+  it('ספירה בלתי-אפשרית זורקת ⛔ ואינה מחזירה מספר שלילי', () => {
+    expect(() =>
+      summarizeAllLevels({
+        totals: { ...EMPTY_TOTALS, A1: 0 },
+        rows: [{ band: 'A1', attempts: 0, repetition: 1, selfMarkedKnown: false }],
+      }),
+    ).toThrow(RangeError);
   });
 });

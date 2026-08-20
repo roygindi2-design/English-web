@@ -414,8 +414,36 @@ T-124 · D-065). הצרכן הוא `<StudyDeckScreen>`, ו**לכל אחד משל
 **200 — רמה נבחרה:**
 
 ```json
-{ "ok": true, "level": "A1", "totalInLevel": 315, "known": 189, "inReviewList": 18, "unseen": 108 }
+{
+  "ok": true,
+  "level": "A1",
+  "totalInLevel": 315,
+  "known": 189,
+  "inReviewList": 18,
+  "unseen": 108,
+  "levels": [
+    { "level": "A1", "totalInLevel": 315, "known": 189, "inReviewList": 18, "unseen": 108 },
+    { "level": "A2", "totalInLevel": 80, "known": 0, "inReviewList": 0, "unseen": 80 },
+    { "level": "B1", "totalInLevel": 20, "known": 0, "inReviewList": 0, "unseen": 20 },
+    { "level": "B2", "totalInLevel": 2, "known": 0, "inReviewList": 0, "unseen": 2 },
+    { "level": "C1", "totalInLevel": 0, "known": 0, "inReviewList": 0, "unseen": 0 },
+    { "level": "C2", "totalInLevel": 0, "known": 0, "inReviewList": 0, "unseen": 0 }
+  ]
+}
 ```
+
+⚠️ **`levels` הוא תוספת של T-102, ⛔ ואינו משנה ולו שדה קיים אחד.** חמשת השדות שמעליו
+נשארים בדיוק כפי שהיו, ותשובת «טרם בחר רמה» (`{ "ok": true, "level": null }`) ⛔ אינה
+נושאת אותו כלל — במצב הזה המסך מציג ממילא את שישה כפתורי הבחירה של T-081.
+
+⚠️ **תמיד בדיוק שש רשומות, בסדר `A1…C2`.** רמה בלי מילים במאגר (C1/C2 היום) חוזרת
+כאפסים ⛔ ואינה נעדרת: § 4.2ז שורה 6 מחייבת שבב **מושבת עם המספר 0**, ⛔ לא מוסתר.
+מערך באורך משתנה היה מסך שמשנה את מספר השבבים שלו כשהמאגר גדל.
+
+⚠️ **הספירות ב-`levels` נגזרות מאותה `classifyProgress`** שגוזרת את חמשת השדות שמעליה
+(`lib/core/levelSummary.ts`) — ⛔ אין סיווג שני. שורה שהרמה שלה NULL או לא מוכרת ⛔ אינה
+מנוחשת לרמה ו⛔ אינה נספרת באף אחת מהשש (D-034), ולכן ⛔ ייתכן שסכום ה-`known` של שש
+הרמות קטן ממספר שורות ההתקדמות של הלומד. זו מדידה, ⛔ לא אי-התאמה.
 
 | השדה | ההגדרה — מילה במילה מ-§ 4.2ז |
 |---|---|
@@ -423,6 +451,7 @@ T-124 · D-065). הצרכן הוא `<StudyDeckScreen>`, ו**לכל אחד משל
 | `known` | `self_marked_known = true` **או** `repetition >= 1` |
 | `inReviewList` | `attempts > 0 AND repetition = 0 AND self_marked_known = false` |
 | `unseen` | `totalInLevel − known − inReviewList` — **זה המספר הגדול במסך** («נשארו לך N מילים ברמה הזאת») |
+| `levels[]` | **שש רשומות** בסדר `A1…C2`, כל אחת עם אותם ארבעה שדות של רמתה. הקלט של טבעות המילוי ב-T-084 |
 
 ⚠️ **שלוש הקבוצות זרות וסכומן הוא הסך. אי-שוויון הוא באג, ⛔ לא עיגול.** ההגדרה
 חיה **אך ורק** ב-`lib/core/levelSummary.ts`: הנתיב שולף את שורות ההתקדמות של הלומד
