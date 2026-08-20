@@ -96,3 +96,43 @@ describe('plan/30-architecture.md — the technical-debt register', () => {
     expect(numbers).toEqual(expected);
   });
 });
+
+/**
+ * F-078 · T-128 — אותו חוק, רגיסטר אחד הלאה.
+ *
+ * `F-076` הוטבע פעמיים (שורות 97 ו-99) על שני ממצאים שונים. זה ⛔ אינו קוסמטי:
+ * `measure-plan-tables.mjs:56-61` בונה `findingStates` כ-`Map`, כלומר השני דורס את
+ * הראשון בשקט — ממצא שלם נעלם מהמכונה, ו-`staleBlocks` מכריעה עליו לפי הסטטוס של
+ * ממצא אחר לגמרי. זו בדיוק מחלקת `TD-28`, שלישית באותה משפחה.
+ */
+const FINDINGS = readFileSync('plan/60-findings.md', 'utf8');
+
+/** Only the ID cell of a real table row — `| F-076 | 🟡 MEDIUM | …`. */
+const FINDING_ROW_ID = /^\|\s*(F-\d{3})\s*\|/gm;
+
+function findingIds(): string[] {
+  return [...FINDINGS.matchAll(FINDING_ROW_ID)]
+    .map((m) => m[1])
+    .filter((id): id is string => id !== undefined);
+}
+
+describe('plan/60-findings.md — the findings register', () => {
+  it('has rows at all (guards the regex, not just the file)', () => {
+    expect(findingIds().length).toBeGreaterThan(20);
+  });
+
+  it('mints every finding ID exactly once', () => {
+    const seen = new Map<string, number>();
+    for (const id of findingIds()) seen.set(id, (seen.get(id) ?? 0) + 1);
+    const duplicates = [...seen.entries()].filter(([, n]) => n > 1).map(([id, n]) => `${id}×${n}`);
+    expect(duplicates, 'a duplicate finding ID silently drops one finding from findingStates').toEqual([]);
+  });
+
+  it('leaves no gap in the ID sequence — a gap means an ID was lost, not freed', () => {
+    const numbers = findingIds()
+      .map((id) => Number(id.slice(2)))
+      .sort((a, b) => a - b);
+    const expected = Array.from({ length: numbers.length }, (_, i) => i + 1);
+    expect(numbers).toEqual(expected);
+  });
+});
