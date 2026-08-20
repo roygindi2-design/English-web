@@ -557,9 +557,14 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
    * Two cards and not one: «one card per screen» is unfalsifiable on a deck that only ever
    * held one card, and the snap container's height is only wrong when there is a second
    * card to push out of the viewport.
+   *
+   * T-086 (§ 4.2ח ⓑ · 2026-08-20) — הפיקסטורה גדלה מ-2 ל-5 כדי להוכיח שכרטיס 3, 4, 5
+   * גם מחוץ למסך: פגם `h-full` בתוך `flex-1` היה נעצר על כרטיס 2 ומחזיר את כרטיס 3
+   * ל-`min-content`. חמישה הוא מספר קונקרטי — ההארנס סורק את כל הפריטים ומאמת שכל
+   * אחד ממלא את ה-snap viewport ושכל כרטיס משני והלאה מתחיל מתחת לקצה התחתון.
    */
-  it('hard-codes exactly two cards', () => {
-    expect(fixture.match(/word_id:/g) ?? []).toHaveLength(2);
+  it('hard-codes exactly five cards (T-086)', () => {
+    expect(fixture.match(/word_id:/g) ?? []).toHaveLength(5);
   });
 
   /**

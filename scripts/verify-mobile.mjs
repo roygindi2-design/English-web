@@ -565,12 +565,19 @@ try {
       // F-027 cause 1: `/onboarding` answers 307 without Supabase env (TD-13),
       // so naming it here measured /login twice and the goal form never once.
       // The fixture is the only place the onboarding layout exists in this run.
+      //
+      // T-085 · D-039 (§ 4.2ח ⓐ · 2026-08-20) — הוסר `/dev/card*` מבדיקה זו. פני
+      // הכרטיס עצמם הם כעת יעד המגע (⛔ ⛔ כפתור קטן בתחתית), והפיקסטורה
+      // `/dev/card` ⛔ ⛔ מתרחקת ל-`h-dvh` (רק CardDeck עושה זאת), כך שהכרטיס
+      // מגיע ל-~170px גובה בראש המסך. הרחבת הבדיקה לתמוך במקרה הזה תפגע ביכולת
+      // שלה לתפוס אמת כפתור-נגיש בטופס מסך רגיל. `/dev/deck` (הפיקסטורה ה-`h-dvh`)
+      // בודקת «כרטיס אחד למסך» ב-T-086 באופן נקי יותר. שלושת המסלולים שנשארים
+      // הם טופסי אימות ומסך הבית, שם הכפתור צר וחייב להיות בזון האגודל.
       if (
         route === '/' ||
         route === '/dev/onboarding' ||
         route === '/login' ||
-        route === '/signup' ||
-        route.startsWith('/dev/card')
+        route === '/signup'
       ) {
         const y = await page.evaluate(() => {
           const el =
@@ -1137,11 +1144,15 @@ try {
         }
       }
 
-      // T-065 · § 4.2ו — the scrolling deck. Three promises, measured on the component and
-      // ⛔ not on the screen above it: one card fills the screen, and the two grade buttons
-      // are both thumb-sized AND separated. `/dev/deck` and not `/study`: the real route
-      // renders its failure state without Supabase env (TD-13), so the deck itself would
-      // never be in the DOM while this ran.
+      // T-065 · § 4.2ו · T-086 — the scrolling deck. Three promises, measured on the
+      // component and ⛔ not on the screen above it: one card fills the screen, and the two
+      // grade buttons are both thumb-sized AND separated. `/dev/deck` and not `/study`: the
+      // real route renders its failure state without Supabase env (TD-13), so the deck itself
+      // would never be in the DOM while this ran.
+      //
+      // ⚠️ T-086 (§ 4.2ח ⓑ · 2026-08-20) — הפיקסטורה גדלה מ-2 ל-5 כדי להוכיח שכרטיס 3, 4, 5
+      // גם מחוץ למסך: 2 כרטיסים ⛔ ⛔ מוכיחים ש-`h-full` בתוך `flex-1` לא מקריס את
+      // כרטיס 3 ל-`min-content`. המשימה נסגרת בדוח מדידה, ⛔ ⛔ ב"נראה טוב".
       if (route === '/dev/deck') {
         const deck = await page.evaluate(() => {
           const scroller = document.querySelector('[data-deck-scroll]');
@@ -1152,9 +1163,10 @@ try {
           // the card sits under the article's `pt-4`, so measuring the inner section reported
           // 567px inside a 583px viewport and convicted the deck of a 16px gutter that is the
           // spacing the design asks for. What must fill the viewport is the thing that snaps.
-          const items = [...scroller.children];
-          const first = items[0].getBoundingClientRect();
-          const second = items[1].getBoundingClientRect();
+          const items = [...scroller.children].map((child) => {
+            const rect = child.getBoundingClientRect();
+            return { top: Math.round(rect.top), height: Math.round(rect.height) };
+          });
           return {
             count: cards.length,
             scroller: true,
@@ -1163,17 +1175,16 @@ try {
             top: Math.round(box.top),
             bottom: Math.round(box.bottom),
             height: Math.round(box.height),
-            firstHeight: Math.round(first.height),
-            secondTop: Math.round(second.top),
+            items,
             viewportHeight: window.innerHeight,
           };
         });
         check(
-          deck.count === 2 && deck.scroller,
-          `${at} the deck holds both fixture cards`,
+          deck.count >= 2 && deck.scroller,
+          `${at} the deck holds all fixture cards`,
           `found ${deck.count} cards and ${deck.scroller ? 'a' : 'no'} [data-deck-scroll]`,
         );
-        if (deck.count === 2 && deck.scroller) {
+        if (deck.count >= 2 && deck.scroller) {
           // Measured against the SNAP VIEWPORT and ⛔ not against the window: the container
           // clips, so a card whose rectangle runs past `innerHeight` may be perfectly
           // invisible while a card 40px short of it is half on screen. Three properties,
@@ -1186,19 +1197,36 @@ try {
             `${at} the deck fits on screen`,
             `the snap viewport occupies ${deck.top}..${deck.bottom} of a ${deck.viewportHeight}px viewport`,
           );
-          // ⓑ Card 1 FILLS it. 1px of tolerance for sub-pixel layout, and no more: a card
-          //    shorter than its viewport is the `min-h-dvh`/`flex-1` collapse measured in
-          //    C-0104, where card 2 sat visible under card 1 and snapping meant nothing.
+          // ⓑ EVERY card fills the snap viewport. 1px of tolerance for sub-pixel layout, and
+          //    no more: a card shorter than its viewport is the `min-h-dvh`/`flex-1` collapse
+          //    measured in C-0104, where card 2 sat visible under card 1 and snapping meant
+          //    nothing. T-086: the check runs over ALL fixture cards, so pinning
+          //    `h-full` in `<CardDeck>` inside `flex-1` cannot pass by chance on card 1.
+          const short = deck.items
+            .map((it, i) => ({ i, ...it }))
+            .filter((it) => it.height < deck.height - 1);
           check(
-            deck.firstHeight >= deck.height - 1,
-            `${at} one card per screen`,
-            `card 1 is ${deck.firstHeight}px inside a ${deck.height}px snap viewport`,
+            short.length === 0,
+            `${at} one card per screen (${deck.items.length} cards checked)`,
+            short.length === 0
+              ? ''
+              : `cards ${short.map((it) => `${it.i}=${it.height}px`).join(' · ')} inside a ${deck.height}px snap viewport`,
           );
-          // ⓒ Card 2 begins at or after that bottom edge — the other half of the same claim.
+          // ⓒ Every subsequent card begins at or after that bottom edge — the other half of
+          //    the same claim, applied to every card past the first.
+          const overlapping = deck.items
+            .map((it, i) => ({ i, ...it }))
+            .filter((it) => it.i >= 1 && it.top < deck.bottom - 1);
           check(
-            deck.secondTop >= deck.bottom - 1,
-            `${at} the next card waits off screen`,
-            `card 2 starts at y=${deck.secondTop}, above the snap viewport's bottom edge at ${deck.bottom}`,
+            overlapping.length === 0,
+            `${at} every subsequent card waits off screen`,
+            overlapping.length === 0
+              ? ''
+              : `cards ${overlapping.map((it) => `${it.i}@y=${it.top}`).join(' · ')} start above the snap viewport's bottom edge at ${deck.bottom}`,
+          );
+          // ⓓ דו״ח T-086 — הגיאומטריה בפועל, כדי שהמשימה תיסגר על מספרים ולא על תחושה.
+          report(
+            `${at} T-086: snap viewport ${deck.top}..${deck.bottom} (height ${deck.height}px) · cards ${deck.items.map((it) => it.height).join('/')}px inside`,
           );
         }
 

@@ -28,6 +28,12 @@ import type { QueueCardInput } from '@/lib/core/deck';
  * Two cards and ⛔ not one: «one card per screen» cannot fail on a deck that holds a single
  * card, and the snap container's height is only measurably wrong when there is a second card
  * for it to push out of the viewport.
+ *
+ * T-086 (§ 4.2ח ⓑ · 2026-08-20) — הפיקסטורה גדלה מ-2 ל-5. שני כרטיסים מוכיחים ש-`snap`
+ * פעיל, אבל ⛔ ⛔ מוכיחים שכרטיס 3, 4, 5 גם מחוץ למסך: פגם `h-full` בתוך `flex-1` היה
+ * נעצר על כרטיס 2 ומחזיר את כרטיס 3 ל-`min-content`. המשימה נסגרת בדוח מדידה של
+ * שלושת הרחבים, ⛔ לא ב"נראה טוב". כל חמשת הכרטיסים חייבים `word_id` שונים —
+ * ל-<CardDeck> יש `remaining.filter(!graded)` שעובר על אותו מזהה.
  */
 const FIXTURE: readonly QueueCardInput[] = [
   {
@@ -49,6 +55,39 @@ const FIXTURE: readonly QueueCardInput[] = [
       headword: 'Ipsum',
       translation_he: 'טקסט אחר',
       examples: { supportive: 'The Ipsum is also a fixture.', neutral: '' },
+      needs_human_review: false,
+    },
+  },
+  {
+    word_id: 'fixture-dolor',
+    direction: 'recognition',
+    is_first_encounter: true,
+    sense: {
+      headword: 'Dolor',
+      translation_he: 'שלישי לדוגמה',
+      examples: { supportive: 'The Dolor is a third fixture card.', neutral: '' },
+      needs_human_review: false,
+    },
+  },
+  {
+    word_id: 'fixture-sit',
+    direction: 'recognition',
+    is_first_encounter: true,
+    sense: {
+      headword: 'Sit',
+      translation_he: 'רביעי לדוגמה',
+      examples: { supportive: 'The Sit is a fourth fixture card.', neutral: '' },
+      needs_human_review: false,
+    },
+  },
+  {
+    word_id: 'fixture-amet',
+    direction: 'recognition',
+    is_first_encounter: true,
+    sense: {
+      headword: 'Amet',
+      translation_he: 'חמישי לדוגמה',
+      examples: { supportive: 'The Amet is a fifth fixture card.', neutral: '' },
       needs_human_review: false,
     },
   },
