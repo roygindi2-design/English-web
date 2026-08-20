@@ -35,6 +35,16 @@ export interface CollectedBefore {
   readonly timesCorrect: number;
 }
 
+/** F-092 · גוף התשובה של `POST /api/arcade/result`, כפי שהוא נשמר וכפי שהוא חוזר. */
+export interface ArcadeResultResponse {
+  readonly ok: true;
+  readonly enemyDefeated: boolean;
+  readonly outcome: 'victory' | 'survived';
+  readonly leveledUp: boolean;
+  readonly unlocked: string | null;
+  readonly missed: readonly { readonly wordId: string; readonly answer: string; readonly chosen: string }[];
+}
+
 export interface ArcadeWritePlan {
   readonly rows: readonly ArcadeWriteRow[];
   readonly enemyDefeated: boolean;
@@ -49,6 +59,12 @@ export interface ArcadeWritePlan {
    * האיסוף הייתה גורמת לאוסף לשקר על מה שקרה בקרב.
    */
   readonly collected: readonly { readonly wordId: string; readonly timesMissed: number; readonly timesCorrect: number }[];
+  /**
+   * F-092 · גוף התשובה, ⛔ נבנה **פעם אחת**. הנתיב שומר אותו ב-`response_snapshot`
+   * ומחזיר **אותו אובייקט**; שידור חוזר מקבל את התצלום ⛔ ולא חישוב שני, כי
+   * `unlocked` ו-`leveledUp` נכונים פעם אחת בלבד — בפעם הראשונה.
+   */
+  readonly response: ArcadeResultResponse;
 }
 
 export const ARCADE_WRITE_TABLES = Object.freeze(
@@ -59,6 +75,11 @@ export const ARCADE_ITEMS = Object.freeze(['helmet', 'cape', 'lantern', 'boots',
 
 export function planArcadeWrites(input: {
   readonly userId: string;
+  /**
+   * F-092 · מפתח האידמפוטנטיות של הקרב. ⛔ **חובה ו⛔ בלי ברירת מחדל:** קורא
+   * ששוכח אותו היה מקבל בדיוק את הפגם שהעמודה נועדה לסגור.
+   */
+  readonly runId: string;
   readonly answers: readonly ArcadeAnswer[];
   readonly before: { readonly gameLevel: number; readonly wins: number; readonly unlockedItems: readonly string[] };
   /**
@@ -116,8 +137,32 @@ export function planArcadeWrites(input: {
     return { wordId, timesMissed: row.timesMissed, timesCorrect: row.timesCorrect };
   });
 
+  const response: ArcadeResultResponse = {
+    ok: true,
+    enemyDefeated: won,
+    outcome: won ? 'victory' : 'survived',
+    leveledUp: after.leveledUp,
+    unlocked: next,
+    missed,
+  };
+
   return {
     rows: [
+      // ⛔ **ראשונה, ⛔ ולא שנייה (F-092).** האינדקס הייחודי על `run_id` הופך את
+      // הכתיבה הזאת לשער: שידור חוזר מתנגש **כאן**, לפני ש-`arcade_progress`
+      // הספיק לנפח את `wins`. סדר הפוך היה מותיר בדיוק את הפגם המקורי.
+      {
+        table: 'arcade_runs',
+        values: {
+          user_id: input.userId,
+          run_id: input.runId,
+          finished_at: input.finishedAt,
+          words_seen: input.answers.length,
+          words_correct: correct,
+          enemy_defeated: won,
+          response_snapshot: response,
+        },
+      },
       {
         table: 'arcade_progress',
         values: {
@@ -126,16 +171,6 @@ export function planArcadeWrites(input: {
           wins: after.wins,
           unlocked_items: unlockedItems,
           updated_at: input.finishedAt,
-        },
-      },
-      {
-        table: 'arcade_runs',
-        values: {
-          user_id: input.userId,
-          finished_at: input.finishedAt,
-          words_seen: input.answers.length,
-          words_correct: correct,
-          enemy_defeated: won,
         },
       },
       // ⛔ `first_seen_at` ⛔ אינו נכתב במכוון: ברירת המחדל בסכמה היא `now()`, וכתיבה
@@ -156,5 +191,6 @@ export function planArcadeWrites(input: {
     leveledUp: after.leveledUp,
     unlocked: next,
     missed,
+    response,
   };
 }
