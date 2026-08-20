@@ -51,6 +51,13 @@ const ROUTES = [
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
+  // T-082 · D-041 — סריקת הרמה. `/study/scan` יושב מחוץ ל-`PROTECTED_SCREENS`
+  // (proxy.ts) ולכן הוא **כן** מרונדר כאן, אבל בלי env של Supabase
+  // `GET /api/levels/scan` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה ההיא מודדת הוא מצב
+  // **הכשל**. הפיקסטורה מקבלת את 12 המילים כ-prop ואינה מבקשת מהשרת דבר, ולכן
+  // ⛔ אין לה רשומה ב-EXPECTED_CONSOLE — והשקט הזה הוא ההוכחה שהרשת עצמה נמדדת.
+  '/study/scan',
+  '/dev/scan',
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
@@ -216,6 +223,7 @@ const FLOW_ARRIVAL = {
  */
 const EXPECTED_CONSOLE = {
   '/study': [/status of 503[\s\S]*@\S*\/api\/study\/queue/],
+  '/study/scan': [/status of 503[\s\S]*@\S*\/api\/levels\/scan/],
   // C-0103 (T-065 task 7): `<CardsScreen>` became the deck selector and now reads both
   // decks for their counts. Same situation and same narrowness as `/study` above — the
   // fixture has no session and the harness has no Supabase env, so the queue answers 503
