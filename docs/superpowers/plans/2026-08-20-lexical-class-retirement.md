@@ -65,7 +65,7 @@
 * Consumes: `supabase/migrations/0006_layer2_track_and_bank.sql` — העמודה `lexical_class text` והמגבלות `words_lexical_class_check` · `words_lexical_class_agrees` כבר קיימות. ⛔ המיגרציה הזאת ⛔ אינה יוצרת עמודה ו⛔ אינה נוגעת במגבלות.
 * Produces: אחרי הרצה ידנית, `select count(*) from words where lexical_class = 'function'` שווה בדיוק ל-`select count(*) from words where is_function_word`. **משימה 2 מסתמכת על השוויון הזה.**
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 `lib/supabase/lexicalClassBackfill.test.ts` — הבדיקה קוראת את טקסט ה-SQL, בדיוק כמו `lib/supabase/layer2.test.ts`:
 
@@ -110,12 +110,12 @@ describe('0016 — מילוי lexical_class מהעמודה הפורשת (T-120�
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 הרץ: `npx vitest run lib/supabase/lexicalClassBackfill.test.ts`
 צפוי: **FAIL** — `ENOENT: no such file or directory, open 'supabase/migrations/0016_lexical_class_backfill.sql'`.
 
-- [ ] **Step 3: כתוב את המיגרציה**
+- [x] **Step 3: כתוב את המיגרציה**
 
 `supabase/migrations/0016_lexical_class_backfill.sql`:
 
@@ -155,19 +155,19 @@ update public.words
 commit;
 ```
 
-- [ ] **Step 4: הרץ ואמת שהיא עוברת**
+- [x] **Step 4: הרץ ואמת שהיא עוברת**
 
 הרץ: `npx vitest run lib/supabase/lexicalClassBackfill.test.ts`
 צפוי: **PASS**, 6 בדיקות.
 
-- [ ] **Step 5: מוטציה — אמת שהשער אינו קישוט**
+- [x] **Step 5: מוטציה — אמת שהשער אינו קישוט**
 
 החלף זמנית את פקודה ⓑ ב-`set lexical_class = 'content' where is_function_word is false and lexical_class is null` (בלי `origin`).
 הרץ: `npx vitest run lib/supabase/lexicalClassBackfill.test.ts`
 צפוי: **FAIL** על `⛔ false ⛔ אינו הופך ל-content בלי origin = 'generated'`.
 **החזר את השורה.** הרץ שוב וודא ירוק.
 
-- [ ] **Step 6: פריט 41 ב-`plan/03-for-roy.md`**
+- [x] **Step 6: פריט 41 ב-`plan/03-for-roy.md`**
 
 הוסף שורה בראש הטבלה שתחת «## פתוח». המספר הגבוה ביותר היום הוא 40, ועמודות הטבלה הן `| # | מי ביקש | מתי | מה נדרש מרוי | למה זה חשוב | חוסם? |` — **שש**:
 
@@ -177,7 +177,7 @@ commit;
 
 ⛔ **אל תכניס לתא ולו צינור גולמי אחד** — המפצל של `measure-plan-tables.mjs` קורא אותו כמפריד עמודה, וזה בדיוק שורש F-063.
 
-- [ ] **Step 7: אימות מלא + קומיט**
+- [x] **Step 7: אימות מלא + קומיט**
 
 הרץ: `npm run typecheck && npm run check:core && npm test && npm run build`
 צפוי: `typecheck` יוצא 0 · `check:core` מדפיס `OK` · הסוויטה ירוקה עם **6 בדיקות נוספות** מול הבסיס · `build` יוצא 0.
@@ -187,6 +187,12 @@ git add supabase/migrations/0016_lexical_class_backfill.sql lib/supabase/lexical
 git commit -m "loop(DEV): T-120a מיגרציית מילוי 0016 — lexical_class מקבלת את הידע לפני שהקוד מחליף מקור"
 git push origin dev
 ```
+
+---
+
+> ✅ **משימה 1 בוצעה C-0223 (טיק ביצוע).** ארבע הפקודות ירוקות בהרצה טרייה: `typecheck` 0 · `check:core` `OK` · **1982/1982 ב-126 קבצים** (בסיס 1976/1976 ב-125 ⇒ **+6 בדיקות, +קובץ אחד**, בדיוק כמתוכנן) · `build` 0.
+> ⚠️ **סטייה אחת מנוסח צעד 1, והיא תיקון פגם בתוכנית ⛔ ולא בקוד המוצר (F-087):** `SQL.split(';')` על המקור הגולמי בחר את **בלוק ההערה** של `0016` כפקודה הראשונה שמכילה `'content'`, מפני שההערה מסבירה למה המילוי ⛔ אינו `else 'content'`. נוסף `withoutSqlComments` בראש הקובץ — מחלקת F-039 · F-065 בלבוש SQL. ⛔ ההערה ⛔ לא נמחקה.
+> **מוטציה (צעד 5) רצה ונמדדה:** הסרת `and origin = 'generated'` הפילה בדיוק בדיקה אחת בשמה, והקובץ שוחזר (`git diff` ריק עליו).
 
 ---
 
