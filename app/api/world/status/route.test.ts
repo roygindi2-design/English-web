@@ -38,7 +38,7 @@ describe('GET /api/world/status', () => {
     // file still "contains" the name, so that assertion stayed green through the mutation
     // (C-0120). The bank count has to be read off the CALL SITE.
     expect(CODE).toMatch(/functionWords:\s*uniqueHeadwords\(/);
-    expect(CODE).toMatch(/\.eq\('is_function_word',\s*true\)/);
+    expect(CODE).toMatch(/\.eq\('lexical_class',\s*'function'\)/);
   });
 
   it('counts the learner side from is_active_this_week, scoped to the caller', () => {

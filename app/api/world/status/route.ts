@@ -68,7 +68,7 @@ export async function GET() {
   const bank = await supabase
     .from('words')
     .select('headword')
-    .eq('is_function_word', true)
+    .eq('lexical_class', 'function')
     .order('headword', { ascending: true })
     .limit(MAX_BANK_ROWS);
 

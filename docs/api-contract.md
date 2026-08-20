@@ -573,7 +573,9 @@ T-124 · D-065). הצרכן הוא `<LevelMapScreen>`, ולשלושת הקודי
 וגם משמעות תוכן, ולכן בנק בצורת sense היה מציג כל אחד מהם פעמיים. ה-dedupe הוא
 `uniqueHeadwords` בשכבה הטהורה, **בשני אתרי הקריאה**, תחת תקרה של `MAX_BANK_ROWS = 2000`.
 
-`functionWords` — כל `words` עם `is_function_word = true`, ממוינות. `activeWords` —
+`functionWords` — כל `words` עם `lexical_class = 'function'`, ממוינות. ⚠️ **T-120 החליף
+כאן את `is_function_word`** — העמודה הישנה `not null default false` ⛔ אינה יכולה לומר
+«לא ידוע», ולכן `false` בה היה ברירת מחדל ⛔ ולא טענה. המילוי הוא `0016_lexical_class_backfill.sql`. `activeWords` —
 `word_progress` של הקורא בלבד (`user_id = user.id`) עם `is_active_this_week = true`,
 בצירוף `words!inner(headword)`. ⚠️ **ה-`!inner` מכוון**, מאותו נימוק שב-
 `app/api/study/queue/route.ts`: שורת התקדמות שהמילה שלה נמחקה אינה שבב בבנק, וצירוף חיצוני
@@ -636,7 +638,9 @@ T-124 · D-065). הצרכן הוא `<LevelMapScreen>`, ולשלושת הקודי
 ⚠️ ‏`author_kind` הוא **הגנה ⛔ ולא ניקוי**: בלעדיו פוסט מיוצר היה מוצג ללומד כמשפט
 שהוא עצמו כתב (הלקח של C-0123).
 ⓑ `word_progress` — `select('words!inner(headword, cefr_profile_band, ngsl_rank,
-is_function_word)')` של הקורא בלבד, תקרת `MAX_LEARNER_WORDS = 2000`.
+lexical_class)')` של הקורא בלבד, תקרת `MAX_LEARNER_WORDS = 2000`. השדה הטהור
+`isFunctionWord` נגזר בנתיב מ-`lexical_class === 'function'` (T-120) — `worldRecall.ts`
+מחזיק **מושג תחום**, ⛔ ולא שם עמודה.
 
 ⚠️ **כל ההחלטה בשכבה הטהורה** (`lib/core/worldRecall.ts`) — הנתיב ⛔ אינו מסנן, אינו
 מדרג ואינו מגריל ב-SQL. ה-`seed` נגזר מ-`Date.now() >>> 0` **בנתיב**, בדיוק כמו

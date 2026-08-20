@@ -99,8 +99,9 @@ export type CardSense = Pick<GeneratedSense, 'headword' | 'translationHe' | 'exa
    * `senses.needs_human_review` — the same boolean `parseBatchRecord` derives and the
    * seed SQL writes. **Required, with no default on purpose.** An optional field
    * defaulting to `false` means a sense nobody classified renders as *verified*: the
-   * exact shape of the `is_function_word` defect the layer-2 plan measured, and the
-   * inverse of what D-024 asks for. Every caller states it, or does not compile.
+   * exact shape of the `not null default false` defect the layer-2 plan measured — a
+   * column that cannot say "unknown" — and the inverse of what D-024 asks for. Every
+   * caller states it, or does not compile.
    */
   readonly needsHumanReview: boolean;
 };

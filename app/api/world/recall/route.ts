@@ -22,13 +22,13 @@ const MAX_RECALL_POSTS = 100;
 const MAX_LEARNER_WORDS = 2000;
 
 const LEARNER_WORDS_SELECT =
-  'words!inner(headword, cefr_profile_band, ngsl_rank, is_function_word)';
+  'words!inner(headword, cefr_profile_band, ngsl_rank, lexical_class)';
 
 type JoinedWord = {
   headword: string | null;
   cefr_profile_band: string | null;
   ngsl_rank: number | null;
-  is_function_word: boolean | null;
+  lexical_class: string | null;
 };
 
 function isSchemaMissing(code: string | undefined): boolean {
@@ -102,7 +102,7 @@ export async function GET() {
       headword: word.headword ?? '',
       band: word.cefr_profile_band,
       ngslRank: word.ngsl_rank,
-      isFunctionWord: word.is_function_word === true,
+      isFunctionWord: word.lexical_class === 'function',
     }));
 
   // ⛔ אין `Math.random` בשכבה הטהורה — ה-seed נגזר כאן, בדיוק כמו `arcade/round`.

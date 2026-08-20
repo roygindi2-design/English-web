@@ -213,7 +213,7 @@ git push origin dev
 * Consumes: משימה 1 — אחרי שרוי הריץ את `0016`, `lexical_class = 'function'` שקול בדיוק ל-`is_function_word = true`.
 * Produces: `lib/core/worldRecall.ts` נשאר **ללא שינוי**. השדה הטהור שלו הוא `isFunctionWord: boolean` (`worldRecall.ts:38`) — מושג תחום, ⛔ לא שם עמודה. הנתיב הוא שממפה `lexical_class === 'function'` אליו. ⛔ אל תשנה את `LearnerWord`.
 
-- [ ] **Step 1: כתוב את בדיקת סריקת המקור הנופלת**
+- [x] **Step 1: כתוב את בדיקת סריקת המקור הנופלת**
 
 `app/api/world/lexicalClassOnly.test.ts`. ⚠️ **הסריקה מלבינה הערות** — `grep` גולמי היה פוגע גם בהערה שמתעדת את האיסור (F-039 · F-065), וההלבנה היא הפתרון ⛔ ולא מחיקת ההערות:
 
@@ -261,12 +261,14 @@ describe('T-120 — קוד המוצר ⛔ אינו קורא את words.is_functi
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
+
+> ⚠️ **הניבוי כאן שגוי, ונמדד C-0224 (F-088):** האסרציה על `lib/core/flashcard.ts` ⛔ **אינה** נופלת — האזכור שם הוא כולו בתוך בלוק `/** */`, וההלבנה מוחקת אותו. ההרצה בפועל: `6 failed` מול `1 passed (7)`. הבדיקה תוקנה לסריקת מקור **גולמי** ⇒ `7 failed` מול `1 passed (8)`.
 
 הרץ: `npx vitest run app/api/world/lexicalClassOnly.test.ts`
 צפוי: **FAIL** — שלוש הבדיקות הראשונות נופלות (`is_function_word` נמצא בשלושת הנתיבים וב-`flashcard.ts`), ושלוש האחרונות נופלות כי `lexical_class` עדיין לא מופיע.
 
-- [ ] **Step 3: החלף את שני הבנקים**
+- [x] **Step 3: החלף את שני הבנקים**
 
 ב-`app/api/world/bank/route.ts:52` וב-`app/api/world/status/route.ts:71`, שורה זהה בשניהם:
 
@@ -276,7 +278,7 @@ describe('T-120 — קוד המוצר ⛔ אינו קורא את words.is_functi
 
 ⛔ אל תיגע ב-`.select('headword')`, ב-`.order(...)` וב-`.limit(MAX_BANK_ROWS)`.
 
-- [ ] **Step 4: החלף את `recall`**
+- [x] **Step 4: החלף את `recall`**
 
 `app/api/world/recall/route.ts:24-32`:
 
@@ -300,7 +302,7 @@ type JoinedWord = {
 
 ⚠️ `word.lexical_class` הוא `string | null` ⇒ `=== 'function'` מחזיר `boolean` ללא `any` וללא `!`. `isSchemaMissing` כבר מטפל ב-`42703` (עמודה חסרה) ⇒ סביבה שבה `0016` לא רצה מחזירה 503 מסודר ⛔ ולא קריסה.
 
-- [ ] **Step 5: תקן את ההערה ב-`lib/core/flashcard.ts:102`**
+- [x] **Step 5: תקן את ההערה ב-`lib/core/flashcard.ts:102`**
 
 ההערה מנמקת את `needsHumanReview` בעזרת שם עמודה שעומדת להימחק. ⛔ אל תמחק את ההערה — הלקח שבה נכון. החלף את שם העמודה בתיאור המחלקה:
 
@@ -312,7 +314,7 @@ type JoinedWord = {
    * asks for. Every caller states it, or does not compile.
 ```
 
-- [ ] **Step 6: הפוך את שתי האסרציות הקיימות, ⛔ אל תמחק אותן**
+- [x] **Step 6: הפוך את שתי האסרציות הקיימות, ⛔ אל תמחק אותן**
 
 `app/api/world/bank/route.test.ts:30` ו-`app/api/world/status/route.test.ts:41` — באותה שורה בדיוק בשני הקבצים:
 
@@ -322,19 +324,19 @@ type JoinedWord = {
 
 ⛔ אל תיגע בשורות השכנות (`functionWords:\s*uniqueHeadwords\(` · `is_active_this_week`) — הן מודדות דברים אחרים.
 
-- [ ] **Step 7: הרץ ואמת שהכל עובר**
+- [x] **Step 7: הרץ ואמת שהכל עובר**
 
 הרץ: `npx vitest run app/api/world/`
 צפוי: **PASS** — כולל 6 הבדיקות החדשות ושתי המתוקנות.
 
-- [ ] **Step 8: מוטציה — אמת ששער הבנק אינו קישוט**
+- [x] **Step 8: מוטציה — אמת ששער הבנק אינו קישוט**
 
 מחק זמנית את `.eq('lexical_class', 'function')` מ-`app/api/world/bank/route.ts`.
 הרץ: `npx vitest run app/api/world/`
 צפוי: **FAIL** בשמן על `app/api/world/bank/route.ts מסנן על lexical_class = function` ועל האסרציה ב-`bank/route.test.ts`.
 **החזר את השורה.** הרץ שוב וודא ירוק.
 
-- [ ] **Step 9: אימות מלא + קומיט**
+- [x] **Step 9: אימות מלא + קומיט**
 
 הרץ: `npm run typecheck && npm run check:core && npm test && npm run build`
 צפוי: `typecheck` 0 · `check:core` `OK` · סוויטה ירוקה · `build` 0.
