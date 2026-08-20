@@ -252,3 +252,90 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     expect(errorBranch).not.toContain('data-primary-action');
   });
 });
+
+/**
+ * T-087 · § 4.2ח ⓒ — פעולת סגירה על מסך מנת היום.
+ *
+ * סורק מקור, ⛔ ⛔ DOM. הענף `state.kind === 'cards'` דורש טעינה מוצלחת של
+ * `/api/study/queue`, וההארנס של Vitest רץ בסביבת `node` בלי fetch — היה
+ * מרנדר את ה-`loading` state ומגיע לאסרציה של ⛔ ⛔ נכון. הקריאה על המקור
+ * מודדת את מה שהקומפיילר יעביר ל-DOM, בלי לדרוש רינדור.
+ */
+const T087_SRC = readFileSync('components/StudyDeckScreen.tsx', 'utf8')
+  .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+
+/** הבלוק של ענף `state.kind === 'cards'` — סוגריים נספרים, ⛔ regex עצל. */
+function cardsBranch(src: string): string {
+  const at = src.indexOf("state.kind === 'cards'");
+  if (at === -1) return '';
+  const returnAt = src.indexOf('return (', at);
+  if (returnAt === -1) return '';
+  let depth = 0;
+  for (let i = returnAt + 'return '.length; i < src.length; i += 1) {
+    const c = src[i];
+    if (c === '(') depth += 1;
+    else if (c === ')') {
+      depth -= 1;
+      if (depth === 0) return src.slice(returnAt, i + 1);
+    }
+  }
+  return '';
+}
+
+describe('the study screen carries a top-anchored close (T-087 · § 4.2ח ⓒ)', () => {
+  it('קורא מקור עם ענף `cards` תקין', () => {
+    expect(T087_SRC.length).toBeGreaterThan(1000);
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'ענף `cards` לא נמצא').toContain('<CardDeck');
+  });
+
+  it('הענף `cards` מכיל אלמנט עם `data-close` ו-`href="/cards"`', () => {
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'חסרה יציאה — `data-close` לא נמצא בענף `cards`').toContain('data-close');
+    expect(branch, 'היציאה חייבת לחזור לבורר `/cards` (§ 4.2ח ⓒ)').toMatch(/href="\/cards"/);
+  });
+
+  it('היציאה נושאת `<CloseIcon />` מיובא ⛔ ⛔ SVG שני', () => {
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'האייקון חייב להיות `<CloseIcon />`').toContain('<CloseIcon');
+    expect(branch, 'SVG מוטבע נוסף ⛔ ⛔ מותר — השתמש ב-`<CloseIcon />`').not.toMatch(/<svg\b/);
+    expect(T087_SRC).toMatch(/from ['"]@\/components\/CloseIcon['"]/);
+  });
+
+  it('יעד המגע של היציאה ≥44px (`min-h-touch min-w-touch`)', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, 'היעד חייב להיות ≥44px גובה (`min-h-touch`)').toContain('min-h-touch');
+    expect(near, 'היעד חייב להיות ≥44px רוחב (`min-w-touch`)').toContain('min-w-touch');
+  });
+
+  it('היציאה נושאת `aria-label="סגור"` — האייקון בלבד ⛔ ⛔ שם נגיש', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, '`<CloseIcon>` נושא `aria-hidden` ⇒ הקישור עצמו חייב `aria-label`').toMatch(
+      /aria-label="סגור"/,
+    );
+  });
+
+  it('⛔ ⛔ `data-primary-action` על היציאה — עלול לשבור F-027 של `/study`', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, '⛔ ⛔ `data-primary-action` על הסגירה').not.toMatch(/data-primary-action/);
+  });
+
+  it('⛔ ⛔ `data-close` בענפים אחרים (`error`/`empty`/`session_expired`/`schema_missing`/`loading`)', () => {
+    const branch = cardsBranch(T087_SRC);
+    const total = (T087_SRC.match(/data-close/g) || []).length;
+    const inBranch = (branch.match(/data-close/g) || []).length;
+    expect(total, `\`data-close\` מופיע ${total} פעמים בסה"כ ובלוק \`cards\` ${inBranch}; חייב להיות שווה`).toBe(inBranch);
+  });
+
+  it('⛔ ⛔ SVG מוטבע נוסף בכל הקובץ (חוקה § 6)', () => {
+    expect(T087_SRC.match(/<svg\b/g) ?? [], 'SVG מוטבע חדש ⛔ ⛔ בקובץ הזה — השתמש ב-`<CloseIcon>`').toHaveLength(0);
+  });
+});

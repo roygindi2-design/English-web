@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import CardDeck from '@/components/CardDeck';
 import CardSkeleton from '@/components/CardSkeleton';
+import CloseIcon from '@/components/CloseIcon';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
@@ -180,7 +181,29 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
 
   if (state.kind === 'cards') {
     return (
-      <>
+      // T-087 · § 4.2ח ⓒ — פעולת סגירה מעוגנת למעלה.
+      //
+      // שלוש הכרעות מדידות:
+      // 1. `absolute` על `<section>` `relative` ⛔ ⛔ תוספת שורה בתוך `<CardDeck>`:
+      //    `<CardDeck>` מחשב `h-[calc(100dvh-10rem)]` על chrome קבוע של `app/layout.tsx`
+      //    (CardDeck.tsx:130-148), וכל תוספת גובה כאן שוברת את החישוב הזה בשקט
+      //    ומפילה את T-086 (בדיקות ההארנס ב-`/dev/deck`).
+      // 2. `start-2` וְ⛔ ⛔ `right-2` — CSS logical, נפתר תחת RTL לפינה הימנית העליונה
+      //    (בעברית) ולפינה השמאלית העליונה בכיוון LTR.
+      // 3. `aria-label="סגור"` על הקישור — `<CloseIcon>` נושא `aria-hidden` (שם נגיש
+      //    כפול היה גורם לקורא-מסך להקריא «סגור סגור»). ⛔ ⛔ `data-primary-action`
+      //    על הסגירה — /study הוא FLOW_ROUTE וסלקטור `main [data-primary-action]`
+      //    דורש **סימון אחד בדיוק** (verify-mobile.mjs). הענף `cards` היום
+      //    ⛔ ⛔ נושא סימון כזה (הכרעת T-065), והסגירה ⛔ ⛔ הופכת אותו לסימון־ראשי.
+      <section className="relative">
+        <Link
+          href="/cards"
+          data-close
+          aria-label="סגור"
+          className="absolute start-2 top-2 z-10 flex min-h-touch min-w-touch items-center justify-center rounded-lg text-ink active:opacity-90"
+        >
+          <CloseIcon />
+        </Link>
         {gradeError !== '' && (
           // Above the deck and ⛔ not a toast: the card the grade belongs to is still on
           // screen and still gradable, so the message has to stay until the retry lands.
@@ -192,7 +215,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
             directly on top of the two grade buttons — the only controls this screen exists
             for. The way forward here IS grading. */}
         <CardDeck deck={deck} cards={state.cards} onGraded={onGraded} />
-      </>
+      </section>
     );
   }
 
