@@ -19,6 +19,28 @@ describe('splitRow', () => {
   it('does not swallow a doubled backslash before a real break', () => {
     expect(splitRow('| a | ends with \\\\ | b |')).toEqual(['a', 'ends with \\', 'b']);
   });
+
+  it('does not break a column on a pipe inside a code span', () => {
+    // מחלקת F-059 · F-062ⓒ · F-063 — שלוש נפילות רצ׳ט מאותו שורש, ובכל פעם התיקון
+    // היה להבריח צינור בשורה אחת. השורש הוא כאן: מפצל שאינו מכיר code span.
+    expect(splitRow('| F-053 | `string | undefined` | fix |')).toEqual([
+      'F-053',
+      '`string | undefined`',
+      'fix',
+    ]);
+  });
+
+  it('honours a doubled backtick run and only closes on a run of the same length', () => {
+    // נמדד: 3 רצפי `` ב-50-tasks ו-1 ב-60-findings, ובתוכם כבר יושבים `\|` מוברחים.
+    // מפצל שסופר גרש בודד היה שובר את השורות האלה, שהיום תקינות.
+    expect(splitRow('| T-001 | ``a ` b | c`` | d |')).toEqual(['T-001', '``a ` b | c``', 'd']);
+  });
+
+  it('treats an unterminated backtick run as literal, not as an open span', () => {
+    // ⛔ הכשל השקט המסוכן: רצף שאינו נסגר בולע את שארית השורה ומאחד עמודות, כלומר
+    // שורה תקינה הופכת פגומה. CommonMark מסכים: רצף בלי סוגר הוא טקסט.
+    expect(splitRow('| T-002 | a ` b | c |')).toEqual(['T-002', 'a ` b', 'c']);
+  });
 });
 
 describe('rowShape', () => {

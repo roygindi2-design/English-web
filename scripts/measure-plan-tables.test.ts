@@ -27,7 +27,19 @@ const stdout = execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
  * lower it; ⛔ nothing raises it silently.
  */
 const MALFORMED_TASKS_CEILING = 0;
-const MALFORMED_FINDINGS_CEILING = 19;
+/**
+ * 19 → 17, C-0220 (T-101). ⛔ Not an instance fix: `splitRow` now honours CommonMark code
+ * spans, so a raw pipe inside `` ` `` stops inventing a column. That is the shared root of
+ * F-059 · F-062ⓒ · F-063 — three ratchet failures whose fix each time was to escape one
+ * pipe on one line. `F-026` and `F-053` fell out class-wide; `tasks` stayed at 0, which is
+ * the evidence the splitter broke no row that was well-formed before.
+ *
+ * ⚠️ `F-017` did ⛔ not fall out, and the reason is a measurement the plan did not have:
+ * it lost its two code-span pipes and landed on **9** cells, i.e. it is a *second* class-ⓐ
+ * row (two status cells against an 8-column header), like `F-016`. Class ⓐ is therefore
+ * **12** rows, ⛔ not 11 — a schema decision that belongs to the Critic, ⛔ not to Dev.
+ */
+const MALFORMED_FINDINGS_CEILING = 17;
 
 const numberAfter = (label: string): number => {
   const m = new RegExp(`${label}: \\d+ rows, (\\d+) malformed`).exec(stdout);
