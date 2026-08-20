@@ -16,8 +16,24 @@ describe('⛔ הכתיבה נוגעת בשתי טבלאות הזירה בלבד 
   const written = [...CODE.matchAll(/\.from\('([a-z_]+)'\)\s*\.(?:upsert|insert|update|delete)\(/g)]
     .map((m) => m[1]);
 
-  it('שתי הטבלאות, ותו לא', () => {
-    expect([...new Set(written)].sort()).toEqual(['arcade_progress', 'arcade_runs']);
+  it('שלוש הטבלאות, ותו לא', () => {
+    expect([...new Set(written)].sort())
+      .toEqual(['arcade_collected_words', 'arcade_progress', 'arcade_runs']);
+  });
+
+  // T-109 · הכרעה א׳ — האוסף נקרא **לפני** שהתוכנית נבנית, כי `times_correct` עולה רק
+  // על מפתח קיים; קריאה אחרי הבנייה הייתה הופכת את התנאי הזה למת.
+  it('האוסף **נקרא** לפני שהתוכנית נבנית, ומסונן ללומד', () => {
+    expect(CODE).toContain(".from('arcade_collected_words')");
+    expect(CODE.indexOf("from('arcade_collected_words')"))
+      .toBeLessThan(CODE.indexOf('planArcadeWrites('));
+    const read = CODE.slice(CODE.indexOf("from('arcade_collected_words')"),
+                            CODE.indexOf('planArcadeWrites('));
+    expect(read).toContain(".eq('user_id', user.id)");
+  });
+
+  it('⛔ upsert על המפתח המורכב, ⛔ ולא על user_id לבדו', () => {
+    expect(CODE).toContain("onConflict: 'user_id,word_id'");
   });
 
   it.each(['word_progress', 'profiles', 'words', 'senses'])('⛔ %s אינו נכתב', (table) => {

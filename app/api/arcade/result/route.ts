@@ -78,6 +78,22 @@ export async function POST(request: Request) {
   }
   const row = current as { arcade_level?: number; wins?: number; unlocked_items?: string[] } | null;
 
+  // T-109 · הכרעה א׳ — האוסף נקרא **לפני** בניית התוכנית: `times_correct` עולה אך ורק
+  // על מפתח שכבר קיים, ובלי הקריאה הזאת התנאי הזה היה מת. הסינון מצומצם למילים של
+  // הקרב הזה בלבד ⛔ ואינו מושך את כל האוסף.
+  const { data: collectedRows, error: collectedError } = await supabase
+    .from('arcade_collected_words')
+    .select('word_id, times_missed, times_correct')
+    .eq('user_id', user.id)
+    .in('word_id', answers.map((a) => a.wordId));
+  if (collectedError) {
+    console.error('[api/arcade/result] collection read failed:', collectedError.message);
+    return isSchemaMissing((collectedError as { code?: string }).code) ? schemaMissing() : unavailable();
+  }
+  const collectedBefore = ((collectedRows ?? []) as {
+    word_id: string; times_missed: number; times_correct: number;
+  }[]).map((c) => ({ wordId: c.word_id, timesMissed: c.times_missed, timesCorrect: c.times_correct }));
+
   // ⛔ הנתיב אינו מחשב: הוא מקבל תוכנית כתיבה ומחיל אותה. D-044 חי בשכבה הטהורה,
   // ו-`ArcadeWriteRow['table']` הוא הטיפוס שאינו מרשה שם טבלה שלישי.
   const plan = planArcadeWrites({
@@ -88,13 +104,18 @@ export async function POST(request: Request) {
       wins: row?.wins ?? 0,
       unlockedItems: row?.unlocked_items ?? [],
     },
+    collectedBefore,
     finishedAt: new Date().toISOString(),
   });
 
   for (const write of plan.rows) {
+    // ⛔ המפתח הראשי של `arcade_collected_words` הוא (user_id, word_id) — upsert על
+    // `user_id` לבדו היה דורס את כל אוסף הלומד בשורה אחת.
     const { error } = write.table === 'arcade_progress'
       ? await supabase.from('arcade_progress').upsert(write.values, { onConflict: 'user_id' })
-      : await supabase.from('arcade_runs').insert(write.values);
+      : write.table === 'arcade_collected_words'
+        ? await supabase.from('arcade_collected_words').upsert(write.values, { onConflict: 'user_id,word_id' })
+        : await supabase.from('arcade_runs').insert(write.values);
     if (error) {
       console.error(`[api/arcade/result] ${write.table} write failed:`, error.message);
       return isSchemaMissing((error as { code?: string }).code) ? schemaMissing() : unavailable();

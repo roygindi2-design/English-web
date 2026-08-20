@@ -19,9 +19,20 @@ export interface ArcadeAnswer {
   readonly answer: string;
 }
 
+export type ArcadeWriteTable = 'arcade_progress' | 'arcade_runs' | 'arcade_collected_words';
+
 export interface ArcadeWriteRow {
-  readonly table: 'arcade_progress' | 'arcade_runs';
+  readonly table: ArcadeWriteTable;
   readonly values: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * שורת אוסף אחת כפי שהיא **לפני** הקרב. ⛔ אין כאן שדה לימודי ו⛔ אין CEFR — D-052.
+ */
+export interface CollectedBefore {
+  readonly wordId: string;
+  readonly timesMissed: number;
+  readonly timesCorrect: number;
 }
 
 export interface ArcadeWritePlan {
@@ -32,9 +43,17 @@ export interface ArcadeWritePlan {
   readonly leveledUp: boolean;
   readonly unlocked: string | null;
   readonly missed: readonly { readonly wordId: string; readonly answer: string; readonly chosen: string }[];
+  /**
+   * ⛔ **שדה נפרד מ-`missed`, וזו לא כפילות:** `missed` הוא תקרת **תצוגה** בת 5 (D-047),
+   * ו-`collected` הוא מה ש**נכתב** — קרב עם 7 החמצות אוסף 7. תקרה שהייתה חותכת את
+   * האיסוף הייתה גורמת לאוסף לשקר על מה שקרה בקרב.
+   */
+  readonly collected: readonly { readonly wordId: string; readonly timesMissed: number; readonly timesCorrect: number }[];
 }
 
-export const ARCADE_WRITE_TABLES = Object.freeze(['arcade_progress', 'arcade_runs'] as const);
+export const ARCADE_WRITE_TABLES = Object.freeze(
+  ['arcade_progress', 'arcade_runs', 'arcade_collected_words'] as const,
+);
 export const ARCADE_MISSED_LIMIT = 5;
 export const ARCADE_ITEMS = Object.freeze(['helmet', 'cape', 'lantern', 'boots', 'banner'] as const);
 
@@ -42,6 +61,11 @@ export function planArcadeWrites(input: {
   readonly userId: string;
   readonly answers: readonly ArcadeAnswer[];
   readonly before: { readonly gameLevel: number; readonly wins: number; readonly unlockedItems: readonly string[] };
+  /**
+   * ⛔ **רשות במכוון:** קורא שלא סיפק אותו מקבל בדיוק את ההתנהגות הישנה — אין שורת
+   * אוסף ואין `times_correct` שעולה. כך `typecheck` נשאר ירוק בתוך הצעד עצמו.
+   */
+  readonly collectedBefore?: readonly CollectedBefore[];
   readonly finishedAt: string;
 }): ArcadeWritePlan {
   const correct = input.answers.filter((a) => a.correct).length;
@@ -65,6 +89,33 @@ export function planArcadeWrites(input: {
     .slice(0, ARCADE_MISSED_LIMIT)
     .map((a) => ({ wordId: a.wordId, answer: a.answer, chosen: a.chosen }));
 
+  // T-109 · הכרעה א׳ של התוכנית: **שורה נוצרת על טעות בלבד.** תשובה נכונה מעלה את
+  // `times_correct` אך ורק על מפתח שכבר קיים — או באוסף שנקרא מהמאגר, או שנוצר קודם
+  // באותו קרב עצמו. מילה שנענתה נכון ומעולם לא הוחמצה ⛔ אינה נכנסת לאוסף.
+  const collectedMap = new Map<string, { timesMissed: number; timesCorrect: number }>();
+  for (const row of input.collectedBefore ?? []) {
+    collectedMap.set(row.wordId, { timesMissed: row.timesMissed, timesCorrect: row.timesCorrect });
+  }
+  const touched = new Set<string>();
+  for (const a of input.answers) {
+    const existing = collectedMap.get(a.wordId);
+    if (!a.correct) {
+      collectedMap.set(a.wordId, {
+        timesMissed: (existing?.timesMissed ?? 0) + 1,
+        timesCorrect: existing?.timesCorrect ?? 0,
+      });
+      touched.add(a.wordId);
+      continue;
+    }
+    if (!existing) continue;
+    collectedMap.set(a.wordId, { timesMissed: existing.timesMissed, timesCorrect: existing.timesCorrect + 1 });
+    touched.add(a.wordId);
+  }
+  const collected = [...touched].map((wordId) => {
+    const row = collectedMap.get(wordId) as { timesMissed: number; timesCorrect: number };
+    return { wordId, timesMissed: row.timesMissed, timesCorrect: row.timesCorrect };
+  });
+
   return {
     rows: [
       {
@@ -87,7 +138,19 @@ export function planArcadeWrites(input: {
           enemy_defeated: won,
         },
       },
+      // ⛔ `first_seen_at` ⛔ אינו נכתב במכוון: ברירת המחדל בסכמה היא `now()`, וכתיבה
+      // מפורשת הייתה **מאפסת** את תאריך הפגישה הראשונה בכל upsert חוזר.
+      ...collected.map((c) => ({
+        table: 'arcade_collected_words' as const,
+        values: {
+          user_id: input.userId,
+          word_id: c.wordId,
+          times_missed: c.timesMissed,
+          times_correct: c.timesCorrect,
+        },
+      })),
     ],
+    collected,
     enemyDefeated: won,
     outcome: won ? 'victory' : 'survived',
     leveledUp: after.leveledUp,
