@@ -81,6 +81,11 @@ const ROUTES = [
   // כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי והדרך
   // החוצה. זה מצב שלומד פוגש, ⛔ ולא מסך שגיאה שהומצא להרמוניה.
   '/world/chain',
+  // C-0218 (T-110) — «המילים שאספתי», ואותו נימוק בדיוק כמו `/world/chain` שמעליה:
+  // בלי env של Supabase `GET /api/arcade/collected` עונה 503 בחוזה שלו עצמו, ולכן מה
+  // שנמדד כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי,
+  // ואפס גלילה אופקית ב-320. זה מצב שלומד פוגש, ⛔ ולא מסך שהומצא למדידה.
+  '/world/collected',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
@@ -270,6 +275,13 @@ const EXPECTED_CONSOLE = {
   // רשומה כאן: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
   '/world/chain': [
     /status of 503[\s\S]*@\S*\/api\/world\/posts/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
+  // C-0218 (T-110): גם היא יושבת בתוך `(tabs)` ⇒ **שתי** בקשות — `<CollectedWords>`
+  // קורא את האוסף, ו-`<TabBar>` שואל אם הלשונית פתוחה. כתובת אחת וסטטוס אחד לכל
+  // רשומה: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
+  '/world/collected': [
+    /status of 503[\s\S]*@\S*\/api\/arcade\/collected/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two

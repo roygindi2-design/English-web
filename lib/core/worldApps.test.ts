@@ -19,11 +19,22 @@ const app = (over: Partial<WorldApp> & Pick<WorldApp, 'id'>): WorldApp => ({
 });
 
 describe('worldApps', () => {
-  it('⛔ בדיוק שני אריחים, ⛔ ואין שלישי (§ 4.2יא)', () => {
-    expect([...WORLD_APP_ORDER]).toEqual(['compose', 'arcade']);
-    expect(Object.keys(WORLD_APP_HREF).sort()).toEqual(['arcade', 'compose']);
+  // ⚠️ **שניים ⇒ שלושה, C-0218 (T-110).** § 4.2יב מחייבת דרך הגעה למסך «המילים
+  // שאספתי» («מגיעים מאריח»), ובלי האריח השלישי המסך קיים ו⛔ אין אליו קישור. האריח
+  // עומד במסננת של § 4.2יא: תנאי הפתיחה שלו הוא **פתוח תמיד**, ⛔ ולא «בקרוב» בלי מספר.
+  it('⛔ בדיוק שלושה אריחים, ⛔ ואין רביעי (§ 4.2יא · § 4.2יב)', () => {
+    expect([...WORLD_APP_ORDER]).toEqual(['compose', 'arcade', 'collected']);
+    expect(Object.keys(WORLD_APP_HREF).sort()).toEqual(['arcade', 'collected', 'compose']);
     expect(WORLD_APP_HREF.compose).toBe('/world/compose');
     expect(WORLD_APP_HREF.arcade).toBe('/arcade');
+    expect(WORLD_APP_HREF.collected).toBe('/world/collected');
+  });
+
+  it('⛔ לכל אריח יש תווית **וגם** href — ⛔ אין ערך חסר בטבלה', () => {
+    for (const id of WORLD_APP_ORDER) {
+      expect(WORLD_APP_LABEL_HE[id] ?? '').not.toBe('');
+      expect(WORLD_APP_HREF[id] ?? '').toMatch(/^\//);
+    }
   });
 
   it('כל תווית היא עברית ⛔ ואינה ריקה (חוקה § 1 — צבע אינו ערוץ יחיד)', () => {
