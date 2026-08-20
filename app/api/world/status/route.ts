@@ -94,14 +94,23 @@ export async function GET() {
     ).length,
   };
 
+  const thresholds = {
+    minFunctionWords: MIN_FUNCTION_WORDS,
+    minActiveWords: MIN_ACTIVE_WORDS,
+  };
+
   // ⛔ Computed on every call. A cached unlock state is a wrong unlock state: the learner
   // crosses the threshold mid-session, and the tab has to notice.
+  //
+  // T-125 · D-066: הספים עולים על החוט משום שהלשונית נעולה על שניהם והמשפט
+  // חייב לדעת על שניהם. ⛔ הם עדיין חיים כאן ו⛔ לא ב-lib/core (D-031) —
+  // הצרכן מקבל אותם ⛔ ואינו מחזיק העתק שיכול לחלוק בשקט. ⚠️ אותו אובייקט
+  // בדיוק הולך ל-`isWorldUnlocked` וגם על החוט, ולכן ההחלטה והמשפט ⛔ אינם
+  // יכולים להיפרד: מה שפתח את הדלת הוא מה שמסופר עליה.
   return NextResponse.json({
     ok: true,
-    unlocked: isWorldUnlocked(counts, {
-      minFunctionWords: MIN_FUNCTION_WORDS,
-      minActiveWords: MIN_ACTIVE_WORDS,
-    }),
+    unlocked: isWorldUnlocked(counts, thresholds),
     ...counts,
+    ...thresholds,
   });
 }

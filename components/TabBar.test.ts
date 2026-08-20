@@ -105,22 +105,24 @@ describe('<TabBar> — the world tab unlocks from the server (D-031 · task 7)',
     expect(src).toMatch(/setWorldSheetOpen\(true\)/);
   });
 
-  it('states the measurable sentence, and the count in it is the fetched activeWords', () => {
-    // Locate the sentence itself, then the identifier interpolated into it.
-    const sentence = src.match(
-      /העולם ייפתח כשיהיו לך 12 מילים פעילות\.[^`]*יש לך \$\{([\w$]+)\}/,
-    );
-    expect(sentence).not.toBeNull();
-    const param = sentence![1];
-
-    // Locate the CALL SITE and read what is actually handed to that parameter. This is the
-    // assertion F-039 says was missing: `posts.length`, `TABS.length` or a literal would all
-    // satisfy a `toContain('יש לך')` and all fail here.
+  /**
+   * ⚠️ **Repaired in T-125, ⛔ not deleted.** Until T-125 this assertion located the Hebrew
+   * sentence INSIDE this component and read the identifier interpolated into it. D-066 moved
+   * the sentence to `lib/core/worldGate.ts`, so the string is no longer here to find — but
+   * what the assertion actually protects (F-039: measure the CALL SITE, ⛔ never a name the
+   * file merely mentions) survives unchanged. What is measured now is that the counts handed
+   * to the pure sentence are the ones the status read wrote, and the sentence's own wording
+   * is measured as behaviour in `lib/core/worldGate.test.ts`.
+   */
+  it('hands the sheet sentence the fetched counts, ⛔ not a literal and ⛔ not a length', () => {
+    // Locate the CALL SITE and read what is actually passed AT it. `TABS.length`, a literal,
+    // or an unrelated counter would all satisfy a `toContain('worldGateSentenceHe')`.
     const callSite = src.match(
-      new RegExp(String.raw`worldSheetTextHe\(\s*([\w$]+)\?\.activeWords\s*\?\?\s*null\s*\)`),
+      new RegExp(
+        String.raw`worldGateSentenceHe\(\s*\{\s*functionWords: ([\w$]+)\.functionWords,\s*activeWords: \1\.activeWords,?\s*\}`,
+      ),
     );
     expect(callSite).not.toBeNull();
-    expect(param).toBe('activeWords');
 
     // …and the variable at that call site is the one the status read writes, written once.
     const stateVar = callSite![1];
@@ -131,7 +133,10 @@ describe('<TabBar> — the world tab unlocks from the server (D-031 · task 7)',
     const setter = decl![1];
     expect(src.match(new RegExp(String.raw`${setter}\(`, 'g'))?.length).toBe(1);
     expect(src).toMatch(
-      new RegExp(String.raw`${setter}\(\{[\s\S]{0,200}activeWords: body\.activeWords`),
+      new RegExp(String.raw`${setter}\(\{[\s\S]{0,300}activeWords: body\.activeWords`),
+    );
+    expect(src).toMatch(
+      new RegExp(String.raw`${setter}\(\{[\s\S]{0,300}functionWords: body\.functionWords`),
     );
   });
 
@@ -148,11 +153,67 @@ describe('<TabBar> — the world tab unlocks from the server (D-031 · task 7)',
     expect(src).not.toMatch(/\?\.unlocked \?\?/);
   });
 
-  it('⛔ never shows «יש לך 0» before the count is known', () => {
-    // 0 and "not yet known" are different facts. The renderer must take `number | null` and
-    // drop the whole clause on `null` — ⛔ not default it to 0.
-    expect(src).toMatch(/worldSheetTextHe\s*=\s*\(\s*activeWords: number \| null\s*\)/);
-    expect(src).toMatch(/activeWords === null/);
-    expect(src).not.toMatch(/activeWords\s*\?\?\s*0/);
+  /**
+   * ⚠️ **Repaired in T-125, ⛔ not deleted.** The rule it guards — 0 and «not yet known» are
+   * different facts — is unchanged; what moved is where each half of it is enforced. The
+   * `number | null` contract and the dropped «יש לך» clause are now measured as behaviour in
+   * `lib/core/worldGate.test.ts`. What is left for THIS file is the half only this file can
+   * break: manufacturing a zero on the way in.
+   */
+  it('⛔ never manufactures a 0 for a count or a threshold it did not receive', () => {
+    expect(src).not.toMatch(/[aA]ctiveWords\s*\?\?\s*0/);
+    expect(src).not.toMatch(/[fF]unctionWords\s*\?\?\s*0/);
+    // The whole-status branch, ⛔ not a per-field default: with no answer there is no
+    // threshold either, so «כשיהיו לך 0 מילים פעילות» is a number this file would have
+    // invented. Both halves are required — the constant alone could sit unused.
+    expect(src).toContain('WORLD_SHEET_UNKNOWN_HE');
+    expect(src).toMatch(/worldStatus === null\s*\n?\s*\?\s*WORLD_SHEET_UNKNOWN_HE/);
+  });
+});
+
+/**
+ * T-125 · D-066 — the sheet stops telling the learner about one of the two conditions.
+ *
+ * ⚠️ Every assertion here is a SOURCE guard on `TabBar.tsx` and measures wiring only; the
+ * sentence's wording is measured as behaviour in `lib/core/worldGate.test.ts`. F-039 applies:
+ * each check locates a call site or a field, ⛔ never a bare mention.
+ */
+describe('<TabBar> — the sheet speaks about BOTH gate conditions (T-125 · D-066)', () => {
+  it('⛔ carries no copy of the threshold inside a Hebrew string in this file', () => {
+    // This was the silent copy: «כשיהיו לך 12 מילים פעילות» written out here while the
+    // number that decides lived in the route. ⛔ Any literal, ⛔ not just 12.
+    expect(src).not.toMatch(/כשיהיו לך \d/);
+  });
+
+  it('delegates the sentence to /lib/core ⛔ and does not rebuild it here', () => {
+    expect(src).toMatch(/import \{ worldGateSentenceHe \} from '@\/lib\/core\/worldGate'/);
+    expect(src).not.toContain('worldSheetTextHe');
+  });
+
+  it('reads functionWords — the condition that was blocking and invisible', () => {
+    // Read off the CALL SITE: the field has to reach the sentence, ⛔ not merely be typed.
+    expect(src).toMatch(/worldGateSentenceHe\(\s*\{\s*functionWords:/);
+  });
+
+  it('takes BOTH thresholds from the server ⛔ and hard-codes neither', () => {
+    expect(src).toMatch(/minFunctionWords: [\w$]+\.minFunctionWords/);
+    expect(src).toMatch(/minActiveWords: [\w$]+\.minActiveWords/);
+    expect(src).not.toMatch(/min(Function|Active)Words[:=]\s*\d/);
+  });
+
+  it('validates the four numbers where they arrive — apiGet casts, ⛔ it does not check', () => {
+    // A body that is `ok:true` and short a threshold would otherwise print
+    // «כשיהיו לך undefined מילים פעילות». The guard has to sit BEFORE the setter.
+    const guard = src.indexOf('Number.isFinite');
+    const setter = src.indexOf('setWorldStatus({');
+    expect(guard).toBeGreaterThan(-1);
+    expect(setter).toBeGreaterThan(guard);
+    for (const field of ['functionWords', 'activeWords', 'minFunctionWords', 'minActiveWords'])
+      expect(src).toContain(`'${field}'`);
+  });
+
+  it('keeps the id the sheet is labelled by — aria-labelledby points at it', () => {
+    expect(src).toMatch(/aria-labelledby="world-sheet-text"/);
+    expect(src).toMatch(/id="world-sheet-text"/);
   });
 });

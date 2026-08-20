@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
+import { worldGateSentenceHe } from '@/lib/core/worldGate';
 
 /**
  * The four-tab shell — D-027 · `40-decisions.md` § 4.2ב · T-051.
@@ -61,32 +62,49 @@ const WORLD_SHEET_CLOSE_HE = 'סגירה';
 const WORLD_HREF = '/world';
 
 /**
- * § 4.2ה, verbatim: «העולם ייפתח כשיהיו לך 12 מילים פעילות. יש לך <n>.»
+ * ⛔ The sentence itself is ⛔ NOT built here any more — T-125 · D-066 moved it to
+ * `lib/core/worldGate.ts`, where the two gate conditions are measured as BEHAVIOUR
+ * instead of as a string inside a source guard.
  *
- * The threshold is spelled out in the sentence and ⛔ is not interpolated from a
- * constant here: the number that governs the gate is `MIN_ACTIVE_WORDS` in
- * `app/api/world/status/route.ts` (a product parameter, D-031), and a second copy of it in
- * the tab bar would be a copy that can silently disagree with the one doing the deciding.
- * A learner never sees a threshold this file invented — they see the sentence the product
- * decision wrote, and the count the server measured.
- *
- * ⛔ No date, ⛔ no bare «בקרוב» as the sentence, ⛔ no "request access" button (§ 4.2ה).
+ * This is the one sentence left in this file, and it covers the ⛔ ONLY branch in which
+ * nothing at all is known: `worldStatus === null` means the read has not answered yet, or
+ * never will. ⚠️ Since T-125 the thresholds arrive FROM THE SERVER, so in that branch the
+ * target is unknown too — and «כשיהיו לך 0 מילים פעילות» would be a number this file
+ * invented, which is the very defect D-066 names. ⛔ No date, ⛔ no bare «בקרוב» as the
+ * sentence, ⛔ no "request access" button (§ 4.2ה).
  */
-const worldSheetTextHe = (activeWords: number | null): string =>
-  activeWords === null
-    ? 'העולם ייפתח כשיהיו לך 12 מילים פעילות.'
-    : `העולם ייפתח כשיהיו לך 12 מילים פעילות. יש לך ${activeWords}.`;
+const WORLD_SHEET_UNKNOWN_HE = 'העולם ייפתח בהמשך.';
 
-/** Exactly the two fields this bar reads. ⛔ `functionWords` is the bank's business, not
- *  the tab's: the sentence § 4.2ה fixes speaks about active words only. */
+/**
+ * ⚠️ `functionWords` is read here as of T-125. Before that it was treated as «the bank's
+ * business, not the tab's» — and that WAS the defect (D-066, measured C-0207): the tab is
+ * locked on BOTH conditions while the sentence spoke about one, so on an empty bank the
+ * learner was handed a target of 12 active words that ⛔ could never open the tab.
+ *
+ * ⛔ The thresholds are ⛔ not copied here either. They arrive over the wire, off the same
+ * object the route hands `isWorldUnlocked`, so the number that decides and the number the
+ * learner is told about ⛔ cannot silently disagree.
+ */
 type WorldStatus = {
   readonly unlocked: boolean;
+  readonly functionWords: number;
   readonly activeWords: number;
+  readonly minFunctionWords: number;
+  readonly minActiveWords: number;
 };
 
 type StatusResponse =
-  | { readonly ok: true; readonly unlocked: boolean; readonly activeWords: number }
+  | ({ readonly ok: true } & WorldStatus)
   | { readonly ok: false; readonly code: string };
+
+/** The four fields the sheet reads as numbers. ⛔ `unlocked` is not here — it is a boolean
+ *  and its own gate (`=== true`) already refuses anything that is not one. */
+const FOUR_NUMBERS = [
+  'functionWords',
+  'activeWords',
+  'minFunctionWords',
+  'minActiveWords',
+] as const satisfies readonly (keyof WorldStatus)[];
 
 const ITEM_BASE =
   'flex min-h-touch flex-1 flex-col items-center justify-center gap-1 px-2 pt-2 text-sm';
@@ -118,7 +136,20 @@ export default function TabBar(): React.JSX.Element {
       try {
         const body = await apiGet<StatusResponse>('/api/world/status');
         if (cancelled || !body.ok) return;
-        setWorldStatus({ unlocked: body.unlocked, activeWords: body.activeWords });
+        // ⚠️ `apiGet` CASTS, it ⛔ does not validate — so a body that is `ok:true` and
+        // missing a threshold would reach the sentence as `undefined` and print
+        // «כשיהיו לך undefined מילים פעילות». T-125 put the thresholds on the wire, and a
+        // number that arrives from elsewhere has to be checked where it arrives. ⛔ Not
+        // `?? 0`: a threshold we did not receive is unknown, ⛔ not zero, and the state
+        // stays `null` exactly as it does for a read that never answered.
+        if (!FOUR_NUMBERS.every((key) => Number.isFinite(body[key]))) return;
+        setWorldStatus({
+          unlocked: body.unlocked,
+          functionWords: body.functionWords,
+          activeWords: body.activeWords,
+          minFunctionWords: body.minFunctionWords,
+          minActiveWords: body.minActiveWords,
+        });
       } catch {
         // `apiGet` rejects only when the answer never arrived or was not JSON. Nothing to
         // act on, and ⛔ nothing to unlock: the state stays `null`, the tab stays locked,
@@ -199,8 +230,27 @@ export default function TabBar(): React.JSX.Element {
             aria-labelledby="world-sheet-text"
             className="mx-auto w-full max-w-md rounded-t-2xl border-t border-border-subtle bg-surface-raised px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5"
           >
+            {/* ⚠️ **Deviation from the plan's literal step 6, and it is measured.** The
+                plan renders `worldGateSentenceHe({ functionWords: worldStatus?.x ?? null,
+                … }, { minActiveWords: worldStatus?.y ?? 0 })` and THEN wraps the whole
+                thing in `worldStatus === null ? …`. Inside that ternary's else-branch
+                `worldStatus` is already narrowed to non-null, so every `?.` and every
+                `??` in it is dead — and the `?? 0` fallback in particular is the exact
+                sentence the plan itself calls «שגוי» three lines later. The narrowing is
+                the guard; the defaults were a second, weaker copy of it. */}
             <p id="world-sheet-text" className="text-lg leading-relaxed text-ink">
-              {worldSheetTextHe(worldStatus?.activeWords ?? null)}
+              {worldStatus === null
+                ? WORLD_SHEET_UNKNOWN_HE
+                : worldGateSentenceHe(
+                    {
+                      functionWords: worldStatus.functionWords,
+                      activeWords: worldStatus.activeWords,
+                    },
+                    {
+                      minFunctionWords: worldStatus.minFunctionWords,
+                      minActiveWords: worldStatus.minActiveWords,
+                    },
+                  )}
             </p>
             <button
               type="button"
