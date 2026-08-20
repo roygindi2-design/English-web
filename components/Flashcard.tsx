@@ -7,7 +7,7 @@ import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcar
 /**
  * The card, per the UI spec in docs/superpowers/plans/2026-08-06-content-bank.md.
  *
- * Two rules here are measurements, not preferences:
+ * Three rules here are measurements, not preferences:
  *
  * 1. The reveal is state, not animation. `revealed` puts the answer in the DOM
  *    immediately; any transition is decoration on top and is disabled entirely
@@ -17,6 +17,13 @@ import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcar
  *    dataviz validator: --success vs --danger separate by only ΔE 4.1 for a
  *    deutan reader. Every grade control therefore carries its own Hebrew label
  *    and a glyph; colour is the third channel, not the first.
+ * 3. **פני הכרטיס הם הכפתור** (D-039 · § 4.2ח ⓐ): במצב `self` + `!revealed`
+ *    הרכיב `<button>` הטבעי הוא החזית — Enter/Space, `role="button"` וסימון
+ *    `:focus-visible` הגלובלי מגיעים חינם. `role="button"` על `<div>` היה
+ *    דורש `tabIndex` וטיפול ידני ב-Space. הרמז «הקש להצגת התשובה» חי
+ *    **בתוך** הכפתור — תווית מחוץ לו היא הבטחה שלא נאכפת. שני כפתורי הסימון
+ *    נשארים בחוץ ו⛔ ⛔ אינם מקוננים (`<button>` בתוך `<button>` שובר HTML
+ *    ושובר קורא מסך; בדיקת מקור נכשלת על כך).
  *
  * Layout is anchored to the top, never vertically centred (F-011, F-016) — and
  * `flex-1` is load-bearing, not decorative: without it the section shrinks to its
@@ -55,46 +62,81 @@ export default function Flashcard({
 
   const reveal = () => setRevealed(true);
 
+  /* T-085 · D-039 · § 4.2ח ⓐ — פני הכרטיס הם יעד המגע.
+   *
+   * ה-JSX של פני הכרטיס מוטבע בכל אחת משתי הענפים ⛔ ⛔ נשלף לפונקציית עזר.
+   * בדיקת המקור (`Flashcard.test.ts`) סורקת את הבלוק של ה-`<button>` וחייבת
+   * למצוא בתוכו את `data-card-front` ואת «הקש להצגת התשובה» — משתנה JSX חיצוני
+   * היה מסתיר את שני אלה מהבדיקה, שהיא הראיה היחידה שהחזית באמת בתוך הכפתור.
+   * ⛔ ⛔ להוציא את `data-card-front` החוצה — `<CardDeck>` מודד את החזית דרכו.
+   * ⛔ ⛔ להעביר את הרמז מחוץ לכפתור — תווית מחוץ לו היא הבטחה שלא נאכפת. */
+  const prompt =
+    card.direction === 'recognition' ? 'מה הפירוש?' : 'איך אומרים באנגלית?';
+
   return (
     <section className="flex flex-1 flex-col gap-6" data-flashcard={card.direction}>
-      <div className="rounded-2xl border border-border-subtle bg-surface-raised p-6">
-        <p className="text-sm text-ink-muted">
-          {card.direction === 'recognition' ? 'מה הפירוש?' : 'איך אומרים באנגלית?'}
-        </p>
-        <p className="mt-2 text-4xl font-bold leading-tight" data-card-front>
-          {primary(card.front.primary, card.front.primaryLang)}
-        </p>
+      {/* פני הכרטיס.
+          ⓐ במצב `self` + `!revealed` — `<button>` שגם היפוך וגם יעד מגע: `<button>`
+             טבעי נותן Enter/Space, `role="button"` אוטומטי, ו-`:focus-visible`
+             הגלובלי (globals.css:72) מציג רינג בלי CSS מקומי. ⛔ ⛔ `<div role="button">`
+             — היה דורש `tabIndex` + טיפול ידני ב-Space, שגורר גלילת עמוד.
+          ⓑ במצב `typed` או `revealed` — `<div>` שקט: לחיצה עליו ⛔ ⛔ עוזרת.
+          ⛔ ⛔ שני כפתורי הסימון (revealed && input==='self') נמצאים בחוץ ומעולם
+             לא בתוך הכפתור — כפתור בתוך כפתור שובר HTML וקורא-מסך. */}
+      {!revealed && card.input === 'self' ? (
+        <button
+          type="button"
+          onClick={reveal}
+          data-reveal
+          className="w-full rounded-2xl border border-border-subtle bg-surface-raised p-6 text-start"
+        >
+          <p className="text-sm text-ink-muted">{prompt}</p>
+          <p className="mt-2 text-4xl font-bold leading-tight" data-card-front>
+            {primary(card.front.primary, card.front.primaryLang)}
+          </p>
+          {/* הרמז חי בתוך הכפתור — תווית מחוץ לו אינה נלחצת עם הכפתור. */}
+          <p className="mt-6 text-sm text-ink-muted" data-reveal-hint>
+            {'הקש להצגת התשובה'}
+          </p>
+        </button>
+      ) : (
+        <div className="rounded-2xl border border-border-subtle bg-surface-raised p-6">
+          <p className="text-sm text-ink-muted">{prompt}</p>
+          <p className="mt-2 text-4xl font-bold leading-tight" data-card-front>
+            {primary(card.front.primary, card.front.primaryLang)}
+          </p>
 
-        {revealed ? (
-          <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-5" data-card-back>
-            <p className="text-2xl font-semibold" data-card-answer>
-              {primary(card.back.primary, card.back.primaryLang)}
-            </p>
-            {card.back.exampleSegments.length > 0 ? (
-              <p className="text-base leading-relaxed text-ink-muted">
-                <EnText segments={card.back.exampleSegments} />
+          {revealed ? (
+            <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-5" data-card-back>
+              <p className="text-2xl font-semibold" data-card-answer>
+                {primary(card.back.primary, card.back.primaryLang)}
               </p>
-            ) : null}
-            {/*
-              D-024: a translation that has not been checked by a human is SHOWN,
-              and marked. Back only — `card.back.unverified` is the single place
-              that decides, and on a production card the front is the Hebrew
-              prompt, where this sentence would read as "the question is wrong".
-              No new colour and no new token: the palette has 11 and none of them
-              means "warning" (lib/core/palette.ts). `text-ink-muted` is the
-              discreet register T-045 asks for, the glyph is a second channel so
-              colour is never alone, and aria-hidden keeps the screen reader on
-              the sentence rather than on decoration.
-            */}
-            {card.back.unverified ? (
-              <p className="flex items-center gap-2 text-sm text-ink-muted" data-card-unverified>
-                <span aria-hidden="true">◇</span>
-                טרם אומת — התרגום ממתין לאישור אנושי
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+              {card.back.exampleSegments.length > 0 ? (
+                <p className="text-base leading-relaxed text-ink-muted">
+                  <EnText segments={card.back.exampleSegments} />
+                </p>
+              ) : null}
+              {/*
+                D-024: a translation that has not been checked by a human is SHOWN,
+                and marked. Back only — `card.back.unverified` is the single place
+                that decides, and on a production card the front is the Hebrew
+                prompt, where this sentence would read as "the question is wrong".
+                No new colour and no new token: the palette has 11 and none of them
+                means "warning" (lib/core/palette.ts). `text-ink-muted` is the
+                discreet register T-045 asks for, the glyph is a second channel so
+                colour is never alone, and aria-hidden keeps the screen reader on
+                the sentence rather than on decoration.
+              */}
+              {card.back.unverified ? (
+                <p className="flex items-center gap-2 text-sm text-ink-muted" data-card-unverified>
+                  <span aria-hidden="true">◇</span>
+                  טרם אומת — התרגום ממתין לאישור אנושי
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      )}
 
       {/* Actions live in the lower half for thumb reach (MF-5). */}
       <div className="mt-auto flex flex-col gap-3">
@@ -135,16 +177,11 @@ export default function Flashcard({
           </form>
         ) : null}
 
-        {!revealed && card.input === 'self' ? (
-          <button
-            type="button"
-            onClick={reveal}
-            data-reveal
-            className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
-          >
-            הצג תשובה
-          </button>
-        ) : null}
+        {/*
+          ⛔ ⛔ הענף «!revealed && input === 'self'» כאן — הוא ירד לחזית הכרטיס
+          עצמה (D-039 · § 4.2ח ⓐ). שאר שני הענפים למטה (`typed` אחרי revealed
+          ו-`self` אחרי revealed) נשארים.
+        */}
 
         {/*
           The typed direction is auto-graded, so the learner does not rate themselves —

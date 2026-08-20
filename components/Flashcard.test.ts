@@ -154,3 +154,93 @@ describe('the unverified marker lives on the back of the card (T-045 · D-024)',
     }
   });
 });
+
+/**
+ * T-085 · D-039 · § 4.2ח ⓐ — הכרטיס עצמו הוא יעד המגע.
+ *
+ * סורק מקור בלבד (כמו כל הקובץ הזה), משתי סיבות מדידות:
+ * ⓐ `revealed` הוא state של הרכיב, ולכן `renderToStaticMarkup` היה מחזיר תמיד
+ *    חזית עם `data-reveal` בלי לגלות שהכפתור נמצא במקום שגוי.
+ * ⓑ הבדיקה של «⛔ קינון כפתורים» היא **על ה-JSX עצמו**, ⛔ ⛔ על תוצר הרינדור:
+ *    דפדפן «מתקן» באופן שקט קינון שכזה על ידי סגירת ה-`<button>` הפנימי, ולכן
+ *    בדיקת DOM הייתה מחמיצה את הפגם שהיא קיימת בשבילו.
+ */
+const T085_HINT = 'הקש להצגת התשובה';
+const T085_CARD_SRC = stripComments(readFileSync(FLASHCARD, 'utf8'));
+
+/** תא של `<button ...>` (הרישום ההיפותטי אחד או יותר) עד `</button>` המתאים,
+ *  עומק-נספר בדיוק כמו `divBlockContaining` — ⛔ ⛔ regex עצל. */
+function buttonBlockContaining(src: string, marker: string): string | null {
+  const at = src.indexOf(marker);
+  if (at === -1) return null;
+  const start = src.lastIndexOf('<button', at);
+  if (start === -1) return null;
+  let depth = 0;
+  for (let i = start; i < src.length; i += 1) {
+    if (src.startsWith('<button', i)) depth += 1;
+    else if (src.startsWith('</button>', i)) {
+      depth -= 1;
+      if (depth === 0) return src.slice(start, i + '</button>'.length);
+    }
+  }
+  return null;
+}
+
+describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
+  it('קורא רכיב אמיתי עם `data-reveal`', () => {
+    // שומר-ריק: אם מישהו שינה את שם ה-hook, כל הבדיקות שלהלן היו עוברות ריק.
+    expect(T085_CARD_SRC.length).toBeGreaterThan(1000);
+    expect(T085_CARD_SRC).toContain('data-reveal');
+  });
+
+  it('חזית הכרטיס הופכת ל-`<button>` עם `data-reveal`', () => {
+    // הכפתור נמצא ב-JSX ⛔ ולא ב-`role="button"` על `<div>`: `role` על `<div>` דורש
+    // גם `tabIndex={0}` וגם טיפול ידני ב-Enter/Space, וזה כמות הקוד שהופכת
+    // בדיקה חיה יותר מקוד אמיתי — `<button>` הטבעי נותן את שני התנאים חינם.
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal');
+    expect(revealBlock, 'לא נמצא `<button>` שעוטף `data-reveal`').toBeTruthy();
+    // ⛔ ⛔ `<div ... data-reveal>` — היה שוברת גם מקלדת וגם קורא-מסך:
+    expect(T085_CARD_SRC).not.toMatch(/<div\b[^>]*\bdata-reveal\b/);
+  });
+
+  it('הרמז «הקש להצגת התשובה» חי בתוך הכפתור, ⛔ ולא מחוץ לו', () => {
+    // תווית מחוץ לכפתור לא נלחצת עם הכפתור — מרווח 8px מספיק כדי להחמיץ.
+    expect(T085_CARD_SRC).toContain(T085_HINT);
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal') ?? '';
+    expect(revealBlock, 'הרמז חייב לחיות בתוך אותו `<button>` שנושא `data-reveal`').toContain(
+      T085_HINT,
+    );
+  });
+
+  it('חזית הכרטיס נשארת מזוהה: `data-card-front` בתוך אותו כפתור', () => {
+    // `<CardDeck>` בונה גובה מתוך מדידה של החזית, ובדיקת ההארנס
+    // (`scripts/verify-mobile.mjs` — `[data-card-front]`) לא רשאית להיבור. הכפתור
+    // אינו רשאי «לבלוע» את התוכן ולהחזיר `data-card-front` להיות ריק.
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal') ?? '';
+    expect(revealBlock).toContain('data-card-front');
+  });
+
+  it('⛔ ⛔ `<button>` בתוך `<button>` בכל מקום בקובץ (HTML לא תקין)', () => {
+    // בודקים על הקוד עצמו, ⛔ ⛔ על ה-DOM: הדפדפן «מתקן» קינון בשקט על ידי סגירת
+    // ה-<button> הפנימי מוקדם ⇒ ה-DOM נראה תקין וקורא המסך שובר.
+    let depth = 0;
+    let maxDepth = 0;
+    for (let i = 0; i < T085_CARD_SRC.length; i += 1) {
+      if (T085_CARD_SRC.startsWith('<button', i)) {
+        depth += 1;
+        if (depth > maxDepth) maxDepth = depth;
+      } else if (T085_CARD_SRC.startsWith('</button>', i)) {
+        depth = Math.max(0, depth - 1);
+      }
+    }
+    expect(maxDepth, 'קינון `<button>` בתוך `<button>` — HTML לא תקין, שובר קורא מסך').toBeLessThanOrEqual(1);
+  });
+
+  it('⛔ ⛔ swipe-to-grade (D-032 בתוקף)', () => {
+    // האיסור על מחווה גורף בקובץ הזה, ⛔ רק בקטע חדש: התיקון של T-085 לא
+    // רשאי להחזיר מחווה שכבר נדחתה בהחלטה כתובה.
+    for (const forbidden of ['onPointerDown', 'onPointerMove', 'onTouchMove', 'onSwipe']) {
+      expect(T085_CARD_SRC, `${forbidden} ⛔ ⛔ אסור על הכרטיס`).not.toContain(forbidden);
+    }
+  });
+});
