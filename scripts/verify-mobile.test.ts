@@ -737,7 +737,14 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
   }
 
   it('declares an arrival for EVERY flow route — a new screen cannot arrive unmeasured', () => {
-    expect(arrivalRoutes().sort()).toEqual([...entriesOf('FLOW_ROUTES')].sort());
+    // ⚠️ מאז C-0250 (T-091) הקבוצה היא **האיחוד** של `FLOW_ROUTES` ושתי לשוניות
+    // הפיקסטורה שנוספו ל-`PRIMARY_ACTION_ROUTES`. ⛔ **⛔ אינה החלשה** — היא
+    // הרחבה: השוויון עדיין דו-כיווני, ולכן ⛔ אין רשומת נחיתה בלי מסלול, ⛔ ואין
+    // מסלול שנמדדת עליו פעולה מסומנת בלי יעד נקוב. `entriesOf` קורא רק מחרוזות
+    // במרכאות, ולכן ה-spread ב-`PRIMARY_ACTION_ROUTES` ⛔ אינו נספר פעמיים (F-100).
+    expect(arrivalRoutes().sort()).toEqual(
+      [...entriesOf('FLOW_ROUTES'), ...entriesOf('PRIMARY_ACTION_ROUTES')].sort(),
+    );
   });
 
   it('gives each entry one of the three kinds, and a reason', () => {
@@ -850,5 +857,84 @@ describe('the F-027 primary-action checks cover the tab fixtures (T-091 · F-098
     );
     expect(primaryBlock).not.toContain('no tab bar on a flow screen');
     expect(primaryBlock).toContain('exactly one primary action');
+  });
+});
+
+/**
+ * ‏T-091, החצי השני של F-027: ההקשה **מגיעה** לאיפשהו. `02-inbox` פריט 9.
+ * ‏`FLOW_ARRIVAL` נקרא ב-`const arrival = FLOW_ARRIVAL[route]` בלי תנאי חברות
+ * ב-`FLOW_ROUTES`, ולכן שתי הרשומות האלה נמדדות בזכות עצמן.
+ */
+describe('both tab fixtures declare where their tap lands (T-091)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const arrival = source.slice(
+    source.indexOf('const FLOW_ARRIVAL'),
+    source.indexOf('const EXPECTED_CONSOLE'),
+  );
+
+  it('/dev/tabs/studies names /login — the redirect proxy.ts forces without env', () => {
+    const entry = arrival.slice(arrival.indexOf("'/dev/tabs/studies':"));
+    expect(entry).toContain("kind: 'navigates'");
+    expect(entry).toContain("to: '/login'");
+    expect(entry).toContain("marker: 'input[name=\"email\"]'");
+  });
+
+  it('/dev/tabs/cards names /study and the request that landing fires', () => {
+    const entry = arrival.slice(arrival.indexOf("'/dev/tabs/cards':"));
+    expect(entry).toContain("kind: 'navigates'");
+    expect(entry).toContain("to: '/study'");
+    expect(entry).toContain("marker: '[data-action-bar]'");
+    expect(entry).toContain("settles: '/api/study/queue?deck=due'");
+  });
+
+  /**
+   * ⛔ NOT a blanket exemption for the route. The landing on `/study` fires ONE
+   * request the harness itself makes impossible, and the entry is keyed to that
+   * exact URL and pinned with `$` so it cannot also swallow `?deck=due&limit=1`
+   * — the request `<DeckSelector>` makes on the route itself.
+   */
+  it('allows exactly the one 503 that landing on /study causes', () => {
+    const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
+    const block = expected.slice(expected.indexOf("'/dev/tabs/cards':"));
+    expect(block).toContain('\\/api\\/study\\/queue\\?deck=due$');
+  });
+});
+
+/**
+ * ‏C-0250 · F-101 — מירוץ בבדיקת הנחיתה עצמה, נמדד ⛔ ולא שוער.
+ *
+ * ענף `navigates` קרא את הסמן ב-`.count()` **מיד** אחרי `waitForURL`, בלי להמתין
+ * לו ולו רגע. נמדד בהרצת הארנס (‏C-0250, שלושת הרוחבים): בנחיתה על `/study`
+ * הכתובת וה-`<h1>` כבר במקום ב-`t=0`, ואילו `[data-action-bar]` ו-
+ * `[data-primary-action]` מופיעים תוך **300ms** — כלומר הבדיקה נכשלה על מסך
+ * שרונדר בפועל. כל הרשומות שקדמו עברו רק משום שיעדן רונדר סינכרונית.
+ *
+ * ⛔ ההמתנה ⛔ אינה החלשה: מסך שלעולם ⛔ אינו מרנדר את הסמן עדיין נופל בתום
+ * הפסק, בדיוק כמו קודם. זו אותה תבנית שענף `announces` כבר משתמש בה שורות
+ * ספורות מתחת, ואותו לקח בדיוק כמו C-0134 — למדוד אחרי שהדבר הגיע, ⛔ ולא לפניו.
+ */
+describe('the arrival marker is waited for, not raced (F-101)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const code = source.replace(/^[^\S\n]*\/\/.*$/gm, '');
+
+  it('waits for the marker before counting it', () => {
+    const start = code.indexOf("if (arrival.kind === 'navigates') {");
+    expect(start).toBeGreaterThan(-1);
+    const block = code.slice(start, code.indexOf("} else if (arrival.kind === 'announces')", start));
+    // ⛔ רגקס ו⛔ לא מחרוזת: השרשור מפוצל לשורות בידי המעצב, ומחרוזת אחת הייתה
+    // בדיקה ששוברת עצמה על ריווח ⛔ ולא על התנהגות.
+    expect(block).toMatch(/page\s*\.locator\(arrival\.marker\)\s*\.first\(\)\s*\.waitFor\(/);
+    expect(block.indexOf('.waitFor(')).toBeLessThan(block.indexOf('.count()'));
+  });
+
+  /**
+   * ⛔ הפסק חייב להישאר סופי. `waitFor` בלי `timeout` היה תולה את הארנס על מסך
+   * מת במקום להפיל אותו — כלומר הופך כישלון נמדד לריצה שלא נגמרת.
+   */
+  it('keeps the wait bounded, so a dead screen still fails instead of hanging', () => {
+    const start = code.indexOf("if (arrival.kind === 'navigates') {");
+    const block = code.slice(start, code.indexOf("} else if (arrival.kind === 'announces')", start));
+    expect(block).toMatch(/waitFor\(\{\s*timeout:\s*5000\s*\}\)/);
+    expect(block).toContain('.catch(() => {})');
   });
 });

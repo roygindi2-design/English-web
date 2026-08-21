@@ -231,6 +231,34 @@ const FLOW_ARRIVAL = {
     request: '/api/world/bank',
     why: 'same failure state and same «נסה שוב», one route down',
   },
+  // T-091 · `02-inbox` פריט 9 — «לתת לצוות עיניים» על שתי לשוניות שהמדידה מעולם
+  // לא נגעה בהן. ⛔ שתיהן `navigates`, הצורה החזקה: `kind` ⛔ אינו נחלש כדי
+  // שמסך יעבור.
+  //
+  // ⛔ `/login` ולא `/cards`, וזו מדידה: `proxy.ts:28` מחזיק את `/cards`
+  // ב-`PROTECTED_SCREENS`, ולארנס אין env של Supabase ⇒ הבקשה נענית 307
+  // ל-`/login?expired=1`. לכתוב כאן `/cards` היה מייצר בדיקה שנכשלת תמיד על
+  // התנהגות **נכונה** של המוצר.
+  '/dev/tabs/studies': {
+    kind: 'navigates',
+    to: '/login',
+    marker: 'input[name="email"]',
+    why: 'the tab’s one action is a Link to /cards, which proxy.ts redirects to /login without Supabase env — so what is measured is that the tap really moves the router',
+  },
+  // ⛔ הפעולה המסומנת כאן היא מצב ה-`dead` של `<DeckSelector>` — כל שלושת
+  // האריחים מושבתים כי שתי הקריאות ל-`/api/study/queue` נכשלות ב-503 — ולכן
+  // היעד הוא `DECK_ALL_EMPTY_HREF` (`lib/core/deckTiles.ts:33`), כלומר `/study`.
+  // `[data-action-bar]` ⛔ ולא טקסט: כתובת לבדה היא טענה על הנתב, והסמן הוא
+  // הטענה על המסך — מסלול שמרנדר גבול שגיאה נושא את אותה כתובת בדיוק.
+  '/dev/tabs/cards': {
+    kind: 'navigates',
+    to: '/study',
+    marker: '[data-action-bar]',
+    why: 'the only marked action in the all-decks-dead state is the link to /study; landing there is what proves the tap is not a dead end',
+    // הבקשה שהנחיתה גורמת. בלי לנקוב בה, ה-503 שלה נספר על המסלול הזה אחרי
+    // שהלולאה כבר עברה הלאה — בדיוק הייחוס השגוי שנמדד ב-C-0134.
+    settles: '/api/study/queue?deck=due',
+  },
 };
 
 /**
@@ -272,6 +300,12 @@ const EXPECTED_CONSOLE = {
     // בלי env של Supabase הנתיב עונה 503 בחוזה שלו עצמו, וזו בדיוק השורה המושבתת
     // שהמדידה עוברת עליה. מקושר לכתובת אחת ולסטטוס אחד, כמו כל רשומה כאן.
     /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
+    // T-091: ההקשה נוחתת על `/study`, שמבקש את התור **בלי** `limit` ומקבל 503
+    // מהחוזה שלו עצמו. ⛔ פטור למסלול: `$` נועל את סוף הכתובת, ולכן הרשומה
+    // הזאת ⛔ אינה יכולה לבלוע גם את `?deck=due&limit=1` — הבקשה ש-`<DeckSelector>`
+    // עושה על המסלול עצמו, ושכבר יש לה רשומה משלה למעלה. 401 או 500 על אותה
+    // כתובת עדיין מפילים.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due$/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase
@@ -1413,6 +1447,19 @@ try {
             check(url === arrival.to, `${at} tap arrives at ${arrival.to}`, `landed on ${url}`);
             // The URL alone is a claim about the router; the marker is a claim about the
             // screen. A route that renders an error boundary has the right URL too.
+            //
+            // ⚠️ F-101 (C-0250) — ההמתנה חובה, והיא נמדדה: `waitForURL` נפתר ברגע
+            // שהכתובת השתנתה, והיעד עדיין נצבע. בנחיתה על `/study` (‏T-091) הכתובת
+            // וה-`<h1>` כבר במקום ב-`t=0`, ואילו `[data-action-bar]` מופיע תוך
+            // ~300ms — כלומר קריאה מיידית ב-`.count()` מדדה DOM שטרם הגיע והפילה
+            // מסך שרונדר בפועל, בשלושת הרוחבים. ⛔ ⛔ החלשה: הפסק סופי, ומסך
+            // שלעולם ⛔ אינו מרנדר את הסמן עדיין נופל בתומו. אותו לקח כמו C-0134
+            // ואותה תבנית שענף `announces` משתמש בה מיד למטה.
+            await page
+              .locator(arrival.marker)
+              .first()
+              .waitFor({ timeout: 5000 })
+              .catch(() => {});
             const marker = await page.locator(arrival.marker).count();
             check(
               marker > 0,
