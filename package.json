@@ -17,6 +17,7 @@
     "measure:plan": "node scripts/measure-plan-tables.mjs",
     "build:ingest": "node scripts/build-ingest-sql.mjs",
     "build:levels": "node scripts/build-word-levels-sql.mjs",
+    "build:stories": "node scripts/build-stories-sql.mjs",
     "verify": "npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile"
   },
   "dependencies": {
