@@ -110,4 +110,16 @@ describe('<AppGrid>', () => {
     expect(CODE).not.toMatch(/\bh-screen\b/);
     expect(CODE).not.toMatch(/justify-center/);
   });
+
+  it('הרשת שואלת את השרת על הספרייה ⛔ ואינה סופרת בעצמה (T-137ⓒ · D-046)', () => {
+    expect(CODE).toMatch(/apiGet<[^>]*>\('\/api\/world\/status'\)/);
+    expect(CODE).toContain('libraryTile');
+    // ⛔ הסף ⛔ אינו כתוב כאן: הוא מגיע כשדה בתשובה.
+    expect(CODE, '⛔ 3 אינו מספר בקוד').not.toMatch(/required\s*[:=]\s*\d/);
+  });
+
+  it('⛔ ארבעה אריחים — הרשת נבנית מהסדר ⛔ ואינה מונה אותם ביד (D-074ⓑ)', () => {
+    expect(CODE).toContain('WORLD_APP_ORDER');
+    expect(CODE).not.toMatch(/\[\s*'compose'\s*,/);
+  });
 });
