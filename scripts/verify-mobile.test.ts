@@ -169,7 +169,12 @@ describe('every flow screen carries one reachable primary action (F-027)', () =>
   });
 
   it('measures reachability before anything else scrolls the page', () => {
-    const start = code.indexOf('FLOW_ROUTES.includes(route)');
+    // ⚠️ העוגן הוא `PRIMARY_ACTION_ROUTES` מאז C-0250 (T-091 · F-098), כי בלוק
+    // ארבע בדיקות F-027 נחתך מ-`FLOW_ROUTES` כדי לכסות גם את שתי לשוניות
+    // הפיקסטורה. ⛔ **הבדיקה ⛔ לא נחלשה ולו בתו אחד** — שתי האסרציות שמתחת
+    // זהות, והשינוי היחיד הוא שהן מצביעות שוב על אותו קוד עצמו: עוגן שמצביע
+    // על הבלוק השני היה הופך אותה לבדיקה חלולה שעוברת על כלום (F-100 · משפחת F-091).
+    const start = code.indexOf('PRIMARY_ACTION_ROUTES.includes(route)');
     expect(start).toBeGreaterThan(-1);
     const block = code.slice(start, code.indexOf('report(`', start));
     expect(block).toContain('scrollIntoView');
@@ -803,5 +808,47 @@ describe('the lesson anatomy is measured at all three widths (T-089)', () => {
   it('⛔ grants them no console allowance — they request nothing', () => {
     const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
     expect(expected).not.toContain('/dev/lesson');
+  });
+});
+
+/**
+ * ‏T-091 · F-098 — שתי לשוניות הפיקסטורה מקבלות את שלוש בדיקות F-027, ⛔ ובלי
+ * שאף בדיקה קיימת תיחלש.
+ *
+ * ⚠️ הסתירה שנמדדה בטיק התכנון: `no tab bar on a flow screen` יושבת באותו בלוק,
+ * ושתי הלשוניות מרנדרות `<TabBar />` (‏`data-tab-bar`) — כלומר הוספה ל-FLOW_ROUTES
+ * מפילה אותה בוודאות, בשש נקודות. הבדיקה שלמטה היא מה שמונע מהיד הבאה «לפתור»
+ * את זה בהחלשה.
+ */
+describe('the F-027 primary-action checks cover the tab fixtures (T-091 · F-098)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('declares a list that is FLOW_ROUTES plus the two tab fixtures', () => {
+    expect(source).toMatch(
+      /const PRIMARY_ACTION_ROUTES = \[\s*\.\.\.FLOW_ROUTES,\s*'\/dev\/tabs\/studies',\s*'\/dev\/tabs\/cards',?\s*\]/,
+    );
+  });
+
+  it('gates the primary-action block on that list and ⛔ not on FLOW_ROUTES', () => {
+    expect(source).toContain('if (PRIMARY_ACTION_ROUTES.includes(route)) {');
+    expect(source).toContain('exactly one primary action');
+  });
+
+  /**
+   * ⛔ THE POINT OF THIS WHOLE TASK. `no tab bar on a flow screen` is a claim
+   * about a FLOW screen (D-028) and a tab screen is a destination, not a step.
+   * If a later hand moves it under PRIMARY_ACTION_ROUTES it fails six times and
+   * the cheapest way out is to delete it. This pins it where it belongs.
+   */
+  it('keeps "no tab bar on a flow screen" bound to FLOW_ROUTES', () => {
+    expect(source).toContain('if (FLOW_ROUTES.includes(route)) {');
+    const flowOnly = source.slice(source.lastIndexOf('if (FLOW_ROUTES.includes(route)) {'));
+    expect(flowOnly).toContain('no tab bar on a flow screen');
+    const primaryBlock = source.slice(
+      source.indexOf('if (PRIMARY_ACTION_ROUTES.includes(route)) {'),
+      source.lastIndexOf('if (FLOW_ROUTES.includes(route)) {'),
+    );
+    expect(primaryBlock).not.toContain('no tab bar on a flow screen');
+    expect(primaryBlock).toContain('exactly one primary action');
   });
 });

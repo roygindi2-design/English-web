@@ -158,6 +158,25 @@ const MIN_GAP = 8;
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
 /**
+ * T-091 · F-098 — היכן נמדדות שלוש בדיקות F-027 («סימון אחד · האגודל מגיע · במסך הראשון»).
+ *
+ * ⚠️ ⛔ ⛔ אינו `FLOW_ROUTES`, וזו מדידה ⛔ ולא טעם: באותו בלוק יושבת גם
+ * `no tab bar on a flow screen`, ושתי לשוניות הפיקסטורה מרנדרות `<TabBar />`
+ * (`components/TabBar.tsx:167`, `data-tab-bar="true"`) — בעוד `TAB_ROUTES` **דורש**
+ * שהסרגל יהיה שם. הוספה נאיבית של השתיים ל-`FLOW_ROUTES` מפילה את הבדיקה ההיא
+ * בוודאות, שש פעמים (שני מסלולים × שלושה רוחבים), והדרך הזולה החוצה היא להחליש
+ * אותה. ⇒ הבלוק נחתך במקום, ו-D-028 נשארת קשורה ל-`FLOW_ROUTES` בלבד.
+ *
+ * מסך לשונית הוא **יעד** ⛔ ולא צעד בזרימה — בדיוק הנימוק שבגללו `/sources` ו-`/offline`
+ * ⛔ אינם ב-`FLOW_ROUTES`. מה שכן נכון עליו הוא שהוא מחזיק **פעולה מסומנת אחת** שהאגודל
+ * מגיע אליה בלי גלילה, וזה מה שנמדד כאן. `02-inbox` פריט 9 של רוי: «לתת לצוות עיניים».
+ *
+ * ⛔ `/dev/tabs/me` ⛔ אינו כאן ובכוונה: T-091 נוקבת בשתי לשוניות, והשלישית היא
+ * שורת משימה של ה-PM ⛔ ולא הרחבה שסוכן מוסיף לעצמו.
+ */
+const PRIMARY_ACTION_ROUTES = [...FLOW_ROUTES, '/dev/tabs/studies', '/dev/tabs/cards'];
+
+/**
  * T-067 — where the primary action LEADS. `02-inbox` י׳, and the other half of F-027.
  *
  * Two thirds of the connectivity guarantee already exist above: every flow screen holds
@@ -612,7 +631,7 @@ try {
       //
       // D-028 (40-decisions § 4.2ג) settled the half that used to be reported
       // and not asserted: the action must paint inside the first viewport.
-      if (FLOW_ROUTES.includes(route)) {
+      if (PRIMARY_ACTION_ROUTES.includes(route)) {
         const primary = await page.evaluate(() => {
           const all = document.querySelectorAll('main [data-primary-action]');
           if (all.length !== 1) return { count: all.length };
@@ -701,7 +720,18 @@ try {
               (primary.belowTheFold ? ' (below the fold — scroll required)' : ''),
           );
         }
+      }
 
+      if (FLOW_ROUTES.includes(route)) {
+        // D-028 · צפיפות · סרגל תחתון — טענות על **מסך זרימה**, ⛔ לא על מסך עם פעולה.
+        // ⛔ נשארות על FLOW_ROUTES: מסך לשונית נושא סרגל לשוניות בהגדרה (TAB_ROUTES
+        // דורש זאת), ולכן הטענה שסרגל כזה הוא תועה הייתה עליו סתירה ⛔ ולא מדידה (F-098).
+        //
+        // ⛔ ההערה הזאת יושבת **בתוך** הבלוק ו⛔ לא מעליו במכוון: השומר ב-
+        // `verify-mobile.test.ts` מודד שהמחרוזת «no tab bar…» ⛔ אינה מופיעה בין פתיחת
+        // בלוק PRIMARY_ACTION_ROUTES לפתיחת בלוק FLOW_ROUTES, וציטוט שלה מעל השורה
+        // היה מפיל שומר חי על מיקום נכון (F-100).
+        //
         // The bar is `fixed`, so it covers a strip of the document. The rejected
         // alternative — a spacer inside <main> — moves that strip onto <footer>
         // instead of clearing it, because the footer holding the /sources link
