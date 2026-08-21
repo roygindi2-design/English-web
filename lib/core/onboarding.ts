@@ -46,23 +46,12 @@ export type OnboardingRaw = {
   readonly dailyMinutes: unknown;
   readonly examDate: unknown;
   readonly targetScore: unknown;
-  /**
-   * Optional in the TYPE and ⛔ not in the rule: `unknown` already admits
-   * `undefined`, so `institution?: unknown` and `institution: unknown` are the
-   * same value space to every reader of this field. The `?` exists so a caller
-   * written before this field — `app/api/profile/route.ts` (Task 2) and the
-   * three T-029 tests — still compiles, i.e. so Task 1 can satisfy its own
-   * typecheck without editing Task 2's file. Absent, empty and non-string all
-   * mean the same thing here: NULL.
-   */
-  readonly institution?: unknown;
 };
 
 export type OnboardingAnswers = {
   readonly dailyMinutes: DailyMinutes;
   readonly examDate: string | null;
   readonly targetScore: number | null;
-  readonly institution: string | null;
 };
 
 export type OnboardingFieldErrors = {
@@ -149,22 +138,6 @@ export const TARGET_SCORE_QUESTION_HE = 'ציון יעד (לא חובה)';
 export const TARGET_SCORE_HELP_HE = `הסולם הוא ${TARGET_SCORE_MIN}–${TARGET_SCORE_MAX}.`;
 export const ONBOARDING_SUBMIT_HE = 'שמירה והתחלה';
 
-/**
- * A7 (nite.org.il, grade א׳): the exemption threshold and the level banding are
- * set **per institution** — there is no single national threshold. That is the
- * whole reason the target score stays a number the learner types instead of one
- * we compute, and this field is the EXPLANATION for that manual question, ⛔ not
- * an input to any calculation. Nothing but the /me display reads it.
- *
- * 120 characters: the longest real Hebrew institution name measures well under
- * it ("המכללה האקדמית להנדסה אורט בראודה" is 33), and the same number is the
- * check constraint in 0009 — a unit test fails if the two drift apart.
- */
-export const INSTITUTION_MAX_LENGTH = 120;
-export const INSTITUTION_QUESTION_HE = 'איפה תיגש למבחן? (לא חובה)';
-export const INSTITUTION_HELP_HE =
-  'שם המוסד. עוזר לנו להציג את המטרה שלך, ולא משנה את התרגול.';
-
 const MESSAGES_HE = {
   dailyMinutes: 'בחר אחת מהאפשרויות.',
   examDateFormat: 'תאריך לא תקין.',
@@ -223,16 +196,8 @@ export function checkOnboarding(raw: OnboardingRaw, today: string): OnboardingCh
     }
   }
 
-  // ⛔ No validation beyond the length, and the length TRUNCATES rather than
-  // rejects (§ 4.2ד, "טעות: אין תשובה שגויה"). A non-string is not an error
-  // either — it is simply not an answer, and `String(raw.institution)` would
-  // quietly store "[object Object]" as the learner's university.
-  const institutionRaw = typeof raw.institution === 'string' ? raw.institution.trim() : '';
-  const institution =
-    institutionRaw === '' ? null : institutionRaw.slice(0, INSTITUTION_MAX_LENGTH);
-
   if (Object.keys(fieldErrors).length > 0 || dailyMinutes === null) {
     return { ok: false, fieldErrors };
   }
-  return { ok: true, answers: { dailyMinutes, examDate, targetScore, institution } };
+  return { ok: true, answers: { dailyMinutes, examDate, targetScore } };
 }

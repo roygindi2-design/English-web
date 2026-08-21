@@ -4,8 +4,6 @@ import {
   DAILY_MINUTES_LABELS_HE,
   DAILY_MINUTES_OPTIONS,
   DEFAULT_DAILY_MINUTES,
-  INSTITUTION_MAX_LENGTH,
-  INSTITUTION_QUESTION_HE,
   MAX_EXAM_HORIZON_DAYS,
   TARGET_SCORE_MAX,
   TARGET_SCORE_MIN,
@@ -17,6 +15,7 @@ import {
   LEARNER_TIME_ZONE,
   toIsoDateInZone,
   type OnboardingAnswers,
+  type OnboardingRaw,
 } from './onboarding';
 
 const TODAY = '2026-08-07';
@@ -225,78 +224,56 @@ describe("the learner's calendar date", () => {
   });
 });
 
-/** The three answers T-029 already validates, so each test states one thing. */
-const INSTITUTION_BASE = { dailyMinutes: 5, examDate: '', targetScore: '' } as const;
-const INSTITUTION_TODAY = '2026-08-13';
+/**
+ * D-056 · T-111 — רוי הסיר את שאלת המוסד: «לא צריך את זה, שחרר את זה, מיותר».
+ *
+ * ⚠️ **וזה ⛔ אינו «מחקנו קוד ואין מה לבדוק».** הכשל שהרַצֶ׳ט הזה קיים בשבילו הוא
+ * הכשל של F-010: פיצ׳ר שהוסר, וסוכן שמחזיר אותו חצי-שנה אחר כך כי «הטיפוס עדיין
+ * מקבל את השדה, אז כנראה מותר». ⇒ שלוש הטענות כאן נופלות **בשם** ביום שמישהו
+ * יחזיר את השדה לשכבה הטהורה, ובאותו יום הוא ייאלץ לקרוא את D-056.
+ *
+ * ⛔ **ומה שהרַצֶ׳ט הזה במפורש ⛔ אינו אוסר:** את **העמודה** `profiles.institution`
+ * (‏D-056: «⛔ אינה נמחקת») ואת **התצוגה** ב-`components/MeScreen.tsx` (שורת המשימה:
+ * «בלוק «המטרה שלך» ⛔ נשאר»). הסריקה כאן היא על `lib/core/onboarding.ts` בלבד.
+ */
+describe('the institution question is gone from the pure layer (D-056 · T-111)', () => {
+  const CORE = readFileSync('lib/core/onboarding.ts', 'utf8');
+  /** ⚠️ ⛔ בלי הלבנת הערות — הטענה כאן היא שהמילה ⛔ אינה בקובץ **כלל**, כולל בהערה
+   *  שמסבירה «למה השדה היה כאן». הערה כזאת היא בדיוק הזרע שמצמיח את הפיצ׳ר בחזרה. */
 
-describe('the institution (A7 — optional, free text, read by nothing but the display)', () => {
-  it('is genuinely optional: absent, empty and whitespace all mean NULL', () => {
-    for (const value of [undefined, '', '   ', null]) {
-      const result = checkOnboarding(
-        { ...INSTITUTION_BASE, institution: value },
-        INSTITUTION_TODAY,
-      );
-      expect(result.ok, `institution=${JSON.stringify(value)}`).toBe(true);
-      if (result.ok) expect(result.answers.institution).toBeNull();
+  it('⛔ never mentions the institution again — not in code and not in a comment', () => {
+    expect(CORE).not.toMatch(/institution/i);
+  });
+
+  it('⛔ exports none of the three strings the question needed', () => {
+    for (const gone of ['INSTITUTION_MAX_LENGTH', 'INSTITUTION_QUESTION_HE', 'INSTITUTION_HELP_HE']) {
+      expect(CORE).not.toContain(gone);
     }
   });
 
-  it('keeps the Hebrew the learner typed, trimmed', () => {
+  it('accepts a body that still carries the old key, and ⛔ answers nothing about it', () => {
+    // ⚠️ המדידה שמונעת רגרסיה בייצור: לומד שעמוד ישן שלו נשאר פתוח בדפדפן ישלח
+    // עדיין `institution`. הבקשה חייבת להצליח — ⛔ ולא 422 — והשדה נופל לרצפה.
     const result = checkOnboarding(
-      { ...INSTITUTION_BASE, institution: '  אוניברסיטת חיפה  ' },
-      INSTITUTION_TODAY,
+      { dailyMinutes: 5, examDate: '', targetScore: '', institution: 'אוניברסיטת חיפה' } as OnboardingRaw,
+      '2026-08-21',
     );
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.answers.institution).toBe('אוניברסיטת חיפה');
+    if (result.ok) expect(Object.keys(result.answers).sort()).toEqual(['dailyMinutes', 'examDate', 'targetScore']);
   });
+});
 
+describe('the 0009 column survives its question (D-056)', () => {
   /**
-   * § 4.2ד: "נחתך ב-120 תווים בשרת". Truncation and ⛔ not rejection — there is
-   * no wrong answer in a free-text field, so a long one must not block a form
-   * whose other three answers are fine.
+   * ⚠️ **`INSTITUTION_MAX_LENGTH` נמחק ב-T-111, והמספר כאן גולמי בכוונה.**
+   * העמודה והאילוץ **נשארים במסד** (D-056: «⛔ אינה נמחקת»), ולכן אילוץ שאיש
+   * אינו בודק הוא אילוץ שהמיגרציה הבאה תשבור בשקט. ⛔ החלופה — להשאיר קבוע חי
+   * ב-`lib/core` "רק בשביל הבדיקה" — היא בדיוק הפגם של F-010: קוד שאיש אינו
+   * קורא, שיושב בעץ כדרך מוכנה להחזיר את הפיצ׳ר בייבוא אחד.
    */
-  it('truncates past the limit instead of rejecting the whole form', () => {
-    const long = 'א'.repeat(INSTITUTION_MAX_LENGTH + 40);
-    const result = checkOnboarding(
-      { ...INSTITUTION_BASE, institution: long },
-      INSTITUTION_TODAY,
-    );
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.answers.institution).toHaveLength(INSTITUTION_MAX_LENGTH);
-      expect(result.answers.institution).toBe('א'.repeat(INSTITUTION_MAX_LENGTH));
-    }
-  });
-
-  it('⛔ never produces a field error — there is no wrong answer here', () => {
-    const result = checkOnboarding(
-      { ...INSTITUTION_BASE, institution: 'א'.repeat(5000) },
-      INSTITUTION_TODAY,
-    );
-    expect(result.ok).toBe(true);
-    // A non-string is not an error either; it is simply not an answer.
-    const weird = checkOnboarding(
-      { ...INSTITUTION_BASE, institution: { a: 1 } },
-      INSTITUTION_TODAY,
-    );
-    expect(weird.ok).toBe(true);
-    if (weird.ok) expect(weird.answers.institution).toBeNull();
-  });
-
-  /**
-   * The ceiling lives in two places — the module and the database — and a
-   * ceiling that disagrees with itself truncates in the app and then throws in
-   * Postgres. Same pattern as profiles_daily_minutes_check (api-contract.md).
-   */
-  it('agrees with the length the migration enforces', () => {
+  it('still guards the 0009 constraint, ⛔ even though nothing writes the column now', () => {
     const sql = readFileSync('supabase/migrations/0009_onboarding_institution.sql', 'utf8');
-    expect(sql).toContain(`char_length(institution) <= ${INSTITUTION_MAX_LENGTH}`);
+    expect(sql).toContain('char_length(institution) <= 120');
     expect(sql).not.toMatch(/institution\s+text\s+not\s+null/i);
-  });
-
-  it('asks the question in Hebrew and ⛔ never promises a threshold', () => {
-    for (const forbidden of ['פטור', 'סף', 'ציון עובר', 'מוכנות']) {
-      expect(INSTITUTION_QUESTION_HE).not.toContain(forbidden);
-    }
   });
 });

@@ -41,24 +41,41 @@ describe('POST /api/profile — the post-onboarding destination (§ 4.2ב)', () 
 });
 
 /**
- * T-003 · § 4.2ד — the institution travels body → checkOnboarding → column.
+ * D-056 · T-111 — הכתיבה לעמודה נפסקת, ⛔ והעמודה נשארת.
  *
- * ⚠️ Deviation from the plan, and a deliberate strengthening: the plan asserts
- * against the raw source (`SRC`). These assertions run on `CODE`, the
- * comment-stripped source, for the reason C-0032 recorded — a comment that
- * merely *mentions* `institution: body.institution` would satisfy a raw-text
- * guard while the route reads nothing. The negative assertions gain the most:
- * a `...body` written inside an explanatory comment must not be able to fail a
- * test about what the route actually spreads.
+ * ⚠️ **הטענה כאן היא על `.update(` ⛔ ולא על הקובץ כולו**, וזו ⛔ אינה קפדנות
+ * מיותרת: הקובץ **חייב** להמשיך להזכיר את השדה בהערה אחת — «העמודה נשארת ואיש
+ * אינו כותב אליה» — אחרת הסוכן הבא יראה עמודה יתומה בסכמה ויציע `drop column`,
+ * שהוא בדיוק מה ש-D-056 אוסרת. ⇒ סריקה גורפת הייתה **מענישה את התיעוד הנכון**.
+ *
+ * ⚠️ סטייה מוצהרת מנוסח התוכנית: התוכנית קוראת למקור הגולמי `SRC` ומגדירה
+ * `CODE` מקומי. הקובץ הזה כבר מחזיק את שניהם ברמת המודול — `ROUTE` (גולמי) ו-
+ * `CODE` (מולבן ב-`withoutComments`, אותה הלבנה בדיוק) — ולכן הבלוק משתמש בהם
+ * ⛔ ואינו מגדיר שלישייה שנייה שתיפרד מהראשונה.
  */
-describe('the institution reaches the column (T-003 · § 4.2ד)', () => {
-  it('passes the submitted key into checkOnboarding by name', () => {
-    expect(CODE).toMatch(/institution:\s*body\.institution/);
+describe('the institution column is no longer written (D-056 · T-111)', () => {
+  it('⛔ never passes the field into checkOnboarding', () => {
+    expect(CODE).not.toMatch(/institution:\s*body\.institution/);
   });
 
-  it('writes the validated value and ⛔ never the raw body', () => {
-    expect(CODE).toMatch(/institution:\s*check\.answers\.institution/);
-    expect(CODE).not.toMatch(/institution:\s*body\.institution[\s\S]{0,200}\.update\(/);
+  it('⛔ never puts the field in the update payload', () => {
+    // ⚠️ נמדד: `.slice(indexOf('.update('))` לבדו רץ עד סוף הקובץ ותופס הערות
+    // מתחתיו. הטווח נחתך על הסוגר של האובייקט — הוא ⛔ אינו יכול לצאת ממנו.
+    const at = CODE.indexOf('.update({');
+    expect(at, 'the profile update is not in the source').toBeGreaterThan(-1);
+    const payload = CODE.slice(at, CODE.indexOf('})', at));
+    expect(payload).not.toContain('institution');
+    // ⚠️ והשומר שמונע «עברנו כי ה-slice ריק»: ארבעת השדות שכן נכתבים.
+    for (const kept of ['daily_minutes', 'exam_date', 'target_score', 'onboarded_at']) {
+      expect(payload).toContain(kept);
+    }
+  });
+
+  it('keeps the prose that stops the next agent from dropping the column', () => {
+    // ⚠️ F-088 — כאן הטענה היא **על ההערה עצמה**, ולכן ⛔ בלי הלבנה: זה המקום
+    // היחיד בקובץ שבו הופעת המילה היא הדבר הנדרש ⛔ ולא הדבר האסור.
+    expect(ROUTE).toMatch(/institution/);
+    expect(ROUTE).toMatch(/D-056/);
   });
 
   /**
@@ -78,13 +95,20 @@ describe('the institution reaches the column (T-003 · § 4.2ד)', () => {
    * would satisfy a test whose whole claim is "documented *here*". The slice is
    * bounded by the next `## ` heading instead.
    */
-  it('is documented in the same contract the route claims to implement', () => {
+  it('documents the removal in the same commit, ⛔ and ⛔ not the field', () => {
     const start = CONTRACT.indexOf('## POST /api/profile');
     expect(start).toBeGreaterThan(-1);
     const rest = CONTRACT.slice(start + 1);
     const end = rest.indexOf('\n## ');
     const section = end === -1 ? rest : rest.slice(0, end);
+    // ⚠️ **F-115 — סטייה מוצהרת מנוסח התוכנית.** התוכנית הורתה `not.toContain('institution')`
+    // על הסעיף כולו, ובאותה נשימה הורתה לכתוב בו שלוש שורות שמסבירות **מה קרה
+    // לשדה `institution`** — שתי ההוראות ⛔ אינן יכולות להתקיים יחד. הנמדד כאן
+    // הוא הדבר שהתוכנית התכוונה אליו: השדה ⛔ אינו **מתועד כשדה מתקבל** —
+    // ⛔ אינו בגוף הדוגמה ו⛔ אין לו תקרת 120 — וההסבר שמונע `drop column` נשאר.
+    expect(section).not.toContain('"institution"');
+    expect(section).not.toContain('120');
+    expect(section).toContain('D-056');
     expect(section).toContain('institution');
-    expect(section).toContain('120');
   });
 });
