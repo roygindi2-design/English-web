@@ -113,7 +113,7 @@ export interface HeadroomReport {
 export function measureHeadroom(input: HeadroomInput): HeadroomReport;
 ```
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 צור `lib/core/levelHeadroom.test.ts`:
 
@@ -230,12 +230,12 @@ describe('measureHeadroom — D-058 headroom arithmetic', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ את הבדיקה וודא שהיא נופלת**
+- [x] **Step 2: הרץ את הבדיקה וודא שהיא נופלת**
 
 Run: `npx vitest run lib/core/levelHeadroom.test.ts`
 Expected: FAIL — `Failed to resolve import "./levelHeadroom"`.
 
-- [ ] **Step 3: כתוב את המימוש המינימלי**
+- [x] **Step 3: כתוב את המימוש המינימלי**
 
 צור `lib/core/levelHeadroom.ts`:
 
@@ -357,17 +357,17 @@ export function measureHeadroom(input: HeadroomInput): HeadroomReport {
 }
 ```
 
-- [ ] **Step 4: הרץ את הבדיקה וודא שהיא עוברת**
+- [x] **Step 4: הרץ את הבדיקה וודא שהיא עוברת**
 
 Run: `npx vitest run lib/core/levelHeadroom.test.ts`
 Expected: PASS — 11 passed.
 
-- [ ] **Step 5: הרץ את שער הטוהר**
+- [x] **Step 5: הרץ את שער הטוהר**
 
 Run: `npm run check:core`
 Expected: `/lib/core purity: OK`
 
-- [ ] **Step 6: קומיט**
+- [x] **Step 6: קומיט**
 
 ```bash
 git add lib/core/levelHeadroom.ts lib/core/levelHeadroom.test.ts
@@ -394,7 +394,7 @@ export function renderHeadroomMarkdown(
 ): string;
 ```
 
-- [ ] **Step 1: כתוב את הבדיקה הנופלת**
+- [x] **Step 1: כתוב את הבדיקה הנופלת**
 
 הוסף בסוף `lib/core/levelHeadroom.test.ts`:
 
@@ -432,12 +432,12 @@ describe('renderHeadroomMarkdown', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת נפילה**
+- [x] **Step 2: הרץ ואמת נפילה**
 
 Run: `npx vitest run lib/core/levelHeadroom.test.ts`
 Expected: FAIL — `renderHeadroomMarkdown is not a function`.
 
-- [ ] **Step 3: כתוב את המימוש**
+- [x] **Step 3: כתוב את המימוש**
 
 הוסף בסוף `lib/core/levelHeadroom.ts`:
 
@@ -491,12 +491,12 @@ export function renderHeadroomMarkdown(
 }
 ```
 
-- [ ] **Step 4: הרץ ואמת מעבר**
+- [x] **Step 4: הרץ ואמת מעבר**
 
 Run: `npx vitest run lib/core/levelHeadroom.test.ts`
 Expected: PASS — 16 passed.
 
-- [ ] **Step 5: קומיט**
+- [x] **Step 5: קומיט**
 
 ```bash
 git add lib/core/levelHeadroom.ts lib/core/levelHeadroom.test.ts
@@ -516,7 +516,7 @@ git commit -m "loop(DEV): T-114 headroom report rendering"
 - Consumes: `measureHeadroom`, `renderHeadroomMarkdown` מ-Task 1/2 · `parseCefrCsv`, `buildLevelMap` מ-`lib/core/cefrLevels.ts` · `parseBatchFile` מ-`lib/core/batchRecord.ts` (‏`rec.sense.headword`).
 - Produces: `docs/level-headroom-report.md` · `npm run measure:headroom`.
 
-- [ ] **Step 1: כתוב את בדיקת סריקת המקור**
+- [x] **Step 1: כתוב את בדיקת סריקת המקור**
 
 צור `scripts/measure-level-headroom.test.ts`:
 
@@ -564,12 +564,12 @@ describe('measure-level-headroom.mjs', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת נפילה**
+- [x] **Step 2: הרץ ואמת נפילה**
 
 Run: `npx vitest run scripts/measure-level-headroom.test.ts`
 Expected: FAIL — `ENOENT: no such file or directory, open 'scripts/measure-level-headroom.mjs'`.
 
-- [ ] **Step 3: כתוב את הרץ**
+- [x] **Step 3: כתוב את הרץ**
 
 צור `scripts/measure-level-headroom.mjs`:
 
@@ -686,7 +686,7 @@ console.log(
 console.log(`\nwrote ${OUT}`);
 ```
 
-- [ ] **Step 4: רשום את הסקריפט ב-`package.json`**
+- [x] **Step 4: רשום את הסקריפט ב-`package.json`**
 
 הוסף מיד אחרי השורה של `measure:sense`:
 
@@ -694,12 +694,12 @@ console.log(`\nwrote ${OUT}`);
     "measure:headroom": "node scripts/measure-level-headroom.mjs",
 ```
 
-- [ ] **Step 5: הרץ את הבדיקה וודא שהיא עוברת**
+- [x] **Step 5: הרץ את הבדיקה וודא שהיא עוברת**
 
 Run: `npx vitest run scripts/measure-level-headroom.test.ts`
 Expected: PASS — 7 passed.
 
-- [ ] **Step 6: הרץ את המדידה עצמה ואמת מול המספרים שנמדדו בטיק התכנון**
+- [x] **Step 6: הרץ את המדידה עצמה ואמת מול המספרים שנמדדו בטיק התכנון**
 
 Run: `npm run measure:headroom`
 Expected — ⛔ **המספרים האלה נמדדו ב-2026-08-21 ואינם ניחוש.** סטייה בהם ⛔ אינה «רענון», היא באג:
@@ -716,7 +716,7 @@ TOTAL: free 2744 · authoredUnlabelled 0 · authoredOffLimits 0
 
 ⚠️ **הפער מול D-058 הוא ראיה, ⛔ ולא טעות שמתקנים:** D-058 כותבת «55 ו-14 כותרות בסך הכל» ל-C1/C2, והמדידה נותנת **46** ו-**9**. שני המספרים נכונים על אוכלוסיות שונות (‏D-058 ספרה `(headword,pos)`, כאן נספר lemma מנורמל). **רשום את הפער ב-`plan/30-architecture.md`** כשורה אחת, ⛔ ואל תשנה לא את הקוד ולא את D-058.
 
-- [ ] **Step 7: קומיט — T-114 נסגרת**
+- [x] **Step 7: קומיט — T-114 נסגרת**
 
 ```bash
 git add scripts/measure-level-headroom.mjs scripts/measure-level-headroom.test.ts package.json docs/level-headroom-report.md
