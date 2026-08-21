@@ -51,6 +51,14 @@ const ROUTES = [
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
+  // T-089 · § 4.2ט — אנטומיית מסך השיעור. ⛔ אין עדיין מסלול מוצר: T-090 (התוכן)
+  // חסומה ב-R-018, ולכן `<LessonScreen>` ⛔ אינו מרונדר בשום מקום שהארנס מגיע
+  // אליו, וכל טענה על 320/375/414 עליו הייתה הצהרה. שתי שורות ו⛔ לא אחת, מאותו
+  // נימוק בדיוק כמו `/dev/deck` מול `/dev/deck/done`: `phase` הוא prop, ולכן בלוק
+  // הסיום ⛔ אינו נגיש מהמסלול שמעליו. שתיהן מקבלות את הפריטים כ-prop ואינן
+  // מבקשות מהשרת דבר ⇒ ⛔ אין להן רשומה ב-EXPECTED_CONSOLE.
+  '/dev/lesson',
+  '/dev/lesson/done',
   // T-082 · D-041 — סריקת הרמה. `/study/scan` יושב מחוץ ל-`PROTECTED_SCREENS`
   // (proxy.ts) ולכן הוא **כן** מרונדר כאן, אבל בלי env של Supabase
   // `GET /api/levels/scan` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה ההיא מודדת הוא מצב

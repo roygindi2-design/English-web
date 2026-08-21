@@ -782,3 +782,26 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
     expect(named).toContain('/api/profile');
   });
 });
+
+/**
+ * ‏T-089 — בלי שתי השורות האלה בארנס, אנטומיית מסך השיעור ⛔ מעולם לא נמדדת
+ * ב-320/375/414, והטענה «אפס גלילה אופקית» עליה היא הצהרה ⛔ ולא מדידה.
+ */
+describe('the lesson anatomy is measured at all three widths (T-089)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('names both lesson fixtures in ROUTES', () => {
+    expect(source).toContain("'/dev/lesson',");
+    expect(source).toContain("'/dev/lesson/done',");
+  });
+
+  /**
+   * ⛔ אין להן רשומת EXPECTED_CONSOLE, וזה השקט שמוכיח שהן מקבלות את הפריטים
+   * כ-prop ו⛔ אינן מבקשות מהשרת דבר. רשומה שתופיע כאן מאוחר יותר פירושה
+   * שהפיקסטורה התחילה לרשת — כלומר שהמדידה חזרה בשקט למסך הכשל.
+   */
+  it('⛔ grants them no console allowance — they request nothing', () => {
+    const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
+    expect(expected).not.toContain('/dev/lesson');
+  });
+});
