@@ -6,12 +6,14 @@
  *
  * שלוש ההכרעות כאן הן חוקי המשימה ⛔ ולא טעם:
  *
- * 1. **בדיוק שלושה אריחים** (‏C-0218 · T-110; היו שניים). § 4.2יא נוקבת ב«הרכבה»
- *    (קיים) וב«זירה» (T-095), ו-§ 4.2יב מוסיפה את «המילים שאספתי» ואומרת במפורש
- *    ש«מגיעים אליו מאריח» ⇒ בלי האריח השלישי המסך קיים ו⛔ אין אליו דרך הגעה.
- *    כלל המסננת באותו סעיף («אריח בלי תנאי מדיד ⛔ אינו נכנס לרשת») עדיין מוציא
- *    ספרייה, הודעות ומייל: לאף אחד מהם אין תנאי פתיחה נקוב במספר. הפער נרשם כ-F-072
- *    ⛔ ואינו מוסתר.
+ * 1. **בדיוק ארבעה אריחים** (D-074ⓑ — הנוסח «⛔ אין רביעי» ב-§ 4.2יא **בטל**,
+ *    § 4.2יג גוברת). § 4.2יא נוקבת ב«הרכבה» (קיים) וב«זירה» (T-095), § 4.2יב מוסיפה
+ *    את «המילים שאספתי» ואומרת במפורש ש«מגיעים אליו מאריח», ו-§ 4.2יג מוסיפה את
+ *    «הספרייה» באותו נוסח בדיוק.
+ *    F-072 **נסגר** ב-D-074: חברות ברשת היא שלושת התנאים ⓘ משימה · ⓘ שורה בטבלת
+ *    הצימוד של D-054 · ⓘ תנאי פתיחה מדיד ונקוב במספר — והספרייה עומדת בשלושתם
+ *    («נדרשים 3 סיפורים ברמה שלך, יש N»). הודעות ומייל עדיין מחוץ לרשת: לאף אחד
+ *    מהם אין תנאי פתיחה נקוב במספר.
  *    ⚠️ האריח השלישי הוא **`open` תמיד** ⛔ ואינו `locked`: § 4.2יב מגדירה לו מצב ריק
  *    בעל פעולה אחת ⇒ ⛔ אין לו תנאי פתיחה נקוב במספר, ו-D-046 חל על אריח **נעול**
  *    ⛔ ולא על אריח פתוח עם אוסף ריק.
@@ -29,7 +31,7 @@
  * הזאת ⛔ אינה מזכירה את השמות האסורים בשמם.
  */
 
-export type WorldAppId = 'compose' | 'arcade' | 'collected';
+export type WorldAppId = 'compose' | 'arcade' | 'collected' | 'library';
 
 export type AppState =
   /** פתוח: הלומד יכול להיכנס עכשיו. */
@@ -48,27 +50,86 @@ export interface WorldApp {
   readonly hasActiveTask: boolean;
 }
 
-/** סדר הרשת = סדר הפתיחה, ו⛔ לא «הכי בשימוש» (ספירת שימוש היא עמודה חדשה — נדחתה). */
-export const WORLD_APP_ORDER: readonly WorldAppId[] = ['compose', 'arcade', 'collected'];
+/** סדר הרשת = סדר הפתיחה, ו⛔ לא «הכי בשימוש» (ספירת שימוש היא עמודה חדשה — נדחתה).
+ *  ⚠️ «הספרייה» **בסוף** (T-137ⓐ): היא האחרונה שנפתחה, ⛔ ולא האחרונה בחשיבות. */
+export const WORLD_APP_ORDER: readonly WorldAppId[] = [
+  'compose',
+  'arcade',
+  'collected',
+  'library',
+];
 
-/** בחירת האריח הגדול (⛔ ⛔ סדר הרשת) — «תרגול > הפקה > השתקפות» (D-071ⓐ). */
-export const LEARNING_PRIORITY: readonly WorldAppId[] = ['arcade', 'compose', 'collected'];
+/** בחירת האריח הגדול (⛔ ⛔ סדר הרשת) — «תרגול > הפקה > השתקפות» (D-071ⓐ).
+ *  ⚠️ «הספרייה» **שנייה** (T-137ⓑ): קריאה בהקשר היא **תרגול** ⛔ ולא צפייה — היא
+ *  הפער היחיד שכרטיסייה ⛔ אינה מכסה (§ 4.2יג), ולכן היא מקדימה הפקה והשתקפות. */
+export const LEARNING_PRIORITY: readonly WorldAppId[] = [
+  'arcade',
+  'library',
+  'compose',
+  'collected',
+];
 
 export const WORLD_APP_LABEL_HE: Readonly<Record<WorldAppId, string>> = {
   compose: 'הרכבה',
   arcade: 'זירה',
   collected: 'המילים שאספתי',
+  library: 'הספרייה',
 };
 
 export const WORLD_APP_HREF: Readonly<Record<WorldAppId, string>> = {
   compose: '/world/compose',
   arcade: '/arcade',
   collected: '/world/collected',
+  library: '/world/story',
 };
 
 /** «נדרשות 12 מילים ברמה, יש 8». שני המספרים מהשרת ⛔ ואינם כתובים בקוד. */
 export function levelTooSmallNoteHe(required: number, eligible: number): string {
   return `נדרשות ${required} מילים ברמה, יש ${eligible}`;
+}
+
+/**
+ * T-137ⓓ · § 4.2יג — «⛔ **ולומד בלי `current_level` ⛔ אינו נחסם** — הוא נשלח
+ * לסריקת הרמה (T-082), ⛔ לא למסך ריק». המסך נחת ב-T-082 (אושר C-0228).
+ */
+export const LEVEL_SCAN_HREF = '/study/scan';
+
+/** «נדרשים 3 סיפורים ברמה שלך, יש 1». שני המספרים מהשרת ⛔ ואינם כתובים בקוד. */
+export function storiesTooFewNoteHe(required: number, atLevel: number): string {
+  return `נדרשים ${required} סיפורים ברמה שלך, יש ${atLevel}`;
+}
+
+/**
+ * מצב הספרייה כפי שהשרת מוסר אותו. ⛔ `null` ⇒ הקריאה נכשלה, ⛔ ולא «אפס סיפורים»:
+ * ‏`0018_stories.sql` ⛔ טרם הורץ בייצור, ולומד ⛔ אינו רשאי לראות «יש 0» כשהמאגר
+ * פשוט אינו שם.
+ */
+export interface StoriesStatus {
+  readonly required: number;
+  /** ⛔ `null` ⇒ ללומד אין `current_level` — הוא ⛔ אינו נחסם (T-137ⓓ). */
+  readonly atLevel: number | null;
+}
+
+/**
+ * שלושת ענפי האריח, ⛔ ואין רביעי:
+ *
+ * ⛔ **תנאי הפתיחה הוא על המאגר, ⛔ ולא על הלומד** (§ 4.2יג): «⛔ אין מה להסתיר
+ * מלומד שעשה הכל נכון». ⇒ המספר נאמר לו במלואו, ⛔ ולא «בקרוב».
+ */
+export function libraryTile(status: StoriesStatus | null): {
+  readonly state: AppState;
+  readonly href: string;
+} {
+  if (status === null) return { state: { kind: 'unknown' }, href: WORLD_APP_HREF.library };
+  // ⛔ ⛔ חסימה: הלומד ⛔ לא עשה דבר רע, פשוט עוד אין לו רמה. הדרך קדימה היא הסריקה.
+  if (status.atLevel === null) return { state: { kind: 'open' }, href: LEVEL_SCAN_HREF };
+  if (status.atLevel >= status.required) {
+    return { state: { kind: 'open' }, href: WORLD_APP_HREF.library };
+  }
+  return {
+    state: { kind: 'locked', noteHe: storiesTooFewNoteHe(status.required, status.atLevel) },
+    href: WORLD_APP_HREF.library,
+  };
 }
 
 /** האריח הגדול: הראשון עם `hasActiveTask` שגם `open`; אין ⇒ הראשון בסדר הפדגוגי

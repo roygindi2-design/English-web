@@ -5,9 +5,12 @@ import {
   WORLD_APP_LABEL_HE,
   WORLD_APP_HREF,
   LEARNING_PRIORITY,
+  LEVEL_SCAN_HREF,
   featuredAppId,
   levelTooSmallNoteHe,
+  libraryTile,
   openAppCount,
+  storiesTooFewNoteHe,
   type WorldApp,
 } from './worldApps';
 
@@ -20,15 +23,22 @@ const app = (over: Partial<WorldApp> & Pick<WorldApp, 'id'>): WorldApp => ({
 });
 
 describe('worldApps', () => {
-  // ⚠️ **שניים ⇒ שלושה, C-0218 (T-110).** § 4.2יב מחייבת דרך הגעה למסך «המילים
-  // שאספתי» («מגיעים מאריח»), ובלי האריח השלישי המסך קיים ו⛔ אין אליו קישור. האריח
-  // עומד במסננת של § 4.2יא: תנאי הפתיחה שלו הוא **פתוח תמיד**, ⛔ ולא «בקרוב» בלי מספר.
-  it('⛔ בדיוק שלושה אריחים, ⛔ ואין רביעי (§ 4.2יא · § 4.2יב)', () => {
-    expect([...WORLD_APP_ORDER]).toEqual(['compose', 'arcade', 'collected']);
-    expect(Object.keys(WORLD_APP_HREF).sort()).toEqual(['arcade', 'collected', 'compose']);
+  // ⚠️ **שלושה ⇒ ארבעה, D-074ⓑ.** «אריח נכנס לרשת אם ורק אם יש לו משימה, שורה
+  // בטבלת הצימוד של D-054, ותנאי פתיחה מדיד ונקוב במספר» — והספרייה עומדת
+  // בשלושתם מ-C-0239 (‏T-134…T-137 · שורת D-054 · «נדרשים 3 סיפורים ברמה שלך, יש N»).
+  // ⛔ הנוסח «⛔ אין רביעי» ב-§ 4.2יא **בטל** — § 4.2יג גוברת עליו.
+  it('⛔ בדיוק ארבעה אריחים, וסדר הרשת = סדר הפתיחה (D-074ⓑ · § 4.2יג)', () => {
+    expect([...WORLD_APP_ORDER]).toEqual(['compose', 'arcade', 'collected', 'library']);
+    expect(Object.keys(WORLD_APP_HREF).sort()).toEqual([
+      'arcade',
+      'collected',
+      'compose',
+      'library',
+    ]);
     expect(WORLD_APP_HREF.compose).toBe('/world/compose');
     expect(WORLD_APP_HREF.arcade).toBe('/arcade');
     expect(WORLD_APP_HREF.collected).toBe('/world/collected');
+    expect(WORLD_APP_HREF.library).toBe('/world/story');
   });
 
   it('⛔ לכל אריח יש תווית **וגם** href — ⛔ אין ערך חסר בטבלה', () => {
@@ -103,9 +113,10 @@ describe('worldApps', () => {
     expect(featuredAppId(inputs)).toBe('arcade');
   });
 
-  it('`LEARNING_PRIORITY` הוא בדיוק שלושת מזהי `WORLD_APP_ORDER` בסדר D-071ⓐ', () => {
-    expect([...LEARNING_PRIORITY]).toEqual(['arcade', 'compose', 'collected']);
+  it('`LEARNING_PRIORITY` — קריאה בהקשר היא **תרגול** ⛔ ולא צפייה (T-137ⓑ · D-071ⓐ)', () => {
+    expect([...LEARNING_PRIORITY]).toEqual(['arcade', 'library', 'compose', 'collected']);
     expect(new Set(LEARNING_PRIORITY).size).toBe(LEARNING_PRIORITY.length);
+    expect(LEARNING_PRIORITY.length).toBe(WORLD_APP_ORDER.length);
     for (const id of LEARNING_PRIORITY) expect(WORLD_APP_ORDER).toContain(id);
   });
 
@@ -136,5 +147,51 @@ describe('worldApps', () => {
     expect(entry).toContain('נדרשות');
     expect(entry).toContain('מילים ברמה, יש');
     expect(levelTooSmallNoteHe(12, 8)).toBe('נדרשות 12 מילים ברמה, יש 8');
+  });
+});
+
+/**
+ * אריח «הספרייה» — § 4.2יג · D-074ⓑ · D-046. שלושה ענפים בדיוק, ⛔ ואין רביעי.
+ */
+describe('libraryTile (T-137ⓒ · ⓓ)', () => {
+  it('⛔ פחות מהנדרש ⇒ מושבת **עם שני המספרים**, ⛔ ולא «בקרוב» (D-046)', () => {
+    const tile = libraryTile({ required: 3, atLevel: 1 });
+    expect(tile.state.kind).toBe('locked');
+    const note = tile.state.kind === 'locked' ? tile.state.noteHe : '';
+    expect(note).toContain('3');
+    expect(note).toContain('1');
+    expect(note).toMatch(/\d/);
+    expect(tile.href).toBe(WORLD_APP_HREF.library);
+  });
+
+  it('הנוסח נבנה משני מספרים ⛔ ואינו כותב אף אחד מהם בקוד', () => {
+    // ⚠️ נמדד בשני ערכים שונים ⛔ ולא באחד: פונקציה שמחזירה מחרוזת קבועה עוברת
+    // בדיקה של ערך יחיד (F-105 — קלט שנבנה מהקבוע הנמדד ⛔ אינו מדידה).
+    expect(storiesTooFewNoteHe(3, 1)).not.toBe(storiesTooFewNoteHe(5, 2));
+    expect(storiesTooFewNoteHe(5, 2)).toContain('5');
+    expect(storiesTooFewNoteHe(5, 2)).toContain('2');
+  });
+
+  it('הגיע לסף ⇒ פתוח אל המסך (§ 4.2יג — «מגיעים מאריח»)', () => {
+    const tile = libraryTile({ required: 3, atLevel: 3 });
+    expect(tile.state.kind).toBe('open');
+    expect(tile.href).toBe(WORLD_APP_HREF.library);
+  });
+
+  it('⛔ לומד בלי רמה ⛔ אינו נחסם — הוא נשלח לסריקת הרמה (T-137ⓓ · T-082)', () => {
+    const tile = libraryTile({ required: 3, atLevel: null });
+    expect(tile.state.kind).toBe('open');
+    expect(tile.href).toBe(LEVEL_SCAN_HREF);
+    expect(tile.href).not.toBe(WORLD_APP_HREF.library);
+  });
+
+  it('קריאה שנכשלה ⇒ «—» ⛔ ולא «0» — מספר שאין לנו אינו אפס', () => {
+    expect(libraryTile(null).state.kind).toBe('unknown');
+  });
+
+  it('⛔ הספרייה ⛔ אינה נוגעת בזירה — D-054: 🔗 מצומדת לצד הלימודי', () => {
+    // סריקת מקור: הגבול נאכף **בהיעדר**, בדיוק כמו ב-`0018_stories.sql`.
+    const src = readFileSync('lib/core/worldApps.ts', 'utf8');
+    expect(src).not.toContain('arcade_collected_words');
   });
 });
