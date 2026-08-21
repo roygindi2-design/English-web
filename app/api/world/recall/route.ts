@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { buildRecallCard, type LearnerWord, type RecallPost } from '@/lib/core/worldRecall';
+import {
+  buildRecallCard,
+  recallCounts,
+  type LearnerWord,
+  type RecallPost,
+} from '@/lib/core/worldRecall';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -107,14 +112,18 @@ export async function GET() {
 
   // ⛔ אין `Math.random` בשכבה הטהורה — ה-seed נגזר כאן, בדיוק כמו `arcade/round`.
   const seed = Date.now() >>> 0;
-  const card = buildRecallCard({
-    posts: recallPosts,
-    words: learnerWords,
-    nowMs: Date.now(),
-    seed,
-  });
+  // ⚠️ קריאת שעון **אחת** לשני הצרכנים: שתי קריאות נפרדות יכולות ליפול משני צדי
+  // חצות ולהחזיר `card !== null` יחד עם `eligible = 0` — חוזה שסותר את עצמו.
+  const nowMs = Date.now();
+  const card = buildRecallCard({ posts: recallPosts, words: learnerWords, nowMs, seed });
+
+  // D-075ⓐ — ⛔ **אפס קריאה שלישית ואפס עמודה**: שלושת המונים נגזרים מאותן שתי
+  // התוצאות שכבר בזיכרון (תבנית D-043). ⛔ `required` מגיע מהשכבה הטהורה ⛔ ואינו
+  // נכתב כאן, כדי שהמסך יקבל מספר ⛔ ולא יחזיק עותק (D-046).
+  const counts = recallCounts({ posts: recallPosts, words: learnerWords, nowMs });
 
   // ⛔ `card: null` ⛔ ואינו 404: «אין מה להיזכר בו היום» אינו שגיאה, ומסך שמקבל 404
-  // מצייר כשל (§ 4.2יב).
-  return NextResponse.json({ ok: true, card });
+  // מצייר כשל (§ 4.2יב). ⚠️ ומאז D-075 הוא ⛔ אינו לבד: `counts` הוא מה שמבדיל בין
+  // «עדיין לא הרכבת משפט» לבין «המשפט שלך יחזור אליך».
+  return NextResponse.json({ ok: true, card, counts });
 }
