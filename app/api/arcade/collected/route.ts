@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import type { CollectedWord } from '@/lib/core/arcadeCollection';
+import { latestCollected, type CollectedWord } from '@/lib/core/arcadeCollection';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -92,7 +92,23 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ ok: true, words, hiddenCount: count ?? 0 });
+  // «המילה שאספת אתמול» (D-071ⓑ · T-133) — ⛔ **נגזרת מ-`words`, ⛔ ולא שאילתה שנייה.**
+  // ⚠️ סטייה מדודה מ-`docs/superpowers/plans/2026-08-20-world-featured-and-pin.md` צעד 2.1,
+  // ושתי סיבותיה נמדדו ⛔ ולא שוערו: ⓐ `words` כבר `first_seen_at desc` ומסונן
+  // ל-`hidden_by_learner=false` ⇒ `words[0]` **הוא** הפריט האחרון הגלוי, ושאילתה שנייה
+  // הייתה הלוך-חזור נוסף למאגר על אותו נתון · ⓑ השאילתה שהתוכנית מציעה מצטרפת ל-`words`
+  // בלבד, ⛔ בלי `senses!inner` ⇒ מילה בלי תרגום הייתה מגיעה לפִּין ⛔ אך ⛔ נעדרת
+  // מהאריח שהפִּין מוביל אליו. הגזירה מסגירה את הפער: מה שנכתב בפִּין ⛔ תמיד נמצא ברשימה.
+  const latest = latestCollected(words);
+
+  // ⛔ **`?` הוא חלק מהחוזה:** «אין פריט אחרון ⇒ ⛔ אין שדה» — היעדר הפִּין הוא המצב
+  // הריק, ⛔ ולא כיתוב «אין מילים אתמול».
+  return NextResponse.json({
+    ok: true,
+    words,
+    hiddenCount: count ?? 0,
+    ...(latest !== undefined ? { latest } : {}),
+  });
 }
 
 /** ⛔ ולידציה מלאה ⛔ ולא cast: הגוף מגיע מהלקוח. */

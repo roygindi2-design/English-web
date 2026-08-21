@@ -76,8 +76,32 @@ describe('§ 4.2יב · T-110 — האוסף נקרא, ⛔ ואינו מנוע',
     expect(CODE).toContain(".eq('hidden_by_learner', true)");
   });
 
+  it('`latest` נגזר מ-`words` ⛔ ולא משאילתה שנייה (D-071ⓑ · T-133)', () => {
+    // ⛔ הפונקציה הטהורה, ⛔ ולא `.from(...)` נוסף: שאילתה שלישית לאותו נתון היא
+    // הלוך-חזור מיותר, והצטרפות בלי `senses!inner` הייתה מפרידה את הפִּין מהרשימה.
+    expect(CODE).toContain('latestCollected(words)');
+    expect(CODE.match(/\.from\('arcade_collected_words'\)/g) ?? []).toHaveLength(3);
+  });
+
+  it('⛔ «אין פריט אחרון ⇒ ⛔ אין שדה» — `latest` מותנה ⛔ ואינו `null`', () => {
+    const get = CODE.slice(CODE.indexOf('export async function GET'),
+                           CODE.indexOf('function parseHideBody'));
+    expect(get).toContain('latest !== undefined ? { latest } : {}');
+    expect(get).not.toContain('latest: null');
+  });
+
+  it('⛔ `latest` ⛔ אינו שאילתה בלי מסננת ההסתרה — הוא יורש את מסננת `words`', () => {
+    // המסננת חיה בשאילתה אחת בלבד; מילה מוסתרת ⛔ אינה ב-`words` ⇒ ⛔ אינה בפִּין.
+    const get = CODE.slice(CODE.indexOf('export async function GET'),
+                           CODE.indexOf('function parseHideBody'));
+    expect(get.indexOf(".eq('hidden_by_learner', false)")).toBeLessThan(
+      get.indexOf('latestCollected(words)'),
+    );
+  });
+
   it('החוזה מתעד את הנתיב באותו קומיט', () => {
     expect(CONTRACT).toContain('GET /api/arcade/collected');
     expect(CONTRACT).toContain('PATCH /api/arcade/collected');
+    expect(CONTRACT).toContain('`latest?`');
   });
 });

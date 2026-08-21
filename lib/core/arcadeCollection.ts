@@ -40,3 +40,38 @@ export function viewCollection(input: {
 export function encountersHe(timesMissed: number): string {
   return timesMissed === 1 ? 'נפגשת פעם אחת' : `נפגשת ${timesMissed} פעמים`;
 }
+
+/**
+ * «המילה שאספת אתמול» — הפריט האחרון שנאסף (D-071ⓑ · T-133).
+ *
+ * ⚠️ **«אתמול» כאן הוא הפריט האחרון, ⛔ ולא חלון זמן של 24 שעות.** לומד ששיחק לפני
+ * שבוע ⛔ אינו מקבל שורה ריקה, ולומד ששיחק פעמיים היום ⛔ אינו מקבל שתי שורות. זו
+ * ההכרעה של D-071ⓑ ⛔ ולא פשרה: חלון זמן היה הופך את הפִּין לנעלם ולחוזר בלי שהלומד
+ * עשה דבר.
+ *
+ * ⚠️ **הקלט הוא הרשימה ה*גלויה* בלבד** — `hidden_by_learner=true` כבר נופל בשאילתה,
+ * ולכן מילה שהלומד הסתיר ⛔ לעולם אינה מגיעה לכאן. ⛔ אין כאן סינון שני; סינון שני
+ * היה טוען טענה שהמסננת האמיתית חיה כאן, והיא אינה.
+ */
+export interface CollectedLatest {
+  readonly enText: string;
+  readonly collectedAt: string;
+}
+
+/**
+ * ⛔ **אין פריט אחרון ⇒ ⛔ אין שדה** (‏`undefined`, ⛔ לא `null` ו⛔ לא מחרוזת ריקה):
+ * היעדר הפִּין הוא המצב הריק, ⛔ ולא «אין מילים אתמול» ככיתוב.
+ *
+ * ⚠️ הקלט ⛔ אינו ממוין כאן מחדש — הוא מגיע `first_seen_at desc` מהשאילתה, והמיון
+ * הוא חוזה השדה `words` (‏`docs/api-contract.md`). מיון שני היה עולה על אוסף של 200
+ * שורות בכל בקשה בלי להוסיף ולו טענה אחת.
+ */
+export function latestCollected(
+  visible: readonly CollectedWord[],
+): CollectedLatest | undefined {
+  const first = visible[0];
+  if (first === undefined) return undefined;
+  // מילה בלי `headword` ⛔ אינה פִּין: «המילה שאספת אתמול — » הוא משפט קטוע.
+  if (first.headword.length === 0) return undefined;
+  return { enText: first.headword, collectedAt: first.firstSeenAt };
+}

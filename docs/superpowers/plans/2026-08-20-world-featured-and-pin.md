@@ -157,15 +157,15 @@ type CollectedResponseOk = {
 
 ### בדיקה עצמית (⛔ טענת אימות בלי הרצה = פסולה)
 
-- [ ] **מוטציה 1** — ‏הפיכת סדר `LEARNING_PRIORITY` ל־`['collected','compose','arcade']`:
+- [x] **מוטציה 1** — ‏הפיכת סדר `LEARNING_PRIORITY` ל־`['collected','compose','arcade']`:
       **חייבת** להפיל את «שלושה פתוחים ⇒ arcade», את «רק compose ו-collected ⇒ compose»,
       ואת «F-084 · סדר הרשת ⛔ אינו קלט».
-- [ ] **מוטציה 2** — הסרת סעיף «חיוב על אריח נעול»: מפילה את הבדיקה בשמה.
-- [ ] **מוטציה 3** — מחיקת בדיקת המקור על `LEARNING_PRIORITY`: **אינה** מגיעה לאימות;
+- [x] **מוטציה 2** — הסרת סעיף «חיוב על אריח נעול»: מפילה את הבדיקה בשמה.
+- [x] **מוטציה 3** — מחיקת בדיקת המקור על `LEARNING_PRIORITY`: **אינה** מגיעה לאימות;
       פועלת רק כרשת ביטחון לרֶגרֶסיה שקטה.
-- [ ] הרצה טרייה בקומיט הביצוע: `typecheck ✓` · `check:core ✓` (המודול טהור — ⛔ React) ·
+- [x] הרצה טרייה בקומיט הביצוע: `typecheck ✓` · `check:core ✓` (המודול טהור — ⛔ React) ·
       `npm test ✓` (‏קובץ הבדיקה עולה מ־8 ל־10 בדיקות · `it` הראשונה נשארה בשם עם ניסוח D-071ⓐ).
-- [ ] `git diff` נדרש: **שני קבצים בלבד** — `lib/core/worldApps.ts` (+8/−6 שורות משוערות)
+- [x] `git diff` נדרש: **שני קבצים בלבד** — `lib/core/worldApps.ts` (+8/−6 שורות משוערות)
       ו־`lib/core/worldApps.test.ts` (+35/−3 שורות משוערות).
 
 ---
@@ -190,7 +190,7 @@ type CollectedResponseOk = {
 
 ### צעדים
 
-- [ ] **2.1** ‏`route.ts` — אחרי שאילתת ה־words + hiddenCount, שאילתה נוספת:
+- [x] **2.1** ‏`route.ts` — ⚠️ **בוצע בסטייה מדודה, ⛔ ולא כנוסחו.** ⛔ **אין שאילתה שנייה:** `latest` נגזר מ-`words[0]` דרך `latestCollected` (‏`lib/core/arcadeCollection.ts`, טהור). **שתי הסיבות נמדדו:** ⓐ `words` כבר `first_seen_at desc` ומסונן ל-`hidden_by_learner=false` ⇒ `words[0]` **הוא** הפריט האחרון הגלוי, ושאילתה שנייה היא הלוך-חזור נוסף על אותו נתון · ⓑ השאילתה שהתוכנית מכתיבה מצטרפת ל-`words` בלבד, ⛔ **בלי `senses!inner`** ⇒ מילה בלי תרגום הייתה נכתבת בפִּין ⛔ ונעדרת מהאריח שהפִּין מוביל אליו. הגזירה סוגרת את הפער. **הנוסח המקורי, לשעבר:** — אחרי שאילתת ה־words + hiddenCount, שאילתה נוספת:
   ```ts
   // «אתמול» = הפריט האחרון שנאסף — פשוט, מדיד, ⛔ לא חלון זמן (D-071ⓑ)
   const { data: latestRow, error: latestErr } = await supabase
@@ -211,18 +211,18 @@ type CollectedResponseOk = {
 
   return NextResponse.json({ ok: true, words, hiddenCount: count ?? 0, ...(latest ? { latest } : {}) });
   ```
-- [ ] **2.2** ‏`route.test.ts` — שלוש בדיקות חדשות (‏חוזה):
+- [x] **2.2** ‏`route.test.ts` — שלוש בדיקות חדשות, ⚠️ **כסריקת מקור ⛔ ולא כ-mock**: הקובץ כולו סורק מקור (‏`withoutComments(readFileSync(...))`) ו-`vitest.config.ts` רץ ב-`node` בלי jsdom ⇒ ‏mock של Supabase היה מנגנון חדש שלם. ההתנהגות עצמה נמדדת ב-**5 בדיקות אמת** על `latestCollected` ב-`lib/core/arcadeCollection.test.ts`. **הנוסח המקורי, לשעבר:** (‏חוזה):
   ```ts
   it('GET מחזיר `latest.enText` + `latest.collectedAt` כשקיים פריט אחרון גלוי', async () => { /* mock — headword: "cat" */ });
   it('⛔ GET ⛔ אינו מחזיר `latest` כשאין ולו פריט גלוי אחד (D-071ⓑ)', async () => { /* mock — 0 rows */ });
   it('⛔ פריט מוסתר ⛔ אינו נבחר ל־`latest` (`hidden_by_learner=true` נופל בפילטר)', async () => { /* mock — רק rows מוסתרים */ });
   ```
-- [ ] **2.3** ‏`components/AppGrid.tsx` — קריאה חדשה ל־`apiGet<CollectedResponse>('/api/arcade/collected')`
+- [x] **2.3** ‏`components/AppGrid.tsx` — קריאה חדשה ל־`apiGet<CollectedResponse>('/api/arcade/collected')`
       (בפרויקט זה קיימת רק ב־`app/(tabs)/world/collected/page.tsx`; להוסיף כאן
       `useEffect` מקבילה שקוראת רק את `latest`, ⛔ **לא** את מערך `words` המלא. ⇒ אם
       הביצוע גדול — פנייה לשרת חדש שמחזיר רק את `latest` תיכתב כמשימת המשך; להיום
       קריאה אחת מספיקה כי הגוף קטן: ≤ 20 שורות בפועל).
-- [ ] **2.4** ‏`AppGrid.tsx` — מעל האריח `collected` (ולא בתוכו), שורה:
+- [x] **2.4** ‏`AppGrid.tsx` — מעל האריח `collected` (ולא בתוכו), שורה:
   ```tsx
   {featuredHint && appId === 'collected' ? (
     <p className="mb-1 truncate text-sm text-muted" data-collected-pin>
@@ -232,24 +232,27 @@ type CollectedResponseOk = {
   ```
       ⛔ ⛔ `text-overflow: ellipsis` דרך `truncate` — 16 תו הוא **דרישת מפרט**, ⛔ לא CSS
       נוקשה (‏רוחב האריח משתנה); לומד מפוצץ במילים ארוכות אינו נשבר.
-- [ ] **2.5** ‏`docs/api-contract.md` — סעיף `GET /api/arcade/collected` מקבל שורה
+- [x] **2.5** ‏`docs/api-contract.md` — סעיף `GET /api/arcade/collected` מקבל שורה
       חדשה: «‏`latest?` — `{enText, collectedAt}`; חסר ⇒ ‏«אין פריט אחרון גלוי». ⛔ אין
       חלון זמן — `enText` הוא ה־`headword` של השורה בעלת `first_seen_at` המקסימלי
       תחת `hidden_by_learner=false`.»
 
 ### בדיקה עצמית
 
-- [ ] **מוטציה A** — הסרת בלוק `latest` מהחזרת GET: מפילה את שתי הבדיקות הראשונות
+- [x] **מוטציה A** ✅ **נמדדה נופלת** (1 failed / 19) — — הסרת בלוק `latest` מהחזרת GET: מפילה את שתי הבדיקות הראשונות
       (‏«מחזיר `latest` כשקיים», «⛔ אינו מחזיר `latest` כשאין»).
-- [ ] **מוטציה B** — הסרת תנאי `hidden_by_learner=false` בשאילתת latest: מפילה את
+- [x] **מוטציה B** ✅ **נמדדה נופלת** (1 failed / 19) — — הסרת תנאי `hidden_by_learner=false` בשאילתת latest: מפילה את
       «⛔ פריט מוסתר ⛔ אינו נבחר».
-- [ ] **מוטציה C** — הסרת `appId === 'collected'` בתנאי הפִּין: הפִּין מוצג מעל כל אריח.
+- [x] **מוטציה C** ✅ **נמדדה נופלת** (1 failed / 13) — — הסרת `appId === 'collected'` בתנאי הפִּין: הפִּין מוצג מעל כל אריח.
       **דרוש שומר מקור** ב־`components/AppGrid.test.tsx` (‏אם קיים; אחרת בדיקה חדשה של
       3 שורות): «הפִּין חי אך ורק מעל `collected`».
-- [ ] הרצה טרייה: `typecheck ✓` · `check:core ✓` · `npm test ✓` (+3 חוזה +1 שומר מקור) ·
+- [x] **מוטציה D** ✅ (‏חדשה, ⛔ לא בתוכנית) `visible[0]` ⇒ `visible[length-1]`: **2 failed / 18**.
+- [x] **מוטציה E** ✅ (‏חדשה) הסרת שומר `headword` ריק: **1 failed / 18**.
+- [x] ⚠️ **רגרסיה שנמדדה ⛔ ולא שוערה:** `check:mobile` נפל ב-**3 שערים** (`/world` ב-320/375/414) על `503 @/api/arcade/collected` בקונסולה — הבקשה החדשה. ⇒ רשומה **צרה** ב-`EXPECTED_CONSOLE['/world']`, קשורה לכתובת אחת ולסטטוס אחד בדיוק כמו `/api/arcade/round` שמעליה. **957 ✓ אחריה.**
+- [x] הרצה טרייה: `typecheck ✓` · `check:core ✓` · `npm test ✓` (+3 חוזה +1 שומר מקור) ·
       `npm run build ✓` · `npm run check:mobile ✓` (‏הפִּין נכנס לאזור העליון של הרשת —
       ⛔ ⛔ שינוי `y` של הפעולה הראשית שהוגדרה ב־F-027; שומר `first paint` יאותת).
-- [ ] `git diff` צפוי: `route.ts` (+15/−1), `route.test.ts` (+45), `AppGrid.tsx` (+~10),
+- [x] `git diff` צפוי: `route.ts` (+15/−1), `route.test.ts` (+45), `AppGrid.tsx` (+~10),
       `docs/api-contract.md` (+3), `docs/superpowers/plans/…` (המשימה סומנה בוצע).
 
 ---

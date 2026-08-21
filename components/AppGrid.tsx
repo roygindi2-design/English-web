@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
+import type { CollectedLatest } from '@/lib/core/arcadeCollection';
 import {
   WORLD_APP_HREF,
   WORLD_APP_LABEL_HE,
@@ -56,6 +58,8 @@ import {
 
 /** ⛔ לא `0`. מספר שאין לנו אינו מספר אפס. */
 const UNKNOWN_HE = '—';
+/** D-071ⓑ · T-133 — ⛔ שורה אחת, ⛔ בלי מונה, בלי רצף ובלי תגמול. */
+const PIN_PREFIX_HE = 'המילה שאספת אתמול — ';
 const OPEN_HE = 'פתוח';
 const HEADING_HE = 'אפליקציות';
 
@@ -78,6 +82,29 @@ type RoundResponse =
       readonly required: number;
     }
   | { readonly ok: true; readonly gameLevel: number; readonly round: null }
+  | { readonly ok: false; readonly code: string };
+
+/**
+ * D-071ⓑ · T-133 — הפִּין «המילה שאספת אתמול» **מעל** אריח `collected`, ⛔ ולא בתוכו.
+ *
+ * ⚠️ **הסיבה שהוא קיים נמדדה ⛔ ולא שוערה (F-084 · D-071ⓐ):** `collected` הוא האחרון
+ * ב-`LEARNING_PRIORITY` ⇒ ⛔ לעולם אינו האריח הגדול כשמשהו אחר פתוח ⇒ קטן ⇒ קל
+ * לפספס. הפִּין הוא הפיצוי, ⛔ ולא קישוט.
+ *
+ * ⛔ **הרכיב ⛔ אינו קורא את מערך `words` המלא** — הוא לוקח את `latest` בלבד מאותה
+ * תשובה. ⛔ אין כאן נקודת קצה חדשה: פתיחת נתיב שמחזיר שדה יחיד הייתה מגדילה את שטח
+ * ה-HTTP בלי ערך, ובדיוק מחלקת קוד המת של F-074.
+ *
+ * ⛔ **קריאה שנכשלה ⇒ ⛔ אין פִּין, ⛔ ולא הודעת שגיאה.** הפִּין הוא תוספת, וכישלון
+ * שלו ⛔ אינו רשאי לדבר על המסך.
+ */
+type CollectedResponse =
+  | {
+      readonly ok: true;
+      readonly words: readonly unknown[];
+      readonly hiddenCount: number;
+      readonly latest?: CollectedLatest;
+    }
   | { readonly ok: false; readonly code: string };
 
 interface ArcadeTile {
@@ -128,6 +155,8 @@ export default function AppGrid(): React.JSX.Element {
     hasActiveTask: false,
   });
   const [loading, setLoading] = useState(true);
+  // ⛔ `undefined` ⇒ ⛔ אין שורה. היעדר הפִּין **הוא** המצב הריק (D-071ⓑ).
+  const [latest, setLatest] = useState<CollectedLatest | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +170,24 @@ export default function AppGrid(): React.JSX.Element {
       if (cancelled) return;
       setArcade(next);
       setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      let next: CollectedLatest | undefined;
+      try {
+        const body = await apiGet<CollectedResponse>('/api/arcade/collected');
+        next = body.ok ? body.latest : undefined;
+      } catch {
+        next = undefined;
+      }
+      if (cancelled) return;
+      setLatest(next);
     })();
     return () => {
       cancelled = true;
@@ -166,6 +213,14 @@ export default function AppGrid(): React.JSX.Element {
           );
           return (
             <li key={worldApp.id} className={featured === worldApp.id ? 'col-span-2' : ''}>
+              {worldApp.id === 'collected' && latest !== undefined ? (
+                // ⛔ **מעל** האריח, ⛔ ולא בתוכו. `truncate` ⛔ ולא תקרת תווים קשיחה:
+                // רוחב האריח משתנה, ומילה ארוכה ⛔ אינה רשאית לשבור את הרשת.
+                <p className="mb-1 truncate text-sm text-ink-muted" data-collected-pin>
+                  {PIN_PREFIX_HE}
+                  <EnWord>{latest.enText}</EnWord>
+                </p>
+              ) : null}
               {worldApp.state.kind === 'open' ? (
                 <Link href={worldApp.href} data-app-tile={worldApp.id} className={`${TILE_BASE} ${TILE_OPEN}`}>
                   {body}
