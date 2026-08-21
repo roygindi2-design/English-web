@@ -27,3 +27,19 @@
 - data/octanove-vocabulary-profile-c1c2-1.0.csv — 2136 rows · 2182 entries · 0 skipped · 2 with an unrecognised POS
 - data/wordnet-sense-index.tsv — **unavailable** (T-043: WordNet sense index)
 - data/h1-hebrew-wordnet-synsets.tsv — **unavailable** (T-043: synset-bearing H1 export)
+
+## אימות צולב לרשומות `!` (T-112 · D-055)
+
+D-055 ביטלה את הכלל הגורף «כל רשומת `!` היא low». רשומה נבדקת מול מקור שני
+מורשה (H3 Kaikki CC BY-SA · H4 word2word Apache-2.0): תואמת ⇒ `medium` ומוסר
+«טרם אומת»; חלוקה או לא-מכוסה ⇒ נשארת `low`.
+
+⛔ **מודל שפה ⛔ אינו מקור אימות ולעולם אינו קובע confidence** (D-055 · R-014).
+
+- מועמדים (רשומות `!`): **3291**
+- שיעור השדרוג: **unavailable** — ⛔ אין מקור שני טעון. ראה `data/README.md` (T-043).
+
+### מקורות האימות
+
+- `data/h3-kaikki-en.jsonl` — **unavailable** (T-043)
+- `data/h4-word2word-en-he.tsv` — **unavailable** (T-043)

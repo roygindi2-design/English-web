@@ -108,3 +108,27 @@ describe('⛔ D-055 — a language model is never a validation source', () => {
     expect(src.toLowerCase()).not.toMatch(/\bllm\b|\bgpt\b|openai|anthropic|\bclaude\b/);
   });
 });
+
+import { renderCrossValidationMarkdown } from './translationConfidence';
+
+describe('renderCrossValidationMarkdown', () => {
+  const gold = buildGoldSet(['run\t!לרוץ', 'bank\t!גדה', 'zzzz\t!משהו'].join('\n'));
+
+  it('prints unavailable — and never 0% — when there is no second source', () => {
+    const md = renderCrossValidationMarkdown(tallyCrossValidation(gold, null), []);
+    expect(md).toContain('unavailable');
+    expect(md).not.toMatch(/\b0(\.0)?%/);
+  });
+
+  it('prints a percentage once a second source is present', () => {
+    const md = renderCrossValidationMarkdown(tallyCrossValidation(gold, SECOND), ['H4 — 3 pairs']);
+    expect(md).toContain('33.3%');
+    expect(md).toContain('H4 — 3 pairs');
+  });
+
+  it('states that a model is not a validation source', () => {
+    const md = renderCrossValidationMarkdown(tallyCrossValidation(gold, SECOND), []);
+    expect(md).toContain('D-055');
+    expect(md).toMatch(/⛔/);
+  });
+});

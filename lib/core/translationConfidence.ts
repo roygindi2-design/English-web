@@ -151,3 +151,49 @@ export function tallyCrossValidation(
 
   return { candidates, upgraded, disagreed, uncovered, noSecondSource, lemmasCovered: lemmas.size };
 }
+
+/**
+ * ⛔ אחוז ⛔ אינו מודפס כשאין מקור שני. `0 מתוך 3301` הוא מספר נכון שנקרא כטענה
+ * שקרית — «האימות רץ ונכשל» במקום «האימות לא רץ». זה בדיוק הכלל ש-
+ * measure-sense-accuracy.test.ts כבר אוכף: קלט חסר הוא unavailable ⛔ ולא אפס.
+ */
+export function renderCrossValidationMarkdown(
+  tally: CrossTally,
+  provenance: readonly string[],
+): string {
+  const lines: string[] = [
+    '## אימות צולב לרשומות `!` (T-112 · D-055)',
+    '',
+    'D-055 ביטלה את הכלל הגורף «כל רשומת `!` היא low». רשומה נבדקת מול מקור שני',
+    'מורשה (H3 Kaikki CC BY-SA · H4 word2word Apache-2.0): תואמת ⇒ `medium` ומוסר',
+    '«טרם אומת»; חלוקה או לא-מכוסה ⇒ נשארת `low`.',
+    '',
+    '⛔ **מודל שפה ⛔ אינו מקור אימות ולעולם אינו קובע confidence** (D-055 · R-014).',
+    '',
+  ];
+  if (tally.noSecondSource === tally.candidates && tally.candidates > 0) {
+    lines.push(
+      `- מועמדים (רשומות \`!\`): **${tally.candidates}**`,
+      '- שיעור השדרוג: **unavailable** — ⛔ אין מקור שני טעון. ראה `data/README.md` (T-043).',
+      '',
+    );
+  } else {
+    const pct =
+      tally.candidates === 0 ? '0.0' : ((tally.upgraded / tally.candidates) * 100).toFixed(1);
+    lines.push(
+      `- מועמדים (רשומות \`!\`): **${tally.candidates}**`,
+      `- שודרגו ל-\`medium\` (כלל 2): **${tally.upgraded}** (${pct}%)`,
+      `- נשארו \`low\` — המקור השני חלוק (כלל 3): **${tally.disagreed}**`,
+      `- נשארו \`low\` — המקור השני ⛔ אינו מכסה (כלל 4): **${tally.uncovered}**`,
+      `- למות שהמקור השני מכסה: **${tally.lemmasCovered}**`,
+      '',
+    );
+  }
+  lines.push(
+    '### מקורות האימות',
+    '',
+    ...(provenance.length === 0 ? ['- ⛔ אין.'] : provenance.map((p) => `- ${p}`)),
+    '',
+  );
+  return lines.join('\n');
+}
