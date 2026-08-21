@@ -33,9 +33,20 @@ export interface QueueRow {
   readonly cefrProfileBand: string | null;
   /** epoch ms. null = מילה חדשה שטרם נענתה — ⛔ ולא "לא בזמן". */
   readonly nextReviewAtMs: number | null;
+  /** `0` = SM-2 טרם תזמן. העמודה היא `not null default 0` (0005_review_state.sql:29). */
+  readonly intervalDays: number;
   readonly attempts: number;
   readonly repetition: number;
   readonly consecutiveCorrectRecognition: number;
+}
+
+/**
+ * T-100 · D-043 — מצב התזמון של המילה, ⛔ ולא פן של הכרטיס.
+ * ⛔ אפס עמודה חדשה: שני השדות קיימים מאז 0005_review_state.sql.
+ */
+export interface QueueCardReview {
+  readonly next_review_at: string | null;
+  readonly interval_days: number;
 }
 
 /** צורת החוט. ⛔ המסלול לא בונה Card — buildCard רץ בלקוח, שם חי גם מצב החשיפה. */
@@ -49,6 +60,8 @@ export interface QueueCardInput {
     readonly examples: { readonly supportive: string; readonly neutral: string };
     readonly needs_human_review: boolean;
   };
+  /** ⛔ תוספת בלבד — ארבעת השדות שמעליה ⛔ לא זזו (התקדים הוא T-102). */
+  readonly review: QueueCardReview;
 }
 
 export function parseDeckName(value: string | null): DeckName | null {
@@ -152,6 +165,13 @@ export function toQueueCardInput(
       examples: { supportive: row.examples.supportive, neutral: row.examples.neutral },
       // D-024: travels as measured. A sense nobody verified must reach the card marked.
       needs_human_review: row.needsHumanReview === true,
+    },
+    review: {
+      // ⛔ אין שדה ISO שני ב-QueueRow: שתי הצגות של אותו נתון הן הסחיפה של
+      // D-034. ההמרה נאמנה למילישנייה ונבדקת ב-deck.test.ts.
+      next_review_at:
+        row.nextReviewAtMs === null ? null : new Date(row.nextReviewAtMs).toISOString(),
+      interval_days: row.intervalDays,
     },
   };
 }

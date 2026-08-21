@@ -46,6 +46,11 @@ const FIXTURE: readonly QueueCardInput[] = [
       examples: { supportive: 'The Lorem is only a layout fixture.', neutral: '' },
       needs_human_review: false,
     },
+    // T-100 — הכרטיס הראשון **פג לחזרה** במכוון: בלי כרטיס אחד כזה
+    // `[data-decay]` ⛔ לעולם אינו `stale` בארנס, ו«הדעיכה נראית» היה נשאר
+    // טענה. ⛔ תאריך קבוע ⛔ ולא מחושב: פיקסטורה שמשתנה עם השעון היא בדיקה
+    // שנשברת ביום אחר.
+    review: { next_review_at: '2026-01-01T00:00:00.000Z', interval_days: 7 },
   },
   {
     word_id: 'fixture-ipsum',
@@ -57,6 +62,7 @@ const FIXTURE: readonly QueueCardInput[] = [
       examples: { supportive: 'The Ipsum is also a fixture.', neutral: '' },
       needs_human_review: false,
     },
+    review: { next_review_at: null, interval_days: 0 },
   },
   {
     word_id: 'fixture-dolor',
@@ -68,6 +74,7 @@ const FIXTURE: readonly QueueCardInput[] = [
       examples: { supportive: 'The Dolor is a third fixture card.', neutral: '' },
       needs_human_review: false,
     },
+    review: { next_review_at: null, interval_days: 0 },
   },
   {
     word_id: 'fixture-sit',
@@ -79,6 +86,7 @@ const FIXTURE: readonly QueueCardInput[] = [
       examples: { supportive: 'The Sit is a fourth fixture card.', neutral: '' },
       needs_human_review: false,
     },
+    review: { next_review_at: null, interval_days: 0 },
   },
   {
     word_id: 'fixture-amet',
@@ -90,6 +98,7 @@ const FIXTURE: readonly QueueCardInput[] = [
       examples: { supportive: 'The Amet is a fifth fixture card.', neutral: '' },
       needs_human_review: false,
     },
+    review: { next_review_at: null, interval_days: 0 },
   },
 ];
 

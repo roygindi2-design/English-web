@@ -136,3 +136,11 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   transform: translateX(-8px);
   opacity: 0.6;
 }
+
+/* T-100 · D-043 — ההיחלשות החזותית. ⛔ חלה על מילת הכותרת בלבד (--ink, ~17:1),
+   ⛔ ולעולם לא על השורה המשנית (--ink-muted, ~7.5:1) שהייתה נופלת מתחת ל-4.5:1
+   באטימות הזאת. הערכים זהים ל-DECAY_OPACITY ב-lib/core/decay.ts, והרצפה נבדקת
+   שם בחישוב. ⛔ אין כאן אנימציה: דעיכה היא מצב, ⛔ לא תנועה. */
+[data-decay='due'] { opacity: 0.9; }
+[data-decay='late'] { opacity: 0.75; }
+[data-decay='stale'] { opacity: 0.6; }

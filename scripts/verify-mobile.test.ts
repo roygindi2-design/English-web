@@ -984,3 +984,11 @@ describe('C-0252 — the gesture block establishes its own precondition', () => 
     expect(BLOCK).toMatch(/\[data-reveal\]'\)\.count\(\)/);
   });
 });
+
+it('T-100 — the harness measures the decay level AND its Hebrew label', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  expect(SRC).toContain('overdue card decays');
+  expect(SRC).toContain('decay carries its Hebrew label');
+  // ⛔ הסדר: בדיקת הדעיכה קודמת למחוות, שמסירות את הכרטיס הראשון מה-DOM.
+  expect(SRC.indexOf('overdue card decays')).toBeLessThan(SRC.indexOf('swipe right grades the card'));
+});

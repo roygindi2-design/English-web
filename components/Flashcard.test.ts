@@ -301,3 +301,32 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(T085_CARD_SRC).toContain('data-swipe');
   });
 });
+
+describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {
+  it('התווית העברית מגיעה מהמודול הטהור ⛔ ואינה מוקלדת שוב', () => {
+    expect(T085_CARD_SRC).toContain('DECAY_LABEL');
+    expect(T085_CARD_SRC).not.toContain('הגיע זמן לחזור');
+  });
+
+  it('שתי חזיתות הכרטיס — שתיהן נושאות את הדעיכה', () => {
+    // הפנים מוטבעות פעמיים במכוון (ראה ההערה של T-085); דעיכה על אחת מהן
+    // בלבד הייתה אומרת שהלומד רואה אותה לפני החשיפה ⛔ ולא אחריה, או להפך.
+    expect(T085_CARD_SRC.split('data-decay').length - 1).toBeGreaterThanOrEqual(2);
+  });
+
+  it('⛔ הדעיכה ⛔ אינה נוגעת בשורה המשנית — היא שוברת 4.5:1 (עובדה ד׳)', () => {
+    // ⛔ אין `data-decay` על אף אלמנט שנושא `text-ink-muted`.
+    for (const line of T085_CARD_SRC.split('\n')) {
+      if (line.includes('data-decay')) {
+        expect(line, 'דעיכה על text-ink-muted שוברת רצפת ניגודיות').not.toContain('text-ink-muted');
+      }
+    }
+  });
+
+  it('⛔ אפס שדה חדש: הרכיב קורא next_review_at ו-interval_days ⛔ ותו לא', () => {
+    expect(T085_CARD_SRC).toContain('decayLevel');
+    for (const invented of ['decayed_at', 'decay_level', 'is_decayed', 'staleness']) {
+      expect(T085_CARD_SRC, `${invented} — D-043 אוסרת שדה מתמיד`).not.toContain(invented);
+    }
+  });
+});

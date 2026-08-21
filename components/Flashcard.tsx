@@ -1,9 +1,11 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcard';
 import { resolveSwipe } from '@/lib/core/swipeGrade';
+import { DECAY_LABEL, decayLevel, parseReviewAt } from '@/lib/core/decay';
+import type { QueueCardReview } from '@/lib/core/deck';
 
 /**
  * The card, per the UI spec in docs/superpowers/plans/2026-08-06-content-bank.md.
@@ -34,9 +36,13 @@ import { resolveSwipe } from '@/lib/core/swipeGrade';
  */
 export default function Flashcard({
   card,
+  review,
   onGrade,
 }: {
   readonly card: Card;
+  /** ⛔ אופציונלי: פיקסטורות `/dev/card*` בונות `Card` ישירות ⛔ ואין להן תזמון
+   *  להמציא. חסר ⇒ `'none'`, ⛔ ולא ניחוש. */
+  readonly review?: QueueCardReview;
   readonly onGrade: (grade: CardGrade) => void;
 }) {
   const [revealed, setRevealed] = useState(false);
@@ -48,6 +54,12 @@ export default function Flashcard({
   // מחדש על כל `pointerdown` היה מאפס את שדה ההקלדה של הכיוון השני.
   const swipeFrom = useRef<{ x: number; y: number } | null>(null);
   const [swipe, setSwipe] = useState<CardGrade | null>(null);
+
+  // ⛔ אפס `Date.now()` ברינדור: השרת והלקוח היו מקבלים שני מספרים שונים,
+  // וזו אזהרת hydration שהארנס סופר כשגיאת קונסולה. השעון נכנס **אחרי**
+  // ההרכבה, ולכן הרינדור הראשון זהה בשני הצדדים ו⛔ אין אי-התאמה.
+  const [nowMs, setNowMs] = useState<number | null>(null);
+  useEffect(() => setNowMs(Date.now()), []);
 
   // React's documented "adjust state when a prop changes" pattern, and it is a
   // correctness fix, not tidiness: `revealed` is component state, so a parent that
@@ -82,6 +94,15 @@ export default function Flashcard({
 
   /** ⛔ תנאי אחד לשני הערוצים: הכפתורים למטה נבדקים באותו ביטוי בדיוק. */
   const swipeActive = revealed && card.input === 'self';
+
+  const decay =
+    nowMs === null || review === undefined
+      ? 'none'
+      : decayLevel({
+          nowMs,
+          nextReviewAtMs: parseReviewAt(review.next_review_at),
+          intervalDays: review.interval_days,
+        });
 
   return (
     <section
@@ -134,9 +155,22 @@ export default function Flashcard({
           className="w-full rounded-2xl border border-border-subtle bg-surface-raised p-6 text-start"
         >
           <p className="text-sm text-ink-muted">{prompt}</p>
-          <p className="mt-2 text-4xl font-bold leading-tight" data-card-front>
+          <p
+            className="mt-2 text-4xl font-bold leading-tight"
+            data-card-front
+            data-decay={decay}
+          >
             {primary(card.front.primary, card.front.primaryLang)}
           </p>
+          {decay === 'none' ? null : (
+            /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
+               ואין צבע חדש: `text-ink-muted` הוא המשלב הדיסקרטי, בדיוק כמו
+               «טרם אומת». ⛔ והשורה הזאת ⛔ אינה דועכת — היא תישבר מ-4.5:1. */
+            <p className="mt-2 flex items-center gap-2 text-sm text-ink-muted">
+              <span aria-hidden="true">◷</span>
+              {DECAY_LABEL}
+            </p>
+          )}
           {/* הרמז חי בתוך הכפתור — תווית מחוץ לו אינה נלחצת עם הכפתור. */}
           <p className="mt-6 text-sm text-ink-muted" data-reveal-hint>
             {'הקש להצגת התשובה'}
@@ -145,9 +179,22 @@ export default function Flashcard({
       ) : (
         <div className="rounded-2xl border border-border-subtle bg-surface-raised p-6">
           <p className="text-sm text-ink-muted">{prompt}</p>
-          <p className="mt-2 text-4xl font-bold leading-tight" data-card-front>
+          <p
+            className="mt-2 text-4xl font-bold leading-tight"
+            data-card-front
+            data-decay={decay}
+          >
             {primary(card.front.primary, card.front.primaryLang)}
           </p>
+          {decay === 'none' ? null : (
+            /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
+               ואין צבע חדש: `text-ink-muted` הוא המשלב הדיסקרטי, בדיוק כמו
+               «טרם אומת». ⛔ והשורה הזאת ⛔ אינה דועכת — היא תישבר מ-4.5:1. */
+            <p className="mt-2 flex items-center gap-2 text-sm text-ink-muted">
+              <span aria-hidden="true">◷</span>
+              {DECAY_LABEL}
+            </p>
+          )}
 
           {revealed ? (
             <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-5" data-card-back>

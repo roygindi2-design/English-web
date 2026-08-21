@@ -195,6 +195,9 @@ export default function CardDeck({
                 card.direction,
                 { isFirstEncounter: card.is_first_encounter },
               )}
+              // T-100 — מצב התזמון עובר כמו שהוא. ⛔ הדק ⛔ אינו גוזר ממנו דבר:
+              // ההכרעה טהורה ויושבת ב-lib/core/decay.ts.
+              review={card.review}
               onGrade={(value) => {
                 void grade(card.word_id, value);
               }}

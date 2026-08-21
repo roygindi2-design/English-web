@@ -1557,6 +1557,19 @@ try {
           `[data-reveal] count is ${revealable} ⇒ the card is already revealed`,
         );
 
+        // T-100 · D-043 — הדעיכה נראית, ⛔ ולא מוצהרת. הכרטיס הראשון בפיקסטורה
+        // פג לחזרה, ולכן `stale` חייב להיות על המסך. ⛔ הבדיקה ⛔ אינה על צבע:
+        // היא על **התווית העברית**, שהיא הערוץ שאינו-צבע של חוקה § 1.
+        const decay = await page.evaluate(() => {
+          const el = document.querySelector('[data-card-front][data-decay]');
+          return {
+            level: el === null ? null : el.getAttribute('data-decay'),
+            label: document.body.innerText.includes('הגיע זמן לחזור'),
+          };
+        });
+        check(decay.level === 'stale', `${at} overdue card decays`, `data-decay=${decay.level}`);
+        check(decay.label, `${at} decay carries its Hebrew label`, 'label missing');
+
         // ⓐ המחווה ⛔ אינה חיה לפני החשיפה — שני הכפתורים אינם על המסך, ולכן
         // גם הקיצור אליהם אינו. זה D-033: סימון בטעות הוא הנזק.
         const before = await remainingNow();
