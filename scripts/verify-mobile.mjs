@@ -1527,6 +1527,80 @@ try {
         }
       }
 
+      // T-099 · D-042 — המחווה נמדדת חיה, ⛔ ולא מוצהרת. `/dev/deck` מחזיק חמישה
+      // כרטיסים ו-`onGraded` שלו נפתר מיד, ולכן «הכרטיס סומן» הוא בדיוק ירידה
+      // של `data-remaining` — ⛔ ולא צילום מסך ולא «נראה תקין».
+      //
+      // ⚠️ הבלוק יושב **אחרון** בגוף הלולאה בכוונה: הוא משנה את מצב העמוד
+      // (כרטיס עוזב את ה-DOM), וכל בדיקה שהייתה רצה אחריו הייתה מודדת דף אחר.
+      if (route === '/dev/deck') {
+        const remainingNow = () =>
+          page.evaluate(() => {
+            const el = document.querySelector('[data-remaining]');
+            return el === null ? -1 : Number(el.getAttribute('data-remaining'));
+          });
+
+        // ⚠️ נמדד C-0252, ⛔ ולא הנחה: הבלוק של יעדי המגע (למעלה, «grade targets»)
+        // **חושף** את הכרטיס הראשון כדי למדוד את שני הכפתורים, ולכן העמוד שמגיע
+        // לכאן ⛔ אינו במצב ההתחלתי. הרצה ראשונה הוכיחה זאת — «swipe before reveal»
+        // נפלה עם `remaining moved 5 → 4` בשלושת הרוחבים, כלומר המחווה «לפני
+        // החשיפה» רצה על כרטיס חשוף וסימנה אותו כדין.
+        // ⛔ התיקון ⛔ אינו להחליש את הטענה: הוא **לבסס את התנאי שהיא מתיימרת
+        // למדוד**. טעינה מחדש מחזירה את הפיקסטורה למצבה, והשורה שאחריה מאמתת
+        // שהחזית באמת בלתי-חשופה — בלעדיה הבדיקה הייתה עוברת ריק ביום שבו
+        // בלוק אחר יחשוף שוב.
+        await page.reload({ waitUntil: 'networkidle' });
+        const revealable = await page.locator('[data-reveal]').count();
+        check(
+          revealable >= 1,
+          `${at} deck starts unrevealed — the precondition is measured`,
+          `[data-reveal] count is ${revealable} ⇒ the card is already revealed`,
+        );
+
+        // ⓐ המחווה ⛔ אינה חיה לפני החשיפה — שני הכפתורים אינם על המסך, ולכן
+        // גם הקיצור אליהם אינו. זה D-033: סימון בטעות הוא הנזק.
+        const before = await remainingNow();
+        const box = await page.locator('[data-flashcard]').first().boundingBox();
+        const midY = Math.round(box.y + box.height / 2);
+        await page.mouse.move(Math.round(width / 2) - 40, midY);
+        await page.mouse.down();
+        await page.mouse.move(Math.round(width / 2) + 40, midY, { steps: 8 });
+        await page.mouse.up();
+        check(
+          (await remainingNow()) === before,
+          `${at} swipe before reveal ⛔ does not grade`,
+          `remaining moved ${before} → ${await remainingNow()}`,
+        );
+
+        // ⓑ אחרי חשיפה — החלקה ימינה מסמנת «ידעתי» והכרטיס עוזב.
+        await page.locator('[data-reveal]').first().click();
+        const revealed = await remainingNow();
+        await page.mouse.move(Math.round(width / 2) - 40, midY);
+        await page.mouse.down();
+        await page.mouse.move(Math.round(width / 2) + 40, midY, { steps: 8 });
+        await page.mouse.up();
+        const afterSwipe = await remainingNow();
+        check(
+          afterSwipe === revealed - 1,
+          `${at} swipe right grades the card`,
+          `remaining ${revealed} → ${afterSwipe}`,
+        );
+
+        // ⓒ D-042ⓐ — מחווה שמתחילה ברצועת הקצה ⛔ אינה מסמנת. זו הבדיקה
+        // ששומרת על ההחלקה «אחורה» של iOS Safari, והיא **שלילית בכוונה**.
+        await page.locator('[data-reveal]').first().click();
+        const beforeEdge = await remainingNow();
+        await page.mouse.move(5, midY);
+        await page.mouse.down();
+        await page.mouse.move(200, midY, { steps: 8 });
+        await page.mouse.up();
+        check(
+          (await remainingNow()) === beforeEdge,
+          `${at} edge-zone swipe ⛔ does not grade (D-042ⓐ)`,
+          `remaining moved ${beforeEdge} → ${await remainingNow()}`,
+        );
+      }
+
       // A 404 route legitimately logs a 404; every other route must be silent — except for
       // the one request this harness itself makes impossible (see EXPECTED_CONSOLE).
       if (route !== '/does-not-exist') {

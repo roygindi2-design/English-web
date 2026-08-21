@@ -1,8 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcard';
+import { resolveSwipe } from '@/lib/core/swipeGrade';
 
 /**
  * The card, per the UI spec in docs/superpowers/plans/2026-08-06-content-bank.md.
@@ -43,6 +44,11 @@ export default function Flashcard({
   const [grade, setGrade] = useState<CardGrade | null>(null);
   const answerId = useId();
 
+  // ⛔ ref ולא state: נקודת ההתחלה ⛔ אינה משנה ולו פיקסל אחד על המסך, ורינדור
+  // מחדש על כל `pointerdown` היה מאפס את שדה ההקלדה של הכיוון השני.
+  const swipeFrom = useRef<{ x: number; y: number } | null>(null);
+  const [swipe, setSwipe] = useState<CardGrade | null>(null);
+
   // React's documented "adjust state when a prop changes" pattern, and it is a
   // correctness fix, not tidiness: `revealed` is component state, so a parent that
   // renders the next card in the same slot without a `key` would hand the learner
@@ -55,6 +61,7 @@ export default function Flashcard({
     setRevealed(false);
     setTyped('');
     setGrade(null);
+    setSwipe(null);
   }
 
   const primary = (text: string, lang: 'en' | 'he') =>
@@ -73,8 +80,44 @@ export default function Flashcard({
   const prompt =
     card.direction === 'recognition' ? 'מה הפירוש?' : 'איך אומרים באנגלית?';
 
+  /** ⛔ תנאי אחד לשני הערוצים: הכפתורים למטה נבדקים באותו ביטוי בדיוק. */
+  const swipeActive = revealed && card.input === 'self';
+
   return (
-    <section className="flex flex-1 flex-col gap-6" data-flashcard={card.direction}>
+    <section
+      className="flex flex-1 flex-col gap-6"
+      data-flashcard={card.direction}
+      /* D-042 — הקיצור לשני הכפתורים. ⛔ הוא חי בדיוק כשהם על המסך: `swipeActive`
+         הוא **אותו תנאי** שמרנדר אותם למטה, ⛔ ולא תנאי שני שיסטה ממנו.
+         ⛔ אפס מטפל תנועה: הכרטיס ⛔ אינו נגרר (D-042ⓒ), וההיזון הוא אישור בדיד
+         שנצבע ברגע ההכרעה. ⚠️ ההערה הזאת היא הערת-בלוק בכוונה ⛔ ולא הערת-שורה:
+         שומר המקור ב-`Flashcard.test.ts` מסיר הערות-בלוק בלבד, ולכן שם של מטפל
+         שנכתב בהערת-שורה היה מפיל אותו כאילו הוא קוד חי. */
+      data-swipe={swipe ?? undefined}
+      onPointerDown={(e) => {
+        setSwipe(null);
+        swipeFrom.current = swipeActive ? { x: e.clientX, y: e.clientY } : null;
+      }}
+      onPointerUp={(e) => {
+        const from = swipeFrom.current;
+        swipeFrom.current = null;
+        if (from === null) return;
+        const resolved = resolveSwipe({
+          startX: from.x,
+          startY: from.y,
+          endX: e.clientX,
+          endY: e.clientY,
+          // ⛔ `window.innerWidth` ⛔ אינו נקרא ב-`/lib/core` — הרכיב הוא שמודד
+          // את המסך ומוסר את המספר, וזה בדיוק גבול הטהרה של הפרויקט.
+          viewportWidth: window.innerWidth,
+        });
+        if (resolved === null) return;
+        // ⛔ אפס `setTimeout`: הציון יוצא **מיד**, והמעבר של 200ms מתנגן בזמן
+        // שהבקשה בדרך. השהיית הציון הייתה מירוץ (התקדים הוא F-101).
+        setSwipe(resolved);
+        onGrade(resolved);
+      }}
+    >
       {/* פני הכרטיס.
           ⓐ במצב `self` + `!revealed` — `<button>` שגם היפוך וגם יעד מגע: `<button>`
              טבעי נותן Enter/Space, `role="button"` אוטומטי, ו-`:focus-visible`
@@ -214,7 +257,7 @@ export default function Flashcard({
           </div>
         ) : null}
 
-        {revealed && card.input === 'self' ? (
+        {swipeActive ? (
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"

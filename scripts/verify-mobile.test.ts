@@ -938,3 +938,49 @@ describe('the arrival marker is waited for, not raced (F-101)', () => {
     expect(block).toContain('.catch(() => {})');
   });
 });
+
+describe('T-099 · D-042 — the deck gesture is measured, ⛔ not declared', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('measures all three claims: before reveal · after reveal · edge zone', () => {
+    for (const label of [
+      'swipe before reveal ⛔ does not grade',
+      'swipe right grades the card',
+      'edge-zone swipe ⛔ does not grade (D-042ⓐ)',
+    ]) {
+      expect(SRC, `${label} — בדיקה חסרה בארנס`).toContain(label);
+    }
+  });
+
+  it('the block runs last for that route — it mutates the page', () => {
+    // ⛔ הטענה היא סדר: בלוק שמסמן כרטיס ורץ באמצע היה משאיר לכל שאר
+    // הבדיקות דף אחר ממה שהן חושבות שהן מודדות.
+    expect(SRC.indexOf("route === '/dev/deck'")).toBeGreaterThan(SRC.indexOf('no horizontal scroll'));
+  });
+});
+
+/**
+ * C-0252 — «לפני החשיפה» היא טענה על **מצב**, והמצב הזה ⛔ אינו מובן מאליו:
+ * בלוק יעדי המגע (`grade targets`) חושף את הכרטיס הראשון קודם, ולכן ההרצה
+ * הראשונה הפילה את «swipe before reveal» עם `remaining moved 5 → 4` בשלושת
+ * הרוחבים. הטעינה מחדש היא מה שמבסס את התנאי, והספירה היא מה שמונע מהבדיקה
+ * לעבור ריק ביום שבו בלוק אחר יחשוף שוב.
+ */
+describe('C-0252 — the gesture block establishes its own precondition', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  // הבלוק של המחווה הוא **האחרון** מבין בלוקי `/dev/deck` — הוא רץ בסוף גוף
+  // הלולאה בכוונה, ולכן `lastIndexOf` הוא ההיצמדות הנכונה ⛔ ולא הראשונה.
+  const BLOCK = SRC.slice(SRC.lastIndexOf("route === '/dev/deck'"));
+
+  it('reloads the fixture before claiming the card is unrevealed', () => {
+    expect(BLOCK).toContain('deck starts unrevealed — the precondition is measured');
+    expect(
+      BLOCK.indexOf('page.reload'),
+      'הטעינה מחדש חייבת לקדום למחווה «לפני החשיפה» — אחרת הטענה מודדת דף אחר',
+    ).toBeLessThan(BLOCK.indexOf('swipe before reveal ⛔ does not grade'));
+  });
+
+  it('⛔ and the precondition is a real count, ⛔ not a comment', () => {
+    expect(BLOCK).toMatch(/\[data-reveal\]'\)\.count\(\)/);
+  });
+});

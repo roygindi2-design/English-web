@@ -236,11 +236,68 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(maxDepth, 'קינון `<button>` בתוך `<button>` — HTML לא תקין, שובר קורא מסך').toBeLessThanOrEqual(1);
   });
 
-  it('⛔ ⛔ swipe-to-grade (D-032 בתוקף)', () => {
-    // האיסור על מחווה גורף בקובץ הזה, ⛔ רק בקטע חדש: התיקון של T-085 לא
-    // רשאי להחזיר מחווה שכבר נדחתה בהחלטה כתובה.
-    for (const forbidden of ['onPointerDown', 'onPointerMove', 'onTouchMove', 'onSwipe']) {
-      expect(T085_CARD_SRC, `${forbidden} ⛔ ⛔ אסור על הכרטיס`).not.toContain(forbidden);
+  /**
+   * F-103 · D-042 · T-099 — הבדיקה הקודמת כאן אסרה מחווה בנימוק «D-032 בתוקף».
+   * D-042 הפכה את D-032 במפורש, ולכן הנימוק חדל להתקיים. ⛔ הבדיקה ⛔ לא הוחלשה:
+   * מה שהיא מודדת עכשיו **חד יותר** — לא «אין מחווה» אלא «המחווה היא קיצור, ⛔ לא
+   * ערוץ, ⛔ לא גרירה, ⛔ ולא מסלול שני».
+   */
+  it('D-042ⓒ — ⛔ ⛔ גרירה: אין מטפל תנועה בכל הקובץ', () => {
+    for (const forbidden of ['onPointerMove', 'onTouchMove', 'onTouchStart', 'onDrag']) {
+      expect(T085_CARD_SRC, `${forbidden} ⇒ הכרטיס נגרר עם האצבע — D-042ⓒ אוסרת`).not.toContain(
+        forbidden,
+      );
     }
+  });
+
+  it('D-042 — שני הכפתורים נשארים הערוץ הקנוני', () => {
+    expect(T085_CARD_SRC).toContain('data-grade="again"');
+    expect(T085_CARD_SRC).toContain('data-grade="good"');
+    expect(T085_CARD_SRC).toContain('לא ידעתי');
+    expect(T085_CARD_SRC).toContain('ידעתי');
+  });
+
+  it('D-042 — המחווה קוראת ל-onGrade, ⛔ ולא למסלול שני', () => {
+    // ⛔ `resolveSwipe` הוא היחיד שמכריע, ו-`onGrade` הוא היחיד שמסמן: שתי
+    // המחרוזות ⛔ אינן מספיקות בנפרד, ולכן שתיהן נדרשות באותה בדיקה.
+    expect(T085_CARD_SRC).toContain('resolveSwipe');
+    expect(T085_CARD_SRC).toContain('onPointerUp');
+    expect(T085_CARD_SRC).toContain('onPointerDown');
+    // ⛔ אפס לוגיקת ציון מקומית: הציון מגיע מהמודול הטהור ונמסר כמו שהוא.
+    expect(T085_CARD_SRC).not.toMatch(/onGrade\(\s*['"]good['"]\s*\)\s*;?\s*\/\/\s*swipe/);
+  });
+
+  /**
+   * F-106 — התוכנית הכתיבה כאן `expect(SRC).not.toContain('preventDefault')` וניבאה
+   * שהיא «עוברת כבר עכשיו». ⛔ היא ⛔ אינה יכולה לעבור: `onSubmit` של טופס ההקלדה
+   * קורא `e.preventDefault()` מאז T-085, וזו קריאה **נכונה ולא קשורה** — בלעדיה
+   * הטופס מרענן את העמוד. אסרציה שאפשר לספק רק במחיקת קוד עובד ⛔ אינה שומר.
+   * ⛔ הבדיקה ⛔ לא הוחלשה — היא **כוונה לטענה שהיא התכוונה אליה**: D-042ⓒ אוסרת
+   * ביטול ברירת מחדל **במטפל מחווה**, כי זה מה שהורג גלילה. הטופס ⛔ אינו מחווה.
+   */
+  it('D-042ⓒ — ⛔ אפס `preventDefault` במטפל מחווה (הטופס ⛔ אינו מחווה)', () => {
+    const hits: number[] = [];
+    for (let i = T085_CARD_SRC.indexOf('preventDefault'); i !== -1; i = T085_CARD_SRC.indexOf('preventDefault', i + 1)) {
+      hits.push(i);
+    }
+    expect(hits.length, 'שומר-ריק: אם אין ולו קריאה אחת, הבדיקה ⛔ אינה מודדת דבר').toBe(1);
+    for (const at of hits) {
+      // המטפל העוטף הוא זה שנפתח אחרון לפני הקריאה. ⛔ `onPointer*` לפני `onSubmit`
+      // פירושו ביטול ברירת מחדל בתוך מחווה — בדיוק מה ש-D-042ⓒ אוסרת.
+      expect(
+        T085_CARD_SRC.lastIndexOf('onSubmit', at),
+        '`preventDefault` בתוך מטפל מצביע ⇒ הגלילה מתה (D-042ⓒ)',
+      ).toBeGreaterThan(T085_CARD_SRC.lastIndexOf('onPointer', at));
+    }
+  });
+
+  it('D-042ⓒ — ⛔ אפס גלילה אופקית שנוצרת בקובץ עצמו', () => {
+    expect(T085_CARD_SRC).not.toContain('overflow-x');
+    expect(T085_CARD_SRC).not.toContain('touch-action');
+  });
+
+  it('⛔ אפס `style={{}}` — ההיזון חי ב-CSS, בתקדים [data-arena-stage]', () => {
+    expect(T085_CARD_SRC).not.toContain('style={{');
+    expect(T085_CARD_SRC).toContain('data-swipe');
   });
 });

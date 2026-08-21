@@ -120,3 +120,19 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
 [data-arena-phase='dodge'] [data-arena-figure='hero'] {
   transform: translateX(-0.75rem);
 }
+
+/* T-099 · D-042ⓒ — ההיזון החזותי של ההחלקה. ⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע:
+   הכרטיס ⛔ אינו נגרר, ולכן אין כאן מטפל תנועה ואין ערך רציף. שני המספרים הם
+   התקרות שההחלטה נוקבת בהן — 8px ו-200ms — ו-prefers-reduced-motion למעלה
+   מאפס את המשך בלי כלל נוסף כאן. */
+[data-flashcard] {
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
+}
+[data-flashcard][data-swipe='good'] {
+  transform: translateX(8px);
+  opacity: 0.6;
+}
+[data-flashcard][data-swipe='again'] {
+  transform: translateX(-8px);
+  opacity: 0.6;
+}
