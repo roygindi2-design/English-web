@@ -18,11 +18,21 @@ import { buildCard, type CardGrade } from '@/lib/core/flashcard';
  *    construction: there is nothing above to scroll back to, and no state to drift out of
  *    sync with the queue. Hence ⛔ no `preventDefault`, ⛔ no `overflow-hidden`.
  *
- * 2. **Vertical snap, ⛔ never swipe-to-grade.** T-065 states the reason and it is the same
- *    one the vision gives for banning drag: a horizontal gesture on a vertically scrolling
- *    surface competes with the scroll, and a gesture cannot carry a 44px target or a Hebrew
- *    label. Grading stays on the two buttons `Flashcard` already renders — this component
- *    adds no control of its own and ⛔ does not touch `Flashcard.tsx`.
+ * 2. **Vertical snap here; the horizontal shortcut lives in `Flashcard` (D-042 · T-099).**
+ *    The original ban quoted the vision's reason for forbidding drag — «a gesture on the
+ *    scroll axis competes with the scroll» — and D-042 measured that reason against this
+ *    file and found it does not apply: this container scrolls **vertically**
+ *    (`snap-y snap-mandatory`), and the gesture is **horizontal**. The two axes are not the
+ *    same axis, so the blanket ban was wider than the evidence that justified it.
+ *    What survives, and is not negotiable: the two ≥44px buttons with a Hebrew label and a
+ *    glyph stay **the canonical channel**, and the swipe calls **exactly the same handler**
+ *    — ⛔ never a second path with its own logic. Three caveats come from measurement:
+ *    ⓐ a **20px** strip at each edge does not respond (iOS Safari back-swipe), ⓑ the
+ *    gesture needs ≥**64px** of travel at ≤**30°** off the horizontal, ⓒ ⛔ zero horizontal
+ *    scroll survives: the card is ⛔ never dragged with the finger — feedback is ≤8px of
+ *    offset plus an opacity change, ≤**200ms**, switched off by prefers-reduced-motion.
+ *    ⛔ None of that lives here: `<Flashcard>` owns both grade buttons, so it owns the
+ *    shortcut to them, and this component still adds no control of its own.
  *
  * 3. **`behavior: 'auto'`, ⛔ never `'smooth'`.** Smooth scrolling is motion the OS-level
  *    prefers-reduced-motion setting cannot switch off from CSS, because it is requested
