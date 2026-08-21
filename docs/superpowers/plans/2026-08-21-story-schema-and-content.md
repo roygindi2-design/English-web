@@ -85,7 +85,7 @@ T-135ⓕ מחייבת «3 בדיוק בכל אחת מארבע הרמות ⇒ 11 
 - Consumes: ⛔ כלום. זו המשימה הראשונה ברצף.
 - Produces: הטבלה `public.stories(id uuid, cefr_level text, title_en text, body_en text, origin text, created_at timestamptz)` עם `unique (cefr_level, title_en)`. Task 4 פולט `insert … on conflict (cefr_level, title_en) do nothing` נגד הצורה הזאת בדיוק, ו-T-136 יקרא ממנה.
 
-- [ ] **Step 1: כתוב את בדיקת השומר — היא נופלת כי אין קובץ**
+- [x] **Step 1: כתוב את בדיקת השומר — היא נופלת כי אין קובץ**
 
 ```ts
 // lib/supabase/stories.test.ts
@@ -182,12 +182,12 @@ describe('⛔ הגבול של D-054 — הספרייה מצומדת לצד הל�
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהיא נופלת**
+- [x] **Step 2: הרץ ואמת שהיא נופלת**
 
 Run: `npx vitest run lib/supabase/stories.test.ts`
 Expected: FAIL — `ENOENT: no such file or directory, open 'supabase/migrations/0018_stories.sql'`
 
-- [ ] **Step 3: כתוב את המיגרציה**
+- [x] **Step 3: כתוב את המיגרציה**
 
 ```sql
 -- 0018_stories.sql — טבלת «סיפור» אחת (T-134ⓐ · § 4.2יג · D-073).
@@ -269,12 +269,12 @@ grant select on public.stories to authenticated;
 commit;
 ```
 
-- [ ] **Step 4: הרץ את השומר ואת שער המיגרציות**
+- [x] **Step 4: הרץ את השומר ואת שער המיגרציות**
 
 Run: `npx vitest run lib/supabase/stories.test.ts scripts/migration-hygiene.test.ts`
 Expected: PASS — ⛔ ובפרט «leaves no gap in the sequence» ירוק, כי 0018 עוקב ל-0017.
 
-- [ ] **Step 5: קומיט**
+- [x] **Step 5: קומיט**
 
 ```bash
 git add supabase/migrations/0018_stories.sql lib/supabase/stories.test.ts
@@ -315,7 +315,7 @@ export function storyGate(record: StoryRecord, opts: { readonly allowedLemmas: R
 ```
   Task 3 קורא את ארבעת הקבועים; Task 4 קורא את חמש הפונקציות.
 
-- [ ] **Step 1: כתוב את הבדיקות — הן נופלות כי אין מודול**
+- [x] **Step 1: כתוב את הבדיקות — הן נופלות כי אין מודול**
 
 ```ts
 // lib/core/storyGate.test.ts
@@ -475,12 +475,12 @@ describe('הקבועים הם המקור היחיד', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ ואמת שהן נופלות**
+- [x] **Step 2: הרץ ואמת שהן נופלות**
 
 Run: `npx vitest run lib/core/storyGate.test.ts`
 Expected: FAIL — `Failed to resolve import "@/lib/core/storyGate"`
 
-- [ ] **Step 3: כתוב את המודול**
+- [x] **Step 3: כתוב את המודול**
 
 ```ts
 /**
@@ -696,18 +696,18 @@ export function parseStoryFile(text: string): StoryRecord[] {
 }
 ```
 
-- [ ] **Step 4: הרץ את הבדיקות ואת שער הטוהר**
+- [x] **Step 4: הרץ את הבדיקות ואת שער הטוהר**
 
 Run: `npx vitest run lib/core/storyGate.test.ts && npm run check:core && npm run typecheck`
 Expected: PASS · `lib/core purity: OK` · אפס שגיאות טיפוס.
 
-- [ ] **Step 5: בדיקת מוטציה — שער שאינו יכול ליפול אינו שער (F-088)**
+- [x] **Step 5: בדיקת מוטציה — שער שאינו יכול ליפול אינו שער (F-088)**
 
 מחק זמנית את שורת `if (at >= 0 && at <= ceiling)` והחזר את כל הבנק.
 Run: `npx vitest run lib/core/storyGate.test.ts`
 Expected: FAIL על «A1 ⛔ אינו מכיל מילת A2». **החזר את השורה** והרץ שוב — PASS.
 
-- [ ] **Step 6: קומיט**
+- [x] **Step 6: קומיט**
 
 ```bash
 git add lib/core/storyGate.ts lib/core/storyGate.test.ts
