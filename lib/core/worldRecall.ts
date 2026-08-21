@@ -197,6 +197,70 @@ function segmentsAround(bodyEn: string, headword: string): RecallSegment[] | nul
   return out;
 }
 
+/** ⛔ מהשרת, ⛔ ולא קבוע בלקוח (D-046 · D-075ⓐ). כרטיס אחד ליום ⇒ הרצפה היא 1. */
+export const RECALL_REQUIRED_ELIGIBLE = 1;
+
+/**
+ * שלושת המונים של D-075ⓐ. ⛔ **אפס עמודה · אפס מיגרציה · אפס שדה** — הכל נגזר
+ * בזמן השאילתה מאותן שורות שהנתיב כבר קרא (תבנית D-043).
+ */
+export interface RecallCounts {
+  /** כמה משפטים הלומד הרכיב אי-פעם. גוף ריק ⛔ אינו משפט שהורכב. */
+  readonly posts: number;
+  /** כמה מהם כשירים לשליפה **עכשיו**. ⛔ המצב «אין מילת יעד» נספר ב-`posts` ⛔ ולא כאן. */
+  readonly eligible: number;
+  /** `RECALL_REQUIRED_ELIGIBLE`. עובר על החוט כדי שהמסך ⛔ לא יחזיק עותק (D-046). */
+  readonly required: number;
+}
+
+/** משפט שהלומד באמת הרכיב. ⛔ גוף ריק ⛔ אינו הפקה. */
+function isComposed(post: RecallPost): boolean {
+  return typeof post?.bodyEn === 'string' && post.bodyEn.trim() !== '';
+}
+
+/**
+ * ⛔ **הפרדיקט היחיד של «כשיר לשליפה», ולכן הוא ⛔ אינו מוכפל.** `recallCounts`
+ * ו-`buildRecallCard` קוראות **לו**, וכל היום שבו הכלל ישתנה הוא יזוז פעם אחת.
+ * הוא ⛔ אינו בודק את מאגר האפשרויות — זו טענה על **הלומד** ⛔ ולא על המשפט,
+ * ולכן היא נבדקת פעם אחת אצל הקורא.
+ */
+function retrievableTarget(
+  post: RecallPost,
+  words: readonly LearnerWord[],
+  nowMs: number,
+): { readonly answer: string; readonly segments: readonly RecallSegment[] } | null {
+  if (!isComposed(post)) return null;
+  // משפט מהיום ⛔ אינו נבחר — הוא עדיין בזיכרון (§ 4.2יב).
+  if (ageInDays(post.createdAt, nowMs) <= 0) return null;
+  const target = pickRecallTarget(post.bodyEn, words);
+  if (target === null) return null;
+  const answer = normaliseToken(target.headword);
+  const segments = segmentsAround(post.bodyEn, answer);
+  if (segments === null) return null;
+  return { answer, segments };
+}
+
+/**
+ * D-075ⓐ. ⚠️ **`eligible` ⛔ אינו «כמה משפטים יש» פחות משהו** — הוא ספירה של אותו
+ * פרדיקט שבונה את הכרטיס, ולכן `eligible ≥ required` ⟺ יש כרטיס. האינווריאנט הזה
+ * נמדד בבדיקה בשם ⛔ ואינו הבטחה.
+ */
+export function recallCounts(input: {
+  readonly posts: readonly RecallPost[];
+  readonly words: readonly LearnerWord[];
+  readonly nowMs: number;
+}): RecallCounts {
+  const composed = input.posts.filter(isComposed);
+  // פחות מארבע מילות תוכן ⇒ ⛔ אין כרטיס בכלל, ולכן ⛔ אין משפט כשיר — טענה על
+  // הלומד, ⛔ ולא על המשפט, ולכן היא כאן ⛔ ולא בתוך הפרדיקט.
+  const pool = contentWords(input.words).size;
+  const eligible =
+    pool < RECALL_OPTION_COUNT
+      ? 0
+      : composed.filter((post) => retrievableTarget(post, input.words, input.nowMs) !== null).length;
+  return { posts: composed.length, eligible, required: RECALL_REQUIRED_ELIGIBLE };
+}
+
 /**
  * הכרטיס היחיד של היום, או `null` ⇒ `{ok:true, card:null}` ⛔ ולא 404: «אין מה
  * להיזכר בו היום» אינו שגיאה.
@@ -216,7 +280,7 @@ export function buildRecallCard(input: {
   if (pool.length < RECALL_OPTION_COUNT) return null;
 
   const dated = input.posts
-    .filter((post) => typeof post?.bodyEn === 'string' && post.bodyEn.trim() !== '')
+    .filter(isComposed)
     .map((post) => ({ post, daysAgo: ageInDays(post.createdAt, input.nowMs) }))
     .filter((entry) => entry.daysAgo > 0)
     .sort((a, b) => {
@@ -225,15 +289,13 @@ export function buildRecallCard(input: {
     });
 
   for (const entry of dated) {
-    const target = pickRecallTarget(entry.post.bodyEn, input.words);
-    if (target === null) continue;
-    const answer = normaliseToken(target.headword);
-    const segments = segmentsAround(entry.post.bodyEn, answer);
-    if (segments === null) continue;
+    // ⛔ אותו פרדיקט בדיוק ש-`recallCounts` סופר. ⛔ אין כאן עותק שני.
+    const hit = retrievableTarget(entry.post, input.words, input.nowMs);
+    if (hit === null) continue;
 
     const rnd = mulberry32(input.seed);
     const wrong = shuffle(
-      pool.filter((headword) => headword !== answer),
+      pool.filter((headword) => headword !== hit.answer),
       rnd,
     ).slice(0, RECALL_OPTION_COUNT - 1);
     if (wrong.length < RECALL_OPTION_COUNT - 1) continue;
@@ -242,9 +304,9 @@ export function buildRecallCard(input: {
       postId: entry.post.id,
       bodyEn: entry.post.bodyEn,
       daysAgo: entry.daysAgo,
-      answer,
-      options: shuffle([answer, ...wrong], rnd),
-      segments,
+      answer: hit.answer,
+      options: shuffle([hit.answer, ...wrong], rnd),
+      segments: hit.segments,
     };
   }
   return null;
