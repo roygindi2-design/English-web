@@ -37,10 +37,12 @@ import type { RecallCard as RecallCardData } from '@/lib/core/worldRecall';
  * וצעד 3.3 של אותה תוכנית אוסר `#[0-9a-fA-F]{3,8}` — הישות `&#8203;` **מפילה את
  * הבדיקה של התוכנית עצמה**. ⇒ אותו תו בדיוק נכתב כ-`​`. ⛔ הפרש התנהגות: אפס.
  *
- * ⚠️ **`card: null` ⇒ «כתוב את המשפט הראשון שלך» ⛔ בלי מספר, וזה F-080.** שורת T-105
- * דורשת «מושבת **עם המספר**» (D-046), אבל `GET /api/world/recall` עונה
- * `{ok:true, card:null}` **ובלי ולו מונה אחד** — אין בחוזה `posts` ואין `eligible`,
- * ולכן מספר על המסך הזה היה מומצא. ⇒ הנוסח הוא זה של התוכנית, והפער נרשם כממצא.
+ * ⚠️ **שני מצבים ⛔ ולא אחד — D-075, וזה סוגר את F-080 🟡.** `GET /api/world/recall`
+ * מוסר `counts: {posts, eligible, required}`, ולכן «עדיין לא הרכבת משפט» ו«המשפט שלך
+ * יחזור אליך» חדלו להיראות זהים. ⛔ **המצב השלישי — «במשפט שלך אין מילה כזאת» —
+ * ⛔ אינו נאמר ולעולם לא ייאמר**: הוא משוב על ההפקה של הלומד, ו-R-016 קובעת שאין לנו
+ * מקור מורשה לכזה. הוא נספר ב-`posts`, ⛔ אינו נספר ב-`eligible`, והמסך זהה — **כי
+ * הפעולה זהה.** ⛔ הפרדה שאין אחריה פעולה שונה ⛔ אינה מידע, היא שיפוט.
  */
 
 const TITLE_HE = 'מה שכתבת';
@@ -48,22 +50,41 @@ const CHAIN_HE = 'שרשרת הכתיבה';
 const CHAIN_HREF = '/world/chain';
 const REMEMBERED_HE = 'וזכרת';
 const THE_WORD_WAS_HE = 'המילה הייתה';
-const EMPTY_HE = 'עוד אין משפט להיזכר בו.';
+/** D-075ⓑ — `posts = 0`. ⛔ הנוסח נקוב בהכרעה ⛔ ואינו נבחר כאן. */
+const NO_POSTS_HE = 'עדיין לא הרכבת משפט';
+/** D-075ⓑ — `posts ≥ 1 && eligible < required`. ⛔ ולא «אין מילה מתאימה» (R-016). */
+const WILL_RETURN_HE = 'המשפט שלך יחזור אליך';
 const FIRST_SENTENCE_HE = 'כתוב את המשפט הראשון שלך';
+/** ⚠️ D-075 נוקבת ביעד ⛔ ולא בתווית. ⛔ «הראשון» ללומד שכתב חמישה הוא בדיוק
+ *  השקר הקטן ש-F-080 פתחה עליו ⇒ **F-108 🟡 → PM**. הפעולה זהה בשני המצבים. */
+const WRITE_MORE_HE = 'כתוב עוד משפט';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הכרטיס שלך…';
 const COMPOSE_HREF = '/world/compose';
 
 /** בדיוק מה ש-`GET /api/world/recall` עונה (`docs/api-contract.md`), ⛔ ולא יותר. */
+type RecallCounts = {
+  readonly posts: number;
+  readonly eligible: number;
+  /** ⛔ **מהשרת** (D-046). המסך ⛔ אינו מחזיק עותק של הסף. */
+  readonly required: number;
+};
+
 type RecallBody =
-  | { readonly ok: true; readonly card: RecallCardData | null }
+  | { readonly ok: true; readonly card: RecallCardData | null; readonly counts?: RecallCounts }
   | { readonly ok: false; readonly code: string; readonly message?: string };
 
 type ScreenState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'card'; readonly card: RecallCardData }
-  | { readonly kind: 'empty' }
+  /**
+   * ⛔ **שני מצבים ללומד ⛔ ולא שלושה** (D-075ⓑ). `posts` הוא כל ההבדל, ו-
+   * ⛔ **המצב «אין מילה כזאת» ⛔ אינו קיים כאן ולעולם לא יהיה** — הוא משוב על ההפקה
+   * של הלומד, ו-R-016 קובעת שאין לנו מקור מורשה לכזה. הוא נספר ב-`posts` ⛔ ואינו
+   * נספר ב-`eligible`, והלומד רואה בדיוק את אותו מסך — **כי הפעולה שלו זהה**.
+   */
+  | { readonly kind: 'empty'; readonly posts: number }
   | { readonly kind: 'session_expired' }
   | { readonly kind: 'schema_missing' }
   | { readonly kind: 'error' };
@@ -192,7 +213,17 @@ export default function RecallCard(): React.JSX.Element {
         else setState({ kind: 'error' });
         return;
       }
-      setState(body.card === null ? { kind: 'empty' } : { kind: 'card', card: body.card });
+      if (body.card !== null) {
+        setState({ kind: 'card', card: body.card });
+        return;
+      }
+      // ⛔ **הסף מגיע מהשרת** (D-046): `counts.required` ⛔ ולא «0» שהלקוח המציא —
+      // הלקוח ⛔ אינו יודע ש-«1», ו⛔ אינו רשאי לדעת. ⛔ תשובה בלי `counts` (חוזה
+      // ישן) ⇒ `0` ⇒ המצב המזמין, שהוא ⛔ אינו טוען דבר על מה שהלומד עשה.
+      const counts = body.counts;
+      const dryPosts =
+        counts !== undefined && counts.eligible < counts.required ? counts.posts : 0;
+      setState({ kind: 'empty', posts: dryPosts });
     } catch {
       setState({ kind: 'error' });
     }
@@ -224,13 +255,22 @@ export default function RecallCard(): React.JSX.Element {
       )}
 
       {state.kind === 'empty' && (
-        // ⛔ לא מסך ריק ו⛔ לא «בקרוב» (D-046): הדרך היחידה שכרטיס נולד היא משפט
-        // שהלומד כתב, ולכן המצב הזה מוביל בדיוק לשם.
+        // ⛔ לא מסך ריק ו⛔ לא «בקרוב» (D-046), ו⛔ לא מסך מת שממתין למחר (D-066):
+        // בשני המצבים הפעולה של הלומד **זהה** — להרכיב עוד משפט — ולכן הכפתור אחד
+        // והיעד אחד. מה שמשתנה הוא המשפט, ⛔ ולא הדרך קדימה.
         <div className="flex flex-col items-start gap-3">
-          <p className="text-lg leading-relaxed text-ink">{EMPTY_HE}</p>
-          <Link href={COMPOSE_HREF} className={PRIMARY_ACTION_CLASS}>
-            {FIRST_SENTENCE_HE}
-          </Link>
+          <p className="text-lg leading-relaxed text-ink">
+            {state.posts === 0 ? NO_POSTS_HE : WILL_RETURN_HE}
+          </p>
+          {state.posts === 0 ? (
+            <Link href={COMPOSE_HREF} className={PRIMARY_ACTION_CLASS}>
+              {FIRST_SENTENCE_HE}
+            </Link>
+          ) : (
+            <Link href={COMPOSE_HREF} className={PRIMARY_ACTION_CLASS}>
+              {WRITE_MORE_HE}
+            </Link>
+          )}
         </div>
       )}
 
