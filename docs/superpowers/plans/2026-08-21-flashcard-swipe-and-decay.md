@@ -101,7 +101,7 @@
 
 **⚠️ שים לב לפני שאתה כותב את הבדיקה:** `CardDeck.test.ts` מגדיר `const CODE = withoutComments(SRC)` — כל השומרים בקובץ הזה **עיוורים להערות**. הבדיקה החדשה חייבת לרוץ על **`SRC` הגולמי**, אחרת היא עוברת ריק לנצח.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 הוסף לסוף `components/CardDeck.test.ts`, **אחרי** ה-`describe` האחרון, את הבלוק המלא הזה:
 
@@ -136,7 +136,7 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 npm test -- components/CardDeck.test.ts
@@ -144,7 +144,7 @@ npm test -- components/CardDeck.test.ts
 
 Expected: **FAIL ×2** — `not.toContain('never swipe-to-grade')` נופלת (הנוסח שם), ו-`toContain('D-042')` נופלת (המחרוזת אינה בקובץ). הבדיקה השלישית עוברת כבר עכשיו, וזה בכוונה: היא הבסיס שמוכיח שהמשימה ⛔ לא נגעה בקוד.
 
-- [ ] **Step 3: Replace the comment**
+- [x] **Step 3: Replace the comment**
 
 ב-`components/CardDeck.tsx`, החלף את סעיף 2 בבלוק התיעוד העליון (`* 2. **Vertical snap, ⛔ never swipe-to-grade.** …` ועד סוף אותו סעיף, לפני `* 3. **`behavior: 'auto'`…`) בטקסט הזה **במלואו**:
 
@@ -166,7 +166,7 @@ Expected: **FAIL ×2** — `not.toContain('never swipe-to-grade')` נופלת (�
  *    shortcut to them, and this component still adds no control of its own.
 ```
 
-- [ ] **Step 4: Run the whole file and watch it pass**
+- [x] **Step 4: Run the whole file and watch it pass**
 
 ```bash
 npm test -- components/CardDeck.test.ts
@@ -174,7 +174,7 @@ npm test -- components/CardDeck.test.ts
 
 Expected: **PASS**, כל הבדיקות בקובץ (כולל 20+ השומרים הישנים — אם אחד מהם נפל, נגעת בקוד ולא בהערה).
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
@@ -182,7 +182,7 @@ npm run typecheck && npm run check:core && npm test && npm run build
 
 Expected: `tsc` 0 · `purity: OK` · כל הבדיקות ירוקות · build 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add components/CardDeck.tsx components/CardDeck.test.ts
@@ -233,7 +233,7 @@ export function resolveSwipe(input: SwipeInput): CardGrade | null;
 
 **⚠️ הכיוון ממומש כלשון D-042 — `dx > 0 ⇒ 'good'` — והסתירה עם סדר הכפתורים ב-RTL רשומה כ-F-102** (עובדה א׳). ⛔ אל תהפוך אותו «כי זה נראה הגיוני»: החלטה חתומה משתנה בידי ה-PM, ⛔ לא בידי המבצע.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 צור `lib/core/swipeGrade.test.ts` עם התוכן הזה **במלואו**:
 
@@ -347,7 +347,7 @@ describe('קלט לא סביר ⛔ אינו מייצר ציון', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 npm test -- lib/core/swipeGrade.test.ts
@@ -355,7 +355,7 @@ npm test -- lib/core/swipeGrade.test.ts
 
 Expected: **FAIL** — `Failed to resolve import "./swipeGrade"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 צור `lib/core/swipeGrade.ts` עם התוכן הזה **במלואו**:
 
@@ -422,7 +422,7 @@ export function resolveSwipe(input: SwipeInput): CardGrade | null {
 }
 ```
 
-- [ ] **Step 4: Run it and watch it pass**
+- [x] **Step 4: Run it and watch it pass**
 
 ```bash
 npm test -- lib/core/swipeGrade.test.ts && npm run check:core
@@ -430,7 +430,7 @@ npm test -- lib/core/swipeGrade.test.ts && npm run check:core
 
 Expected: **PASS** בכל הבדיקות · `/lib/core purity: OK`.
 
-- [ ] **Step 5: Mutation check — ⛔ בדיקה שלא נופלת אינה בדיקה**
+- [x] **Step 5: Mutation check — ⛔ בדיקה שלא נופלת אינה בדיקה**
 
 הרץ שלוש מוטציות, אחת אחרי השנייה, וודא שכל אחת **מפילה בדיקה בשם**, ואז שחזר:
 
@@ -440,7 +440,7 @@ Expected: **PASS** בכל הבדיקות · `/lib/core purity: OK`.
 
 רשום בדיווח הטיק **מה נפל בכל אחת**. מוטציה ש⛔ לא הפילה דבר = הבדיקה חסרה, ⛔ ולא «המימוש חזק».
 
-- [ ] **Step 6: Full verification + commit**
+- [x] **Step 6: Full verification + commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
@@ -474,7 +474,7 @@ git commit -m "loop(DEV): T-099a — pure swipe resolution, D-042's three caveat
 
 **⛔ מה שהמשימה הזאת ⛔ אינה עושה:** ⛔ אינה נוגעת ב-`CardDeck.tsx` (עובדה ג׳ 2) · ⛔ אינה מוסיפה `preventDefault` · ⛔ אינה מסירה ולו כפתור אחד.
 
-- [ ] **Step 1: Re-aim the stale guard (F-103) — ⛔ ולא להחליש אותו**
+- [x] **Step 1: Re-aim the stale guard (F-103) — ⛔ ולא להחליש אותו**
 
 ב-`components/Flashcard.test.ts`, החלף את `it('⛔ ⛔ swipe-to-grade (D-032 בתוקף)')` **כולו** בבלוק הזה:
 
@@ -521,7 +521,7 @@ git commit -m "loop(DEV): T-099a — pure swipe resolution, D-042's three caveat
   });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 npm test -- components/Flashcard.test.ts
@@ -529,7 +529,7 @@ npm test -- components/Flashcard.test.ts
 
 Expected: **FAIL ×2** — «המחווה קוראת ל-onGrade» (אין `resolveSwipe` בקובץ) ו«אפס `style={{}}`» (אין `data-swipe`). ארבע האחרות עוברות כבר עכשיו, וזה הבסיס שמוכיח שהכפתורים ⛔ לא נעלמו במהלך העבודה.
 
-- [ ] **Step 3: Add the CSS block**
+- [x] **Step 3: Add the CSS block**
 
 הוסף לסוף `app/globals.css`:
 
@@ -551,7 +551,7 @@ Expected: **FAIL ×2** — «המחווה קוראת ל-onGrade» (אין `resol
 }
 ```
 
-- [ ] **Step 4: Wire the gesture into `Flashcard.tsx`**
+- [x] **Step 4: Wire the gesture into `Flashcard.tsx`**
 
 ⓐ הוסף לייבוא בראש הקובץ:
 
@@ -618,7 +618,7 @@ import { resolveSwipe } from '@/lib/core/swipeGrade';
 
 והחלף את התנאי של בלוק שני הכפתורים מ-`{revealed && card.input === 'self' ? (` ל-`{swipeActive ? (`.
 
-- [ ] **Step 5: Run the component tests and watch them pass**
+- [x] **Step 5: Run the component tests and watch them pass**
 
 ```bash
 npm test -- components/Flashcard.test.ts components/CardDeck.test.ts
@@ -626,7 +626,7 @@ npm test -- components/Flashcard.test.ts components/CardDeck.test.ts
 
 Expected: **PASS** בשני הקבצים. ⚠️ אם `CardDeck.test.ts` נפל — נגעת בקובץ שהמשימה הזאת ⛔ אינה נוגעת בו.
 
-- [ ] **Step 6: Add the live measurement to the harness**
+- [x] **Step 6: Add the live measurement to the harness**
 
 ב-`scripts/verify-mobile.mjs`, בתוך `for (const route of ROUTES)`, **מיד לפני** בלוק בדיקת שגיאות הקונסולה שסוגר את גוף הלולאה, הוסף:
 
@@ -689,7 +689,7 @@ Expected: **PASS** בשני הקבצים. ⚠️ אם `CardDeck.test.ts` נפל 
       }
 ```
 
-- [ ] **Step 7: Add the source guard for the harness change**
+- [x] **Step 7: Add the source guard for the harness change**
 
 הוסף ל-`scripts/verify-mobile.test.ts`:
 
@@ -717,7 +717,7 @@ describe('T-099 · D-042 — the deck gesture is measured, ⛔ not declared', ()
 
 ⚠️ ודא ש-`readFileSync` ו-`describe/expect/it` כבר מיובאים בראש `scripts/verify-mobile.test.ts` — אם כן, ⛔ אל תכפיל את הייבוא.
 
-- [ ] **Step 8: Run the live harness**
+- [x] **Step 8: Run the live harness**
 
 ```bash
 npm run build && npm run check:mobile
@@ -725,7 +725,7 @@ npm run build && npm run check:mobile
 
 Expected: מספר ה-`✓` **עולה בתשעה בדיוק** מול הבסיס (שלוש בדיקות × שלושה רוחבים), ואפס `✗`. אם הוא עלה בפחות — בלוק לא רץ; אם עלה ביותר — משהו אחר השתנה ויש למדוד למה. ⛔ אל תדווח «עבר» בלי המספר לפני ואחרי.
 
-- [ ] **Step 9: Full verification + commit**
+- [x] **Step 9: Full verification + commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile
@@ -778,7 +778,7 @@ export function blendOver(hexFg: string, hexBg: string, alpha: number): string;
 
 **למה `intervalDays <= 0` ⇒ `'none'`:** T-100 מדברת על «מילה **שסומנה כידועה**». `interval_days = 0` הוא בדיוק מילה ש-SM-2 ⛔ טרם תזמן — חדשה, או כזו שנענתה «לא ידעתי» ואופסה. מילה כזאת ⛔ אינה «דעכה», היא **מעולם לא נלמדה**, והצגת «הגיע זמן לחזור» עליה הייתה שקר ללומד. ⛔ זו ⛔ אינה החמרה שהומצאה — היא הקריאה היחידה שבה הביטוי `f(now, next_review_at, interval_days)` של D-043 מוגדר בכלל (חלוקה במכנה שאינו אפס).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 צור `lib/core/decay.test.ts` עם התוכן הזה **במלואו**:
 
@@ -893,7 +893,7 @@ describe('blendOver', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 npm test -- lib/core/decay.test.ts
@@ -901,7 +901,7 @@ npm test -- lib/core/decay.test.ts
 
 Expected: **FAIL** — `Failed to resolve import "./decay"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 צור `lib/core/decay.ts` עם התוכן הזה **במלואו**:
 
@@ -995,7 +995,7 @@ export function blendOver(hexFg: string, hexBg: string, alpha: number): string {
 }
 ```
 
-- [ ] **Step 4: Run it and watch it pass**
+- [x] **Step 4: Run it and watch it pass**
 
 ```bash
 npm test -- lib/core/decay.test.ts && npm run check:core
@@ -1005,7 +1005,7 @@ Expected: **PASS** בכל הבדיקות, כולל שמונה בדיקות הנ�
 
 ⚠️ אם אחת מבדיקות הניגודיות **נפלה** — ⛔ אל תשנה את הרצפה ל-4.0. ה-`DECAY_OPACITY` הוא שנקבע שגוי; העלה את הערך של הדרגה שנפלה עד שהוא עובר, ורשום בדיווח את המספר שהתקבל ולמה.
 
-- [ ] **Step 5: Mutation check**
+- [x] **Step 5: Mutation check**
 
 1. `if (intervalDays <= 0) return 'none';` → הסר ⇒ חייב להפיל את «interval_days=0».
 2. `if (overdueMs <= 0)` → `< 0` ⇒ חייב להפיל את «בדיוק במועד ⇒ none».
@@ -1013,7 +1013,7 @@ Expected: **PASS** בכל הבדיקות, כולל שמונה בדיקות הנ�
 
 רשום מה נפל בכל אחת, ושחזר.
 
-- [ ] **Step 6: Full verification + commit**
+- [x] **Step 6: Full verification + commit**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
@@ -1069,7 +1069,7 @@ readonly review?: QueueCardReview;
 
 **⚠️ שים לב — יש כאן המרה כפולה, והיא מכוונת:** ה-DB מחזיר ISO, `QueueRow` מחזיק `nextReviewAtMs` (מספר, כי המיון ב-`sortQueue` משווה מספרים), והחוט מחזיר ל-ISO. ⛔ **אל תוסיף שדה ISO שני ל-`QueueRow`** — שתי הצגות של אותו נתון הן בדיוק הסחיפה של D-034. ההמרה `new Date(ms).toISOString()` נאמנה למילישנייה, וזה נבדק בצעד 1.
 
-- [ ] **Step 1: Write the failing tests (three files)**
+- [x] **Step 1: Write the failing tests (three files)**
 
 ⓐ הוסף ל-`lib/core/deck.test.ts`:
 
@@ -1161,7 +1161,7 @@ describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {
 });
 ```
 
-- [ ] **Step 2: Run all three and watch them fail**
+- [x] **Step 2: Run all three and watch them fail**
 
 ```bash
 npm test -- lib/core/deck.test.ts app/api/study/queue/route.test.ts components/Flashcard.test.ts
@@ -1169,7 +1169,7 @@ npm test -- lib/core/deck.test.ts app/api/study/queue/route.test.ts components/F
 
 Expected: **FAIL** בשלושתם — `card.review` הוא `undefined`, `interval_days` אינו במקור, `DECAY_LABEL` אינו בקובץ.
 
-- [ ] **Step 3: The wire — `lib/core/deck.ts`**
+- [x] **Step 3: The wire — `lib/core/deck.ts`**
 
 ⓐ הוסף ל-`QueueRow`, אחרי `nextReviewAtMs`:
 
@@ -1210,7 +1210,7 @@ export interface QueueCardReview {
     },
 ```
 
-- [ ] **Step 4: The query — `app/api/study/queue/route.ts`**
+- [x] **Step 4: The query — `app/api/study/queue/route.ts`**
 
 ⓐ ב-`PROGRESS_SELECT` הוסף `interval_days` אחרי `next_review_at`:
 
@@ -1241,7 +1241,7 @@ const PROGRESS_SELECT =
     intervalDays: 0,
 ```
 
-- [ ] **Step 5: The card — `CardDeck.tsx` ו-`Flashcard.tsx`**
+- [x] **Step 5: The card — `CardDeck.tsx` ו-`Flashcard.tsx`**
 
 ⓐ ב-`components/CardDeck.tsx`, בקריאה ל-`<Flashcard`, הוסף שורה אחת **אחרי** `card={buildCard(…)}`:
 
@@ -1328,7 +1328,7 @@ import type { QueueCardReview } from '@/lib/core/deck';
           )}
 ```
 
-- [ ] **Step 6: The CSS — ארבע דרגות, ארבע מחלקות**
+- [x] **Step 6: The CSS — ארבע דרגות, ארבע מחלקות**
 
 הוסף לסוף `app/globals.css`:
 
@@ -1342,7 +1342,7 @@ import type { QueueCardReview } from '@/lib/core/deck';
 [data-decay='stale'] { opacity: 0.6; }
 ```
 
-- [ ] **Step 7: The fixture and the contract**
+- [x] **Step 7: The fixture and the contract**
 
 ⓐ ב-`app/dev/deck/page.tsx` הוסף `review` לכל אחד מחמשת הכרטיסים. **ארבעה** מקבלים מילה שטרם תוזמנה, ו**אחד** — הראשון — פג לחזרה, כדי שהתווית תהיה מדידה:
 
@@ -1377,7 +1377,7 @@ import type { QueueCardReview } from '@/lib/core/deck';
 אמת שני שנקבע לפי השעון של השרת ומוצג לפי השעון של הלקוח.
 ```
 
-- [ ] **Step 8: Add the live measurement**
+- [x] **Step 8: Add the live measurement**
 
 ב-`scripts/verify-mobile.mjs`, בתוך בלוק `if (route === '/dev/deck') {` שנוצר במשימה 3, הוסף **בראשו** (⛔ לפני המחוות, שמסירות את הכרטיס הראשון מה-DOM):
 
@@ -1408,7 +1408,7 @@ it('T-100 — the harness measures the decay level AND its Hebrew label', () => 
 });
 ```
 
-- [ ] **Step 9: Run everything**
+- [x] **Step 9: Run everything**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile
@@ -1418,7 +1418,7 @@ Expected: `tsc` **0** · `purity: OK` · כל הבדיקות ירוקות · bui
 
 ⚠️ **הכשל הצפוי כאן, ואם הוא לא קרה — בדוק למה:** `npm run typecheck` **חייב** ליפול בפעם הראשונה על `lib/core/deck.test.ts` ועל `app/api/study/queue/route.test.ts`, כי `QueueRow` ו-`QueueCardInput` קיבלו שדה חובה חדש וכל אובייקט בדיקה שנבנה ידנית חסר אותו. ⛔ **אל תהפוך את השדה לאופציונלי כדי לעקוף את זה** — זה בדיוק «להחליש בדיקה». הוסף את השדה לכל אובייקט שנפל.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add lib/core/deck.ts lib/core/deck.test.ts app/api/study/queue/route.ts app/api/study/queue/route.test.ts components/CardDeck.tsx components/Flashcard.tsx components/Flashcard.test.ts app/dev/deck/page.tsx app/globals.css docs/api-contract.md scripts/verify-mobile.mjs scripts/verify-mobile.test.ts
@@ -1449,3 +1449,27 @@ git commit -m "loop(DEV): T-100b — review state on the wire, decay derived at 
 1. ⛔ **אינה מכריעה את F-102.** הכיוון ממומש כלשון ההחלטה החתומה, והסתירה עוברת ל-PM.
 2. ⛔ **אינה מודדת שהמחווה עובדת באצבע אמיתית ב-iOS Safari.** Playwright נוהג ב-Pointer Events בכרומיום; רצועת הקצה נבדקת כלוגיקה ⛔ ולא מול ניווט אמיתי של הדפדפן. חוב מוצהר.
 3. ⛔ **אינה נותנת ללומד דרך לבטל סימון שנעשה בהחלקה.** «אין גלילה אחורה» הוא כלל קיים (`CardDeck` מסיר את הכרטיס), וביטול הוא **מסך חדש** — כלומר הכרעת PM, ⛔ ולא משהו שמבצע ממציא.
+
+---
+
+## ✅ בוצע — C-0252 (DEV, טיק ביצוע), 2026-08-21T09:11:22Z
+
+חמש המשימות נסגרו בחמישה קומיטים: `9ff9bc3` · `867e6ae` · `75c60c1` · `46a14a9` · `d95b74e`.
+
+**⚠️ ארבעה פערים בין התוכנית למקור, ⛔ אף אחד לא נסגר בשקט. שלושה מהם פגמים בתוכנית הזאת:**
+
+- **F-104** — הבדיקה «הזווית סימטרית» (משימה 2 צעד 1) טוענת ש-36.9° הוא `'good'`, בעוד שתי
+  הבדיקות שמעליה קובעות `null`. האסרציה השנייה בה טאוטולוגית (`460-120===340`). ⇒ כוונה
+  מחדש לסימטריה על **שני** צדי הגבול, והמימוש ⛔ לא נגע.
+- **F-105 🟠** — **שתיים משלוש המוטציות שהתוכנית מחייבת ⛔ לא הפילו דבר.** הבדיקות בנו את
+  הקלט מהקבוע שהן מודדות, ושער הזווית בלע את כשל שער המרחק. ⇒ מספרים מילוליים + המקרה
+  היחיד שמפריד בין `abs(dx)` ל-`hypot` (‏dx=60 · dy=30). אחרי התיקון שלושתן מפילות בשם.
+- **F-106** — `not.toContain('preventDefault')` (משימה 3 צעד 1) **בלתי-אפשרית**: `onSubmit`
+  של טופס ההקלדה תלוי בה מאז T-085. ⇒ כוונה למטפל **מחווה**, ⛔ ולא נמחק קוד עובד.
+- **F-107 🟠** — הבלוק החי (משימה 3 צעד 6) ירש עמוד שבלוק יעדי המגע כבר **חשף** ⇒
+  `remaining moved 5 → 4` ×3. ⇒ הבלוק **מבסס את התנאי** (`reload` + ספירת `[data-reveal]`)
+  ⛔ ולא מרכך את הטענה. ⇒ `check:mobile` עלה ב-**12** ⛔ ולא ב-9 שהתוכנית ניבאה (ארבע
+  בדיקות × שלושה רוחבים), ואחר כך ב-**6** נוספות במשימה 5 — בדיוק כפי שנחזה שם.
+
+**אימות סופי:** `tsc` 0 · `purity: OK` · `Tests 2334 passed (2334)` · `build` ✓ ·
+`check:mobile` ✓ **1059**. ⚠️ **F-102 נותר פתוח ל-PM** — הכיוון מומש כלשון D-042 החתומה.
