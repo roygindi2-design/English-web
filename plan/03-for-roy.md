@@ -23,6 +23,30 @@ plan/03-for-roy.md — מקום אחד לכל מה שנדרש מרוי.
 |---|---|---|---|
 | 1 | `כרטיסיות` → «מנת היום» | **Swipe a card sideways** | Right = ידעתי, left = לא ידעתי. ⚠️ The card will barely move — **8px, that is T-157, already queued.** The question here is only: **does the swipe register at all?** |
 | 2 | `העולם` | Look at the tile grid | **«המילים שאספתי»** should now be there and open. Tap it — a list, newest first (empty if you have not lost a word in the arcade yet) |
+---
+
+## ▶️ פריט 52 — החזון נסגר, הלופ מנותב ל-PM · 23/08
+
+רוי סגר את הכיוון החזותי בשני סרטוני רנדור דטרמיניסטיים, ושני מסמכים חדשים
+נכתבו ל-`plan/`:
+
+- **`plan/36-video-spec.md`** — מסמך העוגן. **סעיף 2 מכיל שמונה הכרזות ביטול**
+  שגוברות על החלטות קודמות, ביניהן פריט 46 (לשונית חמישית) ויעד ההקשה בסיפור.
+  **סעיף 3 מתקן את MF-2** עבור יעד הקשה inline בפסקת קריאה, עם ארבעה תנאים
+  נמדדים ומסלול נסיגה מוסכם. **סעיף 13 קובע סדר ביצוע מחייב.**
+- **`plan/37-arena-spec.md`** — שכתוב מלא של `/arcade`.
+
+`00-control.md` נותב: `NEXT_AGENT: PM` · `STATE: PLANNING`.
+
+**מה נדרש ממך:**
+
+| # | הפעולה | למה |
+|---|---|---|
+| א | **הדלקת ארבע המשימות המתוזמנות** | הן עדיין כבויות. בלי זה שום סוכן לא ירוץ, גם אם הקובץ מנותב |
+| ב | לוודא שה-PM גוזר משימות מסעיף 13 ולא מהתור הישן | התור ב-`ACTIVE_TASK_ID` נכתב לפני שהחזון נסגר |
+
+⚠️ **הסוכנים אינם צופים בווידאו.** שני המסמכים הם החוזה. הסרטונים הם ההמחשה לרוי בלבד.
+
 | 3 | `העולם` → top of screen | Look for **«מה שכתבת»** | The recall card. Empty is a valid answer — it means you have not composed a sentence yet |
 
 ⛔ **Anything that looks wrong: say it in your words and I turn it into a 🔴 finding verbatim.** ⛔ A slice is **shipped**, never **verified**, until you answer.
