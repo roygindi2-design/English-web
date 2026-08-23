@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
+import ArenaStage from '@/components/ArenaStage';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import {
-  ARCADE_ENEMY_HP,
   advance,
+  ammoLeft,
   chooseOption,
   isFinished,
+  stagePhase,
   startBattle,
   type BattleState,
 } from '@/lib/core/arcadeBattle';
@@ -65,9 +67,21 @@ type ResultBody =
     }
   | { readonly ok: false; readonly code?: string; readonly message?: string };
 
-/** גוף הבקשה של סוף הקרב. ⛔ `enemyHp` מגיע מהקבוע ו⛔ לא כמספר בקוד. */
+/**
+ * גוף הבקשה של סוף הקרב — **`answers` ובלבד** (D-067ⓑ).
+ * ⛔ אין כאן שדה סף: השרת גוזר אותו ב-`requiredHits(max(answers.length, ARCADE_AMMO))`,
+ * ושדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
+ */
 type ResultPayload = {
-  readonly enemyHp: number;
+  // F-092 · מפתח האידמפוטנטיות. ⛔ **נוצר פעם אחת, ברגע השליחה, ו⛔ לא בתוך `send`** —
+  // `send` היא בדיוק הפונקציה שרצה שוב אחרי `online`, ומפתח שנוצר בתוכה היה מפתח
+  // חדש בכל שידור, כלומר קרב שני. הוא נישא בתוך `pendingResult`, ⇒ השידור החוזר
+  // נושא אותו מעצמו.
+  // ⚠️ **סטייה מדודה מנוסח התוכנית:** התוכנית כתבה כאן בלוק `/** … */`, ו⛔ הוא ⛔ אינו
+  // ניתן למימוש בקובץ הזה — מלבן ההלבנה של הבדיקה (`ArenaBoard.test.ts:5`) הוא
+  // `/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, ולכן בלוק שנפתח מיד אחרי `{` נסגר על `*/ }` מאוחר
+  // ונבלע 8,232 תווים מהמקור — נמדד. הערת שורה נותנת בדיוק את אותו תיעוד בלי הבליעה.
+  readonly runId: string;
   readonly answers: readonly ArcadeAnswer[];
 };
 
@@ -111,6 +125,15 @@ const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הזירה…';
 
+/**
+ * D-070 — ⛔ שני המספרים באותה שורה, כי המתח הוא **היחס ביניהם**: תחמושת שנשרפת
+ * מהר מול יריב שעוד עומד. ⛔ אין כאן ספירה לאחור, שעון, מכפיל וניקוד (D-045 · D-050).
+ * ⛔ והיחיד ⛔ אינו «1 קליעים» — נאמנות דקדוקית לאותו נוסח, ⛔ ולא נוסח שני.
+ */
+const AMMO_ONE_HE = 'נשאר לך קליע אחד';
+const statusHe = (ammo: number, hp: number): string =>
+  ammo === 1 ? `${AMMO_ONE_HE} · ליריב ${hp} חיים` : `נשארו לך ${ammo} קליעים · ליריב ${hp} חיים`;
+
 /** `—` ⛔ אינו `0` (`DeckSelector.tsx:58`): מספר שאין לנו אינו מספר אפס. */
 const MISSING_NUMBER_HE = '—';
 
@@ -128,8 +151,12 @@ const OPTION_CLASS =
 const PIP_ON_CLASS = 'h-3 w-6 rounded-md bg-danger';
 const PIP_OFF_CLASS = 'h-3 w-6 rounded-md bg-surface-raised border border-border-strong';
 
-/** ⛔ `Array.from` אסור כאן: הבדיקה אוסרת `.from(` כדי לחסום גישה לדאטהבייס מרכיב ממשק. */
-const HP_PIPS: readonly number[] = [...Array(ARCADE_ENEMY_HP).keys()];
+/**
+ * ⛔ `Array.from` אסור כאן: הבדיקה אוסרת `.from(` כדי לחסום גישה לדאטהבייס מרכיב ממשק.
+ * ⛔ ו⛔ אינו קבוע מודול יותר (D-067ⓑ): המקסימום נגזר מאורך הסיבוב, ולכן הוא נבנה
+ * מתוך המצב בכל רנדר ⛔ ולא פעם אחת מ-`ARCADE_ENEMY_HP`.
+ */
+const hpPips = (max: number): readonly number[] => [...Array(max).keys()];
 
 export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
@@ -214,7 +241,7 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     if (!isFinished(battle) || battle.chosen !== null) return;
     if (submitted) return;
     setSubmitted(true);
-    void send({ enemyHp: ARCADE_ENEMY_HP, answers: battle.answers });
+    void send({ runId: crypto.randomUUID(), answers: battle.answers });
   }, [battle, submitted, send]);
 
   /**
@@ -402,18 +429,25 @@ export default function ArenaBoard({ initialRound }: ArenaBoardProps = {}): Reac
     <section className="flex min-h-[100dvh] flex-col gap-6 pb-28">
       {topBar(null)}
 
-      {/* מד חיי היריב — בקרת מצב ו⛔ לא תצוגת נתונים (§ 4.2י שאלה 5): ⛔ אין כאן גרף.
-          התווית העברית והמספר הולכים עם הצבע, כי צבע לעולם אינו הערוץ היחיד (חוקה § 1). */}
+      {/* הבמה — T-117 · D-060. ⛔ **התנועה חיה כאן ובלבד**: אזור השאלה שמתחת ⛔ לעולם
+          אינו זז (T-041, עקרון הקוהרנטיות של Mayer). התנוחה מגיעה מ-`stagePhase` שבחוק
+          ⛔ ואינה מחושבת כאן. ⛔ `items={[]}` — הפריטים שנפתחו ⛔ אינם ב-`ArenaBoard`
+          היום (`/api/arcade/result` מחזיר `unlocked` בסוף הקרב בלבד) ⇒ F-083. */}
+      <ArenaStage phase={stagePhase(battle)} items={[]} />
+
+      {/* שורת המצב — בקרה, ⛔ ולא תצוגת נתונים (§ 4.2י שאלה 5): ⛔ אין כאן גרף.
+          התווית העברית והמספר הולכים עם הצבע, כי צבע לעולם אינו הערוץ היחיד (חוקה § 1).
+          ⛔ שני המספרים באותה שורה (D-070) — התחמושת נותנת למהירות מחיר. */}
       <div className="flex flex-col gap-2">
         <p className="text-base font-semibold text-ink">
-          {ENEMY_HP_HE}: {battle.enemyHp}
+          {statusHe(ammoLeft(battle), battle.enemyHp)}
         </p>
         <div
           role="img"
-          aria-label={`${ENEMY_HP_HE}: ${battle.enemyHp} מתוך ${ARCADE_ENEMY_HP}`}
+          aria-label={`${statusHe(ammoLeft(battle), battle.enemyHp)}, ${ENEMY_HP_HE} מתוך ${battle.enemyHpMax}`}
           className="flex flex-row gap-1"
         >
-          {HP_PIPS.map((pip) => (
+          {hpPips(battle.enemyHpMax).map((pip) => (
             <span
               key={pip}
               aria-hidden

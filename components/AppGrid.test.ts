@@ -76,9 +76,50 @@ describe('<AppGrid>', () => {
     expect(CODE).not.toMatch(/\bxp\b|\bscore\b|\bcoin\b/i);
   });
 
+  it('הפִּין חי אך ורק מעל `collected` (D-071ⓑ · T-133)', () => {
+    // ⛔ בלי התנאי הזה הפִּין היה מופיע מעל שלושת האריחים — מוטציה C בתוכנית.
+    expect(CODE).toContain("worldApp.id === 'collected' && latest !== undefined");
+    expect(CODE).toContain('data-collected-pin');
+  });
+
+  it('⛔ הפִּין ⛔ אינו בתוך האריח — הוא קודם ל-`<Link>`/`<button>` באותה `<li>`', () => {
+    const li = CODE.slice(CODE.indexOf('<li key={worldApp.id}'));
+    expect(li.indexOf('data-collected-pin')).toBeLessThan(li.indexOf('data-app-tile='));
+    expect(li.indexOf('data-collected-pin')).toBeGreaterThan(-1);
+  });
+
+  it('⛔ אין פריט אחרון ⇒ ⛔ אין שורה, ⛔ ולא כיתוב «אין מילים אתמול»', () => {
+    // `null` הוא הענף השני של השלישייה; מחרוזת נפילה כאן הייתה משפט שאיש לא הכריע.
+    expect(CODE).toMatch(/data-collected-pin[\s\S]*?\) : null\}/);
+    expect(SRC).not.toContain('אין מילים');
+  });
+
+  it('הפִּין קורא את החוזה החי ⛔ ולא נקודת קצה שהומצאה, ו⛔ אינו מושך את `words`', () => {
+    expect(CODE).toMatch(/apiGet<[^>]*>\('\/api\/arcade\/collected'\)/);
+    expect(CODE).not.toContain('/api/world/collected');
+    expect(CODE).toContain('body.ok ? body.latest : undefined');
+  });
+
+  it('⛔ אין בפִּין מונה, רצף או תגמול (D-071ⓑ)', () => {
+    const li = CODE.slice(CODE.indexOf('data-collected-pin'), CODE.indexOf('</p>'));
+    expect(li).not.toMatch(/streak|רצף|פעמים|timesMissed|hiddenCount/);
+  });
+
   it('כל אריח נושא יעד מגע ⛔ ואינו ממורכז אנכית (חוקה § 4 · F-011)', () => {
     expect(CODE).toContain('min-h-touch');
     expect(CODE).not.toMatch(/\bh-screen\b/);
     expect(CODE).not.toMatch(/justify-center/);
+  });
+
+  it('הרשת שואלת את השרת על הספרייה ⛔ ואינה סופרת בעצמה (T-137ⓒ · D-046)', () => {
+    expect(CODE).toMatch(/apiGet<[^>]*>\('\/api\/world\/status'\)/);
+    expect(CODE).toContain('libraryTile');
+    // ⛔ הסף ⛔ אינו כתוב כאן: הוא מגיע כשדה בתשובה.
+    expect(CODE, '⛔ 3 אינו מספר בקוד').not.toMatch(/required\s*[:=]\s*\d/);
+  });
+
+  it('⛔ ארבעה אריחים — הרשת נבנית מהסדר ⛔ ואינה מונה אותם ביד (D-074ⓑ)', () => {
+    expect(CODE).toContain('WORLD_APP_ORDER');
+    expect(CODE).not.toMatch(/\[\s*'compose'\s*,/);
   });
 });

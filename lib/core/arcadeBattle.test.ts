@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   ARCADE_ENEMY_HP,
   advance,
+  ammoLeft,
   battleOutcome,
   chooseOption,
   enemyDefeated,
   isFinished,
+  stagePhase,
   startBattle,
   type BattleState,
 } from './arcadeBattle';
@@ -142,5 +144,69 @@ describe('D-059 — שני מוצאים בלבד מהקרב', () => {
 
   it('הקרב באמצע ⇒ running', () => {
     expect(battleOutcome(startBattle(QUESTIONS))).toBe('running');
+  });
+});
+
+describe('D-067ⓑ — חיי היריב נגזרים מהסיבוב שנשלח', () => {
+  it('15 שאלות ⇒ 10 חיים, והמקסימום נשמר במצב', () => {
+    const s = startBattle(QUESTIONS);
+    expect(s.enemyHp).toBe(10);
+    expect(s.enemyHpMax).toBe(10);
+  });
+
+  it('סיבוב בן 12 ⇒ 8 חיים ⛔ ולא 10 — קרב שאפשר לנצח בו', () => {
+    const s = startBattle(QUESTIONS.slice(0, 12));
+    expect(s.enemyHp).toBe(8);
+    expect(s.enemyHpMax).toBe(8);
+  });
+
+  it('⛔ המקסימום ⛔ אינו זז כשהחיים יורדים', () => {
+    const s = chooseOption(startBattle(QUESTIONS), 'אפשרות 1');
+    expect(s.enemyHp).toBe(9);
+    expect(s.enemyHpMax).toBe(10);
+  });
+});
+
+describe('D-070 — התחמושת שנותרה, כדי שלמהירות יהיה מחיר', () => {
+  it('בתחילת הקרב נשארו כל הקליעים', () => {
+    expect(ammoLeft(startBattle(QUESTIONS))).toBe(ARCADE_AMMO);
+  });
+
+  it('⛔ הקליע נשרף ברגע ההקשה ⛔ ולא ב«הבא» — אחרת המחיר מגיע באיחור', () => {
+    const chosen = chooseOption(startBattle(QUESTIONS), 'אפשרות 1');
+    expect(ammoLeft(chosen)).toBe(ARCADE_AMMO - 1);
+    expect(ammoLeft(advance(chosen))).toBe(ARCADE_AMMO - 1);
+  });
+
+  it('הקשה שגויה מורידה את התחמושת ⛔ ואינה נוגעת בחיי היריב', () => {
+    const before = startBattle(QUESTIONS);
+    const after = chooseOption(before, 'מסיח 1א');
+    expect(ammoLeft(after)).toBe(ammoLeft(before) - 1);
+    expect(after.enemyHp).toBe(before.enemyHp);
+  });
+
+  it('בסוף הקרב ⛔ אין תחמושת שלילית', () => {
+    let s = startBattle(QUESTIONS);
+    for (let i = 0; i < QUESTIONS.length; i += 1) s = advance(chooseOption(s, 'מסיח 1א'));
+    expect(ammoLeft(s)).toBe(0);
+  });
+});
+
+describe('D-060 — הבמה יודעת מה לצייר מהחוק ⛔ ולא מהרכיב', () => {
+  it('לפני הקשה — המתנה', () => {
+    expect(stagePhase(startBattle(QUESTIONS))).toBe('idle');
+  });
+
+  it('תשובה נכונה ⇒ מכה', () => {
+    expect(stagePhase(chooseOption(startBattle(QUESTIONS), 'אפשרות 1'))).toBe('hit');
+  });
+
+  it('תשובה שגויה ⇒ התחמקות, ⛔ ולא «פגיעה בלומד»', () => {
+    expect(stagePhase(chooseOption(startBattle(QUESTIONS), 'מסיח 1א'))).toBe('dodge');
+  });
+
+  it('אחרי «הבא» הבמה חוזרת להמתנה', () => {
+    const s = advance(chooseOption(startBattle(QUESTIONS), 'אפשרות 1'));
+    expect(stagePhase(s)).toBe('idle');
   });
 });

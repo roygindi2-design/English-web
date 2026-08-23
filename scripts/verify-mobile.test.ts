@@ -169,7 +169,12 @@ describe('every flow screen carries one reachable primary action (F-027)', () =>
   });
 
   it('measures reachability before anything else scrolls the page', () => {
-    const start = code.indexOf('FLOW_ROUTES.includes(route)');
+    // ⚠️ העוגן הוא `PRIMARY_ACTION_ROUTES` מאז C-0250 (T-091 · F-098), כי בלוק
+    // ארבע בדיקות F-027 נחתך מ-`FLOW_ROUTES` כדי לכסות גם את שתי לשוניות
+    // הפיקסטורה. ⛔ **הבדיקה ⛔ לא נחלשה ולו בתו אחד** — שתי האסרציות שמתחת
+    // זהות, והשינוי היחיד הוא שהן מצביעות שוב על אותו קוד עצמו: עוגן שמצביע
+    // על הבלוק השני היה הופך אותה לבדיקה חלולה שעוברת על כלום (F-100 · משפחת F-091).
+    const start = code.indexOf('PRIMARY_ACTION_ROUTES.includes(route)');
     expect(start).toBeGreaterThan(-1);
     const block = code.slice(start, code.indexOf('report(`', start));
     expect(block).toContain('scrollIntoView');
@@ -557,9 +562,14 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
    * Two cards and not one: «one card per screen» is unfalsifiable on a deck that only ever
    * held one card, and the snap container's height is only wrong when there is a second
    * card to push out of the viewport.
+   *
+   * T-086 (§ 4.2ח ⓑ · 2026-08-20) — הפיקסטורה גדלה מ-2 ל-5 כדי להוכיח שכרטיס 3, 4, 5
+   * גם מחוץ למסך: פגם `h-full` בתוך `flex-1` היה נעצר על כרטיס 2 ומחזיר את כרטיס 3
+   * ל-`min-content`. חמישה הוא מספר קונקרטי — ההארנס סורק את כל הפריטים ומאמת שכל
+   * אחד ממלא את ה-snap viewport ושכל כרטיס משני והלאה מתחיל מתחת לקצה התחתון.
    */
-  it('hard-codes exactly two cards', () => {
-    expect(fixture.match(/word_id:/g) ?? []).toHaveLength(2);
+  it('hard-codes exactly five cards (T-086)', () => {
+    expect(fixture.match(/word_id:/g) ?? []).toHaveLength(5);
   });
 
   /**
@@ -727,7 +737,14 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
   }
 
   it('declares an arrival for EVERY flow route — a new screen cannot arrive unmeasured', () => {
-    expect(arrivalRoutes().sort()).toEqual([...entriesOf('FLOW_ROUTES')].sort());
+    // ⚠️ מאז C-0250 (T-091) הקבוצה היא **האיחוד** של `FLOW_ROUTES` ושתי לשוניות
+    // הפיקסטורה שנוספו ל-`PRIMARY_ACTION_ROUTES`. ⛔ **⛔ אינה החלשה** — היא
+    // הרחבה: השוויון עדיין דו-כיווני, ולכן ⛔ אין רשומת נחיתה בלי מסלול, ⛔ ואין
+    // מסלול שנמדדת עליו פעולה מסומנת בלי יעד נקוב. `entriesOf` קורא רק מחרוזות
+    // במרכאות, ולכן ה-spread ב-`PRIMARY_ACTION_ROUTES` ⛔ אינו נספר פעמיים (F-100).
+    expect(arrivalRoutes().sort()).toEqual(
+      [...entriesOf('FLOW_ROUTES'), ...entriesOf('PRIMARY_ACTION_ROUTES')].sort(),
+    );
   });
 
   it('gives each entry one of the three kinds, and a reason', () => {
@@ -776,4 +793,202 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
     expect(named).toContain('503');
     expect(named).toContain('/api/profile');
   });
+});
+
+/**
+ * ‏T-089 — בלי שתי השורות האלה בארנס, אנטומיית מסך השיעור ⛔ מעולם לא נמדדת
+ * ב-320/375/414, והטענה «אפס גלילה אופקית» עליה היא הצהרה ⛔ ולא מדידה.
+ */
+describe('the lesson anatomy is measured at all three widths (T-089)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('names both lesson fixtures in ROUTES', () => {
+    expect(source).toContain("'/dev/lesson',");
+    expect(source).toContain("'/dev/lesson/done',");
+  });
+
+  /**
+   * ⛔ אין להן רשומת EXPECTED_CONSOLE, וזה השקט שמוכיח שהן מקבלות את הפריטים
+   * כ-prop ו⛔ אינן מבקשות מהשרת דבר. רשומה שתופיע כאן מאוחר יותר פירושה
+   * שהפיקסטורה התחילה לרשת — כלומר שהמדידה חזרה בשקט למסך הכשל.
+   */
+  it('⛔ grants them no console allowance — they request nothing', () => {
+    const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
+    expect(expected).not.toContain('/dev/lesson');
+  });
+});
+
+/**
+ * ‏T-091 · F-098 — שתי לשוניות הפיקסטורה מקבלות את שלוש בדיקות F-027, ⛔ ובלי
+ * שאף בדיקה קיימת תיחלש.
+ *
+ * ⚠️ הסתירה שנמדדה בטיק התכנון: `no tab bar on a flow screen` יושבת באותו בלוק,
+ * ושתי הלשוניות מרנדרות `<TabBar />` (‏`data-tab-bar`) — כלומר הוספה ל-FLOW_ROUTES
+ * מפילה אותה בוודאות, בשש נקודות. הבדיקה שלמטה היא מה שמונע מהיד הבאה «לפתור»
+ * את זה בהחלשה.
+ */
+describe('the F-027 primary-action checks cover the tab fixtures (T-091 · F-098)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('declares a list that is FLOW_ROUTES plus the two tab fixtures', () => {
+    expect(source).toMatch(
+      /const PRIMARY_ACTION_ROUTES = \[\s*\.\.\.FLOW_ROUTES,\s*'\/dev\/tabs\/studies',\s*'\/dev\/tabs\/cards',?\s*\]/,
+    );
+  });
+
+  it('gates the primary-action block on that list and ⛔ not on FLOW_ROUTES', () => {
+    expect(source).toContain('if (PRIMARY_ACTION_ROUTES.includes(route)) {');
+    expect(source).toContain('exactly one primary action');
+  });
+
+  /**
+   * ⛔ THE POINT OF THIS WHOLE TASK. `no tab bar on a flow screen` is a claim
+   * about a FLOW screen (D-028) and a tab screen is a destination, not a step.
+   * If a later hand moves it under PRIMARY_ACTION_ROUTES it fails six times and
+   * the cheapest way out is to delete it. This pins it where it belongs.
+   */
+  it('keeps "no tab bar on a flow screen" bound to FLOW_ROUTES', () => {
+    expect(source).toContain('if (FLOW_ROUTES.includes(route)) {');
+    const flowOnly = source.slice(source.lastIndexOf('if (FLOW_ROUTES.includes(route)) {'));
+    expect(flowOnly).toContain('no tab bar on a flow screen');
+    const primaryBlock = source.slice(
+      source.indexOf('if (PRIMARY_ACTION_ROUTES.includes(route)) {'),
+      source.lastIndexOf('if (FLOW_ROUTES.includes(route)) {'),
+    );
+    expect(primaryBlock).not.toContain('no tab bar on a flow screen');
+    expect(primaryBlock).toContain('exactly one primary action');
+  });
+});
+
+/**
+ * ‏T-091, החצי השני של F-027: ההקשה **מגיעה** לאיפשהו. `02-inbox` פריט 9.
+ * ‏`FLOW_ARRIVAL` נקרא ב-`const arrival = FLOW_ARRIVAL[route]` בלי תנאי חברות
+ * ב-`FLOW_ROUTES`, ולכן שתי הרשומות האלה נמדדות בזכות עצמן.
+ */
+describe('both tab fixtures declare where their tap lands (T-091)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const arrival = source.slice(
+    source.indexOf('const FLOW_ARRIVAL'),
+    source.indexOf('const EXPECTED_CONSOLE'),
+  );
+
+  it('/dev/tabs/studies names /login — the redirect proxy.ts forces without env', () => {
+    const entry = arrival.slice(arrival.indexOf("'/dev/tabs/studies':"));
+    expect(entry).toContain("kind: 'navigates'");
+    expect(entry).toContain("to: '/login'");
+    expect(entry).toContain("marker: 'input[name=\"email\"]'");
+  });
+
+  it('/dev/tabs/cards names /study and the request that landing fires', () => {
+    const entry = arrival.slice(arrival.indexOf("'/dev/tabs/cards':"));
+    expect(entry).toContain("kind: 'navigates'");
+    expect(entry).toContain("to: '/study'");
+    expect(entry).toContain("marker: '[data-action-bar]'");
+    expect(entry).toContain("settles: '/api/study/queue?deck=due'");
+  });
+
+  /**
+   * ⛔ NOT a blanket exemption for the route. The landing on `/study` fires ONE
+   * request the harness itself makes impossible, and the entry is keyed to that
+   * exact URL and pinned with `$` so it cannot also swallow `?deck=due&limit=1`
+   * — the request `<DeckSelector>` makes on the route itself.
+   */
+  it('allows exactly the one 503 that landing on /study causes', () => {
+    const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
+    const block = expected.slice(expected.indexOf("'/dev/tabs/cards':"));
+    expect(block).toContain('\\/api\\/study\\/queue\\?deck=due$');
+  });
+});
+
+/**
+ * ‏C-0250 · F-101 — מירוץ בבדיקת הנחיתה עצמה, נמדד ⛔ ולא שוער.
+ *
+ * ענף `navigates` קרא את הסמן ב-`.count()` **מיד** אחרי `waitForURL`, בלי להמתין
+ * לו ולו רגע. נמדד בהרצת הארנס (‏C-0250, שלושת הרוחבים): בנחיתה על `/study`
+ * הכתובת וה-`<h1>` כבר במקום ב-`t=0`, ואילו `[data-action-bar]` ו-
+ * `[data-primary-action]` מופיעים תוך **300ms** — כלומר הבדיקה נכשלה על מסך
+ * שרונדר בפועל. כל הרשומות שקדמו עברו רק משום שיעדן רונדר סינכרונית.
+ *
+ * ⛔ ההמתנה ⛔ אינה החלשה: מסך שלעולם ⛔ אינו מרנדר את הסמן עדיין נופל בתום
+ * הפסק, בדיוק כמו קודם. זו אותה תבנית שענף `announces` כבר משתמש בה שורות
+ * ספורות מתחת, ואותו לקח בדיוק כמו C-0134 — למדוד אחרי שהדבר הגיע, ⛔ ולא לפניו.
+ */
+describe('the arrival marker is waited for, not raced (F-101)', () => {
+  const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const code = source.replace(/^[^\S\n]*\/\/.*$/gm, '');
+
+  it('waits for the marker before counting it', () => {
+    const start = code.indexOf("if (arrival.kind === 'navigates') {");
+    expect(start).toBeGreaterThan(-1);
+    const block = code.slice(start, code.indexOf("} else if (arrival.kind === 'announces')", start));
+    // ⛔ רגקס ו⛔ לא מחרוזת: השרשור מפוצל לשורות בידי המעצב, ומחרוזת אחת הייתה
+    // בדיקה ששוברת עצמה על ריווח ⛔ ולא על התנהגות.
+    expect(block).toMatch(/page\s*\.locator\(arrival\.marker\)\s*\.first\(\)\s*\.waitFor\(/);
+    expect(block.indexOf('.waitFor(')).toBeLessThan(block.indexOf('.count()'));
+  });
+
+  /**
+   * ⛔ הפסק חייב להישאר סופי. `waitFor` בלי `timeout` היה תולה את הארנס על מסך
+   * מת במקום להפיל אותו — כלומר הופך כישלון נמדד לריצה שלא נגמרת.
+   */
+  it('keeps the wait bounded, so a dead screen still fails instead of hanging', () => {
+    const start = code.indexOf("if (arrival.kind === 'navigates') {");
+    const block = code.slice(start, code.indexOf("} else if (arrival.kind === 'announces')", start));
+    expect(block).toMatch(/waitFor\(\{\s*timeout:\s*5000\s*\}\)/);
+    expect(block).toContain('.catch(() => {})');
+  });
+});
+
+describe('T-099 · D-042 — the deck gesture is measured, ⛔ not declared', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('measures all three claims: before reveal · after reveal · edge zone', () => {
+    for (const label of [
+      'swipe before reveal ⛔ does not grade',
+      'swipe right grades the card',
+      'edge-zone swipe ⛔ does not grade (D-042ⓐ)',
+    ]) {
+      expect(SRC, `${label} — בדיקה חסרה בארנס`).toContain(label);
+    }
+  });
+
+  it('the block runs last for that route — it mutates the page', () => {
+    // ⛔ הטענה היא סדר: בלוק שמסמן כרטיס ורץ באמצע היה משאיר לכל שאר
+    // הבדיקות דף אחר ממה שהן חושבות שהן מודדות.
+    expect(SRC.indexOf("route === '/dev/deck'")).toBeGreaterThan(SRC.indexOf('no horizontal scroll'));
+  });
+});
+
+/**
+ * C-0252 — «לפני החשיפה» היא טענה על **מצב**, והמצב הזה ⛔ אינו מובן מאליו:
+ * בלוק יעדי המגע (`grade targets`) חושף את הכרטיס הראשון קודם, ולכן ההרצה
+ * הראשונה הפילה את «swipe before reveal» עם `remaining moved 5 → 4` בשלושת
+ * הרוחבים. הטעינה מחדש היא מה שמבסס את התנאי, והספירה היא מה שמונע מהבדיקה
+ * לעבור ריק ביום שבו בלוק אחר יחשוף שוב.
+ */
+describe('C-0252 — the gesture block establishes its own precondition', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  // הבלוק של המחווה הוא **האחרון** מבין בלוקי `/dev/deck` — הוא רץ בסוף גוף
+  // הלולאה בכוונה, ולכן `lastIndexOf` הוא ההיצמדות הנכונה ⛔ ולא הראשונה.
+  const BLOCK = SRC.slice(SRC.lastIndexOf("route === '/dev/deck'"));
+
+  it('reloads the fixture before claiming the card is unrevealed', () => {
+    expect(BLOCK).toContain('deck starts unrevealed — the precondition is measured');
+    expect(
+      BLOCK.indexOf('page.reload'),
+      'הטעינה מחדש חייבת לקדום למחווה «לפני החשיפה» — אחרת הטענה מודדת דף אחר',
+    ).toBeLessThan(BLOCK.indexOf('swipe before reveal ⛔ does not grade'));
+  });
+
+  it('⛔ and the precondition is a real count, ⛔ not a comment', () => {
+    expect(BLOCK).toMatch(/\[data-reveal\]'\)\.count\(\)/);
+  });
+});
+
+it('T-100 — the harness measures the decay level AND its Hebrew label', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  expect(SRC).toContain('overdue card decays');
+  expect(SRC).toContain('decay carries its Hebrew label');
+  // ⛔ הסדר: בדיקת הדעיכה קודמת למחוות, שמסירות את הכרטיס הראשון מה-DOM.
+  expect(SRC.indexOf('overdue card decays')).toBeLessThan(SRC.indexOf('swipe right grades the card'));
 });

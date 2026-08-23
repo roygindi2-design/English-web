@@ -63,7 +63,7 @@ const MAX_QUEUE_ROWS = 200;
  * D-013 is enforced there, ⛔ and is not restated here as a second, divergent rule.
  */
 const PROGRESS_SELECT =
-  'word_id, attempts, correct_attempts, repetition, consecutive_correct_recognition, next_review_at, ' +
+  'word_id, attempts, correct_attempts, repetition, consecutive_correct_recognition, next_review_at, interval_days, ' +
   'words!inner(headword, cefr_profile_band, ' +
   'senses(sense_index, translation_he, needs_human_review, sense_examples(kind, text_en)))';
 
@@ -98,6 +98,7 @@ type ProgressJoinRow = {
   repetition: number | null;
   consecutive_correct_recognition: number | null;
   next_review_at: string | null;
+  interval_days: number | null;
   words: WordRow | WordRow[] | null;
 };
 
@@ -166,6 +167,9 @@ function toQueueRow(row: ProgressJoinRow): QueueRow | null {
     needsHumanReview: sense.needs_human_review === true,
     cefrProfileBand: word.cefr_profile_band ?? null,
     nextReviewAtMs: epochMs(row.next_review_at),
+    // ⛔ `?? 0` ⛔ ואינו ניחוש: העמודה `not null default 0`, ולכן null כאן פירושו
+    // שהשורה הגיעה משאילתה שלא ביקשה אותה — ואפס הוא בדיוק «טרם תוזמן».
+    intervalDays: row.interval_days ?? 0,
     attempts: row.attempts ?? 0,
     repetition: row.repetition ?? 0,
     consecutiveCorrectRecognition: row.consecutive_correct_recognition ?? 0,
@@ -199,6 +203,7 @@ function toNewQueueRow(row: NewWordRow): QueueRow | null {
     needsHumanReview: sense.needs_human_review === true,
     cefrProfileBand: row.cefr_profile_band ?? null,
     nextReviewAtMs: null,
+    intervalDays: 0,
     attempts: 0,
     repetition: 0,
     consecutiveCorrectRecognition: 0,

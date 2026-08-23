@@ -10,6 +10,8 @@ const row = (over: Partial<QueueRow>): QueueRow => ({
   headword: 'word', translationHe: 'מילה',
   examples: { supportive: 'A supportive word.', neutral: 'The word is here.' },
   needsHumanReview: false, cefrProfileBand: 'A1', nextReviewAtMs: 1_000,
+  // T-100 — ברירת מחדל `0` = «SM-2 טרם תזמן», בדיוק כמו `not null default 0` בעמודה.
+  intervalDays: 0,
   attempts: 0, repetition: 0, consecutiveCorrectRecognition: 0, ...over,
 });
 
@@ -143,5 +145,39 @@ describe('checkPracticePayload — F-004 בגבול הזה', () => {
   it('מקבל את השניים התקינים', () => {
     const check = checkPracticePayload({ word_id: id, grade: 'again' });
     expect(check.ok && check.payload).toEqual({ wordId: id, grade: 'again' });
+  });
+});
+
+describe('T-100 · D-043 — התזמון נוסע בחוט, ⛔ ואפס עמודה חדשה', () => {
+  const row = {
+    wordId: '11111111-2222-3333-4444-555555555555',
+    headword: 'budget',
+    translationHe: 'תקציב',
+    examples: { supportive: 'a', neutral: 'b' },
+    needsHumanReview: false,
+    cefrProfileBand: 'A1',
+    nextReviewAtMs: Date.parse('2026-08-01T09:00:00.000Z'),
+    attempts: 3,
+    repetition: 2,
+    consecutiveCorrectRecognition: 1,
+    intervalDays: 7,
+  };
+
+  it('מעביר את שני השדות, ⛔ ובלי לגעת בארבעת הקיימים', () => {
+    const card = toQueueCardInput(row, 3);
+    expect(card.review).toEqual({ next_review_at: '2026-08-01T09:00:00.000Z', interval_days: 7 });
+    expect(card.word_id).toBe(row.wordId);
+    expect(card.sense.headword).toBe('budget');
+    expect(card.is_first_encounter).toBe(false);
+  });
+
+  it('המרת ms⇄ISO נאמנה למילישנייה — ⛔ אין כאן איבוד דיוק', () => {
+    const odd = { ...row, nextReviewAtMs: Date.parse('2026-08-01T09:00:00.123Z') };
+    expect(Date.parse(toQueueCardInput(odd, 3).review.next_review_at ?? '')).toBe(odd.nextReviewAtMs);
+  });
+
+  it('מילה שטרם תוזמנה ⇒ null ⛔ ולא אפוק 0', () => {
+    const fresh = { ...row, nextReviewAtMs: null, intervalDays: 0, attempts: 0 };
+    expect(toQueueCardInput(fresh, 3).review).toEqual({ next_review_at: null, interval_days: 0 });
   });
 });

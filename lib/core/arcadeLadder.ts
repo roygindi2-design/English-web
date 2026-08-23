@@ -21,8 +21,9 @@ export const ARCADE_WINS_PER_LEVEL = 3;
 
 export const MAX_GAME_LEVEL = 12;
 
-/** רמה שאין לה כל כך הרבה מילים כשירות מוצגת **נעולה עם המספר** (D-046). */
-export const ARCADE_MIN_WORDS_PER_LEVEL = 12;
+/** רמה שאין בה תחמושת שלמה של מילים כשירות מוצגת **נעולה עם המספר** (D-046 · D-067ⓐ).
+ *  ⛔ המספר הוא `ARCADE_AMMO` ⛔ ולא 12: שער נמוך מהתחמושת מחזיר קרב שסף הניצחון בו 83%. */
+export const ARCADE_MIN_WORDS_PER_LEVEL = ARCADE_AMMO;
 
 /**
  * D-060 · `03-for-roy` פריט 39 — תנוחת המתנה חיה היא **לולאה מתמשכת**, וחוקה § 5
@@ -78,9 +79,21 @@ export function describeLevel(
   };
 }
 
-/** ⛔ `>=` ולא `===`: תחמושת עודפת אינה מבטלת ניצחון. */
-export function isVictory(correct: number): boolean {
-  return correct >= ARCADE_ENEMY_HP;
+/**
+ * D-067ⓑ — כמה פגיעות דרושות לניצחון בסיבוב שנשלחו בו `questionCount` שאלות.
+ * ⛔ `ceil(q · 2/3)` ⛔ ולא קבוע: קבוע מייצג 67% **רק** כשהסיבוב הוא בדיוק 15.
+ * ⛔ קלט פסול נופל ל-`ARCADE_ENEMY_HP` ⛔ ולא ל-0 — סף שאפשר לנצח בו באפס תשובות
+ * הוא בדיוק מה שהסעיף הזה נולד למנוע.
+ */
+export function requiredHits(questionCount: number): number {
+  if (!Number.isInteger(questionCount) || questionCount <= 0) return ARCADE_ENEMY_HP;
+  return Math.ceil((questionCount * 2) / 3);
+}
+
+/** ⛔ `>=` ולא `===`: תחמושת עודפת אינה מבטלת ניצחון. ⛔ ושני ארגומנטים ולא אחד —
+ *  קריאה בת ארגומנט אחד ⛔ אינה מהדרת, וזה מה שמאלץ כל קורא לומר מכמה שאלות. */
+export function isVictory(correct: number, questionCount: number): boolean {
+  return correct >= requiredHits(questionCount);
 }
 
 export function applyWin(

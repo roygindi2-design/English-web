@@ -27,7 +27,7 @@ describe('GET /api/world/bank', () => {
     // Read the dedupe off the CALL SITES, one per group.
     expect(CODE).toMatch(/functionWords:\s*uniqueHeadwords\(/);
     expect(CODE).toMatch(/activeWords\s*=\s*uniqueHeadwords\(/);
-    expect(CODE).toMatch(/\.eq\('is_function_word',\s*true\)/);
+    expect(CODE).toMatch(/\.eq\('lexical_class',\s*'function'\)/);
   });
 
   it('reads the learner group from is_active_this_week, ⛔ not the whole vocabulary', () => {

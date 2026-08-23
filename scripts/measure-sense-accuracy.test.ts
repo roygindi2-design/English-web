@@ -55,9 +55,40 @@ describe('measure-sense-accuracy.mjs', () => {
     expect(SRC).toContain('gold.droppedPseudoGap');
   });
 
-  /** The file written and the file printed are one render, not two. */
+  /**
+   * The file written and the file printed are one render, not two.
+   *
+   * ⚠️ Measured on the IDENTIFIER, not on its spelling. The literal
+   * `writeFileSync(OUT, markdown` this used to assert broke the moment T-112
+   * appended a second section and the written value became `full` (F-112) — a
+   * rename is not a regression, but two different values would be. Reading the
+   * name out of the source keeps the property and drops the false alarm.
+   */
   it('writes exactly what it prints', () => {
-    expect(SRC).toContain('writeFileSync(OUT, markdown');
-    expect(SRC).toContain('console.log(markdown)');
+    const written = /writeFileSync\(OUT,\s*([A-Za-z_$][\w$]*)/.exec(SRC);
+    expect(written).not.toBeNull();
+    const name = written?.[1];
+    expect(name).toBeTruthy();
+    expect(SRC).toContain(`console.log(${name})`);
+  });
+});
+
+describe('measure-sense-accuracy.mjs — the T-112 cross-validation section', () => {
+  it('loads both permitted second sources by name', () => {
+    expect(SRC).toContain('h3-kaikki-en.jsonl');
+    expect(SRC).toContain('h4-word2word-en-he.tsv');
+  });
+
+  it('passes null — never an empty index — when no second source is present', () => {
+    expect(SRC).toMatch(/secondEntries\.length === 0 \? null :/);
+  });
+
+  it('appends the cross-validation section to the same report, not to a second file', () => {
+    expect(SRC.match(/writeFileSync\(/g)).toHaveLength(1);
+    expect(SRC).toContain('renderCrossValidationMarkdown');
+  });
+
+  it('⛔ names no language model as a validation source (D-055)', () => {
+    expect(SRC.toLowerCase()).not.toMatch(/\bllm\b|\bgpt\b|openai|anthropic/);
   });
 });

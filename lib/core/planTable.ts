@@ -24,7 +24,60 @@ export interface RowShape {
   readonly ok: boolean;
 }
 
+/**
+ * Every code span boundary on the line, as sorted, non-overlapping `[openStart, closeEnd)`
+ * pairs, by the CommonMark rule: a maximal run of N backticks is closed by the next maximal
+ * run of exactly N. A run that never finds its match ⛔ does not open a span — it is literal
+ * text, and treating it as an opener would swallow the rest of the line and merge columns,
+ * turning a well-formed row malformed.
+ *
+ * Measured C-0219: 3 doubled-backtick runs in 50-tasks.md and 1 in 60-findings.md already
+ * carry `\|` inside them, so a splitter that closed on any run length would break rows that
+ * are correct today.
+ *
+ * The scan skips an escape pair in the same order `splitRow` does, so the two parsers never
+ * disagree about which index a character sits at. `\|` and `\\` are `splitRow`'s escapes; a
+ * backtick after a backslash is content here too, so it ⛔ does not open a run.
+ */
+export function codeSpans(line: string): ReadonlyArray<readonly [number, number]> {
+  const runs: Array<{ start: number; length: number }> = [];
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\') {
+      const next = line[i + 1];
+      if (next === '|' || next === '\\' || next === '`') i += 1;
+      continue;
+    }
+    if (ch !== '`') continue;
+    const start = i;
+    while (line[i + 1] === '`') i += 1;
+    runs.push({ start, length: i + 1 - start });
+  }
+
+  const spans: Array<readonly [number, number]> = [];
+  for (let a = 0; a < runs.length; a += 1) {
+    const open = runs[a];
+    if (open === undefined) continue;
+    for (let b = a + 1; b < runs.length; b += 1) {
+      const close = runs[b];
+      if (close === undefined || close.length !== open.length) continue;
+      spans.push([open.start, close.start + close.length] as const);
+      a = b;
+      break;
+    }
+  }
+  return spans;
+}
+
+function insideSpan(spans: ReadonlyArray<readonly [number, number]>, at: number): boolean {
+  for (const [start, end] of spans) {
+    if (at >= start && at < end) return true;
+  }
+  return false;
+}
+
 export function splitRow(line: string): string[] {
+  const spans = codeSpans(line);
   const cells: string[] = [];
   let current = '';
   for (let i = 0; i < line.length; i += 1) {
@@ -38,6 +91,10 @@ export function splitRow(line: string): string[] {
         i += 1;
         continue;
       }
+      current += ch;
+      continue;
+    }
+    if (ch === '|' && insideSpan(spans, i)) {
       current += ch;
       continue;
     }

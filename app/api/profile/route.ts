@@ -43,8 +43,6 @@ export async function POST(request: Request) {
       dailyMinutes: body.dailyMinutes,
       examDate: body.examDate,
       targetScore: body.targetScore,
-      // § 4.2ד: optional free text, truncated (not rejected) by lib/core.
-      institution: body.institution,
     },
     today
   );
@@ -56,13 +54,16 @@ export async function POST(request: Request) {
   // row, and an upsert here would need to restate track_id — a second place
   // where the default lives is a second place for it to be wrong (D-016).
   const now = new Date().toISOString();
+  // ⛔ `institution` ⛔ אינו נכתב עוד — D-056 · T-111 (רוי, 19/08). העמודה
+  // `profiles.institution` **נשארת** (`0009`, nullable) ומוסיפה להיקרא ב-`/me`
+  // עבור לומדים שכבר ענו. ⛔ אל תציע `drop column` — מחיקת עמודה הרסנית ואינה
+  // סמכות סוכן, וההחלטה נוקבת בכך במפורש. מתועד כחוב ב-`plan/30-architecture.md`.
   const { error } = await supabase
     .from('profiles')
     .update({
       daily_minutes: check.answers.dailyMinutes,
       exam_date: check.answers.examDate,
       target_score: check.answers.targetScore,
-      institution: check.answers.institution,
       onboarded_at: now,
       updated_at: now,
     })

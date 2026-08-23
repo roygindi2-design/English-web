@@ -231,3 +231,16 @@ describe('החוזה מול הקוד — F-035', () => {
     expect(CONTRACT).toMatch(/limit[^\n]{0,120}נחתך/);
   });
 });
+
+describe('T-100 — interval_days נשלף, ⛔ ואינו מנוחש', () => {
+  const SRC = readFileSync('app/api/study/queue/route.ts', 'utf8');
+
+  it('העמודה בשאילתת ההתקדמות', () => {
+    // ⛔ שדה שלא נשלף חוזר undefined ⇒ הדעיכה הייתה `none` לנצח, בשקט.
+    expect(SRC).toMatch(/PROGRESS_SELECT[\s\S]{0,400}interval_days/);
+  });
+
+  it('מילה חדשה מקבלת 0 ⛔ ולא undefined', () => {
+    expect(SRC).toMatch(/intervalDays:\s*0/);
+  });
+});

@@ -42,6 +42,9 @@ const { buildGoldSet } = await import('../lib/core/senseGold.ts');
 const { parseCefrCsv, buildLevelMap } = await import('../lib/core/cefrLevels.ts');
 const { buildInventory } = await import('../lib/core/senseInventory.ts');
 const { measureAccuracy, renderAccuracyMarkdown } = await import('../lib/core/senseAccuracy.ts');
+const { parsePairsTsv, parseKaikkiJsonl } = await import('../lib/core/sources.ts');
+const { buildSecondSourceIndex, tallyCrossValidation, renderCrossValidationMarkdown } =
+  await import('../lib/core/translationConfidence.ts');
 
 const DATA = 'data';
 const OUT = join('docs', 'sense-accuracy-report.md');
@@ -110,7 +113,37 @@ const inv = buildInventory(inventoryRecords ?? []);
 const report = measureAccuracy({ items: [], inv, gold, levels });
 
 const markdown = renderAccuracyMarkdown(report, provenance);
+
+// --- T-112 · D-055 — אימות צולב לרשומות `!` -----------------------------------
+// ⛔ שני המקורות כבר ברשימה המאושרת: H3 Kaikki (CC BY-SA) · H4 word2word
+// (Apache-2.0). ⛔ אפס רישוי חדש, אפס עלות, ⛔ ואפס הורדה (TD-17).
+const SECOND_SOURCES = [
+  { id: 'H3', file: join(DATA, 'h3-kaikki-en.jsonl'), parse: (t) => parseKaikkiJsonl(t, 'he') },
+  { id: 'H4', file: join(DATA, 'h4-word2word-en-he.tsv'), parse: parsePairsTsv },
+];
+const secondEntries = [];
+const secondProvenance = [];
+for (const s of SECOND_SOURCES) {
+  if (!existsSync(s.file)) {
+    secondProvenance.push(`\`${s.file}\` — **unavailable** (T-043)`);
+    continue;
+  }
+  const parsed = s.parse(readFileSync(s.file, 'utf8'));
+  secondEntries.push(...parsed.entries);
+  secondProvenance.push(
+    `\`${s.file}\` — ${parsed.entries.length} זוגות · ${parsed.skipped}/${parsed.lines} שורות דולגו`,
+  );
+}
+// ⛔ null ⛔ ולא אינדקס ריק: אינדקס ריק היה מדווח על 3,301 מועמדים כ"המקור השני
+// חלוק/אינו מכסה" — כלומר שהאימות רץ ונכשל, במקום שלא רץ כלל.
+const second = secondEntries.length === 0 ? null : buildSecondSourceIndex(secondEntries);
+const crossSection = renderCrossValidationMarkdown(
+  tallyCrossValidation(gold, second),
+  secondProvenance,
+);
+
+const full = `${markdown}\n${crossSection}`;
 mkdirSync('docs', { recursive: true });
-writeFileSync(OUT, markdown, 'utf8');
-console.log(markdown);
+writeFileSync(OUT, full, 'utf8');
+console.log(full);
 console.log(`\nwritten to ${OUT}`);

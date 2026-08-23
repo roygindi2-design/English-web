@@ -1,6 +1,13 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { parseLevel, summarizeLevel, type ProgressFacts } from '@/lib/core/levelSummary';
+import {
+  parseLevel,
+  summarizeAllLevels,
+  summarizeLevel,
+  type BandedProgressFacts,
+  type ProgressFacts,
+} from '@/lib/core/levelSummary';
+import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +31,18 @@ type ProgressJoinRow = {
   attempts: number | null;
   repetition: number | null;
   self_marked_known: boolean | null;
+  words:
+    | { cefr_profile_band: string | null }
+    | { cefr_profile_band: string | null }[]
+    | null;
 };
+
+/** PostgREST מחזיר embed של many-to-one כאובייקט במסלול אחד וכמערך בן-איבר במסלול אחר. */
+function bandOf(row: ProgressJoinRow): CefrBand | null {
+  const words = Array.isArray(row.words) ? (row.words[0] ?? null) : row.words;
+  const raw = words?.cefr_profile_band ?? null;
+  return parseLevel(raw);
+}
 
 /**
  * ⚠️ `42703` (undefined column) הוא **המצב הצפוי** עד שמיגרציה 0013 תורץ בייצור
@@ -73,21 +91,13 @@ export async function GET() {
   const level = parseLevel((profile as { current_level?: unknown } | null)?.current_level);
   if (level === null) return NextResponse.json({ ok: true, level: null });
 
-  const { count, error: totalError } = await supabase
-    .from('words')
-    .select('id', { count: 'exact', head: true })
-    .eq('cefr_profile_band', level);
-
-  if (totalError) {
-    console.error('[api/levels/summary] level size read failed:', totalError.message);
-    return isSchemaMissing((totalError as { code?: string }).code) ? schemaMissing() : unavailable();
-  }
-
+  // ⚠️ **T-102: שליפה אחת בלי מסנן רמה, ⛔ ולא שש שליפות.** שש קריאות היו שש נסיעות
+  // רשת על אותה טבלה, והקיבוץ ממילא נעשה בשכבה הטהורה. התקרה נבדקת מול הסך הכולל
+  // מיד אחרי כן — שליפה שנחתכה היא ספירה שגויה בכל שש הרמות, ⛔ ולא בְּאחת.
   const { data, error } = await supabase
     .from('word_progress')
     .select(PROGRESS_SELECT)
     .eq('user_id', user.id)
-    .eq('words.cefr_profile_band', level)
     .limit(MAX_PROGRESS_ROWS);
 
   if (error) {
@@ -103,16 +113,38 @@ export async function GET() {
     return unavailable();
   }
 
-  const rows: ProgressFacts[] = raw.map((row) => ({
+  const banded: BandedProgressFacts[] = raw.map((row) => ({
     attempts: row.attempts ?? 0,
     repetition: row.repetition ?? 0,
     selfMarkedKnown: row.self_marked_known === true,
+    band: bandOf(row),
   }));
 
+  // שש ספירות `head: true` — עלות אחת לכל רמה, ⛔ ואפס שורות על החוט. ⛔ הן ⛔ אינן
+  // סופרות התקדמות: הן סופרות **מילים ברמה**, וזה בדיוק מה שהשכבה הטהורה אינה יכולה
+  // לדעת. מקבילות, כי אף אחת מהן ⛔ אינה תלויה בשנייה.
+  const counted = await Promise.all(
+    BAND_ORDER.map((band) =>
+      supabase.from('words').select('id', { count: 'exact', head: true }).eq('cefr_profile_band', band),
+    ),
+  );
+  const failedCount = counted.find((result) => result.error);
+  if (failedCount?.error) {
+    console.error('[api/levels/summary] level sizes read failed:', failedCount.error.message);
+    return isSchemaMissing((failedCount.error as { code?: string }).code) ? schemaMissing() : unavailable();
+  }
+
+  const totals = Object.fromEntries(
+    BAND_ORDER.map((band, i) => [band, counted[i]?.count ?? 0]),
+  ) as Record<CefrBand, number>;
+
   try {
-    // ⛔ הנתיב אינו סופר: הוא מוסר שורות ומקבל סיכום. ההגדרה חיה במקום אחד.
-    const summary = summarizeLevel({ level, totalInLevel: count ?? 0, rows });
-    return NextResponse.json({ ok: true, ...summary });
+    // ⛔ הנתיב אינו סופר: הוא מוסר שורות ומקבל סיכומים. ההגדרה חיה במקום אחד.
+    const levels = summarizeAllLevels({ totals, rows: banded });
+    const rows: ProgressFacts[] = banded.filter((row) => row.band === level);
+    const summary = summarizeLevel({ level, totalInLevel: totals[level] ?? 0, rows });
+    // ⛔ **תוספת בלבד:** חמשת השדות הקיימים יוצאים בדיוק כפי שיצאו קודם.
+    return NextResponse.json({ ok: true, ...summary, levels });
   } catch (rangeError) {
     console.error('[api/levels/summary] impossible counts:', (rangeError as Error).message);
     return unavailable();

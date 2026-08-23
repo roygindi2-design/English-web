@@ -88,6 +88,17 @@ body {
 body:has([data-action-bar]) { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
 body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 
+/* 🟠 F-082 — one reservation per bar SHAPE, because the rule above is a
+   constant and the bar's height is not. Measured C-0214 at 320 · 375 · 414,
+   width-independent: single row 77px (covered by the 5rem above), two rows
+   135px (⛔ not covered — 55px of the document, i.e. the /sources link T-011
+   requires, sat under the bar; that is the gate `check:mobile` reported).
+   9rem = 144px clears 135 with the slack the single-row rule keeps over 77.
+   ⛔ This must stay AFTER the rule above: same specificity, later wins.
+   `components/ActionBar.tsx` emits the value; `ActionBar.test.ts` asserts no
+   shape is emitted without a rule here. */
+body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-area-inset-bottom)); }
+
 /* T-041: the reveal is an affordance, never a delay. Any motion is opt-out. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -96,3 +107,40 @@ body:has([data-tab-bar])    { padding-bottom: calc(4.5rem + env(safe-area-inset-
   }
 }
 
+
+/* arena-stage — T-117 · D-060 · חוקה § 5. ⛔ מעבר, ⛔ ולא לולאה: אין `infinite`
+   ואין `alternate`. `prefers-reduced-motion` (למעלה) מאפס את המשכים.
+   ⛔ אין כאן כלל ל-`idle`: המתנה היא היעדר תזוזה, ⛔ ולא תנועה שלישית. */
+[data-arena-stage] [data-arena-figure] {
+  transition: transform 200ms ease-out;
+}
+[data-arena-phase='hit'] [data-arena-figure='enemy'] {
+  transform: translateX(0.75rem);
+}
+[data-arena-phase='dodge'] [data-arena-figure='hero'] {
+  transform: translateX(-0.75rem);
+}
+
+/* T-099 · D-042ⓒ — ההיזון החזותי של ההחלקה. ⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע:
+   הכרטיס ⛔ אינו נגרר, ולכן אין כאן מטפל תנועה ואין ערך רציף. שני המספרים הם
+   התקרות שההחלטה נוקבת בהן — 8px ו-200ms — ו-prefers-reduced-motion למעלה
+   מאפס את המשך בלי כלל נוסף כאן. */
+[data-flashcard] {
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
+}
+[data-flashcard][data-swipe='good'] {
+  transform: translateX(8px);
+  opacity: 0.6;
+}
+[data-flashcard][data-swipe='again'] {
+  transform: translateX(-8px);
+  opacity: 0.6;
+}
+
+/* T-100 · D-043 — ההיחלשות החזותית. ⛔ חלה על מילת הכותרת בלבד (--ink, ~17:1),
+   ⛔ ולעולם לא על השורה המשנית (--ink-muted, ~7.5:1) שהייתה נופלת מתחת ל-4.5:1
+   באטימות הזאת. הערכים זהים ל-DECAY_OPACITY ב-lib/core/decay.ts, והרצפה נבדקת
+   שם בחישוב. ⛔ אין כאן אנימציה: דעיכה היא מצב, ⛔ לא תנועה. */
+[data-decay='due'] { opacity: 0.9; }
+[data-decay='late'] { opacity: 0.75; }
+[data-decay='stale'] { opacity: 0.6; }

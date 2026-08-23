@@ -2,14 +2,18 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
+import type { CollectedLatest } from '@/lib/core/arcadeCollection';
 import {
   WORLD_APP_HREF,
   WORLD_APP_LABEL_HE,
   WORLD_APP_ORDER,
   featuredAppId,
   levelTooSmallNoteHe,
+  libraryTile,
   type AppState,
+  type StoriesStatus,
   type WorldApp,
 } from '@/lib/core/worldApps';
 
@@ -22,10 +26,17 @@ import {
  *
  * ארבע ההכרעות כאן הן חוקי המשימה ⛔ ולא טעם:
  *
- * 1. **בדיוק שני אריחים.** «הרכבה» (§ 4.2ה, קיים) ו«זירה» (T-095). כלל המסננת של
- *    § 4.2יא — «אריח בלי תנאי מדיד ⛔ אינו נכנס לרשת» — הוא שמוציא את השאר: לספרייה,
- *    להודעות ולמייל ⛔ אין תנאי פתיחה נקוב במספר, ואריח «בקרוב» בלי מספר אסור
- *    מפורשות (D-046). הפער רשום כ-F-072 ⛔ ואינו מוסתר.
+ * 1. **בדיוק ארבעה אריחים** (D-074ⓑ · § 4.2יג). «הרכבה» (§ 4.2ה, קיים) · «זירה»
+ *    (T-095) · «המילים שאספתי» (§ 4.2יב, שאומרת «מגיעים אליו מאריח») · «הספרייה»
+ *    (§ 4.2יג, שאומרת את אותו הדבר בדיוק).
+ *    **F-072 נסגר ב-D-074:** חברות ברשת היא שלושת התנאים ⓘ משימה · ⓘ שורה בטבלת
+ *    הצימוד של D-054 · ⓘ תנאי פתיחה מדיד ונקוב במספר — והספרייה עומדת בשלושתם
+ *    («נדרשים 3 סיפורים ברמה שלך, יש N», והמספר מהשרת). הודעות ומייל עדיין מחוץ
+ *    לרשת מאותה מסננת: לאף אחד מהם אין תנאי פתיחה נקוב במספר, ואריח «בקרוב» בלי
+ *    מספר אסור מפורשות (D-046).
+ *    ⚠️ **תוצאה שנמדדה ⛔ ולא שוערה, ונרשמה כ-F-084 → PM:** `featuredAppId` בוחר את
+ *    **האחרון הפתוח** כשאין חיוב פתוח ⇒ האריח הגדול עבר מ«זירה» ל«המילים שאספתי»
+ *    בעצם הוספת השלישי. זו הכרעת מסך ⇒ ⛔ אינה מוכרעת כאן.
  *
  * 2. **שני המספרים באים מהשרת.** הנוסח נבנה ב-`levelTooSmallNoteHe` מ-`required`
  *    ומ-`eligible` של התשובה ⛔ ואינו נכתב כאן. `12` חי במקום אחד בלבד —
@@ -52,6 +63,8 @@ import {
 
 /** ⛔ לא `0`. מספר שאין לנו אינו מספר אפס. */
 const UNKNOWN_HE = '—';
+/** D-071ⓑ · T-133 — ⛔ שורה אחת, ⛔ בלי מונה, בלי רצף ובלי תגמול. */
+const PIN_PREFIX_HE = 'המילה שאספת אתמול — ';
 const OPEN_HE = 'פתוח';
 const HEADING_HE = 'אפליקציות';
 
@@ -76,6 +89,38 @@ type RoundResponse =
   | { readonly ok: true; readonly gameLevel: number; readonly round: null }
   | { readonly ok: false; readonly code: string };
 
+/**
+ * D-071ⓑ · T-133 — הפִּין «המילה שאספת אתמול» **מעל** אריח `collected`, ⛔ ולא בתוכו.
+ *
+ * ⚠️ **הסיבה שהוא קיים נמדדה ⛔ ולא שוערה (F-084 · D-071ⓐ):** `collected` הוא האחרון
+ * ב-`LEARNING_PRIORITY` ⇒ ⛔ לעולם אינו האריח הגדול כשמשהו אחר פתוח ⇒ קטן ⇒ קל
+ * לפספס. הפִּין הוא הפיצוי, ⛔ ולא קישוט.
+ *
+ * ⛔ **הרכיב ⛔ אינו קורא את מערך `words` המלא** — הוא לוקח את `latest` בלבד מאותה
+ * תשובה. ⛔ אין כאן נקודת קצה חדשה: פתיחת נתיב שמחזיר שדה יחיד הייתה מגדילה את שטח
+ * ה-HTTP בלי ערך, ובדיוק מחלקת קוד המת של F-074.
+ *
+ * ⛔ **קריאה שנכשלה ⇒ ⛔ אין פִּין, ⛔ ולא הודעת שגיאה.** הפִּין הוא תוספת, וכישלון
+ * שלו ⛔ אינו רשאי לדבר על המסך.
+ */
+type CollectedResponse =
+  | {
+      readonly ok: true;
+      readonly words: readonly unknown[];
+      readonly hiddenCount: number;
+      readonly latest?: CollectedLatest;
+    }
+  | { readonly ok: false; readonly code: string };
+
+/**
+ * ⛔ בדיוק מה ש-`GET /api/world/status` עונה בשדה `stories` (`docs/api-contract.md`),
+ * ⛔ ולא יותר. ⚠️ **הרמה עצמה ⛔ אינה על החוט ו⛔ אינה כאן** — היא חיה בשרת, והלקוח
+ * מקבל מספר או `null`. ⛔ `current_level` ⛔ אסור בקובץ הזה, ושער חי מודד זאת.
+ */
+type StatusResponse =
+  | { readonly ok: true; readonly stories: StoriesStatus | null }
+  | { readonly ok: false; readonly code: string };
+
 interface ArcadeTile {
   readonly state: AppState;
   readonly hasActiveTask: boolean;
@@ -95,15 +140,39 @@ function toArcadeTile(body: RoundResponse): ArcadeTile {
   return { state: { kind: 'unknown' }, hasActiveTask: false };
 }
 
-/** «הרכבה» תמיד פתוחה, ⛔ ואין לה עדיין אות חיוב מוכרע — זה חלקה של F-072. */
-function buildApps(arcade: ArcadeTile): readonly WorldApp[] {
-  return WORLD_APP_ORDER.map((id) => ({
-    id,
-    labelHe: WORLD_APP_LABEL_HE[id],
-    href: WORLD_APP_HREF[id],
-    state: id === 'arcade' ? arcade.state : ({ kind: 'open' } as const),
-    hasActiveTask: id === 'arcade' ? arcade.hasActiveTask : false,
-  }));
+/** «הרכבה» ו«המילים שאספתי» פתוחות תמיד: מצב ריק בעל פעולה אחת ⛔ אינו תנאי פתיחה,
+ *  ו-D-046 חל על אריח **נעול** ⛔ ולא על אריח פתוח עם אוסף ריק (§ 4.2יב).
+ *  ⚠️ «הספרייה» היא היחידה שה-`href` שלה **מותנה**: לומד בלי רמה ⛔ אינו נחסם והוא
+ *  נשלח לסריקת הרמה (T-137ⓓ). ההכרעה כולה ב-`libraryTile` — ⛔ אין כאן ענף שני. */
+function buildApps(arcade: ArcadeTile, stories: StoriesStatus | null): readonly WorldApp[] {
+  const library = libraryTile(stories);
+  return WORLD_APP_ORDER.map((id) => {
+    if (id === 'arcade') {
+      return {
+        id,
+        labelHe: WORLD_APP_LABEL_HE[id],
+        href: WORLD_APP_HREF[id],
+        state: arcade.state,
+        hasActiveTask: arcade.hasActiveTask,
+      };
+    }
+    if (id === 'library') {
+      return {
+        id,
+        labelHe: WORLD_APP_LABEL_HE[id],
+        href: library.href,
+        state: library.state,
+        hasActiveTask: false,
+      };
+    }
+    return {
+      id,
+      labelHe: WORLD_APP_LABEL_HE[id],
+      href: WORLD_APP_HREF[id],
+      state: { kind: 'open' } as const,
+      hasActiveTask: false,
+    };
+  });
 }
 
 function noteOf(state: AppState): string {
@@ -122,6 +191,10 @@ export default function AppGrid(): React.JSX.Element {
     hasActiveTask: false,
   });
   const [loading, setLoading] = useState(true);
+  // ⛔ `undefined` ⇒ ⛔ אין שורה. היעדר הפִּין **הוא** המצב הריק (D-071ⓑ).
+  const [latest, setLatest] = useState<CollectedLatest | undefined>(undefined);
+  // ⛔ `null` ⇒ «—» באריח, ⛔ ולא «0». מספר שאין לנו אינו אפס.
+  const [stories, setStories] = useState<StoriesStatus | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,7 +214,43 @@ export default function AppGrid(): React.JSX.Element {
     };
   }, []);
 
-  const apps = buildApps(arcade);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      let next: CollectedLatest | undefined;
+      try {
+        const body = await apiGet<CollectedResponse>('/api/arcade/collected');
+        next = body.ok ? body.latest : undefined;
+      } catch {
+        next = undefined;
+      }
+      if (cancelled) return;
+      setLatest(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      let next: StoriesStatus | null;
+      try {
+        const body = await apiGet<StatusResponse>('/api/world/status');
+        next = body.ok ? body.stories : null;
+      } catch {
+        next = null;
+      }
+      if (cancelled) return;
+      setStories(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const apps = buildApps(arcade, stories);
   const featured = featuredAppId(apps);
 
   return (
@@ -160,6 +269,14 @@ export default function AppGrid(): React.JSX.Element {
           );
           return (
             <li key={worldApp.id} className={featured === worldApp.id ? 'col-span-2' : ''}>
+              {worldApp.id === 'collected' && latest !== undefined ? (
+                // ⛔ **מעל** האריח, ⛔ ולא בתוכו. `truncate` ⛔ ולא תקרת תווים קשיחה:
+                // רוחב האריח משתנה, ומילה ארוכה ⛔ אינה רשאית לשבור את הרשת.
+                <p className="mb-1 truncate text-sm text-ink-muted" data-collected-pin>
+                  {PIN_PREFIX_HE}
+                  <EnWord>{latest.enText}</EnWord>
+                </p>
+              ) : null}
               {worldApp.state.kind === 'open' ? (
                 <Link href={worldApp.href} data-app-tile={worldApp.id} className={`${TILE_BASE} ${TILE_OPEN}`}>
                   {body}

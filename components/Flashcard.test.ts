@@ -154,3 +154,179 @@ describe('the unverified marker lives on the back of the card (T-045 · D-024)',
     }
   });
 });
+
+/**
+ * T-085 · D-039 · § 4.2ח ⓐ — הכרטיס עצמו הוא יעד המגע.
+ *
+ * סורק מקור בלבד (כמו כל הקובץ הזה), משתי סיבות מדידות:
+ * ⓐ `revealed` הוא state של הרכיב, ולכן `renderToStaticMarkup` היה מחזיר תמיד
+ *    חזית עם `data-reveal` בלי לגלות שהכפתור נמצא במקום שגוי.
+ * ⓑ הבדיקה של «⛔ קינון כפתורים» היא **על ה-JSX עצמו**, ⛔ ⛔ על תוצר הרינדור:
+ *    דפדפן «מתקן» באופן שקט קינון שכזה על ידי סגירת ה-`<button>` הפנימי, ולכן
+ *    בדיקת DOM הייתה מחמיצה את הפגם שהיא קיימת בשבילו.
+ */
+const T085_HINT = 'הקש להצגת התשובה';
+const T085_CARD_SRC = stripComments(readFileSync(FLASHCARD, 'utf8'));
+
+/** תא של `<button ...>` (הרישום ההיפותטי אחד או יותר) עד `</button>` המתאים,
+ *  עומק-נספר בדיוק כמו `divBlockContaining` — ⛔ ⛔ regex עצל. */
+function buttonBlockContaining(src: string, marker: string): string | null {
+  const at = src.indexOf(marker);
+  if (at === -1) return null;
+  const start = src.lastIndexOf('<button', at);
+  if (start === -1) return null;
+  let depth = 0;
+  for (let i = start; i < src.length; i += 1) {
+    if (src.startsWith('<button', i)) depth += 1;
+    else if (src.startsWith('</button>', i)) {
+      depth -= 1;
+      if (depth === 0) return src.slice(start, i + '</button>'.length);
+    }
+  }
+  return null;
+}
+
+describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
+  it('קורא רכיב אמיתי עם `data-reveal`', () => {
+    // שומר-ריק: אם מישהו שינה את שם ה-hook, כל הבדיקות שלהלן היו עוברות ריק.
+    expect(T085_CARD_SRC.length).toBeGreaterThan(1000);
+    expect(T085_CARD_SRC).toContain('data-reveal');
+  });
+
+  it('חזית הכרטיס הופכת ל-`<button>` עם `data-reveal`', () => {
+    // הכפתור נמצא ב-JSX ⛔ ולא ב-`role="button"` על `<div>`: `role` על `<div>` דורש
+    // גם `tabIndex={0}` וגם טיפול ידני ב-Enter/Space, וזה כמות הקוד שהופכת
+    // בדיקה חיה יותר מקוד אמיתי — `<button>` הטבעי נותן את שני התנאים חינם.
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal');
+    expect(revealBlock, 'לא נמצא `<button>` שעוטף `data-reveal`').toBeTruthy();
+    // ⛔ ⛔ `<div ... data-reveal>` — היה שוברת גם מקלדת וגם קורא-מסך:
+    expect(T085_CARD_SRC).not.toMatch(/<div\b[^>]*\bdata-reveal\b/);
+  });
+
+  it('הרמז «הקש להצגת התשובה» חי בתוך הכפתור, ⛔ ולא מחוץ לו', () => {
+    // תווית מחוץ לכפתור לא נלחצת עם הכפתור — מרווח 8px מספיק כדי להחמיץ.
+    expect(T085_CARD_SRC).toContain(T085_HINT);
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal') ?? '';
+    expect(revealBlock, 'הרמז חייב לחיות בתוך אותו `<button>` שנושא `data-reveal`').toContain(
+      T085_HINT,
+    );
+  });
+
+  it('חזית הכרטיס נשארת מזוהה: `data-card-front` בתוך אותו כפתור', () => {
+    // `<CardDeck>` בונה גובה מתוך מדידה של החזית, ובדיקת ההארנס
+    // (`scripts/verify-mobile.mjs` — `[data-card-front]`) לא רשאית להיבור. הכפתור
+    // אינו רשאי «לבלוע» את התוכן ולהחזיר `data-card-front` להיות ריק.
+    const revealBlock = buttonBlockContaining(T085_CARD_SRC, 'data-reveal') ?? '';
+    expect(revealBlock).toContain('data-card-front');
+  });
+
+  it('⛔ ⛔ `<button>` בתוך `<button>` בכל מקום בקובץ (HTML לא תקין)', () => {
+    // בודקים על הקוד עצמו, ⛔ ⛔ על ה-DOM: הדפדפן «מתקן» קינון בשקט על ידי סגירת
+    // ה-<button> הפנימי מוקדם ⇒ ה-DOM נראה תקין וקורא המסך שובר.
+    let depth = 0;
+    let maxDepth = 0;
+    for (let i = 0; i < T085_CARD_SRC.length; i += 1) {
+      if (T085_CARD_SRC.startsWith('<button', i)) {
+        depth += 1;
+        if (depth > maxDepth) maxDepth = depth;
+      } else if (T085_CARD_SRC.startsWith('</button>', i)) {
+        depth = Math.max(0, depth - 1);
+      }
+    }
+    expect(maxDepth, 'קינון `<button>` בתוך `<button>` — HTML לא תקין, שובר קורא מסך').toBeLessThanOrEqual(1);
+  });
+
+  /**
+   * F-103 · D-042 · T-099 — הבדיקה הקודמת כאן אסרה מחווה בנימוק «D-032 בתוקף».
+   * D-042 הפכה את D-032 במפורש, ולכן הנימוק חדל להתקיים. ⛔ הבדיקה ⛔ לא הוחלשה:
+   * מה שהיא מודדת עכשיו **חד יותר** — לא «אין מחווה» אלא «המחווה היא קיצור, ⛔ לא
+   * ערוץ, ⛔ לא גרירה, ⛔ ולא מסלול שני».
+   */
+  it('D-042ⓒ — ⛔ ⛔ גרירה: אין מטפל תנועה בכל הקובץ', () => {
+    for (const forbidden of ['onPointerMove', 'onTouchMove', 'onTouchStart', 'onDrag']) {
+      expect(T085_CARD_SRC, `${forbidden} ⇒ הכרטיס נגרר עם האצבע — D-042ⓒ אוסרת`).not.toContain(
+        forbidden,
+      );
+    }
+  });
+
+  it('D-042 — שני הכפתורים נשארים הערוץ הקנוני', () => {
+    expect(T085_CARD_SRC).toContain('data-grade="again"');
+    expect(T085_CARD_SRC).toContain('data-grade="good"');
+    expect(T085_CARD_SRC).toContain('לא ידעתי');
+    expect(T085_CARD_SRC).toContain('ידעתי');
+  });
+
+  it('D-042 — המחווה קוראת ל-onGrade, ⛔ ולא למסלול שני', () => {
+    // ⛔ `resolveSwipe` הוא היחיד שמכריע, ו-`onGrade` הוא היחיד שמסמן: שתי
+    // המחרוזות ⛔ אינן מספיקות בנפרד, ולכן שתיהן נדרשות באותה בדיקה.
+    expect(T085_CARD_SRC).toContain('resolveSwipe');
+    expect(T085_CARD_SRC).toContain('onPointerUp');
+    expect(T085_CARD_SRC).toContain('onPointerDown');
+    // ⛔ אפס לוגיקת ציון מקומית: הציון מגיע מהמודול הטהור ונמסר כמו שהוא.
+    expect(T085_CARD_SRC).not.toMatch(/onGrade\(\s*['"]good['"]\s*\)\s*;?\s*\/\/\s*swipe/);
+  });
+
+  /**
+   * F-106 — התוכנית הכתיבה כאן `expect(SRC).not.toContain('preventDefault')` וניבאה
+   * שהיא «עוברת כבר עכשיו». ⛔ היא ⛔ אינה יכולה לעבור: `onSubmit` של טופס ההקלדה
+   * קורא `e.preventDefault()` מאז T-085, וזו קריאה **נכונה ולא קשורה** — בלעדיה
+   * הטופס מרענן את העמוד. אסרציה שאפשר לספק רק במחיקת קוד עובד ⛔ אינה שומר.
+   * ⛔ הבדיקה ⛔ לא הוחלשה — היא **כוונה לטענה שהיא התכוונה אליה**: D-042ⓒ אוסרת
+   * ביטול ברירת מחדל **במטפל מחווה**, כי זה מה שהורג גלילה. הטופס ⛔ אינו מחווה.
+   */
+  it('D-042ⓒ — ⛔ אפס `preventDefault` במטפל מחווה (הטופס ⛔ אינו מחווה)', () => {
+    const hits: number[] = [];
+    for (let i = T085_CARD_SRC.indexOf('preventDefault'); i !== -1; i = T085_CARD_SRC.indexOf('preventDefault', i + 1)) {
+      hits.push(i);
+    }
+    expect(hits.length, 'שומר-ריק: אם אין ולו קריאה אחת, הבדיקה ⛔ אינה מודדת דבר').toBe(1);
+    for (const at of hits) {
+      // המטפל העוטף הוא זה שנפתח אחרון לפני הקריאה. ⛔ `onPointer*` לפני `onSubmit`
+      // פירושו ביטול ברירת מחדל בתוך מחווה — בדיוק מה ש-D-042ⓒ אוסרת.
+      expect(
+        T085_CARD_SRC.lastIndexOf('onSubmit', at),
+        '`preventDefault` בתוך מטפל מצביע ⇒ הגלילה מתה (D-042ⓒ)',
+      ).toBeGreaterThan(T085_CARD_SRC.lastIndexOf('onPointer', at));
+    }
+  });
+
+  it('D-042ⓒ — ⛔ אפס גלילה אופקית שנוצרת בקובץ עצמו', () => {
+    expect(T085_CARD_SRC).not.toContain('overflow-x');
+    expect(T085_CARD_SRC).not.toContain('touch-action');
+  });
+
+  it('⛔ אפס `style={{}}` — ההיזון חי ב-CSS, בתקדים [data-arena-stage]', () => {
+    expect(T085_CARD_SRC).not.toContain('style={{');
+    expect(T085_CARD_SRC).toContain('data-swipe');
+  });
+});
+
+describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {
+  it('התווית העברית מגיעה מהמודול הטהור ⛔ ואינה מוקלדת שוב', () => {
+    expect(T085_CARD_SRC).toContain('DECAY_LABEL');
+    expect(T085_CARD_SRC).not.toContain('הגיע זמן לחזור');
+  });
+
+  it('שתי חזיתות הכרטיס — שתיהן נושאות את הדעיכה', () => {
+    // הפנים מוטבעות פעמיים במכוון (ראה ההערה של T-085); דעיכה על אחת מהן
+    // בלבד הייתה אומרת שהלומד רואה אותה לפני החשיפה ⛔ ולא אחריה, או להפך.
+    expect(T085_CARD_SRC.split('data-decay').length - 1).toBeGreaterThanOrEqual(2);
+  });
+
+  it('⛔ הדעיכה ⛔ אינה נוגעת בשורה המשנית — היא שוברת 4.5:1 (עובדה ד׳)', () => {
+    // ⛔ אין `data-decay` על אף אלמנט שנושא `text-ink-muted`.
+    for (const line of T085_CARD_SRC.split('\n')) {
+      if (line.includes('data-decay')) {
+        expect(line, 'דעיכה על text-ink-muted שוברת רצפת ניגודיות').not.toContain('text-ink-muted');
+      }
+    }
+  });
+
+  it('⛔ אפס שדה חדש: הרכיב קורא next_review_at ו-interval_days ⛔ ותו לא', () => {
+    expect(T085_CARD_SRC).toContain('decayLevel');
+    for (const invented of ['decayed_at', 'decay_level', 'is_decayed', 'staleness']) {
+      expect(T085_CARD_SRC, `${invented} — D-043 אוסרת שדה מתמיד`).not.toContain(invented);
+    }
+  });
+});

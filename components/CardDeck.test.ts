@@ -282,3 +282,32 @@ describe('the brace extractor itself is measured, so the guard above is not vacu
     expect(outside, 'the ungated copy survives the subtraction').toContain(PRACTICE_LABEL);
   });
 });
+
+/**
+ * T-127 · D-042 — ההערה מנמקת את הכלל שבתוקף, ⛔ לא את זה שבוטל.
+ *
+ * ⚠️ הבדיקה היחידה בקובץ הזה שרצה על **המקור הגולמי**: כל שאר השומרים מודדים
+ * את `CODE` שממנו ההערות הוסרו, ולכן שומר על נוסח הערה **חייב** לקרוא את `SRC`.
+ * ⛔ בלי זה הבדיקה עוברת ריק גם אם ההערה נמחקה כולה.
+ */
+describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', () => {
+  it('⛔ no longer justifies «never swipe-to-grade» — D-042 overturned it', () => {
+    expect(SRC, 'D-042 החליפה את האיסור בקיצור — נוסח בטל מטעה את הסוכן הבא').not.toContain(
+      'never swipe-to-grade',
+    );
+  });
+
+  it('names D-042 and all three caveats, with their numbers', () => {
+    // המספרים הם התוכן: הערה שאומרת «יש סייגים» ⛔ אינה מונעת מימוש שמפר אותם.
+    for (const required of ['D-042', '20px', '64px', '30°', '200ms']) {
+      expect(SRC, `${required} — סייג של D-042 שההערה חייבת לשאת`).toContain(required);
+    }
+  });
+
+  it('⛔ changes no code at all — the comment is the whole task', () => {
+    // הטענה החזקה: כל השומרים האחרים בקובץ מודדים את `CODE`, והוא ⛔ לא זז.
+    expect(CODE).toContain('snap-y');
+    expect(CODE).not.toContain('preventDefault');
+    expect(CODE).not.toContain('onPointerDown');
+  });
+});

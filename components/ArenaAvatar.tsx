@@ -104,6 +104,8 @@ export default function ArenaAvatar({
     <svg
       role="img"
       aria-label={label}
+      /* T-117 — הבמה מזיזה את הדמות דרך התכונה הזאת. ⛔ התנועה חיה ב-CSS. */
+      data-arena-figure={role}
       viewBox="0 0 64 96"
       className={['h-40 w-auto', className].filter(Boolean).join(' ')}
       fill="none"

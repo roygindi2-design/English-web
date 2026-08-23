@@ -81,6 +81,21 @@ describe('הנתיב אינו מחליט — ההחלטה בשכבה הטהור�
     expect(CODE).not.toContain('404');
     expect(CODE).toMatch(/ok:\s*true,\s*card/);
   });
+
+  it('מוסר `counts` מהשכבה הטהורה ⛔ ואינו סופר בעצמו (D-075ⓐ)', () => {
+    expect(CODE).toMatch(/recallCounts\(/);
+    expect(CODE).toMatch(/counts/);
+  });
+
+  it('⛔ אפס קריאה שלישית — המונים נגזרים מאותן שתי קריאות (תבנית D-043)', () => {
+    // ⚠️ נמדד באתר הקריאה ⛔ ולא בשם: `.from('` הוא כל שאילתה בקובץ. שלוש ⇒ עמודה
+    // או טבלה חדשה נכנסו מהדלת האחורית, וזה בדיוק מה ש-D-075 אוסר.
+    expect(CODE.match(/\.from\('/g) ?? []).toHaveLength(2);
+  });
+
+  it('⛔ `required` אינו כתוב בקוד הנתיב — הוא מגיע מהשכבה הטהורה (D-046)', () => {
+    expect(CODE).not.toMatch(/required\s*:\s*\d/);
+  });
 });
 
 describe('דפוס הכשל — סדר C-0032 ושתי המשפחות', () => {

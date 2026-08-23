@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { parseLevel } from '@/lib/core/levelSummary';
+import { STORIES_PER_LEVEL } from '@/lib/core/storyGate';
 import { isWorldUnlocked, uniqueHeadwords } from '@/lib/core/world';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 import {
@@ -37,6 +39,15 @@ const MIN_ACTIVE_WORDS = 12;
 const MAX_BANK_ROWS = 2000;
 
 /**
+ * ⛔ **הסף ⛔ אינו קבוע שני.** § 4.2יג נוקבת ב-«≥3 סיפורים ברמת הלומד», וזה **אותו
+ * מספר** של מכסת הייצור (`STORIES_PER_LEVEL`, `lib/core/storyGate.ts`) **ומאותו טעם**:
+ * האריח נפתח כשמכסת הרמה מלאה. שני קבועים באותו ערך הם החצי שלא יזוז ביום שהמכסה
+ * תשתנה. ⚠️ ⛔ זה ⛔ אינו סותר את D-031: `MIN_*` הם ספי מוצר בלי מקור, וזו **מכסת
+ * תוכן** שכבר נאכפת בשער חי (`scripts/build-stories-sql.test.ts`).
+ */
+const STORIES_REQUIRED = STORIES_PER_LEVEL;
+
+/**
  * Both reads fail the same way, and the shape of that failure is the requirement: the raw
  * PostgREST string goes to the log and ⛔ never into the body, because it names columns and
  * tables. A missing schema is 503 with a Hebrew sentence — ⛔ never 500, ⛔ never an empty
@@ -68,7 +79,7 @@ export async function GET() {
   const bank = await supabase
     .from('words')
     .select('headword')
-    .eq('is_function_word', true)
+    .eq('lexical_class', 'function')
     .order('headword', { ascending: true })
     .limit(MAX_BANK_ROWS);
 
@@ -107,10 +118,54 @@ export async function GET() {
   // הצרכן מקבל אותם ⛔ ואינו מחזיק העתק שיכול לחלוק בשקט. ⚠️ אותו אובייקט
   // בדיוק הולך ל-`isWorldUnlocked` וגם על החוט, ולכן ההחלטה והמשפט ⛔ אינם
   // יכולים להיפרד: מה שפתח את הדלת הוא מה שמסופר עליה.
+  // ⛔ אחרונה בכוונה: היא ⛔ אינה רשאית להשפיע על `unlocked` ו⛔ אינה רשאית להחזיר 503.
+  const storiesStatus = await readStories(supabase, user.id);
+
   return NextResponse.json({
     ok: true,
     unlocked: isWorldUnlocked(counts, thresholds),
     ...counts,
     ...thresholds,
+    // ⛔ `null` ⇒ «—» באריח (⛔ ולא «0»), ו⛔ הלשונית ⛔ אינה נוגעת.
+    stories: storiesStatus,
   });
+}
+
+/**
+ * ⛔ **קריאה רכה, ⛔ ולא 503 — וזו הכרעה שנמדדה.** `0018_stories.sql` טרם הורץ בייצור,
+ * ו-`<TabBar>` נועל את לשונית «העולם» על כל תשובה שאינה `ok:true` (`docs/api-contract.md`).
+ * ⇒ כישלון כאן היה **נועל את הלשונית לכל הלומדים** עד שרוי ירוץ מיגרציה. ⇒ הפונקציה
+ * מחזירה `null`, האריח מצייר «—», והלשונית ⛔ אינה נוגעת. ⛔ הכישלון יורד ללוג בלבד.
+ */
+async function readStories(
+  supabase: ReturnType<typeof createRouteClient>,
+  userId: string,
+): Promise<{ required: number; atLevel: number | null } | null> {
+  const profile = await supabase
+    .from('profiles')
+    .select('current_level')
+    .eq('id', userId)
+    .maybeSingle();
+  if (profile.error) {
+    console.error('[api/world/status] profile read failed:', profile.error.message);
+    return null;
+  }
+
+  // ⛔ אין נפילה שקטה ל-A1 (D-037). «טרם בחר» הוא מצב אמיתי, ולומד כזה ⛔ אינו נחסם —
+  // הוא נשלח לסריקת הרמה (T-137ⓓ), וההחלטה הזאת נעשית בשכבה הטהורה ⛔ ולא כאן.
+  const level = parseLevel((profile.data as { current_level?: unknown } | null)?.current_level);
+  if (level === null) return { required: STORIES_REQUIRED, atLevel: null };
+
+  // ⚠️ `stories` היא `unique (cefr_level, title_en)` ⇒ **שורה = סיפור**, ולכן ספירת
+  // שורות כאן היא הספירה הנכונה — ⛔ בניגוד ל-`words`/`word_progress` שנמדדות
+  // ב-headwords (F-040). ⛔ אפס שורות על החוט.
+  const counted = await supabase
+    .from('stories')
+    .select('id', { count: 'exact', head: true })
+    .eq('cefr_level', level);
+  if (counted.error) {
+    console.error('[api/world/status] stories read failed:', counted.error.message);
+    return null;
+  }
+  return { required: STORIES_REQUIRED, atLevel: counted.count ?? 0 };
 }

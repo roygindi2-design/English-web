@@ -51,6 +51,21 @@ const ROUTES = [
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
+  // T-089 · § 4.2ט — אנטומיית מסך השיעור. ⛔ אין עדיין מסלול מוצר: T-090 (התוכן)
+  // חסומה ב-R-018, ולכן `<LessonScreen>` ⛔ אינו מרונדר בשום מקום שהארנס מגיע
+  // אליו, וכל טענה על 320/375/414 עליו הייתה הצהרה. שתי שורות ו⛔ לא אחת, מאותו
+  // נימוק בדיוק כמו `/dev/deck` מול `/dev/deck/done`: `phase` הוא prop, ולכן בלוק
+  // הסיום ⛔ אינו נגיש מהמסלול שמעליו. שתיהן מקבלות את הפריטים כ-prop ואינן
+  // מבקשות מהשרת דבר ⇒ ⛔ אין להן רשומה ב-EXPECTED_CONSOLE.
+  '/dev/lesson',
+  '/dev/lesson/done',
+  // T-082 · D-041 — סריקת הרמה. `/study/scan` יושב מחוץ ל-`PROTECTED_SCREENS`
+  // (proxy.ts) ולכן הוא **כן** מרונדר כאן, אבל בלי env של Supabase
+  // `GET /api/levels/scan` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה ההיא מודדת הוא מצב
+  // **הכשל**. הפיקסטורה מקבלת את 12 המילים כ-prop ואינה מבקשת מהשרת דבר, ולכן
+  // ⛔ אין לה רשומה ב-EXPECTED_CONSOLE — והשקט הזה הוא ההוכחה שהרשת עצמה נמדדת.
+  '/study/scan',
+  '/dev/scan',
   // T-026 layout fixture, same reasoning: /onboarding redirects without Supabase
   // env, so the address band would otherwise be measured on the login screen.
   '/dev/identity',
@@ -81,6 +96,11 @@ const ROUTES = [
   // כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי והדרך
   // החוצה. זה מצב שלומד פוגש, ⛔ ולא מסך שגיאה שהומצא להרמוניה.
   '/world/chain',
+  // C-0218 (T-110) — «המילים שאספתי», ואותו נימוק בדיוק כמו `/world/chain` שמעליה:
+  // בלי env של Supabase `GET /api/arcade/collected` עונה 503 בחוזה שלו עצמו, ולכן מה
+  // שנמדד כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי,
+  // ואפס גלילה אופקית ב-320. זה מצב שלומד פוגש, ⛔ ולא מסך שהומצא למדידה.
+  '/world/collected',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
@@ -138,6 +158,25 @@ const MIN_GAP = 8;
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
 /**
+ * T-091 · F-098 — היכן נמדדות שלוש בדיקות F-027 («סימון אחד · האגודל מגיע · במסך הראשון»).
+ *
+ * ⚠️ ⛔ ⛔ אינו `FLOW_ROUTES`, וזו מדידה ⛔ ולא טעם: באותו בלוק יושבת גם
+ * `no tab bar on a flow screen`, ושתי לשוניות הפיקסטורה מרנדרות `<TabBar />`
+ * (`components/TabBar.tsx:167`, `data-tab-bar="true"`) — בעוד `TAB_ROUTES` **דורש**
+ * שהסרגל יהיה שם. הוספה נאיבית של השתיים ל-`FLOW_ROUTES` מפילה את הבדיקה ההיא
+ * בוודאות, שש פעמים (שני מסלולים × שלושה רוחבים), והדרך הזולה החוצה היא להחליש
+ * אותה. ⇒ הבלוק נחתך במקום, ו-D-028 נשארת קשורה ל-`FLOW_ROUTES` בלבד.
+ *
+ * מסך לשונית הוא **יעד** ⛔ ולא צעד בזרימה — בדיוק הנימוק שבגללו `/sources` ו-`/offline`
+ * ⛔ אינם ב-`FLOW_ROUTES`. מה שכן נכון עליו הוא שהוא מחזיק **פעולה מסומנת אחת** שהאגודל
+ * מגיע אליה בלי גלילה, וזה מה שנמדד כאן. `02-inbox` פריט 9 של רוי: «לתת לצוות עיניים».
+ *
+ * ⛔ `/dev/tabs/me` ⛔ אינו כאן ובכוונה: T-091 נוקבת בשתי לשוניות, והשלישית היא
+ * שורת משימה של ה-PM ⛔ ולא הרחבה שסוכן מוסיף לעצמו.
+ */
+const PRIMARY_ACTION_ROUTES = [...FLOW_ROUTES, '/dev/tabs/studies', '/dev/tabs/cards'];
+
+/**
  * T-067 — where the primary action LEADS. `02-inbox` י׳, and the other half of F-027.
  *
  * Two thirds of the connectivity guarantee already exist above: every flow screen holds
@@ -192,6 +231,34 @@ const FLOW_ARRIVAL = {
     request: '/api/world/bank',
     why: 'same failure state and same «נסה שוב», one route down',
   },
+  // T-091 · `02-inbox` פריט 9 — «לתת לצוות עיניים» על שתי לשוניות שהמדידה מעולם
+  // לא נגעה בהן. ⛔ שתיהן `navigates`, הצורה החזקה: `kind` ⛔ אינו נחלש כדי
+  // שמסך יעבור.
+  //
+  // ⛔ `/login` ולא `/cards`, וזו מדידה: `proxy.ts:28` מחזיק את `/cards`
+  // ב-`PROTECTED_SCREENS`, ולארנס אין env של Supabase ⇒ הבקשה נענית 307
+  // ל-`/login?expired=1`. לכתוב כאן `/cards` היה מייצר בדיקה שנכשלת תמיד על
+  // התנהגות **נכונה** של המוצר.
+  '/dev/tabs/studies': {
+    kind: 'navigates',
+    to: '/login',
+    marker: 'input[name="email"]',
+    why: 'the tab’s one action is a Link to /cards, which proxy.ts redirects to /login without Supabase env — so what is measured is that the tap really moves the router',
+  },
+  // ⛔ הפעולה המסומנת כאן היא מצב ה-`dead` של `<DeckSelector>` — כל שלושת
+  // האריחים מושבתים כי שתי הקריאות ל-`/api/study/queue` נכשלות ב-503 — ולכן
+  // היעד הוא `DECK_ALL_EMPTY_HREF` (`lib/core/deckTiles.ts:33`), כלומר `/study`.
+  // `[data-action-bar]` ⛔ ולא טקסט: כתובת לבדה היא טענה על הנתב, והסמן הוא
+  // הטענה על המסך — מסלול שמרנדר גבול שגיאה נושא את אותה כתובת בדיוק.
+  '/dev/tabs/cards': {
+    kind: 'navigates',
+    to: '/study',
+    marker: '[data-action-bar]',
+    why: 'the only marked action in the all-decks-dead state is the link to /study; landing there is what proves the tap is not a dead end',
+    // הבקשה שהנחיתה גורמת. בלי לנקוב בה, ה-503 שלה נספר על המסלול הזה אחרי
+    // שהלולאה כבר עברה הלאה — בדיוק הייחוס השגוי שנמדד ב-C-0134.
+    settles: '/api/study/queue?deck=due',
+  },
 };
 
 /**
@@ -211,6 +278,7 @@ const FLOW_ARRIVAL = {
  */
 const EXPECTED_CONSOLE = {
   '/study': [/status of 503[\s\S]*@\S*\/api\/study\/queue/],
+  '/study/scan': [/status of 503[\s\S]*@\S*\/api\/levels\/scan/],
   // C-0103 (T-065 task 7): `<CardsScreen>` became the deck selector and now reads both
   // decks for their counts. Same situation and same narrowness as `/study` above — the
   // fixture has no session and the harness has no Supabase env, so the queue answers 503
@@ -232,6 +300,12 @@ const EXPECTED_CONSOLE = {
     // בלי env של Supabase הנתיב עונה 503 בחוזה שלו עצמו, וזו בדיוק השורה המושבתת
     // שהמדידה עוברת עליה. מקושר לכתובת אחת ולסטטוס אחד, כמו כל רשומה כאן.
     /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
+    // T-091: ההקשה נוחתת על `/study`, שמבקש את התור **בלי** `limit` ומקבל 503
+    // מהחוזה שלו עצמו. ⛔ פטור למסלול: `$` נועל את סוף הכתובת, ולכן הרשומה
+    // הזאת ⛔ אינה יכולה לבלוע גם את `?deck=due&limit=1` — הבקשה ש-`<DeckSelector>`
+    // עושה על המסלול עצמו, ושכבר יש לה רשומה משלה למעלה. 401 או 500 על אותה
+    // כתובת עדיין מפילים.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due$/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase
@@ -261,6 +335,12 @@ const EXPECTED_CONSOLE = {
     // `/world` מבקש בקשה רביעית. כתובת אחת וסטטוס אחד כמו כל רשומה כאן — וזו בדיוק
     // המדידה שמוכיחה שהכרטיס באמת נטען ובאמת מבקש.
     /status of 503[\s\S]*@\S*\/api\/world\/recall/,
+    // C-0243 (T-133 · D-071ⓑ): `<AppGrid>` מבקש עכשיו גם את `latest` של האוסף, כדי
+    // לצייר את הפִּין «המילה שאספת אתמול» מעל אריח `collected`. בלי env של Supabase
+    // `GET /api/arcade/collected` עונה 503 בחוזה שלו עצמו — וזו בדיוק ההתנהגות שהפִּין
+    // מבטיח: ⛔ קריאה שנכשלה ⇒ ⛔ אין שורה, ⛔ ולא הודעת שגיאה על המסך. מקושר לכתובת
+    // אחת ולסטטוס אחד כמו כל רשומה כאן: 401 או 500 מאותה כתובת עדיין מפילים.
+    /status of 503[\s\S]*@\S*\/api\/arcade\/collected/,
   ],
   '/world/compose': [/status of 503[\s\S]*@\S*\/api\/world\/bank/],
   // C-0205 (T-106): «שרשרת הכתיבה» יושבת בתוך `(tabs)` בדיוק כמו `/world`, ולכן היא
@@ -270,6 +350,13 @@ const EXPECTED_CONSOLE = {
   // רשומה כאן: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
   '/world/chain': [
     /status of 503[\s\S]*@\S*\/api\/world\/posts/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
+  // C-0218 (T-110): גם היא יושבת בתוך `(tabs)` ⇒ **שתי** בקשות — `<CollectedWords>`
+  // קורא את האוסף, ו-`<TabBar>` שואל אם הלשונית פתוחה. כתובת אחת וסטטוס אחד לכל
+  // רשומה: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
+  '/world/collected': [
+    /status of 503[\s\S]*@\S*\/api\/arcade\/collected/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two
@@ -458,7 +545,20 @@ try {
     page.on('console', (m) => {
       if (m.type() === 'error') consoleErrors.push(`${m.text()} @${m.location().url}`);
     });
-    page.on('requestfailed', (r) => consoleErrors.push(`request failed: ${r.url()}`));
+    // ⚠️ C-0220 (T-131): the URL alone ⛔ cannot decide fixture-vs-defect, and every
+    // EXPECTED_CONSOLE entry is shaped `status of NNN`, so a `request failed:` line could
+    // never match one in any case. `errorText` is the missing measurement, ⛔ not noise.
+    page.on('requestfailed', (r) => {
+      const why = r.failure()?.errorText ?? 'unknown';
+      // ⛔ ביטול ⛔ אינו כשל: פריפץ׳ RSC ש-Chromium מבטל בניווט מייצר ERR_ABORTED
+      // בלי שום תשובת שרת. רישום שלו כשגיאת קונסולה מודד את מנוע הפריפץ׳ של Next,
+      // ⛔ לא את המסך. כל שאר ה-errorText ממשיכים להיכשל בדיוק כמו קודם.
+      // ⛔ הסינון הוא על errorText בלבד ⛔ ולא על הכתובת — סינון לפי `/study` היה
+      // משתיק גם כשל אמיתי באותו נתיב. נמדד C-0220 (T-131):
+      // `request failed: http://localhost:3000/study?_rsc=… — net::ERR_ABORTED`, ×2, ×3 רוחבים.
+      if (why === 'net::ERR_ABORTED') return;
+      consoleErrors.push(`request failed: ${r.url()} — ${why}`);
+    });
 
     for (const route of ROUTES) {
       consoleErrors = [];
@@ -532,12 +632,19 @@ try {
       // F-027 cause 1: `/onboarding` answers 307 without Supabase env (TD-13),
       // so naming it here measured /login twice and the goal form never once.
       // The fixture is the only place the onboarding layout exists in this run.
+      //
+      // T-085 · D-039 (§ 4.2ח ⓐ · 2026-08-20) — הוסר `/dev/card*` מבדיקה זו. פני
+      // הכרטיס עצמם הם כעת יעד המגע (⛔ ⛔ כפתור קטן בתחתית), והפיקסטורה
+      // `/dev/card` ⛔ ⛔ מתרחקת ל-`h-dvh` (רק CardDeck עושה זאת), כך שהכרטיס
+      // מגיע ל-~170px גובה בראש המסך. הרחבת הבדיקה לתמוך במקרה הזה תפגע ביכולת
+      // שלה לתפוס אמת כפתור-נגיש בטופס מסך רגיל. `/dev/deck` (הפיקסטורה ה-`h-dvh`)
+      // בודקת «כרטיס אחד למסך» ב-T-086 באופן נקי יותר. שלושת המסלולים שנשארים
+      // הם טופסי אימות ומסך הבית, שם הכפתור צר וחייב להיות בזון האגודל.
       if (
         route === '/' ||
         route === '/dev/onboarding' ||
         route === '/login' ||
-        route === '/signup' ||
-        route.startsWith('/dev/card')
+        route === '/signup'
       ) {
         const y = await page.evaluate(() => {
           const el =
@@ -558,7 +665,7 @@ try {
       //
       // D-028 (40-decisions § 4.2ג) settled the half that used to be reported
       // and not asserted: the action must paint inside the first viewport.
-      if (FLOW_ROUTES.includes(route)) {
+      if (PRIMARY_ACTION_ROUTES.includes(route)) {
         const primary = await page.evaluate(() => {
           const all = document.querySelectorAll('main [data-primary-action]');
           if (all.length !== 1) return { count: all.length };
@@ -647,7 +754,18 @@ try {
               (primary.belowTheFold ? ' (below the fold — scroll required)' : ''),
           );
         }
+      }
 
+      if (FLOW_ROUTES.includes(route)) {
+        // D-028 · צפיפות · סרגל תחתון — טענות על **מסך זרימה**, ⛔ לא על מסך עם פעולה.
+        // ⛔ נשארות על FLOW_ROUTES: מסך לשונית נושא סרגל לשוניות בהגדרה (TAB_ROUTES
+        // דורש זאת), ולכן הטענה שסרגל כזה הוא תועה הייתה עליו סתירה ⛔ ולא מדידה (F-098).
+        //
+        // ⛔ ההערה הזאת יושבת **בתוך** הבלוק ו⛔ לא מעליו במכוון: השומר ב-
+        // `verify-mobile.test.ts` מודד שהמחרוזת «no tab bar…» ⛔ אינה מופיעה בין פתיחת
+        // בלוק PRIMARY_ACTION_ROUTES לפתיחת בלוק FLOW_ROUTES, וציטוט שלה מעל השורה
+        // היה מפיל שומר חי על מיקום נכון (F-100).
+        //
         // The bar is `fixed`, so it covers a strip of the document. The rejected
         // alternative — a spacer inside <main> — moves that strip onto <footer>
         // instead of clearing it, because the footer holding the /sources link
@@ -1104,11 +1222,15 @@ try {
         }
       }
 
-      // T-065 · § 4.2ו — the scrolling deck. Three promises, measured on the component and
-      // ⛔ not on the screen above it: one card fills the screen, and the two grade buttons
-      // are both thumb-sized AND separated. `/dev/deck` and not `/study`: the real route
-      // renders its failure state without Supabase env (TD-13), so the deck itself would
-      // never be in the DOM while this ran.
+      // T-065 · § 4.2ו · T-086 — the scrolling deck. Three promises, measured on the
+      // component and ⛔ not on the screen above it: one card fills the screen, and the two
+      // grade buttons are both thumb-sized AND separated. `/dev/deck` and not `/study`: the
+      // real route renders its failure state without Supabase env (TD-13), so the deck itself
+      // would never be in the DOM while this ran.
+      //
+      // ⚠️ T-086 (§ 4.2ח ⓑ · 2026-08-20) — הפיקסטורה גדלה מ-2 ל-5 כדי להוכיח שכרטיס 3, 4, 5
+      // גם מחוץ למסך: 2 כרטיסים ⛔ ⛔ מוכיחים ש-`h-full` בתוך `flex-1` לא מקריס את
+      // כרטיס 3 ל-`min-content`. המשימה נסגרת בדוח מדידה, ⛔ ⛔ ב"נראה טוב".
       if (route === '/dev/deck') {
         const deck = await page.evaluate(() => {
           const scroller = document.querySelector('[data-deck-scroll]');
@@ -1119,9 +1241,10 @@ try {
           // the card sits under the article's `pt-4`, so measuring the inner section reported
           // 567px inside a 583px viewport and convicted the deck of a 16px gutter that is the
           // spacing the design asks for. What must fill the viewport is the thing that snaps.
-          const items = [...scroller.children];
-          const first = items[0].getBoundingClientRect();
-          const second = items[1].getBoundingClientRect();
+          const items = [...scroller.children].map((child) => {
+            const rect = child.getBoundingClientRect();
+            return { top: Math.round(rect.top), height: Math.round(rect.height) };
+          });
           return {
             count: cards.length,
             scroller: true,
@@ -1130,17 +1253,16 @@ try {
             top: Math.round(box.top),
             bottom: Math.round(box.bottom),
             height: Math.round(box.height),
-            firstHeight: Math.round(first.height),
-            secondTop: Math.round(second.top),
+            items,
             viewportHeight: window.innerHeight,
           };
         });
         check(
-          deck.count === 2 && deck.scroller,
-          `${at} the deck holds both fixture cards`,
+          deck.count >= 2 && deck.scroller,
+          `${at} the deck holds all fixture cards`,
           `found ${deck.count} cards and ${deck.scroller ? 'a' : 'no'} [data-deck-scroll]`,
         );
-        if (deck.count === 2 && deck.scroller) {
+        if (deck.count >= 2 && deck.scroller) {
           // Measured against the SNAP VIEWPORT and ⛔ not against the window: the container
           // clips, so a card whose rectangle runs past `innerHeight` may be perfectly
           // invisible while a card 40px short of it is half on screen. Three properties,
@@ -1153,19 +1275,36 @@ try {
             `${at} the deck fits on screen`,
             `the snap viewport occupies ${deck.top}..${deck.bottom} of a ${deck.viewportHeight}px viewport`,
           );
-          // ⓑ Card 1 FILLS it. 1px of tolerance for sub-pixel layout, and no more: a card
-          //    shorter than its viewport is the `min-h-dvh`/`flex-1` collapse measured in
-          //    C-0104, where card 2 sat visible under card 1 and snapping meant nothing.
+          // ⓑ EVERY card fills the snap viewport. 1px of tolerance for sub-pixel layout, and
+          //    no more: a card shorter than its viewport is the `min-h-dvh`/`flex-1` collapse
+          //    measured in C-0104, where card 2 sat visible under card 1 and snapping meant
+          //    nothing. T-086: the check runs over ALL fixture cards, so pinning
+          //    `h-full` in `<CardDeck>` inside `flex-1` cannot pass by chance on card 1.
+          const short = deck.items
+            .map((it, i) => ({ i, ...it }))
+            .filter((it) => it.height < deck.height - 1);
           check(
-            deck.firstHeight >= deck.height - 1,
-            `${at} one card per screen`,
-            `card 1 is ${deck.firstHeight}px inside a ${deck.height}px snap viewport`,
+            short.length === 0,
+            `${at} one card per screen (${deck.items.length} cards checked)`,
+            short.length === 0
+              ? ''
+              : `cards ${short.map((it) => `${it.i}=${it.height}px`).join(' · ')} inside a ${deck.height}px snap viewport`,
           );
-          // ⓒ Card 2 begins at or after that bottom edge — the other half of the same claim.
+          // ⓒ Every subsequent card begins at or after that bottom edge — the other half of
+          //    the same claim, applied to every card past the first.
+          const overlapping = deck.items
+            .map((it, i) => ({ i, ...it }))
+            .filter((it) => it.i >= 1 && it.top < deck.bottom - 1);
           check(
-            deck.secondTop >= deck.bottom - 1,
-            `${at} the next card waits off screen`,
-            `card 2 starts at y=${deck.secondTop}, above the snap viewport's bottom edge at ${deck.bottom}`,
+            overlapping.length === 0,
+            `${at} every subsequent card waits off screen`,
+            overlapping.length === 0
+              ? ''
+              : `cards ${overlapping.map((it) => `${it.i}@y=${it.top}`).join(' · ')} start above the snap viewport's bottom edge at ${deck.bottom}`,
+          );
+          // ⓓ דו״ח T-086 — הגיאומטריה בפועל, כדי שהמשימה תיסגר על מספרים ולא על תחושה.
+          report(
+            `${at} T-086: snap viewport ${deck.top}..${deck.bottom} (height ${deck.height}px) · cards ${deck.items.map((it) => it.height).join('/')}px inside`,
           );
         }
 
@@ -1308,6 +1447,19 @@ try {
             check(url === arrival.to, `${at} tap arrives at ${arrival.to}`, `landed on ${url}`);
             // The URL alone is a claim about the router; the marker is a claim about the
             // screen. A route that renders an error boundary has the right URL too.
+            //
+            // ⚠️ F-101 (C-0250) — ההמתנה חובה, והיא נמדדה: `waitForURL` נפתר ברגע
+            // שהכתובת השתנתה, והיעד עדיין נצבע. בנחיתה על `/study` (‏T-091) הכתובת
+            // וה-`<h1>` כבר במקום ב-`t=0`, ואילו `[data-action-bar]` מופיע תוך
+            // ~300ms — כלומר קריאה מיידית ב-`.count()` מדדה DOM שטרם הגיע והפילה
+            // מסך שרונדר בפועל, בשלושת הרוחבים. ⛔ ⛔ החלשה: הפסק סופי, ומסך
+            // שלעולם ⛔ אינו מרנדר את הסמן עדיין נופל בתומו. אותו לקח כמו C-0134
+            // ואותה תבנית שענף `announces` משתמש בה מיד למטה.
+            await page
+              .locator(arrival.marker)
+              .first()
+              .waitFor({ timeout: 5000 })
+              .catch(() => {});
             const marker = await page.locator(arrival.marker).count();
             check(
               marker > 0,
@@ -1373,6 +1525,93 @@ try {
           }
           report(`${at} arrival: ${arrival.kind} — ${arrival.why}`);
         }
+      }
+
+      // T-099 · D-042 — המחווה נמדדת חיה, ⛔ ולא מוצהרת. `/dev/deck` מחזיק חמישה
+      // כרטיסים ו-`onGraded` שלו נפתר מיד, ולכן «הכרטיס סומן» הוא בדיוק ירידה
+      // של `data-remaining` — ⛔ ולא צילום מסך ולא «נראה תקין».
+      //
+      // ⚠️ הבלוק יושב **אחרון** בגוף הלולאה בכוונה: הוא משנה את מצב העמוד
+      // (כרטיס עוזב את ה-DOM), וכל בדיקה שהייתה רצה אחריו הייתה מודדת דף אחר.
+      if (route === '/dev/deck') {
+        const remainingNow = () =>
+          page.evaluate(() => {
+            const el = document.querySelector('[data-remaining]');
+            return el === null ? -1 : Number(el.getAttribute('data-remaining'));
+          });
+
+        // ⚠️ נמדד C-0252, ⛔ ולא הנחה: הבלוק של יעדי המגע (למעלה, «grade targets»)
+        // **חושף** את הכרטיס הראשון כדי למדוד את שני הכפתורים, ולכן העמוד שמגיע
+        // לכאן ⛔ אינו במצב ההתחלתי. הרצה ראשונה הוכיחה זאת — «swipe before reveal»
+        // נפלה עם `remaining moved 5 → 4` בשלושת הרוחבים, כלומר המחווה «לפני
+        // החשיפה» רצה על כרטיס חשוף וסימנה אותו כדין.
+        // ⛔ התיקון ⛔ אינו להחליש את הטענה: הוא **לבסס את התנאי שהיא מתיימרת
+        // למדוד**. טעינה מחדש מחזירה את הפיקסטורה למצבה, והשורה שאחריה מאמתת
+        // שהחזית באמת בלתי-חשופה — בלעדיה הבדיקה הייתה עוברת ריק ביום שבו
+        // בלוק אחר יחשוף שוב.
+        await page.reload({ waitUntil: 'networkidle' });
+        const revealable = await page.locator('[data-reveal]').count();
+        check(
+          revealable >= 1,
+          `${at} deck starts unrevealed — the precondition is measured`,
+          `[data-reveal] count is ${revealable} ⇒ the card is already revealed`,
+        );
+
+        // T-100 · D-043 — הדעיכה נראית, ⛔ ולא מוצהרת. הכרטיס הראשון בפיקסטורה
+        // פג לחזרה, ולכן `stale` חייב להיות על המסך. ⛔ הבדיקה ⛔ אינה על צבע:
+        // היא על **התווית העברית**, שהיא הערוץ שאינו-צבע של חוקה § 1.
+        const decay = await page.evaluate(() => {
+          const el = document.querySelector('[data-card-front][data-decay]');
+          return {
+            level: el === null ? null : el.getAttribute('data-decay'),
+            label: document.body.innerText.includes('הגיע זמן לחזור'),
+          };
+        });
+        check(decay.level === 'stale', `${at} overdue card decays`, `data-decay=${decay.level}`);
+        check(decay.label, `${at} decay carries its Hebrew label`, 'label missing');
+
+        // ⓐ המחווה ⛔ אינה חיה לפני החשיפה — שני הכפתורים אינם על המסך, ולכן
+        // גם הקיצור אליהם אינו. זה D-033: סימון בטעות הוא הנזק.
+        const before = await remainingNow();
+        const box = await page.locator('[data-flashcard]').first().boundingBox();
+        const midY = Math.round(box.y + box.height / 2);
+        await page.mouse.move(Math.round(width / 2) - 40, midY);
+        await page.mouse.down();
+        await page.mouse.move(Math.round(width / 2) + 40, midY, { steps: 8 });
+        await page.mouse.up();
+        check(
+          (await remainingNow()) === before,
+          `${at} swipe before reveal ⛔ does not grade`,
+          `remaining moved ${before} → ${await remainingNow()}`,
+        );
+
+        // ⓑ אחרי חשיפה — החלקה ימינה מסמנת «ידעתי» והכרטיס עוזב.
+        await page.locator('[data-reveal]').first().click();
+        const revealed = await remainingNow();
+        await page.mouse.move(Math.round(width / 2) - 40, midY);
+        await page.mouse.down();
+        await page.mouse.move(Math.round(width / 2) + 40, midY, { steps: 8 });
+        await page.mouse.up();
+        const afterSwipe = await remainingNow();
+        check(
+          afterSwipe === revealed - 1,
+          `${at} swipe right grades the card`,
+          `remaining ${revealed} → ${afterSwipe}`,
+        );
+
+        // ⓒ D-042ⓐ — מחווה שמתחילה ברצועת הקצה ⛔ אינה מסמנת. זו הבדיקה
+        // ששומרת על ההחלקה «אחורה» של iOS Safari, והיא **שלילית בכוונה**.
+        await page.locator('[data-reveal]').first().click();
+        const beforeEdge = await remainingNow();
+        await page.mouse.move(5, midY);
+        await page.mouse.down();
+        await page.mouse.move(200, midY, { steps: 8 });
+        await page.mouse.up();
+        check(
+          (await remainingNow()) === beforeEdge,
+          `${at} edge-zone swipe ⛔ does not grade (D-042ⓐ)`,
+          `remaining moved ${beforeEdge} → ${await remainingNow()}`,
+        );
       }
 
       // A 404 route legitimately logs a 404; every other route must be silent — except for

@@ -217,8 +217,17 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     expect(schema).toBeLessThan(retry);
   });
 
+  /**
+   * ⚠️ FIXED C-0214 (F-082) ו⛔ לא הוחלש. `"state.kind === 'error' ?"` הפך
+   * ל**דו-משמעי** ברגע ש-`layout={state.kind === 'error' ? 'stacked' : 'single'}`
+   * נכנס לתג הפתיחה, והמופע הראשון הוא עכשיו התכונה ⛔ ולא ענף ה-JSX. שתי
+   * האסרציות שהשתמשו בו נעלו מאותו רגע על קטע קוד אחר משמן — האחת המשיכה לעבור
+   * במקרה, והשנייה נפלה. המאתר להלן דורש את `? (` שרק ענף ה-JSX נושא.
+   */
+  const ERROR_BRANCH = /state\.kind === 'error' \?\s*\(/;
+
   it('ענף התקלה החולפת נושא גם יציאה — «נסה שוב» לבדו הוא מסך ללא דרך החוצה', () => {
-    const start = CODE.indexOf("state.kind === 'error' ?");
+    const start = CODE.search(ERROR_BRANCH);
     expect(start).toBeGreaterThan(-1);
     expect(CODE.slice(start, start + 700)).toMatch(/<a\s/);
   });
@@ -229,11 +238,104 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     // schema_missing · empty · ניסיון חוזר), וארבעה סימונים בסך הכל — אחד לכל
     // חלופה. היציאה שנוספה לענף התקלה החולפת היא משנית **במכוון**, ולכן ⛔ אינה
     // מסומנת: סימון חמישי היה מפיל את הארנס על `found 2 elements`.
-    const bar = CODE.slice(CODE.indexOf('<ActionBar>'), CODE.indexOf('</ActionBar>'));
+    // ⚠️ FIXED C-0214 (F-082) ו⛔ לא הוחלש: הביטוי היה `'<ActionBar>'` מילולי,
+    // והחזיר -1 ברגע שהסרגל קיבל את התכונה `layout` שהממצא חייב. מה שהאסרציה
+    // שומרת — ארבעה סימונים, אחד לכל חלופה — ⛔ לא זז; רק תג הפתיחה רשאי כעת
+    // לשאת מאפיינים.
+    const open = CODE.search(/<ActionBar[\s>]/);
+    expect(open).toBeGreaterThan(-1);
+    const bar = CODE.slice(open, CODE.indexOf('</ActionBar>'));
     expect((bar.match(/data-primary-action/g) ?? []).length).toBe(4);
 
-    const errorBranch = bar.slice(bar.indexOf("state.kind === 'error' ?"));
+    const errorBranch = bar.slice(bar.search(ERROR_BRANCH));
     expect(errorBranch).toMatch(/<a\s/);
     expect(errorBranch).not.toContain('data-primary-action');
+  });
+});
+
+/**
+ * T-087 · § 4.2ח ⓒ — פעולת סגירה על מסך מנת היום.
+ *
+ * סורק מקור, ⛔ ⛔ DOM. הענף `state.kind === 'cards'` דורש טעינה מוצלחת של
+ * `/api/study/queue`, וההארנס של Vitest רץ בסביבת `node` בלי fetch — היה
+ * מרנדר את ה-`loading` state ומגיע לאסרציה של ⛔ ⛔ נכון. הקריאה על המקור
+ * מודדת את מה שהקומפיילר יעביר ל-DOM, בלי לדרוש רינדור.
+ */
+const T087_SRC = readFileSync('components/StudyDeckScreen.tsx', 'utf8')
+  .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+
+/** הבלוק של ענף `state.kind === 'cards'` — סוגריים נספרים, ⛔ regex עצל. */
+function cardsBranch(src: string): string {
+  const at = src.indexOf("state.kind === 'cards'");
+  if (at === -1) return '';
+  const returnAt = src.indexOf('return (', at);
+  if (returnAt === -1) return '';
+  let depth = 0;
+  for (let i = returnAt + 'return '.length; i < src.length; i += 1) {
+    const c = src[i];
+    if (c === '(') depth += 1;
+    else if (c === ')') {
+      depth -= 1;
+      if (depth === 0) return src.slice(returnAt, i + 1);
+    }
+  }
+  return '';
+}
+
+describe('the study screen carries a top-anchored close (T-087 · § 4.2ח ⓒ)', () => {
+  it('קורא מקור עם ענף `cards` תקין', () => {
+    expect(T087_SRC.length).toBeGreaterThan(1000);
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'ענף `cards` לא נמצא').toContain('<CardDeck');
+  });
+
+  it('הענף `cards` מכיל אלמנט עם `data-close` ו-`href="/cards"`', () => {
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'חסרה יציאה — `data-close` לא נמצא בענף `cards`').toContain('data-close');
+    expect(branch, 'היציאה חייבת לחזור לבורר `/cards` (§ 4.2ח ⓒ)').toMatch(/href="\/cards"/);
+  });
+
+  it('היציאה נושאת `<CloseIcon />` מיובא ⛔ ⛔ SVG שני', () => {
+    const branch = cardsBranch(T087_SRC);
+    expect(branch, 'האייקון חייב להיות `<CloseIcon />`').toContain('<CloseIcon');
+    expect(branch, 'SVG מוטבע נוסף ⛔ ⛔ מותר — השתמש ב-`<CloseIcon />`').not.toMatch(/<svg\b/);
+    expect(T087_SRC).toMatch(/from ['"]@\/components\/CloseIcon['"]/);
+  });
+
+  it('יעד המגע של היציאה ≥44px (`min-h-touch min-w-touch`)', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, 'היעד חייב להיות ≥44px גובה (`min-h-touch`)').toContain('min-h-touch');
+    expect(near, 'היעד חייב להיות ≥44px רוחב (`min-w-touch`)').toContain('min-w-touch');
+  });
+
+  it('היציאה נושאת `aria-label="סגור"` — האייקון בלבד ⛔ ⛔ שם נגיש', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, '`<CloseIcon>` נושא `aria-hidden` ⇒ הקישור עצמו חייב `aria-label`').toMatch(
+      /aria-label="סגור"/,
+    );
+  });
+
+  it('⛔ ⛔ `data-primary-action` על היציאה — עלול לשבור F-027 של `/study`', () => {
+    const branch = cardsBranch(T087_SRC);
+    const at = branch.indexOf('data-close');
+    const near = branch.slice(Math.max(0, at - 300), at + 300);
+    expect(near, '⛔ ⛔ `data-primary-action` על הסגירה').not.toMatch(/data-primary-action/);
+  });
+
+  it('⛔ ⛔ `data-close` בענפים אחרים (`error`/`empty`/`session_expired`/`schema_missing`/`loading`)', () => {
+    const branch = cardsBranch(T087_SRC);
+    const total = (T087_SRC.match(/data-close/g) || []).length;
+    const inBranch = (branch.match(/data-close/g) || []).length;
+    expect(total, `\`data-close\` מופיע ${total} פעמים בסה"כ ובלוק \`cards\` ${inBranch}; חייב להיות שווה`).toBe(inBranch);
+  });
+
+  it('⛔ ⛔ SVG מוטבע נוסף בכל הקובץ (חוקה § 6)', () => {
+    expect(T087_SRC.match(/<svg\b/g) ?? [], 'SVG מוטבע חדש ⛔ ⛔ בקובץ הזה — השתמש ב-`<CloseIcon>`').toHaveLength(0);
   });
 });

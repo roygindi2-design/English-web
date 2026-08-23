@@ -118,8 +118,13 @@ describe('<ArenaBoard>', () => {
     expect(CODE, '⛔ רכיב ממשק אינו ניגש לדאטהבייס').not.toMatch(/supabase|\.from\(/);
   });
 
-  it('שולח את חיי היריב מהקבוע ⛔ ולא כמספר בקוד', () => {
-    expect(CODE).toMatch(/enemyHp:\s*ARCADE_ENEMY_HP/);
+  it('⛔ אינו שולח סף כלל — הסף חי בשרת (D-067ⓑ)', () => {
+    // D-067ⓑ — הסף חי בשרת. ⛔ שדה סף בגוף הבקשה הוא הזמנה לזייף ניצחון.
+    expect(CODE).not.toMatch(/enemyHp\s*:/);
+    // ⚠️ F-092 עדכן את הגוף: `runId` **וגם** `answers`. הטענה ⛔ לא נמחקה — היא הורחבה,
+    // וההנחה שהיא נועדה לשמור עליה (⛔ אפס שדה סף) נאכפת בשורה שמעליה ובטענה שמתחת.
+    expect(CODE).toMatch(/send\(\s*\{\s*runId:\s*crypto\.randomUUID\(\),\s*answers:\s*battle\.answers\s*\}\s*\)/);
+    expect(CODE).not.toMatch(/send\(\s*\{[^}]*(?:threshold|required|hp)\s*:/i);
   });
 
   it('שש התשובות של החוזה מטופלות, ⛔ ולא ארבע', () => {
@@ -149,5 +154,95 @@ describe('<ArenaBoard>', () => {
   it('הפיקסטורה מקבלת סיבוב ו⛔ אינה פונה לרשת', () => {
     expect(CODE).toMatch(/initialRound/);
     expect(CODE).toMatch(/if \(initialRound !== undefined\) return;/);
+  });
+});
+
+/** גוף `statusHe` — הנוסח היחיד של שורת המצב (D-070). */
+const AMMO_WORDING = CODE.slice(CODE.indexOf('const statusHe'), CODE.indexOf('const MISSING_NUMBER_HE'));
+
+describe('D-070 · T-130 — שורת המצב נושאת את שני המספרים', () => {
+  it('הנוסח הוא של D-070, מילה במילה', () => {
+    expect(CODE).toContain('קליעים');
+    expect(CODE).toContain('ליריב');
+    expect(CODE).toMatch(/נשארו לך \$\{ammo\} קליעים · ליריב \$\{hp\} חיים/);
+  });
+
+  it('היחיד ⛔ אינו «1 קליעים»', () => {
+    expect(CODE).toContain('קליע אחד');
+  });
+
+  it('שני המספרים באים מהחוק ⛔ ולא מחישוב מקומי', () => {
+    expect(CODE).toMatch(/ammoLeft\(battle\)/);
+    expect(CODE).not.toMatch(/questions\.length\s*-\s*battle\.index/);
+  });
+
+  it('⛔ אין ספירה לאחור, שעון, מכפיל וניקוד (D-050 · D-070)', () => {
+    for (const banned of [/countdown/i, /\bscore\b/i, /multiplier/i, /ניקוד/, /שניות/]) {
+      expect(CODE).not.toMatch(banned);
+    }
+  });
+
+  /**
+   * ⚠️ **נוסח התוכנית לאסרציה הזאת ⛔ אינו יכול לעבור, והמדידה הראתה זאת:** הוא דרש
+   * את המחרוזת «קליעים» **בתוך** תבנית ה-`aria-label`, בעוד המימוש שהתוכנית עצמה
+   * כותבת מרכיב את הנוסח ב-`statusHe(...)` ⇒ המילה ⛔ אינה שם. אסרציה שמכריחה
+   * לשכפל את הנוסח בשני מקומות סותרת את הסיבה שבגללה `statusHe` קיימת.
+   * הנמדד כאן הוא הדבר עצמו: **מד הצבע נושא את אותו נוסח עברי** ⛔ ולא צבע בלבד.
+   */
+  it('חוקה § 1 — המספרים נגישים גם בלי צבע', () => {
+    const label = CODE.match(/aria-label=\{`[^`]*`\}/);
+    expect(label, 'מד ה-pips חייב aria-label').not.toBeNull();
+    expect(label?.[0], 'התווית נבנית מאותו נוסח ⛔ ולא משוכפלת').toContain('statusHe(');
+    expect(AMMO_WORDING, '⛔ והנוסח עצמו נושא את המילה').toContain('קליעים');
+  });
+});
+
+describe('T-117 · T-041 — התנועה נכלאת בבמה', () => {
+  it('הבמה מצוירת, והתנוחה מגיעה מהחוק', () => {
+    expect(CODE).toMatch(/<ArenaStage\b/);
+    expect(CODE).toMatch(/phase=\{stagePhase\(battle\)\}/);
+  });
+
+  /**
+   * ⚠️ **נוסח התוכנית לאסרציה הזאת היה קישוט, והמדידה הראתה זאת:** הוא חתך את המקור
+   * מ-`data-arena-options` והלאה — ושם יושב **רק שם המחלקה** `OPTION_CLASS`, בעוד
+   * הגדרתה יושבת **למעלה**. כלומר `transition-opacity duration-200` שכבר קיים בה
+   * ⛔ לא היה נמדד, ומוטציה שמוסיפה תנועה להגדרה **שורדת**.
+   * ⛔ הנמדד כאן הוא **המחלקות בפועל**, דרך `classesOf` שכבר פורש קבועים (F-041).
+   */
+  it('⛔ אפס תנועה של **תזוזה** על אזור השאלה', () => {
+    const list = CODE.match(/<ul[^>]*data-arena-options[\s\S]*?>/);
+    const option = CODE.match(/<button[^>]*data-arena-option[\s\S]*?>/);
+    expect(list, 'המכולה חייבת לשאת data-arena-options').not.toBeNull();
+    expect(option, 'האפשרות חייבת לשאת data-arena-option').not.toBeNull();
+    for (const tag of [list?.[0] ?? '', option?.[0] ?? '']) {
+      const classes = classesOf(tag);
+      for (const banned of [/\banimate-/, /transition-transform\b/, /\btranslate-/, /\bscale-/]) {
+        expect(classes, `${banned} אסור על אזור השאלה — T-041`).not.toMatch(banned);
+      }
+    }
+  });
+
+  it('⛔ הרכיב ⛔ אינו מחשב תנוחה בעצמו', () => {
+    expect(CODE).not.toMatch(/answers\[[^\]]*\]\.correct/);
+  });
+});
+
+describe('F-092 — מפתח הקרב נוצר פעם אחת ונישא בשידור החוזר', () => {
+  it('המפתח נוצר ב-`crypto.randomUUID`', () => {
+    expect(CODE).toMatch(/crypto\.randomUUID\(\)/);
+  });
+
+  it('הוא נשלח בגוף, לצד `answers`', () => {
+    expect(CODE).toMatch(/send\(\s*\{[^}]*runId[^}]*answers:\s*battle\.answers[^}]*\}\s*\)/s);
+  });
+
+  it('⛔ המפתח ⛔ אינו נוצר בתוך `send` — שידור חוזר היה מקבל מפתח חדש', () => {
+    const send = CODE.slice(CODE.indexOf('const send = useCallback'), CODE.indexOf('useEffect(() => {\n    if (battle === null)'));
+    expect(send).not.toContain('randomUUID');
+  });
+
+  it('השידור החוזר משדר את `pendingResult` כמות שהוא', () => {
+    expect(CODE).toMatch(/send\(pendingResult\)/);
   });
 });

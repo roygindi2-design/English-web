@@ -2,24 +2,45 @@ import { describe, expect, it } from 'vitest';
 import {
   ARCADE_AMMO, ARCADE_ENEMY_HP, ARCADE_MIN_WORDS_PER_LEVEL, ARCADE_WINS_PER_LEVEL,
   ARENA_IDLE_LOOP, GAME_LEVELS, MAX_GAME_LEVEL,
-  applyWin, describeLevel, gameLevelAt, isVictory,
+  applyWin, describeLevel, gameLevelAt, isVictory, requiredHits,
 } from './arcadeLadder';
 
-describe('D-059 — שלושת קבועי הקרב', () => {
+describe('D-059 · D-067 — שלושת קבועי הקרב, והסף שנגזר מהם', () => {
   it('15 שאלות · 10 חיי יריב · 3 ניצחונות לרמה', () => {
     expect(ARCADE_AMMO).toBe(15);
     expect(ARCADE_ENEMY_HP).toBe(10);
     expect(ARCADE_WINS_PER_LEVEL).toBe(3);
   });
 
-  it('סף הניצחון הוא בדיוק 10 מתוך 15 — ⛔ לא 9 ולא 11', () => {
-    expect(isVictory(9)).toBe(false);
-    expect(isVictory(10)).toBe(true);
-    expect(isVictory(15)).toBe(true);
+  it('D-067ⓐ — שער הבריכה הוא התחמושת עצמה, ⛔ ולא 12', () => {
+    expect(ARCADE_MIN_WORDS_PER_LEVEL).toBe(ARCADE_AMMO);
   });
 
-  it('סף הדיוק שנגזר הוא 67% — הבדיקה שתיפול אם מישהו ישנה קבוע אחד לבדו', () => {
-    expect(Math.round((ARCADE_ENEMY_HP / ARCADE_AMMO) * 100)).toBe(67);
+  it('D-067ⓑ — הסף הוא 67% של מה שנשלח בפועל, בכל אורך סיבוב', () => {
+    expect(requiredHits(15)).toBe(10);
+    expect(requiredHits(12)).toBe(8);
+    expect(requiredHits(14)).toBe(10);
+    expect(requiredHits(30)).toBe(20);
+    for (const q of [12, 13, 14, 15, 20, 30]) {
+      const ratio = requiredHits(q) / q;
+      expect(ratio).toBeGreaterThanOrEqual(2 / 3);
+      expect(ratio).toBeLessThan(2 / 3 + 1 / q);
+    }
+  });
+
+  it('⛔ קלט פסול ⛔ אינו מקל — הרצפה היא הקבוע', () => {
+    expect(requiredHits(0)).toBe(ARCADE_ENEMY_HP);
+    expect(requiredHits(-5)).toBe(ARCADE_ENEMY_HP);
+    expect(requiredHits(1.5)).toBe(ARCADE_ENEMY_HP);
+    expect(requiredHits(Number.NaN)).toBe(ARCADE_ENEMY_HP);
+  });
+
+  it('סיבוב מלא: 10 מנצח, 9 ⛔ לא — ⛔ ובסיבוב בן 12 הסף הוא 8', () => {
+    expect(isVictory(9, 15)).toBe(false);
+    expect(isVictory(10, 15)).toBe(true);
+    expect(isVictory(15, 15)).toBe(true);
+    expect(isVictory(7, 12)).toBe(false);
+    expect(isVictory(8, 12)).toBe(true);
   });
 
   it('D-060 · פריט 39 — לולאת ההמתנה כבויה בברירת מחדל', () => {
@@ -57,22 +78,22 @@ describe('D-061 — סולם 12 רמות המשחק', () => {
   });
 });
 
-describe('D-061 · D-046 — רמה בלי 12 מילים כשירות נעולה **עם המספר**', () => {
-  it('11 כשירות ⇒ נעולה, והמספרים חוזרים ללומד', () => {
-    expect(describeLevel(3, 11)).toEqual({ unlocked: false, required: 12, eligible: 11 });
+describe('D-061 · D-046 · D-067ⓐ — רמה בלי 15 מילים כשירות נעולה **עם המספר**', () => {
+  it('14 כשירות ⇒ נעולה, והמספרים חוזרים ללומד', () => {
+    expect(describeLevel(3, 14)).toEqual({ unlocked: false, required: 15, eligible: 14 });
   });
 
-  it('12 כשירות ⇒ פתוחה', () => {
-    expect(describeLevel(3, 12)).toEqual({ unlocked: true, required: 12, eligible: 12 });
+  it('15 כשירות ⇒ פתוחה', () => {
+    expect(describeLevel(3, 15)).toEqual({ unlocked: true, required: 15, eligible: 15 });
   });
 
   it('הסף הוא הקבוע ⛔ ולא מספר בקוד', () => {
-    expect(ARCADE_MIN_WORDS_PER_LEVEL).toBe(12);
+    expect(ARCADE_MIN_WORDS_PER_LEVEL).toBe(15);
   });
 
   it('C1/C2 היום = 0 כשירות (R-021) ⇒ נעולות עם 0, ⛔ לא מוסתרות', () => {
-    expect(describeLevel(11, 0)).toEqual({ unlocked: false, required: 12, eligible: 0 });
-    expect(describeLevel(12, 0)).toEqual({ unlocked: false, required: 12, eligible: 0 });
+    expect(describeLevel(11, 0)).toEqual({ unlocked: false, required: 15, eligible: 0 });
+    expect(describeLevel(12, 0)).toEqual({ unlocked: false, required: 15, eligible: 0 });
   });
 });
 

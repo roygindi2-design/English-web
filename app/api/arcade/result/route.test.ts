@@ -12,12 +12,39 @@ function withoutComments(source: string): string {
 const CODE = withoutComments(readFileSync('app/api/arcade/result/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 
+/**
+ * F-092 · גוף התשובה עבר לשכבה הטהורה (`plan.response`), ולכן שני שומרים ותיקים
+ * ⛔ אינם יכולים עוד לחפש `missed: plan.missed` במחרוזת הנתיב — הם נמדדים **שם**.
+ * ⛔ הם ⛔ לא נמחקו: הטענה «מה שהלומד מקבל» נשמרה, רק הועברה לקובץ שבו היא חיה.
+ */
+const PURE = readFileSync('lib/core/arcadeResult.ts', 'utf8');
+const RESPONSE_LITERAL = PURE.slice(
+  PURE.indexOf('const response: ArcadeResultResponse = {'),
+  PURE.indexOf('};', PURE.indexOf('const response: ArcadeResultResponse = {')),
+);
+
 describe('⛔ הכתיבה נוגעת בשתי טבלאות הזירה בלבד (D-044 · § 4.2י מדד ⓐ)', () => {
   const written = [...CODE.matchAll(/\.from\('([a-z_]+)'\)\s*\.(?:upsert|insert|update|delete)\(/g)]
     .map((m) => m[1]);
 
-  it('שתי הטבלאות, ותו לא', () => {
-    expect([...new Set(written)].sort()).toEqual(['arcade_progress', 'arcade_runs']);
+  it('שלוש הטבלאות, ותו לא', () => {
+    expect([...new Set(written)].sort())
+      .toEqual(['arcade_collected_words', 'arcade_progress', 'arcade_runs']);
+  });
+
+  // T-109 · הכרעה א׳ — האוסף נקרא **לפני** שהתוכנית נבנית, כי `times_correct` עולה רק
+  // על מפתח קיים; קריאה אחרי הבנייה הייתה הופכת את התנאי הזה למת.
+  it('האוסף **נקרא** לפני שהתוכנית נבנית, ומסונן ללומד', () => {
+    expect(CODE).toContain(".from('arcade_collected_words')");
+    expect(CODE.indexOf("from('arcade_collected_words')"))
+      .toBeLessThan(CODE.indexOf('planArcadeWrites('));
+    const read = CODE.slice(CODE.indexOf("from('arcade_collected_words')"),
+                            CODE.indexOf('planArcadeWrites('));
+    expect(read).toContain(".eq('user_id', user.id)");
+  });
+
+  it('⛔ upsert על המפתח המורכב, ⛔ ולא על user_id לבדו', () => {
+    expect(CODE).toContain("onConflict: 'user_id,word_id'");
   });
 
   it.each(['word_progress', 'profiles', 'words', 'senses'])('⛔ %s אינו נכתב', (table) => {
@@ -76,7 +103,8 @@ describe('הנתיב אינו מחליט', () => {
   it('«המילים שהפילו אותך» חוזר בתשובה ⛔ ואינו נכתב (D-047)', () => {
     const writes = CODE.slice(CODE.indexOf('for (const write of plan.rows)'), CODE.lastIndexOf('return NextResponse.json'));
     expect(writes).not.toContain('missed');
-    expect(CODE.slice(CODE.lastIndexOf('return NextResponse.json'))).toContain('missed: plan.missed');
+    expect(CODE.slice(CODE.lastIndexOf('return NextResponse.json'))).toContain('plan.response');
+    expect(RESPONSE_LITERAL).toMatch(/(^|\s)missed,/);
   });
 });
 
@@ -121,14 +149,74 @@ describe('T-116 — הסף הוא קבוע שרת, ⛔ ולא שדה בגוף ה
 
   it('הנתיב מחזיר `outcome` ו-`leveledUp`', () => {
     const tail = CODE.slice(CODE.lastIndexOf('return NextResponse.json'));
-    expect(tail).toContain('outcome: plan.outcome');
-    expect(tail).toContain('leveledUp: plan.leveledUp');
+    expect(tail).toContain('plan.response');
+    expect(RESPONSE_LITERAL).toContain('outcome:');
+    expect(RESPONSE_LITERAL).toContain('leveledUp:');
   });
 
-  it('החוזה מתעד את שני השדות ואת ההתעלמות מ-`enemyHp`', () => {
+  /**
+   * ⚠️ **האסרציה השלישית כוונה מחדש ב-T-126 ⛔ ולא נמחקה.** היא נעלה את המחרוזת
+   * `ARCADE_ENEMY_HP` ככיסוי ל«הסף הוא קבוע שרת» — ו-D-067ⓑ הפך את הסף ל**נגזרת**,
+   * ולכן השם הזה ⛔ אינו מופיע עוד בפסקת הבקשה. מחיקה הייתה משאירה את החוזה בלי
+   * שום נעילה על מקור הסף; לכן הנעילה עברה לשם החדש ולרצפה שלו.
+   */
+  it('החוזה מתעד את שני השדות ואת הסף הנגזר בשרת', () => {
     const section = CONTRACT.slice(CONTRACT.indexOf('POST /api/arcade/result'));
     expect(section).toContain('outcome');
     expect(section).toContain('leveledUp');
-    expect(section).toContain('ARCADE_ENEMY_HP');
+    expect(section).toContain('requiredHits');
+    expect(section).toContain('ARCADE_AMMO');
+  });
+});
+
+describe('F-092 — הנתיב אידמפוטנטי, ⛔ ולא «כמעט»', () => {
+  it('`runId` מאומת בטיפוסו ובצורתו, ⛔ ולא cast', () => {
+    expect(CODE).toContain('parseRunId');
+    // הצורה נבדקת: מחרוזת כלשהי ⛔ אינה מפתח.
+    expect(CODE).toMatch(/[0-9a-f]\{8\}|uuid/i);
+  });
+
+  it('`runId` פגום ⇒ 422, ⛔ ולפני כל כתיבה', () => {
+    expect(CODE).toMatch(/fieldErrors:\s*\{\s*runId/);
+    expect(CODE.indexOf('parseRunId')).toBeLessThan(CODE.indexOf('planArcadeWrites('));
+  });
+
+  it('ⓐ קריאת קיצור-הדרך קודמת לבניית התוכנית', () => {
+    expect(CODE).toContain('response_snapshot');
+    expect(CODE.indexOf('response_snapshot')).toBeLessThan(CODE.indexOf('planArcadeWrites('));
+    const shortcut = CODE.slice(CODE.indexOf("from('arcade_runs')"), CODE.indexOf('planArcadeWrites('));
+    expect(shortcut).toContain(".eq('run_id'");
+    expect(shortcut).toContain(".eq('user_id', user.id)");
+  });
+
+  it('ⓑ התנגשות ייחודיות עוצרת את **שאר** הכתיבות — ⛔ לא רק את שורת הקרב', () => {
+    expect(CODE).toContain('23505');
+    // העצירה היא `return`/`break` מתוך הלולאה, ⛔ ולא `continue`.
+    const conflict = CODE.slice(CODE.indexOf('23505'));
+    expect(conflict.slice(0, 400)).toMatch(/\breturn\b|\bbreak\b/);
+    expect(conflict.slice(0, 400)).not.toMatch(/\bcontinue\b/);
+  });
+
+  it('⛔ שידור חוזר מחזיר את התצלום, ⛔ ולא חישוב שני', () => {
+    expect(CODE).toMatch(/response_snapshot/);
+    // התשובה המוחזרת היא `plan.response`, ⛔ ולא אובייקט שנבנה בנתיב שוב.
+    expect(CODE).toContain('plan.response');
+    expect(CODE).not.toMatch(/enemyDefeated:\s*plan\.enemyDefeated/);
+  });
+
+  it('החוזה מתעד את `runId` ואת השידור החוזר', () => {
+    const section = CONTRACT.slice(
+      CONTRACT.indexOf('## POST /api/arcade/result'),
+      CONTRACT.indexOf('## GET /api/arcade/collected'),
+    );
+    expect(section).toContain('runId');
+    expect(section).toMatch(/אידמפוטנט/);
+  });
+
+  it('⛔ שלוש הטבלאות נשמרו — האידמפוטנטיות ⛔ לא פתחה טבלה רביעית', () => {
+    const written = [...CODE.matchAll(/\.from\('([a-z_]+)'\)\s*\.(?:upsert|insert|update|delete)\(/g)]
+      .map((m) => m[1]);
+    expect([...new Set(written)].sort())
+      .toEqual(['arcade_collected_words', 'arcade_progress', 'arcade_runs']);
   });
 });

@@ -43,6 +43,31 @@ export class ApiUnreachableError extends Error {
   }
 }
 
+/**
+ * ⚠️ ADDED C-0218 (T-110). Identical in shape to `apiPost` and for the same reason: the
+ * screen must never call `fetch` itself. `PATCH /api/arcade/collected` is the first
+ * partial update in the product — hiding one collected word is not a create and not a
+ * replace, and modelling it as a POST would have made the route's verb lie about it.
+ */
+export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(path, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiUnreachableError(path);
+  }
+
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new ApiUnreachableError(path);
+  }
+}
+
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   let res: Response;
   try {
