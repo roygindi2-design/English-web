@@ -992,3 +992,76 @@ it('T-100 — the harness measures the decay level AND its Hebrew label', () => 
   // ⛔ הסדר: בדיקת הדעיכה קודמת למחוות, שמסירות את הכרטיס הראשון מה-DOM.
   expect(SRC.indexOf('overdue card decays')).toBeLessThan(SRC.indexOf('swipe right grades the card'));
 });
+
+/**
+ * T-183 · `plan/36-video-spec.md § 3`.
+ *
+ * The harness now grants exactly one exemption from the 44px floor, and an
+ * exemption is the most dangerous thing to add to a barrier: the failure mode is
+ * that it quietly covers more than it was meant to, and nothing ever says so.
+ * (C-0034 documents the same hazard one relaxation earlier, on radio labels.)
+ *
+ * So what is asserted here is the NARROWNESS and the TRADE, ⛔ not that the
+ * exemption exists. The conditions themselves are executed against real geometry
+ * in `scripts/story-tap-audit.test.ts` — this block only defends the wiring, which
+ * a real Chromium run is the only other way to see.
+ */
+describe('the 44px exemption is narrow and it is paid for (T-183 · 36 § 3)', () => {
+  const SRC = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  // C-0032: over raw text, the comment that EXPLAINS a rule satisfies the
+  // assertion meant to prove the rule is implemented. Strip comments first.
+  const CODE = SRC.replace(/^[^\S\n]*\/\/.*$/gm, '');
+
+  it('exempts a story word ONLY inside a story paragraph', () => {
+    expect(CODE).toContain("const STORY_TAP_EXEMPT = '[data-story-body] [data-story-word]'");
+  });
+
+  it('⛔ never exempts a bare [data-story-word] on its own', () => {
+    // A descendant selector is the whole guarantee: drop the `[data-story-body] `
+    // prefix and the attribute becomes a way to buy any button out of 44px.
+    expect(CODE).not.toMatch(/STORY_TAP_EXEMPT\s*=\s*'\[data-story-word\]'/);
+  });
+
+  it('applies the exemption inside the 44px scan and nowhere else', () => {
+    expect(CODE).toContain('if (el.matches(exempt)) return false;');
+    expect(CODE.match(/STORY_TAP_EXEMPT/g) ?? []).toHaveLength(3);
+  });
+
+  it('pays for it by auditing every story paragraph against all four conditions', () => {
+    expect(CODE).toContain("import { auditStoryBody } from './story-tap-audit.mjs'");
+    expect(CODE).toContain('auditStoryBody(storyBody)');
+    expect(CODE).toContain('hold all four conditions of 36 § 3');
+  });
+
+  it('triggers the audit from the markup, ⛔ not from a route list that can drift', () => {
+    expect(CODE).toContain("document.querySelectorAll('[data-story-body]')");
+    expect(CODE).not.toContain('STORY_ROUTES');
+  });
+
+  it('collects the geometry all four conditions need, including the translation', () => {
+    for (const measured of [
+      'data-story-translation',
+      's.paddingTop',
+      's.paddingBottom',
+      's.paddingLeft',
+      's.paddingRight',
+      's.marginLeft',
+      's.marginRight',
+      'bodyStyle.lineHeight',
+    ]) {
+      expect(CODE, `${measured} is not collected, so a condition of 36 § 3 cannot be measured`).toContain(
+        measured,
+      );
+    }
+  });
+
+  it('proves condition 4 by tapping between two words, ⛔ not by trusting an attribute', () => {
+    expect(CODE).toContain('page.mouse.click');
+    expect(CODE).toContain('data-story-ambiguity-chip');
+    expect(CODE).toContain('never a guess (36 § 3.4)');
+  });
+
+  it('runs the audit inside the width loop, so it is measured at 320/375/414', () => {
+    expect(CODE.indexOf('for (const route of ROUTES)')).toBeLessThan(CODE.indexOf('auditStoryBody(storyBody)'));
+  });
+});

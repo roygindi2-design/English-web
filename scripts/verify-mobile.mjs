@@ -18,6 +18,10 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
+// T-183 · `36 § 3`. The four conditions live in their own pure module so they can
+// be unit tested against production-shaped geometry; this file only measures.
+import { auditStoryBody } from './story-tap-audit.mjs';
+
 const BASE_ARG = process.argv[2];
 const PORT = Number(process.env.PORT) || 3000;
 const BASE = BASE_ARG || `http://localhost:${PORT}`;
@@ -129,6 +133,30 @@ const ROUTES = [
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
+
+/**
+ * T-183 · `36 § 3` — the ONE exemption from `MIN_TAP`, and its exact shape.
+ *
+ * `36 § 3` amends MF-2: an inline tap target inside a continuous reading paragraph
+ * is exempt from 44x44, because widening a word to 44px means changing the font,
+ * which breaks the constitution. Without this, the story screen `36 § 13` puts
+ * first could not pass `check:mobile` at all — every tappable word in the
+ * paragraph would report as an undersized target, and the cheap way out would have
+ * been to weaken the 44px scan for the whole product.
+ *
+ * ⛔ THE SELECTOR IS THE NARROWNESS. Two conditions, both required:
+ *   1. the element carries `data-story-word`, AND
+ *   2. it is INSIDE an element carrying `data-story-body`.
+ * A `data-story-word` anywhere else is ⛔ not exempt, so the attribute cannot be
+ * sprinkled on a button, chip, tab or list row to buy it out of the 44px floor —
+ * which is precisely what `36 § 3` says the exemption is not for.
+ *
+ * ⛔ AND THE EXEMPTION IS NOT FREE. It is a trade: everything it excuses is
+ * measured instead by `auditStoryBody` against all four conditions of `36 § 3`, on
+ * every route, at every width, in the block further down. The two are inseparable
+ * on purpose — an exemption whose audit could be skipped is just a hole.
+ */
+const STORY_TAP_EXEMPT = '[data-story-body] [data-story-word]';
 
 /**
  * T-057: 44px targets that touch each other are still one mis-tap. 8px is the
@@ -580,7 +608,7 @@ try {
       check(lang === 'he', `${at} lang=he`, `got "${lang}"`);
 
       // Touch targets (MF-2) — real interactive elements only.
-      const small = await page.evaluate((min) => {
+      const small = await page.evaluate(([min, exempt]) => {
         const sel = 'a[href], button, input, select, textarea, [role="button"]';
         // C-0034: the tap target is the region that ACTIVATES the control, and
         // that is not always the control's own box. Clicking anywhere in a
@@ -605,6 +633,13 @@ try {
             const own = el.getBoundingClientRect();
             // A control with no box of its own is hidden, not undersized.
             if (own.width <= 0 || own.height <= 0) return false;
+            // T-183 · `36 § 3`. The ONLY exemption from the 44px floor, and it is
+            // spent, not given: `el.matches(exempt)` is true only for a
+            // `data-story-word` that is INSIDE a `data-story-body`, and every
+            // element it excuses is measured against all four conditions of
+            // `36 § 3` in the story block below. ⛔ A `data-story-word` outside a
+            // story paragraph does not match and stays on the 44px floor.
+            if (el.matches(exempt)) return false;
             const { rect } = tapRect(el);
             return rect.width < min || rect.height < min;
           })
@@ -613,8 +648,97 @@ try {
             const via = viaLabel ? ' (its label)' : '';
             return `${el.tagName.toLowerCase()}"${(el.textContent || '').trim().slice(0, 20)}"${via} ${Math.round(rect.width)}x${Math.round(rect.height)}`;
           });
-      }, MIN_TAP);
+      }, [MIN_TAP, STORY_TAP_EXEMPT]);
       check(small.length === 0, `${at} all tap targets >= ${MIN_TAP}px`, `too small: ${small.join(' · ')}`);
+
+      // ── T-183 · `36 § 3` — what the exemption above costs ───────────────────
+      //
+      // Runs on EVERY route, ⛔ not on a story-routes list. A list drifts: the
+      // day someone renders a story paragraph on a route nobody remembered to
+      // add, the exemption would still fire and the audit would not. Here the
+      // trigger is the markup itself, so the two can never come apart.
+      //
+      // The geometry is collected in the page and judged out here, because the
+      // judging is the part that has to be unit tested (`story-tap-audit.test.ts`).
+      const storyBodies = await page.evaluate(
+        ([route, width, exemptWord]) => {
+          const px = (v) => {
+            const n = Number.parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
+          };
+          return [...document.querySelectorAll('[data-story-body]')].map((bodyEl) => {
+            const bodyStyle = getComputedStyle(bodyEl);
+            return {
+              route,
+              width,
+              // `normal` resolves to a font-dependent number that varies by
+              // family, so a paragraph that leaves line-height unset cannot
+              // satisfy a 34px floor and is reported as 0 rather than guessed.
+              lineHeight: px(bodyStyle.lineHeight),
+              declaresAmbiguityChip: bodyEl.dataset.storyAmbiguity === 'chip',
+              targets: [...bodyEl.querySelectorAll(exemptWord)].map((el) => {
+                const s = getComputedStyle(el);
+                const r = el.getBoundingClientRect();
+                return {
+                  text: (el.textContent || '').trim(),
+                  // `36 § 3.1`, measurable half: the target carries the Hebrew it
+                  // is going to show, so a word we cannot translate cannot be one.
+                  translation: el.getAttribute('data-story-translation'),
+                  rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+                  padTop: px(s.paddingTop),
+                  padBottom: px(s.paddingBottom),
+                  padLeft: px(s.paddingLeft),
+                  padRight: px(s.paddingRight),
+                  marginLeft: px(s.marginLeft),
+                  marginRight: px(s.marginRight),
+                };
+              }),
+            };
+          });
+        },
+        [route, width, STORY_TAP_EXEMPT.split(' ').pop()],
+      );
+
+      for (const storyBody of storyBodies) {
+        const { failures: storyFailures, overlaps } = auditStoryBody(storyBody);
+        check(
+          storyFailures.length === 0,
+          `${at} story tap targets hold all four conditions of 36 § 3 (${storyBody.targets.length} words)`,
+          storyFailures.map((f) => f.detail).join(' · '),
+        );
+
+        // Condition 4, driven rather than declared. The chip attribute says the
+        // screen CLAIMS to resolve ambiguity; this tap is what proves it does.
+        // It runs exactly when the condition is live — when two hit areas really
+        // do overlap — so it is never theatre and never a false demand.
+        if (overlaps.length > 0 && storyFailures.length === 0) {
+          const [i, j] = overlaps[0];
+          const a = storyBody.targets[i].rect;
+          const b = storyBody.targets[j].rect;
+          await page.mouse.click(
+            (Math.max(a.x, b.x) + Math.min(a.x + a.width, b.x + b.width)) / 2,
+            (Math.max(a.y, b.y) + Math.min(a.y + a.height, b.y + b.height)) / 2,
+          );
+          const chip = await page.evaluate(() => {
+            const el = document.querySelector('[data-story-ambiguity-chip]');
+            return el ? (el.textContent || '').trim() : null;
+          });
+          const both =
+            chip !== null &&
+            chip.includes(storyBody.targets[i].text) &&
+            chip.includes(storyBody.targets[j].text);
+          check(
+            both,
+            `${at} a touch between two words offers both, never a guess (36 § 3.4)`,
+            chip === null ? 'no chip appeared' : `chip showed "${chip}"`,
+          );
+        }
+      }
+      if (storyBodies.length > 0) {
+        report(
+          `${at} story paragraphs measured: ${storyBodies.length}, words exempt from ${MIN_TAP}px: ${storyBodies.reduce((n, b) => n + b.targets.length, 0)}`,
+        );
+      }
 
       // Primary action reachable by thumb (MF-5). Once a screen carries
       // interactive content above the call to action (T-027's preview card),
