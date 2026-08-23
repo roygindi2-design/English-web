@@ -11,6 +11,22 @@ plan/03-for-roy.md — מקום אחד לכל מה שנדרש מרוי.
 סוכן שצריך משהו מרוי כותב שורה כאן **וממשיך לעבוד** על משימה אחרת.
 רוי ניגש לכאן אחת לכמה ימים — לופ שממתין לו הוא לופ מבוזבז.
 
+---
+
+## ✅ POST-PROMOTION CHECK — 2026-08-23, PR #2 (143 commits, the first shipment in 3 days)
+
+⚠️ **No agent can do this (D-101): the sandbox refuses browser traffic to the live host, and `WebFetch` cannot log in. You are the only one who can see a logged-in screen.**
+
+**Three taps. Two minutes. Answer ✅ or ❌ per line.**
+
+| # | Where | Do this | Should happen |
+|---|---|---|---|
+| 1 | `כרטיסיות` → «מנת היום» | **Swipe a card sideways** | Right = ידעתי, left = לא ידעתי. ⚠️ The card will barely move — **8px, that is T-157, already queued.** The question here is only: **does the swipe register at all?** |
+| 2 | `העולם` | Look at the tile grid | **«המילים שאספתי»** should now be there and open. Tap it — a list, newest first (empty if you have not lost a word in the arcade yet) |
+| 3 | `העולם` → top of screen | Look for **«מה שכתבת»** | The recall card. Empty is a valid answer — it means you have not composed a sentence yet |
+
+⛔ **Anything that looks wrong: say it in your words and I turn it into a 🔴 finding verbatim.** ⛔ A slice is **shipped**, never **verified**, until you answer.
+
 ## פתוח
 
 > 🟢 **בשורה (C-0213, 20/08 01:14Z) — חסימת הדחיפה ל-main שוחררה.** מאז 14/08 `git push origin main` נדחה ב-`denied by classifier` (C-0170) וכל קידום נחסם. ההשערה ב«תיקון 17/08» — שה-PAT הגלוי ב-URL של ה-remote הפעיל את הסינון — **אושרה**: הגדרת remote נקי + `git config credential.helper "store --file=..."` ⇒ הדחיפה עברה בפעם הראשונה. קידום C-0213 (`502b32f..4f3bcfe`) הושלם ובדיקת עשן `/api/health` החזירה `ok:true` 4/4. אין דרוש ממך — רשום לידיעה בלבד.

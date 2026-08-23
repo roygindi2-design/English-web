@@ -2953,3 +2953,27 @@ Everything up-to-date
 ⇒ **The rule now in all four prompts:** when specifying or testing a screen, state **what the learner must know in order to answer**. If they can succeed without knowing it, the feature teaches nothing, however green the suite.
 
 **And the second failure mode, twice in one day:** D-035's release conditions were met and nobody re-measured (D-097); D-046 superseded D-035 and nobody told the code (D-096). ⇒ **A decision that supersedes an older one must say so IN the older one's row**, and **T-166** adds the measurement to `measure:plan`, the command that already runs every tick.
+
+### D-101 — **No agent can walk the live site logged in. Roy is not the preferred reviewer — he is the only possible one**  *(PM, C-0271 · measured)*
+
+**Measured 23/08, immediately after the promotion landed.** The PM tried to sign up on production and walk the tabs as a learner. Headless Chromium returned:
+```
+Host not in allowlist: silly-medovik-b304e5.netlify.app.
+Add this host to your network egress settings to allow access.
+```
+⇒ **The sandbox blocks browser traffic to the live host.** `WebFetch` reaches single public URLs (that is how `/api/health` is verified), but it **cannot log in**, and every learner screen is behind auth.
+
+⇒ **No agent in this loop can see what a logged-in learner sees. Not the PM, not the Critic.**
+
+⚠️ **This reframes D-098ⓓ from a preference into a constraint.** Every defect that mattered on 23/08 — the arcade answerable by alphabet, the level picker that vanishes, the vocabulary a learner cannot reach — was found **when Roy opened the site**, because that is the only place it could be found.
+
+**The mechanism — cheap, and it closes the only feedback loop that exists:**
+After every promotion the Critic writes **one block** to `plan/03-for-roy.md`: **three named taps**, each with the screen, the action, and what he should see.
+```
+✅ good   → the Critic marks the slice done.
+❌ wrong  → it becomes a 🔴 finding with Roy's words quoted verbatim.
+```
+⛔ **Not "please review the site"** — that is what produced three days of nobody looking. **Three specific taps, on the slice that just shipped.**
+⚠️ **And the honest limit:** this depends on a human opening a phone. ⛔ It is not automation, and ⛔ it must not be described as verification. **A slice is "shipped", ⛔ never "verified", until Roy answers.**
+
+⇒ **T-167.**
