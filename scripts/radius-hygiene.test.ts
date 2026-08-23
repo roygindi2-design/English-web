@@ -3,14 +3,26 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * T-068 · constitution § 3 (signed 12/08, frozen) · D-036 (the mapping).
+ * T-068 · T-168 · constitution v2 layer B § ב2 · D-036 (the mapping) · D-102.
  *
- * The constitution allows three radii. Before this guard existed the product's most
- * common value was a fourth one — 37 × `rounded-xl` — and nothing anywhere would ever
- * have said so. The value of this task is the guard and not the rewrite: without a test
- * that fails, the fourth value returns in the first commit nobody reads.
+ * The guard exists because before it, the product's most common radius was an
+ * undeclared fourth value and nothing anywhere would ever have said so. That reason
+ * still holds: without a test that fails, an undeclared value returns in the first
+ * commit nobody reads.
+ *
+ * ⚠️ UPDATED 2026-08-23 (T-168). The old list was {md, lg, 2xl}, taken from
+ * constitution v1 § 3, which was written 12/08 — two weeks before Roy's product
+ * vision existed — and marked frozen. D-102 replaced it: layer B is derived from
+ * plan/36-video-spec.md and the approved renders in docs/design/, and it declares a
+ * FIVE-value scale. `rounded-full` in particular is now explicitly allowed for a
+ * primary button, a chip, a progress bar and the world tab — every one of which is a
+ * pill in the renders Roy signed off.
+ *
+ * ⛔ What did NOT change, and is the whole point of keeping this file: a single
+ * uniform radius on every element stays banned. The scale is GRADED. Adding a sixth
+ * value is still a finding — edit the constitution first, then this list.
  */
-const ALLOWED = new Set(['md', 'lg', '2xl']);
+const ALLOWED = new Set(['md', 'lg', 'xl', '2xl', 'full']);
 
 /** Tailwind's logical and physical side segments, which are not radius VALUES. */
 const SIDES = new Set(['t', 'b', 'l', 'r', 's', 'e', 'tl', 'tr', 'bl', 'br', 'ss', 'se', 'es', 'ee']);
@@ -49,7 +61,7 @@ function radii(file: string): { token: string; value: string }[] {
   });
 }
 
-describe('radius hygiene (T-068 · constitution § 3)', () => {
+describe('radius hygiene (T-068 · T-168 · constitution v2 layer B § ב2)', () => {
   it('scans a real set of files (guards the walker, not just the regex)', () => {
     // Without this, a broken glob turns every assertion below into a vacuous pass.
     expect(FILES.length).toBeGreaterThan(20);
@@ -60,14 +72,17 @@ describe('radius hygiene (T-068 · constitution § 3)', () => {
     expect(FILES.flatMap((f) => radii(f)).length).toBeGreaterThan(20);
   });
 
-  it('uses only the three radii the frozen constitution allows', () => {
+  it('uses only the five radii constitution v2 layer B allows', () => {
     const offenders = FILES.flatMap((file) =>
       radii(file)
         .filter(({ value }) => !ALLOWED.has(value))
         .map(({ token }) => `${file}: ${token}`),
     );
-    // The message IS the fix list: constitution § 3 allows md (6px, fields and tags),
-    // lg (8px, buttons) and 2xl (16px, cards and modals). D-036 maps a role to a group.
+    // The message IS the fix list. Layer B § ב2 allows md (6px, fields and tags),
+    // lg (8px, buttons), xl (12px, secondary controls and counter tiles),
+    // 2xl (16px, the card default — the most common value in the renders) and
+    // full (pill: primary button, chip, progress bar, the world tab).
+    // D-036 maps a role to a group. ⛔ A sixth value is a finding, not a fix.
     expect(offenders).toEqual([]);
   });
 

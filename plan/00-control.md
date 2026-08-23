@@ -20,7 +20,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   msgs:    0 / 120           # 39-messages-spec § 9 · הודעות (סדר הבנייה שם, ⛔ הפוך מסדר הסרטון)
 MILESTONE_TICKS: 102           # ⛔ מונה M0 הישן — **מוקפא ואינו בלם עוד**. נשמר להיסטוריה. הבלם החי הוא WORKSTREAM_TICKS.
 RELEASE_READY: ""              # ה-Critic כותב כאן <sha> · <תאריך> · <N קומיטים> · <מה הלומד מקבל>. ⛔ הוא אינו דוחף ל-main — המיזוג הוא פעולה של רוי (RULES § 0.1.1 ב׳, שוכתב 23/08).
-PAUSED_BY_HUMAN: true            # ⏸️ Roy stopped the schedules 23/08 to redesign first. ⛔ An agent that starts anyway: exit in one line.
+PAUSED_BY_HUMAN: false           # ▶️ **שוחרר 23/08 בהוראת רוי — הרצה ידנית מבוקרת.** ⚠️ שלוש המשימות המתוזמנות (DEV · PM · CRITIC) עדיין **כבויות**; רק הפעלה ידנית תרוץ. CONTENT דלוקה ותרוץ ב-04:02Z.
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
 LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
