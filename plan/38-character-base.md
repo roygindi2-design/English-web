@@ -1,7 +1,7 @@
 # 38 · בסיס הדמות · אושר 23/08
 
 **מעמד:** נגזר מ-`plan/36-video-spec.md`. משלים את סעיף 7 ב-`plan/37-arena-spec.md`.
-תמונת ייחוס: **`docs/design/character-base.png`**.
+תמונת ייחוס: **`docs/design/character-base.png.jpg`**.
 
 ---
 
