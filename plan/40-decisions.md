@@ -2350,6 +2350,17 @@ T-148:           ספירה לא ידועה ⇒ ⛔ **אין אריח מושבת
 
 ### 4.2יג-ב תוכנית UX — **הספרייה, הגרסה המלאה**  *(T-136 · T-150 · T-151 · PM, C-0263 · מרחיבה את § 4.2יג ⛔ ואינה מבטלת אותה · נגזרת מ-D-073 · D-084 · D-034 · M7 · S15)*
 
+> 🔴 **SUPERSEDED IN PART — 23/08, C-0273. Read this before implementing anything below.**
+> `36-video-spec § 2` declaration 8 cancelled ⓐ of this section by name: **the tap target is
+> the WORD, ⛔ not the line**, under the four measurable conditions of `36 § 3`, with the agreed
+> fallback to the line if they cannot be met. ⇒ **the «רצועה» mechanism below is ⛔ not built.**
+> **`D-108` replaces it.** ⛔ **What is NOT superseded and is carried forward verbatim:**
+> ⓑ ⛔ no pre-marking of hard words · the ordering discipline (write path before screen) ·
+> «עברת על K מילים» wording · ⛔ zero column / zero migration for derived counts ·
+> ⛔ zero points. ⚠️ **And one addition, ⛔ not a cancellation:** `36 § 7` adds a closing
+> comprehension question — see **D-108א**; § 4.2יג's «⛔ לא מבחן» applied to the reading
+> screen and ⛔ not to a separate closing item with feedback and no score.
+
 > ⚠️ **מה שהשתנה מ-§ 4.2יג, ולמה.** § 4.2יג תיארה **מילון עם עטיפת סיפור**: טקסט, הקשה על
 > מילה, תרגום. זה עובד ⛔ ואינו טוב. **שני פגמים נמדדו בה עכשיו:**
 > ⓐ **הלומד ⛔ אינו יודע מה הוא לא יודע** — 110 מילים בעיצוב אחיד ⛔ אינן נותנות ולו נקודת
@@ -3233,3 +3244,197 @@ origin origin/dev:main` החזיר `fb808a4..2d3007a origin/dev -> main` **בל�
 
 ⚠️ **הערה שנייה:** התדריך נקב ב-`50-tasks.md` כ-232KB. **נמדד: 375KB.** הפער עצמו
 הוא הבעיה שנפתחה כ-**T-184** — הקובץ גדל מהר יותר ממה שמישהו עוקב.
+
+---
+
+### D-108 — UX plan · `/world/story` — the reading screen  *(PM, C-0273 · derived from `36-video-spec § 7` + `§ 3` · render `docs/design/kol-A-05-story.png` + `kol-A-06-question.png` · slice A of the new queue)*
+
+> **Measured this tick, ⛔ not assumed.** Headless Chromium at 375×780 against localhost:
+> `/world/story` → **status 404**, `h1 = "הדף הזה לא קיים"`, 118 chars, 2 taps.
+> The migration, the 12 stories, `storyGate` and the world tile all exist. **Only the screen is missing.**
+
+**⚠️ This plan supersedes `§ 4.2יג-ב ⓐ` — see the supersession note written into that section.**
+`36 § 2` declaration 8 cancelled "the tap target is the line". The tap target is **the word**,
+under the four measurable conditions of `36 § 3`. `§ 4.2יג-ב ⓑ` (⛔ no pre-marking of hard words)
+and the whole of `D-084` (tap writes `attempts` only) **are not cancelled and are carried forward.**
+
+```
+Arrival:      העולם ring → node `סיפורים`. ⛔ Not from כרטיסיות (D-090ⓐ logic: an app
+              in the ring is entered from the ring).
+Exit:         primary `הסיפור הבא` (render, bottom) · the tab bar stays visible
+              (the render shows it) ⇒ the screen lives INSIDE app/(tabs), ⛔ unlike
+              /world/compose which is a flow screen.
+Do nothing:   the story is on screen and readable. Doing nothing is a legitimate
+              use of this screen — reading IS the activity. ⛔ No nag, no timer.
+Empty state:  no story at the learner's level ⇒ ONE action, per D-064/D-066: the
+              count comes from the server (`stories:{required,atLevel}` already
+              served by /api/world/status) and the action is the level selector.
+
+Header        `העולם · סיפורים` / story title / `סיפור ברמה שלך · הקש על מילה מודגשת לתרגום`.
+(render):     Status row: level chip (`A1`) · reading progress bar · `סיפור 3 מתוך 12`.
+              ⚠️ **The render's title is HEBREW («הספרייה של מאיה») and `stories` has
+              only `title_en`.** ⛔ Do NOT translate at render time and ⛔ do not invent
+              a Hebrew title. → line to Roy; T-186 ships with `title_en` and the
+              Hebrew-title column is a separate, declared migration.
+
+Body:         English LTR inside an RTL screen, `<EnText>`. line-height ≥34px (36 § 3).
+              **Marking:** words the learner already marked `ידעתי` carry a thin
+              `--success` underline (render: `river`). ⛔ New words carry NOTHING.
+              Legend at the bottom of the card: `ידועה` + the underline swatch —
+              «no state encoded by colour alone» satisfied by the written legend.
+
+Tap:          opens a popover anchored to the word: the word (`<EnWord>`), the Hebrew
+              translation with niqqud, the part of speech, and ONE button
+              `הוסף לכרטיסיות` → after the write: `✓ נוספה לחזרה`.
+              Tapping another word closes the previous popover. Tap outside closes.
+              ⛔ Only content words that HAVE a translation are targets (36 § 3-1).
+              A word we have no translation for is simply not a target — ⛔ and there
+              is no «אין תרגום» state (carried from § 4.2יג-ב).
+
+Write path:   `attempts` only — D-084 unchanged, ⛔ no grade, ⛔ no SM-2 field.
+              `הוסף לכרטיסיות` is the ONE explicit learner action that may create the
+              review row. ⚠️ Same invariant as the arena results screen (T-180):
+              **the learner presses, the product does not.**
+
+Footer meta   `5 מילים חדשות · 2 שכבר ידעת` (render). Derived at render time from the
+(render):     three counts of D-034 — ⛔ zero column, zero migration (D-043 pattern).
+```
+
+**The six questions (`45-product-questions.md`):**
+
+1. **First three seconds** — «I can read this». The screen opens on a full paragraph of
+   English, and 2 of its words are already underlined as *known*. ⛔ The failure of F-011/F-016
+   (two sentences and a lot of white) is structurally impossible here: the body is 90–150 words.
+2. **The small win that brings him back tomorrow** — ⓐ a word he tapped and added drops out of
+   «נשארו לך N מילים ברמה» (D-084 creates the `word_progress` row) · ⓑ **tomorrow there is a
+   different story** — still the only thing in the product that changes by itself.
+3. **What happens when he is wrong** — reading has no "wrong". The one place a wrong answer
+   exists is the closing comprehension question (T-188), and there the response is **feedback
+   with an icon + label and ⛔ no score and ⛔ no counter** (`36 § 7`).
+4. **What he sees advancing** — the reading progress bar, `סיפור 3 מתוך 12`, and the
+   descending «נשארו לך N».
+5. **Skill** — `design-taste-frontend` (allowed on `/world/story` by name, `RULES § 0.1.1 ז׳`)
+   + `ui-styling`.
+6. **Arrival / exit / doing nothing** — answered in the block above.
+
+**⚠️ What the LEARNER must know to answer** *(the 23/08 lesson, applied)*: nothing, to read.
+For the closing question — see D-108א below; that is where the trap lives.
+
+### D-108א — the closing comprehension question, and why the render's shape is the right one
+
+The render (`kol-A-06-question.png`) shows: label `שאלת הבנה`, **the question in ENGLISH**
+(`What did Maya find inside the book?`), **three answers in HEBREW with niqqud**, immediate
+feedback on the chosen row (green ring + ✓).
+
+**⚠️ This is the exact inverse of the arcade defect (D-087), and that is why it is correct.**
+The arcade asked in Hebrew and offered English distractors ⇒ the learner matched alphabets.
+Here the learner must **comprehend the English question** and must have **read the English
+story**; the Hebrew answers remove a second decoding load that is not what we are measuring.
+
+**Three binding conditions on the item, ⛔ all of them measurable:**
+
+```
+ⓐ The question is answerable ONLY from the story. ⛔ A question answerable from world
+   knowledge («What colour is the sky?») is not a comprehension item.
+ⓑ All three answers must be plausible IN THE STORY'S OWN WORLD, and every content word
+   in them must exist in our bank at the story's level or below — the same rule the body
+   already obeys (`storyGate`).
+ⓒ ⛔ The correct answer is ⛔ NOT the longest, ⛔ not the only specific one, and ⛔ not
+   always in the same position. Position is derived from a per-story deterministic
+   shuffle, ⛔ not from authoring order.
+```
+
+**⛔ And the content is ⛔ NOT written by the PM and ⛔ not by Dev.** It is a Content-agent
+batch under a gate, exactly like the stories themselves (T-135 precedent, `origin='generated'`).
+⇒ **T-188 is the screen and ⛔ ships behind the content**; **T-189 is the content instruction.**
+⚠️ The `stories` table comment says «⛔ אין כאן שאלה, ציון או תשובה נכונה» — that sentence was
+written before the vision closed and `36 § 7` overrides it. The question lives in **its own
+table**, ⛔ not in columns bolted onto `stories`: a story with no question must stay readable.
+
+### D-109 — UX plan · `הודעות` → the simulation inbox  *(PM, C-0273 · derived from `39-messages-spec § 7` + `§ 1` · renders `docs/design/kol-C-13-inbox.png` + `kol-C-14-mail-open.png` · slice B of the new queue)*
+
+> **Measured this tick:** `/world/messages` → **status 404**. Nothing of this app exists.
+> `39 § 9` orders the simulation inbox **first** — ⛔ deliberately the reverse of the video —
+> because it needs no classes, no accounts and no user-to-user interaction.
+
+**⛔ The scope of this slice is the inbox ONLY.** The block keyboard is `39 § 9` item 2 and is
+**not written to the queue this tick** — its continuation engine is a claim about English that
+needs a Tier A/B source we do not yet hold. See **R-026**.
+
+```
+Arrival:      העולם ring → node `הודעות` (the ring now has EIGHT nodes, 36 § 6 as amended
+              by 39 § 10). ⇒ **T-175 must be extended from seven to eight** — ⛔ do not
+              open a second ring task.
+Internal nav: segmented bar under the title, RTL: `הקיר · סיפור · תיבה` (39 § 4).
+              **In THIS slice only `תיבה` is live**; `הקיר` and `סיפור` are shown
+              disabled with a measurable unlock condition, ⛔ never «בקרוב» (D-046,
+              D-096) — and the condition here is honest: «נפתח עם הכיתות».
+Exit:         back to the ring · the tab bar is visible on the list (render kol-C-13)
+              and ⛔ ABSENT on the open message (render kol-C-14) ⇒ the open message is
+              a flow screen and lives OUTSIDE app/(tabs), the /world/compose precedent.
+Do nothing:   the list is the screen. Two unread dots sit there. ⛔ No push, no badge
+              on the tab bar, ⛔ no «you have not replied in 3 days».
+Empty state:  ⛔ cannot happen — the simulations are seeded content, not user data.
+              A read failure is a failure state (D-065), ⛔ not an empty state.
+
+List (render  Per row: avatar initial in a coloured disc · sender name (`<EnWord>`) ·
+kol-C-13):    **context chip** (`תייר` · `מסעדה` · `מורה` · `מלון`) · subject ON ITS OWN
+              LINE in English · one-line preview · time (`09:20` · `אתמול` · `יום ג׳`)
+              · **blue dot for not-yet-answered**. Above the list: `3 הודעות · 2 שלא נענו`.
+              Fixed card at the bottom: `כל התכתובת מול דמויות` / `אין כאן משתמשים אחרים`
+              with an open-lock icon. ⚠️ **That card is binding text** — 39 § 1 forbids
+              claiming a 100%-safe space, and this is the honest form of the claim.
+              ⛔ The blue dot is ⛔ not the only channel: `שלא נענו` is written above.
+
+Open message  Header `תיבת הסימולציות` / subject / `תייר · היום 09:20 · Tom`.
+(render       Body bubble with the sender's English message.
+kol-C-14):    **`מילות חובה`** — three chips (`recommend` · `visit` · `summer`); a chip
+              that has been used lights `--success` with a ✓. In this slice the chips are
+              **the visible learning object**: they tell the learner, before he writes a
+              word, WHICH English words this situation calls for.
+              Below: the compose strip, and below it the keyboard sheet — **both are
+              T-19x work, ⛔ not this slice.** In this slice the compose strip is present
+              and **disabled with the same measurable condition**, ⛔ not hidden.
+```
+
+**The six questions:**
+
+1. **First three seconds** — «someone wrote to me». A mail list with names, times and unread
+   dots is a form the learner has read a thousand times; ⛔ nothing must be learned to parse it.
+2. **The small win that brings him back tomorrow** — ⛔ ⛔ NOT points (D-050 holds outside the
+   arena). It is **the unread dot turning off** and the required-word chips going green: the
+   learner sees «I said the three things this situation needed». `39 § 5` puts the recognition
+   in a like on a reply — that is the wall, and it is ⛔ not in this slice.
+3. **What happens when he is wrong** — in this slice there is no wrong: opening and reading
+   cannot fail. When the keyboard lands, a required word not yet used is shown as **not yet
+   lit**, ⛔ never as an error, and ⛔ never with `--danger`.
+4. **What he sees advancing** — `3 הודעות · 2 שלא נענו` and the chip counter `N מתוך 3 מילות חובה`.
+5. **Skill** — `design-taste-frontend` + `ui-styling`.
+6. **Arrival / exit / doing nothing** — answered in the block above.
+
+**⚠️ What the LEARNER must know to read this screen:** the sender name, the subject and the
+body are **English at the learner's level**; the chrome (chips, counters, the isolation card)
+is Hebrew. ⇒ **the message body passes the same gate the stories pass** — every content word
+in our bank at the learner's level or below. ⛔ A simulation whose body a learner cannot read
+is a decorative screen, ⛔ not a learning one.
+
+**⛔ Content provenance — the same wall as the stories.** Senders, subjects, bodies and the
+three required words are **generated content** and are ⛔ NOT written by the PM or by Dev.
+They are a Content-agent batch, `origin='generated'`, gated. ⇒ **T-192 is the instruction**,
+and the screen tasks ship against a fixture until it lands. ⚠️ **The render's own text is an
+illustration and ⛔ not the content** — note that it uses first names (`Tom`, `Sarah`,
+`Mr. Levi`) while `docs/content-stories-brief.md` forbids first names in stories. **For
+messages a sender name is structurally required**, so the brief must state its own rule
+explicitly rather than inherit one written for prose. → T-192.
+
+### 💡 Product idea Roy did not ask for  *(C-0273 · ⛔ nothing cut by `RULES § 0.14 ה׳`)*
+
+**«המילים שהמצב הזה דורש» — the required-word chips, reused as an entry point from the ring.**
+The inbox already computes, per simulation, the three English words the situation calls for.
+That set is the first thing in the product that is organised by **situation** rather than by
+frequency or by CEFR band. ⇒ the `הודעות` node can carry a one-line subtitle on the ring —
+`מסעדה · מלון · מורה` — so the learner picks a *situation* he is about to be in.
+⛔ Zero new data, zero column: the chips already exist per simulation.
+⚠️ **⛔ Not written as a task and ⛔ not a claim** — it needs the inbox content to exist first,
+and «situational vocabulary helps more than frequency order» is exactly the kind of claim that
+needs a source. Recorded here so it is not lost.
