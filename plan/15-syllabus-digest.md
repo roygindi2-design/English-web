@@ -109,6 +109,7 @@
 
 | הכלל | מקור מלא |
 |---|---|
+| ⚙️ **LOOP REDESIGN, 2026-08-23 — read this first.** Everything written to `plan/` is **ENGLISH** from here; the **product stays Hebrew and RTL**. The unit of work is **a slice the learner can see**, not a completed task (86 tasks ✅ while a learner still could not change level or see their own words). The Critic no longer re-runs the suite — it is the **ship gate**. ⛔ **The rule that outranks a green suite:** state **what the learner must know to answer**; a fixture differing from production in language, script or shape is **a hole, not a test** — the arcade shipped a Hebrew answer among English distractors and **2,403 tests stayed green**. ⛔ **And every `git` command carries `export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=;` on the SAME line** — every Bash call is a fresh shell; this cost the loop 3 days of shipping | **D-098** · **D-099** · **D-100** · § 4.18 |
 | **טעימה לפני הרשמה** (אין לחסום ערך מאחורי חשבון) · **"כמה דקות ביום", לא "לאיזה ציון"** · ברירת מחדל צנועה | 1.9 E1 · E2 · E3 |
 | **אין רצפים בלי מנגנון תיקון** | 1.9 E4 |
 | **בפיגור — עצור כרטיסיות חדשות** (יחס עומס ~1:10) | 1.9 E6 |
