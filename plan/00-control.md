@@ -6,7 +6,7 @@ ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: ""                # ⏳ Queue order on restart: **T-155** · T-165 · T-152 · T-154 · T-164 · T-166 · T-156 · T-147 · T-157. **20 eligible.**
 CRITIC_ROUNDS_ON_TASK: 0          # C-0237 (CRITIC): ✅ **T-085 · T-086 · T-087** (רצף `2026-08-20-flashcard-interaction.md`, קומיט `3f62bf9`). C-0236 (DEV) הוסיף **T-132 🟣** (Task 1 של `2026-08-20-world-featured-and-pin.md`). בתור לסקירה: **T-127 · T-099 · T-100 🟣 (C-0252, מחווה + דעיכה; ⛔ שלושה פגמי תוכנית נסגרו בדרך)** · **T-089 · T-091 🟣 (C-0250)** · **T-134 🟣 (C-0246, ‏T-134ⓐ+ⓑ — מיגרציה 0018 + שער טהור)** · **T-133 🟣 (C-0243, Task 2 של `world-featured-and-pin`)** · **T-139 · T-140 🟣 (C-0242, F-092 סגור בקוד)** · **T-138 (C-0241)** · **T-132 🟣 (C-0236)** · **T-084 · T-102 · T-083 · T-131 (check:mobile 957 ✓ בהרצה CRITIC) 🟣** · **T-109 · T-110 · T-118 🟣 (⚠️ F-092 חלה)** · F-084 🟡 · T-126 · T-130 · T-117 · T-005 · T-006 · T-018 · T-052+F-027 · F-033 · F-008ⓑ · T-073…T-078 · T-095 · F-070+F-071 · F-063/F-064 · T-119…T-121.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN. ⚠️ C-0087 לא נספר כ"אין התקדמות" — הוא עצירת בלם מכוונת, לא כישלון להתקדם
-LAST_HANDOFF_AT: 2026-08-23T10:52:04Z
+LAST_HANDOFF_AT: 2026-08-23T11:03:26Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
@@ -14,14 +14,14 @@ LOCK_HELD_BY: ""                  # C-0271 (PM) released.
 LOCK_AT: ""
 MILESTONE_TICKS: 101           # C-0271(PM) 100->101. **101/120** — ⚠️ **19 to the brake.** Roy must decide: raise it, or close M0.
 PAUSED_BY_HUMAN: true            # ⏸️ Roy stopped the schedules 23/08 to redesign first. ⛔ An agent that starts anyway: exit in one line.
-DEPLOYS_THIS_MONTH: 4            # C-0213 קידום 4f3bcfe → פריסה (הדיף הכיל קוד, ה-ignore לא דילג).
-LAST_DEPLOYED_AT: "2026-08-20T01:08:00Z"
-LAST_REVIEWED_COMMIT: "2fd8819"  # ⚠️ **נשאר בכוונה** — C-0237 סקר 2fd8819..336c0f9 (57 קומיטים) ומצא **בלתי-נקי: F-092 🟠**. ארבע הפקודות ירוקות בהרצה שלי (2156/2156 · check:mobile 957 ✓), ⛔ כי אין בדיקה שמדדה את הפגם. המצביע נותר כדי שהטיק הבא ייסקור את הדיף שוב אחרי תיקון Dev ל-F-092. ⛔ קידום היה חסום גם ללא F-092: שער יומי (01:08Z).
+DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
+LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
+LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1.1 ---
 WORKING_BRANCH: dev               # כל הסוכנים דוחפים לכאן. Netlify לא בונה ענף זה.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
-LAST_PROMOTED_AT: "2026-08-20T01:08:00Z"  # C-0213 (CRITIC) קידום 502b32f..4f3bcfe (T-106 שרשרת הכתיבה · T-122…T-125 ארבעת חסמי הלומד). בדיקת עשן health ok:true 4/4 כולל database_schema (word_progress reachable). 🟢 push ל-main עבר עם credential.helper (בלי PAT ב-URL) — חסימת C-0170 שוחררה.
-PROMOTIONS_THIS_MONTH: 12         # תקרה רכה: 30. C-0213 קידום 12 החודש.
+LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # ⚠️ **Promoted BY ROY, by hand, via GitHub PR #2 — ⛔ not by the Critic.** 143 commits, the first shipment in 3 days. Smoke test **passed**: `/api/health` `ok:true` on all four checks incl. `database_schema: word_progress reachable`. ⛔ The Critic could not push (D-099) — the promotion is real, the loop did not perform it.
+PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — הפירוט ב-`plan/OPERATOR-LOG.md`. **פתוחים:** **F-082 🟡 (ⓐ נסגר C-0214 — `check:mobile` 6→3 · ⓑ = T-131 → DEV · ⛔ לא חוסם)** · **F-081 ⚪ (C-0204 → DEV מצבור · ⛔ לא חוסם)** · F-079 🟠 (C-0201 → PM · נעילה. ✅ **המזהה הכפול אוחד C-0220 (T-128): השני הוא `F-085`**) · **F-080 🟡 (C-0203 → PM)** · F-078 🟡 (C-0201 → PM) · F-073 🟡 (C-0193 → PM) · F-072 🟡 (C-0189 → PM) · F-012 🟠 · F-019 🟠 · F-028 🟠 · F-029 🟡 · F-008 🟡 · R-010. שנסגרו — `plan/archive/control-log.md` (C-0177).
