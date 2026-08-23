@@ -61,7 +61,6 @@
 | H4 | word2word (Kakao Brain) — נגזר סטטיסטית מ-OpenSubtitles | **Apache-2.0** — הנוח ביותר ברשימה | ✅ מותר · היקף לא נמדד (T-016) |
 | H5/H6 | Wikidata Lexemes (CC0, ~1,000 זוגות בלבד) · ConceptNet 5 (CC BY-SA) | פתוח | 🅿️ מילוי פערים בלבד |
 | ⛔ | **PanLex · MUSE** (סעיף NC) · **Glosbe** (רישוי מעורב) · **מאגר האקדמיה ללשון** (אין הצהרת רישיון) · **FreeDict/Apertium/DBnary** (אין עברית שימושית) | — | ⛔ **חסומים. אל תפתח שוב אלא אם הרישיון השתנה** |
-
 ## נעילת מקורות — מחייב את Dev
 
 **NGSL v1.2 — 2,809 ערכים בדיוק**, מהדומיין `newgeneralservicelist.com` בלבד. רישיון CC BY-SA 4.0.
