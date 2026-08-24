@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { ANSWERS_PER_QUESTION } from '@/lib/core/storyQuestionGate';
+import { REQUIRED_WORDS_PER_MESSAGE } from '@/lib/core/messageGate';
 import {
   STORIES_PER_LEVEL,
   STORY_LEVELS,
@@ -41,5 +43,67 @@ describe('docs/content-stories-brief.md — ⛔ אפס סחיפה מול הקו�
 
   it('⛔ אוסר תיקון ביד: פריט שנפסל מיוצר מחדש', () => {
     expect(BRIEF).toMatch(/מיוצר מחדש/);
+  });
+});
+
+
+/**
+ * ⛔ **THE DRIFT THAT THE NUMBER CHECKS ABOVE CANNOT CATCH.** F-087/F-093 pinned
+ * the numbers in one brief. The failure that is left is structural and applies to
+ * all three: a gate GAINS a rejection reason, the brief never learns about it, and
+ * CONTENT produces a whole batch that the gate rejects for a rule ⛔ nobody wrote
+ * down. R-014 then forbids repair, so the batch is regenerated — blind, again.
+ *
+ * ⇒ the reason union is read **out of the gate's source**, ⛔ not retyped here.
+ * Retyping it would mean this test asserts against a copy that drifts in exactly
+ * the same way it exists to prevent.
+ */
+const reasonsDeclaredIn = (gateFile: string): string[] => {
+  const src = readFileSync(gateFile, 'utf8');
+  const union = /export type \w*GateReason =([\s\S]*?);/.exec(src);
+  if (union === null) throw new Error(`${gateFile}: ⛔ no exported GateReason union`);
+  const body = union[1];
+  if (body === undefined) throw new Error(`${gateFile}: ⛔ union matched with no body`);
+  const reasons = [...body.matchAll(/'([a-z_]+)'/g)]
+    .map((m) => m[1])
+    .filter((r): r is string => r !== undefined);
+  if (reasons.length === 0) throw new Error(`${gateFile}: ⛔ union parsed to zero reasons`);
+  return reasons;
+};
+
+const PAIRS: readonly (readonly [string, string])[] = [
+  ['docs/content-stories-brief.md', 'lib/core/storyGate.ts'],
+  ['docs/content-story-questions-brief.md', 'lib/core/storyQuestionGate.ts'],
+  ['docs/content-messages-brief.md', 'lib/core/messageGate.ts'],
+];
+
+describe('כל תדריך מונה כל סיבת פסילה שהשער שלו יודע לפלוט', () => {
+  for (const [brief, gate] of PAIRS) {
+    it(`${brief} ← ${gate}`, () => {
+      const text = readFileSync(brief, 'utf8');
+      const missing = reasonsDeclaredIn(gate).filter((r) => !text.includes(r));
+      expect(missing, `⛔ סיבות שהשער פולט ו⛔ אינן בתדריך: ${missing.join(', ')}`).toEqual([]);
+    });
+  }
+});
+
+describe('docs/content-story-questions-brief.md · docs/content-messages-brief.md — המספרים', () => {
+  it('שאלת הבנה: מספר התשובות בתדריך הוא זה שהשער אוכף', () => {
+    const text = readFileSync('docs/content-story-questions-brief.md', 'utf8');
+    expect(ANSWERS_PER_QUESTION).toBe(3);
+    expect(text).toContain(`${ANSWERS_PER_QUESTION}`);
+    expect(text).toContain(`${STORIES_PER_LEVEL * STORY_LEVELS.length}`);
+  });
+
+  it('הודעות: מספר מילות החובה בתדריך הוא זה שהשער אוכף', () => {
+    const text = readFileSync('docs/content-messages-brief.md', 'utf8');
+    expect(REQUIRED_WORDS_PER_MESSAGE).toBe(3);
+    expect(text).toContain(`${REQUIRED_WORDS_PER_MESSAGE}`);
+  });
+
+  it('⛔ שני התדריכים אוסרים תיקון ביד — R-014 ⛔ אינו נתון לפרשנות לפי הזמנה', () => {
+    for (const [brief] of PAIRS) {
+      expect(readFileSync(brief, 'utf8'), brief).toMatch(/מיוצר מחדש|מיוצרת מחדש/);
+    }
   });
 });

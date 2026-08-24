@@ -115,6 +115,55 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.code).toBe(1);
   });
 
+  /**
+   * ⛔ THE BLOCKED-ROW PAIR. A ⛔ row is where a checker is easiest to game: mark
+   * the row blocked and the missing brief stops being reported. These two tests
+   * are what makes that impossible — blocked buys an exemption from the FILES and
+   * pays for it with a NAMED finding or task.
+   */
+  it('1 · stays green on a ⛔ blocked row that names its finding — blocking is a successful outcome', () => {
+    const root = healthy();
+    patch(root, 'plan/25-content-commissions.md', (s) =>
+      s
+        .replace('`docs/real-brief.md`', '⛔ אין — נחסמה')
+        .replace('`lib/core/realGate.ts` | — | ⬜ |', '⛔ אין | F-117 | ⛔ |'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '1')).toBe(false);
+  });
+
+  it('1 · goes red on a ⛔ blocked row that names nothing — ⛔ אינו מקום לחנות בו עבודה', () => {
+    const root = healthy();
+    patch(root, 'plan/25-content-commissions.md', (s) =>
+      s
+        .replace('`docs/real-brief.md`', '⛔ אין — נחסמה')
+        .replace('`lib/core/realGate.ts` | — | ⬜ | T-001 |', '⛔ אין | — | ⛔ | — |'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '1')).toBe(true);
+    expect(r.out).toContain('⛔ בלי ממצא או משימה');
+  });
+
+  /**
+   * ⛔ ⛔ IS A PROSE GLYPH IN THIS REPO, AND THAT IS THE TRAP. Every register here
+   * writes ⛔ inside its descriptions, so «the row contains ⛔» would mark almost
+   * every commission blocked and exempt it from the file check — the checker would
+   * go quiet on exactly the rows it exists for. Only the STATE cell counts.
+   * ⛔ Without this test the scoping is unpinned: it survives being widened to the
+   * whole line, measured.
+   */
+  it('1 · ⛔ בתיאור ⛔ אינו חסימה — רק תא המצב נחשב', () => {
+    const root = healthy();
+    patch(root, 'plan/25-content-commissions.md', (s) =>
+      s
+        .replace('| K-001 | x |', '| K-001 | ⛔ אין להמציא כאן דקדוק |')
+        .replace('`docs/real-brief.md`', '`docs/never-written-brief.md`'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '1')).toBe(true);
+    expect(r.out).toContain('docs/never-written-brief.md');
+  });
+
   it('1 · stays green when the same row is closed — a closed row may name a deleted file', () => {
     const root = healthy();
     patch(root, 'plan/25-content-commissions.md', (s) =>
@@ -160,6 +209,22 @@ describe('scripts/loop-health.mjs', () => {
     const r = run(root);
     expect(failed(r.out, '6')).toBe(true);
     expect(r.out).toContain('2026-02-02-orphan.md');
+  });
+
+  /**
+   * ⛔ The widening measured on 24/08: 4 of the 8 «orphans» were cited in
+   * `60-findings.md`. A plan a finding cites is **findable**, which is the entire
+   * harm the check names. ⛔ Without this test the widening is unpinned and a later
+   * hand could quietly narrow it back to `50-tasks.md` alone.
+   */
+  it('6 · stays green on a plan only a FINDING cites — findable is findable', () => {
+    const root = healthy();
+    writeFileSync(join(root, 'docs/superpowers/plans/2026-02-02-from-finding.md'), '# x\n', 'utf8');
+    patch(root, 'plan/60-findings.md', (s) =>
+      s.replace('| x | y | z |', '| x | y | 2026-02-02-from-finding.md |'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '6')).toBe(false);
   });
 
   it('7 · goes red when the same missing element is reported twice — the PM did not learn', () => {

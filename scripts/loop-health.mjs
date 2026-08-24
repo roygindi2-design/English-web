@@ -67,10 +67,29 @@ const check = (id, title, fn) => {
 /* 1 — a commission's brief and gate are INPUTS. ⛔ They must exist before the row
  * goes ⬜, or CONTENT reads the row, finds nothing, and falls through in silence.
  * ⚠️ Contrast with a task row, whose files are OUTPUTS and are absent on purpose. */
+/**
+ * ⛔ A BLOCKED commission is checked DIFFERENTLY, and that is not a loophole —
+ * it is the register's own rule 2: «אין מקור ואין שער ⇒ ההזמנה אינה נכתבת», and
+ * «חסימה היא תוצאה מוצלחת». Demanding a brief from a row that is blocked BECAUSE
+ * it has no brief is a check that can only be satisfied by writing the file the
+ * block exists to prevent — i.e. the check would push an agent to produce exactly
+ * the thing the register forbids.
+ * ⇒ so a ⛔ row is not exempt, it trades one obligation for another: it must NAME
+ * the block (`F-NNN` or `T-NNN`), so the block is traceable to a finding or a task
+ * and ⛔ cannot be used as a quiet place to park work.
+ */
+const BLOCKED_STATE = /⛔/u;
+const BLOCK_REFERENCE = /\b[FT]-\d+\b/;
+const isBlocked = (line) => BLOCKED_STATE.test(line.split('|').slice(-3).join('|'));
+
 check('1', 'תדריך ושער של כל הזמנה פתוחה — קיימים', () => {
   const missing = [];
   for (const line of rows(read(at('plan', '25-content-commissions.md')), 'K')) {
     if (isClosed(line)) continue;
+    if (isBlocked(line)) {
+      if (!BLOCK_REFERENCE.test(line)) missing.push(`${idOf(line)} → ⛔ חסומה ⛔ בלי ממצא או משימה`);
+      continue;
+    }
     for (const p of claimedPaths(line)) if (!existsSync(at(p))) missing.push(`${idOf(line)} → ${p}`);
   }
   return { ok: missing.length === 0, detail: `${missing.length} חסרים`, items: missing };
@@ -131,12 +150,25 @@ check('5', 'אפס סטטוס לא-מוכר · אפס שורה פגומה', () =
 });
 
 /* 6 — a plan no row cites is a plan the next PM rewrites from scratch. */
-check('6', 'כל תוכנית מצוטטת בשורת משימה', () => {
+/**
+ * ⛔ **EVERY register counts, ⛔ not only `50-tasks.md`** — and that widening is a
+ * correction, ⛔ not a relaxation. The harm this check names is «an orphan plan
+ * gets rewritten from scratch by the next PM», and a plan that a FINDING row cites
+ * is just as findable as one a task row cites. Measured on 24/08: of the 8 plans
+ * the task-only version called orphans, **4 were already cited** — in
+ * `60-findings.md` and `26-plan-feedback.md`. ⇒ the task-only version was reporting
+ * bookkeeping, ⛔ not risk, and a checker that cries wolf is a checker agents learn
+ * to ignore. The four that were genuinely unreachable got their citation instead.
+ */
+check('6', 'כל תוכנית מצוטטת ברשם כלשהו', () => {
   const dir = at('docs', 'superpowers', 'plans');
-  const tasks = read(at('plan', '50-tasks.md'));
+  const registers = readdirSync(at('plan'))
+    .filter((n) => n.endsWith('.md'))
+    .map((n) => read(at('plan', n)))
+    .join('\n');
   const orphans = readdirSync(dir)
     .filter((n) => n.endsWith('.md'))
-    .filter((n) => !tasks.includes(n));
+    .filter((n) => !registers.includes(n));
   return { ok: orphans.length === 0, detail: `${orphans.length} יתומות`, items: orphans };
 });
 
