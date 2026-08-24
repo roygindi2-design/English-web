@@ -37,6 +37,7 @@ const {
   staleTaskBlocks,
   eligibleTaskIds,
   citedTasks,
+  splitRow,
   excerpt,
   classify,
   continuationOf,
@@ -57,6 +58,7 @@ const OUT = process.env.PLAN_TABLES_OUT || join('docs', 'plan-tables.md');
 const OPEN_OUT = process.env.PLAN_OPEN_OUT || join('docs', 'plan-open.md');
 const CONTROL_FILE = join('plan', '00-control.md');
 const PLANS_DIR = join('docs', 'superpowers', 'plans');
+const FEEDBACK_FILE = join('plan', '26-plan-feedback.md');
 
 const shapesOf = (file, columns) =>
   readFileSync(file, 'utf8')
@@ -355,6 +357,15 @@ for (const row of taskRows) {
   for (const name of planFiles) if (text.includes(name)) tasksCitingPlan.get(name).push(row);
 }
 
+/* Rows of `plan/26-plan-feedback.md` that are still open. ⛔ Read by the ⬜/🔵 glyph in
+ * the last cell, the same convention every other register uses — a fifth vocabulary for
+ * one small table would be one more thing to keep in step. */
+const feedbackRows = readFileSync(FEEDBACK_FILE, 'utf8')
+  .split('\n')
+  .filter((line) => /^\| C-\d{4} \|/.test(line))
+  .map((line) => splitRow(line));
+const openFeedback = feedbackRows.filter((cells) => /[⬜🔵]/.test(cells[cells.length - 1] ?? ''));
+
 const planLine = (name) => {
   const rows = tasksCitingPlan.get(name) ?? [];
   const t = tally(rows);
@@ -408,11 +419,28 @@ const balance = [
   '|---|---|---|',
   ...planFiles.map(planLine),
   '',
+  /* ── The DEV → PM lane (C-0287). ⛔ A channel nobody reads is not a channel: an
+   * open row here means Dev hit a gap in a plan and the PM has not closed it, and the
+   * PM's own step 1.5 sends him here. Rows are matched by their ⬜/🔵 status cell. */
+  '## 🔁 משוב על תוכניות — פתוח מ-DEV אל ה-PM',
+  '',
+  ...(openFeedback.length === 0
+    ? ['✅ אין. כל מה ש-Dev סימן כחסר בתוכנית — טופל.']
+    : [
+        '| מחזור | תוכנית | מה חסר | סטטוס |',
+        '|---|---|---|---|',
+        ...openFeedback.map(
+          (r) =>
+            `| ${excerpt(r[0] ?? '', 12)} | ${excerpt(r[1] ?? '', 46)} | ${excerpt(r[2] ?? '', 60)} | ${excerpt(r[4] ?? '', 20)} |`,
+        ),
+      ]),
+  '',
 ].join('\n');
 
 writeFileSync(OPEN_OUT, index + balance, 'utf8');
 console.log(`balance: ${untagged.length} rows without a workstream, ${badTags.length} bad tags, ${flags.length} flags`);
 console.log(`plans: ${planFiles.length} files, ${planFiles.filter((n) => (tasksCitingPlan.get(n) ?? []).length === 0).length} orphaned`);
+console.log(`plan feedback: ${openFeedback.length} open of ${feedbackRows.length}`);
 
 console.log(`tasks: ${taskRows.length} rows, ${badTasks.length} malformed`);
 console.log(`findings: ${findingRows.length} rows, ${badFindings.length} malformed`);

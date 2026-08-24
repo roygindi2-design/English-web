@@ -245,6 +245,25 @@ describe('scripts/measure-plan-tables.mjs', () => {
     expect(fresh).toContain(`## 📐 אינדקס התוכניות — ${onDisk.length} קבצים`);
   });
 
+  it('surfaces every open plan-feedback row — a channel nobody reads is not a channel', () => {
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    // ⛔ Counted from the register itself, ⛔ not from stdout. Mutation-found: with the
+    // open-row filter stubbed to [], stdout said "0 open" and the rendered count was 0,
+    // so a check comparing the two agreed perfectly while the section was empty and the
+    // PM would never see a single gap Dev reported.
+    const open = readFileSync(join('plan', '26-plan-feedback.md'), 'utf8')
+      .split('\n')
+      .filter((l) => /^\| C-\d{4} \|/.test(l))
+      .filter((l) => /[⬜🔵]\s*\|\s*$/.test(l)).length;
+    expect(open).toBeGreaterThan(0);
+    expect(fresh).toContain('## 🔁 משוב על תוכניות');
+    const shown = [...fresh.matchAll(/^\| C-\d{4} \|/gm)].length;
+    expect(shown).toBe(open);
+    // The DEV→PM lane only works if the PM is actually sent here, so the section must
+    // exist even when it is empty — an absent section reads as "nothing to do".
+    expect(fresh).toMatch(/## 🔁 משוב על תוכניות[\s\S]{0,400}(אין|מחזור)/);
+  });
+
   it('carries no date, so the snapshot cannot rot on its own', () => {
     // ⛔ The one thing that would break the freshness assertion below on nobody's
     // edit: a clock. The tree would go red every midnight and the loop would

@@ -1,0 +1,126 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const DIR = mkdtempSync(join(tmpdir(), 'plan-shape-'));
+
+/** Runs the gate and returns its stdout plus exit code. ⛔ Exit 1 is a finding, not a crash. */
+const run = (file: string): { out: string; code: number } => {
+  try {
+    return { out: execFileSync('node', ['scripts/check-plan-shape.mjs', file], { encoding: 'utf8' }), code: 0 };
+  } catch (e) {
+    const err = e as { stdout?: string; status?: number };
+    return { out: err.stdout ?? '', code: err.status ?? -1 };
+  }
+};
+
+const write = (name: string, body: string): string => {
+  const path = join(DIR, name);
+  writeFileSync(path, body, 'utf8');
+  return path;
+};
+
+const COMPLETE = `# Plan — T-999
+
+## File Structure
+- \`lib/core/thing.ts\` (new)
+
+## Interfaces
+\`\`\`ts
+export function thing(a: string): number;
+\`\`\`
+
+## Task 1
+- [ ] **Step 1: write the failing test** — add to \`lib/core/thing.test.ts\`:
+\`\`\`ts
+it('does the thing', () => {
+  expect(thing('a')).toBe(1);
+});
+\`\`\`
+- [ ] **Step 2: implement** — edit \`lib/core/thing.ts\`.
+- [ ] **Step 3: gate** — \`npm run verify\`.
+`;
+
+describe('scripts/check-plan-shape.mjs', () => {
+  it('passes a plan that carries every element, and exits 0', () => {
+    const r = run(write('complete.md', COMPLETE));
+    expect(r.out).toContain('shape: 7/7');
+    expect(r.code).toBe(0);
+  });
+
+  it('names the missing element and exits 1 — the exit code is what a script can act on', () => {
+    const r = run(write('no-interfaces.md', COMPLETE.replace(/## Interfaces[\s\S]*?```\n\n/, '')));
+    expect(r.out).toMatch(/^MISS  interfaces/m);
+    expect(r.code).toBe(1);
+  });
+
+  it('measures a step by its whole block, not its heading line', () => {
+    // ⚠️ The bug this pins, measured on the real register: reading only the heading
+    // reported 19 of 28 steps "unaddressed" on a plan that addresses every one — the
+    // command lives in the fenced block UNDER the heading. A gate that cries wolf on a
+    // good plan is a gate every agent learns to ignore.
+    const plan = write(
+      'body.md',
+      COMPLETE.replace(
+        '- [ ] **Step 2: implement** — edit `lib/core/thing.ts`.',
+        '- [ ] **Step 2: run and confirm red**\n```bash\nnpm run test\n```',
+      ),
+    );
+    const r = run(plan);
+    expect(r.out).toMatch(/^  ok  addressed/m);
+  });
+
+  it('asks a UI plan for the render and the finish clause, and a non-UI plan for neither', () => {
+    // The two extra elements exist only where `36 § 14.4` applies. Demanding them of a
+    // pure-logic plan would train the PM to paste a render name that means nothing.
+    expect(run(write('logic.md', COMPLETE)).out).toContain('shape: 7/7');
+    const ui = run(write('ui.md', `${COMPLETE}\nEdit \`components/Thing.tsx\`.\n`));
+    expect(ui.out).toMatch(/^MISS  render/m);
+    expect(ui.out).toMatch(/^MISS  finish/m);
+  });
+
+  it('rejects a DESCRIBED test — a sentence about a test is not a test', () => {
+    // ⚠️ Mutation-found: with the `tests` probe stubbed to true, every other assertion
+    // still passed. This is the one that says no. The distinction is the whole reason
+    // the element exists: `test-driven-development` needs a failing test to run, and a
+    // plan that says "add a test that checks the level gate" hands Dev a blank page.
+    const described = write(
+      'described.md',
+      COMPLETE.replace(
+        /```ts\nit\('does the thing[\s\S]*?```/,
+        'Add a test that checks `thing` returns 1 for the string "a".',
+      ),
+    );
+    const r = run(described);
+    expect(r.out).toMatch(/^MISS  tests/m);
+    expect(r.code).toBe(1);
+  });
+
+  it('prints a row ready to paste into plan/26-plan-feedback.md', () => {
+    // ⛔ The point of the whole gate: the complaint arrives as a table row with an
+    // address, ⛔ not as "the plan was unclear", which the PM cannot improve against.
+    const r = run(write('gap.md', COMPLETE.replace('## File Structure\n- `lib/core/thing.ts` (new)\n', '')));
+    expect(r.out).toContain('plan/26-plan-feedback.md');
+    expect(r.out).toMatch(/^\| ‏<C-XXXX> \| `gap\.md` \| `files`/m);
+  });
+
+  it('is wired into package.json as check:plan', () => {
+    const pkg = JSON.parse(execFileSync('cat', ['package.json'], { encoding: 'utf8' })) as {
+      scripts: Record<string, string>;
+    };
+    expect(pkg.scripts['check:plan']).toBe('node scripts/check-plan-shape.mjs');
+  });
+
+  it('runs over every committed plan without crashing', () => {
+    // A gate that throws on one of the 46 real plans is a gate nobody can run.
+    const plans = readdirSync(join('docs', 'superpowers', 'plans')).filter((n) => n.endsWith('.md'));
+    expect(plans.length).toBeGreaterThan(40);
+    for (const name of plans) {
+      const r = run(join('docs', 'superpowers', 'plans', name));
+      expect(r.code, name).toBeGreaterThanOrEqual(0);
+      expect(r.out, name).toMatch(/^shape: \d+\/\d+ elements present$/m);
+    }
+  });
+});

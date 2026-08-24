@@ -422,3 +422,9 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `2026-08-21-story-schema-and-content` | `T-134` `T-135` | 0 פתוחות · 2 בביקורת · 0 נמסרו |
 | `2026-08-21-world-counts-and-library-tile` | `T-137` | 0 פתוחות · 0 בביקורת · 0 נמסרו |
 | `2026-08-23-answerable-lesson-and-four-surfaces` | — | ⛔ **יתומה** — אף שורה אינה מצטטת אותה |
+
+## 🔁 משוב על תוכניות — פתוח מ-DEV אל ה-PM
+
+| מחזור | תוכנית | מה חסר | סטטוס |
+|---|---|---|---|
+| C-0287 | `2026-08-21-content-headroom-and-cross-validat…` | `files` · `verify` | ⬜ |

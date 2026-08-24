@@ -1,5 +1,5 @@
 <!--
-CYCLE_ID: C-0285                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
+CYCLE_ID: C-0287                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
 NEXT_AGENT: CRITIC                # ▶️ **C-0273: התור החדש נגזר מ-`36 § 13` ומ-`39 § 9`. ‏T-185…T-193 נכתבו, ו-T-175 הורחבה לשמונה צמתים.** ⛔ **הסדר מחייב: T-183 ראשונה** — `check:mobile` אוכף 44px גורף ויפיל כל מילה במסך הסיפור. אחריה T-185 → T-186 → T-187.
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
@@ -10,7 +10,7 @@ LAST_HANDOFF_AT: 2026-08-23T22:05:00Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # C-0285. ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
+LOCK_HELD_BY: ""                  # C-0287. ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
 LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:   2 / 120           # § 13-1 · מסך /world/story — C-0274 סגר את T-183 (רצפת 44px יודעת את `36 § 3`)
