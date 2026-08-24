@@ -297,3 +297,132 @@ export function excerpt(cell: string, limit: number): string {
   if (backticks % 2 === 1) out += '`';
   return out.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * TWO CLASSIFICATION AXES (Roy, 24/08) — so "am I progressing everywhere, or
+ * stuck on one thing?" becomes a MEASUREMENT instead of a feeling.
+ *
+ * ⚠️ Why two axes and ⛔ not one list of five categories, measured on the real
+ * register: a category set like «apps · tabs · content · comfort · transitions»
+ * is NOT disjoint. `T-186` (the story screen) is an app AND a tab AND content
+ * AND comfort AND a transition, all at once. A category that lands on 80% of
+ * rows makes the balance table lie. So:
+ *
+ *   AXIS 1 — WORKSTREAM: WHERE in the product. Already authoritative: these are
+ *   `36 § 13`'s build order, already counted by `WORKSTREAM_TICKS`. Disjoint by
+ *   construction — a row belongs to one screen family. `loop` is the sixth,
+ *   for work on the loop's own machinery, which no `36 § 13` item covers.
+ *
+ *   AXIS 2 — KIND: WHAT KIND of work. Orthogonal to axis 1, so it never fights
+ *   it. This is where «comfort» and «transitions» live honestly — as a property
+ *   of the work, ⛔ not as a place in the product.
+ *
+ * ⛔ Both vocabularies are CLOSED and a test fails on an unknown token. An open
+ * vocabulary drifts into synonyms («ux», «UX», «חוויה») and the balance table
+ * silently splits one column into three.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * `36 § 13` build order + `39 § 9`, in the order the anchor spec builds them,
+ * then the two that sit OUTSIDE that sequence and must not be flagged against it:
+ *   `loop` — the loop's own machinery: registers, scripts, RULES, the brakes.
+ *   `base` — the foundation built BEFORE the video spec existed: auth, onboarding,
+ *            the PWA shell, the data sources, the lexicon. Measured 24/08: 116 of
+ *            200 rows are these, and 61 of them are already ✅. Leaving them in an
+ *            «unclassified» bucket would have made that bucket the biggest column
+ *            in the balance table and drowned the signal it exists to give.
+ */
+export const WORKSTREAMS = [
+  'story',
+  'nav',
+  'arena',
+  'studies',
+  'msgs',
+  'loop',
+  'base',
+] as const;
+export type Workstream = (typeof WORKSTREAMS)[number];
+
+/** Roy's vocabulary, made disjoint. `נוחות` absorbs UX/visual/accessibility. */
+export const WORK_KINDS = ['מבנה', 'תוכן', 'נוחות', 'מעברים', 'תשתית'] as const;
+export type WorkKind = (typeof WORK_KINDS)[number];
+
+const WORKSTREAM_SET: ReadonlySet<string> = new Set(WORKSTREAMS);
+const KIND_SET: ReadonlySet<string> = new Set(WORK_KINDS);
+
+/** 0-based index of `אבן דרך`, the cell that carries both tags. */
+export const TASK_MILESTONE_INDEX = 1;
+
+const MILESTONE = /^M[0-6]$/;
+
+export interface Classification {
+  readonly milestone: string | null;
+  readonly workstream: Workstream | null;
+  readonly kind: WorkKind | null;
+  /** Tokens that are neither a milestone nor a known tag. ⛔ Never silently dropped. */
+  readonly unknown: readonly string[];
+}
+
+/**
+ * Reads `M2 · story · נוחות` out of the `אבן דרך` cell.
+ *
+ * ⚠️ The tags live INSIDE an existing cell rather than in two new columns, and
+ * that is deliberate: `TASK_COLUMNS` is 8, every malformed-row assertion counts
+ * against it, and widening the header would mean rewriting 200 rows in one
+ * commit to keep the ratchet at zero. The `חסם:` marker already proved a
+ * declared field inside a cell works; this is the same move on a cell that is
+ * 220 bytes across every open row, so it costs nothing to read.
+ *
+ * Order is ⛔ not enforced — the two vocabularies are disjoint, so `story · M2`
+ * reads identically. What IS enforced is that every token is recognised, which
+ * is what `unknown` reports and what the register test fails on.
+ */
+export function classify(cell: string): Classification {
+  let milestone: string | null = null;
+  let workstream: Workstream | null = null;
+  let kind: WorkKind | null = null;
+  const unknown: string[] = [];
+
+  for (const raw of cell.split('·')) {
+    const token = raw.trim();
+    if (token === '' || token === '—') continue;
+    if (MILESTONE.test(token)) {
+      // A second milestone is a contradiction, not a tag — report it.
+      if (milestone === null) milestone = token;
+      else unknown.push(token);
+      continue;
+    }
+    if (WORKSTREAM_SET.has(token)) {
+      if (workstream === null) workstream = token as Workstream;
+      else unknown.push(token);
+      continue;
+    }
+    if (KIND_SET.has(token)) {
+      if (kind === null) kind = token as WorkKind;
+      else unknown.push(token);
+      continue;
+    }
+    unknown.push(token);
+  }
+  return { milestone, workstream, kind, unknown };
+}
+
+/**
+ * The lineage marker. `המשך של: T-183` declares that this row continues that
+ * one, which is what turns a flat queue into the tree the PM can actually read.
+ *
+ * ⛔ Declared, ⛔ never inferred — for exactly the reason `citedTasks` is
+ * declared: a task's prose names other tasks as evidence, as context, as things
+ * it supersedes. Guessing a parent from a citation would build a tree out of
+ * footnotes. Self-citation is dropped so a row can never be its own parent.
+ */
+export const CONTINUATION_MARKER = 'המשך של:';
+
+export function continuationOf(cell: string, selfId: string): string | null {
+  const at = cell.indexOf(CONTINUATION_MARKER);
+  if (at === -1) return null;
+  const declared = cell.slice(at + CONTINUATION_MARKER.length);
+  const match = /\bT-\d{3}\b/.exec(declared);
+  if (match === null) return null;
+  return match[0] === selfId ? null : match[0];
+}

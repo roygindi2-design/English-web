@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { splitRow, rowShape, excerpt, TASK_COLUMNS } from './planTable';
+import {
+  splitRow,
+  rowShape,
+  excerpt,
+  classify,
+  continuationOf,
+  WORKSTREAMS,
+  WORK_KINDS,
+  TASK_COLUMNS,
+} from './planTable';
 
 describe('splitRow', () => {
   it('drops the leading and trailing empties and trims', () => {
@@ -288,5 +297,77 @@ describe('excerpt', () => {
   it('marks that it cut, and does not mark that it did not', () => {
     expect(excerpt('abcdef', 3)).toBe('abc…');
     expect(excerpt('abc', 3)).toBe('abc');
+  });
+});
+
+
+describe('classify', () => {
+  it('reads a milestone, a workstream and a kind out of one cell', () => {
+    expect(classify('M2 · story · נוחות')).toEqual({
+      milestone: 'M2',
+      workstream: 'story',
+      kind: 'נוחות',
+      unknown: [],
+    });
+  });
+
+  it('does not care about token order — the two vocabularies are disjoint', () => {
+    expect(classify('story · M2 · נוחות')).toEqual(classify('M2 · story · נוחות'));
+  });
+
+  it('still reads the 200 rows that carry a bare milestone', () => {
+    // ⛔ The tags are being added incrementally. An untagged row must classify
+    // cleanly as "milestone known, axes unknown" — ⛔ never as malformed.
+    expect(classify('M0')).toEqual({
+      milestone: 'M0',
+      workstream: null,
+      kind: null,
+      unknown: [],
+    });
+  });
+
+  it('reports an unrecognised token instead of swallowing it', () => {
+    // This is the assertion that keeps the vocabulary closed. Without it, `ux`
+    // and `נוחות` become two columns in the balance table that mean one thing.
+    expect(classify('M2 · ux').unknown).toEqual(['ux']);
+    expect(classify('M2 · ux').kind).toBeNull();
+  });
+
+  it('treats a second tag on the same axis as a contradiction, not a tag', () => {
+    // A row that claims two workstreams would be counted twice and the balance
+    // table would not add up to the register.
+    const c = classify('M2 · story · arena');
+    expect(c.workstream).toBe('story');
+    expect(c.unknown).toEqual(['arena']);
+  });
+
+  it('ignores the em-dash the register writes for "no value"', () => {
+    expect(classify('M1 · —').unknown).toEqual([]);
+  });
+
+  it('accepts every token in both published vocabularies', () => {
+    for (const w of WORKSTREAMS) expect(classify(`M0 · ${w}`).workstream).toBe(w);
+    for (const k of WORK_KINDS) expect(classify(`M0 · ${k}`).kind).toBe(k);
+  });
+});
+
+describe('continuationOf', () => {
+  it('reads the declared parent', () => {
+    expect(continuationOf('**מסך הסיפור.** המשך של: T-183', 'T-186')).toBe('T-183');
+  });
+
+  it('ignores a task named in prose before the marker', () => {
+    // The same defect `citedTasks` was written against: prose names tasks as
+    // evidence. A tree built from footnotes is a wrong tree.
+    const cell = 'T-999 כבר נמסרה ולכן זה אפשרי. המשך של: T-183';
+    expect(continuationOf(cell, 'T-186')).toBe('T-183');
+  });
+
+  it('returns null when no parent is declared', () => {
+    expect(continuationOf('**מסך הסיפור** (T-183 רלוונטית)', 'T-186')).toBeNull();
+  });
+
+  it('never lets a row be its own parent', () => {
+    expect(continuationOf('המשך של: T-186', 'T-186')).toBeNull();
   });
 });

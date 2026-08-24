@@ -6,7 +6,7 @@
  * ⛔ Read-only over plan/. The two files it writes are docs/plan-tables.md (the shape
  * report) and docs/plan-open.md (T-184's work index).
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { registerHooks } from 'node:module';
 
@@ -38,7 +38,13 @@ const {
   eligibleTaskIds,
   citedTasks,
   excerpt,
+  classify,
+  continuationOf,
+  WORKSTREAMS,
+  WORK_KINDS,
   BLOCKER_MARKER,
+  CONTINUATION_MARKER,
+  TASK_MILESTONE_INDEX,
   TASK_COLUMNS,
   FINDING_COLUMNS,
   TASK_STATUS_INDEX,
@@ -49,6 +55,8 @@ const TASKS_FILE = join('plan', '50-tasks.md');
 const FINDINGS_FILE = join('plan', '60-findings.md');
 const OUT = process.env.PLAN_TABLES_OUT || join('docs', 'plan-tables.md');
 const OPEN_OUT = process.env.PLAN_OPEN_OUT || join('docs', 'plan-open.md');
+const CONTROL_FILE = join('plan', '00-control.md');
+const PLANS_DIR = join('docs', 'superpowers', 'plans');
 
 const shapesOf = (file, columns) =>
   readFileSync(file, 'utf8')
@@ -211,7 +219,200 @@ const index = [
   '',
 ].join('\n');
 
-writeFileSync(OPEN_OUT, index, 'utf8');
+/* ─────────────────────────────────────────────────────────────────────────────
+ * THE BALANCE VIEW (Roy, 24/08) — "am I progressing across the whole product,
+ * or stuck on one part of it?", answered by counting instead of by feeling.
+ *
+ * ⛔ NO CLOCK ANYWHERE IN THIS FILE. `measure-plan-tables.test.ts` compares the
+ * committed snapshot byte-for-byte against a fresh run, so a timestamp or a
+ * "days since" column would redden the tree every single day, on nobody's edit.
+ * Every signal below is derived from files already in the repo.
+ *
+ * ⚠️ And the honest part, which the report says out loud: `36 § 13` is a
+ * SEQUENCE, ⛔ not a set of lanes to run in parallel. A workstream sitting at
+ * zero because it is later in the build order is CORRECT, and a report that
+ * flagged it would train every agent to ignore the flags. So the only two
+ * flags here are derived from the anchor's own ordering, ⛔ with no invented
+ * threshold: work happening out of build order, and an active workstream with
+ * nothing eligible left in it.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+const TICKS = new Map(
+  [...readFileSync(CONTROL_FILE, 'utf8').matchAll(/^#\s+(\w+):\s+(\d+)\s*\/\s*(\d+)/gm)].map(
+    (m) => [m[1], { spent: Number(m[2]), ceiling: Number(m[3]) }],
+  ),
+);
+
+const classOf = (row) => classify(row.ok ? (row.cells[TASK_MILESTONE_INDEX] ?? '') : '');
+const streamOf = (row) => classOf(row).workstream;
+
+const badTags = taskRows
+  .filter((r) => r.ok && classOf(r).unknown.length > 0)
+  .map((r) => ({ id: r.id, unknown: classOf(r).unknown }));
+
+const tally = (rows) => {
+  const t = { open: 0, blocked: 0, review: 0, done: 0, cancelled: 0, other: 0 };
+  for (const row of rows) {
+    const state = taskState(row);
+    if (state === 'open') t.open += 1;
+    else if (state === 'blocked') t.blocked += 1;
+    else if (state === 'awaiting-review') t.review += 1;
+    else if (state === 'done') t.done += 1;
+    else if (state === 'cancelled') t.cancelled += 1;
+    else t.other += 1;
+  }
+  return t;
+};
+
+const byStream = new Map(WORKSTREAMS.map((w) => [w, taskRows.filter((r) => streamOf(r) === w)]));
+const untagged = taskRows.filter((r) => streamOf(r) === null);
+
+// Build-order flags. `loop` and `base` are excluded from both: neither is a
+// `36 § 13` item, so neither has a position in the sequence to violate.
+const OUTSIDE_SEQUENCE = new Set(['loop', 'base']);
+const ORDERED = WORKSTREAMS.filter((w) => !OUTSIDE_SEQUENCE.has(w));
+const flags = [];
+for (let i = 0; i < ORDERED.length; i += 1) {
+  const here = ORDERED[i];
+  const spent = TICKS.get(here)?.spent ?? 0;
+  if (spent > 0) {
+    const earlierStarved = ORDERED.slice(0, i).filter(
+      (w) => tally(byStream.get(w) ?? []).open > 0 && (TICKS.get(w)?.spent ?? 0) === 0,
+    );
+    for (const w of earlierStarved) {
+      flags.push(`⚠️ \`${here}\` צבר ${spent} טיקים בעוד \`${w}\` — שקודם לו ב-\`36 § 13\` — עומד על 0 טיקים ויש בו משימות ⬜ פנויות. **עבודה מחוץ לסדר**, או שהסדר השתנה ואיש לא כתב זאת.`);
+    }
+    if (tally(byStream.get(here) ?? []).open === 0) {
+      flags.push(`⚠️ \`${here}\` פעיל (${spent} טיקים) ו⛔ **אין בו אף משימה ⬜ פנויה** — או שהוא גמור ויש לעבור לבא בתור, או שה-PM חייב לפתוח בו את הפרוסה הבאה.`);
+    }
+  }
+}
+for (const b of badTags) {
+  flags.push(`⚠️ \`${b.id}\` נושאת תג שאינו באוצר המילים: ${b.unknown.map((u) => `\`${u}\``).join(' · ')}. ⛔ תקן או הסר — תג לא מוכר אינו נספר בשום מקום.`);
+}
+
+const balanceRow = (label, rows, ticks) => {
+  const t = tally(rows);
+  return `| ${label} | ${ticks} | ${t.open} | ${t.blocked} | ${t.review} | ${t.done} | ${rows.length} |`;
+};
+
+/* ── The lineage tree. Roots first, children under their declared parent. ──
+ * ⛔ Only OPEN rows are drawn: a tree that carried all 200 would be the register
+ * again. A row whose parent is closed is a root here, and that is the point —
+ * it is the next live step of a finished line of work. */
+const parentOf = new Map(
+  taskRows.filter((r) => r.ok).map((r) => [r.id, continuationOf(r.cells[2] ?? '', r.id)]),
+);
+const openIds = new Set(openTasks.map((r) => r.id));
+const childrenOf = new Map();
+for (const row of openTasks) {
+  const parent = parentOf.get(row.id) ?? null;
+  const key = parent !== null && openIds.has(parent) ? parent : '';
+  if (!childrenOf.has(key)) childrenOf.set(key, []);
+  childrenOf.get(key).push(row);
+}
+
+const GLYPH = { open: '⬜', blocked: '⛔', 'awaiting-review': '🟣', unknown: '❔', malformed: '⚠️' };
+const drawTree = (rows, depth, seen) => {
+  const out = [];
+  for (const row of rows) {
+    if (seen.has(row.id)) continue;      // ⛔ a declared cycle must not hang the generator
+    seen.add(row.id);
+    const kind = classOf(row).kind;
+    out.push(
+      `${'  '.repeat(depth)}- ${GLYPH[taskState(row)] ?? '·'} \`${row.id}\`${kind === null ? '' : ` · ${kind}`} — ${excerpt(row.cells[2] ?? '', 80)}`,
+    );
+    out.push(...drawTree(childrenOf.get(row.id) ?? [], depth + 1, seen));
+  }
+  return out;
+};
+
+const seenInTree = new Set();
+const treeSections = [...WORKSTREAMS, null].flatMap((stream) => {
+  const rows = (stream === null ? untagged : (byStream.get(stream) ?? [])).filter((r) =>
+    openIds.has(r.id),
+  );
+  if (rows.length === 0) return [];
+  const roots = rows.filter((r) => {
+    const parent = parentOf.get(r.id) ?? null;
+    return parent === null || !openIds.has(parent) || streamOf(r) !== stream;
+  });
+  const title =
+    stream === null
+      ? `### ⛔ ללא זרימה — ${rows.length} שורות שאיש לא סיווג`
+      : `### \`${stream}\` — ${rows.length} פתוחות`;
+  return [title, '', ...drawTree(roots.length > 0 ? roots : rows, 0, seenInTree), ''];
+});
+
+/* ── The plans index. 46 files, and until now no map of them at all. ── */
+const planFiles = readdirSync(PLANS_DIR)
+  .filter((name) => name.endsWith('.md'))
+  .sort();
+const tasksCitingPlan = new Map(planFiles.map((name) => [name, []]));
+for (const row of taskRows) {
+  if (!row.ok) continue;
+  const text = row.cells.join(' ');
+  for (const name of planFiles) if (text.includes(name)) tasksCitingPlan.get(name).push(row);
+}
+
+const planLine = (name) => {
+  const rows = tasksCitingPlan.get(name) ?? [];
+  const t = tally(rows);
+  const state =
+    rows.length === 0
+      ? '⛔ **יתומה** — אף שורה אינה מצטטת אותה'
+      : t.done === rows.length
+        ? '✅ נמסרה'
+        : `${t.open + t.blocked} פתוחות · ${t.review} בביקורת · ${t.done} נמסרו`;
+  return `| \`${name.replace(/\.md$/, '')}\` | ${rows.length === 0 ? '—' : rows.map((r) => `\`${r.id}\``).join(' ')} | ${state} |`;
+};
+
+const balance = [
+  '',
+  '## 🧭 מאזן — האם ההתקדמות פרושה או תקועה',
+  '',
+  `⛔ **\`36 § 13\` הוא רצף, ⛔ לא חמישה מסלולים מקבילים.** זרימה שיושבת על 0 מפני שהיא **מאוחרת יותר בסדר הבנייה — תקינה**, ואין מה לתקן בה. הטבלה מראה את הסדר; הדגלים מתחת מראים רק חריגה **מהסדר עצמו**, ⛔ בלי שום סף מומצא.`,
+  '',
+  '| זרימה | טיקים | ⬜ | ⛔ | 🟣 | ✅ | סה״כ |',
+  '|---|---|---|---|---|---|---|',
+  ...ORDERED.map((w, i) =>
+    balanceRow(`${i + 1}. \`${w}\``, byStream.get(w) ?? [], TICKS.get(w)?.spent ?? 0),
+  ),
+  ...[...OUTSIDE_SEQUENCE].map((w) =>
+    balanceRow(`· \`${w}\` (מחוץ לרצף)`, byStream.get(w) ?? [], '—'),
+  ),
+  balanceRow('· **ללא זרימה**', untagged, '—'),
+  '',
+  '| סוג עבודה | ⬜ | ⛔ | 🟣 | ✅ | סה״כ |',
+  '|---|---|---|---|---|---|',
+  ...[...WORK_KINDS, null].map((k) => {
+    const rows = taskRows.filter((r) => classOf(r).kind === k);
+    const t = tally(rows);
+    return `| ${k === null ? '**ללא סיווג**' : `\`${k}\``} | ${t.open} | ${t.blocked} | ${t.review} | ${t.done} | ${rows.length} |`;
+  }),
+  '',
+  '### דגלים',
+  '',
+  flags.length === 0 ? '✅ אין. הסדר נשמר, ואין תג לא מוכר.' : flags.map((f) => `- ${f}`).join('\n'),
+  '',
+  '## 🌳 עץ העבודה הפתוחה — לפי זרימה',
+  '',
+  `שושלת מוצהרת ב-\`${CONTINUATION_MARKER} T-XXX\` בתא המשימה. שורה שאין לה הורה פתוח היא שורש.`,
+  '',
+  ...treeSections,
+  `## 📐 אינדקס התוכניות — ${planFiles.length} קבצים ב-\`${PLANS_DIR}\``,
+  '',
+  '⛔ נוצר, ⛔ לא נכתב. «יתומה» = תוכנית שאף שורת משימה אינה מצטטת — או שהיא נמסרה ואיש לא סגר את הלולאה, או שהיא נשכחה.',
+  '',
+  '| תוכנית | משימות | מצב |',
+  '|---|---|---|',
+  ...planFiles.map(planLine),
+  '',
+].join('\n');
+
+writeFileSync(OPEN_OUT, index + balance, 'utf8');
+console.log(`balance: ${untagged.length} rows without a workstream, ${badTags.length} bad tags, ${flags.length} flags`);
+console.log(`plans: ${planFiles.length} files, ${planFiles.filter((n) => (tasksCitingPlan.get(n) ?? []).length === 0).length} orphaned`);
 
 console.log(`tasks: ${taskRows.length} rows, ${badTasks.length} malformed`);
 console.log(`findings: ${findingRows.length} rows, ${badFindings.length} malformed`);

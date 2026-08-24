@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -69,6 +69,12 @@ const MALFORMED_FINDINGS_CEILING = 13;
 
 const numberAfter = (label: string): number => {
   const m = new RegExp(`${label}: \\d+ rows, (\\d+) malformed`).exec(stdout);
+  if (m?.[1] === undefined) throw new Error(`no "${label}" line in stdout:\n${stdout}`);
+  return Number(m[1]);
+};
+
+const rowsIn = (label: string): number => {
+  const m = new RegExp(`${label}: (\\d+) rows,`).exec(stdout);
   if (m?.[1] === undefined) throw new Error(`no "${label}" line in stdout:\n${stdout}`);
   return Number(m[1]);
 };
@@ -178,21 +184,74 @@ describe('scripts/measure-plan-tables.mjs', () => {
     // `splitRow` UNESCAPES `\|`, so a re-emitted cell can carry a raw pipe and invent a
     // column. `excerpt` escapes it again; this is the assertion that says it did. Every
     // table row must have the same cell count as the header above it.
+    // ⚠️ The file now holds SEVERAL tables of different widths (the state
+    // sections, the two balance tables, the plans index). The header is
+    // whatever line the `|---|` separator follows, so the width resets per
+    // table instead of being assumed once for the file.
     const lines = readFileSync(FRESH_OPEN, 'utf8').split('\n');
     let expected: number | null = null;
     let checked = 0;
-    for (const line of lines) {
-      if (!line.startsWith('|')) continue;
-      const cells = splitRow(line).length;
-      if (/^\|[-|]+\|$/.test(line)) continue;
-      if (expected === null || /^\| id \|/.test(line)) {
-        expected = cells;
+    let tables = 0;
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (line === undefined || !line.startsWith('|')) continue;
+      if (/^\|[\s:-]+\|[\s|:-]*$/.test(line)) continue;
+      if (/^\|[\s:-]+\|[\s|:-]*$/.test(lines[i + 1] ?? '')) {
+        expected = splitRow(line).length;   // this line is a header
+        tables += 1;
         continue;
       }
-      expect(cells).toBe(expected);
+      if (expected === null) continue;
+      expect(splitRow(line).length).toBe(expected);
       checked += 1;
     }
+    expect(tables).toBeGreaterThan(4);
     expect(checked).toBeGreaterThan(50);
+  });
+
+  it('loses no open row between the flat list and the tree', () => {
+    // The tree is what three agents will read to decide what to work on. A row
+    // that falls out of it — a declared parent cycle, a workstream nobody
+    // tagged, a root filter that is too strict — stops existing for them.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    const tree = fresh.slice(fresh.indexOf('## 🌳'), fresh.indexOf('## 📐'));
+    const inTree = new Set([...tree.matchAll(/^\s*- \S+ `([TF]-\d{3})`/gm)].map((m) => m[1]));
+    const m = /^open index: (\d+) tasks,/m.exec(stdout);
+    expect(inTree.size).toBe(Number(m?.[1]));
+  });
+
+  it('counts every task row exactly once in the balance table', () => {
+    // ⛔ The whole point of the balance table is that it adds up. A row counted
+    // twice (two workstream tags) or zero times (a tag nobody recognises) turns
+    // it into a decoration. Read from the rendered table, ⛔ not from the code
+    // that wrote it.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    const balance = fresh.slice(fresh.indexOf('| זרימה |'), fresh.indexOf('| סוג עבודה |'));
+    const totals = [...balance.matchAll(/^\|[^|]+\|[^|]*\|[^|]*\|[^|]*\|[^|]*\|[^|]*\| (\d+) \|$/gm)]
+      .map((x) => Number(x[1]));
+    expect(totals.length).toBeGreaterThan(5);
+    expect(totals.reduce((a, b) => a + b, 0)).toBe(rowsIn('tasks'));
+  });
+
+  it('names every plan file on disk, and marks the orphans', () => {
+    // 46 plans and, before this, no map of them at all. A plan missing here is
+    // a plan the PM cannot find and will rewrite from scratch.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    const onDisk = readdirSync(join('docs', 'superpowers', 'plans')).filter((n) =>
+      n.endsWith('.md'),
+    );
+    expect(onDisk.length).toBeGreaterThan(40);
+    for (const name of onDisk) expect(fresh).toContain(`\`${name.replace(/\.md$/, '')}\``);
+    expect(fresh).toContain(`## 📐 אינדקס התוכניות — ${onDisk.length} קבצים`);
+  });
+
+  it('carries no date, so the snapshot cannot rot on its own', () => {
+    // ⛔ The one thing that would break the freshness assertion below on nobody's
+    // edit: a clock. The tree would go red every midnight and the loop would
+    // learn to ignore it.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    expect(fresh).not.toMatch(/\b20\d{2}-\d{2}-\d{2}T\d{2}:/);
+    expect(fresh).not.toMatch(/ימים מאז|days since/);
   });
 
   it('leaves the committed index identical to a fresh run', () => {
