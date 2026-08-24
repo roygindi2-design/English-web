@@ -172,6 +172,49 @@ check('6', 'כל תוכנית מצוטטת ברשם כלשהו', () => {
   return { ok: orphans.length === 0, detail: `${orphans.length} יתומות`, items: orphans };
 });
 
+/**
+ * 10 — ⛔ **QA STOPPED MERGING AND NOBODY NOTICED.** `work/current` is a long-lived
+ * branch by design (RULES § 0.17), and the failure mode of a long-lived branch is
+ * ⛔ not a conflict — it is **silence**: the gate goes red one day, QA files a
+ * finding, and nothing merges for a week while DEV keeps piling commits onto a
+ * branch no learner will ever see. ⇒ distance from `dev` is the one number that
+ * makes that visible on the day it starts.
+ *
+ * ⛔ **Measured with `git`, ⛔ never with a register claim** — a register can say
+ * "merged" while the branch says otherwise, and that is exactly the lie this check
+ * exists to catch. ⚠️ The branch may not exist yet (it is created in phase 2) and
+ * the remote may be unreachable from a sandbox; both are reported as **⛔ not
+ * measured**, ⛔ never as "ok". A check that passes because it could not run is a
+ * check that lies.
+ */
+const MAX_COMMITS_AHEAD = 40;
+check('10', 'work/current ⛔ אינו רחוק מדי מ-dev', () => {
+  const git = (...args) => {
+    try {
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+    } catch {
+      return null;
+    }
+  };
+  const head = git('rev-parse', '--verify', 'refs/remotes/origin/work/current');
+  if (head === null) {
+    return { ok: false, detail: '⛔ לא נמדד — הענף origin/work/current אינו נגיש' };
+  }
+  const count = git('rev-list', '--count', 'origin/dev..origin/work/current');
+  if (count === null || !/^\d+$/.test(count)) {
+    return { ok: false, detail: '⛔ לא נמדד — rev-list נכשל' };
+  }
+  const ahead = Number(count);
+  return {
+    ok: ahead <= MAX_COMMITS_AHEAD,
+    detail: `${ahead} קומיטים לפני dev (תקרה ${MAX_COMMITS_AHEAD})`,
+  };
+});
+
 /* 7 — the DEV→PM lane only works if the PM actually learns. ⛔ No invented
  * threshold: the same missing element on two open rows IS the PM not learning,
  * which RULES § 0.5ג already calls a 🟡 finding. */
@@ -212,8 +255,11 @@ check('8', 'הצילומים הנגזרים זהים להרצה טרייה', () 
 });
 
 const failed = results.filter((r) => !r.ok);
+/** ⛔ מוין לפי מספר, ⛔ ולא לפי סדר הרישום בקובץ — בדיקה חדשה נכתבת ליד הקוד
+ *  שהיא בודקת, ⛔ ולא בסוף, ודוח שקופץ מ-6 ל-10 ובחזרה ל-7 הוא דוח שקוראים לא נכון. */
+const ordered = [...results].sort((a, b) => Number(a.id) - Number(b.id));
 console.log('בריאות הלופ — כל בדיקה היא קצה פתוח שכבר קרה\n');
-for (const r of results) {
+for (const r of ordered) {
   console.log(`${r.ok ? '  ok  ' : ' FAIL '}${r.id}. ${r.title} — ${r.detail}`);
   for (const item of r.items.slice(0, 8)) console.log(`         ${item}`);
   if (r.items.length > 8) console.log(`         … ועוד ${r.items.length - 8}`);

@@ -1,16 +1,16 @@
 <!--
-CYCLE_ID: C-0289                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
+CYCLE_ID: C-0290                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
 NEXT_AGENT: CRITIC                # ▶️ **C-0273: התור החדש נגזר מ-`36 § 13` ומ-`39 § 9`. ‏T-185…T-193 נכתבו, ו-T-175 הורחבה לשמונה צמתים.** ⛔ **הסדר מחייב: T-183 ראשונה** — `check:mobile` אוכף 44px גורף ויפיל כל מילה במסך הסיפור. אחריה T-185 → T-186 → T-187.
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: "T-185"           # ▶️ **T-183 נסגרה C-0274 (DEV) — `check:mobile` יודע את ארבעת התנאים של `36 § 3`, וההחרגה צרה ומשולמת. הבא בתור: T-185.** פרוסה A · `36 § 13` פריט 1. הרצף: **T-183 → T-185 → T-186 → T-187** ⇒ הלומד פותח `/world/story`, קורא סיפור ברמתו, מקיש על מילה ורואה תרגום, ומוסיף אותה לכרטיסיות. אחריו **T-189 → T-188** (שאלת ההבנה), ואז פרוסה B: **T-190 → T-191 → T-192 → T-193**.
 CRITIC_ROUNDS_ON_TASK: 0          # C-0237 (CRITIC): ✅ **T-085 · T-086 · T-087** (רצף `2026-08-20-flashcard-interaction.md`, קומיט `3f62bf9`). C-0236 (DEV) הוסיף **T-132 🟣** (Task 1 של `2026-08-20-world-featured-and-pin.md`). בתור לסקירה: **T-127 · T-099 · T-100 🟣 (C-0252, מחווה + דעיכה; ⛔ שלושה פגמי תוכנית נסגרו בדרך)** · **T-089 · T-091 🟣 (C-0250)** · **T-134 🟣 (C-0246, ‏T-134ⓐ+ⓑ — מיגרציה 0018 + שער טהור)** · **T-133 🟣 (C-0243, Task 2 של `world-featured-and-pin`)** · **T-139 · T-140 🟣 (C-0242, F-092 סגור בקוד)** · **T-138 (C-0241)** · **T-132 🟣 (C-0236)** · **T-084 · T-102 · T-083 · T-131 (check:mobile 957 ✓ בהרצה CRITIC) 🟣** · **T-109 · T-110 · T-118 🟣 (⚠️ F-092 חלה)** · F-084 🟡 · T-126 · T-130 · T-117 · T-005 · T-006 · T-018 · T-052+F-027 · F-033 · F-008ⓑ · T-073…T-078 · T-095 · F-070+F-071 · F-063/F-064 · T-119…T-121.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN. ⚠️ C-0087 לא נספר כ"אין התקדמות" — הוא עצירת בלם מכוונת, לא כישלון להתקדם
-LAST_HANDOFF_AT: 2026-08-24T00:05:00Z
+LAST_HANDOFF_AT: 2026-08-24T01:20:00Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # C-0289. ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
+LOCK_HELD_BY: ""                  # C-0290. ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
 LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:   2 / 120           # § 13-1 · מסך /world/story — C-0274 סגר את T-183 (רצפת 44px יודעת את `36 § 3`)
@@ -25,7 +25,10 @@ DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
 LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1.1 ---
-WORKING_BRANCH: dev               # כל הסוכנים דוחפים לכאן. Netlify לא בונה ענף זה.
+WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.17 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
+MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
+ACTIVE_WORKSTREAM: story          # ▶️ QA קובע · PM מתכנן רק בה (חריג: 🔴 שעוצר לומד) · תור DEV מסונן אליה. ⛔ זזה כשהיא מוצתה או חסומה, ⛔ ולא כדי «לאזן».
+RELEASE_BLOCKERS: ""              # QA כותב כאן כשמיזוג נחסם — **המינימום שנדרש כדי למזג**, ⛔ ולא כל הממצאים. DEV לוקח אותה לפני כל דבר אחר.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
 LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # ⚠️ **Promoted BY ROY, by hand, via GitHub PR #2 — ⛔ not by the Critic.** 143 commits, the first shipment in 3 days. Smoke test **passed**: `/api/health` `ok:true` on all four checks incl. `database_schema: word_progress reachable`. ⛔ The Critic could not push (D-099) — the promotion is real, the loop did not perform it.
 PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longer a reason to delay (D-086).

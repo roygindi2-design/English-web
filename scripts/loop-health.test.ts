@@ -84,10 +84,15 @@ describe('scripts/loop-health.mjs', () => {
     // false on both sides. It passed while measuring nothing. Now it names the
     // checks and asserts each one individually.
     const r = run(healthy());
-    expect(r.out).toContain('loop health: 7/8 checks pass');
+    expect(r.out).toContain('loop health: 7/9 checks pass');
     for (const n of ['1', '2', '3', '4', '5', '6', '7']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
+    // ⛔ Check 10 shells out to git inside the fixture root, which is ⛔ not a repo.
+    // It reports «⛔ לא נמדד» and goes RED — ⛔ never green. A check that passes
+    // because it could not run is the exact lie this file exists against.
+    expect(failed(r.out, '10')).toBe(true);
+    expect(r.out).toContain('⛔ לא נמדד');
     // ⛔ Check 8 runs the real generator against fixture registers, so it cannot
     // pass here. Stated out loud rather than excluded quietly — a checker whose
     // own test hides a failure is the thing this whole file exists against.
@@ -99,9 +104,14 @@ describe('scripts/loop-health.mjs', () => {
     // The live repo is the one place check 8 can be satisfied. Today checks 1, 3
     // and 6 fail there, so the exit code is 1 and that is the honest state.
     const r = run('.');
-    const passes = /loop health: (\d+)\/8/.exec(r.out)?.[1];
+    const m = /loop health: (\d+)\/(\d+)/.exec(r.out);
+    const passes = m?.[1];
+    const total = m?.[2];
     expect(passes).toBeDefined();
-    expect(r.code).toBe(Number(passes) === 8 ? 0 : 1);
+    // ⛔ ids 1–8 and 10 — the gap is deliberate: check 9 (register size ceiling)
+    // lights up in phase 6, and renumbering would break every reference to it.
+    expect(total).toBe('9');
+    expect(r.code).toBe(passes === total ? 0 : 1);
   });
 
   it('1 · goes red on a commission whose brief was never written — the live failure of 24/08', () => {
