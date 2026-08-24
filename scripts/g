@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# ⛔ THE PROXY WRAPPER. It cost the loop three days of shipping without it.
+#
+# Every Bash call an agent makes is a FRESH SHELL, so `export` never survives to
+# the next call, and the sandbox re-injects proxy variables that git cannot reach
+# GitHub through. Measured: the identical `git push` fails without the unset and
+# succeeds with it, one second apart.
+#
+# ⇒ `./scripts/g <any git command>` — the unset travels with the command instead
+# of depending on an agent remembering to prepend it.
+#
+# ⚠️ This does NOT remove the discipline, it moves it: an agent still has to call
+# the wrapper. What closes the hole is the RETRY RULE in every agent prompt —
+# a git command that fails with a network/proxy error is retried ONCE through
+# this wrapper before the failure is believed. That turns a three-day outage
+# into one second.
+set -euo pipefail
+exec env -u https_proxy -u HTTPS_PROXY -u http_proxy -u HTTP_PROXY \
+         -u all_proxy -u ALL_PROXY -u no_proxy -u NO_PROXY \
+         git "$@"
