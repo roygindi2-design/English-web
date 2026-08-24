@@ -275,3 +275,25 @@ export function eligibleTaskIds(tasks: readonly RowShape[]): string[] {
     })
     .map((row) => row.id);
 }
+
+/**
+ * ⚠️ T-184. The registers are 667KB and every agent read both of them, whole, every tick —
+ * ~200k tokens of reading before a single line of work. This is the compaction rule behind
+ * `docs/plan-open.md`: one short, safe excerpt per cell.
+ *
+ * Three things it must not break, all of them measured on the real registers:
+ *  ⓐ `splitRow` UNESCAPES `\|`, so a cell handed back here can carry a raw pipe. Re-emitting
+ *    it into a markdown table would invent a column, so the pipe is escaped again.
+ *  ⓑ Cutting mid-code-span leaves an unmatched backtick that swallows the rest of the table
+ *    row when rendered. An odd backtick count is closed rather than left open.
+ *  ⓒ Cutting by `String.prototype.slice` can split a surrogate pair — the registers are full
+ *    of emoji status glyphs — so the cut is by code point.
+ */
+export function excerpt(cell: string, limit: number): string {
+  const flat = cell.replace(/\s+/g, ' ').trim();
+  const points = [...flat];
+  let out = points.length <= limit ? flat : `${points.slice(0, limit).join('')}…`;
+  const backticks = (out.match(/`/g) ?? []).length;
+  if (backticks % 2 === 1) out += '`';
+  return out.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+}

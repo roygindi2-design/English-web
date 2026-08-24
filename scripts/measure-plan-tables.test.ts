@@ -3,12 +3,27 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import {
+  splitRow,
+  rowShape,
+  classifyStatus,
+  TASK_COLUMNS,
+  FINDING_COLUMNS,
+  TASK_STATUS_INDEX,
+  FINDING_STATUS_INDEX,
+} from '../lib/core/planTable';
 
 const OUT_DIR = mkdtempSync(join(tmpdir(), 'plan-tables-'));
 const FRESH = join(OUT_DIR, 'plan-tables.md');
+/**
+ * ⛔ BOTH env vars, always. The script writes two files now, and a run that overrides only
+ * `PLAN_TABLES_OUT` writes the *real* `docs/plan-open.md` from inside the test suite — a
+ * test that mutates the repo it is measuring. `PLAN_OPEN_OUT` exists for this reason.
+ */
+const FRESH_OPEN = join(OUT_DIR, 'plan-open.md');
 const stdout = execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
   encoding: 'utf8',
-  env: { ...process.env, PLAN_TABLES_OUT: FRESH },
+  env: { ...process.env, PLAN_TABLES_OUT: FRESH, PLAN_OPEN_OUT: FRESH_OPEN },
 });
 
 /**
@@ -104,6 +119,84 @@ describe('scripts/measure-plan-tables.mjs', () => {
     const named = [...fresh.matchAll(/^\| `[TFQ]-\d{3}` \| \d+ \| \d+ \|$/gm)].length;
     expect(named).toBe(numberAfter('tasks') + numberAfter('findings'));
     expect(named).toBeGreaterThan(0);
+  });
+
+  it('indexes every open row and ⛔ drops only ✅ and 🚫', () => {
+    // T-184. The index is the only thing three agents will read instead of 667KB of
+    // register, so the failure that matters is a row going MISSING, ⛔ not a row being
+    // ugly. The count in the header is checked against stdout, which is computed by a
+    // different expression over the same rows, and every section count must add up to it.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    const m = /^open index: (\d+) tasks, (\d+) findings$/m.exec(stdout);
+    if (m?.[1] === undefined || m[2] === undefined) throw new Error(`no index line:\n${stdout}`);
+    const [tasks, findings] = [Number(m[1]), Number(m[2])];
+    expect(tasks).toBeGreaterThan(0);
+    const sectionCounts = [...fresh.matchAll(/^## (?!ממצאים).*\((\d+)\)$/gm)].map((x) =>
+      Number(x[1]),
+    );
+    expect(sectionCounts.length).toBe(5);
+    expect(sectionCounts.reduce((a, b) => a + b, 0)).toBe(tasks);
+    expect(fresh).toContain(`## ממצאים פתוחים (${findings})`);
+
+    // ⛔ The count above and the `open index:` line are computed from the SAME array, so
+    // together they cannot catch the mutation that matters: a state quietly added to the
+    // dropped set. This recount reads the registers independently — ✅ and 🚫 out, every
+    // other state in — and it is the assertion that goes red if ⛔ or 🟣 stops being
+    // indexed. Measured: adding 'blocked' to the drop list leaves the sums agreeing and
+    // fails only here.
+    const countOpen = (file: string, columns: number, statusIndex: number): number =>
+      readFileSync(join('plan', file), 'utf8')
+        .split('\n')
+        .map((line) => rowShape(line, columns))
+        .filter((row) => row !== null)
+        .filter((row) => {
+          if (!row.ok) return true;
+          const state = classifyStatus(row.cells[statusIndex] ?? '');
+          return state !== 'done' && state !== 'cancelled';
+        }).length;
+    expect(tasks).toBe(countOpen('50-tasks.md', TASK_COLUMNS, TASK_STATUS_INDEX));
+    expect(findings).toBe(countOpen('60-findings.md', FINDING_COLUMNS, FINDING_STATUS_INDEX));
+    // ...and every one of those IDs is physically present in the file, ⛔ not just counted.
+    for (const id of ['T-185', 'T-184']) expect(fresh).toContain(`\`${id}\``);
+    // ⛔ The pointer clause is load-bearing: without it an agent treats an excerpt as
+    // the row. If someone deletes it, this test is what says no.
+    expect(fresh).toContain('זהו תקציר, לא מקור אמת');
+    expect(fresh).toContain("grep -n '^| T-185 |' plan/50-tasks.md");
+  });
+
+  it('keeps the index smaller than a fifth of the registers it replaces', () => {
+    // The whole point is the cut. A ratchet, ⛔ not a style rule: if a future change starts
+    // emitting whole cells again, the index silently stops being cheaper than the register
+    // and every agent pays for it in every tick, with nothing going red.
+    const registers =
+      readFileSync(join('plan', '50-tasks.md'), 'utf8').length +
+      readFileSync(join('plan', '60-findings.md'), 'utf8').length;
+    expect(readFileSync(FRESH_OPEN, 'utf8').length).toBeLessThan(registers / 5);
+  });
+
+  it('emits an index whose table rows are all well-formed', () => {
+    // `splitRow` UNESCAPES `\|`, so a re-emitted cell can carry a raw pipe and invent a
+    // column. `excerpt` escapes it again; this is the assertion that says it did. Every
+    // table row must have the same cell count as the header above it.
+    const lines = readFileSync(FRESH_OPEN, 'utf8').split('\n');
+    let expected: number | null = null;
+    let checked = 0;
+    for (const line of lines) {
+      if (!line.startsWith('|')) continue;
+      const cells = splitRow(line).length;
+      if (/^\|[-|]+\|$/.test(line)) continue;
+      if (expected === null || /^\| id \|/.test(line)) {
+        expected = cells;
+        continue;
+      }
+      expect(cells).toBe(expected);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(50);
+  });
+
+  it('leaves the committed index identical to a fresh run', () => {
+    expect(readFileSync(join('docs', 'plan-open.md'), 'utf8')).toBe(readFileSync(FRESH_OPEN, 'utf8'));
   });
 
   it('leaves the committed report identical to a fresh run', () => {

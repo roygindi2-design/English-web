@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { splitRow, rowShape, TASK_COLUMNS } from './planTable';
+import { splitRow, rowShape, excerpt, TASK_COLUMNS } from './planTable';
 
 describe('splitRow', () => {
   it('drops the leading and trailing empties and trims', () => {
@@ -248,5 +248,45 @@ describe('column indices', () => {
   it('points at the סטטוס column of each header, measured from the header row', () => {
     expect(TASK_STATUS_INDEX).toBe(4);
     expect(FINDING_STATUS_INDEX).toBe(6);
+  });
+});
+
+
+describe('excerpt', () => {
+  it('leaves a short cell alone', () => {
+    expect(excerpt('⬜', 150)).toBe('⬜');
+  });
+
+  it('collapses the whitespace a register cell carries', () => {
+    expect(excerpt('  ⬜   ממתין\tלביצוע ', 150)).toBe('⬜ ממתין לביצוע');
+  });
+
+  it('re-escapes a pipe, because splitRow handed it back unescaped', () => {
+    // The round trip that matters: `a \| b` in the register becomes `a | b` in `cells`,
+    // and re-emitting THAT into a markdown table invents a column in the index.
+    const cell = splitRow('| T-001 | a \\| b |')[1];
+    expect(cell).toBe('a | b');
+    expect(excerpt(cell ?? '', 150)).toBe('a \\| b');
+  });
+
+  it('escapes a backslash before it can eat the pipe that follows', () => {
+    expect(excerpt('C:\\', 150)).toBe('C:\\\\');
+  });
+
+  it('closes a code span the cut left hanging', () => {
+    // An unmatched backtick swallows the rest of the rendered row.
+    expect(excerpt('see `lib/core/planTable.ts` and `app', 20)).toBe('see `lib/core/planTa…`');
+  });
+
+  it('cuts by code point, so a surrogate pair is never split', () => {
+    // The registers are full of emoji. `'🔴🔴🔴'.slice(0, 2)` is half a character.
+    const out = excerpt('🔴🟠🟡⚪', 2);
+    expect(out).toBe('🔴🟠…');
+    expect([...out].length).toBe(3);
+  });
+
+  it('marks that it cut, and does not mark that it did not', () => {
+    expect(excerpt('abcdef', 3)).toBe('abc…');
+    expect(excerpt('abc', 3)).toBe('abc');
   });
 });
