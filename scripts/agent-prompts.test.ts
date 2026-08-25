@@ -25,10 +25,46 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(found).toEqual([...AGENTS].sort());
   });
 
-  it('⛔ אפס סודות בריפו — המפתח חי במשימה המתוזמנת בלבד', () => {
+  /**
+   * ⛔ **⛔ לא רק מפתח GitHub, וזה ⛔ אינו הידוק תיאורטי.** בגרסה הראשונה של
+   * הבדיקה הזאת ניקיתי `github_pat_` בלבד — ו**טוקן Supabase (`sbp_…`) שישב באותו
+   * פרומפט עבר, נדחף ל-GitHub, ורוי הוא שתפס אותו.** ⇒ רשימת התבניות היא **סגורה
+   * ומוצהרת**, וכל סוד חדש שמישהו מוסיף לפרומפט חייב להיכנס לכאן.
+   * ⛔ ריפו ⛔ אינו מקום לסוד — גם ריפו פרטי: כל סוכן שמשכפל מקבל עותק, וההיסטוריה
+   * שומרת אותו לנצח גם אחרי מחיקה.
+   */
+  const SECRETS: readonly (readonly [RegExp, string])[] = [
+    [/github_pat_[A-Za-z0-9_]{10,}/, 'GitHub PAT'],
+    [/\bsbp_[0-9a-f]{20,}/, 'Supabase access token'],
+    [/\bsb[ps]_[A-Za-z0-9]{20,}/, 'Supabase key'],
+    [/\beyJ[A-Za-z0-9_-]{20,}\./, 'JWT (Supabase anon/service key)'],
+    [/service_role["'\s:=]+[A-Za-z0-9._-]{20,}/, 'service_role key'],
+    [/\bpostgres(ql)?:\/\/[^\s`]+:[^\s`]+@/, 'database URL with a password'],
+  ];
+
+  it('⛔ אפס סודות בריפו — כל אחד מהם חי במשימה המתוזמנת בלבד', () => {
     for (const a of AGENTS) {
-      expect(text(a), a).not.toMatch(/github_pat_[A-Za-z0-9_]/);
-      expect(text(a), a).toContain('${GITHUB_PAT}');
+      const body = text(a);
+      for (const [pattern, label] of SECRETS) {
+        expect(body, `${a}: ⛔ ${label}`).not.toMatch(pattern);
+      }
+    }
+    // ⛔ ומפתח ה-GitHub עדיין **נדרש כמצייה**, אחרת הסוכן ⛔ אינו יודע מה להחליף.
+    for (const a of AGENTS) expect(text(a), a).toContain('${GITHUB_PAT}');
+  });
+
+  it('⛔ הבדיקה עצמה ⛔ אינה חלולה — כל תבנית תופסת דוגמה אמיתית', () => {
+    const samples = [
+      'github_pat_11ABCDEFGH0123456789abcdefghij',
+      'sbp_2a2d6dac74f5a9fafbcd0c969d503c27e7fbf2c7',
+      'sbp_abcdefghijklmnopqrstuvwxyz012345',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload',
+      'service_role = abcdefghijklmnopqrstuvwxyz123456',
+      'postgresql://user:hunter2@db.example.com:5432/postgres',
+    ];
+    expect(samples).toHaveLength(SECRETS.length);
+    for (const [i, sample] of samples.entries()) {
+      expect(sample, `sample ${i}`).toMatch(SECRETS[i]![0]);
     }
   });
 

@@ -28,14 +28,12 @@ Write the SQL migration file and save it in the supabase/migrations/ directory.
 You MUST execute the command supabase db push to push the local migration to the remote database.
 
 Verify the migration succeeded before marking the task as complete. Do not leave .sql files for manual execution by the human.
-הוראות התחברות:
-בשורת הפקודה של סביבת הפיתוח (בטרמינל שבו הסוכנים פועלים), יש להריץ:
-supabase login --token <${SUPABASE_TOKEN}>
-(זה יחבר את ה-CLI של סביבת הפיתוח ל-Supabase באופן קבוע).
-
-לאחר מכן, יש לקשר את הפרויקט המקומי לפרויקט בענן:
-supabase link --project-ref ${SUPABASE_PROJECT_REF}
-(בשלב זה הוא יבקש את סיסמת ה-DB שלך, אותה תצטרך להזין פעם אחת).
+⛔ **הוראות ההתחברות ל-Supabase ⛔ אינן כאן, והן ⛔ לעולם ⛔ לא ייכתבו כאן.**
+הן חיות **בשורת האתחול של המשימה המתוזמנת בלבד** — יחד עם `supabase login --token`
+ועם ה-`--project-ref`. ⚠️ **ריפו ⛔ אינו מקום לסוד**, גם ריפו פרטי: כל סוכן שמשכפל
+אותו מקבל עותק, וכל היסטוריית git שומרת אותו לנצח.
+⇒ **הרץ את שתי הפקודות שהמשימה המתוזמנת נתנה לך** לפני `supabase db push`.
+⛔ `scripts/agent-prompts.test.ts` מפיל את הבנייה אם סוד חוזר לקובץ הזה.
 
 ## 🆕 YOU HAVE ROOM — 2026-08-23, Roy's decision (D-110 · RULES § 0.16)
 
