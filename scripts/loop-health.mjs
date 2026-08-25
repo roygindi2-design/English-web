@@ -204,14 +204,28 @@ check('10', 'work/current ⛔ אינו רחוק מדי מ-dev', () => {
   if (head === null) {
     return { ok: false, detail: '⛔ לא נמדד — הענף origin/work/current אינו נגיש' };
   }
-  const count = git('rev-list', '--count', 'origin/dev..origin/work/current');
-  if (count === null || !/^\d+$/.test(count)) {
+  /**
+   * ⛔ **BOTH DIRECTIONS, and the second one is ⛔ not symmetry for its own sake.**
+   * AHEAD means QA stopped merging. **BEHIND means something pushed straight to
+   * `dev` and bypassed the gate entirely** — which is the worse failure, because
+   * the branch then rebases over work nobody reviewed. Measured 24/08: one agent
+   * still carried a prompt that pushed to `dev`, and an ahead-only check would
+   * have reported "ok" the whole time.
+   */
+  const counts = git('rev-list', '--left-right', '--count', 'origin/dev...origin/work/current');
+  const pair = /^(\d+)\s+(\d+)$/.exec(counts ?? '');
+  if (pair === null) {
     return { ok: false, detail: '⛔ לא נמדד — rev-list נכשל' };
   }
-  const ahead = Number(count);
+  const behind = Number(pair[1]);
+  const ahead = Number(pair[2]);
+  const items = [];
+  if (ahead > MAX_COMMITS_AHEAD) items.push(`⛔ ${ahead} לפני dev — QA הפסיק למזג`);
+  if (behind > 0) items.push(`⛔ ${behind} מאחורי dev — משהו נדחף ל-dev ועקף את השער`);
   return {
-    ok: ahead <= MAX_COMMITS_AHEAD,
-    detail: `${ahead} קומיטים לפני dev (תקרה ${MAX_COMMITS_AHEAD})`,
+    ok: items.length === 0,
+    detail: `${ahead} לפני · ${behind} אחרי (תקרה ${MAX_COMMITS_AHEAD} לפני · 0 אחרי)`,
+    items,
   };
 });
 
