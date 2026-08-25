@@ -56,8 +56,11 @@ export function pickStory({ stories, dayIndex, readStoryIds }: StoryPickInput): 
   for (let step = 0; step < total; step += 1) {
     const at = (start + step) % total;
     const candidate = ordered[at];
+    if (candidate === undefined) continue;
     if (!readStoryIds.has(candidate.id)) return { story: candidate, index: at + 1, total };
   }
   // Every story read. ⛔ Reading is never blocked — the day's story comes back.
-  return { story: ordered[start], index: start + 1, total };
+  const fallback = ordered[start];
+  if (fallback === undefined) return null;
+  return { story: fallback, index: start + 1, total };
 }

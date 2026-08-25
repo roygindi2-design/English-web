@@ -326,7 +326,7 @@ Expected: PASS, and `/lib/core purity: OK`.
 
 **Copy the guard order from `app/api/world/status/route.ts` verbatim:** ENV → `getUser()` → query (C-0032). An unauthenticated caller learns nothing about the shape of the endpoint.
 
-- [ ] **Step 1: Write the failing route test** into `app/api/world/story/route.test.ts`
+- [x] **Step 1: Write the failing route test** into `app/api/world/story/route.test.ts`
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -357,12 +357,12 @@ describe('T-185ⓒ — a soft read, ⛔ never a 503 over "no stories"', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run app/api/world/story/route.test.ts`
 Expected: FAIL — `ENOENT: app/api/world/story/route.ts`.
 
-- [ ] **Step 3: Write `lib/supabase/stories.ts`**
+- [x] **Step 3: Write `lib/supabase/stories.ts`**
 
 Three reads, each bounded, each failing into a value rather than an exception. `MAX_LEVEL_STORIES = 200` and `MAX_GLOSS_ROWS = 2000` are ceilings on what we are willing to read, the same class of constant as `MAX_BANK_ROWS` in `app/api/world/status/route.ts`.
 
@@ -395,7 +395,7 @@ export function toStoryCandidates(
 }
 ```
 
-- [ ] **Step 4: Write `app/api/world/story/route.ts`**
+- [x] **Step 4: Write `app/api/world/story/route.ts`**
 
 The Hebrew part-of-speech label is a UI string over the closed `words.pos` vocabulary of `supabase/migrations/0002_content_bank.sql` — nine values — and it is a **map in this route**, ⛔ not a new column and ⛔ not a translation invented at render time: `noun→שם עצם · verb→פועל · adjective→שם תואר · adverb→תואר הפועל · preposition→מילת יחס · conjunction→מילת חיבור · pronoun→כינוי · determiner→מילית · interjection→מילת קריאה`.
 
@@ -443,16 +443,16 @@ export async function GET(request: Request) {
 }
 ```
 
-- [ ] **Step 5: Run the route test and the type gate**
+- [x] **Step 5: Run the route test and the type gate**
 
 Run: `npx vitest run app/api/world/story/route.test.ts && npm run typecheck`
 Expected: PASS.
 
-- [ ] **Step 6: Document the endpoint in `docs/api-contract.md`**
+- [x] **Step 6: Document the endpoint in `docs/api-contract.md`**
 
 Add a `## GET /api/world/story` section directly after `## GET /api/world/status`, with the success body, the five `ok:false` codes, and one sentence on why `no_stories` is a 200. Same commit as the route — a stale contract is a 🟠 HIGH finding by the file's own header.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 ./scripts/g add lib/supabase/stories.ts app/api/world/story/route.ts app/api/world/story/route.test.ts docs/api-contract.md
