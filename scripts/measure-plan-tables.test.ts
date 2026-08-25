@@ -283,3 +283,53 @@ describe('scripts/measure-plan-tables.mjs', () => {
     expect(readFileSync(join('docs', 'plan-tables.md'), 'utf8')).toBe(readFileSync(FRESH, 'utf8'));
   });
 });
+
+
+/**
+ * ⛔ **עמודת הצעדים (שלב 3 · P3-2).** הטענה ⛔ אינה «יש עמודה» — היא ש**שתי
+ * המחלקות ⛔ אינן מתערבבות**: תוכנית שאיש לא סימן בה ולו תיבה אחת ⛔ אינה «נעצרה
+ * באמצע», ודגל שמאחד אותן הוא דגל שכל סוכן לומד להתעלם ממנו.
+ */
+describe('📐 אינדקס התוכניות — כיסוי הצעדים', () => {
+  const open = readFileSync(join('docs', 'plan-open.md'), 'utf8');
+  const rows = open
+    .split('\n')
+    .filter((l) => /^\| `20\d\d-\d\d-\d\d-/.test(l));
+
+  it('כל תוכנית מקבלת שורה, ובה ארבע עמודות', () => {
+    const files = readdirSync(join('docs', 'superpowers', 'plans')).filter((f) => f.endsWith('.md'));
+    expect(rows).toHaveLength(files.length);
+    for (const r of rows) expect(r.split('|').length, r.slice(0, 40)).toBe(6);
+  });
+
+  it('כל שורה נושאת מונה `done/total`, ⛔ ולא טקסט חופשי', () => {
+    for (const r of rows) {
+      expect(r, r.slice(0, 40)).toMatch(/\| [^|]*(\d+\/\d+|⛔ אין צעדים)[^|]*\|/);
+    }
+  });
+
+  it('⛔ ⛔ אין שורה שהיא גם «נעצרה באמצע» וגם «ולו תיבה אחת לא סומנה»', () => {
+    for (const r of rows) {
+      const mid = r.includes('נעצרה באמצע');
+      const none = r.includes('ולו תיבה אחת לא סומנה');
+      expect(mid && none, r.slice(0, 40)).toBe(false);
+    }
+  });
+
+  it('«נעצרה באמצע» ⛔ לעולם ⛔ אינה 0, ו«לא סומנה» היא תמיד 0 — זו כל ההפרדה', () => {
+    for (const r of rows) {
+      const mid = /\*\*(\d+)\/(\d+)\*\* — נעצרה באמצע/.exec(r);
+      if (mid !== null) {
+        expect(Number(mid[1]), r.slice(0, 40)).toBeGreaterThan(0);
+        expect(Number(mid[1])).toBeLessThan(Number(mid[2]));
+      }
+      const none = /⚪ (\d+)\/\d+ — ⛔ ולו תיבה אחת/.exec(r);
+      if (none !== null) expect(Number(none[1]), r.slice(0, 40)).toBe(0);
+    }
+  });
+
+  it('שתי המחלקות קיימות בפועל — ⛔ בדיקה שלא ראתה אף מקרה ⛔ אינה בדיקה', () => {
+    expect(rows.filter((r) => r.includes('נעצרה באמצע')).length).toBeGreaterThan(0);
+    expect(rows.filter((r) => r.includes('ולו תיבה אחת לא סומנה')).length).toBeGreaterThan(0);
+  });
+});

@@ -152,7 +152,7 @@ Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `supe
 ⚠️ **Check the plans index first — 46 exist and 8 are orphaned.** ⛔ Do not write plan 47 for what plan 31 covers.
 **No, non-trivial** → 📝 **PLANNING TICK. You touch no code.** Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact file paths · an `Interfaces` block · **real test code** · steps of 2–5 minutes with `- [ ]` · a self-check. ⛔ No "TODO".
 **A screen plan names the render it targets and quotes the layout values it took.**
-**Trivial** → do it directly.
+**Trivial** → do it directly. ⚠️ Then **keep going** — STEP 4.5, the tick ⛔ does not end on a task boundary.
 
 ⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.5ג`).
 
@@ -162,7 +162,35 @@ Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:p
 ✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
 ⛔ Blocked skills: `RULES § 0.1.1 ז׳`.
 
-## STEP 5 — BUILD ONE TASK
+## ⭐ STEP 4.5 — WHICH KIND OF TICK, AND WHEN IT ENDS  ⟦NEW 24/08 · phase 3⟧
+
+⛔ **A tick is ⛔ NOT "one task". That rule was the single biggest brake on output** —
+a two-line fix and a full-day feature cost the same tick, and the loop paid a whole
+clone, install and verify for each.
+
+| | 📝 **PLANNING TICK** | 🔨 **BUILD TICK** |
+|---|---|---|
+| you touch code | ⛔ **never** | yes |
+| output | one plan covering 2–4 tasks | **N tasks, ⛔ not one** |
+| commit | one, the plan | ⛔ **one per task** |
+
+### ⛔ THE TICK ENDS WHEN ONE OF THREE HAPPENS — ⛔ NOT WHEN YOU HAVE COUNTED TASKS
+1. **The gate went red and you cannot fix it in this tick.** ⇒ `revert`, file it, end.
+2. **The time box ran out.**
+3. **The plan's steps ran out.**
+
+⇒ a one-line task and a day-long task are measured by the same rule, and there is
+⛔ no number for anyone to argue about.
+
+### ⛔ ONE COMMIT PER TASK. ⛔ NOT ONE PER TICK.
+This is what lets QA review 40 tasks without reading 40 diffs: it reads the **branch**
+diff, and when something falls over, **the history says which task did it**. ⛔ A tick
+squashed into one commit destroys exactly that, and it cannot be reconstructed later.
+⚠️ And tick the plan's `- [ ]` boxes as you close each step — `docs/plan-open.md` now
+prints `done/total` per plan, and **a plan where ⛔ not one box was ever ticked is
+measured and shown**. Measured 24/08: **12 of 46 plans** had zero boxes ticked.
+
+## STEP 5 — BUILD TASKS — ⛔ AS MANY AS THE THREE CONDITIONS ALLOW
 Lock as DEV, push immediately, then `npm install`.
 - `/lib/core/` is PURE — zero React, window, document, localStorage, fetch, process.env.
 - A UI component NEVER touches the database — everything through `/app/api/` and `lib/api/client.ts`.

@@ -113,6 +113,22 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     }
   });
 
+  /**
+   * ⛔ **שלב 3 · P3-1.** כלל הסיום התלת-תנאי וקומיט-למשימה הם מה שמאפשר ל-QA לסקור
+   * ‏40 משימות בלי לקרוא 40 דיפים. ⛔ טיק שנדחס לקומיט אחד הורס בדיוק את זה,
+   * ⛔ ואי אפשר לשחזר את זה בדיעבד.
+   */
+  it('DEV נושא את שני סוגי הטיק ואת כלל הסיום התלת-תנאי', () => {
+    const dev = text('DEV');
+    for (const needle of ['PLANNING TICK', 'BUILD TICK', 'ONE COMMIT PER TASK']) {
+      expect(dev, needle).toContain(needle);
+    }
+    // ⛔ שלושה תנאים, ⛔ ולא «בערך שלושה»: מספור מפורש בפרומפט.
+    for (const n of ['1. **The gate went red', '2. **The time box', '3. **The plan']) {
+      expect(dev, n).toContain(n);
+    }
+  });
+
   it('QA יודע ש-⛔ אין מיזוג בזמן נעילת DEV', () => {
     expect(text('CRITIC')).toMatch(/LOCK_HELD_BY: DEV/);
   });
