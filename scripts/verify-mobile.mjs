@@ -105,6 +105,16 @@ const ROUTES = [
   // שנמדד כאן הוא **המצב שהמסך מצייר כשאין נתונים** — «—» במקום מספר, המשפט העברי,
   // ואפס גלילה אופקית ב-320. זה מצב שלומד פוגש, ⛔ ולא מסך שהומצא למדידה.
   '/world/collected',
+  // C-0298 (T-186) — מסך הסיפור, ואותו נימוק בדיוק כמו שתי השורות שמעליו: `/world/story`
+  // יושב מחוץ ל-`PROTECTED_SCREENS`, אבל בלי env של Supabase `GET /api/world/story` עונה
+  // `session_expired` בחוזה שלו עצמו ⇒ מה שנמדד כאן הוא **מצב הכשל** — המשפט העברי
+  // והדרך החוצה. מצב שלומד פוגש, ⛔ ולא מסך שהומצא למדידה.
+  '/world/story',
+  // ...והפיקסטורה, כי אותו `session_expired` אומר שהפסקה עצמה — `data-story-body`, גובה
+  // השורה של `36 § 3.2`, המקרא ושורת הסיכום — לעולם אינה על המסך בשורה שמעליה. היא
+  // מקבלת את הסיפור כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE,
+  // והשקט הזה הוא מה שמוכיח שהמדידה אינה על מסך הכשל.
+  '/dev/story',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
@@ -385,6 +395,14 @@ const EXPECTED_CONSOLE = {
   // רשומה: 401 או 500 על אותה כתובת עדיין מפילים את הבדיקה.
   '/world/collected': [
     /status of 503[\s\S]*@\S*\/api\/arcade\/collected/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
+  // C-0298 (T-186): מסך הסיפור יושב בתוך `(tabs)` בדיוק כמו `/world/collected` ⇒ **שתי**
+  // בקשות — `<StoryScreen>` קורא את הסיפור, ו-`<TabBar>` שואל אם הלשונית פתוחה. בלי env
+  // של Supabase שתיהן עונות 503 בחוזה שלהן עצמן, וזה בדיוק מצב הכשל שהשורות של המסלול
+  // הזה מודדות. כתובת אחת וסטטוס אחד לכל רשומה: 401 או 500 על אותה כתובת עדיין מפילים.
+  '/world/story': [
+    /status of 503[\s\S]*@\S*\/api\/world\/story/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two

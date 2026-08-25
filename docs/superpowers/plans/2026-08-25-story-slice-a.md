@@ -491,7 +491,7 @@ Add a `## GET /api/world/story` section directly after `## GET /api/world/status
 - Consumes: the `GET /api/world/story` body (Task 2) · `apiGet` from `lib/api/client.ts` · `EnWord` from `components/EnWord.tsx` · `FAILURE_HE`, `RETRY_HE` from `lib/core/failure.ts`.
 - Produces: `export default function StoryScreen(): React.JSX.Element` and `export function StoryScreenView(props: StoryScreenViewProps)` — the fixture in `app/dev/story/page.tsx` renders `StoryScreenView` with a prop and asks the server for nothing, exactly like `app/dev/lesson/page.tsx`.
 
-- [ ] **Step 1: Write the failing component test** into `components/StoryScreen.test.ts`
+- [x] **Step 1: Write the failing component test** into `components/StoryScreen.test.ts`
 
 Follow the source-scan style already used across `components/*.test.ts` in this repo — these tests assert what the file **says**, because the harness that renders it is `check:mobile`.
 
@@ -531,36 +531,36 @@ describe('T-186 — the screen the render binds', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run components/StoryScreen.test.ts`
 Expected: FAIL — `ENOENT: components/StoryScreen.tsx`.
 
-- [ ] **Step 3: Write `components/StoryScreen.tsx`**
+- [x] **Step 3: Write `components/StoryScreen.tsx`**
 
 `'use client'`. State machine copied in shape from `components/CollectedWords.tsx`: `loading | ready | no_level | no_stories | schema_missing | session_expired | error`. `no_level` gives ONE action → `LEVEL_SCAN_HREF` from `lib/core/worldApps.ts`. `no_stories` gives ONE action and the server's own numbers (D-064 · D-066), never a hard-coded count.
 
-- [ ] **Step 4: Write the route and the fixture**
+- [x] **Step 4: Write the route and the fixture**
 
 `app/(tabs)/world/story/page.tsx` renders `<StoryScreen />` and does ⛔ zero data access — the same decision as `app/(tabs)/world/collected/page.tsx`, whose comment explains why a second `getUser()` here would be a second session check that can disagree with the first. It sits inside `app/(tabs)/` so the five-tab bar stays visible, per the render; it is ⛔ not a flow screen and therefore carries ⛔ no `<ActionBar>` (D-028, one bar per screen).
 
 `app/dev/story/page.tsx` renders `StoryScreenView` with a fixture prop and asks the server for nothing ⇒ it needs ⛔ no `EXPECTED_CONSOLE` entry, and an entry appearing there later would mean the measurement has silently gone back to reading the failure screen.
 
-- [ ] **Step 5: Register the three routes in `scripts/verify-mobile.mjs`**
+- [x] **Step 5: Register the three routes in `scripts/verify-mobile.mjs`**
 
 Add to `ROUTES`, each with the one-line reason the file's own convention demands: `'/world/story'` (renders here, but with no Supabase env the route answers `session_expired` by its own contract ⇒ what is measured is the failure state a learner can meet), `'/dev/story'` and `'/dev/story/done'` (prop-fed fixtures — the only place the reading layout and the question layout exist in this run).
 
-- [ ] **Step 6: Measure it in a real browser at 320/375/414**
+- [x] **Step 6: Measure it in a real browser at 320/375/414**
 
 Run: `npm run check:mobile`
 Expected: `ok /dev/story` at all three widths, `story paragraphs measured: 1`, zero horizontal scroll, and the `36 § 3` line reporting the exempt word count. **A failure here is a BLOCKER**, and the only agreed fallback is tapping the line per § 4.2יג-ב ⓐ.
 
-- [ ] **Step 7: Look at the screen, and compare it to the render**
+- [x] **Step 7: Look at the screen, and compare it to the render**
 
 Run: `npm run diff:render /dev/story docs/design/kol-A-05-story.png`
 Record in the tick summary: heading · body character count · tappable count · under-44px count · horizontal scroll · console errors. ⛔ Not a pixel comparison — a human eye reports the gaps.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 ./scripts/g add components/StoryScreen.tsx components/StoryScreen.test.ts "app/(tabs)/world/story/page.tsx" app/dev/story/page.tsx scripts/verify-mobile.mjs
