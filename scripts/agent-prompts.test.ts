@@ -149,8 +149,16 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(dev).toContain('ACTIVE_WORKSTREAM');
   });
 
-  it('QA יודע ש-⛔ אין מיזוג בזמן נעילת DEV', () => {
-    expect(text('CRITIC')).toMatch(/LOCK_HELD_BY: DEV/);
+  /**
+   * ⛔ **הכלל נכשל בפועל 25/08, בפעם הראשונה שהלופ רץ.** הוא נכתב «נעילת DEV»,
+   * ומיזוג עבר בזמן ש-**CONTENT** החזיק את הנעילה ⇒ הענף ו-`dev` התפצלו.
+   * ⇒ הבדיקה דורשת את הנוסח הכולל, ו⛔ **פוסלת את הנוסח הישן במפורש**.
+   */
+  it('QA ⛔ אינו ממזג בזמן נעילה של **סוכן כלשהו**, ⛔ ולא רק DEV', () => {
+    const qa = text('CRITIC');
+    expect(qa).toContain('LOCK_HELD_BY');
+    expect(qa).toMatch(/ANY agent's lock/);
+    expect(qa, '⛔ הנוסח הישן חזר').not.toMatch(/`LOCK_HELD_BY: DEV` in/);
   });
 
   /** ⛔ פרומפט שהתרוקן הוא פרומפט שאיש לא ישים לב אליו עד שסוכן ירוץ בלי הוראות. */

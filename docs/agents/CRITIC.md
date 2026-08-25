@@ -144,7 +144,8 @@ screen is a tool everyone learns to ignore.
 
 ## ⭐ STEP 5 — THE GATE. MERGE, OR FILE. ⛔ THERE IS NO THIRD OUTCOME. (RULES § 0.17)
 
-⛔ **FIRST, ONE LINE THAT CAN END THIS STEP:** `LOCK_HELD_BY: DEV` in `plan/00-control.md` ⇒ ⛔ **no merge this tick.** Say so and go to STEP 6. ⚠️ Nothing else is needed for merge safety: DEV must finish or `revert` within its own tick, so **every commit on the branch is a whole task by definition**, and running the gate on `HEAD` is the proof.
+⛔ **FIRST, ONE LINE THAT CAN END THIS STEP:** `LOCK_HELD_BY` in `plan/00-control.md` is **anything other than empty** ⇒ ⛔ **no merge this tick.**
+🔴 **⛔ ANY agent's lock, ⛔ not just DEV's — and this is a correction, ⛔ not a tightening.** On 25/08, the first time the loop actually ran, a merge went through while **CONTENT** held the lock working on K-001; `work/current` and `dev` split one commit each way and check 10 went red. Say so and go to STEP 6. ⚠️ Nothing else is needed for merge safety: DEV must finish or `revert` within its own tick, so **every commit on the branch is a whole task by definition**, and running the gate on `HEAD` is the proof.
 
 ```
 ./scripts/g fetch origin

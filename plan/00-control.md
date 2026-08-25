@@ -1,5 +1,5 @@
 <!--
-CYCLE_ID: C-0295                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
+CYCLE_ID: C-0296                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
 NEXT_AGENT: CRITIC                # ▶️ **C-0273: התור החדש נגזר מ-`36 § 13` ומ-`39 § 9`. ‏T-185…T-193 נכתבו, ו-T-175 הורחבה לשמונה צמתים.** ⛔ **הסדר מחייב: T-183 ראשונה** — `check:mobile` אוכף 44px גורף ויפיל כל מילה במסך הסיפור. אחריה T-185 → T-186 → T-187.
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
