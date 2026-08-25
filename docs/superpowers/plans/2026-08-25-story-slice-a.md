@@ -589,7 +589,7 @@ Record in the tick summary: heading · body character count · tappable count ·
 - Consumes: `FUNCTION_WORD_FLOOR`, `normalizeWord` semantics from `scripts/story-tap-audit.mjs` (mirrored, ⛔ not imported — that file is `.mjs` for the harness) · `storyLemma` from `lib/core/storyGate.ts` · the `glosses` map from Task 2.
 - Produces: `buildStorySegments`, `StorySegment`, `StoryGloss` · `checkContextTapPayload`, `ContextTapPayload` · `export default function WordPopover(props: WordPopoverProps)`.
 
-- [ ] **Step 1: Write the failing pure test** into `lib/core/storyTapTargets.test.ts`
+- [x] **Step 1: Write the failing pure test** into `lib/core/storyTapTargets.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -630,16 +630,16 @@ describe('36 § 3.1 — only content words that HAVE a translation', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/storyTapTargets.test.ts`
 Expected: FAIL — `Failed to resolve import "./storyTapTargets"`.
 
-- [ ] **Step 3: Write `lib/core/storyTapTargets.ts`**
+- [x] **Step 3: Write `lib/core/storyTapTargets.ts`**
 
 Segment by character offsets, ⛔ never by `split(' ')` — the invariant `segments.map(s => s.text).join('') === bodyEn` is stated in `components/EnWord.tsx`'s own doc comment, and a producer that trims renders words glued together on the learner's screen. A token is a target when `storyLemma(token)` is in `glosses` **and** the normalised token is not in the function-word floor.
 
-- [ ] **Step 4: Write the failing write-path test** into `app/api/review/context/route.test.ts`
+- [x] **Step 4: Write the failing write-path test** into `app/api/review/context/route.test.ts`
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -676,16 +676,16 @@ describe('D-084 — a tap raises attempts and NOTHING else', () => {
 });
 ```
 
-- [ ] **Step 5: Run it and watch it fail**
+- [x] **Step 5: Run it and watch it fail**
 
 Run: `npx vitest run app/api/review/context/route.test.ts`
 Expected: FAIL — `ENOENT: app/api/review/context/route.ts`.
 
-- [ ] **Step 6: Write `lib/core/contextTapRequest.ts` and `app/api/review/context/route.ts`**
+- [x] **Step 6: Write `lib/core/contextTapRequest.ts` and `app/api/review/context/route.ts`**
 
 The route reads `word_progress` for `(user_id, word_id)`, and either inserts a row with `attempts: 1` or upserts `attempts: row.attempts + 1`. **⛔ It selects and writes exactly two columns**, so the six banned names never appear in the file and the scan above is a real gate rather than a promise. Coupling is preserved (D-054): a `word_progress` row now exists, so the word leaves «טרם נראה» and «נשארו לך N מילים ברמה» moves — which is the whole gamification § 4.2יג promised.
 
-- [ ] **Step 7: Add the truth test to `app/api/review/context/route.test.ts`**
+- [x] **Step 7: Add the truth test to `app/api/review/context/route.test.ts`**
 
 The source scan proves the file does not name the fields; this proves the behaviour. Stub the PostgREST client and assert the update payload:
 
@@ -701,20 +701,20 @@ it('a word at repetition=3 is still at repetition=3 after a tap, and next_review
 });
 ```
 
-- [ ] **Step 8: Wire the popover into `components/StoryScreen.tsx`**
+- [x] **Step 8: Wire the popover into `components/StoryScreen.tsx`**
 
 `components/WordPopover.tsx` shows, from the render's popover block (`render_video_A.py:1010-1032`): the word in `<EnWord>` · the Hebrew translation with niqqud, large and bold · the part of speech in `--brand-surface` · ONE button `הוסף לכרטיסיות` → after the write `✓ נוספה לחזרה` with the check icon on `--success`. Tapping another word closes the previous popover; tapping outside closes. **The learner presses, the product does not** — the same invariant as T-180.
 
-- [ ] **Step 9: Measure the four conditions in a real browser**
+- [x] **Step 9: Measure the four conditions in a real browser**
 
 Run: `npm run check:mobile`
 Expected: at 320, 375 and 414 — `story tap targets hold all four conditions of 36 § 3 (N words)`, and, if any two hit areas overlap, `a touch between two words offers both, never a guess (36 § 3.4)`. **Any of the four failing is a BLOCKER** ⇒ revert to tapping the line per § 4.2יג-ב ⓐ and file it. ⛔ There is no third path.
 
-- [ ] **Step 10: Document `POST /api/review/context` in `docs/api-contract.md`**
+- [x] **Step 10: Document `POST /api/review/context` in `docs/api-contract.md`**
 
 Body `{ "word_id": "<uuid>" }`, the `ok:true` answer, the codes, and one sentence naming D-084 and the six fields it does not write. Same commit.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 ./scripts/g add lib/core/storyTapTargets.ts lib/core/storyTapTargets.test.ts lib/core/contextTapRequest.ts app/api/review/context/route.ts app/api/review/context/route.test.ts components/WordPopover.tsx components/StoryScreen.tsx docs/api-contract.md

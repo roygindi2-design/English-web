@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
-import { apiGet } from '@/lib/api/client';
+import WordPopover from '@/components/WordPopover';
+import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { buildStorySegments, type StoryGloss } from '@/lib/core/storyTapTargets';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
 /**
@@ -36,6 +38,7 @@ const KICKER_HE = 'העולם · סיפורים';
 const SUBTITLE_HE = 'סיפור ברמה שלך · הקש על מילה מודגשת לתרגום';
 const KNOWN_LEGEND_HE = 'ידועה';
 const NEXT_STORY_HE = 'הסיפור הבא';
+const AMBIGUOUS_HE = 'לאיזו מילה התכוונת?';
 const LOADING_HE = 'טוען את הסיפור שלך…';
 const NO_LEVEL_HE = 'עוד לא בחרת רמה, ובלי רמה אין סיפור ברמה שלך.';
 const NO_LEVEL_ACTION_HE = 'לבחירת הרמה';
@@ -169,21 +172,130 @@ function StatusRow({ level, index, total }: { level: string; index: number; tota
 
 function StoryReady({ payload }: { payload: StoryPayload }) {
   const known = new Set(payload.knownLemmas);
+  const glosses = new Map<string, StoryGloss>(
+    Object.entries(payload.glosses).map(([lemma, g]) => [
+      lemma,
+      { translationHe: g.translationHe, posHe: g.posHe },
+    ]),
+  );
+  const segments = buildStorySegments(payload.story.bodyEn, glosses, known);
+
+  const [openLemma, setOpenLemma] = useState<string | null>(null);
+  const [addedLemmas, setAddedLemmas] = useState<ReadonlySet<string>>(new Set());
+  const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
+
+  /**
+   * `36 § 3.4` — **מגע בטווח של שני יעדים מציג שבב עם שניהם, ⛔ ולעולם לא ניחוש.**
+   * המרווח האופקי מוחזר כשוליים שליליים, ולכן שני אזורי הקשה של מילים סמוכות **יכולים**
+   * לחפוף. ההכרעה נעשית על **הקואורדינטה של המגע** מול כל אזורי ההקשה בפסקה, ⛔ ולא על
+   * האלמנט שהדפדפן במקרה בחר.
+   */
+  const onWordClick = useCallback((event: React.MouseEvent<HTMLButtonElement>, lemma: string) => {
+    const paragraph = event.currentTarget.closest('[data-story-body]');
+    const hits =
+      paragraph === null
+        ? []
+        : [...paragraph.querySelectorAll('[data-story-word]')].filter((el) => {
+            const r = el.getBoundingClientRect();
+            return (
+              event.clientX >= r.left &&
+              event.clientX <= r.right &&
+              event.clientY >= r.top &&
+              event.clientY <= r.bottom
+            );
+          });
+    if (hits.length > 1) {
+      setOpenLemma(null);
+      setAmbiguous(hits.map((el) => (el.textContent ?? '').trim()));
+      return;
+    }
+    setAmbiguous(null);
+    setOpenLemma(lemma);
+  }, []);
+
+  const add = useCallback(
+    (lemma: string) => {
+      const wordId = payload.glosses[lemma]?.wordId;
+      if (wordId === undefined) return;
+      // ⛔ סימון מיידי ו⛔ בלי טעינה מחדש: הלומד לחץ, והכתיבה היא `attempts + 1` בלבד
+      // (D-084). כישלון רשת ⛔ אינו הופך את המסך למסך שגיאה — הקריאה הבאה תגלה את האמת.
+      setAddedLemmas((prev) => new Set([...prev, lemma]));
+      void apiPost('/api/review/context', { wordId }).catch(() => {});
+    },
+    [payload.glosses],
+  );
+
+  const openGloss = openLemma === null ? undefined : payload.glosses[openLemma];
+
   return (
     <>
       <StatusRow level={payload.level} index={payload.index} total={payload.total} />
 
       {/* ⚠️ `data-story-body` הוא חוזה T-183: `scripts/verify-mobile.mjs` מוצא את
           הפסקה דרכו ומעביר אותה ל-`auditStoryBody`. ⛔ אין להסיר אותו.
-          ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר. */}
+          ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר.
+          ⚠️ `data-story-ambiguity="chip"` מצהיר על תנאי 4, והמימוש הוא `onWordClick`. */}
       <div
         data-story-body
+        data-story-ambiguity="chip"
         className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
       >
         <p dir="ltr" lang="en" className="ltr-inline text-ink-muted">
-          <StoryParagraph bodyEn={payload.story.bodyEn} known={known} />
+          {segments.map((segment, i) => {
+            if (!segment.isTarget || segment.lemma === null) {
+              return <span key={i}>{segment.text}</span>;
+            }
+            const lemma = segment.lemma;
+            const gloss = payload.glosses[lemma];
+            return (
+              <button
+                key={i}
+                type="button"
+                data-story-word
+                data-story-translation={gloss?.translationHe ?? ''}
+                onClick={(e) => onWordClick(e, lemma)}
+                className={[
+                  // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
+                  // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
+                  // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
+                  'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
+                  // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
+                  // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
+                  // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא
+                  // (F-123) ⛔ ולא נסגר כאן בהמצאה. הסימון היחיד הוא «ידועה», והוא נושא
+                  // **מקרא כתוב** — צבע לעולם אינו הערוץ היחיד (חוקה שכבה A).
+                  segment.isKnown
+                    ? 'font-semibold text-ink underline decoration-success decoration-2 underline-offset-4'
+                    : '',
+                ].join(' ')}
+              >
+                {segment.text}
+              </button>
+            );
+          })}
         </p>
       </div>
+
+      {ambiguous === null ? null : (
+        <p
+          data-story-ambiguity-chip
+          dir="rtl"
+          className="rounded-lg border border-border-strong px-4 py-3 text-sm text-ink"
+        >
+          {`${AMBIGUOUS_HE} ${ambiguous.join(' · ')}`}
+        </p>
+      )}
+
+      {openLemma === null || openGloss === undefined ? null : (
+        <WordPopover
+          word={openLemma}
+          translationHe={openGloss.translationHe}
+          posHe={openGloss.posHe}
+          added={addedLemmas.has(openLemma)}
+          onAdd={() => add(openLemma)}
+          onClose={() => setOpenLemma(null)}
+        />
+      )}
 
       {/* ⚠️ אותו נימוק בדיוק כמו בשורת המצב: ברנדר הקו הירוק ו-«ידועה» יושבים ב-
           `x = 48…84` (הקצה **השמאלי**), ושורת הסיכום `anchor="rm"` על `LW - 24`
@@ -205,28 +317,6 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
   );
 }
 
-/**
- * ⛔ **פיצול על רווחים בלבד, והטקסט חוזר מילה במילה.** הקו הדק מסמן «ידועה» ⛔ ותו לא —
- * מילה חדשה ⛔ אינה מסומנת מראש (§ 4.2יג-ב ⓑ). יעדי ההקשה עצמם הם T-187, ⛔ ולא כאן.
- */
-function StoryParagraph({ bodyEn, known }: { bodyEn: string; known: ReadonlySet<string> }) {
-  const tokens = bodyEn.split(/(\s+)/);
-  return (
-    <>
-      {tokens.map((token, i) => {
-        const bare = token.replace(/[^A-Za-z'-]/g, '').toLowerCase();
-        if (bare !== '' && known.has(bare)) {
-          return (
-            <span key={i} className="font-semibold text-ink underline decoration-success decoration-2 underline-offset-4">
-              {token}
-            </span>
-          );
-        }
-        return <span key={i}>{token}</span>;
-      })}
-    </>
-  );
-}
 
 function StoryNotReady({ state, onRetry }: { state: ScreenState; onRetry?: () => void }) {
   if (state.kind === 'loading') {
