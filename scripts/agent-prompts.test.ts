@@ -129,6 +129,26 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     }
   });
 
+  /**
+   * ⛔ **שני קצוות שנפתחו דווקא בגלל שלב 2, ⛔ ולא לפניו.**
+   * ⓐ ‏QA הפסיק לסרוק תור — ואיתו נעלם מי שרענן את חותמות `⟨נבדק⟩`. ‏21 פריטים
+   *    פתוחים, ובדיקה 3 מאדימה אחרי 7 ימים ⇒ הרצה לא מפוקחת הייתה מייצרת רעש.
+   * ⓑ ‏DEV מסונן ל-`ACTIVE_WORKSTREAM`, ובה **6 משימות מול 12 טיקים ביום**.
+   *    יציאה שקטה שאינה נוקבת בסיבה משאירה את QA בלי דרך לדעת שהלופ מדשדש.
+   */
+  it('QA יודע שהחותמות עברו לאחריותו אחרי שהסריקה בוטלה', () => {
+    const qa = text('CRITIC');
+    expect(qa).toContain('⟨נבדק: YYYY-MM-DD⟩');
+    expect(qa).toMatch(/STAMPS ARE NOW YOURS/);
+    expect(qa).toMatch(/03-for-roy/);
+  });
+
+  it('DEV נוקב בסיבה כשהזרימה הפעילה ריקה, ⛔ ואינו יוצא בשקט', () => {
+    const dev = text('DEV');
+    expect(dev).toContain('הזרימה הפעילה');
+    expect(dev).toContain('ACTIVE_WORKSTREAM');
+  });
+
   it('QA יודע ש-⛔ אין מיזוג בזמן נעילת DEV', () => {
     expect(text('CRITIC')).toMatch(/LOCK_HELD_BY: DEV/);
   });

@@ -237,7 +237,8 @@ Verify the fast-forward first (`./scripts/g merge-base --is-ancestor origin/main
 ## STEP 8 — CLOSE
 Your files: `60-findings` · append to `20-alerts` · `30-architecture` verifications · `80-content-lessons` §B/§C · marking ✅/🚫 in `50-tasks` · the block in `03-for-roy` · `RELEASE_READY` in `00-control`.
 ⛔ Never touch code, `10-pedagogy`, `15-syllabus-digest`, `01-vision`, `35-design-constitution`, `36`/`37`/`38`/`39`.
-⚠️ **Wrote an item for Roy? It carries `⟨נבדק: YYYY-MM-DD⟩`** — check 3 fails otherwise. **Swept an existing item? Refresh its stamp.**
+⚠️ **Wrote an item for Roy? It carries `⟨נבדק: YYYY-MM-DD⟩`** — check 3 fails otherwise.
+🔴 **AND THE STAMPS ARE NOW YOURS ALONE, ⛔ BECAUSE THE SWEEP THAT USED TO REFRESH THEM IS GONE.** `plan/03-for-roy.md` holds **21 open items**; `RULES § 0.15א` makes any item unchecked for 7 days a finding in itself, and `loop:health` check 3 goes red on it. ⇒ **every tick, re-read each open item, and for each one either: refresh the stamp because it still holds, or close it because it no longer does.** ⛔ **Refreshing a stamp without re-reading the item is the lie this rule exists against** — it converts «Roy still needs this» into «the date is recent».
 New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
 ```
 ./scripts/g commit -m "loop(QA): C-XXXX <summary>" && ./scripts/g push origin work/current

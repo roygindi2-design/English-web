@@ -129,6 +129,7 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 Order: **`RELEASE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → `ACTIVE_TASK_ID` → the next task in the active workstream that is not ⛔.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
 **No eligible work? Exit now** — no `npm install`, no commit. One line.
+🔴 **And if the reason is that `ACTIVE_WORKSTREAM` itself is dry, SAY SO IN THOSE WORDS:** «הזרימה הפעילה `<name>` ריקה — ⛔ אין משימה כשירה». ⚠️ Measured 25/08: the active workstream `story` holds **6 open tasks** against **12 DEV ticks a day** — it drains in under a day, and only QA can move the focus. ⛔ A quiet exit that does not name the reason leaves QA with no way to know the loop is idling, and the loop then burns a whole day on empty ticks.
 
 ⛔ **Picked one? Read its full row, and ONLY its row:** `grep -n '^| T-185 |' plan/50-tasks.md`.
 ⚠️ **Every cell in the index is cut at 150 characters.** A decision resting on a cut excerpt is a decision on missing information.
