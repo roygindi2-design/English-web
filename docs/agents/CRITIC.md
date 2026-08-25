@@ -168,7 +168,18 @@ npm run loop:health                                               ⇐ nine check
 **The only test that blocks is «will the learner be harmed?»**
 ⛔ **A good merge blocked for a bad reason teaches every agent to ignore the gate** — and then the blocks that DO matter get ignored too.
 
-### GREEN ⇒ MERGE
+### GREEN ⇒ ARCHIVE FIRST, THEN MERGE  ⟦NEW 25/08 · phase 6 · T-184ⓑ⟧
+```
+npm run archive && npm run measure:plan
+```
+⛔ **This runs on the merge, ⛔ not on a schedule** — the merge is the one moment the tree
+is green and nothing is half-written, and an archiving job on its own timer is a job that
+fires mid-tick. It replaces every **closed** row with a one-line stub and moves the full
+text to `plan/archive/` — ⛔ it deletes nothing, and ⛔ it never touches an open row.
+⚠️ Measured 25/08: **381KB off the two registers in one run.** ⛔ Commit the archive files
+and the regenerated index **in the same commit** as the merge.
+
+### THEN MERGE
 ```
 ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
 ```
