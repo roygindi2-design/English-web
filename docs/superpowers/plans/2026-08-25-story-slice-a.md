@@ -149,7 +149,7 @@ export function shuffleAnswers(question: StoryQuestion, storyId: string): StoryQ
 
 **Why a day index and ⛔ not `Math.random`:** T-185's closed failure scenario is «בחירה אקראית ⇒ רענון באמצע סיפור מקפיץ לסיפור אחר». § 4.2יג states the mechanism outright — «סיפור אחד ביום», and D-108 question 2 says «מחר יש סיפור אחר». A day index gives both, costs ⛔ zero columns and ⛔ zero migration, and makes `סיפור 3 מתוך 12` a real number instead of a permanent `1`.
 
-- [ ] **Step 1: Write the failing test** into `lib/core/storyPick.test.ts`
+- [x] **Step 1: Write the failing test** into `lib/core/storyPick.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -225,12 +225,12 @@ describe('pickStory — the failure scenario T-185 closes', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/storyPick.test.ts`
 Expected: FAIL — `Failed to resolve import "./storyPick"`.
 
-- [ ] **Step 3: Write `lib/core/storyPick.ts`**
+- [x] **Step 3: Write `lib/core/storyPick.ts`**
 
 ```ts
 /**
@@ -298,12 +298,12 @@ export function pickStory({ stories, dayIndex, readStoryIds }: StoryPickInput): 
 }
 ```
 
-- [ ] **Step 4: Run the tests and the purity gate**
+- [x] **Step 4: Run the tests and the purity gate**
 
 Run: `npx vitest run lib/core/storyPick.test.ts && npm run check:core`
 Expected: PASS, and `/lib/core purity: OK`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 ./scripts/g add lib/core/storyPick.ts lib/core/storyPick.test.ts
