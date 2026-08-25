@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -134,5 +135,46 @@ describe('plan/60-findings.md — the findings register', () => {
       .sort((a, b) => a - b);
     const expected = Array.from({ length: numbers.length }, (_, i) => i + 1);
     expect(numbers).toEqual(expected);
+  });
+});
+
+
+/**
+ * ⛔ **P4-1 — החזון הישן הוארך, וזו הבדיקה שמונעת ממנו לחזור.**
+ * ‏`plan/01-vision.md` הכריז «ארבע לשוניות, ⛔ לא חמש» בזמן ש-`36 § 13` פריט 2 הוא
+ * «לשונית חמישית». ⛔ סוכן שקרא את שניהם ⛔ אינו יכול לציית לשתיהן — זו ⛔ אינה
+ * שאלת ניסוח. ⇒ הקובץ הוא **מצבה**, והבדיקה כאן שומרת שהוא יישאר כזה.
+ */
+describe('plan/01-vision.md — מצבה, ⛔ ולא חזון (P4-1)', () => {
+  const tomb = readFileSync(join('plan', '01-vision.md'), 'utf8');
+
+  it('הנוסח המלא נשמר בארכיון — ⛔ הוארך, ⛔ ולא נמחק', () => {
+    const archived = readFileSync(
+      join('plan', 'archive', '01-vision-retired-2026-08-24.md'),
+      'utf8',
+    );
+    expect(archived.length).toBeGreaterThan(3000);
+    expect(archived).toContain('שכבה 3');
+  });
+
+  it('המצבה מפנה למסמך העוגן ומצהירה שהיא ⛔ אינה מקור', () => {
+    expect(tomb).toContain('plan/36-video-spec.md');
+    expect(tomb).toContain('⛔ אינו מקור');
+  });
+
+  /** ⛔ הטענה שנושאת את כל המשקל: התוכן הסותר ⛔ אינו חוזר לקובץ החי. */
+  it('⛔ ⛔ אין בה שכבות ו⛔ אין בה את הסתירה שבגללה הוארכה', () => {
+    for (const banned of ['שכבה 1 —', 'שכבה 2 —', 'ארבע לשוניות']) {
+      expect(tomb, banned).not.toContain(banned);
+    }
+    // ⛔ מצבה שגדלה היא חזון שחזר בדלת האחורית.
+    expect(tomb.length).toBeLessThan(2500);
+  });
+
+  it('⛔ אף פרומפט סוכן ⛔ אינו מורה לקרוא אותה', () => {
+    for (const agent of ['DEV', 'PM', 'CRITIC', 'CONTENT']) {
+      const body = readFileSync(join('docs', 'agents', `${agent}.md`), 'utf8');
+      expect(body, agent).not.toMatch(/(read|קרא|Read)[^\n]{0,40}01-vision/i);
+    }
   });
 });

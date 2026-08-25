@@ -99,6 +99,21 @@ The `אבן דרך` cell is `M<n> · <זרימה> · <סוג>` — e.g. `M2 · s
 ⛔ **`36 § 13` is a SEQUENCE, ⛔ not five parallel lanes.** A workstream at **0 ticks because it is later in the build order is CORRECT** — spreading work evenly gives **five half-built screens instead of one finished one**. ⇒ ⛔ **Never open a slice in a later workstream to "balance" the table.**
 **What the table is for:** the two flags. `⚠️ עבודה מחוץ לסדר` means work is running ahead of an earlier workstream that still has free ⬜ rows. `⚠️ זרימה מוצתה` means the active workstream has no free ⬜ left — **that one is your cue** to open the next slice there.
 
+## ⭐ STEP 1.6 — `plan/27-pm-lessons.md` § A1 — 12 LINES, AND YOU READ THEM EVERY TICK  ⟦NEW 24/08 · P3-3⟧
+
+```
+sed -n '/## § A1/,/## § A2/p' plan/27-pm-lessons.md
+```
+⛔ **That is the whole read in a normal tick.** ⛔ Do NOT open `plan/26-plan-feedback.md`
+— it is the journal and it only grows; § A1 is what is left of it.
+
+**ONCE A DAY, in your first tick, distil:** read the 🔁 section of `docs/plan-open.md`
+(already filtered to open rows), promote any gap that appeared **twice or more** into a
+§ A1 line, and **mark every row you read closed in `plan/26-plan-feedback.md`**. ⛔ An
+open row nobody closed is exactly what `loop:health` check 7 goes red on.
+⚠️ § A1 has a **ceiling of 12 lines**. Line 13 means deleting one — ⛔ not lengthening
+the list. Delete the one that has not recurred in the last month.
+
 ## STEP 2 — PICK THE SLICE
 Read `plan/03-for-roy.md`, `plan/02-inbox.md`, **`docs/plan-open.md`**, `plan/20-alerts.md`, **and `plan/25-content-commissions.md`**.
 ⛔ **FIRST, READ `ACTIVE_WORKSTREAM` IN `plan/00-control.md`** (QA sets it, RULES § 0.17ז). ⛔ **You open slices in that workstream ONLY.** The single exception is an open 🔴 that stops a learner. ⚠️ `36 § 13` is a **sequence**, ⛔ not a menu — three workstreams open at once is how none of them ever finishes.

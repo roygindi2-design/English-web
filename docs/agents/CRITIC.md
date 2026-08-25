@@ -108,6 +108,40 @@ a. What can the learner **DO** here? b. Is there a **dead end**? c. Could a lear
 
 **What one minute of this caught on 23/08, that 2,403 green tests never saw:** `/dev/lesson` → **`taps=1`** on a 593-character screen. `/dev/tabs/studies` → **116 characters**, unchanged from 21/08. **39 console errors** (T-170).
 
+## ⭐ STEP 4.5 — RENDER FIDELITY, AS SEVEN NUMBERED ITEMS  ⟦NEW 24/08 · P4-3⟧
+
+⛔ **Why numbered and not a sentence.** Every one of the five open-ended channels found
+on 24/08 was born the same way: **the intent was written, the action was not defined.**
+"Compare to the render" is an intent. This is the action.
+
+1. `./scripts/g checkout work/current`
+2. `(npx next dev -p 3000 &) && sleep 25`
+   ⚠️ **And `pkill -f "next dev"` when you are done, BEFORE `npm run verify`.** Measured
+   24/08: a dev server left alive on 3000 made `check:mobile` test against it instead of
+   `next start` — **two failures that looked real and ⛔ were not** (⛔ no service worker in
+   dev, `/api/*` answers 503).
+3. `npm run diff:render <route> docs/design/<file>.png`
+4. **Read the PNG it wrote.** ⛔ Do not skip this — the file IS the evidence, and a
+   report written without opening it is a report about nothing.
+5. Record a line **per item below**, each one "matches" or the measured difference:
+   **ⓐ** what is on the screen and in what order · **ⓑ** the exact strings ·
+   **ⓒ** spacing and sizes · **ⓓ** **finish — shadows, gradients, elevation, type
+   refinement** · **ⓔ** colour · **ⓕ** what the render has and the screen does not ·
+   **ⓖ** what the screen has and the render does not.
+6. ⛔ **A difference in ⓓ is a real difference now.** `36 § 14.4` **was reversed on
+   24/08**: the render binds finish too. ⛔ "The finish comes from the constitution" is
+   ⛔ NO LONGER an answer to a gap — it was the door every visual gap walked out of.
+7. **Layer A (accessibility) is the only carve-out, and it overrides the render.**
+   Contrast, a 44px target, state encoded by colour alone — the render ⛔ is not copied
+   there, and the gap is written down with the measured number.
+
+⚠️ **This produces findings, ⛔ not a blocked merge** (RULES § 0.17ד). Render fidelity
+is not "the learner is harmed". ⛔ A good merge blocked for a bad reason teaches every
+agent to ignore the gate.
+⚠️ **⛔ Never a pixel comparison.** The renders came from a different tool with different
+fonts; a numeric diff calls every pixel a difference, and a tool that fails a perfect
+screen is a tool everyone learns to ignore.
+
 ## ⭐ STEP 5 — THE GATE. MERGE, OR FILE. ⛔ THERE IS NO THIRD OUTCOME. (RULES § 0.17)
 
 ⛔ **FIRST, ONE LINE THAT CAN END THIS STEP:** `LOCK_HELD_BY: DEV` in `plan/00-control.md` ⇒ ⛔ **no merge this tick.** Say so and go to STEP 6. ⚠️ Nothing else is needed for merge safety: DEV must finish or `revert` within its own tick, so **every commit on the branch is a whole task by definition**, and running the gate on `HEAD` is the proof.

@@ -115,9 +115,14 @@ if (isUi) {
   });
   ELEMENTS.push({
     key: 'finish',
-    label: 'הצהרה שהגימור מגיע מהחוקה, ⛔ לא מהצילום',
-    ok: /14\.4|שכבה B|layer B|החוקה/.test(text),
-    why: 'הצילומים רונדרו בכלי מוגבל ואינם תקרת האיכות. בלי המשפט הזה Dev מעתיק פגם רנדר.',
+    /* 🔄 REWRITTEN 24/08 (P4-2). The old check accepted the sentence "finish comes
+     * from the constitution" — which `36 § 14.4` has since REVERSED, because that
+     * sentence was the door every visual gap walked out of. What a screen plan must
+     * now declare is the opposite: the render binds finish too, and layer A is the
+     * only carve-out. ⛔ Accepting the retired sentence would keep rewarding it. */
+    label: 'הצהרה שהרנדר מחייב **גם בגימור**, ושכבה A היא ההחרגה היחידה',
+    ok: /הרנדר מחייב|מחייב גם בגימור|14\.4/.test(text) && /שכבה A|layer A|נגישות/.test(text),
+    why: '`36 § 14.4` התהפך 24/08. «הגימור מגיע מהחוקה» ⛔ אינו עוד תשובה לפער מהרנדר — הוא היה דלת היציאה מכל פער חזותי.',
   });
 }
 
