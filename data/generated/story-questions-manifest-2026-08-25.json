@@ -1,0 +1,29 @@
+{
+  "commission": "K-001",
+  "task": "T-189",
+  "date": "2026-08-25",
+  "cycle": "C-0295",
+  "agent": "CONTENT",
+  "model": "claude-opus-5",
+  "prompt_version": "content-2026-08-23-D110",
+  "brief": "docs/content-story-questions-brief.md",
+  "gate": "lib/core/storyQuestionGate.ts",
+  "output_file": "story-questions-2026-08-25.jsonl",
+  "requested": 12,
+  "accepted": 12,
+  "rejected": 0,
+  "rejected_reasons": [],
+  "self_rejected_before_gate": 1,
+  "self_rejected_reason": "item 5 (A2 · A day at the market) — the stem 'a part of ___' admitted two defensible answers from the same clause (חיים / עיירה). Lesson 17: the stem is at fault, not the distractor. Regenerated, not hand-patched.",
+  "gate_run": "storyQuestionGate over all 12 items, allowedLemmas = allowedLemmasAtOrBelow(story_level, bank) built exactly as scripts/build-stories-sql.mjs builds it; allowedHebrew = the translation_he values of those same bank entries.",
+  "gate_result": "12/12 ok",
+  "negative_control": "5 deliberately bad items were gated in the same run and 0/5 passed (unknown_words+not_grounded · unknown_hebrew+correct_is_longest · unknown_words · duplicate_answers · bad_correct_index) — evidence the gate discriminates and did not pass everything.",
+  "correct_index_distribution": { "0": 4, "1": 4, "2": 4 },
+  "human_eye_axes": [
+    "⛔ sensitive subject — NO deterministic gate exists for this axis and none is claimed. All 12 items were read by the agent; the subjects are school, work, a market, a school policy and a product assessment.",
+    "each correct answer was checked by hand against the sentence in the story body that carries it",
+    "each distractor was checked by hand not to be a defensible second answer to its own question"
+  ],
+  "ingest_note": "⛔ No runner script exists yet (there is no `npm run build:story-questions`). The gate was run through a throwaway harness outside the repo — CONTENT does not touch code. Ingest is a DEV task.",
+  "provenance": "כל תוכן נכתב לפרויקט; ⛔ לא נועץ ב-R-010 (מאל\"ו) ולא ב-R-013 (AnkiWeb) ולא בשום מילון NC. השאלות נגזרו מגוף הסיפורים שכבר בריפו, והתשובות מתוך translation_he של הבנק שלנו."
+}
