@@ -149,6 +149,27 @@ check('5', 'אפס סטטוס לא-מוכר · אפס שורה פגומה', () =
   };
 });
 
+/**
+ * 9 — ⛔ **THE FILE EVERY AGENT READS EVERY TICK, AND IT WAS ALREADY OVER.**
+ * `RULES § 0.1.2 ב׳` sets a 12KB ceiling on `plan/00-control.md` for one reason:
+ * four agents read it on every single tick, so its size is a tax paid ~20 times a
+ * day. Measured 25/08 — **12,949 bytes, 661 over the ceiling**, ⛔ and nothing in
+ * the loop was watching. The rule existed; the enforcement did not.
+ * ⚠️ Advisory like every check here: an oversized register ⛔ does not mean the
+ * code is broken, and it ⛔ must not block a merge.
+ */
+const CONTROL_CEILING = 12 * 1024;
+check('9', 'רגיסטר הבקרה מתחת לתקרת ה-12KB', () => {
+  const bytes = Buffer.byteLength(read(at('plan', '00-control.md')), 'utf8');
+  return {
+    ok: bytes > 0 && bytes <= CONTROL_CEILING,
+    detail:
+      bytes === 0
+        ? '⛔ לא נמדד — הקובץ ריק או חסר'
+        : `${bytes} בתים מתוך ${CONTROL_CEILING}`,
+  };
+});
+
 /* 6 — a plan no row cites is a plan the next PM rewrites from scratch. */
 /**
  * ⛔ **EVERY register counts, ⛔ not only `50-tasks.md`** — and that widening is a

@@ -84,8 +84,8 @@ describe('scripts/loop-health.mjs', () => {
     // false on both sides. It passed while measuring nothing. Now it names the
     // checks and asserts each one individually.
     const r = run(healthy());
-    expect(r.out).toContain('loop health: 7/9 checks pass');
-    for (const n of ['1', '2', '3', '4', '5', '6', '7']) {
+    expect(r.out).toContain('loop health: 8/10 checks pass');
+    for (const n of ['1', '2', '3', '4', '5', '6', '7', '9']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
     // ⛔ Check 10 shells out to git inside the fixture root, which is ⛔ not a repo.
@@ -108,9 +108,9 @@ describe('scripts/loop-health.mjs', () => {
     const passes = m?.[1];
     const total = m?.[2];
     expect(passes).toBeDefined();
-    // ⛔ ids 1–8 and 10 — the gap is deliberate: check 9 (register size ceiling)
-    // lights up in phase 6, and renumbering would break every reference to it.
-    expect(total).toBe('9');
+    // ⛔ ids 1–10, contiguous since 25/08: check 9 (the control-register ceiling)
+    // was lit early — the file was measured 661 bytes OVER its own rule.
+    expect(total).toBe('10');
     expect(r.code).toBe(passes === total ? 0 : 1);
   });
 
@@ -235,6 +235,27 @@ describe('scripts/loop-health.mjs', () => {
     );
     const r = run(root);
     expect(failed(r.out, '6')).toBe(false);
+  });
+
+  /**
+   * ⛔ **9 — the rule existed and nothing enforced it.** Measured 25/08:
+   * `plan/00-control.md` was **12,949 bytes against a 12,288 ceiling**, and four
+   * agents read it every tick. ⛔ A ceiling nobody measures is a comment.
+   */
+  it('9 · goes red when the control register passes its ceiling', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) => s + 'x'.repeat(13_000));
+    const r = run(root);
+    expect(failed(r.out, '9')).toBe(true);
+    expect(r.out).toMatch(/\d+ בתים מתוך 12288/);
+  });
+
+  it('9 · ⛔ ⛔ אינו ירוק על קובץ חסר — «0 בתים» ⛔ אינו «מתחת לתקרה»', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', () => '');
+    const r = run(root);
+    expect(failed(r.out, '9')).toBe(true);
+    expect(r.out).toContain('⛔ לא נמדד');
   });
 
   it('7 · goes red when the same missing element is reported twice — the PM did not learn', () => {
