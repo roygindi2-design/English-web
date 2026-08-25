@@ -70,13 +70,32 @@ If this call is wrong — does one commit fix it?
 
 ### ⛔ HOW TO USE `docs/design/` — `36 § 14.4`
 
+> 🔴 **REVERSED 24/08 (D-114). If you remember the old wording, you remember a rule
+> that no longer exists.** This block used to hand finish to the constitution instead of
+> to the render — and that sentence was **the door every visual gap walked out of**: any
+> difference from the render got closed with it, ⛔ unmeasured and ⛔ unrecorded.
+> ⚠️ **The retired sentence is deliberately ⛔ not quoted here**, and a test forbids it
+> from reappearing in any prompt: a dead instruction that keeps showing up in a live file
+> is an instruction some agent will still obey.
+> ⚠️ **And `npm run check:plan` now FAILS a screen plan that leans on the old wording.**
+> ⛔ Writing it would fail your own gate.
+
 | What | Status |
 |---|---|
-| **Layout · strings · structure · order · what sits where** | **BINDING.** On layout, the screenshot wins |
-| **Visual finish — shadows, gradients, elevation, typography** | **From the constitution and the tokens.** On finish, the constitution wins |
+| **Layout · strings · structure · order · what sits where** | ✅ **BINDING** |
+| **Visual finish — shadows, gradients, elevation, typography** | ✅ **BINDING TOO** |
+| **Accessibility — contrast · 44px target · ⛔ no state in colour alone** | **Layer A OVERRIDES the render** |
 
-⚠️ **The screenshots were rendered with a limited graphics tool and are NOT the quality ceiling.** A jagged edge or a flat shadow in a PNG is a **renderer limitation**, ⛔ not an instruction.
-⇒ Take **position, order, strings and dimensions** from the screenshot and the matching `render_video_*.py` / `msgs_ui.py` — grep them. Take **finish** from constitution layer B.
+⇒ **The render binds — layout and finish alike.** ⛔ «The finish comes from the
+constitution» is ⛔ **NOT** an answer to a gap any more.
+
+### ⛔ Layer A is the only carve-out, and there is ⛔ no second one
+A render showing low contrast, a target under 44px, or state encoded by colour alone is
+⛔ **not built as drawn** — and the gap goes in the task row **with the number you
+measured**. ⛔ «I think it looks better», «the tool is limited», «it is only a shadow»
+are ⛔ not grounds. ⚠️ A real tool limitation is a **finding**, ⛔ not a silent deviation.
+⇒ Take **position, order, strings and dimensions** from the screenshot **and** the
+matching `render_video_*.py` / `msgs_ui.py` — grep them, ⛔ do not eyeball the PNG.
 
 **⛔ THE CHARACTERS ARE PLACEHOLDERS (`38 § 5`).** ⛔ Never copy `wizard_sprite`, `knight_sprite` or `hero_sprite` out of `render_video_B.py`. Build from `38 § 3`'s anchor points as separate layers.
 
