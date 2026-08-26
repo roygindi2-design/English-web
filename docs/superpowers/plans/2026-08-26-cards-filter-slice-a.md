@@ -177,12 +177,12 @@ export function dragOffset(input: {
 
 ### Task `T-155` — the deck (⛔ first, so the screen has something real to call)
 
-- [ ] Add `'level'` to `DeckName` and `DECK_NAMES` in `lib/core/deck.ts`. ⛔ Do not touch `parseDeckName` — it already falls through to `null` on an unknown value.
-- [ ] In `lib/core/deck.ts`, in `selectDeck`, add the `level` branch: `level` is **not** re-filtered in the pure layer (the query already restricted the band), exactly as `due` is not. Only `unknown` filters, and that stays.
-- [ ] In `app/api/study/queue/route.ts`, add the `level` branch beside the existing `unknown` branch: read `profiles.current_level`, query `WORDS_SELECT` restricted to that band, exclude nothing, cap at `MAX_QUEUE_ROWS`, and return `{ ok: true, deck, total: filtered.length, cards }`.
-- [ ] In `app/api/study/queue/route.ts`: `current_level` is `null` ⇒ answer `{ ok: false, code: 'no_level' }`, ⛔ not 500 and ⛔ not a silent fall-back to A1. The screen already knows this state (`kind: 'choose'`).
-- [ ] Add to `docs/api-contract.md`: `deck=level` beside `due` and `unknown`, with the same `total`-before-`limit` sentence.
-- [ ] Tests in `lib/core/deck.test.ts`:
+- [x] Add `'level'` to `DeckName` and `DECK_NAMES` in `lib/core/deck.ts`. ⛔ Do not touch `parseDeckName` — it already falls through to `null` on an unknown value.
+- [x] In `lib/core/deck.ts`, in `selectDeck`, add the `level` branch: `level` is **not** re-filtered in the pure layer (the query already restricted the band), exactly as `due` is not. Only `unknown` filters, and that stays.
+- [x] In `app/api/study/queue/route.ts`, add the `level` branch beside the existing `unknown` branch: read `profiles.current_level`, query `WORDS_SELECT` restricted to that band, exclude nothing, cap at `MAX_QUEUE_ROWS`, and return `{ ok: true, deck, total: filtered.length, cards }`.
+- [x] In `app/api/study/queue/route.ts`: `current_level` is `null` ⇒ answer `{ ok: false, code: 'no_level' }`, ⛔ not 500 and ⛔ not a silent fall-back to A1. The screen already knows this state (`kind: 'choose'`).
+- [x] Add to `docs/api-contract.md`: `deck=level` beside `due` and `unknown`, with the same `total`-before-`limit` sentence.
+- [x] Tests in `lib/core/deck.test.ts`:
 
 ```ts
 it('accepts level as a deck name', () => {
@@ -220,14 +220,14 @@ it('MUTATION: a null current_level must answer no_level, never A1', () => {
 
 ### Task `T-210` — the § 5 home screen
 
-- [ ] Create `lib/core/filterProgress.ts` exactly as § 2 gives it. ⛔ It imports nothing from React, `next`, or `lib/supabase`. `npm run check:core` is the guard.
-- [ ] Create `components/LevelCard.tsx`: `הרמה שלך` · `<EnWord>{level}</EnWord>` · `נקבעה במבחן הרמה` · a `<Link href="/settings">` chip reading `שינוי רמה · הגדרות` with `min-h-touch`. ⛔ No `onChoose` prop, ⛔ no state, ⛔ no six-level grid — D-123ג׳ⓐ.
-- [ ] Create `components/FilterBar.tsx`: one track, three segments (`--success` · `--danger` · `--border-subtle`) laid out **RTL**, widths from `filterProgress()`, and the label `N / M סוננו` beside the heading `התקדמות ברמה`. Beneath it, the three `counterCells()` — each carrying **icon + Hebrew label + number**, ⛔ never colour alone (`36 § 12.7`).
-- [ ] In `components/LevelMapScreen.tsx`: render `<LevelCard>` · `<FilterBar>` · `<DeckSelector>` · the fixed note `הסימון של מילים מתבצע בכרטיסיות בלבד`, in that order. **Delete the `<LevelPath>` and `<ArcadeEntry>` render sites** (`T-211` · `T-156`) — ⛔ the components themselves are untouched.
-- [ ] In `components/LevelMapScreen.tsx`, keep the `kind: 'choose'` branch exactly as it is (D-123ג׳ⓒ) — a learner with no level must still have one action.
-- [ ] In `components/LevelMapScreen.tsx`, keep the `<UnknownList>` render site. ⛔ It is not a deck tile and § 5 does not forbid it.
-- [ ] Edit `app/dev/tabs/cards/page.tsx` so the fixture supplies a non-null summary (`totalInLevel: 400, known: 61, inReviewList: 25, unseen: 314` — the render's own numbers) ⇒ the bar and the counters are measurable by `check:mobile` **without env**.
-- [ ] Tests in `lib/core/filterProgress.test.ts` and `components/LevelMapScreen.test.ts`:
+- [x] Create `lib/core/filterProgress.ts` exactly as § 2 gives it. ⛔ It imports nothing from React, `next`, or `lib/supabase`. `npm run check:core` is the guard.
+- [x] Create `components/LevelCard.tsx`: `הרמה שלך` · `<EnWord>{level}</EnWord>` · `נקבעה במבחן הרמה` · a `<Link href="/settings">` chip reading `שינוי רמה · הגדרות` with `min-h-touch`. ⛔ No `onChoose` prop, ⛔ no state, ⛔ no six-level grid — D-123ג׳ⓐ.
+- [x] Create `components/FilterBar.tsx`: one track, three segments (`--success` · `--danger` · `--border-subtle`) laid out **RTL**, widths from `filterProgress()`, and the label `N / M סוננו` beside the heading `התקדמות ברמה`. Beneath it, the three `counterCells()` — each carrying **icon + Hebrew label + number**, ⛔ never colour alone (`36 § 12.7`).
+- [x] In `components/LevelMapScreen.tsx`: render `<LevelCard>` · `<FilterBar>` · `<DeckSelector>` · the fixed note `הסימון של מילים מתבצע בכרטיסיות בלבד`, in that order. **Delete the `<LevelPath>` and `<ArcadeEntry>` render sites** (`T-211` · `T-156`) — ⛔ the components themselves are untouched.
+- [x] In `components/LevelMapScreen.tsx`, keep the `kind: 'choose'` branch exactly as it is (D-123ג׳ⓒ) — a learner with no level must still have one action.
+- [x] In `components/LevelMapScreen.tsx`, keep the `<UnknownList>` render site. ⛔ It is not a deck tile and § 5 does not forbid it.
+- [x] Edit `app/dev/tabs/cards/page.tsx` so the fixture supplies a non-null summary (`totalInLevel: 400, known: 61, inReviewList: 25, unseen: 314` — the render's own numbers) ⇒ the bar and the counters are measurable by `check:mobile` **without env**.
+- [x] Tests in `lib/core/filterProgress.test.ts` and `components/LevelMapScreen.test.ts`:
 
 ```ts
 it('splits the bar exactly as 36 § 5 draws it', () => {
@@ -270,12 +270,12 @@ it('MUTATION: the invariant note must be on the screen', () => {
 
 ### Task `T-211` — the level switch gets its home in `הגדרות`
 
-- [ ] In `app/(tabs)/settings/page.tsx`: make it a client component that reads `GET /api/levels/summary`, renders `<LevelPath levels={...} current={...} onChoose={...} busy={...} />`, and posts to `POST /api/levels/current` — **the same route `LevelMapScreen` uses today**. ⛔ Zero new endpoint (T-154ⓓ, carried over).
-- [ ] In `app/(tabs)/settings/page.tsx`: ⛔ **no gate, no «עדיין לא», no threshold** — D-037 · R-017: there is no empirical mastery threshold and the product **counts, it does not judge** (T-154ⓑ, carried over).
-- [ ] In `app/(tabs)/settings/page.tsx`: ⛔ **no «are you sure?» dialog** — `current_level` is one field and touches neither SM-2 nor any learned word (T-154ⓒ, carried over).
-- [ ] In `app/(tabs)/settings/page.tsx`, keep the existing `שינוי רמה` → `/study/scan` link **as a second, clearly-labelled entry** (`סריקת רמה` · `לסמן מה שאתה כבר יודע`). ⛔ It is not the level switch and must stop being labelled as one — that is the gap measured in § 0.
-- [ ] `/settings` now reads the learner's profile ⇒ **add `'/settings'` to `PROTECTED_SCREENS` in `lib/proxy.ts` in the SAME commit**, exactly as `/me` did. ⛔ Not later.
-- [ ] Tests in `app/(tabs)/settings/page.test.ts`:
+- [x] In `app/(tabs)/settings/page.tsx`: make it a client component that reads `GET /api/levels/summary`, renders `<LevelPath levels={...} current={...} onChoose={...} busy={...} />`, and posts to `POST /api/levels/current` — **the same route `LevelMapScreen` uses today**. ⛔ Zero new endpoint (T-154ⓓ, carried over).
+- [x] In `app/(tabs)/settings/page.tsx`: ⛔ **no gate, no «עדיין לא», no threshold** — D-037 · R-017: there is no empirical mastery threshold and the product **counts, it does not judge** (T-154ⓑ, carried over).
+- [x] In `app/(tabs)/settings/page.tsx`: ⛔ **no «are you sure?» dialog** — `current_level` is one field and touches neither SM-2 nor any learned word (T-154ⓒ, carried over).
+- [x] In `app/(tabs)/settings/page.tsx`, keep the existing `שינוי רמה` → `/study/scan` link **as a second, clearly-labelled entry** (`סריקת רמה` · `לסמן מה שאתה כבר יודע`). ⛔ It is not the level switch and must stop being labelled as one — that is the gap measured in § 0.
+- [x] `/settings` now reads the learner's profile ⇒ **add `'/settings'` to `PROTECTED_SCREENS` in `lib/proxy.ts` in the SAME commit**, exactly as `/me` did. ⛔ Not later.
+- [x] Tests in `app/(tabs)/settings/page.test.ts`:
 
 ```ts
 it('offers all six levels and gates none of them', () => {
@@ -296,11 +296,11 @@ it('MUTATION: settings must join PROTECTED_SCREENS once it reads the profile', (
 
 ### Task `T-157` — the card follows the finger
 
-- [ ] In `lib/core/swipeGrade.ts`: add `dragOffset` as § 2 gives it; delete `SWIPE_FEEDBACK_MAX_PX`. ⛔ **`SWIPE_EDGE_PX` · `SWIPE_MIN_DISTANCE_PX` · `SWIPE_MAX_ANGLE_DEG` do not move** — they were measured, ⛔ not chosen.
-- [ ] In `components/CardDeck.tsx`: during the drag, translate the card by `dragOffset().x` with **⛔ no transition** (1:1 is direct manipulation, ⛔ not a timed animation — § 5 of the constitution governs the **release**). On release **above** the threshold, exit toward the gesture in **150–300ms, one easing**; **below** it, return to place in the same range.
-- [ ] In `components/CardDeck.tsx` and `lib/core/swipeGrade.ts`: `prefers-reduced-motion` ⇒ **zero motion**, and the gesture still grades. ⛔ Not "less motion".
-- [ ] In `components/CardDeck.tsx`: ⛔ the two grade buttons stay the canonical channel (D-042) and the swipe is a shortcut. ⛔ Zero horizontal scrolling — the card container keeps `overflow-x: hidden`.
-- [ ] Tests in `lib/core/swipeGrade.test.ts`:
+- [x] In `lib/core/swipeGrade.ts`: add `dragOffset` as § 2 gives it; delete `SWIPE_FEEDBACK_MAX_PX`. ⛔ **`SWIPE_EDGE_PX` · `SWIPE_MIN_DISTANCE_PX` · `SWIPE_MAX_ANGLE_DEG` do not move** — they were measured, ⛔ not chosen.
+- [x] In `components/CardDeck.tsx`: during the drag, translate the card by `dragOffset().x` with **⛔ no transition** (1:1 is direct manipulation, ⛔ not a timed animation — § 5 of the constitution governs the **release**). On release **above** the threshold, exit toward the gesture in **150–300ms, one easing**; **below** it, return to place in the same range.
+- [x] In `components/CardDeck.tsx` and `lib/core/swipeGrade.ts`: `prefers-reduced-motion` ⇒ **zero motion**, and the gesture still grades. ⛔ Not "less motion".
+- [x] In `components/CardDeck.tsx`: ⛔ the two grade buttons stay the canonical channel (D-042) and the swipe is a shortcut. ⛔ Zero horizontal scrolling — the card container keeps `overflow-x: hidden`.
+- [x] Tests in `lib/core/swipeGrade.test.ts`:
 
 ```ts
 it('tracks the finger 1:1', () => {
@@ -326,14 +326,14 @@ it('MUTATION: the three measured thresholds must not move', () => {
 
 ### Task `T-156` — the arena entry leaves the cards screen
 
-- [ ] Already done by `T-210`'s render-site deletion. **Close `T-156` in the SAME commit** — `plan/27-pm-lessons.md § A1` line 8: a row whose deliverables landed inside another row's tick is closed then, ⛔ not "later".
-- [ ] Verify the arena is still reachable: `grep -rn "ArcadeEntry\|/arcade" app components lib` must still show the ring node (`lib/core/worldRing.ts`). ⛔ If it does not, the arena has lost its only entry and this step is a 🔴 — stop and say so.
+- [x] Already done by `T-210`'s render-site deletion. **Close `T-156` in the SAME commit** — `plan/27-pm-lessons.md § A1` line 8: a row whose deliverables landed inside another row's tick is closed then, ⛔ not "later".
+- [x] Verify the arena is still reachable: `grep -rn "ArcadeEntry\|/arcade" app components lib` must still show the ring node (`lib/core/worldRing.ts`). ⛔ If it does not, the arena has lost its only entry and this step is a 🔴 — stop and say so.
 
 ### Closing
 
-- [ ] `npm run measure:plan` and commit **both** generated files in the same commit (`RULES § 0.1.1 ח׳`). ⛔ Never hand-edit them.
-- [ ] Run `npx next dev -p 3000` and walk `http://127.0.0.1:3000/dev/tabs/cards` (rendered by `app/dev/tabs/cards/page.tsx`) at 375×780 and record: heading · character count · tappable count · anything under 44px · horizontal scroll · console errors. ⚠️ The expected character count rises well above the 235 measured in § 0 — if it does not, the bar and the counters did not render.
-- [ ] `npm run verify` — **exit 0, freshly run.** ⛔ No claim of "done" before that output exists (`RULES § 0.6`).
+- [x] `npm run measure:plan` and commit **both** generated files in the same commit (`RULES § 0.1.1 ח׳`). ⛔ Never hand-edit them.
+- [x] Run `npx next dev -p 3000` and walk `http://127.0.0.1:3000/dev/tabs/cards` (rendered by `app/dev/tabs/cards/page.tsx`) at 375×780 and record: heading · character count · tappable count · anything under 44px · horizontal scroll · console errors. ⚠️ The expected character count rises well above the 235 measured in § 0 — if it does not, the bar and the counters did not render.
+- [x] `npm run verify` — **exit 0, freshly run.** ⛔ No claim of "done" before that output exists (`RULES § 0.6`).
 
 ## 4 · What this plan ⛔ does NOT claim
 
@@ -341,3 +341,41 @@ it('MUTATION: the three measured thresholds must not move', () => {
 * ⛔ **It does not touch `T-165` or `T-199`** — the `משפטים` deck is `cards` slice B, and mixing cloze items into a filtering slice would make it two features.
 * ⛔ **It does not delete `מנת היום`.** `§ 4.2כ ד׳` records the declared deviation from `§ 5`'s "two decks" and the measurement behind it: that tile is the only entry to `/study` in the whole product.
 * ⛔ **It does not measure whether ~10 sittings is a good number.** It measures that 61 days is a bad one. The first is a question for a real learner; the second is arithmetic on two constants in the tree.
+
+
+---
+
+## 5 · What actually happened — C-0318 (DEV), 2026-08-26
+
+⛔ **Every box above is ticked, and three of them were built somewhere other than where
+this plan says.** Ticking a box whose file was wrong would make the plan a record of what
+was intended rather than of what exists.
+
+| Step as written | What shipped | Why |
+|---|---|---|
+| `lib/proxy.ts` — the `PROTECTED_SCREENS` mutation | **`proxy.ts`** (repo root) | The file has lived at the root since Next 16 renamed the convention. The test as written (`readFileSync('lib/proxy.ts')`) would have thrown ENOENT, ⛔ not failed by name. |
+| `components/CardDeck.tsx` — the drag | **`components/Flashcard.tsx`** | The gesture handlers (`onPointerDown`/`onPointerUp` · `resolveSwipe`) live there; `CardDeck.tsx` holds ⛔ not one of them. `CardDeck` did get `overflow-x-hidden` (`T-157ⓕ`). |
+| `selectDeck(rows, 'level', limit)` in the route | **`levelRows.slice(0, limit)`** | `sortQueue` has no rank to sort by — every level row is unscheduled — so its tie-break replaces **frequency** with the **alphabet**. Same measured reason `loadNewWords` gives. The pure layer still owns the deck's shape and `deck.test.ts` pins it. |
+
+### ⛔ And one thing the plan does ⛔ NOT cover at all — `F-140` 🔴
+
+The plan defines `deck=level` **end to end on the READ side** and is silent on the write.
+Measured this tick: `app/api/practice/route.ts:59` answers **404** for a word with no
+`word_progress` row — **by declared intent** — and the level deck is precisely the set of
+words the learner has never met (A1 = **305**, a new learner carries ~0 rows). `T-155ⓒ`
+forbids the one route that does insert (`/api/review`, SM-2). ⇒ ⛔ **no admissible write
+path exists**, and choosing one is a **learning mechanic** — `RULES § 0.16` sends that to
+the PM.
+
+⇒ The endpoint, the contract and the pure layer shipped and are green; the `סינון מילים`
+tile ships **locked with its number** (`D-046` · `§ 4.2ו`, the `משפטים` pattern) rather
+than as a primary CTA that fails on the learner's first tap. **Opening it is one PM line.**
+
+### The numbers, measured after the tick
+
+| What | Before | After |
+|---|---|---|
+| `/dev/tabs/cards` at 375×780 | **235** chars, every number `—` | **462** chars, `86 / 400 סוננו`, counters `61 · 25 · 314` |
+| A 100px drag on the card | 8px of offset | **100px**, `transition-duration: 0s` |
+| `prefers-reduced-motion` on the drag | ≤8px | **`transform: none`** — zero |
+| `npm run verify` | — | **exit 0** (typecheck · core · 2803 tests · build · 1158 mobile checks) |
