@@ -68,7 +68,7 @@ function braceRegion(source: string, open: string): string {
  * Every balanced-brace region opened by `open` — the plural of `braceRegion`.
  *
  * C-0137 measured why the singular is not enough: the finish state (T-055) gates the D-033
- * notice behind its own `deck === 'unknown'` ternary, so the file legitimately holds two
+ * notice behind its own `deck !== 'due'` gate, so the file legitimately holds two
  * gates. `indexOf` sees only the first, and the containment guard read the second gated copy
  * as a leak. Subtracting ALL gated regions is the same containment question asked of a file
  * that is allowed to grow gates — ⛔ it does not weaken the claim: a copy that sits behind no
@@ -99,7 +99,14 @@ function braceRegions(source: string, open: string): string[] {
 
 const PRACTICE_LABEL = 'לא משנה את מועד החזרה';
 /** The gate the label is allowed to live behind, and the only one. */
-const UNKNOWN_GATE = "{deck === 'unknown'";
+/**
+ * ⚠️ **הורחב C-0318 (T-155), ⛔ והטענה ⛔ לא נחלשה.** ‏`level` כותב את אותן שתי עמודות
+ * בדיוק כמו `unknown` (D-032 · D-033 · T-155ⓒ), ולכן ההבטחה «⛔ אינו משנה את מועד החזרה»
+ * נכונה בשתיהן — ומה שנמדד כאן הוא **הכלה**: כל עותק של התווית יושב בתוך שער, ⛔ ואף עותק
+ * ⛔ אינו שורד את החיסור. השער הוא «כל חפיסה שאינה `due`» כי `due` היא היחידה שמתזמנת,
+ * ⛔ והוא ⛔ אינו «כל חפיסה»: עותק לא-משוער עדיין מפיל.
+ */
+const UNKNOWN_GATE = "{deck !== 'due' &&";
 
 describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
   it('is a client component — it holds which cards were already graded', () => {
@@ -166,20 +173,20 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
    * are about to press does NOT do; a copy of it on today's dose would be a lie, and its
    * absence from the practice deck would be a silent schedule change.
    */
-  it('shows the practice label behind unknown gates and ⛔ nowhere else', () => {
+  it('shows the practice label behind non-due gates and ⛔ nowhere else', () => {
     // C-0137: the file carries TWO gates since T-055 — the scrolling header and the finish
     // state — and each holds one copy. «exactly one copy in the file» was a proxy for the
     // claim while there was one gate; the claim itself is containment, so it is asked of
     // every gate. ⛔ Not a relaxation: an ungated copy still survives the subtraction below.
     const gates = braceRegions(CODE, UNKNOWN_GATE);
-    expect(gates.length, 'at least one unknown gate').toBeGreaterThan(0);
+    expect(gates.length, 'at least one non-due gate').toBeGreaterThan(0);
 
     const gated = gates.filter((gate) => gate.includes(PRACTICE_LABEL));
-    expect(gated.length, 'the label must be inside an unknown gate').toBeGreaterThan(0);
+    expect(gated.length, 'the label must be inside a non-due gate').toBeGreaterThan(0);
 
     let outside = CODE;
     for (const gate of gates) outside = outside.split(gate).join('');
-    expect(outside, 'the label leaked outside the unknown gates').not.toContain(PRACTICE_LABEL);
+    expect(outside, 'the label leaked outside the non-due gates').not.toContain(PRACTICE_LABEL);
 
     // Every copy is accounted for by a gate — no copy hides in a region the subtraction
     // happened to remove for another reason.
@@ -251,12 +258,12 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
 
 describe('the brace extractor itself is measured, so the guard above is not vacuous', () => {
   it('returns the balanced region and not the rest of the file', () => {
-    const src = "a {deck === 'unknown' ? (<p>{x}</p>) : null} b";
-    expect(braceRegion(src, UNKNOWN_GATE)).toBe("{deck === 'unknown' ? (<p>{x}</p>) : null}");
+    const src = "a {deck !== 'due' && (<p>{x}</p>)} b";
+    expect(braceRegion(src, UNKNOWN_GATE)).toBe("{deck !== 'due' && (<p>{x}</p>)}");
   });
 
   it('would catch a label planted outside the branch', () => {
-    const src = `<p>${PRACTICE_LABEL}</p> {deck === 'unknown' ? (<p>${PRACTICE_LABEL}</p>) : null}`;
+    const src = `<p>${PRACTICE_LABEL}</p> {deck !== 'due' && (<p>${PRACTICE_LABEL}</p>)}`;
     const branch = braceRegion(src, UNKNOWN_GATE);
     expect(src.split(branch).join('')).toContain(PRACTICE_LABEL);
   });
@@ -268,15 +275,15 @@ describe('the brace extractor itself is measured, so the guard above is not vacu
    * containment claim never changed; the "there is exactly one gate" proxy expired.
    */
   it('extracts EVERY gate and not only the first (the two-gate file)', () => {
-    const src = `{deck === 'unknown' ? (<p>a</p>) : null} x {deck === 'unknown' ? (<p>b</p>) : null}`;
+    const src = `{deck !== 'due' && (<p>a</p>)} x {deck !== 'due' && (<p>b</p>)}`;
     const regions = braceRegions(src, UNKNOWN_GATE);
     expect(regions.length, 'both gates').toBe(2);
-    expect(regions[0]).toBe("{deck === 'unknown' ? (<p>a</p>) : null}");
-    expect(regions[1]).toBe("{deck === 'unknown' ? (<p>b</p>) : null}");
+    expect(regions[0]).toBe("{deck !== 'due' && (<p>a</p>)}");
+    expect(regions[1]).toBe("{deck !== 'due' && (<p>b</p>)}");
   });
 
   it('would still catch a label planted outside EVERY gate', () => {
-    const src = `<p>${PRACTICE_LABEL}</p> {deck === 'unknown' ? (<p>${PRACTICE_LABEL}</p>) : null}`;
+    const src = `<p>${PRACTICE_LABEL}</p> {deck !== 'due' && (<p>${PRACTICE_LABEL}</p>)}`;
     let outside = src;
     for (const region of braceRegions(src, UNKNOWN_GATE)) outside = outside.split(region).join('');
     expect(outside, 'the ungated copy survives the subtraction').toContain(PRACTICE_LABEL);

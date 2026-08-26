@@ -121,9 +121,16 @@ export default function CardDeck({
       //    ⛔ No count, no streak, no score, no readiness (`לא בתחולה` · T-032) — the finish
       //    state is a closure, and a number here would be a claim no decision makes.
       <section className="flex flex-col gap-4" data-card-deck={deck} data-deck-done>
-        <p className="text-base text-ink-muted">
-          {deck === 'unknown' ? 'תרגול — לא משנה את מועד החזרה' : 'מנת היום'}
-        </p>
+        {/* T-155 — `level` נושא את **אותה** הבטחה של `unknown`, כי הוא כותב את אותן שתי
+            עמודות בדיוק (D-032 · D-033). ⛔ לא «מנת היום»: זו חפיסה שלישית.
+            ⛔ **שני תנאים ⛔ ולא שלישייה אחת,** וזה ⛔ אינו סגנון: `CardDeck.test.ts` מודד
+            **הכלה** — שכל עותק של התווית יושב בתוך שער — ומחלץ שערים לפי סוגריים
+            מאוזנים. ענף `else` של שלישייה ⛔ אינו אזור שאפשר לחלץ, ולכן הטענה הייתה
+            נמחקת מהבדיקה במקום להיאכף בה. */}
+        {deck === 'due' && <p className="text-base text-ink-muted">מנת היום</p>}
+        {deck !== 'due' && (
+          <p className="text-base text-ink-muted">תרגול — לא משנה את מועד החזרה</p>
+        )}
         <h1 className="text-3xl font-bold leading-tight text-ink">סיימת</h1>
         <Link
           href="/cards"
@@ -158,10 +165,12 @@ export default function CardDeck({
       data-card-deck={deck}
     >
       <header className="flex flex-none items-center justify-between gap-3 border-b border-border-subtle bg-surface py-2 text-sm text-ink-muted">
-        {deck === 'unknown' ? (
+        {/* T-155 — התווית הקבועה חלה על **כל** חפיסה שדירוגה עובר ב-`/api/practice`,
+            ⛔ ולא על `unknown` בלבד: ההבטחה היא על מה שהכפתורים ⛔ אינם עושים, והיא חייבת
+            להיות נכונה על הכרטיס שהלומד מסתכל בו (D-033). */}
+        {deck === 'due' && <span>מנת היום</span>}
+        {deck !== 'due' && (
           <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
-        ) : (
-          <span>מנת היום</span>
         )}
         <span data-remaining={remaining.length}>נותרו {remaining.length}</span>
       </header>

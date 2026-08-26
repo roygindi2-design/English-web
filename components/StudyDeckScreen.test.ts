@@ -61,8 +61,17 @@ function braceRegion(source: string, open: string): string {
   throw new Error(`unbalanced braces after ${open} in StudyDeckScreen.tsx`);
 }
 
-/** The gate the practice route is allowed to live behind, and the only one. */
-const UNKNOWN_GATE = "if (deck === 'unknown') {";
+/**
+ * The gate the practice route is allowed to live behind, and the only one.
+ *
+ * ⚠️ **Widened C-0318 (T-155), ⛔ and the claim was ⛔ not weakened.** `level` grades write
+ * the same two counters as `unknown` (D-032 · D-033 · T-155ⓒ), so the practice route now
+ * serves two decks — but it still serves them from ⛔ ONE branch, and `/api/review` is still
+ * unreachable from inside it. The string is written out in full rather than matched loosely
+ * for the same reason it always was: `deck !== 'due'` would let a fourth deck inherit the
+ * practice wire silently, and this test would ⛔ not notice.
+ */
+const UNKNOWN_GATE = "if (deck === 'unknown' || deck === 'level') {";
 
 describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.2ו)', () => {
   it('is a client component', () => {

@@ -289,6 +289,70 @@ async function loadNewWords(
   return excludeSeen(candidates, seenIds).slice(0, wanted);
 }
 
+/**
+ * T-155 · D-089 — «סינון מילים»: the learner's whole level, in the order the ingest
+ * pipeline ranked it.
+ *
+ * ⛔ **It reads `words`, ⛔ not `word_progress`,** and that is the point: the other two
+ * decks can only ever show what the learner has already met, so a word nobody introduced
+ * is unreachable until the five-a-day brake gets around to it. Measured 26/08: A1 holds
+ * **305** authored words and `NEW_CARDS_PER_DAY` is **5** ⇒ **61 days** to see the level.
+ *
+ * ⛔ **The band comes from `profiles.current_level` compared to `words.cefr_profile_band`,
+ * ⛔ and never to `senses.cefr_level`** (D-034: the two disagree on 125 of 343 measured
+ * senses, and the second column has no provenance and is not maintained).
+ *
+ * ⛔ **Nothing is excluded.** `unknown` and `due` are defined by the learner's counters;
+ * this deck is defined by the level, so a word already known is still IN the level and
+ * still shown. Filtering by progress here would make «סינון מילים» a second, silent
+ * spaced-repetition queue — which is exactly what D-032/D-033 keep it from being.
+ */
+async function loadLevelWords(supabase: RouteClient, band: string): Promise<QueueRow[]> {
+  const { data, error } = await supabase
+    .from('words')
+    .select(WORDS_SELECT)
+    .eq('cefr_profile_band', band)
+    // ⛔ The order is the contract, ⛔ not a preference: band first (a single band here, but
+    // stated so the two decks that share `WORDS_SELECT` cannot drift), then `ngsl_rank`,
+    // which is frequency — the teaching order the ingest pipeline already computed.
+    .order('cefr_profile_band', { ascending: true, nullsFirst: false })
+    .order('ngsl_rank', { ascending: true, nullsFirst: false })
+    .limit(MAX_QUEUE_ROWS);
+
+  if (error) {
+    console.error('[api/study/queue] level read failed:', error.message);
+    throw error;
+  }
+
+  return ((data ?? []) as unknown as NewWordRow[])
+    .map(toNewQueueRow)
+    .filter((row): row is QueueRow => row !== null);
+}
+
+/**
+ * `profiles.current_level`, read as a value and ⛔ never defaulted. A learner who has not
+ * chosen a level has ⛔ no level — `?? 'A1'` here would silently teach the wrong band to
+ * every one of them, and the screen already has a state for "no level yet" (`kind: 'choose'`).
+ */
+async function readCurrentLevel(
+  supabase: RouteClient,
+  userId: string,
+): Promise<{ readonly ok: true; readonly level: string | null } | { readonly ok: false }> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('current_level')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[api/study/queue] current_level read failed:', error.message);
+    return { ok: false };
+  }
+
+  const level = (data as { current_level?: string | null } | null)?.current_level;
+  return { ok: true, level: typeof level === 'string' && level !== '' ? level : null };
+}
+
 /** GET /api/study/queue — see docs/api-contract.md */
 export async function GET(request: Request) {
   const env = readSupabaseEnv();
@@ -308,6 +372,47 @@ export async function GET(request: Request) {
   // not ask for — `sentences` is blocked by D-035 and must read as blocked, not as empty.
   if (deck === null) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
   const limit = clampQueueLimit(params.get('limit'));
+
+  // T-155 · D-089 — «סינון מילים» answers from `words` and therefore ⛔ never touches the
+  // `word_progress` query below. It returns FIRST so that query is not paid for at all.
+  if (deck === 'level') {
+    const profile = await readCurrentLevel(supabase, user.id);
+    if (!profile.ok) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+    // ⛔ 409 and ⛔ not 503: the request is well-formed and the server is healthy — the
+    // learner simply has no level yet. ⛔ And ⛔ not a silent fall-back to A1, which would
+    // teach a band nobody chose. `<LevelMapScreen>` already renders this as `kind: 'choose'`.
+    if (profile.level === null) {
+      return NextResponse.json({ ok: false, code: 'no_level' }, { status: 409 });
+    }
+
+    let levelRows: QueueRow[];
+    try {
+      levelRows = await loadLevelWords(supabase, profile.level);
+    } catch (levelError) {
+      const code = (levelError as { code?: string }).code;
+      if (code === '42P01' || code === 'PGRST205') {
+        return NextResponse.json(
+          { ok: false, code: 'schema_missing', message: 'המאגר עדיין לא הוקם' },
+          { status: 503 },
+        );
+      }
+      return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+    }
+
+    // `total` before the cut, exactly as the contract fixes it for the other two decks —
+    // it is the only reason `<DeckSelector>` can read a count with `limit=1`.
+    //
+    // ⛔ **`slice` and ⛔ not `selectDeck`,** for the same measured reason `loadNewWords`
+    // gives four functions up: the query already ordered these rows by band and then by
+    // `ngsl_rank`, and `sortQueue` has no rank to sort by — every row here is unscheduled,
+    // so its tie-break would replace FREQUENCY with the alphabet. «anchor before apple» is
+    // a dictionary, ⛔ not a teaching order. The pure layer still owns the deck's shape
+    // (`selectDeck(rows, 'level', …)` keeps every row, and `deck.test.ts` pins that).
+    const levelCards = levelRows
+      .slice(0, limit)
+      .map((row) => toQueueCardInput(row, PROMOTE_AFTER_CONSECUTIVE_CORRECT));
+    return NextResponse.json({ ok: true, deck, total: levelRows.length, cards: levelCards });
+  }
 
   // F-034: the order comes BEFORE the ceiling, because Postgres does not promise row order
   // without one — a `limit(200)` with no `order` returns an arbitrary 200 of the learner's

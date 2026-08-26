@@ -16,8 +16,18 @@
 
 import { BINARY_GRADES, directionFor, type CardDirection, type CardGrade } from './flashcard';
 
-export type DeckName = 'due' | 'unknown';
-export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown'];
+/**
+ * T-155 · D-089 — `'level'` is ADDITIVE and the two names above it ⛔ do not move.
+ *
+ * «סינון מילים» is the whole level, in band-then-rank order, and it exists because the
+ * only other supply of new words is the five-a-day brake in `app/api/study/queue/route.ts`
+ * — measured 26/08 as **61 days** to see A1's 305 authored words. ⛔ It is ⛔ not a third
+ * scheduling mode: grading from it writes `attempts` / `correct_attempts` and ⛔ nothing
+ * else (D-032 · D-033), exactly as `unknown` does. Looking at a word ⛔ is not an exposure
+ * that was answered.
+ */
+export type DeckName = 'due' | 'unknown' | 'level';
+export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown', 'level'];
 export const DEFAULT_QUEUE_LIMIT = 20;
 export const MAX_QUEUE_LIMIT = 50;
 /** סדר הרמות. ⛔ המקור הוא words.cefr_profile_band בלבד (D-034). */
@@ -129,7 +139,10 @@ export function selectDeck(
   limit: number,
 ): QueueRow[] {
   // `due` is filtered by the query (`next_review_at <= now`), so filtering it again here
-  // would be a second, divergent definition of the same deck.
+  // would be a second, divergent definition of the same deck. `level` is filtered by the
+  // query too — the band predicate is `words.cefr_profile_band = profiles.current_level` —
+  // and re-filtering it here would be the same duplicated definition one deck over. ⛔ Only
+  // `unknown` filters, because only `unknown` is defined by counters this layer can read.
   const filtered = deck === 'unknown' ? rows.filter(isUnknownRow) : rows;
   return sortQueue(filtered).slice(0, limit);
 }

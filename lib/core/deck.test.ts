@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   applyPractice, bandRank, checkPracticePayload, clampQueueLimit, DEFAULT_QUEUE_LIMIT,
@@ -179,5 +180,87 @@ describe('T-100 · D-043 — התזמון נוסע בחוט, ⛔ ואפס עמו
   it('מילה שטרם תוזמנה ⇒ null ⛔ ולא אפוק 0', () => {
     const fresh = { ...row, nextReviewAtMs: null, intervalDays: 0, attempts: 0 };
     expect(toQueueCardInput(fresh, 3).review).toEqual({ next_review_at: null, interval_days: 0 });
+  });
+});
+
+/**
+ * T-155 · D-089 — «סינון מילים».
+ *
+ * ⚠️ שלוש הבדיקות האחרונות כאן סורקות את **המסלול** ⛔ ולא את השכבה הטהורה, וזה בכוונה:
+ * שלוש ההבטחות של D-089 (⛔ אפס SM-2 · ⛔ אפס `senses.cefr_level` · ⛔ אפס נפילה ל-A1)
+ * חיות בקובץ שאין לו בדיקת יחידה — הוא נוגע ב-Supabase — ובלי סריקת מקור אף אחת מהן
+ * ⛔ אינה נמדדת בכלל. סריקה היא ראיה חלשה יותר מהרצה, ו⛔ היא חזקה מאינסוף מאין-בדיקה.
+ */
+describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)', () => {
+  const QUEUE_ROUTE_SRC = readFileSync('app/api/study/queue/route.ts', 'utf8');
+  /**
+   * ⛔ **הערות מוסרות לפני הסריקה, וזה ⛔ אינו החלשה.** המשפט «⛔ ולעולם לא
+   * `senses.cefr_level`» מופיע בקובץ **כהערה שאוסרת אותו**, ולכן סריקה על הקובץ הגולמי
+   * הייתה נופלת על התיעוד של הכלל עצמו — ומי שהיה מתקן אותה היה מוחק את ההערה, ⛔ לא
+   * את הסכנה. מה שנמדד כאן הוא **קוד חי**. אותו דפוס בדיוק ב-`Flashcard.test.ts`.
+   */
+  const stripComments = (source: string): string =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const QUEUE_ROUTE_CODE = stripComments(QUEUE_ROUTE_SRC);
+
+  it('מקבל `level` כשם חפיסה', () => {
+    expect(parseDeckName('level')).toBe('level');
+  });
+
+  it('⛔ ואינו שובר את שתי החפיסות הקיימות', () => {
+    expect(parseDeckName('due')).toBe('due');
+    expect(parseDeckName('unknown')).toBe('unknown');
+    expect(parseDeckName(null)).toBe('due');
+    // D-035: `sentences` עדיין 400 — ⛔ התוספת לא פתחה אותה בטעות.
+    expect(parseDeckName('sentences')).toBeNull();
+  });
+
+  it('שומר כל שורה שהשאילתה החזירה, בסדר רמה ואז כותרת', () => {
+    const rows = [
+      row({ cefrProfileBand: 'B1', headword: 'zebra', nextReviewAtMs: null }),
+      row({ cefrProfileBand: 'A1', headword: 'apple', nextReviewAtMs: null }),
+      row({ cefrProfileBand: 'A1', headword: 'anchor', nextReviewAtMs: null }),
+    ];
+    expect(selectDeck(rows, 'level', 20).map((r) => r.headword)).toEqual([
+      'anchor',
+      'apple',
+      'zebra',
+    ]);
+  });
+
+  it('⛔ אינו משמיט מילה שטרם נענתה, כפי ש-`unknown` כן', () => {
+    const fresh = row({ attempts: 0, repetition: 0 });
+    expect(selectDeck([fresh], 'unknown', 20)).toHaveLength(0);
+    expect(selectDeck([fresh], 'level', 20)).toHaveLength(1);
+  });
+
+  it('⛔ אינו מסנן מילה שכבר ידועה — היא ברמה, והחפיסה היא הרמה', () => {
+    const known = row({ attempts: 9, repetition: 4 });
+    expect(selectDeck([known], 'level', 20)).toHaveLength(1);
+  });
+
+  // ⛔ שלוש המוטציות. כל אחת נופלת **בשם**, ⛔ ולא בטענה כללית.
+  it('מוטציה: דירוג מחפיסת הרמה ⛔ לעולם אינו נוגע ב-SM-2', () => {
+    const next = applyPractice({ attempts: 3, correctAttempts: 1 }, 'good');
+    expect(Object.keys(next).sort()).toEqual(['attempts', 'correctAttempts']);
+  });
+
+  it('מוטציה: חפיסת הרמה ⛔ לעולם אינה ממוינת לפי senses.cefr_level', () => {
+    expect(QUEUE_ROUTE_CODE).not.toMatch(/senses[^\n]*cefr_level/);
+  });
+
+  it('מוטציה: current_level ריק ⇒ no_level, ⛔ ולעולם לא A1', () => {
+    expect(QUEUE_ROUTE_CODE).toContain("'no_level'");
+    expect(QUEUE_ROUTE_CODE).not.toMatch(/current_level[^\n]*\?\?\s*'A1'/);
+  });
+
+  it('מוטציה: הסדר בשאילתה הוא ngsl_rank, ⛔ ולא שובר-שוויון אלפביתי', () => {
+    // ⛔ הבדיקה היא על **הפונקציה**, ⛔ לא על הקובץ כולו: `loadNewWords` מסדר באותה
+    // צורה בדיוק, ולכן סריקה גלובלית הייתה עוברת גם אם הענף הזה איבד את הסדר.
+    const fn = QUEUE_ROUTE_CODE.slice(QUEUE_ROUTE_CODE.indexOf('async function loadLevelWords'));
+    const body = fn.slice(0, fn.indexOf('\n}\n'));
+    expect(body).toContain("ngsl_rank");
+    expect(body).toContain("cefr_profile_band");
+    expect(body).not.toContain('excludeSeen');
   });
 });

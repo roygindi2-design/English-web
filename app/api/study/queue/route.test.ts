@@ -148,11 +148,34 @@ describe('החוזה מתעדכן באותו קומיט (RULES, Dev § 5)', () =
 const SRC = readFileSync('app/api/study/queue/route.ts', 'utf8');
 
 describe('F-034 — סדר בשאילתה, ⛔ ולא 200 שורות שרירותיות', () => {
+  /**
+   * ⚠️ **הוצמד לשאילתה C-0318 (T-155), ⛔ והטענה ⛔ לא נחלשה — היא התחדדה.** מאז שיש
+   * שתי שאילתות עם `MAX_QUEUE_ROWS` (‏`word_progress` ו-`words` של `deck=level`),
+   * `indexOf` על הקובץ כולו היה מודד את התקרה של האחת מול הסדר של האחרת — כלומר טוען
+   * טענה נכונה על צמד שגוי. ⇒ **כל שאילתה נמדדת בתוך עצמה**, ושתיהן נדרשות.
+   */
+  const queryRegion = (from: string): string => {
+    const at = CODE.indexOf(from);
+    expect(at, `expected the query ${from} in route.ts`).toBeGreaterThan(-1);
+    const rest = CODE.slice(at);
+    const end = rest.indexOf(';');
+    return end === -1 ? rest : rest.slice(0, end);
+  };
+
   it('יש order לפני התקרה — Postgres אינו מבטיח סדר שורות בלי order', () => {
-    const orderAt = CODE.indexOf(".order('next_review_at'");
-    const limitAt = CODE.indexOf('.limit(MAX_QUEUE_ROWS)');
-    expect(orderAt).toBeGreaterThan(-1);
-    expect(limitAt).toBeGreaterThan(orderAt);
+    const progress = queryRegion(".select(PROGRESS_SELECT)");
+    expect(progress.indexOf(".order('next_review_at'")).toBeGreaterThan(-1);
+    expect(progress.indexOf('.limit(MAX_QUEUE_ROWS)')).toBeGreaterThan(
+      progress.indexOf(".order('next_review_at'"),
+    );
+  });
+
+  it('T-155 — גם שאילתת הרמה מסודרת לפני התקרה, ⛔ ולא 200 מילים שרירותיות', () => {
+    const level = queryRegion(".eq('cefr_profile_band', band)");
+    expect(level.indexOf(".order('ngsl_rank'")).toBeGreaterThan(-1);
+    expect(level.indexOf('.limit(MAX_QUEUE_ROWS)')).toBeGreaterThan(
+      level.indexOf(".order('ngsl_rank'"),
+    );
   });
 
   it('שובר שוויון דטרמיניסטי — שתי בקשות זהות חותכות את אותן שורות', () => {

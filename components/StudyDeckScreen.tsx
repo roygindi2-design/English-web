@@ -60,6 +60,8 @@ import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
 
 const HEADING_HE = 'מנת היום';
 const PRACTICE_HEADING_HE = 'לא ידעתי';
+/** T-155 · `36 § 5` — שם החפיסה כלשונו במפרט. ⛔ לא «מנת היום»: זו חפיסה אחרת. */
+const LEVEL_HEADING_HE = 'סינון מילים';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
@@ -99,9 +101,17 @@ async function sendGrade(
   grade: CardGrade,
   elapsedMs: number,
 ): Promise<void> {
-  if (deck === 'unknown') {
+  // T-155 · D-089 — `level` grades travel the SAME wire as `unknown`, and that is
+  // T-155ⓒ verbatim: «⛔ אפס כתיבה ל-SM-2 — `attempts` בלבד». ⛔ The condition is written
+  // as an explicit list and ⛔ not as `deck !== 'due'`: a fourth deck added later would
+  // inherit the practice wire silently, and which endpoint a deck grades through is the
+  // one decision on this screen that D-033 makes load-bearing.
+  if (deck === 'unknown' || deck === 'level') {
     // D-033: two counters, ⛔ no scheduling fields. The route rejects a word with no
     // progress row with 404 rather than inventing one, so a failure here is real.
+    // ⚠️ **F-140 (C-0318):** for `level` that 404 is the COMMON case, ⛔ not the stray one —
+    // a word the learner never met has no row. The write path for it is ⛔ undefined by any
+    // signed decision, which is why the `סינון מילים` tile ships LOCKED this tick.
     const practice = await apiPost<GradeResponse>('/api/practice', {
       word_id: card.word_id,
       grade,
@@ -222,7 +232,9 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-3xl font-bold leading-tight">
-        {deck === 'due' ? HEADING_HE : PRACTICE_HEADING_HE}
+        {/* ⛔ שלוש חפיסות, שלוש כותרות. קודם לכן הביטוי היה בינארי, ולכן `level`
+            היה מקבל «לא ידעתי» — שם של חפיסה אחרת על מסך שהלומד פתח בשם אחר. */}
+        {deck === 'due' ? HEADING_HE : deck === 'level' ? LEVEL_HEADING_HE : PRACTICE_HEADING_HE}
       </h1>
 
       {/* The shape of what is coming, ⛔ not a spinner (constitution § 5). The markup lives
