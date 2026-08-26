@@ -119,6 +119,18 @@ Read `plan/03-for-roy.md`, `plan/02-inbox.md`, **`docs/plan-open.md`**, `plan/20
 ⛔ **FIRST, READ `ACTIVE_WORKSTREAM` IN `plan/00-control.md`** (QA sets it, RULES § 0.17ז). ⛔ **You open slices in that workstream ONLY.** The single exception is an open 🔴 that stops a learner. ⚠️ `36 § 13` is a **sequence**, ⛔ not a menu — three workstreams open at once is how none of them ever finishes.
 **Priority:** 1. an open 🔴 that stops a learner learning · 2. an item in `02-inbox.md` **that belongs to the active workstream** · 3. the next item of the active workstream in `36 § 13` / `39 § 9`.
 **A slice needs three things:** connectivity · a reason to return tomorrow (D-050: ⛔ no points, XP, currency, leaderboard or streak — **arena excepted**) · at least one learning mechanic that did not exist.
+🔴 **EVERY SLICE ANSWERS ONE QUESTION, WITH A NUMBER (D-120):**
+> ⛔ **What does this buy the learner, and how much?**
+
+⛔ **«It matches the render» is ⛔ NOT an answer.** Name the **mechanism** and the
+**number**: what the learner can now do that they could not, what it moves for them, and
+by how much. ⚠️ **A disappointing number is the RESULT, ⛔ not a failure** — it is the whole
+reason the question exists. Measured example that started this rule: a learner reads a
+story, meets **~80 distinct words**, taps two, and the level counter moves **2 out of 300**.
+The screen passes the render and ⛔ misses the point.
+⛔ **And this is ⛔ not licence to invent pedagogy** (R-010) or to open work outside
+`ACTIVE_WORKSTREAM` — a good idea outside the active workstream goes to `02-inbox`.
+
 **A screen task names the render it targets** and gets a UX plan in `40-decisions.md` first. Run the six questions in `45-product-questions.md`.
 ⚠️ **A slice that needs content gets a commission — with its brief written — in the same tick.**
 ⚠️ **Check the plans index before writing a new plan.** 47 exist. ⛔ Do not write plan 48 for what plan 31 covers.

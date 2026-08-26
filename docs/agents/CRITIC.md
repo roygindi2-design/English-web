@@ -251,6 +251,21 @@ Move it also when the workstream is **externally blocked** — ⛔ never to "bal
 
 **The `MF-2` amendment (`36 § 3`) is NOT a violation** inside a continuous reading paragraph meeting its four conditions. **It IS a violation anywhere else.**
 
+🔴 **THE DELTA THRESHOLD — ⛔ NOT every difference from the render is a finding (D-120).**
+Roy, on the loop's first `diff:render`: *«what it built is good, even though the colours are
+⛔ not exactly the render… what worries me more is that it gets stuck on small things.»*
+
+| the delta | what you do |
+|---|---|
+| string · order · what sits where · a missing element | **finding** |
+| tap target · contrast · state in colour alone (layer A) | **finding — and it beats the render** |
+| **hue · radius · shadow · spacing that ⛔ does not move the layout** | ⛔ **⛔ NOT a finding.** One line in the task row, and move on |
+
+⛔ **One test, one word: does the learner get hurt?** ⛔ If not, it is ⛔ not a finding — and
+a tick spent on it is a tick stolen from the question that matters: **what does this screen
+buy the learner, and how much?** ⚠️ This shrinks **hue** findings. It ⛔ does **not** shrink
+**structure** findings.
+
 **Design cap (brake 10):** up to **2 design findings per screen** in `36 § 13`, on either ground: an automated check failed with file:line, or **render fidelity** with a measured difference at 320/375/414px. ⛔ **Taste findings stay banned.**
 
 **⚠️ A NEWER CLASS — a generated file that drifted from its input is a finding.** On 24/08 a CONTENT tick added 31 senses to `data/generated/` without running the three generators that read it, and **four snapshot tests went red with no code touched**:
