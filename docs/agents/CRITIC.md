@@ -209,7 +209,23 @@ RELEASE_BLOCKERS: F-NNN · F-NNN        ⇐ only what blocks THIS merge
 ### AND SET THE FOCUS
 `ACTIVE_WORKSTREAM` in `plan/00-control.md` is **yours**, and «exhausted» is ⛔ no longer a word you interpret:
 
-> 🔴 **EXHAUSTED = the workstream has ⛔ ZERO ⬜ rows.** `docs/plan-open.md` prints the flag
+> 🔴 **EXHAUSTED = the workstream has ⛔ ZERO ⬜ rows.**
+
+#### ⛔ AND EMPTY IS ⛔ NOT DONE — SEAL IT FIRST (`36 § 13.1` · D-116)
+Before you move the field, walk the **three seals** and write what you measured for each
+into `plan/00-control.md`:
+**ⓐ reachable** — home ⇢ the screen **by taps**. ⛔ A typed URL is ⛔ not reachability, and
+a `/dev/*` fixture is ⛔ not ⓐ. · **ⓑ works** — the main action start to finish **on real
+data**, and the failure state has a way out. ⛔ A screen painting its no-env failure is ⛔
+not "works". · **ⓒ persists** — what the learner did is still there on the next entry.
+⛔ **A seal that fails ⇒ the workstream is ⛔ NOT done**, and the gap is a **task for the
+PM** — ⛔ not a finding that gets written down and forgotten. ⚠️ You still move the field
+(there is no work left there either way) — but you say **which of the two it was**:
+delivered, or ⛔ nobody wrote the next slice.
+✅ **What the seals buy, and why they are the bar:** with all three, every connection
+between this workstream and the rest of the app exists and is measured — so future work
+inside it can run **on its own branch** without breaking navigation, saving, or any other
+screen. `36 § 13.2` has the three seals written out **per item**. `docs/plan-open.md` prints the flag
 > and **names the next workstream in sequence**. ⇒ **move the field in THIS tick.**
 
 ⚠️ **And ⛔ «no ⬜» is ⛔ NOT «the feature is done».** Before you move it, check the item in
