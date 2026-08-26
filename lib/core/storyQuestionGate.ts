@@ -31,7 +31,7 @@ export const ANSWERS_PER_QUESTION = 3;
  * ולכן ⛔ אינן נדרשות להופיע בסיפור. ⚠️ הרשימה משמשת **אך ורק** להחרגה מבדיקת
  * העיגון — היא ⛔ אינה מעניקה היתר אוצר מילים, ומילה כאן שאינה בבנק עדיין נפסלת.
  */
-const QUESTION_FUNCTION_WORDS: ReadonlySet<string> = new Set([
+export const QUESTION_FUNCTION_WORDS: ReadonlySet<string> = new Set([
   'what', 'who', 'where', 'when', 'why', 'how', 'which', 'whose',
   'is', 'are', 'was', 'were', 'do', 'does', 'did', 'be', 'been', 'being',
   'the', 'a', 'an', 'this', 'that', 'these', 'those',

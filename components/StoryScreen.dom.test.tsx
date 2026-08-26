@@ -2,29 +2,44 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { StoryScreenView, type StoryPayload } from '@/components/StoryScreen';
+import {
+  FIXTURE_BODY_EN,
+  FIXTURE_COUNTS,
+  FIXTURE_GLOSSES,
+  FIXTURE_KNOWN_LEMMAS,
+  FIXTURE_QUESTION,
+  FIXTURE_STORY_ID,
+  FIXTURE_TITLE_EN,
+} from '@/app/dev/story/story-fixture';
 
 afterEach(cleanup);
 
 /**
  * ⛔ **הפיקסטורה הזאת ⛔ אינה «כמו» נתוני המוצר — היא הצורה של החוט.** הלקח של 23/08
  * (`DEV.md`): 2,403 בדיקות היו ירוקות כי הפיקסטורה נבדלה מנתוני הייצור בממד אחד.
- * ⇒ `question` כאן הוא שורה 2 של `data/generated/story-questions-2026-08-25.jsonl`,
- * ⛔ ולא שאלה שנכתבה כאן.
+ *
+ * ⚠️ **ו-F-133 הוכיחה שהמשפט הזה ⛔ לא הספיק:** עד 26/08 ישבה כאן שאלה **אמיתית**
+ * מ-`story-questions-2026-08-25.jsonl` — אבל שאלתו של סיפור **אחר**, «The letter in
+ * the book», מעל גוף שהוא «The library near the river». הבדיקה **קיבעה** את הזיווג
+ * השגוי, ולכן 2,676 בדיקות ירוקות ⛔ לא יכלו לתפוס «שאלה בלי תשובה».
+ * ⇒ הפיקסטורה כולה מיובאת עכשיו מ-`@/app/dev/story/story-fixture` — **אותו מקור בדיוק**
+ * ששני מסכי `/dev/story` מרנדרים — ו-`story-fixture.test.ts` מודד אותו מול
+ * `docs/design/render_video_A.py` ומול העיגון של השאלה בגוף. ⛔ אין כאן עותק שני.
  */
 const PAYLOAD: StoryPayload = {
-  story: { id: 'fixture-story', titleEn: 'The library near the river', bodyEn: 'She found a book.' },
+  story: { id: FIXTURE_STORY_ID, titleEn: FIXTURE_TITLE_EN, bodyEn: FIXTURE_BODY_EN },
   index: 3,
   total: 12,
   level: 'A1',
-  glosses: { book: { translationHe: 'סֵפֶר', posHe: 'שם עצם', wordId: 'fixture-book' } },
-  knownLemmas: ['book'],
-  counts: { newWords: 5, alreadyKnown: 2 },
-  question: {
-    questionEn: 'Who wrote the letter that was in the book?',
-    answersHe: ['אם', 'אנשים', 'חבר'],
-    correctIndex: 2,
-  },
+  glosses: FIXTURE_GLOSSES,
+  knownLemmas: FIXTURE_KNOWN_LEMMAS,
+  counts: FIXTURE_COUNTS,
+  question: FIXTURE_QUESTION,
 };
+
+/** `Object.keys(FIXTURE_GLOSSES).length` · `FIXTURE_KNOWN_LEMMAS.length` — 7 ו-2. */
+const GLOSS_COUNT = Object.keys(FIXTURE_GLOSSES).length;
+const KNOWN_COUNT = FIXTURE_KNOWN_LEMMAS.length;
 
 describe('T-202 — the question is a STATE, and the chrome survives the swap', () => {
   it('phase `reading` shows ⛔ no question', () => {
@@ -39,7 +54,11 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
     expect(screen.getByText('שאלת הבנה')).toBeTruthy();
     // ⛔ THE POINT OF THE TEST: the chrome must still be there after the swap.
     expect(screen.getByText('סיפור 3 מתוך 12')).toBeTruthy();
-    expect(screen.getByText('5 מילים חדשות · 2 שכבר ידעת')).toBeTruthy();
+    expect(
+      screen.getByText(
+        `${FIXTURE_COUNTS.newWords} מילים חדשות · ${FIXTURE_COUNTS.alreadyKnown} שכבר ידעת`,
+      ),
+    ).toBeTruthy();
   });
 
   it('⛔ the reading paragraph is gone once the question is up — it is a SWAP, ⛔ not an append', () => {
@@ -71,11 +90,15 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
 
   it('T-150 — the intro layer states what the learner ALREADY has', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
-    expect(screen.getByText(/בסיפור הזה 1 מילים\. 1 מהן אתה כבר מכיר\./)).toBeTruthy();
+    expect(GLOSS_COUNT).toBe(7);
+    expect(KNOWN_COUNT).toBe(2);
+    expect(
+      screen.getByText(`בסיפור הזה ${GLOSS_COUNT} מילים. ${KNOWN_COUNT} מהן אתה כבר מכיר.`),
+    ).toBeTruthy();
   });
 
   it('⛔ the intro layer belongs to the READING phase only', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />);
-    expect(screen.queryByText(/בסיפור הזה 1 מילים\./)).toBeNull();
+    expect(screen.queryByText(new RegExp(`בסיפור הזה ${GLOSS_COUNT} מילים\\.`))).toBeNull();
   });
 });
