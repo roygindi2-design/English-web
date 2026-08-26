@@ -167,19 +167,33 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   transform: translateX(-0.75rem);
 }
 
-/* T-099 · D-042ⓒ — ההיזון החזותי של ההחלקה. ⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע:
-   הכרטיס ⛔ אינו נגרר, ולכן אין כאן מטפל תנועה ואין ערך רציף. שני המספרים הם
-   התקרות שההחלטה נוקבת בהן — 8px ו-200ms — ו-prefers-reduced-motion למעלה
-   מאפס את המשך בלי כלל נוסף כאן. */
+/* T-157 · D-090ⓑ — ההיזון החזותי של ההחלקה, **אחרי** שהכרטיס נצמד לאצבע.
+   ⚠️ **שוכתב 26/08. הניסוח הקודם כאן קבע «⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע» ו-8px
+   ‏— D-090ⓑ הפכה את שניהם**, ולכן ההנמקה ההיא חדלה להתקיים ⛔ ואינה מצוטטת כאן.
+
+   שתי תנועות, ⛔ ולא אחת, וזו ההפרדה כולה:
+   ⓐ **בזמן הגרירה** — `[data-dragging]`: הכרטיס נושא `transform` inline שנקבע בכל
+      `pointermove`, ולכן ⛔ **אין כאן מעבר בכלל**. מעבר מתוזמן על ערך רציף הוא פיגור
+      בין האצבע לכרטיס, ⛔ והוא גם ⛔ אינו מה שחוקה § 5 מסדירה: גרירה היא **מניפולציה
+      ישירה**, ⛔ ולא אנימציה שהמוצר מנגן.
+   ⓑ **בשחרור** — הענף השני: ההיסט המוטבע יורד, ו-200ms ב-easing אחד מחזירים את הכרטיס
+      למקומו או מוציאים אותו לכיוון המחווה. **זה** מה ש-§ 5 מסדירה, וזה בטווח 150–300ms.
+
+   ⛔ `prefers-reduced-motion` ⇒ **אפס תנועה**: הבלוק הגלובלי למעלה מאפס את המשך, ובנוסף
+   ‏`dragOffset` מחזיר `x: 0` בשכבה הטהורה ⇒ ⛔ אין היסט מוטבע כלל. שני מחסומים, כי
+   ‏`transition-duration: 0.01ms` על `transform` מוטבע עדיין **מזיז** את הכרטיס. */
 [data-flashcard] {
   transition: transform 200ms ease-out, opacity 200ms ease-out;
 }
+[data-flashcard][data-dragging] {
+  transition: none;
+}
 [data-flashcard][data-swipe='good'] {
-  transform: translateX(8px);
+  transform: translateX(32px);
   opacity: 0.6;
 }
 [data-flashcard][data-swipe='again'] {
-  transform: translateX(-8px);
+  transform: translateX(-32px);
   opacity: 0.6;
 }
 

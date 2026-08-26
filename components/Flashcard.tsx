@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcard';
-import { resolveSwipe } from '@/lib/core/swipeGrade';
+import { dragOffset, resolveSwipe } from '@/lib/core/swipeGrade';
 import { DECAY_LABEL, decayLevel, parseReviewAt } from '@/lib/core/decay';
 import type { QueueCardReview } from '@/lib/core/deck';
 
@@ -54,6 +54,26 @@ export default function Flashcard({
   // מחדש על כל `pointerdown` היה מאפס את שדה ההקלדה של הכיוון השני.
   const swipeFrom = useRef<{ x: number; y: number } | null>(null);
   const [swipe, setSwipe] = useState<CardGrade | null>(null);
+  /**
+   * T-157 · D-090ⓑ — ההיסט החי של הגרירה. ⛔ **state ו⛔ לא ref**, בניגוד ל-`swipeFrom`
+   * שמעליו: נקודת ההתחלה ⛔ אינה משנה פיקסל על המסך, וההיסט **הוא** הפיקסלים. ⛔ אפס
+   * `Date.now()` ואפס `matchMedia` ברינדור — ⛔ אין כאן שעון, וההעדפה נקראת אחרי ההרכבה.
+   */
+  const [dragX, setDragX] = useState(0);
+
+  /**
+   * ⛔ `prefers-reduced-motion` נקרא **אחרי** ההרכבה ו⛔ לא ברינדור: `matchMedia` ⛔ אינו
+   * קיים בשרת, ורינדור ראשון שנבדל בין הצדדים הוא אזהרת hydration שהארנס סופר כשגיאה.
+   * ⛔ והוא ⛔ אינו נקרא פעם אחת בלבד — לומד שמשנה את ההעדפה בזמן שהמסך פתוח מקבל אותה.
+   */
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
 
   // ⛔ אפס `Date.now()` ברינדור: השרת והלקוח היו מקבלים שני מספרים שונים,
   // וזו אזהרת hydration שהארנס סופר כשגיאת קונסולה. השעון נכנס **אחרי**
@@ -74,6 +94,7 @@ export default function Flashcard({
     setTyped('');
     setGrade(null);
     setSwipe(null);
+    setDragX(0);
   }
 
   const primary = (text: string, lang: 'en' | 'he') =>
@@ -115,13 +136,36 @@ export default function Flashcard({
          שומר המקור ב-`Flashcard.test.ts` מסיר הערות-בלוק בלבד, ולכן שם של מטפל
          שנכתב בהערת-שורה היה מפיל אותו כאילו הוא קוד חי. */
       data-swipe={swipe ?? undefined}
+      data-dragging={dragX !== 0 ? 'true' : undefined}
+      /* T-157 · D-090ⓑ — הכרטיס עוקב אחרי האצבע **1:1**, ⛔ ולא ב-8 פיקסלים.
+         ⛔ `transition` ⛔ אינו מוגדר כאן בזמן הגרירה: מעבר מתוזמן על ערך שמשתנה בכל
+         `pointermove` הוא פיגור בין האצבע לכרטיס. ה-CSS ב-`globals.css` מכבה את המעבר
+         בדיוק כשהתכונה `data-dragging` נוכחת, ומחזיר אותו בשחרור. */
+      style={dragX === 0 ? undefined : { transform: `translateX(${dragX}px)` }}
       onPointerDown={(e) => {
         setSwipe(null);
+        setDragX(0);
         swipeFrom.current = swipeActive ? { x: e.clientX, y: e.clientY } : null;
+      }}
+      onPointerMove={(e) => {
+        const from = swipeFrom.current;
+        if (from === null) return;
+        // ⛔ ההכרעה כולה בשכבה הטהורה: `prefers-reduced-motion` ⇒ **אפס תנועה**
+        // ⛔ ולא «פחות», ומספר לא-סופי ⛔ אינו אפס ו⛔ אינו הרבה.
+        setDragX(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x);
+      }}
+      onPointerCancel={() => {
+        // מחווה שהמערכת חטפה (שיחה נכנסת, מחוות מערכת) — הכרטיס **חוזר למקומו**,
+        // ⛔ ואינו נשאר תלוי באמצע המסך בלי שאיש דירג אותו.
+        swipeFrom.current = null;
+        setDragX(0);
       }}
       onPointerUp={(e) => {
         const from = swipeFrom.current;
         swipeFrom.current = null;
+        // ⛔ מתאפס **תמיד**, בשני הענפים: מעל הסף `data-swipe` נושא את היציאה, ומתחתיו
+        // הכרטיס חוזר למקומו — ובשניהם המעבר של `globals.css` מנגן את ההשתקעות.
+        setDragX(0);
         if (from === null) return;
         const resolved = resolveSwipe({
           startX: from.x,

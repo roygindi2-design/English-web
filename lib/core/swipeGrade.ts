@@ -25,8 +25,46 @@ export interface SwipeInput {
 export const SWIPE_EDGE_PX = 20;
 export const SWIPE_MIN_DISTANCE_PX = 64;
 export const SWIPE_MAX_ANGLE_DEG = 30;
-export const SWIPE_FEEDBACK_MAX_PX = 8;
+/**
+ * משך ההשתקעות של **השחרור**, ⛔ ולא של הגרירה — חוקה § 5 («150–300ms, easing אחד»).
+ * ⛔ ערך אחד לשני הכיוונים: יציאה מעל הסף וחזרה למקום מתחתיו הן אותה תנועה בשני יעדים,
+ * ושני משכים היו שני easing בפועל.
+ */
 export const SWIPE_FEEDBACK_MAX_MS = 200;
+
+/**
+ * T-157 · D-090ⓑ — **הכרטיס נצמד לאצבע.**
+ *
+ * ⚠️ **תקרת שמונת הפיקסלים פרשה כאן, וזה ⛔ אינו ריכוך של חוקה § 5.** § 5 חלה על
+ * **השחרור** — אנימציה מתוזמנת. גרירה היא **מניפולציה ישירה**: היא ⛔ אינה תנועה שהמוצר
+ * מנגן, היא האצבע. תקרה של 8 פיקסלים על מעקב אחרי אצבע ⛔ אינה «פחות תנועה» — היא משוב
+ * שהלומד ⛔ אינו מרגיש בכלל.
+ *
+ * ⚠️ **ועקרון הקוהרנטיות של Mayer (T-041) ⛔ אינו חל כאן:** הוא אוסר **קישוט שמתחרה
+ * בתוכן**, וכרטיס שעוקב אחרי האצבע הוא **המשוב על המחווה עצמה**.
+ *
+ * ⛔ **שלושת הספים למעלה ⛔ אינם זזים** — הם **נמדדו** (רצועת ה-back-swipe של iOS · הסף
+ * שמפריד מחווה מגלילה מעט אלכסונית), ⛔ ולא נבחרו בטעם.
+ */
+export type DragOffset = { readonly x: number; readonly settleMs: number };
+
+export function dragOffset(input: {
+  readonly startX: number;
+  readonly currentX: number;
+  readonly reducedMotion: boolean;
+}): DragOffset {
+  // ⛔ `prefers-reduced-motion` נבדק **ראשון** ומחזיר **אפס תנועה**, ⛔ ולא מספר קטן
+  // יותר: חוקה שכבה A דורשת שהתנועה **תיפסק**. המחווה עצמה עדיין מוכרעת ב-`resolveSwipe`,
+  // ⇒ לומד שכיבה תנועה עדיין מדרג בהחלקה.
+  if (input.reducedMotion) return { x: 0, settleMs: 0 };
+  const delta = input.currentX - input.startX;
+  // אותו כלל של `resolveSwipe`: מספר שאינו סופי ⛔ אינו «אפס» ו⛔ אינו «הרבה».
+  if (!Number.isFinite(delta)) return { x: 0, settleMs: 0 };
+  // ⛔ `settleMs: 0` **בזמן הגרירה** — 1:1 הוא מניפולציה ישירה ⛔ ולא אנימציה, וכל
+  // `transition` כאן היה מכניס פיגור בין האצבע לכרטיס. ההשתקעות שייכת ל**שחרור**, והמשך
+  // שלה הוא `SWIPE_FEEDBACK_MAX_MS` — ⛔ קבוע אחד, ⛔ ולא שני שמות לאותו מספר.
+  return { x: delta, settleMs: 0 };
+}
 
 const MAX_ANGLE_RAD = (SWIPE_MAX_ANGLE_DEG * Math.PI) / 180;
 

@@ -237,17 +237,39 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
   });
 
   /**
-   * F-103 · D-042 · T-099 — הבדיקה הקודמת כאן אסרה מחווה בנימוק «D-032 בתוקף».
-   * D-042 הפכה את D-032 במפורש, ולכן הנימוק חדל להתקיים. ⛔ הבדיקה ⛔ לא הוחלשה:
-   * מה שהיא מודדת עכשיו **חד יותר** — לא «אין מחווה» אלא «המחווה היא קיצור, ⛔ לא
-   * ערוץ, ⛔ לא גרירה, ⛔ ולא מסלול שני».
+   * 🔴 **הפוכה 26/08 — D-090ⓑ · T-157.** הבדיקה כאן אסרה **כל מטפל תנועה** בנימוק
+   * «D-042ⓒ: הכרטיס ⛔ אינו נגרר». ⛔ **D-090ⓑ הפכה בדיוק את הסעיף הזה**: נמדד ש-
+   * `SWIPE_FEEDBACK_MAX_PX = 8` הוא משוב שהלומד ⛔ אינו מרגיש, והכרטיס עוקב עכשיו אחרי
+   * האצבע **1:1**. ⇒ הנימוק חדל להתקיים, ⛔ והבדיקה ⛔ לא נמחקה — היא מודדת עכשיו את מה
+   * ש**כן** נשאר אסור, וזה **חד יותר** ממה שהיה:
+   *
+   * ⓐ **הגרירה עוברת בשכבה הטהורה** (`dragOffset`) ⛔ ואינה מחושבת ב-JSX — שם היא הייתה
+   *   נבדקת רק בדפדפן, ⛔ ואף פעם לא בגבול שלה (מספר לא-סופי · reduced-motion).
+   * ⓑ ⛔ **אפס `onTouchMove`/`onTouchStart`/`onDrag`** — מטפלי מגע מקבילים ל-Pointer הם
+   *   מסלול שני לאותה מחווה, וזה בדיוק מה ש-D-042 אוסרת.
+   * ⓒ **מחווה שנחטפה חוזרת** — `onPointerCancel` חייב להתקיים, אחרת כרטיס נשאר תלוי
+   *   באמצע המסך בלי שאיש דירג אותו.
    */
-  it('D-042ⓒ — ⛔ ⛔ גרירה: אין מטפל תנועה בכל הקובץ', () => {
-    for (const forbidden of ['onPointerMove', 'onTouchMove', 'onTouchStart', 'onDrag']) {
-      expect(T085_CARD_SRC, `${forbidden} ⇒ הכרטיס נגרר עם האצבע — D-042ⓒ אוסרת`).not.toContain(
+  it('T-157 · D-090ⓑ — הגרירה עוברת בשכבה הטהורה, ⛔ ואין מסלול מגע שני', () => {
+    expect(T085_CARD_SRC, 'הכרטיס חייב לעקוב אחרי האצבע — D-090ⓑ').toContain('onPointerMove');
+    expect(T085_CARD_SRC, 'ההכרעה חיה ב-lib/core/swipeGrade.ts').toContain('dragOffset(');
+    expect(T085_CARD_SRC, 'מחווה שנחטפה חייבת להחזיר את הכרטיס').toContain('onPointerCancel');
+    for (const forbidden of ['onTouchMove', 'onTouchStart', 'onDrag']) {
+      expect(T085_CARD_SRC, `${forbidden} ⇒ מסלול שני לאותה מחווה — D-042 אוסרת`).not.toContain(
         forbidden,
       );
     }
+  });
+
+  /** ⛔ מוטציה: תקרת שמונת הפיקסלים ⛔ לא תחזור. */
+  it('MUTATION: ⛔ אין תקרה קשיחה על ההיסט של הגרירה', () => {
+    const pure = readFileSync('lib/core/swipeGrade.ts', 'utf8');
+    expect(pure).not.toContain('SWIPE_FEEDBACK_MAX_PX');
+    // ⛔ ולא `Math.min`/`Math.max` על ההיסט: 1:1 פירושו ⛔ אין חיתוך.
+    const start = pure.indexOf('export function dragOffset');
+    expect(start).toBeGreaterThan(-1);
+    const body = pure.slice(start, pure.indexOf('\n}', start));
+    expect(body).not.toMatch(/Math\.(min|max|sign)/);
   });
 
   it('D-042 — שני הכפתורים נשארים הערוץ הקנוני', () => {

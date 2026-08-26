@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  dragOffset,
   resolveSwipe,
   SWIPE_EDGE_PX,
+  SWIPE_FEEDBACK_MAX_MS,
   SWIPE_MAX_ANGLE_DEG,
   SWIPE_MIN_DISTANCE_PX,
 } from './swipeGrade';
@@ -135,5 +138,62 @@ describe('קלט לא סביר ⛔ אינו מייצר ציון', () => {
 
   it('אינסוף ⇒ null', () => {
     expect(resolveSwipe({ ...base, endX: Number.POSITIVE_INFINITY, endY: 400 })).toBeNull();
+  });
+});
+
+/**
+ * T-157 · D-090ⓑ — הכרטיס נצמד לאצבע.
+ *
+ * ⚠️ שלושת הספים של `resolveSwipe` נבדקים למעלה ו⛔ **אינם זזים** — הם נמדדו (רצועת
+ * ה-back-swipe של iOS · הסף שמפריד מחווה מגלילה מעט אלכסונית), ⛔ ולא נבחרו בטעם.
+ * מה שחדש הוא **המשוב**, ⛔ ולא ההכרעה.
+ */
+describe('dragOffset — מעקב 1:1 אחרי האצבע', () => {
+  it('עוקב אחרי האצבע 1:1, בשני הכיוונים', () => {
+    expect(dragOffset({ startX: 200, currentX: 260, reducedMotion: false }).x).toBe(60);
+    expect(dragOffset({ startX: 200, currentX: 140, reducedMotion: false }).x).toBe(-60);
+  });
+
+  it('⛔ אין תקרה — 300 פיקסלים הם 300 פיקסלים, ⛔ ולא 8', () => {
+    expect(dragOffset({ startX: 20, currentX: 320, reducedMotion: false }).x).toBe(300);
+  });
+
+  it('תנועה מופחתת פירושה אפס תנועה, ⛔ ולא פחות תנועה', () => {
+    expect(dragOffset({ startX: 200, currentX: 260, reducedMotion: true }).x).toBe(0);
+    expect(dragOffset({ startX: 200, currentX: 900, reducedMotion: true }).x).toBe(0);
+  });
+
+  it('והמחווה עצמה עדיין מוכרעת כשהתנועה כבויה — הקיצור ⛔ לא בוטל', () => {
+    expect(
+      resolveSwipe({ startX: 200, startY: 400, endX: 300, endY: 400, viewportWidth: 375 }),
+    ).toBe('good');
+  });
+
+  it('מספר שאינו סופי ⛔ אינו «אפס» ו⛔ אינו «הרבה» — אותו כלל של resolveSwipe', () => {
+    expect(dragOffset({ startX: Number.NaN, currentX: 260, reducedMotion: false }).x).toBe(0);
+    expect(
+      dragOffset({ startX: 200, currentX: Number.POSITIVE_INFINITY, reducedMotion: false }).x,
+    ).toBe(0);
+  });
+
+  it('⛔ בזמן הגרירה אין השתקעות — 1:1 הוא מניפולציה ישירה, ⛔ ולא אנימציה', () => {
+    expect(dragOffset({ startX: 200, currentX: 260, reducedMotion: false }).settleMs).toBe(0);
+  });
+
+  it('מוטציה: שלושת הספים שנמדדו ⛔ אינם זזים', () => {
+    expect(SWIPE_EDGE_PX).toBe(20);
+    expect(SWIPE_MIN_DISTANCE_PX).toBe(64);
+    expect(SWIPE_MAX_ANGLE_DEG).toBe(30);
+  });
+
+  it('מוטציה: משך ההשתקעות בשחרור בטווח 150–300ms של חוקה § 5', () => {
+    expect(SWIPE_FEEDBACK_MAX_MS).toBeGreaterThanOrEqual(150);
+    expect(SWIPE_FEEDBACK_MAX_MS).toBeLessThanOrEqual(300);
+  });
+
+  it('מוטציה: המעבר מכובה בזמן הגרירה, ⛔ ומוחזר בשחרור', () => {
+    const css = readFileSync('app/globals.css', 'utf8');
+    expect(css).toMatch(/\[data-flashcard\]\[data-dragging\]\s*\{\s*transition:\s*none;/);
+    expect(css).toMatch(/\[data-flashcard\]\s*\{\s*transition:\s*transform\s+200ms/);
   });
 });

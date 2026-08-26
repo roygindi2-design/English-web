@@ -26,11 +26,18 @@ import { buildCard, type CardGrade } from '@/lib/core/flashcard';
  *    same axis, so the blanket ban was wider than the evidence that justified it.
  *    What survives, and is not negotiable: the two ≥44px buttons with a Hebrew label and a
  *    glyph stay **the canonical channel**, and the swipe calls **exactly the same handler**
- *    — ⛔ never a second path with its own logic. Three caveats come from measurement:
+ *    — ⛔ never a second path with its own logic. Two caveats come from measurement:
  *    ⓐ a **20px** strip at each edge does not respond (iOS Safari back-swipe), ⓑ the
- *    gesture needs ≥**64px** of travel at ≤**30°** off the horizontal, ⓒ ⛔ zero horizontal
- *    scroll survives: the card is ⛔ never dragged with the finger — feedback is ≤8px of
- *    offset plus an opacity change, ≤**200ms**, switched off by prefers-reduced-motion.
+ *    gesture needs ≥**64px** of travel at ≤**30°** off the horizontal.
+ *    ⚠️ **The third caveat was REVERSED on 26/08 (D-090ⓑ · T-157), and it is deliberately
+ *    ⛔ NOT quoted here** — a dead instruction sitting in a live file is one some agent
+ *    will still obey (the `36 § 14.4` precedent). What it forbade was the finger; what was
+ *    measured is that its 8-pixel allowance is feedback a learner ⛔ does not feel.
+ *    The card now tracks the finger **1:1** during the
+ *    drag and settles in one easing on release — ⛔ and that is ⛔ not a relaxation of
+ *    constitution § 5, which governs the RELEASE: dragging is **direct manipulation**,
+ *    ⛔ not an animation the product plays. ⛔ Zero horizontal SCROLL still survives:
+ *    the container below keeps its own overflow, and `translateX` ⛔ does not scroll it.
  *    ⛔ None of that lives here: `<Flashcard>` owns both grade buttons, so it owns the
  *    shortcut to them, and this component still adds no control of its own.
  *
@@ -178,7 +185,13 @@ export default function CardDeck({
       {/* The scroll container. `h-dvh` lives on the section above, so one card fills exactly
           what is left under the label — a card taller than the viewport would put the grade
           buttons below the fold on the very screen they exist for. */}
-      <div className="snap-y snap-mandatory min-h-0 flex-1 overflow-y-auto" data-deck-scroll>
+      {/* ⛔ `overflow-x-hidden` מפורש (T-157ⓕ): הכרטיס נגרר עכשיו 1:1, ולכן `translateX`
+          של 200 פיקסלים מגיע אל מחוץ למכולה. ⛔ גלילה אופקית היא בדיוק מה ש-`check:mobile`
+          מפיל ב-320/375/414, ו-`overflow-y-auto` לבדו ⛔ אינו חוסם את הציר השני. */}
+      <div
+        className="snap-y snap-mandatory min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+        data-deck-scroll
+      >
         {remaining.map((card) => (
           <article
             key={card.word_id}

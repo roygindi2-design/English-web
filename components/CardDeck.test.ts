@@ -304,11 +304,23 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
     );
   });
 
-  it('names D-042 and all three caveats, with their numbers', () => {
+  it('names D-042 and the two measured caveats, with their numbers', () => {
     // המספרים הם התוכן: הערה שאומרת «יש סייגים» ⛔ אינה מונעת מימוש שמפר אותם.
-    for (const required of ['D-042', '20px', '64px', '30°', '200ms']) {
+    // ⚠️ **`200ms` ירד מהרשימה 26/08 (D-090ⓑ · T-157), ו⛔ הדרישה ⛔ לא נזנחה — היא עברה
+    // לקובץ שבו המספר חי.** הסייג השלישי של D-042 היה «⛔ אין גרירה, המשוב הוא ≤8px
+    // ב-≤200ms»; D-090ⓑ **הפכה** אותו, והכרטיס עוקב עכשיו אחרי האצבע 1:1. ⇒ ציטוט של
+    // «200ms» כסייג **כאן** היה נוסח בטל — בדיוק מה שהבדיקה שמעליה נכתבה נגדו. המשך
+    // ההשתקעות נמדד עכשיו כמספר, ⛔ ולא כמחרוזת בהערה: `SWIPE_FEEDBACK_MAX_MS` בטווח
+    // 150–300ms ב-`lib/core/swipeGrade.test.ts`, ושם גם המעבר של `globals.css`.
+    for (const required of ['D-042', '20px', '64px', '30°']) {
       expect(SRC, `${required} — סייג של D-042 שההערה חייבת לשאת`).toContain(required);
     }
+  });
+
+  /** ⛔ מוטציה: ההערה ⛔ אינה רשאית להמשיך לצטט את הסייג ש-D-090ⓑ הפכה. */
+  it('MUTATION: ⛔ the comment must not still claim the card is never dragged', () => {
+    expect(SRC).not.toContain('never dragged with the finger —');
+    expect(SRC).toContain('D-090ⓑ');
   });
 
   it('⛔ changes no code at all — the comment is the whole task', () => {
