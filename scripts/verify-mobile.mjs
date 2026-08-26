@@ -115,6 +115,12 @@ const ROUTES = [
   // מקבלת את הסיפור כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE,
   // והשקט הזה הוא מה שמוכיח שהמדידה אינה על מסך הכשל.
   '/dev/story',
+  // C-0299 (T-188) — מסך הסיום, ואותו נימוק בדיוק כמו `/dev/deck/done` מול `/dev/deck`:
+  // הוא נפתח רק **אחרי** קריאת סיפור שלמה, ולכן ⛔ אינו נגיש מהמסלול שמעליו בהרצה הזאת.
+  // הפיקסטורה מקבלת את השאלה כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה
+  // ב-EXPECTED_CONSOLE. ⚠️ שורות התשובה הן שורות **רשימה**, ולכן החרגת `36 § 3`
+  // ⛔ אינה חלה עליהן והן נמדדות מול 44px מלאים ככל כפתור אחר.
+  '/dev/story/done',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no

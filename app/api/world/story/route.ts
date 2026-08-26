@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { parseLevel } from '@/lib/core/levelSummary';
 import { LEARNER_TIME_ZONE, toIsoDateInZone } from '@/lib/core/onboarding';
 import { STORIES_PER_LEVEL, storyLemma } from '@/lib/core/storyGate';
+import { ANSWERS_PER_QUESTION } from '@/lib/core/storyQuestionGate';
 import { dayIndexFromIsoDate, pickStory } from '@/lib/core/storyPick';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 import {
@@ -97,16 +98,27 @@ export async function GET(request: Request) {
     });
   }
 
-  const [glossResult, progressResult] = await Promise.all([
+  const [glossResult, progressResult, questionResult] = await Promise.all([
     supabase.from('words').select(GLOSS_SELECT).eq('cefr_profile_band', level).limit(MAX_GLOSS_ROWS),
     supabase
       .from('word_progress')
       .select('words!inner(headword)')
       .eq('user_id', user.id)
       .limit(MAX_GLOSS_ROWS),
+    // ⛔ **קריאה רכה, ⛔ ולא 503**, מאותו נימוק בדיוק כמו `readStories` ב-
+    // `app/api/world/status/route.ts`: `0019_story_questions.sql` היא טבלה חדשה, וסיפור
+    // בלי שאלה חייב להישאר **קריא**. ⇒ כישלון כאן יורד ללוג, ו-`question` הוא `null`.
+    supabase
+      .from('story_questions')
+      .select('question_en, answers_he, correct_index')
+      .eq('story_id', picked.story.id)
+      .maybeSingle(),
   ]);
   if (glossResult.error) return schemaAwareFailure('glosses', glossResult.error);
   if (progressResult.error) return schemaAwareFailure('progress', progressResult.error);
+  if (questionResult.error) {
+    console.error('[api/world/story] question read failed:', questionResult.error.message);
+  }
 
   const glossRows = toGlossRows((glossResult.data ?? []) as unknown as readonly RawGlossRow[]);
   const byHeadword = new Map<string, GlossRow>();
@@ -145,8 +157,28 @@ export async function GET(request: Request) {
     glosses,
     knownLemmas: [...knownLemmas].sort(),
     counts: { newWords, alreadyKnown },
+    // ⛔ סדר התשובות ⛔ אינו נקבע כאן ו⛔ אינו סדר הכתיבה — `lib/core/storyQuestion.ts`
+    // מערבב דטרמיניסטית לפי מזהה הסיפור, במסך. ⛔ `null` ⇒ ⛔ אין מסך סיום, ⛔ ולא
+    // «אין שאלה»: סיפור בלי שאלה נשאר סיפור קריא.
+    question: toQuestion(questionResult.error === null ? questionResult.data : null),
     stories: { atLevel: stories.length, required: STORIES_PER_LEVEL },
   });
+}
+
+/** ⛔ שורה פגומה היא `null`, ⛔ ולא שאלה חלקית: שלוש תשובות ואינדקס שמצביע לתוכן. */
+function toQuestion(
+  data: unknown,
+): { questionEn: string; answersHe: readonly string[]; correctIndex: number } | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const row = data as { question_en?: unknown; answers_he?: unknown; correct_index?: unknown };
+  if (typeof row.question_en !== 'string' || row.question_en.trim() === '') return null;
+  if (!Array.isArray(row.answers_he) || row.answers_he.length !== ANSWERS_PER_QUESTION) return null;
+  const answersHe = row.answers_he.map((a) => String(a));
+  const correctIndex = Number(row.correct_index);
+  if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= answersHe.length) {
+    return null;
+  }
+  return { questionEn: row.question_en, answersHe, correctIndex };
 }
 
 /**

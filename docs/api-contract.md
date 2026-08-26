@@ -703,8 +703,18 @@ T-124 · D-065). הצרכן הוא `<LevelMapScreen>`, ולשלושת הקודי
   "glosses": { "library": { "translationHe": "סִפְרִיָּה", "posHe": "שם עצם", "wordId": "…" } },
   "knownLemmas": ["river", "book"],
   "counts": { "newWords": 5, "alreadyKnown": 2 },
+  "question": { "questionEn": "Who wrote the letter that was in the book?",
+                "answersHe": ["אם", "אנשים", "חבר"], "correctIndex": 2 },
   "stories": { "atLevel": 12, "required": 3 } }
 ```
+
+⚠️ **`question` — שאלת ההבנה (T-188 · D-108א), ו⛔ קריאה רכה.** ‏`0019_story_questions.sql`
+היא טבלה חדשה, וסיפור בלי שאלה חייב להישאר **קריא** ⇒ כישלון הקריאה יורד ללוג בלבד
+והשדה הוא **`null`**. ⛔ `null` פירושו «⛔ אין מסך סיום», ⛔ ולא «אין שאלה» על המסך.
+⛔ **`correctIndex` הוא האינדקס כפי שנכתב, ו⛔ אינו סדר התצוגה** — `lib/core/storyQuestion.ts`
+מערבב דטרמיניסטית לפי מזהה הסיפור, במסך, כדי שהתשובה הנכונה ⛔ לא תשב באותו מקום בכל
+הסיפורים. ⛔ שורה עם מספר תשובות שאינו `ANSWERS_PER_QUESTION`, או אינדקס מחוץ לתחום,
+חוזרת כ-`null` — ⛔ ולא כשאלה חלקית.
 
 ⚠️ **הבחירה דטרמיניסטית ו⛔ אינה אקראית.** היא נעשית ב-`pickStory` (`lib/core/storyPick.ts`)
 על אינדקס-יום באזור `LEARNER_TIME_ZONE`: שתי טעינות של אותו מצב מחזירות **את אותו סיפור**,

@@ -745,7 +745,7 @@ Body `{ "word_id": "<uuid>" }`, the `ok:true` answer, the codes, and one sentenc
 - Consumes: `StoryQuestionRecord`, `ANSWERS_PER_QUESTION` from `lib/core/storyQuestionGate.ts` · the 12 gated rows in `data/generated/story-questions-2026-08-25.jsonl` (CONTENT, C-0295 — gate 12/12, negative control 0/5).
 - Produces: `shuffleAnswers`, `StoryQuestion` · `export default function StoryEndScreen(props: StoryEndScreenProps)`.
 
-- [ ] **Step 1: Write the failing shuffle test** into `lib/core/storyQuestion.test.ts`
+- [x] **Step 1: Write the failing shuffle test** into `lib/core/storyQuestion.test.ts`
 
 **The 23/08 lesson, applied:** a fixture whose three answers are the same length and the same shape is a hole, ⛔ not a test. These fixtures deliberately vary length and put the correct answer somewhere other than index 0.
 
@@ -792,24 +792,24 @@ describe('T-188ⓓ — position comes from the story id, ⛔ not from write orde
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/storyQuestion.test.ts`
 Expected: FAIL — `Failed to resolve import "./storyQuestion"`.
 
-- [ ] **Step 3: Write `lib/core/storyQuestion.ts`**
+- [x] **Step 3: Write `lib/core/storyQuestion.ts`**
 
 A Fisher–Yates walk driven by a small integer hash of the story id — ⛔ zero `Math.random`, for the same reason `lib/core/storyPick.ts` has none: a learner who refreshes must see the answers in the same order, or the screen looks like it is cheating.
 
-- [ ] **Step 4: Write `supabase/migrations/0019_story_questions.sql`**
+- [x] **Step 4: Write `supabase/migrations/0019_story_questions.sql`**
 
 Copy the shape of `supabase/migrations/0018_stories.sql` exactly — it is the house pattern and its guard test already exists: `begin;` / `commit;` · `create table if not exists public.story_questions` · **⛔ no constraint declared inside `create table`** (a second run skips the whole statement — measured C-0032), each named constraint added inside `do $$ … end $$` · RLS enabled with one `select` policy for `authenticated` · `revoke all` then `grant select` · ⛔ no insert/update/delete for the client. Columns: `id uuid pk`, `story_id uuid not null references public.stories(id) on delete cascade`, `question_en text not null`, `answers_he text[] not null`, `correct_index int not null`, `origin text not null` (`check (origin = 'generated')`), `created_at timestamptz not null default now()`, `unique (story_id)`.
 
-- [ ] **Step 5: Write the migration guard test** into `lib/supabase/storyQuestions.test.ts`
+- [x] **Step 5: Write the migration guard test** into `lib/supabase/storyQuestions.test.ts`
 
 Mirror `lib/supabase/stories.test.ts` — it proves what the file **says**, not that it ran. Whitelist the comments away first (`F-087` · `F-088`), then assert the transaction, `if not exists`, the named constraints outside `create table`, the single `select` policy, and that `answers_he` is length-checked against `ANSWERS_PER_QUESTION`.
 
-- [ ] **Step 6: Push the migration and verify it landed**
+- [x] **Step 6: Push the migration and verify it landed**
 
 ⚠️ Connect first with the two commands the scheduled task supplied — they live there and ⛔ nowhere in this repo.
 
@@ -819,20 +819,20 @@ node -e "1" # then confirm via list_migrations that 0019 is applied
 ```
 Expected: `0019_story_questions` applied. ⛔ Do not leave the `.sql` for Roy to run by hand.
 
-- [ ] **Step 7: Write `scripts/build-story-questions-sql.mjs`**
+- [x] **Step 7: Write `scripts/build-story-questions-sql.mjs`**
 
 Same shape as `scripts/build-stories-sql.mjs`: read `data/generated/story-questions-*.jsonl`, re-run `storyQuestionGate` on every row, **stop rather than write an empty file** (a seed with no rows looks like an ingest that succeeded), and write `supabase/seed/0005_story_questions.sql`. Add `"build:questions"` to `package.json` scripts next to `build:stories`.
 
-- [ ] **Step 8: Write `components/StoryEndScreen.tsx` and `app/dev/story/done/page.tsx`**
+- [x] **Step 8: Write `components/StoryEndScreen.tsx` and `app/dev/story/done/page.tsx`**
 
 Strings, verbatim: `שאלת הבנה` · the English question in `<EnWord>` · three Hebrew answers · on choice, an SVG icon **and** a Hebrew label · then `עברת על N מילים שהיו בתור החזרה שלך` — **«עברת על», ⛔ never «אתה יודע אותן»** (§ 4.2יג-ב ⓒ, ⛔ not cancelled) — the exit `לתרגל אותן בכרטיסיות`, and the primary action `הסיפור הבא`, which reloads `GET /api/world/story?read=<ids seen this session>`.
 
-- [ ] **Step 9: Measure and compare**
+- [x] **Step 9: Measure and compare**
 
 Run: `npm run check:mobile && npm run diff:render /dev/story/done docs/design/kol-A-06-question.png`
 Expected: `ok /dev/story/done` at 320/375/414, every answer row ≥44px (⛔ these are list rows, ⛔ not inline reading targets — the `36 § 3` exemption does ⛔ not reach them), zero horizontal scroll.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 ./scripts/g add supabase/migrations/0019_story_questions.sql lib/supabase/storyQuestions.test.ts scripts/build-story-questions-sql.mjs lib/core/storyQuestion.ts lib/core/storyQuestion.test.ts components/StoryEndScreen.tsx app/dev/story/done/page.tsx app/api/world/story/route.ts docs/api-contract.md package.json
