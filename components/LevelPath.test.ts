@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 
 /** `<LevelPath>` — שורה 6 של § 4.2ז (T-084). שומר מקור. */
 const SRC = readFileSync('components/LevelPath.tsx', 'utf8');
-const SCREEN = readFileSync('components/LevelMapScreen.tsx', 'utf8');
 
 function withoutComments(source: string): string {
   return source
@@ -84,13 +83,34 @@ describe('חוקת העיצוב', () => {
   });
 });
 
-describe('הרכיב הוא שורה 6 של המסך, ⛔ ואינו יתום', () => {
-  it('‏<LevelMapScreen> מרנדר אותו אחרי שורה 5', () => {
-    expect(SCREEN).toContain('LevelPath');
-    expect(SCREEN.indexOf('UnknownList')).toBeLessThan(SCREEN.indexOf('<LevelPath'));
+/**
+ * ⚠️ **ההורה השתנה C-0318 (T-211 · D-123), ו⛔ שמירת היתמות ⛔ לא נחלשה — היא עברה
+ * לקובץ הנכון.** `36 § 5` פותח ב«**אין מעבר רמות כאן**», ולכן `<LevelPath>` ⛔ אינו
+ * שורה במסך הכרטיסיות עוד; הבית שלו הוא `הגדרות` (`36 § 4`: «לתת בית לשינוי רמה»).
+ * ⛔ **הרכיב עצמו ⛔ לא נגעו בו** — זהו שינוי **הורה**, וכל הבדיקות שמעל עוברות כלשונן.
+ *
+ * ⚠️ **ובדיקת ההורה סורקת מקור ⛔ מנוקה-הערות מעכשיו (F-141):** הניסוח הקודם קרא את
+ * ה-`SRC` הגולמי, ולכן הזכרה של `<LevelPath` **בהערה** הייתה מספקת אותו — נמדד בטיק
+ * הזה: הבדיקה עברה על `<LevelMapScreen>` שכבר ⛔ לא רינדר אותו כלל.
+ */
+describe('הרכיב אינו יתום — הבית שלו הוא `הגדרות` (T-211)', () => {
+  const SETTINGS = readFileSync('app/(tabs)/settings/page.tsx', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+
+  it('‏`הגדרות` מרנדר אותו', () => {
+    expect(SETTINGS).toContain('<LevelPath');
   });
 
-  it('המסך מוסר לו את levels מהשרת ⛔ ואינו בונה אותם בעצמו', () => {
-    expect(SCREEN).toContain('levels={');
+  it('ההורה מוסר לו את levels מהשרת ⛔ ואינו בונה אותם בעצמו', () => {
+    expect(SETTINGS).toContain('levels={');
+    expect(SETTINGS).toContain("'/api/levels/summary'");
+  });
+
+  it('מוטציה: מסך הכרטיסיות ⛔ אינו מרנדר אותו עוד (36 § 5 · D-123)', () => {
+    const cards = readFileSync('components/LevelMapScreen.tsx', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    expect(cards).not.toContain('<LevelPath');
   });
 });

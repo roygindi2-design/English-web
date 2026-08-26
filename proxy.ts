@@ -24,8 +24,14 @@ const AUTH_SCREENS = ['/signup', '/login'];
  * `word_progress`, and `/cards` is the queue's home. ⛔ The `/dev/*` fixtures
  * are deliberately absent — a session-gated fixture answers 307 and
  * `check:mobile` silently measures `/login` instead (the F-027 cause-1 lesson).
+ *
+ * ⚠️ `/settings` joined in C-0318 (T-211ⓔ) and ⛔ not "later": since that tick it
+ * reads `GET /api/levels/summary` and writes `POST /api/levels/current`, i.e. it
+ * holds the learner's own level. The comment this file used to carry said the
+ * screen would join «the moment it holds something private» — this is that
+ * moment, and it is the SAME commit.
  */
-const PROTECTED_SCREENS = ['/onboarding', '/studies', '/cards', '/me'];
+const PROTECTED_SCREENS = ['/onboarding', '/studies', '/cards', '/me', '/settings'];
 
 /** Exported for the F-003 unit test and reused by the onboarding screen's own guard. */
 export function isProtectedPath(pathname: string) {
