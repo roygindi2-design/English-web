@@ -194,10 +194,10 @@ can reach it without a browser.
 
 ### Task `T-206` — the memory (⛔ before the screen, so the screen has something to call)
 
-- [ ] **5.** Write `lib/core/lastNode.test.ts`: a table of hostile inputs — `null` · `''` ·
+- [x] **5.** Write `lib/core/lastNode.test.ts`: a table of hostile inputs — `null` · `''` ·
       `'arena"); DROP'` · `'ARENA'` · `'library'` (a node id that ⛔ does not exist) — each
       expecting `null`; and `'arena'` expecting `'arena'`.
-- [ ] **6.** Write `lib/core/lastNode.ts` from § 2. `npm run check:core` again.
+- [x] **6.** Write `lib/core/lastNode.ts` from § 2. `npm run check:core` again.
 
 ### Task `T-205` — the screen
 
