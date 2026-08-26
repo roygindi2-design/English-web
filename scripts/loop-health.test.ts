@@ -58,7 +58,7 @@ const healthy = (): string => {
     '| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n' +
       `| 1 | PM (C-0001) | 2026-08-01 | לעשות משהו · נבדק: ${today} | כי | לא |\n`,
   );
-  write('plan/00-control.md', 'RELEASE_READY: ""\n');
+  write('plan/00-control.md', 'RELEASE_READY: ""\nACTIVE_WORKSTREAM: story\n');
   write('plan/26-plan-feedback.md', '| C-0001 | `p.md` | `files` | why | ⬜ |\n');
   write('plan/50-tasks.md', '| T-001 | M0 | uses 2026-01-01-real-plan.md | — | ⬜ | 0 | — | — |\n');
   write('docs/superpowers/plans/2026-01-01-real-plan.md', '# plan\n');
@@ -84,7 +84,7 @@ describe('scripts/loop-health.mjs', () => {
     // false on both sides. It passed while measuring nothing. Now it names the
     // checks and asserts each one individually.
     const r = run(healthy());
-    expect(r.out).toContain('loop health: 8/10 checks pass');
+    expect(r.out).toContain('loop health: 8/11 checks pass');
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -97,6 +97,11 @@ describe('scripts/loop-health.mjs', () => {
     // pass here. Stated out loud rather than excluded quietly — a checker whose
     // own test hides a failure is the thing this whole file exists against.
     expect(failed(r.out, '8')).toBe(true);
+    // ⛔ Check 11 reads the REAL `docs/plan-open.md` the fixture copies in, so its
+    // verdict tracks the live repo, ⛔ not the fixture. Named here rather than left
+    // to be absorbed by the 8/11 count — a total that quietly swallows a failure is
+    // the same lie as a check that passes because it could not run.
+    expect(failed(r.out, '11')).toBe(true);
     expect(r.code).toBe(1);
   });
 
@@ -110,7 +115,7 @@ describe('scripts/loop-health.mjs', () => {
     expect(passes).toBeDefined();
     // ⛔ ids 1–10, contiguous since 25/08: check 9 (the control-register ceiling)
     // was lit early — the file was measured 661 bytes OVER its own rule.
-    expect(total).toBe('10');
+    expect(total).toBe('11');
     expect(r.code).toBe(passes === total ? 0 : 1);
   });
 
@@ -255,6 +260,27 @@ describe('scripts/loop-health.mjs', () => {
     patch(root, 'plan/00-control.md', () => '');
     const r = run(root);
     expect(failed(r.out, '9')).toBe(true);
+    expect(r.out).toContain('⛔ לא נמדד');
+  });
+
+  /**
+   * ⛔ **11 — הבדיקה היחידה שמודדת בזבוז, ⛔ ולא נכונות.** ‏DEV לוקח עבודה **רק**
+   * מהזרימה הפעילה; כשהיא ריקה, כל טיק שלו הוא שכפול + קריאת פרומפט + ⛔ אפס תוצר.
+   * נמדד 26/08: `story` התרוקנה ב-05:29 והשדה עדיין אמר `story` שעתיים אחר כך.
+   */
+  it('11 · goes red when the active workstream has no open row', () => {
+    const root = healthy();
+    patch(root, 'docs/plan-open.md', (s) => s.replace(/^\| 1\. `story` \|([^|]*)\|([^|]*)\|/m, '| 1. `story` |$1| 0 |'));
+    const r = run(root);
+    expect(failed(r.out, '11')).toBe(true);
+    expect(r.out).toContain('טיק ריק');
+  });
+
+  it('11 · ⛔ ⛔ אינו ירוק כשאין ACTIVE_WORKSTREAM — «חסר» ⛔ אינו «תקין»', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) => s.replace(/^ACTIVE_WORKSTREAM:.*$/m, ''));
+    const r = run(root);
+    expect(failed(r.out, '11')).toBe(true);
     expect(r.out).toContain('⛔ לא נמדד');
   });
 

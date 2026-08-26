@@ -207,7 +207,21 @@ RELEASE_BLOCKERS: F-NNN · F-NNN        ⇐ only what blocks THIS merge
 ⚠️ **The branch STAYS.** ⛔ You never delete it, never reset it, never rebase it yourself. The loop ⛔ does not stop because a merge did not happen.
 
 ### AND SET THE FOCUS
-`ACTIVE_WORKSTREAM` in `plan/00-control.md` is **yours**. Move it when the workstream is **exhausted or externally blocked** — ⛔ never to "balance" the table, because `36 § 13` is a **sequence**. You are the only one who sees the plan, the queue and the branch at once.
+`ACTIVE_WORKSTREAM` in `plan/00-control.md` is **yours**, and «exhausted» is ⛔ no longer a word you interpret:
+
+> 🔴 **EXHAUSTED = the workstream has ⛔ ZERO ⬜ rows.** `docs/plan-open.md` prints the flag
+> and **names the next workstream in sequence**. ⇒ **move the field in THIS tick.**
+
+⚠️ **And ⛔ «no ⬜» is ⛔ NOT «the feature is done».** Before you move it, check the item in
+`36 § 13` and say which it is: **delivered**, or **⛔ nobody wrote the next slice** — in
+which case the move is still right, but the PM owes a slice and that goes in `03-for-roy`
+⛔ only if it repeats.
+⚠️ **Why the same tick:** ‏DEV takes work **only** from the active workstream, and it fires
+**12 times a day against your 4**. Measured on the loop's first night — `story` emptied at
+05:29 and the field still read `story` at 07:03, with two empty DEV ticks due before your
+next run. `loop:health` check 11 goes red for exactly this.
+
+Move it also when the workstream is **externally blocked** — ⛔ never to "balance" the table, because `36 § 13` is a **sequence**. You are the only one who sees the plan, the queue and the branch at once.
 
 ## STEP 6 — FINDINGS
 **One test: does this reach the learner as broken, unsafe, or teaching something false?** No → not a finding. ⛔ No style findings. ⛔ No findings against layer B. ⛔ No findings against a workstream's position in the build order.

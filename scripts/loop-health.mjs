@@ -250,6 +250,39 @@ check('10', 'work/current ⛔ אינו רחוק מדי מ-dev', () => {
   };
 });
 
+/**
+ * 11 — ⛔ **THE ACTIVE WORKSTREAM RAN DRY AND NOBODY MOVED IT.**
+ * ‏DEV takes work **only** from `ACTIVE_WORKSTREAM`. When that workstream has no
+ * open row left, every DEV tick until QA moves the focus is a **clone, a prompt
+ * read, and ⛔ zero output**. Measured 26/08 on the loop's first night: `story`
+ * emptied at 05:29, DEV recorded it dry at 07:03, and the field still said
+ * `story` — with DEV due to fire twice more before QA's next tick.
+ * ⇒ this is the one check that measures **wasted ticks**, ⛔ not correctness.
+ * ⚠️ Advisory like every check here. ⛔ It must not block a merge — an idle loop
+ * is ⛔ not broken code.
+ */
+check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
+  const control = read(at('plan', '00-control.md'));
+  const active = /^ACTIVE_WORKSTREAM:\s*(\S+)/m.exec(control)?.[1];
+  if (active === undefined) {
+    return { ok: false, detail: '⛔ לא נמדד — ⛔ אין ACTIVE_WORKSTREAM ב-00-control' };
+  }
+  const idx = read(at('docs', 'plan-open.md'));
+  const row = new RegExp(`^\\|\\s*\\d+\\.\\s*\`${active}\`\\s*\\|([^|]*)\\|([^|]*)\\|`, 'm').exec(idx);
+  if (row === null) {
+    return { ok: false, detail: `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
+  }
+  const open = Number((row[2] ?? '').trim());
+  if (!Number.isFinite(open)) return { ok: false, detail: '⛔ לא נמדד — עמודת ⬜ ⛔ אינה מספר' };
+  return {
+    ok: open > 0,
+    detail:
+      open > 0
+        ? `${active} — ${open} משימות ⬜`
+        : `⛔ ${active} מוצתה — כל טיק DEV עד שה-QA יזיז את המיקוד הוא טיק ריק`,
+  };
+});
+
 /* 7 — the DEV→PM lane only works if the PM actually learns. ⛔ No invented
  * threshold: the same missing element on two open rows IS the PM not learning,
  * which RULES § 0.5ג already calls a 🟡 finding. */
