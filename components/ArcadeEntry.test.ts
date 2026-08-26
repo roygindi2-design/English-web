@@ -117,10 +117,31 @@ describe('<ArcadeEntry>', () => {
   });
 });
 
-describe('<LevelMapScreen> — שורה 4', () => {
-  const MAP = readFileSync('components/LevelMapScreen.tsx', 'utf8');
-  it('בלוק «דרכים לתרגל» מחזיק **שתי** דרכים בדיוק', () => {
-    expect(MAP).toMatch(/<DeckSelector\s*\/>/);
-    expect(MAP).toMatch(/<ArcadeEntry\s*\/>/);
+/**
+ * ⚠️ **ההורה השתנה C-0318 (T-156 · D-090ⓐ · D-052), ו⛔ שמירת היתמות ⛔ לא נחלשה.**
+ * ‏D-052 ניתקה את הזירה מהצד הלימודי **בשני הכיוונים**, ואריח בתוך מפת הרמה סתר את
+ * הניתוק **במו הניווט**. ⇒ הזירה חיה ב`העולם` בלבד, כאריח ב-`<AppGrid>`.
+ * ⛔ **`/arcade` עצמו ⛔ לא זז** — ⛔ אפס שינוי נתיב, ⛔ אפס קישור שבור, ומי שהגיע דרך
+ * היסטוריה עדיין נוחת. ⛔ **והרכיב הזה ⛔ לא נמחק ו⛔ לא נערך.**
+ */
+describe('הזירה נגישה מ`העולם` בלבד (T-156)', () => {
+  const strip = (source: string): string =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+
+  it('מוטציה: מסך הכרטיסיות ⛔ אינו נושא כניסה לזירה', () => {
+    const cards = strip(readFileSync('components/LevelMapScreen.tsx', 'utf8'));
+    expect(cards).not.toContain('<ArcadeEntry');
+    expect(cards).not.toContain('/arcade');
+  });
+
+  it('⛔ ולא איבדה את הכניסה שלה — `העולם` עדיין נושא אותה', () => {
+    // ⛔ אם השורה הזאת תיפול, לזירה ⛔ אין ולו כניסה אחת — וזה 🔴, ⛔ ולא סידור.
+    const apps = readFileSync('lib/core/worldApps.ts', 'utf8');
+    expect(apps).toMatch(/arcade:\s*'\/arcade'/);
+    expect(apps).toMatch(/arcade:\s*'זירה'/);
+  });
+
+  it('הרכיב עצמו ⛔ לא נמחק', () => {
+    expect(CODE).toContain('export default function ArcadeEntry');
   });
 });

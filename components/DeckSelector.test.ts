@@ -90,11 +90,46 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
     expect(CODE).not.toContain('cards.length');
   });
 
-  it('renders exactly three entries, and the third is the sentences deck', () => {
-    expect(CODE).toContain("key: 'due'");
+  /**
+   * ⚠️ **שלושה ⇒ ארבעה, C-0318 (T-210ⓓ · `36 § 5`), ו⛔ הכלל ⛔ לא נחלש.** `36 § 5` נוקב
+   * בשתי חפיסות — `סינון מילים` ו-`חזרה`; `מנת היום` נשארת כ**סטייה מוצהרת** (§ 4.2כ ד׳ —
+   * היא הכניסה היחידה ל-`/study` במוצר כולו), ו-`משפטים` ⛔ לא נגעו בה. מה שנמדד הוא אותו
+   * דבר בדיוק שנמדד קודם: **מספר קבוע של אריחים**, ⛔ ולא רשימה שגדלה ומתכווצת מתחת ללומד.
+   */
+  it('renders exactly four entries, and the last is the sentences deck', () => {
+    expect(CODE).toContain("key: 'level'");
     expect(CODE).toContain("key: 'unknown'");
+    expect(CODE).toContain("key: 'due'");
     expect(CODE).toContain(SENTENCES_ENTRY);
-    expect(CODE.match(/key: '/g)?.length).toBe(3);
+    expect(CODE.match(/key: '/g)?.length).toBe(4);
+  });
+
+  it('`36 § 5` — «סינון מילים» היא הראשונה, ו«חזרה» מיד אחריה', () => {
+    expect(CODE.indexOf("key: 'level'")).toBeLessThan(CODE.indexOf("key: 'unknown'"));
+    expect(CODE.indexOf("key: 'unknown'")).toBeLessThan(CODE.indexOf("key: 'due'"));
+  });
+
+  /**
+   * ⛔ **מוטציה, ונופלת בשם.** מאז T-210 «לא ידעתי» היא **המונה האמצעי** של המסך הזה
+   * (`36 § 5`: ידעתי · לא ידעתי · לא סוננו). אותן שתי מילים גם כשם חפיסה הן מושג אחד
+   * בשתי צורות — חוקה § 6 — ולכן `36 § 5` קורא לחפיסה `חזרה`.
+   */
+  it('MUTATION: «לא ידעתי» ⛔ אינה שם של אריח חפיסה', () => {
+    expect(CODE).toContain("const PRACTICE_LABEL_HE = 'חזרה'");
+    expect(CODE).not.toMatch(/LABEL_HE = 'לא ידעתי'/);
+  });
+
+  /**
+   * F-140 — האריח נעול בכוונה, ⛔ ולא ריק. `/api/practice` עונה 404 על מילה בלי שורת
+   * `word_progress`, וחפיסת הרמה היא בדיוק אוסף המילים האלה ⇒ CTA ראשי שנכשל בהקשה
+   * הראשונה. ⛔ אין להחליף את `href: null` לפני ש-F-140 נסגר.
+   */
+  it('F-140 — «סינון מילים» נעולה עם המספר, ⛔ ולא מנווטת', () => {
+    const region = braceRegion(CODE, "{\n      key: 'level'");
+    expect(region).toContain('href: null');
+    expect(region).toContain('locked: true');
+    expect(region).toContain('LEVEL_NOTE_HE');
+    expect(region).not.toContain('/study');
   });
 
   /**
@@ -104,7 +139,7 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * exactly what the block exists to keep off a learner's screen.
    */
   it('locks the sentences deck with href: null — ⛔ no navigation (D-035)', () => {
-    const region = braceRegion(CODE, `{ ${SENTENCES_ENTRY}`);
+    const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
     expect(region).toContain('href: null');
     expect(region).not.toContain('/study');
     expect(region).not.toContain('/sentences');
@@ -181,11 +216,19 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * `LOCKED_HE`, and the enabling rule is untouched — the icon renders off the same
    * `entry.enabled` flag the row already had, and introduces no second source of truth.
    */
-  it('keeps «נעול» as text beside the icon, and ⛔ adds no new state (T-078)', () => {
+  /**
+   * ⚠️ **הופרד C-0318, ו⛔ זה ⛔ אינו ריכוך — זו הפרדה של שתי עובדות שהיו כרוכות.** קודם
+   * המנעול נגזר מ**טקסט ההערה** (`entry.note === LOCKED_HE`), ומאז T-210 ההערה היא **משפט
+   * עם מספר** ⇒ אריח יכול להיות נעול **ולהציג את המספר שלו** (F-140 · «סינון מילים»),
+   * וגזירה מהטקסט הייתה מוחקת את המנעול שלו בשקט. ⛔ `enabled: false` עדיין ⛔ אינו מנעול:
+   * חפיסה ריקה מושבתת עם המספר ו⛔ אינה נעולה (§ 4.2ו).
+   */
+  it('keeps «נעול» as text beside the icon, and the lock is its own fact (T-078)', () => {
     expect(CODE).toContain("const LOCKED_HE = 'נעול'");
     expect(CODE).toContain('note: LOCKED_HE');
-    expect(CODE).toMatch(/entry\.enabled/);
-    expect(CODE).not.toMatch(/locked:\s*(true|false)/);
+    expect(CODE).toMatch(/entry\.locked === true \? <LockIcon \/> : null/);
+    // ⛔ המנעול ⛔ אינו נגזר מהטקסט עוד — זו בדיוק הכריכה שנשברה.
+    expect(CODE).not.toContain('entry.note === LOCKED_HE');
   });
 });
 
@@ -208,7 +251,17 @@ describe('T-123 · D-064 — מסך שכל האריחים בו מושבתים �
     expect(CODE.indexOf('data-deck-empty')).toBeLessThan(CODE.indexOf('data-deck-selector'));
   });
 
-  it('פעולה ראשית אחת בדיוק: היא עוברת לאריח due רק כשהוא פעיל', () => {
-    expect(CODE).toMatch(/entry\.key === 'due' && entry\.enabled/);
+  /**
+   * ⚠️ **הכלל נגזר C-0318 במקום להיות מקודד לאריח אחד, ו-`check:mobile` הוא שכפה זאת:**
+   * הוא מפיל מסך שנושא משהו אחר מ**סימון אחד בדיוק** (F-027). «`due` כשהוא פעיל» ⛔ אינו
+   * יכול לשרוד אריח פעיל **מעליו** — ולכן הראשי הוא **האריח הפעיל הראשון בסדר של `36 § 5`**,
+   * והספירה היא אחת מעצם הבנייה.
+   */
+  it('פעולה ראשית אחת בדיוק, והיא נגזרת ⛔ ולא מקודדת לאריח', () => {
+    expect(CODE).toMatch(/const primaryKey = entries\.find\(\(entry\) => entry\.enabled\)\?\.key \?\? null/);
+    expect(CODE.match(/data-primary-action=\{entry\.key === primaryKey/g)?.length).toBe(1);
+    // ⛔ אריח מושבת ⛔ אינו יכול לשאת סימון בכלל — הענף שלו ⛔ אינו פולט את התכונה.
+    const disabled = braceRegion(CODE, '<button');
+    expect(disabled).not.toContain('data-primary-action');
   });
 });

@@ -66,10 +66,26 @@ import {
 const UNKNOWN_COUNT_HE = '—';
 const LOCKED_HE = 'נעול';
 const DUE_LABEL_HE = 'מנת היום';
-const PRACTICE_LABEL_HE = 'לא ידעתי';
+/**
+ * T-210 · `36 § 5`. ⚠️ **Renamed from «לא ידעתי», and the rename is the point:** since
+ * T-210 the SAME two words are the middle COUNTER on this screen («ידעתי · לא ידעתי ·
+ * לא סוננו»), and one phrase naming two different things on one screen is the constitution
+ * § 6 failure. `36 § 5` calls the deck `חזרה`, so the deck is `חזרה`.
+ */
+const PRACTICE_LABEL_HE = 'חזרה';
+const LEVEL_LABEL_HE = 'סינון מילים';
 const SENTENCES_LABEL_HE = 'משפטים';
 
-/** Written out rather than built from a template so the two requests are readable as what
+/**
+ * The second line of each tile — `36 § 5` and `render_video_A.py:288-293` draw a tile as
+ * a NAME and a sentence carrying the number, ⛔ not as a bare digit in the corner.
+ * ⛔ «—» still travels when the count is unknown, in the sentence's place.
+ */
+const LEVEL_NOTE_HE = (n: string) => `${n} מילים שעוד לא סוננו`;
+const PRACTICE_NOTE_HE = (n: string) => `${n} מילים שסימנת לא ידעתי`;
+const DUE_NOTE_HE = (n: string) => `${n} כרטיסיות להיום`;
+
+/** Written out rather than built from a template so the requests are readable as what
  *  they are: one row each, because only `total` is wanted. */
 const DUE_QUERY = '/api/study/queue?deck=due&limit=1';
 const UNKNOWN_QUERY = '/api/study/queue?deck=unknown&limit=1';
@@ -89,6 +105,13 @@ type DeckEntry = {
   readonly key: string;
   readonly label: string;
   readonly note: string;
+  /**
+   * ⛔ **`locked` and `enabled: false` are ⛔ NOT the same fact.** An empty deck is disabled
+   * WITH its number and is ⛔ not locked (§ 4.2ו); a locked deck is one the product has not
+   * opened yet. The lock mark follows THIS flag — ⛔ never the note's text, which was the
+   * coupling that made `«נעול»` a magic string.
+   */
+  readonly locked?: boolean;
 } & (
   | { readonly enabled: true; readonly href: string }
   | { readonly enabled: false; readonly href: string | null }
@@ -124,7 +147,17 @@ function toEntry(input: {
     : { key, label, note, enabled: false, href };
 }
 
-export default function DeckSelector(): React.JSX.Element {
+/**
+ * T-210 — `unseen` is the level's un-filtered count and it belongs to the SCREEN, not to
+ * this block: `<LevelMapScreen>` already holds the level summary, and a second read here
+ * would be a second definition of a number § 4.2ז fixes in one place. ⛔ Optional, so
+ * `/dev/tabs/probe` still renders `<DeckSelector />` with no props and gets «—».
+ */
+export default function DeckSelector({
+  unseen = null,
+}: {
+  readonly unseen?: number | null;
+} = {}): React.JSX.Element {
   const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null });
   const [loading, setLoading] = useState(true);
 
@@ -143,17 +176,59 @@ export default function DeckSelector(): React.JSX.Element {
     };
   }, []);
 
+  // ⛔ **The order is `36 § 5`'s order**, ⛔ not a preference: «סינון מילים» first, `חזרה`
+  // second. `מנת היום` follows as the DECLARED deviation recorded in the UX plan (§ 4.2כ ד׳)
+  // — it is the only entry to `/study` in the whole product — and `משפטים` stays last and
+  // untouched.
   const entries: readonly DeckEntry[] = [
-    toEntry({ key: 'due', label: DUE_LABEL_HE, href: '/study', count: counts.due }),
+    // ⛔ **`href: null` — LOCKED, and ⛔ not because the deck is empty.** `F-140` (C-0318):
+    // grading a word from this deck has ⛔ no admissible write path today — `/api/practice`
+    // answers 404 for a word with no `word_progress` row (its own comment says why), and
+    // T-155ⓒ forbids `/api/review`. ⛔ The endpoint itself is live and tested; what is
+    // missing is one PM decision. Until it lands the tile is «מושבת עם המספר» (D-046 ·
+    // § 4.2ו) rather than a primary CTA that fails on the learner's first tap — the F-027
+    // class. ⇒ ⛔ Do NOT flip this to a href before F-140 closes.
+    {
+      key: 'level',
+      label: LEVEL_LABEL_HE,
+      note: LEVEL_NOTE_HE(noteFor(unseen)),
+      href: null,
+      enabled: false,
+      locked: true,
+    },
     toEntry({
       key: 'unknown',
       label: PRACTICE_LABEL_HE,
       href: '/study?deck=unknown',
       count: counts.unknown,
+      note: PRACTICE_NOTE_HE(noteFor(counts.unknown)),
+    }),
+    toEntry({
+      key: 'due',
+      label: DUE_LABEL_HE,
+      href: '/study',
+      count: counts.due,
+      note: DUE_NOTE_HE(noteFor(counts.due)),
     }),
     // ⛔ D-035: no destination, and the note is the lock rather than a number.
-    { key: 'sentences', label: SENTENCES_LABEL_HE, href: null, note: LOCKED_HE, enabled: false },
+    {
+      key: 'sentences',
+      label: SENTENCES_LABEL_HE,
+      href: null,
+      note: LOCKED_HE,
+      enabled: false,
+      locked: true,
+    },
   ];
+
+  /**
+   * ⛔ **ONE marker, and it is derived ⛔ rather than hard-coded to a key.** `check:mobile`
+   * fails a screen carrying anything other than exactly one `[data-primary-action]`
+   * (F-027), and the old rule — «`due` when enabled» — could not survive a second enabled
+   * tile above it. The primary is the FIRST enabled tile in `36 § 5`'s own order, so the
+   * count is one by construction whichever tiles happen to be live.
+   */
+  const primaryKey = entries.find((entry) => entry.enabled)?.key ?? null;
 
   // T-123 · D-064: ⛔ בזמן טעינה אין מצב ריק. שלושת האריחים מציגים «—» וזה
   // נכון; «אין מה לתרגל» חצי שנייה לפני שהמספרים נוחתים הוא שקר קצר.
@@ -185,19 +260,23 @@ export default function DeckSelector(): React.JSX.Element {
           // ONE body, shared by both branches. If each branch carried its own copy, the
           // disabled one could quietly lose its number — and «disabled WITH the number» is
           // the whole rule (§ 4.2ו).
+          // ONE body, shared by both branches — `36 § 5` and the render draw a tile as a
+          // NAME above a sentence that carries the number. If each branch carried its own
+          // copy, the disabled one could quietly lose the number, and «disabled WITH the
+          // number» is the whole rule (§ 4.2ו).
           const body = (
             <>
-              <span className="text-lg font-semibold">{entry.label}</span>
-              {/* T-078: «נעול» gets the same mark the locked world tab wears, from the
-                  same component. The word alone was the only signal here, and one
-                  concept in two forms is constitution § 6 — and § 1, since a muted
-                  grey word is a single channel. ⛔ The condition is the note the row
-                  already carries, ⛔ not a new flag: `enabled: false` is also true of
-                  an empty deck, which shows a NUMBER and is not locked (§ 4.2ו). */}
-              <span className="inline-flex items-center gap-1 text-lg text-ink-muted">
-                {entry.note === LOCKED_HE ? <LockIcon /> : null}
-                {entry.note}
+              <span className="inline-flex items-center gap-2 text-lg font-semibold">
+                {/* T-078: the lock gets the same mark the locked world tab wears, from the
+                    same component. The word alone was the only signal here, and one
+                    concept in two forms is constitution § 6 — and § 1, since a muted grey
+                    word is a single channel. ⚠️ **Keyed to `entry.locked` since C-0318**,
+                    ⛔ no longer to the note's TEXT: the note is a sentence now, and a tile
+                    can be locked while still showing its number (F-140 · «סינון מילים»). */}
+                {entry.locked === true ? <LockIcon /> : null}
+                {entry.label}
               </span>
+              <span className="text-sm text-ink-muted">{entry.note}</span>
             </>
           );
 
@@ -206,8 +285,8 @@ export default function DeckSelector(): React.JSX.Element {
               {entry.enabled ? (
                 <Link
                   href={entry.href}
-                  data-primary-action={entry.key === 'due' && entry.enabled ? 'true' : undefined}
-                  className="flex min-h-touch items-center justify-between gap-3 rounded-lg border border-border-strong px-5 py-3 text-ink active:opacity-90"
+                  data-primary-action={entry.key === primaryKey ? 'true' : undefined}
+                  className="flex min-h-touch flex-col items-start justify-center gap-1 rounded-2xl border border-border-strong px-5 py-3 text-ink active:opacity-90"
                 >
                   {body}
                 </Link>
@@ -220,8 +299,7 @@ export default function DeckSelector(): React.JSX.Element {
                 <button
                   type="button"
                   aria-disabled="true"
-                  data-primary-action={entry.key === 'due' && entry.enabled ? 'true' : undefined}
-                  className="flex w-full min-h-touch items-center justify-between gap-3 rounded-lg border border-border-subtle px-5 py-3 text-ink-muted"
+                  className="flex w-full min-h-touch flex-col items-start justify-center gap-1 rounded-2xl border border-border-subtle px-5 py-3 text-ink-muted"
                 >
                   {body}
                 </button>

@@ -29,10 +29,33 @@ import TabBar from '@/components/TabBar';
  * measure. The two 503 lines are allowed in `EXPECTED_CONSOLE` (scripts/verify-mobile.mjs)
  * by exact URL and status, ⛔ not by exempting the route.
  */
+/**
+ * ⚠️ **C-0318 (T-210ⓗ) — the fixture now feeds a NON-NULL summary, and that is the whole
+ * reason the § 5 screen is measurable at all.** Without it this route could only ever land
+ * in the 503 branch, so the progress bar and the three counters never reached the DOM and
+ * `check:mobile` measured a screen that does not exist for a learner with a session.
+ *
+ * ⛔ **The four numbers are the RENDER's own** — `docs/design/render_video_A.py:241`
+ * (`LV_TOTAL, LV_KNOWN, LV_UNKNOWN = 400, 61, 25`, and `LV_REMAIN = 400 − 86 = 314`) — so
+ * what the harness walks is the picture the plan targets, ⛔ not numbers invented here.
+ * `filterProgress` turns them into exactly «86 / 400 סוננו».
+ *
+ * ⛔ `<DeckSelector>` still fetches and still lands in its «—» state: the harness has no
+ * session, so both queue requests answer 503 by the route's own contract, and that failure
+ * state is what `EXPECTED_CONSOLE` allows by exact URL and status.
+ */
+const RENDER_SUMMARY = {
+  level: 'A1',
+  totalInLevel: 400,
+  known: 61,
+  inReviewList: 25,
+  unseen: 314,
+} as const;
+
 export default function DevTabsCardsPage() {
   return (
     <>
-      <LevelMapScreen />
+      <LevelMapScreen fixtureSummary={RENDER_SUMMARY} />
       <TabBar />
     </>
   );

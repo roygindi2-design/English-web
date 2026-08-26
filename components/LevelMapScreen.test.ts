@@ -2,63 +2,85 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
- * `<LevelMapScreen>` — לשונית «כרטיסיות» כמפת הרמה (T-081 · § 4.2ז).
+ * `<LevelMapScreen>` — לשונית «כרטיסיות», **מסך הבית של `36 § 5`** (T-210 · D-123).
  *
  * שומר מקור, כמו `DeckSelector.test.ts` ו-`StudyDeckScreen.test.ts`: סביבת vitest היא
  * `node` ו-jsdom נעדר בכוונה, ולכן בדיקת רינדור אינה שייכת לכאן. גיאומטריה — 44px, אפס
- * גלילה אופקית, והמספר הגדול בתוך הצפייה הראשונה ב-375 — היא עבודתו של `check:mobile`
- * דרך הפיקסטורה `/dev/tabs/cards`.
+ * גלילה אופקית, והפס והמונים בתוך הצפייה הראשונה ב-375 — היא עבודתו של `check:mobile`
+ * דרך הפיקסטורה `/dev/tabs/cards`, שמאז C-0318 מוזנת בסיכום לא-ריק.
  */
 const SRC = readFileSync('components/LevelMapScreen.tsx', 'utf8');
 
+/**
+ * ⚠️ **סדר הפעולות שונה C-0318, ו⛔ זו ⛔ אינה קוסמטיקה — ראה F-141.** הניסוח הקודם התחיל
+ * בתבנית «סוגר מסולסל, הערת-בלוק, סוגר מסולסל» כדי להסיר הערת-JSX; הכמת עצל, אך הוא **מתארך אחורה** עד
+ * שהתבנית **כולה** מתאימה, ולכן `{` אחד יכול להזדווג עם סוגר-הערה **הרבה אחריו** ולבלוע את
+ * הקוד שביניהם. נמדד בטיק הזה על הקובץ הזה: **11,032 בתים ⇒ 4,397**, ו-`/api/levels/current`
+ * נעלם מ-`CODE`. ⇒ כל `not.toContain` בקובץ הזה היה נעשה **ריק** בשקט.
+ * ⇒ מסירים הערות-בלוק **תחילה**, ורק אז את הסוגריים המסולסלים הריקים שנשארו.
+ */
 function withoutComments(source: string): string {
   return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
+    .replace(/\{\s*\}/g, '');
 }
 
 const CODE = withoutComments(SRC);
 
-describe('חמש השורות של § 4.2ז, בסדרן', () => {
-  it('שורה 1 — כותרת רמה עם תווית עברית ⛔ ולא אות בלבד (חוקה § 1)', () => {
-    expect(CODE).toContain('LEVEL_LABELS_HE');
-    expect(CODE).toContain('הרמה שלך');
+describe('חמש השורות של 36 § 5, בסדרן (T-210 · D-123)', () => {
+  it('שורה 1 — כרטיס רמה קריאה-בלבד, ⛔ ולא בורר', () => {
+    expect(CODE).toContain('<LevelCard');
+    expect(CODE).toContain("summary.level");
   });
 
-  it('שורה 2 — המספר הגדול הוא unseen, ומופיע לפני שלוש הספירות במקור', () => {
-    expect(CODE).toContain('נשארו לך');
-    expect(CODE.indexOf('נשארו לך')).toBeLessThan(CODE.indexOf('ברשימת החזרה'));
+  it('שורות 2–3 — הפס ושלושת המונים מגיעים מ-<FilterBar>, ⛔ ולא מחישוב מקומי', () => {
+    expect(CODE).toContain('<FilterBar');
+    // ⛔ אפס אריתמטיקה כאן: ההגדרה חיה ב-`lib/core/filterProgress.ts` (§ 4.2ז).
+    expect(CODE).not.toContain('filterProgress(');
+    expect(CODE).not.toContain('counterCells(');
   });
 
-  it('שורה 3 — שלוש הספירות, כל אחת עם תווית עברית', () => {
-    expect(CODE).toContain('ברמה');
-    expect(CODE).toContain('סימנת שידעת');
-    expect(CODE).toContain('ברשימת החזרה');
-  });
-
-  it('שורה 4 — שלושת כרטיסי החפיסה ⛔ לא נמחקו, הם ירדו לבלוק «דרכים לתרגל»', () => {
-    expect(CODE).toContain('DeckSelector');
+  it('שורה 4 — החפיסות, אחרי הפס', () => {
+    expect(CODE).toContain('<DeckSelector');
     expect(CODE).toContain('דרכים לתרגל');
+    expect(CODE.indexOf('<FilterBar')).toBeLessThan(CODE.indexOf('<DeckSelector'));
   });
 
-  it('שורה 5 — רשימת «לא ידעתי», אחרי בלוק «דרכים לתרגל»', () => {
-    // ⚠️ **סטייה מנוסח התוכנית, והיא מדידה ⛔ ולא העדפה.** התוכנית נוקבת ב-
-    // `CODE.indexOf('UnknownList')`, וההופעה הראשונה שלה בקובץ היא **שורת הייבוא**
-    // בראשו — שקודמת ל-`PRACTICE_HE`, ולכן האסרציה נכשלת גם על חיבור תקין ומודדת
-    // סדר ייבוא ולא סדר שורות. אותה מחלקה כמו סטייה ⓑ של C-0227; מודדים באתר
-    // הקריאה, `<UnknownList`.
+  it('שורה 4 — `unseen` נמסר לחפיסות מהסיכום, ⛔ ולא נקרא שנית', () => {
+    expect(CODE).toMatch(/<DeckSelector unseen=\{summary\?\.unseen \?\? null\}/);
+  });
+
+  it('שורה 5 — ההערה הקבועה חייבת להימצא בקובץ, היא נושאת את האינווריאנט', () => {
+    expect(CODE).toContain('הסימון של מילים מתבצע בכרטיסיות בלבד');
+  });
+
+  it('רשימת «לא ידעתי» נשארה, אחרי בלוק החפיסות (§ 4.2ז · T-083)', () => {
     expect(CODE).toContain('UnknownList');
     expect(CODE.indexOf('דרכים לתרגל')).toBeLessThan(CODE.indexOf('<UnknownList'));
   });
 
-  it('שורה 6 — מפת שש הרמות, אחרי שורה 5', () => {
-    expect(CODE).toContain('LevelPath');
-    expect(CODE.indexOf('UnknownList')).toBeLessThan(CODE.indexOf('<LevelPath'));
+  it('ענף `choose` נשאר — לומד בלי רמה חייב פעולה אחת (D-123ג׳ⓒ)', () => {
+    expect(CODE).toContain("kind: 'choose'");
+    expect(CODE).toContain('בחר רמה');
   });
 
-  it('שורה 6 משתמשת באותו choose ⛔ ולא בכותב שני', () => {
-    expect(CODE).toContain('onChoose={(band) => void choose(band)}');
+  /**
+   * ⛔ שלוש מוטציות. כל אחת נופלת **בשם**, ⛔ ולא בטענה כללית.
+   */
+  it('מוטציה: בורר הרמות ⛔ לא יחזור למסך הכרטיסיות (D-123 · 36 § 5)', () => {
+    expect(CODE).not.toContain('<LevelPath');
+  });
+
+  it('מוטציה: הכניסה לזירה ⛔ לא תחזור למסך הכרטיסיות (T-156 · D-052 · D-090ⓐ)', () => {
+    expect(CODE).not.toContain('<ArcadeEntry');
+    expect(CODE).not.toContain('/arcade');
+  });
+
+  it('מוטציה: המסך ⛔ אינו מציג עוד את התוויות שהוחלפו ב-36 § 5', () => {
+    for (const old of ['נשארו לך', 'סימנת שידעת', 'ברשימת החזרה']) {
+      expect(CODE, `«${old}» הוחלפה בתוויות של 36 § 5`).not.toContain(old);
+    }
   });
 });
 

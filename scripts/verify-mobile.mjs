@@ -364,6 +364,16 @@ const EXPECTED_CONSOLE = {
     // עושה על המסלול עצמו, ושכבר יש לה רשומה משלה למעלה. 401 או 500 על אותה
     // כתובת עדיין מפילים.
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due$/,
+    // C-0318 (T-210ⓗ): the fixture now feeds `<LevelMapScreen>` a non-null summary, so the
+    // screen reaches its READY branch — and `<UnknownList>`, which only renders there, asks
+    // for its list. ⛔ A NEW request on this route, ⛔ not a new defect: the harness has no
+    // Supabase env, so the queue answers 503 by its own contract and the list lands in the
+    // «—» state it was written for. ⚠️ Before this tick the route could only ever reach the
+    // FAILURE branch, which is exactly why the bar and the counters were never measured.
+    // Keyed to the one URL and the one status like every entry above: a 401 or a 500 on the
+    // same URL still fails the check, and `limit=50` ⛔ cannot be satisfied by the
+    // `limit=1` entry above.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=50$/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase

@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import ArcadeEntry from '@/components/ArcadeEntry';
 import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
-import LevelPath from '@/components/LevelPath';
+import FilterBar from '@/components/FilterBar';
+import LevelCard from '@/components/LevelCard';
 import UnknownList from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
@@ -13,26 +13,55 @@ import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
 
 /**
- * לשונית «כרטיסיות» כמפת הרמה — T-081 · § 4.2ז.
+ * לשונית «כרטיסיות» — **מסך הבית של `36 § 5`** (T-210 · T-211ⓐ · T-156 · D-123 · D-124).
  *
- * חמש השורות הראשונות של המפרט, בסדרן: כותרת רמה · המספר · שלוש הספירות · דרכים
- * לתרגל · רשימת «לא ידעתי» (T-083). שורה 6 (מפת שש הרמות, T-084) היא משימה נפרדת
- * ו⛔ אינה ממומשת כאן.
+ * 🎯 **הרנדר: `docs/design/kol-A-02-deck.png`**, והערכים נלקחו מ-`docs/design/render_video_A.py`
+ * ‏(`screen_deck`, שורות 254–305) ⛔ ולא מהעין. חמש השורות של § 5, בסדרן:
+ * ‏**כרטיס רמה קריאה-בלבד** · **פס מקוטע** · **שלושה מונים** · **חפיסות** · **ההערה הקבועה**.
  *
- * ⛔ שלושת כרטיסי החפיסה של § 4.2ו לא נמחקו — הם `<DeckSelector>`, אותו קוד בדיוק,
- * שירד לבלוק «דרכים לתרגל» ואיבד רק את הכותרת שלו.
+ * ⛔ **מה שירד מכאן ב-C-0318, ולמה:**
+ *
+ * ⓐ `<LevelPath>` — **בורר הרמות**. `36 § 5` פותח ב«**אין מעבר רמות כאן**», והמסך נשא
+ *   **שני** בוררים (ענף `choose` ו-`<LevelPath>`). ⇒ D-123. הבורר עבר ל`הגדרות` (T-211),
+ *   ⛔ **והרכיב עצמו ⛔ לא נמחק ו⛔ לא נערך** — זהו שינוי **הורה**.
+ *
+ * ⓑ `<ArcadeEntry>` — **הכניסה לזירה** (T-156 · D-090ⓐ · D-052). D-052 ניתקה את הזירה
+ *   מהצד הלימודי **בשני הכיוונים**, ואריח בתוך מפת הרמה סתר את הניתוק במו הניווט.
+ *   הזירה נשארת אריח ב-`AppGrid` של `העולם`, ⛔ ו-`/arcade` עצמו ⛔ לא זז.
+ *
+ * ⛔ **ענף `choose` נשאר** (D-123ג׳ⓒ): לומד בלי רמה חייב פעולה אחת, ובלעדיה המסך שלו ריק.
+ *
+ * ⛔ **⛔ אפס שאילתה חדשה** (T-210ⓖ): `GET /api/levels/summary` כבר מחזיר
+ * `totalInLevel`·`known`·`inReviewList`·`unseen`, ו-`(known+inReviewList)/totalInLevel`
+ * הוא בדיוק `86 / 400 סוננו` שברנדר.
  *
  * ⛔ עיגון עליון, ⛔ אפס `justify-center` (חוקה § 4 — זה F-011 שחזר כ-F-016).
+ *
+ * ### הפרופ `fixtureSummary` — פיקסטורה של הארנס, ⛔ ולא מצב מוצר (T-210ⓗ)
+ *
+ * בלעדיו `/dev/tabs/cards` יכול למדוד אך ורק את **ענף הכשל**: לארנס אין env של Supabase,
+ * ולכן `GET /api/levels/summary` עונה 503 בחוזה שלו עצמו ⇒ הפס ושלושת המונים ⛔ אינם
+ * מגיעים ל-DOM בכלל, וגובה יעד המגע, הגלישה האופקית והניגודיות שלהם ⛔ אינם נמדדים ולו
+ * פעם אחת.
+ *
+ * ⛔ **הוא ⛔ אינו ברירת מחדל ו⛔ אינו נפילה אחורה:** כשהוא נמסר, הרשת ⛔ אינה נקראת כלל —
+ * פיקסטורה שקריאת רשת יכולה לדרוס אותה היא פיקסטורה שנמדדת רק לפעמים. ⛔ אף מסך מוצר
+ * ⛔ אינו מעביר אותו: `app/(tabs)/cards/page.tsx` מרנדר `<LevelMapScreen />` כלשונו.
  */
 
-const HEADING_HE = 'הרמה שלך';
+const HEADING_HE = 'כרטיסיות';
+/** `render_video_A.py:255` — השורה הקטנה מעל הכותרת. ⛔ נלקחה, ⛔ ולא הומצאה. */
+const TRACK_HE = 'אנגלית · מסלול אמיר״ם';
+/**
+ * ⛔ **ההערה הקבועה של `36 § 5`, והיא נושאת את האינווריאנט:** «אין דרך לסמן ידעתי/לא
+ * ידעתי מחוץ לכרטיסייה». המסך מציג מצב ופותח חפיסות — הוא ⛔ אינו עורך מצב.
+ */
+const INVARIANT_NOTE_HE = 'הסימון של מילים מתבצע בכרטיסיות בלבד';
 const CHOOSE_HE = 'בחר רמה להתחיל';
 const CHOOSE_HINT_HE = 'אפשר להחליף רמה בכל רגע.';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
 const PRACTICE_HE = 'דרכים לתרגל';
-/** ⛔ לא `0`. מספר שאין לנו אינו מספר אפס — אותו כלל של `<DeckSelector>` ושל `<MeScreen>`. */
-const NO_NUMBER_HE = '—';
 
 type SummaryResponse =
   | ({ readonly ok: true; readonly levels?: readonly LevelSummary[] } & LevelSummary)
@@ -59,8 +88,16 @@ function failureText(code: string): string {
   return FAILURE_HE.load;
 }
 
-export default function LevelMapScreen(): React.JSX.Element {
-  const [state, setState] = useState<ScreenState>({ kind: 'loading' });
+export default function LevelMapScreen({
+  fixtureSummary,
+}: {
+  readonly fixtureSummary?: LevelSummary;
+} = {}): React.JSX.Element {
+  const [state, setState] = useState<ScreenState>(
+    fixtureSummary === undefined
+      ? { kind: 'loading' }
+      : { kind: 'ready', summary: fixtureSummary, levels: [] },
+  );
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -86,8 +123,9 @@ export default function LevelMapScreen(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
+    if (fixtureSummary !== undefined) return;
     void load();
-  }, [load]);
+  }, [load, fixtureSummary]);
 
   const choose = useCallback(
     async (level: CefrBand) => {
@@ -106,22 +144,14 @@ export default function LevelMapScreen(): React.JSX.Element {
   );
 
   const summary = state.kind === 'ready' ? state.summary : null;
-  const number = (value: number | undefined): string => (value === undefined ? NO_NUMBER_HE : String(value));
 
   return (
     <section className="flex flex-col gap-6" data-level-map>
-      {/* שורה 1 — הרמה לעולם אינה רק אות: תווית עברית לצידה (חוקה § 1). */}
+      {/* הכותרת — `render_video_A.py:255-256`: שורת המסלול הקטנה, ואז שם המסך.
+          ⛔ הרמה ⛔ אינה כאן עוד: היא הכרטיס שמתחת (`36 § 5` שורה 1). */}
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold leading-tight">
-          {HEADING_HE}
-          {summary ? (
-            <>
-              {' · '}
-              <EnWord>{summary.level}</EnWord>
-            </>
-          ) : null}
-        </h1>
-        {summary ? <p className="text-lg text-ink-muted">{LEVEL_LABELS_HE[summary.level]}</p> : null}
+        <p className="text-sm text-ink-muted">{TRACK_HE}</p>
+        <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
       </header>
 
       {state.kind === 'choose' ? (
@@ -180,57 +210,37 @@ export default function LevelMapScreen(): React.JSX.Element {
       {state.kind === 'loading' || state.kind === 'ready' ? (
         // ⚠️ השורות כבר בגודלן הסופי בזמן הטעינה, ולכן שום דבר לא קופץ כשהמספרים נוחתים.
         // `aria-busy` ו⛔ לא ספינר (חוקה § 5).
-        <div aria-busy={state.kind === 'loading'} className="flex flex-col gap-4">
-          {/* שורה 2 — המספר היחיד במוצר שיורד, והאלמנט הגדול במסך (D-028). */}
-          <p className="flex flex-col gap-1">
-            <span className="text-5xl font-bold leading-none">{number(summary?.unseen)}</span>
-            <span className="text-lg text-ink-muted">נשארו לך מילים ברמה הזאת</span>
-          </p>
+        <div aria-busy={state.kind === 'loading'} className="flex flex-col gap-5">
+          {/* `36 § 5` שורה 1 — כרטיס הרמה, **קריאה בלבד**. ⛔ הוא מוצג רק כשיש רמה:
+              בלי רמה המסך הוא ענף הבחירה, וכרטיס «הרמה שלך —» היה טוען טענה ריקה. */}
+          {summary ? <LevelCard level={summary.level} /> : null}
 
-          {/* שורה 3 — שלוש קבוצות זרות שסכומן הוא הסך. */}
-          <ul className="flex list-none flex-col gap-2 p-0">
-            <li className="flex items-baseline justify-between gap-3">
-              <span className="text-lg font-semibold">{number(summary?.totalInLevel)}</span>
-              <span className="text-base text-ink-muted">ברמה</span>
-            </li>
-            <li className="flex items-baseline justify-between gap-3">
-              <span className="text-lg font-semibold">{number(summary?.known)}</span>
-              <span className="text-base text-ink-muted">סימנת שידעת</span>
-            </li>
-            <li className="flex items-baseline justify-between gap-3">
-              <span className="text-lg font-semibold">{number(summary?.inReviewList)}</span>
-              <span className="text-base text-ink-muted">ברשימת החזרה</span>
-            </li>
-          </ul>
+          {/* `36 § 5` שורות 2–3 — הפס ושלושת המונים. ⛔ `summary` ⛔ ולא `summary ?? 0`:
+              «—» הוא התשובה כשאין מספר, ו-`<FilterBar>` הוא שמכיר את הכלל. */}
+          <FilterBar summary={summary} />
         </div>
       ) : null}
 
-      {/* שורה 4 — **שתי** דרכים לתרגל (§ 4.2ז): שלושת כרטיסי החפיסה, ומתחתיהם
-          «משחק» — הכניסה לזירה (T-097). ⚠️ סטייה מוצהרת: אין כותרת-משנה «כרטיסיות»
-          מעל `<DeckSelector>`, כי הוספתה היא שינוי מבנה בקוד ש-T-080/T-081 יושבות
-          בתור הסקירה שלו. תוספת בלבד — נרשם ב-`plan/30-architecture.md` § 3.1.45. */}
+      {/* `36 § 5` שורה 4 — החפיסות. ⚠️ **`<ArcadeEntry>` ירד מכאן ב-T-156** (D-090ⓐ ·
+          D-052): הזירה חיה ב`העולם` בלבד, ואריח שני לאותו מסך בתוך הצד הלימודי סתר
+          את הניתוק. ⛔ הרכיב ⛔ לא נמחק ו⛔ לא נערך — הוא פשוט ⛔ אינו מרונדר כאן. */}
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">{PRACTICE_HE}</h2>
-        <DeckSelector />
-        <ArcadeEntry />
+        <DeckSelector unseen={summary?.unseen ?? null} />
       </section>
+
+      {/* `36 § 5` שורה 5 — ההערה הקבועה. ⛔ היא ⛔ אינה קישוט: היא הניסוח של
+          האינווריאנט «אין דרך לסמן ידעתי/לא ידעתי מחוץ לכרטיסייה». */}
+      <p className="text-sm text-ink-muted">{INVARIANT_NOTE_HE}</p>
 
       {/* שורה 5 — «לא ידעתי» (T-083 · § 4.2ז). ⛔ רשימה ולא מונה: `<DeckSelector>`
           למעלה כבר מציג את המספר כאריח. מוצגת רק כשיש רמה — בלי רמה המסך הוא מצב
           בחירה, ורשימה מתחת לשש הרמות הייתה תשובה לשאלה שהלומד עוד לא שאל. */}
       {state.kind === 'ready' ? <UnknownList /> : null}
 
-      {/* שורה 6 — מפת שש הרמות (T-084 · § 4.2ז). כולן ניתנות להקשה ומחליפות את
-          `profiles.current_level` דרך **אותו** `choose` שמצב הבחירה משתמש בו —
-          ⛔ ולא כותב שני לאותה עמודה. */}
-      {state.kind === 'ready' ? (
-        <LevelPath
-          levels={state.levels}
-          current={state.summary.level}
-          onChoose={(band) => void choose(band)}
-          busy={saving}
-        />
-      ) : null}
+      {/* ⛔ **בורר שש הרמות ⛔ אינו כאן עוד** — `36 § 5`: «אין מעבר רמות כאן» (D-123).
+          ‏`<LevelPath>` עבר ל`הגדרות` (T-211) יחד עם הקריאה ל-`POST /api/levels/current`,
+          ⛔ והרכיב עצמו ⛔ לא נגעו בו. */}
     </section>
   );
 }
