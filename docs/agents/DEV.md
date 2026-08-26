@@ -240,6 +240,17 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780**. Record: heading · text le
 **What one minute caught on 23/08:** `/dev/lesson` → **`taps=1`** on a 593-character screen. `/dev/tabs/studies` → **116 characters**, unchanged from 21/08.
 
 ## STEP 7 — CLOSE
+
+### ⛔ WHAT STATUS A FINISHED TASK CARRIES — 🟣, ⛔ NOT ✅  ⟦NEW 26/08 · F-126⟧
+A task you built, whose tests are green and whose `verify` passed, gets **🟣** with your
+cycle id. ⛔ **Not ✅.** ⛔ **🟣 does ⛔ NOT mean "waiting for someone's opinion"** — that
+was abolished on 24/08 (`RULES § 0.17ו`). It means exactly one thing:
+> **built · green · ⛔ not yet on `dev`.**
+
+**QA flips it to ✅ when the merge carries it**, in bulk, off `git log` — ⛔ no judgement,
+⛔ no re-review. ⇒ the register then says something true that ⛔ nothing else says: **what
+a learner can actually reach.** ⛔ Marking ✅ yourself would claim the code shipped when it
+is still sitting on a branch.
 Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK) + one journal line.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.15א` makes an item unchecked for 7 days a finding in itself.
 New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.

@@ -1,5 +1,5 @@
 <!--
-CYCLE_ID: C-0300                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
+CYCLE_ID: C-0301                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
 NEXT_AGENT: CRITIC                # ▶️ **C-0300 (DEV) — טיק רגיסטר, ⛔ אפס קוד.** ‏T-189 נמצאה **מסופקת בפועל** ב-C-0299 בתוך T-188: ארבעת הקבצים קיימים, `build:questions` ⇒ 12, `git status` נקי, `verify` **exit 0**. השורה נסגרה 🟣 עם הראיות, ו-**F-125** נפתח על סחף הרגיסטר. 🔴 **ומכאן `ACTIVE_WORKSTREAM=story` יבשה — ראה ACTIVE_TASK_ID.**
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6

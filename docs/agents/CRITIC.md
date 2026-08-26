@@ -180,6 +180,18 @@ text to `plan/archive/` — ⛔ it deletes nothing, and ⛔ it never touches an 
 ⚠️ Measured 25/08: **381KB off the two registers in one run.** ⛔ Commit the archive files
 and the regenerated index **in the same commit** as the merge.
 
+### AFTER THE MERGE — FLIP 🟣 TO ✅ IN BULK  ⟦NEW 26/08 · F-126⟧
+```
+./scripts/g log --oneline <sha-before>..origin/dev
+```
+Every task id in those commit subjects that still reads **🟣** becomes **✅ + your cycle id**.
+⛔ **This is ⛔ NOT the one-by-one review that was abolished** — there is ⛔ no judgement in
+it: the merge is the evidence, `git log` is the list, and you are copying a fact.
+⚠️ **And it is the only thing that makes the register true.** 🟣 means *built and green but
+⛔ not on `dev`*; ✅ means *a learner can reach it*. ⛔ Skip this and 🟣 becomes a state
+nobody ever clears — which is exactly what happened on the loop's first real build tick,
+when five rows were left stranded (F-126).
+
 ### THEN MERGE
 ```
 ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
