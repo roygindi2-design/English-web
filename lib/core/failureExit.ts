@@ -41,3 +41,30 @@ export function failureExit(code: FailureCode): FailureExit {
 export function isRetryable(code: FailureCode): boolean {
   return TABLE[code].retryable;
 }
+
+/**
+ * ⛔ **מסך אחד ⇒ קוד אחד** (T-146ⓐ · ⓒ). מסך שקורא שני מקורות יכול לקבל שני
+ * כשלים שונים, ו-T-146ⓐ מתירה לו **אזור שגיאה אחד ופעולה אחת** — כלומר עליו
+ * **להכריע**. ⛔ הכרעה בלי כלל היא «מי שענה אחרון», ואז היציאה שהלומד מקבל
+ * תלויה בזמני הרשת ⛔ ולא במה שקרה לו.
+ *
+ * הסדר ⛔ אינו טעם: `session_expired` ראשון מפני שסשן מת **מסביר גם את שני
+ * האחרים** — קריאה מאומתת שנכשלת ב-401 תיראה כ«לא זמין» לכל צרכן שלא הביט
+ * בקוד. `schema_missing` לפני `unavailable` מפני ששתי התקלות ⛔ אינן חולפות
+ * באותה מידה, ולהציע «נסה שוב» על הקשה מהשתיים הוא בדיוק המבוי הסתום ש-D-065
+ * נכתבה נגדו.
+ */
+const SEVERITY: readonly FailureCode[] = ['session_expired', 'schema_missing', 'unavailable'];
+
+export function worstFailure(codes: readonly FailureCode[]): FailureCode {
+  return SEVERITY.find((code) => codes.includes(code)) ?? 'unavailable';
+}
+
+/**
+ * ⛔ הצרה, ⛔ ולא אמון. גוף התשובה מגיע מהרשת ולכן `code` שלו הוא `string`
+ * ⛔ ולא `FailureCode`; קוד שהטבלה ⛔ אינה מכירה חייב ליפול ל-`unavailable`
+ * ⛔ ולא לזלוג למסך ולהפיל אותו על `TABLE[code]` שהוא `undefined`.
+ */
+export function toFailureCode(raw: unknown): FailureCode {
+  return raw === 'session_expired' || raw === 'schema_missing' ? raw : 'unavailable';
+}

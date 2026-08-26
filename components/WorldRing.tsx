@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
-import { RETRY_HE } from '@/lib/core/failure';
+import { toFailureCode, worstFailure, type FailureCode } from '@/lib/core/failureExit';
 import { LAST_NODE_KEY, parseLastNode } from '@/lib/core/lastNode';
 import { levelTooSmallNoteHe, libraryTile, type StoriesStatus } from '@/lib/core/worldApps';
 import {
@@ -321,19 +321,24 @@ function RingNodeItem({
 function RingEmpty({
   messageHe,
   actionHref,
+  actionLabelHe,
 }: {
   readonly messageHe: string;
   readonly actionHref: string;
+  readonly actionLabelHe: string;
 }): React.JSX.Element {
   return (
     <div data-ring-empty className="flex flex-col items-start gap-4 py-10">
       <p className="text-lg leading-relaxed text-ink">{messageHe}</p>
-      <Link
+      {/* ⛔ `<a>` ולא `<Link>`, ובדיוק מהטעם ש-`LevelMapScreen` נושא: כשהסשן מת
+          הבקשה הבאה **חייבת** להגיע לשרת ולקבל רשות להפנות — הראוטר של הלקוח
+          עלול לענות `/login` מהמטמון של עצמו, ואז היציאה ⛔ אינה יציאה. */}
+      <a
         href={actionHref}
-        className="flex min-h-touch items-center justify-center rounded-lg border border-border-strong px-5 py-3 text-base text-ink active:opacity-90"
+        className="flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-base text-ink active:opacity-90"
       >
-        {RETRY_HE}
-      </Link>
+        {actionLabelHe}
+      </a>
     </div>
   );
 }
@@ -356,7 +361,11 @@ export function WorldRingView({
       </header>
 
       {screen.kind === 'empty' ? (
-        <RingEmpty messageHe={screen.messageHe} actionHref={screen.actionHref} />
+        <RingEmpty
+          messageHe={screen.messageHe}
+          actionHref={screen.actionHref}
+          actionLabelHe={screen.actionLabelHe}
+        />
       ) : (
         <div
           data-ring
@@ -428,10 +437,23 @@ function readLastNode(): RingNodeId | null {
   }
 }
 
+/**
+ * ⛔ **קריאה אחת ⇒ מצב **וגם** קוד** (T-146ⓒ). `toArenaState` ו-`toStoriesState`
+ * משטחים כל כשל ל-`unknown` **בכוונה** — הצומת ⛔ אינו מכיר קודי שגיאה (D-118),
+ * וזה נשאר נכון. אבל **המסך** כן חייב להכיר אותם, אחרת «נסה שוב» הוא הפעולה
+ * היחידה שהוא יודע להציע, ו-D-065 נשברת. ⇒ הקוד נוסע לצד המצב, ⛔ ולא בתוכו.
+ */
+interface Read {
+  readonly state: RingNodeState;
+  /** `null` = הקריאה הזאת ⛔ לא נכשלה. ⛔ ⛔ אינו `'unavailable'` — ראה `worstFailure`. */
+  readonly code: FailureCode | null;
+}
+
 export default function WorldRing(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [arena, setArena] = useState<RingNodeState>({ kind: 'unknown' });
   const [stories, setStories] = useState<RingNodeState>({ kind: 'unknown' });
+  const [failure, setFailure] = useState<FailureCode>('unavailable');
   const [lastNode, setLastNode] = useState<RingNodeId | null>(null);
 
   // ⛔ **⛔ אין כאן ניווט** (T-206ⓓ): הקריאה מסמנת צומת אחד, ⛔ ואינה מזיזה איש.
@@ -443,17 +465,32 @@ export default function WorldRing(): React.JSX.Element {
     let cancelled = false;
     void (async () => {
       const [round, status] = await Promise.all([
-        apiGet<RoundResponse>('/api/arcade/round').then(toArenaState, (): RingNodeState => ({
-          kind: 'unknown',
-        })),
+        apiGet<RoundResponse>('/api/arcade/round').then(
+          (body): Read => ({
+            state: toArenaState(body),
+            code: body.ok ? null : toFailureCode(body.code),
+          }),
+          // ⛔ הבקשה ⛔ לא הגיעה לשרת (`ApiUnreachableError`) — זו התקלה החולפת.
+          (): Read => ({ state: { kind: 'unknown' }, code: 'unavailable' }),
+        ),
         apiGet<StatusResponse>('/api/world/status').then(
-          (body): RingNodeState => toStoriesState(body.ok ? body.stories : null),
-          (): RingNodeState => ({ kind: 'unknown' }),
+          (body): Read => ({
+            state: toStoriesState(body.ok ? body.stories : null),
+            code: body.ok ? null : toFailureCode(body.code),
+          }),
+          (): Read => ({ state: { kind: 'unknown' }, code: 'unavailable' }),
         ),
       ]);
       if (cancelled) return;
-      setArena(round);
-      setStories(status);
+      setArena(round.state);
+      setStories(status.state);
+      // ⛔ **מסך אחד ⇒ קוד אחד**, והכלל הוא של `failureExit` ⛔ ואינו נכתב כאן:
+      // ⛔ «מי שענה אחרון» היה הופך את היציאה של הלומד לתלוית זמני רשת.
+      setFailure(
+        worstFailure(
+          [round.code, status.code].filter((code): code is FailureCode => code !== null),
+        ),
+      );
       setLoading(false);
     })();
     return () => {
@@ -491,6 +528,10 @@ export default function WorldRing(): React.JSX.Element {
     vocab: { kind: 'open', href: '/world/collected' },
   };
   return (
-    <WorldRingView screen={ringScreen(inputs, RETRY_HREF)} lastNode={lastNode} onPick={onPick} />
+    <WorldRingView
+      screen={ringScreen(inputs, RETRY_HREF, failure)}
+      lastNode={lastNode}
+      onPick={onPick}
+    />
   );
 }

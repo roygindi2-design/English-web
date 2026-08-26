@@ -24,8 +24,13 @@
  * 4. **`unknown` הוא מצב של מסך ⛔ ולא של צומת** (D-118 · T-148 · T-146ⓑ).
  *    ראה את ההערה מעל `ringScreen` — שם זה נאכף, ⛔ ולא בתקווה.
  *
+ * 5. **המצב הריק נושא **יציאה**, ⛔ ולא «נסה שוב» קבוע** (T-146ⓒ · D-065). ראה
+ *    את ההערה מעל `emptyScreen`.
+ *
  * ⛔ אפס מדדי משחק מסוג D-050: ⛔ אין ניקוד, ⛔ אין מטבע, ⛔ אין רצף, ⛔ אין לוח.
  */
+import { RETRY_HE } from './failure';
+import { failureExit, isRetryable, type FailureCode } from './failureExit';
 
 export type RingNodeId =
   | 'arena'
@@ -107,7 +112,13 @@ export function ringPoint(id: RingNodeId, radius: number = RING_RADIUS): RingPoi
 
 export type RingScreen =
   | { readonly kind: 'ring'; readonly nodes: readonly RingNode[] }
-  | { readonly kind: 'empty'; readonly messageHe: string; readonly actionHref: string };
+  | {
+      readonly kind: 'empty';
+      readonly messageHe: string;
+      /** ⛔ **פעולה אחת** (T-146ⓐ), והיא **יציאה** (T-146ⓒ) — ⛔ לא תמיד ניסיון חוזר. */
+      readonly actionHref: string;
+      readonly actionLabelHe: string;
+    };
 
 /** ארבעת הצמתים שמצבם מגיע מהחוט. ארבעת האחרים הם ⛔ קבועים. */
 export interface RingInputs {
@@ -134,6 +145,38 @@ const ALL_UNKNOWN_HE = 'לא הצלחנו לטעון את העולם.';
 const LIVE_IDS = ['arena', 'stories', 'compose', 'vocab'] as const;
 
 /**
+ * ⛔ **T-146ⓒ · D-065 — «⛔ אין מסך כשל בלי יציאה».** שלושת ענפי המצב הריק
+ * עוברים דרך כאן, ולכן ⛔ אין ענף שנשאר מאחור: זו בדיוק המוטציה שהבדיקה הורגת.
+ *
+ * ⛔ **הטבלה ⛔ אינה נכתבת כאן שנית** — `lib/core/failureExit.ts` היא המקום
+ * היחיד שבו «לאן אפשר ללכת מכאן» מוכרע, ⛔ והמסך הזה הוא הצרכן החמישי שלה.
+ * ⇒ `session_expired` ⇒ `/login` · `schema_missing` ⇒ ניווט ללשונית שכן עובדת ·
+ * `unavailable` ⇒ «נסה שוב» אל `retryHref`, כי היא **התקלה החולפת היחידה**.
+ *
+ * ⚠️ **ופעולה אחת ⛔ ולא שתיים:** `LevelMapScreen` מצייר על `unavailable` גם
+ * ניסיון חוזר וגם יציאה, וזה חוקי שם. כאן T-146ⓐ נמדדה בשם על **המסך הזה**
+ * («בדיוק אחד «נסה שוב»»), ולכן הענף החולף נושא את הניסיון החוזר **במקום**
+ * היציאה, ⛔ ולא לצדה.
+ */
+function emptyScreen(code: FailureCode, retryHref: string): RingScreen {
+  if (isRetryable(code)) {
+    return {
+      kind: 'empty',
+      messageHe: ALL_UNKNOWN_HE,
+      actionHref: retryHref,
+      actionLabelHe: RETRY_HE,
+    };
+  }
+  const exit = failureExit(code);
+  return {
+    kind: 'empty',
+    messageHe: ALL_UNKNOWN_HE,
+    actionHref: exit.href,
+    actionLabelHe: exit.labelHe,
+  };
+}
+
+/**
  * הכרעת המסך. ⛔ **שלושה ענפים מובילים למצב הריק, ⛔ ולא אחד**, וזו ⛔ אינה
  * הקשחה סתם — היא מה שהופך את T-146 ואת T-148 ל**מבנה** במקום לכוונה:
  *
@@ -156,12 +199,16 @@ const LIVE_IDS = ['arena', 'stories', 'compose', 'vocab'] as const;
  * ⇒ אחרי שלושת הענפים, **טיפוס `unknown` ⛔ אינו נגיש** על אף צומת של טבעת
  * מצוירת, והבדיקה מודדת זאת ⛔ ולא מניחה.
  */
-export function ringScreen(inputs: RingInputs | null, retryHref: string): RingScreen {
+export function ringScreen(
+  inputs: RingInputs | null,
+  retryHref: string,
+  code: FailureCode,
+): RingScreen {
   if (inputs === null) {
-    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+    return emptyScreen(code, retryHref);
   }
   if (LIVE_IDS.some((id) => inputs[id].kind === 'unknown')) {
-    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+    return emptyScreen(code, retryHref);
   }
   const live: Readonly<Record<RingNodeId, RingNodeState>> = {
     arena: inputs.arena,
@@ -179,7 +226,7 @@ export function ringScreen(inputs: RingInputs | null, retryHref: string): RingSc
     state: live[id],
   }));
   if (!nodes.some((n) => n.state.kind === 'open')) {
-    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+    return emptyScreen(code, retryHref);
   }
   return { kind: 'ring', nodes };
 }

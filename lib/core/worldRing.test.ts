@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { RETRY_HE } from './failure';
+import { failureExit } from './failureExit';
 import {
   RING_ANGLE_DEG,
   RING_LABEL_HE,
@@ -85,7 +87,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
 
   // T-148 · D-064, applied to the ring: ⛔ a failed read is a state of the SCREEN.
   it('⛔ a failed read is one empty state with one action — ⛔ never eight «—»', () => {
-    const screen = ringScreen(null, '/world');
+    const screen = ringScreen(null, '/world', 'unavailable');
     expect(screen.kind).toBe('empty');
     if (screen.kind !== 'empty') throw new Error('unreachable');
     expect(screen.messageHe).toMatch(/[֐-׿]/);
@@ -94,11 +96,11 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
   });
 
   it('⛔ all four live nodes unknown ⇒ the whole screen is empty (D-064)', () => {
-    expect(ringScreen(ALL_UNKNOWN, '/world').kind).toBe('empty');
+    expect(ringScreen(ALL_UNKNOWN, '/world', 'unavailable').kind).toBe('empty');
   });
 
   it('a healthy read draws the ring — ⛔ and it draws all eight', () => {
-    const screen = ringScreen(inputs(), '/world');
+    const screen = ringScreen(inputs(), '/world', 'unavailable');
     expect(screen.kind).toBe('ring');
     if (screen.kind !== 'ring') throw new Error('unreachable');
     expect(screen.nodes.map((n) => n.id)).toEqual([...RING_ORDER]);
@@ -112,7 +114,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
    */
   it('⛔ ⛔ ONE failed live read ⇒ the whole screen is empty — ⛔ never a ring with a hole', () => {
     for (const id of ['arena', 'stories', 'compose', 'vocab'] as const) {
-      const screen = ringScreen(inputs({ [id]: { kind: 'unknown' } }), '/world');
+      const screen = ringScreen(inputs({ [id]: { kind: 'unknown' } }), '/world', 'unavailable');
       expect([id, screen.kind]).toEqual([id, 'empty']);
     }
   });
@@ -121,6 +123,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     const screen = ringScreen(
       inputs({ arena: { kind: 'locked_count', noteHe: 'נדרשות 12 מילים ברמה, יש 8' } }),
       '/world',
+      'unavailable',
     );
     if (screen.kind !== 'ring') throw new Error('unreachable');
     expect(screen.nodes.every((n) => n.state.kind !== 'unknown')).toBe(true);
@@ -131,6 +134,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     const screen = ringScreen(
       { arena: shut, stories: shut, compose: shut, vocab: shut },
       '/world',
+      'unavailable',
     );
     expect(screen.kind).toBe('empty');
   });
@@ -138,7 +142,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
   // ── the three mutations that must fail BY NAME, ⛔ not by count ──────────────
 
   it('⛔ ⛔ no `locked_infra` note carries a digit — D-046 ⛔ does NOT apply here (D-118)', () => {
-    const screen = ringScreen(inputs(), '/world');
+    const screen = ringScreen(inputs(), '/world', 'unavailable');
     if (screen.kind !== 'ring') throw new Error('unreachable');
     const infra = screen.nodes.filter((n) => n.state.kind === 'locked_infra');
     expect(infra.map((n) => n.id).sort()).toEqual(['friends', 'leaders', 'msgs', 'sentences']);
@@ -149,7 +153,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
   });
 
   it('⛔ ⛔ no `locked_infra` note says «בקרוב» (F-011 · F-016 · D-046)', () => {
-    const screen = ringScreen(inputs(), '/world');
+    const screen = ringScreen(inputs(), '/world', 'unavailable');
     if (screen.kind !== 'ring') throw new Error('unreachable');
     for (const node of screen.nodes) {
       if (node.state.kind !== 'locked_infra') continue;
@@ -162,10 +166,70 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     const screen = ringScreen(
       inputs({ arena: { kind: 'locked_count', noteHe: 'נדרשות 12 מילים ברמה, יש 8' } }),
       '/world',
+      'unavailable',
     );
     if (screen.kind !== 'ring') throw new Error('unreachable');
     const arena = stateOf(screen.nodes, 'arena');
     if (arena?.kind !== 'locked_count') throw new Error('unreachable');
     expect(/\d/.test(arena.noteHe)).toBe(true);
+  });
+});
+
+/**
+ * ⛔ **T-146ⓒ — «⛔ אין מסך כשל בלי יציאה» (D-065).** ⓐ ו-ⓑ נסגרו ב-C-0314:
+ * המסך מחזיר אזור שגיאה אחד ופעולה אחת. ⓒ ⛔ לא — הפעולה האחת הייתה **תמיד**
+ * «נסה שוב» אל `/world`, כלומר לומד שסשנו פג קיבל את אותו הכשל שוב, ולומד
+ * שהמיגרציה חסרה אצלו קיבל כפתור שלעולם ⛔ אינו יכול להצליח.
+ *
+ * ⛔ **המודל ⛔ אינו מכיר קודי שגיאה על צומת** — זה נשאר נכון (D-118): הקוד
+ * נכנס כארגומנט **של המסך**, בדיוק כמו ש-`unknown` הוא מצב של מסך.
+ */
+describe('ringScreen — היציאה מהמצב הריק (T-146ⓒ · D-065)', () => {
+  it('`unavailable` ⇒ «נסה שוב» אל `retryHref` — התקלה החולפת היחידה', () => {
+    const screen = ringScreen(null, '/world', 'unavailable');
+    if (screen.kind !== 'empty') throw new Error('unreachable');
+    expect(screen.actionHref).toBe('/world');
+    expect(screen.actionLabelHe).toBe(RETRY_HE);
+  });
+
+  it('⛔ `session_expired` ⛔ אינו מקבל «נסה שוב» — הוא נשלח ל-`/login`', () => {
+    const screen = ringScreen(null, '/world', 'session_expired');
+    if (screen.kind !== 'empty') throw new Error('unreachable');
+    expect(screen.actionHref).toBe('/login');
+    expect(screen.actionLabelHe).not.toBe(RETRY_HE);
+  });
+
+  it('⛔ `schema_missing` ⛔ אינו מקבל «נסה שוב» — הוא מנווט ללשונית שכן עובדת', () => {
+    const screen = ringScreen(null, '/world', 'schema_missing');
+    if (screen.kind !== 'empty') throw new Error('unreachable');
+    expect(screen.actionHref).toBe(failureExit('schema_missing').href);
+    expect(screen.actionLabelHe).not.toBe(RETRY_HE);
+  });
+
+  /**
+   * ⛔ המוטציה שזה הורג: לחווט את הקוד רק אל הענף `inputs === null` ולהשאיר את
+   * שני הענפים האחרים על «נסה שוב». שלושת הענפים מגיעים לאותו מצב ריק, ולכן
+   * שלושתם חייבים לשאת את אותה יציאה.
+   */
+  it('⛔ שלושת הענפים אל המצב הריק נושאים את אותה יציאה, ⛔ ולא רק הראשון', () => {
+    const allLocked: RingInputs = {
+      arena: { kind: 'locked_count', noteHe: 'נדרשות 12 מילים ברמה, יש 8' },
+      stories: { kind: 'locked_count', noteHe: 'נדרשים 3 סיפורים ברמה שלך, יש 1' },
+      compose: { kind: 'locked_infra', noteHe: 'הכתיבה תיפתח כשהעורך ייבנה.' },
+      vocab: { kind: 'locked_infra', noteHe: 'אוצר המילים ייפתח כשהמאגר ייבנה.' },
+    };
+    for (const inp of [null, ALL_UNKNOWN, allLocked]) {
+      const screen = ringScreen(inp, '/world', 'session_expired');
+      if (screen.kind !== 'empty') throw new Error('unreachable');
+      expect(screen.actionHref).toBe('/login');
+    }
+  });
+
+  /** ⛔ הקוד ⛔ אינו זולג אל צומת: D-118 נשארת בתוקף גם אחרי ⓒ. */
+  it('⛔ קוד הכשל ⛔ אינו משנה דבר בטבעת מצוירת', () => {
+    const a = ringScreen(inputs(), '/world', 'unavailable');
+    const b = ringScreen(inputs(), '/world', 'session_expired');
+    expect(a).toEqual(b);
+    expect(a.kind).toBe('ring');
   });
 });

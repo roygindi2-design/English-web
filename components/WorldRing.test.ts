@@ -88,11 +88,49 @@ describe('the world ring shell (T-205 · T-206 · D-117 · D-118)', () => {
   /** T-205ⓔ — one error region, one action, and ⛔ never error + content. */
   it('the empty state is one region with one action, ⛔ and the ring is not drawn beside it', () => {
     expect(src).toContain('data-ring-empty');
-    // ⛔ the label is IMPORTED, ⛔ never restated — T-056: one failure sentence, one place.
-    expect(src).toMatch(/import \{ RETRY_HE \} from '@\/lib\/core\/failure'/);
-    expect(src).not.toContain('נסה שוב');
-    expect(src.match(/\{RETRY_HE\}/g)?.length).toBe(1);
     expect(src).toContain("screen.kind === 'empty'");
+  });
+
+  /**
+   * ⛔ **T-146ⓒ · D-065.** ⚠️ CHANGED C-0315, and the guard got **stronger**, ⛔ not
+   * weaker: it used to assert that the shell imports `RETRY_HE` and prints it once.
+   * That assertion **froze the defect** — «נסה שוב» printed unconditionally is exactly
+   * the retry loop `session_expired` walks into. The label now comes off the screen
+   * decision (`lib/core/worldRing.ts`, which imports `RETRY_HE` itself), so the T-056
+   * invariant is intact — one wording, one place — and the shell may ⛔ not hold a
+   * second copy of it in ANY form.
+   */
+  it('⛔ the shell ⛔ never prints an action label of its own — it draws the one the model chose', () => {
+    expect(src).not.toContain('נסה שוב');
+    expect(src).not.toContain('RETRY_HE');
+    expect(src).not.toContain('התחברות מחדש');
+    expect(src).not.toContain('חזרה ללימודים');
+    expect(src).toContain('actionLabelHe');
+  });
+
+  /** T-146ⓐ — ⛔ ONE action. ⛔ Not a retry AND an exit; the ring measured «exactly one». */
+  it('⛔ the empty state renders exactly one action element', () => {
+    const empty = src.slice(src.indexOf('function RingEmpty'), src.indexOf('export function WorldRingView'));
+    expect((empty.match(/<a\b/g) ?? []).length + (empty.match(/<Link\b/g) ?? []).length).toBe(1);
+    expect(empty).not.toContain('<button');
+  });
+
+  /**
+   * ⛔ `<a>` and ⛔ not `<Link>`, the same reason `LevelMapScreen` carries: when the
+   * session is dead the next request MUST reach the server and be allowed to redirect.
+   * The client router may answer `/login` out of its own cache.
+   */
+  it('the exit is a full document navigation, ⛔ not a client-router push', () => {
+    const empty = src.slice(src.indexOf('function RingEmpty'), src.indexOf('export function WorldRingView'));
+    expect(empty).toContain('<a');
+    expect(empty).not.toContain('<Link');
+  });
+
+  /** T-146ⓒ — the screen picks ONE code, by the shared rule, ⛔ not by which fetch landed last. */
+  it('the failure code is narrowed and reduced through `lib/core/failureExit`', () => {
+    expect(src).toContain('toFailureCode');
+    expect(src).toContain('worstFailure');
+    expect(src).toContain("from '@/lib/core/failureExit'");
   });
 
   /** Constitution layer A4 — every node is a 44×44 target. */

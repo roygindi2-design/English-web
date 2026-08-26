@@ -36,5 +36,5 @@ const FIXTURE: RingInputs = {
 };
 
 export default function DevWorldRingPage() {
-  return <WorldRingView screen={ringScreen(FIXTURE, '/world')} lastNode="stories" />;
+  return <WorldRingView screen={ringScreen(FIXTURE, '/world', 'unavailable')} lastNode="stories" />;
 }
