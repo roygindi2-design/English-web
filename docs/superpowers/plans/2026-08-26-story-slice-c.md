@@ -360,10 +360,10 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
 
 ### Step 8 — the full gate, last
 
-- [ ] ⛔ **One commit per task, ⛔ not one per tick** — `T-150`, `T-203`, `T-202`, in that order
+- [x] ⛔ **One commit per task, ⛔ not one per tick** — `T-150`, `T-203`, `T-202`, in that order
       (pure → strings → structure): `git commit -m "loop(DEV): C-XXXX T-150 …"` via `./scripts/g`.
-- [ ] `npm run verify` — all five commands, in this message, ⛔ before any claim.
-- [ ] `npm run measure:plan`, and `docs/plan-tables.md` + `docs/plan-open.md` in the **same**
+- [x] `npm run verify` — all five commands, in this message, ⛔ before any claim.
+- [x] `npm run measure:plan`, and `docs/plan-tables.md` + `docs/plan-open.md` in the **same**
       commit as the register edit (`RULES § 0.1.1 ח׳`).
 
 ## 4 · Self-check — ⛔ what would make this plan wrong
