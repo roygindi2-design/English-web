@@ -9,10 +9,11 @@ import { WORLD_APP_HREF, WORLD_APP_ORDER, LEVEL_SCAN_HREF } from '@/lib/core/wor
  * להוציא אותו מהרשימה. רשימה שאיש ⛔ אינו מנקה היא רשימה שאיש ⛔ אינו קורא.
  */
 
-/** ⛔ **T-136 חסומה ב-F-096 🟡** (הכרעת PM: מה בדיוק נכתב בהקשה על מילה בסיפור).
- *  ⇒ `/world/story` ⛔ אינו קיים, והאריח שלו ⛔ אינו ניתן להגעה כ-`open` בייצור:
- *  `stories` ריקה עד ש-`0018_stories.sql` ייוולד ורוי יריץ אותו. */
-const PENDING_ROUTES: readonly string[] = ['/world/story'];
+/** ⛔ **ריקה מאז C-0299 (T-186), והרצ׳ט הוא שדרש את הניקוי:** `/world/story` נבנה,
+ *  והבדיקה למטה **נפלה בשם** עד שהוצא מכאן — בדיוק מה שהיא נכתבה בשבילו.
+ *  ⇒ D-091 סגור: האריח ⛔ אינו מצביע עוד ל-404.
+ *  ⚠️ מסלול חדש שממתין נכנס לכאן עם **סיבה**, ⛔ ולא כשם בלבד. */
+const PENDING_ROUTES: readonly string[] = [];
 
 /** Next מאפשר גם `app/<href>` וגם `app/(tabs)/<href>` — שניהם מסלולים חוקיים. */
 function pageExists(href: string): boolean {

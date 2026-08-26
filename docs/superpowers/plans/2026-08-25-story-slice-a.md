@@ -843,21 +843,21 @@ Expected: `ok /dev/story/done` at 320/375/414, every answer row ≥44px (⛔ the
 
 ### Task 6: the full gate, and only then a claim
 
-- [ ] **Step 1: Regenerate every generated file whose input this plan touched**
+- [x] **Step 1: Regenerate every generated file whose input this plan touched**
 
 Run: `npm run build:questions && npm run measure:gate && npm run measure:plan`
 `RULES § 0.1.1 ח׳` — a content tick reddened `dev` on 24/08 for exactly this. Both `docs/plan-tables.md` and `docs/plan-open.md` go in the SAME commit as the register edit.
 
-- [ ] **Step 2: Run the full gate, in this message, before any claim**
+- [x] **Step 2: Run the full gate, in this message, before any claim**
 
 Run: `npm run verify`
 Expected: five commands green — `typecheck`, `check:core`, `test`, `build`, `check:mobile`. Banned words for this step: «should work» · «looks fine» · «passed earlier» · «the subagent reported success». Failing and unfixable in this tick ⇒ `./scripts/g revert` plus a debt entry in `plan/30-architecture.md`.
 
-- [ ] **Step 3: Close the registers and hand off**
+- [x] **Step 3: Close the registers and hand off**
 
 Update `plan/50-tasks.md` (T-185 · T-186 · T-187 · T-188 · T-149 → 🟣, milestone cells ⛔ untouched), `plan/60-findings.md`, `plan/30-architecture.md`, and `plan/00-control.md` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK), plus one journal line.
 
-- [ ] **Step 4: Push to `work/current`, and ⛔ nowhere else**
+- [x] **Step 4: Push to `work/current`, and ⛔ nowhere else**
 
 ```bash
 ./scripts/g push origin work/current

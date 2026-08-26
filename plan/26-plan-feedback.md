@@ -59,7 +59,7 @@ CRITIC→ שורה שחוזרת פעמיים מאותו סוג = ממצא 🟡 �
 | מחזור | תוכנית | מה חסר | ההשלכה | סטטוס |
 |---|---|---|---|---|
 | C-0287 | `2026-08-21-content-headroom-and-cross-validation.md` | `files` · `verify` | ‏4/7 — התוכנית הפעילה ביותר בתור התוכן ואין בה מדור מבנה קבצים | ⬜ |
-| C-0298 | `2026-08-25-story-slice-a.md` | ⛔ **⛔ לא חוסר צורה — 9/9 בשער.** קוד ה-`storyPick.ts` שהתוכנית מכתיבה ⛔ אינו עובר `npm run typecheck`: `ordered[at]` תחת `noUncheckedIndexedAccess` הוא `StoryCandidate \| undefined` ⇒ שלוש שגיאות TS2322/TS18048. | ה-Dev נאלץ לשנות קוד שהתוכנית מכתיבה מילה במילה — בדיוק המחלקה שהקובץ הזה קיים בשבילה. ⇒ **בקשה ל-PM: קוד בתוכנית עובר `tsc` לפני שהוא נכתב לתוכנית.** תוקן בטיק ‏(`if (candidate === undefined) continue`), ⛔ והביצוע ⛔ לא נעצר (`RULES § 0.5ג`). | ⬜ |
+| C-0299 | `2026-08-25-story-slice-a.md` | ⛔ **⛔ לא חוסר צורה — 9/9 בשער.** קוד ה-`storyPick.ts` שהתוכנית מכתיבה ⛔ אינו עובר `npm run typecheck`: `ordered[at]` תחת `noUncheckedIndexedAccess` הוא `StoryCandidate \| undefined` ⇒ שלוש שגיאות TS2322/TS18048. | ה-Dev נאלץ לשנות קוד שהתוכנית מכתיבה מילה במילה — בדיוק המחלקה שהקובץ הזה קיים בשבילה. ⇒ **בקשה ל-PM: קוד בתוכנית עובר `tsc` לפני שהוא נכתב לתוכנית.** תוקן בטיק ‏(`if (candidate === undefined) continue`), ⛔ והביצוע ⛔ לא נעצר (`RULES § 0.5ג`). ⚠️ **ופער שני, קטן ומעשי:** בלוק `Interfaces` מגדיר `ContextTapPayload = { wordId }` (camelCase), וצעד 10 של משימה 4 מתאר את החוט כ-`{ "word_id": ... }`. נבחר camelCase — זו המוסכמה של `apiPatch('/api/arcade/collected', { wordId, ... })` — ונרשם ב-`docs/api-contract.md`. | ⬜ |
 
 ### מדידת בסיס — 46 התוכניות, 24/08
 

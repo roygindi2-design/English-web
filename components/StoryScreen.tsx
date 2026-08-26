@@ -161,9 +161,13 @@ function StatusRow({ level, index, total }: { level: string; index: number; tota
     <div className="flex items-center gap-3">
       <span className="shrink-0 text-sm text-ink-muted">{`סיפור ${index} מתוך ${total}`}</span>
       <span aria-hidden className="h-2 flex-1 overflow-hidden rounded-full bg-border-subtle">
-        <span className="block h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+        <span className="block h-full rounded-full bg-brand-surface" style={{ width: `${pct}%` }} />
       </span>
-      <span className="rounded-full border border-brand/60 bg-brand/20 px-3 py-1 text-sm font-bold text-brand-surface">
+      {/* ⚠️ **פער מוצהר מול הרנדר, ⛔ ולא טעם — F-036 היא שכבה A וגוברת.** `screen_story`
+          ממלא את השבב ואת הפס ב-`BRAND` — מילוי של **4.42:1**, ו-
+          `lib/core/palette.test.ts` פוסל אותו בכל מסך. ⇒ המילוי הוא `bg-brand-surface`
+          בשקיפות, והקו נשאר `border-brand` — `--brand` חוקי כקו וכאייקון, ⛔ לא כמילוי. */}
+      <span className="rounded-full border border-brand/60 bg-brand-surface/20 px-3 py-1 text-sm font-bold text-brand-surface">
         <EnWord>{level}</EnWord>
       </span>
     </div>
@@ -240,7 +244,11 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
         data-story-ambiguity="chip"
         className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
       >
-        <p dir="ltr" lang="en" className="ltr-inline text-ink-muted">
+        {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
+            (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד
+            מהם נעלם. `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו. */}
+        <p className="text-ink-muted">
+          <EnWord>
           {segments.map((segment, i) => {
             if (!segment.isTarget || segment.lemma === null) {
               return <span key={i}>{segment.text}</span>;
@@ -273,6 +281,7 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
               </button>
             );
           })}
+          </EnWord>
         </p>
       </div>
 
