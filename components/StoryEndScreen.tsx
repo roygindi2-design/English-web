@@ -33,7 +33,6 @@ const QUESTION_LABEL_HE = 'שאלת הבנה';
 const CORRECT_HE = 'נכונה';
 const WRONG_HE = 'לא זו';
 const PRACTICE_HE = 'לתרגל אותן בכרטיסיות';
-const NEXT_STORY_HE = 'הסיפור הבא';
 const CARDS_HREF = '/cards';
 
 export interface StoryEndScreenProps {
@@ -41,7 +40,6 @@ export interface StoryEndScreenProps {
   readonly question: StoryQuestion;
   /** כמה מילים בסיפור היו בתור החזרה של הלומד. ⛔ אפס ⇒ ⛔ אין שורה כלל. */
   readonly reviewedCount: number;
-  readonly onNextStory?: () => void;
 }
 
 function CheckIcon() {
@@ -84,7 +82,6 @@ export default function StoryEndScreen({
   storyId,
   question,
   reviewedCount,
-  onNextStory,
 }: StoryEndScreenProps): React.JSX.Element {
   const shuffled = shuffleAnswers(question, storyId);
   const [chosen, setChosen] = useState<number | null>(null);
@@ -169,13 +166,9 @@ export default function StoryEndScreen({
         </Link>
       ) : null}
 
-      <button
-        type="button"
-        onClick={onNextStory}
-        className="inline-flex min-h-touch w-full items-center justify-center rounded-2xl bg-brand-surface px-5 py-4 text-lg font-bold text-brand-on active:opacity-90"
-      >
-        {NEXT_STORY_HE}
-      </button>
+      {/* ⛔ **הפעולה הראשית ⛔ אינה כאן (T-202ⓑ · T-203).** התווית שהייתה כאן הבטיחה מעבר
+          לפריט הבא ברצף, ו-`pickStory` בוחר על אינדקס-יום ⇒ אין רצף כזה (T-151ⓓ). הפעולה
+          הראשית שייכת ל-`StoryScreen`, נמצאת **מחוץ להחלפה**, ומצוירת ברנדר פעם אחת. */}
     </section>
   );
 }

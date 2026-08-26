@@ -132,9 +132,9 @@ not belong here — **add jsdom first** if that ever changes». `T-202` and `T-2
 in writing why: *a fixture of a component in isolation is what let F-124 pass 1,119 green
 checks.* ⇒ the environment is added, deliberately and with a trace.
 
-- [ ] Add the three devDeps to `./package.json` and confirm the tree resolves:
+- [x] Add the three devDeps to `./package.json` and confirm the tree resolves:
       `npm install -D jsdom @testing-library/react @testing-library/dom`
-- [ ] Confirm `vitest.config.ts` needs **no** global change — the new file opts in with a
+- [x] Confirm `vitest.config.ts` needs **no** global change — the new file opts in with a
       first-line `// @vitest-environment jsdom` docblock. Prove it:
       `npx vitest run components/StoryScreen.test.ts` still green under `node`.
 - [ ] ⛔ **If the install is refused by the sandbox:** ⛔ do **not** downgrade the tests to
@@ -144,7 +144,7 @@ checks.* ⇒ the environment is added, deliberately and with a trace.
 
 ### Step 2 — `T-150` pure first, red before green (`test-driven-development`)
 
-- [ ] Write `lib/core/storyIntro.test.ts` and run it red: `npx vitest run lib/core/storyIntro.test.ts`
+- [x] Write `lib/core/storyIntro.test.ts` and run it red: `npx vitest run lib/core/storyIntro.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -173,22 +173,22 @@ describe('T-150 — «כמה מזה אתה כבר יודע», derived at display
 });
 ```
 
-- [ ] Implement `lib/core/storyIntro.ts` to green. ⛔ Zero React, DOM, network, clock, env —
+- [x] Implement `lib/core/storyIntro.ts` to green. ⛔ Zero React, DOM, network, clock, env —
       `npm run check:core` is the gate that proves it.
 
 ### Step 3 — `T-203`: the three strings, and the two source scans that fail by name
 
-- [ ] Edit `components/StoryScreen.tsx`: `SUBTITLE_HE` becomes `36 § 7` **verbatim** —
+- [x] Edit `components/StoryScreen.tsx`: `SUBTITLE_HE` becomes `36 § 7` **verbatim** —
       `'סיפור ברמה שלך · הקש על מילה לתרגום'`. ⛔ The marking itself does ⛔ **not** change
       (D-115 § 1 rejected path ⓒ **on layer A**: known words already carry an underline, and a
       second one differing only in colour is «מצב שמקודד בצבע בלבד»).
-- [ ] In the same file replace `NEXT_STORY_HE` with two labels:
+- [x] In the same file replace `NEXT_STORY_HE` with two labels:
       `DONE_READING_HE = 'סיימתי לקרוא'` (phase `reading`) and
       `BACK_TO_WORLD_HE = 'חזרה לעולם'` (phase `question`). ⛔ `PRIMARY_ACTION_CLASS` and the
       ⛔ no-`data-primary-action` guard are **unchanged** — `/world/story` is ⛔ not a
       `FLOW_ROUTE` (`scripts/verify-mobile.mjs:202,221`), and this task changes labels only.
-- [ ] Delete `NEXT_STORY_HE` from `components/StoryEndScreen.tsx` together with its button.
-- [ ] Add the two failing-by-name scans to `components/StoryScreen.test.ts`:
+- [x] Delete `NEXT_STORY_HE` from `components/StoryEndScreen.tsx` together with its button.
+- [x] Add the two failing-by-name scans to `components/StoryScreen.test.ts`:
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -266,7 +266,7 @@ describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
       target `<button>`'s class list carries ⛔ no branch on word level or learner state other
       than `segment.isKnown`. `grep -n 'isKnown' components/StoryScreen.tsx` must return
       exactly the one existing branch.
-- [ ] ⛔ **Never «חסרות לך K מילים» (T-150ⓒ).** Add to `components/StoryScreen.test.ts`:
+- [x] ⛔ **Never «חסרות לך K מילים» (T-150ⓒ).** Add to `components/StoryScreen.test.ts`:
       `expect(SRC).not.toContain('חסרות')`.
 
 ### Step 6 — the render tests `T-202` and `T-203` name, in a real DOM
