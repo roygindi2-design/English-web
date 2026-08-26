@@ -1,5 +1,5 @@
 <!--
-CYCLE_ID: C-0301                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
+CYCLE_ID: C-0302                  # Running id. +1 on every PM->Dev->Critic->PM handoff.
 NEXT_AGENT: CRITIC                # ▶️ **C-0300 (DEV) — טיק רגיסטר, ⛔ אפס קוד.** ‏T-189 נמצאה **מסופקת בפועל** ב-C-0299 בתוך T-188: ארבעת הקבצים קיימים, `build:questions` ⇒ 12, `git status` נקי, `verify` **exit 0**. השורה נסגרה 🟣 עם הראיות, ו-**F-125** נפתח על סחף הרגיסטר. 🔴 **ומכאן `ACTIVE_WORKSTREAM=story` יבשה — ראה ACTIVE_TASK_ID.**
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
@@ -10,8 +10,8 @@ LAST_HANDOFF_AT: 2026-08-26T00:51:47Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                  # שוחררה C-0300 (DEV). ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
-LOCK_AT: ""
+LOCK_HELD_BY: "PM"                # נלקחה C-0302 (PM). ⚠️ קרא `docs/plan-open.md` (RULES § 0.5א · 0.5ב).
+LOCK_AT: "2026-08-26T01:08:31Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:   9 / 120           # § 13-1 · ⛔ **לא עלה ב-C-0300** — טיק רגיסטר, ⛔ לא טיק עבודה. 🔴 **הזרימה יבשה** (ראה ACTIVE_TASK_ID)
 #   nav:     0 / 120           # § 13-2 · לשונית חמישית + טבעת העולם
