@@ -387,7 +387,10 @@ describe('the harness measures the tab shell (T-051 · D-027 · D-028)', () => {
 
   it('asserts the tab bar is present, complete and thumb-sized', () => {
     expect(code).toContain('tab bar is present');
-    expect(code).toContain('exactly four tabs');
+    // ⚠️ ארבע ⇒ **חמש**, C-0314 (T-174 · `36 § 4`): `הגדרות` נוספה כדי שהעולם יעמוד
+    // במרכז הגאומטרי המדויק. ⛔ המספר נשאר מדויק ו⛔ לא הוחלף ב-`>= 4`.
+    expect(code).toContain('exactly five tabs');
+    expect(code).toContain('tabs.count === 5');
     expect(code).toContain('every tab >= 44px');
   });
 

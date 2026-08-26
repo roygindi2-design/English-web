@@ -133,6 +133,14 @@ const ROUTES = [
   // היה על המסך ב-320/375/414, ו-`/world` מדד עד היום את מצב הכשל שלו בלבד. הפיקסטורה
   // מקבלת כרטיס כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE.
   '/dev/world/recall',
+  // C-0314 (T-205ⓕ) — הטבעת, ואותו נימוק בדיוק כמו שתי הפיקסטורות שמעליה: בלי env של
+  // Supabase גם `GET /api/arcade/round` וגם `GET /api/world/status` עונים 503 בחוזה שלהם
+  // עצמם ⇒ `/world` מצייר את **המצב הריק** שלו, ושמונת הצמתים, שלוש מחלקות הנעילה וסימן
+  // «כאן היית» מעולם אינם על המסך ב-320/375/414. הפיקסטורה מקבלת את הקלטים כ-prop ואינה
+  // מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE.
+  // ⛔ ⛔ ואינה ב-`FLOW_ROUTES` ו⛔ אינה ב-`TAB_ROUTES`: היא מרנדרת את הרכיב לבדו,
+  // בלי סרגל לשוניות (תקדים `/dev/deck`, C-0104), ו-D-028 נשארת קשורה ל-`FLOW_ROUTES`.
+  '/dev/world/ring',
   // T-095 · § 4.2י. `/arcade` יושב מחוץ ל-`PROTECTED_SCREENS` ולכן הוא **כן** מרונדר כאן,
   // אבל בלי env של Supabase `GET /api/arcade/round` עונה 503 בחוזה שלו עצמו ⇒ מה שהשורה
   // הזאת מודדת הוא מצב **הכשל**: המשפט העברי והדרך החוצה. מצב שלומד יכול לפגוש בו.
@@ -1028,8 +1036,13 @@ try {
         );
       }
 
-      // D-027 · § 4.2ב — the tab shell itself: present, complete, thumb-sized,
+      // `36 § 4` · D-027 · § 4.2ב — the tab shell itself: present, complete, thumb-sized,
       // and alone at the bottom of the screen.
+      // ⚠️ **ארבע ⇒ חמש, C-0314 (T-174), ו⛔ זו ⛔ אינה הרפיה של הבדיקה.** `36 § 4`
+      // מוסיף את `הגדרות` **מסיבה מבנית**: סרגל בן ארבע ⛔ אינו יכול להעמיד את
+      // `העולם` במרכז הגאומטרי המדויק, והרנדר `docs/design/kol-world-ring.png`
+      // מצייר אותו שם. ⇒ המספר נשאר **מדויק** (`=== 5`), כי מה שהבדיקה שומרת עליו
+      // הוא שלשונית ⛔ לא תיווסף בלי מסמך עוגן — ⛔ ולא המספר ארבע כשלעצמו.
       if (TAB_ROUTES.includes(route)) {
         const tabs = await page.evaluate(() => {
           const bar = document.querySelector('[data-tab-bar]');
@@ -1046,7 +1059,7 @@ try {
         });
         check(tabs.present, `${at} tab bar is present`, 'no [data-tab-bar] in the document');
         if (tabs.present) {
-          check(tabs.count === 4, `${at} exactly four tabs`, `found ${tabs.count}`);
+          check(tabs.count === 5, `${at} exactly five tabs`, `found ${tabs.count}`);
           check(tabs.small === 0, `${at} every tab >= 44px`, `${tabs.small} tabs below the floor`);
           // D-028: a screen never carries both bars.
           check(tabs.actionBars === 0, `${at} no action bar on a tab screen`, `found ${tabs.actionBars}`);

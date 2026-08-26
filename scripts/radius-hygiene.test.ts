@@ -51,14 +51,19 @@ function code(file: string): string {
     .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
 }
 
-/** Every `rounded…` utility in a file, as `{ token, value }`. */
-function radii(file: string): { token: string; value: string }[] {
-  return [...code(file).matchAll(/\brounded(?:-[a-z0-9]+)*/g)].map((m) => {
+/** Every `rounded…` utility in a source string, as `{ token, value }`. */
+function radiiIn(source: string): { token: string; value: string }[] {
+  return [...source.matchAll(/\brounded(?:-[a-z0-9]+)*/g)].map((m) => {
     const token = m[0];
     const parts = token.split('-').slice(1);
     if (parts.length > 1 && parts[0] !== undefined && SIDES.has(parts[0])) parts.shift();
     return { token, value: parts.join('-') };
   });
+}
+
+/** …and the same, read off a file. */
+function radii(file: string): { token: string; value: string }[] {
+  return radiiIn(code(file));
 }
 
 describe('radius hygiene (T-068 · T-168 · constitution v2 layer B § ב2)', () => {
@@ -86,8 +91,24 @@ describe('radius hygiene (T-068 · T-168 · constitution v2 layer B § ב2)', ()
     expect(offenders).toEqual([]);
   });
 
+  /**
+   * ⚠️ **Rewritten C-0314 (T-174), and the reason is why the old form was fragile.** It
+   * asserted that `components/TabBar.tsx` contains a `2xl` — which was true only because
+   * the world sheet in that file carried `rounded-t-2xl`. D-117 deleted the sheet, and the
+   * check then failed for a file with ⛔ no radius defect at all: it was measuring one
+   * screen's markup while claiming to measure the PARSER. ⇒ the side-stripping is now
+   * proven directly, exactly as the `rounded` edge case below already is, and it can no
+   * longer be broken by an unrelated screen losing a corner.
+   */
   it('accepts a side-clipped form of an allowed value (D-036 ⓔ)', () => {
-    expect(radii('components/TabBar.tsx').some(({ value }) => value === '2xl')).toBe(true);
+    for (const side of ['t', 'b', 's', 'e', 'tl', 'br']) {
+      expect(radiiIn(`class="rounded-${side}-2xl"`)).toEqual([
+        { token: `rounded-${side}-2xl`, value: '2xl' },
+      ]);
+    }
+    // …and a side segment ⛔ never swallows the value itself: `rounded-t` alone is Tailwind's
+    // 4px on one side, which is ⛔ not in ALLOWED.
+    expect(radiiIn('rounded-t')[0]?.value).toBe('t');
   });
 
   it('⛔ never accepts a bare `rounded` — that is Tailwind’s 4px, a fourth value', () => {
