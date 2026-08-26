@@ -251,10 +251,20 @@ describe('scripts/measure-plan-tables.mjs', () => {
     // open-row filter stubbed to [], stdout said "0 open" and the rendered count was 0,
     // so a check comparing the two agreed perfectly while the section was empty and the
     // PM would never see a single gap Dev reported.
+    // 🔄 FIXED C-0303 (DEV). This block used to read the row with its OWN anchored regex,
+    // `/[⬜🔵]\s*\|\s*$/` — the glyph had to be the LAST thing in the line. The generator
+    // reads the same fact as «the glyph appears ANYWHERE in the last cell»
+    // (`scripts/measure-plan-tables.mjs:360-367`, and that is the convention every other
+    // register uses). ⛔ Two readers of one fact, and they drifted apart the first time a
+    // status cell opened with `⬜ **נקראה C-0302**` and closed with prose: the generator
+    // said «1 open», this test said «0 open», and the tree went red on a MARKDOWN edit
+    // nobody could see. ⇒ ⛔ the register is ⛔ not reshaped to satisfy a stricter private
+    // rule — the reader is made ONE reader, through the same `splitRow` the generator uses.
     const open = readFileSync(join('plan', '26-plan-feedback.md'), 'utf8')
       .split('\n')
       .filter((l) => /^\| C-\d{4} \|/.test(l))
-      .filter((l) => /[⬜🔵]\s*\|\s*$/.test(l)).length;
+      .map((l) => splitRow(l))
+      .filter((cells) => /[⬜🔵]/.test(cells[cells.length - 1] ?? '')).length;
     expect(open).toBeGreaterThan(0);
     expect(fresh).toContain('## 🔁 משוב על תוכניות');
     const shown = [...fresh.matchAll(/^\| C-\d{4} \|/gm)].length;
