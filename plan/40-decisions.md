@@ -3604,3 +3604,136 @@ Dev שהכריע ולא תיעד הוא ממצא.
 ⚠️ **ומה שההיפוך ⛔ אינו עושה:** נאמנות לרנדר ⛔ **אינה חוסמת מיזוג** (`RULES § 0.17ד`).
 היא ⛔ אינה «הלומד ייפגע», והיא נכתבת כממצא. ⛔ מיזוג טוב שנחסם מסיבה לא נכונה
 מלמד כל סוכן להתעלם מהשער.
+
+### D-115 — UX plan · the closing state of `/world/story`, and the three strings that promise what the screen does not do  *(PM, C-0302 · derived from `36-video-spec § 7` + `§ 3` · renders `docs/design/kol-A-05-story.png` + `kol-A-06-question.png` · resolves **F-123** and **F-124** · slice C of the `story` workstream)*
+
+> **Measured this tick, ⛔ not assumed.** `next dev` at 375, live HTTP:
+> `/dev/story` → **200**, 449 chars, subtitle `סיפור ברמה שלך · הקש על מילה מודגשת לתרגום`,
+> and ⛔ **not one word on the screen is emphasised**. `/dev/story/done` → **200**, 221 chars,
+> ⛔ **no header, no status row, no footer meta** — it is its own screen, ⛔ not a state.
+> `grep -rn StoryEndScreen` ⇒ **two files**: the component and `app/dev/story/done/page.tsx`.
+> ⇒ **⛔ No learner route renders it.** F-124 is measured, ⛔ not predicted.
+
+**⚠️ Both questions are one question.** F-123 is a string that promises a highlight nobody
+drew; F-124 is a screen the learner cannot reach whose button promises a story that ⛔ cannot
+exist. **Three strings on one screen assert behaviour the product does not have**, and every
+one of them is the defect class that `36 § 7` and the register already legislated against.
+
+#### 1 · F-123 — marking. **Path ⓐ: ⓑ holds, and the subtitle changes.**
+
+`36 § 7` is the anchor and it is unambiguous: known words carry a thin `--success` underline,
+and **`⛔ מילים חדשות אינן מסומנות מראש` — «שליפה מועילה רק כשהיא מאמץ»**, kept deliberately
+since 21/08. `§ 1` gives 36 the win in any conflict, and the render is **derived from** 36.
+
+```
+ⓑ (cancel the rule, mark new words)  ⛔ REJECTED. It overturns a pedagogical decision
+   restated verbatim in the anchor, and ⛔ I have no Tier A/B source that says pre-marking
+   helps. STEP 4 forbids supplying one from my own knowledge.
+ⓒ (uniform underline on every target) ⛔ REJECTED ON LAYER A, ⛔ not on taste. Known words
+   ALREADY carry an underline. A second underline that differs from it only in COLOUR is
+   «מצב שמקודד בצבע בלבד» — and D-114 names layer A as the ONE thing that outranks the
+   render. ⛔ The intermediate path is not available here.
+ⓐ (no marking; the subtitle stops lying) ✅ CHOSEN.
+```
+
+**The replacement string is ⛔ not invented — it is `36 § 7` verbatim:**
+`סיפור ברמה שלך · הקש על מילה לתרגום`.
+
+**⚠️ And the discoverability worry inside F-123 is real and gets a written answer, ⛔ not a
+shrug.** How does the learner know anything is tappable? **Three channels, all already built:**
+ⓐ the subtitle says so **in words**; ⓑ the known-word underline **plus the written legend**
+`ידועה` proves on screen that words carry state; ⓒ the first tap opens the popover and teaches
+the rest. ⛔ **No coach-mark, no pulse, no onboarding overlay** — a mechanic nobody asked for,
+introduced to compensate for a string we are about to make true, is worse than the string.
+
+#### 2 · F-124 — the trigger and the shape. **State, ⛔ not screen. One primary action.**
+
+**⛔ The render already answers the shape question**, and both frames were opened this tick:
+`kol-A-05` and `kol-A-06` carry **identical chrome** — kicker · title · subtitle · status row
+(`A1` · progress bar · `סיפור 3 מתוך 12`) · footer meta (`5 מילים חדשות · 2 שכבר ידעת` + the
+legend) · one full-width primary button. **Only the body card swaps.** ⇒ the question is a
+**state of `StoryScreen`**, and `StoryEndScreen` must render **as the body card**, ⛔ not as a
+`min-h-[100dvh]` screen carrying its own copy of the button.
+
+**The trigger — three approaches, and why the third wins:**
+
+```
+ⓐ Scroll to the end reveals the question below the story.
+   ⛔ REJECTED. The render REPLACES the body; it does not append. And a learner who scrolls
+   back to re-read would fire it — a control the learner did not press.
+ⓑ `הסיפור הבא` becomes a two-press spine (press 1 → question, press 2 → next story).
+   ⛔ REJECTED, and ⛔ not on taste — **it is unimplementable.** `lib/core/storyPick.ts` is a
+   DAY INDEX («סיפור אחד ביום», § 4.2יג · D-108 q2), so there IS no next story today, and
+   **T-151ⓓ already legislated it in writing: «⛔ אין «הסיפור הבא» — אחד ליום».** The button
+   today escapes to `WORLD_HREF`. ⇒ ⛔ Keeping the label ships a SECOND lying string
+   knowingly, in the same tick we fix the first.
+ⓒ One primary action, and its label names what it does in each phase.  ✅ CHOSEN.
+```
+
+```
+Phase `reading`   body = the story.       primary = `סיימתי לקרוא`
+                  ⇒ press swaps the BODY CARD to the question. ⛔ No route change,
+                    ⛔ no scroll jump, ⛔ chrome untouched.
+Phase `question`  body = the question.    primary = `חזרה לעולם`
+                  + `לתרגל אותן בכרטיסיות` as a SECONDARY link, and ⛔ only when N>0
+                    (`36 § 7` · T-151ⓐⓒ, already built and already conditional).
+                  ⛔ The learner may leave WITHOUT answering. § 4.2יג clause 3 —
+                    «⛔ אין טעות בקריאה, ולכן ⛔ אין עונש» — and a question that traps
+                    the exit is a test. ⛔ It is not a test.
+⛔ There is no third phase and ⛔ no way back to `reading`. Re-reading is tomorrow's
+   story or the same story on a fresh load — ⛔ not a toggle nobody asked for.
+```
+
+**⚠️ `T-151ⓔ` is superseded here, ⛔ and deliberately:** it said `K=0 ⇒ ⛔ אין מסך סיום כלל`.
+`36 § 7` mandates the comprehension question **regardless of K** — it is about the story, ⛔ not
+about the review queue. ⇒ **the question always shows; only the `עברת על N מילים` line and its
+exit are conditional on `N>0`** — which is exactly what `StoryEndScreen` already does.
+
+#### 3 · What this does to the register, ⛔ written here so nobody re-plans it
+
+```
+T-136  🚫 SUPERSEDED. It is the OLD `/world/story` task. Every clause it names shipped in
+       T-185…T-188. It has sat ⬜ for a day as «the only eligible row in the active
+       workstream», and its own text disqualified it. ⇒ **F-125 exactly, a second time.**
+T-151  🚫 SUPERSEDED. ⓐⓑⓒ are `components/StoryEndScreen.tsx` (built, green, T-188);
+       ⓓ becomes **T-203**; ⓔ is overruled above.
+T-150  ⛔ → ⬜. Its blocker was «the screen does not exist». **The screen exists** (T-186).
+       ⇒ ⛔ Nothing blocks it, and it was frozen by drift, ⛔ not by a constraint.
+```
+
+**The six questions (`45-product-questions.md`):**
+
+1. **First three seconds** — unchanged from D-108; this slice does ⛔ not touch the opening.
+2. **The small win that brings him back tomorrow** — he now **finishes** something. Before this
+   slice the story had ⛔ no end: he read, and the screen sat there. ⛔ Not a score, ⛔ not a
+   streak (D-050) — a closing beat.
+3. **What happens when he is wrong** — icon + written label, ⛔ zero score, ⛔ zero counter
+   (`36 § 7`), and ⛔ nothing is written to the server. Already built.
+4. **What he sees advancing** — the reading bar and `סיפור 3 מתוך 12`. ⛔ Unchanged.
+5. **Skill** — `ui-styling`. ⛔ Not `design-taste-frontend`: ⛔ zero new visual language here,
+   the two frames are drawn and the components exist.
+6. **Arrival / exit / doing nothing** — arrival unchanged; exit is now **named correctly**;
+   doing nothing is still legitimate — ⛔ no timer, ⛔ no nag, ⛔ no auto-advance.
+
+**⚠️ What the LEARNER must know to answer** *(the 23/08 arcade lesson, applied)*: he must have
+**read the English story** and must **comprehend an English question** — the Hebrew answers
+remove a second decoding load. ⛔ Alphabet-matching is structurally impossible here (D-108א).
+
+#### 4 · The render gap, ⛔ recorded and ⛔ not closed in code
+
+`docs/design/render_video_A.py` draws a brand chip behind every new target (`986-993`) and
+prints both `הקש על מילה מודגשת לתרגום` and `הסיפור הבא`. **All three contradict `36 § 7` or
+T-151ⓓ.** The renders are **anchor artifacts** and ⛔ the PM ⛔ may not edit them. ⇒ one stamped
+line to Roy (`03-for-roy` 60), ⛔ **and it blocks nothing**: `diff:render` reviewers are told
+here, in writing, that these three deltas are **decided**, ⛔ not drift.
+
+#### 5 · Product idea Roy did not ask for — **«הסיפור של אתמול»**
+
+One secondary link under the footer meta: **`הסיפור של אתמול`** → the same screen, `dayIndex−1`,
+read-only. **Cost: ⛔ zero columns, ⛔ zero migration, ⛔ zero content** — `storyPick` is already
+a pure function of the day index. **Why:** «one a day» currently means the story **vanishes**;
+a shelf that grows behind you is a reason to return that is ⛔ not points, ⛔ not XP, ⛔ not a
+streak (D-050 clean). ⚠️ **And the pedagogical claim is ⛔ NOT made here:** re-reading a text you
+have already decoded is a real literature (narrow reading), ⛔ but it has **no `source_url` in
+`10-pedagogy` yet** ⇒ this is a **product** idea and ⛔ enters pedagogy only behind a Tier A/B
+source. ⛔ Not opened as a task this tick.
