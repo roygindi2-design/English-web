@@ -138,11 +138,46 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * conditions that are still open (F-033), and 806 sentences behind a broken gate are
    * exactly what the block exists to keep off a learner's screen.
    */
-  it('locks the sentences deck with href: null — ⛔ no navigation (D-035)', () => {
+  it('locks the sentences deck with href: null — ⛔ no navigation (F-142 · F-143)', () => {
     const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
     expect(region).toContain('href: null');
+    expect(region).toContain('locked: true');
     expect(region).not.toContain('/study');
     expect(region).not.toContain('/sentences');
+  });
+
+  /**
+   * **T-199ⓑ ⓒ · C-0321 — המספר שמחליף את המנעול, ונמדד באריח עצמו.**
+   *
+   * `render_video_A.py:290,296` מצייר את השורה השנייה של כל אריח כ-`<מספר> <צירוף שם>`,
+   * ואריח «משפטים» היה היחיד במסך ששורתו השנייה ⛔ אינה מספר. D-096 פסלה את המצב הזה
+   * ב-22/08, ו-D-097 מדדה ב-23/08 ששני תנאי D-035 מולאו. ⇒ יש מספר, והוא מוצג.
+   */
+  it('T-199ⓑ — השורה השנייה של «משפטים» היא המספר, ⛔ ולא «נעול»', () => {
+    const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
+    expect(region).toContain('SENTENCES_NOTE_HE');
+    expect(region).not.toContain('LOCKED_HE');
+    expect(CODE).toContain('const SENTENCES_NOTE_HE =');
+    // אותה צורה בדיוק כמו שלושת האריחים האחרים: מספר, ואז צירוף שם.
+    expect(CODE).toMatch(/SENTENCES_NOTE_HE = \(n: string\) => `\$\{n\} משפטים/);
+  });
+
+  it('T-199ⓒ — המונה נקרא בפועל, ובאותה קריאה מקבילה כמו השאר', () => {
+    expect(CODE).toContain("const SENTENCES_QUERY = '/api/study/queue?deck=sentences&limit=1'");
+    expect(CODE).toMatch(/Promise\.all\(\[[\s\S]{0,200}readTotal\(SENTENCES_QUERY\)/);
+    expect(CODE).toMatch(/setCounts\(\{ due, unknown, sentences \}\)/);
+  });
+
+  /**
+   * ⛔ «—» ⛔ אינו `0`, וזו הבדיקה שמונעת בדיוק את הבלבול הזה: קריאה שנכשלה וחפיסה ריקה
+   * נראות זהות על המסך, ורק אחת מהן נכונה. `noteFor` הוא המקום היחיד שמכריע, והאריח
+   * החדש עובר דרכו בדיוק כמו שלושת הקודמים.
+   */
+  it('קריאה שנכשלה ⇒ «—» בתוך המשפט, ⛔ ולא 0', () => {
+    const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
+    expect(region).toContain('SENTENCES_NOTE_HE(noteFor(counts.sentences))');
+    expect(CODE).toMatch(/count === null \? UNKNOWN_COUNT_HE : String\(count\)/);
+    expect(CODE).toContain("const UNKNOWN_COUNT_HE = '—'");
   });
 
   /**
@@ -223,12 +258,24 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * וגזירה מהטקסט הייתה מוחקת את המנעול שלו בשקט. ⛔ `enabled: false` עדיין ⛔ אינו מנעול:
    * חפיסה ריקה מושבתת עם המספר ו⛔ אינה נעולה (§ 4.2ו).
    */
-  it('keeps «נעול» as text beside the icon, and the lock is its own fact (T-078)', () => {
+  /**
+   * ⚠️ **הועבר C-0321, ו⛔ זה ⛔ אינו ריכוך.** «נעול» כבר ⛔ אינה יכולה לשבת בשורת ההערה:
+   * D-096 קובעת שאריח מושבת בלי מספר אינו מצב חוקי, והרנדר מצייר `<מספר> <צירוף שם>` בכל
+   * אריח. ⇒ המילה עברה ל-`sr-only` ליד השם. ⛔ **המדידה התחזקה:** קודם נמדד שהמילה קיימת
+   * **באריח אחד**; עכשיו נמדד שהיא נוסעת עם **כל** אריח נעול, שהיא ⛔ אינה נראית, ושהיא
+   * ⛔ אינה חוזרת להיות ההערה.
+   */
+  it('«נעול» נוסעת עם כל אריח נעול כ-sr-only, והמנעול הוא עובדה בפני עצמה (T-078)', () => {
     expect(CODE).toContain("const LOCKED_HE = 'נעול'");
-    expect(CODE).toContain('note: LOCKED_HE');
     expect(CODE).toMatch(/entry\.locked === true \? <LockIcon \/> : null/);
-    // ⛔ המנעול ⛔ אינו נגזר מהטקסט עוד — זו בדיוק הכריכה שנשברה.
+    expect(CODE).toMatch(
+      /entry\.locked === true \? <span className="sr-only">\{LOCKED_HE\}<\/span> : null/,
+    );
+    // ⛔ המנעול ⛔ אינו נגזר מהטקסט — לא מהערה ולא מהמילה.
     expect(CODE).not.toContain('entry.note === LOCKED_HE');
+    // ⛔ **המוטציה של T-199ⓑ, ונופלת בשם:** «נעול» כהערה של אריח היא בדיוק המצב ש-D-096
+    // פסלה, ו-`render_video_A.py:290,296` ⛔ אינו מצייר אף שורה שנייה שאינה מספר.
+    expect(CODE).not.toContain('note: LOCKED_HE');
   });
 });
 

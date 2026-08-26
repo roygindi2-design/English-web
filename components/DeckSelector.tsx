@@ -64,6 +64,17 @@ import {
 
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
+/**
+ * ⚠️ **C-0321 — «נעול» עברה משורת ההערה ל-`sr-only` ליד שם האריח, ⛔ והיא ⛔ לא נמחקה.**
+ *
+ * D-096 קובעת שאריח מושבת **בלי מספר** אינו מצב חוקי, ו-`render_video_A.py:290,296` מצייר
+ * כל אריח כ-`<מספר> <צירוף שם>` ⇒ השורה השנייה של «משפטים» חייבת להיות המספר. אבל
+ * `LockIcon` הוא `aria-hidden`, ולכן מחיקת המילה הייתה משאירה את **הנעילה** בלי שום ערוץ
+ * שקורא מסך שומע — וזו בדיוק חוקה שכבה A. ⇒ המילה נשארת, במקום שאינו נראה ואינו נמדד
+ * ברנדר, ו⛔ אינה גורעת פיקסל מהפריסה שהרנדר מחייב.
+ *
+ * ⛔ אותו טיפול חל על «סינון מילים», שנעילתה (F-140) הייתה חסרת מילה מאז C-0318.
+ */
 const LOCKED_HE = 'נעול';
 const DUE_LABEL_HE = 'מנת היום';
 /**
@@ -82,6 +93,17 @@ const SENTENCES_LABEL_HE = 'משפטים';
  * ⛔ «—» still travels when the count is unknown, in the sentence's place.
  */
 const LEVEL_NOTE_HE = (n: string) => `${n} מילים שעוד לא סוננו`;
+/**
+ * T-199ⓑ · C-0321 — **המספר שמחליף את המנעול.**
+ *
+ * ⛔ ⛔ זו ⛔ אינה החלטת עיצוב: `render_video_A.py:290,296` מצייר כל אריח כ-`<מספר> <צירוף
+ * שם>`, ואריח «משפטים» היה **האריח היחיד במסך** שהשורה השנייה שלו ⛔ אינה מספר. D-096 כבר
+ * מדדה את המצב הזה כמצב לא חוקי ב-22/08, ו-D-097 מדדה ב-23/08 ששני תנאי השחרור של D-035
+ * **מולאו**. ⇒ המספר קיים, והוא מוצג.
+ *
+ * ⛔ «—» עדיין נוסע במקום המספר כשהקריאה נכשלת — ⛔ הוא ⛔ אינו `0`.
+ */
+const SENTENCES_NOTE_HE = (n: string) => `${n} משפטים ברמה שלך`;
 const PRACTICE_NOTE_HE = (n: string) => `${n} מילים שסימנת לא ידעתי`;
 const DUE_NOTE_HE = (n: string) => `${n} כרטיסיות להיום`;
 
@@ -89,12 +111,21 @@ const DUE_NOTE_HE = (n: string) => `${n} כרטיסיות להיום`;
  *  they are: one row each, because only `total` is wanted. */
 const DUE_QUERY = '/api/study/queue?deck=due&limit=1';
 const UNKNOWN_QUERY = '/api/study/queue?deck=unknown&limit=1';
+/**
+ * ⚠️ `limit=1` ⛔ ואינו מקצץ את המונה: `total` נספר **לפני** החיתוך בכל ארבע החפיסות
+ * (`docs/api-contract.md`), וזו הסיבה היחידה שאריח יכול לקרוא מספר בשורה אחת.
+ */
+const SENTENCES_QUERY = '/api/study/queue?deck=sentences&limit=1';
 
 type QueueResponse =
   | { readonly ok: true; readonly total: number }
   | { readonly ok: false; readonly code: string };
 
-type DeckCounts = { readonly due: number | null; readonly unknown: number | null };
+type DeckCounts = {
+  readonly due: number | null;
+  readonly unknown: number | null;
+  readonly sentences: number | null;
+};
 
 /**
  * `enabled: true` carries a non-null `href` in the type itself, so the enabled branch of the
@@ -158,17 +189,23 @@ export default function DeckSelector({
 }: {
   readonly unseen?: number | null;
 } = {}): React.JSX.Element {
-  const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null });
+  const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null, sentences: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      // Both decks in parallel: they are two reads of the same table and neither depends on
-      // the other, so serialising them would double the wait for no gain.
-      const [due, unknown] = await Promise.all([readTotal(DUE_QUERY), readTotal(UNKNOWN_QUERY)]);
+      // The three counted decks in parallel: none depends on another, so serialising them
+      // would multiply the wait for no gain. ⛔ `level` is ⛔ not among them — its number is
+      // `unseen`, which the SCREEN already holds (§ 4.2ז), and a fourth read here would be
+      // a second definition of it.
+      const [due, unknown, sentences] = await Promise.all([
+        readTotal(DUE_QUERY),
+        readTotal(UNKNOWN_QUERY),
+        readTotal(SENTENCES_QUERY),
+      ]);
       if (cancelled) return;
-      setCounts({ due, unknown });
+      setCounts({ due, unknown, sentences });
       setLoading(false);
     })();
     return () => {
@@ -210,12 +247,21 @@ export default function DeckSelector({
       count: counts.due,
       note: DUE_NOTE_HE(noteFor(counts.due)),
     }),
-    // ⛔ D-035: no destination, and the note is the lock rather than a number.
+    // ⛔ **`href: null` and `locked: true` stay** — T-199ⓐ (the tile becoming navigable) is
+    // ⛔ NOT this commit. Two homes claim this feature and neither has been chosen: `36 § 5`
+    // fixes TWO decks and the render draws two, while `36 § 6` and the delivered ring
+    // (`lib/core/worldRing.ts:78,138`) carry `sentences` as a `locked_infra` node. That is
+    // **F-142**, a PM navigation decision. And the SCREEN itself has no render at all
+    // (**F-143**). ⇒ ⛔ Do NOT flip this to an href before both close.
+    //
+    // ⚠️ What DID change (T-199ⓑ · D-096): the second line is the COUNT, ⛔ no longer
+    // `«נעול»`. A disabled tile with no number is ⛔ not a legal state on this screen, and
+    // this was the only tile in `36 § 5` whose second line was not a number.
     {
       key: 'sentences',
       label: SENTENCES_LABEL_HE,
       href: null,
-      note: LOCKED_HE,
+      note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
       enabled: false,
       locked: true,
     },
@@ -274,6 +320,10 @@ export default function DeckSelector({
                     ⛔ no longer to the note's TEXT: the note is a sentence now, and a tile
                     can be locked while still showing its number (F-140 · «סינון מילים»). */}
                 {entry.locked === true ? <LockIcon /> : null}
+                {/* ⛔ הנעילה ⛔ אינה נשענת על האייקון בלבד: `LockIcon` הוא `aria-hidden`
+                    (⛔ בכוונה — הוא קישוט), ולכן בלי המילה הזאת לומד שמשתמש בקורא מסך
+                    שומע «מושבת» ⛔ ולא «נעול». ⛔ ואינה נראית ⇒ ⛔ אפס סטייה מהרנדר. */}
+                {entry.locked === true ? <span className="sr-only">{LOCKED_HE}</span> : null}
                 {entry.label}
               </span>
               <span className="text-sm text-ink-muted">{entry.note}</span>

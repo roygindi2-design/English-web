@@ -346,6 +346,14 @@ const EXPECTED_CONSOLE = {
   '/dev/tabs/cards': [
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
+    // C-0321 (T-199ⓒ): the «משפטים» tile stopped saying «נעול» and now carries its count,
+    // so `<DeckSelector>` reads a THIRD deck on mount. Same situation, same contract, same
+    // narrowness as the two lines above it: the fixture has no session and the harness has
+    // no Supabase env, so `?deck=sentences` answers 503 by its own contract and the browser
+    // logs it. ⛔ Keyed to the one exact URL and the one status — a 400 here would mean the
+    // route rejected the deck name and would still fail this check, which is precisely the
+    // regression worth catching.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=sentences&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
     // C-0176 (T-081): the fixture now renders `<LevelMapScreen>`, which asks for the level
     // summary on mount. The fixture has no session and the harness has no Supabase env, so
