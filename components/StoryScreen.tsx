@@ -6,6 +6,7 @@ import EnWord from '@/components/EnWord';
 import WordPopover from '@/components/WordPopover';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { storyIntro } from '@/lib/core/storyIntro';
 import { buildStorySegments, type StoryGloss } from '@/lib/core/storyTapTargets';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
@@ -37,6 +38,15 @@ import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 const KICKER_HE = 'העולם · סיפורים';
 const SUBTITLE_HE = 'סיפור ברמה שלך · הקש על מילה מודגשת לתרגום';
 const KNOWN_LEGEND_HE = 'ידועה';
+/**
+ * T-150 — שכבת הפתיחה. המשפט אומר **כמה אתה כבר מכיר**, ⛔ ולעולם ⛔ לא את ההשלמה שלו
+ * (T-150ⓒ): ההיפוך הופך משפט פתיחה לרשימת חובות. ⛔ המילה האסורה עצמה ⛔ אינה נכתבת
+ * כאן — ⛔ גם לא בהערה: `components/StoryScreen.test.ts` סורק את **המקור**, ותיעוד
+ * שמכיל את המחרוזת מפיל בדיוק את הסריקה שנועדה לשמור עליה.
+ * שני המספרים נגזרים בזמן תצוגה ב-`lib/core/storyIntro.ts` — ⛔ אפס עמודות, ⛔ אפס שדות חוט.
+ */
+const introLineHe = (total: number, known: number): string =>
+  `בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.`;
 const NEXT_STORY_HE = 'הסיפור הבא';
 const AMBIGUOUS_HE = 'לאיזו מילה התכוונת?';
 const LOADING_HE = 'טוען את הסיפור שלך…';
@@ -183,6 +193,9 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
     ]),
   );
   const segments = buildStorySegments(payload.story.bodyEn, glosses, known);
+  // ⛔ מפתחות `glosses` הם «מילות הסיפור שיש להן משמעות אצלנו» — בדיוק הקבוצה ש-
+  // `36 § 3` תנאי 1 מגדיר כיעדי הקשה. מילה בלעדיהם ⛔ אינה נספרת באף מספר (T-150ⓓ).
+  const intro = storyIntro(Object.keys(payload.glosses), payload.knownLemmas);
 
   const [openLemma, setOpenLemma] = useState<string | null>(null);
   const [addedLemmas, setAddedLemmas] = useState<ReadonlySet<string>>(new Set());
@@ -234,6 +247,12 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
   return (
     <>
       <StatusRow level={payload.level} index={payload.index} total={payload.total} />
+
+      {/* 🎯 T-150 · המיקום מ-`docs/design/kol-A-05-story.png`: מעל כרטיס הגוף, מתחת
+          לשורת המצב. ⛔ אין כאן סימון מוקדם של מילה (T-150ⓑ) — רק משפט. */}
+      <p data-story-intro className="text-sm text-ink-muted">
+        {introLineHe(intro.total, intro.known)}
+      </p>
 
       {/* ⚠️ `data-story-body` הוא חוזה T-183: `scripts/verify-mobile.mjs` מוצא את
           הפסקה דרכו ומעביר אותה ל-`auditStoryBody`. ⛔ אין להסיר אותו.

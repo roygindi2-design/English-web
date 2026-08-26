@@ -31,3 +31,18 @@ describe('T-186 — the screen the render binds', () => {
     expect(SRC).not.toMatch(/\bfetch\s*\(/);
   });
 });
+
+describe('T-150 — the intro layer states what the learner ALREADY has', () => {
+  it('⛔ never «חסרות לך K מילים» — the encouraging sentence is ⛔ not a debt list (T-150ⓒ)', () => {
+    expect(SRC).not.toContain('חסרות');
+  });
+
+  it('the two numbers are derived at display time, ⛔ not read off a new wire field (T-150ⓐ)', () => {
+    expect(SRC).toContain("from '@/lib/core/storyIntro'");
+    expect(SRC).toContain('בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.');
+  });
+
+  it('⛔ zero pre-marking: `isKnown` branches EXACTLY once (T-150ⓑ · § 4.2יג-ב ⓑ)', () => {
+    expect(SRC.match(/isKnown/g)?.length ?? 0).toBe(1);
+  });
+});
