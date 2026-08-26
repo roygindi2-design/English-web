@@ -26,8 +26,26 @@ import { BINARY_GRADES, directionFor, type CardDirection, type CardGrade } from 
  * else (D-032 · D-033), exactly as `unknown` does. Looking at a word ⛔ is not an exposure
  * that was answered.
  */
-export type DeckName = 'due' | 'unknown' | 'level';
-export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown', 'level'];
+export type DeckName = 'due' | 'unknown' | 'level' | 'sentences';
+export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown', 'level', 'sentences'];
+
+/**
+ * T-165ⓐ · C-0321 — **שני שמות, שני שערים, ⛔ ולא שם אחד לשניהם.**
+ *
+ * `DeckName` הוא מה ש**המסלול** מקבל. `FlashcardDeckName` הוא מה ש**המסך** מקבל, וההפרש
+ * ביניהם הוא `'sentences'` בלבד.
+ *
+ * ⚠️ הסיבה נמדדה, ⛔ ואינה טעם: `app/study/page.tsx` מוסר את שם החפיסה ל-`<StudyDeckScreen>`
+ * ומשם ל-`buildCard`, שבונה **כרטיס דו-כפתורי של דירוג עצמי**. פריט השלמה ⛔ אינו כרטיס
+ * כזה — הוא גזע וארבע אפשרויות. בלי ההפרדה, לומד שמגיע ל-`/study?deck=sentences` מכתובת
+ * מקבל מסך שבור מ-URL, וזו בדיוק מחלקת F-027.
+ *
+ * ⇒ `Exclude` הופך את מסירת פריט השלמה ל-`<Flashcard>` ל**שגיאת הידור**, ⛔ ולא לכלל
+ * בהערה. ⚠️ נרשם תחת `RULES § 0.16` כהכרעה הפיכה (גבול מודול / שמות פונקציות): קומיט אחד
+ * מבטל אותה.
+ */
+export type FlashcardDeckName = Exclude<DeckName, 'sentences'>;
+export const FLASHCARD_DECK_NAMES: readonly FlashcardDeckName[] = ['due', 'unknown', 'level'];
 export const DEFAULT_QUEUE_LIMIT = 20;
 export const MAX_QUEUE_LIMIT = 50;
 /** סדר הרמות. ⛔ המקור הוא words.cefr_profile_band בלבד (D-034). */
@@ -76,10 +94,22 @@ export interface QueueCardInput {
 
 export function parseDeckName(value: string | null): DeckName | null {
   // No argument at all is the daily dose — the learner who taps «כרטיסיות» without a query
-  // string is asking for today's queue. An argument we do not know (`sentences`, D-035) is a
-  // 400 at the route, never a silent fallback to a deck the learner did not ask for.
+  // string is asking for today's queue. An argument we do not know is a 400 at the route,
+  // never a silent fallback to a deck the learner did not ask for.
   if (value === null) return 'due';
   return DECK_NAMES.includes(value as DeckName) ? (value as DeckName) : null;
+}
+
+/**
+ * שער ה**מסך**. ⛔ `'sentences'` מחזיר `null` כאן ⛔ ולא כי הוא שם פסול — הוא שם חוקי
+ * לגמרי במסלול — אלא כי `<StudyDeckScreen>` ⛔ אינו יודע לצייר פריט השלמה (F-143: ⛔ אין
+ * רנדר למסך הזה). ⇒ הכתובת נופלת ל«מנת היום», ⛔ ולא למסך שבור.
+ */
+export function parseFlashcardDeckName(value: string | null): FlashcardDeckName | null {
+  if (value === null) return 'due';
+  return FLASHCARD_DECK_NAMES.includes(value as FlashcardDeckName)
+    ? (value as FlashcardDeckName)
+    : null;
 }
 
 export function clampQueueLimit(value: string | null): number {

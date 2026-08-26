@@ -10,6 +10,11 @@ import {
   type QueueRow,
 } from '@/lib/core/deck';
 import { planDailyQueue } from '@/lib/core/queue';
+import {
+  buildSentenceItems,
+  type SentenceCandidate,
+  type SentenceItem,
+} from '@/lib/core/sentenceItem';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -76,7 +81,78 @@ const WORDS_SELECT =
   'id, headword, cefr_profile_band, ' +
   'senses!inner(sense_index, translation_he, needs_human_review, sense_examples(kind, text_en))';
 
+/**
+ * T-165ⓑ ⓓ ⓔ — the sentences deck. Three `!inner` joins, and each one drops a row that
+ * could ⛔ not become an item anyway: a word with no sense, a sense with no stem, a sense
+ * with no distractor. An outer join here would return rows the pure layer then discards,
+ * inside a 200-row ceiling — i.e. it would spend the ceiling on rows that show nothing.
+ *
+ * ⛔ **`translation_confidence` is ⛔ not selected and ⛔ not filtered here.** D-013 is
+ * enforced in RLS (`0003a_low_confidence_is_visible.sql:38-49` — both `sense_items` and
+ * `sense_distractors` are gated on `translation_confidence <> 'low'`), and a second copy of
+ * that rule in this file is a second rule that can drift. ⚠️ This is a deliberate deviation
+ * from the plan's quoted `SENTENCES_SELECT`, which listed the column: selecting a column
+ * nothing reads reads as a filter that is missing. Recorded under `RULES § 0.16`.
+ *
+ * ⛔ **`senses.cefr_level` appears nowhere** — the band is `words.cefr_profile_band` (D-034),
+ * the same column `deck=level` uses, and `queue/route.test.ts` scans this file for it by name.
+ */
+const SENTENCES_SELECT =
+  'id, headword, cefr_profile_band, ' +
+  'senses!inner(sense_items!inner(item_index, stem), ' +
+  'sense_distractors!inner(distractor, relation_type))';
+
 type ExampleRow = { kind: string | null; text_en: string | null };
+
+type SenseItemRow = { item_index: number | null; stem: string | null };
+type SenseDistractorRow = { distractor: string | null; relation_type: string | null };
+type SentenceSenseRow = {
+  sense_items?: SenseItemRow[] | null;
+  sense_distractors?: SenseDistractorRow[] | null;
+};
+type SentenceWordRow = {
+  id: string | null;
+  headword: string | null;
+  cefr_profile_band: string | null;
+  senses?: SentenceSenseRow[] | null;
+};
+
+/**
+ * Flattens one PostgREST row into the shape the pure layer takes. Every sense of the word
+ * contributes its stems and its distractors — the deck is a word-level deck (the band lives
+ * on `words`), so two senses of the same headword are two supplies of stems for the same
+ * answer, ⛔ not two different answers.
+ *
+ * `null` ⇒ the row carried nothing usable and is dropped here, ⛔ never rendered as an
+ * empty card.
+ */
+function toSentenceCandidate(row: SentenceWordRow): SentenceCandidate | null {
+  const wordId = row.id;
+  const headword = row.headword;
+  if (typeof wordId !== 'string' || typeof headword !== 'string' || headword.trim() === '') {
+    return null;
+  }
+  const stems: { itemIndex: number; stem: string }[] = [];
+  const distractors: { text: string; relationType: string }[] = [];
+  for (const sense of row.senses ?? []) {
+    for (const item of sense.sense_items ?? []) {
+      if (typeof item.stem !== 'string' || typeof item.item_index !== 'number') continue;
+      stems.push({ itemIndex: item.item_index, stem: item.stem });
+    }
+    for (const d of sense.sense_distractors ?? []) {
+      if (typeof d.distractor !== 'string' || typeof d.relation_type !== 'string') continue;
+      distractors.push({ text: d.distractor, relationType: d.relation_type });
+    }
+  }
+  if (stems.length === 0) return null;
+  return {
+    wordId,
+    headword,
+    stems,
+    distractors,
+    cefrProfileBand: row.cefr_profile_band,
+  };
+}
 
 type SenseRow = {
   sense_index: number | null;
@@ -330,6 +406,32 @@ async function loadLevelWords(supabase: RouteClient, band: string): Promise<Queu
 }
 
 /**
+ * T-165ⓓ — the same band predicate `loadLevelWords` uses, on the same column. The order is
+ * `ngsl_rank` for the same reason: frequency is the teaching order the ingest pipeline
+ * already computed, and the 200-row ceiling must cut the rare tail, ⛔ not the common core.
+ */
+async function loadSentenceCandidates(
+  supabase: RouteClient,
+  band: string,
+): Promise<SentenceCandidate[]> {
+  const { data, error } = await supabase
+    .from('words')
+    .select(SENTENCES_SELECT)
+    .eq('cefr_profile_band', band)
+    .order('ngsl_rank', { ascending: true, nullsFirst: false })
+    .limit(MAX_QUEUE_ROWS);
+
+  if (error) {
+    console.error('[api/study/queue] sentences read failed:', error.message);
+    throw error;
+  }
+
+  return ((data ?? []) as unknown as SentenceWordRow[])
+    .map(toSentenceCandidate)
+    .filter((row): row is SentenceCandidate => row !== null);
+}
+
+/**
  * `profiles.current_level`, read as a value and ⛔ never defaulted. A learner who has not
  * chosen a level has ⛔ no level — `?? 'A1'` here would silently teach the wrong band to
  * every one of them, and the screen already has a state for "no level yet" (`kind: 'choose'`).
@@ -369,9 +471,58 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const deck = parseDeckName(params.get('deck'));
   // An unknown deck name is a 400, ⛔ never a silent fallback to a deck the learner did
-  // not ask for — `sentences` is blocked by D-035 and must read as blocked, not as empty.
+  // not ask for. ⚠️ `sentences` is ⛔ no longer among the unknown: D-097 measured both of
+  // D-035's release conditions met on 23/08, and T-165 opened it here (C-0321).
   if (deck === null) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
   const limit = clampQueueLimit(params.get('limit'));
+
+  // T-165 · D-097 — «משפטים». Like `level`, it answers from `words` and therefore ⛔ never
+  // touches the `word_progress` query below; it returns FIRST so that query is not paid for.
+  //
+  // ⛔ **Read side only.** The response carries items; ⛔ nothing here writes, and
+  // ⛔ `/api/review` is ⛔ not reachable from this deck (T-165ⓒ · D-032 · D-033). Grading a
+  // sentences item is F-140 in a second deck — most band words have no `word_progress` row
+  // and `app/api/practice/route.ts:59` answers 404 to exactly those — and that is a PM
+  // decision, ⛔ not something this route mints.
+  if (deck === 'sentences') {
+    const profile = await readCurrentLevel(supabase, user.id);
+    if (!profile.ok) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+    // ⛔ 409, ⛔ and never a fall-back to A1 — the same three codes `level` uses, ⛔ not new ones.
+    if (profile.level === null) {
+      return NextResponse.json({ ok: false, code: 'no_level' }, { status: 409 });
+    }
+
+    let candidates: SentenceCandidate[];
+    try {
+      candidates = await loadSentenceCandidates(supabase, profile.level);
+    } catch (sentencesError) {
+      const code = (sentencesError as { code?: string }).code;
+      if (code === '42P01' || code === 'PGRST205') {
+        return NextResponse.json(
+          { ok: false, code: 'schema_missing', message: 'המאגר עדיין לא הוקם' },
+          { status: 503 },
+        );
+      }
+      return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+    }
+
+    // ⛔ The seed is read from the clock exactly as `app/api/arcade/round/route.ts:97` does,
+    // and it travels in the response — the round is reproducible from the answer itself.
+    const seed = Date.now() >>> 0;
+    // ⚠️ Built ONCE at the ceiling and then cut, ⛔ not built twice: `buildSentenceItems`
+    // shuffles and *then* slices, so the first `limit` of the full build are exactly the
+    // items a build at `limit` would have produced — and `total` is therefore counted
+    // BEFORE the cut, which is the only reason `<DeckSelector>` may read a count with
+    // `limit=1` (docs/api-contract.md).
+    const allItems: readonly SentenceItem[] = buildSentenceItems(candidates, seed, MAX_QUEUE_ROWS);
+    return NextResponse.json({
+      ok: true,
+      deck,
+      total: allItems.length,
+      seed,
+      items: allItems.slice(0, limit),
+    });
+  }
 
   // T-155 · D-089 — «סינון מילים» answers from `words` and therefore ⛔ never touches the
   // `word_progress` query below. It returns FIRST so that query is not paid for at all.

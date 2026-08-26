@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   applyPractice, bandRank, checkPracticePayload, clampQueueLimit, DEFAULT_QUEUE_LIMIT,
-  excludeSeen, isUnknownRow, parseDeckName, selectDeck, sortQueue, toQueueCardInput,
-  type QueueRow,
+  excludeSeen, isUnknownRow, parseDeckName, parseFlashcardDeckName, selectDeck, sortQueue,
+  toQueueCardInput, type QueueRow,
 } from '@/lib/core/deck';
 
 const row = (over: Partial<QueueRow>): QueueRow => ({
@@ -92,10 +92,13 @@ describe('excludeSeen — ⛔ במקום not.in שגדל עם ההיסטוריה
 });
 
 describe('parseDeckName · clampQueueLimit — קלט מהכתובת הוא קלט זר', () => {
-  it('מקבל את שני השמות בלבד', () => {
+  it('מקבל את השמות שהמסלול מכיר', () => {
     expect(parseDeckName('due')).toBe('due');
     expect(parseDeckName('unknown')).toBe('unknown');
-    expect(parseDeckName('sentences')).toBeNull(); // ⛔ D-035 — חסומה
+    expect(parseDeckName('level')).toBe('level');
+    // T-165ⓐ · C-0321 — `sentences` נפתחה במסלול (D-097 מדדה את שני תנאי D-035 כמולאים).
+    expect(parseDeckName('sentences')).toBe('sentences');
+    expect(parseDeckName('nope')).toBeNull();
     expect(parseDeckName(null)).toBe('due');       // ברירת מחדל = מנת היום
   });
   it('limit פסול נופל לברירת מחדל, ⛔ ולא ל-NaN בשאילתה', () => {
@@ -211,8 +214,6 @@ describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)',
     expect(parseDeckName('due')).toBe('due');
     expect(parseDeckName('unknown')).toBe('unknown');
     expect(parseDeckName(null)).toBe('due');
-    // D-035: `sentences` עדיין 400 — ⛔ התוספת לא פתחה אותה בטעות.
-    expect(parseDeckName('sentences')).toBeNull();
   });
 
   it('שומר כל שורה שהשאילתה החזירה, בסדר רמה ואז כותרת', () => {
@@ -262,5 +263,37 @@ describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)',
     expect(body).toContain("ngsl_rank");
     expect(body).toContain("cefr_profile_band");
     expect(body).not.toContain('excludeSeen');
+  });
+});
+
+/**
+ * T-165ⓐ · C-0321 — **שער המסך, ⛔ ולא שער המסלול.**
+ *
+ * ⛔ הבדיקה הזאת היא **בת הזוג של שגיאת ההידור**: `FlashcardDeckName` מונע מסירת שם
+ * `'sentences'` ל-`<Flashcard>` בזמן הידור, והשורות כאן מונעות מהשער עצמו להיפתח בטעות
+ * בעריכה עתידית. אחת בלי השנייה ⛔ אינה שמירה — טיפוס אפשר להרחיב בשורה אחת.
+ */
+describe('parseFlashcardDeckName — פריט השלמה ⛔ אינו מגיע לכרטיס דו-כפתורי', () => {
+  it('שלוש חפיסות הכרטיסייה עוברות', () => {
+    expect(parseFlashcardDeckName('due')).toBe('due');
+    expect(parseFlashcardDeckName('unknown')).toBe('unknown');
+    expect(parseFlashcardDeckName('level')).toBe('level');
+    expect(parseFlashcardDeckName(null)).toBe('due');
+  });
+
+  it('⛔ `sentences` ⛔ אינו עובר — המסך אינו יודע לצייר אותו (F-143)', () => {
+    expect(parseFlashcardDeckName('sentences')).toBeNull();
+  });
+
+  it('⛔ ושם שאינו קיים כלל ⛔ אינו עובר גם הוא', () => {
+    expect(parseFlashcardDeckName('nope')).toBeNull();
+  });
+
+  it('מוטציה: `app/study/page.tsx` ⛔ אינו קורא ל-parseDeckName הרחב', () => {
+    const src = readFileSync('app/study/page.tsx', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/[^\n]*/g, '');
+    expect(src).toContain('parseFlashcardDeckName');
+    expect(src).not.toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
   });
 });

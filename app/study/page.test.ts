@@ -38,9 +38,18 @@ describe('/study — the deck screen (T-065)', () => {
     expect(CODE).not.toContain('/api/');
   });
 
-  it('validates ?deck= through parseDeckName and falls back to the day’s dose', () => {
+  /**
+   * ⚠️ **C-0321 — the parser this screen uses is the NARROW one.** Until T-165 every deck
+   * name meant the same two-button self-grade card, so `parseDeckName` was the right gate.
+   * `'sentences'` is a cloze stem with four English options: handing it to
+   * `<StudyDeckScreen>` → `<CardDeck>` → `buildCard` renders a broken screen from a URL
+   * (the F-027 class). ⛔ The assertion below is therefore **negative as well as positive** —
+   * a future edit that widens this back to `parseDeckName` fails here **by name**.
+   */
+  it('validates ?deck= through parseFlashcardDeckName and falls back to the day’s dose', () => {
     expect(CODE).toMatch(/from '@\/lib\/core\/deck'/);
-    expect(CODE).toContain('parseDeckName');
+    expect(CODE).toContain('parseFlashcardDeckName');
+    expect(CODE).not.toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
     expect(CODE).toMatch(/\?\?\s*'due'/);
   });
 

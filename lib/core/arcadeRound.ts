@@ -11,6 +11,9 @@
  */
 import { ARCADE_AMMO, ARCADE_MIN_WORDS_PER_LEVEL, gameLevelAt } from './arcadeLadder';
 import type { CefrBand } from './cefrLevels';
+// ⛔ העותקים הפרטיים של mulberry32/shuffle יצאו ל-`./shuffle` ב-C-0321, מילה במילה.
+// ⛔ אין כאן שינוי התנהגות: `shuffle.test.ts` מחזיק את התמורות שנמדדו לפני ההעברה.
+import { mulberry32, shuffle } from './shuffle';
 
 export const ARCADE_MIN_WORDS = ARCADE_MIN_WORDS_PER_LEVEL;
 /** ⛔ שם היסטורי. גודל הסיבוב הוא התחמושת (D-059) — ⛔ אין כאן מספר משלו. */
@@ -66,30 +69,6 @@ export function eligibleCandidates(
   level: CefrBand,
 ): ArcadeCandidate[] {
   return candidates.filter((c) => isEligible(c, level));
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffle<T>(items: readonly T[], rnd: () => number): T[] {
-  const out = items.slice();
-  for (let i = out.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rnd() * (i + 1));
-    // ⛔ ⛔ לא destructuring swap: `noUncheckedIndexedAccess` מטפס `out[i]` ל-`T | undefined`
-    // וההשמה ההדדית אינה מהדרת (נמדד בהרצת `tsc --noEmit`, C-0178).
-    const atI = out[i] as T;
-    const atJ = out[j] as T;
-    out[i] = atJ;
-    out[j] = atI;
-  }
-  return out;
 }
 
 export function buildRound(input: {

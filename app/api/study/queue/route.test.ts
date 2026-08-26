@@ -267,3 +267,68 @@ describe('T-100 — interval_days נשלף, ⛔ ואינו מנוחש', () => {
     expect(SRC).toMatch(/intervalDays:\s*0/);
   });
 });
+
+/**
+ * T-165 · C-0321 — «משפטים», **צד קריאה בלבד**.
+ *
+ * ⛔ שלוש הסריקות כאן הן על **קוד חי** (הערות מוסרות למעלה), וכל אחת מהן מגינה על משהו
+ * שהשכבה הטהורה ⛔ אינה יכולה להגן עליו: הרכב השאילתה, קודי השגיאה, ומה **אסור** שיצא
+ * מהמסלול. סריקה חלשה מהרצה, ו⛔ היא חזקה מאינסוף מאין-בדיקה.
+ */
+describe('חפיסת «משפטים» — deck=sentences (T-165 · D-097)', () => {
+  const BRANCH = (() => {
+    const at = CODE.indexOf("if (deck === 'sentences')");
+    return at === -1 ? '' : CODE.slice(at, CODE.indexOf("if (deck === 'level')"));
+  })();
+
+  it('הענף קיים ומחזיר לפני שאילתת word_progress', () => {
+    expect(BRANCH).not.toBe('');
+    // ⛔ נמדד מול `.select(PROGRESS_SELECT)` ⛔ ולא מול `from('word_progress')`: המחרוזת
+    // השנייה מופיעה גם בפונקציית עזר שמוגדרת **מעל** ה-GET, ולכן היא ⛔ אינה מודדת סדר
+    // ריצה כלל. השאילתה של מנת היום היא זו שאסור לשלם עליה, והיא זו שנמדדת.
+    expect(CODE.indexOf("if (deck === 'sentences')"))
+      .toBeLessThan(CODE.indexOf('.select(PROGRESS_SELECT)'));
+  });
+
+  it('מוטציה: הרמה היא words.cefr_profile_band, ⛔ ולעולם לא senses.cefr_level (D-034)', () => {
+    expect(CODE).not.toMatch(/senses[^\n]*cefr_level/);
+    expect(CODE).toMatch(/SENTENCES_SELECT[\s\S]{0,300}cefr_profile_band/);
+  });
+
+  it('מוטציה: current_level ריק ⇒ no_level 409, ⛔ ולעולם לא A1', () => {
+    expect(BRANCH).toContain("'no_level'");
+    expect(BRANCH).not.toMatch(/current_level[^\n]*\?\?\s*'A1'/);
+    expect(BRANCH).not.toContain("'A1'");
+  });
+
+  it('⛔ אפס קוד שגיאה חדש — אותם שלושה בדיוק', () => {
+    expect(BRANCH).toContain('schema_missing');
+    expect(BRANCH).toContain("'42P01'");
+    expect(BRANCH).toContain("'PGRST205'");
+  });
+
+  it('⛔ צד קריאה: `/api/review` ⛔ אינו מופיע בקובץ הזה בשם (T-165ⓒ)', () => {
+    expect(CODE).not.toContain('/api/review');
+  });
+
+  it('⛔ ואין בענף שום כתיבה — אפס upsert/insert/update', () => {
+    for (const write of ['upsert', '.insert(', '.update(', 'applyPractice']) {
+      expect(BRANCH).not.toContain(write);
+    }
+  });
+
+  it('⛔ ההחרגה של low ⛔ אינה משוכפלת כאן — היא ב-RLS (D-013)', () => {
+    expect(CODE).not.toContain('translation_confidence');
+  });
+
+  it('total נספר לפני החיתוך — אחרת המונה של האריח משקר', () => {
+    expect(BRANCH).toMatch(/total:\s*allItems\.length/);
+    expect(BRANCH).toMatch(/items:\s*allItems\.slice\(0,\s*limit\)/);
+  });
+
+  it('החוזה מתאר את החפיסה ואת צורת התשובה השונה שלה', () => {
+    expect(CONTRACT).toContain('deck=sentences');
+    expect(CONTRACT).toContain('near_synonym');
+    expect(CONTRACT).toContain('parseFlashcardDeckName');
+  });
+});

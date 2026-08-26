@@ -1,5 +1,5 @@
 import StudyDeckScreen from '@/components/StudyDeckScreen';
-import { parseDeckName } from '@/lib/core/deck';
+import { parseFlashcardDeckName } from '@/lib/core/deck';
 
 /**
  * The study screen — T-041, rewired in T-065 (plan `2026-08-13-study-queue.md` task 6).
@@ -21,8 +21,15 @@ import { parseDeckName } from '@/lib/core/deck';
  *
  * An unrecognised `?deck=` value falls back to the day's dose and ⛔ does not 404: the only
  * way to get one is a stale bookmark or a typo, and neither is something the learner can act
- * on. `parseDeckName` is the single source of which names exist (`DECK_NAMES`), so a third
- * deck lands here without this file changing.
+ * on.
+ *
+ * ⚠️ **C-0321 — the parser here is `parseFlashcardDeckName`, ⛔ deliberately ⛔ not
+ * `parseDeckName`.** The sentence about "a third deck lands here without this file changing"
+ * held while every deck name meant the same two-button self-grade card. `'sentences'`
+ * (T-165) does ⛔ not: it is a cloze stem with four English options, and handing it to
+ * `<StudyDeckScreen>` → `<CardDeck>` → `buildCard` would render a broken screen from a
+ * URL — the F-027 class. `FlashcardDeckName` excludes it at the type level, so this falls
+ * back to «מנת היום» **until the sentences screen exists** (F-143, PM).
  */
 export default async function StudyPage({
   searchParams,
@@ -31,7 +38,7 @@ export default async function StudyPage({
 }) {
   const params = await searchParams;
   const raw = params.deck;
-  const deck = parseDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
+  const deck = parseFlashcardDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
 
   return <StudyDeckScreen deck={deck} />;
 }
