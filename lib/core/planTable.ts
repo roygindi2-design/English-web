@@ -325,6 +325,10 @@ export function excerpt(cell: string, limit: number): string {
 /**
  * `36 § 13` build order + `39 § 9`, in the order the anchor spec builds them,
  * then the two that sit OUTSIDE that sequence and must not be flagged against it:
+ * ⚠️ `cards` was added 26/08 (D-122, F-139). It is the failure this list exists to
+ * make impossible: the spec named a workstream and the code did not know the word,
+ * so five rows read as «unknown tag» and check 11 could not measure them. ⇒ a new
+ * item in `36 § 13` must land HERE in the same commit, never a commit later.
  *   `loop` — the loop's own machinery: registers, scripts, RULES, the brakes.
  *   `base` — the foundation built BEFORE the video spec existed: auth, onboarding,
  *            the PWA shell, the data sources, the lexicon. Measured 24/08: 116 of
@@ -335,6 +339,7 @@ export function excerpt(cell: string, limit: number): string {
 export const WORKSTREAMS = [
   'story',
   'nav',
+  'cards',
   'arena',
   'studies',
   'msgs',
