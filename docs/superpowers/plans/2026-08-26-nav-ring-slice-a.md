@@ -181,16 +181,16 @@ can reach it without a browser.
 
 ### Task `T-204` — the model
 
-- [ ] **1.** Write `lib/core/worldRing.test.ts` FIRST and watch it fail. Four truth tests:
+- [x] **1.** Write `lib/core/worldRing.test.ts` FIRST and watch it fail. Four truth tests:
       `RING_ORDER` is `36 § 6`'s order, exactly eight, no duplicates · `ringPoint('arena')`
       is `{x: 0, y: -108}` within 1e-9 · `ringScreen(null, '/world')` returns `kind:'empty'`
       · a `RingInputs` with all four `unknown` also returns `kind:'empty'`.
-- [ ] **2.** Add the three tests that must fail **by name**, ⛔ not by count:
+- [x] **2.** Add the three tests that must fail **by name**, ⛔ not by count:
       `every locked_infra note has no digit` — `expect(/\d/.test(note)).toBe(false)` for all
       four · `no locked_infra note contains «בקרוב»` · `every locked_count note HAS a digit`
       (this is D-046, and it is the one that keeps `worldApps.test.ts`'s rule alive).
-- [ ] **3.** Write `lib/core/worldRing.ts` from § 2 above. ⛔ Copy it; it compiles.
-- [ ] **4.** `npm run check:core` — the module must pass the purity scan.
+- [x] **3.** Write `lib/core/worldRing.ts` from § 2 above. ⛔ Copy it; it compiles.
+- [x] **4.** `npm run check:core` — the module must pass the purity scan.
 
 ### Task `T-206` — the memory (⛔ before the screen, so the screen has something to call)
 

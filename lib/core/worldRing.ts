@@ -1,0 +1,185 @@
+/**
+ * טבעת `העולם` — המודל הטהור (T-204 · D-117 · D-118 · `36 § 6`).
+ *
+ * ⛔ **המודול ⛔ אינו יודע דבר על React, על DOM, על HTTP, על `env` ועל השעון.**
+ * הוא מקבל את מצבם של ארבעת הצמתים שמגיעים מהחוט, ומחזיר **הכרעת מסך אחת**:
+ * טבעת של שמונה צמתים, או מצב ריק אחד עם פעולה אחת.
+ *
+ * ארבע ההכרעות כאן הן חוקי המשימה ⛔ ולא טעם:
+ *
+ * 1. **שמונה צמתים בסדר של `36 § 6`** — `זירת קרב` · `הודעות` · `סיפורים` ·
+ *    `כתיבה חופשית` · `משפטים` · `אוצר מילים` · `מובילים` · `חברים`. הסדר
+ *    ⛔ **אינו פדגוגי**, ו⛔ **אין «צומת גדול»**: `featuredAppId` הוא של הרשת
+ *    הישנה ⛔ ואינו נכנס לכאן (§ 4.2יט הכרעה 3 · F-084 מתה עם הרשת).
+ *
+ * 2. **הגאומטריה יוצאת כנתון** (§ 4.2יט הכרעה 2): `RING_RADIUS` ו-`RING_ANGLE_DEG`
+ *    מיוצאים כמספרים, ו-`ringPoint` מחשב את המיקום. ⇒ הטבעת נבדקת **בלי DOM**,
+ *    והמסך ⛔ אינו מחשב זווית בתוך JSX.
+ *
+ * 3. **שלוש מחלקות נעילה, ⛔ ולא אחת** (D-118). `locked_count` נושא **ספרה**
+ *    (D-046 חלה, ושני המספרים מהשרת); `locked_infra` הוא משפט **בלי מספר ובלי
+ *    תאריך** — D-046 ⛔ **אינה** חלה עליו, ונאכף ההפך, כי «תשתית שלא נבנתה»
+ *    ⛔ אין לה מספר, והמצאת מספר היא R-010.
+ *
+ * 4. **`unknown` הוא מצב של מסך ⛔ ולא של צומת** (D-118 · T-148 · T-146ⓑ).
+ *    ראה את ההערה מעל `ringScreen` — שם זה נאכף, ⛔ ולא בתקווה.
+ *
+ * ⛔ אפס מדדי משחק מסוג D-050: ⛔ אין ניקוד, ⛔ אין מטבע, ⛔ אין רצף, ⛔ אין לוח.
+ */
+
+export type RingNodeId =
+  | 'arena'
+  | 'msgs'
+  | 'stories'
+  | 'compose'
+  | 'sentences'
+  | 'vocab'
+  | 'leaders'
+  | 'friends';
+
+export type RingNodeState =
+  /** יש יעד **וגם** התנאי מתקיים. */
+  | { readonly kind: 'open'; readonly href: string }
+  /** יש יעד, התנאי ⛔ לא מתקיים — **D-046 חלה**: ב-`noteHe` **חייבת** להיות ספרה. */
+  | { readonly kind: 'locked_count'; readonly noteHe: string }
+  /** ⛔ אין יעד — התשתית לא נבנתה. ⛔ D-046 ⛔ אינה חלה; נאכף ההפך. */
+  | { readonly kind: 'locked_infra'; readonly noteHe: string }
+  /** הקריאה נכשלה. ⛔ ⛔ לעולם ⛔ אינו מצויר על צומת — ראה `ringScreen`. */
+  | { readonly kind: 'unknown' };
+
+export interface RingNode {
+  readonly id: RingNodeId;
+  readonly labelHe: string;
+  readonly state: RingNodeState;
+}
+
+/** `36 § 6` כלשונו ובסדרו. ⛔ ⛔ אינו סדר פדגוגי, ⛔ ואין בו צומת גדול. */
+export const RING_ORDER: readonly RingNodeId[] = [
+  'arena',
+  'msgs',
+  'stories',
+  'compose',
+  'sentences',
+  'vocab',
+  'leaders',
+  'friends',
+];
+
+export const RING_LABEL_HE: Readonly<Record<RingNodeId, string>> = {
+  arena: 'זירת קרב',
+  msgs: 'הודעות',
+  stories: 'סיפורים',
+  compose: 'כתיבה חופשית',
+  sentences: 'משפטים',
+  vocab: 'אוצר מילים',
+  leaders: 'מובילים',
+  friends: 'חברים',
+};
+
+/**
+ * `36 § 6` נוקב ב-r=108. הזוויות נקראו מ-`docs/design/kol-world-ring.png`
+ * ⛔ ולא הומצאו: `זירת קרב` **למעלה**, ומשם **עם כיוון השעון** — `הודעות`
+ * מימין־מעלה, `סיפורים` מימין, `משפטים` למטה, `מובילים` משמאל.
+ * מוסכמה: 0° = ימין, נגד כיוון השעון חיובי, ציר y של המסך יורד.
+ */
+export const RING_RADIUS = 108;
+export const RING_ANGLE_DEG: Readonly<Record<RingNodeId, number>> = {
+  arena: 90,
+  msgs: 45,
+  stories: 0,
+  compose: -45,
+  sentences: -90,
+  vocab: -135,
+  leaders: 180,
+  friends: 135,
+};
+
+export interface RingPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** ⛔ המסך ⛔ **אינו** מחשב את זה — זה מה שהופך את הטבעת לנבדקת בלי DOM. */
+export function ringPoint(id: RingNodeId, radius: number = RING_RADIUS): RingPoint {
+  const rad = (RING_ANGLE_DEG[id] * Math.PI) / 180;
+  return { x: radius * Math.cos(rad), y: -radius * Math.sin(rad) };
+}
+
+export type RingScreen =
+  | { readonly kind: 'ring'; readonly nodes: readonly RingNode[] }
+  | { readonly kind: 'empty'; readonly messageHe: string; readonly actionHref: string };
+
+/** ארבעת הצמתים שמצבם מגיע מהחוט. ארבעת האחרים הם ⛔ קבועים. */
+export interface RingInputs {
+  readonly arena: RingNodeState;
+  readonly stories: RingNodeState;
+  readonly compose: RingNodeState;
+  readonly vocab: RingNodeState;
+}
+
+/**
+ * ⛔ ארבעת צמתי `locked_infra`, **וזו הרשימה כולה** (D-118 · T-204ⓔ).
+ * ⛔ ⛔ אין בהם מספר ו⛔ אין בהם תאריך — הבדיקה אוכפת את ההיפך של D-046.
+ * ⛔ מעבר של צומת מכאן ל-`open` הוא **משימה**, ⛔ ולא דגל.
+ */
+const INFRA_NOTE_HE: Readonly<Record<'msgs' | 'sentences' | 'leaders' | 'friends', string>> = {
+  msgs: 'ההודעות ייפתחו כשתיבת הדואר תיבנה.',
+  sentences: 'המשפטים ייפתחו כשמאגר המשפטים ייבנה.',
+  leaders: 'המובילים ייפתחו כשחשבונות המשתמשים יחוברו.',
+  friends: 'החברים ייפתחו כשחשבונות המשתמשים יחוברו.',
+};
+
+const ALL_UNKNOWN_HE = 'לא הצלחנו לטעון את העולם.';
+
+const LIVE_IDS = ['arena', 'stories', 'compose', 'vocab'] as const;
+
+/**
+ * הכרעת המסך. ⛔ **שלושה ענפים מובילים למצב הריק, ⛔ ולא אחד**, וזו ⛔ אינה
+ * הקשחה סתם — היא מה שהופך את T-146 ואת T-148 ל**מבנה** במקום לכוונה:
+ *
+ * ⓐ `inputs === null` — ⛔ שום קריאה לא ענתה.
+ *
+ * ⓑ **⛔ ולו קלט חי אחד הוא `unknown`** — ⚠️ **סטייה מוצהרת מקוד התוכנית, וסיבתה
+ *    מדידה ⛔ ולא טעם.** התוכנית (`2026-08-26-nav-ring-slice-a.md` § 2) מעבירה
+ *    את הקלטים כמות שהם ובודקת `anyOpen` בלבד ⇒ קלט `unknown` **שורד אל צומת**
+ *    ברגע שצומת אחר פתוח, והמסך נאלץ לצייר לו משהו — כלומר «—», שהיא בדיוק
+ *    המחרוזת ש-T-148ⓑ אוסרת **בשם**, ובדיוק «שגיאה **וגם** תוכן» ש-T-146ⓑ
+ *    אוסרת. ⚠️ ובפועל זה גרוע יותר: `כתיבה חופשית` ו`אוצר מילים` הם `open`
+ *    קבוע (כמו ברשת — `worldApps.ts`), ולכן `anyOpen` **אמת תמיד** ⇒ הענף
+ *    היחיד שנשאר לתוכנית הוא ⓐ, והמצב הריק שהיא מתיימרת לספק הוא **קוד מת
+ *    ביום שנולד** — מחלקת הפגם של F-074. ⇒ הכלל כאן הוא הכלל שהמשימות כותבות:
+ *    ⛔ **`unknown` הוא מצב של מסך**, ולכן ⛔ אינו רשאי לצאת מכאן על צומת.
+ *
+ * ⓒ ⛔ **אף צומת ⛔ אינו `open`** — D-064 כלשונה: אריח מושבת ⛔ אינו חוקי כשכל
+ *    האריחים מושבתים.
+ *
+ * ⇒ אחרי שלושת הענפים, **טיפוס `unknown` ⛔ אינו נגיש** על אף צומת של טבעת
+ * מצוירת, והבדיקה מודדת זאת ⛔ ולא מניחה.
+ */
+export function ringScreen(inputs: RingInputs | null, retryHref: string): RingScreen {
+  if (inputs === null) {
+    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+  }
+  if (LIVE_IDS.some((id) => inputs[id].kind === 'unknown')) {
+    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+  }
+  const live: Readonly<Record<RingNodeId, RingNodeState>> = {
+    arena: inputs.arena,
+    stories: inputs.stories,
+    compose: inputs.compose,
+    vocab: inputs.vocab,
+    msgs: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.msgs },
+    sentences: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.sentences },
+    leaders: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.leaders },
+    friends: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.friends },
+  };
+  const nodes: readonly RingNode[] = RING_ORDER.map((id) => ({
+    id,
+    labelHe: RING_LABEL_HE[id],
+    state: live[id],
+  }));
+  if (!nodes.some((n) => n.state.kind === 'open')) {
+    return { kind: 'empty', messageHe: ALL_UNKNOWN_HE, actionHref: retryHref };
+  }
+  return { kind: 'ring', nodes };
+}
