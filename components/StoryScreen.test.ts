@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 const SRC = readFileSync('components/StoryScreen.tsx', 'utf8');
 const END = readFileSync('components/StoryEndScreen.tsx', 'utf8');
+const DONE_FIXTURE = readFileSync('app/dev/story/done/page.tsx', 'utf8');
 
 describe('T-186 — the screen the render binds', () => {
   it('carries the three header strings verbatim', () => {
@@ -39,7 +40,7 @@ describe('T-150 — the intro layer states what the learner ALREADY has', () => 
   });
 
   it('the two numbers are derived at display time, ⛔ not read off a new wire field (T-150ⓐ)', () => {
-    expect(SRC).toContain("from '@/lib/core/storyIntro'");
+    expect(SRC).toMatch(/from ['"]@\/lib\/core\/storyIntro['"]/);
     expect(SRC).toContain('בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.');
   });
 
@@ -64,5 +65,31 @@ describe('T-203 — a string that promises what the screen does not do', () => {
   it('both phase labels exist, and they name what the button does', () => {
     expect(SRC).toContain('סיימתי לקרוא');
     expect(SRC).toContain('חזרה לעולם');
+  });
+});
+
+describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
+  it('⛔ StoryEndScreen ⛔ never claims a screen: no 100dvh, no section semantics', () => {
+    expect(END).not.toContain('min-h-[100dvh]');
+    expect(END).not.toContain('h-screen');
+    expect(END).not.toContain('<section');
+  });
+
+  it('⛔ `onNextStory` is gone — the primary action belongs to StoryScreen', () => {
+    expect(END).not.toContain('onNextStory');
+  });
+
+  it('the /dev fixture renders the WHOLE screen, ⛔ not the component in isolation', () => {
+    expect(DONE_FIXTURE).toContain('StoryScreenView');
+    expect(DONE_FIXTURE).not.toMatch(/<StoryEndScreen\b/);
+    expect(DONE_FIXTURE).toContain('initialPhase="question"');
+  });
+
+  it('⛔ `data-story-body` stays on the READING paragraph only (T-183 contract)', () => {
+    // ⚠️ הספירה היא על **המאפיין**, ⛔ ולא על אזכור בתיעוד: `data-story-body=` עם
+    // סימן שוויון, או המאפיין העירום ב-JSX. שאר האזכורים בקובץ הם הערות שמסבירות
+    // את חוזה T-183, ו⛔ אין להן משמעות בדפדפן.
+    expect(SRC.match(/^\s*data-story-body$/gm)?.length ?? 0).toBe(1);
+    expect(END).not.toContain('data-story-body');
   });
 });

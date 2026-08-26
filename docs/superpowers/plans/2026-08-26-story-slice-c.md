@@ -234,21 +234,21 @@ describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
 
 ### Step 4 — `T-202ⓐⓑ`: the phase, and the chrome that survives the swap
 
-- [ ] In `components/StoryScreen.tsx` lift the phase into `StoryReady`:
+- [x] In `components/StoryScreen.tsx` lift the phase into `StoryReady`:
       `const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading')`.
       Render `<StatusRow>`, the footer meta + legend and the single primary action
       **outside** the body swap — the render draws them once, and so does the code.
-- [ ] In the same file the body card is the swap and ⛔ nothing else:
+- [x] In the same file the body card is the swap and ⛔ nothing else:
       `phase === 'question' && payload.question !== null` ⇒ `<StoryEndScreen …/>`, else the
       `data-story-body` paragraph. ⛔ `data-story-body` stays on the reading paragraph only
       (T-183 contract, `scripts/story-tap-audit.mjs`).
-- [ ] The primary action, in `components/StoryScreen.tsx`: in `reading` it is a
+- [x] The primary action, in `components/StoryScreen.tsx`: in `reading` it is a
       `<button type="button">` that calls `setPhase('question')` — ⛔ only when
       `payload.question !== null`; with `null` it stays the `חזרה לעולם` `<Link>` to
       `WORLD_HREF`, because a story with no question has no second phase
       (`docs/api-contract.md:713`). In `question` it is a `<Link href={WORLD_HREF}>`.
       ⛔ No disabled exit and ⛔ no modal — `§ 4.2יג` clause 3, «⛔ אין טעות בקריאה, ולכן ⛔ אין עונש».
-- [ ] Edit `components/StoryEndScreen.tsx`: drop `min-h-[100dvh]`, drop the `<section>` screen
+- [x] Edit `components/StoryEndScreen.tsx`: drop `min-h-[100dvh]`, drop the `<section>` screen
       semantics (it becomes the `rounded-2xl border border-border-subtle bg-surface-raised`
       body card the render draws at radius 22), drop its own button, drop `onNextStory`.
       `לתרגל אותן בכרטיסיות` stays as the **secondary** link and stays conditional on `N>0`
@@ -257,12 +257,12 @@ describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
 
 ### Step 5 — `T-150`: the intro layer, above the body card and under the status row
 
-- [ ] In `components/StoryScreen.tsx` render, **in phase `reading` only**, one line built from
+- [x] In `components/StoryScreen.tsx` render, **in phase `reading` only**, one line built from
       `storyIntro(Object.keys(payload.glosses), payload.knownLemmas)`:
       `בסיפור הזה {total} מילים. {known} מהן אתה כבר מכיר.`
       🎯 Position from `docs/design/kol-A-05-story.png` — above the body card, below the status
       row. ⛔ No new column and ⛔ no new wire field (T-150ⓐ · D-043).
-- [ ] ⛔ **Zero pre-marking (T-150ⓑ).** Prove it in `components/StoryScreen.test.ts`: the
+- [x] ⛔ **Zero pre-marking (T-150ⓑ).** Prove it in `components/StoryScreen.test.ts`: the
       target `<button>`'s class list carries ⛔ no branch on word level or learner state other
       than `segment.isKnown`. `grep -n 'isKnown' components/StoryScreen.tsx` must return
       exactly the one existing branch.
@@ -271,7 +271,7 @@ describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
 
 ### Step 6 — the render tests `T-202` and `T-203` name, in a real DOM
 
-- [ ] Create `components/StoryScreen.dom.test.tsx` and run it red:
+- [x] Create `components/StoryScreen.dom.test.tsx` and run it red:
       `npx vitest run components/StoryScreen.dom.test.tsx`
 
 ```tsx
@@ -340,23 +340,23 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
 });
 ```
 
-- [ ] Make it green by finishing Steps 4–5 in `components/StoryScreen.tsx` and
+- [x] Make it green by finishing Steps 4–5 in `components/StoryScreen.tsx` and
       `components/StoryEndScreen.tsx`. ⛔ Do ⛔ not weaken an assertion to reach green.
       `npx vitest run components/StoryScreen.dom.test.tsx`
 
 ### Step 7 — `T-202ⓔ`: the fixture measures the real thing
 
-- [ ] **Replace** `app/dev/story/done/page.tsx`: it renders `<StoryScreenView>` with
+- [x] **Replace** `app/dev/story/done/page.tsx`: it renders `<StoryScreenView>` with
       `initialPhase="question"` and the full payload, so `check:mobile` and `diff:render`
       measure the **whole screen** in the question phase. ⛔ The question stays line 2 of
       `data/generated/story-questions-2026-08-25.jsonl` — ⛔ nothing is written here.
-- [ ] Add `question` to the payload in `app/dev/story/page.tsx` so the reading fixture keeps
+- [x] Add `question` to the payload in `app/dev/story/page.tsx` so the reading fixture keeps
       typechecking, and confirm both fixtures: `npm run typecheck`
-- [ ] Walk both routes and record the numbers (`STEP 6.5`, D-103) at 375×780:
+- [x] Walk both routes and record the numbers (`STEP 6.5`, D-103) at 375×780:
       `(npx next dev -p 3000 &) && sleep 25` then `/dev/story` and `/dev/story/done` —
       heading · char count · tappable count · under-44px · horizontal scroll · console errors.
       ⛔ `/dev/story/done` at 221 chars would mean the fixture was not replaced.
-- [ ] Compare layout to the render: `npm run diff:render /dev/story/done docs/design/kol-A-06-question.png`
+- [x] Compare layout to the render: `npm run diff:render /dev/story/done docs/design/kol-A-06-question.png`
 
 ### Step 8 — the full gate, last
 

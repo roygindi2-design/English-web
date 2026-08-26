@@ -6,7 +6,15 @@ import EnWord from '@/components/EnWord';
 import { shuffleAnswers, type StoryQuestion } from '@/lib/core/storyQuestion';
 
 /**
- * מסך הסיום של הסיפור — T-188 · `36 § 7` · D-108א.
+ * **כרטיס הגוף במצב `question` של מסך הסיפור** — T-188 · **T-202** · `36 § 7` · D-108א · D-115.
+ *
+ * ⛔ **⛔ אינו מסך, ו⛔ לא היה צריך להיות (T-202 · F-124).** ‏`render_video_A.py:964` הוא
+ * פונקציה **אחת** עם דגל `question=`: הכרום מצויר פעם אחת **מחוץ להחלפה**, ורק כרטיס
+ * הגוף מתחלף. ⇒ הרכיב הזה מחזיר **שברי כרטיס**, ⛔ ולא מכולה בגובה מסך עם סמנטיקה של
+ * מסך, ⛔ ולא פעולה ראשית משלו: שורת המצב, שורת הסיכום, המקרא והפעולה הראשית שייכים
+ * ל-`components/StoryScreen.tsx` ו**שורדים את ההחלפה**.
+ * ⛔ **המחרוזות שנפסלו כאן ⛔ אינן מצוטטות בקובץ** — הסריקות ב-
+ * `components/StoryScreen.test.ts` קוראות את המקור, והערה שמצטטת אותן מפילה את השמירה.
  *
  * 🎯 **הרנדר: `docs/design/kol-A-06-question.png`**, וערכיו נלקחו מ-`story_question`
  * ב-`docs/design/render_video_A.py` (שורות 945–963), ⛔ ולא מהעין: התווית «שאלת הבנה»
@@ -94,7 +102,9 @@ export default function StoryEndScreen({
   }, []);
 
   return (
-    <section dir="rtl" className="flex min-h-[100dvh] flex-col gap-5 pb-8">
+    <>
+      {/* 🎯 רדיוס 22 ברנדר → `rounded-2xl`, על `RAISED` עם מסגרת `BORDER_SUB` — בדיוק
+          אותו כרטיס שפסקת הקריאה יושבת בו, כי ברנדר זה **אותו כרטיס**. */}
       <div className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-6">
         <p className="text-center text-sm font-semibold text-brand-surface">{QUESTION_LABEL_HE}</p>
 
@@ -169,6 +179,6 @@ export default function StoryEndScreen({
       {/* ⛔ **הפעולה הראשית ⛔ אינה כאן (T-202ⓑ · T-203).** התווית שהייתה כאן הבטיחה מעבר
           לפריט הבא ברצף, ו-`pickStory` בוחר על אינדקס-יום ⇒ אין רצף כזה (T-151ⓓ). הפעולה
           הראשית שייכת ל-`StoryScreen`, נמצאת **מחוץ להחלפה**, ומצוירת ברנדר פעם אחת. */}
-    </section>
+    </>
   );
 }

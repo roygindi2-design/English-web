@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
+import StoryEndScreen from '@/components/StoryEndScreen';
 import WordPopover from '@/components/WordPopover';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { storyIntro } from '@/lib/core/storyIntro';
+import type { StoryQuestion } from '@/lib/core/storyQuestion';
 import { buildStorySegments, type StoryGloss } from '@/lib/core/storyTapTargets';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
@@ -94,7 +96,20 @@ export interface StoryPayload {
   readonly glosses: Readonly<Record<string, StoryGlossWire>>;
   readonly knownLemmas: readonly string[];
   readonly counts: { readonly newWords: number; readonly alreadyKnown: number };
+  /**
+   * ⛔ **כבר על החוט מאז T-188** (`docs/api-contract.md` שורה 706) — ⛔ אין כאן שינוי
+   * נקודת קצה ו⛔ אין עמודה חדשה. `null` פירושו «⛔ אין מצב שני», ⛔ ולא «אין שאלה».
+   */
+  readonly question: StoryQuestion | null;
 }
+
+/**
+ * T-202 · F-124 — **שאלת ההבנה היא מצב של מסך הסיפור, ⛔ ולא מסך.**
+ * 🎯 המדידה שקובעת: `render_video_A.py:964` הוא פונקציה **אחת** עם דגל `question=`.
+ * הכרום — שורת המצב, שורת הסיכום, המקרא והפעולה הראשית — מצויר **מחוץ להחלפה**,
+ * ורק כרטיס הגוף מתחלף. ⇒ הצורה נמדדה מהרנדר, ⛔ ולא הוסקה.
+ */
+export type StoryPhase = 'reading' | 'question';
 
 type StoryBody =
   | ({ readonly ok: true } & StoryPayload)
@@ -121,6 +136,12 @@ const SECONDARY_ACTION_CLASS =
 export interface StoryScreenViewProps {
   readonly state: ScreenState;
   readonly onRetry?: () => void;
+  /**
+   * ⛔ **פיקסטורות בלבד (T-202ⓔ).** מסלול המוצר תמיד מתחיל ב-`reading`; הדלת הזאת קיימת
+   * כדי ש-`check:mobile` ו-`diff:render` ימדדו את **המסך כולו** במצב השאלה. ⛔ פיקסטורה
+   * של רכיב בבידוד היא בדיוק מה שאיפשר ל-F-124 לעבור 1,119 בדיקות ירוקות.
+   */
+  readonly initialPhase?: StoryPhase;
 }
 
 export default function StoryScreen(): React.JSX.Element {
@@ -157,7 +178,11 @@ export default function StoryScreen(): React.JSX.Element {
   return <StoryScreenView state={state} onRetry={() => void load()} />;
 }
 
-export function StoryScreenView({ state, onRetry }: StoryScreenViewProps): React.JSX.Element {
+export function StoryScreenView({
+  state,
+  onRetry,
+  initialPhase,
+}: StoryScreenViewProps): React.JSX.Element {
   return (
     <section dir="rtl" className="flex min-h-[100dvh] flex-col gap-5 pb-8">
       <header className="flex flex-col gap-1 text-right">
@@ -169,7 +194,7 @@ export function StoryScreenView({ state, onRetry }: StoryScreenViewProps): React
       </header>
 
       {state.kind === 'ready' ? (
-        <StoryReady payload={state.payload} />
+        <StoryReady payload={state.payload} initialPhase={initialPhase} />
       ) : (
         <StoryNotReady state={state} onRetry={onRetry} />
       )}
@@ -204,7 +229,13 @@ function StatusRow({ level, index, total }: { level: string; index: number; tota
   );
 }
 
-function StoryReady({ payload }: { payload: StoryPayload }) {
+function StoryReady({
+  payload,
+  initialPhase,
+}: {
+  payload: StoryPayload;
+  initialPhase?: StoryPhase;
+}) {
   const known = new Set(payload.knownLemmas);
   const glosses = new Map<string, StoryGloss>(
     Object.entries(payload.glosses).map(([lemma, g]) => [
@@ -217,6 +248,7 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
   // `36 § 3` תנאי 1 מגדיר כיעדי הקשה. מילה בלעדיהם ⛔ אינה נספרת באף מספר (T-150ⓓ).
   const intro = storyIntro(Object.keys(payload.glosses), payload.knownLemmas);
 
+  const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading');
   const [openLemma, setOpenLemma] = useState<string | null>(null);
   const [addedLemmas, setAddedLemmas] = useState<ReadonlySet<string>>(new Set());
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
@@ -264,85 +296,105 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
 
   const openGloss = openLemma === null ? undefined : payload.glosses[openLemma];
 
+  // ⛔ סיפור בלי שאלה ⛔ אין לו מצב שני (`docs/api-contract.md` שורה 713) — הפעולה
+  // הראשית שלו נשארת היציאה. ⛔ אין כאן «שאלה חלקית» ו⛔ אין מסך ריק.
+  const question = payload.question;
+  const inQuestion = phase === 'question' && question !== null;
+
   return (
     <>
       <StatusRow level={payload.level} index={payload.index} total={payload.total} />
 
       {/* 🎯 T-150 · המיקום מ-`docs/design/kol-A-05-story.png`: מעל כרטיס הגוף, מתחת
-          לשורת המצב. ⛔ אין כאן סימון מוקדם של מילה (T-150ⓑ) — רק משפט. */}
-      <p data-story-intro className="text-sm text-ink-muted">
-        {introLineHe(intro.total, intro.known)}
-      </p>
-
-      {/* ⚠️ `data-story-body` הוא חוזה T-183: `scripts/verify-mobile.mjs` מוצא את
-          הפסקה דרכו ומעביר אותה ל-`auditStoryBody`. ⛔ אין להסיר אותו.
-          ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר.
-          ⚠️ `data-story-ambiguity="chip"` מצהיר על תנאי 4, והמימוש הוא `onWordClick`. */}
-      <div
-        data-story-body
-        data-story-ambiguity="chip"
-        className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
-      >
-        {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
-            (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד
-            מהם נעלם. `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו. */}
-        <p className="text-ink-muted">
-          <EnWord>
-          {segments.map((segment, i) => {
-            if (!segment.isTarget || segment.lemma === null) {
-              return <span key={i}>{segment.text}</span>;
-            }
-            const lemma = segment.lemma;
-            const gloss = payload.glosses[lemma];
-            return (
-              <button
-                key={i}
-                type="button"
-                data-story-word
-                data-story-translation={gloss?.translationHe ?? ''}
-                onClick={(e) => onWordClick(e, lemma)}
-                className={[
-                  // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
-                  // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
-                  // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
-                  'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
-                  // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
-                  // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
-                  // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא
-                  // (F-123) ⛔ ולא נסגר כאן בהמצאה. הסימון היחיד הוא «ידועה», והוא נושא
-                  // **מקרא כתוב** — צבע לעולם אינו הערוץ היחיד (חוקה שכבה A).
-                  segment.isKnown
-                    ? 'font-semibold text-ink underline decoration-success decoration-2 underline-offset-4'
-                    : '',
-                ].join(' ')}
-              >
-                {segment.text}
-              </button>
-            );
-          })}
-          </EnWord>
-        </p>
-      </div>
-
-      {ambiguous === null ? null : (
-        <p
-          data-story-ambiguity-chip
-          dir="rtl"
-          className="rounded-lg border border-border-strong px-4 py-3 text-sm text-ink"
-        >
-          {`${AMBIGUOUS_HE} ${ambiguous.join(' · ')}`}
+          לשורת המצב. ⛔ אין כאן סימון מוקדם של מילה (T-150ⓑ) — רק משפט.
+          ⛔ שכבת הפתיחה שייכת ל-`reading` בלבד: היא מתארת מה עומד להיקרא. */}
+      {inQuestion ? null : (
+        <p data-story-intro className="text-sm text-ink-muted">
+          {introLineHe(intro.total, intro.known)}
         </p>
       )}
 
-      {openLemma === null || openGloss === undefined ? null : (
-        <WordPopover
-          word={openLemma}
-          translationHe={openGloss.translationHe}
-          posHe={openGloss.posHe}
-          added={addedLemmas.has(openLemma)}
-          onAdd={() => add(openLemma)}
-          onClose={() => setOpenLemma(null)}
+      {/* ⛔ **ההחלפה היא כרטיס הגוף ו⛔ שום דבר אחר.** ⛔ `data-story-body` נשאר על פסקת
+          הקריאה בלבד — חוזה T-183, ו-`scripts/story-tap-audit.mjs` מודד דרכו. */}
+      {inQuestion && question !== null ? (
+        <StoryEndScreen
+          storyId={payload.story.id}
+          question={question}
+          reviewedCount={payload.counts.alreadyKnown}
         />
+      ) : (
+        <>
+          {/* ⚠️ `data-story-body` הוא חוזה T-183: `scripts/verify-mobile.mjs` מוצא את
+          הפסקה דרכו ומעביר אותה ל-`auditStoryBody`. ⛔ אין להסיר אותו.
+          ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר.
+          ⚠️ `data-story-ambiguity="chip"` מצהיר על תנאי 4, והמימוש הוא `onWordClick`. */}
+          <div
+            data-story-body
+            data-story-ambiguity="chip"
+            className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
+          >
+            {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
+            (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד
+            מהם נעלם. `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו. */}
+            <p className="text-ink-muted">
+              <EnWord>
+                {segments.map((segment, i) => {
+                  if (!segment.isTarget || segment.lemma === null) {
+                    return <span key={i}>{segment.text}</span>;
+                  }
+                  const lemma = segment.lemma;
+                  const gloss = payload.glosses[lemma];
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      data-story-word
+                      data-story-translation={gloss?.translationHe ?? ''}
+                      onClick={(e) => onWordClick(e, lemma)}
+                      className={[
+                        // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
+                        // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
+                        // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
+                        'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
+                        // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
+                        // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
+                        // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא
+                        // (F-123) ⛔ ולא נסגר כאן בהמצאה. הסימון היחיד הוא «ידועה», והוא נושא
+                        // **מקרא כתוב** — צבע לעולם אינו הערוץ היחיד (חוקה שכבה A).
+                        segment.isKnown
+                          ? 'font-semibold text-ink underline decoration-success decoration-2 underline-offset-4'
+                          : '',
+                      ].join(' ')}
+                    >
+                      {segment.text}
+                    </button>
+                  );
+                })}
+              </EnWord>
+            </p>
+          </div>
+
+          {ambiguous === null ? null : (
+            <p
+              data-story-ambiguity-chip
+              dir="rtl"
+              className="rounded-lg border border-border-strong px-4 py-3 text-sm text-ink"
+            >
+              {`${AMBIGUOUS_HE} ${ambiguous.join(' · ')}`}
+            </p>
+          )}
+
+          {openLemma === null || openGloss === undefined ? null : (
+            <WordPopover
+              word={openLemma}
+              translationHe={openGloss.translationHe}
+              posHe={openGloss.posHe}
+              added={addedLemmas.has(openLemma)}
+              onAdd={() => add(openLemma)}
+              onClose={() => setOpenLemma(null)}
+            />
+          )}
+        </>
       )}
 
       {/* ⚠️ אותו נימוק בדיוק כמו בשורת המצב: ברנדר הקו הירוק ו-«ידועה» יושבים ב-
@@ -358,13 +410,21 @@ function StoryReady({ payload }: { payload: StoryPayload }) {
         </span>
       </div>
 
-      <Link href={WORLD_HREF} className={PRIMARY_ACTION_CLASS}>
-        {BACK_TO_WORLD_HE}
-      </Link>
+      {/* ⛔ **הפעולה הראשית מצוירת פעם אחת, מחוץ להחלפה** — כך היא ברנדר, וכך כאן.
+          ⛔ **היציאה חיה בשני המצבים** (`§ 4.2יג` סעיף 3: «⛔ אין טעות בקריאה, ולכן
+          ⛔ אין עונש») — ⛔ אין יציאה מנוטרלת ו⛔ אין חלונית שחוסמת. */}
+      {inQuestion || question === null ? (
+        <Link href={WORLD_HREF} className={PRIMARY_ACTION_CLASS}>
+          {BACK_TO_WORLD_HE}
+        </Link>
+      ) : (
+        <button type="button" onClick={() => setPhase('question')} className={PRIMARY_ACTION_CLASS}>
+          {DONE_READING_HE}
+        </button>
+      )}
     </>
   );
 }
-
 
 function StoryNotReady({ state, onRetry }: { state: ScreenState; onRetry?: () => void }) {
   if (state.kind === 'loading') {

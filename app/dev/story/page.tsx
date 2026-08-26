@@ -40,6 +40,15 @@ export default function DevStoryPage() {
             },
             knownLemmas: ['river', 'book'],
             counts: { newWords: 5, alreadyKnown: 2 },
+            // ⛔ **השאלה ⛔ אינה מומצאת** — שורה 2 של
+            // `data/generated/story-questions-2026-08-25.jsonl`, הפריט ש-CONTENT מסר
+            // ב-C-0295 ושעבר את `storyQuestionGate` ‏12/12. ⛔ אין כאן ניסוח, תרגום
+            // או מסיח שנכתב כאן. היא נוסעת כדי שהמצב השני יהיה בר-הגעה מהפיקסטורה.
+            question: {
+              questionEn: 'Who wrote the letter that was in the book?',
+              answersHe: ['אם', 'אנשים', 'חבר'],
+              correctIndex: 2,
+            },
           },
         }}
       />
