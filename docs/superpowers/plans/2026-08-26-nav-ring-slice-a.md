@@ -201,14 +201,14 @@ can reach it without a browser.
 
 ### Task `T-205` — the screen
 
-- [ ] **7.** `components/WorldRing.tsx` (`'use client'`). It reads the same three endpoints
+- [x] **7.** `components/WorldRing.tsx` (`'use client'`). It reads the same three endpoints
       `components/AppGrid.tsx` already reads — `GET /api/arcade/round` (line 204),
       `GET /api/arcade/collected` (line 222), `GET /api/world/status` (line 240) — and maps
       them to `RingInputs`. ⛔ **Reuse the existing mappers**: `levelTooSmallNoteHe` and
       `libraryTile` from `lib/core/worldApps.ts`, and `worldGateSentenceHe` from
       `lib/core/worldGate.ts`. ⛔ **Do not write a second copy of any Hebrew note.**
       `apiGet` only — ⛔ zero `apiPost`, ⛔ zero writes, exactly as `AppGrid` guarantees today.
-- [ ] **8.** Draw it, against `docs/design/kol-world-ring.png` and ⛔ not against memory:
+- [x] **8.** Draw it, against `docs/design/kol-world-ring.png` and ⛔ not against memory:
       heading `העולם` + `מרחב פתוח · לא נספר להתקדמות הלמידה`, top-anchored right (layer A) ·
       the `קול` focus centred, raised, with the glow ≤ the constitution-B3 budget and OFF
       under `prefers-reduced-motion` · eight nodes positioned from `ringPoint` · **the label
@@ -216,43 +216,43 @@ can reach it without a browser.
       dimmed **and** carry a padlock — ⛔ the padlock is the non-colour channel, and colour
       alone is ⛔ never the state · the fixed card at the bottom: `בידוד מלא מהלמידה` /
       `ניצחון או הפסד לא נוגעים ב-word_progress`.
-- [ ] **9.** In `components/WorldRing.tsx`, `kind:'empty'` renders **one** region with **one** action — `T-146` and `T-148`
+- [x] **9.** In `components/WorldRing.tsx`, `kind:'empty'` renders **one** region with **one** action — `T-146` and `T-148`
       discharged here, and ⛔ nowhere else on the screen.
-- [ ] **10.** `T-206ⓑⓒⓓⓔ`, still in `components/WorldRing.tsx`: read `localStorage` inside `try/catch` on
+- [x] **10.** `T-206ⓑⓒⓓⓔ`, still in `components/WorldRing.tsx`: read `localStorage` inside `try/catch` on
       mount, `parseLastNode` the value, mark that one node «כאן היית» (a shape channel, ⛔ not
       colour), write the id in `try/catch` on tap. ⛔ **No auto-navigation**, ⛔ no counter.
-- [ ] **11.** `app/(tabs)/world/page.tsx` becomes `<WorldRing />` and nothing else. ⛔ Delete
+- [x] **11.** `app/(tabs)/world/page.tsx` becomes `<WorldRing />` and nothing else. ⛔ Delete
       no file. ⛔ Do not touch `/world/compose`, `/world/collected`, `/world/story`.
-- [ ] **12.** `components/WorldRing.test.ts` — source scans that fail **by name**: the file
+- [x] **12.** `components/WorldRing.test.ts` — source scans that fail **by name**: the file
       contains no `'—'` as a state string · no `בקרוב` · no `router.push`/`redirect` at mount.
 
 ### Task `T-174` — the bar (seal ⓐ's other half)
 
-- [ ] **13.** `app/(tabs)/settings/page.tsx` FIRST — a tab whose destination 404s is worse
+- [x] **13.** `app/(tabs)/settings/page.tsx` FIRST — a tab whose destination 404s is worse
       than four tabs. Minimum honest screen: the heading `הגדרות` and the level-change entry
       point `36 § 4` names. ⛔ No invented settings.
-- [ ] **14.** `components/TabBar.tsx`: `TABS` becomes five —
+- [x] **14.** `components/TabBar.tsx`: `TABS` becomes five —
       `לימודים · כרטיסיות · העולם · אני · הגדרות` — logical positions 10/30/**50**/70/90%,
       labels 9.8pt, RTL first-in-DOM is rightmost. **`world` gets `href: '/world'`**
       (`D-117`): delete `href: null`, the `aria-disabled` button, the sheet, the
       `worldStatus` state and the `useEffect` that fetches `/api/world/status`. The world
       entry is a raised r=27 circle on `--brand-surface` with the pulsing glow, at the exact
       geometric centre; targets stay 44×44 (`36 § 4` — `§ 3` does not apply to tabs).
-- [ ] **15.** `components/TabBar.test.ts`: invert the lock assertions and add one that fails
+- [x] **15.** `components/TabBar.test.ts`: invert the lock assertions and add one that fails
       by name — **this file may ⛔ not contain the string `בקרוב`**.
 
 ### Closing
 
-- [ ] **16.** `scripts/verify-mobile.mjs`: add `/dev/world/ring` to `ROUTES`. ⛔ Do **not**
+- [x] **16.** `scripts/verify-mobile.mjs`: add `/dev/world/ring` to `ROUTES`. ⛔ Do **not**
       add it to `FLOW_ROUTES` — read the comment at line 207 first; the naive addition breaks
       the `data-tab-bar` assertion. ⛔ Do not add it to `TAB_ROUTES` either: the fixture
       renders the component alone (the `/dev/deck` precedent, C-0104).
-- [ ] **17.** `app/dev/world/ring/page.tsx` — the component with a hand-built `RingInputs`
+- [x] **17.** `app/dev/world/ring/page.tsx` — the component with a hand-built `RingInputs`
       showing **all three classes at once**: one `open`, one `locked_count`, the rest
       `locked_infra`. ⛔ Component only, ⛔ no heading of its own (C-0104). ⛔ Non-content
       strings, per the `/dev/deck` and `/dev/world` precedent.
-- [ ] **18.** `npm run verify` — exit 0, and ⛔ nothing is claimed before it is seen.
-- [ ] **19.** Walk it: `npx next dev -p 3000`, then `/world` and `/dev/world/ring` at
+- [x] **18.** `npm run verify` — exit 0, and ⛔ nothing is claimed before it is seen.
+- [x] **19.** Walk it: `npx next dev -p 3000`, then `/world` and `/dev/world/ring` at
       375×780. Record **heading · text length · tappable count · targets under 44px ·
       horizontal scroll · console errors**, and write the numbers into the handoff row.
 

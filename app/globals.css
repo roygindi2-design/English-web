@@ -108,6 +108,52 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
 }
 
 
+/* T-205 · T-174 · חוקה שכבה ב3 — **שני הזוהרים היחידים במסך `העולם`**, וזו כל
+   התקרה שההחלטה נותנת: מוקד `קול` במרכז הטבעת, והעיגול המרכזי בסרגל הלשוניות.
+   ⛔ שניהם על `--brand`/`--brand-surface` בלבד, ⛔ ואף אחד מהם ⛔ אינו על טקסט גוף.
+
+   `color-mix` ו⛔ לא `bg-brand/40`: כל טוקן צבע הוא `var(--x)` בלי חריץ
+   `<alpha-value>`, ולכן Tailwind ⛔ אינו יכול לגזור ממנו שקיפות (נמדד ב-C-0163 —
+   `bg-ink/40` ⛔ אינו פולט כלל בכלל). ⇒ השקיפות נגזרת ב-CSS, מאותו טוקן. */
+[data-ring-focus] {
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--brand) 14%, transparent),
+    0 0 26px 8px color-mix(in srgb, var(--brand) 26%, transparent);
+}
+
+[data-tab-world] {
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--brand-surface) 18%, transparent),
+    0 0 22px 6px color-mix(in srgb, var(--brand-surface) 34%, transparent);
+  animation: kol-world-pulse 2600ms ease-in-out infinite;
+}
+
+@keyframes kol-world-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--brand-surface) 18%, transparent),
+      0 0 22px 6px color-mix(in srgb, var(--brand-surface) 34%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px color-mix(in srgb, var(--brand-surface) 10%, transparent),
+      0 0 30px 10px color-mix(in srgb, var(--brand-surface) 22%, transparent);
+  }
+}
+
+/* ⛔ `animation: none` ו⛔ לא רק `animation-duration: 0.01ms` של הבלוק הגלובלי
+   למעלה: זו הלולאה ה**אינסופית** היחידה במוצר, ומשך 0.01ms על `infinite` הוא
+   לולאה בתדר גבוה ⛔ ולא עצירה. חוקה שכבה A דורשת שהתנועה תיפסק, ⛔ לא שתואץ. */
+@media (prefers-reduced-motion: reduce) {
+  [data-tab-world] { animation: none; }
+}
+
+/* ⚠️ **המיקום כאן הוא חוק, ⛔ ולא סדר.** `components/ArenaStage.test.ts` לוקח את
+   בלוק הבמה כ-`CSS.slice(indexOf('/* arena-stage'))` — כלומר **עד סוף הקובץ**.
+   ⇒ כלל שנוסף בסוף `globals.css` נמדד כאילו הוא חלק מכללי הבמה, והלולאה הפועמת
+   כאן הפילה שם שתי בדיקות (‏2600ms מול תקרת 300ms, ו-`infinite` מול «⛔ אין לולאה»).
+   ⛔ כל בלוק חדש נכנס **לפני** הסמן הזה. */
+
 /* arena-stage — T-117 · D-060 · חוקה § 5. ⛔ מעבר, ⛔ ולא לולאה: אין `infinite`
    ואין `alternate`. `prefers-reduced-motion` (למעלה) מאפס את המשכים.
    ⛔ אין כאן כלל ל-`idle`: המתנה היא היעדר תזוזה, ⛔ ולא תנועה שלישית. */
