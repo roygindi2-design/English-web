@@ -22,4 +22,10 @@
   --arena-stone-dark: #34323f;
   /* כחול הליל — רקע הבמה. */
   --arena-night: #1c2642;
+  /* T-179 · `37 § 6` — מד ההטלה של היריב ותווית ההתחמקות.
+     `render_video_B.py` (`cast_meter`) — ⛔ הערכים של הרנדר, מומרים ⛔ ולא נבחרים. */
+  --arena-cast: #c482ff;
+  --arena-cast-edge: #b478f0;
+  --arena-cast-warn: #ff7878;
+  --arena-dodge: #96e6ff;
 }

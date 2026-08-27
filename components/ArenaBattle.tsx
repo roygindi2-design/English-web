@@ -10,15 +10,18 @@ import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { mixArenaWords, type ArenaWord } from '@/lib/core/arenaWords';
+import { resolveGesture } from '@/lib/core/arenaGesture';
 import {
   BATTLE_MS,
   MANA_CAP,
   cast,
+  dodge,
   isRage,
   manaAt,
   outcomeAt,
   stagePhase,
   startBattle,
+  telegraphAt,
   tick,
   type BattleState,
 } from '@/lib/core/battle';
@@ -135,6 +138,10 @@ export const ARENA_ISOLATION_HE = 'זירת הקרב מבודדת · אין הש
  * `37 § 5` — מסלול הנגישות. ⛔ נוסח ממשק ש⛔ אינו תוכן לימודי ⇒ הכרעת DEV
  * (`RULES § 0.16`), ונרשמה בסיכום הטיק.
  */
+/** `37 § 6` — הרנדר מצייר «מטיל!» מעל המד (`cast_meter`), וזה גם ערוץ שאינו צבע (שכבה א׳ א2). */
+const CASTING_HE = 'מטיל!';
+const CASTING_METER_HE = 'היריב מטיל';
+const DODGED_HE = 'התחמקות!';
 const FIRE_HE = 'שגר לחש';
 const FIRE_HINT_HE = 'בחר קלף לחש כדי לשגר';
 /** ⛔ זיכרון מכשיר, ⛔ ולא התקדמות למידה — ⛔ אינו נקודות, ⛔ אינו רצף, ⛔ אינו נוגע ב-`word_progress`. */
@@ -199,6 +206,8 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   const [sendError, setSendError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const originRef = useRef<number | null>(null);
+  /** ⛔ נקודת ההתחלה של מחוות הבמה. ⛔ ref ו⛔ לא state — היא ⛔ אינה משנה פיקסל. */
+  const stageFrom = useRef<{ x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   /**
@@ -492,6 +501,8 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   const hand = questions[battle.index]?.options ?? [];
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
   const raging = isRage(elapsedMs);
+  /** ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו חלון. */
+  const telegraph = useMemo(() => telegraphAt(elapsedMs), [elapsedMs]);
 
   return (
     <section
@@ -531,6 +542,30 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         <p className="text-end text-base font-bold text-[color:var(--arena-gold-light)]">
           {ENEMY_HE}
         </p>
+        {/* ⓒ1 מד ההטלה — `37 § 6`. ⚠️ **שכבה א׳ גוברת על הרנדר:** השלב מוכרז ב**מילה**
+            ‏(«מטיל!») ⛔ ולעולם לא בגוון בלבד (א2), והיא `aria-live` כדי שהגלגול יהיה
+            נגיש בלי לראות את שינוי הצבע. תחת `prefers-reduced-motion` הפעימה נעצרת
+            ⛔ והמילה **נשארת**. */}
+        {telegraph.phase !== 'quiet' && (
+          <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraph.phase}>
+            {telegraph.phase !== 'charging' && (
+              <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
+                {CASTING_HE}
+              </p>
+            )}
+            <div
+              role="img"
+              aria-label={`${CASTING_METER_HE} ${Math.round(telegraph.frac * 100)} אחוז`}
+              className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--arena-cast-edge)] bg-[color:var(--arena-night)]"
+            >
+              <span
+                aria-hidden
+                className={`block h-full ${telegraph.phase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
+                style={{ width: `${telegraph.frac * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
         {/* ⛔ מסלול הנגישות של `§ 5` — «הקשה בוחרת, **הקשה על היריב משגרת**».
             פס החיים ו-`role="img"` שלו ⛔ לא השתנו; הם עברו **לתוך** הכפתור. */}
         <button
@@ -564,8 +599,33 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
 
       {/* ⓓ הבמה — שתי הדמויות. ⛔ **התנועה חיה כאן ובלבד** (T-041, עקרון הקוהרנטיות
           של Mayer): אזור היד שמתחת ⛔ לעולם אינו זז. התנוחה מגיעה מ-`stagePhase` שבחוק. */}
-      <div className="rounded-2xl bg-[color:var(--arena-night)] px-4 py-6">
+      <div
+        data-arena-stage-area
+        className="rounded-2xl bg-[color:var(--arena-night)] px-4 py-6"
+        style={{ touchAction: 'pan-y' }}
+        onPointerDown={(e) => { stageFrom.current = { x: e.clientX, y: e.clientY }; }}
+        onPointerUp={(e) => {
+          const start = stageFrom.current;
+          stageFrom.current = null;
+          if (start === null) return;
+          const gesture = resolveGesture({
+            source: 'stage',
+            startX: start.x, startY: start.y,
+            endX: e.clientX, endY: e.clientY,
+            viewportWidth: window.innerWidth,
+          });
+          // ⛔ `move` ⛔ אינו «התחמקות» — `dodge` בליבה מכריע אם הוא נפל בתוך החלון.
+          // ⛔ הרכיב ⛔ אינו יודע מהו חלון, ו⛔ אינו סופר 400 מילישניות.
+          if (gesture?.kind === 'move') setBattle((prev) => (prev === null ? prev : dodge(prev, elapsedMs)));
+        }}
+        onPointerCancel={() => { stageFrom.current = null; }}
+      >
         <ArenaStage phase={stagePhase(battle)} items={[]} />
+        {battle.dodgedSwing !== null && (
+          <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
+            {DODGED_HE}
+          </p>
+        )}
       </div>
 
       {/* ⓔ מד המאנה — `מאנה N / 10`, ובזמן זעם התווית מתחלפת.

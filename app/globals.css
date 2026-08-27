@@ -162,6 +162,15 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   box-shadow: 0 0 12px 0 color-mix(in srgb, var(--arena-gold) 55%, transparent);
 }
 
+/* T-179 · 37 § 6 — ההכרזה מהבהבת. ⚠️ **חוקה ב6 מתירה לתזמון הזה לחרוג מתקרת 300ms**
+   כי הוא **מפרט מדיד** (חלון 5.3–5.7) ⛔ ולא קישוט. ⛔ `prefers-reduced-motion` (:103)
+   מאפס את המשך — והמילה «מטיל!» **נשארת**, כי היא הערוץ שאינו תנועה ואינו צבע. */
+@keyframes arena-announce { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+[data-arena-cast-phase='window'] { animation: arena-announce 400ms ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-cast-phase='window'] { animation: none; }
+}
+
 /* ⚠️ **המיקום כאן הוא חוק, ⛔ ולא סדר.** `components/ArenaStage.test.ts` לוקח את
    בלוק הבמה כ-`CSS.slice(indexOf('/* arena-stage'))` — כלומר **עד סוף הקובץ**.
    ⇒ כלל שנוסף בסוף `globals.css` נמדד כאילו הוא חלק מכללי הבמה, והלולאה הפועמת

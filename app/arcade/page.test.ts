@@ -29,8 +29,13 @@ const CODE = withoutComments(SRC);
 const CARD_SRC = readFileSync('components/SpellCard.tsx', 'utf8');
 const CARD_CODE = withoutComments(CARD_SRC);
 
-/** אינווריאנט `37 § 13.5` — חמשת הערכים, וזו הרשימה המלאה. */
-const ARENA_HEXES = ['#d4a94a', '#f5d684', '#4a4858', '#34323f', '#1c2642'] as const;
+/**
+ * אינווריאנט `37 § 13.5` — **הרשימה המלאה** של טוקני הזירה, ⛔ ולא מדגם.
+ * ⚠️ T-179 הוסיפה ארבעה (`cast` · `cast-edge` · `cast-warn` · `dodge`) ⇒ ארבעה
+ * ערכים נוספים שחייבים להישאר **מחוץ** ל-`palette.ts` ול-`globals.css`.
+ */
+const ARENA_HEXES = ['#d4a94a', '#f5d684', '#4a4858', '#34323f', '#1c2642',
+                     '#c482ff', '#b478f0', '#ff7878', '#96e6ff'] as const;
 
 describe('אינווריאנט 37 § 13.5 — הפלטה scoped לזירה', () => {
   it('⛔ טוקני הזירה ⛔ אינם דולפים ל-palette', () => {
@@ -144,10 +149,13 @@ describe('חוקה שכבה א׳ — ⛔ ההחרגה היחידה, ו⛔ אין
   });
 
   it('א2 — המצב ⛔ אינו מקודד בצבע בלבד: לפס ולמד יש מספר ותווית', () => {
-    // פס היריב נושא אחוז בתוכו; מד המאנה נושא `N / 10`. שניהם `role="img"` עם שם נגיש.
+    // פס היריב נושא אחוז בתוכו; מד המאנה נושא `N / 10`; ומאז T-179 גם מד ההטלה
+    // נושא אחוז בשם הנגיש שלו. ⛔ **שלושה, ⛔ ולא «לפחות שניים»:** המספר נשמר קשיח
+    // כי `role="img"` בלי שם נגיש הוא בדיוק ההחמצה ששכבה א׳ א2 נועדה לתפוס.
     expect(CODE).toContain('${enemyPct}/100');
     expect(CODE).toContain('${mana} / ${MANA_CAP}');
-    expect([...CODE.matchAll(/role="img"/g)]).toHaveLength(2);
+    expect(CODE).toContain('${Math.round(telegraph.frac * 100)} אחוז');
+    expect([...CODE.matchAll(/role="img"/g)]).toHaveLength(3);
   });
 
   it('⛔ אפס אמוג׳י (שכבה א׳ — אייקוני SVG בלבד)', () => {
@@ -174,5 +182,33 @@ describe('T-178 · 37 § 5 — שני המסלולים, וההכרעה ⛔ אי�
 
   it('⛔ ההעדפה נקראת אחרי ההרכבה, ⛔ ולא ברינדור (אזהרת hydration)', () => {
     expect(CODE).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
+  });
+});
+
+describe('T-179 · 37 § 6 — חלון ההתחמקות', () => {
+  it('המד מגיע מהליבה — ⛔ הרכיב ⛔ אינו סופר 5.3 ואינו סופר 5.7', () => {
+    expect(CODE).toContain('telegraphAt(');
+    for (const number of ['5300', '5700', '6000', '5.3', '5.7']) {
+      expect(CODE).not.toContain(number);
+    }
+  });
+
+  it('⛔ ההכרזה ⛔ אינה צבע בלבד — המילה על המסך ו-`aria-live` (שכבה א׳ א2)', () => {
+    expect(SRC).toContain('מטיל!');
+    expect(CODE).toContain('aria-live');
+  });
+
+  it('ההחלקה על הבמה עוברת בכלל מקור המחווה', () => {
+    expect(CODE).toContain("source: 'stage'");
+    expect(CODE).toContain('dodge(');
+  });
+
+  it('⛔ אין hex חדש שדלף ל-globals או ל-palette', () => {
+    const palette = readFileSync('lib/core/palette.ts', 'utf8');
+    const globals = readFileSync('app/globals.css', 'utf8');
+    for (const hex of ARENA_HEXES) {
+      expect(palette, `${hex} — אינווריאנט 37 § 13.5`).not.toContain(hex);
+      expect(globals, `${hex} — אינווריאנט 37 § 13.5`).not.toContain(hex);
+    }
   });
 });
