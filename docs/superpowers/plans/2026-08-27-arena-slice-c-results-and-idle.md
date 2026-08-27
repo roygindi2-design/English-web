@@ -351,14 +351,14 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
 
 ## Task 3 — T-158 · the flag flips on
 
-- [ ] **Step 3.1 — flip the assertion first.** In `lib/core/arcadeLadder.test.ts:47`,
+- [x] **Step 3.1 — flip the assertion first.** In `lib/core/arcadeLadder.test.ts:47`,
       `expect(ARENA_IDLE_LOOP).toBe(false)` becomes `toBe(true)`, with a comment naming
       **D-090ⓒ** and `plan/03-for-roy.md` item 39. Run
       `npx vitest run lib/core/arcadeLadder.test.ts` and measure red.
-- [ ] **Step 3.2 — flip the flag.** `lib/core/arcadeLadder.ts:33` → `true`, and its
+- [x] **Step 3.2 — flip the flag.** `lib/core/arcadeLadder.ts:33` → `true`, and its
       doc-comment records that the consumer landed in T-119 — a flag with no reader was
       the whole reason this row sat blocked.
-- [ ] **Step 3.3 — green.** `npx vitest run lib/core/arcadeLadder.test.ts`
+- [x] **Step 3.3 — green.** `npx vitest run lib/core/arcadeLadder.test.ts`
 
 ## Task 4 — the registers, the gate, and the walk
 
