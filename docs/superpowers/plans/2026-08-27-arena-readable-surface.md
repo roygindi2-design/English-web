@@ -195,7 +195,7 @@ buildable all along.
 **⛔ Anchor-derived, ⛔ not invented** — every number below is copied from
 `plan/38-character-base.md § 3`, and the layer order from `§ 4`.
 
-- [ ] **Step 1 — the geometry becomes a pure module.** New `lib/core/characterBase.ts`.
+- [x] **Step 1 — the geometry becomes a pure module.** New `lib/core/characterBase.ts`.
       The anchor points, verbatim from `38 § 3` (head `r=34` at `(0,-62)`; shoulders
       `(∓52,-8)`; body `76×84` at `(0,-18)`; belt `68×14` at `(0,47)`; main hand
       `(66,16)`; off hand `(-70,12)`; boots `(∓20,112)`), and the eleven-layer order from
@@ -225,7 +225,7 @@ buildable all along.
       export type Layer = (typeof LAYER_ORDER)[number];
       ```
 
-- [ ] **Step 2 — unit tests.** New `lib/core/characterBase.test.ts`. `LAYER_ORDER` has
+- [x] **Step 2 — unit tests.** New `lib/core/characterBase.test.ts`. `LAYER_ORDER` has
       **eleven** entries in `38 § 4`'s order; every `CharacterSlot` resolves to an anchor;
       an item whose slot is not in the map is **rejected** — `38 § 3` says in as many
       words that such an item is invalid, ⛔ *not* a reason to change the skeleton.
@@ -236,7 +236,7 @@ buildable all along.
       expect(anchorFor('mainHand')).toEqual({ x: 66, y: 16 })
       ```
 
-- [ ] **Step 3 — `ArenaAvatar` draws the `38 § 4` order.** `components/ArenaAvatar.tsx`
+- [x] **Step 3 — `ArenaAvatar` draws the `38 § 4` order.** `components/ArenaAvatar.tsx`
       goes from 4 base layers to the eleven, **hair and main-hand weapon among them**.
       ⛔ **`38 § 5` forbids copying `wizard_sprite` / `knight_sprite` / `hero_sprite`
       from `render_video_B.py`** — the shapes are written here, on this skeleton.
@@ -245,11 +245,11 @@ buildable all along.
       ⚠️ `ITEM_LABELS_HE` and `ARCADE_ITEMS` are **unchanged** — D-132 settled that slots
       and item instances are two vocabularies, ⛔ not two rival lists.
 
-- [ ] **Step 4 — mutation check.** Swap two entries of `LAYER_ORDER` in
+- [x] **Step 4 — mutation check.** Swap two entries of `LAYER_ORDER` in
       `lib/core/characterBase.ts`, run `npx vitest run lib/core/characterBase.test.ts`;
       it must fail **by name**. Restore.
 
-- [ ] **Step 5 — `npm run verify`**, fresh, output into the tick report.
+- [x] **Step 5 — `npm run verify`**, fresh, output into the tick report.
 
 ---
 

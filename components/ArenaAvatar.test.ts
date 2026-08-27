@@ -60,6 +60,49 @@ describe('<ArenaAvatar>', () => {
     }
   });
 
+  /**
+   * T-215 · `38 § 4`. ⛔ **הסדר ⛔ אינו נשמר בזכות סדר הכתיבה בקובץ** — הוא נגזר
+   * מ-`LAYER_ORDER` שב-`lib/core/characterBase.ts`, שנבדק שם ביחידה. הבדיקה כאן
+   * מוודאת שהרכיב באמת **נגזר ממנו**, ⛔ ולא מחזיק עותק שני שיסטה.
+   */
+  it('אחת־עשרה השכבות מגיעות מהמודול הטהור, ⛔ ולא מסדר הכתיבה כאן', () => {
+    expect(CODE).toMatch(/from '@\/lib\/core\/characterBase'/);
+    expect(CODE).toMatch(/LAYER_ORDER\.map/);
+    expect(CODE).toMatch(/data-arena-layer=\{layer\}/);
+    // ⛔ אפס גיאומטריה מוטבעת: כל עוגן מגיע מ-`anchorFor`, ⛔ ולא ממספר בקובץ הזה.
+    expect(CODE).toMatch(/anchorFor\(/);
+    for (const literal of ['-62', '52', '-70', '112', '76', '84']) {
+      expect(CODE, `${literal} — הגיאומטריה חיה ב-characterBase.ts בלבד`)
+        .not.toMatch(new RegExp(`[^\\w-]${literal}[^\\d]`));
+    }
+  });
+
+  it('⛔ שכבה ריקה ⛔ אינה מצוירת — 22 צמתים שאיש אינו רואה', () => {
+    expect(CODE).toMatch(/base === undefined && equipped\.length === 0/);
+  });
+
+  it('⛔ אין לוח רקע אטום (F-158 · `38 § 4` ⛔ אינו מונה רקע)', () => {
+    expect(CODE).not.toMatch(/text-surface-raised/);
+    expect(CODE).not.toMatch(/data-arena-layer="background"/);
+  });
+
+  it('א4 (`T-216`) מקבלת ווים בשם — גלימה · שיער · נשק', () => {
+    for (const part of ['hair', 'cape', 'weapon']) {
+      expect(CODE, `data-arena-part="${part}"`).toContain(`data-arena-part="${part}"`);
+    }
+  });
+
+  /**
+   * ⚠️ **`CODE` ו⛔ לא `SRC`, וזה בדיוק הלקח של F-039 · F-065:** הרכיב **מתעד בהערה**
+   * ש-`38 § 5` אוסר את שלוש הפונקציות בשמן, ומדידה גולמית הייתה מפילה קובץ ⛔ שאין בו
+   * ולו העתקה אחת. מודדים **קוד**, ⛔ לא תיעוד — ו⛔ מחיקת ההערה אינה הפתרון.
+   */
+  it('⛔ `38 § 5` — אף אחת משלוש פונקציות ה-sprite שנפסלו ⛔ אינה מועתקת', () => {
+    for (const banned of ['wizard_sprite', 'knight_sprite', 'hero_sprite']) {
+      expect(CODE, `${banned} — 38 § 5`).not.toContain(banned);
+    }
+  });
+
   it('שני התפקידים נבדלים גם בשם הנגיש ⛔ ולא בצבע בלבד (חוקה § 1)', () => {
     expect(CODE).toContain('הדמות שלך');
     expect(CODE).toContain('היריב');

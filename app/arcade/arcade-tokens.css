@@ -163,20 +163,21 @@
    ‏(ⓘ ⛔ אינו קשור ל-F-158, שמטפל בניגודיות הלוח הזה בתוך T-215.) */
 @keyframes arena-impact-a { from { color: var(--arena-ink); } }
 @keyframes arena-impact-b { from { color: var(--arena-ink); } }
-@keyframes arena-impact-plate-a { from { opacity: 0; } }
-@keyframes arena-impact-plate-b { from { opacity: 0; } }
 
-[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g:not([data-arena-layer='background']) {
+/* ⚠️ **שוכתב ב-T-215 באותו טיק (C-0335), ⛔ ולא הושאר לרוץ על מבנה שכבר אינו קיים.**
+   הניסוח הקודם החריג `[data-arena-layer='background']` והוריד אותו ל-`opacity: 0`,
+   כי ל-`ArenaAvatar` היה **לוח אטום** בגודל ה-`viewBox` שהיה הופך את הצללית למלבן.
+   ‏T-215 **מחקה** את הלוח (`38 § 4` ⛔ אינו מונה רקע · סוגר את F-158) ⇒ ההחרגה
+   ⛔ חדלה להתקיים, וכלל שממשיך לחפש שכבה מחוקה הוא כלל שאיש ⛔ לא ימדוד שוב.
+   ⛔ **וזה גם למה זה `g` ⛔ ולא `> g`:** קבוצת הציוד היא `<g>` **מקונן** עם `color`
+   משלה, ובן ישיר בלבד היה משאיר אותה בצבעה בתוך פריים האימפקט. */
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure],
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] g {
   animation: arena-impact-a var(--arena-impact-ms) steps(1, end) 1;
 }
-[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g:not([data-arena-layer='background']) {
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure],
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] g {
   animation: arena-impact-b var(--arena-impact-ms) steps(1, end) 1;
-}
-[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g[data-arena-layer='background'] {
-  animation: arena-impact-plate-a var(--arena-impact-ms) steps(1, end) 1;
-}
-[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g[data-arena-layer='background'] {
-  animation: arena-impact-plate-b var(--arena-impact-ms) steps(1, end) 1;
 }
 
 /* חוקה שכבה א׳ א7 — `prefers-reduced-motion` **מסיר** את שניהם, והסבב עדיין נפתר.
@@ -191,8 +192,27 @@
   [data-arena-stage-area][data-arena-impact='b'] [data-arena-idle='on'] {
     animation-play-state: running;
   }
-  [data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g,
-  [data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g {
+  [data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] g,
+  [data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] g {
     animation: none;
   }
 }
+
+
+/* ═══ T-215 · `38 § 4` — **הדיו של הדמות בתוך הזירה** (סוגר את F-158).
+   ⛔ **הרכיב ⛔ אינו יודע באיזה מסך הוא, וזה מכוון:** `components/ArenaAvatar.tsx` מצויר
+   גם ב-`components/ArenaResult.tsx`, שאינו נושא `data-arena-scope`. שם ברירת המחדל
+   ‏(`--brand` / `--ink-muted` של `globals.css`) נכונה; כאן היא ⛔ אינה.
+
+   ⚠️ **המספרים שבגללם השורות האלה קיימות — נמדדו, ⛔ ולא שוערו:** על כחול־הליל
+   ‏`--arena-night`, ‏`--ink-muted` של הסכימה הבהירה הוא **1.97:1** ו-`--ink` שלה הוא
+   **1.02:1** — כלומר יריב ולוח שאיש ⛔ אינו רואה. ⛔ **הערכים עצמם ⛔ אינם נכתבים כאן**:
+   ‏`app/arcade/page.test.ts` סורק את הקובץ הזה **גולמי** וכל hex בו נספר כטוקן זירה
+   (אותה סיבה בדיוק שבגללה T-214 ⛔ לא כתב כאן את הערך של `--ink`). הערכים כאן:
+   ‏`--arena-gold-light` = **10.66:1** · `--arena-ink-dim` = **6.92:1** · והקו של הציוד
+   ‏`--arena-night` = **10.66:1** מול הזהב. שלושתם מעל רצפת שכבה א׳ בשתי הסכימות, כי
+   ⛔ אף אחד מהם ⛔ אינו מתחלף עם `prefers-color-scheme`.
+   ⛔ **התפקיד ⛔ אינו מקודד בצבע בלבד** — `aria-label` נושא `הדמות שלך` / `היריב`. */
+[data-arena-scope] [data-arena-figure='hero'] { color: var(--arena-gold-light); }
+[data-arena-scope] [data-arena-figure='enemy'] { color: var(--arena-ink-dim); }
+[data-arena-scope] [data-arena-figure] [data-arena-equipment] { color: var(--arena-night); }

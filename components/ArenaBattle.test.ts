@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { LAYER_ORDER } from '@/lib/core/characterBase';
 
 /**
  * T-182 · `37-arena-spec § 11` — **שפת האנימציה, א1 + א2** (D-133 § א׳).
@@ -99,10 +100,20 @@ describe('א2 — פריים אימפקט: 1-2 פריימים של צללית ל
     expect(CSS_CODE).not.toMatch(/arena-impact-[ab][^;]*forwards/);
   });
 
-  it('לוח הרקע יורד באותו פריים — אחרת הצללית היא **מלבן** ⛔ ולא דמות', () => {
-    expect(AVATAR).toContain('data-arena-layer="background"');
-    expect(CSS_CODE).toMatch(/g:not\(\[data-arena-layer='background'\]\)/);
-    expect(CSS_CODE).toMatch(/@keyframes arena-impact-plate-a\s*\{\s*from\s*\{\s*opacity:\s*0;/);
+  /**
+   * ⚠️ **הופנתה ב-T-215 באותו טיק, ⛔ ולא נמחקה** (⛔ בדיקה שנמחקה בלי מחליפה היא מה
+   * שהפיל את T-164). הניסוח הקודם דרש **שכבת רקע שיורדת** ל-`opacity: 0` בפריים
+   * האימפקט; ‏T-215 **מחקה** את הלוח האטום מ-`ArenaAvatar` (`38 § 4` ⛔ אינו מונה רקע ·
+   * סוגר את F-158) ⇒ הצללית היא דמות **מעצם המבנה**. הדרישה ⛔ לא נחלשה — היא נמדדת
+   * עכשיו על מה שמייצר אותה: ⛔ אין לוח, והכלל מגיע לכל `<g>` מקונן ⛔ ולא לבן ישיר.
+   */
+  it('⛔ אין לוח רקע אטום — הצללית היא דמות מעצם המבנה', () => {
+    expect(AVATAR).not.toContain("data-arena-layer=\"background\"");
+    expect(AVATAR).not.toMatch(/text-surface-raised/);
+    expect([...LAYER_ORDER]).not.toContain('background');
+    // ⛔ `g` ⛔ ולא `> g`: קבוצת הציוד היא `<g>` מקונן עם `color` משלה.
+    expect(CSS_CODE).toMatch(/\[data-arena-figure\] g \{\s*animation: arena-impact-a/);
+    expect(CSS_CODE).not.toMatch(/arena-impact-plate/);
   });
 });
 

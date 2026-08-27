@@ -1,4 +1,13 @@
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
+import {
+  BELT_SIZE,
+  BODY_SIZE,
+  HEAD_RADIUS,
+  LAYER_ORDER,
+  anchorFor,
+  mirror,
+  type Layer,
+} from '@/lib/core/characterBase';
 
 /**
  * הדמות של הזירה — T-096 · § 4.2י · חוקה § 6.
@@ -14,6 +23,17 @@ import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
  * ⛔ **אינו רכיב לקוח ואין לו מצב:** ציור בלבד. שדה טקסט חופשי לשם הדמות ⛔ אינו בתחולה
  * (F-067: ל-`arcade_progress` אין עמודת שם ו-`POST /api/arcade/result` אינו כותב אחת ⇒
  * בקרה שאינה נשמרת היא בקרה מזויפת).
+ *
+ * ⚠️ **T-215 — הדמות נבנתה מחדש על `plan/38-character-base.md`, ⛔ ולא הורחבה.** עד
+ * C-0335 היו כאן **ארבע** שכבות (רקע · גוף · ראש · פריטים) מול **אחת־עשרה** ש-`38 § 4`
+ * מונה — F-157 ⓑ מדד את הפער, ⛔ ולא שיער אותו, והוא זה שחסם את א4 (`T-216`).
+ * ⛔ **הגיאומטריה ⛔ אינה כאן**: כל נקודת עיגון וכל מידה מגיעות מ-`lib/core/characterBase.ts`
+ * שהוא טהור ונבדק ביחידה. הרכיב **מצייר** ⛔ ואינו קובע מספר.
+ * ⛔ **`38 § 5` — ⛔ אין להעתיק את `wizard_sprite` · `knight_sprite` · `hero_sprite`
+ * מ-`render_video_B.py`.** הן מתעדות את הגרסה שנפסלה; הצורות כאן נכתבו על השלד.
+ * ⚠️ **הלוח האטום שהיה שכבה 1 ⛔ נמחק, ⛔ ולא נצבע מחדש (סוגר את F-158):** `38 § 4`
+ * ⛔ אינו מונה רקע, והלוח נמדד **1.02:1** על כחול־הליל של הזירה — כלומר מלבן שאיש
+ * ⛔ אינו רואה, שגם הפך את צללית האימפקט (א2) למלבן ⛔ במקום לדמות.
  *
  * ⚠️ **`ARCADE_ITEMS` הוא המקור היחיד לרשימת הפריטים** (`lib/core/arcadeResult.ts:34`), והמפה
  * מוקלדת מולו — `Record<(typeof ARCADE_ITEMS)[number], …>` ⇒ פריט שישי ⛔ אינו מהדר, ופריט
@@ -46,45 +66,150 @@ const ROLE_LABEL_HE: Record<ArenaAvatarProps['role'], string> = {
   enemy: 'היריב',
 };
 
-/** צבע התפקיד. ⛔ לעולם אינו הערוץ היחיד — השם הנגיש נושא את אותה הבחנה (חוקה § 1). */
-const ROLE_CLASS: Record<ArenaAvatarProps['role'], string> = {
+type ArenaRole = ArenaAvatarProps['role'];
+
+/**
+ * ⛔ **צבע אחד לדמות, ⛔ ולא ארבעה** — והסיבה **נמדדה, ⛔ ולא שוערה**: `--ink-muted`
+ * של `globals.css` בסכימה הבהירה הוא `#475569`, ועל כחול־הליל של הזירה הוא נותן
+ * **1.97:1** ⇒ היריב כמעט ⛔ אינו נראה. הערך כאן הוא ברירת המחדל של מסך הסיום
+ * (`components/ArenaResult.tsx`, שאינו בסקופ הזירה); `app/arcade/arcade-tokens.css`
+ * דורס אותו **בתוך הזירה** בטוקן זירה, ⇒ שני הצרכנים מקבלים דיו קריא ⛔ בלי שהרכיב
+ * יידע באיזה מסך הוא. ⛔ **התפקיד ⛔ לעולם אינו מקודד בצבע בלבד** — השם הנגיש
+ * (`הדמות שלך` / `היריב`) נושא את אותה הבחנה (חוקה § 1 · שכבה א׳ א2).
+ */
+const ROLE_INK: Record<ArenaRole, string> = {
   hero: 'text-brand',
   enemy: 'text-ink-muted',
 };
 
-const BACKGROUND_CLASS = 'text-surface-raised';
+/**
+ * ⛔ **הקו של הציוד, ⛔ ולא צבע שני של הדמות.** הבסיס ממולא ב-`currentColor` של התפקיד,
+ * והציוד מצויר כקו מעליו — קו באותו גוון היה נעלם. מחוץ לזירה זהו `--ink`; בתוך הזירה
+ * ‏`app/arcade/arcade-tokens.css` דורס אותו לכחול־הליל, שנותן 10.66:1 מול הזהב.
+ */
 const OUTLINE_CLASS = 'text-ink';
 
-/** שכבת פריט אחת לכל מפתח. חמישה מפתחות בדיוק — הטיפוס אוכף את זה. */
-const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], React.JSX.Element> = {
-  helmet: (
-    <g key="helmet" className={OUTLINE_CLASS} fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 26a14 14 0 0 1 28 0" />
-      <path d="M16 26h32" />
-    </g>
-  ),
-  cape: (
-    <g key="cape" className={BACKGROUND_CLASS} fill="currentColor">
-      <path d="M20 40 12 78h10l4-30zM44 40l8 38H42l-4-30z" />
-    </g>
-  ),
-  lantern: (
-    <g key="lantern" className={OUTLINE_CLASS} fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="50" y="52" width="10" height="12" rx="2" />
-      <path d="M55 52v-6" />
-    </g>
+/* ── השלד. ⛔ כל מספר מגיע מ-`lib/core/characterBase.ts`, שמצטט את `38 § 3`. ── */
+const HEAD = anchorFor('head');
+const SHOULDER_R = anchorFor('shoulders');
+const SHOULDER_L = mirror(SHOULDER_R);
+const BODY = anchorFor('body');
+const BELT = anchorFor('belt');
+const MAIN_HAND = anchorFor('mainHand');
+const OFF_HAND = anchorFor('offHand');
+const BOOT_R = anchorFor('legs');
+const BOOT_L = mirror(BOOT_R);
+
+/**
+ * ⛔ **ה-`viewBox` נגזר מהעוגנים ⛔ ואינו נבחר**: הקצוות הן ראש (`y = -62 - 34`),
+ * מגף (`y = 112`), יד משנית (`x = -70`) ויד ראשית (`x = 66`), ועוד שוליים לרוחב הפריט
+ * שיושב על כל אחת מהן. ⛔ יחס הגובה-רוחב ⛔ אינו משנה פריסה: שני הצרכנים נותנים ל-`svg`
+ * מידה מפורשת (`h-24 w-24` בבמה · `h-40 w-auto` כברירת מחדל).
+ */
+const VIEW_BOX = '-100 -108 200 252';
+
+/**
+ * ⛔ **שכבת בסיס ⛔ אינה שכבת ציוד.** `38 § 4` מונה אחת־עשרה שכבות **רנדור**, וחלקן
+ * ריקות עד שפריט נכנס אליהן (`chest` · `headgear` · `shoulders` · `capeBack`). מה
+ * שמצויר כאן הוא הדמות **בלי ציוד** — גוף, ראש, שיער, רגליים, כפות ידיים.
+ * ⚠️ ‏`data-arena-part` על השיער ועל הגלימה ועל הנשק הוא ה**וו** של א4 (`T-216`),
+ * ⛔ ולא קישוט: א4 נוקבת בשלושתם בשמם, ובלי סימון היא הייתה נאלצת לנחש שכבה.
+ */
+const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
+  legs: (
+    <>
+      <rect x={BOOT_L.x - 13} y={BELT.y - 3} width={26} height={BOOT_L.y - BELT.y + 3} rx={12} />
+      <rect x={BOOT_R.x - 13} y={BELT.y - 3} width={26} height={BOOT_R.y - BELT.y + 3} rx={12} />
+    </>
   ),
   boots: (
-    <g key="boots" className={OUTLINE_CLASS} fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M24 78v6h8v-6M40 78v6h8v-6" />
-    </g>
+    <>
+      <rect x={BOOT_L.x - 17} y={BOOT_L.y - 8} width={34} height={24} rx={7} />
+      <rect x={BOOT_R.x - 17} y={BOOT_R.y - 8} width={34} height={24} rx={7} />
+    </>
   ),
-  banner: (
-    <g key="banner" className={OUTLINE_CLASS} fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M8 34v46" />
-      <path d="M8 34h14l-4 7 4 7H8z" />
-    </g>
+  body: (
+    <rect
+      x={BODY.x - BODY_SIZE.width / 2}
+      y={BODY.y - BODY_SIZE.height / 2}
+      width={BODY_SIZE.width}
+      height={BODY_SIZE.height}
+      rx={18}
+    />
   ),
+  belt: (
+    <rect
+      x={BELT.x - BELT_SIZE.width / 2}
+      y={BELT.y - BELT_SIZE.height / 2}
+      width={BELT_SIZE.width}
+      height={BELT_SIZE.height}
+      rx={5}
+    />
+  ),
+  offHand: <circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={13} />,
+  head: (
+    <>
+      {/* ⛔ השיער ⛔ אינו קישוט — א4 (`T-216`) נוקבת בו בשמו, ולכן הוא שכבה מסומנת. */}
+      <path
+        data-arena-part="hair"
+        d={`M${HEAD.x - HEAD_RADIUS} ${HEAD.y - 4}a${HEAD_RADIUS} ${HEAD_RADIUS} 0 0 1 ${HEAD_RADIUS * 2} 0q-8 -14 -${HEAD_RADIUS} -14q-24 0 -${HEAD_RADIUS} 14z`}
+      />
+      <circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} />
+    </>
+  ),
+  mainHand: <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={13} />,
+};
+
+/**
+ * שכבת פריט אחת לכל מפתח. חמישה מפתחות בדיוק — הטיפוס אוכף את זה, ⛔ ופריט שישי
+ * ⛔ אינו מהדר. ⚠️ **D-132 — משבצת ופריט הם שתי אוצרות מילים, ⛔ ולא שתי רשימות
+ * מתחרות:** `ARCADE_ITEMS` נשארה כפי שהיא, וכל פריט **מצביע** על השכבה שהוא נכנס אליה.
+ */
+type ItemLayer = { readonly layer: Layer; readonly shape: React.JSX.Element };
+
+const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
+  helmet: {
+    layer: 'headgear',
+    shape: (
+      <path
+        d={`M${HEAD.x - HEAD_RADIUS - 2} ${HEAD.y}a${HEAD_RADIUS + 2} ${HEAD_RADIUS + 2} 0 0 1 ${(HEAD_RADIUS + 2) * 2} 0M${HEAD.x - HEAD_RADIUS - 6} ${HEAD.y}h${(HEAD_RADIUS + 6) * 2}`}
+      />
+    ),
+  },
+  cape: {
+    layer: 'capeBack',
+    shape: (
+      <path
+        data-arena-part="cape"
+        d={`M${SHOULDER_L.x} ${SHOULDER_L.y}L${SHOULDER_L.x - 22} ${BOOT_L.y - 16}h44zM${SHOULDER_R.x} ${SHOULDER_R.y}l22 ${BOOT_R.y - 16 - SHOULDER_R.y}h-44z`}
+      />
+    ),
+  },
+  lantern: {
+    layer: 'offHand',
+    shape: (
+      <path
+        d={`M${OFF_HAND.x - 11} ${OFF_HAND.y + 4}h22v22h-22zM${OFF_HAND.x} ${OFF_HAND.y + 4}v-14`}
+      />
+    ),
+  },
+  boots: {
+    layer: 'boots',
+    shape: (
+      <path
+        d={`M${BOOT_L.x - 19} ${BOOT_L.y + 16}h38M${BOOT_R.x - 19} ${BOOT_R.y + 16}h38`}
+      />
+    ),
+  },
+  banner: {
+    layer: 'mainHand',
+    shape: (
+      <path
+        data-arena-part="weapon"
+        d={`M${MAIN_HAND.x} ${MAIN_HAND.y - 70}v${140}M${MAIN_HAND.x} ${MAIN_HAND.y - 70}h30l-8 14 8 14h-30z`}
+      />
+    ),
+  },
 };
 
 export default function ArenaAvatar({
@@ -106,31 +231,38 @@ export default function ArenaAvatar({
       aria-label={label}
       /* T-117 — הבמה מזיזה את הדמות דרך התכונה הזאת. ⛔ התנועה חיה ב-CSS. */
       data-arena-figure={role}
-      viewBox="0 0 64 96"
-      className={['h-40 w-auto', className].filter(Boolean).join(' ')}
+      viewBox={VIEW_BOX}
+      className={['h-40 w-auto', ROLE_INK[role], className].filter(Boolean).join(' ')}
       fill="none"
     >
-      {/* שכבה 1 — רקע.
-          ⚠️ **`data-arena-layer` נוסף ב-T-182, והוא ⛔ אינו קישוט:** פריים האימפקט (א2)
-          הופך את שכבות הדמות לצללית בדיו הזירה, ו**הלוח הזה חייב לרדת** — אחרת הצללית
-          היא מלבן לבן בגודל ה-`viewBox` ⛔ ולא דמות. סלקטור מבני (`:first-of-type`) היה
-          מחטיא בשקט ברגע ש-T-215 מסדרת מחדש את אחת־עשרה השכבות של `38 § 4`; שם ⛔ לא. */}
-      <g data-arena-layer="background" className={BACKGROUND_CLASS} fill="currentColor">
-        <rect x="0" y="0" width="64" height="96" rx="12" />
-      </g>
-
-      {/* שכבה 2 — גוף */}
-      <g className={ROLE_CLASS[role]} fill="currentColor">
-        <path d="M24 40h16a6 6 0 0 1 6 6v32H18V46a6 6 0 0 1 6-6z" />
-      </g>
-
-      {/* שכבה 3 — ראש */}
-      <g className={ROLE_CLASS[role]} fill="currentColor">
-        <circle cx="32" cy="28" r="11" />
-      </g>
-
-      {/* שכבה 4 — פריטים, בסדר הקנוני של `ARCADE_ITEMS` */}
-      {worn.map((name) => ITEM_LAYERS[name])}
+      {/* ⛔ **הסדר מגיע מ-`LAYER_ORDER`, ⛔ ולא מסדר הכתיבה בקובץ הזה.** זו ההפרדה
+          כולה: `38 § 4` הוא **חוק**, ולכן הוא נבדק ביחידה ב-`characterBase.test.ts`
+          ⛔ ולא נשמר בזכות זה שמישהו יזכור לא לגרור בלוק JSX למעלה.
+          ⛔ **שכבה ריקה ⛔ אינה מצוירת** — `<g>` ריק על אחת־עשרה שכבות בשתי דמויות
+          הוא 22 צמתים שאיש ⛔ אינו רואה. */}
+      {LAYER_ORDER.map((layer) => {
+        const base = BASE_LAYERS[layer];
+        const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer);
+        if (base === undefined && equipped.length === 0) return null;
+        return (
+          <g key={layer} data-arena-layer={layer}>
+            {base !== undefined && <g fill="currentColor">{base}</g>}
+            {equipped.length > 0 && (
+              <g
+                data-arena-equipment
+                className={OUTLINE_CLASS}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={5}
+              >
+                {equipped.map((name) => (
+                  <g key={name}>{ITEM_LAYERS[name].shape}</g>
+                ))}
+              </g>
+            )}
+          </g>
+        );
+      })}
     </svg>
   );
 }
