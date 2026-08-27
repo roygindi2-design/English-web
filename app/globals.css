@@ -148,6 +148,20 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   [data-tab-world] { animation: none; }
 }
 
+/* T-178 · 37 § 5 — **השחרור** של קלף הלחש. ⛔ הגרירה עצמה היא מניפולציה ישירה ו⛔ אין
+   לה transition (ההיסט מגיע מ-`cardLift`, ⛔ ולא מכאן); מה שמושתק כאן הוא החזרה למקום.
+   חוקה § 5: 150–300ms, easing אחד. `prefers-reduced-motion` (:103) מאפס את המשך. */
+[data-arena-card] {
+  transition: transform 200ms ease-out;
+}
+[data-arena-card][data-arena-lift='dragging'] {
+  transition: none;
+}
+/* חוקה שכבה ב3 — הזוהר היחיד שהמסך הזה מוציא, והוא על טוקן הזירה ⛔ ולא על טקסט גוף. */
+[data-arena-card][data-arena-lift='ready'] {
+  box-shadow: 0 0 12px 0 color-mix(in srgb, var(--arena-gold) 55%, transparent);
+}
+
 /* ⚠️ **המיקום כאן הוא חוק, ⛔ ולא סדר.** `components/ArenaStage.test.ts` לוקח את
    בלוק הבמה כ-`CSS.slice(indexOf('/* arena-stage'))` — כלומר **עד סוף הקובץ**.
    ⇒ כלל שנוסף בסוף `globals.css` נמדד כאילו הוא חלק מכללי הבמה, והלולאה הפועמת

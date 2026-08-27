@@ -20,6 +20,14 @@ const DEV_PAGE = readFileSync('app/dev/arcade/page.tsx', 'utf8');
 const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
 const SRC = readFileSync('components/ArenaBattle.tsx', 'utf8');
 const CODE = withoutComments(SRC);
+/**
+ * ⚠️ **T-178 — קלף היד עבר ל-`components/SpellCard.tsx`, ⛔ ולא נמחק.** שתי הבדיקות
+ * שמדדו אותו כאן **הופנו** לקובץ החדש ⛔ ולא הוסרו: שומר מסך שנמחק כי הקוד זז הוא
+ * בדיוק הדפוס שהפיל את T-164. המסך עדיין אחראי לכך שהקלף נושא 44px ותווית עברית —
+ * הוא פשוט ⛔ אינו מצייר אותו בעצמו עוד.
+ */
+const CARD_SRC = readFileSync('components/SpellCard.tsx', 'utf8');
+const CARD_CODE = withoutComments(CARD_SRC);
 
 /** אינווריאנט `37 § 13.5` — חמשת הערכים, וזו הרשימה המלאה. */
 const ARENA_HEXES = ['#d4a94a', '#f5d684', '#4a4858', '#34323f', '#1c2642'] as const;
@@ -92,9 +100,11 @@ describe('שבעת האזורים של הרנדר — `docs/design/kol-B-03-batt
   });
 
   it('כותרת השעון ומחרוזות הזירה, כלשונן ברנדר', () => {
-    for (const he of ['זמן קרב', 'מאנה', 'לחש לא מזוהה']) {
+    for (const he of ['זמן קרב', 'מאנה']) {
       expect(SRC, `«${he}» — הרנדר`).toContain(he);
     }
+    // ⛔ תווית קלף ה-`?` — ב-`SpellCard.tsx` מאז T-178, ⛔ והדרישה ⛔ לא נחלשה.
+    expect(CARD_SRC, '«לחש לא מזוהה» — הרנדר').toContain('לחש לא מזוהה');
   });
 });
 
@@ -126,7 +136,7 @@ describe('חוקה שכבה א׳ — ⛔ ההחרגה היחידה, ו⛔ אין
   });
 
   it('קלפי היד הם יעד מגע ≥44px', () => {
-    const card = CODE.split('<button').find((chunk) =>
+    const card = CARD_CODE.split('<button').find((chunk) =>
       chunk.slice(0, chunk.indexOf('</button>')).includes('data-arena-card'),
     );
     expect(card, 'קלף היד חייב להימצא').toBeDefined();
@@ -142,5 +152,27 @@ describe('חוקה שכבה א׳ — ⛔ ההחרגה היחידה, ו⛔ אין
 
   it('⛔ אפס אמוג׳י (שכבה א׳ — אייקוני SVG בלבד)', () => {
     expect(CODE).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+});
+
+describe('T-178 · 37 § 5 — שני המסלולים, וההכרעה ⛔ אינה ברכיב', () => {
+  it('היד מורכבת מ-`<SpellCard>`, ⛔ ולא מכפתור מקומי', () => {
+    expect(CODE).toContain('<SpellCard');
+    expect(CODE).toContain("from '@/components/SpellCard'");
+  });
+
+  it('⛔ מסלול הנגישות קיים: יעד ירי על היריב', () => {
+    expect(CODE).toContain('data-arena-fire');
+  });
+
+  it('⛔ הרמז נשמר במכשיר ⛔ ולא בשרת — ⛔ אפס כתיבה ללמידה', () => {
+    expect(CODE).toContain('kol.arena.dragTaught');
+    for (const token of ['word_progress', 'easiness', 'interval_days', 'next_review_at']) {
+      expect(CODE).not.toContain(token);
+    }
+  });
+
+  it('⛔ ההעדפה נקראת אחרי ההרכבה, ⛔ ולא ברינדור (אזהרת hydration)', () => {
+    expect(CODE).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
   });
 });

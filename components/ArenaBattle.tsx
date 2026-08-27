@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import ArenaStage from '@/components/ArenaStage';
+import SpellCard from '@/components/SpellCard';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -124,13 +125,21 @@ const ENEMY_HE = 'הקוסם';
 const ENEMY_HP_HE = 'חיי היריב';
 const MANA_HE = 'מאנה';
 const RAGE_HE = 'זמן זעם · מאנה כפולה';
-const UNKNOWN_SPELL_HE = 'לחש לא מזוהה';
 /**
  * ⛔ **הערת הבידוד ⛔ אינה אופציונלית** (אינווריאנט `37 § 13.1`), והיא מופיעה ברנדר
  * כשורה התחתונה של המסך. היא ⛔ אינה נוסח שיווקי: הלומד רשאי לדעת שקרב ⛔ אינו מזיז
  * את מנוע החזרות שלו.
  */
 export const ARENA_ISOLATION_HE = 'זירת הקרב מבודדת · אין השפעה על SM-2';
+/**
+ * `37 § 5` — מסלול הנגישות. ⛔ נוסח ממשק ש⛔ אינו תוכן לימודי ⇒ הכרעת DEV
+ * (`RULES § 0.16`), ונרשמה בסיכום הטיק.
+ */
+const FIRE_HE = 'שגר לחש';
+const FIRE_HINT_HE = 'בחר קלף לחש כדי לשגר';
+/** ⛔ זיכרון מכשיר, ⛔ ולא התקדמות למידה — ⛔ אינו נקודות, ⛔ אינו רצף, ⛔ אינו נוגע ב-`word_progress`. */
+export const ARENA_TAUGHT_KEY = 'kol.arena.dragTaught';
+const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · או הקש על קלף ואז על היריב';
 const SAVING_HE = 'שומר את הקרב…';
 const FINISHED_HE = 'הקרב נגמר';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
@@ -190,6 +199,36 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   const [sendError, setSendError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const originRef = useRef<number | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  /**
+   * ⛔ `prefers-reduced-motion` נקרא **אחרי** ההרכבה ו⛔ לא ברינדור: `matchMedia` ⛔ אינו
+   * קיים בשרת, ורינדור ראשון שנבדל בין הצדדים הוא אזהרת hydration שהארנס סופר כשגיאה.
+   * התבנית היא `components/Flashcard.tsx:65-77`, מילה במילה.
+   */
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    // ⛔ `try/catch`: דפדפן שחוסם אחסון ⛔ אינו מפיל את הזירה — הרמז פשוט ⛔ אינו נשמר.
+    try { setShowHint(window.localStorage.getItem(ARENA_TAUGHT_KEY) !== '1'); }
+    catch { setShowHint(false); }
+  }, []);
+
+  /** ⛔ ההטלה חיה **במקום אחד** — שני המסלולים (`§ 5`) נכנסים לכאן, ⛔ ולא כל אחד לעצמו. */
+  const fire = useCallback((option: string) => {
+    setSelected(null);
+    setShowHint(false);
+    try { window.localStorage.setItem(ARENA_TAUGHT_KEY, '1'); } catch { /* ⛔ אחסון חסום ⛔ אינו שגיאה */ }
+    setChosenSoFar((prev) => [...prev, option]);
+    setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedMs)));
+  }, [elapsedMs]);
 
   const load = useCallback(async () => {
     setScreen({ kind: 'loading' });
@@ -492,24 +531,35 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         <p className="text-end text-base font-bold text-[color:var(--arena-gold-light)]">
           {ENEMY_HE}
         </p>
-        <div
-          role="img"
-          aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
-          className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)]"
+        {/* ⛔ מסלול הנגישות של `§ 5` — «הקשה בוחרת, **הקשה על היריב משגרת**».
+            פס החיים ו-`role="img"` שלו ⛔ לא השתנו; הם עברו **לתוך** הכפתור. */}
+        <button
+          type="button"
+          data-arena-fire
+          disabled={selected === null}
+          onClick={() => { if (selected !== null) fire(selected); }}
+          className="min-h-touch w-full rounded-lg text-start disabled:opacity-60"
         >
-          <span
-            aria-hidden
-            className="absolute inset-y-0 end-0 bg-danger"
-            style={{ width: `${enemyPct}%` }}
-          />
-          <span
-            aria-hidden
-            className="absolute inset-0 grid place-items-center text-xs font-bold text-brand-on"
+          <span className="sr-only">{selected === null ? FIRE_HINT_HE : `${FIRE_HE} ${selected}`}</span>
+          <div
+            role="img"
+            aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
+            className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)]"
           >
-            {/* ⛔ אחוז, ⛔ ולא HP גולמי — בדיוק מה ש-`render_video_B.py:475` מצייר. */}
-            <EnWord>{`${enemyPct}/100`}</EnWord>
-          </span>
-        </div>
+            <span
+              aria-hidden
+              className="absolute inset-y-0 end-0 bg-danger"
+              style={{ width: `${enemyPct}%` }}
+            />
+            <span
+              aria-hidden
+              className="absolute inset-0 grid place-items-center text-xs font-bold text-brand-on"
+            >
+              {/* ⛔ אחוז, ⛔ ולא HP גולמי — בדיוק מה ש-`render_video_B.py:475` מצייר. */}
+              <EnWord>{`${enemyPct}/100`}</EnWord>
+            </span>
+          </div>
+        </button>
       </div>
 
       {/* ⓓ הבמה — שתי הדמויות. ⛔ **התנועה חיה כאן ובלבד** (T-041, עקרון הקוהרנטיות
@@ -550,23 +600,23 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           ⛔ אינה «מסלול זמני»: `§ 5` קורא לגרירה «מסלול **נוסף**», והקשה נשארת.
           ⛔ קלף `?` נושא את הסימן **וגם** את התווית העברית — סימן לבדו הוא קידוד
           בערוץ אחד ומפר את שכבה א׳ א2. */}
+      {/* ⛔ הרמז יושב **מעל** היד ו⛔ לעולם לא עליה (קוהרנטיות, T-041): אזור היד
+          ⛔ אינו זז, ולכן הרמז ⛔ אינו יכול להיות שכבה מעליו. */}
+      {showHint && (
+        <p data-arena-hint className="text-center text-xs text-ink-muted">{DRAG_HINT_HE}</p>
+      )}
+
       <ul data-arena-hand className="grid grid-cols-4 gap-2">
         {hand.map((option) => (
           <li key={option}>
-            <button
-              type="button"
-              data-arena-card
-              className="flex min-h-touch w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)] px-1 py-4 text-sm font-bold text-ink active:opacity-90"
-              onClick={() => {
-                setChosenSoFar((prev) => [...prev, option]);
-                setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedMs)));
-              }}
-            >
-              <span>{option === '?' ? '?' : option}</span>
-              {option === '?' && (
-                <span className="text-xs font-normal text-ink-muted">{UNKNOWN_SPELL_HE}</span>
-              )}
-            </button>
+            <SpellCard
+              label={option}
+              unknown={option === '?'}
+              selected={selected === option}
+              reducedMotion={reducedMotion}
+              onSelect={() => setSelected((prev) => (prev === option ? null : option))}
+              onCast={() => fire(option)}
+            />
           </li>
         ))}
       </ul>
