@@ -61,9 +61,18 @@ describe('בחירת המילים (D-034 · § 4.2י)', () => {
     expect(CODE).not.toContain('distractorsHe');
   });
 
-  it('!inner על שני הצמתים — ⛔ ללא שינוי ב-T-152; הרחבת הבריכה היא הכרעת PM (F-146)', () => {
+  /**
+   * T-212 · D-129 — `sense_distractors!inner` is gone. ⛔ The old assertion was ⛔ NOT
+   * deleted, it was **flipped**: a test removed without a replacement is exactly what
+   * felled T-164.
+   */
+  it('⛔ `sense_distractors!inner` ⛔ אינו קיים — T-152 מחקה את העילה שלו (D-129)', () => {
     expect(selectBlock).toContain('senses!inner');
-    expect(selectBlock).toContain('sense_distractors!inner');
+    expect(selectBlock).not.toContain('sense_distractors!inner');
+  });
+
+  it('הצומת עדיין נקרא — האפשרויות עבריות, אך `sense_distractors` ⛔ אינו יוצא מהשאילתא', () => {
+    expect(selectBlock).toContain('sense_distractors(distractor)');
   });
 
   it('order בא לפני limit — תקרה על סדר לא מוגדר חותכת אוכלוסייה אקראית (לקח F-034)', () => {

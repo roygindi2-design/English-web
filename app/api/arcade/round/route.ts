@@ -13,17 +13,19 @@ const MAX_LEVEL_ROWS = 1000;
 
 /**
  * ⛔ הסינון הוא `words.cefr_profile_band` ולעולם לא `senses.cefr_level` — השתיים חלוקות
- * על 125 מתוך 343 שורות (D-034). ⛔ `!inner` על שתי הרמות: מילה בלי משמעות אינה פריט קרב,
+ * על 125 מתוך 343 שורות (D-034). ⛔ `!inner` על `senses`: מילה בלי משמעות אינה פריט קרב,
  * ו-outer join היה מכניס אותה ואז מדלג עליה בשקט בשכבה הטהורה.
  *
- * ⚠️ **`sense_distractors!inner` ⛔ אינו מספק עוד את האפשרויות** (T-152 · D-087): ארבע
- * האפשרויות הן תרגומים עבריים של מועמדים אחרים באותה רמה, ונבנות **אך ורק** ב-
- * `lib/core/arcadeRound.ts`. הצומת נשאר כאן **ללא שינוי בכוונה** — הסרתו הייתה מרחיבה את
- * הבריכה ומשחררת נעילות רמה, וזו הכרעת מכניקה של ה-PM ⛔ ולא החלטה של DEV. ⇒ **F-146.**
+ * ⚠️ **T-212 · D-129 — `sense_distractors` ⛔ אינו `!inner` עוד.** T-152 העבירה את ארבע
+ * האפשרויות לתרגומים עבריים מהרמה, ו-`isEligible` **חדל** לדרוש מסיחים אנגליים ⇒ הצומת
+ * סינן על נתון ש⛔ אינו נדרש. **המספר, ⛔ ולא ההערכה:** על 13 קובצי האצווה — 713 שורות,
+ * 713 עם תרגום, 713 עם ≥3 מסיחים ⇒ **0 שורות מושפעות היום**. הוא יורד כי ברגע ש-T-153
+ * תזמין `distractors_he`, שורה עם תרגום ובלי מסיחים אנגליים הייתה **נעלמת מהזירה בשקט**
+ * ו-`describeLevel` היה נועל רמה על נתון שהלומד ⛔ אינו רואה. **סוגר את F-146.**
  */
 const ROUND_SELECT =
   'id, headword, cefr_profile_band, ngsl_rank, ' +
-  'senses!inner(translation_he, translation_confidence, sense_distractors!inner(distractor))';
+  'senses!inner(translation_he, translation_confidence, sense_distractors(distractor))';
 
 function isSchemaMissing(code: string | undefined): boolean {
   return code === '42P01' || code === 'PGRST205' || code === '42703' || code === 'PGRST204';
