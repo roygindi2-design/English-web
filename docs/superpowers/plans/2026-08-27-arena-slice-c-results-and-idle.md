@@ -306,7 +306,7 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
 
 ## Task 2 — T-119 · the idle loop gets a consumer
 
-- [ ] **Step 2.1 — rewrite the two assertions that forbid it, and say why in the file.**
+- [x] **Step 2.1 — rewrite the two assertions that forbid it, and say why in the file.**
       In `components/ArenaStage.test.ts`, the test at `:66-69`
       («פריט 39 — ⛔ אין לולאת המתנה») and the ≤300ms cap at `:59-64` are what stand in the
       way. Replace them with the pair below. ⛔ The old comment is ⛔ not deleted silently:
@@ -332,21 +332,21 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
   });
 ```
 
-- [ ] **Step 2.2 — run and measure red.**
+- [x] **Step 2.2 — run and measure red.**
       `npx vitest run components/ArenaStage.test.ts`
-- [ ] **Step 2.3 — the CSS, inside the stage block of `app/globals.css`.** ⛔ Not before
+- [x] **Step 2.3 — the CSS, inside the stage block of `app/globals.css`.** ⛔ Not before
       the `/* arena-stage` marker — this rule **is** a stage rule and the slice at
       `components/ArenaStage.test.ts:25` must see it. Amplitude **2px** (the render's
       `bob` is 2.2 at `render_video_B.py:124`, and the fence in constitution **ב5** is
       **≤2**; the 0.2px gap is § 7). One `@keyframes arena-idle`, one
       `[data-arena-idle='on']` rule, one `@media (prefers-reduced-motion: reduce)` with
       `animation: none`.
-- [ ] **Step 2.4 — the consumer, in `components/ArenaStage.tsx`.** Import
+- [x] **Step 2.4 — the consumer, in `components/ArenaStage.tsx`.** Import
       `ARENA_IDLE_LOOP` from `@/lib/core/arcadeLadder`, add the `idle` prop defaulting to
       it, and emit `data-arena-idle={idle ? 'on' : 'off'}` on the **hero figure only**
       (D-060: the question area ⛔ never moves). ⛔ No `useState`, ⛔ no `useEffect`,
       ⛔ no `requestAnimationFrame` — `ArenaStage.test.ts:41-45` fails by name on all three.
-- [ ] **Step 2.5 — green, both files.**
+- [x] **Step 2.5 — green, both files.**
       `npx vitest run components/ArenaStage.test.ts lib/core/arcadeLadder.test.ts`
 
 ## Task 3 — T-158 · the flag flips on

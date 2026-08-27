@@ -57,15 +57,39 @@ describe('<ArenaStage> — D-060 · חוקה § 5', () => {
     expect(STAGE_AT, `הסמן «${STAGE_MARKER}» חייב להופיע ב-app/globals.css`).toBeGreaterThan(-1);
   });
 
-  it('חוקה § 5 — ⛔ אין משך מעל 300ms בכללי הבמה', () => {
-    const ms = [...STAGE_CSS.matchAll(/(\d+(?:\.\d+)?)ms/g)].map((m) => Number(m[1]));
-    const s = [...STAGE_CSS.matchAll(/(\d+(?:\.\d+)?)s\b/g)].map((m) => Number(m[1]) * 1000);
+  /**
+   * ⚠️ **החריגה נמדדת בשמה, ⛔ ולא מבטלת את התקרה.** חוקה ב5 מתירה מוטיון מעל תקרת ב6
+   * — ⇒ בלוק ה-`arena-idle` **בלבד** מוסר לפני המדידה, ותקרת 300ms ממשיכה לחול על
+   * **כל שאר** כללי הבמה. ⛔ מחיקת התקרה הייתה קונה שורה אחת במחיר השומר כולו.
+   */
+  const NO_IDLE = STAGE_CSS.replace(/@keyframes arena-idle[\s\S]*?\}\s*\}/, '').replace(
+    /\[data-arena-idle='on'\][^{]*\{[^}]*\}/g,
+    '',
+  );
+
+  it('חוקה § 5 — ⛔ אין משך מעל 300ms בכללי הבמה (מלבד חריגת ב5, שנמדדת בנפרד)', () => {
+    const ms = [...NO_IDLE.matchAll(/(\d+(?:\.\d+)?)ms/g)].map((m) => Number(m[1]));
+    const s = [...NO_IDLE.matchAll(/(\d+(?:\.\d+)?)s\b/g)].map((m) => Number(m[1]) * 1000);
     expect([...ms, ...s].length, 'חייב להימדד משך אחד לפחות').toBeGreaterThan(0);
     for (const d of [...ms, ...s]) expect(d).toBeLessThanOrEqual(300);
   });
 
-  it('פריט 39 — ⛔ אין לולאת המתנה עד שרוי יאשר', () => {
+  it('פריט 39 · D-128 — לולאת ההמתנה קיימת, וחיה אך ורק בבמה', () => {
     expect(STAGE_CSS.length, 'הבלוק חייב להיות לא ריק').toBeGreaterThan(0);
-    expect(STAGE_CSS).not.toMatch(/infinite/);
+    expect(STAGE_CSS).toMatch(/@keyframes arena-idle/);
+    expect(STAGE_CSS).toMatch(/infinite/);
+    // ⛔ הלולאה היחידה בבלוק, ⛔ ולא «לולאות»: ב5 מתיר חריגה מדודה, ⛔ לא רשות פתוחה.
+    expect([...STAGE_CSS.matchAll(/infinite/g)]).toHaveLength(1);
+  });
+
+  it('גדר המשרעת ≤2px נמדדת מה-CSS, ⛔ ולא מהערה', () => {
+    const px = [...STAGE_CSS.matchAll(/translateY\((-?\d+(?:\.\d+)?)px\)/g)]
+      .map((m) => Math.abs(Number(m[1])));
+    expect(px.length, 'חייבת להימדד תזוזה אחת לפחות').toBeGreaterThan(0);
+    for (const v of px) expect(v).toBeLessThanOrEqual(2);
+  });
+
+  it('חוקה א7 — prefers-reduced-motion עוצר, ⛔ ולא מאיץ', () => {
+    expect(STAGE_CSS).toMatch(/prefers-reduced-motion[\s\S]*arena-idle[\s\S]*animation:\s*none/);
   });
 });

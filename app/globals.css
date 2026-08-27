@@ -190,6 +190,32 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   transform: translateX(-0.75rem);
 }
 
+/* T-119 · T-158 · D-090ⓒ · `03-for-roy` פריט 39 — **תנוחת ההמתנה.**
+   ⚠️ **הכלל הזה יושב בכוונה בתוך בלוק הבמה, ⛔ ולא לפני הסמן** — הוא **הוא** כלל במה,
+   ו-`components/ArenaStage.test.ts` מודד אותו כאן בשמו.
+   ⛔ **חריגה מגודרת, ⛔ ולא רשות פתוחה** (חוקה ב5 — «מוטיון מעל תקרת ב6»): זו הלולאה
+   ה**אינסופית** היחידה בבלוק, והבדיקה סופרת `infinite` **פעם אחת בדיוק**.
+   ⛔ **המשרעת 2px, ⛔ ולא 2.2** — `render_video_B.py:124` מצייר `bob = sin(t*1.5)*2.2`,
+   וגדר ה-**≤2px** של שורת T-119 (שנכתבה לגוף ב5 ב-D-128) **גוברת**. סטייה **מדודה של
+   0.2px**, ⛔ לא עיגול שנצפה.
+   ⛔ **התנועה על העוטף, ⛔ ולא על הדמות עצמה:** ל-`[data-arena-figure]` כבר יש
+   `transition: transform`, ו-`hit`/`dodge` מזיזים אותה ב-`translateX`. אנימציה על
+   אותו `transform` הייתה **דורסת** את שתי התנוחות — שני מאפיינים על שני אלמנטים
+   מפרידים ביניהם בלי ולו `if` אחד.
+   ⛔ **הגיבור בלבד** (D-060) — אזור השאלה ⛔ לעולם אינו זז. */
+@keyframes arena-idle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+[data-arena-stage] [data-arena-idle='on'] {
+  animation: arena-idle 2600ms ease-in-out infinite;
+}
+/* ⛔ `animation: none` ו⛔ לא `animation-duration: 0.01ms`: משך 0.01ms על `infinite`
+   הוא לולאה בתדר גבוה ⛔ ולא עצירה. חוקה שכבה א׳ א7 דורשת שהתנועה **תיפסק**. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-stage] [data-arena-idle='on'] { animation: none; }
+}
+
 /* T-157 · D-090ⓑ — ההיזון החזותי של ההחלקה, **אחרי** שהכרטיס נצמד לאצבע.
    ⚠️ **שוכתב 26/08. הניסוח הקודם כאן קבע «⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע» ו-8px
    ‏— D-090ⓑ הפכה את שניהם**, ולכן ההנמקה ההיא חדלה להתקיים ⛔ ואינה מצוטטת כאן.
