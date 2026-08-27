@@ -362,32 +362,32 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
 
 ## Task 4 — the registers, the gate, and the walk
 
-- [ ] **Step 4.1 — the register rows.** In `plan/50-tasks.md`, set **T-180 · T-119 ·
+- [x] **Step 4.1 — the register rows.** In `plan/50-tasks.md`, set **T-180 · T-119 ·
       T-158** to 🟣 with `C-XXXX`, ⛔ never ✅ (that is QA's, on merge — `F-126`). ⛔ **Do
       ⛔ not touch the `אבן דרך` cell** of any row: `M2 · arena · <סוג>` is what the
       balance table counts (`RULES § 0.5ב`).
-- [ ] **Step 4.2 — the findings of § 7** go into `plan/60-findings.md`, each with the
+- [x] **Step 4.2 — the findings of § 7** go into `plan/60-findings.md`, each with the
       render line number that was measured, and **T-181** gets `⛔ חסומה` naming them.
-- [ ] **Step 4.3 — regenerate, ⛔ never hand-edit.** `npm run measure:plan`, and
+- [x] **Step 4.3 — regenerate, ⛔ never hand-edit.** `npm run measure:plan`, and
       `docs/plan-tables.md` **and** `docs/plan-open.md` go in the **same commit**
       (`RULES § 0.1.1 ח׳` — this has reddened the tree twice).
-- [ ] **Step 4.4 — the full gate, last.** `npm run verify` — all five commands, fresh, in
+- [x] **Step 4.4 — the full gate, last.** `npm run verify` — all five commands, fresh, in
       the message that claims it. ⛔ «passed earlier» is banned. Red and unfixable in this
       tick ⇒ `./scripts/g revert` + a debt line in `plan/30-architecture.md`.
-- [ ] **Step 4.5 — the live walk (STEP 6.5 · D-103), on `next start` ⛔ not `next dev`.**
+- [x] **Step 4.5 — the live walk (STEP 6.5 · D-103), on `next start` ⛔ not `next dev`.**
       `npm run build && (npx next start -p 3000 &) && sleep 8`, then drive
       `http://127.0.0.1:3000/dev/arcade/summary` at **375×780** and record: heading ·
       text length · tappable count · **count under 44px** · horizontal scroll · console
       errors — then compare **layout** to `docs/design/kol-B-07-results.png`.
       ⚠️ A stale `.next` gave two false readings on 26/08 (`plan/30-architecture.md`) —
       `rm -rf .next` before the build.
-- [ ] **Step 4.6 — the idle loop is measured, ⛔ not admired.** On
+- [x] **Step 4.6 — the idle loop is measured, ⛔ not admired.** On
       `http://127.0.0.1:3000/dev/arcade`, read the hero figure's
       `getBoundingClientRect().top` over ~2s and record **max − min ≤ 2px**; then re-run
       under emulated `prefers-reduced-motion: reduce` and record it as **0**. The static
       half of the same fence is a command, and it runs too:
       `grep -n "translateY" app/globals.css`.
-- [ ] **Step 4.7 — one commit per task, ⛔ not one per tick** (STEP 4.5 of the DEV
+- [x] **Step 4.7 — one commit per task, ⛔ not one per tick** (STEP 4.5 of the DEV
       prompt), then push through the wrapper — `git` direct ⛔ cannot reach the remote
       (`RULES § 0.14ג`), and the retry rule is mandatory:
       `./scripts/g push origin work/current` (see `scripts/g`). ⛔ Never `dev`,
@@ -427,16 +427,16 @@ invent one** — it is recorded, and the next independent task is taken.
 
 ## Self-check — ⛔ before the tick is called done
 
-- [ ] `npm run check:plan docs/superpowers/plans/2026-08-27-arena-slice-c-results-and-idle.md`
+- [x] `npm run check:plan docs/superpowers/plans/2026-08-27-arena-slice-c-results-and-idle.md`
       prints `shape: N/N`.
-- [ ] `npm run verify` was run **in the message that claims it**, and its five lines are in
+- [x] `npm run verify` was run **in the message that claims it**, and its five lines are in
       the report.
-- [ ] `grep -c "infinite" app/globals.css` — the count rose by exactly **1**, and
+- [x] `grep -c "infinite" app/globals.css` — the count rose by exactly **1**, and
       `npx vitest run components/ArenaStage.test.ts` is green.
-- [ ] `grep -rn "word_progress\|apiPost" components/ArenaSummary.tsx` returns **nothing**
+- [x] `grep -rn "word_progress\|apiPost" components/ArenaSummary.tsx` returns **nothing**
       (invariant `37 § 13.1`).
-- [ ] `npm run check:mobile` — **0** targets under 44px, **0** horizontal scroll at
+- [x] `npm run check:mobile` — **0** targets under 44px, **0** horizontal scroll at
       320 · 375 · 414.
-- [ ] Every `- [ ]` above is ticked in this file, in the commit that closed its step —
+- [x] Every `- [ ]` above is ticked in this file, in the commit that closed its step —
       `docs/plan-open.md` prints `done/total`, and a plan with zero ticked boxes is
       measured and shown.
