@@ -57,12 +57,14 @@ export default function SpellCard({
         // ⛔ `min-h-touch` **וגם** `h-[100px]`, ⛔ ולא שני `min-h-*`: שתי מחלקות
         // מאותה תכונה נחתכות לפי סדר ה-CSS ⛔ ולא לפי כוונה. ה-100px הוא הרנדר,
         // ורצפת 44px של שכבה א׳ היא זו ששורדת אם הרנדר יקטן אי-פעם.
-        'flex min-h-touch h-[100px] w-full flex-col items-center justify-center gap-1',
-        'rounded-xl border-2 px-1 py-4 text-sm font-bold text-ink active:opacity-90',
+        'relative flex min-h-touch h-[100px] w-full flex-col items-center justify-center gap-1',
+        'rounded-xl border-2 px-1 py-4 text-sm font-bold active:opacity-90',
         'bg-[color:var(--arena-stone-dark)]',
+        // ⛔ `text-*` נושא **גם** את `currentColor` של המעוין — ולכן צבע המסגרת וצבע
+        // הסימן ⛔ אינם יכולים להיפרד. שני מקומות לצבע אחד סוטים בשלישי.
         selected
-          ? 'border-[color:var(--arena-gold)]'
-          : 'border-[color:var(--arena-stone)]',
+          ? 'border-[color:var(--arena-gold)] text-[color:var(--arena-gold)]'
+          : 'border-[color:var(--arena-stone)] text-[color:var(--arena-stone)]',
       ].join(' ')}
       onPointerDown={(e) => {
         from.current = { x: e.clientX, y: e.clientY };
@@ -90,7 +92,25 @@ export default function SpellCard({
       }}
       onPointerCancel={() => { from.current = null; setDrag({ y: 0, lift: 0 }); }}
     >
-      <span>{unknown ? '?' : label}</span>
+      {/* ⛔ **גימור הרנדר, ⛔ ולא קישוט** (`36 § 14.4`): `render_video_B.py:267` מצייר
+          קו־שיער פנימי — `rr(pad+3, pad+3, W-6, H-6, r=9, לבן 28%, 1px)`.
+          ⚠️ **רדיוס 9 ⛔ אינו אחד מחמשת הערכים** של שכבה ב׳ (6·8·12·16·מלא) ⇒ נלקח
+          `lg` = **8**, הקרוב בסולם. סטייה של פיקסל אחד, ⛔ מוצהרת ⛔ ולא שקטה. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-[3px] rounded-lg border border-white/25"
+      />
+      {/* `render_video_B.py:268-270` — מעוין בראש הקלף, חצי־גובה 5px, ממורכז ב-`pad+10`.
+          ⛔ SVG ⛔ ולא אמוג׳י (שכבה א׳). ⛔ הצבע הוא צבע המסגרת — צבע היסוד (`ELEM_COL`)
+          הוא **T-153** ו⛔ אינו בתחולה, ומיפוי שהומצא כאן היה תוכן לימודי מומצא. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 10 10"
+        className="pointer-events-none absolute top-[5px] h-[10px] w-[10px]"
+      >
+        <polygon points="5,0 10,5 5,10 0,5" fill="currentColor" />
+      </svg>
+      <span className="text-ink">{unknown ? '?' : label}</span>
       {/* ⛔ סימן לבדו הוא קידוד בערוץ אחד ומפר את שכבה א׳ א2 — התווית ⛔ אינה אופציונלית. */}
       {unknown && <span className="text-xs font-normal text-ink-muted">{UNKNOWN_SPELL_HE}</span>}
       {/* ⛔ הבחירה ⛔ אינה צבע בלבד (א2): `aria-pressed` למקריא־מסך, והשורה הזאת לעין. */}

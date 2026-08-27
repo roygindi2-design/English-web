@@ -52,3 +52,21 @@ describe('פני הקלף עבריים — ⛔ ולא אנגלית', () => {
     expect(CODE).not.toContain('EnWord');
   });
 });
+
+describe('36 § 14.4 — גימור הרנדר מחייב, ⛔ ולא רק המבנה', () => {
+  it('קו־השיער הפנימי קיים (`render_video_B.py:267`), ברדיוס מהסולם', () => {
+    expect(CODE).toContain('inset-[3px]');
+    // ⛔ הרנדר נוקב ב-9; שכבה ב׳ מתירה חמישה ⇒ `lg` = 8. הסטייה מוצהרת בהערה.
+    expect(CODE).toMatch(/inset-\[3px\][^"]*rounded-lg/);
+  });
+
+  it('המעוין בראש הקלף הוא SVG, ⛔ ולא אמוג׳י (שכבה א׳)', () => {
+    expect(CODE).toContain('<polygon points="5,0 10,5 5,10 0,5"');
+    expect(CODE).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
+  it('⛔ צבע המסגרת וצבע הסימן ⛔ אינם נפרדים — `currentColor` ממקום אחד', () => {
+    expect(CODE).toContain('currentColor');
+    expect(CODE).toMatch(/border-\[color:var\(--arena-gold\)\] text-\[color:var\(--arena-gold\)\]/);
+  });
+});
