@@ -101,6 +101,34 @@
      השעון, ‏`animationend` הוא מה שמשחרר אותה, והמשך ⛔ לעולם ⛔ אינו עובר דרך JS. */
   --arena-hitstop-ms: 120ms;
   --arena-impact-ms: 66ms;
+
+  /* T-216 · `37 § 11` א4 — **תנועת המשך**, ושלושת המספרים שהיא צריכה. ⛔ כולם
+     **נגזרים**, ⛔ ואף אחד מהם ⛔ לא נבחר כאן:
+
+       `--arena-follow-ms`        — הפיגור עצמו. א4 נוקבת ב-**2 פריימים**, ובאותו
+                                    `FPS = 30` של T-182 ⇒ **66ms**.
+       `--arena-follow-settle-ms` — כמה זמן לוקח לשכבה **להדביק** את הגוף. זהו משך
+                                    המעבר של הגוף עצמו (`app/globals.css`, בלוק
+                                    `arena-stage`, T-117) ⇒ אותה עקומה בדיוק, ⛔ ולא
+                                    שנייה. `components/ArenaBattle.test.ts` קורא את
+                                    שני הקבצים ומפיל סטייה ביניהם.
+       `--arena-follow-x`         — כמה **מאחור** השכבה מתחילה, ⛔ ביחידות ה-`viewBox`
+                                    ⛔ ולא ב-`rem`: הגוף זז על ה-`<svg>` (`0.75rem`),
+                                    והשכבה חיה **בתוכו**. ‏`0.75rem` מתוך `w-24` (6rem)
+                                    על `viewBox` ברוחב 200 = **25 יחידות**; המעבר הוא
+                                    200ms = **שישה** פריימים, ולכן פיגור של **שניים**
+                                    הוא **שליש** ⇒ `25 / 3` = **8.33**.
+
+     ⚠️ **קירוב ליניארי, מוצהר ⛔ ולא מוסתר:** העקומה היא `ease-out`, ולכן שליש
+     ה**מרחק** ⛔ אינו שליש ה**זמן** במדויק. ⛔ הבדיקה מודדת את הגזירה מארבעת
+     המספרים במקור ⇒ שינוי ב-`FIGURE_CLASS`, ב-`viewBox`, בתזוזה או במשך מפיל שורה
+     בשם ⛔ ולא משאיר מספר יתום.
+
+     ⛔ **ולמה זה `px` ⛔ ולא `rem`:** בתוך `<svg>` יחידת ה-CSS היא יחידת ה-`viewBox`,
+     ⇒ `rem` כאן היה נמדד מול גופן השורש ו⛔ לא מול הדמות. */
+  --arena-follow-ms: 66ms;
+  --arena-follow-settle-ms: 200ms;
+  --arena-follow-x: 8.33px;
 }
 
 /* T-214 · ⛔ **הכפתור «סגור» ⛔ אינו יוצא מהכלל.** ‏`CLOSE_CLASS` מצהיר `text-ink`,
@@ -216,3 +244,66 @@
 [data-arena-scope] [data-arena-figure='hero'] { color: var(--arena-gold-light); }
 [data-arena-scope] [data-arena-figure='enemy'] { color: var(--arena-ink-dim); }
 [data-arena-scope] [data-arena-figure] [data-arena-equipment] { color: var(--arena-night); }
+
+
+/* ═══ T-216 · `37-arena-spec § 11` א4 — **תנועת המשך: גלימה, שיער וחרב מפגרים
+   2 פריימים אחרי הגוף.** ⛔ **המשך של T-182** (‏`D-133 § א׳`), ⛔ ולא שורה עצמאית.
+
+   ⚠️ **מה ששחרר את השורה הוא ש-T-215 סימנה את שלוש השכבות בשמן** —
+   `data-arena-part="cape" | "hair" | "weapon"` ב-`components/ArenaAvatar.tsx`.
+   ⛔ עד אז לא היו לדמות שתיים מהשלוש (F-157 ⓑ), וכלל שהיה נכתב כאן **היה ממציא
+   שכבה** — בדיוק מה ש-`38 § 5` אוסר.
+
+   ⛔ **הגיאומטריה ⛔ אינה מועתקת מ-`render_video_B.py`.** ‏`hero_sprite` שם אמנם
+   מיישם את א4 (‏`lag` על הגלימה, על השיער ועל יד הנשק), ⛔ אבל `38 § 5` פוסל את
+   שלושת הספרייטים ההם כפלייסהולדרים ⇒ **הזמן** נלקח מהמפרט (2 פריימים) וה**מרחק**
+   נגזר מהשלד שלנו (`38 § 3`), ⛔ ולא מגוף זר.
+
+   ⛔ **המנגנון, בשורה אחת:** הגוף (‏`<svg data-arena-figure>`) עובר `translateX`
+   ב-200ms; שלוש השכבות יושבות **בתוכו** ולכן הן יורשות את התזוזה **מיד**. הכלל כאן
+   מוסיף להן **תיקון** שמתחיל `--arena-follow-x` מאחור ומתאפס על אותה עקומה ⇒ נטו הן
+   מתחילות מאחור ומדביקות. ⛔ **ולמה זו אנימציה ⛔ ולא `transition-delay`:** מצב
+   המנוחה ומצב התנוחה של התיקון הם **שניהם אפס** (השכבה **מדביקה**), ומעבר בין שני
+   ערכים זהים ⛔ לעולם ⛔ אינו נורה. הפיגור הוא **מעבר**, ⛔ ולא מצב.
+
+   ⛔ **ואין כאן תעלול `a`/`b` כמו ב-א1, וזה נמדד ⛔ ולא נשכח:** התנוחה נגזרת
+   מה-`cast` האחרון (‏`lib/core/battle.ts` · `stagePhase`), ⇒ `hit`⇢`hit` ⛔ אינו מזיז
+   את הגוף כלל — ולכן שכבה שלא תזוזה בו היא התנהגות **נכונה**, ⛔ ולא אנימציה שאבדה.
+
+   ⚠️ **F-083 בתוקף ו⛔ לא נסגר כאן:** `<ArenaStage … items={[]} />` ⇒ בקרב **הגלימה
+   והנשק ⛔ אינם מצוירים כלל**, והשכבה היחידה שזזה היא השיער. הכלל נכתב לשלושתן ולכן
+   הוא ⛔ אינו זקוק לשינוי כשהפריטים יגיעו לבמה. */
+@keyframes arena-follow-hit { from { transform: translateX(calc(var(--arena-follow-x) * -1)); } }
+@keyframes arena-follow-dodge { from { transform: translateX(var(--arena-follow-x)); } }
+
+/* ⛔ **הסימן הפוך לסימן של הגוף, ⛔ ולא זהה לו:** היריב נהדף `+0.75rem` ⇒ הגלימה
+   נגררת `-`; הגיבור מתחמק `-0.75rem` ⇒ הגלימה נגררת `+`. סימן זהה היה **מכפיל**
+   את התזוזה במקום לפגר אחריה. */
+[data-arena-stage][data-arena-phase='hit'] [data-arena-figure='enemy'] [data-arena-part] {
+  animation: arena-follow-hit var(--arena-follow-settle-ms) ease-out 1;
+}
+[data-arena-stage][data-arena-phase='dodge'] [data-arena-figure='hero'] [data-arena-part] {
+  animation: arena-follow-dodge var(--arena-follow-settle-ms) ease-out 1;
+}
+
+/* א1 — **הקיפאון עוצר שלושה ערוצים, ⛔ ולא שניים.** עד T-216 עצר hit-stop את לולאת
+   ההמתנה ואת מעבר התנוחה; ערוץ שלישי שממשיך לזוז בתוך הקיפאון הוא בדיוק הפגם
+   ש-א1 קיימת כדי למנוע.
+   ⛔ **חמישה סלקטורים ⛔ ולא שלושה, וזה מכוון:** קיצור `animation` בכלל שלמעלה
+   **מאפס** את `animation-play-state` ⇒ כלל עצירה חלש יותר היה נדרס בשקט. */
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-stage] [data-arena-figure] [data-arena-part],
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-stage] [data-arena-figure] [data-arena-part] {
+  animation-play-state: paused;
+}
+
+/* חוקה שכבה א׳ א7 — ⛔ **הפיגור מוסר, ⛔ ולא מואץ.** הבלוק הגלובלי
+   (`app/globals.css:103`) מוריד משכים ל-`0.01ms`, ⛔ אבל אנימציה בת 0.01ms היא עדיין
+   **קפיצה** של השכבה; `animation: none` היא היעדר תנועה.
+   ⛔ **אותה ספציפיות ומאוחר יותר בקובץ** — מדיה ⛔ אינה מוסיפה משקל, וכלל חלש יותר
+   כאן היה נדרס על ידי שני הכללים שלמעלה. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-stage][data-arena-phase='hit'] [data-arena-figure='enemy'] [data-arena-part],
+  [data-arena-stage][data-arena-phase='dodge'] [data-arena-figure='hero'] [data-arena-part] {
+    animation: none;
+  }
+}

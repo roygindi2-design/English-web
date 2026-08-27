@@ -169,3 +169,145 @@ describe('אינווריאנט 37 § 13.5 — התוספת ⛔ לא הדליפה
     }
   });
 });
+
+/**
+ * T-216 · `37-arena-spec § 11` א4 — **תנועת המשך: גלימה, שיער וחרב מפגרים 2 פריימים
+ * אחרי הגוף.** ⛔ **המשך של T-182**, ⛔ ולא שורה עצמאית: א1 קופאת על אותה במה, ולכן
+ * הפיגור נמדד כאן — ליד שני התזמונים שהוא נגזר מאותו `FPS = 30` שלהם.
+ *
+ * ⚠️ **מה שהופך את השורה הזאת לניתנת למדידה הוא ש-T-215 סימנה את שלוש השכבות בשמן**
+ * (`data-arena-part="cape" | "hair" | "weapon"`) ⇒ הכלל ⛔ אינו מנחש שכבה, ו-`38 § 5`
+ * ⛔ לא הופר.
+ */
+describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פריימים אחרי הגוף', () => {
+  /** ⛔ שלוש, ⛔ ואין רביעית — א4 נוקבת בהן בשמן. */
+  const PARTS = ['cape', 'hair', 'weapon'] as const;
+
+  /* ── הפרימיטיבים. ⛔ כולם **נקראים מהמקור**, ⛔ ואף אחד מהם ⛔ אינו נכתב כאן פעמיים. ── */
+  const GLOBALS = readFileSync('app/globals.css', 'utf8');
+  const STAGE_SRC = readFileSync('components/ArenaStage.tsx', 'utf8');
+
+  const numberFrom = (src: string, re: RegExp, what: string): number => {
+    const hit = src.match(re);
+    expect(hit, `${what} — ⛔ לא נמצא במקור; בדיקה על מקור שהשתנה היא בדיקה ריקה`).not.toBeNull();
+    return Number((hit as RegExpMatchArray)[1]);
+  };
+
+  /** תזוזת הגוף בתנוחה, ב-`rem` — `app/globals.css`, בלוק `arena-stage` (T-117). */
+  const BODY_SHIFT_REM = numberFrom(
+    GLOBALS,
+    /\[data-arena-phase='hit'\] \[data-arena-figure='enemy'\] \{\s*transform: translateX\((-?[\d.]+)rem\)/,
+    'תזוזת הגוף',
+  );
+  /** משך המעבר של הגוף, ב-ms — אותו בלוק. */
+  const BODY_MS = numberFrom(
+    GLOBALS,
+    /\[data-arena-stage\] \[data-arena-figure\] \{\s*transition: transform (\d+)ms/,
+    'משך המעבר של הגוף',
+  );
+  /** רוחב הדמות על הבמה — `FIGURE_CLASS` ב-`ArenaStage.tsx`. ‏`w-24` = 6rem. */
+  const FIGURE_W_REM =
+    numberFrom(STAGE_SRC, /FIGURE_CLASS = '[^']*\bw-(\d+)\b/, 'רוחב הדמות על הבמה') / 4;
+  /** רוחב ה-`viewBox` ביחידות משתמש — `ArenaAvatar.tsx`. */
+  const VIEW_W = numberFrom(AVATAR, /VIEW_BOX = '-?[\d.]+ -?[\d.]+ ([\d.]+) /, 'רוחב ה-viewBox');
+
+  /**
+   * ⛔ **המרה, ⛔ ולא מספר שנבחר.** התזוזה של הגוף היא `rem` על ה-`<svg>`; הפיגור חי
+   * **בתוך** ה-`viewBox`, כלומר ביחידות משתמש. ⇒ אותה תזוזה ביחידות של הדמות:
+   *   `0.75rem / 6rem × 200` = **25 יחידות**.
+   */
+  const BODY_SHIFT_UNITS = (BODY_SHIFT_REM / FIGURE_W_REM) * VIEW_W;
+
+  it('הפיגור הוא **טוקן** ב-`arcade-tokens.css`, והוא **2 פריימים** בדיוק', () => {
+    expect(CSS_CODE).toMatch(/--arena-follow-ms/);
+    const ms = declared('--arena-follow-ms');
+    expect(Math.abs(ms - 2 * FRAME_MS), `2 פריימים = ${(2 * FRAME_MS).toFixed(1)}ms`)
+      .toBeLessThanOrEqual(1);
+  });
+
+  /**
+   * ⛔ **המשרעת נגזרת מהתזוזה של הגוף, ⛔ ואינה נבחרת.** הגוף עובר `BODY_SHIFT_UNITS`
+   * לאורך `BODY_MS`; ב-`FPS = 30` זה **שישה פריימים**, ולכן פיגור של **שניים** הוא
+   * **שליש** מהמרחק. ⚠️ **קירוב ליניארי, מוצהר** — ⛔ ולא ערך ש«נראה נכון»: העקומה היא
+   * `ease-out`, ולכן השליש הוא המרחק בקצב אחיד ⛔ ולא בקצב העקומה. הקירוב **נמדד כאן**,
+   * ⇒ שינוי בכל אחד מארבעת הפרימיטיבים מפיל את השורה הזאת בשם.
+   */
+  it('המשרעת נגזרת מארבעה מספרים שנקראו מהמקור, ⛔ ולא נבחרה', () => {
+    const frames = BODY_MS / FRAME_MS;
+    const expected = BODY_SHIFT_UNITS * (2 / frames);
+    const hit = CSS_CODE.match(/--arena-follow-x:\s*(-?[\d.]+)px/);
+    expect(hit, '--arena-follow-x חייב להיות מוצהר ב-app/arcade/arcade-tokens.css').not.toBeNull();
+    const declaredX = Number((hit as RegExpMatchArray)[1]);
+    expect(
+      Math.abs(declaredX - expected),
+      `${declaredX} מול ${expected.toFixed(2)} = ${BODY_SHIFT_UNITS} × 2/${frames}`,
+    ).toBeLessThanOrEqual(0.01);
+  });
+
+  /**
+   * ⛔ **משך ההדבקה הוא משך המעבר של הגוף, ⛔ ולא מספר שני.** שני משכים על אותה תנועה
+   * הם שתי עקומות שסוטות, ⇒ הבדיקה קוראת את **שני** הקבצים ומשווה.
+   */
+  it('משך ההדבקה = משך המעבר של הגוף, ⛔ ולא ליטרל שני', () => {
+    expect(declared('--arena-follow-settle-ms')).toBe(BODY_MS);
+    expect(CSS_CODE).toMatch(/animation: arena-follow-hit var\(--arena-follow-settle-ms\)/);
+  });
+
+  it('שלוש השכבות מסומנות בשמן ב-`ArenaAvatar`, ⇒ הכלל ⛔ אינו מנחש שכבה (`38 § 5`)', () => {
+    for (const part of PARTS) expect(AVATAR).toContain(`data-arena-part="${part}"`);
+  });
+
+  /**
+   * ⛔ **הפיגור הוא ל<b>אחור</b>, ⛔ ולא לאותו כיוון.** הגוף של היריב עובר `+`, ולכן
+   * הגלימה נגררת `-`; הגיבור מתחמק `-`, והגלימה נגררת `+`. ⛔ סימן זהה היה **מכפיל**
+   * את התזוזה במקום לפגר אחריה.
+   */
+  it('לכל תנוחה כלל משלה, והסימן הפוך לסימן של הגוף', () => {
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-phase='hit'\][^{]*\[data-arena-part\][^{]*\{\s*animation: arena-follow-hit/,
+    );
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-phase='dodge'\][^{]*\[data-arena-part\][^{]*\{\s*animation: arena-follow-dodge/,
+    );
+    const hit = CSS_CODE.match(/@keyframes arena-follow-hit\s*\{[^}]*\}[^}]*\}/);
+    const dodge = CSS_CODE.match(/@keyframes arena-follow-dodge\s*\{[^}]*\}[^}]*\}/);
+    expect(hit, 'הקדר של `hit` חייב להתקיים').not.toBeNull();
+    expect(dodge, 'הקדר של `dodge` חייב להתקיים').not.toBeNull();
+    expect(String(hit)).toMatch(/translateX\(calc\(var\(--arena-follow-x\) \* -1\)\)/);
+    expect(String(dodge)).toMatch(/translateX\(var\(--arena-follow-x\)\)/);
+  });
+
+  /**
+   * ⛔ **⛔ בלי `forwards`** — פיגור שנשאר קפוא הוא גלימה שנשארת מאחור לנצח. השכבה
+   * מתחילה `Δ` מאחור ו**מדביקה** את הגוף, ⇒ מצב היציבה הוא הגוף עצמו.
+   */
+  it('⛔ הפיגור מתיישב על הגוף — ⛔ אין `forwards`', () => {
+    expect(CSS_CODE).not.toMatch(/arena-follow-[a-z]+[^;]*forwards/);
+  });
+
+  /**
+   * ⛔ **א1 קופאת על שלושת הערוצים, ⛔ ולא על שניים.** עד השורה הזאת הקיפאון עצר את
+   * לולאת ההמתנה ואת מעבר התנוחה; ערוץ שלישי שממשיך לזוז בתוך hit-stop הוא בדיוק
+   * הפגם ש-א1 קיימת כדי למנוע.
+   */
+  it('א1 — הקיפאון עוצר גם את תנועת ההמשך', () => {
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-impact='a'\][^{]*\[data-arena-part\][^{]*\{\s*animation-play-state: paused/,
+    );
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-impact='b'\][^{]*\[data-arena-part\][^{]*\{\s*animation-play-state: paused/,
+    );
+  });
+
+  it('שכבה א׳ א7 — `prefers-reduced-motion` מסיר את הפיגור', () => {
+    const at = CSS_CODE.lastIndexOf('@media (prefers-reduced-motion: reduce)');
+    expect(at, 'הבלוק חייב להתקיים').toBeGreaterThan(-1);
+    expect(CSS_CODE.slice(at)).toMatch(/\[data-arena-part\][^{]*\{\s*animation: none/);
+  });
+
+  it('⛔ אפס JS — הפיגור חי ב-CSS בלבד, ובשלושת הרכיבים אין לו ולו אזכור', () => {
+    for (const src of [CODE, withoutComments(STAGE_SRC), AVATAR]) {
+      expect(src).not.toMatch(/arena-follow/);
+    }
+  });
+});
