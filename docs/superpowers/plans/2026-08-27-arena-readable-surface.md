@@ -169,16 +169,16 @@ anchor, and ⓘⓘ is the route that patches around it).
 on T-215. ⛔ א1 and א2 need **no** layers, and this is the measured reason the row was
 buildable all along.
 
-- [ ] **Step 1 — א1, hit-stop.** In `app/arcade/arcade-tokens.css` and
+- [x] **Step 1 — א1, hit-stop.** In `app/arcade/arcade-tokens.css` and
       `components/ArenaBattle.tsx`: 3–4 frames (100–130 ms) of total freeze on impact.
       The duration is a token in `app/arcade/arcade-tokens.css`, ⛔ not a literal in the component,
       so Step 3 can assert it. The freeze is CSS (`animation-play-state`), ⛔ not a timer:
       `36 § 14` and T-041 keep arena motion in CSS.
-- [ ] **Step 2 — א2, impact frame.** In `components/ArenaBattle.tsx` (keyframes in
+- [x] **Step 2 — א2, impact frame.** In `components/ArenaBattle.tsx` (keyframes in
       `app/arcade/arcade-tokens.css`): 1–2 frames in which both figures are a pure white
       silhouette. ⛔ **Uses the arena ink from T-214 Step 1** — this is the coupling that
       puts the two rows in one plan.
-- [ ] **Step 3 — `prefers-reduced-motion` and the test.** Under reduced motion the
+- [x] **Step 3 — `prefers-reduced-motion` and the test.** Under reduced motion the
       freeze and the silhouette are **removed**, and the round still resolves. New file
       `components/ArenaBattle.test.ts`, a **source scan** on the template of
       `components/ArenaStage.test.ts` (⛔ no RTL, ⛔ no jsdom):
@@ -188,7 +188,7 @@ buildable all along.
       expect(src).not.toMatch(/setTimeout\(\s*[^)]*130/) // the freeze is CSS, ⛔ not a timer
       expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)/)
       ```
-- [ ] **Step 4 — `npm run verify`**, fresh.
+- [x] **Step 4 — `npm run verify`**, fresh.
 
 ## T-215 — the character base (`38 § 3` · `38 § 4`)
 

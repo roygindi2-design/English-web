@@ -218,6 +218,14 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
    * התבנית היא `components/Flashcard.tsx:65-77`, מילה במילה.
    */
   const [reducedMotion, setReducedMotion] = useState(false);
+  /**
+   * T-182 · `37 § 11` א1+א2 — **מתג פריים האימפקט, ⛔ ולא שעון.**
+   * ⛔ שלושה ערכים ו⛔ לא בוליאן: החלפת **שם** האנימציה היא מה שמאתחל אותה בדפדפן,
+   * ⇒ `a`⇄`b` מבטיחים שגם פגיעה שנייה בתוך 120ms מקבלת קיפאון משלה. `off` הוא
+   * המצב שאליו `onAnimationEnd` מחזיר — ⇒ **המשך חי ב-CSS** (`--arena-hitstop-ms`)
+   * ו⛔ אין ולו `setTimeout` אחד בנתיב הזה.
+   */
+  const [impact, setImpact] = useState<'off' | 'a' | 'b'>('off');
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(query.matches);
@@ -225,6 +233,23 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
     query.addEventListener('change', onChange);
     return () => query.removeEventListener('change', onChange);
   }, []);
+
+  /**
+   * ⛔ **הטריגר נגזר מהחוק, ⛔ ואינו מחושב כאן.** «פגיעה» היא `stagePhase(battle) === 'hit'`
+   * שב-`lib/core/battle.ts`; הרכיב ⛔ אינו יודע מהי תשובה נכונה ו⛔ אינו קורא ל-`correct`.
+   * ⛔ **והתחמקות ⛔ אינה אימפקט:** `dodge` היא הימנעות מנזק, ⛔ ולא לחש שנחת — א1
+   * נוקב במפורש ב«קיפאון מוחלט **בפגיעה**».
+   * ⛔ תחת `prefers-reduced-motion` התכונה ⛔ אינה מוצבת כלל (מחסום ⓐ מתוך שניים —
+   * השני הוא בלוק ה-`@media` ב-`app/arcade/arcade-tokens.css`), והסבב נפתר בדיוק כמו קודם.
+   */
+  const castCount = battle === null ? 0 : battle.casts.length;
+  useEffect(() => {
+    if (castCount === 0 || reducedMotion) return;
+    if (battle === null || stagePhase(battle) !== 'hit') return;
+    setImpact((prev) => (prev === 'a' ? 'b' : 'a'));
+    // ⛔ תלות ב-`battle` **כולו** הייתה יורה בכל פריים של הלולאה: `tick` מחזיר אובייקט חדש.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [castCount]);
 
   useEffect(() => {
     // ⛔ `try/catch`: דפדפן שחוסם אחסון ⛔ אינו מפיל את הזירה — הרמז פשוט ⛔ אינו נשמר.
@@ -618,8 +643,15 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
 
       {/* ⓓ הבמה — שתי הדמויות. ⛔ **התנועה חיה כאן ובלבד** (T-041, עקרון הקוהרנטיות
           של Mayer): אזור היד שמתחת ⛔ לעולם אינו זז. התנוחה מגיעה מ-`stagePhase` שבחוק. */}
+      {/* ⛔ **`onAnimationEnd` הוא ה«טיימר», והוא ⛔ אינו טיימר:** האנימציה הנושאת ב-CSS
+          נגמרת אחרי `--arena-hitstop-ms`, והאירוע הזה הוא מה שמשחרר את הקיפאון. ⇒ המספר
+          חי בקובץ הטוקנים ⛔ ולא כאן, והשם נבדק כי אנימציות אחרות בבמה מבעבעות למעלה. */}
       <div
         data-arena-stage-area
+        data-arena-impact={impact}
+        onAnimationEnd={(e) => {
+          if (e.animationName.startsWith('arena-hitstop')) setImpact('off');
+        }}
         className="rounded-2xl bg-[color:var(--arena-night)] px-4 py-6"
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(e) => { stageFrom.current = { x: e.clientX, y: e.clientY }; }}

@@ -89,6 +89,18 @@
      ⚠️ קודם לכן המד צויר ב-`bg-brand-surface` של `globals` — ובסכימה **בהירה** הוא הכחול הכהה
      של הסכימה הבהירה, כלומר **1.90:1** על המסילה: מד שאי אפשר לקרוא כמה מלא הוא. */
   --arena-mana: #5684e2;
+
+  /* T-182 · `37 § 11` א1+א2 — **שני התזמונים של שפת האנימציה, ⛔ כטוקנים ⛔ ולא כליטרלים
+     ברכיב.** ‏`render_video_A.py:16` מצהיר `FPS = 30` ⇒ פריים אחד = **33.3ms**, וזה
+     המספר שממנו שני הערכים נגזרו ⛔ ולא נבחרו:
+       א1 `hit-stop` — המפרט נוקב **3-4 פריימים (100-130ms)** ⇒ **120ms** = 3.6 פריימים.
+       א2 `פריים אימפקט` — המפרט נוקב **1-2 פריימים** ⇒ **66ms** = 2 פריימים בדיוק.
+     ⛔ **הם חיים כאן ⛔ ולא ב-`ArenaBattle.tsx`** מפני ש-`components/ArenaBattle.test.ts`
+     מודד אותם מכאן, ורכיב שמחזיק את המספר בעצמו הוא רכיב שאיש ⛔ אינו יכול לטעון עליו.
+     ⛔ **וזה גם למה הקיפאון ⛔ אינו `setTimeout`:** האנימציה ה**נושאת** על אזור הבמה היא
+     השעון, ‏`animationend` הוא מה שמשחרר אותה, והמשך ⛔ לעולם ⛔ אינו עובר דרך JS. */
+  --arena-hitstop-ms: 120ms;
+  --arena-impact-ms: 66ms;
 }
 
 /* T-214 · ⛔ **הכפתור «סגור» ⛔ אינו יוצא מהכלל.** ‏`CLOSE_CLASS` מצהיר `text-ink`,
@@ -99,4 +111,88 @@
    ‏`--arena-ink` על `--arena-night` = **14.59:1**. */
 [data-arena-scope] [data-arena-close] {
   color: var(--arena-ink);
+}
+
+
+/* ═══ T-182 · `37-arena-spec § 11` — שפת האנימציה, **א1 + א2 בלבד** (D-133 § א׳).
+   ⛔ א4 (תנועת המשך) ⛔ אינה כאן ו⛔ אינה «נשכחה»: היא נוקבת בגלימה, **שיער** ו**חרב**,
+   ול-`ArenaAvatar` יש ארבע שכבות בסיס ו⛔ אין לו שתיים מהשלוש (F-157 ⓑ) ⇒ היא יצאה
+   ל-`T-216`, שחסומה ב-T-215. ⛔ סוכן שיוסיף אותה כאן **ימציא שכבות**, ו-`38 § 5` אוסר.
+
+   ⚠️ **המבנה כולו, בשורה אחת:** לחש שפגע מחליף את `data-arena-impact` בין `a` ל-`b`
+   על `[data-arena-stage-area]`. ⛔ **שני שמות ולא אחד** — החלפת **שם** האנימציה היא מה
+   שמאתחל אותה בדפדפן; ערך זהה חוזר ⛔ אינו מפעיל אנימציה מחדש, ולכן שתי פגיעות בתוך
+   120ms היו מקבלות קיפאון אחד. ⛔ זו ⛔ אינה כפילות — זה מנגנון האתחול.
+
+   ⛔ **הקיפאון ⛔ אינו טיימר.** האנימציה על אזור הבמה ⛔ אינה מקשטת דבר: היא ה**שעון**.
+   כשהיא נגמרת, `onAnimationEnd` ברכיב מחזיר את התכונה ל-`off` — ⇒ המשך חי ב-CSS
+   ‏(`--arena-hitstop-ms`) ו⛔ אין ולו `setTimeout` אחד בנתיב הזה. ‏`36 § 14` ו-T-041
+   מחזיקים את תנועת הזירה ב-CSS, וזה מה שזה אומר בפועל. */
+@keyframes arena-hitstop-a { from { opacity: 1; } to { opacity: 1; } }
+@keyframes arena-hitstop-b { from { opacity: 1; } to { opacity: 1; } }
+
+[data-arena-stage-area][data-arena-impact='a'] {
+  animation: arena-hitstop-a var(--arena-hitstop-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-impact='b'] {
+  animation: arena-hitstop-b var(--arena-hitstop-ms) linear 1;
+}
+
+/* א1 — **קיפאון מוחלט**, ⛔ ולא האטה. שני הערוצים שזזים בבמה נעצרים יחד:
+   ⓐ לולאת ההמתנה (`arena-idle`) — `animation-play-state: paused`, שהוא **עצירה**
+      ⛔ ולא האצה; ⓑ מעבר ה-`hit`/`dodge` של הדמות — `transition: none` ⇒ התנוחה
+   ננקטת **מיד** ואז הכול עומד. ⛔ זה בדיוק מה ש-hit-stop הוא: הפגיעה נרשמת בפריים
+   אחד, והמסך מחזיק אותה 3-4 פריימים לפני שהתנועה חוזרת. */
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-idle='on'],
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-idle='on'] {
+  animation-play-state: paused;
+}
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure],
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] {
+  transition: none;
+}
+
+/* א2 — **פריים האימפקט: שתי הדמויות צללית לבנה טהורה, 2 פריימים.**
+   ⛔ הצבע ⛔ אינו hex ו⛔ אינו «לבן» — הוא `--arena-ink`, הדיו שהזירה הצהירה עליו
+   ב-T-214 (`#fffcf6`, 14.59:1 על כחול־ליל). ⚠️ **זה הצימוד שהכניס את שתי השורות
+   לתוכנית אחת:** בלי דיו משלה, לזירה ⛔ לא היה צבע צללית שאינו מתחלף עם הסכימה.
+   ⛔ `steps(1, end)` ו⛔ לא easing: אימפקט הוא **פריים**, ⛔ ולא מעבר — ערך ה-`from`
+   מוחזק לכל אורך המשך ואז חוזר לעצמו, ⛔ בלי `forwards` שהיה מקפיא אותו לתמיד.
+   ⛔ **ושכבת הרקע יורדת לאפס באותו פריים** — בלעדיה הצללית הייתה **מלבן** לבן
+   ⛔ ולא דמות: שכבה 1 של `ArenaAvatar` היא לוח אטום בגודל ה-`viewBox` כולו.
+   ‏(ⓘ ⛔ אינו קשור ל-F-158, שמטפל בניגודיות הלוח הזה בתוך T-215.) */
+@keyframes arena-impact-a { from { color: var(--arena-ink); } }
+@keyframes arena-impact-b { from { color: var(--arena-ink); } }
+@keyframes arena-impact-plate-a { from { opacity: 0; } }
+@keyframes arena-impact-plate-b { from { opacity: 0; } }
+
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g:not([data-arena-layer='background']) {
+  animation: arena-impact-a var(--arena-impact-ms) steps(1, end) 1;
+}
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g:not([data-arena-layer='background']) {
+  animation: arena-impact-b var(--arena-impact-ms) steps(1, end) 1;
+}
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g[data-arena-layer='background'] {
+  animation: arena-impact-plate-a var(--arena-impact-ms) steps(1, end) 1;
+}
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g[data-arena-layer='background'] {
+  animation: arena-impact-plate-b var(--arena-impact-ms) steps(1, end) 1;
+}
+
+/* חוקה שכבה א׳ א7 — `prefers-reduced-motion` **מסיר** את שניהם, והסבב עדיין נפתר.
+   ⛔ **שני מחסומים, ⛔ ולא אחד:** ⓐ הרכיב ⛔ אינו מציב את התכונה כלל כשההעדפה דלוקה
+   (‏`matchMedia`, אותה תבנית של `components/Flashcard.tsx`), ⓑ והבלוק הזה מנטרל את
+   ההשפעה גם אם התכונה כן הוצבה — דפדפן בלי `matchMedia` ⛔ אינו נופל לקיפאון.
+   ⛔ **והאנימציה ה**נושאת** ⛔ אינה מכובה כאן, וזה מכוון:** הבלוק הגלובלי של
+   `app/globals.css:103` מוריד אותה ל-`0.01ms` ⇒ `animationend` ⛔ עדיין נורה והתכונה
+   משתחררת. ‏`animation: none` עליה היה משאיר את הבמה קפואה **לנצח**. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-stage-area][data-arena-impact='a'] [data-arena-idle='on'],
+  [data-arena-stage-area][data-arena-impact='b'] [data-arena-idle='on'] {
+    animation-play-state: running;
+  }
+  [data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] > g,
+  [data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] > g {
+    animation: none;
+  }
 }

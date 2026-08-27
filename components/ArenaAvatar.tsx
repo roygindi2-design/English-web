@@ -110,8 +110,12 @@ export default function ArenaAvatar({
       className={['h-40 w-auto', className].filter(Boolean).join(' ')}
       fill="none"
     >
-      {/* שכבה 1 — רקע */}
-      <g className={BACKGROUND_CLASS} fill="currentColor">
+      {/* שכבה 1 — רקע.
+          ⚠️ **`data-arena-layer` נוסף ב-T-182, והוא ⛔ אינו קישוט:** פריים האימפקט (א2)
+          הופך את שכבות הדמות לצללית בדיו הזירה, ו**הלוח הזה חייב לרדת** — אחרת הצללית
+          היא מלבן לבן בגודל ה-`viewBox` ⛔ ולא דמות. סלקטור מבני (`:first-of-type`) היה
+          מחטיא בשקט ברגע ש-T-215 מסדרת מחדש את אחת־עשרה השכבות של `38 § 4`; שם ⛔ לא. */}
+      <g data-arena-layer="background" className={BACKGROUND_CLASS} fill="currentColor">
         <rect x="0" y="0" width="64" height="96" rx="12" />
       </g>
 
