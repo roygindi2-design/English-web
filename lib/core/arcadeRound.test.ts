@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   ARCADE_MIN_WORDS,
@@ -9,6 +10,13 @@ import {
 } from './arcadeRound';
 import type { CefrBand } from './cefrLevels';
 
+/**
+ * ⚠️ **הפיקסטורה היא החור שהיה כאן** (T-152 · D-087). עד 27/08 היא הזינה `distractorsHe`
+ * **בעברית**, ולכן 2,403 בדיקות היו ירוקות בזמן שהייצור הגיש ללומד תרגום עברי אחד מול
+ * שלוש מילים **באנגלית** — כלומר תשובה נכונה בלי לדעת ולו מילה אחת.
+ * ⇒ מכאן ואילך הפיקסטורה מזינה **אנגלית**, בדיוק כמו `sense_distractors` בייצור,
+ * והבדיקות מוכיחות שהיא ⛔ אינה מגיעה ל-`options`.
+ */
 function candidate(i: number, over: Partial<ArcadeCandidate> = {}): ArcadeCandidate {
   return {
     wordId: `w-${String(i).padStart(2, '0')}`,
@@ -16,7 +24,7 @@ function candidate(i: number, over: Partial<ArcadeCandidate> = {}): ArcadeCandid
     band: 'A2' as CefrBand,
     ngslRank: 100 + i,
     translationHe: `תרגום-${i}`,
-    distractorsHe: [`מסיח-${i}-א`, `מסיח-${i}-ב`, `מסיח-${i}-ג`],
+    distractorsEn: ['rest', 'play', 'window'],
     ...over,
   };
 }
@@ -32,20 +40,18 @@ const POOL = Array.from({ length: 20 }, (_, i) => candidate(i));
 const A2_FIRST = 5;
 const A2_SECOND = 6;
 
-describe('כשירות — ⛔ מילה בלי ארבעה מסיחים כשירים מדולגת בשקט', () => {
-  it('שלושה מסיחים ייחודיים הם המינימום; שניים ⇒ מדולגת', () => {
-    const thin = candidate(99, { distractorsHe: ['מסיח-א', 'מסיח-ב'] });
-    expect(eligibleCandidates([thin, ...POOL], 'A2')).toHaveLength(POOL.length);
+const HEBREW = /[֐-׿]/;
+const LATIN = /[A-Za-z]/;
+
+describe('כשירות — מה הופך מועמד לפריט קרב', () => {
+  it('⛔ תרגום ריק ⇒ מדולג — בלי תשובה נכונה אין שאלה', () => {
+    const blank = candidate(99, { translationHe: '   ' });
+    expect(eligibleCandidates([blank, ...POOL], 'A2')).toHaveLength(POOL.length);
   });
 
-  it('מסיח שזהה לתרגום הנכון ⛔ אינו נספר — ארבע אפשרויות עם כפילות אינן ארבע', () => {
-    const dup = candidate(98, { distractorsHe: ['תרגום-98', 'מסיח-א', 'מסיח-ב'] });
-    expect(eligibleCandidates([dup], 'A2')).toHaveLength(0);
-  });
-
-  it('שני מסיחים זהים זה לזה נספרים כאחד', () => {
-    const dup = candidate(97, { distractorsHe: ['מסיח-א', 'מסיח-א', 'מסיח-ב'] });
-    expect(eligibleCandidates([dup], 'A2')).toHaveLength(0);
+  it('⛔ הכשירות ⛔ אינה נשענת עוד על מסיחי המילה — הם אנגלית ואינם מוצגים (T-152)', () => {
+    const noEn = candidate(94, { distractorsEn: [] });
+    expect(eligibleCandidates([noEn], 'A2').map((c) => c.wordId)).toEqual(['w-94']);
   });
 
   it('⛔ רמה אחרת אינה נכנסת — לומד ב-A2 ⛔ לעולם אינו נלחם על מילת C1', () => {
@@ -68,7 +74,7 @@ describe('רמה קטנה מדי — מספר, ⛔ לא מסך ריק', () => {
   it('הספירה סופרת כשירות ⛔ ולא שורות — 20 שורות שרק 8 מהן כשירות הן 8', () => {
     const mixed = [
       ...POOL.slice(0, 8),
-      ...Array.from({ length: 12 }, (_, i) => candidate(50 + i, { distractorsHe: ['רק-אחד'] })),
+      ...Array.from({ length: 12 }, (_, i) => candidate(50 + i, { translationHe: '' })),
     ];
     const round = buildRound({ gameLevel: A2_FIRST, candidates: mixed, seed: 1 });
     expect(round).toMatchObject({ ok: false, eligible: 8 });
@@ -116,6 +122,83 @@ describe('הסיבוב עצמו', () => {
     expect(Math.max(...deepRanks)).toBeGreaterThan(Math.max(...round.questions.map((q) => Number(q.wordId.slice(2)))));
     // ⛔ ועדיין A2 בלבד: כל מזהה מגיע מהמאגר שסונן לרמה
     expect(deep.questions.every((q) => POOL.some((c) => c.wordId === q.wordId))).toBe(true);
+  });
+});
+
+/**
+ * 🔴 T-152 · D-087 — **המשחק מפסיק להיות בחירה לפי א"ב.**
+ * המסיחים הם תרגומים עבריים של **מועמדים אחרים באותה רמה**, ⛔ ולא `sense_distractors`
+ * האנגליים. ⛔ אפס מיגרציה · אפס תוכן חדש · אפס מקור חדש.
+ */
+describe('T-152 — ארבע האפשרויות עבריות, ⛔ ואין נפילה חזרה לאנגלית', () => {
+  const round = buildRound({ gameLevel: A2_FIRST, candidates: POOL, seed: 11 });
+
+  it('⛔ ולו מסיח אנגלי אחד ⛔ אינו מגיע ל-options — הפיקסטורה מזינה אנגלית בכוונה', () => {
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    const english = new Set(POOL.flatMap((c) => c.distractorsEn));
+    for (const q of round.questions) {
+      for (const opt of q.options) expect(english.has(opt)).toBe(false);
+    }
+  });
+
+  it('⛔ אף אפשרות אינה נושאת אות לטינית, וכולן בטווח היוניקוד העברי', () => {
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    for (const q of round.questions) {
+      for (const opt of q.options) {
+        expect(opt).toMatch(HEBREW);
+        expect(opt).not.toMatch(LATIN);
+      }
+    }
+  });
+
+  it('כל מסיח הוא תרגום של מועמד אחר באותה רמה — ⛔ ולא מחרוזת שיוצרה בזמן אמת', () => {
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    const levelTranslations = new Set(POOL.map((c) => c.translationHe));
+    for (const q of round.questions) {
+      for (const opt of q.options) expect(levelTranslations.has(opt)).toBe(true);
+    }
+  });
+
+  it('⛔ המסיח לעולם אינו זהה לתשובה ו⛔ אינו חוזר פעמיים', () => {
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    for (const q of round.questions) {
+      const wrong = q.options.filter((o) => o !== q.answer);
+      expect(wrong).toHaveLength(ARCADE_OPTION_COUNT - 1);
+      expect(new Set(wrong).size).toBe(ARCADE_OPTION_COUNT - 1);
+    }
+  });
+
+  it('⛔ מסיחים אנגליים ⛔ אינם מרפדים סיבוב חסר — רמה בת שלושה תרגומים היא level_too_small', () => {
+    // עשרים מועמדים כשירים, ⛔ אך רק שלושה תרגומים שונים ביניהם ⇒ אי-אפשר לבנות
+    // ארבע אפשרויות עבריות ⇒ כל שאלה יורדת, ⛔ ואין ריפוד באנגלית (ⓒ).
+    const thin = Array.from({ length: 20 }, (_, i) =>
+      candidate(i, { translationHe: `תרגום-${i % 3}` }));
+    const round2 = buildRound({ gameLevel: A2_FIRST, candidates: thin, seed: 5 });
+    expect(round2).toMatchObject({ ok: false, reason: 'level_too_small' });
+  });
+
+  it('ארבעה תרגומים שונים ברמה מספיקים — הסף הוא ARCADE_OPTION_COUNT, ⛔ ולא יותר', () => {
+    const four = Array.from({ length: 20 }, (_, i) =>
+      candidate(i, { translationHe: `תרגום-${i % 4}` }));
+    const round3 = buildRound({ gameLevel: A2_FIRST, candidates: four, seed: 5 });
+    expect(round3.ok).toBe(true);
+    if (!round3.ok) return;
+    expect(round3.questions).toHaveLength(ARCADE_ROUND_SIZE);
+  });
+
+  /**
+   * ⛔ שומר-המקור: המוטציה שהממצא נועד למנוע היא «להחזיר את `c.distractorsEn`
+   * ל-`options`». ⛔ סריקה על המקור נופלת **בשם** אם מישהו יחזיר אותה.
+   */
+  it('⛔ `buildRound` ⛔ אינו קורא את מסיחי המילה בכלל', () => {
+    const src = readFileSync('lib/core/arcadeRound.ts', 'utf8');
+    const body = src.slice(src.indexOf('export function buildRound'));
+    expect(body).not.toContain('distractorsEn');
+    expect(body).not.toContain('distractorsHe');
   });
 });
 

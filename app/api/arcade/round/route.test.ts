@@ -46,12 +46,22 @@ describe('בחירת המילים (D-034 · § 4.2י)', () => {
     expect(CODE).toContain(".eq('cefr_profile_band', band)");
   });
 
-  it('המסיחים נשלפים מהטבלה ⛔ ואינם מיוצרים בזמן אמת', () => {
-    expect(selectBlock).toContain('sense_distractors');
+  it('⛔ הנתיב ⛔ אינו מייצר מסיחים בזמן אמת — הבנייה כולה בשכבה הטהורה (F-020)', () => {
     expect(CODE).not.toMatch(/generateDistractor|makeDistractor/i);
+    expect(CODE).toContain('buildRound(');
   });
 
-  it('!inner על שני הצמתים — מילה בלי משמעות או בלי מסיח ⛔ אינה פריט קרב', () => {
+  /**
+   * 🔴 T-152 · D-087 — האפשרויות עבריות. `sense_distractors` הוא **אנגלית**, ולכן השדה
+   * שנוסע לשכבה הטהורה נקרא `distractorsEn` ⛔ ואינו יכול להיקרא `distractorsHe`:
+   * השם הישן הוא בדיוק מה שאִפשר להגיש ללומד תרגום עברי אחד מול שלוש מילים באנגלית.
+   */
+  it('⛔ השם ⛔ אינו משקר — `distractorsEn`, ⛔ ולעולם לא `distractorsHe`', () => {
+    expect(CODE).toContain('distractorsEn');
+    expect(CODE).not.toContain('distractorsHe');
+  });
+
+  it('!inner על שני הצמתים — ⛔ ללא שינוי ב-T-152; הרחבת הבריכה היא הכרעת PM (F-146)', () => {
     expect(selectBlock).toContain('senses!inner');
     expect(selectBlock).toContain('sense_distractors!inner');
   });

@@ -13,8 +13,13 @@ const MAX_LEVEL_ROWS = 1000;
 
 /**
  * ⛔ הסינון הוא `words.cefr_profile_band` ולעולם לא `senses.cefr_level` — השתיים חלוקות
- * על 125 מתוך 343 שורות (D-034). ⛔ `!inner` על שתי הרמות: מילה בלי משמעות ומשמעות בלי
- * מסיחים אינן פריט קרב, ו-outer join היה מכניס אותן ואז מדלג עליהן בשקט בשכבה הטהורה.
+ * על 125 מתוך 343 שורות (D-034). ⛔ `!inner` על שתי הרמות: מילה בלי משמעות אינה פריט קרב,
+ * ו-outer join היה מכניס אותה ואז מדלג עליה בשקט בשכבה הטהורה.
+ *
+ * ⚠️ **`sense_distractors!inner` ⛔ אינו מספק עוד את האפשרויות** (T-152 · D-087): ארבע
+ * האפשרויות הן תרגומים עבריים של מועמדים אחרים באותה רמה, ונבנות **אך ורק** ב-
+ * `lib/core/arcadeRound.ts`. הצומת נשאר כאן **ללא שינוי בכוונה** — הסרתו הייתה מרחיבה את
+ * הבריכה ומשחררת נעילות רמה, וזו הכרעת מכניקה של ה-PM ⛔ ולא החלטה של DEV. ⇒ **F-146.**
  */
 const ROUND_SELECT =
   'id, headword, cefr_profile_band, ngsl_rank, ' +
@@ -86,7 +91,7 @@ export async function GET() {
       band: parseLevel(r.cefr_profile_band),
       ngslRank: r.ngsl_rank,
       translationHe: sense?.translation_he ?? '',
-      distractorsHe: (sense?.sense_distractors ?? [])
+      distractorsEn: (sense?.sense_distractors ?? [])
         .map((d) => d.distractor ?? '')
         .filter((d) => d.length > 0),
     };

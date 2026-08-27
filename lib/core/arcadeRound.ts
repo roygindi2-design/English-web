@@ -26,7 +26,14 @@ export interface ArcadeCandidate {
   readonly band: CefrBand | null;
   readonly ngslRank: number | null;
   readonly translationHe: string;
-  readonly distractorsHe: readonly string[];
+  /**
+   * ⛔ **אנגלית, ו⛔ לעולם אינה מוצגת ללומד** (T-152 · D-087). היא נטענת מ-`sense_distractors`,
+   * ולכן השם ⛔ אינו יכול להיות `distractorsHe` — השם הישן שיקר, ותחתיו הזירה הגישה תרגום
+   * עברי אחד מול שלוש מילים באנגלית, כלומר תשובה נכונה בלי לדעת ולו מילה.
+   * ⚠️ השדה נשאר בטיפוס **כדי שבדיקה תוכיח שהוא ⛔ אינו מגיע ל-`options`** — ⛔ אין לו קורא
+   * ב-`buildRound`, ו-`arcadeRound.test.ts` סורק את המקור ונופל בשם אם יחזור.
+   */
+  readonly distractorsEn: readonly string[];
 }
 
 export interface ArcadeQuestion {
@@ -46,11 +53,16 @@ export type ArcadeRound =
   | { readonly ok: false; readonly reason: 'level_too_small'; readonly eligible: number; readonly required: number }
   | { readonly ok: false; readonly reason: 'no_such_level' };
 
-function usableDistractors(c: ArcadeCandidate): string[] {
-  const seen = new Set<string>([c.translationHe]);
+/**
+ * 🔴 T-152 · D-087 — **מאגר המסיחים של הרמה.** התרגומים העבריים של המועמדים הכשירים,
+ * ⛔ בלי כפילות ו⛔ בלי ריקים, בסדר הקלט (⇒ ניתן לשחזור מה-seed בלבד).
+ * ⚠️ זהו **המקור היחיד** לשלוש האפשרויות השגויות. ⛔ אין מקור אנגלי, ⛔ אין ייצור בזמן אמת.
+ */
+function levelTranslations(pool: readonly ArcadeCandidate[]): string[] {
+  const seen = new Set<string>();
   const out: string[] = [];
-  for (const d of c.distractorsHe) {
-    const t = d.trim();
+  for (const c of pool) {
+    const t = c.translationHe.trim();
     if (t.length === 0 || seen.has(t)) continue;
     seen.add(t);
     out.push(t);
@@ -58,10 +70,14 @@ function usableDistractors(c: ArcadeCandidate): string[] {
   return out;
 }
 
+/**
+ * ⚠️ **הכשירות ⛔ אינה נשענת עוד על מסיחי המילה עצמה** (T-152): הם אנגלית, ⛔ אינם מוצגים,
+ * ולכן «מילה בלי שלושה מסיחים» ⛔ אינה עוד סיבה לדלג. מה שנשאר הוא מה שהשאלה באמת דורשת —
+ * הרמה הנכונה ותשובה נכונה. המחסור באפשרויות נמדד **ברמה** (ⓒ ב-`buildRound`), ⛔ ולא במילה.
+ */
 export function isEligible(c: ArcadeCandidate, level: CefrBand): boolean {
   if (c.band !== level) return false;
-  if (c.translationHe.trim().length === 0) return false;
-  return usableDistractors(c).length >= ARCADE_OPTION_COUNT - 1;
+  return c.translationHe.trim().length > 0;
 }
 
 export function eligibleCandidates(
@@ -98,15 +114,29 @@ export function buildRound(input: {
   const window = byRank.slice(offset, offset + sliceSize);
 
   const rnd = mulberry32(input.seed);
+  // ⛔ המסיחים נמשכים מ**כל הרמה** ⛔ ולא מהחלון: החלון הוא פרוסת התדירות של הקרב,
+  // וצמצום המסיחים אליו היה מקטין את המאגר בלי סיבה לימודית.
+  const translations = levelTranslations(pool);
   const picked = shuffle(window, rnd).slice(0, ARCADE_ROUND_SIZE);
-  const questions = picked.map((c) => {
-    const wrong = shuffle(usableDistractors(c), rnd).slice(0, ARCADE_OPTION_COUNT - 1);
-    return {
+  const questions: ArcadeQuestion[] = [];
+  for (const c of picked) {
+    const answer = c.translationHe.trim();
+    // ⛔ המסיח ⛔ אינו זהה לתשובה (ⓑ), והרשימה כבר ייחודית ⇒ ⛔ אינו חוזר פעמיים.
+    const wrong = shuffle(translations.filter((t) => t !== answer), rnd).slice(0, ARCADE_OPTION_COUNT - 1);
+    // ⓒ ⛔ **אין נפילה חזרה לאנגלית.** אין ברמה מספיק תרגומים שונים ⇒ השאלה יורדת
+    // מהסיבוב, והסיבוב החסר מדווח `level_too_small` — בדיוק כמו רמה קטנה מדי.
+    if (wrong.length < ARCADE_OPTION_COUNT - 1) continue;
+    questions.push({
       wordId: c.wordId,
       headword: c.headword,
-      answer: c.translationHe,
-      options: shuffle([c.translationHe, ...wrong], rnd),
-    };
-  });
+      answer,
+      options: shuffle([answer, ...wrong], rnd),
+    });
+  }
+  if (questions.length < ARCADE_ROUND_SIZE) {
+    // ⛔ `eligible` הוא מה שהרמה באמת יכולה להגיש — שאלה בלי ארבע אפשרויות עבריות
+    // ⛔ אינה פריט קרב, גם אם המילה עצמה כשירה.
+    return { ok: false, reason: 'level_too_small', eligible: questions.length, required: ARCADE_MIN_WORDS };
+  }
   return { ok: true, band: rung.band, gameLevel: rung.level, questions };
 }
