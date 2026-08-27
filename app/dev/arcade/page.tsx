@@ -1,4 +1,5 @@
-import ArenaBoard, { type ArenaRound } from '@/components/ArenaBoard';
+import ArenaBattle, { type ArenaRound } from '@/components/ArenaBattle';
+import '../../arcade/arcade-tokens.css';
 import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
 
 /**
@@ -24,6 +25,10 @@ import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
  *
  * Fifteen questions and ⛔ not two: `ARCADE_ROUND_SIZE` is 15 (the ammo, D-059), and a 2×2
  * grid that is never filled cannot fail a wrap check.
+ *
+ * ⚠️ **C-0325 — `<ArenaBoard>` נמחק ו-`<ArenaBattle>` תפס את מקומו** (T-177). ⛔ אותו prop
+ * ואותו טיפוס `ArenaRound` בדיוק, ⇒ הפיקסצ׳ר ⛔ לא השתנה. ‏`arcade-tokens.css` נטען גם
+ * כאן, כי אחרת הפיקסצ׳ר היה נמדד **בלי** פלטת הזירה — כלומר מסך שאינו המסך.
  */
 function question(n: number): ArcadeQuestion {
   return {
@@ -56,5 +61,5 @@ const FIXTURE: ArenaRound = {
 };
 
 export default function DevArcadePage() {
-  return <ArenaBoard initialRound={FIXTURE} />;
+  return <ArenaBattle initialRound={FIXTURE} />;
 }

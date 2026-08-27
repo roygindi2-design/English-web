@@ -116,8 +116,14 @@ describe('החוזה מתעדכן באותו קומיט', () => {
 
 describe('D-059 — ⛔ המילה «הפסדת» אינה קיימת במוצר', () => {
   const files = [
-    'components/ArenaBoard.tsx', 'components/ArenaResult.tsx', 'components/ArenaAvatar.tsx',
-    'components/ArcadeEntry.tsx', 'lib/core/arcadeBattle.ts', 'lib/core/arcadeResult.ts',
+    // ⚠️ **C-0325 — שני נתיבים הוחלפו, ⛔ ולא הוסרו:** `components/ArenaBoard.tsx` ⇢
+    // `components/ArenaBattle.tsx` ו-`lib/core/arcadeBattle.ts` ⇢ `lib/core/battle.ts`
+    // (T-176 · T-177, פרישה בצעד 9). ⛔ **וזה ⛔ אינו מרכך את D-059:** D-126 § ד׳ הפכה
+    // «הפסד» ל**מצב** (`outcomeAt` מחזיר `survived`), ⛔ אך המילה «הפסדת» ⛔ עדיין אינה
+    // מופיעה על המסך אף פעם — `37 § 9` ח4 קובע מסגור «היית 2 מילים מהבוס».
+    // ⇒ **המצב קיים, הנוסח ⛔ לא**, והשומר הזה הוא בדיוק מה שמודד את זה.
+    'components/ArenaBattle.tsx', 'components/ArenaResult.tsx', 'components/ArenaAvatar.tsx',
+    'components/ArcadeEntry.tsx', 'lib/core/battle.ts', 'lib/core/arcadeResult.ts',
   ];
 
   /**

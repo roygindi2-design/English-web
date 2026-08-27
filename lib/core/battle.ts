@@ -176,3 +176,17 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
     pendingPenalty: 0,
   };
 }
+
+/**
+ * D-060 — מה הבמה מציירת. ⛔ הרכיב ⛔ אינו גוזר את זה בעצמו: תנוחה שנגזרת בשני
+ * מקומות סוטה בשלישי. ⛔ שגיאה היא **התחמקות** ⛔ ולא פגיעה בלומד — הפגיעה מגיעה
+ * מהיריב בקצב שלו (`§ 3`), ⛔ ולא מהתשובה.
+ * ⛔ **שלוש תנוחות, ⛔ ואין רביעית.** הועבר מ-`arcadeBattle.ts` באותו קומיט שבו נמחק.
+ */
+export type StagePhase = 'idle' | 'hit' | 'dodge';
+
+export function stagePhase(state: BattleState): StagePhase {
+  const last = state.casts[state.casts.length - 1];
+  if (last === undefined) return 'idle';
+  return last.correct ? 'hit' : 'dodge';
+}
