@@ -183,7 +183,7 @@ export interface ArenaStageProps {
 
 ## Task 1 — T-180 · the results screen
 
-- [ ] **Step 1.1 — write the failing pure test.** Create `lib/core/arenaSummary.test.ts`
+- [x] **Step 1.1 — write the failing pure test.** Create `lib/core/arenaSummary.test.ts`
       with the block below, ⛔ and no implementation file yet.
 
 ```ts
@@ -232,16 +232,16 @@ describe('summarize — 37 § 10', () => {
 });
 ```
 
-- [ ] **Step 1.2 — run it and measure red.** `npx vitest run lib/core/arenaSummary.test.ts`
+- [x] **Step 1.2 — run it and measure red.** `npx vitest run lib/core/arenaSummary.test.ts`
       — the output must name the missing module. ⛔ Paste it into the report; ⛔ an assumed
       red is not a red.
-- [ ] **Step 1.3 — implement `lib/core/arenaSummary.ts`** to the `Interfaces` block above.
+- [x] **Step 1.3 — implement `lib/core/arenaSummary.ts`** to the `Interfaces` block above.
       `bestStreak` is one pass with a running counter; `slow` is
       `casts.filter((c) => c.correct && !c.critical)`; `meanSecondsHe` is
       `(ms / 1000).toFixed(1) + ' ש׳'`. ⛔ No `Date.now`, ⛔ no `Intl`.
-- [ ] **Step 1.4 — green, and the purity gate.**
+- [x] **Step 1.4 — green, and the purity gate.**
       `npx vitest run lib/core/arenaSummary.test.ts && npm run check:core`
-- [ ] **Step 1.5 — write the failing component scan.** Create
+- [x] **Step 1.5 — write the failing component scan.** Create
       `components/ArenaSummary.test.ts` on the `components/ArenaStage.test.ts:1-25`
       template (comment-stripped `CODE`, ⛔ not raw `SRC`):
 
@@ -287,21 +287,21 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
 });
 ```
 
-- [ ] **Step 1.6 — run and measure red.**
+- [x] **Step 1.6 — run and measure red.**
       `npx vitest run components/ArenaSummary.test.ts`
-- [ ] **Step 1.7 — build `components/ArenaSummary.tsx`** to the measured table above.
+- [x] **Step 1.7 — build `components/ArenaSummary.tsx`** to the measured table above.
       Right-aligned Hebrew label + `dir="ltr"` value per row; the slow panel renders
       `<EnWord>` per slow word; the CTA is 56px; the footer string is verbatim.
       ⛔ Do not add the XP sub-line, the chest or the new-words panel — § 7.
-- [ ] **Step 1.8 — the fixture.** Create `app/dev/arcade/summary/page.tsx` on the
+- [x] **Step 1.8 — the fixture.** Create `app/dev/arcade/summary/page.tsx` on the
       `app/dev/arcade/result/page.tsx` template, with a 16-cast fixture that produces
       **14/16 · 1.8 ש׳ · רצף 4 · 3 איטיות** — the render's own numbers, so the walk
       compares like with like.
-- [ ] **Step 1.9 — wire it in.** In `components/ArenaBattle.tsx`, render `<ArenaSummary>`
+- [x] **Step 1.9 — wire it in.** In `components/ArenaBattle.tsx`, render `<ArenaSummary>`
       above the existing `<ArenaResult>` block at `:463`, fed from
       `summarize(battle.casts)`. ⛔ `<ArenaResult>` is ⛔ not deleted in this slice — it
       carries the unlocked-item panel that § 7 has no replacement for yet.
-- [ ] **Step 1.10 — green.**
+- [x] **Step 1.10 — green.**
       `npx vitest run components/ArenaSummary.test.ts lib/core/arenaSummary.test.ts`
 
 ## Task 2 — T-119 · the idle loop gets a consumer

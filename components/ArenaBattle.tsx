@@ -5,12 +5,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import ArenaStage from '@/components/ArenaStage';
+import ArenaSummary from '@/components/ArenaSummary';
 import SpellCard from '@/components/SpellCard';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { mixArenaWords, type ArenaWord } from '@/lib/core/arenaWords';
 import { resolveGesture } from '@/lib/core/arenaGesture';
+import { summarize } from '@/lib/core/arenaSummary';
 import {
   BATTLE_MS,
   MANA_CAP,
@@ -460,13 +462,25 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         chosen: row.chosen,
       }));
       return (
-        <ArenaResult
-          enemyDefeated={outcome.enemyDefeated}
-          unlocked={outcome.unlocked}
-          items={outcome.unlocked === null ? [] : [outcome.unlocked]}
-          missed={missed}
-          onAgain={again}
-        />
+        <>
+          {/* T-180 · `37 § 10` — הסיכום המדוד של הקרב, מעל מסך הסיום הקיים.
+              ⛔ `<ArenaResult>` ⛔ אינו נמחק בפרוסה הזאת: הוא נושא את לוח הפריט שנפתח,
+              ⛔ ואין לו מחליף עדיין (§ 7 של תוכנית פרוסה C). ⛔ הסיכום ⛔ אינו מחשב כאן —
+              `summarize` הוא `lib/core` טהור. */}
+          <ArenaSummary
+            enemyDefeated={outcome.enemyDefeated}
+            summary={summarize(battle.casts)}
+            headwords={Object.fromEntries(headwords)}
+            onBack={again}
+          />
+          <ArenaResult
+            enemyDefeated={outcome.enemyDefeated}
+            unlocked={outcome.unlocked}
+            items={outcome.unlocked === null ? [] : [outcome.unlocked]}
+            missed={missed}
+            onAgain={again}
+          />
+        </>
       );
     }
     return (
