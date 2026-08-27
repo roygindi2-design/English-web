@@ -79,6 +79,8 @@ export interface BattleState {
   readonly lastSwingMs: number;
   /** `§ 5` — אחרי תשובה שגויה, המכה הבאה **בלבד** חזקה יותר. */
   readonly pendingPenalty: number;
+  /** `37 § 6` — המכה שהלומד התגלגל ממנה. ⛔ אחת: החסינות שייכת למכה ש**הוכרזה**. */
+  readonly dodgedSwing: number | null;
   readonly casts: readonly BattleCast[];
 }
 
@@ -98,6 +100,7 @@ export function startBattle(
     shownAtMs: 0,
     lastSwingMs: 0,
     pendingPenalty: 0,
+    dodgedSwing: null,
     casts: [],
   };
 }
@@ -167,14 +170,70 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   const swings = due - applied;
   if (swings <= 0) return { ...state, lastSwingMs: Math.max(state.lastSwingMs, elapsedMs) };
 
+  // `§ 6` — ⛔ החסינות מבטלת **מכה אחת מזוהה**, ⛔ ולא «את הנזק»: אם שתי מכות התאחדו
+  // בפריים אחד (חלון שנרדם, מכשיר איטי), השנייה עדיין פוגעת. ⛔ «התגלגלתי פעם אחת
+  // ולא נפגעתי שלוש» הוא בדיוק סוג החור ש-2,403 בדיקות ירוקות לא תופסות.
+  const immune =
+    state.dodgedSwing !== null && state.dodgedSwing > applied && state.dodgedSwing <= due;
+  const landed = swings - (immune ? 1 : 0);
   // ⛔ העונש חל על **המכה הבאה בלבד** (`§ 5`), ולכן הוא נצרך פעם אחת ⛔ ולא לכל מכה בקבוצה.
-  const damage = swings * SWING_DAMAGE + state.pendingPenalty;
+  // ⛔ והמכה שנמנעה לוקחת איתה את העונש שהיה תלוי בה — הוא חל על **המכה הבאה**, וזו
+  // ⛔ לא הגיעה.
+  const damage = landed === 0 ? 0 : landed * SWING_DAMAGE + state.pendingPenalty;
   return {
     ...state,
     learnerHp: state.learnerHp - damage,
     lastSwingMs: elapsedMs,
     pendingPenalty: 0,
+    dodgedSwing: immune ? null : state.dodgedSwing,
   };
+}
+
+/**
+ * `37 § 6` — **הטלגרף.** ⚠️ **המספרים הם של המפרט, וההעגנה היא חשבון ⛔ ולא המצאה:**
+ * `§ 6` קובע שהוא **6.0 שניות שנגמרות במכה**, ו-`§ 3` קובע שהמכות **8.0 שניות זו מזו**.
+ * שתיהן מתקיימות בסידור אחד בלבד — הטעינה של מכה `n` מתחילה ב-`n·8000 − 6000`, כלומר
+ * **2.0 שניות אחרי המכה הקודמת**. ⛔ `tick` ⛔ לא השתנה בקצב: המכות עדיין נוחתות ב-`n·8000`.
+ * ⛔ החלטה הפיכה (`RULES § 0.16`), ונרשמה בסיכום הטיק.
+ */
+export const TELEGRAPH_MS = 6_000;
+/** `§ 6` — «הכרזה 5.3 ש׳»: ידיים מורמות, גוון סגול, המד מהבהב. */
+export const ANNOUNCE_AT_MS = 5_300;
+/** `§ 6` — «חלון 5.3 עד 5.7 ש׳». ⛔ 400ms, וזה כל הרוחב. */
+export const WINDOW_END_MS = 5_700;
+
+export type TelegraphPhase = 'quiet' | 'charging' | 'window' | 'committed';
+
+export interface Telegraph {
+  readonly phase: TelegraphPhase;
+  readonly frac: number;
+  readonly swingIndex: number;
+}
+
+/**
+ * ⛔ **טהורה ביחס לשעון:** `elapsedMs` הוא קלט, ולכן ארבעת הגבולות נבדקים ב-0ms
+ * ⛔ ולא ב-90 שניות. אותו נימוק בדיוק שבגללו `battle.ts` ⛔ אינו מכיר `Date.now`.
+ */
+export function telegraphAt(elapsedMs: number): Telegraph {
+  const t = Math.max(0, Number.isFinite(elapsedMs) ? elapsedMs : 0);
+  const swingIndex = Math.floor(t / ENEMY_SWING_MS) + 1;
+  const into = t - (swingIndex * ENEMY_SWING_MS - TELEGRAPH_MS);
+  if (into < 0) return { phase: 'quiet', frac: 0, swingIndex };
+  if (into < ANNOUNCE_AT_MS) return { phase: 'charging', frac: into / ANNOUNCE_AT_MS, swingIndex };
+  if (into < WINDOW_END_MS) return { phase: 'window', frac: 1, swingIndex };
+  return { phase: 'committed', frac: 1, swingIndex };
+}
+
+/**
+ * `§ 6` — «החלקה לצד = **גלגול עם חסינות**». ⛔ מחוץ לחלון היא ⛔ אינה עושה דבר
+ * ו⛔ אינה עולה חיים: `§ 6` מחייב אותה ב**טמפו** ⛔ ולא בנזק, ו⛔ אין כאן טמפו למדוד.
+ * ⛔ **והיא ⛔ אינה עוצרת את השעון** — `elapsedMs` ⛔ אינו נגזר מהמצב.
+ */
+export function dodge(state: BattleState, elapsedMs: number): BattleState {
+  const telegraph = telegraphAt(elapsedMs);
+  if (telegraph.phase !== 'window') return state;
+  if (state.dodgedSwing === telegraph.swingIndex) return state;
+  return { ...state, dodgedSwing: telegraph.swingIndex };
 }
 
 /**

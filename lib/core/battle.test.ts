@@ -2,14 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { ArenaWord } from './arenaWords';
 import {
+  ANNOUNCE_AT_MS,
   BATTLE_MS,
   ENEMY_SWING_MS,
   MANA_CAP,
+  TELEGRAPH_MS,
+  WINDOW_END_MS,
   cast,
+  dodge,
   isRage,
   manaAt,
   outcomeAt,
   startBattle,
+  telegraphAt,
   tick,
 } from './battle';
 
@@ -108,5 +113,78 @@ describe('battle', () => {
     for (const banned of [/word_progress/, /easiness/, /interval_days/, /next_review_at/]) {
       expect(code, `${banned} אסור — אינווריאנט 13.1`).not.toMatch(banned);
     }
+  });
+});
+
+describe('37 § 6 — הטלגרף: 6 שניות שנגמרות במכה, בקצב של § 3', () => {
+  it('⛔ שקט עד 2.0 ש׳ — המכה הראשונה ב-8.0 ש׳, והטעינה מתחילה 6.0 לפניה', () => {
+    expect(telegraphAt(0)).toEqual({ phase: 'quiet', frac: 0, swingIndex: 1 });
+    expect(telegraphAt(1_999).phase).toBe('quiet');
+  });
+
+  it('טעינה מ-2.0 ש׳, והמד מתמלא לינארית עד 5.3 ש׳ לתוך הטלגרף', () => {
+    expect(telegraphAt(2_000)).toEqual({ phase: 'charging', frac: 0, swingIndex: 1 });
+    const half = telegraphAt(2_000 + ANNOUNCE_AT_MS / 2);
+    expect(half.phase).toBe('charging');
+    expect(half.frac).toBeCloseTo(0.5, 5);
+  });
+
+  it('הכרזה בדיוק ב-5.3 ש׳ לתוך הטלגרף — והחלון פתוח עד 5.7', () => {
+    expect(telegraphAt(2_000 + ANNOUNCE_AT_MS)).toEqual({ phase: 'window', frac: 1, swingIndex: 1 });
+    expect(telegraphAt(2_000 + WINDOW_END_MS - 1).phase).toBe('window');
+  });
+
+  it('⛔ ב-5.7 החלון נסגר, ועד 6.0 המכה כבר בלתי-נמנעת', () => {
+    expect(telegraphAt(2_000 + WINDOW_END_MS).phase).toBe('committed');
+    expect(telegraphAt(2_000 + TELEGRAPH_MS - 1).phase).toBe('committed');
+  });
+
+  it('המכה השנייה נושאת `swingIndex: 2`, ⛔ והטלגרף שלה מתחיל 6.0 לפני 16.0 ש׳', () => {
+    expect(telegraphAt(2 * ENEMY_SWING_MS - TELEGRAPH_MS).swingIndex).toBe(2);
+    expect(telegraphAt(2 * ENEMY_SWING_MS - TELEGRAPH_MS).phase).toBe('charging');
+  });
+
+  it('⛔ זמן שלילי ⛔ אינו מצב — הוא שקט, ⛔ ולא חלון פתוח', () => {
+    expect(telegraphAt(-1).phase).toBe('quiet');
+  });
+});
+
+describe('37 § 6 — הגלגול: חסינות למכה **המוכרזת**, ⛔ ולא «פחות נזק»', () => {
+  const words = [{ wordId: 'w1', headword: 'ONE', translationHe: 'אחת', kind: 'base' as const }];
+
+  it('⛔ החלקה מחוץ לחלון ⛔ אינה עושה דבר — ⛔ ואינה עולה חיים', () => {
+    const s = startBattle(words, 12, 20);
+    expect(dodge(s, 3_000)).toEqual(s);
+    expect(dodge(s, 2_000 + WINDOW_END_MS)).toEqual(s);
+  });
+
+  it('החלקה בתוך החלון מסמנת את המכה, והמכה נוחתת ב⛔ אפס נזק', () => {
+    const s = dodge(startBattle(words, 12, 20), 2_000 + ANNOUNCE_AT_MS);
+    expect(s.dodgedSwing).toBe(1);
+    expect(tick(s, ENEMY_SWING_MS).learnerHp).toBe(12);
+  });
+
+  it('⛔ בלי גלגול — המכה פוגעת, וזו ההוכחה שהבדיקה מודדת את הגלגול ⛔ ולא כלום', () => {
+    expect(tick(startBattle(words, 12, 20), ENEMY_SWING_MS).learnerHp).toBe(11);
+  });
+
+  it('⛔ הגלגול מבטל את המכה **כולה**, כולל עונש התשובה השגויה שהיה תלוי בה', () => {
+    const wrong = cast(startBattle(words, 12, 20), 'לא נכון', 500);
+    expect(wrong.pendingPenalty).toBe(1);
+    const rolled = dodge(wrong, 2_000 + ANNOUNCE_AT_MS);
+    const after = tick(rolled, ENEMY_SWING_MS);
+    expect(after.learnerHp).toBe(12);
+    expect(after.pendingPenalty).toBe(0);
+    expect(after.dodgedSwing).toBeNull();
+  });
+
+  it('⛔ החסינות שייכת למכה אחת: אם שתי מכות התאחדו בפריים, השנייה עדיין פוגעת', () => {
+    const s = dodge(startBattle(words, 12, 20), 2_000 + ANNOUNCE_AT_MS);
+    expect(tick(s, 2 * ENEMY_SWING_MS).learnerHp).toBe(11);
+  });
+
+  it('⛔ הגלגול ⛔ אינו עוצר את השעון — `outcomeAt` על אותו זמן ⛔ אינו משתנה', () => {
+    const s = startBattle(words, 12, 20);
+    expect(outcomeAt(dodge(s, 2_000 + ANNOUNCE_AT_MS), 50_000)).toBe(outcomeAt(s, 50_000));
   });
 });
