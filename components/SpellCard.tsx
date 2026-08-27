@@ -65,9 +65,14 @@ export default function SpellCard({
         'bg-[color:var(--arena-card)]',
         // ⛔ `text-*` נושא **גם** את `currentColor` של המעוין — ולכן צבע המסגרת וצבע
         // הסימן ⛔ אינם יכולים להיפרד. שני מקומות לצבע אחד סוטים בשלישי.
+        // T-214 · F-156 — הגבול הלא־נבחר נמדד **1.80:1** מול המילוי (`--arena-stone`
+        // על `--arena-card`), מתחת לרצפת 3:1 של שכבה א׳ לגבול משמעותי. ⛔ `--arena-stone`
+        // ⛔ אינו מוגה — F-156 מדד שהוא מצייר מסגרות אחרות בזירה — ולכן הקלף לוקח
+        // `--arena-card-edge`: **7.36:1** מול המילוי, **6.88:1** מול הבמה.
+        // ⚠️ הנבחר ⛔ לא נגע: `--arena-gold` על המילוי הוא **7.29:1**.
         selected
           ? 'border-[color:var(--arena-gold)] text-[color:var(--arena-gold)]'
-          : 'border-[color:var(--arena-stone)] text-[color:var(--arena-stone)]',
+          : 'border-[color:var(--arena-card-edge)] text-[color:var(--arena-card-edge)]',
       ].join(' ')}
       onPointerDown={(e) => {
         from.current = { x: e.clientX, y: e.clientY };

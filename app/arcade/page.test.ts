@@ -38,9 +38,17 @@ const CARD_CODE = withoutComments(CARD_SRC);
  * `--arena-ink-dim` (`:248`, `ELEM_COL['unknown']`). ⛔ הם ⛔ אינם «צבעים חדשים
  * למוצר» — הם בדיוק אותה חריגה מגודרת, ואותה בדיקה למטה כולאת אותם באותו קובץ.
  */
+/**
+ * ⚠️ **T-214 הוסיפה שלושה, וכולם נמדדו מ-`render_video_B.py` ⛔ ולא נבחרו:**
+ * `--arena-hp` (`:474` `(226, 62, 62)`, מוגה כלפי מעלה בשכבה א׳ עד 5.02:1 מול
+ * `--arena-ink`) · `--arena-hp-track` (`:471` `(20, 14, 24)`) · `--arena-mana`
+ * (`:299` `(86, 132, 226)`). ‏`--arena-card-edge` ⛔ אינו הקסא רביעי — הוא הערך של
+ * `--arena-ink-dim` בתפקיד גבול, ולכן הרשימה כאן ⛔ לא גדלה בשבילו.
+ */
 const ARENA_HEXES = ['#d4a94a', '#f5d684', '#4a4858', '#34323f', '#1c2642',
                      '#c482ff', '#b478f0', '#ff7878', '#96e6ff',
-                     '#182138', '#fffcf6', '#a8b0c4'] as const;
+                     '#182138', '#fffcf6', '#a8b0c4',
+                     '#cc3333', '#140e18', '#5684e2'] as const;
 
 describe('אינווריאנט 37 § 13.5 — הפלטה scoped לזירה', () => {
   it('⛔ טוקני הזירה ⛔ אינם דולפים ל-palette', () => {
@@ -61,6 +69,34 @@ describe('אינווריאנט 37 § 13.5 — הפלטה scoped לזירה', () 
     for (const hex of ARENA_HEXES) expect(TOKENS).toContain(hex);
     const found = [...TOKENS.matchAll(/#[0-9a-fA-F]{6}\b/g)].map((m) => m[0].toLowerCase());
     expect(new Set(found)).toEqual(new Set(ARENA_HEXES));
+  });
+
+  /**
+   * T-214 · D-130 מסלול ⓘ — **הבמה מצהירה רקע משלה ודיו משלה.**
+   * ⛔ הבדיקה ⛔ אינה מחליפה את בדיקת חמשת הערכים מעליה — היא **מוסיפה** עליה
+   * (⛔ בדיקה שנמחקה בלי מחליפה היא מה שהפיל את T-164).
+   * ⚠️ נמדד C-0333 לפני התיקון: `<section data-arena-scope>` החזיר `rgba(0, 0, 0, 0)`.
+   */
+  it('הסקופ מצהיר **רקע** מ-`--arena-night` — אחרת הטקסט יושב על רקע העמוד', () => {
+    expect(TOKENS).toMatch(/background:\s*var\(--arena-night\)/);
+  });
+
+  it('הסקופ מצהיר **דיו** משלו — `--ink` של globals מתחלף עם הסכימה', () => {
+    expect(TOKENS).toMatch(/color:\s*var\(--arena-ink\)/);
+    // זוג הדיו — חזק ועמום — חי כאן, ⛔ ולא ב-`palette.ts`.
+    for (const token of ['--arena-ink:', '--arena-ink-dim:', '--arena-card-edge:']) {
+      expect(TOKENS, `${token} — הדיו של הזירה חי בקובץ הזה`).toContain(token);
+    }
+  });
+
+  it('⛔ ושמות הזירה ⛔ אינם דולפים ל-`palette.ts` ול-`globals.css`', () => {
+    const palette = readFileSync('lib/core/palette.ts', 'utf8');
+    const globals = readFileSync('app/globals.css', 'utf8');
+    for (const token of ['--arena-ink', '--arena-night', '--arena-card-edge',
+                         '--arena-hp', '--arena-mana']) {
+      expect(palette, `${token} — אינווריאנט 37 § 13.5`).not.toContain(token);
+      expect(globals, `${token} — אינווריאנט 37 § 13.5`).not.toContain(token);
+    }
   });
 
   it('שני המסלולים טוענים את הפלטה — אחרת הפיקסצ׳ר מודד מסך שאינו המסך', () => {

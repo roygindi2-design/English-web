@@ -531,7 +531,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       <div className="flex flex-col items-center gap-1" data-arena-clock>
         <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
         <p
-          className="text-4xl font-black tabular-nums text-ink"
+          className="text-4xl font-black tabular-nums text-[color:var(--arena-ink)]"
           role="timer"
           aria-label={`${CLOCK_HE} ${clockHe(BATTLE_MS - elapsedMs)}`}
         >
@@ -593,16 +593,21 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           <div
             role="img"
             aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
-            className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)]"
+            className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
           >
+            {/* T-214 · ⛔ `bg-danger` יצא: `--danger` מתחלף ב-`globals` לפי הסכימה
+                (`#b91c1c` בהירה · `#f87171` כהה) ⇒ בסכימה כהה המספר הלבן ישב עליו
+                ב-**2.70:1**. הערך כאן הוא של הרנדר, מוגה כלפי מעלה בשכבה א׳. */}
             <span
               aria-hidden
-              className="absolute inset-y-0 end-0 bg-danger"
+              className="absolute inset-y-0 end-0 bg-[color:var(--arena-hp)]"
               style={{ width: `${enemyPct}%` }}
             />
+            {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
+                המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
             <span
               aria-hidden
-              className="absolute inset-0 grid place-items-center text-xs font-bold text-brand-on"
+              className="absolute inset-0 grid place-items-center text-xs font-bold text-[color:var(--arena-ink)]"
             >
               {/* ⛔ אחוז, ⛔ ולא HP גולמי — בדיוק מה ש-`render_video_B.py:475` מצייר. */}
               <EnWord>{`${enemyPct}/100`}</EnWord>
@@ -649,22 +654,22 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       <div className="flex flex-col gap-1" data-arena-mana>
         <div className="flex flex-row items-baseline justify-between gap-2">
           <span
-            className={`text-sm font-semibold ${raging ? 'text-danger' : 'text-ink-muted'}`}
+            className={`text-sm font-semibold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink-dim)]'}`}
           >
             {raging ? RAGE_HE : MANA_HE}
           </span>
-          <span className={`text-sm font-bold ${raging ? 'text-danger' : 'text-brand-surface'}`}>
+          <span className={`text-sm font-bold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink)]'}`}>
             <EnWord>{`${mana} / ${MANA_CAP}`}</EnWord>
           </span>
         </div>
         <div
           role="img"
           aria-label={`${raging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`}
-          className="h-4 w-full overflow-hidden rounded-full border border-border-subtle bg-[color:var(--arena-stone-dark)]"
+          className="h-4 w-full overflow-hidden rounded-full border border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)]"
         >
           <span
             aria-hidden
-            className={`block h-full ${raging ? 'bg-danger' : 'bg-brand-surface'}`}
+            className={`block h-full ${raging ? 'bg-[color:var(--arena-cast-warn)]' : 'bg-[color:var(--arena-mana)]'}`}
             style={{ width: `${(mana / MANA_CAP) * 100}%` }}
           />
         </div>
@@ -677,7 +682,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       {/* ⛔ הרמז יושב **מעל** היד ו⛔ לעולם לא עליה (קוהרנטיות, T-041): אזור היד
           ⛔ אינו זז, ולכן הרמז ⛔ אינו יכול להיות שכבה מעליו. */}
       {showHint && (
-        <p data-arena-hint className="text-center text-xs text-ink-muted">{DRAG_HINT_HE}</p>
+        <p data-arena-hint className="text-center text-xs text-[color:var(--arena-ink-dim)]">{DRAG_HINT_HE}</p>
       )}
 
       <ul data-arena-hand className="grid grid-cols-4 gap-2">
@@ -696,7 +701,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       </ul>
 
       {/* ⓖ הערת הבידוד — אינווריאנט `37 § 13.1`, והשורה התחתונה ברנדר. */}
-      <p className="text-center text-xs text-ink-muted" data-arena-isolation>
+      <p className="text-center text-xs text-[color:var(--arena-ink-dim)]" data-arena-isolation>
         {ARENA_ISOLATION_HE}
       </p>
     </section>

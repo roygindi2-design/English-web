@@ -1850,6 +1850,179 @@ try {
     check(dark.bg === 'rgb(15, 23, 42)', 'dark surface is the --surface token', `got ${dark.bg}`);
   }
 
+  // ---- 2c. the arena is measured where it is painted (T-214 · D-134) -------
+  // ⛔ Block 2b measures `document.body` on `/` and NOTHING else. That is why 2,889 green
+  // tests never saw three arena text nodes under the Layer A floor: a screen that paints
+  // its OWN surfaces is invisible to a body-level probe. This block is therefore
+  // per-SCREEN and ⛔ not per-component — C-0332 measured the spell card in isolation,
+  // got 15.61:1, and shipped a screen with three other failures still on it.
+  //
+  // The effective background is taken from `elementsFromPoint` at the node's centre and
+  // ⛔ not from an ancestor walk: the enemy health number is painted ON TOP of an
+  // absolutely-positioned sibling (the health fill), so an ancestor walk would report the
+  // track colour and pass a number nobody can read.
+  {
+    for (const scheme of ['light', 'dark']) {
+      const ctx = await browser.newContext({
+        viewport: { width: 375, height: 780 },
+        colorScheme: scheme,
+      });
+      const page = await ctx.newPage();
+      await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+      await page.waitForSelector('[data-arena-scope]');
+
+      const measured = await page.evaluate(() => {
+        const parse = (value) => {
+          const m = /rgba?\(([^)]+)\)/.exec(value ?? '');
+          if (m === null) return null;
+          const parts = m[1].split(',').map((n) => Number.parseFloat(n.trim()));
+          const [r, g, b] = parts;
+          const a = parts.length > 3 ? parts[3] : 1;
+          if ([r, g, b].some((n) => Number.isNaN(n))) return null;
+          return { r, g, b, a };
+        };
+        const lum = ({ r, g, b }) => {
+          const f = (c) => {
+            const v = c / 255;
+            return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+          };
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const ratio = (fg, bg) => {
+          const a = lum(fg);
+          const b = lum(bg);
+          const hi = Math.max(a, b);
+          const lo = Math.min(a, b);
+          return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100;
+        };
+        const show = ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`;
+
+        /** The first painted surface at this point, the node itself included. */
+        const backgroundAt = (el, x, y) => {
+          const stack = document.elementsFromPoint(x, y);
+          const from = stack.indexOf(el);
+          const below = from === -1 ? stack : stack.slice(from);
+          for (const candidate of below) {
+            const bg = parse(getComputedStyle(candidate).backgroundColor);
+            if (bg !== null && bg.a > 0.5) return bg;
+          }
+          const body = parse(getComputedStyle(document.body).backgroundColor);
+          return body !== null && body.a > 0.5 ? body : { r: 255, g: 255, b: 255, a: 1 };
+        };
+
+        const scope = document.querySelector('[data-arena-scope]');
+        const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        const failing = [];
+        let worst = null;
+        for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) {
+          const text = (n.textContent ?? '').trim();
+          if (text === '') continue;
+          const el = n.parentElement;
+          if (el === null) continue;
+          const style = getComputedStyle(el);
+          if (style.visibility === 'hidden' || style.display === 'none') continue;
+          if (Number.parseFloat(style.opacity) === 0) continue;
+          const rect = el.getBoundingClientRect();
+          // sr-only lives in a 1px clipped box — it is read aloud, ⛔ never painted.
+          if (rect.width * rect.height < 16) continue;
+          const fg = parse(style.color);
+          if (fg === null) continue;
+          const x = Math.min(window.innerWidth - 1, Math.max(0, rect.x + rect.width / 2));
+          const y = Math.min(window.innerHeight - 1, Math.max(0, rect.y + rect.height / 2));
+          const bg = backgroundAt(el, x, y);
+          const entry = { text: text.slice(0, 24), ratio: ratio(fg, bg), color: show(fg), bg: show(bg) };
+          nodes.push(entry);
+          if (worst === null || entry.ratio < worst.ratio) worst = entry;
+          if (entry.ratio < 4.5) failing.push(entry);
+        }
+
+        // ⛔ Icons are not text, and a text-node walk is blind to them: the close
+        // control paints with `currentColor`, and once the stage took a background of
+        // its own it measured 1.27:1 in the light scheme.
+        //
+        // ⚠️ **CONTROLS ONLY, and the reason is measured ⛔ not stylistic:** the stage
+        // figures paint their own backdrop as an SVG `<rect>`, and a CSS
+        // `background-color` probe cannot see an SVG fill — measuring them here reports
+        // the stage colour behind the artwork and fails a figure that is perfectly
+        // legible. The avatar's own layers are `components/ArenaAvatar.tsx`, i.e. T-215.
+        // ⇒ what is measured here is every icon a learner can PRESS.
+        const icons = [];
+        for (const el of scope.querySelectorAll('a svg, a svg *, button svg, button svg *, [role="button"] svg, [role="button"] svg *')) {
+          const cs = getComputedStyle(el);
+          const fg = parse(cs.color);
+          if (fg === null) continue;
+          const paints = [cs.fill, cs.stroke].map(parse).filter((c) => c !== null);
+          if (!paints.some((c) => c.r === fg.r && c.g === fg.g && c.b === fg.b && c.a > 0.5)) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.width * rect.height < 100) continue;
+          const x = Math.min(window.innerWidth - 1, Math.max(0, rect.x + rect.width / 2));
+          const y = Math.min(window.innerHeight - 1, Math.max(0, rect.y + rect.height / 2));
+          const bg = backgroundAt(el, x, y);
+          const r = ratio(fg, bg);
+          if (r < 3) icons.push({ label: el.closest('[data-arena-close]') !== null ? 'close' : el.tagName, ratio: r, color: show(fg), bg: show(bg) });
+        }
+
+        // The unselected spell card: its boundary is the ONLY thing separating it from
+        // the stage — the fill measures 1.06:1 against the night blue behind it.
+        const card = document.querySelector('[data-arena-card][aria-pressed="false"]');
+        let cardEdge = null;
+        if (card !== null) {
+          const cs = getComputedStyle(card);
+          const edge = parse(cs.borderTopColor);
+          const fill = parse(cs.backgroundColor);
+          const rect = card.getBoundingClientRect();
+          const stage = backgroundAt(card, rect.x + rect.width / 2, rect.y - 6);
+          if (edge !== null && fill !== null) {
+            cardEdge = {
+              vsFill: ratio(edge, fill),
+              vsStage: ratio(edge, stage),
+              edge: show(edge),
+            };
+          }
+        }
+
+        const scopeBg = parse(getComputedStyle(scope).backgroundColor);
+        return { count: nodes.length, worst, failing, icons, cardEdge, scopeOpaque: scopeBg !== null && scopeBg.a > 0.5, scopeBg: getComputedStyle(scope).backgroundColor };
+      });
+
+      await ctx.close();
+
+      const at = `${scheme} /dev/arcade`;
+      check(measured.count > 0, `${at} the arena paints text at all`, 'zero text nodes under [data-arena-scope]');
+      // ⛔ The scope with no background of its own is the whole defect (F-155): the arena
+      // then inherits the PAGE surface, which flips with prefers-color-scheme.
+      check(measured.scopeOpaque, `${at} the arena declares its own surface`, `[data-arena-scope] background is ${measured.scopeBg}`);
+      // ⛔ Fails BY NAME on the first node under the floor — ⛔ not a count.
+      check(
+        measured.worst !== null && measured.worst.ratio >= 4.5,
+        `${at} · every arena text node clears 4.5:1 (${measured.count} nodes)`,
+        measured.worst === null
+          ? 'nothing measured'
+          // ⛔ EVERY node under the floor, by its own text — ⛔ not a count and ⛔ not
+          // only the worst one: naming a single node hides how wide the failure is.
+          : measured.failing
+              .map((n) => `"${n.text}" is ${n.ratio}:1 (${n.color} on ${n.bg})`)
+              .join(' · '),
+      );
+      check(
+        measured.icons.length === 0,
+        `${at} · every pressable arena icon clears 3:1`,
+        measured.icons.map((i) => `${i.label} is ${i.ratio}:1 (${i.color} on ${i.bg})`).join(' · '),
+      );
+      check(
+        measured.cardEdge !== null && measured.cardEdge.vsFill >= 3,
+        `${at} · spell-card border clears 3:1 against its fill`,
+        measured.cardEdge === null ? 'no unselected card' : `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsFill}:1`,
+      );
+      check(
+        measured.cardEdge !== null && measured.cardEdge.vsStage >= 3,
+        `${at} · spell-card border clears 3:1 against the stage`,
+        measured.cardEdge === null ? 'no unselected card' : `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsStage}:1`,
+      );
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

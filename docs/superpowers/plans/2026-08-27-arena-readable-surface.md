@@ -97,7 +97,7 @@ the nine that exist exist, and the three marked **new** do not.
 stage night-blue — which is exactly why route ⓘ is the route that *agrees* with the
 anchor, and ⓘⓘ is the route that patches around it).
 
-- [ ] **Step 1 — the scope declares a surface.** In `app/arcade/arcade-tokens.css`, inside
+- [x] **Step 1 — the scope declares a surface.** In `app/arcade/arcade-tokens.css`, inside
       the existing `[data-arena-scope]` block: a `background` taken from `--arena-night`,
       and an **arena ink pair** (a strong ink and a muted ink) that every arena surface
       uses. ⛔ Do **not** touch `globals.css`, and ⛔ do **not** add these to
@@ -107,14 +107,14 @@ anchor, and ⓘⓘ is the route that patches around it).
       ⚠️ `app/arcade/page.test.ts` scans this file **raw** and counts every hex in it as an
       arena token — so it fails until Step 4.
 
-- [ ] **Step 2 — the three failing elements stop reading `globals`.** In
+- [x] **Step 2 — the three failing elements stop reading `globals`.** In
       `components/ArenaBattle.tsx`: the clock digits at `:532` (`text-ink`) and the health
       number at `:605` (`text-brand-on`) take the arena ink; the clock label at `:529` and
       the enemy name at `:554` now sit on the declared background instead of on the page.
       ⛔ Do not change `--arena-gold` or `--arena-gold-light` — they are the arena's
       identity and D-130 § ג rules them out of scope.
 
-- [ ] **Step 3 — the card boundary.** In `components/SpellCard.tsx:67`, the **unselected**
+- [x] **Step 3 — the card boundary.** In `components/SpellCard.tsx:67`, the **unselected**
       border takes a value that measures **≥ 3:1 against the card fill AND ≥ 3:1 against
       the stage background**. ⛔ Do **not** re-tone `--arena-stone`: F-156 measured that it
       draws other borders in the arena, so re-toning it is a screen change. The **selected**
@@ -123,13 +123,13 @@ anchor, and ⓘⓘ is the route that patches around it).
       card fill `rgb(24,33,56)` against stage `#1c2642` = `rgb(28,38,66)` is **≈1.06:1**
       — ⛔ the fill cannot carry the boundary, so the border must.
 
-- [ ] **Step 4 — the token-scan test learns the new declarations.** Update
+- [x] **Step 4 — the token-scan test learns the new declarations.** Update
       `app/arcade/page.test.ts` so it asserts the arena background and ink pair are
       declared **in this file** and are **absent from `lib/core/palette.ts`**.
       ⛔ Do not delete the existing five-token assertion — extend it. ⛔ A deleted test
       with no replacement is what felled T-164.
 
-- [ ] **Step 5 — the gate that would have caught all four.** Add **block 2c** to
+- [x] **Step 5 — the gate that would have caught all four.** Add **block 2c** to
       `scripts/verify-mobile.mjs`, in the existing `check(...)` idiom and directly after
       block 2b (`:1820-1851`). For `/dev/arcade` at 375×780, **in both `colorScheme`
       values**, walk every text node inside `[data-arena-scope]`, resolve each node's
@@ -153,12 +153,12 @@ anchor, and ⓘⓘ is the route that patches around it).
       (D-134): C-0332 measured the *card*, got 15.61:1, and shipped a screen with three
       other failures still on it.
 
-- [ ] **Step 6 — mutation check, ⛔ not a green run.** In `app/arcade/arcade-tokens.css`
+- [x] **Step 6 — mutation check, ⛔ not a green run.** In `app/arcade/arcade-tokens.css`
       revert Step 1's `background` declaration alone, then run
       `node scripts/verify-mobile.mjs`. **It must fail by name on `הקוסם`.** Restore.
       ⛔ A gate that has never failed is a gate nobody has measured.
 
-- [ ] **Step 7 — `npm run verify`**, fresh, output into the tick report.
+- [x] **Step 7 — `npm run verify`**, fresh, output into the tick report.
 
 ## T-182 — the animation language, bisected: א1 + א2 only
 
@@ -260,3 +260,42 @@ buildable all along.
 - ⛔ **No character-selection screen** — T-217, blocked on a migration (`03-for-roy`).
 - ⛔ **No א4 follow-through** — T-216, blocked on T-215.
 - ⛔ **`--arena-stone` is not re-toned** and `--arena-gold*` is not recoloured.
+
+---
+
+## Execution log — T-214, C-0334 (DEV, 🔨 build tick)
+
+Steps 1–7 closed. ⛔ Two things the plan did not foresee, both **measured** and both
+written down instead of absorbed silently:
+
+1. **Declaring the background moved far more than the three named nodes.**
+   `render_video_B.py` draws the whole stage on the **dark**-scheme globals values
+   (`INK_MUTED` · `BRAND_SURFACE` · `BORDER_SUB`), so once the section became night-blue
+   in **both** schemes, every element still reading a `globals` token failed in the
+   **light** scheme: `מאנה` 1.97:1 · `0 / 10` 2.23:1 · the drag hint and the isolation
+   note 1.97:1 · the mana meter fill 1.90:1 against its own track · and the close icon
+   **1.27:1**. ⇒ Step 2 covers **every** arena text node and the two meters, ⛔ not the
+   three the table named. Leaving them would have shipped a NEW defect with the fix.
+2. **`bg-danger` under the health number.** `--danger` flips with the scheme
+   (`#b91c1c` / `#f87171`), so arena ink on it measured **2.70:1** in dark. The fill is
+   now the render's own value (`:474`), darkened by Layer A until arena ink clears
+   **5.02:1**, on the render's own track (`:471`). ⚠️ An ancestor walk would ⛔ never
+   have caught this — the fill is an absolutely-positioned **sibling** — which is why
+   block 2c resolves the background with `elementsFromPoint`.
+
+**Gate, proven by failing (⛔ twice, ⛔ not once):**
+- remove `background` alone ⇒ `"זמן קרב" is 2.1:1 · "1:30" is 1.02:1 · "הקוסם" is 1.35:1 · "מאנה" is 2.08:1 · "0 / 10" is 1.02:1 · …` — the two numbers C-0333 measured, reproduced **by name**.
+- remove the close-icon rule alone ⇒ `close is 1.19:1 (rgb(15, 23, 42) on rgb(28, 38, 66))`.
+
+**`npm run verify`:** typecheck ✅ · `/lib/core purity: OK` · **178 files / 2892 tests** ✅ ·
+build ✅ · **1188 mobile checks** ✅.
+
+**13 nodes, ⛔ not 14:** the walk finds 15 text nodes under `[data-arena-scope]`; two are
+`sr-only` at 1×1 and are ⛔ never painted. The gate skips them by area, and the count is
+reported in the check label so a future change to that number is visible.
+
+⚠️ **Two findings opened, ⛔ not absorbed:** `F-158` (the avatar's own backdrop is
+`--surface-raised` ⇒ **1.02:1** on the night blue in dark — it belongs to T-215, which
+rewrites that file) · `F-159` (block 2c measures **pressable** icons only, because a
+`background-color` probe cannot see an SVG `<rect>` fill and reported a legible figure as
+a failure).
