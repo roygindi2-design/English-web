@@ -70,3 +70,34 @@ describe('36 § 14.4 — גימור הרנדר מחייב, ⛔ ולא רק המ�
     expect(CODE).toMatch(/border-\[color:var\(--arena-gold\)\] text-\[color:var\(--arena-gold\)\]/);
   });
 });
+
+/**
+ * F-149ⓐ · `36 § 14.4` — **מילוי הקלף נלקח מהרנדר, והדיו ⛔ אינו יכול להילקח משם.**
+ *
+ * ⓐ **הרנדר:** `docs/design/render_video_B.py:265` ממלא `(24, 33, 56)` = `#182138`,
+ *   והרכיב מילא `--arena-stone-dark` = `#34323f` — ⛔ אפור־אבן מול כחול־ליל.
+ *
+ * ⚠️ **ו⛔ אי אפשר להחליף רק את המילוי:** `--ink` נקבע ב-`app/globals.css` לפי
+ *   `prefers-color-scheme`, ו-`[data-arena-scope]` ⛔ אינו דורס אותו. בסכימה **בהירה**
+ *   — שהיא ברירת המחדל של `:root` — `--ink` הוא `#0f172a`, ולכן תווית הקלף נמדדה
+ *   **1.42:1** על `#34323f` ו-**1.12:1** על מילוי הרנדר. ⇒ **שכבה א׳ גוברת** ו⛔ אינה
+ *   מרשה לסגור את הפער בלי דיו משלה. הדיו החדש נלקח **גם הוא מהרנדר**, ⛔ ולא נבחר:
+ *   `--arena-ink` = `render_video_B.py:277` `(255, 252, 246)` ⇒ **15.61:1**.
+ *   `--arena-ink-dim` = `:248` `ELEM_COL['unknown']` `(168, 176, 196)` ⇒ **7.36:1**.
+ */
+describe('F-149ⓐ · שכבה א׳ — המילוי מהרנדר, הדיו scoped לזירה', () => {
+  it('המילוי הוא `--arena-card`, ⛔ ולא `--arena-stone-dark`', () => {
+    expect(CODE).toContain('bg-[color:var(--arena-card)]');
+    expect(CODE).not.toContain('bg-[color:var(--arena-stone-dark)]');
+  });
+
+  it('⛔ הדיו המשותף ⛔ אינו יושב על משטח כהה של הזירה', () => {
+    expect(CODE).not.toMatch(/\btext-ink\b/);
+    expect(CODE).not.toMatch(/\btext-ink-muted\b/);
+  });
+
+  it('הדיו של הקלף הוא טוקן זירה — שני הערכים, ⛔ ולא אחד', () => {
+    expect(CODE).toContain('text-[color:var(--arena-ink)]');
+    expect(CODE).toContain('text-[color:var(--arena-ink-dim)]');
+  });
+});

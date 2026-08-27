@@ -59,7 +59,10 @@ export default function SpellCard({
         // ורצפת 44px של שכבה א׳ היא זו ששורדת אם הרנדר יקטן אי-פעם.
         'relative flex min-h-touch h-[100px] w-full flex-col items-center justify-center gap-1',
         'rounded-xl border-2 px-1 py-4 text-sm font-bold active:opacity-90',
-        'bg-[color:var(--arena-stone-dark)]',
+        // F-149ⓐ — המילוי הוא הרנדר עצמו: `render_video_B.py:265` ממלא `(24, 33, 56)`.
+        // ⛔ `--arena-stone-dark` (`#34323f`) היה אפור־אבן במקום כחול־ליל — פער גוון,
+        // ⛔ ולא ניואנס. ⚠️ הטוקן ⛔ אינו נכנס ל-`palette.ts` (אינווריאנט `37 § 13.5`).
+        'bg-[color:var(--arena-card)]',
         // ⛔ `text-*` נושא **גם** את `currentColor` של המעוין — ולכן צבע המסגרת וצבע
         // הסימן ⛔ אינם יכולים להיפרד. שני מקומות לצבע אחד סוטים בשלישי.
         selected
@@ -110,9 +113,19 @@ export default function SpellCard({
       >
         <polygon points="5,0 10,5 5,10 0,5" fill="currentColor" />
       </svg>
-      <span className="text-ink">{unknown ? '?' : label}</span>
+      {/* ⚠️ **שכבה א׳, ובמספר:** `--ink` מתחלף ב-`globals.css` לפי `prefers-color-scheme`
+          ו-`[data-arena-scope]` ⛔ אינו דורס אותו ⇒ בסכימה **בהירה** הוא `#0f172a`,
+          והתווית נמדדה **1.42:1** על המילוי הישן ו-**1.12:1** על מילוי הרנדר. ⛔ אי אפשר
+          היה להחליף מילוי בלבד. הדיו נלקח **גם הוא מהרנדר** (`:277` ⇒ 15.61:1), ⛔ ולא
+          נבחר, והוא scoped לזירה ⛔ ולא טוקן מוצר חדש. */}
+      <span className="text-[color:var(--arena-ink)]">{unknown ? '?' : label}</span>
       {/* ⛔ סימן לבדו הוא קידוד בערוץ אחד ומפר את שכבה א׳ א2 — התווית ⛔ אינה אופציונלית. */}
-      {unknown && <span className="text-xs font-normal text-ink-muted">{UNKNOWN_SPELL_HE}</span>}
+      {unknown && (
+        /* `:248` — `ELEM_COL['unknown']` = `(168, 176, 196)` ⇒ **7.36:1** על המילוי. */
+        <span className="text-xs font-normal text-[color:var(--arena-ink-dim)]">
+          {UNKNOWN_SPELL_HE}
+        </span>
+      )}
       {/* ⛔ הבחירה ⛔ אינה צבע בלבד (א2): `aria-pressed` למקריא־מסך, והשורה הזאת לעין. */}
       {selected && <span className="text-xs font-normal text-[color:var(--arena-gold-light)]">{SELECTED_HE}</span>}
     </button>
