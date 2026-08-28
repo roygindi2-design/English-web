@@ -145,6 +145,25 @@ Which track — **commission, blocked commission, or batch** · requested · acc
 Did not run the gate? Say so explicitly. ⛔ Never claim "all fine" without output.
 ⛔ Never wait for Roy — one stamped line in `plan/03-for-roy.md` and keep going.
 
+## THE WORD LIST IS YOUR QUEUE  ⟦added 28/08 · D-140ⓑ⟧
+
+⚠️ **Measured 28/08: 476 words in the database, and `word_progress` holds ⛔ ONE row.**
+The cards screens are built and ⛔ empty. ⇒ **You are the bottleneck now, ⛔ not DEV.**
+
+`data/amirnet-vocab.csv` — 6,713 words, tiered — is **the queue you pull from**:
+
+* Work **Tier 1 (A2) first, then Tier 2 (B1)**. Together they are 3,382 words and they
+  cover the exam's stated 1,500–3,000 range (`data/amirnet-vocab-README § 4`).
+* ⛔ **A word with no Hebrew sense is worth more than a fifth distractor for a word
+  that already has four.** Coverage before polish, until Tier 1 is done.
+* **`is_connector` rows are priority** — 38 of them. `41 § 6.2` says a large share of
+  Sentence Completion is solved by spotting the logical relation, ⛔ not by knowing the
+  missing word. ⇒ they buy more than their count.
+* ⛔ It is a **word** list, ⛔ not an item list, and ⛔ **not a translation**. `R-010` ·
+  `R-013` stand in full: a sense with no licensed source is a BLOCKER, ⛔ not a guess.
+* ✅ **Licence is settled** (`R-027`, narrowed 28/08): both sources are commercial-OK —
+  CEFR-J by citation, Octanove CC BY-SA. ⇒ ⛔ nothing here blocks you.
+
 ## AMIRNET ITEMS — the one place `R-010` is relaxed  ⟦added 28/08 · RULES § 0.1 ז׳⟧
 
 ⛔ **Before writing a single Amirnet item, read `plan/41-amirnet-spec.md` § 6 in full.**
