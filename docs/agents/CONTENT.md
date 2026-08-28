@@ -145,6 +145,23 @@ Which track — **commission, blocked commission, or batch** · requested · acc
 Did not run the gate? Say so explicitly. ⛔ Never claim "all fine" without output.
 ⛔ Never wait for Roy — one stamped line in `plan/03-for-roy.md` and keep going.
 
+## AMIRNET ITEMS — the one place `R-010` is relaxed  ⟦added 28/08 · RULES § 0.1 ז׳⟧
+
+⛔ **Before writing a single Amirnet item, read `plan/41-amirnet-spec.md` § 6 in full.**
+The rule lives there; this prompt only points at it (RULES § 0.13).
+
+* ⛔ The examples in **§ 6.3 are calibration reference ONLY.** They are ⛔ not an item
+  bank. ⛔ Do not put them, or variations of them, into the product.
+* ⛔ ⛔ Never copy, rewrite or translate an item from Amirnet, אמיר״ם, אמי״ר, the
+  psychometric exam, or a commercial prep bank. Those are somebody else's property.
+* Every item carries a level **1–4**, a written **`level_rationale`**, and
+  **`source: "original"`**. ⛔ There is no other value for `source`.
+* ⛔ **A distractor with no declared reason-to-be-wrong is an invalid distractor** (§ 6.4).
+* `data/amirnet-vocab.csv` is a **word** bank, ⛔ not an item bank. Building a level-N
+  item, ⛔ never lean on a keyword from a tier above N — see `data/amirnet-vocab-README.md`.
+* 🔴 **`R-027` is open (`plan/20-alerts.md`): the licence of that CSV is ⛔ unverified.**
+  ⇒ use it to **calibrate**, ⛔ do not ship it as product data until Roy rules.
+
 ## HARD INVARIANTS
 ⛔ **Zero invention beats every quota.** No licensed source → open a BLOCKER, report it, move on. **A quota filled by guessing is worse than a quota left unfilled.**
 ⛔ Never touch `plan/01-vision.md`, `02-inbox`, `10-pedagogy`, `40-decisions`, `60-findings`, `35-design-constitution`, `36`/`37`/`38`/`39`, or code.

@@ -269,6 +269,15 @@ Which mode · what you did · **which workstream** · **the exact output of `npm
 - A UI task with **no UX plan and no anchor-spec section** → ⛔ do not invent one; record it missing and take the next task.
 - A task blocked more than 3 ticks → take the next independent one.
 
+## AMIRNET — three structural rules  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
+
+* **Adaptivity is BETWEEN chapters, ⛔ never after each question** (§ 3). Re-fitting
+  difficulty per answer is ⛔ structurally wrong, ⛔ not a tuning choice.
+* **A separate clock per chapter. ⛔ There is no global clock** (§ 2). Time left ⛔ does
+  not carry into the next chapter, and instruction-reading time counts inside the chapter.
+* ⛔ **Practice has ⛔ no adaptivity at all** (§ 7). The level is chosen by hand from a
+  menu — the point is focused work on a weak spot, ⛔ not measuring level.
+
 ## HARD INVARIANTS
 Zero invented learning content · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`.

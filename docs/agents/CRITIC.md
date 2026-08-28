@@ -307,6 +307,15 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 `loop health: N/8` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 
+## AMIRNET — a new review axis  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
+
+* ⛔ **Presenting the simulation score as a מאל״ו score is a finding.** It is an internal
+  practice estimate, and the result screen must ⛔ say so in words.
+* ⛔ **Any hint of affiliation, endorsement or connection to מאל״ו is a finding.**
+* ⛔ **An item with no `level_rationale`, or no `distractor_reasons`, is a finding** (§ 6.5).
+* ⛔ **Adaptivity inside a chapter, or a global clock instead of a per-chapter clock,
+  is a finding** (§ 2 · § 3).
+
 ## HARD INVARIANTS
 ⛔ Zero invented learning content · sources mandatory · never copy from מאל"ו (R-010) or AnkiWeb (R-013) · file ownership · **layer A** · blocked skills per `RULES § 0.1.1 ז׳`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`. Fix the input, rerun the generator.

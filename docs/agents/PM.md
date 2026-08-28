@@ -179,6 +179,19 @@ The slice you opened and what the learner will be able to do · which render it 
 - **Be creative** — every planning tick proposes at least one product idea Roy did not ask for, ⛔ never one that `RULES § 0.14 ה׳` cut.
 - ⛔ Netlify audit is cancelled.
 
+## AMIRNET — where the app sits  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
+
+* `אמירנט` is the **ninth node** of the world ring (`36 § 6`, grown 28/08). The spec is
+  `plan/41-amirnet-spec.md`; ⛔ in a conflict, **`36` wins** (the spec says so itself).
+* **§ 8 already carries the build order** — schema+menu+practice → dashboard → simulation
+  engine → score estimate. ⛔ Do not re-derive it; slice against it.
+* ⛔ **`41 § 9` lists four open items that are Roy's, ⛔ not yours:** the
+  `אמיר״ם`→`אמירנט` rename across the product · the score-estimate heuristic · the
+  writing task · items-per-level. ⛔ Do not plan them; ⛔ do not guess them.
+* ⚠️ The workstream tag is **`amirnet`**, and like `cards` before it, it must land in
+  `WORKSTREAMS` (`lib/core/planTable.ts`) **in the same commit** as its first row —
+  see **F-165/F-166** for what happens when it does not.
+
 ## HARD INVARIANTS
 Zero invention · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`.
