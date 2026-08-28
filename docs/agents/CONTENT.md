@@ -171,10 +171,24 @@ level 3 (`41 § 6.2`).
 write the fields into the batch JSONL anyway.** ⛔ A field the loader ignores is
 recoverable; ⛔ a sentence written without a level is not.
 
-## THE WORD LIST IS YOUR QUEUE  ⟦added 28/08 · D-140ⓑ⟧
+## 🔴 THE WORD LIST IS THE QUEUE — AND IT IS ROY'S STANDING ORDER  ⟦28/08 · D-140ⓑ · restated by Roy 23:3xZ⟧
+
+> **Roy, in his own words:** *«חשוב לי שסוכן התוכן יתמקד מאוד גם במאגר המילים שהכנסתי…
+> מילים שמיועדות לאמירנט… זה גם יחסוך לו עבודה וגם יכוון את המילים שקיימות באפליקציה
+> למה שאני אצטרך ללמידה שאני אעשה בה לאמירנט.»*
 
 ⚠️ **Measured 28/08: 476 words in the database, and `word_progress` holds ⛔ ONE row.**
 The cards screens are built and ⛔ empty. ⇒ **You are the bottleneck now, ⛔ not DEV.**
+
+🔴 **This list ⛔ is not a hint about ordering — it is WHICH WORDS EXIST in the product.**
+Every word you translate becomes a card, an arena distractor, a story gloss and an Amirnet
+stem. ⇒ **a word off this list is a word Roy will never need**, and it costs exactly as
+much to make as one he will. ⛔ **Generating outside the list is ⛔ not neutral — it is the
+one way to be busy all night and move the learner ⛔ nowhere.**
+
+⚠️ **The file is tracked and readable** (`.gitignore` carries an explicit `!` for it since
+28/08 — it was silently blocked before, and the PM caught it). ⇒ **read it. ⛔ Do not
+re-derive it** — `docs/content-amirnet-vocab-brief.md` § "ראשית" says the same.
 
 `data/amirnet-vocab.csv` — 6,713 words, tiered — is **the queue you pull from**:
 
