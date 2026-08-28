@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: CRITIC                    # ▶️ **C-0347 (DEV): 🔨 בנייה — `T-153` ⇒ 🟣. המסיחים מתויגים (2 סמנטי + 1 צורני), מילוי **לפי משבצת**, ⛔ אפס מיגרציה. `verify` **3,010 ✅**.** ‏F-164/F-163 על PM.
+NEXT_AGENT: CRITIC                 # 🛑 **הלופ עצור (28/08, רוי).** נקודת החזרה: **QA** — 24 קומיטים ממתינים ל-`dev`, `T-153` 🟣, ו-`arena` נותרה עם **⬜=1** (‏T-220) ⇒ הזזת מוקד קרובה. ⚠️ שתי אזהרות: בדיקה 9 על הקצה (12KB), ו-`dev` **192 לפני `main`** — ⛔ לא קודם מאז 23/08.
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-220             # ▶️ **C-0347: `T-153` ⇒ 🟣.** ⚠️ ב-`arena` נותרה **⬜ אחת — `T-220`**, וחצייה הפתוח (ⓐ·ⓓ) ⛔ חסום ב-**F-164** על ה-PM ⇒ ⛔ אינו בר-בנייה. `T-218` ⛔ חסומה עד ש-`T-153` נוחתת על `dev`. ⇒ ⚠️ **הזרימה קרובה לריקה; F-164 פותחת.**
@@ -20,7 +20,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא ואינו בלם עוד**. נשמר להיסטוריה. הבלם החי הוא WORKSTREAM_TICKS.
 RELEASE_READY: ""              # ה-Critic כותב כאן <sha> · <תאריך> · <N קומיטים> · <מה הלומד מקבל>. ⛔ הוא אינו דוחף ל-main — המיזוג הוא פעולה של רוי (RULES § 0.1.1 ב׳, שוכתב 23/08).
-PAUSED_BY_HUMAN: false           # ▶️ **שוחרר 23/08 בהוראת רוי — הרצה ידנית מבוקרת.** ⚠️ שלוש המשימות המתוזמנות (DEV · PM · CRITIC) עדיין **כבויות**; רק הפעלה ידנית תרוץ. CONTENT דלוקה ותרוץ ב-04:02Z.
+PAUSED_BY_HUMAN: true            # 🛑 ▶️ **נעצר 28/08 בהוראת רוי. ארבע המשימות המתוזמנות (DEV · PM · CRITIC · CONTENT) **כבויות** בצד קלוד.** החזרה: להדליק אותן שוב, ולהעמיד `false` כאן. ⛔ מצב העצירה מתועד ב-`plan/00-control.md` בלבד — ⛔ אין סוכן שרץ.
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
 LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
@@ -40,7 +40,7 @@ LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # ⚠️ **Promoted BY ROY, by hand, v
 PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
-> 🧑‍⚖️ שתי ביקורות ידניות של רוי — הפירוט ב-`plan/OPERATOR-LOG.md`. **פתוחים:** **F-082 🟡 (ⓐ נסגר C-0214 — `check:mobile` 6→3 · ⓑ = T-131 → DEV · ⛔ לא חוסם)** · **F-081 ⚪ (C-0204 → DEV מצבור · ⛔ לא חוסם)** · F-079 🟠 (C-0201 → PM · נעילה. ✅ **המזהה הכפול אוחד C-0220 (T-128): השני הוא `F-085`**) · **F-080 🟡 (C-0203 → PM)** · F-078 🟡 (C-0201 → PM) · F-073 🟡 (C-0193 → PM) · F-072 🟡 (C-0189 → PM) · F-012 🟠 · F-019 🟠 · F-028 🟠 · F-029 🟡 · F-008 🟡 · R-010. שנסגרו — `plan/archive/control-log.md` (C-0177).
+> 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
 > ✅ **חסימת הקידום שוחררה ב-C-0092** (`main` אוחה ל-`dev`, `db71f27`) — הפירוט ב-`plan/archive/control-log.md` (C-0177). ⛔ **בתוקף: אין לערוך את `main` דרך עורך GitHub** (פריט 17).
 > ⚡ סקילים של superpowers פעילים (`RULES.md` § 0.6). החוק הקשה: אין טענת הצלחה בלי ריצה טרייה.
 > **תזמון:** Dev כל שעה ב-:30 · PM יומי 08:00 · Critic יומי 20:00. `NEXT_AGENT` הוא איתות
