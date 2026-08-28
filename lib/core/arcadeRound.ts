@@ -10,6 +10,7 @@
  * מהנתיב.
  */
 import { ARCADE_AMMO, ARCADE_MIN_WORDS_PER_LEVEL, gameLevelAt } from './arcadeLadder';
+import { pickWrongOptions, type TaggedHeDistractor } from './arcadeDistractors';
 import type { CefrBand } from './cefrLevels';
 // ⛔ העותקים הפרטיים של mulberry32/shuffle יצאו ל-`./shuffle` ב-C-0321, מילה במילה.
 // ⛔ אין כאן שינוי התנהגות: `shuffle.test.ts` מחזיק את התמורות שנמדדו לפני ההעברה.
@@ -35,6 +36,15 @@ export interface ArcadeCandidate {
    * ב-`buildRound`, ו-`arcadeRound.test.ts` סורק את המקור ונופל בשם אם יחזור.
    */
   readonly distractorsEn: readonly string[];
+  /**
+   * 🔴 T-153 · D-138 § ב׳ — **עברית, מתויגת, ו⛔ אינה תוכן חדש.** הערך הוא
+   * `translation_he` של מילה **אחרת שכבר במאגר**, שהנתיב פתר מ-`sense_distractors`
+   * (‏`distractor → words.headword → senses.translation_he`).
+   * ⛔ הוא ⛔ לעולם ⛔ אינו נוסע דרך `distractorsEn`: שדה נפרד ומפורש הוא מה ששומר על
+   * המשמעות של שומר-המקור למטה, ומה שמונע את החזרה של D-087 בערוץ אחר.
+   * בריכה בלי תמהיל ⇒ נפילה למנגנון של T-152, ⛔ מוצהרת ו⛔ לא שקטה.
+   */
+  readonly taggedHe: readonly TaggedHeDistractor[];
 }
 
 export interface ArcadeQuestion {
@@ -143,7 +153,14 @@ export function buildRound(input: {
   for (const c of picked) {
     const answer = c.translationHe.trim();
     // ⛔ המסיח ⛔ אינו זהה לתשובה (ⓑ), והרשימה כבר ייחודית ⇒ ⛔ אינו חוזר פעמיים.
-    const wrong = shuffle(translations.filter((t) => t !== answer), rnd).slice(0, ARCADE_OPTION_COUNT - 1);
+    // T-153 · D-138 § ג׳ — התמהיל קודם, המילוי מהרמה משלים לפי משבצת (T-152).
+    const wrong = pickWrongOptions({
+      answer,
+      tagged: c.taggedHe,
+      levelTranslations: translations,
+      count: ARCADE_OPTION_COUNT - 1,
+      rnd,
+    });
     // ⓒ ⛔ **אין נפילה חזרה לאנגלית.** אין ברמה מספיק תרגומים שונים ⇒ השאלה יורדת
     // מהסיבוב, והסיבוב החסר מדווח `level_too_small` — בדיוק כמו רמה קטנה מדי.
     if (wrong.length < ARCADE_OPTION_COUNT - 1) continue;

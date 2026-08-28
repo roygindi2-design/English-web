@@ -8,6 +8,7 @@ import {
   eligibleCandidates,
   type ArcadeCandidate,
 } from './arcadeRound';
+import type { TaggedHeDistractor } from './arcadeDistractors';
 import type { CefrBand } from './cefrLevels';
 
 /**
@@ -25,6 +26,7 @@ function candidate(i: number, over: Partial<ArcadeCandidate> = {}): ArcadeCandid
     ngslRank: 100 + i,
     translationHe: `תרגום-${i}`,
     distractorsEn: ['rest', 'play', 'window'],
+    taggedHe: [],
     ...over,
   };
 }
@@ -249,6 +251,7 @@ const mixCand = (n: number): ArcadeCandidate => ({
   ngslRank: n,
   translationHe: `ת${n}`,
   distractorsEn: [],
+  taggedHe: [],
 });
 const MIX_POOL = Array.from({ length: 40 }, (_, i) => mixCand(i));
 
@@ -276,6 +279,57 @@ describe('37 § 2 — כל שאלה נושאת את סוג המילה', () => {
       if (known.has(q.wordId)) expect(q.kind).toBe('known');
       else if (touched.has(q.wordId)) expect(q.kind).toBe('base');
       else expect(q.kind).toBe('unfiltered');
+    }
+  });
+});
+
+describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויות', () => {
+  const MIX: TaggedHeDistractor[] = [
+    { he: 'תרגום-1', relation: 'semantic' },
+    { he: 'תרגום-2', relation: 'semantic' },
+    { he: 'תרגום-3', relation: 'orthographic' },
+    { he: 'תרגום-4', relation: 'near_synonym' },
+  ];
+
+  it('מועמד עם תמהיל מלא ⇒ שלוש השגויות שלו הן בדיוק המתויגות', () => {
+    const pool = makeCandidates('A2', 20).map((c, i) =>
+      i === 0 ? { ...c, taggedHe: MIX } : c);
+    const round = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 21 });
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    const q = round.questions.find((x) => x.wordId === 'w-00');
+    expect(q).toBeDefined();
+    if (q === undefined) return;
+    const wrong = q.options.filter((o) => o !== q.answer);
+    expect(new Set(wrong)).toEqual(new Set(['תרגום-1', 'תרגום-2', 'תרגום-3']));
+  });
+
+  it('⛔ `near_synonym` ⛔ אינו מגיע לאפשרויות גם דרך הסיבוב', () => {
+    const pool = makeCandidates('A2', 20).map((c, i) =>
+      i === 0 ? { ...c, taggedHe: MIX } : c);
+    const round = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 21 });
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    const q = round.questions.find((x) => x.wordId === 'w-00');
+    expect(q?.options).not.toContain('תרגום-4');
+  });
+
+  it('⛔ אפס רגרסיה: בריכה בלי תמהיל כלל מחזירה סיבוב מלא כמו היום (ⓗ)', () => {
+    const pool = makeCandidates('A2', 20);
+    const round = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 21 });
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    expect(round.questions).toHaveLength(ARCADE_ROUND_SIZE);
+  });
+
+  it('⛔ המתויג ⛔ אינו עוקף את «רק עברית» — האנגלית נשארת מחוץ לאפשרויות', () => {
+    const pool = makeCandidates('A2', 20).map((c, i) =>
+      i === 0 ? { ...c, taggedHe: MIX } : c);
+    const round = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 21 });
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+    for (const q of round.questions) {
+      for (const opt of q.options) expect(opt).not.toMatch(LATIN);
     }
   });
 });
