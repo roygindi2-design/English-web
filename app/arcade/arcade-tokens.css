@@ -307,3 +307,16 @@
     animation: none;
   }
 }
+
+
+/* ═══ T-181 · `37 § 12` — **נשימת ה-idle של מסך הבית.**
+   ⛔ **שני המספרים נגרפו מ-`docs/design/render_video_B.py:134`, ⛔ ולא נבחרו:**
+   ‏`bob = math.sin(t * 1.5) * 2.2` ⇒ המשרעת היא **±2.2px**, והמחזור הוא `2π / 1.5`
+   = **4.1888s**, שנכתב `4.19s` ברכיב. ⛔ אין כאן hex ו⛔ לא יהיה: `app/arcade/page.test.ts`
+   סורק את הקובץ הזה **גולמי** וכל hex בו נספר כטוקן זירה.
+   ⛔ **והעצירה תחת `prefers-reduced-motion` ⛔ אינה כאן** — היא `motion-reduce:animate-none`
+   על הרכיב עצמו, שהוא ה**היעדר** של האנימציה ⛔ ולא האצה שלה (שכבה א׳ א7). */
+@keyframes arena-idle-bob {
+  0%, 100% { transform: translateY(-2.2px); }
+  50% { transform: translateY(2.2px); }
+}
