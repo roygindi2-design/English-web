@@ -1,6 +1,6 @@
 # Tagged Hebrew Distractors in the Arena — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make the three wrong answers in an arena round *semantically chosen* instead of
 *random same-level Hebrew* — two words close in meaning plus one that is the meaning of a
@@ -139,7 +139,7 @@ const RESOLVE_CHUNK = 150;
 - Produces: `DistractorRelation`, `TaggedHeDistractor`, `SEMANTIC_SLOTS`, `ORTHOGRAPHIC_SLOTS`,
   `pickWrongOptions` — exactly as written in the `## Interfaces` block above.
 
-- [ ] **Step 1: Re-measure, so the plan's numbers are yours and not inherited**
+- [x] **Step 1: Re-measure, so the plan's numbers are yours and not inherited**
 
 ```bash
 cat data/generated/batch-*.jsonl | python3 -c "
@@ -160,7 +160,7 @@ print('full mix', full, '/', len(rows), '· at least one', part, '/', len(rows))
 Expected on `work/current` at the time of writing: `full mix 216 / 787 · at least one 704 / 787`.
 A materially different pair is ⛔ not a reason to stop — it is a line in your tick summary.
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `lib/core/arcadeDistractors.test.ts`:
 
@@ -275,13 +275,13 @@ describe('D-023 — התמהיל, ⛔ ולא הגרלה מהרמה', () => {
 });
 ```
 
-- [ ] **Step 3: Run it and confirm it is red for the right reason**
+- [x] **Step 3: Run it and confirm it is red for the right reason**
 
 Run: `npx vitest run lib/core/arcadeDistractors.test.ts`
 Expected: FAIL — `Failed to resolve import "./arcadeDistractors"`. ⛔ A failure with any other
 message means the test file itself is wrong; fix that before writing implementation.
 
-- [ ] **Step 4: Write the minimal implementation**
+- [x] **Step 4: Write the minimal implementation**
 
 Create `lib/core/arcadeDistractors.ts`:
 
@@ -371,18 +371,18 @@ export function pickWrongOptions(input: {
 }
 ```
 
-- [ ] **Step 5: Run the test and confirm green**
+- [x] **Step 5: Run the test and confirm green**
 
 Run: `npx vitest run lib/core/arcadeDistractors.test.ts`
 Expected: PASS — 9 tests.
 
-- [ ] **Step 6: Prove the file is pure and typed**
+- [x] **Step 6: Prove the file is pure and typed**
 
 Run: `npm run check:core && npm run typecheck`
 Expected: both exit 0. ⛔ `check:core` failing here means an impure import slipped in — fix it
 in this task, ⛔ do not carry it forward.
 
-- [ ] **Step 7: Commit — one commit for this task, ⛔ not for the tick**
+- [x] **Step 7: Commit — one commit for this task, ⛔ not for the tick**
 
 ```bash
 ./scripts/g add lib/core/arcadeDistractors.ts lib/core/arcadeDistractors.test.ts
@@ -403,7 +403,7 @@ in this task, ⛔ do not carry it forward.
 - Produces: `ArcadeCandidate.taggedHe: readonly TaggedHeDistractor[]` — required, ⛔ not
   optional, so that Task 3 cannot forget to fill it and `tsc` says so.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 In `lib/core/arcadeRound.test.ts`, extend the fixture and append a `describe`. Change the
 `candidate()` helper to add the field (keep every existing line of it):
@@ -474,13 +474,13 @@ describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויו
 });
 ```
 
-- [ ] **Step 2: Run it and confirm red**
+- [x] **Step 2: Run it and confirm red**
 
 Run: `npx vitest run lib/core/arcadeRound.test.ts`
 Expected: FAIL — a type error on `taggedHe` (the field does not exist yet) and the first two
 assertions failing because the wrong options are still random level translations.
 
-- [ ] **Step 3: Add the field to `ArcadeCandidate`**
+- [x] **Step 3: Add the field to `ArcadeCandidate`**
 
 In `lib/core/arcadeRound.ts`, import the type and add the field **after** `distractorsEn`,
 keeping `distractorsEn` and its comment exactly as they are:
@@ -501,7 +501,7 @@ import type { TaggedHeDistractor } from './arcadeDistractors';
   readonly taggedHe: readonly TaggedHeDistractor[];
 ```
 
-- [ ] **Step 4: Delegate the wrong-option line**
+- [x] **Step 4: Delegate the wrong-option line**
 
 In `lib/core/arcadeRound.ts`, add to the existing import from `./arcadeDistractors`:
 
@@ -525,14 +525,14 @@ and replace the single `const wrong = …` line inside `buildRound`'s loop with:
 ⛔ Leave the `if (wrong.length < ARCADE_OPTION_COUNT - 1) continue;` line and its comment
 exactly as they are — that is ⓒ, «⛔ אין נפילה חזרה לאנגלית», and it still holds.
 
-- [ ] **Step 5: Run the whole core suite and confirm green**
+- [x] **Step 5: Run the whole core suite and confirm green**
 
 Run: `npx vitest run lib/core/`
 Expected: PASS. ⛔ The source-scan guard «`buildRound` ⛔ אינו קורא את מסיחי המילה בכלל»
 must still pass **unmodified** — if you had to touch it, the value travelled through the
 wrong field and the design is wrong, ⛔ not the test.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 ./scripts/g add lib/core/arcadeRound.ts lib/core/arcadeRound.test.ts
@@ -553,7 +553,7 @@ wrong field and the design is wrong, ⛔ not the test.
 - Produces: nothing new to other tasks. ⛔ **The HTTP response shape does not change** —
   `questions[].options` are still four Hebrew strings; only *which* strings changed.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `app/api/arcade/round/route.test.ts`:
 
@@ -601,13 +601,13 @@ describe('T-153 · D-138 § א׳ — הפתירה היא צירוף, ⛔ לא ע
 });
 ```
 
-- [ ] **Step 2: Run it and confirm red**
+- [x] **Step 2: Run it and confirm red**
 
 Run: `npx vitest run app/api/arcade/round/route.test.ts`
 Expected: FAIL on `relation_type`, `MAX_RESOLVE_HEADWORDS`, `taggedHe` and the contract
 assertion — five or more failures, all for missing content.
 
-- [ ] **Step 3: Widen the select and add the resolve constants**
+- [x] **Step 3: Widen the select and add the resolve constants**
 
 In `app/api/arcade/round/route.ts`, change `ROUND_SELECT`'s last line and add the constants
 beneath it:
@@ -633,7 +633,7 @@ const RESOLVE_CHUNK = 150;
 const RESOLVED_RELATIONS = new Set(['semantic', 'orthographic']);
 ```
 
-- [ ] **Step 4: Resolve, then build the candidates**
+- [x] **Step 4: Resolve, then build the candidates**
 
 In `app/api/arcade/round/route.ts`, replace the `const candidates: ArcadeCandidate[] = …map(…)`
 block with the following (the `sense` / `distractorsEn` lines are unchanged in meaning):
@@ -714,7 +714,7 @@ and add the type import at the top of the file:
 import type { TaggedHeDistractor } from '@/lib/core/arcadeDistractors';
 ```
 
-- [ ] **Step 5: Update `docs/api-contract.md` in this same commit**
+- [x] **Step 5: Update `docs/api-contract.md` in this same commit**
 
 In `docs/api-contract.md`, inside `## GET /api/arcade/round`, replace the stale sentence
 «⚠️ הנתיב עדיין קורא `sense_distractors!inner` …» (it is wrong since T-212 removed `!inner`,
@@ -737,26 +737,26 @@ and F-146 it points at is closed) with:
 ארבע מחרוזות עבריות, ⛔ בלי כפילות, והנכונה ביניהן.
 ```
 
-- [ ] **Step 6: Run the route tests and confirm green**
+- [x] **Step 6: Run the route tests and confirm green**
 
 Run: `npx vitest run app/api/arcade/round/route.test.ts lib/core/`
 Expected: PASS.
 
-- [ ] **Step 7: Commit the route and the contract together**
+- [x] **Step 7: Commit the route and the contract together**
 
 ```bash
 ./scripts/g add app/api/arcade/round/route.ts app/api/arcade/round/route.test.ts docs/api-contract.md
 ./scripts/g commit -m "loop(DEV): C-XXXX T-153 the route resolves distractor headwords to Hebrew; contract in the same commit"
 ```
 
-- [ ] **Step 8: The full gate — ⛔ the only thing that lets you claim it passes**
+- [x] **Step 8: The full gate — ⛔ the only thing that lets you claim it passes**
 
 Run: `npm run verify`
 Expected: all five commands green (`typecheck` · `check:core` · `test` · `build` ·
 `check:mobile`). ⛔ Red and unfixable in this tick ⇒ `./scripts/g revert`, a debt entry in
 `plan/30-architecture.md`, ⛔ and nothing is pushed.
 
-- [ ] **Step 9: Close the row and push**
+- [x] **Step 9: Close the row and push**
 
 Set `T-153` to **🟣** with your cycle id in `plan/50-tasks.md` (⛔ do not touch its
 `אבן דרך` cell), regenerate the index with `npm run measure:plan`, and commit
