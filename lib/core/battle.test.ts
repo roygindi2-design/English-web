@@ -16,6 +16,7 @@ import {
   startBattle,
   telegraphAt,
   tick,
+  UNFILTERED_BONUS_DAMAGE,
 } from './battle';
 
 /**
@@ -186,5 +187,64 @@ describe('37 § 6 — הגלגול: חסינות למכה **המוכרזת**, �
   it('⛔ הגלגול ⛔ אינו עוצר את השעון — `outcomeAt` על אותו זמן ⛔ אינו משתנה', () => {
     const s = startBattle(words, 12, 20);
     expect(outcomeAt(dodge(s, 2_000 + ANNOUNCE_AT_MS), 50_000)).toBe(outcomeAt(s, 50_000));
+  });
+});
+
+/**
+ * 🔴 T-220 ⓑ · ⓒ — `37 § 2`, מילה במילה: «מילה לא מסוננת … **צדקת — נזק מוגבר** ·
+ * **טעית — הלחש חוזר אליך**». ⛔ עד 28/08 `cast` ⛔ לא החזיק ולו ענף אחד על סוג המילה.
+ */
+const unfW = (id: string, kind: ArenaWord['kind']): ArenaWord => ({
+  wordId: id,
+  headword: id,
+  translationHe: `ת-${id}`,
+  kind,
+});
+
+describe('37 § 2 — «צדקת: נזק מוגבר · טעית: הלחש חוזר אליך»', () => {
+  it('מילה `unfiltered` נכונה ⇒ נזק גדול ב-UNFILTERED_BONUS_DAMAGE ממילה `base` נכונה', () => {
+    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'ת-a', 5_000);
+    const unf = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'ת-a', 5_000);
+    expect(20 - unf.enemyHp).toBe((20 - base.enemyHp) + UNFILTERED_BONUS_DAMAGE);
+  });
+
+  it('⛔ הבונוס ⛔ אינו חל על `known` ו⛔ לא על `base`', () => {
+    const known = cast(startBattle([unfW('a', 'known')], 3, 20), 'ת-a', 5_000);
+    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'ת-a', 5_000);
+    expect(known.enemyHp).toBe(base.enemyHp);
+  });
+
+  it('`unfiltered` שגויה ⇒ המילה חוזרת לסוף התור **באותו קרב**', () => {
+    const s = cast(
+      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')], 3, 20),
+      'לא נכון',
+      5_000,
+    );
+    expect(s.words.map((x) => x.wordId)).toEqual(['a', 'b', 'a']);
+    expect(s.index).toBe(1);
+  });
+
+  it('⛔ אין עונש כפול: `unfiltered` שגויה גורעת חיים **בדיוק** כמו כל שגיאה אחרת', () => {
+    const unf = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'לא נכון', 5_000);
+    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'לא נכון', 5_000);
+    expect(unf.pendingPenalty).toBe(base.pendingPenalty);
+    expect(unf.learnerHp).toBe(base.learnerHp);
+  });
+
+  it('⛔ מילה חוזרת **פעם אחת בלבד** — שגיאה שנייה עליה ⛔ אינה מאריכה את התור לנצח', () => {
+    const first = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'לא נכון', 5_000);
+    const second = cast(first, 'לא נכון', 9_000);
+    expect(second.words.map((x) => x.wordId)).toEqual(['a', 'a']);
+  });
+
+  it('⛔ `casts[i]` עדיין תואם ל-`words[i]` אחרי חזרה', () => {
+    const s = cast(
+      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')], 3, 20),
+      'לא נכון',
+      5_000,
+    );
+    const t = cast(s, 'ת-b', 6_000);
+    expect(t.casts.map((c) => c.wordId)).toEqual(['a', 'b']);
+    expect(t.words.slice(0, 2).map((x) => x.wordId)).toEqual(['a', 'b']);
   });
 });

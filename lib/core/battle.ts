@@ -44,6 +44,12 @@ const HIT_DAMAGE = 1;
 const CRITICAL_DAMAGE = 2;
 
 /**
+ * `37 § 2` — «מילה לא מסוננת … צדקת — **נזק מוגבר**». ⛔ תוספת ⛔ ולא מכפיל: מכפיל היה
+ * הופך קריטי על מילה לא מסוננת ל-4, כלומר 40% מחיי היריב בהטלה אחת.
+ */
+export const UNFILTERED_BONUS_DAMAGE = 1;
+
+/**
  * ⛔ **ארבעה מוצאים, ⛔ ולא שלושה** (D-126 § ד׳). ההערה ב-`arcadeBattle.ts:24` («⛔ שני
  * מוצאים … «הפסד» אינו מצב») **בוטלה**: `37 § 3` קובע «בתום השעון מנצח אחוז החיים
  * הגבוה» ⇒ הפסד **הוא** מצב.
@@ -146,10 +152,20 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
   const responseMs = Math.max(0, elapsedMs - state.shownAtMs);
   const correct = chosen === word.translationHe;
   const critical = correct && responseMs < CRITICAL_MS;
-  const damage = correct ? (critical ? CRITICAL_DAMAGE : HIT_DAMAGE) : 0;
+  const bonus = correct && word.kind === 'unfiltered' ? UNFILTERED_BONUS_DAMAGE : 0;
+  const damage = correct ? (critical ? CRITICAL_DAMAGE : HIT_DAMAGE) + bonus : 0;
+
+  // `§ 2` — «טעית — הלחש חוזר אליך». ⛔ **פעם אחת בלבד**: המילה החוזרת נכנסת כ-`base`,
+  // ולכן שגיאה שנייה עליה ⛔ אינה מחזירה אותה שוב ו⛔ אין לולאה שאינה נגמרת.
+  // ⛔ **ואין עונש נוסף** — `pendingPenalty` זהה לכל שגיאה אחרת (שורת המשימה, ⓒ).
+  // ⛔ האינווריאנט `casts[i] ↔ words[i]` נשמר: `cast` תמיד קורא `words[index]` ותמיד
+  // מקדם את `index` ב-1, ⇒ הוספה **בזנב** ⛔ אינה יכולה להזיז משבצת שכבר נוצקה.
+  const requeue = !correct && word.kind === 'unfiltered';
+  const words = requeue ? [...state.words, { ...word, kind: 'base' as const }] : state.words;
 
   return {
     ...state,
+    words,
     index: state.index + 1,
     // ⛔ `Math.max(0, …)` — חיים שליליים הם מצב שאין לו ציור.
     enemyHp: Math.max(0, state.enemyHp - damage),
