@@ -1183,6 +1183,34 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 
 **503 — כל כשל אחר:** `{ "ok": false, "code": "unavailable" }`
 
+## GET /api/arcade/home
+
+**מצב מסך הבית של הזירה — קריאה בלבד** (T-181 · `37 § 12`). דורש סשן חי; סדר
+השומרים הוא ENV ⇒ סשן ⇒ שאילתה (דפוס C-0032). ⛔ אין פרמטרים.
+
+⛔ **הנתיב אינו כותב דבר** — אין בו `.insert(` · `.update(` · `.upsert(` · `.delete(`,
+ו⛔ הוא אינו נוגע במנוע החזרות (`37 § 13.1`) ו⛔ אינו קורא את טבלת הפרופיל (D-052).
+הטבלה היחידה שהוא קורא היא `arcade_progress`, ובדיוק בשלוש עמודות.
+
+**200:**
+
+```json
+{ "ok": true, "arcadeLevel": 7, "wins": 3, "unlockedItems": ["helmet"] }
+```
+
+| השדה | ההגדרה |
+|---|---|
+| `arcadeLevel` | `arcade_progress.arcade_level`. ⛔ **אינה רמת האנגלית של הלומד** (D-052 · D-061), והמסך אומר זאת במילים |
+| `wins` | `arcade_progress.wins`. ‏`lib/core/arenaHome.ts` גוזר ממנה את מסלול הבוס — `37 § 9`, «בוס כל 5 ניצחונות» |
+| `unlockedItems` | `arcade_progress.unlocked_items`. שם שאינו ב-`ARCADE_ITEMS` **מדולג בשקט**, וכך גם `banner`, שאינה משבצת ציוד (D-135) |
+
+⚠️ **לומד בלי שורה ⛔ אינו כישלון:** מוחזרות ברירות המחדל של `0014_arcade.sql` —
+`arcadeLevel: 1` · `wins: 0` · `unlockedItems: []` — ⛔ ולא 503. מסך בית ריק הוא
+**עובדה נכונה** על לומד שטרם קרב.
+
+**כשלים:** `401 session_expired` · `503 schema_missing` · `503 unavailable` — אותם
+שלושה גופים בדיוק של `GET /api/arcade/collected`.
+
 ## POST /api/arcade/result
 
 **סוף קרב — כותב לזירה בלבד** (T-094 · § 4.2י · D-044). דורש סשן חי; בדיקת ה-session
