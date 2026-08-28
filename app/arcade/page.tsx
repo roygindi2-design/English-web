@@ -1,4 +1,4 @@
-import ArenaBattle from '@/components/ArenaBattle';
+import ArenaShell from '@/components/ArenaShell';
 import './arcade-tokens.css';
 
 /**
@@ -16,7 +16,12 @@ import './arcade-tokens.css';
  * Server Component ⛔ בלי גישה לנתונים: `<ArenaBattle>` קורא `GET /api/arcade/round`, שכבר
  * מבצע את סדר השמירה של C-0032 ומחזיר `session_expired` **כנתון**. ⛔ ומאותה סיבה
  * `/arcade` ⛔ אינו נכנס ל-`PROTECTED_SCREENS`.
+ *
+ * ⚠️ **T-181 — `/arcade` נפתח על מסך הבית של `37 § 12`, ⛔ ולא בתוך קרב.**
+ * ‏`<ArenaShell>` מחזיק `'home' | 'battle'`; ⛔ אין ראוט חדש ⇒ ⛔ אין שינוי ניווט
+ * (`RULES § 0.16`). ⛔ **והעמוד ⛔ לא הפך ללקוח** — הוא מרכיב רכיב לקוח אחד, בדיוק
+ * כפי שהרכיב קודם את `<ArenaBattle>`.
  */
 export default function ArcadePage() {
-  return <ArenaBattle />;
+  return <ArenaShell />;
 }

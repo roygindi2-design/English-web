@@ -253,3 +253,36 @@ describe('T-179 · 37 § 6 — חלון ההתחמקות', () => {
     }
   });
 });
+
+describe('T-181 · `37 § 12` — `/arcade` נפתח על מסך הבית, ⛔ ולא בתוך קרב', () => {
+  // ⛔ הלבנה, כמו בכל שאר הקובץ (F-039): ההערה בראש `page.tsx` מתעדת מה עמד שם קודם,
+  // ומדידה גולמית הייתה מפילה עמוד ⛔ שאין בו ולו הפרה אחת.
+  it('העמוד מרכיב את המעטפת, ⛔ ולא את הקרב', () => {
+    expect(withoutComments(PAGE)).toContain('ArenaShell');
+    expect(withoutComments(PAGE)).not.toContain('ArenaBattle');
+  });
+
+  it('⛔ הטוקנים של הזירה עדיין נטענים כאן ו⛔ לא ב-`globals.css` (`37 § 13.5`)', () => {
+    expect(PAGE).toContain('./arcade-tokens.css');
+  });
+
+  it('⛔ העמוד נשאר Server Component ⛔ בלי גישה לנתונים', () => {
+    expect(PAGE).not.toContain("'use client'");
+    expect(PAGE).not.toContain('supabase');
+  });
+
+  it('⛔ המעטפת מחזיקה מצב, ⛔ ואינה מוסיפה ראוט (`RULES § 0.16`)', () => {
+    const shell = readFileSync('components/ArenaShell.tsx', 'utf8');
+    expect(shell).toContain("'home' | 'battle'");
+    expect(shell).toContain('<ArenaHome');
+    expect(shell).toContain('<ArenaBattle');
+    // ⛔ ⛔ אינה מבקשת נתונים ו⛔ אינה מציירת — כל מסך טוען את שלו.
+    expect(shell).not.toContain('/api/');
+  });
+
+  it('הפיקסצ׳ר של מסך הבית טוען את הפלטה, אחרת הוא מודד מסך שאינו המסך', () => {
+    const devHome = readFileSync('app/dev/arcade/home/page.tsx', 'utf8');
+    expect(devHome).toContain('arcade-tokens.css');
+    expect(devHome).toContain('<ArenaHome');
+  });
+});

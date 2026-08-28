@@ -34,6 +34,13 @@ import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
  *      ⛔ **והצבע ⛔ אינו הערוץ היחיד ממילא** — לכל מצב **צורה** (וי · נקודה · גולגולת)
  *      ו**שם נגיש** בעברית.
  *
+ * ⚠️ **הרדיוסים הם שניים מתוך החמישה של החוקה, ⛔ ולא מספרי הרנדר, וזו קריאה של DEV
+ * מוצהרת** (`RULES § 0.16` — «איזה מתוך חמשת הרדיוסים»): הרנדר מצייר `r=18` על כרטיס
+ * הרמה ועל הפעולה הראשית ו-`r=14` על המשבצות ועל הפעולות המשניות, ⛔ ושני הערכים אינם
+ * בסולם. ‏`scripts/radius-hygiene.test.ts` מפיל **ערך שישי** ⇒ 18 ⇐ `rounded-2xl` (16,
+ * «ברירת המחדל של הכרטיס») ו-14 ⇐ `rounded-xl` (12, «פקדים משניים ואריחי מונה»), לפי
+ * מיפוי התפקידים של D-036. ⛔ סטייה מוצהרת ובמספר, ⛔ ולא «נראה לי».
+ *
  * ⚠️ **D-137 (PM) — ⛔ אין בזירה מספר גופן מתחת ל-12.** הרנדר מצייר את תווית המשבצת
  * ב-9px, את תת-הכותרת ב-11.5 ואת תווית ההפרדה ב-10.5; שלושתן עולות ל-`text-xs` (12px).
  * ⛔ זו ⛔ אינה רצפת טקסט לכל המוצר — היא חלה על **הזירה בלבד**, וזה נאמר במפורש בהכרעה.
@@ -84,11 +91,11 @@ const BOSS_HE = 'קרב הבוס';
 
 /** `:136` — `rr(24, 404, LW-48, 66, 18, fill=RAISED)` + `BORDER_SUB` 1.1. */
 const CARD_CLASS =
-  'rounded-[18px] border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]';
+  'rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]';
 
 /** `:180-183` — הפעולה הראשית. גובה 58 ורדיוס 18 של הרנדר, ⛔ ללא שינוי. */
 const START_CLASS =
-  'flex h-[58px] w-full items-center justify-center rounded-[18px] border-2 ' +
+  'flex h-[58px] w-full items-center justify-center rounded-2xl border-2 ' +
   'border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] ' +
   'text-[17px] font-black text-[color:var(--arena-night)] active:opacity-90';
 
@@ -97,13 +104,13 @@ const START_CLASS =
  * הרוחב, הרדיוס, המילוי והמסגרת ⛔ לא נגעו.
  */
 const SECONDARY_CLASS =
-  'flex min-h-touch flex-1 items-center justify-center rounded-[14px] ' +
+  'flex min-h-touch flex-1 items-center justify-center rounded-xl ' +
   'border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] ' +
   'text-[12.5px] font-semibold text-[color:var(--arena-ink-dim)] active:opacity-90 ' +
   'disabled:opacity-100';
 
 const SLOT_CLASS =
-  'flex h-[66px] w-[66px] shrink-0 flex-col items-center justify-center gap-1 rounded-[14px] ' +
+  'flex h-[66px] w-[66px] shrink-0 flex-col items-center justify-center gap-1 rounded-xl ' +
   'bg-[color:var(--arena-card)]';
 
 function CheckGlyph() {
@@ -218,9 +225,9 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
             <p className="sr-only" role="status">
               {LOADING_HE}
             </p>
-            <div aria-hidden className="h-40 rounded-[18px] bg-[color:var(--arena-card)]" />
-            <div aria-hidden className="h-[66px] rounded-[18px] bg-[color:var(--arena-card)]" />
-            <div aria-hidden className="h-[66px] rounded-[14px] bg-[color:var(--arena-card)]" />
+            <div aria-hidden className="h-40 rounded-2xl bg-[color:var(--arena-card)]" />
+            <div aria-hidden className="h-[66px] rounded-2xl bg-[color:var(--arena-card)]" />
+            <div aria-hidden className="h-[66px] rounded-xl bg-[color:var(--arena-card)]" />
           </div>
         ) : (
           <>

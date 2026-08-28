@@ -155,6 +155,11 @@ const ROUTES = [
   // המסך בשורה שמעל. היא מקבלת את הסיבוב כ-prop ואינה מבקשת מהשרת דבר — ולכן ⛔ אין לה
   // רשומה ב-EXPECTED_CONSOLE, והשקט הזה הוא מה שמוכיח שהמדידה אינה על מסך הכשל.
   '/dev/arcade',
+  // T-181 · D-134 — מסך הבית של הזירה, ואותו נימוק בדיוק כמו השורה שמעליה: בלי env של
+  // Supabase גם `GET /api/arcade/home` עונה 503 בחוזה שלו עצמו ⇒ `/arcade` מצייר את מסך
+  // ה**כשל**, וחמש צמתי הבוס, ארבע המשבצות ושלוש הפעולות מעולם אינן על המסך ב-320/375/414.
+  // הפיקסצ׳ר מקבל את המצב כ-prop ו⛔ אינו מבקש מהשרת דבר ⇒ ⛔ אין לו רשומה ב-EXPECTED_CONSOLE.
+  '/dev/arcade/home',
   // T-096 · § 4.2י. מסך הסיום ⛔ אינו נגיש דרך `/arcade` בלי סשן: הוא נפתח רק אחרי
   // ‏`POST /api/arcade/result` שעונה 200, וכאן אין env של Supabase ⇒ הנתיב האמיתי עוצר
   // ב-503 והמסך הזה מעולם לא נמדד. הפיקסטורה מרנדרת אותו ישירות ואינה מבקשת מהשרת דבר,
@@ -218,6 +223,14 @@ const MIN_GAP = 8;
  * what this block asserts on it is that the failure state still offers exactly one marked
  * way out and puts it where a thumb can reach — which is precisely the F-027 dead end.
  */
+/**
+ * T-214 · **D-134 — the arena contrast gate is per SCREEN, ⛔ not per component.**
+ * Every route here paints its own dark surfaces under `[data-arena-scope]`, so a
+ * body-level probe is blind to it. ⛔ A new arena screen that is ⛔ not in this list is a
+ * screen nobody measured.
+ */
+const ARENA_SCREENS = ['/dev/arcade', '/dev/arcade/home'];
+
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
 /**
@@ -455,7 +468,15 @@ const EXPECTED_CONSOLE = {
   // entry for `/dev/arcade`: the fixture is handed its round as a prop and issues no request
   // at all, and that silence is what proves the harness measures the battle rather than the
   // failure screen.
-  '/arcade': [/status of 503[\s\S]*@\S*\/api\/arcade\/round/],
+  // ⚠️ **T-181 — `/arcade` now opens on the HOME screen, so the request it issues without
+  // env is `GET /api/arcade/home`, ⛔ not `…/round`.** The round entry stays: the battle is
+  // one tap away and the shell mounts `<ArenaBattle>` on the same route, ⇒ removing it
+  // would have made this list describe a screen the route no longer opens on ⛔ and stopped
+  // covering the one it can still reach. Both are keyed to the one URL and the one status.
+  '/arcade': [
+    /status of 503[\s\S]*@\S*\/api\/arcade\/home/,
+    /status of 503[\s\S]*@\S*\/api\/arcade\/round/,
+  ],
   // T-067: the arrival block TAPS the onboarding fixture's submit, which reaches
   // POST /api/profile — and that route answers 503 without Supabase env by its own
   // contract (`app/api/profile/route.ts:24`). Keyed to the one URL and the one status
@@ -1861,14 +1882,20 @@ try {
   // ⛔ not from an ancestor walk: the enemy health number is painted ON TOP of an
   // absolutely-positioned sibling (the health fill), so an ancestor walk would report the
   // track colour and pass a number nobody can read.
+  //
+  // ⚠️ **D-134, word for word: the gate is per SCREEN, ⛔ not per component.** A home
+  // screen painting its own dark surfaces is exactly the shape that hid three failures on
+  // the battle screen until T-214 measured it — so `/dev/arcade/home` (T-181) is walked
+  // here by the same probe, ⛔ and nothing inside `page.evaluate` changed to make it fit.
   {
+    for (const route of ARENA_SCREENS) {
     for (const scheme of ['light', 'dark']) {
       const ctx = await browser.newContext({
         viewport: { width: 375, height: 780 },
         colorScheme: scheme,
       });
       const page = await ctx.newPage();
-      await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+      await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
       await page.waitForSelector('[data-arena-scope]');
 
       const measured = await page.evaluate(() => {
@@ -1988,7 +2015,7 @@ try {
 
       await ctx.close();
 
-      const at = `${scheme} /dev/arcade`;
+      const at = `${scheme} ${route}`;
       check(measured.count > 0, `${at} the arena paints text at all`, 'zero text nodes under [data-arena-scope]');
       // ⛔ The scope with no background of its own is the whole defect (F-155): the arena
       // then inherits the PAGE surface, which flips with prefers-color-scheme.
@@ -2010,16 +2037,23 @@ try {
         `${at} · every pressable arena icon clears 3:1`,
         measured.icons.map((i) => `${i.label} is ${i.ratio}:1 (${i.color} on ${i.bg})`).join(' · '),
       );
-      check(
-        measured.cardEdge !== null && measured.cardEdge.vsFill >= 3,
-        `${at} · spell-card border clears 3:1 against its fill`,
-        measured.cardEdge === null ? 'no unselected card' : `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsFill}:1`,
-      );
-      check(
-        measured.cardEdge !== null && measured.cardEdge.vsStage >= 3,
-        `${at} · spell-card border clears 3:1 against the stage`,
-        measured.cardEdge === null ? 'no unselected card' : `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsStage}:1`,
-      );
+      // ⛔ **The spell card lives on the battle screen only** — the home screen has no
+      // hand, and `measured.cardEdge === null` there is the CORRECT state, ⛔ not a
+      // failure. Asserting it everywhere would have forced a card onto a screen the
+      // render ⛔ does not draw one on.
+      if (measured.cardEdge !== null) {
+        check(
+          measured.cardEdge.vsFill >= 3,
+          `${at} · spell-card border clears 3:1 against its fill`,
+          `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsFill}:1`,
+        );
+        check(
+          measured.cardEdge.vsStage >= 3,
+          `${at} · spell-card border clears 3:1 against the stage`,
+          `border ${measured.cardEdge.edge} is ${measured.cardEdge.vsStage}:1`,
+        );
+      }
+    }
     }
   }
 
