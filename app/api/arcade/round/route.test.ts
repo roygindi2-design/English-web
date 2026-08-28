@@ -85,8 +85,15 @@ describe('בחירת המילים (D-034 · § 4.2י)', () => {
     expect(selectBlock).not.toContain('sense_distractors!inner');
   });
 
+  /**
+   * ⚠️ **צומצם 28/08 (T-153).** השומר קבע את המחרוזת המלאה `sense_distractors(distractor)`,
+   * ו-T-153 הוסיפה לה `relation_type` — התיוג שבלעדיו ⛔ אין תמהיל D-023 כלל.
+   * ⛔ **השומר ⛔ לא נמחק:** מה שהוא שומר עליו הוא ש**הצומת נקרא** ושהוא ⛔ אינו `!inner`,
+   * ⛔ ולא רשימת העמודות המדויקת. ⇒ הוא בודק את הקידומת, והבדיקה שמתחתיו קובעת ש-
+   * `relation_type` **חייב** להופיע.
+   */
   it('הצומת עדיין נקרא — האפשרויות עבריות, אך `sense_distractors` ⛔ אינו יוצא מהשאילתא', () => {
-    expect(selectBlock).toContain('sense_distractors(distractor)');
+    expect(selectBlock).toContain('sense_distractors(distractor');
   });
 
   it('order בא לפני limit — תקרה על סדר לא מוגדר חותכת אוכלוסייה אקראית (לקח F-034)', () => {
@@ -133,5 +140,47 @@ describe('החוזה מתעדכן באותו קומיט', () => {
     const block = section.slice(0, section.indexOf('\n## ', 1));
     expect(block).toContain('gameLevel');
     expect(block).not.toContain('current_level');
+  });
+});
+
+describe('T-153 · D-138 § א׳ — הפתירה היא צירוף, ⛔ לא עמודה', () => {
+  it('‏`relation_type` נשלף — בלי התיוג התמהיל אינו קיים', () => {
+    expect(CODE).toContain('relation_type');
+  });
+
+  it('⛔ אין מיגרציה ואין עמודת שפה — D-138 § א׳ ביטלה את `T-153` ⓐ', () => {
+    expect(CODE).not.toContain('distractor_lang');
+    expect(CODE).not.toMatch(/\blang\b/);
+  });
+
+  it('הפתירה קוראת `words` שוב — ⛔ ולא טבלה חדשה', () => {
+    const read = [...CODE.matchAll(/\.from\('([a-z_]+)'\)/g)].map((m) => m[1]);
+    expect([...new Set(read)].sort()).toEqual(['arcade_progress', 'word_progress', 'words']);
+  });
+
+  it('⛔ הפתירה חסומה בתקרה — ⛔ URL בלי גבול הוא 414 בייצור', () => {
+    expect(CODE).toContain('MAX_RESOLVE_HEADWORDS');
+    expect(CODE).toContain('RESOLVE_CHUNK');
+  });
+
+  it('⛔ הנתיב עדיין ⛔ אינו כותב דבר, גם אחרי השאילתה השנייה', () => {
+    expect(CODE).not.toMatch(/\.(insert|upsert|update|delete)\(/);
+  });
+
+  it('⛔ הערך הפתור נוסע ב-`taggedHe`, ⛔ ולעולם לא ב-`distractorsEn`', () => {
+    expect(CODE).toContain('taggedHe');
+    expect(CODE).toContain('distractorsEn');
+    expect(CODE).not.toContain('distractorsHe');
+  });
+
+  it('⛔ תרגום בביטחון `low` ⛔ אינו נעשה מסיח — D-013 חל גם על המסיח', () => {
+    const resolve = CODE.slice(CODE.indexOf('RESOLVE_SELECT'));
+    expect(resolve).toContain('translation_confidence');
+    expect(resolve).toContain("'low'");
+  });
+
+  it('החוזה מתעדכן באותו קומיט — `docs/api-contract.md` נוקב בתמהיל', () => {
+    expect(CONTRACT).toContain('T-153');
+    expect(CONTRACT).toContain('relation_type');
   });
 });

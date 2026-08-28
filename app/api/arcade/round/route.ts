@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { describeLevel, gameLevelAt } from '@/lib/core/arcadeLadder';
+import type { TaggedHeDistractor } from '@/lib/core/arcadeDistractors';
 import { buildRound, type ArcadeCandidate } from '@/lib/core/arcadeRound';
 // ⛔ `parseLevel` כאן ממפה את `words.cefr_profile_band` של המועמדים בלבד — ⛔ ולא פרופיל.
 import { parseLevel } from '@/lib/core/levelSummary';
@@ -25,7 +26,22 @@ const MAX_LEVEL_ROWS = 1000;
  */
 const ROUND_SELECT =
   'id, headword, cefr_profile_band, ngsl_rank, ' +
-  'senses!inner(translation_he, translation_confidence, sense_distractors(distractor))';
+  'senses!inner(translation_he, translation_confidence, ' +
+  'sense_distractors(distractor, relation_type))';
+
+/**
+ * 🔴 T-153 · D-138 § א׳ — **הפתירה היא צירוף, ⛔ ולא עמודה.** `sense_distractors.distractor`
+ * הוא מחרוזת **אנגלית**; המסיח העברי הוא ה-`translation_he` של אותה מילה **כשהיא עצמה
+ * במאגר**. ⛔ אין כאן FK, ולכן PostgREST ⛔ אינו יכול לצרף — זו שאילתת קריאה שנייה על
+ * אותה טבלה בדיוק (`words`), ⛔ ולא טבלה חדשה ו⛔ לא מיגרציה.
+ */
+const RESOLVE_SELECT = 'headword, senses(translation_he, translation_confidence)';
+/** ⛔ תקרה, ⛔ לא ציפייה: רמה שלמה יכולה להחזיק אלפי מסיחים, ו-`in()` בלי גבול הוא URL בן 414. */
+const MAX_RESOLVE_HEADWORDS = 600;
+/** ⛔ ומחולק לאצוות: 600 מחרוזות בשאילתה אחת הן URL שהשרת חותך בשקט. */
+const RESOLVE_CHUNK = 150;
+/** ⛔ `unrelated`/`collocational`/`near_synonym` ⛔ אינם נפתרים כלל — ⛔ אין להם משבצת (D-023). */
+const RESOLVED_RELATIONS = new Set(['semantic', 'orthographic']);
 
 function isSchemaMissing(code: string | undefined): boolean {
   return code === '42P01' || code === 'PGRST205' || code === '42703' || code === 'PGRST204';
@@ -105,24 +121,71 @@ export async function GET() {
     return isSchemaMissing((error as { code?: string }).code) ? schemaMissing() : unavailable();
   }
 
-  const candidates: ArcadeCandidate[] = (data ?? []).map((row) => {
-    const r = row as unknown as {
-      id: string; headword: string | null;
-      cefr_profile_band: string | null; ngsl_rank: number | null;
-      senses: { translation_he: string | null; translation_confidence: string | null;
-                sense_distractors: { distractor: string | null }[] | null }[] | null;
-    };
-    // ⛔ D-013: תרגום בביטחון נמוך לעולם אינו מוצג ללומד. המשמעות הראשונה שאינה low.
-    const sense = (r.senses ?? []).find((s) => s.translation_confidence !== 'low');
+  type Row = {
+    id: string; headword: string | null;
+    cefr_profile_band: string | null; ngsl_rank: number | null;
+    senses: { translation_he: string | null; translation_confidence: string | null;
+              sense_distractors: { distractor: string | null;
+                                   relation_type: string | null }[] | null }[] | null;
+  };
+  // ⛔ D-013: תרגום בביטחון נמוך לעולם אינו מוצג ללומד. המשמעות הראשונה שאינה low.
+  const rows = ((data ?? []) as unknown as Row[]).map((r) => ({
+    row: r,
+    sense: (r.senses ?? []).find((s) => s.translation_confidence !== 'low'),
+  }));
+
+  // ⛔ ממוין ⛔ ולא בסדר ההגעה: תקרה שחותכת קבוצה לא-ממוינת היא סיבוב שאינו ניתן לשחזור.
+  const wanted = [...new Set(
+    rows.flatMap((r) => (r.sense?.sense_distractors ?? [])
+      .filter((d) => d.relation_type !== null && RESOLVED_RELATIONS.has(d.relation_type))
+      .map((d) => (d.distractor ?? '').trim().toLowerCase())
+      .filter((d) => d.length > 0)),
+  )].sort().slice(0, MAX_RESOLVE_HEADWORDS);
+
+  const heByHeadword = new Map<string, string>();
+  for (let i = 0; i < wanted.length; i += RESOLVE_CHUNK) {
+    const chunk = wanted.slice(i, i + RESOLVE_CHUNK);
+    const { data: resolved, error: resolveError } = await supabase
+      .from('words')
+      .select(RESOLVE_SELECT)
+      .in('headword', chunk)
+      .order('headword')
+      .order('id');
+    if (resolveError) {
+      // ⛔ ⛔ לא 503: התמהיל הוא **שיפור**, והנפילה למנגנון של T-152 היא סיבוב תקין
+      // לגמרי (ⓗ). לומד ⛔ אינו רואה מסך שגיאה מפני שהעשרה לא נטענה.
+      console.error('[api/arcade/round] distractor resolve failed:', resolveError.message);
+      break;
+    }
+    for (const w of (resolved ?? []) as unknown as {
+      headword: string | null;
+      senses: { translation_he: string | null; translation_confidence: string | null }[] | null;
+    }[]) {
+      const key = (w.headword ?? '').trim().toLowerCase();
+      if (key.length === 0 || heByHeadword.has(key)) continue;
+      const he = (w.senses ?? []).find((s) => s.translation_confidence !== 'low')?.translation_he;
+      if (he !== null && he !== undefined && he.trim().length > 0) heByHeadword.set(key, he.trim());
+    }
+  }
+
+  const candidates: ArcadeCandidate[] = rows.map(({ row: r, sense }) => {
+    const distractors = sense?.sense_distractors ?? [];
+    const taggedHe: TaggedHeDistractor[] = [];
+    for (const d of distractors) {
+      const relation = d.relation_type;
+      if (relation === null || !RESOLVED_RELATIONS.has(relation)) continue;
+      const he = heByHeadword.get((d.distractor ?? '').trim().toLowerCase());
+      if (he === undefined) continue;
+      taggedHe.push({ he, relation: relation as TaggedHeDistractor['relation'] });
+    }
     return {
       wordId: r.id,
       headword: r.headword ?? '',
       band: parseLevel(r.cefr_profile_band),
       ngslRank: r.ngsl_rank,
       translationHe: sense?.translation_he ?? '',
-      distractorsEn: (sense?.sense_distractors ?? [])
-        .map((d) => d.distractor ?? '')
-        .filter((d) => d.length > 0),
+      distractorsEn: distractors.map((d) => d.distractor ?? '').filter((d) => d.length > 0),
+      taggedHe,
     };
   });
 
