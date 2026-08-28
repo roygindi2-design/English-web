@@ -115,7 +115,7 @@ increments `index` by 1 — appending at the tail can never disturb an already-c
 - Consumes: `mixArenaWords`, `ArenaWord`, `ArenaWordKind` from `lib/core/arenaWords.ts` — ⛔ unchanged.
 - Produces: `ArcadeQuestion.kind`; `buildRound({ knownWordIds, touchedWordIds })`.
 
-- [ ] **Step 1: write the failing pure-layer test — `kind` is assigned, ⛔ not guessed**
+- [x] **Step 1: write the failing pure-layer test — `kind` is assigned, ⛔ not guessed**
 
 ```ts
 // lib/core/arcadeRound.test.ts
@@ -155,14 +155,14 @@ describe('37 § 2 — כל שאלה נושאת את סוג המילה', () => {
 });
 ```
 
-- [ ] **Step 2: run it and confirm RED**
+- [x] **Step 2: run it and confirm RED**
 
 ```bash
 npx vitest run lib/core/arcadeRound.test.ts
 ```
 Expected: FAIL — `kind` is `undefined` on every question.
 
-- [ ] **Step 3: add `kind` to `lib/core/arcadeRound.ts`**
+- [x] **Step 3: add `kind` to `lib/core/arcadeRound.ts`**
 
 ```ts
 import type { ArenaWordKind } from './arenaWords';
@@ -197,14 +197,14 @@ then inside `buildRound`'s question loop, replace the pushed object with:
 and add the two optional fields to the `buildRound` input type exactly as the `Interfaces`
 block above spells them.
 
-- [ ] **Step 4: run it and confirm GREEN**
+- [x] **Step 4: run it and confirm GREEN**
 
 ```bash
 npx vitest run lib/core/arcadeRound.test.ts lib/core/arenaWords.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 5: rewrite the D-052 guard — ⛔ never delete it**
+- [x] **Step 5: rewrite the D-052 guard — ⛔ never delete it**
 
 `app/api/arcade/round/route.test.ts:11-16` currently asserts `word_progress` and
 `self_marked_known` do **not appear at all** — a rule `37 § 13.3` explicitly permits breaking
@@ -236,14 +236,14 @@ describe('⛔ D-052 · 37 § 13.3 — קריאה מותרת, כתיבה אסור
 });
 ```
 
-- [ ] **Step 6: run it and confirm RED**
+- [x] **Step 6: run it and confirm RED**
 
 ```bash
 npx vitest run app/api/arcade/round/route.test.ts
 ```
 Expected: FAIL — `word_progress` is not read yet.
 
-- [ ] **Step 7: read the progress rows in `app/api/arcade/round/route.ts`**
+- [x] **Step 7: read the progress rows in `app/api/arcade/round/route.ts`**
 
 Insert **after** the `arcade_progress` read and **before** the `words` read:
 
@@ -285,14 +285,14 @@ const round = buildRound({
 });
 ```
 
-- [ ] **Step 8: run it and confirm GREEN**
+- [x] **Step 8: run it and confirm GREEN**
 
 ```bash
 npx vitest run app/api/arcade/round/route.test.ts lib/core/arcadeRound.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 9: hand the three sets to `mixArenaWords` in `components/ArenaBattle.tsx`**
+- [x] **Step 9: hand the three sets to `mixArenaWords` in `components/ArenaBattle.tsx`**
 
 Replace `wordsOf` (`:182-190`) with:
 
@@ -338,7 +338,7 @@ same map lookup so the submitted `answer` follows the word and ⛔ not the posit
       answer: byWordId.get(c.wordId)?.answer ?? '',
 ```
 
-- [ ] **Step 10: update `docs/api-contract.md` in this same commit**
+- [x] **Step 10: update `docs/api-contract.md` in this same commit**
 
 In `## GET /api/arcade/round`, add `"kind": "base"` to the sample question, add the row
 `| `kind` | `known` · `unfiltered` · `base` — `37 § 2`. ⛔ נגזר מ-`word_progress` **בקריאה בלבד** |`
@@ -350,7 +350,7 @@ to the field table, and replace the sentence that says `word_progress` is not to
 > `arcade_progress` · `words` · `word_progress`, כולן בקריאה. ⛔ **D-052 ⛔ אינו נפגע** —
 > ה-`band` עדיין נגזר מ-`arcade_level` בלבד.
 
-- [ ] **Step 11: full gate, then commit**
+- [x] **Step 11: full gate, then commit**
 
 ```bash
 npm run verify
@@ -374,7 +374,7 @@ Expected: all five commands green. Then:
 - Consumes: `ArenaWord.kind` — delivered by Task 1 through `wordsOf`.
 - Produces: `UNFILTERED_BONUS_DAMAGE`; `cast` may append to `state.words`.
 
-- [ ] **Step 1: write the failing test**
+- [x] **Step 1: write the failing test**
 
 ```ts
 // lib/core/battle.test.ts
@@ -425,14 +425,14 @@ describe('37 § 2 — «צדקת: נזק מוגבר · טעית: הלחש חוז
 });
 ```
 
-- [ ] **Step 2: run it and confirm RED**
+- [x] **Step 2: run it and confirm RED**
 
 ```bash
 npx vitest run lib/core/battle.test.ts
 ```
 Expected: FAIL — `UNFILTERED_BONUS_DAMAGE` is not exported.
 
-- [ ] **Step 3: implement in `lib/core/battle.ts`**
+- [x] **Step 3: implement in `lib/core/battle.ts`**
 
 Add next to `CRITICAL_DAMAGE`:
 
@@ -475,14 +475,14 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
 }
 ```
 
-- [ ] **Step 4: run it and confirm GREEN**
+- [x] **Step 4: run it and confirm GREEN**
 
 ```bash
 npx vitest run lib/core/battle.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 5: confirm the hand survives the re-queued word**
+- [x] **Step 5: confirm the hand survives the re-queued word**
 
 The re-queued word is the same `wordId`, so the `byWordId` map built in Task 1 Step 9 already
 serves it its four options. Verify with a fresh run, ⛔ not by reading:
@@ -492,7 +492,7 @@ npx vitest run components/ArenaBattle.test.ts lib/core/arcadeResult.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 6: full gate, then commit**
+- [x] **Step 6: full gate, then commit**
 
 ```bash
 npm run verify
@@ -514,13 +514,13 @@ Expected: all five green. Then:
 **Interfaces:**
 - Consumes: everything Tasks 1–2 produced.
 
-- [ ] **Step 1: start the server**
+- [x] **Step 1: start the server**
 
 ```bash
 (npx next dev -p 3000 &) && sleep 25
 ```
 
-- [ ] **Step 2: drive `/dev/arcade` at 375x780 and record the numbers**
+- [x] **Step 2: drive `/dev/arcade` at 375x780 and record the numbers**
 
 Record, ⛔ do not eyeball: heading · text length · tappable count · anything under 44px ·
 horizontal scroll at 320/375/414 · console errors. Compare the **layout** with
@@ -528,14 +528,14 @@ horizontal scroll at 320/375/414 · console errors. Compare the **layout** with
 (contrast · 44px · ⛔ no state in colour alone) is the only carve-out, and any gap goes in the
 task row **with the number measured**.
 
-- [ ] **Step 3: contrast and palette gates**
+- [x] **Step 3: contrast and palette gates**
 
 ```bash
 npm run check:palette && npm run check:mobile
 ```
 Expected: both green.
 
-- [ ] **Step 4: close out the registers and commit**
+- [x] **Step 4: close out the registers and commit**
 
 Update `plan/50-tasks.md` (T-219 ⇒ 🟣 with the cycle id; T-220 stays ⬜ with ⓑⓒ marked done and
 ⓐⓓ blocked on F-164), `plan/60-findings.md` (F-164), `plan/30-architecture.md`,
