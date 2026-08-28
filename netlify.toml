@@ -23,6 +23,19 @@
   # Without this flag its postinstall downloads ~200MB of browsers on every deploy.
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 
+  # ── 🔴 סורק הסודות של Netlify · נוסף 28/08 אחרי שלושה ימי בנייה שבורה ──────────
+  # **מה קרה:** `Branch Deploy: dev` נפל ב-25/08 וב-26/08 עם `Exposed secrets detected`
+  # ⇒ `github_pat_***`. הסורק ⛔ אינו בודק רק ערכים של משתני סביבה — הוא מחפש **תבניות
+  # מפתח מוכרות בקוד המקור**, ותפס מחרוזת־דוגמה מזויפת ב-`scripts/agent-prompts.test.ts`.
+  # ⛔ **והבנייה נפלה בשקט: ⛔ אף שער בלופ ⛔ לא מדד את מצב הבנייה של Netlify.**
+  #
+  # שתי שכבות, ⛔ ולא אחת:
+  #   ⓐ הדוגמאות בקובץ הבדיקה **מורכבות בזמן ריצה** ⇒ ⛔ אין תבנית ברצף בשום קובץ.
+  #   ⓑ והשורה הזאת — `scripts/` · `plan/` · `docs/` ⛔ **אינם נארזים לאתר**: הם מכונת
+  #      הלופ והתיעוד. ⇒ החרגתם ⛔ אינה מחלישה את הסריקה על קוד שכן מגיע ללומד.
+  # ⚠️ **⛔ אל תוסיף כאן `app/`, `lib/` או `components/`** — שם הסריקה היא הגנה אמיתית.
+  SECRETS_SCAN_OMIT_PATHS = "scripts/**,plan/**,docs/**"
+
 [[headers]]
   for = "/sw.js"
   [headers.values]

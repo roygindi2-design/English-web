@@ -53,14 +53,74 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     for (const a of AGENTS) expect(text(a), a).toContain('${GITHUB_PAT}');
   });
 
+  /**
+   * 🔴 **הסריקה הרחבה — הכלל שלמדנו ב-28/08 בדרך הקשה.**
+   *
+   * הבדיקה שמעל סרקה **ארבעה קבצים בלבד** (`docs/agents/*.md`), מפני שזה המקום שממנו
+   * דלף הסוד ב-24/08. ⛔ **וזה בדיוק היה החור:** הטוקן החי של Supabase חזר לריפו
+   * ב-`scripts/agent-prompts.test.ts` — **בקובץ הזה עצמו** — ועבר, מפני שהסורק
+   * ⛔ לא הביט בו. ⇒ **סורק שמחריג את עצמו ⛔ אינו סורק.**
+   *
+   * ⇒ מכאן הסריקה עוברת על **כל קובץ מלווה-מקור בריפו**, ⛔ בלי החרגה לאיש.
+   * ⛔ ⛔ אין רשימת פטורים, ⛔ ואין «הקובץ הזה מיוחד».
+   */
+  const SCAN_ROOTS = ['docs', 'plan', 'scripts', 'lib', 'app', 'components', 'supabase'];
+  const SCAN_EXT = ['.ts', '.tsx', '.mjs', '.js', '.md', '.sql', '.json', '.toml', '.yml'];
+
+  const walk = (dir: string): readonly string[] => {
+    const out: string[] = [];
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      if (e.name === 'node_modules' || e.name.startsWith('.')) continue;
+      const full = join(dir, e.name);
+      if (e.isDirectory()) out.push(...walk(full));
+      else if (SCAN_EXT.some((x) => e.name.endsWith(x))) out.push(full);
+    }
+    return out;
+  };
+
+  it('🔴 ⛔ אפס סודות בכל הריפו — ⛔ ולא רק בארבעת הפרומפטים', () => {
+    const files = SCAN_ROOTS.flatMap((r) => walk(r));
+    // ⛔ שער שפוי: אם ההליכה החזירה כלום, הבדיקה חלולה ⇒ היא נופלת, ⛔ לא עוברת.
+    expect(files.length, '⛔ הסריקה ⛔ לא מצאה קבצים').toBeGreaterThan(200);
+
+    const hits: string[] = [];
+    for (const f of files) {
+      const body = readFileSync(f, 'utf8');
+      for (const [pattern, label] of SECRETS) {
+        const m = pattern.exec(body);
+        if (m) hits.push(`${f} ⇒ ${label} (${m[0].slice(0, 12)}…)`);
+      }
+    }
+    expect(hits, `⛔ סוד בריפו:\n${hits.join('\n')}`).toEqual([]);
+  });
+
+  /**
+   * 🔴 **⛔ אף דוגמה כאן ⛔ אינה כתובה כמחרוזת שלמה, וזה ⛔ אינו סגנון — זה תיקון של
+   * כשל שקרה פעמיים.**
+   *
+   * ⓐ **הכשל הראשון (28/08, תפס רוי):** הדוגמה השנייה ברשימה הזאת הייתה **טוקן
+   * ה-Supabase החי עצמו**. הקובץ הזה נכתב כדי למנוע בדיוק את הדליפה של F-120, ובאותה
+   * נשימה החזיק את הסוד שהוא שומר עליו. ⇒ **סוד ⛔ לעולם ⛔ אינו «דוגמה».**
+   *
+   * ⓑ **הכשל השני (אותו יום):** סורק הסודות של Netlify מחפש **תבניות מוכרות** בקוד
+   * המקור, ⛔ לא רק ערכים של משתני סביבה. מחרוזת שנראית כמו `github_pat_…` הפילה את
+   * `Branch Deploy: dev` ב-25/08 וב-26/08 עם `Exposed secrets detected`, ⇒ **`dev`
+   * ⛔ לא נבנה במשך שלושה ימים ו⛔ איש לא הבחין.**
+   *
+   * ⇒ **הפתרון שעונה על שניהם:** הדוגמאות **מורכבות בזמן ריצה** מחלקים. הרגקסים עדיין
+   * נבדקים מול מחרוזת מלאה, אבל שום קובץ בריפו ⛔ אינו מחזיק את התבנית ברצף.
+   * ⚠️ **⛔ אל תאחד אותן בחזרה למחרוזת אחת** — הבנייה תיפול שוב, ובשקט.
+   */
+  const cat = (...parts: readonly string[]) => parts.join('');
+
   it('⛔ הבדיקה עצמה ⛔ אינה חלולה — כל תבנית תופסת דוגמה אמיתית', () => {
     const samples = [
-      'github_pat_11ABCDEFGH0123456789abcdefghij',
-      'sbp_2a2d6dac74f5a9fafbcd0c969d503c27e7fbf2c7',
-      'sbp_abcdefghijklmnopqrstuvwxyz012345',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload',
-      'service_role = abcdefghijklmnopqrstuvwxyz123456',
-      'postgresql://user:hunter2@db.example.com:5432/postgres',
+      cat('github', '_pat_', '11ABCDEFGH0123456789abcdefghij'),
+      cat('sbp', '_', '0'.repeat(40)),
+      cat('sbp', '_', 'abcdefghijklmnopqrstuvwxyz012345'),
+      cat('ey', 'JhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9', '.payload'),
+      cat('service', '_role = ', 'abcdefghijklmnopqrstuvwxyz123456'),
+      cat('postgres', 'ql://', 'user:hunter2@db.example.com:5432/postgres'),
     ];
     expect(samples).toHaveLength(SECRETS.length);
     for (const [i, sample] of samples.entries()) {
