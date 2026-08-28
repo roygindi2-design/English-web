@@ -227,7 +227,7 @@ layout change the render ⛔ does not carry, made to hide a PM decision.
 - Consumes: `CharacterSlot` from `lib/core/characterBase.ts`; `ARCADE_ITEMS` from `lib/core/arcadeResult.ts`.
 - Produces: `BOSS_EVERY` · `BossNode` · `bossTrack` · `winsToBoss` · `SLOT_LABELS_HE` · `ITEM_SLOTS` · `HOME_SLOTS` · `HomeSlot` · `homeSlots`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/arenaHome.test.ts`:
 
@@ -323,12 +323,12 @@ describe('המשבצות — `38 § 2`, ⛔ ולא שמות פריטים (D-132)
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/core/arenaHome.test.ts`
 Expected: **FAIL** — `Failed to resolve import "./arenaHome"`.
 
-- [ ] **Step 3: Write `lib/core/arenaHome.ts`**
+- [x] **Step 3: Write `lib/core/arenaHome.ts`**
 
 ```ts
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
@@ -427,12 +427,12 @@ export function homeSlots(unlocked: readonly string[]): readonly HomeSlot[] {
 }
 ```
 
-- [ ] **Step 4: Run the test and the purity gate**
+- [x] **Step 4: Run the test and the purity gate**
 
 Run: `npx vitest run lib/core/arenaHome.test.ts && npm run check:core`
 Expected: **PASS**, and `check:core` reports the core still clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 ./scripts/g add lib/core/arenaHome.ts lib/core/arenaHome.test.ts
@@ -451,7 +451,7 @@ Expected: **PASS**, and `check:core` reports the core still clean.
 - Consumes: `createRouteClient` · `readSupabaseEnv` from `lib/supabase/auth`.
 - Produces: `GET /api/arcade/home` ⇒ `{ ok: true, arcadeLevel, wins, unlockedItems }`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `app/api/arcade/home/route.test.ts`:
 
@@ -499,12 +499,12 @@ describe('GET /api/arcade/home — `37 § 13.1`: קריאה, ⛔ ואפס כתי
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run app/api/arcade/home/route.test.ts`
 Expected: **FAIL** — `ENOENT ... app/api/arcade/home/route.ts`.
 
-- [ ] **Step 3: Write `app/api/arcade/home/route.ts`**
+- [x] **Step 3: Write `app/api/arcade/home/route.ts`**
 
 Copy the guard order and the three failure bodies **verbatim** from
 `app/api/arcade/collected/route.ts:29-45` (`isSchemaMissing` · `schemaMissing` ·
@@ -570,12 +570,12 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Run: `npx vitest run app/api/arcade/home/route.test.ts`
 Expected: **PASS** (6 tests).
 
-- [ ] **Step 5: Write the contract section — the SAME commit**
+- [x] **Step 5: Write the contract section — the SAME commit**
 
 Append to `docs/api-contract.md`, immediately after the `## GET /api/arcade/round`
 section, in the shape the neighbouring sections already use:
@@ -610,7 +610,7 @@ section, in the shape the neighbouring sections already use:
 שלושה גופים בדיוק של `GET /api/arcade/collected`.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 ./scripts/g add app/api/arcade/home docs/api-contract.md
@@ -636,7 +636,7 @@ section, in the shape the neighbouring sections already use:
 and `homeSlots(unlocked)` and renders what comes back. ⛔ No `%`, no `Math.floor`, no
 `5` in this file.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `components/ArenaHome.test.ts`. It is a **source scan**, the pattern
 `components/ArenaBattle.test.ts` already uses:
@@ -712,12 +712,12 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run components/ArenaHome.test.ts`
 Expected: **FAIL** — `ENOENT ... components/ArenaHome.tsx`.
 
-- [ ] **Step 3: Build the component**
+- [x] **Step 3: Build the component**
 
 Build it top-down in the render's own order, taking every coordinate from the numbers
 table above. The load path mirrors `components/ArenaBattle.tsx:192-260` exactly: `useState`
@@ -757,12 +757,12 @@ Six blocks, in this order:
    `aria-describedby` on the visible line `בחירת דמות תיפתח בקרוב` — ⛔ **a disabled
    control with no written reason is a dead end**, and `37 § 7` is **T-217**.
 
-- [ ] **Step 4: Run the test and the type gate**
+- [x] **Step 4: Run the test and the type gate**
 
 Run: `npx vitest run components/ArenaHome.test.ts && npx tsc --noEmit`
 Expected: **PASS**, ⛔ zero `any`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 ./scripts/g add components/ArenaHome.tsx components/ArenaHome.test.ts app/arcade/arcade-tokens.css
@@ -787,7 +787,7 @@ component adds ⛔ zero routes and ⛔ zero entries to any route table ⇒ it st
 boundary**, which is DEV's call. `/dev/arcade/home` is a **layout fixture**, `noindex` and
 unlinked — the same standing exception `/dev/arcade` already is.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `app/arcade/page.test.ts`:
 
@@ -810,12 +810,12 @@ it('⛔ העמוד נשאר Server Component ⛔ בלי גישה לנתונים'
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run app/arcade/page.test.ts`
 Expected: **FAIL** — `expected '…ArenaBattle…' to contain 'ArenaShell'`.
 
-- [ ] **Step 3: Write the shell and repoint the page**
+- [x] **Step 3: Write the shell and repoint the page**
 
 `components/ArenaShell.tsx`:
 
@@ -885,7 +885,7 @@ export default function DevArenaHomePage() {
 }
 ```
 
-- [ ] **Step 4: Parameterise the contrast gate over both arena screens**
+- [x] **Step 4: Parameterise the contrast gate over both arena screens**
 
 In `scripts/verify-mobile.mjs`: add `'/dev/arcade/home'` to `ROUTES` (beside
 `'/dev/arcade'`, line ~157), then wrap block **2c** (line ~1853) in a route loop —
@@ -897,7 +897,7 @@ at line ~1991 with `route`. ⛔ **Nothing inside the `page.evaluate` changes.**
 painting its own dark surfaces is exactly the shape that hid three failures on the battle
 screen until T-214 measured it.
 
-- [ ] **Step 5: Prove the gate can fail — ⛔ a gate that never failed is a gate nobody measured**
+- [x] **Step 5: Prove the gate can fail — ⛔ a gate that never failed is a gate nobody measured**
 
 Temporarily set the slot caption's colour to `--arena-stone-dark` in
 `components/ArenaHome.tsx`, run the harness, and confirm it fails **by name** on the
@@ -906,7 +906,7 @@ string `ציוד` with a ratio under 4.5. Then revert that one line.
 Run: `npm run check:mobile`
 Expected: **FAIL**, naming `ציוד` and its measured ratio. Revert ⇒ **PASS**.
 
-- [ ] **Step 6: Walk the screen — `36 § 6.5`, mandatory on a UI tick**
+- [x] **Step 6: Walk the screen — `36 § 6.5`, mandatory on a UI tick**
 
 ```bash
 (npx next dev -p 3000 &) && sleep 25
@@ -920,13 +920,13 @@ controls, in that vertical order.
 ⚠️ `F-132` is open: Next 16 refuses cross-origin dev assets on `127.0.0.1`. If
 `/_next/static/*` 404s, use `http://localhost:3000` and say so in the report.
 
-- [ ] **Step 7: The full gate**
+- [x] **Step 7: The full gate**
 
 Run: `npm run verify`
 Expected: **PASS** — all five commands, `check:mobile` included. ⛔ A failure is fixed in
 this tick or the work is reverted; ⛔ never pushed red.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 ./scripts/g add components/ArenaShell.tsx app/arcade/page.tsx app/arcade/page.test.ts \
