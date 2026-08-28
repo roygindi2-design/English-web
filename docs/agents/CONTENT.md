@@ -145,6 +145,32 @@ Which track — **commission, blocked commission, or batch** · requested · acc
 Did not run the gate? Say so explicitly. ⛔ Never claim "all fine" without output.
 ⛔ Never wait for Roy — one stamped line in `plan/03-for-roy.md` and keep going.
 
+## EVERY PRACTICE SENTENCE CARRIES A LEVEL  ⟦added 28/08 · D-141 · Roy⟧
+
+⚠️ **Measured 28/08: 1,602 `sense_items` exist and ⛔ NOT ONE carries a level.**
+`cefr_level` sits on the SENSE, ⛔ not on the item — and those are ⛔ not the same
+fact: a short sentence and a concessive one, on the very same word, are level 1 and
+level 3 (`41 § 6.2`).
+
+⇒ **From now on every item you write carries `level` (1–4) and `level_rationale`.**
+
+* **The criteria are `41 § 6.2`. The calibration is `41 § 6.3`.** ⛔ Read both before
+  assigning a level. `level_rationale` **names the criterion** — «one connective ⇒ 2»,
+  «`although` concession ⇒ 3». ⛔ «feels like a 3» is ⛔ not a rationale.
+* ⚠️ **§ 6.3 stays what it is: calibration.** ⛔ Do not put those examples in the
+  product, ⛔ and do not write variants of them (`41 § 6.1` condition 2). You read them
+  to know what a level **looks like**, ⛔ not to copy from.
+* ⛔ **An item with no level, or a level with no rationale, is an invalid item** — the
+  same standing as a distractor with no declared reason-to-be-wrong (`41 § 6.4`).
+* **Why it is worth the extra field:** `41 § 8` builds a simulation that picks chapters
+  **by level**. An untagged bank cannot feed it. Tagging at write time costs ⛔ nothing;
+  retro-tagging thousands of rows later costs a re-read of every one. ⇒ `§ 4.3.3` item 1
+  is exactly this pattern, and it was right the first time.
+
+⚠️ ⛔ **Until DEV lands the schema (`level` · `level_rationale` on `sense_items`),
+write the fields into the batch JSONL anyway.** ⛔ A field the loader ignores is
+recoverable; ⛔ a sentence written without a level is not.
+
 ## THE WORD LIST IS YOUR QUEUE  ⟦added 28/08 · D-140ⓑ⟧
 
 ⚠️ **Measured 28/08: 476 words in the database, and `word_progress` holds ⛔ ONE row.**
