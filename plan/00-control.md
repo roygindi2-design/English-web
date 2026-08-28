@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: CRITIC                 # 🛑 **הלופ עצור (28/08, רוי).** ▶️ **D-141 — כל פריט תרגול נושא `level` 1–4 + `level_rationale` מהרגע שנכתב.** נמדד: 1,602 `sense_items` ו⛔ אף לא אחד מתויג. ⇒ **משימה ל-PM:** מיגרציה מוסיפה (‏`level` · `level_rationale`), שינוי `contentSchema`, ושער שפוסל פריט בלי רמה. D-140 עדיין עומדת: CONTENT ל-4 טיקים ביום, הסדר כרטיסיות⇢סיפורים⇢זירה, ואמירנט במקביל בצד ה-DEV.
+NEXT_AGENT: CRITIC                 # 🟡 **הרצת תוכן בלבד (28/08, רוי).** ✅ **F-120 נסגר — רוי סובב את טוקן Supabase.** ▶️ CONTENT רץ 12×/יום על K-004 (196 נותרו) ואצוות NGSL, **וכל פריט נושא `level` לפי D-141**. ⛔ פריטי אמירנט ⛔ אינם ניתנים לייצור עדיין — ⛔ אין הזמנה ו⛔ אין שער (טיק PM רץ 22:47Z כדי לכתוב אותם).
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-220             # ▶️ **C-0347: `T-153` ⇒ 🟣.** ⚠️ ב-`arena` נותרה **⬜ אחת — `T-220`**, וחצייה הפתוח (ⓐ·ⓓ) ⛔ חסום ב-**F-164** על ה-PM ⇒ ⛔ אינו בר-בנייה. `T-218` ⛔ חסומה עד ש-`T-153` נוחתת על `dev`. ⇒ ⚠️ **הזרימה קרובה לריקה; F-164 פותחת.**
@@ -10,7 +10,7 @@ HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 �
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "PM"                # ננעל C-0348 (הרצה ידנית של רוי 28/08).
-LOCK_AT: "2026-08-28T22:48:09Z"
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜ = 0 · נחתמה והמוקד הוזז ל-`cards` ב-C-0316 (QA).** פרוסה A ב-C-0314 (T-204 · T-205 · T-206 · T-174 + T-147 · T-148); **T-146 נסגרה כולה ב-C-0315** (F-137 ✅). כל השורות מוזגו ל-`dev` ✅ ב-C-0316. חותמות בבלוק SEALS.
@@ -20,7 +20,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא ואינו בלם עוד**. נשמר להיסטוריה. הבלם החי הוא WORKSTREAM_TICKS.
 RELEASE_READY: ""              # ה-Critic כותב כאן <sha> · <תאריך> · <N קומיטים> · <מה הלומד מקבל>. ⛔ הוא אינו דוחף ל-main — המיזוג הוא פעולה של רוי (RULES § 0.1.1 ב׳, שוכתב 23/08).
-PAUSED_BY_HUMAN: true            # 🛑 ▶️ **נעצר 28/08 בהוראת רוי. ארבע המשימות המתוזמנות (DEV · PM · CRITIC · CONTENT) **כבויות** בצד קלוד.** החזרה: להדליק אותן שוב, ולהעמיד `false` כאן. ⛔ מצב העצירה מתועד ב-`plan/00-control.md` בלבד — ⛔ אין סוכן שרץ.
+PAUSED_BY_HUMAN: partial         # 🟡 ▶️ **28/08 ~22:50Z — הרצת תוכן בלבד, יממה.** ‏**CONTENT דלוק** ב-`49 */2 * * *` (12 ליום, D-140). ⛔ **DEV · PM · CRITIC כבויים.** ⇒ ⛔ אין מיזוג ל-`dev` ואין קידום — התוצרים מצטברים על `work/current` עד שרוי מדליק את השאר.
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
 LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
