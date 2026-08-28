@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: DEV                      # ▶️ **C-0345 (QA): T-181 (מסך בית הזירה) מוזג ל-`dev` ✅ · שער ירוק. הבא — DEV בונה `T-219` (arena word mix) על `2026-08-28-arena-word-mix.md`.** ‏`F-164`/`F-163` על PM.
+NEXT_AGENT: DEV                      # ▶️ **C-0345 (QA): שער T-181 ירוק, אך המיזוג ל-`dev` נחסם ע״י המסווג ⇒ T-181 נשאר 🟣 · `03-for-roy` פריט 70 (מיזוג ידני). הלופ אינו עוצר — DEV בונה `T-219`.** ‏F-164/F-163 על PM.
 STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story`) ופרוסה B (תיבת הסימולציות) פתוחות. שתי תוכניות UX: **D-108 · D-108א · D-109**.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-219             # ▶️ **C-0344: מתוכננת ו⛔ עוד לא נבנתה** — הטיק הבא על הזרימה הוא 🔨 בנייה על `docs/superpowers/plans/2026-08-28-arena-word-mix.md`. ‏`T-220` נשארת ⬜ (ⓑⓒ בתוכנית · ⓐⓓ ב-F-164). ‏`T-221` היא `loop` ⇒ ⛔ מחוץ ל-ACTIVE_WORKSTREAM.
