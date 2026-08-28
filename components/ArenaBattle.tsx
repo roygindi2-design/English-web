@@ -10,7 +10,7 @@ import SpellCard from '@/components/SpellCard';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { mixArenaWords, type ArenaWord } from '@/lib/core/arenaWords';
+import { mixArenaWords, type ArenaWord, type ArenaWordKind } from '@/lib/core/arenaWords';
 import { resolveGesture } from '@/lib/core/arenaGesture';
 import { summarize } from '@/lib/core/arenaSummary';
 import {
@@ -175,18 +175,21 @@ function clockHe(remainingMs: number): string {
 
 /**
  * ⛔ הזירה מקבלת את מילותיה מ-`mixArenaWords` ⛔ ולא מהסיבוב ישירות (T-173 · `37 § 2`).
- * ⚠️ **ומה שנמסר לה היום הוא בכוונה שורה 1 בטבלה של `§ 2`:** קריאת מחסן ה«ידעתי»
- * ⛔ אינה בפרוסה הזאת, ⇒ כל מילה היא **מילת בסיס**, וזה בדיוק מצב «מחסן ריק ⇒ 100%
- * מילות בסיס». ⛔ זו ⛔ אינה עקיפה של הפונקציה — זה הענף שהיא מגדירה למשתמש חדש.
+ * ⚠️ **T-219 — שלוש הקטגוריות מגיעות עכשיו מהנתיב.** מחסן ריק ⇒ כל השאלות `base` ⇒
+ * ⛔ בדיוק ההתנהגות של היום, שהיא שורה 1 בטבלה של `§ 2`.
+ * ⛔ הרכיב ⛔ אינו מחליט תמהיל — הוא ממיין לשלוש רשימות ומוסר.
  */
 function wordsOf(questions: readonly ArcadeQuestion[]): readonly ArenaWord[] {
-  const base: readonly ArenaWord[] = questions.map((q) => ({
-    wordId: q.wordId,
-    headword: q.headword,
-    translationHe: q.answer,
-    kind: 'base' as const,
-  }));
-  return mixArenaWords({ known: [], unfiltered: [], base, size: base.length });
+  const of = (kind: ArenaWordKind): ArenaWord[] =>
+    questions
+      .filter((q) => (q.kind ?? 'base') === kind)
+      .map((q) => ({ wordId: q.wordId, headword: q.headword, translationHe: q.answer, kind }));
+  return mixArenaWords({
+    known: of('known'),
+    unfiltered: of('unfiltered'),
+    base: of('base'),
+    size: questions.length,
+  });
 }
 
 export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): React.JSX.Element {
@@ -357,6 +360,15 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   const result = battle === null ? 'running' : outcomeAt(battle, elapsedMs);
   const finished = result !== 'running';
 
+  /**
+   * ⛔ חיפוש לפי `wordId` ⛔ ולא לפי אינדקס (T-219): `mixArenaWords` **משנה סדר**, ולכן
+   * `questions[battle.index]` היה מגיש את ארבע האפשרויות של מילה **אחרת**.
+   */
+  const byWordId = useMemo(
+    () => new Map(questions.map((q) => [q.wordId, q])),
+    [questions],
+  );
+
   useEffect(() => {
     if (battle === null || !finished || submitted) return;
     setSubmitted(true);
@@ -366,10 +378,12 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       wordId: c.wordId,
       correct: c.correct,
       chosen: chosenSoFar[i] ?? '',
-      answer: battle.words[i]?.translationHe ?? '',
+      // ⛔ לפי `wordId` ⛔ ולא לפי מיקום (T-219): `mixArenaWords` משנה סדר, ו-`cast` יכול
+      // להוסיף מילה חוזרת לזנב ⇒ `words[i]` ⛔ אינו עוד המילה שנוצקה בהטלה ה-i.
+      answer: byWordId.get(c.wordId)?.answer ?? '',
     }));
     void send({ runId: crypto.randomUUID(), answers });
-  }, [battle, finished, submitted, chosenSoFar, send]);
+  }, [battle, finished, submitted, chosenSoFar, send, byWordId]);
 
   useEffect(() => {
     if (pendingResult === null) return;
@@ -537,7 +551,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   }
 
   const word = battle.words[battle.index];
-  const hand = questions[battle.index]?.options ?? [];
+  const hand = word === undefined ? [] : byWordId.get(word.wordId)?.options ?? [];
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
   const raging = isRage(elapsedMs);
   /** ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו חלון. */

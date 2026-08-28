@@ -236,3 +236,46 @@ describe('T-108 — הסיבוב נגזר מרמת משחק, ⛔ לא מרמת �
     expect(round.ok && round.questions.length).toBe(ARCADE_ROUND_SIZE);
   });
 });
+
+/**
+ * 🔴 T-219 · `37 § 2` — **הסיבוב נושא את סוג המילה.** ⛔ הפיקסטורה כאן ⛔ אינה יורשת את
+ * `POOL` שלמעלה: היא ממוספרת `w0…w39` כדי שהמזהים בבדיקה יהיו קריאים, והיא ב-A1 כדי
+ * שרמת המשחק 1 תגיש אותה.
+ */
+const mixCand = (n: number): ArcadeCandidate => ({
+  wordId: `w${n}`,
+  headword: `h${n}`,
+  band: 'A1' as CefrBand,
+  ngslRank: n,
+  translationHe: `ת${n}`,
+  distractorsEn: [],
+});
+const MIX_POOL = Array.from({ length: 40 }, (_, i) => mixCand(i));
+
+describe('37 § 2 — כל שאלה נושאת את סוג המילה', () => {
+  it('⛔ בלי הקבוצות — כל השאלות `base`, בדיוק ההתנהגות של היום', () => {
+    const r = buildRound({ gameLevel: 1, candidates: MIX_POOL, seed: 7 });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.questions.every((q) => q.kind === 'base')).toBe(true);
+  });
+
+  it('מילה שסומנה `ידעתי` היא `known`; מילה בלי שורת התקדמות היא `unfiltered`', () => {
+    const known = new Set(['w0', 'w1']);
+    const touched = new Set(['w0', 'w1', 'w2']);
+    const r = buildRound({
+      gameLevel: 1,
+      candidates: MIX_POOL,
+      seed: 7,
+      knownWordIds: known,
+      touchedWordIds: touched,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    for (const q of r.questions) {
+      if (known.has(q.wordId)) expect(q.kind).toBe('known');
+      else if (touched.has(q.wordId)) expect(q.kind).toBe('base');
+      else expect(q.kind).toBe('unfiltered');
+    }
+  });
+});

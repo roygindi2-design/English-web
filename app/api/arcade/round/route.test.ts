@@ -7,9 +7,16 @@ function withoutComments(source: string): string {
 const CODE = withoutComments(readFileSync('app/api/arcade/round/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 
-describe('⛔ D-052 — הזירה אינה יודעת שקיים צד לימודי', () => {
-  it.each(['current_level', 'word_progress', 'self_marked_known', 'repetition',
-           'next_review_at', 'easiness', 'interval_days'])(
+/**
+ * ⚠️ **נכתב מחדש 28/08 (T-219 · D-139).** עד כאן השומר אסר על `word_progress` ועל
+ * `self_marked_known` להופיע בנתיב **גם בקריאה**, ו-`37 § 13.3` מתיר קריאה במפורש
+ * («הזירה **קוראת** את רשימת המילים הידועות»). ⛔ השומר ⛔ **לא נמחק** — מחיקת שומר
+ * בלי שהוא מוחלף היא מה שהפיל את `T-164`; הוא צומצם ל«קריאה מותרת · כתיבה אסורה».
+ * ⛔ **D-052 ⛔ אינו נפגע** — ה-`band` עדיין נגזר מ-`arcade_level` בלבד, ושמות שדות
+ * ה-SM-2 עדיין אסורים בקובץ לחלוטין.
+ */
+describe('⛔ D-052 · 37 § 13.3 — קריאה מותרת, כתיבה אסורה', () => {
+  it.each(['current_level', 'repetition', 'next_review_at', 'easiness', 'interval_days'])(
     '⛔ %s אינו מופיע בנתיב — גם לא בקריאה', (token) => {
       expect(CODE).not.toContain(token);
     });
@@ -18,9 +25,16 @@ describe('⛔ D-052 — הזירה אינה יודעת שקיים צד לימו�
     expect(CODE).not.toMatch(/\.from\('profiles'\)/);
   });
 
-  it('הטבלאות שנקראות הן בדיוק arcade_progress ו-words', () => {
+  it('`word_progress` נקרא, ו⛔ אך ורק ב-select', () => {
+    expect(CODE).toContain("from('word_progress')");
+    const calls = [...CODE.matchAll(/\.from\('word_progress'\)([\s\S]{0,120})/g)];
+    expect(calls.length).toBeGreaterThan(0);
+    for (const c of calls) expect(c[1]).toMatch(/^\s*\.select\(/);
+  });
+
+  it('הטבלאות שנקראות הן בדיוק arcade_progress · words · word_progress', () => {
     const read = [...CODE.matchAll(/\.from\('([a-z_]+)'\)/g)].map((m) => m[1]);
-    expect([...new Set(read)].sort()).toEqual(['arcade_progress', 'words']);
+    expect([...new Set(read)].sort()).toEqual(['arcade_progress', 'word_progress', 'words']);
   });
 
   it('⛔ הנתיב עדיין אינו כותב דבר', () => {

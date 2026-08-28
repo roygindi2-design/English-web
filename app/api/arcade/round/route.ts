@@ -66,6 +66,33 @@ export async function GET() {
   // ל-503, כי הזירה אינה כלי אבחון ולומד ⛔ אינו רואה מסך שגיאה על מונה.
   const band = (rung ?? gameLevelAt(1))?.band ?? 'A1';
 
+  /**
+   * `37 § 13.3` — הזירה **קוראת** את רשימת המילים הידועות. ⛔ קריאה, ⛔ ולעולם לא כתיבה:
+   * ⛔ אין בקובץ `.insert(` · `.update(` · `.upsert(` · `.delete(`, ונאכף בסריקת מקור.
+   * ⛔ **D-052 ⛔ אינו נפגע** — ה-`band` עדיין נגזר מ-`arcade_level` בלבד; מה שהשורות האלה
+   * קובעות הוא **אילו מילים בתוך ה-band** נבחרות, ⛔ ולא איזה band.
+   * ⛔ ⛔ אין כאן ולו שם אחד של שדה SM-2 — שתי עמודות, ובלבד.
+   */
+  const { data: progressWords, error: progressWordsError } = await supabase
+    .from('word_progress')
+    .select('word_id, self_marked_known')
+    .eq('user_id', user.id);
+  if (progressWordsError) {
+    console.error('[api/arcade/round] progress read failed:', progressWordsError.message);
+    return isSchemaMissing((progressWordsError as { code?: string }).code)
+      ? schemaMissing()
+      : unavailable();
+  }
+  const touchedWordIds = new Set<string>();
+  const knownWordIds = new Set<string>();
+  for (const row of (progressWords ?? []) as unknown as {
+    word_id: string;
+    self_marked_known: boolean | null;
+  }[]) {
+    touchedWordIds.add(row.word_id);
+    if (row.self_marked_known === true) knownWordIds.add(row.word_id);
+  }
+
   const { data, error } = await supabase
     .from('words')
     .select(ROUND_SELECT)
@@ -102,7 +129,13 @@ export async function GET() {
   // ⛔ הנתיב אינו מסנן ואינו מגריל: הוא מוסר מועמדים ומקבל סיבוב. ⛔ ואין כאן `Math.random`
   // — ה-seed נגזר מהשעה, כך שהסיבוב ניתן לשחזור מהתשובה עצמה.
   const seed = Date.now() >>> 0;
-  const round = buildRound({ gameLevel: rung === null ? 1 : gameLevel, candidates, seed });
+  const round = buildRound({
+    gameLevel: rung === null ? 1 : gameLevel,
+    candidates,
+    seed,
+    knownWordIds,
+    touchedWordIds,
+  });
 
   if (!round.ok) {
     const eligible = round.reason === 'level_too_small' ? round.eligible : 0;

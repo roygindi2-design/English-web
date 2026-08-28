@@ -14,6 +14,7 @@ import type { CefrBand } from './cefrLevels';
 // ⛔ העותקים הפרטיים של mulberry32/shuffle יצאו ל-`./shuffle` ב-C-0321, מילה במילה.
 // ⛔ אין כאן שינוי התנהגות: `shuffle.test.ts` מחזיק את התמורות שנמדדו לפני ההעברה.
 import { mulberry32, shuffle } from './shuffle';
+import type { ArenaWordKind } from './arenaWords';
 
 export const ARCADE_MIN_WORDS = ARCADE_MIN_WORDS_PER_LEVEL;
 /** ⛔ שם היסטורי. גודל הסיבוב הוא התחמושת (D-059) — ⛔ אין כאן מספר משלו. */
@@ -41,6 +42,8 @@ export interface ArcadeQuestion {
   readonly headword: string;
   readonly answer: string;
   readonly options: readonly string[];
+  /** `37 § 2`. ⛔ הקורא לא מסר את הקבוצות ⇒ `'base'`, ⛔ ולעולם לא ניחוש מדבר אחר. */
+  readonly kind: ArenaWordKind;
 }
 
 export type ArcadeRound =
@@ -87,10 +90,28 @@ export function eligibleCandidates(
   return candidates.filter((c) => isEligible(c, level));
 }
 
+/**
+ * `37 § 2` — ⛔ שלוש קטגוריות ו⛔ אין רביעית. ⛔ **חוסר ידיעה ⛔ אינו `unfiltered`:**
+ * קורא שלא מסר את הקבוצות מקבל `base` לכל שאלה, כלומר בדיוק שורה 1 בטבלה.
+ */
+function kindOf(
+  wordId: string,
+  known: ReadonlySet<string> | undefined,
+  touched: ReadonlySet<string> | undefined,
+): ArenaWordKind {
+  if (known === undefined || touched === undefined) return 'base';
+  if (known.has(wordId)) return 'known';
+  return touched.has(wordId) ? 'base' : 'unfiltered';
+}
+
 export function buildRound(input: {
   readonly gameLevel: number;
   readonly candidates: readonly ArcadeCandidate[];
   readonly seed: number;
+  /** מזהי מילים שהלומד סימן `ידעתי`. ⛔ עובדה בקריאה בלבד, ⛔ ואינה נושאת שדה SM-2. */
+  readonly knownWordIds?: ReadonlySet<string>;
+  /** מזהי מילים שיש להן שורת התקדמות בכלל. מילת רמה שאינה כאן היא `unfiltered`. */
+  readonly touchedWordIds?: ReadonlySet<string>;
 }): ArcadeRound {
   // ⛔ הרמה נגזרת מהסולם ⛔ ולא מהלומד (D-052). רמה שאינה בטבלה אינה נופלת ל-A1.
   const rung = gameLevelAt(input.gameLevel);
@@ -131,6 +152,7 @@ export function buildRound(input: {
       headword: c.headword,
       answer,
       options: shuffle([answer, ...wrong], rnd),
+      kind: kindOf(c.wordId, input.knownWordIds, input.touchedWordIds),
     });
   }
   if (questions.length < ARCADE_ROUND_SIZE) {
