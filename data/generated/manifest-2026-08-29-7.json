@@ -1,0 +1,81 @@
+{
+  "batch_file": "batch-2026-08-29-7.jsonl",
+  "commission": "K-005 (plan/25-content-commissions.md · docs/content-amirnet-vocab-brief.md · D-140ⓑ · D-120 · plan/41-amirnet-spec.md § 6.2)",
+  "generated_at": "2026-08-29T12:50:18Z",
+  "model": "claude-opus-5",
+  "prompt_version": "content-agent/2026-08-29-commission-k005",
+  "provenance": "כל תוכן נכתב לפרויקט; ⛔ לא נועץ ב-R-010 (מאל\"ו) ולא ב-R-013 (AnkiWeb) ולא במילון NC. מהרשימות החיצוניות נקראו: הנגזרת הקפואה של כותרות NGSL v1.2 (CC BY-SA 4.0) דרך data/generated/allowed-words-2026-08-07.txt לצורך כשירות הכותרת ובדיקת הרמה, ועמודות headword/pos/cefr/tier של data/amirnet-vocab.csv (נגזר מ-CEFR-J 1.5 ומ-Octanove 1.0) לצורך התור והרמה. אף ניסוח, תרגום, הגדרה, משפט או מסיח לא הועתק משום מקור.",
+  "headword_source": "⛔ ההזמנה קובעת את הסדר, ⛔ לא אני: docs/content-amirnet-vocab-brief.md § 3 — ⓐ ראש התור (מילות קישור/יחס) נסגר ב-C-0349, ולכן ⓑ Tier 1 (A2) בסדר אלפביתי. data/amirnet-vocab.csv נקרא כמות שהוא (6,713 שורות) ו⛔ לא נגזר מחדש — סעיף «ראשית» בתדריך מורה כך במפורש.",
+  "measured_derivation": {
+    "note": "⛔ אלה המספרים שאני מדדתי מהקובץ שבריפו, ⛔ ולא ציטוט מה-README או מהתדריך (איסור 5).",
+    "csv_rows": 6713,
+    "tier_counts": {
+      "1 (A2)": 1243,
+      "2 (B1)": 2139,
+      "3 (B2)": 2417,
+      "4 (C1)": 914
+    }
+  },
+  "selection_rule": "⛔ ⛔ לא ייצור-לפי-רמה (STEP 4). הזמנה גוברת, והתדריך קובע סדר דטרמיניסטי: Tier 1 (A2) אלפביתי, ממשיך בדיוק מהסמן שהשאיר C-0354 — `lack`. מבחן כשירות הכותרת של לקח 15/28 הורץ על **רשימת המועמדים לפני שנכתבה שורה אחת**, בצורתו המדויקת: מילה היא כותרת **אם ורק אם כל** הצורות ש-targetForms(w) מייצרת נמצאות ב-allowed-words; אומת קודם על עשר מילות הביקורת — **10/10 שוחזרו** (work·abandon·achieve·despite·emphasis עוברות · abandoned·deliberate·apple·pencil·favourite נופלות). ⇒ ⛔ אפס שורות נזרקו אחרי כתיבה, חמישי ברציפות. בחלון `lack`…`negative` (108 שורות Tier 1 גולמיות) נכתבו 50 ודילגתי על **58**: 14 שכבר יש להן שורה (lake · last · lead · least · less · level · local · lose · low · market · member · mention · might · mistake), 10 ערכי לוכסן/רב-מילים (left-hand · license/licence · liter/litre · main course · make-up · marvelous/marvellous · meter/metre · mineral water · mp3 player · ms./ms), ו-33 שאינן כותרות NGSL לפי המבחן (lamp · lane · latest · laziness · learner · leisure · lemon · lemonade · liberty · lifestyle · lively · logical · lost · loudly · luckily · lunchtime · lyric · mall · married · max · meaning · medal · melon · midday · midnight · million · missing · mosque · motorway · mug · mushroom · mysterious · napkin). ⚠️ **כותרת אחת הוסרה אחרי מבחן הכשירות ו⛔ לא בגללו: `latter`.** ה-CSV מתייג אותה `adverb`, ו-levelOf מחזיר עליה A2/exact_pos רק בתגית הזאת — אבל `latter` ⛔ אינה תואר-פועל, וכתיבת `pos:\"adverb\"` היא **טענה דקדוקית שגויה** (R-010). בתגית הנכונה (`adjective`) היא B2, כלומר ⛔ מחוץ ל-Tier 1. ⇒ דולגה, ובמקומה נלקחה הכותרת הכשירה הבאה בתור, `negative`. הרמה של כל 50 אומתה עצמאית ב-levelOf(buildLevelMap([cefrj, octanove]), lemma, pos) — **50/50 A2 · exact_pos** (לקח 18).",
+  "quota_rule": "50. ⛔ אין מספר מוצהר: 41 § 9.4 היא הכרעת רוי שטרם נפלה, והתדריך § 4 מורה לקחת את BATCH_MIN_WORDS (50, lib/core/levelGate.ts) **כתקדים, ⛔ ולא כציטוט**. נרשם כאן כדי שה-PM יתקן בטיק אחד (לקח 22). זהו הטיק השביעי ברציפות שמשתמש באותו תקדים.",
+  "item_levels_D141": {
+    "why_a_sibling_field_and_not_items[]": "🔴 D-141 מורה שכל פריט יישא level ו-level_rationale. lib/core/batchRecord.ts:items() דורש **מחרוזת** בכל תא של items[] וזורק RangeError על אובייקט ⇒ הצורה שההכרעה נוקבת בה ⛔ אינה «שדה שהטוען מתעלם ממנו» אלא נפילה של build:ingest ו-measure:gate. ⇒ נכתב שדה־אח ברמה העליונה, item_levels[], מקביל ל-items[] לפי stem_index. T-224ⓑ/ⓓ הן שיקפלו אותו פנימה (לקח 26).",
+    "classifier": "מכני, ⛔ לא שיפוט: הגזע מולא במילת המטרה ונסרק מול רשימה סגורה — אותו מסווג בדיוק של C-0349…C-0354. CONTRAST = although · though · whereas · despite · however ⇒ 3 (41 § 6.2 שורה 3). LINK = because · so · but · unless · since · therefore · instead · yet ⇒ 2 (שורה 2). אחרת ⇒ 1 (שורה 1). level_rationale נושא את שם המילה שנמצאה ואת מספר השורה ב-§ 6.2.",
+    "distribution": {
+      "level_1": 48,
+      "level_2": 52,
+      "level_3": 50,
+      "level_4": 0
+    },
+    "why_no_level_4": "⛔ רמה 4 ב-41 § 6.2 היא «שתי מילים חסרות בתלות הדדית». gateSense פוסל גזע עם יותר מ-`____` אחד ⇒ רמה 4 ⛔ אינה ניתנת לביטוי בצורת השורה הנוכחית. זו מגבלת צורה, ⛔ לא בחירה.",
+    "what_the_level_does_not_claim": "⚠️ 41 § 6.2 מגדיר רמה בשני צירים — מבנה ומסיחים. השורה נושאת ארבעה מסיחים משותפים לשלושת הגזעים ⇒ ציר המסיחים ⛔ אינו ניתן לכיול פר-פריט בצורה הנוכחית. ⇒ level ו-level_rationale כאן נגזרים מציר ה**מבנה בלבד**."
+  },
+  "requested": 50,
+  "produced": 50,
+  "accepted": 50,
+  "rejected": 0,
+  "rejection_reasons": {},
+  "repair_rounds": 0,
+  "repair_note": "0 סבבי תיקון בשער. כל התיקונים נעשו בשכתוב הפריט **בטיוטה לפני ההרצה** (ראה pre_gate_checks), ⛔ ולא בתיקון-יד של פריט שנפסל (R-014).",
+  "translation_confidence_counts": {
+    "high": 48,
+    "medium": 2,
+    "low": 0
+  },
+  "translation_confidence_note": "2 medium: lover (חובב — נבחרה המשמעות «מי שאוהב תחום», ⛔ לא «מאהב», ושתיהן lover באנגלית) · native (מולד — נבחרה המשמעות «קיים באדם מלידה»; המשמעות השנייה, «של ארץ/שפת המוצא», ⛔ אין לה תואר עברי חד-מילי, והדוגמאות כאן ⛔ אינן מלמדות אותה). ⛔ 0 low — ⛔ לא כי הכול ודאי, אלא כי שורה שלא הייתי בטוח בה ⛔ לא נכתבה (תדריך § 5.2).",
+  "translation_he_present": 50,
+  "spot_check_count": 50,
+  "spot_check_rule": "AQL 1.0 — אצווה קטנה מ-80 מסומנת כולה.",
+  "pre_gate_checks": "1) **בריכת המסיחים הממוחזרים נבדקה פעם אחת לפני הכתיבה** (לקח 30) יחד עם **כל 100 המסיחים הסמנטיים ו-50 האורתוגרפיים** באותה הרצת `grep -x` (לקח 31): **15 נפסלו שם ו⛔ לא נכתבו** — hungry · seldom · colour · napkin · brick · militant · statue · robbery · murmur · theatre · artistic · rational · notional · artificial · neutral — והוחלפו במילים שנשלפו מ-allowed-words (tired · hardly · shape · plate · paper · primary · drawing · border · history · picture · electric · natural · chemical · silent · famous), ובבריכת «לא-קשור» מאומתת curtain · carpet · silver · river · potato · garden. ⇒ **0 מסיחים בדריפט בסבב 1**, שלישי ברציפות. 2) הפרש קבוצות ברמת הטוקן על **קובץ הטיוטה כולו** (2 דוגמאות · 3 גזעים · 4 מסיחים × 50) מול allowed-words פרט לנטיות מילת המטרה: סבב 1 — **24 פגיעות, כולן במשפטים שאני ניסחתי** (died ×2 · two · sore · thief · rope ×2 · screw · invisible ×2 · colour ×2 · leaked · soup · rots · shave · flour · noon · three · Friday · Hebrew · English ×2 · soap), מהן **2 מספרים-במילים ו-3 שם עצם פרטי** — כלומר לקח 1 עדיין נושך. סבב 2 — **0**. 3) בדיקת הד (לקח 20): פגיעה **אמיתית אחת** — mainly עם המסיח `daily` מול הטוקן `day` בגזע שלו («because the day was ____ wet»); הגזע נוסח מחדש ל-«the weather», ⛔ ולא המסיח. 4) הצבת כל מסיח בכל אחד משלושת הגזעים (לקחים 6·17·23·24): **34 מסיחים הוחלפו ו-9 גזעים הוצרו או נכתבו מחדש** לפני שנכתבה שורה. 5) דליפת «a/an ____»: נסרקה מכנית — פגיעה אחת (medical עם `electric` בגזע «a ____ problem»), הגזע נוסח מחדש ל-«her ____ problem».",
+  "antonym_orthographic_rule": "⚠️ **לקח 33 הופעל, וזו הפעלתו הראשונה.** ‏`mad` קיבל בתחילה `sad` במשבצת האורתוגרפית — ⛔ אנטונים שהוא **תשובה תקפה** בכל שלושת הגזעים, ו-gateSense ⛔ מעביר אותו. הוחלף ב-`map`. ⛔ אין באצווה כותרת שוללת מורפולוגית (il-/im-/in-/un-/dis-), ולכן זו הפעלה של **הכלל הכללי** של לקח 33 — «הבסיס/האנטונים ⛔ אינו מסיח אורתוגרפי» — ⛔ ולא של המקרה הפרטי שהוליד אותו.",
+  "connective_distractor_rule": "⚠️ הכרעה מוצהרת, ⛔ ולא שתיקה (לקח 27). ב-4 שורות מילות התפקוד/היחס של האצווה (myself · mainly · mostly · nearly) המסיח הסמנטי נבחר לפי 41 § 6.2 — «מתאים דקדוקית אך סותר את הקשר הלוגי» — כי שם קריאת המשפט השלם **כן** פוסלת אותו; ב-46 שורות התוכן נשמר לקח 7/17/23/24 (קטגוריית בחירה זרה, ⛔ לא אנטונים). ⛔ אין לזה שער, וזו הצהרה.",
+  "gate": "lib/core/contentSchema.ts · gateSense · **50/50 עברו בסבב אחד** · 100 משפטי דוגמה · 150 גזעים. מאומת שנית בריפו על ידי npm run measure:gate.",
+  "negative_control": "לקח 21ב — 100% בסבב ראשון מחייב בקרת שלילה. 25 פריטים פגומים בכוונה נבנו מהשורה lack והורצו באותה הרצה. 24 מהם, אחד לכל reason ש-gateSense מצהיר עליו (pos · headword · definition · 4× translation · 2× headword-missing · example-over-N · example-drift · items<3 · no-blank · 2-blanks · leaks-answer · stem<3-words · stem-drift · stem-over-N · distractor-empty · distractor-multiword · distractor-is-inflection · distractor-duplicate · relationType · <4-scorable) — **0/24 עברו**. הפריט ה-25 (מסיח מחוץ לרמה, 'hedgehog') **עבר** — ⛔ אינו reason ש-gateSense מצהיר עליו, אישור תשיעי ללקח 14, וזו בדיוק הפרצה שבדיקה מקדימה 1 סוגרת.",
+  "commission_effect_measured": {
+    "definition": "⚠️ ההגדרה שלי, ⛔ לא ציטוט: «מילה עם שורת משמעות» = כותרת שמופיעה ב-data/generated/batch-*.jsonl. מדוד לפני ואחרי באותה פקודה.",
+    "tier1_A2_with_a_sense_before": "417 / 1,243 = 33.5%",
+    "tier1_A2_with_a_sense_after": "467 / 1,243 = 37.6%",
+    "tier2_B1_with_a_sense_before": "110 / 2,139 = 5.1%",
+    "tier2_B1_with_a_sense_after": "110 / 2,139 = 5.1%  ⛔ ללא שינוי — התדריך מורה לסיים Tier 1 קודם",
+    "tier1_2_exam_range_before": "527 / 3,382 = 15.6%",
+    "tier1_2_exam_range_after": "577 / 3,382 = 17.1%  ⇒ נותרו 2,805",
+    "distinct_headwords_in_the_bank": "951 → 1,001",
+    "connectors_tier1_2_with_a_sense": "23 / 35 — ⛔ ללא שינוי, ראש התור נסגר ב-C-0349 (12 הנותרות ⛔ אינן כותרות)",
+    "seed_band_counts_before": {
+      "A1": 338,
+      "A2": 439,
+      "B1": 131,
+      "B2": 119
+    },
+    "seed_band_counts_after": {
+      "A1": 338,
+      "A2": 489,
+      "B1": 131,
+      "B2": 119
+    },
+    "seed_measured_by": "scripts/build-word-levels-sql.mjs עם SEED_OUT_DIR זמני למדידת ה«לפני» (1,027 מילים · 1,019 exact_pos · 832 agree); ה«אחרי» הוא הזרע שנכתב בקומיט הזה — ראה seed_report_after.",
+    "seed_report_after": "1,077 מילים · 1,069 exact_pos · 8 lemma_only · 0 unmatched · 882 agree · 195 disagree ⇒ כל 50 השורות החדשות נכנסו ב-exact_pos ובהסכמה מלאה עם המפה הממוזגת (1,019→1,069 · 832→882), לקח 18.",
+    "measure_gate_after": "1,137 שורות מ-22 קובצי אצווה · 2,274 משפטי דוגמה · 3,411 גזעים · **0 rows rejected**.",
+    "alphabetical_cursor": "‏Tier 1 אלפביתי: C-0354 סיים ב-`knowledge`; הטיק הזה התחיל ב-`lack` וסיים ב-`negative`. **הסמן לטיק הבא: `nervous`.** נותרו **260** כותרות כשירות ב-Tier 1."
+  }
+}
