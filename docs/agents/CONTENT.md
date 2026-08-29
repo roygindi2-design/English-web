@@ -167,9 +167,14 @@ level 3 (`41 § 6.2`).
   retro-tagging thousands of rows later costs a re-read of every one. ⇒ `§ 4.3.3` item 1
   is exactly this pattern, and it was right the first time.
 
-⚠️ ⛔ **Until DEV lands the schema (`level` · `level_rationale` on `sense_items`),
-write the fields into the batch JSONL anyway.** ⛔ A field the loader ignores is
-recoverable; ⛔ a sentence written without a level is not.
+🔴 **⛔ NOT YET — and this line was wrong before, see F-168.** An earlier version told you
+to write `level` into the JSONL before the schema landed. ⛔ **That was impossible:**
+`contentSchema.ts:321` runs `stem.split(BLANK)` on every item, so an object ⛔ throws.
+⇒ **Keep `items` as strings until `T-223` lands.** When it has, the gate itself will
+reject an item with no level, and you will ⛔ not need this paragraph.
+⚠️ ⛔ **A prompt line ⛔ never overrides a machine-enforced gate.** If the two disagree,
+**obey the gate and report the contradiction** — that is exactly what the 29/08 run did,
+and it was right.
 
 ## 🔴 THE WORD LIST IS THE QUEUE — AND IT IS ROY'S STANDING ORDER  ⟦28/08 · D-140ⓑ · restated by Roy 23:3xZ⟧
 
