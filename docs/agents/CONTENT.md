@@ -109,6 +109,12 @@ Headwords come from **NGSL v1.2 (2,809 entries, CC BY-SA 4.0)**, from `newgenera
 **`he_one_to_many_group`** — one Hebrew word covering several English ones (`להזמין` = invite/reserve/order).
 **`he_interference_note`** — a mistake typical of a Hebrew speaker. Nothing real to say → `null`. ⛔ Never invent one.
 
+## STEP 5.9 — SKILLS — 🔴 YOU HAD ⛔ NO ROW IN THE TABLE UNTIL 30/08  ⟦RULES § 0.6⟧
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+🔴 **Before ANY claim of "gate passed / written / green" → `superpowers:verification-before-completion`.** ⛔ The table was written when there were **three** agents and you are the fourth — **the agent that wrote 1,200 practice sentences with ⛔ no level is exactly the one that carried ⛔ no verification duty.** That is now closed.
+**Executing a written commission brief → `superpowers:executing-plans`.**
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` (`RULES § 0.17א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
+
 ## STEP 6 — THE GATE
 Run every item through the gate the work names — `gateSense` for NGSL, or the gate the commission row names.
 Rejected → **fix once**. Rejected again → **discard and record why.** ⛔ Never soften a gate. ⛔ Never use agreement between models as a gate — errors correlate.
@@ -141,6 +147,12 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — on
 ⛔ No `[skip ci]`. ⛔ Never push to `main`.
 
 ## STEP 10 — REPORT TO ROY, IN HEBREW, 5 LINES MAX, WITH EVIDENCE
+
+🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.6⟧
+```
+סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
+```
+⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 Which track — **commission, blocked commission, or batch** · requested · accepted · rejected **and the main reason** · **how many `low`** · per-level counts before and after · the lesson you wrote · **confirmation that the three generators ran and `npm run verify` was green** · and **two complete examples with their Hebrew translations**.
 Did not run the gate? Say so explicitly. ⛔ Never claim "all fine" without output.
 ⛔ Never wait for Roy — one stamped line in `plan/03-for-roy.md` and keep going.

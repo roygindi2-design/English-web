@@ -114,7 +114,48 @@ open row nobody closed is exactly what `loop:health` check 7 goes red on.
 ⚠️ § A1 has a **ceiling of 12 lines**. Line 13 means deleting one — ⛔ not lengthening
 the list. Delete the one that has not recurred in the last month.
 
+## 🩺 STEP 1.7 — IMPROVE MODE, AND WHEN YOU ENTER IT  ⟦NEW 30/08 · D-146 · RULES § 0.5⟧
+
+**You have FOUR triage modes now, ⛔ not three.** Order: 🔬 research → 📐 planning → **🩺 IMPROVE** → 💤 quiet. ⇒ ⛔ **You ⛔ do NOT exit quiet while `plan/61-deferred.md` has something in it.**
+
+**Enter 🩺 when EITHER holds:**
+```
+ACTIVE_WORKSTREAM has ⛔ no eligible row      ⇐ the loop is running dry RIGHT NOW
+   ⛔ or ⛔
+this is the 17:00Z tick                       ⇐ one improvement tick a day, by the clock
+```
+
+**What you do in 🩺, and ⛔ nothing else:** read `plan/61-deferred.md`, pick **one** sealed workstream, write **at most two** rows against it, and set the field:
+```
+IMPROVE_TARGET: <workstream>        ⇐ plan/00-control.md. Empty = the mode is OFF.
+```
+
+🔴 **FIVE FENCES. ⛔ Break one and this becomes a second active workstream through the back door:**
+```
+1. ONE target, named.                                  ⛔ never two.
+2. A workstream with THREE written seals (36 § 13.1).  ⛔ never the active one.
+3. ≤ 2 rows.
+4. Every row `סוג עבודה = נוחות` (§ 0.5ב).
+5. Every row cites a finding or a number FROM `61-deferred.md` (D-144ⓑ).
+```
+⚠️ **⛔ You ⛔ do NOT derive improvements from memory.** `61-deferred.md` is the source; an improvement re-derived each tick is an improvement invented (lesson 10). ⛔ Nothing in `61-deferred.md` for that workstream ⇒ ⛔ ⛔ no 🩺 rows, and you say so in one line.
+⚠️ **DEV takes these rows LAST** — only when `ACTIVE_WORKSTREAM` is dry (`DEV.md` STEP 2). ⛔ A 🩺 row ⛔ never competes with real slice work.
+**Turning it off is emptying the field.** ⛔ No `revert`, ⛔ no discussion.
+**Enforced by** `loop:health` check 14 — target sealed, ≤2 rows. **Advisory for 3 days, then blocking.**
+
 ## STEP 2 — PICK THE SLICE
+
+### ⚖️ FIRST, DECIDE ONE FINDING. ⛔ BEFORE YOU OPEN ANYTHING.  ⟦NEW 30/08 · D-147⟧
+**Measured 30/08: 87 open findings, most of them YOURS**, and six of them block rows that are already written — F-140 · F-142 · F-143 · F-144 · F-164 · F-167. ⇒ **you are blocking yourself**, and the loop has no other way to clear it.
+⇒ **Every tick, before you open a slice: resolve ONE PM-owned finding that blocks a row.** Write the decision, close the finding, unblock the row.
+✅ 🔴 **A tick that decided one and opened ⛔ no slice is a SUCCESSFUL tick.** This **replaces** work, ⛔ it does not add any: 3 ticks a day drains the pile in weeks at ⛔ zero extra cost.
+⚠️ ⛔ **Nothing PM-owned is blocking a row?** Say that in one line and move on — ⛔ do not invent a decision to satisfy the rule.
+**Enforced by** `loop:health` check 12 — «no PM-owned finding open more than 3 days that blocks a row». **Advisory for 3 days, then blocking.**
+
+### 📊 AND THE MIX YOU ARE AIMED AT — 4/1/1, SOFT  ⟦NEW 30/08 · D-147⟧
+Over a window of **6 PM ticks: 4 new slices · 1 improvement (🩺) · 1 decision-and-hygiene.** Measured today: **73 `מבנה` rows against 45 `נוחות`**.
+⚠️ **⛔ This is a REPORTED NUMBER, ⛔ not a brake and ⛔ not a score.** `loop:health` prints it; ⛔ nothing fails on it. Two weeks, then it tightens to 3/2/1 — ⛔ but ⛔ not while DEV is running dry.
+
 Read `plan/03-for-roy.md`, `plan/02-inbox.md`, **`docs/plan-open.md`**, `plan/20-alerts.md`, **and `plan/25-content-commissions.md`**.
 ⛔ **FIRST, READ `ACTIVE_WORKSTREAM` IN `plan/00-control.md`** (QA sets it, RULES § 0.17ז). ⛔ **You open slices in that workstream ONLY.** The single exception is an open 🔴 that stops a learner. ⚠️ `36 § 13` is a **sequence**, ⛔ not a menu — three workstreams open at once is how none of them ever finishes.
 **Priority:** 1. an open 🔴 that stops a learner learning · 2. an item in `02-inbox.md` **that belongs to the active workstream** · 3. the next item of the active workstream in `36 § 13` / `39 § 9`.
@@ -128,6 +169,19 @@ by how much. ⚠️ **A disappointing number is the RESULT, ⛔ not a failure** 
 reason the question exists. Measured example that started this rule: a learner reads a
 story, meets **~80 distinct words**, taps two, and the level counter moves **2 out of 300**.
 The screen passes the render and ⛔ misses the point.
+
+### 🩺 A SLICE HAS TWO SHAPES, ⛔ NOT ONE (D-144 · new 30/08)
+> **ⓐ a capability that did not exist** — the sentence above, unchanged.
+> **⛔ OR ⓑ a MEASURED DELTA on a number that already exists** — «4 taps instead of 7» · «the failure state has a way out» · «the action carries the same name on all three screens».
+
+⛔ **ⓑ ⛔ does NOT open D-098's negative list. It stands word for word:** ⛔ schema-only · ⛔ refactor · ⛔ a rule written down · ⛔ a test added. ⛔ Not a slice, ⛔ not even with a number attached.
+🔴 **A ⓑ row carries ONE of these two, literally, inside the task cell — ⛔ or it is ⛔ not a ⓑ row:**
+```
+מ-X ל-Y        ⇐ two numbers, same unit, measured before and after
+F-NNN          ⇐ the id of the open finding the row closes
+```
+⛔ **And its `סוג עבודה` tag is `נוחות`** (§ 0.5ב) — a delta ⛔ may not hide as `מבנה` and escape the count.
+⚠️ **Where ⓑ rows come from: `plan/61-deferred.md` (D-145), ⛔ never from your own memory.** An improvement re-derived each tick is an improvement invented (lesson 10).
 ⛔ **And this is ⛔ not licence to invent pedagogy** (R-010) or to open work outside
 `ACTIVE_WORKSTREAM` — a good idea outside the active workstream goes to `02-inbox`.
 
@@ -147,6 +201,9 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed famili
 
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+⛔ **Before you open a slice: `codebase-investigator`** ⟦NEW 30/08⟧ — the half of D-144 that runs BEFORE the row is written. `check:plan` element 10 catches an extension declared as a new build **after**; this stops you writing it in the first place.
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.17א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Feature, UX plan or behaviour change → **`superpowers:brainstorming`** first. Research with 2+ angles → `dispatching-parallel-agents`. Before ANY claim of researched/verified/closed → **`verification-before-completion`**.
 ⛔ In UX plans: no over-centred layouts (arena excepted) · no purple outside `/arcade` · no single uniform radius · no Inter.
 
@@ -171,6 +228,12 @@ Research findings are **table rows, not prose**. `00-control.md` is state only, 
 ⛔ Never push to `main`.
 
 ## STEP 7 — REPORT TO ROY, IN HEBREW, 5 LINES MAX
+
+🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.6⟧
+```
+סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
+```
+⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 The slice you opened and what the learner will be able to do · which render it targets · **which workstream and what the balance table says** · **what you routed and to whom** · what is genuinely still Roy's.
 ⛔ Never wait for Roy. Need a decision → one **stamped** line in `03-for-roy.md` and keep working.
 

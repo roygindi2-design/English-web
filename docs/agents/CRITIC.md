@@ -142,6 +142,11 @@ agent to ignore the gate.
 fonts; a numeric diff calls every pixel a difference, and a tool that fails a perfect
 screen is a tool everyone learns to ignore.
 
+## STEP 4.9 — SKILLS  ⟦NEW 30/08 · RULES § 0.6⟧
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+Before ANY claim of green/verified/merged → **`superpowers:verification-before-completion`**. Merging → **`superpowers:finishing-a-development-branch`** — ⛔ **yours alone; ⛔ no other agent may run it.**
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` (`RULES § 0.17א`).
+
 ## ⭐ STEP 5 — THE GATE. MERGE, OR FILE. ⛔ THERE IS NO THIRD OUTCOME. (RULES § 0.17)
 
 ⛔ **FIRST, ONE LINE THAT CAN END THIS STEP:** `LOCK_HELD_BY` in `plan/00-control.md` is **anything other than empty** ⇒ ⛔ **no merge this tick.**
@@ -222,6 +227,16 @@ not "works". · **ⓒ persists** — what the learner did is still there on the 
 PM** — ⛔ not a finding that gets written down and forgotten. ⚠️ You still move the field
 (there is no work left there either way) — but you say **which of the two it was**:
 delivered, or ⛔ nobody wrote the next slice.
+#### 🔴 A FOURTH LINE, AND IT IS WRITTEN BEFORE YOU MOVE THE FIELD (D-145 · new 30/08)
+Three seals say what **shipped**. ⛔ Nothing says what was **left behind** — and `36 § 13` is a **one-way sequence**, so the leftovers are never collected by anyone. Measured 30/08: `story` left **5 ⛔ rows** whose release condition is «when `story` becomes active again», a condition the sequence ⛔ cannot produce; `cards` moved **without seal ⓐ** with four open PM findings behind it.
+⇒ **In the SAME commit as the seals, and ⛔ BEFORE you move `ACTIVE_WORKSTREAM`, append one row to `plan/61-deferred.md`:**
+```
+| <workstream> | <date> | ⬜ left (ids) | open findings (ids) | plan boxes unticked (plan · n/N) | C-XXXX |
+```
+⛔ **`36 § 13.1` is UNCHANGED — the three seals are exactly what they were.** This is a register, ⛔ not a fourth seal, and ⛔ you still ⛔ do not touch `36`.
+⚠️ **Who reads it: the PM in 🩺 IMPROVE mode (D-146), and ⛔ nobody else.** Every improvement row he opens must cite a finding or a number from your row. ⛔ Skip the row and the PM has nothing to read — so he invents (lesson 10).
+⚠️ **Measured, ⛔ not summarised:** the ids come from `docs/plan-open.md` (the ⬜/⛔ sections, the findings list and the 📐 plans index), ⛔ not from what you remember of the tick.
+
 ✅ **What the seals buy, and why they are the bar:** with all three, every connection
 between this workstream and the rest of the app exists and is measured — so future work
 inside it can run **on its own branch** without breaking navigation, saving, or any other
@@ -304,6 +319,12 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 ⚠️ **Your register writes go to `work/current` like everyone else's** — and then travel to `dev` through your own `--ff-only`. ⛔ The only thing you push straight to `dev` is that fast-forward. ⛔ You never write to `main`.
 
 ## STEP 9 — REPORT TO ROY, IN HEBREW, 4 LINES MAX
+
+🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.6⟧
+```
+סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
+```
+⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 `loop health: N/8` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 

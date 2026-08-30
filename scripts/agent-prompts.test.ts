@@ -275,6 +275,84 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(qa, '⛔ הנוסח הישן חזר').not.toMatch(/`LOCK_HELD_BY: DEV` in/);
   });
 
+  /**
+   * 🔬 **גל 1 · 30/08 — הטענות שהופכות את שינויי הטקסט מ«אפשר לאבד בשקט» ל**חוזה**.**
+   *
+   * ⛔ **למה זה ⛔ אינו בדיקת סגנון.** כל שינוי בגל 1 הוא **טקסט בפרומפט** — ⛔ אין לו
+   * קומפיילר, ⛔ אין לו טסט יחידה, ו⛔ אין שום דבר שיצעק אם הקומיט הבא ידרוס אותו.
+   * ‏`agent-prompts.test.ts` הוא **המקום היחיד בריפו שמפיל את הבנייה על סטייה בפרומפט**,
+   * ולכן כל חוליה שבלעדיה מנגנון שלם מת נבדקת כאן, ⛔ ולא במקום אחר.
+   */
+  it('🔬 ארבעתם נושאים את שורת הסקילים בדוח — הפריט הזול ביותר בלופ', () => {
+    for (const a of AGENTS) {
+      expect(text(a), `${a}: שורת הסקילים`).toContain('סקילים:');
+      // ⛔ ו«⛔ אף אחד» חייב להישאר תשובה חוקית — בלעדיה הסוכן ינחש כדי לא להישמע ריק,
+      // וזו בדיוק המדידה היחידה שהשורה קיימת בשבילה.
+      expect(text(a), `${a}: «⛔ אף אחד» כתשובה חוקית`).toContain('⛔ אף אחד');
+      expect(text(a), `${a}: using-superpowers בפתיחה`).toContain('superpowers:using-superpowers');
+    }
+  });
+
+  /**
+   * ⛔ **הרשימה השלילית, וזו ⛔ אינה החמרה תיאורטית.** ענף יחיד `work/current` + נעילה
+   * אחת ב-`00-control` הם מה שמחזיק את F-121 ואת בדיקה 10 ב-`loop:health`. סוכן
+   * שמפצל ענף שובר את שניהם **בשקט** — ⛔ אף בדיקה קיימת ⛔ לא הייתה רואה אותו.
+   */
+  it('⛔ worktrees אסור לארבעתם, ו-finishing-a-development-branch הוא של QA לבדו', () => {
+    for (const a of AGENTS) {
+      expect(text(a), `${a}: איסור worktrees`).toContain('superpowers:using-git-worktrees');
+    }
+    for (const a of ['DEV', 'PM', 'CONTENT'] as const) {
+      expect(text(a), `${a}: finishing שייך ל-QA`).toMatch(/finishing-a-development-branch` is QA/);
+    }
+    expect(text('CRITIC'), 'QA: המיזוג שלו').toContain('superpowers:finishing-a-development-branch');
+  });
+
+  /**
+   * ⛔ **D-144 — שתי צורות לפרוסה, והתבנית שבלעדיה «דלתא» היא מילה.**
+   * ⛔ הרשימה השלילית של D-098 נבדקת כאן במפורש, מפני ש**היא** מה שההרחבה מסכנת.
+   */
+  it('PM נושא את הצורה השנייה של פרוסה — ותבנית הדלתא, ⛔ לא סיסמה', () => {
+    const pm = text('PM');
+    expect(pm, 'PM: D-144').toContain('D-144');
+    expect(pm, 'PM: תבנית «מ-X ל-Y»').toContain('מ-X ל-Y');
+    // ⛔ הרשימה השלילית ⛔ אינה נפתחת בהרחבה — זו כל הנקודה.
+    expect(pm, 'PM: הרשימה השלילית שרירה').toMatch(/schema-only/);
+    expect(pm, 'PM: מקור השורות ⛔ אינו זיכרון').toContain('61-deferred');
+  });
+
+  /**
+   * 🔴 **החוליה של D-146, וזו הטענה שמצדיקה את הבדיקה הזאת לבדה.**
+   * ‏PM כותב שורות שיפור בזרימה **חתומה**; ‏DEV מסנן כל שורה שאינה ב-`ACTIVE_WORKSTREAM`.
+   * ⇒ ⛔ בלי הצעד האחרון בסדר הבחירה של DEV, השורות נכתבות ו**איש ⛔ לעולם לא לוקח
+   * אותן** — המנגנון כולו הופך לאות מתה, ⛔ ושום בדיקה אחרת ⛔ אינה רואה את זה.
+   */
+  it('🔴 שני צדי מצב IMPROVE כתובים: PM כותב, ו-DEV לוקח כשהזרימה ריקה', () => {
+    const pm = text('PM');
+    expect(pm, 'PM: המפתח').toContain('IMPROVE_TARGET');
+    expect(pm, 'PM: המצב הרביעי').toMatch(/IMPROVE MODE/);
+    const dev = text('DEV');
+    expect(dev, '🔴 DEV: החוליה — ⛔ בלעדיה השורות ⛔ לעולם לא יבוצעו').toContain('IMPROVE_TARGET');
+    // ⛔ ⛔ ולא «מזכיר את המפתח»: הוא חייב לשאת אותו כ**צעד אחרון**, ⛔ אחרי הזרימה הפעילה.
+    expect(dev, 'DEV: אחרון בסדר הבחירה').toMatch(/LAST STEP OF THE PICK ORDER/);
+  });
+
+  /** ⛔ D-145 — QA כותב את החוב הנדחה **בזמן החתימה**, ⛔ ו-`36 § 13.1` ⛔ אינו משתנה. */
+  it('QA נושא את הרגיסטר הנדחה, ⛔ ובלי לגעת בשלוש החותמות', () => {
+    const qa = text('CRITIC');
+    expect(qa, 'QA: הרגיסטר').toContain('plan/61-deferred.md');
+    expect(qa, 'QA: לפני הזזת המוקד').toContain('ACTIVE_WORKSTREAM');
+    // ⛔ החותמות נשארות שלוש — הטענה נכתבה כדי שהרגיסטר ⛔ לא יזחל לחוקה של רוי.
+    expect(qa, 'QA: 36 § 13.1 ⛔ אינו משתנה').toMatch(/36 § 13\.1` is UNCHANGED/);
+  });
+
+  /** ⛔ D-147 — הכרעה אחת בכל טיק, ⛔ והיא מחליפה עבודה ⛔ ולא מוסיפה. */
+  it('PM נושא את חובת ההכרעה, ואת ההיתר המפורש לטיק בלי פרוסה', () => {
+    const pm = text('PM');
+    expect(pm, 'PM: D-147').toContain('D-147');
+    expect(pm, 'PM: טיק שהכריע הוא טיק מוצלח').toMatch(/SUCCESSFUL tick/);
+  });
+
   /** ⛔ פרומפט שהתרוקן הוא פרומפט שאיש לא ישים לב אליו עד שסוכן ירוץ בלי הוראות. */
   it('⛔ אף פרומפט ⛔ אינו מתרוקן — רצפה נמדדת, ⛔ לא מוצהרת', () => {
     for (const a of AGENTS) expect(text(a).length, a).toBeGreaterThan(8000);

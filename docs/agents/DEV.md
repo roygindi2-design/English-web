@@ -147,7 +147,17 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 ⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — the single exception is a 🔴 finding that stops a learner.
 Order: **`RELEASE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → `ACTIVE_TASK_ID` → the next task in the active workstream that is not ⛔.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
-**No eligible work? Exit now** — no `npm install`, no commit. One line.
+### 🩺 LAST STEP OF THE PICK ORDER, ⛔ AND ONLY LAST — `IMPROVE_TARGET`  ⟦NEW 30/08 · D-146⟧
+⛔ **No eligible row in `ACTIVE_WORKSTREAM`? ⛔ Do NOT exit yet. Read `IMPROVE_TARGET` in `plan/00-control.md` first.**
+```
+IMPROVE_TARGET: ""        ⇒ empty. ⛔ Nothing here. Exit, and name the reason.
+IMPROVE_TARGET: <name>    ⇒ take a `נוחות` row from that workstream. ⛔ At most 2 exist.
+```
+🔴 **This step is the ONLY reason 🩺 rows are ever executed.** You filter every row to `ACTIVE_WORKSTREAM`, so a row the PM opens in a sealed workstream is ⛔ ineligible and ⛔ nobody would ever take it — the rows would be written and ⛔ never built, forever.
+⛔ **⛔ Never before the active workstream.** An improvement row ⛔ does not compete with slice work; it exists to fill a tick that would otherwise be **clone, prompt, ⛔ zero output** — measured at up to **12 empty ticks a day**.
+⚠️ **Say which you took** in the report line: «הזרימה הפעילה `<name>` ריקה — לקחתי שורת שיפור מ-`IMPROVE_TARGET: <name>`».
+
+**No eligible work anywhere — ⛔ including `IMPROVE_TARGET`? Exit now** — no `npm install`, no commit. One line.
 🔴 **And if the reason is that `ACTIVE_WORKSTREAM` itself is dry, SAY SO IN THOSE WORDS:** «הזרימה הפעילה `<name>` ריקה — ⛔ אין משימה כשירה». ⚠️ Measured 25/08: the active workstream `story` holds **6 open tasks** against **12 DEV ticks a day** — it drains in under a day, and only QA can move the focus. ⛔ A quiet exit that does not name the reason leaves QA with no way to know the loop is idling, and the loop then burns a whole day on empty ticks.
 
 ⛔ **Picked one? Read its full row, and ONLY its row:** `grep -n '^| T-185 |' plan/50-tasks.md`.
@@ -177,6 +187,9 @@ Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `supe
 ⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.5ג`).
 
 ## STEP 4 — SKILLS
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`, and `RULES § 0.6` ⛔ did not carry it. That is why dozens of plans were "delivered" with unticked boxes.
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.17א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Before code → `test-driven-development`. Bug or failing test → `systematic-debugging` BEFORE proposing a fix. Done → `requesting-code-review`. Findings → `receiving-code-review`.
 Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
 ✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
@@ -261,6 +274,12 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 ⚠️ **`RELEASE_BLOCKERS` in `plan/00-control.md` is not empty? Take it FIRST, before anything else in STEP 2.** It is the minimum needed to unblock a merge, ⛔ not a wish list.
 
 ## STEP 8 — REPORT TO ROY, IN HEBREW, 5 LINES MAX, WITH EVIDENCE
+
+🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.6⟧
+```
+סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
+```
+⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 Which mode · what you did · **which workstream** · **the exact output of `npm run verify`** · on a UI tick, the walk numbers and which render you matched · **one line per reversible call under `RULES § 0.16`**. Quiet tick = one line.
 ⛔ **Never wait for Roy.** Need something → one stamped line in `03-for-roy.md` and move on.
 
