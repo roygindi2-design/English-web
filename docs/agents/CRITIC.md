@@ -22,6 +22,86 @@ Cloning (before `scripts/g` exists) still needs the inline form:
 export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone …
 ```
 
+## 🚦 STEP 0.1 — WHICH LANE ARE YOU? ⛔ READ THIS BEFORE ANYTHING ELSE.  ⟦NEW 30/08 · wave 3⟧
+
+**Your opening message declares one line, and it is binding:**
+```
+מסלול: שער        ⇐ the CHEAP tick.  05:00Z and 23:00Z.
+מסלול: מלא        ⇐ the FULL tick.   11:00Z and 19:00Z.
+```
+⛔ **⛔ No line at all ⇒ treat it as `מלא`.** A missing declaration ⛔ must never
+silently buy the cheap path — the cheap path skips the product walk and the seals.
+
+⚠️ **WHY THE LANE IS DECLARED IN THE MESSAGE AND ECHOED IN YOUR REPORT.** The model a
+scheduled task runs on lives in the **task definition**, ⛔ not in this repo — which
+makes it exactly the same kind of channel the prompts were before 24/08
+(`RULES § 0.17ח`): ⛔ nothing here could read it, ⛔ no test could check it, ⛔ no
+change to it could be reviewed. ⇒ the lane is written where an agent can read it and
+a human can review it, and your report line is the only evidence that the split is
+working at all.
+
+---
+
+### 🚦 IF `מסלול: שער` — THIS SECTION IS YOUR WHOLE TICK. ⛔ DO NOT READ PAST IT.
+
+⛔ **You are a cheap gate tick. Your window is small and this file is 25KB.** Reading
+the rest of it would mean **doing** the rest of it — the product walk, the findings,
+the seals — on a budget that ⛔ cannot carry them, and half-doing the seals is worse
+than ⛔ not doing them.
+
+**Do exactly this, in order, and then stop:**
+```
+1.  date -u +%Y-%m-%dT%H:%M:%SZ
+2.  read plan/00-control.md — and ⛔ NOTHING else
+      PAUSED_BY_HUMAN: true          ⇒ one line, exit.
+      LOCK_HELD_BY is not empty      ⇒ say so, ⛔ no merge, exit.
+3.  ./scripts/g fetch origin
+    ./scripts/g rev-list --count origin/dev..origin/work/current
+4.  npm install && npm run verify
+5.  npm run loop:health
+6.  verify GREEN and rev-list > 0 and the lock empty ⇒
+      ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
+    verify RED ⇒ ⛔ NO merge. Report the failing command's output verbatim. ⛔ Nothing else.
+7.  REPORT, 4 lines, Hebrew:
+      מסלול: שער · verify ✅/❌ · loop health: N/14 · merged / ⛔ not merged and why ·
+      how many commits wait · סקילים: <…>
+```
+
+⛔ **WHAT A GATE TICK ⛔ MUST NOT DO — and each of these is ⛔ not a matter of budget:**
+```
+⛔ walk the product            ⛔ write a finding            ⛔ touch 60-findings
+⛔ seal a workstream           ⛔ move ACTIVE_WORKSTREAM     ⛔ write 61-deferred
+⛔ set RELEASE_READY           ⛔ write the three taps       ⛔ refresh a ⟨נבדק⟩ stamp
+⛔ flip 🟣 to ✅               ⛔ run npm run archive        ⛔ mark any row
+```
+🔴 **The seals and the focus move are ⛔ NOT yours, and the reason is measured:** the
+registers are **2.1MB** against a 200K context. A cheap tick ⛔ cannot read what a
+seal is a judgement about, so a seal written here would be a seal **invented** here —
+and `36 § 13.1` would go from a measurement to a rubber stamp in one tick.
+⚠️ **`loop:health` failed? ⛔ Do NOT file it.** Print it and say in your report that
+the full tick owes findings for it. Filing needs the registers you did ⛔ not read.
+
+✅ **A gate tick that merged nothing and reported one red command is a SUCCESSFUL
+tick.** Its whole job is: is the branch shippable right now, yes or no.
+🔴 **AND THE TEST OF THE SPLIT ITSELF:** if a tick that declared `שער` ever writes a
+finding, a seal or a stamp, **the lane separation ⛔ did not work** and the cheap
+trigger gets turned off. Your own report is the evidence.
+
+**⇒ STOP HERE. ⛔ Do not read the rest of this file.**
+
+---
+
+### 🚦 IF `מסלול: מלא` — everything below is yours, unchanged.
+
+You carry the whole file: the walk, the findings, the seals, `61-deferred`,
+`ACTIVE_WORKSTREAM`, `RELEASE_READY`, the three taps, the stamps. ⛔ Nothing was
+removed from your tick — the cheap lane was **added beside** it, ⛔ not carved out of it.
+⚠️ **And you run twice a day now, ⛔ not four times.** ⇒ ⛔ never postpone a seal to
+"the next tick": the next tick is **12 hours** away, and DEV fires **six times** in
+between.
+
+---
+
 ## ⛔ YOUR JOB — Roy's live decisions (D-104 · D-106 · D-107)
 
 **You no longer ship anything. Merging to `main` left the loop entirely.** It is Roy's action, by hand, every few days. ⛔ You do not attempt it, do not report it failed, and **the loop never waits for it and never halts because of it.**
@@ -335,7 +415,7 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-`loop health: N/14` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
+🚦 **`מסלול: שער` or `מסלול: מלא` — the FIRST word of the report, every tick** (`STEP 0.1`) · `loop health: N/14` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 
 ## AMIRNET — a new review axis  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧

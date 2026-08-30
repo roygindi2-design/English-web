@@ -148,8 +148,14 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     // עקיפת השער, והיא הייתה עוברת בדיקה רופפת.
     const qa = text('CRITIC');
     const pushes = [...qa.matchAll(/^.*push +origin +dev\b.*$/gm)].map((m) => m[0]);
-    expect(pushes).toHaveLength(1);
-    expect(pushes[0]).toContain('merge --ff-only work/current');
+    // ⛔ **TWO occurrences since the lane split (30/08), ⛔ and the rule got STRICTER,
+    // ⛔ not looser:** the gate lane and the full lane each carry the command once.
+    // ⛔ The assertion is ⛔ not «how many» — it is that **every** line that pushes to
+    // `dev` also carries the `--ff-only` on the SAME line. A push on its own line is
+    // exactly the gate-bypass this test exists against, and it would have passed a
+    // «contains ff-only somewhere» check.
+    expect(pushes.length, '⛔ אף דחיפה ל-dev מחוץ לשני המסלולים').toBe(2);
+    for (const line of pushes) expect(line).toContain('merge --ff-only work/current');
   });
 
   it('QA לבדו ממזג, ורק ב-`--ff-only`', () => {
@@ -351,6 +357,46 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     const pm = text('PM');
     expect(pm, 'PM: D-147').toContain('D-147');
     expect(pm, 'PM: טיק שהכריע הוא טיק מוצלח').toMatch(/SUCCESSFUL tick/);
+  });
+
+  /**
+   * 🚦 **גל 3 · פיצול ה-QA לשני מסלולים.**
+   *
+   * ⚠️ **המודל יושב בהגדרת המשימה המתוזמנת ⛔ ולא בריפו** ⇒ הוא **ערוץ סמוי בדיוק כמו
+   * שהפרומפטים היו לפני 24/08** (`RULES § 0.17ח`). ⛔ אי אפשר לבדוק מכאן על איזה מודל
+   * טריגר רץ — **אבל אפשר לבדוק שהפרומפט יודע שיש שני מסלולים, שהזול נעצר, ושהחתימה
+   * ⛔ אינה שלו.** זה כל מה שמפריד בין «טיק זול» ל«טיק שחותם על מה שלא קרא».
+   */
+  it('🚦 QA נושא שער מסלול בראש הקובץ, והזול נעצר בו', () => {
+    const qa = text('CRITIC');
+    expect(qa, 'שער המסלול').toMatch(/STEP 0\.1 — WHICH LANE ARE YOU/);
+    expect(qa, 'שני המסלולים בשמם').toContain('מסלול: שער');
+    expect(qa, 'שני המסלולים בשמם').toContain('מסלול: מלא');
+    // ⛔ ⛔ ולא «מזכיר מסלול זול»: הוא חייב **לעצור** שם, אחרת Haiku יקרא 25KB
+    // ויבצע את מה שקרא.
+    expect(qa, '⛔ הזול נעצר').toMatch(/STOP HERE\. ⛔ Do not read the rest of this file/);
+    // ⛔ ברירת המחדל בהיעדר הצהרה היא היקרה — הצהרה חסרה ⛔ אינה קונה את המסלול הזול.
+    expect(qa, 'ברירת מחדל = מלא').toMatch(/⛔ No line at all ⇒ treat it as `מלא`/);
+  });
+
+  /**
+   * 🔴 **הטענה שמגינה על `36 § 13.1`.** חתימה היא **שיפוט** על 2.1MB של רגיסטרים מול
+   * חלון של 200K. טיק זול שחותם ⛔ אינו חוסך — הוא **ממציא**, והחוקה של רוי הופכת
+   * מחותמת מדודה לחותמת גומי בטיק אחד.
+   */
+  it('🔴 טיק השער ⛔ אינו חותם, ⛔ אינו מזיז מוקד ו⛔ אינו כותב ממצא', () => {
+    const qa = text('CRITIC');
+    for (const forbidden of [
+      '⛔ seal a workstream',
+      '⛔ move ACTIVE_WORKSTREAM',
+      '⛔ write 61-deferred',
+      '⛔ write a finding',
+      '⛔ set RELEASE_READY',
+    ]) {
+      expect(qa, `⛔ אסור לטיק השער: ${forbidden}`).toContain(forbidden);
+    }
+    // ⛔ ומבחן הפיצול עצמו כתוב בפרומפט: טיק שער שכתב ממצא = ההפרדה ⛔ לא עבדה.
+    expect(qa, 'מבחן הפיצול').toMatch(/lane separation ⛔ did not work/);
   });
 
   /** ⛔ פרומפט שהתרוקן הוא פרומפט שאיש לא ישים לב אליו עד שסוכן ירוץ בלי הוראות. */
