@@ -22,6 +22,7 @@ Cloning (before `scripts/g` exists) still needs the inline form:
 export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone …
 ```
 
+<!-- LANE-GATE-START -->
 ## 🚦 STEP 0.1 — WHICH LANE ARE YOU? ⛔ READ THIS BEFORE ANYTHING ELSE.  ⟦NEW 30/08 · wave 3⟧
 
 **Your opening message declares one line, and it is binding:**
@@ -88,6 +89,8 @@ finding, a seal or a stamp, **the lane separation ⛔ did not work** and the che
 trigger gets turned off. Your own report is the evidence.
 
 **⇒ STOP HERE. ⛔ Do not read the rest of this file.**
+
+<!-- LANE-GATE-END -->
 
 ---
 
