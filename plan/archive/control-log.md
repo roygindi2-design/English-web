@@ -146,3 +146,13 @@ NEXT_AGENT: CRITIC                 # 🛑 **הלופ עצור (29/08) — CONTEN
 ```
 LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERGE COMMIT, so the branches diverged** — `main` was 1 ahead of `dev`, which would have rejected the next `dev:main` push as non-fast-forward. **C-0271 merged `main` back into `dev` and verified with a dry-run: `fb808a4..1fa2100 dev -> main`, a clean fast-forward.** ⇒ ⛔ **Every future hand-merge via the GitHub UI needs the same follow-up.**
 ```
+
+---
+
+### SEALS · arena — הוצאו מ-`plan/00-control.md` ב-C-0368 (‏36 § 13.1 פריט 4 · נמדדו C-0367)
+
+# SEALS · arena (נמדד C-0367 · 30/08 · 36 § 13.1 פריט 4 — **מוזזת חסומה-חיצונית, ⛔ לא «delivered»**):
+#   ⓐ reachable — ⛔ **⛔ לא נמדדה.** בית (`/`) ב-375×780 = מסך נחיתה: `בואו נתחיל` · `התחבר` בלבד ⇒ ⛔ אין מסלול הקשות בלי חשבון, ו⛔ אין env. `/world` (בכתובת מוקלדת) נעצר על «טוען את העולם…» ⇒ הטבעת ⛔ אינה מציירת צמתים ⇒ ⛔ אין הקשה ל-`/arcade`. **פיקסצ׳רת `/dev/*` ⛔ אינה ⓐ (36 § 13.1).**
+#   ⓑ works — ⛔ **⛔ לא נמדדה על נתונים אמיתיים.** `/arcade` חי נשאר על «טוען את הזירה» **30 שניות** (נמדד ב-4 דגימות: 3 · 10 · 20 · 30ש׳), כי `/api/*` מחזיר 503 ב-dev ו⛔ אין Supabase env. ⚠️ **⛔ זו ⛔ אינה קביעה על המוצר:** `ArenaHome.tsx:186-195` **כן** מחזיק `error`/`session_expired` + כפתור `נסה שוב` + chevron חזרה (2 יעדי הקשה נמדדו) — הכשל הוא **סביבה**, ⛔ לא דרך-מבוי-סתום. הסיבוב המלא (שאלה · תשובה · תוצאה · סיכום) מצויר על פיקסצ׳ר: `/dev/arcade` 7 הקשות · `/dev/arcade/result` 3 · `/dev/arcade/summary` 2 · 0 מתחת ל-44px · ⛔ אין גלילה אופקית.
+#   ⓒ persists — **חצי נמדד, וזה החצי שנאכף:** `36 § 12.1` — הזירה ⛔ אינה כותבת ל-`word_progress`. אומת סטטית: `app/api/arcade/result/route.ts` ⛔ **אינו מכיל את המחרוזת כלל** (`route.test.ts:54`), ו-`round/route.ts:93` קורא **ב-select בלבד** (`route.test.ts:28-37`). ⛔ **החצי החיובי** (תוצאת הסיבוב נשמרת ונראית בכניסה הבאה) ⛔ לא נמדד — אותה חסימת env.
+#   ⇒ 🔴 **arena ⛔ אינה חתומה.** ⛔ ולא בגלל פער במוצר — **⛔ אי אפשר למדוד אותה מכאן.** `36 § 13.1`: «שורה שאין בה נתונים אמיתיים ⛔ אינה עוברת ⓑ… הוא בדיוק מה ש-03-for-roy נועד לו» ⇒ **נכתב פריט לרוי בטיק הזה.** ההזזה חוקית בעילה **חסומה-חיצונית** (`T-220` ⓐ·ⓓ ⛔ חסומות ב-F-164/PM ⇒ אפס שורות בנות-בנייה) — ⛔ לא בעילת «ריקה».
