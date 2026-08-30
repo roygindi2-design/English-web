@@ -24,6 +24,7 @@
     "build:levels": "node scripts/build-word-levels-sql.mjs",
     "build:stories": "node scripts/build-stories-sql.mjs",
     "build:questions": "node scripts/build-story-questions-sql.mjs",
+    "build:surfaces": "node scripts/build-surfaces.mjs",
     "verify": "npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile",
     "check:plan": "node scripts/check-plan-shape.mjs",
     "loop:health": "node scripts/loop-health.mjs"

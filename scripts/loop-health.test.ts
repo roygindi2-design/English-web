@@ -28,6 +28,14 @@ const run = (root: string): { out: string; code: number } => {
 
 const failed = (out: string, n: string): boolean =>
   new RegExp(`^ FAIL ${n}\\.`, 'm').test(out);
+/**
+ * ⛔ **A SOFT CHECK REPORTS ` warn `, ⛔ NOT ` FAIL `** — and the distinction is the
+ * whole point of the soft window: the verdict is printed in full and ⛔ does not
+ * touch the exit code until its date. ⇒ a test for a new check asserts `warned`,
+ * ⛔ and asserting `failed` on it would pass only by accident after the date.
+ */
+const warned = (out: string, n: string): boolean =>
+  new RegExp(`^ warn ${n}\\.`, 'm').test(out);
 
 /** A repo where all eight checks pass. Each test then breaks exactly one thing. */
 const healthy = (): string => {
@@ -58,7 +66,11 @@ const healthy = (): string => {
     '| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n' +
       `| 1 | PM (C-0001) | 2026-08-01 | לעשות משהו · נבדק: ${today} | כי | לא |\n`,
   );
-  write('plan/00-control.md', 'RELEASE_READY: ""\nACTIVE_WORKSTREAM: story\n');
+  write('plan/00-control.md', 'RELEASE_READY: ""\nACTIVE_WORKSTREAM: story\nIMPROVE_TARGET: ""\n');
+  // ⛔ `story` is item 1 of the build order, so ⛔ nothing precedes it and check 13 has
+  // ⛔ nothing to demand — the file still has to EXIST, because «missing register»
+  // reports «⛔ לא נמדד» and goes red, ⛔ never green.
+  write('plan/61-deferred.md', '| זרימה | תאריך | ⬜ | ממצאים | צעדים | C |\n|---|---|---|---|---|---|\n');
   write('plan/26-plan-feedback.md', '| C-0001 | `p.md` | `files` | why | ⬜ |\n');
   write('plan/50-tasks.md', '| T-001 | M0 | uses 2026-01-01-real-plan.md | — | ⬜ | 0 | — | — |\n');
   write('docs/superpowers/plans/2026-01-01-real-plan.md', '# plan\n');
@@ -84,7 +96,7 @@ describe('scripts/loop-health.mjs', () => {
     // false on both sides. It passed while measuring nothing. Now it names the
     // checks and asserts each one individually.
     const r = run(healthy());
-    expect(r.out).toContain('loop health: 8/11 checks pass');
+    expect(r.out).toContain('loop health: 11/14 checks pass');
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -115,8 +127,21 @@ describe('scripts/loop-health.mjs', () => {
     expect(passes).toBeDefined();
     // ⛔ ids 1–10, contiguous since 25/08: check 9 (the control-register ceiling)
     // was lit early — the file was measured 661 bytes OVER its own rule.
-    expect(total).toBe('11');
-    expect(r.code).toBe(passes === total ? 0 : 1);
+    expect(total).toBe('14');
+    /**
+     * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
+     * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
+     * Roy's phase-7 lesson is that a check which goes red on day one teaches every agent
+     * that red is the normal colour. ⇒ inside the soft window they print ` warn `, are
+     * excluded from the pass count's numerator ⛔ and from the exit code, and on their
+     * date they start counting with ⛔ no further edit.
+     * ⛔ The soft ones are named here rather than absorbed silently: a total that
+     * quietly swallows a failure is the same lie as a check that passes because it
+     * could not run.
+     */
+    const soft = ['12', '13', '14'].filter((n) => warned(r.out, n));
+    const hard = Number(total) - Number(passes) - soft.length;
+    expect(r.code).toBe(hard === 0 ? 0 : 1);
   });
 
   it('1 · goes red on a commission whose brief was never written — the live failure of 24/08', () => {
@@ -310,6 +335,88 @@ describe('scripts/loop-health.mjs', () => {
     const r = run(root);
     expect(failed(r.out, '2'), 'a 🔴 row must still be measured').toBe(true);
     expect(r.out).toContain('lib/core/deleted.ts');
+  });
+
+  /**
+   * ⛔ **THE THREE CHECKS ADDED 30/08 GET THE SAME TREATMENT AS THE OTHERS:** each one
+   * is proved to go red on a fixture carrying exactly the defect it exists to catch.
+   * ⛔ A check observed only passing has ⛔ not been tested — and these three were
+   * written against a live repo where two of them are green, which is precisely the
+   * situation in which a broken checker looks perfect.
+   */
+  it('12 · warns on a PM-owned finding that blocks a written row', () => {
+    const root = healthy();
+    patch(root, 'plan/60-findings.md', (s) => s.replace('⬜ פתוח', '⬜ פתוח → **PM**'));
+    patch(root, 'plan/50-tasks.md', (s) =>
+      s.replace('| ⬜ |', '| ⛔ חסום על F-001 |').replace('uses', 'F-001 blocks: uses'),
+    );
+    const r = run(root);
+    expect(warned(r.out, '12'), 'soft window ⇒ warn, ⛔ not FAIL').toBe(true);
+    expect(r.out).toContain('F-001');
+    expect(r.out).toContain('T-001');
+  });
+
+  it('12 · stays green when the PM-owned finding blocks ⛔ nothing — a finding is ⛔ not a debt by itself', () => {
+    const root = healthy();
+    patch(root, 'plan/60-findings.md', (s) => s.replace('⬜ פתוח', '⬜ פתוח → **PM**'));
+    const r = run(root);
+    expect(failed(r.out, '12')).toBe(false);
+    expect(warned(r.out, '12')).toBe(false);
+  });
+
+  it('13 · warns when the sequence moved past a workstream that has ⛔ no deferred row', () => {
+    const root = healthy();
+    // `cards` is item 3 of the build order ⇒ `story` and `nav` are behind it, and the
+    // fixture register is empty ⇒ both are owed a row and ⛔ neither has one.
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: cards'),
+    );
+    const r = run(root);
+    expect(warned(r.out, '13')).toBe(true);
+    expect(r.out).toContain('story');
+    expect(r.out).toContain('nav');
+  });
+
+  it('13 · goes red — ⛔ not green — when the register file is missing entirely', () => {
+    // ⛔ A check that passes because its input is absent is the lie this file exists
+    // against. Missing register ⇒ «⛔ לא נמדד», ⛔ never «ok».
+    const root = healthy();
+    writeFileSync(join(root, 'plan/61-deferred.md'), '', 'utf8');
+    const r = run(root);
+    expect(warned(r.out, '13')).toBe(true);
+    expect(r.out).toContain('⛔ לא נמדד');
+  });
+
+  it('14 · warns when IMPROVE_TARGET points at a workstream the sequence has ⛔ not passed', () => {
+    // 🔴 This is the failure mode the whole fence exists for: `arena` sits AFTER the
+    // active `story`, so pointing IMPROVE_TARGET at it is a **second active
+    // workstream through the back door** — the one rule that keeps the product from
+    // becoming five half-built screens.
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('IMPROVE_TARGET: ""', 'IMPROVE_TARGET: arena'),
+    );
+    const r = run(root);
+    expect(warned(r.out, '14')).toBe(true);
+    expect(r.out).toContain('בדלת האחורית');
+  });
+
+  it('14 · an empty field is the mode being OFF, and that is a PASS', () => {
+    const r = run(healthy());
+    expect(failed(r.out, '14')).toBe(false);
+    expect(warned(r.out, '14')).toBe(false);
+    expect(r.out).toContain('ריק — המצב כבוי');
+  });
+
+  it('prints the work-type mix as a NUMBER — ⛔ never as a check that can fail', () => {
+    // ⛔ D-147 says the mix is soft. A number in the pass/fail column is a number
+    // somebody starts optimising, so it is deliberately ⛔ not a `check()`.
+    const r = run('.');
+    expect(r.out).toContain('תמהיל (דיווח רך');
+    expect(r.out).toMatch(/loop health: \d+\/14 checks pass/);
+    expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
+      /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
+    );
   });
 
   it('writes nothing into the repo it measures', () => {

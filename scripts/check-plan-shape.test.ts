@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -7,13 +7,32 @@ import { describe, expect, it } from 'vitest';
 const DIR = mkdtempSync(join(tmpdir(), 'plan-shape-'));
 
 /** Runs the gate and returns its stdout plus exit code. ⛔ Exit 1 is a finding, not a crash. */
-const run = (file: string): { out: string; code: number } => {
+const run = (file: string, root?: string): { out: string; code: number } => {
   try {
-    return { out: execFileSync('node', ['scripts/check-plan-shape.mjs', file], { encoding: 'utf8' }), code: 0 };
+    return {
+      out: execFileSync('node', ['scripts/check-plan-shape.mjs', file], {
+        encoding: 'utf8',
+        env: root === undefined ? process.env : { ...process.env, CHECK_PLAN_ROOT: root },
+      }),
+      code: 0,
+    };
   } catch (e) {
     const err = e as { stdout?: string; status?: number };
     return { out: err.stdout ?? '', code: err.status ?? -1 };
   }
+};
+
+/**
+ * ⛔ Element ten reads the TASK REGISTER, ⛔ not only the plan file — so it needs a
+ * root it can be pointed at. A fixture root with one known row is the only way to
+ * prove it fires on overlap and stays quiet without it; measuring it against the
+ * live register would make the test depend on 226 rows nobody controls.
+ */
+const fixtureRoot = (taskRow: string): string => {
+  const root = mkdtempSync(join(tmpdir(), 'plan-shape-root-'));
+  mkdirSync(join(root, 'plan'), { recursive: true });
+  writeFileSync(join(root, 'plan', '50-tasks.md'), taskRow, 'utf8');
+  return root;
 };
 
 const write = (name: string, body: string): string => {
@@ -123,4 +142,43 @@ describe('scripts/check-plan-shape.mjs', () => {
       expect(r.out, name).toMatch(/^shape: \d+\/\d+ elements present$/m);
     }
   });
+
+  /**
+   * 🔟 **ELEMENT TEN — «extend before you create», and it is SOFT on purpose.**
+   * ⛔ All 58 existing plans would fail it today, which is exactly the situation
+   * Roy's phase-7 lesson names: a gate that goes red on day one is a gate every
+   * agent learns to ignore. ⇒ it prints in full and ⛔ does not touch the score or
+   * the exit code until 2026-09-02.
+   */
+  const OVERLAP_ROW =
+    '| T-001 | M0 · loop · מבנה | touches `lib/core/thing.ts` | — | ⬜ | 0 | `lib/core/thing.ts` | — |\n';
+
+  it('10 · flags a plan whose file is already named by a task row — ⛔ and does ⛔ not fail the gate', () => {
+    const r = run(write('overlap.md', COMPLETE), fixtureRoot(OVERLAP_ROW));
+    expect(r.out).toMatch(/^ soft ⚠️ +extend/m);
+    expect(r.out).toContain('T-001');
+    // ⛔ THE POINT: still 7/7, still exit 0. Soft means visible, ⛔ not counted.
+    expect(r.out).toContain('shape: 7/7');
+    expect(r.code).toBe(0);
+  });
+
+  it('10 · a declared lineage answers it — `המשך של: T-001`', () => {
+    const declared = `${COMPLETE}\n**המשך של: T-001**\n`;
+    const r = run(write('declared.md', declared), fixtureRoot(OVERLAP_ROW));
+    expect(r.out).toMatch(/^ soft ok +extend/m);
+  });
+
+  it('10 · an explicit «⛔ אינה הרחבה» answers it too — the plan is ⛔ never forced to lie', () => {
+    const argued = `${COMPLETE}\n⛔ אינה הרחבה: T-001 נגעה בקובץ כדי לקרוא ממנו, וזו כתיבה חדשה.\n`;
+    const r = run(write('argued.md', argued), fixtureRoot(OVERLAP_ROW));
+    expect(r.out).toMatch(/^ soft ok +extend/m);
+  });
+
+  it('10 · ⛔ no overlap ⇒ ⛔ nothing to answer', () => {
+    const empty = '| T-002 | M0 · loop · מבנה | unrelated | — | ⬜ | 0 | `lib/core/other.ts` | — |\n';
+    const r = run(write('no-overlap.md', COMPLETE), fixtureRoot(empty));
+    expect(r.out).toMatch(/^ soft ok +extend/m);
+    expect(r.out).toContain('⛔ אין חפיפה');
+  });
+
 });

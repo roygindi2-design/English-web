@@ -185,6 +185,12 @@ F-NNN          ⇐ the id of the open finding the row closes
 ⛔ **And this is ⛔ not licence to invent pedagogy** (R-010) or to open work outside
 `ACTIVE_WORKSTREAM` — a good idea outside the active workstream goes to `02-inbox`.
 
+🗺️ **AND ONE SECOND-LONG COMMAND BEFORE YOU WRITE A SCREEN ROW** ⟦NEW 30/08 · `RULES § 0.5ד`⟧:
+```
+npm run build:surfaces        ⇒ plan/63-surfaces.md   (⛔ no npm install needed)
+```
+Every screen × its tappable actions × where learners arrive from × where they can go × whether it has a written empty state — **derived from `app/`, so it ⛔ cannot be out of date.** A screen with ⛔ no row ⛔ does not exist; **three different names for one destination is a 🔴 finding**, and it is exactly the class D-144ⓑ turns into a legal slice.
+
 **A screen task names the render it targets** and gets a UX plan in `40-decisions.md` first. Run the six questions in `45-product-questions.md`.
 ⚠️ **A slice that needs content gets a commission — with its brief written — in the same tick.**
 ⚠️ **Check the plans index before writing a new plan.** 47 exist. ⛔ Do not write plan 48 for what plan 31 covers.
@@ -257,5 +263,5 @@ The slice you opened and what the learner will be able to do · which render it 
 
 ## HARD INVARIANTS
 Zero invention · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
-⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`.
+⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · anything under `supabase/seed/`.
 Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.

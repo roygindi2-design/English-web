@@ -16,7 +16,8 @@
  * the class where Dev has to invent something the PM was supposed to decide — which is
  * exactly how scope creep re-enters through the back door (`RULES § 0.16`).
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const file = process.argv[2];
 if (file === undefined) {
@@ -126,12 +127,92 @@ if (isUi) {
   });
 }
 
+/**
+ * 🔟 **ELEMENT TEN — «EXTEND BEFORE YOU CREATE».**  ⟦added 30/08⟧
+ *
+ * ⛔ **The mechanism already existed and was ⛔ never once enforced.** `RULES § 0.5ב`
+ * makes lineage a DECLARED field — `**המשך של: T-185**` — precisely because a tree
+ * built from footnotes is a wrong tree. Measured over 58 plans: the declaration
+ * appears in a handful, and **8 plans are orphans** nobody cites at all. Meanwhile
+ * `plan/30-architecture.md` is 553KB and `40-decisions.md` 482KB, both grown by
+ * writing new prose next to old prose. ⇒ the loop's default is CREATE, and ⛔ nothing
+ * asked the cheaper question first.
+ *
+ * **What is measured, and it is deliberately narrow:** the plan names a file that a
+ * task row in `plan/50-tasks.md` ALREADY names. That is ⛔ not a defect by itself —
+ * two slices touching one screen is normal. What it is, is the exact moment the
+ * question «is this an extension?» has an answer, and the plan must ⛔ not be silent:
+ * either `המשך של: T-XXX`, or one sentence saying why it is ⛔ not one.
+ *
+ * ⚠️ **BORN SOFT, and that is Roy's phase-7 lesson applied:** 58 plans predate this
+ * element and every one of them would fail it today. Making it blocking on day one
+ * teaches every agent to ignore the whole gate. ⇒ until `SOFT_UNTIL` it prints, in
+ * full, with the rows it found — and it ⛔ does NOT enter `missing`, ⛔ does not move
+ * the `shape: X/Y` total, and ⛔ does not touch the exit code.
+ */
+const SOFT_UNTIL = '2026-09-02';
+const TODAY = new Date().toISOString().slice(0, 10);
+const ROOT = process.env.CHECK_PLAN_ROOT ?? '.';
+
+const PLAN_PATH = /`((?:[a-z][\w.\-]*\/)+[\w.\-]*\.(?:ts|tsx|mjs|js|sql|css))`/g;
+const claimed = [...new Set([...text.matchAll(PLAN_PATH)].map((m) => m[1]))].filter(
+  (p) => !/[{*]/.test(p),
+);
+
+const tasksFile = join(ROOT, 'plan', '50-tasks.md');
+const taskRows = existsSync(tasksFile)
+  ? readFileSync(tasksFile, 'utf8')
+      .split('\n')
+      .filter((l) => /^\| *T-\d+ *\|/.test(l))
+  : [];
+
+const overlaps = [];
+for (const row of taskRows) {
+  const id = /^\| *(T-\d+)/.exec(row)?.[1];
+  const hit = claimed.filter((c) => row.includes(c));
+  if (id !== undefined && hit.length > 0) overlaps.push({ id, hit });
+}
+// ⛔ A plan that declares its lineage, or argues explicitly that it has none, has
+// answered. ⛔ Silence is the only thing this element reports.
+const DECLARED = /המשך של: *\*{0,2}T-\d+/;
+const ARGUED = /⛔ אינה הרחבה|למה זו אינה הרחבה|NOT an extension/;
+const answered = DECLARED.test(text) || ARGUED.test(text);
+
+const extension = {
+  key: 'extend',
+  label: 'הרחבה לפני יצירה — שורה קיימת נוגעת באותו קובץ',
+  ok: overlaps.length === 0 || answered,
+  why: '`RULES § 0.5ב` — שושלת **מוצהרת**, ⛔ לעולם לא מוסקת. תוכנית שנוגעת בקובץ שכבר יש לו שורה מצהירה `המשך של: T-XXX` או כותבת למה זו ⛔ אינה הרחבה.',
+  detail:
+    overlaps.length === 0
+      ? '⛔ אין חפיפה'
+      : answered
+        ? `${overlaps.length} שורות חופפות — ומוצהר`
+        : `${overlaps.length} שורות חופפות ⛔ בלי הצהרה: ${overlaps
+            .slice(0, 3)
+            .map((o) => `${o.id} (${o.hit[0]})`)
+            .join(' · ')}`,
+};
+
+const softNow = TODAY < SOFT_UNTIL;
+// ⛔ After the soft window it becomes an element like any other — ⛔ no second edit,
+// ⛔ no flag to remember to flip.
+if (!softNow) ELEMENTS.push(extension);
+
 const missing = ELEMENTS.filter((e) => !e.ok);
 console.log(`plan: ${file}`);
 for (const e of ELEMENTS) {
   console.log(`${e.ok ? '  ok  ' : 'MISS  '}${e.key.padEnd(11)}${e.label}${e.detail ? ` — ${e.detail}` : ''}`);
 }
 console.log(`shape: ${ELEMENTS.length - missing.length}/${ELEMENTS.length} elements present`);
+if (softNow) {
+  console.log(
+    `${extension.ok ? ' soft ok ' : ' soft ⚠️  '}${extension.key.padEnd(11)}${extension.label} — ${extension.detail}`,
+  );
+  console.log(
+    `         ⚠️ רכיב עשירי, **מייעץ בלבד עד ${SOFT_UNTIL}** — ⛔ אינו נספר בציון ו⛔ אינו משפיע על קוד היציאה.`,
+  );
+}
 if (missing.length > 0) {
   console.log('');
   console.log('⇒ שורה ל-plan/26-plan-feedback.md:');

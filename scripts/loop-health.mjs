@@ -55,14 +55,152 @@ const claimedPaths = (line) =>
   [...line.matchAll(REAL_PATH)].map((m) => m[1]).filter((p) => !/[{*]|00XX/.test(p));
 
 const results = [];
-const check = (id, title, fn) => {
+/**
+ * ⚠️ **A NEW CHECK IS BORN AS A WARNING.**  ⟦added 30/08, wave 2⟧
+ * Roy's own lesson from phase 7, quoted: «להפוך אותו לחוסם מוקדם מדי הוא הדרך ללמד
+ * כל סוכן להתעלם ממנו». A check that goes red on the day it lands, against a
+ * backlog that predates it, teaches every agent that red is the normal colour.
+ * ⇒ a check may declare `softUntil`. Until that date it PRINTS its verdict in
+ * full — the items, the numbers, everything — and ⛔ does NOT count toward the
+ * exit code. On the date, it starts counting, with ⛔ no further edit.
+ * ⛔ **Soft is ⛔ NOT silent, and that distinction is the whole design:** a check
+ * nobody can see is a check nobody will fix before it bites.
+ */
+const TODAY = new Date().toISOString().slice(0, 10);
+const check = (id, title, fn, softUntil = null) => {
+  const soft = softUntil !== null && TODAY < softUntil;
   try {
     const { ok, detail, items = [] } = fn();
-    results.push({ id, title, ok, detail, items });
+    results.push({ id, title, ok, detail, items, soft, softUntil });
   } catch (e) {
-    results.push({ id, title, ok: false, detail: `⛔ הבדיקה עצמה נפלה: ${e.message}`, items: [] });
+    results.push({
+      id,
+      title,
+      ok: false,
+      detail: `⛔ הבדיקה עצמה נפלה: ${e.message}`,
+      items: [],
+      soft,
+      softUntil,
+    });
   }
 };
+
+/**
+ * ⛔ The build order of `36 § 13` is read from the GENERATED balance table, ⛔ never
+ * hard-coded here: the table already prints the workstreams in the spec's own order
+ * with their open counts, and a second copy of that order in this file is a second
+ * thing to keep in sync — which is exactly the class of defect check 8 exists for.
+ */
+const balance = () => {
+  const idx = read(at('docs', 'plan-open.md'));
+  const out = [];
+  for (const m of idx.matchAll(/^\|\s*(\d+)\.\s*`([a-z]+)`\s*\|([^|]*)\|([^|]*)\|/gm)) {
+    out.push({ order: Number(m[1]), name: m[2], open: Number((m[4] ?? '').trim()) });
+  }
+  return out;
+};
+/**
+ * ⛔ **A TASK ROW'S STATUS IS COLUMN 5 OF 8, ⛔ NOT «somewhere near the end».**
+ * `isClosed` above reads the LAST THREE cells, which is right for a finding
+ * (`FINDING_STATUS_INDEX` 6 of 8) and ⛔ WRONG for a task (`TASK_STATUS_INDEX` 4 of
+ * 8, with the file list and the skill column after it). Measured while writing
+ * check 12: reusing `isClosed` on `plan/50-tasks.md` reported **226 open rows out
+ * of 226** — every closed task counted as open, silently. ⇒ tasks get their own
+ * reader, and the indices are the ones `lib/core/planTable.ts` already declares.
+ */
+const TASK_STATUS_INDEX = 4;
+const TASK_MILESTONE_INDEX = 1;
+/**
+ * ⛔ **THE SPLITTER IS A PORT OF `lib/core/planTable.ts::splitRow`, ⛔ NOT
+ * `line.split('|')`.** The registers escape a literal pipe as `\|` and carry pipes
+ * inside code spans (a regex alternation in a cell). Measured while writing check
+ * 12: a naive split put four rows' status in the wrong column — `T-206` `T-213`
+ * `T-217` `T-224` — and reported them as having ⛔ no status at all, i.e. it lost
+ * exactly the rows whose prose is richest. ⇒ same rules, same indices, so this file
+ * and the generated index can ⛔ never disagree about what is open.
+ */
+const codeSpans = (line) => {
+  const runs = [];
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\') {
+      const next = line[i + 1];
+      if (next === '|' || next === '\\' || next === '`') i += 1;
+      continue;
+    }
+    if (ch !== '`') continue;
+    const start = i;
+    while (line[i + 1] === '`') i += 1;
+    runs.push({ start, length: i + 1 - start });
+  }
+  const spans = [];
+  for (let a = 0; a < runs.length; a += 1) {
+    const open = runs[a];
+    for (let b = a + 1; b < runs.length; b += 1) {
+      if (runs[b].length !== open.length) continue;
+      spans.push([open.start, runs[b].start + runs[b].length]);
+      a = b;
+      break;
+    }
+  }
+  return spans;
+};
+const splitRow = (line) => {
+  const spans = codeSpans(line);
+  const inside = (at) => spans.some(([s, e]) => at >= s && at < e);
+  const cells = [];
+  let cur = '';
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\') {
+      const next = line[i + 1];
+      if (next === '|' || next === '\\') {
+        cur += next;
+        i += 1;
+        continue;
+      }
+      cur += ch;
+      continue;
+    }
+    if (ch === '|' && !inside(i)) {
+      cells.push(cur);
+      cur = '';
+      continue;
+    }
+    cur += ch;
+  }
+  cells.push(cur);
+  return cells.slice(1, -1).map((c) => c.trim());
+};
+const taskCell = (line, i) => splitRow(line)[i] ?? '';
+/**
+ * ⛔ **FIRST GLYPH WINS, exactly as `lib/core/planTable.ts::classifyStatus` decides
+ * it.** A status cell is allowed to argue its case — «⬜ פנויה … הועברה מ-✅» — and a
+ * `contains` test would read that as closed. Measured while writing this: `contains`
+ * reported **170 closed of 226** against the generated index's **164**, i.e. six open
+ * rows vanished. ⇒ the glyph that appears EARLIEST in the cell is the state.
+ */
+const STATE_GLYPHS = ['✅', '🚫', '⬜', '⛔', '🟣', '🔵'];
+const taskState = (line) => {
+  const cell = taskCell(line, TASK_STATUS_INDEX);
+  let best = null;
+  let bestAt = Number.POSITIVE_INFINITY;
+  for (const g of STATE_GLYPHS) {
+    const at = cell.indexOf(g);
+    if (at !== -1 && at < bestAt) {
+      bestAt = at;
+      best = g;
+    }
+  }
+  return best;
+};
+const taskOpen = (line) => {
+  const s = taskState(line);
+  return s !== '✅' && s !== '🚫';
+};
+const taskBlocked = (line) => taskState(line) === '⛔';
+const activeWorkstream = () =>
+  /^ACTIVE_WORKSTREAM:\s*(\S+)/m.exec(read(at('plan', '00-control.md')))?.[1];
 
 /* 1 — a commission's brief and gate are INPUTS. ⛔ They must exist before the row
  * goes ⬜, or CONTENT reads the row, finds nothing, and falls through in silence.
@@ -322,17 +460,182 @@ check('8', 'הצילומים הנגזרים זהים להרצה טרייה', () 
   return { ok: drifted.length === 0, detail: `${drifted.length} סטו`, items: drifted };
 });
 
-const failed = results.filter((r) => !r.ok);
+/**
+ * 12 — ⛔ **THE PM BLOCKS HIMSELF, AND ⛔ NOTHING IN THE LOOP MEASURED IT.**  ⟦D-147⟧
+ * Measured 30/08: **87 open findings**, most of them PM-owned, and six of them —
+ * F-140 · F-142 · F-143 · F-144 · F-164 · F-167 — sit behind task rows that are
+ * ALREADY WRITTEN and ⛔ cannot start. ⇒ the queue is ⛔ not short of work; it is
+ * short of **decisions**, and a decision has ⛔ no other owner.
+ *
+ * ⚠️ **AND THE HONEST LIMIT, stated rather than faked:** `RULES § 0.5` writes the
+ * rule as «open more than 3 days». ⛔ A finding row carries a CYCLE id (`C-XXXX`),
+ * ⛔ not a date — there is ⛔ no date on it to subtract from. ⇒ this check measures
+ * **existence**, ⛔ not age, and the 3 days live in `softUntil` below instead.
+ * ⛔ Inventing a date from the cycle id would be a measurement that looks precise
+ * and is guessed, which is worse than the honest version.
+ */
+const PM_OWNED = /→\s*\*\*PM\*\*|בבעלות PM|→\s*PM\b/;
+check(
+  '12',
+  'אין ממצא בבעלות PM שחוסם שורה כתובה',
+  () => {
+    const findings = rows(read(at('plan', '60-findings.md')), 'F');
+    const open = findings.filter((l) => !isClosed(l) && PM_OWNED.test(l)).map(idOf);
+    if (open.length === 0) return { ok: true, detail: '⛔ אין ממצא PM פתוח' };
+    // ⛔ «Blocks a row» is measured on the TASK register, ⛔ not asserted by the
+    // finding: a ⛔ row that names the finding is the row that cannot start.
+    const tasks = rows(read(at('plan', '50-tasks.md')), 'T').filter(taskOpen);
+    const blocking = [];
+    for (const id of open) {
+      const held = tasks.filter((l) => taskBlocked(l) && new RegExp(`\\b${id}\\b`).test(l)).map(idOf);
+      if (held.length > 0) blocking.push(`${id} → חוסם ${held.join(' · ')}`);
+    }
+    return {
+      ok: blocking.length === 0,
+      detail: `${blocking.length} מתוך ${open.length} ממצאי PM פתוחים חוסמים שורה`,
+      items: blocking,
+    };
+  },
+  '2026-09-02',
+);
+
+/**
+ * 13 — ⛔ **A WORKSTREAM THE SEQUENCE MOVED PAST AND ⛔ NOBODY WROTE DOWN WHAT WAS
+ * LEFT BEHIND.**  ⟦D-145⟧
+ * `36 § 13` is one-way. `story` left 5 ⛔ rows whose release condition is «when
+ * `story` is active again» — a condition the sequence ⛔ cannot produce. `cards`
+ * moved without seal ⓐ with four open PM findings behind it. ⇒ without a row in
+ * `plan/61-deferred.md`, the PM in 🩺 IMPROVE has ⛔ nothing to read, and an
+ * improvement he re-derives each tick is an improvement he **invents** (lesson 10).
+ *
+ * ⚠️ **WHY «MOVED PAST», ⛔ NOT «carries three seals».** The seals are prose inside
+ * `plan/36-video-spec.md` and `plan/archive/control-log.md`, and two of the three
+ * sealed workstreams have theirs in the ARCHIVE — parsing them would be guessing at
+ * free text in a file this script ⛔ must not depend on. **Position in the build
+ * order is the same fact, and it is generated:** a workstream earlier in `36 § 13`
+ * than `ACTIVE_WORKSTREAM` is one the loop has already left. ⛔ Stated here rather
+ * than hidden, because a checker that quietly measures something other than its
+ * title is the lie this whole file exists against.
+ */
+check(
+  '13',
+  'לכל זרימה שהרצף עבר אותה יש שורה ב-61-deferred',
+  () => {
+    const active = activeWorkstream();
+    const table = balance();
+    if (active === undefined || table.length === 0) {
+      return { ok: false, detail: '⛔ לא נמדד — אין ACTIVE_WORKSTREAM או אין טבלת מאזן' };
+    }
+    const here = table.find((w) => w.name === active);
+    if (here === undefined) {
+      return { ok: false, detail: `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
+    }
+    const deferred = read(at('plan', '61-deferred.md'));
+    if (deferred === '') return { ok: false, detail: '⛔ לא נמדד — plan/61-deferred.md חסר' };
+    const missing = table
+      .filter((w) => w.order < here.order)
+      .filter((w) => !new RegExp(`^\\|\\s*\`${w.name}\``, 'm').test(deferred))
+      .map((w) => `${w.name} — נחתמה/הוזזה ⛔ בלי שורת חוב`);
+    return {
+      ok: missing.length === 0,
+      detail: `${missing.length} חסרות מתוך ${here.order - 1} שהרצף עבר`,
+      items: missing,
+    };
+  },
+  '2026-09-02',
+);
+
+/**
+ * 14 — ⛔ **`IMPROVE_TARGET` IS ONE FIELD AWAY FROM BEING A SECOND ACTIVE
+ * WORKSTREAM.**  ⟦D-146⟧
+ * The single-active-workstream rule is what stops the product becoming five
+ * half-built screens. 🩺 IMPROVE opens rows OUTSIDE that workstream — so the five
+ * fences are ⛔ not decoration, they are the entire reason the mode is safe. This
+ * check measures the two that can be measured from the registers: the target is a
+ * workstream the sequence has already passed, and it holds **at most two** rows.
+ * ⚠️ Empty field = the mode is OFF, and that is a PASS, ⛔ not a gap.
+ */
+const IMPROVE_ROW_CEILING = 2;
+check(
+  '14',
+  'IMPROVE_TARGET מצביע על זרימה חתומה ומחזיק ≤2 שורות',
+  () => {
+    const control = read(at('plan', '00-control.md'));
+    const m = /^IMPROVE_TARGET:\s*"?([^"\s#]*)"?/m.exec(control);
+    if (m === null) return { ok: false, detail: '⛔ לא נמדד — ⛔ אין IMPROVE_TARGET ב-00-control' };
+    const target = (m[1] ?? '').trim();
+    if (target === '') return { ok: true, detail: 'ריק — המצב כבוי' };
+    const active = activeWorkstream();
+    const table = balance();
+    const here = table.find((w) => w.name === active);
+    const there = table.find((w) => w.name === target);
+    if (here === undefined || there === undefined) {
+      return { ok: false, detail: `⛔ לא נמדד — \`${target}\` או \`${active}\` ⛔ אינם בטבלת המאזן` };
+    }
+    const items = [];
+    if (there.order >= here.order) {
+      items.push(`⛔ \`${target}\` ⛔ אינה זרימה שהרצף עבר — זו זרימה פעילה שנייה בדלת האחורית`);
+    }
+    if (!new RegExp(`^\\|\\s*\`${target}\``, 'm').test(read(at('plan', '61-deferred.md')))) {
+      items.push(`⛔ \`${target}\` ⛔ אינה ב-61-deferred ⇒ ⛔ אין ממה לצטט (D-144ⓑ)`);
+    }
+    if (there.open > IMPROVE_ROW_CEILING) {
+      items.push(`⛔ ${there.open} שורות ⬜ ב-\`${target}\` — התקרה ${IMPROVE_ROW_CEILING}`);
+    }
+    return { ok: items.length === 0, detail: `יעד \`${target}\` · ${there.open} ⬜`, items };
+  },
+  '2026-09-02',
+);
+
+/**
+ * ⛔ **A REPORTED NUMBER, ⛔ NOT A CHECK.**  ⟦D-147 · the 4/1/1 mix⟧
+ * The mix is a soft target and it ⛔ must not become a gate: cutting new slices in
+ * half while DEV runs dry trades one problem for another. ⇒ this prints and ⛔ never
+ * fails. ⛔ It is deliberately ⛔ not a `check()` — a number in the pass/fail column
+ * is a number somebody will start optimising.
+ */
+const workTypeMix = () => {
+  const tasks = rows(read(at('plan', '50-tasks.md')), 'T').filter(taskOpen);
+  const count = (tag) =>
+    tasks.filter((l) => taskCell(l, TASK_MILESTONE_INDEX).endsWith(tag)).length;
+  const TAGS = ['מבנה', 'תוכן', 'נוחות', 'מעברים', 'תשתית'];
+  const tagged = tasks.filter((l) =>
+    TAGS.some((g) => taskCell(l, TASK_MILESTONE_INDEX).endsWith(g)),
+  ).length;
+  return {
+    מבנה: count('מבנה'),
+    נוחות: count('נוחות'),
+    תוכן: count('תוכן'),
+    open: tasks.length,
+    // ⛔ Reported, ⛔ never hidden: rows written before `§ 0.5ב` carry ⛔ no work-type
+    // tag, and a mix printed as if they did is a share of a subset presented as a
+    // share of the whole.
+    untagged: tasks.length - tagged,
+  };
+};
+
+const failed = results.filter((r) => !r.ok && !r.soft);
+const softFailed = results.filter((r) => !r.ok && r.soft);
 /** ⛔ מוין לפי מספר, ⛔ ולא לפי סדר הרישום בקובץ — בדיקה חדשה נכתבת ליד הקוד
  *  שהיא בודקת, ⛔ ולא בסוף, ודוח שקופץ מ-6 ל-10 ובחזרה ל-7 הוא דוח שקוראים לא נכון. */
 const ordered = [...results].sort((a, b) => Number(a.id) - Number(b.id));
 console.log('בריאות הלופ — כל בדיקה היא קצה פתוח שכבר קרה\n');
 for (const r of ordered) {
-  console.log(`${r.ok ? '  ok  ' : ' FAIL '}${r.id}. ${r.title} — ${r.detail}`);
+  const mark = r.ok ? '  ok  ' : r.soft ? ' warn ' : ' FAIL ';
+  const tail = r.ok || !r.soft ? '' : `   ⚠️ אזהרה בלבד עד ${r.softUntil}`;
+  console.log(`${mark}${r.id}. ${r.title} — ${r.detail}${tail}`);
   for (const item of r.items.slice(0, 8)) console.log(`         ${item}`);
   if (r.items.length > 8) console.log(`         … ועוד ${r.items.length - 8}`);
 }
-console.log(`\nloop health: ${results.length - failed.length}/${results.length} checks pass`);
+const mix = workTypeMix();
+console.log(
+  `\nתמהיל (דיווח רך · D-147 · ⛔ לא ציון): ${mix.open} שורות פתוחות — ` +
+    `מבנה ${mix.מבנה} · נוחות ${mix.נוחות} · תוכן ${mix.תוכן} · ⛔ ללא תג ${mix.untagged}`,
+);
+console.log(`\nloop health: ${results.length - failed.length - softFailed.length}/${results.length} checks pass`);
+if (softFailed.length > 0) {
+  console.log(`⚠️ ${softFailed.length} באזהרה — ⛔ אינן נספרות בקוד היציאה עד התאריך שלהן.`);
+}
 if (failed.length > 0) {
   console.log('⇒ כל כישלון הוא ממצא ל-60-findings. ⛔ אינו חוסם מיזוג ואינו עוצר את DEV.');
 }

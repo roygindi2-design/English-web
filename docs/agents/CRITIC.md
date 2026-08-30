@@ -64,7 +64,7 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 npm run loop:health
 ```
 
-**Why it exists:** on 24/08 four channels in the loop were found open at one end. ⛔ **Not one was found by the loop** — a human wrote four commands by hand. These eight checks are those commands, made permanent:
+**Why it exists:** on 24/08 four channels in the loop were found open at one end. ⛔ **Not one was found by the loop** — a human wrote four commands by hand. These checks are those commands, made permanent — **14 since 30/08**:
 
 | # | what it checks | the open end it prevents |
 |---|---|---|
@@ -76,10 +76,19 @@ npm run loop:health
 | 6 | every plan file is cited by a task row | an orphan plan the next PM rewrites from scratch |
 | 7 | no missing plan element reported twice | the PM is not learning from `26-plan-feedback` |
 | 8 | the generated snapshots match a fresh run | an index that lies, and every agent now reads the index |
+| 9 | `plan/00-control.md` under its 12KB ceiling | the file all four agents read every tick, measured 661 bytes OVER |
+| 10 | `work/current` is not far from `dev`, in **both** directions | QA stopped merging · something pushed straight to `dev` |
+| 11 | the active workstream still has free ⬜ | up to 12 DEV ticks a day that clone, read, and produce ⛔ nothing |
+| **12** ⟦30/08⟧ | ⛔ no PM-owned finding blocks a written row | the PM blocking himself — 87 open findings, six of them holding rows |
+| **13** ⟦30/08⟧ | every workstream the sequence passed has a row in `61-deferred` | ⛔ the debt is never collected, so 🩺 IMPROVE has nothing to read |
+| **14** ⟦30/08⟧ | `IMPROVE_TARGET` is a passed workstream holding ≤2 rows | 🩺 becoming a **second active workstream through the back door** |
+
+⚠️ **12 · 13 · 14 are BORN AS WARNINGS** and print ` warn `, ⛔ not ` FAIL `, until **2026-09-02** — they ⛔ do not touch the exit code before that date. ⛔ **Warning is ⛔ not silent:** you still read their items, and you still file what they name. Roy's phase-7 lesson is the reason: a check that goes red on day one against a pre-existing backlog teaches every agent that red is the normal colour.
+⚠️ **And the last line of the report is a NUMBER, ⛔ not a check** — the 4/1/1 work-type mix (D-147). ⛔ Nothing fails on it. Quote it; ⛔ do not act on it.
 
 ⛔ **ADVISORY, ⛔ NOT BLOCKING — this is Roy's decision, not a phase.** It exits 1 so a script can branch on it, **but it ⛔ never blocks a merge and ⛔ never stops DEV.** An orphan plan does not mean the code is broken, and a good merge blocked for a bad reason teaches every agent to ignore the gate.
 ⇒ **Every failure becomes a finding in `60-findings.md`, in this tick, by you.** ⛔ A failure you neither fix nor file is the ninth open end.
-⚠️ Report the score (`loop health: N/8`) in your Hebrew summary, every tick.
+⚠️ Report the score (`loop health: N/14`) in your Hebrew summary, every tick, **and how many are in the soft window**.
 
 ## STEP 3 — SMOKE TEST, ONLY WHEN ROY HAS MERGED
 `LAST_PROMOTED_AT` unchanged since your previous tick? **Skip.**
@@ -156,7 +165,7 @@ Before ANY claim of green/verified/merged → **`superpowers:verification-before
 ./scripts/g fetch origin
 ./scripts/g rev-list --count origin/dev..origin/work/current     ⇐ how much is waiting
 npm run verify                                                    ⇐ five commands
-npm run loop:health                                               ⇐ nine checks
+npm run loop:health                                               ⇐ 14 checks
 ```
 + **the browser walk at 375×780** (STEP 4) on the screens the branch touched. `./scripts/g diff --name-only origin/dev..origin/work/current` tells you which.
 
@@ -235,6 +244,7 @@ Three seals say what **shipped**. ⛔ Nothing says what was **left behind** — 
 ```
 ⛔ **`36 § 13.1` is UNCHANGED — the three seals are exactly what they were.** This is a register, ⛔ not a fourth seal, and ⛔ you still ⛔ do not touch `36`.
 ⚠️ **Who reads it: the PM in 🩺 IMPROVE mode (D-146), and ⛔ nobody else.** Every improvement row he opens must cite a finding or a number from your row. ⛔ Skip the row and the PM has nothing to read — so he invents (lesson 10).
+⚠️ **And run `npm run build:surfaces` in the same tick** (`RULES § 0.5ד`) — one second, ⛔ no install. It is the only place the workstream's screens are held side by side, and its 🔴 flag («three names for one destination») is a finding you would ⛔ otherwise never see.
 ⚠️ **Measured, ⛔ not summarised:** the ids come from `docs/plan-open.md` (the ⬜/⛔ sections, the findings list and the 📐 plans index), ⛔ not from what you remember of the tick.
 
 ✅ **What the seals buy, and why they are the bar:** with all three, every connection
@@ -325,7 +335,7 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-`loop health: N/8` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
+`loop health: N/14` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 
 ## AMIRNET — a new review axis  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
@@ -339,5 +349,5 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 
 ## HARD INVARIANTS
 ⛔ Zero invented learning content · sources mandatory · never copy from מאל"ו (R-010) or AnkiWeb (R-013) · file ownership · **layer A** · blocked skills per `RULES § 0.1.1 ז׳`.
-⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`. Fix the input, rerun the generator.
+⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · anything under `supabase/seed/`. Fix the input, rerun the generator.
 Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.
