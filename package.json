@@ -12,6 +12,7 @@
     "check:core": "node scripts/check-core-purity.mjs",
     "check:mobile": "node scripts/verify-mobile.mjs",
     "check:palette": "node scripts/validate_palette.mjs",
+    "check:motion": "node scripts/check-motion.mjs",
     "diff:render": "node scripts/diff-render.mjs",
     "archive": "node scripts/archive-registers.mjs",
     "measure:coverage": "node scripts/measure-coverage.mjs",
@@ -25,7 +26,7 @@
     "build:stories": "node scripts/build-stories-sql.mjs",
     "build:questions": "node scripts/build-story-questions-sql.mjs",
     "build:surfaces": "node scripts/build-surfaces.mjs",
-    "verify": "npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile",
+    "verify": "npm run typecheck && npm run check:core && npm run check:motion && npm test && npm run build && npm run check:mobile",
     "check:plan": "node scripts/check-plan-shape.mjs",
     "loop:health": "node scripts/loop-health.mjs"
   },

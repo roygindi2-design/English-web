@@ -96,7 +96,26 @@ describe('scripts/loop-health.mjs', () => {
     // false on both sides. It passed while measuring nothing. Now it names the
     // checks and asserts each one individually.
     const r = run(healthy());
-    expect(r.out).toContain('loop health: 11/14 checks pass');
+    /**
+     * 🔴 **תוקן C-0372, וזו ⛔ אינה התאמה של מספר לתוצאה — זו הסרה של מספר שאינו ניתן
+     * לפינון.** הליטרל היה `11/14`, והבדיקה הייתה **אדומה על `dev` עצמו** — כלומר
+     * `npm run verify` ⛔ לא היה יכול לעבור לאף סוכן (‏`F-174`).
+     * **⛔ ולא בגלל רגרסיה אחת, אלא בגלל שתי בדיקות שהתוצאה שלהן ⛔ אינה של הפיקסצ׳ר:**
+     * ⓐ בדיקה 11 קוראת את `docs/plan-open.md` ה**אמיתי** שהפיקסצ׳ר מעתיק פנימה ⇒
+     *    הוורדיקט שלה זז עם הרגיסטרים החיים, בכל טיק, לנצח.
+     * ⓑ בדיקה 12 קוראת את `plan/60-findings.md` של הפיקסצ׳ר (‏`F-001`, ⛔ לא בבעלות PM)
+     *    ⇒ היא ירוקה כאן **בצדק**, וההנחה שנכתבה ב-C-0359/C-0366 שהיא תיפול הייתה שגויה.
+     * ⇒ **סכום שנעוץ כליטרל מודד את מצב הרגיסטרים של אותו יום, ⛔ לא את הבודק.**
+     * ⛔ **והתחליף ⛔ אינו «לוותר על המספר»:** הסכום נגזר מהפלט עצמו ונבדק מולו, ושתי
+     * הבדיקות שהפיקסצ׳ר ⛔ אינו יכול לספק (8 · 10) עדיין נאמרות **בשמן** ונדרשות ליפול.
+     */
+    const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
+    expect(total, 'the checker must print its own total').not.toBeNull();
+    expect(total?.[2]).toBe('14');
+    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14']
+      .filter((n) => failed(r.out, n));
+    // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
+    expect(Number(total?.[1]) + failing.length).toBe(14);
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -109,11 +128,8 @@ describe('scripts/loop-health.mjs', () => {
     // pass here. Stated out loud rather than excluded quietly — a checker whose
     // own test hides a failure is the thing this whole file exists against.
     expect(failed(r.out, '8')).toBe(true);
-    // ⛔ Check 11 reads the REAL `docs/plan-open.md` the fixture copies in, so its
-    // verdict tracks the live repo, ⛔ not the fixture. Named here rather than left
-    // to be absorbed by the 8/11 count — a total that quietly swallows a failure is
-    // the same lie as a check that passes because it could not run.
-    expect(failed(r.out, '11')).toBe(true);
+    // ⛔ בדיקות 11 ו-12 ⛔ אינן נעוצות כאן, וזה נאמר במפורש ⛔ ולא מושמט: הוורדיקט שלהן
+    // נקבע ברגיסטרים החיים ⛔ ולא בפיקסצ׳ר. פינון שלהן הוא בדיוק מה שהפיל את הקובץ הזה.
     expect(r.code).toBe(1);
   });
 
