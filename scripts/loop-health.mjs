@@ -596,12 +596,23 @@ check(
  */
 const workTypeMix = () => {
   const tasks = rows(read(at('plan', '50-tasks.md')), 'T').filter(taskOpen);
-  const count = (tag) =>
-    tasks.filter((l) => taskCell(l, TASK_MILESTONE_INDEX).endsWith(tag)).length;
   const TAGS = ['מבנה', 'תוכן', 'נוחות', 'מעברים', 'תשתית'];
-  const tagged = tasks.filter((l) =>
-    TAGS.some((g) => taskCell(l, TASK_MILESTONE_INDEX).endsWith(g)),
-  ).length;
+  /**
+   * 🔴 **‏30/08 · D-148 — this read tokens, ⛔ not a suffix, and the difference was ⛔ not
+   * cosmetic.** It used to ask `endsWith(tag)`, which is only true while the work-type
+   * tag happens to be the LAST token in the cell. The moment `שכבה ב׳` joined the cell
+   * (`M2 · arena · נוחות · שכבה ב׳`) **two tagged rows silently re-counted as untagged** —
+   * ⛔ no check failed, ⛔ nothing went red, the printed mix was simply wrong.
+   * ⚠️ `lib/core/planTable.ts` already parses this cell **by token** and was right all
+   * along; this line was a second, weaker parser of the same field. ⇒ splitting on `·`
+   * makes it order-free, exactly like `classify`, and immune to the next token anyone adds.
+   */
+  const tokens = (l) =>
+    taskCell(l, TASK_MILESTONE_INDEX)
+      .split('·')
+      .map((t) => t.trim());
+  const count = (tag) => tasks.filter((l) => tokens(l).includes(tag)).length;
+  const tagged = tasks.filter((l) => tokens(l).some((t) => TAGS.includes(t))).length;
   return {
     מבנה: count('מבנה'),
     נוחות: count('נוחות'),

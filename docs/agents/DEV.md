@@ -195,6 +195,18 @@ Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:p
 ✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
 ⛔ Blocked skills: `RULES § 0.1.1 ז׳`.
 
+### 🎬 CONDITIONAL — THE MOTION SKILLS. ⛔ THE ARENA'S LIVING LAYER, ⛔ AND NOWHERE ELSE.  ⟦NEW 30/08 · D-148⟧
+The row you picked carries **`arena`** ⛔ **AND** **`שכבה ב׳`** in its `אבן דרך` cell ⇒ run **`animate`** before you write the motion, and `apple-design` / `emil-design-eng` **only if `animate` itself sends you for more context** — they are secondary, ⛔ never a starting point.
+⛔ **Any other row these three are BLOCKED** — including an `arena` row that carries ⛔ no layer tag, and every `study` / `onboarding` / `account` screen. ⛔ «The screen looked static» is ⛔ not a reason; a screen that should move and does not is a **task row**, ⛔ not a skill you reach for mid-tick.
+🔴 **⛔ You NEVER write `שכבה ב׳` onto a row.** PM or Roy writes it (`plan/50-tasks.md` legend · D-148). A row you tagged yourself is a permission you wrote yourself, and a gate you can open from the inside ⛔ is not a gate.
+🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md` already says so in its own conflict table: `שכבה ב׳` beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
+⛔ **`prefers-reduced-motion` is Layer A — ⛔ no exception, ⛔ including in the arena.**
+⛔ **BLOCKED with ⛔ no condition: `find-animation-opportunities`** — it searches the codebase for places to ADD motion, and you take work from `50-tasks.md` alone (`RULES § 0.5א`). It is Roy's, by hand. ⛔ **`write-swift` is ⛔ not this stack.**
+
+### 🧰 CONDITIONAL — CHOOSING AN IMPLEMENTATION  ⟦NEW 30/08 · D-148⟧
+A UI dependency the task needs and `package.json` ⛔ does **not** already carry ⇒ **`pick-ui-library`** BEFORE you add it. ⛔ A dependency that is already there ⛔ does not need it.
+The tick touches a toast — `sonner` in `package.json`, a `*Toast*` component, or the row says «טוסט» ⇒ **`ask-sonner`**.
+
 ## ⭐ STEP 4.5 — WHICH KIND OF TICK, AND WHEN IT ENDS  ⟦NEW 24/08 · phase 3⟧
 
 ⛔ **A tick is ⛔ NOT "one task". That rule was the single biggest brake on output** —

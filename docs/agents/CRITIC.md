@@ -239,6 +239,13 @@ screen is a tool everyone learns to ignore.
 Before ANY claim of green/verified/merged → **`superpowers:verification-before-completion`**. Merging → **`superpowers:finishing-a-development-branch`** — ⛔ **yours alone; ⛔ no other agent may run it.**
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` (`RULES § 0.17א`).
 
+### 🎬 CONDITIONAL — MOTION IN THE DIFF YOU ARE REVIEWING  ⟦NEW 30/08 · D-148⟧
+`./scripts/g diff --name-only origin/dev..origin/work/current` touches `app/arcade/**` or `components/Arena*`, ⛔ **OR** the diff body matches `animate|transition|motion|glow(` ⇒ run **`review-animations`** on that diff, and write what it returns as ordinary findings in STEP 6.
+🔬 **Measured 30/08, and it is the reason this line exists.** This file carried **two** occurrences of motion at all — both of them a one-line summary of the constitution — and ⛔ **not one review action**: the seven numbered items in STEP 4.5 ask what is on the screen, in what order, at what size and in what colour, and ⛔ never ask what happens when it **moves**. ⇒ ⛔ this is ⛔ not a second opinion on something you already check; it is a **gap**.
+⚠️ **F-085 is the shape of the failure it is meant to catch:** a live approval for a breathing loop on the arena stage whose three fences — arena stage only · **≤2px** · `prefers-reduced-motion` — lived in a register row that ⛔ no check ever enforced.
+⛔ **It ⛔ does not block the merge.** Motion fidelity is a finding, exactly like render fidelity (`RULES § 0.17ד`) — ⛔ a good merge blocked for a bad reason teaches every agent to ignore the gate. 🔴 **`prefers-reduced-motion` is the exception, and ⛔ not a small one: it is Layer A, and Layer A blocks.**
+⛔ **`animate` · `apple-design` · `emil-design-eng` are ⛔ NOT yours, at ⛔ any layer.** They are build skills; a reviewer that runs them stops measuring the diff and starts proposing a different one. ⛔ **`find-animation-opportunities` is Roy's, by hand** — «this could move» is ⛔ not a finding.
+
 ## ⭐ STEP 5 — THE GATE. MERGE, OR FILE. ⛔ THERE IS NO THIRD OUTCOME. (RULES § 0.17)
 
 ⛔ **FIRST, ONE LINE THAT CAN END THIS STEP:** `LOCK_HELD_BY` in `plan/00-control.md` is **anything other than empty** ⇒ ⛔ **no merge this tick.**

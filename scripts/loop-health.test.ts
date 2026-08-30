@@ -419,6 +419,23 @@ describe('scripts/loop-health.mjs', () => {
     );
   });
 
+  /**
+   * 🔴 **‏D-148 · 30/08 — the mix reads TOKENS, ⛔ not a suffix, and this fixture is the
+   * one that would have caught the bug.** The old line asked `endsWith('נוחות')`, so the
+   * first row to carry a token AFTER its work-type tag re-counted as untagged — ⛔ silently,
+   * ⛔ with every check still green. ⇒ the fixture below puts the layer tag last on purpose.
+   */
+  it('the work-type mix counts a row whose kind tag is ⛔ not the last token (D-148)', () => {
+    const root = healthy();
+    patch(root, 'plan/50-tasks.md', (s) =>
+      s.replace('| T-001 | M0 |', '| T-001 | M0 · arena · נוחות · שכבה ב׳ |'),
+    );
+    const r = run(root);
+    expect(r.out, 'the row counts under its kind, ⛔ not as untagged').toMatch(
+      /נוחות 1 · תוכן 0 · ⛔ ללא תג 0/,
+    );
+  });
+
   it('writes nothing into the repo it measures', () => {
     // ⛔ A checker with side effects is a checker nobody can run safely.
     const root = healthy();

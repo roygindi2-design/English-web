@@ -411,6 +411,86 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(qa, 'מבחן הפיצול').toMatch(/lane separation ⛔ did not work/);
   });
 
+  /**
+   * 🎬 **‏D-148 · 30/08 — הטריגר המותנה של סקילי האנימציה, וארבע החוליות שבלעדיהן הוא מת.**
+   *
+   * ⛔ **למה כאן ו⛔ לא בטסט אחר.** התוספת כולה היא **טקסט בשני פרומפטים** — ⛔ אין לה
+   * קומפיילר ו⛔ אין לה טסט יחידה. ⚠️ ובניגוד לשאר גל 1, **חצי ממנה היא איסור**, וכשל
+   * של איסור ⛔ אינו נראה: פרומפט שאיבד את המילה «BLOCKED» ימשיך לעבוד יפה, והסקיל
+   * פשוט ייטען במקום שבו חוקת העיצוב קפואה. ⇒ **הצד השלילי נבדק כאן במפורש, ⛔ ולא
+   * רק הצד החיובי.**
+   */
+  it('🎬 סקילי האנימציה מותנים ב-`שכבה ב׳`, וה-DEV ⛔ אינו רשאי לסמן לעצמו (D-148)', () => {
+    const dev = text('DEV');
+    // ⓐ התנאי החיובי — שני התגים ביחד, ⛔ ולא אחד מהם
+    expect(dev, 'DEV: D-148').toContain('D-148');
+    expect(dev, 'DEV: תג השכבה עצמו').toContain('שכבה ב׳');
+    expect(dev, 'DEV: `arena` ⛔ לבדה ⛔ אינה מספיקה').toMatch(/`arena`\*\* ⛔ \*\*AND\*\*/);
+    expect(dev, 'DEV: הסקיל המפעיל').toContain('`animate`');
+    // ⓑ המשניים ⛔ אינם עצמאיים
+    expect(dev, 'DEV: apple-design/emil משניים').toMatch(/only if `animate` itself sends you/);
+    // ⓒ הרשימה השלילית — ⛔ זו החוליה שאובדת בשקט
+    expect(dev, 'DEV: איסור מפורש בכל שורה אחרת').toMatch(/Any other row these three are BLOCKED/);
+    expect(dev, 'DEV: המסכים בשמם').toMatch(/study` \/ `onboarding` \/ `account`/);
+    // ⓓ 🔴 השער ⛔ אינו נפתח מבפנים — הסוכן ⛔ אינו מסמן לעצמו את השורה
+    expect(dev, '🔴 DEV: ⛔ אינו כותב את התג בעצמו').toMatch(/NEVER write `שכבה ב׳` onto a row/);
+    // ⓔ והחוקה גוברת על הסקיל — עם המספרים, ⛔ לא כסיסמה
+    expect(dev, 'DEV: החוקה גוברת').toMatch(/beats a design skill/);
+    expect(dev, 'DEV: תקציב הזוהר במספר').toMatch(/max two per screen/);
+    expect(dev, 'DEV: reduced-motion היא שכבה א׳').toContain('prefers-reduced-motion');
+  });
+
+  it('🎬 QA נושא את `review-animations`, ו⛔ אינו נושא אף סקיל בנייה (D-148)', () => {
+    const qa = text('CRITIC');
+    expect(qa, 'QA: D-148').toContain('D-148');
+    expect(qa, 'QA: סקיל הביקורת').toContain('`review-animations`');
+    // התנאי הוא הדיף, ⛔ ולא המשימה — QA ⛔ אינו בוחר שורה
+    expect(qa, 'QA: התנאי הוא הדיף').toMatch(/animate\|transition\|motion\|glow\(/);
+    // ⛔ ⛔ אינו חוסם מיזוג — חוץ מ-reduced-motion, שהיא שכבה א׳
+    expect(qa, 'QA: ⛔ אינו חוסם').toMatch(/⛔ does not block the merge/);
+    expect(qa, 'QA: והחריג היחיד ששכן חוסם').toContain('prefers-reduced-motion');
+    // 🔴 והפרדת התפקידים: סקילי הבנייה ⛔ אינם שלו
+    expect(qa, '🔴 QA: סקילי הבנייה ⛔ אינם שלו').toMatch(/⛔ NOT yours/);
+  });
+
+  /**
+   * 🔴 **‏אי-הדליפה — הטענה שאיש ⛔ לא היה כותב, ובדיוק זו שנשברת ראשונה.**
+   * ‏PM ו-CONTENT ⛔ אינם נוגעים בקוד תצוגה בכלל. אם שם של סקיל אנימציה יופיע
+   * בפרומפט שלהם, זה ⛔ לא ייראה כשגיאה — הוא פשוט ייטען בכל טיק, בשקט, על חשבון
+   * חלון ההקשר של סוכן שאין לו שום שימוש בו.
+   */
+  it('🔴 סקילי האנימציה ⛔ אינם דולפים ל-PM ול-CONTENT, ו-`write-swift` ⛔ אינו בשום פרומפט', () => {
+    for (const a of ['PM', 'CONTENT'] as const) {
+      for (const skill of ['animate', 'apple-design', 'emil-design-eng', 'review-animations']) {
+        expect(text(a), `${a}: ⛔ ${skill}`).not.toContain(skill);
+      }
+    }
+    // ⛔ ‏Swift ⛔ אינו הסטאק הזה, ו-`find-animation-opportunities` הוא של רוי ביד
+    for (const a of AGENTS) {
+      expect(text(a), `${a}: ⛔ write-swift כהיתר`).not.toMatch(/run `write-swift`/);
+    }
+    expect(text('DEV'), 'DEV: find-animation-opportunities חסום').toMatch(
+      /BLOCKED with ⛔ no condition: `find-animation-opportunities`/,
+    );
+  });
+
+  /**
+   * 🔬 **‏בדיקה ד׳ מהתוכנית — «הפניה, ⛔ לא העתקה», ⛔ ואינה כוונה אלא מספר.**
+   * העיקרון שהתוספת נשענת עליו הוא שתוכן הסקיל נשאר ב-`SKILL.md` שלו והפרומפט רק
+   * מפנה אליו. ⛔ **כוונה ⛔ אינה נמדדת** — ולכן התקרה כתובה כאן: התוספת המותנית
+   * בשני הפרומפטים ⛔ אינה חורגת מ-**2,600 בתים** בכל אחד. חריגה מזה אומרת שמישהו
+   * (‏אני, בטעות) התחיל להעתיק את הסקיל פנימה במקום להפנות אליו.
+   */
+  it('🔬 התוספת המותנית נשארה הפניה — ⛔ ולא העתקה של תוכן הסקיל', () => {
+    const dev = text('DEV');
+    const qa = text('CRITIC');
+    const devBlock = dev.slice(dev.indexOf('### 🎬 CONDITIONAL'));
+    const qaStart = qa.indexOf('### 🎬 CONDITIONAL');
+    const qaBlock = qa.slice(qaStart, qa.indexOf('\n## ', qaStart));
+    expect(devBlock.slice(0, devBlock.indexOf('\n## ')).length, 'DEV: גודל התוספת').toBeLessThan(2600);
+    expect(qaBlock.length, 'QA: גודל התוספת').toBeLessThan(2600);
+  });
+
   /** ⛔ פרומפט שהתרוקן הוא פרומפט שאיש לא ישים לב אליו עד שסוכן ירוץ בלי הוראות. */
   it('⛔ אף פרומפט ⛔ אינו מתרוקן — רצפה נמדדת, ⛔ לא מוצהרת', () => {
     for (const a of AGENTS) expect(text(a).length, a).toBeGreaterThan(8000);

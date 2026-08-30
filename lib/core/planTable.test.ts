@@ -7,6 +7,7 @@ import {
   continuationOf,
   WORKSTREAMS,
   WORK_KINDS,
+  LAYERS,
   TASK_COLUMNS,
 } from './planTable';
 
@@ -307,6 +308,7 @@ describe('classify', () => {
       milestone: 'M2',
       workstream: 'story',
       kind: 'נוחות',
+      layer: null,
       unknown: [],
     });
   });
@@ -322,6 +324,7 @@ describe('classify', () => {
       milestone: 'M0',
       workstream: null,
       kind: null,
+      layer: null,
       unknown: [],
     });
   });
@@ -345,9 +348,40 @@ describe('classify', () => {
     expect(classify('M1 · —').unknown).toEqual([]);
   });
 
-  it('accepts every token in both published vocabularies', () => {
+  it('accepts every token in all three published vocabularies', () => {
     for (const w of WORKSTREAMS) expect(classify(`M0 · ${w}`).workstream).toBe(w);
     for (const k of WORK_KINDS) expect(classify(`M0 · ${k}`).kind).toBe(k);
+    for (const l of LAYERS) expect(classify(`M0 · ${l}`).layer).toBe(l);
+  });
+
+  /**
+   * 🔴 **D-148 — the layer tag is the gate the animation skills hang on, so the
+   * three things that would quietly kill it are asserted here and ⛔ nowhere else.**
+   *
+   * 1. It is **optional**. If an untagged row ever counted as a bad tag, 190 rows
+   *    would light up at once and the balance table would stop being readable.
+   * 2. It is **closed**. `שכבה B` or `layer B` must ⛔ not read as the real tag —
+   *    a near-miss spelling that classifies as `unknown` is exactly what stops a
+   *    row from silently buying a permission it was ⛔ never given.
+   * 3. It is **disjoint** from the other two axes, so order stays irrelevant.
+   */
+  it('🔴 the layer tag is optional, closed, and order-free (D-148)', () => {
+    // 1 · optional — ⛔ absent is ⛔ not an error
+    expect(classify('M2 · arena · נוחות').layer).toBeNull();
+    expect(classify('M2 · arena · נוחות').unknown).toEqual([]);
+
+    // 2 · closed — a near-miss is reported, ⛔ never accepted
+    expect(classify('M2 · arena · שכבה B').layer).toBeNull();
+    expect(classify('M2 · arena · שכבה B').unknown).toEqual(['שכבה B']);
+    expect(classify('M2 · arena · layer B').layer).toBeNull();
+
+    // 3 · disjoint — order is irrelevant, exactly like the other two axes
+    expect(classify('שכבה ב׳ · arena · M2')).toEqual(classify('M2 · arena · שכבה ב׳'));
+
+    // and a second layer on one row is a contradiction, ⛔ not a tag
+    const c = classify('M2 · arena · שכבה א׳ · שכבה ב׳');
+    expect(c.layer).toBe('שכבה א׳');
+    expect(c.unknown).toEqual(['שכבה ב׳']);
   });
 });
 

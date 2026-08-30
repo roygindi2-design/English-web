@@ -352,8 +352,28 @@ export type Workstream = (typeof WORKSTREAMS)[number];
 export const WORK_KINDS = ['מבנה', 'תוכן', 'נוחות', 'מעברים', 'תשתית'] as const;
 export type WorkKind = (typeof WORK_KINDS)[number];
 
+/**
+ * ⛔ **הסימון השלישי בתא — ו⛔ אינו חובה.** שתי השכבות של `plan/35-design-constitution.md`
+ * (‏D-102): **`שכבה א׳` קפואה** — ניגודיות · 44px · `prefers-reduced-motion` · צבע לעולם
+ * לא הערוץ היחיד; **`שכבה ב׳` חיה** — כהה-קודם · סולם הרדיוסים · תקציב הזוהר · מוטיון.
+ *
+ * ⚠️ **⛔ אין לו ברירת מחדל, ורוב השורות ⛔ אינן נושאות אותו — שורה בלי סימון שכבה
+ * ⛔ אינה שגיאה ו⛔ אינה `unknown`.** הוא נכתב **רק** על שורה שהעבודה בה היא הגימור
+ * הוויזואלי או התנועה עצמם, והוא מה שפותח — או חוסם — את סקילי האנימציה
+ * ב-`docs/agents/DEV.md STEP 4` (‏**D-148**).
+ *
+ * 🔴 **‏`שכבה א׳` הוא סימן עצירה, ⛔ ולא היתר.** שכבה א׳ קפואה: שינוי בה הוא
+ * `NEXT_AGENT=HUMAN` בלבד (‏`RULES` · D-102), ו⛔ אין סקיל שמרשה אותו.
+ * 🔴 **ומי כותב אותו: PM או רוי, ⛔ לעולם לא DEV.** סוכן שמסמן שורה בעצמו ואז קורא
+ * את הסקיל שהסימון פותח ⛔ אינו עובר שער — הוא כותב לעצמו רשות. זו כל הסיבה
+ * שהסימון יושב ב-`50-tasks.md`, שהוא קלט של DEV, ⛔ ולא בדוח שלו.
+ */
+export const LAYERS = ['שכבה א׳', 'שכבה ב׳'] as const;
+export type Layer = (typeof LAYERS)[number];
+
 const WORKSTREAM_SET: ReadonlySet<string> = new Set(WORKSTREAMS);
 const KIND_SET: ReadonlySet<string> = new Set(WORK_KINDS);
+const LAYER_SET: ReadonlySet<string> = new Set(LAYERS);
 
 /** 0-based index of `אבן דרך`, the cell that carries both tags. */
 export const TASK_MILESTONE_INDEX = 1;
@@ -364,6 +384,8 @@ export interface Classification {
   readonly milestone: string | null;
   readonly workstream: Workstream | null;
   readonly kind: WorkKind | null;
+  /** ⛔ Optional by design — `null` on almost every row, and that is ⛔ not a defect. */
+  readonly layer: Layer | null;
   /** Tokens that are neither a milestone nor a known tag. ⛔ Never silently dropped. */
   readonly unknown: readonly string[];
 }
@@ -378,14 +400,21 @@ export interface Classification {
  * declared field inside a cell works; this is the same move on a cell that is
  * 220 bytes across every open row, so it costs nothing to read.
  *
- * Order is ⛔ not enforced — the two vocabularies are disjoint, so `story · M2`
+ * Order is ⛔ not enforced — the vocabularies are disjoint, so `story · M2`
  * reads identically. What IS enforced is that every token is recognised, which
  * is what `unknown` reports and what the register test fails on.
+ *
+ * ⚠️ **30/08 · D-148 — a THIRD vocabulary joined, and it is the only optional one.**
+ * `שכבה א׳`/`שכבה ב׳` marks the design layer the row's work sits in. Milestone,
+ * workstream and kind are expected on an open row; the layer is ⛔ not, and a row
+ * without it is ⛔ not a bad tag. It exists so a skill that is safe on the arena's
+ * visual layer cannot be reached from a row that is ⛔ not that.
  */
 export function classify(cell: string): Classification {
   let milestone: string | null = null;
   let workstream: Workstream | null = null;
   let kind: WorkKind | null = null;
+  let layer: Layer | null = null;
   const unknown: string[] = [];
 
   for (const raw of cell.split('·')) {
@@ -407,9 +436,15 @@ export function classify(cell: string): Classification {
       else unknown.push(token);
       continue;
     }
+    if (LAYER_SET.has(token)) {
+      // Two layers on one row is a contradiction, ⛔ not a tag — report it.
+      if (layer === null) layer = token as Layer;
+      else unknown.push(token);
+      continue;
+    }
     unknown.push(token);
   }
-  return { milestone, workstream, kind, unknown };
+  return { milestone, workstream, kind, layer, unknown };
 }
 
 /**
