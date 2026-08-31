@@ -13,7 +13,7 @@
  *
  * ⛔ **AND IT IS DERIVED FROM THE CODE, WHICH IS THE WHOLE POINT.** A hand-written
  * inventory is a 553KB architecture file that drifts the day after it is written
- * (`RULES § 0.5ב` says exactly this about `30-architecture.md`). This one is
+ * (`RULES § 0.6ב` says exactly this about `30-architecture.md`). This one is
  * regenerated, so it ⛔ cannot lie — and a screen missing from it is a screen that
  * ⛔ does not exist in `app/`, ⛔ not a screen somebody forgot to describe.
  *

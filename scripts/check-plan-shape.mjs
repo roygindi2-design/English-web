@@ -14,7 +14,7 @@
  * ⚠️ It measures SHAPE, ⛔ never correctness. A plan can carry all seven elements and
  * still be wrong; that is what the Critic and the tests are for. What this catches is
  * the class where Dev has to invent something the PM was supposed to decide — which is
- * exactly how scope creep re-enters through the back door (`RULES § 0.16`).
+ * exactly how scope creep re-enters through the back door (`RULES § 0.22`).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -100,7 +100,7 @@ const ELEMENTS = [
     key: 'verify',
     label: 'צעד סיום שמריץ `npm run verify`',
     ok: /npm run verify|שער העבודה המלא|שער-כולל|השער-הכולל/.test(text),
-    why: '`RULES § 0.1.1 ח׳` — השער רץ אחרון. תוכנית שאינה נוקבת בו מזמינה הצהרה ריקה.',
+    why: '`RULES § 0.1 ח׳` — השער רץ אחרון. תוכנית שאינה נוקבת בו מזמינה הצהרה ריקה.',
   },
 ];
 
@@ -130,7 +130,7 @@ if (isUi) {
 /**
  * 🔟 **ELEMENT TEN — «EXTEND BEFORE YOU CREATE».**  ⟦added 30/08⟧
  *
- * ⛔ **The mechanism already existed and was ⛔ never once enforced.** `RULES § 0.5ב`
+ * ⛔ **The mechanism already existed and was ⛔ never once enforced.** `RULES § 0.6ב`
  * makes lineage a DECLARED field — `**המשך של: T-185**` — precisely because a tree
  * built from footnotes is a wrong tree. Measured over 58 plans: the declaration
  * appears in a handful, and **8 plans are orphans** nobody cites at all. Meanwhile
@@ -182,7 +182,7 @@ const extension = {
   key: 'extend',
   label: 'הרחבה לפני יצירה — שורה קיימת נוגעת באותו קובץ',
   ok: overlaps.length === 0 || answered,
-  why: '`RULES § 0.5ב` — שושלת **מוצהרת**, ⛔ לעולם לא מוסקת. תוכנית שנוגעת בקובץ שכבר יש לו שורה מצהירה `המשך של: T-XXX` או כותבת למה זו ⛔ אינה הרחבה.',
+  why: '`RULES § 0.6ב` — שושלת **מוצהרת**, ⛔ לעולם לא מוסקת. תוכנית שנוגעת בקובץ שכבר יש לו שורה מצהירה `המשך של: T-XXX` או כותבת למה זו ⛔ אינה הרחבה.',
   detail:
     overlaps.length === 0
       ? '⛔ אין חפיפה'

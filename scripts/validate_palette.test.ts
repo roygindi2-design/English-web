@@ -15,7 +15,7 @@ const run = (args: string[]): { out: string; code: number } => {
   }
 };
 
-describe('scripts/validate_palette.mjs — הקובץ ש-RULES § 0.8 מחייב', () => {
+describe('scripts/validate_palette.mjs — הקובץ ש-RULES § 0.9 מחייב', () => {
   it('בודק כל רצפה מוצהרת בשני המצבים — ⛔ אינו בוחר תת-קבוצה', () => {
     const r = run([]);
     expect(r.code).toBe(0);

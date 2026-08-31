@@ -60,7 +60,7 @@ body {
    was isolating as a side effect of being atomic. */
 .ltr-inline { unicode-bidi: isolate; direction: ltr; }
 
-/* T-069 · constitution § 1 · § 6 · RULES § 0.1.1 ז׳ — the keyboard learner's only
+/* T-069 · constitution § 1 · § 6 · RULES § 0.1 ז׳ — the keyboard learner's only
    position indicator. `--brand` and not `--brand-surface`: CONTRAST_FLOORS holds
    --brand at 3:1 against BOTH surfaces (light and dark), which is the WCAG floor for
    a non-text UI boundary, and a focus ring is a boundary and not text.

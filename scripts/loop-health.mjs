@@ -10,7 +10,7 @@
  *   1 · a commission pointing at a brief nobody wrote  → CONTENT silently fell
  *       through to routine work on the channel's first live test.
  *   2 · a finding pointing at a deleted file           → cannot be closed, ever.
- *   3 · `נבדק:` — a rule in RULES § 0.15א with 0 occurrences in the file.
+ *   3 · `נבדק:` — a rule in RULES § 0.21 with 0 occurrences in the file.
  *   4 · Roy's three taps — instructed in the QA prompt, never once written, so
  *       his verification loop never closes.
  *   6 · an orphan plan → gets rewritten from scratch by the next PM.
@@ -279,7 +279,7 @@ check('2', 'קובץ:שורה של כל ממצא פתוח — קיים', () => {
   return { ok: missing.length === 0, detail: `${missing.length} מתים`, items: missing };
 });
 
-/* 3 — RULES § 0.15א, enforced for the first time. The 7 days is the rule's own
+/* 3 — RULES § 0.21, enforced for the first time. The 7 days is the rule's own
  * number, ⛔ not one invented here. A date is fine: this is a report on stdout,
  * ⛔ never a committed snapshot, so a clock cannot rot anything. */
 const STAMP = /נבדק:\s*(\d{4}-\d{2}-\d{2})/;
@@ -325,7 +325,7 @@ check('5', 'אפס סטטוס לא-מוכר · אפס שורה פגומה', () =
 
 /**
  * 9 — ⛔ **THE FILE EVERY AGENT READS EVERY TICK, AND IT WAS ALREADY OVER.**
- * `RULES § 0.1.2 ב׳` sets a 12KB ceiling on `plan/00-control.md` for one reason:
+ * `RULES § 0.2 ב׳` sets a 12KB ceiling on `plan/00-control.md` for one reason:
  * four agents read it on every single tick, so its size is a tax paid ~20 times a
  * day. Measured 25/08 — **12,949 bytes, 661 over the ceiling**, ⛔ and nothing in
  * the loop was watching. The rule existed; the enforcement did not.
@@ -369,7 +369,7 @@ check('6', 'כל תוכנית מצוטטת ברשם כלשהו', () => {
 
 /**
  * 10 — ⛔ **QA STOPPED MERGING AND NOBODY NOTICED.** `work/current` is a long-lived
- * branch by design (RULES § 0.17), and the failure mode of a long-lived branch is
+ * branch by design (RULES § 0.23), and the failure mode of a long-lived branch is
  * ⛔ not a conflict — it is **silence**: the gate goes red one day, QA files a
  * finding, and nothing merges for a week while DEV keeps piling commits onto a
  * branch no learner will ever see. ⇒ distance from `dev` is the one number that
@@ -469,7 +469,7 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
 
 /* 7 — the DEV→PM lane only works if the PM actually learns. ⛔ No invented
  * threshold: the same missing element on two open rows IS the PM not learning,
- * which RULES § 0.5ג already calls a 🟡 finding. */
+ * which RULES § 0.6ג already calls a 🟡 finding. */
 check('7', 'אף חסר בתוכנית אינו חוזר פעמיים', () => {
   const seen = new Map();
   for (const line of read(at('plan', '26-plan-feedback.md')).split('\n')) {
@@ -513,7 +513,7 @@ check('8', 'הצילומים הנגזרים זהים להרצה טרייה', () 
  * ALREADY WRITTEN and ⛔ cannot start. ⇒ the queue is ⛔ not short of work; it is
  * short of **decisions**, and a decision has ⛔ no other owner.
  *
- * ⚠️ **AND THE HONEST LIMIT, stated rather than faked:** `RULES § 0.5` writes the
+ * ⚠️ **AND THE HONEST LIMIT, stated rather than faked:** `RULES § 0.6` writes the
  * rule as «open more than 3 days». ⛔ A finding row carries a CYCLE id (`C-XXXX`),
  * ⛔ not a date — there is ⛔ no date on it to subtract from. ⇒ this check measures
  * **existence**, ⛔ not age, and the 3 days live in `softUntil` below instead.
@@ -667,7 +667,7 @@ const workTypeMix = () => {
     נוחות: count('נוחות'),
     תוכן: count('תוכן'),
     open: tasks.length,
-    // ⛔ Reported, ⛔ never hidden: rows written before `§ 0.5ב` carry ⛔ no work-type
+    // ⛔ Reported, ⛔ never hidden: rows written before `§ 0.6ב` carry ⛔ no work-type
     // tag, and a mix printed as if they did is a share of a subset presented as a
     // share of the whole.
     untagged: tasks.length - tagged,

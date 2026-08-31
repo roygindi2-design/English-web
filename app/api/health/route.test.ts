@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
  *
  * The failure these guard against is the one T-053 exists for: `/api/health`
  * returned `ok:true` while the migrations had never been run, so the post-deploy
- * smoke test of RULES § 0.1.1 ד׳ passed on an empty database.
+ * smoke test of RULES § 0.1 ד׳ passed on an empty database.
  */
 const ROUTE = readFileSync('app/api/health/route.ts', 'utf8');
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');

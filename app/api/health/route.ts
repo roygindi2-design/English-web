@@ -6,7 +6,7 @@ import { readSupabaseEnv, type SupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
 
-/** RULES § 0.1.1 ד׳ leans on this endpoint, so it may not hang behind a silent database. */
+/** RULES § 0.1 ד׳ leans on this endpoint, so it may not hang behind a silent database. */
 const PROBE_TIMEOUT_MS = 3000;
 
 /**

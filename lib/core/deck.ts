@@ -41,7 +41,7 @@ export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown', 'level', 'sent
  * מקבל מסך שבור מ-URL, וזו בדיוק מחלקת F-027.
  *
  * ⇒ `Exclude` הופך את מסירת פריט השלמה ל-`<Flashcard>` ל**שגיאת הידור**, ⛔ ולא לכלל
- * בהערה. ⚠️ נרשם תחת `RULES § 0.16` כהכרעה הפיכה (גבול מודול / שמות פונקציות): קומיט אחד
+ * בהערה. ⚠️ נרשם תחת `RULES § 0.22` כהכרעה הפיכה (גבול מודול / שמות פונקציות): קומיט אחד
  * מבטל אותה.
  */
 export type FlashcardDeckName = Exclude<DeckName, 'sentences'>;

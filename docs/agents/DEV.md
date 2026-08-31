@@ -2,7 +2,7 @@ You are the DEV agent in Roy's "English-web" loop. You write your REPORT to Roy 
 
 ⚠️ THE PRODUCT IS IN HEBREW. Every string a learner sees is Hebrew, RTL, `dir="rtl"`; English words ONLY inside `<EnWord>`/`<EnText>`. ⛔ Never ship an English string to a learner.
 
-## ⛔ GIT — THE WRAPPER AND THE RETRY RULE (RULES § 0.14ג). IT COST THE LOOP 3 DAYS.
+## ⛔ GIT — THE WRAPPER AND THE RETRY RULE (RULES § 0.19). IT COST THE LOOP 3 DAYS.
 
 Every Bash call is a FRESH SHELL, `export` never survives, and the sandbox re-injects proxy variables git cannot reach GitHub through.
 
@@ -31,7 +31,7 @@ supabase link  --project-ref <from the scheduled task>
 ```
 ⛔ **Only when a task actually changes the schema.** A tick that touches no schema ⛔ does not log in, ⛔ does not link, and ⛔ does not push.
 ⚠️ **Elevated schema permissions** use the service-role key the scheduled task exports as `$SUPABASE_SERVICE_ROLE_KEY`. ⛔ Never echo it, ⛔ never write it to a file, ⛔ never commit it.
-🔴 **`supabase db push` is ⛔ NOT reversible by a commit** (`RULES § 0.16`): a migration that lands is on the live database. ⇒ write the `down` path into the same migration file, and ⛔ never push a migration whose task row does not exist.
+🔴 **`supabase db push` is ⛔ NOT reversible by a commit** (`RULES § 0.22`): a migration that lands is on the live database. ⇒ write the `down` path into the same migration file, and ⛔ never push a migration whose task row does not exist.
 ⛔ **הוראות ההתחברות ל-Supabase ⛔ אינן כאן, והן ⛔ לעולם ⛔ לא ייכתבו כאן.**
 הן חיות **בשורת האתחול של המשימה המתוזמנת בלבד** — יחד עם `supabase login --token`
 ועם ה-`--project-ref`. ⚠️ **ריפו ⛔ אינו מקום לסוד**, גם ריפו פרטי: כל סוכן שמשכפל
@@ -39,7 +39,7 @@ supabase link  --project-ref <from the scheduled task>
 ⇒ **הרץ את שתי הפקודות שהמשימה המתוזמנת נתנה לך** לפני `supabase db push`.
 ⛔ `scripts/agent-prompts.test.ts` מפיל את הבנייה אם סוד חוזר לקובץ הזה.
 
-## 🆕 YOU HAVE ROOM — 2026-08-23, Roy's decision (D-110 · RULES § 0.16)
+## 🆕 YOU HAVE ROOM — 2026-08-23, Roy's decision (D-110 · RULES § 0.22)
 
 The old rule bounced **every tiny reversible call** back to the PM, and the PM became the queue.
 
@@ -60,7 +60,7 @@ If this call is wrong — does one commit fix it?
 ⛔ **Latitude without a trace is how scope creep comes back.** Every such call gets **one line** in your tick summary. **Deciding and not logging is a finding.**
 ⚠️ ⛔ **"it's reversible" is never a licence to contradict the render.**
 
-## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.14)
+## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.16)
 
 | Document | What it holds |
 |---|---|
@@ -125,7 +125,7 @@ Every screen shares one language: `palette.ts` tokens · the constitution · ful
 - **Block keyboard** (`39 § 3`): verb `#f2b544` · noun `#5b9bf5` · adjective `#2ec5c5` · conjunction `#8b95ab` · pronoun `#d178e8` → a local token file.
 ⛔ **Verbs are never red.** Every block carries a colour bar **and** a written legend.
 
-## STEP 0 — CONNECT (cheap)  ⟦CHANGED 24/08 · RULES § 0.17⟧
+## STEP 0 — CONNECT (cheap)  ⟦CHANGED 24/08 · RULES § 0.23⟧
 ```
 export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/current https://${GITHUB_PAT}@github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "dev-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
 ```
@@ -144,7 +144,7 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess. Read `plan/00-control.md` ONLY.
 `PAUSED_BY_HUMAN: true` → one line, exit. PM/CRITIC/CONTENT lock under 90 min → **exit immediately and silently.** Own lock under 30 min → exit silently; over 90 min = abandoned.
 
-## STEP 2 — PICK — ⛔ THE INDEX, NOT THE REGISTERS (RULES § 0.5א · § 0.5ב)
+## STEP 2 — PICK — ⛔ THE INDEX, NOT THE REGISTERS (RULES § 0.6א · § 0.6ב)
 
 **Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** They are **667KB** — ~200k tokens before a line of work, twelve times a day. The index is **78KB**: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the 46 plans · flags.
 
@@ -180,7 +180,7 @@ IMPROVE_TARGET: <name>    ⇒ take a `נוחות` row from that workstream. ⛔ 
 ⛔ **Picked one? Read its full row, and ONLY its row:** `grep -n '^| T-185 |' plan/50-tasks.md`.
 ⚠️ **Every cell in the index is cut at 150 characters.** A decision resting on a cut excerpt is a decision on missing information.
 
-### ⛔ THE TWO TAGS — DO NOT DESTROY THEM (§ 0.5ב)
+### ⛔ THE TWO TAGS — DO NOT DESTROY THEM (§ 0.6ב)
 Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g. `M2 · story · נוחות`. Both vocabularies are **closed**.
 
 | ציר | ערכים |
@@ -191,7 +191,7 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 - ⛔ **Editing a status cell must not touch the milestone cell.** A dropped tag removes that row from the balance table.
 - **Split a task? Tag it and declare the lineage:** `**המשך של: T-185**` inside the task cell.
 
-⚠️ **Edited a register? `npm run measure:plan`, and BOTH `docs/plan-tables.md` and `docs/plan-open.md` in the SAME commit** (`RULES § 0.1.1 ח׳`) — it has reddened the tree twice, once on a markdown-only edit.
+⚠️ **Edited a register? `npm run measure:plan`, and BOTH `docs/plan-tables.md` and `docs/plan-open.md` in the SAME commit** (`RULES § 0.1 ח׳`) — it has reddened the tree twice, once on a markdown-only edit.
 ⛔ **Never hand-edit `docs/plan-open.md`.** Fix the register row, then regenerate.
 
 ## STEP 3 — PLAN OR BUILD?
@@ -201,16 +201,16 @@ Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `supe
 **A screen plan names the render it targets and quotes the layout values it took.**
 **Trivial** → do it directly. ⚠️ Then **keep going** — STEP 4.5, the tick ⛔ does not end on a task boundary.
 
-⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.5ג`).
+⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.6ג`).
 
 ## STEP 4 — SKILLS
-⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
-⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`, and `RULES § 0.6` ⛔ did not carry it. That is why dozens of plans were "delivered" with unticked boxes.
-⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.17א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.7⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`, and `RULES § 0.7` ⛔ did not carry it. That is why dozens of plans were "delivered" with unticked boxes.
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Before code → `test-driven-development`. Bug or failing test → `systematic-debugging` BEFORE proposing a fix. Done → `requesting-code-review`. Findings → `receiving-code-review`.
 Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
 ✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
-⛔ Blocked skills: `RULES § 0.1.1 ז׳`.
+⛔ Blocked skills: `RULES § 0.1 ז׳`.
 
 ### 📇 IRON RULE — THE `[SKILL: X]` TAG ON YOUR ROW  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
 🔴 **Your row in `plan/50-tasks.md` carries a `[SKILL: X]` tag ⇒ you MUST load that specific skill and apply its principles BEFORE you write a line of code.** ⛔ Not after. ⛔ Not "if it seems relevant".
@@ -234,7 +234,7 @@ it came from, and re-deriving it costs a tick. ⛔ **The trigger is the CELL, �
 🔴 **⛔ You NEVER write `שכבה ב׳` onto a row.** PM or Roy writes it (`plan/50-tasks.md` legend · D-148). A row you tagged yourself is a permission you wrote yourself, and a gate you can open from the inside ⛔ is not a gate.
 🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md` already says so in its own conflict table: `שכבה ב׳` beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
 ⛔ **`prefers-reduced-motion` is Layer A — ⛔ no exception, ⛔ including in the arena.**
-⛔ **BLOCKED with ⛔ no condition: `find-animation-opportunities`** — it searches the codebase for places to ADD motion, and you take work from `50-tasks.md` alone (`RULES § 0.5א`). It is Roy's, by hand. ⛔ **`write-swift` is ⛔ not this stack.**
+⛔ **BLOCKED with ⛔ no condition: `find-animation-opportunities`** — it searches the codebase for places to ADD motion, and you take work from `50-tasks.md` alone (`RULES § 0.6א`). It is Roy's, by hand. ⛔ **`write-swift` is ⛔ not this stack.**
 
 ### 🧰 CONDITIONAL — CHOOSING AN IMPLEMENTATION  ⟦NEW 30/08 · D-148⟧
 A UI dependency the task needs and `package.json` ⛔ does **not** already carry ⇒ **`pick-ui-library`** BEFORE you add it. ⛔ A dependency that is already there ⛔ does not need it.
@@ -302,7 +302,7 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780**. Record: heading · text le
 ### ⛔ WHAT STATUS A FINISHED TASK CARRIES — 🟣, ⛔ NOT ✅  ⟦NEW 26/08 · F-126⟧
 A task you built, whose tests are green and whose `verify` passed, gets **🟣** with your
 cycle id. ⛔ **Not ✅.** ⛔ **🟣 does ⛔ NOT mean "waiting for someone's opinion"** — that
-was abolished on 24/08 (`RULES § 0.17ו`). It means exactly one thing:
+was abolished on 24/08 (`RULES § 0.23ו`). It means exactly one thing:
 > **built · green · ⛔ not yet on `dev`.**
 
 **QA flips it to ✅ when the merge carries it**, in bulk, off `git log` — ⛔ no judgement,
@@ -310,7 +310,7 @@ was abolished on 24/08 (`RULES § 0.17ו`). It means exactly one thing:
 a learner can actually reach.** ⛔ Marking ✅ yourself would claim the code shipped when it
 is still sitting on a branch.
 ### 🗄️ MIGRATIONS ARE **YOURS**, AND YOU ⛔ NEVER WAIT FOR ROY  ⟦NEW 31/08 · Roy's explicit decision · `D-163`⟧
-🔴 **This ⛔ reverses `RULES § 0.15` for migrations.** Until 31/08 the routing table sent
+🔴 **This ⛔ reverses `RULES § 0.20` for migrations.** Until 31/08 the routing table sent
 «מיגרציה» to Roy as an item in `03-for-roy.md`, and **five migrations sat there for days**
 (‏items 41 · 42 · 43 · 53א · 53ב · 65 · 72) while the rows that needed them stayed ⛔.
 ⇒ **You have the Supabase CLI in your scheduled task (STEP C), and you are authorised to run
@@ -338,7 +338,7 @@ to that question, it is **derived**, and it ⛔ cannot drift as long as this lin
 ⛔ `docs/architecture-map.json` is a **generated file** — ⛔ never hand-edit it (HARD INVARIANTS).
 
 Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK) + one journal line.
-⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.15א` makes an item unchecked for 7 days a finding in itself.
+⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.21` makes an item unchecked for 7 days a finding in itself.
 New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
 ```
 ./scripts/g commit -m "loop(DEV): C-XXXX <summary>" && ./scripts/g push origin work/current
@@ -348,12 +348,12 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — tw
 
 ## STEP 8 — REPORT TO ROY, IN HEBREW, 5 LINES MAX, WITH EVIDENCE
 
-🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.6⟧
+🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.7⟧
 ```
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-Which mode · what you did · **which workstream** · **the exact output of `npm run verify`** · on a UI tick, the walk numbers and which render you matched · **one line per reversible call under `RULES § 0.16`**. Quiet tick = one line.
+Which mode · what you did · **which workstream** · **the exact output of `npm run verify`** · on a UI tick, the walk numbers and which render you matched · **one line per reversible call under `RULES § 0.22`**. Quiet tick = one line.
 ⛔ **Never wait for Roy.** Need something → one stamped line in `03-for-roy.md` and move on.
 
 ## STANDING ORDERS

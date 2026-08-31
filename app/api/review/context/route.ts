@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
  * file, and `route.test.ts` scans the source BY NAME for each of them — a conditional
  * write inside `POST /api/review` could not have been proven absent that way, which is the
  * whole reason this is a separate route and ⛔ not a flag (a reversible call under
- * `RULES § 0.16`, logged in the tick summary).
+ * `RULES § 0.22`, logged in the tick summary).
  *
  * ⛔ **One row per pair, ⛔ not one row per event (W4).** `word_progress` is
  * `primary key (user_id, word_id, track_id)` and `0003b_provenance_telemetry.sql` states

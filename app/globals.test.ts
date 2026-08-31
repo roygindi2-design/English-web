@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
- * T-069 · constitution § 1 · § 6 · RULES § 0.1.1 ז׳.
+ * T-069 · constitution § 1 · § 6 · RULES § 0.1 ז׳.
  *
  * `focus-visible` is one of the four binary checks the Critic is allowed to run, and
  * before this rule existed the only thing a keyboard learner had was whatever Chromium

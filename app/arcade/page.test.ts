@@ -271,7 +271,7 @@ describe('T-181 · `37 § 12` — `/arcade` נפתח על מסך הבית, ⛔ �
     expect(PAGE).not.toContain('supabase');
   });
 
-  it('⛔ המעטפת מחזיקה מצב, ⛔ ואינה מוסיפה ראוט (`RULES § 0.16`)', () => {
+  it('⛔ המעטפת מחזיקה מצב, ⛔ ואינה מוסיפה ראוט (`RULES § 0.22`)', () => {
     const shell = readFileSync('components/ArenaShell.tsx', 'utf8');
     expect(shell).toContain("'home' | 'battle'");
     expect(shell).toContain('<ArenaHome');

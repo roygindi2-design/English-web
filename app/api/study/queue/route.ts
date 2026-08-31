@@ -92,7 +92,7 @@ const WORDS_SELECT =
  * `sense_distractors` are gated on `translation_confidence <> 'low'`), and a second copy of
  * that rule in this file is a second rule that can drift. ⚠️ This is a deliberate deviation
  * from the plan's quoted `SENTENCES_SELECT`, which listed the column: selecting a column
- * nothing reads reads as a filter that is missing. Recorded under `RULES § 0.16`.
+ * nothing reads reads as a filter that is missing. Recorded under `RULES § 0.22`.
  *
  * ⛔ **`senses.cefr_level` appears nowhere** — the band is `words.cefr_profile_band` (D-034),
  * the same column `deck=level` uses, and `queue/route.test.ts` scans this file for it by name.
