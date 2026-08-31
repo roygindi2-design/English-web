@@ -15,6 +15,7 @@
     "check:motion": "node scripts/check-motion.mjs",
     "diff:render": "node scripts/diff-render.mjs",
     "archive": "node scripts/archive-registers.mjs",
+    "archive:arch": "node scripts/archive-architecture.mjs",
     "measure:coverage": "node scripts/measure-coverage.mjs",
     "measure:sense": "node scripts/measure-sense-accuracy.mjs",
     "measure:headroom": "node scripts/measure-level-headroom.mjs",
