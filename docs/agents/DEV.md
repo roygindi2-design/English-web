@@ -153,6 +153,14 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
   ⓑ **the row named in `ACTIVE_TASK_ID`.** ⟦NEW 31/08 · `D-171` · Roy's explicit instruction⟧
 Order: **`RELEASE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`ACTIVE_TASK_ID`** → the next task in the active workstream that is not ⛔.
 
+### 🧭 `ACTIVE_WORKSTREAM: general` — THE CROSS-CUTTING FOCUS  ⟦NEW 31/08 · `D-174` · Roy's explicit instruction⟧
+**When — and only when — `ACTIVE_WORKSTREAM` reads `general`, the eligible set is three tags, ⛔ not one:**
+```
+general · loop · base          ⇐ all three are eligible while the focus is `general`
+```
+🔴 **Why this exists, and it is a MEASUREMENT, ⛔ not a preference.** Measured 31/08 on a live clone: `loop` held **10 open ⬜** and `base` held **15** — **25 rows ⛔ no DEV tick could ever pick**, because you filter to `ACTIVE_WORKSTREAM` and that field has only ever held a *feature* workstream. ⇒ system-wide fixes, logical bugs and loop machinery were **written and never built**. That is the third time this failure class has been measured: `D-122 § ב`, then `D-171`, now this.
+⛔ **And it is ⛔ not a licence.** While the focus is `general` you take ⛔ **no** feature-workstream row — the exceptions above (🔴 finding · `ACTIVE_TASK_ID`) are still the only two. ⛔ You ⛔ do NOT set `ACTIVE_WORKSTREAM` yourself, and ⛔ you ⛔ never retag a feature row `general` to make it eligible.
+
 🔴 **Why ⓑ had to be written down, and it is ⛔ not a loosening.** `ACTIVE_TASK_ID` is the ONLY way the PM or Roy can promote one named row to the head of your queue. Until today the filter sentence allowed an exception for a 🔴 **finding** and ⛔ not for a 🔴 **task** — so a promoted task was silently ineligible and ⛔ would never be built. **That defect is measured, ⛔ not hypothetical:** `D-122 § ב` found five `cards` rows tagged `base` that were **out of reach forever**, and `T-225` was promoted twice (C-0368, C-0374) while the filter above still dropped it.
 ⛔ **It is one named row, ⛔ never a licence.** `ACTIVE_TASK_ID` holds **one** id; when you finish it, the exception is over and the filter is absolute again. ⛔ You ⛔ do NOT set `ACTIVE_TASK_ID` yourself.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
@@ -177,7 +185,7 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 
 | ציר | ערכים |
 |---|---|
-| **זרימה** | `story` · `nav` · `arena` · `studies` · `msgs` · `loop` · `base` |
+| **זרימה** | `story` · `nav` · **`cards`** · `arena` · `studies` · `msgs` · `loop` · `base` · **`general`** |
 | **סוג עבודה** | `מבנה` · `תוכן` · `נוחות` · `מעברים` · `תשתית` |
 
 - ⛔ **Editing a status cell must not touch the milestone cell.** A dropped tag removes that row from the balance table.
@@ -203,6 +211,18 @@ Before code → `test-driven-development`. Bug or failing test → `systematic-d
 Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
 ✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
 ⛔ Blocked skills: `RULES § 0.1.1 ז׳`.
+
+### 📇 IRON RULE — THE `[SKILL: X]` TAG ON YOUR ROW  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
+🔴 **Your row in `plan/50-tasks.md` carries a `[SKILL: X]` tag ⇒ you MUST load that specific skill and apply its principles BEFORE you write a line of code.** ⛔ Not after. ⛔ Not "if it seems relevant".
+```
+grep -n '^| T-XXX |' plan/50-tasks.md      ⇒ read the `סקיל` cell
+[SKILL: taste-skill]              ⇒ skills/taste-skill/SKILL.md
+[SKILL: imagegen-frontend-mobile] ⇒ skills/imagegen-frontend-mobile/SKILL.md   (§ 13 · 14 · 15 · 29 · 30 · 31)
+—                                 ⇒ ⛔ no skill. ⛔ Do not go looking.
+```
+**The index of every skill, what triggers it and where it lives: `docs/skills-registry.md`.** Read the index, ⛔ then the one skill the tag names — ⛔ never all of them: those two files alone are **127KB**.
+⛔ **You ⛔ never write the `סקיל` cell yourself** — PM or Roy writes it. A row you tagged and then "obeyed" is a permission you wrote for yourself.
+⚠️ **The constitution outranks the skill, always.** `35-design-constitution.md` says it in its own conflict table. A skill that contradicts a measured number is a **finding you file**, ⛔ not a deviation you take.
 
 ### 🎬 CONDITIONAL — THE MOTION SKILLS. ⛔ THE ARENA'S LIVING LAYER, ⛔ AND NOWHERE ELSE.  ⟦NEW 30/08 · D-148⟧
 The row you picked carries **`arena`** ⛔ **AND** **`שכבה ב׳`** in its `אבן דרך` cell ⇒ run **`animate`** before you write the motion, and `apple-design` / `emil-design-eng` **only if `animate` itself sends you for more context** — they are secondary, ⛔ never a starting point.

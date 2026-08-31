@@ -97,7 +97,43 @@ const balance = () => {
   for (const m of idx.matchAll(/^\|\s*(\d+)\.\s*`([a-z]+)`\s*\|([^|]*)\|([^|]*)\|/gm)) {
     out.push({ order: Number(m[1]), name: m[2], open: Number((m[4] ?? '').trim()) });
   }
+  /**
+   * ⛔ **AND THE ROWS THAT SIT OUTSIDE THE SEQUENCE — `loop` · `base` · `general`.**
+   * They were invisible to every check here, and that invisibility is the defect
+   * `D-174` closes: measured 31/08, **28 open rows** lived in them and ⛔ no DEV tick
+   * could reach one. `order` is `null` on purpose — they have ⛔ no place in `36 § 13`,
+   * and a fake number here would be a lie the build-order checks would then act on.
+   */
+  for (const m of idx.matchAll(/^\|\s*·\s*`([a-z]+)`\s*\(מחוץ לרצף\)\s*\|([^|]*)\|([^|]*)\|/gm)) {
+    out.push({ order: null, name: m[1], open: Number((m[3] ?? '').trim()) });
+  }
   return out;
+};
+
+/** `36 § 13` holds ⛔ none of these. Mirrors `CROSS_CUTTING` in `lib/core/planTable.ts`. */
+const CROSS_CUTTING = new Set(['general', 'loop', 'base']);
+
+/**
+ * ⛔ **WHERE THE LOOP CAME FROM WHEN THE FOCUS IS CROSS-CUTTING.**
+ * `ACTIVE_WORKSTREAM: general` has ⛔ no position in the build order, so checks 13 and 14
+ * — both of which ask «what has the sequence already passed?» — have ⛔ nothing to measure
+ * against. ⇒ the answer is **written down, ⛔ not guessed**: `PREV_WORKSTREAM` in
+ * `plan/00-control.md` carries the feature workstream the focus stepped away from.
+ * ⛔ Empty while the focus is cross-cutting is a **FAIL**, ⛔ not a pass — an unmeasurable
+ * check that reports green is the exact lie this file exists against.
+ */
+const prevWorkstream = () =>
+  (/^PREV_WORKSTREAM:\s*"?([^"\s#]*)"?/m.exec(read(at('plan', '00-control.md')))?.[1] ?? '').trim();
+
+/** The row checks 13/14 measure «what the sequence passed» from. */
+const sequenceAnchor = (table, active) => {
+  if (!CROSS_CUTTING.has(active)) return { row: table.find((w) => w.name === active) };
+  const prev = prevWorkstream();
+  if (prev === '') return { row: undefined, why: '⛔ PREV_WORKSTREAM ריק בעוד המוקד חוצה-מערכת' };
+  const row = table.find((w) => w.name === prev);
+  return row === undefined
+    ? { row: undefined, why: `⛔ PREV_WORKSTREAM \`${prev}\` ⛔ אינו בטבלת המאזן` }
+    : { row };
 };
 /**
  * ⛔ **A TASK ROW'S STATUS IS COLUMN 5 OF 8, ⛔ NOT «somewhere near the end».**
@@ -405,19 +441,29 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
   if (active === undefined) {
     return { ok: false, detail: '⛔ לא נמדד — ⛔ אין ACTIVE_WORKSTREAM ב-00-control' };
   }
-  const idx = read(at('docs', 'plan-open.md'));
-  const row = new RegExp(`^\\|\\s*\\d+\\.\\s*\`${active}\`\\s*\\|([^|]*)\\|([^|]*)\\|`, 'm').exec(idx);
-  if (row === null) {
+  const table = balance();
+  /**
+   * ⛔ **A CROSS-CUTTING FOCUS IS MEASURED ACROSS ITS WHOLE SET, ⛔ NOT ON ONE ROW.**
+   * `ACTIVE_WORKSTREAM: general` makes `general` ∪ `loop` ∪ `base` eligible (`D-174`),
+   * so counting only the `general` row would report «dry» while 25 rows sit open two
+   * lines below it — the same silent-zero this check exists to catch.
+   */
+  const names = CROSS_CUTTING.has(active) ? [...CROSS_CUTTING] : [active];
+  const rows = table.filter((w) => names.includes(w.name));
+  if (rows.length === 0) {
     return { ok: false, detail: `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
   }
-  const open = Number((row[2] ?? '').trim());
-  if (!Number.isFinite(open)) return { ok: false, detail: '⛔ לא נמדד — עמודת ⬜ ⛔ אינה מספר' };
+  if (rows.some((w) => !Number.isFinite(w.open))) {
+    return { ok: false, detail: '⛔ לא נמדד — עמודת ⬜ ⛔ אינה מספר' };
+  }
+  const open = rows.reduce((n, w) => n + w.open, 0);
+  const how = CROSS_CUTTING.has(active) ? `${active} (חוצה-מערכת: ${names.join(' · ')})` : active;
   return {
     ok: open > 0,
     detail:
       open > 0
-        ? `${active} — ${open} משימות ⬜`
-        : `⛔ ${active} מוצתה — כל טיק DEV עד שה-QA יזיז את המיקוד הוא טיק ריק`,
+        ? `${how} — ${open} משימות ⬜`
+        : `⛔ ${how} מוצתה — כל טיק DEV עד שהמיקוד יוזז הוא טיק ריק`,
   };
 });
 
@@ -526,14 +572,17 @@ check(
     if (active === undefined || table.length === 0) {
       return { ok: false, detail: '⛔ לא נמדד — אין ACTIVE_WORKSTREAM או אין טבלת מאזן' };
     }
-    const here = table.find((w) => w.name === active);
+    const anchor = sequenceAnchor(table, active);
+    const here = anchor.row;
     if (here === undefined) {
-      return { ok: false, detail: `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
+      return { ok: false, detail: anchor.why ?? `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
     }
     const deferred = read(at('plan', '61-deferred.md'));
     if (deferred === '') return { ok: false, detail: '⛔ לא נמדד — plan/61-deferred.md חסר' };
     const missing = table
-      .filter((w) => w.order < here.order)
+      // ⛔ `order === null` is the cross-cutting set. ⛔ `null < 5` is TRUE in JS — this
+      // guard is the whole reason the three of them ⛔ do not silently read as «passed».
+      .filter((w) => w.order !== null && w.order < here.order)
       .filter((w) => !new RegExp(`^\\|\\s*\`${w.name}\``, 'm').test(deferred))
       .map((w) => `${w.name} — נחתמה/הוזזה ⛔ בלי שורת חוב`);
     return {
@@ -567,7 +616,7 @@ check(
     if (target === '') return { ok: true, detail: 'ריק — המצב כבוי' };
     const active = activeWorkstream();
     const table = balance();
-    const here = table.find((w) => w.name === active);
+    const here = sequenceAnchor(table, active).row;
     const there = table.find((w) => w.name === target);
     if (here === undefined || there === undefined) {
       return { ok: false, detail: `⛔ לא נמדד — \`${target}\` או \`${active}\` ⛔ אינם בטבלת המאזן` };

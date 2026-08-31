@@ -325,6 +325,66 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.out).toContain('⛔ לא נמדד');
   });
 
+  /**
+   * 🧭 **‏D-174 · הפרוסה הכללית — ארבע טענות, וכל אחת מהן מחלקת כשל שכבר קרתה.**
+   *
+   * 🔴 **המדידה שפתחה את זה, 31/08 על שיבוט חי:** `loop` נשא **10 שורות ⬜** ו-`base`
+   * נשא **15** — **25 שורות פתוחות ש⛔ אף טיק DEV ⛔ לא יכול היה לקחת**, מפני ש-DEV
+   * מסנן ל-`ACTIVE_WORKSTREAM` ו-`ACTIVE_WORKSTREAM` מעולם ⛔ לא החזיק אלא זרימת פיצ׳ר.
+   * זו **הפעם השלישית** לאותה מחלקת כשל: `D-122 § ב` (חמש שורות `cards` מתויגות `base`)
+   * ו-`D-171` (`ACTIVE_TASK_ID` שהפילטר הפיל בשקט).
+   */
+  it('11 · מוקד חוצה-מערכת נספר על כל הקבוצה — `general` ∪ `loop` ∪ `base`', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "story"'),
+    );
+    const r = run(root);
+    // ⛔ ‏`general` עצמו מחזיק 0 שורות — ואם הבדיקה הייתה סופרת אותו לבדו היא הייתה
+    // מדווחת «מוצתה» בעוד 25 שורות פתוחות יושבות שתי שורות מתחתיה בטבלה.
+    expect(failed(r.out, '11'), '⛔ ⛔ לא «מוצתה» — הקבוצה מחזיקה עבודה').toBe(false);
+    expect(r.out).toContain('חוצה-מערכת');
+  });
+
+  it('11 · ⛔ ו⛔ אינו ירוק מזכות עצמו — קבוצה חוצה-מערכת ריקה עדיין אדומה', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "story"'),
+    );
+    patch(root, 'docs/plan-open.md', (s) =>
+      s.replace(/^\| · `(loop|base|general)` \(מחוץ לרצף\) \|([^|]*)\|([^|]*)\|/gm, '| · `$1` (מחוץ לרצף) |$2| 0 |'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '11')).toBe(true);
+    expect(r.out).toContain('טיק ריק');
+  });
+
+  /**
+   * 🔴 **הבאג שנתפס בכתיבת הבדיקה הזאת, ⛔ ולא שוער.** ‏`order` של הקבוצה החוצה-מערכתית
+   * הוא `null` — ו-**`null < 5` הוא `true` ב-JavaScript**. ⇒ ברגע שהשורות האלה נכנסו
+   * ל-`balance()`, בדיקה 13 החלה לדרוש «שורת חוב» מ-`loop` · `base` · `general` כאילו
+   * הרצף עבר אותן, והלופ ירד מ-13/14 ל-12/14 **בלי ששום דבר בתוכן השתנה**.
+   */
+  it('13 · ⛔ הקבוצה החוצה-מערכתית ⛔ אינה נספרת כזרימה «שהרצף עבר»', () => {
+    const root = healthy();
+    const r = run(root);
+    for (const w of ['loop', 'base', 'general']) {
+      expect(r.out, `⛔ ${w} ⛔ אינו ברצף ⇒ ⛔ אין ממנו מה לדרוש`).not.toContain(
+        `${w} — נחתמה/הוזזה`,
+      );
+    }
+  });
+
+  it('13 · מוקד חוצה-מערכת בלי `PREV_WORKSTREAM` ⛔ אינו עובר בשקט', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: general'),
+    );
+    const r = run(root);
+    expect(warned(r.out, '13') || failed(r.out, '13')).toBe(true);
+    expect(r.out).toContain('PREV_WORKSTREAM ריק');
+  });
+
   it('7 · goes red when the same missing element is reported twice — the PM did not learn', () => {
     const root = healthy();
     patch(root, 'plan/26-plan-feedback.md', (s) => `${s}| C-0002 | \`q.md\` | \`files\` | why | ⬜ |\n`);

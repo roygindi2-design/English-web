@@ -269,9 +269,10 @@ const tally = (rows) => {
 const byStream = new Map(WORKSTREAMS.map((w) => [w, taskRows.filter((r) => streamOf(r) === w)]));
 const untagged = taskRows.filter((r) => streamOf(r) === null);
 
-// Build-order flags. `loop` and `base` are excluded from both: neither is a
-// `36 § 13` item, so neither has a position in the sequence to violate.
-const OUTSIDE_SEQUENCE = new Set(['loop', 'base']);
+// Build-order flags. `loop`, `base` and `general` are excluded from both: none is a
+// `36 § 13` item, so none has a position in the sequence to violate.
+// ⛔ `general` (31/08, D-174) is the cross-cutting focus — see planTable.ts CROSS_CUTTING.
+const OUTSIDE_SEQUENCE = new Set(['loop', 'base', 'general']);
 const ORDERED = WORKSTREAMS.filter((w) => !OUTSIDE_SEQUENCE.has(w));
 const flags = [];
 for (let i = 0; i < ORDERED.length; i += 1) {

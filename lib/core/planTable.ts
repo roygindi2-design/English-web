@@ -345,7 +345,25 @@ export const WORKSTREAMS = [
   'msgs',
   'loop',
   'base',
+  'general',
 ] as const;
+
+/**
+ * ⛔ **THE THREE THAT SIT OUTSIDE `36 § 13`, ⛔ AND THE REASON THE THIRD EXISTS.**
+ * `loop` and `base` are ⛔ not items in the anchor spec's build sequence, so they have
+ * ⛔ no position in it to violate — and that is exactly what made them **unreachable**.
+ * ‏DEV filters every row to `ACTIVE_WORKSTREAM`, and `ACTIVE_WORKSTREAM` has only ever
+ * held a **feature** workstream ⇒ measured 31/08 on a live clone: **10 open `loop` rows
+ * + 15 open `base` rows + 3 untagged = 28 rows that ⛔ no DEV tick could ever pick.**
+ * That is the same failure class as `D-122 § ב` (five `cards` rows tagged `base`, out of
+ * reach forever) and as the `ACTIVE_TASK_ID` filter defect of `D-171` — the third time.
+ *
+ * ⇒ `general` is the **cross-cutting focus** Roy asked for on 31/08 (`D-174`). When
+ * `ACTIVE_WORKSTREAM` is `general`, the eligible set is `general` ∪ `loop` ∪ `base`.
+ * ⛔ It is ⛔ not a second active workstream and ⛔ not a place for feature work: a row
+ * that belongs to a feature workstream ⛔ does not get retagged `general` to jump a queue.
+ */
+export const CROSS_CUTTING: ReadonlySet<string> = new Set(['general', 'loop', 'base']);
 export type Workstream = (typeof WORKSTREAMS)[number];
 
 /** Roy's vocabulary, made disjoint. `נוחות` absorbs UX/visual/accessibility. */

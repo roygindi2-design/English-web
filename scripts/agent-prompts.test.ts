@@ -508,4 +508,116 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   it('⛔ אף פרומפט ⛔ אינו מתרוקן — רצפה נמדדת, ⛔ לא מוצהרת', () => {
     for (const a of AGENTS) expect(text(a).length, a).toBeGreaterThan(8000);
   });
+
+  /**
+   * 📇 **‏C-0376 · אינדקס הסקילים — ו⛔ אין כאן «מסמך», יש חוזה.**
+   *
+   * 🔴 **מחלקת הכשל שהבדיקה הזאת מונעת נמדדה כבר פעמיים בלופ הזה:** הוראה נכתבה
+   * לפרומפט, ⛔ אף בדיקה לא אכפה אותה, והיא הפכה לאות מתה בלי שאיש ראה. כך קרה
+   * לשדה `Layer` (‏`grep -c "Layer" 50-tasks` ⇒ **0**), וכך קרה לציטוט התזמון
+   * השקרי שכל סוכן קרא במשך שלושה שבועות. ⇒ **אינדקס שאיש ⛔ אינו מחויב לקרוא
+   * הוא אינדקס שאיש ⛔ אינו קורא.**
+   *
+   * ⚠️ **ו⛔ זו ⛔ אינה בדיקת סגנון:** כל טענה כאן היא חוליה שבלעדיה המנגנון מת —
+   * ⓐ האינדקס קיים · ⓑ שני קובצי הסקיל שהוא מפנה אליהם קיימים באמת · ⓒ ‏PM חייב
+   * לקרוא אותו בתכנון · ⓓ ‏DEV ו-QA מחויבים לתג · ⓔ **השער ⛔ אינו נפתח מבפנים.**
+   */
+  describe('📇 אינדקס הסקילים — `docs/skills-registry.md`  ⟦C-0376⟧', () => {
+    const registry = (): string => readFileSync('docs/skills-registry.md', 'utf8');
+
+    it('ⓐ האינדקס קיים, והוא אינדקס — ⛔ ולא עותק של סקיל', () => {
+      const r = registry();
+      expect(r.length, 'האינדקס ⛔ אינו ריק').toBeGreaterThan(2000);
+      // ⛔ תקרה: ברגע שמישהו יתחיל להדביק תוכן סקיל פנימה, הקובץ יתפוצץ והבדיקה תיפול.
+      // ‏PM קורא אותו **במלואו** בכל טיק תכנון — זה המחיר שהתקרה שומרת עליו.
+      expect(r.length, 'תקרת האינדקס — הפניה ⛔ ולא העתקה').toBeLessThan(14000);
+      expect(r, 'תג הסקיל מוגדר בו').toContain('[SKILL:');
+    });
+
+    it('ⓑ כל נתיב `skills/**` שהאינדקס מבטיח — קיים בפועל ו⛔ אינו ריק', () => {
+      const paths = [...registry().matchAll(/`(skills\/[A-Za-z0-9._\/-]+\.md)`/g)]
+        .map((m) => m[1])
+        .filter((x): x is string => x !== undefined);
+      expect(paths.length, '⛔ האינדקס ⛔ אינו מפנה לאף סקיל בריפו').toBeGreaterThanOrEqual(2);
+      for (const rel of [...new Set(paths)]) {
+        // ⛔ נתיב שבור באינדקס הוא הבטחה שנשברת **בטיק**, ⛔ ולא בבדיקה.
+        expect(readFileSync(rel, 'utf8').length, rel).toBeGreaterThan(1000);
+      }
+      expect(paths).toContain('skills/taste-skill/SKILL.md');
+      expect(paths).toContain('skills/imagegen-frontend-mobile/SKILL.md');
+    });
+
+    it('ⓒ ‏PM מחויב לקרוא את האינדקס בתכנון, ולהצמיד תג לשורה שהוא גוזר', () => {
+      const pm = text('PM');
+      expect(pm, 'PM: הנתיב עצמו').toContain('docs/skills-registry.md');
+      expect(pm, 'PM: הטריגר הוא מצב התכנון').toContain('STATE: PLANNING');
+      expect(pm, 'PM: הצורה של התג').toContain('[SKILL:');
+      expect(pm, 'PM: לאן התג נכתב').toContain('50-tasks.md');
+    });
+
+    it('ⓓ ‏DEV ו-QA מחויבים לטעון את הסקיל שהתג נוקב בו — לפני קוד ולפני סקירה', () => {
+      for (const a of ['DEV', 'CRITIC'] as const) {
+        const t = text(a);
+        expect(t, `${a}: התג`).toContain('[SKILL:');
+        expect(t, `${a}: האינדקס`).toContain('docs/skills-registry.md');
+        expect(t, `${a}: הנתיב האמיתי`).toContain('skills/taste-skill/SKILL.md');
+      }
+    });
+
+    it('ⓔ 🔴 השער ⛔ אינו נפתח מבפנים — ⛔ DEV ו-QA ⛔ אינם כותבים את תא `סקיל`', () => {
+      for (const a of ['DEV', 'CRITIC'] as const) {
+        expect(text(a), `${a}: ⛔ אינו כותב את התא`).toMatch(
+          /⛔ \*\*(You|And you) ⛔ never write the `סקיל` cell/,
+        );
+      }
+      // ⛔ וסקילי הבנייה נשארים חסומים ל-QA **גם** כשיש תג — אחרת התג הוא דלת אחורית.
+      expect(text('CRITIC'), 'QA: תג ⛔ אינו פותח סקיל בנייה').toMatch(
+        /⛔ A `\[SKILL: X\]` tag ⛔ does not unblock them/,
+      );
+    });
+  });
+
+  /**
+   * 🧭 **‏C-0376 · `D-174` — הפרוסה הכללית, וארבע החוליות שבלעדיהן היא אות מתה.**
+   *
+   * 🔴 **המדידה, ⛔ ולא הרעיון:** 31/08 על שיבוט חי — `loop` נשא **10 ⬜** ו-`base` נשא
+   * **15**. ⇒ **25 שורות פתוחות ש⛔ אף טיק DEV ⛔ לא יכול היה לקחת.** ⛔ אף בדיקה
+   * ⛔ לא ראתה את זה: בדיקה 11 סופרת ⬜ **בזרימה הפעילה**, ו-`loop`/`base` מעולם ⛔ לא היו
+   * הזרימה הפעילה. **מחלקת כשל שלישית מאותו סוג** — `D-122 § ב`, `D-171`, וזו.
+   *
+   * ⚠️ **והצד השלילי הוא חצי מהתוספת** — ומחדל של איסור ⛔ אינו נראה: פרומפט שאיבד את
+   * המשפט «⛔ PM ⛔ אינו מזיז לזרימת פיצ׳ר» ימשיך להיקרא סביר, ו-PM יתחיל להזיז מוקד
+   * שהוא של QA. ⇒ **שני הצדדים נבדקים כאן במפורש.**
+   */
+  describe('🧭 הפרוסה הכללית — `general`  ⟦D-174⟧', () => {
+    it('ⓐ ‏DEV יודע שמוקד `general` פותח שלושה תגים — ⛔ ולא אחד', () => {
+      const dev = text('DEV');
+      expect(dev, 'DEV: הערך עצמו').toContain('ACTIVE_WORKSTREAM: general');
+      expect(dev, 'DEV: הקבוצה, ⛔ ולא תג בודד').toMatch(/general · loop · base/);
+      // ⛔ ואוצר המילים בטבלה חייב להכיל אותו — תג שהטבלה ⛔ אינה מכירה הוא תג שנמחק בעריכה.
+      expect(dev, 'DEV: אוצר המילים').toMatch(/\*\*זרימה\*\* \|[^\n]*`general`/);
+      // 🔴 ‏`cards` נעדר מהטבלה הזאת עד C-0376 — בדיוק הפער שיצר את `D-122 § ב`.
+      expect(dev, 'DEV: ⛔ ו-`cards` ⛔ לא ייעלם שוב').toMatch(/\*\*זרימה\*\* \|[^\n]*`cards`/);
+    });
+
+    it('ⓑ ‏PM מחזיק את ההיתר — ובכיוון אחד בלבד', () => {
+      const pm = text('PM');
+      expect(pm, 'PM: ההיתר').toContain('ACTIVE_WORKSTREAM: general');
+      expect(pm, 'PM: החוליה שבלעדיה הבדיקות ⛔ אינן מודדות').toContain('PREV_WORKSTREAM');
+      expect(pm, 'PM: ההכרעה').toContain('D-174');
+    });
+
+    it('ⓒ 🔴 הצד השלילי — ⛔ PM ⛔ אינו מזיז את המוקד לזרימת פיצ׳ר, ו⛔ אינו חותם', () => {
+      const pm = text('PM');
+      expect(pm, '⛔ PM ⛔ אינו מזיז לפיצ׳ר').toMatch(/⛔ NEVER\. That is QA's alone/);
+      expect(pm, '⛔ PM ⛔ אינו חותם').toMatch(/⛔ \*\*⛔ You ⛔ do not seal a workstream\*\*/);
+    });
+
+    it('ⓓ ‏QA יודע שהמוקד יכול לקרוא `general`, ושהחתימות שלו ⛔ לא זזו', () => {
+      const qa = text('CRITIC');
+      expect(qa, 'QA: הערך').toContain('general');
+      expect(qa, 'QA: החזרה לרצף היא שלו').toMatch(/still YOURS ALONE/);
+      expect(qa, 'QA: מעבר ל-general ⛔ אינו חתימה').toMatch(/is ⛔ \*\*not\*\* a seal/);
+    });
+  });
 });

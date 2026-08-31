@@ -239,6 +239,26 @@ screen is a tool everyone learns to ignore.
 Before ANY claim of green/verified/merged → **`superpowers:verification-before-completion`**. Merging → **`superpowers:finishing-a-development-branch`** — ⛔ **yours alone; ⛔ no other agent may run it.**
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` (`RULES § 0.17א`).
 
+### 🧭 `general` IS IN THE ROTATION — AND ONE MOVE IS ⛔ NO LONGER YOURS ALONE  ⟦NEW 31/08 · `D-174`⟧
+`ACTIVE_WORKSTREAM` may now read **`general`** — a cross-cutting focus that makes `general` ∪ `loop` ∪ `base` eligible for DEV. ⛔ It is ⛔ not a `36 § 13` item and it is ⛔ **never sealed**.
+```
+PM  →  general      ⇐ allowed, one direction only (D-174)
+QA  →  <feature>    ⇐ still YOURS ALONE, and still the only way back into the sequence
+```
+⛔ **Your three seals are unchanged (`36 § 13.1`).** A move to `general` is ⛔ **not** a seal, and a workstream the PM stepped away from is ⛔ **not** sealed by that move — if it deserves a seal, ⛔ you are still the only one who writes it.
+🔬 **What you verify when you see the focus on `general`:** `PREV_WORKSTREAM` is filled in (check 13 goes red without it), `plan/00-control.md § 0.1` says why, and ⛔ **no feature row was retagged `general`** to jump the queue — that would be `D-122 § ב` a fourth time, and it is a 🔴 finding.
+
+### 📇 IRON RULE — THE `[SKILL: X]` TAG ON THE ROW YOU ARE REVIEWING  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
+🔴 **The row you are reviewing carries a `[SKILL: X]` tag ⇒ you MUST load that specific skill and review against its principles BEFORE you judge the code.** ⛔ A row tagged `[SKILL: taste-skill]` reviewed without it is a review of syntax, ⛔ not of the thing the row was opened for.
+```
+[SKILL: taste-skill]              ⇒ skills/taste-skill/SKILL.md
+[SKILL: imagegen-frontend-mobile] ⇒ skills/imagegen-frontend-mobile/SKILL.md   (§ 13 · 14 · 15 · 29 · 30 · 31)
+—                                 ⇒ ⛔ no skill. ⛔ Do not go looking.
+```
+The index — every skill, its trigger, its path — is **`docs/skills-registry.md`**. ⛔ Read the index and **the one skill the tag names**; those two skill files alone are **127KB**.
+⛔ **`animate` · `apple-design` · `emil-design-eng` stay BLOCKED for you in every layer** — they are build skills, and a reviewer who runs one stops measuring the diff and starts proposing a different one. ⛔ A `[SKILL: X]` tag ⛔ does not unblock them.
+⛔ **And you ⛔ never write the `סקיל` cell** — it is PM's and Roy's. ⚠️ **The constitution outranks the skill, always.**
+
 ### 🎬 CONDITIONAL — MOTION IN THE DIFF YOU ARE REVIEWING  ⟦NEW 30/08 · D-148⟧
 `./scripts/g diff --name-only origin/dev..origin/work/current` touches `app/arcade/**` or `components/Arena*`, ⛔ **OR** the diff body matches `animate|transition|motion|glow(` ⇒ run **`review-animations`** on that diff, and write what it returns as ordinary findings in STEP 6.
 🔬 **Measured 30/08, and it is the reason this line exists.** This file carried **two** occurrences of motion at all — both of them a one-line summary of the constitution — and ⛔ **not one review action**: the seven numbered items in STEP 4.5 ask what is on the screen, in what order, at what size and in what colour, and ⛔ never ask what happens when it **moves**. ⇒ ⛔ this is ⛔ not a second opinion on something you already check; it is a **gap**.

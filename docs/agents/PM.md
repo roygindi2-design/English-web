@@ -226,6 +226,37 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed famili
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.6⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+### 🧭 THE GENERAL SLICE — AND THE ONE FOCUS MOVE THAT IS YOURS  ⟦NEW 31/08 · `D-174` · Roy's explicit instruction⟧
+`general` is a **workstream in the rotation**, ⛔ not a parking bay. It is where cross-cutting fixes, logical bugs and system-wide upgrades live — the work that belongs to ⛔ no single feature.
+
+**Roy's words:** «כאשר מסתיימת עבודה על פרוסת פיצ'ר … ה-PM רשאי להעביר את `ACTIVE_WORKSTREAM` ל-`general` כדי לרכז ולטפל במשימות חובקות-מערכת, שדרוגים לוגיים, או באגים רוחביים לפני המעבר לפיצ'ר הבא.»
+
+🔴 **THE GRANT IS NARROW, AND ⛔ EVERY WORD OF IT MATTERS:**
+```
+✅ PM  →  ACTIVE_WORKSTREAM: general      ⇐ yours. One direction. This value only.
+⛔ PM  →  ACTIVE_WORKSTREAM: <feature>    ⇐ ⛔ NEVER. That is QA's alone (§ 0.17ז).
+```
+⛔ **⛔ You ⛔ do not seal a workstream** — the three seals of `36 § 13.1` are QA's, unchanged. Moving the focus to `general` is ⛔ **not** a seal and ⛔ does not stand in for one.
+**When you move it, in the SAME edit, ⛔ or ⛔ do not move it at all:**
+1. `PREV_WORKSTREAM: "<the feature workstream you stepped away from>"` — checks 13 and 14 measure from it, and **empty while the focus is `general` is a 🔴 FAIL**, ⛔ not a quiet pass.
+2. One line in `plan/00-control.md § 0.1` saying **why** — which feature slice finished or ran dry.
+3. ⛔ **Only when the feature workstream has ⛔ no eligible ⬜ row left**, or Roy said so. ⛔ ⛔ Not mid-slice, ⛔ not «to tidy up».
+⚠️ **Coming back is the same move in reverse, and it is ⛔ not automatic:** `general` never «finishes» — you move the focus back to the next feature workstream in `36 § 13` when the cross-cutting batch you opened is built. Returning to a **feature** workstream is QA's move, ⛔ not yours.
+🔬 **What DEV sees:** while the focus is `general`, `general` ∪ `loop` ∪ `base` are all eligible (`DEV.md STEP 2`) — measured 31/08: **25 open rows** that ⛔ no tick could reach before this existed.
+
+### 📇 IRON RULE — READ THE SKILLS INDEX BEFORE YOU PLAN  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
+🔴 **In a planning tick (`STATE: PLANNING`, or any tick in which you derive rows into `plan/50-tasks.md`) you MUST read `docs/skills-registry.md` — whole. It is 9.7KB and it is ⛔ not optional.**
+Use what the relevant skills know to plan the architecture and the UX **better**, ⛔ not to decorate the row:
+- a row that touches interface text, spacing, shadows or visual hierarchy ⇒ think with **`taste-skill`**;
+- a row that touches a mobile screen's layout, safe areas, bottom navigation, density or text readability ⇒ think with **`imagegen-frontend-mobile` § 13 · § 14 · § 15 · § 29 · § 30 · § 31**.
+**Then attach the tag to every row you derive**, in the `סקיל` cell, literally:
+```
+[SKILL: taste-skill]        [SKILL: imagegen-frontend-mobile]        —
+```
+⛔ **`—` is a legitimate and common answer.** A tag on a row that ⛔ does not need it costs DEV a 40–87KB read for nothing, and that is exactly the waste the index exists to stop.
+🔴 **And the tag is yours alone** — `DEV.md` says in so many words that DEV ⛔ never writes it. The gate ⛔ does not open from the inside.
+⚠️ **The constitution still outranks every skill** (`35-design-constitution.md`, conflict table: `שכבה ב׳` beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
+
 ⛔ **Before you open a slice: `codebase-investigator`** ⟦NEW 30/08⟧ — the half of D-144 that runs BEFORE the row is written. `check:plan` element 10 catches an extension declared as a new build **after**; this stops you writing it in the first place.
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.17א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Feature, UX plan or behaviour change → **`superpowers:brainstorming`** first. Research with 2+ angles → `dispatching-parallel-agents`. Before ANY claim of researched/verified/closed → **`verification-before-completion`**.
