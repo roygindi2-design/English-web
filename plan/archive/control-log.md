@@ -156,3 +156,53 @@ LAST_REVIEWED_COMMIT: "fb808a4"  # main after PR #2. ⚠️ **GitHub made a MERG
 #   ⓑ works — ⛔ **⛔ לא נמדדה על נתונים אמיתיים.** `/arcade` חי נשאר על «טוען את הזירה» **30 שניות** (נמדד ב-4 דגימות: 3 · 10 · 20 · 30ש׳), כי `/api/*` מחזיר 503 ב-dev ו⛔ אין Supabase env. ⚠️ **⛔ זו ⛔ אינה קביעה על המוצר:** `ArenaHome.tsx:186-195` **כן** מחזיק `error`/`session_expired` + כפתור `נסה שוב` + chevron חזרה (2 יעדי הקשה נמדדו) — הכשל הוא **סביבה**, ⛔ לא דרך-מבוי-סתום. הסיבוב המלא (שאלה · תשובה · תוצאה · סיכום) מצויר על פיקסצ׳ר: `/dev/arcade` 7 הקשות · `/dev/arcade/result` 3 · `/dev/arcade/summary` 2 · 0 מתחת ל-44px · ⛔ אין גלילה אופקית.
 #   ⓒ persists — **חצי נמדד, וזה החצי שנאכף:** `36 § 12.1` — הזירה ⛔ אינה כותבת ל-`word_progress`. אומת סטטית: `app/api/arcade/result/route.ts` ⛔ **אינו מכיל את המחרוזת כלל** (`route.test.ts:54`), ו-`round/route.ts:93` קורא **ב-select בלבד** (`route.test.ts:28-37`). ⛔ **החצי החיובי** (תוצאת הסיבוב נשמרת ונראית בכניסה הבאה) ⛔ לא נמדד — אותה חסימת env.
 #   ⇒ 🔴 **arena ⛔ אינה חתומה.** ⛔ ולא בגלל פער במוצר — **⛔ אי אפשר למדוד אותה מכאן.** `36 § 13.1`: «שורה שאין בה נתונים אמיתיים ⛔ אינה עוברת ⓑ… הוא בדיוק מה ש-03-for-roy נועד לו» ⇒ **נכתב פריט לרוי בטיק הזה.** ההזזה חוקית בעילה **חסומה-חיצונית** (`T-220` ⓐ·ⓓ ⛔ חסומות ב-F-164/PM ⇒ אפס שורות בנות-בנייה) — ⛔ לא בעילת «ריקה».
+
+
+## פינוי `plan/00-control.md` — 31/08/2026 (תחזוקה ידנית, בקשת רוי)
+
+> נשלף מ-`00-control` כדי להחזיר אותו מתחת לתקרת בדיקה 9 (היה **12,405** מתוך 12,288 — נמדד בסשן).
+> ⛔ אף שורה לא נמחקה. הנוסח המלא, מילה במילה:
+
+**LAST_PROMOTED_AT comment**
+
+```
+LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # ⚠️ **Promoted BY ROY, by hand, via GitHub PR #2 — ⛔ not by the Critic.** 143 commits, the first shipment in 3 days. Smoke test **passed**: `/api/health` `ok:true` on all four checks incl. `database_schema: word_progress reachable`. ⛔ The Critic could not push (D-099) — the promotion is real, the loop did not perform it.
+```
+
+**LAST_REVIEWED_COMMIT comment**
+
+```
+LAST_REVIEWED_COMMIT: "fb808a4"  # main אחרי PR #2. ⚠️ **מיזוג דרך ה-UI של GitHub יוצר merge commit ומפצל את הענפים** — C-0271 אִחה חזרה ואימת ff נקי. ⇒ כל מיזוג-יד עתידי דרך ה-UI דורש את אותו המשך. פירוט ⇒ `plan/archive/control-log.md`.
+```
+
+**PAUSED_BY_HUMAN comment**
+
+```
+PAUSED_BY_HUMAN: false           # 🟡 **הרצת תוכן בלבד.** ⚠️ **תוקן 28/08: הערך היה `partial`, ערך שהבלם ⛔ אינו מכיר** (הוא בודק `== true`) — ⛔ לא היה עוצר, ⛔ אבל סוכן שקורא אותו יכול להסיק שהוא מושהה. ⇒ **האכיפה בתזמונים: DEV·PM·CRITIC כבויים, CONTENT `49 */2 * * *`.**
+```
+
+**CONSECUTIVE_NO_PROGRESS comment**
+
+```
+CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN. ⚠️ C-0087 לא נספר כ"אין התקדמות" — הוא עצירת בלם מכוונת, לא כישלון להתקדם
+```
+
+**MILESTONE_TICKS comment**
+
+```
+MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא ואינו בלם עוד**. נשמר להיסטוריה. הבלם החי הוא WORKSTREAM_TICKS.
+```
+
+**stale schedule blockquote**
+
+```
+> **תזמון:** Dev כל שעה ב-:30 · PM יומי 08:00 · Critic יומי 20:00. `NEXT_AGENT` הוא איתות
+> עדיפות ולא נעילה — סוכן בלי עבודה כשירה מסיים ב"טיק שקט".
+```
+
+**C-0092 blockquote**
+
+```
+> ✅ **חסימת הקידום שוחררה ב-C-0092** (`main` אוחה ל-`dev`, `db71f27`) — הפירוט ב-`plan/archive/control-log.md` (C-0177). ⛔ **בתוקף: אין לערוך את `main` דרך עורך GitHub** (פריט 17).
+```
+

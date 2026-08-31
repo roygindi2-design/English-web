@@ -4,13 +4,13 @@ STATE: EXECUTING                  # ▶️ 23/08 — פרוסה A (`/world/story
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-225             # ▶️ **C-0369: יש לה תוכנית מלאה, ⛔ והיא טרם נבנתה.** ⓕ (סדר הכפתורים, `D-150`) היא **משימה 1 בתוכנית ⛔ ולא אחרונה** — בלעדיה הדבר הראשון שנתיב הכתיבה החדש רושם הוא התשובה ההפוכה. `T-220` (`arena`) נשארת חסומה ב-F-164.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN. ⚠️ C-0087 לא נספר כ"אין התקדמות" — הוא עצירת בלם מכוונת, לא כישלון להתקדם
+CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
 LAST_HANDOFF_AT: 2026-08-30T23:07:00Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "PM"                 # C-0373 · ננעל 2026-08-30T23:39Z
-LOCK_AT: "2026-08-30T23:39:36Z"
+LOCK_HELD_BY: ""                   # ⚠️ נעילת C-0373 (PM, 23:39Z) שוחררה 31/08 — הסשן שהחזיק אותה הסתיים `FAILED` ב-23:47Z ו⛔ לא שחרר
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜ = 0 · נחתמה והמוקד הוזז ל-`cards` ב-C-0316 (QA).** פרוסה A ב-C-0314 (T-204 · T-205 · T-206 · T-174 + T-147 · T-148); **T-146 נסגרה כולה ב-C-0315** (F-137 ✅). כל השורות מוזגו ל-`dev` ✅ ב-C-0316. חותמות בבלוק SEALS.
@@ -18,12 +18,12 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   arena:  17 / 120           # § 13-4 · **מוזזת→`studies` ב-C-0367 (QA), חסומה-חיצונית.** ⬜ אחת (`T-220`) חסומה ב-F-164/PM ⇒ אפס שורות בנות-בנייה. `T-153`·`T-181`·`T-219` 🟣⇢✅ ב-C-0367. חותמות ⇒ בלוק SEALS · שארית ⇒ `plan/61-deferred.md`.
 #   studies: 0 / 120           # § 13-5 · לימודים כמכולת מסלולים
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
-MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא ואינו בלם עוד**. נשמר להיסטוריה. הבלם החי הוא WORKSTREAM_TICKS.
+MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
 RELEASE_READY: ""              # ה-Critic כותב כאן <sha> · <תאריך> · <N קומיטים> · <מה הלומד מקבל>. ⛔ הוא אינו דוחף ל-main — המיזוג הוא פעולה של רוי (RULES § 0.1.1 ב׳, שוכתב 23/08).
-PAUSED_BY_HUMAN: false           # 🟡 **הרצת תוכן בלבד.** ⚠️ **תוקן 28/08: הערך היה `partial`, ערך שהבלם ⛔ אינו מכיר** (הוא בודק `== true`) — ⛔ לא היה עוצר, ⛔ אבל סוכן שקורא אותו יכול להסיק שהוא מושהה. ⇒ **האכיפה בתזמונים: DEV·PM·CRITIC כבויים, CONTENT `49 */2 * * *`.**
+PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **האכיפה בפועל: כל שבע המשימות המתוזמנות כבויות ידנית מ-31/08 00:00Z.** רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
-LAST_REVIEWED_COMMIT: "fb808a4"  # main אחרי PR #2. ⚠️ **מיזוג דרך ה-UI של GitHub יוצר merge commit ומפצל את הענפים** — C-0271 אִחה חזרה ואימת ff נקי. ⇒ כל מיזוג-יד עתידי דרך ה-UI דורש את אותו המשך. פירוט ⇒ `plan/archive/control-log.md`.
+LAST_REVIEWED_COMMIT: "fb808a4"  # main אחרי PR #2. ⚠️ מיזוג דרך ה-UI מפצל ענפים — פירוט ⇒ `plan/archive/control-log.md`
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.17 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -34,15 +34,12 @@ IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** 
 # (SEALS · cards — הוצאו ל-`plan/archive/control-log.md` ב-C-0367, אותו דפוס שבו nav ו-story הוצאו ב-C-0318. **cards ⛔ אינה חתומה** — הוזזה חסומה-חיצונית · F-142/F-143 · ראה `plan/61-deferred.md`.)
 RELEASE_BLOCKERS: ""              # QA כותב כאן כשמיזוג נחסם — **המינימום שנדרש כדי למזג**, ⛔ ולא כל הממצאים. DEV לוקח אותה לפני כל דבר אחר.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
-LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # ⚠️ **Promoted BY ROY, by hand, via GitHub PR #2 — ⛔ not by the Critic.** 143 commits, the first shipment in 3 days. Smoke test **passed**: `/api/health` `ok:true` on all four checks incl. `database_schema: word_progress reachable`. ⛔ The Critic could not push (D-099) — the promotion is real, the loop did not perform it.
+LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # קודם בידי רוי ידנית (PR #2), ⛔ לא בידי ה-Critic. פירוט ⇒ `plan/archive/control-log.md`
 PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
-> ✅ **חסימת הקידום שוחררה ב-C-0092** (`main` אוחה ל-`dev`, `db71f27`) — הפירוט ב-`plan/archive/control-log.md` (C-0177). ⛔ **בתוקף: אין לערוך את `main` דרך עורך GitHub** (פריט 17).
 > ⚡ סקילים של superpowers פעילים (`RULES.md` § 0.6). החוק הקשה: אין טענת הצלחה בלי ריצה טרייה.
-> **תזמון:** Dev כל שעה ב-:30 · PM יומי 08:00 · Critic יומי 20:00. `NEXT_AGENT` הוא איתות
-> עדיפות ולא נעילה — סוכן בלי עבודה כשירה מסיים ב"טיק שקט".
 
 ### 0.1 יומן העברות מקל — 3 האחרונים בלבד
 
