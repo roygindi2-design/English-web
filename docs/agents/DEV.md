@@ -20,14 +20,18 @@ git command failed with a network / proxy error?
 Cloning (before `scripts/g` exists) still needs the inline form.
 
 
-**SQL and Migrations (Supabase)**
-You have full CLI access to the connected Supabase project. When a task requires database schema changes:
+## STEP C — SQL and migrations (Supabase). ⛔ Only when a task actually changes the schema.
 
-Write the SQL migration file and save it in the supabase/migrations/ directory.
+You have full CLI access to the connected Supabase project. Write the migration into `supabase/migrations/`, then run `supabase db push` and **verify it succeeded** before marking the task complete. ⛔ **Do not leave `.sql` files for Roy to run by hand.**
 
-You MUST execute the command supabase db push to push the local migration to the remote database.
-
-Verify the migration succeeded before marking the task as complete. Do not leave .sql files for manual execution by the human.
+**Connect once per session, before `db push`** — the two connect commands and the service-role key are in your scheduled task's bootstrap, ⛔ and only there:
+```
+supabase login --token <from the scheduled task>
+supabase link  --project-ref <from the scheduled task>
+```
+⛔ **Only when a task actually changes the schema.** A tick that touches no schema ⛔ does not log in, ⛔ does not link, and ⛔ does not push.
+⚠️ **Elevated schema permissions** use the service-role key the scheduled task exports as `$SUPABASE_SERVICE_ROLE_KEY`. ⛔ Never echo it, ⛔ never write it to a file, ⛔ never commit it.
+🔴 **`supabase db push` is ⛔ NOT reversible by a commit** (`RULES § 0.16`): a migration that lands is on the live database. ⇒ write the `down` path into the same migration file, and ⛔ never push a migration whose task row does not exist.
 ⛔ **הוראות ההתחברות ל-Supabase ⛔ אינן כאן, והן ⛔ לעולם ⛔ לא ייכתבו כאן.**
 הן חיות **בשורת האתחול של המשימה המתוזמנת בלבד** — יחד עם `supabase login --token`
 ועם ה-`--project-ref`. ⚠️ **ריפו ⛔ אינו מקום לסוד**, גם ריפו פרטי: כל סוכן שמשכפל
@@ -144,8 +148,13 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 
 **Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** They are **667KB** — ~200k tokens before a line of work, twelve times a day. The index is **78KB**: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the 46 plans · flags.
 
-⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — the single exception is a 🔴 finding that stops a learner.
-Order: **`RELEASE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → `ACTIVE_TASK_ID` → the next task in the active workstream that is not ⛔.
+⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — with **exactly two** exceptions, and ⛔ no third:
+  ⓐ a 🔴 finding that stops a learner;
+  ⓑ **the row named in `ACTIVE_TASK_ID`.** ⟦NEW 31/08 · `D-171` · Roy's explicit instruction⟧
+Order: **`RELEASE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`ACTIVE_TASK_ID`** → the next task in the active workstream that is not ⛔.
+
+🔴 **Why ⓑ had to be written down, and it is ⛔ not a loosening.** `ACTIVE_TASK_ID` is the ONLY way the PM or Roy can promote one named row to the head of your queue. Until today the filter sentence allowed an exception for a 🔴 **finding** and ⛔ not for a 🔴 **task** — so a promoted task was silently ineligible and ⛔ would never be built. **That defect is measured, ⛔ not hypothetical:** `D-122 § ב` found five `cards` rows tagged `base` that were **out of reach forever**, and `T-225` was promoted twice (C-0368, C-0374) while the filter above still dropped it.
+⛔ **It is one named row, ⛔ never a licence.** `ACTIVE_TASK_ID` holds **one** id; when you finish it, the exception is over and the filter is absolute again. ⛔ You ⛔ do NOT set `ACTIVE_TASK_ID` yourself.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
 ### 🩺 LAST STEP OF THE PICK ORDER, ⛔ AND ONLY LAST — `IMPROVE_TARGET`  ⟦NEW 30/08 · D-146⟧
 ⛔ **No eligible row in `ACTIVE_WORKSTREAM`? ⛔ Do NOT exit yet. Read `IMPROVE_TARGET` in `plan/00-control.md` first.**
