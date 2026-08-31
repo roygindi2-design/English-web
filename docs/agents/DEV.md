@@ -197,6 +197,10 @@ Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:p
 
 ### 🎬 CONDITIONAL — THE MOTION SKILLS. ⛔ THE ARENA'S LIVING LAYER, ⛔ AND NOWHERE ELSE.  ⟦NEW 30/08 · D-148⟧
 The row you picked carries **`arena`** ⛔ **AND** **`שכבה ב׳`** in its `אבן דרך` cell ⇒ run **`animate`** before you write the motion, and `apple-design` / `emil-design-eng` **only if `animate` itself sends you for more context** — they are secondary, ⛔ never a starting point.
+🆕 **NARROW TRIGGER — the row's `סקיל` cell literally prints the skill name.**  ⟦NEW 31/08 · `D-162`⟧
+Then you load it **directly**, ⛔ without `animate` first: the row already quotes the section
+it came from, and re-deriving it costs a tick. ⛔ **The trigger is the CELL, ⛔ not the subject** —
+⛔ no such cell ⇒ ⛔ no skill, and ⛔ **you never write that cell yourself** (as with `שכבה ב׳`).
 ⛔ **Any other row these three are BLOCKED** — including an `arena` row that carries ⛔ no layer tag, and every `study` / `onboarding` / `account` screen. ⛔ «The screen looked static» is ⛔ not a reason; a screen that should move and does not is a **task row**, ⛔ not a skill you reach for mid-tick.
 🔴 **⛔ You NEVER write `שכבה ב׳` onto a row.** PM or Roy writes it (`plan/50-tasks.md` legend · D-148). A row you tagged yourself is a permission you wrote yourself, and a gate you can open from the inside ⛔ is not a gate.
 🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md` already says so in its own conflict table: `שכבה ב׳` beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
@@ -276,6 +280,34 @@ was abolished on 24/08 (`RULES § 0.17ו`). It means exactly one thing:
 ⛔ no re-review. ⇒ the register then says something true that ⛔ nothing else says: **what
 a learner can actually reach.** ⛔ Marking ✅ yourself would claim the code shipped when it
 is still sitting on a branch.
+### 🗄️ MIGRATIONS ARE **YOURS**, AND YOU ⛔ NEVER WAIT FOR ROY  ⟦NEW 31/08 · Roy's explicit decision · `D-163`⟧
+🔴 **This ⛔ reverses `RULES § 0.15` for migrations.** Until 31/08 the routing table sent
+«מיגרציה» to Roy as an item in `03-for-roy.md`, and **five migrations sat there for days**
+(‏items 41 · 42 · 43 · 53א · 53ב · 65 · 72) while the rows that needed them stayed ⛔.
+⇒ **You have the Supabase CLI in your scheduled task (STEP C), and you are authorised to run
+SQL migrations yourself.** Write the file into `supabase/migrations/`, run `supabase db push`,
+**verify it succeeded**, and only then mark the row 🟣.
+⛔ **⛔ Never leave a `.sql` file for Roy to run by hand**, and ⛔ never open a `03-for-roy`
+item for a migration. What still goes to Roy: a **key, an account, a paid plan, a licence** —
+⛔ never the schema itself.
+⚠️ **And the one thing that ⛔ did not change:** ⛔ **never paste a token, a key, a JWT or a
+database URL into the repo** — `scripts/agent-prompts.test.ts` fails the build if one returns.
+
+### 🗺️ THE ARCHITECTURE MAP — REGENERATE IT, EVERY TICK THAT TOUCHED `app/`, `components/` OR `lib/`  ⟦NEW 31/08 · `D-165` · `T-235`⟧
+```
+npm run generate-map      ⇐ madge --extensions ts,tsx --json app components lib > docs/architecture-map.json
+```
+⚠️ **⛔ The path is ⛔ NOT `./src`.** Roy's instruction said `madge ./src`; **measured 31/08 in a
+live clone: this repo has ⛔ no `src/` directory** — the source lives in `app/` · `components/` ·
+`lib/`. ⇒ the script points at those three. ⛔ Writing `./src` would have produced an **empty map
+that never errors**.
+⛔ **The JSON goes in the SAME commit as the code.** A map generated from a tree that no
+longer exists is worse than no map: the next agent reads it and believes it.
+⚠️ **Why this exists:** `plan/30-architecture.md` is **169,551 bytes as measured on 31/08**,
+and every agent that wanted to know «what imports what» paid for it. The JSON is the answer
+to that question, it is **derived**, and it ⛔ cannot drift as long as this line is obeyed.
+⛔ `docs/architecture-map.json` is a **generated file** — ⛔ never hand-edit it (HARD INVARIANTS).
+
 Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK) + one journal line.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.15א` makes an item unchecked for 7 days a finding in itself.
 New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
@@ -311,5 +343,5 @@ Which mode · what you did · **which workstream** · **the exact output of `npm
 
 ## HARD INVARIANTS
 Zero invented learning content · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
-⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · anything under `supabase/seed/`.
+⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · **`docs/architecture-map.json`** · anything under `supabase/seed/`.
 Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report. Every timestamp from `date -u`.

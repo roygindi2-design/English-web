@@ -296,6 +296,18 @@ it: the merge is the evidence, `git log` is the list, and you are copying a fact
 nobody ever clears — which is exactly what happened on the loop's first real build tick,
 when five rows were left stranded (F-126).
 
+### 🗺️ BEFORE THE MERGE — THE ARCHITECTURE MAP MUST BE FRESH  ⟦NEW 31/08 · `D-165` · `T-235`⟧
+```
+npm run generate-map && ./scripts/g status --porcelain docs/architecture-map.json
+```
+⛔ **The second command printing a line means DEV shipped code and ⛔ did not regenerate the map.**
+⇒ commit the regenerated JSON **into `work/current` before the merge**, and file it —
+`plan/60-findings.md`, ⛔ once per offender, ⛔ not once per tick. It ⛔ **does not block the merge**:
+a stale map is a wrong answer to «what imports what», ⛔ not a broken product.
+⚠️ **Why this is the QA line and ⛔ not a hope:** the map exists so ⛔ no agent has to read
+`plan/30-architecture.md` (**169,551 bytes, measured 31/08**). A map nobody refreshes is read
+with the same trust as a fresh one — that is worse than ⛔ no map.
+
 ### THEN MERGE
 ```
 ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current

@@ -460,11 +460,24 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * חלון ההקשר של סוכן שאין לו שום שימוש בו.
    */
   it('🔴 סקילי האנימציה ⛔ אינם דולפים ל-PM ול-CONTENT, ו-`write-swift` ⛔ אינו בשום פרומפט', () => {
+    /**
+     * 🆕 **‏31/08 — חריג אחד, ⛔ ואחד בלבד: `apple-design` ב-`PM.md`.**
+     * רוי אישר 30/08 «טריגר נדיר ל-PM» (‏`D-162`), אחרי שהרצה ידנית אחת של הסקיל
+     * פתחה **חמש** שורות (‏`T-230`…`T-234`). ⛔ **וזה ⛔ אינו ריכוך של הבדיקה:**
+     * שלושת האחרים נשארים אסורים ל-PM, כל הארבעה נשארים אסורים ל-CONTENT,
+     * ו⛔ החריג נדרש **להיות מגודר במונה** — האסרציה שמיד אחריו היא הגדר.
+     */
+    const ALLOWED: Record<string, readonly string[]> = { PM: ['apple-design'], CONTENT: [] };
     for (const a of ['PM', 'CONTENT'] as const) {
       for (const skill of ['animate', 'apple-design', 'emil-design-eng', 'review-animations']) {
+        if (ALLOWED[a]!.includes(skill)) continue;
         expect(text(a), `${a}: ⛔ ${skill}`).not.toContain(skill);
       }
     }
+    // ⛔ ‏החריג של PM חייב לשאת את המונה שגודר אותו, אחרת הוא היתר פתוח
+    expect(text('PM'), 'PM: `apple-design` מגודר במונה, ⛔ ולא במצב רוח').toMatch(
+      /zero open row whose `סקיל` cell prints `apple-design`/,
+    );
     // ⛔ ‏Swift ⛔ אינו הסטאק הזה, ו-`find-animation-opportunities` הוא של רוי ביד
     for (const a of AGENTS) {
       expect(text(a), `${a}: ⛔ write-swift כהיתר`).not.toMatch(/run `write-swift`/);
