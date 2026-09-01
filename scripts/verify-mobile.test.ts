@@ -887,7 +887,11 @@ describe('both tab fixtures declare where their tap lands (T-091)', () => {
     expect(entry).toContain("kind: 'navigates'");
     expect(entry).toContain("to: '/study'");
     expect(entry).toContain("marker: '[data-action-bar]'");
-    expect(entry).toContain("settles: '/api/study/queue?deck=due'");
+    // T-225 (D-142, closes F-140): the level tile carries a non-null count from
+    // render (`unseen: 314`), so it is `enabled: true` without a request and
+    // becomes the primary action — the tap now settles on `deck=level`, ⛔ not
+    // the old all-tiles-dead fallback's `deck=due`.
+    expect(entry).toContain("settles: '/api/study/queue?deck=level'");
   });
 
   /**
@@ -899,7 +903,7 @@ describe('both tab fixtures declare where their tap lands (T-091)', () => {
   it('allows exactly the one 503 that landing on /study causes', () => {
     const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
     const block = expected.slice(expected.indexOf("'/dev/tabs/cards':"));
-    expect(block).toContain('\\/api\\/study\\/queue\\?deck=due$');
+    expect(block).toContain('\\/api\\/study\\/queue\\?deck=level$');
   });
 });
 

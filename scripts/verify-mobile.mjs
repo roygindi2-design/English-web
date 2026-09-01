@@ -321,19 +321,22 @@ const FLOW_ARRIVAL = {
     marker: 'input[name="email"]',
     why: 'the tab’s one action is a Link to /cards, which proxy.ts redirects to /login without Supabase env — so what is measured is that the tap really moves the router',
   },
-  // ⛔ הפעולה המסומנת כאן היא מצב ה-`dead` של `<DeckSelector>` — כל שלושת
-  // האריחים מושבתים כי שתי הקריאות ל-`/api/study/queue` נכשלות ב-503 — ולכן
-  // היעד הוא `DECK_ALL_EMPTY_HREF` (`lib/core/deckTiles.ts:33`), כלומר `/study`.
-  // `[data-action-bar]` ⛔ ולא טקסט: כתובת לבדה היא טענה על הנתב, והסמן הוא
-  // הטענה על המסך — מסלול שמרנדר גבול שגיאה נושא את אותה כתובת בדיוק.
+  // 🆕 T-225 (D-142, closes F-140) — הפעולה המסומנת כאן השתנתה. `unseen: 314`
+  // בפיקסצ׳ר (`RENDER_SUMMARY`) הוא לא-ריק ולא-אפס ⇒ אריח `level` הוא `enabled: true`
+  // מהרגע הראשון (אינו תלוי בקריאת רשת), בעוד `due`/`unknown`/`sentences` נשארים
+  // מושבתים (503 בלי env). ⇒ `allTilesDead` הוא ⛔ `false`, בלוק ה-`dead` (§
+  // `DECK_ALL_EMPTY_HREF`) ⛔ אינו מרונדר, ו-`primaryKey` הוא `'level'` — האריח
+  // עצמו נושא את `data-primary-action`, ⛔ ולא הנפילה. היעד עדיין `/study`
+  // (`[data-action-bar]` מרונדר שם בלי תלות ב-`deck`), אבל הבקשה שההקשה גורמת לה
+  // היא `deck=level` ⛔ ולא `deck=due`.
   '/dev/tabs/cards': {
     kind: 'navigates',
     to: '/study',
     marker: '[data-action-bar]',
-    why: 'the only marked action in the all-decks-dead state is the link to /study; landing there is what proves the tap is not a dead end',
+    why: 'T-225 unlocked the level tile — it is the only enabled tile in this fixture (unseen=314) and therefore the primary action; landing on /study proves the tap is not a dead end',
     // הבקשה שהנחיתה גורמת. בלי לנקוב בה, ה-503 שלה נספר על המסלול הזה אחרי
     // שהלולאה כבר עברה הלאה — בדיוק הייחוס השגוי שנמדד ב-C-0134.
-    settles: '/api/study/queue?deck=due',
+    settles: '/api/study/queue?deck=level',
   },
 };
 
@@ -400,6 +403,15 @@ const EXPECTED_CONSOLE = {
     // same URL still fails the check, and `limit=50` ⛔ cannot be satisfied by the
     // `limit=1` entry above.
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=50$/,
+    // 🆕 T-225 (D-142, closes F-140): the level tile carries a non-null count
+    // (`unseen: 314` in the fixture) from render, so it is `enabled: true` without
+    // waiting on a request — `allTilesDead` is false and it becomes the primary
+    // action. The tap this harness drives (PRIMARY_ACTION_ROUTES below) therefore
+    // lands on `/study?deck=level`, whose own on-mount fetch answers 503 with no
+    // env, exactly like the pre-existing `deck=due$` line above it. Keyed to the
+    // one URL and the one status: a 400 (the route rejecting `deck=level`) or any
+    // other status still fails this check.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=level$/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase
