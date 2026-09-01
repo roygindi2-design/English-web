@@ -238,7 +238,17 @@ export function applyPractice(current: PracticeCounters, grade: CardGrade): Prac
   };
 }
 
-export type PracticePayload = { readonly wordId: string; readonly grade: CardGrade };
+export type PracticePayload = {
+  readonly wordId: string;
+  readonly grade: CardGrade;
+  /**
+   * ⛔ NOT decoration. The route's 404 for a missing `word_progress` row is correct for
+   * every deck except this one: `level` is BY DEFINITION the words that have no row yet.
+   * The discriminator is what lets the route narrow that 404 instead of deleting it.
+   * ⛔ `'sentences'` is absent — `FlashcardDeckName` excludes it (`deck.ts:47`).
+   */
+  readonly deck: FlashcardDeckName;
+};
 export type PracticeCheck =
   | { readonly ok: true; readonly payload: PracticePayload }
   | { readonly ok: false; readonly code: 'unavailable' };
@@ -250,11 +260,26 @@ const REJECT: PracticeCheck = { ok: false, code: 'unavailable' };
  * F-004 at this boundary: an array is an object and `null` is an object, so the shape is
  * checked before any property is read, and both fields are validated as values rather than
  * as truthiness.
+ *
+ * ⚠️ Absent `deck` is `'due'`, ⛔ not a rejection. `parseDeckName(null)` already means
+ * «today's dose» (`:99`), and `'due'` is the deck whose 404 stays. An old client that sends
+ * no `deck` therefore keeps exactly today's behaviour — ⛔ it does not silently gain the
+ * insert path.
  */
 export function checkPracticePayload(body: unknown): PracticeCheck {
   if (typeof body !== 'object' || body === null || Array.isArray(body)) return REJECT;
-  const { word_id: wordId, grade } = body as { word_id?: unknown; grade?: unknown };
+  const { word_id: wordId, grade, deck } = body as {
+    word_id?: unknown;
+    grade?: unknown;
+    deck?: unknown;
+  };
   if (typeof wordId !== 'string' || !UUID_RE.test(wordId)) return REJECT;
   if (typeof grade !== 'string' || !BINARY_GRADES.includes(grade as CardGrade)) return REJECT;
-  return { ok: true, payload: { wordId, grade: grade as CardGrade } };
+  // ⛔ `undefined` בלבד נופל ל-`'due'`. `null`, `''` ומחרוזת לא מוכרת נדחים — ברירת
+  // מחדל שבולעת קלט פסול היא בדיוק המחלקה של F-004.
+  if (deck !== undefined && (typeof deck !== 'string' || !FLASHCARD_DECK_NAMES.includes(deck as FlashcardDeckName))) {
+    return REJECT;
+  }
+  const deckName: FlashcardDeckName = deck === undefined ? 'due' : (deck as FlashcardDeckName);
+  return { ok: true, payload: { wordId, grade: grade as CardGrade, deck: deckName } };
 }

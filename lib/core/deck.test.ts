@@ -148,7 +148,35 @@ describe('checkPracticePayload — F-004 בגבול הזה', () => {
   });
   it('מקבל את השניים התקינים', () => {
     const check = checkPracticePayload({ word_id: id, grade: 'again' });
-    expect(check.ok && check.payload).toEqual({ wordId: id, grade: 'again' });
+    expect(check.ok && check.payload).toEqual({ wordId: id, grade: 'again', deck: 'due' });
+  });
+});
+
+describe('checkPracticePayload — T-225: החפיסה נוסעת בגוף הבקשה', () => {
+  const id = '00000000-0000-4000-8000-000000000001';
+
+  it("חסר `deck` ⇒ `'due'`, ⛔ ולא דחייה — התאימות לאחור היא הצד הבטוח", () => {
+    const check = checkPracticePayload({ word_id: id, grade: 'good' });
+    expect(check.ok).toBe(true);
+    if (check.ok) expect(check.payload.deck).toBe('due');
+  });
+
+  it('שלושת שמות חפיסת הכרטיס עוברים', () => {
+    for (const deck of ['due', 'unknown', 'level'] as const) {
+      const check = checkPracticePayload({ word_id: id, grade: 'good', deck });
+      expect(check.ok, deck).toBe(true);
+      if (check.ok) expect(check.payload.deck).toBe(deck);
+    }
+  });
+
+  it("⛔ `'sentences'` ⛔ אינו שם חוקי כאן — הוא ⛔ אינו כרטיס דו-כפתורי", () => {
+    expect(checkPracticePayload({ word_id: id, grade: 'good', deck: 'sentences' }).ok).toBe(false);
+  });
+
+  it('⛔ שם שאינו מוכר נדחה, ⛔ ולא נופל בשקט לברירת מחדל', () => {
+    for (const bad of ['level ', 'LEVEL', '', 7, null, {}]) {
+      expect(checkPracticePayload({ word_id: id, grade: 'good', deck: bad }).ok, String(bad)).toBe(false);
+    }
   });
 });
 
