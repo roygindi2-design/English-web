@@ -218,21 +218,19 @@ export default function DeckSelector({
   // — it is the only entry to `/study` in the whole product — and `משפטים` stays last and
   // untouched.
   const entries: readonly DeckEntry[] = [
-    // ⛔ **`href: null` — LOCKED, and ⛔ not because the deck is empty.** `F-140` (C-0318):
-    // grading a word from this deck has ⛔ no admissible write path today — `/api/practice`
-    // answers 404 for a word with no `word_progress` row (its own comment says why), and
-    // T-155ⓒ forbids `/api/review`. ⛔ The endpoint itself is live and tested; what is
-    // missing is one PM decision. Until it lands the tile is «מושבת עם המספר» (D-046 ·
-    // § 4.2ו) rather than a primary CTA that fails on the learner's first tap — the F-027
-    // class. ⇒ ⛔ Do NOT flip this to a href before F-140 closes.
-    {
+    // ⛔ **`F-140` נסגר ב-`D-142` (C-0348) ו-`T-225` בנה את נתיב הכתיבה.**
+    // `/api/practice` פותח שורה — ורק — עבור `deck=level`: «ידעתי» ⇒
+    // `self_marked_known: true`, «לא ידעתי» ⇒ `attempts: 1` ו-`next_review_at: null`.
+    // ⛔ אפס SM-2 (`T-155ⓒ` · D-032). ⇒ האריח הוא CTA ראשי אמיתי.
+    // ⚠️ `toEntry` עדיין מחזיר `enabled: false` **עם המספר** כשהרמה ריקה או כשהקריאה
+    // נכשלה — «מושבת עם המספר» (§ 4.2ו) ⛔ אינו «נעול».
+    toEntry({
       key: 'level',
       label: LEVEL_LABEL_HE,
+      href: '/study?deck=level',
+      count: unseen ?? null,
       note: LEVEL_NOTE_HE(noteFor(unseen)),
-      href: null,
-      enabled: false,
-      locked: true,
-    },
+    }),
     toEntry({
       key: 'unknown',
       label: PRACTICE_LABEL_HE,

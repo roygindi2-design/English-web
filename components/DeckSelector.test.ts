@@ -120,16 +120,26 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * F-140 — האריח נעול בכוונה, ⛔ ולא ריק. `/api/practice` עונה 404 על מילה בלי שורת
-   * `word_progress`, וחפיסת הרמה היא בדיוק אוסף המילים האלה ⇒ CTA ראשי שנכשל בהקשה
-   * הראשונה. ⛔ אין להחליף את `href: null` לפני ש-F-140 נסגר.
+   * T-225ⓒ · D-142 — F-140 נסגר: `/api/practice` פותח שורה עבור `deck=level`
+   * (`app/api/practice/route.ts`, ענף `payload.deck !== 'level'`), ולכן האריח
+   * ⛔ אינו CTA שנכשל בהקשה הראשונה יותר. ⛔ המנעול יורד, ⛔ והמספר נשאר.
    */
-  it('F-140 — «סינון מילים» נעולה עם המספר, ⛔ ולא מנווטת', () => {
+  it('T-225ⓒ — «סינון מילים» מנווטת אל `/study?deck=level`, ⛔ ואינה נעולה', () => {
     const region = braceRegion(CODE, "{\n      key: 'level'");
-    expect(region).toContain('href: null');
-    expect(region).toContain('locked: true');
+    expect(region).toContain("href: '/study?deck=level'");
+    expect(region).not.toContain('locked: true');
     expect(region).toContain('LEVEL_NOTE_HE');
-    expect(region).not.toContain('/study');
+  });
+
+  /**
+   * ⛔ **מוטציה, ונופלת בשם.** רמה ריקה או קריאה שנכשלה ⇒ `unseen` הוא `0`/`null`,
+   * ו-`toEntry` מחזיר `enabled: false` **עם המספר** (§ 4.2ו). אריח שנכתב ידנית עם
+   * `enabled: true` היה עוקף בדיוק את הכלל הזה.
+   */
+  it('MUTATION: אריח הרמה עובר דרך `toEntry`, ⛔ ולא נבנה ביד', () => {
+    const region = braceRegion(CODE, "{\n      key: 'level'");
+    expect(region).not.toContain('enabled: true');
+    expect(CODE).toMatch(/toEntry\(\{\s*\n\s*key: 'level'/);
   });
 
   /**
