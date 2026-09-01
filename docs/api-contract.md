@@ -500,8 +500,23 @@ T-124 · D-065). הצרכן הוא `<StudyDeckScreen>`, ו**לכל אחד משל
 **200 — הלומד טרם בחר רמה:**
 
 ```json
-{ "ok": true, "level": null }
+{
+  "ok": true,
+  "level": null,
+  "levels": [
+    { "level": "A1", "totalInLevel": 315, "known": 0, "inReviewList": 0, "unseen": 315 },
+    { "level": "A2", "totalInLevel": 80, "known": 0, "inReviewList": 0, "unseen": 80 },
+    { "level": "B1", "totalInLevel": 20, "known": 0, "inReviewList": 0, "unseen": 20 },
+    { "level": "B2", "totalInLevel": 2, "known": 0, "inReviewList": 0, "unseen": 2 },
+    { "level": "C1", "totalInLevel": 0, "known": 0, "inReviewList": 0, "unseen": 0 },
+    { "level": "C2", "totalInLevel": 0, "known": 0, "inReviewList": 0, "unseen": 0 }
+  ]
+}
 ```
+
+⚠️ **תוסף T-246:** `levels` יוצא גם כשהלומד טרם בחר רמה — בורר המסלולים ב-`לימודים`
+צריך את שש הרמות בכל מקרה, ולומד יכול לצבור `word_progress` בסימון עצמי לפני שבחר
+רמה נוכחית.
 
 ⛔ **אין כאן ספירות ואין ברירת מחדל ל-A1** (D-037 — אין סף ואין שער; הלומד בוחר).
 

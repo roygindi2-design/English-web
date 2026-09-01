@@ -66,6 +66,25 @@ describe('⛔ הנתיב אינו מחשב — הוא שואל ומרכיב (T-0
     expect(CODE).toMatch(/MAX_PROGRESS_ROWS/);
     expect(CODE).toMatch(/\.limit\(MAX_PROGRESS_ROWS\)/);
   });
+
+  it('T-246: levels[] נספר גם כש-level: null — לא רק בענף עם רמה נבחרת', () => {
+    // עד תיקון זה השורה `if (level === null) return NextResponse.json({ ok: true, level: null })`
+    // חזרה **לפני** הקריאה ל-summarizeAllLevels, ולכן `levels` לא הופיע בגוף כלל בענף הזה.
+    const nullBranch = CODE.slice(
+      CODE.indexOf('if (level === null)'),
+      CODE.indexOf('if (level === null)') + 200,
+    );
+    expect(nullBranch).not.toMatch(/return NextResponse\.json\(\{\s*ok:\s*true,\s*level:\s*null\s*\}\)/);
+    expect(CODE.indexOf('summarizeAllLevels(')).toBeLessThan(CODE.lastIndexOf('level === null'));
+  });
+
+  it('החוזה מתעד levels[] גם בדוגמה של «הלומד טרם בחר רמה»', () => {
+    const example = CONTRACT.slice(
+      CONTRACT.indexOf('200 — הלומד טרם בחר רמה'),
+      CONTRACT.indexOf('200 — רמה נבחרה'),
+    );
+    expect(example).toContain('"levels"');
+  });
 });
 
 describe('מיפוי שגיאות — סכמה שלא הורצה היא 503 מוסבר, ⛔ לא אפסים ולא 500', () => {

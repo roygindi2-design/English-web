@@ -89,7 +89,10 @@ export async function GET() {
   // ⛔ אין נפילה שקטה ל-A1. «טרם בחר» הוא מצב אמיתי (D-037), והמסך מכבד אותו
   // במצב בחירה — ⛔ לא בברירת מחדל שאיש לא הצהיר עליה.
   const level = parseLevel((profile as { current_level?: unknown } | null)?.current_level);
-  if (level === null) return NextResponse.json({ ok: true, level: null });
+
+  // ⚠️ T-246: שתי הקריאות הבאות רצות ⛔ תמיד, גם כש-level הוא null — לומד יכול לצבור
+  // word_progress בכמה רמות עוד לפני שבחר «רמה נוכחית» (למשל דרך סימון עצמי בסריקה),
+  // ובורר המסלולים צריך את שש הרמות בכל מקרה. עד כאן ההתנהגות זהה למה שהיה.
 
   // ⚠️ **T-102: שליפה אחת בלי מסנן רמה, ⛔ ולא שש שליפות.** שש קריאות היו שש נסיעות
   // רשת על אותה טבלה, והקיבוץ ממילא נעשה בשכבה הטהורה. התקרה נבדקת מול הסך הכולל
@@ -141,6 +144,12 @@ export async function GET() {
   try {
     // ⛔ הנתיב אינו סופר: הוא מוסר שורות ומקבל סיכומים. ההגדרה חיה במקום אחד.
     const levels = summarizeAllLevels({ totals, rows: banded });
+
+    // ⛔ אין נפילה שקטה ל-A1: `level: null` הוא תשובה, ⛔ לא חוסר (D-037). התוספת
+    // היחידה כאן היא `levels` — שני השדות שהיו קיימים בענף הזה (`ok`, `level`)
+    // יוצאים בדיוק כפי שיצאו קודם.
+    if (level === null) return NextResponse.json({ ok: true, level: null, levels });
+
     const rows: ProgressFacts[] = banded.filter((row) => row.band === level);
     const summary = summarizeLevel({ level, totalInLevel: totals[level] ?? 0, rows });
     // ⛔ **תוספת בלבד:** חמשת השדות הקיימים יוצאים בדיוק כפי שיצאו קודם.
