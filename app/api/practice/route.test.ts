@@ -7,19 +7,50 @@ const CODE = withoutComments(readFileSync('app/api/practice/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 
 describe('POST /api/practice — D-033, ההגנה שמונעת נזק שקט', () => {
-  it('⛔ אינו כותב אף אחד מארבעת שדות התזמון', () => {
-    for (const field of ['next_review_at', 'easiness', 'interval_days', 'repetition']) {
+  it('⛔ אינו כותב אף אחד משדות SM-2', () => {
+    for (const field of ['easiness', 'interval_days', 'repetition']) {
       expect(CODE).not.toContain(field);
     }
+  });
+
+  /**
+   * T-225ⓑ — `next_review_at` נכנס לקובץ **פעם אחת**, ורק כ-`null` מפורש. ⛔ כל צורה
+   * אחרת (`new Date`, `nowIso`, השמה מחושבת) היא בדיוק הכתיבה ש-D-033 אוסרת.
+   */
+  it('T-225ⓑ — `next_review_at` מופיע פעם אחת בלבד, ורק כ-null מפורש', () => {
+    const hits = CODE.match(/next_review_at/g) ?? [];
+    expect(hits.length).toBe(1);
+    expect(CODE).toContain('next_review_at: null');
   });
 
   it('⛔ אינו נוגע ברצף ההכרה — הרצף מקדם לייצור, ותרגול אינו מקדם', () => {
     expect(CODE).not.toContain('consecutive_correct_recognition');
   });
 
-  it('⛔ לעולם אינו מוסיף שורה — תרגול הוא על מילה שכבר נכשלה', () => {
-    expect(CODE).not.toMatch(/\.insert\(|\.upsert\(/);
-    expect(CODE).toMatch(/\.update\(/);
+  /**
+   * T-225ⓐⓑ — ה-404 ⛔ לא נמחק, הוא **הצטמצם**. `.insert(` מותר, ו⛔ רק בתוך הענף
+   * של `deck === 'level'`; `.upsert(` ⛔ אסור בכל מקום (הנימוק ב-scan/route.ts:92).
+   */
+  it("T-225 — insert חי ⛔ אך ורק בענף `level`, וה-404 שורד לכל חפיסה אחרת", () => {
+    expect(CODE).not.toMatch(/\.upsert\(/);
+    expect(CODE).toMatch(/\.insert\(/);
+    expect(CODE).toMatch(/status:\s*404/);
+    const gate = CODE.indexOf("payload.deck !== 'level'");
+    const insert = CODE.indexOf('.insert(');
+    const notFound = CODE.indexOf('status: 404');
+    expect(gate, 'השער ⛔ אינו קיים').toBeGreaterThan(-1);
+    expect(notFound, 'ה-404 חייב לשבת בתוך השער, לפני ה-insert').toBeGreaterThan(gate);
+    expect(insert, 'ה-insert חייב לבוא אחרי שהשער סינן החוצה כל חפיסה אחרת').toBeGreaterThan(notFound);
+  });
+
+  /**
+   * T-225ⓐ — סימון עצמי ⛔ אינו חשיפה שנענתה: השורה החדשה של «ידעתי» נפתחת עם
+   * `attempts: 0`, בדיוק כמו `app/api/levels/scan/route.ts:22`.
+   */
+  it('T-225ⓐ — «ידעתי» פותחת שורה עם self_marked_known ו-attempts שאינו מנוחש', () => {
+    expect(CODE).toContain('self_marked_known:');
+    expect(CODE).toContain('self_marked_at:');
+    expect(CODE).toContain('first_seen_at:');
   });
 
   it('הספירה עצמה נעשית בשכבה הטהורה', () => {

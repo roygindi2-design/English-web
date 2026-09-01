@@ -51,12 +51,45 @@ export async function POST(request: Request) {
   }
 
   const row = data as { attempts: number | null; correct_attempts: number | null } | null;
-  // A missing row is 404 and ⛔ never an insert. A word with no progress row was never
-  // answered, and a word that was never answered cannot be in a practice deck — so a
-  // missing row means the caller sent a word_id that does not belong to this deck, not
-  // that a row is owed. Inserting here would fabricate a learning history from a stray
-  // POST, and would do it with the scheduling columns at their defaults, i.e. due now.
-  if (row === null) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 404 });
+
+  if (row === null) {
+    // T-225ⓐⓑ · D-142 — the 404 NARROWS, it is ⛔ not deleted. The reason written here
+    // before («a word that was never answered cannot be in a practice deck») is true of
+    // every deck and false of exactly one: `deck=level` IS the collection of words that
+    // were never answered. ⛔ Any other deck still gets the 404.
+    if (payload.deck !== 'level') {
+      return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 404 });
+    }
+
+    const nowIso = new Date().toISOString();
+    const known = payload.grade === 'good';
+    // ⛔ `insert` ולא `upsert` — הנימוק ב-`app/api/levels/scan/route.ts:92-94`.
+    // ⛔ אפס SM-2: `next_review_at: null` נכתב מפורשות ⛔ ואינו «מועד עכשיו» —
+    // `deck=due` מסנן `next_review_at <= now`, ו-NULL ⛔ לעולם אינו עומד בתנאי.
+    const { error: insertError } = await supabase.from('word_progress').insert({
+      user_id: user.id,
+      word_id: payload.wordId,
+      first_seen_at: nowIso,
+      self_marked_known: known,
+      // ⛔ סימון עצמי אינו חשיפה שנענתה (scan/route.ts:22) ⇒ «ידעתי» פותחת ב-0.
+      attempts: known ? 0 : 1,
+      correct_attempts: 0,
+      next_review_at: null,
+      ...(known ? { self_marked_at: nowIso } : {}),
+      updated_at: nowIso,
+    });
+
+    if (insertError) {
+      console.error('[api/practice] progress insert failed:', insertError.message);
+      return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      attempts: known ? 0 : 1,
+      correct_attempts: 0,
+    });
+  }
 
   // Nullable columns are the database saying "unknown"; for two counters, unknown is 0.
   const next = applyPractice(
