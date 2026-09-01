@@ -120,7 +120,10 @@ export default function StudiesScreen({
               onClick={() => setActive(track.id)}
               className={
                 isActive
-                  ? 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand/10 px-4 text-sm font-bold text-brand-surface'
+                  ? // F-036: the bare `--brand` mark colour is a 4.42:1 fill, never a
+                    // text/chip background — the surface token at low opacity is the
+                    // established fill here (components/StoryScreen.tsx:225).
+                    'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand-surface/20 px-4 text-sm font-bold text-brand-surface'
                   : 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-4 text-sm text-ink-muted'
               }
             >
