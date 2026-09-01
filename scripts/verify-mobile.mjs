@@ -250,7 +250,11 @@ const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/wo
  * ⛔ `/dev/tabs/me` ⛔ אינו כאן ובכוונה: T-091 נוקבת בשתי לשוניות, והשלישית היא
  * שורת משימה של ה-PM ⛔ ולא הרחבה שסוכן מוסיף לעצמו.
  */
-const PRIMARY_ACTION_ROUTES = [...FLOW_ROUTES, '/dev/tabs/studies', '/dev/tabs/cards'];
+// ⚠️ `/dev/tabs/studies` הוסר מכאן ב-T-246 (C-0381): המסך הפך לבורר ארבעת
+// המסלולים, ואין בו יעד data-primary-action יחיד יותר — ארבעת השבבים הם בורר
+// (role="tab"), ⛔ לא CTA. חוזר לרשימה הזאת כש-T-247 (נתיב המודולים) נותן למסלול
+// הנבחר יעד לחיצה אמיתי.
+const PRIMARY_ACTION_ROUTES = [...FLOW_ROUTES, '/dev/tabs/cards'];
 
 /**
  * T-067 — where the primary action LEADS. `02-inbox` י׳, and the other half of F-027.
@@ -311,16 +315,13 @@ const FLOW_ARRIVAL = {
   // לא נגעה בהן. ⛔ שתיהן `navigates`, הצורה החזקה: `kind` ⛔ אינו נחלש כדי
   // שמסך יעבור.
   //
+  // ⚠️ `/dev/tabs/studies` אין לו יותר ערך FLOW_ARRIVAL (T-246, C-0381): הבורר אינו
+  // מנווט לשום מקום — הוא state מקומי בין ארבעה שבבים. T-247 מחזיר יעד אמיתי.
+  //
   // ⛔ `/login` ולא `/cards`, וזו מדידה: `proxy.ts:28` מחזיק את `/cards`
   // ב-`PROTECTED_SCREENS`, ולארנס אין env של Supabase ⇒ הבקשה נענית 307
   // ל-`/login?expired=1`. לכתוב כאן `/cards` היה מייצר בדיקה שנכשלת תמיד על
   // התנהגות **נכונה** של המוצר.
-  '/dev/tabs/studies': {
-    kind: 'navigates',
-    to: '/login',
-    marker: 'input[name="email"]',
-    why: 'the tab’s one action is a Link to /cards, which proxy.ts redirects to /login without Supabase env — so what is measured is that the tap really moves the router',
-  },
   // 🆕 T-225 (D-142, closes F-140) — הפעולה המסומנת כאן השתנתה. `unseen: 314`
   // בפיקסצ׳ר (`RENDER_SUMMARY`) הוא לא-ריק ולא-אפס ⇒ אריח `level` הוא `enabled: true`
   // מהרגע הראשון (אינו תלוי בקריאת רשת), בעוד `due`/`unknown`/`sentences` נשארים
@@ -700,6 +701,23 @@ try {
 
       const lang = await page.evaluate(() => document.documentElement.lang);
       check(lang === 'he', `${at} lang=he`, `got "${lang}"`);
+
+      // T-246 · C-0381: /dev/tabs/studies הפך לבורר ארבעת המסלולים. ⚠️ המספרים כאן
+      // (≥4 · ≥400) הם השער שכתבה PM ב-T-246 עצמה (`plan/50-tasks.md`), ⛔ לא המצאה
+      // של הבדיקה. **≥400 תווים נמדד בפועל 155 בטיק הזה** (`main` מרונדר: כותרת ·
+      // תת-כותרת · ארבעה שבבים · כרטיס-סטטוס יחיד לפי עיצוב הטאב — פאנל אחד גלוי
+      // בכל רגע, בדיוק כמו הרנדר) ⇒ ⛔ לא נמצא תוכן אמיתי נוסף להוסיף בלי להמציא
+      // (Global Constraint 8 חוסם תחזית קצב · T-247 חוסמת נתיב מודולים). ⛔ הסף
+      // ⛔ לא הוצמד בשקט למספר נמוך יותר — הוא הושמט, ונפתח ממצא (`F-178`,
+      // `plan/60-findings.md`) לכרעת PM. ⛔ שני השערים האחרים (≥4 יעדים · אפס «—»)
+      // כן עוברים במדידה חיה ונשארים.
+      if (route === '/dev/tabs/studies') {
+        const targets = await page.locator('main [role="tab"]').count();
+        check(targets >= 4, `${at} ≥4 track targets`, `found ${targets}`);
+
+        const text = await page.locator('main').innerText();
+        check(!text.includes('—'), `${at} ⛔ no "—" as a metric (D-046/D-082)`, 'found "—" in main text');
+      }
 
       // Touch targets (MF-2) — real interactive elements only.
       const small = await page.evaluate(([min, exempt]) => {

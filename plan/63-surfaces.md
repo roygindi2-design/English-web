@@ -16,10 +16,10 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
-| `/cards` | ⛔ — | `/dev/tabs/cards` · `/dev/tabs/probe` · `components/AppGrid.tsx` … +12 | ⛔ — | ✅ | `components/LevelMapScreen` |
+| `/cards` | ⛔ — | `/dev/tabs/cards` · `/dev/tabs/probe` · `components/AppGrid.tsx` … +11 | ⛔ — | ✅ | `components/LevelMapScreen` |
 | `/me` | `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` | `/settings` · `app/api/profile/route.ts` · `/dev/tabs/me` … +3 | `/sources` | ⛔ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
-| `/studies` | `התחלת מנה יומית` | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `/dev/tabs/studies` … +6 | `/cards` | ⛔ | `components/StudiesScreen` |
+| `/studies` | ⛔ — | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `components/LessonScreen.tsx` … +4 | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/world/chain` | `כתוב את המשפט הראשון שלך` | `/world/collected` · `components/RecallCard.tsx` | `/login` | ✅ | `components/WritingChain` |
 | `/world/collected` | `לזירה` | `/world/story` · `/dev/world/ring` · `components/WorldRing.tsx` … +1 | `/login` | ✅ | `components/CollectedWords` |
 | `/world` | ⛔ — | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +6 | ⛔ — | ✅ | `components/WorldRing` |
@@ -59,7 +59,7 @@
 | `/dev/tabs/cards` | ⛔ — | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +1 | ⛔ — | ✅ | `components/LevelMapScreen` |
 | `/dev/tabs/me` | `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` | `/me` · `components/MeScreen.tsx` | `/me` · `/sources` | ⛔ | `components/MeScreen` |
 | `/dev/tabs/probe` | ⛔ — | `components/DeckSelector.tsx` | ⛔ — | ✅ | `components/DeckSelector` |
-| `/dev/tabs/studies` | `התחלת מנה יומית` | `/studies` · `components/StudiesScreen.tsx` | `/cards` | ⛔ | `components/StudiesScreen` |
+| `/dev/tabs/studies` | ⛔ — | `/studies` · `components/StudiesScreen.tsx` | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/dev/world` | ⛔ — | `/dev/arcade` · `/dev/arcade/result` · `app/dev/world/layout.tsx` … +3 | ⛔ — | ⛔ | `—` |
 | `/dev/world/recall` | ⛔ — | ⛔ — | ⛔ — | ⛔ | `—` |
 | `/dev/world/ring/expired` | ⛔ — | ⛔ — | ⛔ — | ⛔ | `—` |
@@ -68,12 +68,12 @@
 ### דגלים — 14
 
 - ⚠️ `/cards` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
+- ⚠️ `/studies` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
 - ⚠️ `/world` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
 - ⚠️ `/arcade` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
 - ⚠️ `/offline` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
 - ⚠️ `/offline` — ⛔ אף מסך ⛔ אינו מקשר אליו ⇒ ⛔ אינו נגיש בהקשות
 - ⚠️ `/me` — ⛔ אין מצב ריק כתוב
-- ⚠️ `/studies` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/arcade` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/login` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/offline` — ⛔ אין מצב ריק כתוב

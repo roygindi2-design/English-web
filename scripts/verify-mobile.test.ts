@@ -833,10 +833,14 @@ describe('the lesson anatomy is measured at all three widths (T-089)', () => {
 describe('the F-027 primary-action checks cover the tab fixtures (T-091 · F-098)', () => {
   const source = readFileSync('scripts/verify-mobile.mjs', 'utf8');
 
-  it('declares a list that is FLOW_ROUTES plus the two tab fixtures', () => {
+  // ⚠️ T-246 (C-0381): `/dev/tabs/studies` יצא מהרשימה הזאת. המסך הפך לבורר
+  // ארבעת המסלולים — ארבעה `role="tab"`, ⛔ לא יעד `data-primary-action` יחיד —
+  // וחוזר לכאן כש-T-247 (נתיב המודולים) נותן למסלול הנבחר יעד לחיצה אמיתי.
+  it('declares a list that is FLOW_ROUTES plus the one remaining tab fixture', () => {
     expect(source).toMatch(
-      /const PRIMARY_ACTION_ROUTES = \[\s*\.\.\.FLOW_ROUTES,\s*'\/dev\/tabs\/studies',\s*'\/dev\/tabs\/cards',?\s*\]/,
+      /const PRIMARY_ACTION_ROUTES = \[\s*\.\.\.FLOW_ROUTES,\s*'\/dev\/tabs\/cards',?\s*\]/,
     );
+    expect(source).not.toMatch(/PRIMARY_ACTION_ROUTES = \[[^\]]*'\/dev\/tabs\/studies'/);
   });
 
   it('gates the primary-action block on that list and ⛔ not on FLOW_ROUTES', () => {
@@ -875,11 +879,11 @@ describe('both tab fixtures declare where their tap lands (T-091)', () => {
     source.indexOf('const EXPECTED_CONSOLE'),
   );
 
-  it('/dev/tabs/studies names /login — the redirect proxy.ts forces without env', () => {
-    const entry = arrival.slice(arrival.indexOf("'/dev/tabs/studies':"));
-    expect(entry).toContain("kind: 'navigates'");
-    expect(entry).toContain("to: '/login'");
-    expect(entry).toContain("marker: 'input[name=\"email\"]'");
+  // ⚠️ T-246 (C-0381): הרשומה `'/dev/tabs/studies'` הוסרה מ-`FLOW_ARRIVAL` בכוונה —
+  // הבורר אינו מנווט לשום מקום, הוא state מקומי בין ארבעה שבבים. T-247 מחזיר
+  // יעד אמיתי ואת הרשומה יחד אתו.
+  it('⛔ /dev/tabs/studies has no FLOW_ARRIVAL entry — the selector does not navigate', () => {
+    expect(arrival).not.toContain("'/dev/tabs/studies':");
   });
 
   it('/dev/tabs/cards names /study and the request that landing fires', () => {
