@@ -1,17 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-/**
- * The markup of the לימודים tab (§ 4.2ב question 1 — the three-second read:
- * how many days are left, and one button).
- *
- * A source guard and not a render test: the environment is node and jsdom is
- * deliberately not installed (vitest.config.ts). Geometry is `check:mobile`'s
- * job, through the `/dev/tabs/studies` fixture that renders this component.
- */
 const SRC = readFileSync('components/StudiesScreen.tsx', 'utf8');
 
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
 function withoutComments(source: string): string {
   return source
     .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
@@ -21,58 +12,52 @@ function withoutComments(source: string): string {
 
 const CODE = withoutComments(SRC);
 
-describe('<StudiesScreen> — the route tab body (T-051 · § 4.2ב)', () => {
-  /**
-   * The countdown is `daysUntilExamHe(daysUntilExam(...))`, computed at the edge
-   * where the clock lives and passed in. A component that computed its own would
-   * put a `new Date()` in the render path and make lib/core's purity beside the
-   * point — and would let a second, subtly different day count exist.
-   */
-  it('takes the headline as a prop and ⛔ computes no date of its own', () => {
-    expect(CODE).toContain('headline');
-    expect(CODE).not.toContain('new Date');
-    expect(CODE).not.toContain('daysUntilExam');
+describe('<StudiesScreen> — בורר ארבעת המסלולים (T-246 · 36 § 9)', () => {
+  it('ארבעה יעדי שבב אמיתיים, אחד לכל מסלול', () => {
+    // ⚠️ D-110 latitude, logged in the tick report: ארבעת מזהי המסלול ⛔ אינם
+    // כתובים כאן בקוד המקור — `STUDY_TRACKS` הוא מקור-האמת היחיד (T-246ⓐ: «הוספת
+    // מסלול היא רשומה, ⛔ לא מסך»), וכפילות מחרוזת כאן הייתה בדיוק הגדרה שנייה
+    // ש-§ 4.2ז אוסר. הכיסוי האמיתי ל«ארבעה, ובסדר הזה» יושב ב-`studyTracks.test.ts`;
+    // כאן נבדק שהרכיב מייבא את הרישום הקנוני ומרנדר אותו כבורר, ⛔ לא ניווט.
+    expect(CODE).toContain('STUDY_TRACKS');
+    expect(CODE).toMatch(/from ['"]@\/lib\/core\/studyTracks['"]/);
+    // כל שבב הוא <button role="tab">, ⛔ לא <li> סטטי — הבחירה משנה state, אינה
+    // ניווט. ⚠️ נבדק על role="tab", ⛔ לא ספירת <button> פיזיות: JSX ממופה בלולאה
+    // מופיע פעם אחת במקור בלבד (plan Task 3 Step 4 warning).
+    expect(CODE).toContain('role="tab"');
+    expect(CODE).toContain('STUDY_TRACKS.map');
   });
 
-  it('offers exactly one action, marked so the harness can find it', () => {
-    expect(CODE).toContain('data-primary-action="true"');
-    expect(CODE.match(/data-primary-action/g)?.length).toBe(1);
-    expect(CODE).toContain('href="/cards"');
+  it('השבב הפעיל נושא aria-current — ⛔ לא רק צבע (36 § 12.7)', () => {
+    expect(CODE).toContain('aria-current');
   });
 
-  it('⛔ makes no readiness or score claim (4.4.3)', () => {
-    for (const forbidden of ['מוכנות', 'ציון חזוי', 'צפוי לקבל', '%']) {
+  it('⛔ אפס נקודות · מטבע · XP · לוח תוצאות · רצף יומי (D-050 · R-012 · T-032)', () => {
+    for (const forbidden of ['נקודות', 'מטבע', 'XP', 'לוח תוצאות', 'רצף יומי', 'רצף'])
+      expect(CODE, `"${forbidden}" אסור על המסך הזה`).not.toContain(forbidden);
+  });
+
+  it('⛔ אפס תחזית קצב בטיק הזה — הנוסחה לא הוגדרה (Global Constraint 8)', () => {
+    expect(CODE).not.toContain('בקצב הזה');
+    expect(CODE).not.toContain('forecastHe');
+  });
+
+  it('⛔ אין readiness/score claim (4.4.3)', () => {
+    for (const forbidden of ['מוכנות', 'ציון חזוי', 'צפוי לקבל'])
       expect(CODE, `"${forbidden}" is a claim nobody measured`).not.toContain(forbidden);
-    }
   });
 
-  it('carries ⛔ no ActionBar — D-028 forbids two bottom bars on one screen', () => {
-    expect(CODE).not.toContain('ActionBar');
+  it('קורא ל-GET /api/levels/summary דרך apiGet, ⛔ לא fetch גולמי', () => {
+    expect(CODE).toContain('apiGet');
+    expect(CODE).toContain('/api/levels/summary');
+    expect(CODE).not.toMatch(/\bfetch\(/);
   });
 
-  it('anchors its column to the top and never centres it (F-011 · F-016)', () => {
-    expect(CODE).not.toMatch(/flex-1[^"'`]*justify-center/);
+  it('מקבל fixtureLevels אופציונלי — כמו fixtureSummary ב-LevelMapScreen', () => {
+    expect(CODE).toContain('fixtureLevels');
   });
 
-  /**
-   * T-074. «התחלת מנה יומית» is the primary action of the product's primary
-   * screen, and it was the only primary action shipping at `text-base` while
-   * `WorldFeed` (`PRIMARY_ACTION_CLASS`), `ComposeDraft`, `app/error.tsx` and
-   * `app/not-found.tsx` all ship `text-lg`. One size per role — constitution § 4.
-   *
-   * ⚠️ Asserted on the class attribute of the action itself and ⛔ not on the
-   * file: `text-base` is legitimate elsewhere in this product (secondary links,
-   * option rows), so a file-wide `not.toContain('text-base')` would be a rule
-   * about the wrong thing.
-   */
-  it('sizes its primary action like every other primary action (T-074)', () => {
-    const action = CODE.match(/data-primary-action="true"[\s\S]{0,300}?className="([^"]*)"/)?.[1];
-    expect(action, 'the primary action className was not found').toBeDefined();
-    expect(action).toContain('text-lg');
-    expect(action).not.toContain('text-base');
-    expect(action).toContain('font-semibold');
-    // ⛔ The change is one class. The target and the shape stay where they were.
-    expect(action).toContain('min-h-touch');
-    expect(action).toContain('rounded-lg');
+  it('⛔ הקובץ עצמו אינו ניגש לדאטהבייס (⛔ אפס Supabase import)', () => {
+    expect(CODE).not.toMatch(/@\/lib\/supabase/);
   });
 });

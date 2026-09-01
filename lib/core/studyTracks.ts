@@ -22,12 +22,18 @@ export interface StudyTrackMeta {
  * מצייר שורת שבבים ב-RTL שמתחילה ב-`x = LW - 24` ומתקדמת שמאלה על פני המערך הזה
  * בסדר — כלומר **האיבר הראשון כאן הוא השבב הימני ביותר על המסך**.
  */
-export const STUDY_TRACKS: readonly StudyTrackMeta[] = Object.freeze([
-  { id: 'vocabulary', labelHe: 'אוצר מילים' },
-  { id: 'grammar', labelHe: 'דקדוק' },
-  { id: 'writing', labelHe: 'כתיבה' },
-  { id: 'reading', labelHe: 'הבנת הנקרא' },
-]);
+/**
+ * ⚠️ טיפוס tuple, ⛔ לא `StudyTrackMeta[]` גרידא: `noUncheckedIndexedAccess`
+ * (tsconfig.json) הופך אינדוקס למערך רגיל ל-`| undefined`, ו-`StudiesScreen`
+ * צריך `STUDY_TRACKS[0]` בלי בדיקת undefined כדי לקבוע את השבב הפעיל בפתיחה.
+ */
+export const STUDY_TRACKS: readonly [StudyTrackMeta, StudyTrackMeta, StudyTrackMeta, StudyTrackMeta] =
+  Object.freeze([
+    { id: 'vocabulary', labelHe: 'אוצר מילים' },
+    { id: 'grammar', labelHe: 'דקדוק' },
+    { id: 'writing', labelHe: 'כתיבה' },
+    { id: 'reading', labelHe: 'הבנת הנקרא' },
+  ]);
 
 export function trackLabelHe(id: StudyTrackId): string {
   const meta = STUDY_TRACKS.find((t) => t.id === id);
@@ -66,7 +72,9 @@ export function vocabularyMetric(levels: readonly LevelSummary[]): TrackMetricSt
  * שנכשלה. **כשתתווסף סכמה לאחד משלושת המסלולים האלה, הפונקציה הזאת צריכה
  * לזוז לקריאה אמיתית** — הקבוע הזה תקף אך ורק כל עוד `36 § 9` עצמו אומר שאין תוכן.
  */
-export function emptyTrackMetric(id: Exclude<StudyTrackId, 'vocabulary'>): TrackMetricState {
+export function emptyTrackMetric(
+  id: Exclude<StudyTrackId, 'vocabulary'>,
+): Extract<TrackMetricState, { kind: 'empty' }> {
   // ⚠️ D-110 latitude, logged in the tick report: the plan's own draft string used
   // an em dash ("— 0 מתוך 0"), but "—" is reserved for the 'unreachable' state
   // (D-046/D-082 — see UNREACHABLE_HE in StudiesScreen.tsx) so a real "empty" string
