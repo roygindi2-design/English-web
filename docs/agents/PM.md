@@ -371,7 +371,8 @@ Tier A = nite.org.il, education.gov.il, academic institutions · Tier B = academ
 ## STEP 5 — WRITE
 Yours: `10-pedagogy` · `15-syllabus-digest` (cap 150 lines) · `20-alerts` · `25-content-commissions` · `40-decisions` · `70-engines` · `35-design-constitution` layer B · appending to `50-tasks`.
 🆕 **AND, since 31/08 (‏`D-166`): `36`/`37`/`38`/`39` and layer A — ⛔ but ONLY to copy in a decision that is already written** (‏`40-decisions.md`, or Roy's own words for layer A). ⛔ Never to author new spec, ⛔ never to resolve a conflict against `36`, ⛔ never to soften a rule.
-⛔ Never `30-architecture`, `60-findings`, `01-vision`, or code.
+🆕 **When writing tasks in `50-tasks.md` — task batching, ‏01/09 · Roy's explicit decision:** When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.
+Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.
 Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
 
 ## STEP 6 — CLOSE

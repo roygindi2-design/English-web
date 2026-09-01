@@ -620,4 +620,36 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
       expect(qa, 'QA: מעבר ל-general ⛔ אינו חתימה').toMatch(/is ⛔ \*\*not\*\* a seal/);
     });
   });
+
+  /**
+   * 🔴 **01/09 · C-0379 · הכרעת רוי, אפשרות ⓐ — הסתירה בין STEP 2 ל-STEP 5.**
+   * ‏STEP 2 מחייב את PM לסגור כל ממצא-PM שחוסם שורה; STEP 5 אסר עליו לגעת ב-`60-findings.md`
+   * בכל צורה. ⇒ שני החוזים דרשו פעולות סותרות. רוי אישר את הרישיון הצר: תא סטטוס בלבד,
+   * לממצא שהכרעה כבר סגרה אותו — ⛔ לא כתיבת ממצא חדש ו⛔ לא עריכת נוסח.
+   * ⛔ **הנוסח נדרש להיות מדויק** — `claude/for-roy.md` ⓐ נתן אותו מילה במילה, ומדובר
+   * בהיתר שמעביר בעלות על קובץ שמוגן במפורש מלמעלה (`30-architecture` · `01-vision` · קוד).
+   */
+  it('PM: ⛔ 60-findings — היתר צר לתא סטטוס בלבד, ⛔ לא כתיבת ממצא (D-177, 01/09)', () => {
+    const pm = text('PM');
+    expect(pm, 'PM: הנוסח המדויק של STEP 5 אחרי הכרעת רוי ⓐ').toContain(
+      'Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.',
+    );
+    // ⛔ ⛔ הנוסח הישן (איסור גורף על 60-findings) ⛔ אינו חוזר — אחרת ⛔ ההרחבה בטלה.
+    expect(pm, 'PM: ⛔ האיסור הגורף הישן ⛔ לא חוזר').not.toMatch(
+      /⛔ Never `30-architecture`, `60-findings`, `01-vision`, or code\./,
+    );
+  });
+
+  /**
+   * ⛔ **01/09 · C-0379 — אצוות משימות (task batching), הוראת רוי.** ‏DEV מעבד שורת `T-xxx`
+   * אחת בטיק; שורה שנפרסת לתת-סעיפים (a, b, c) חוסכת סבבי טיקים ריקים בין שינויים קטנים
+   * ומקושרים באותו רכיב. ⛔ הכלל נבדק כאן כמו כל שאר טקסט הפרומפט — כלל שאיש לא אוכף
+   * הוא כלל שנשכח בעריכה הבאה.
+   */
+  it('PM: כלל אצוות המשימות ב-STEP 5 — לקבץ שינויים קטנים לשורת T אחת עם תת-סעיפים', () => {
+    const pm = text('PM');
+    expect(pm, 'PM: נוסח כלל האצוות').toContain(
+      'When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.',
+    );
+  });
 });
