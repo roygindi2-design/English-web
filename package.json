@@ -15,6 +15,7 @@
     "check:motion": "node scripts/check-motion.mjs",
     "check:rules": "node scripts/check-rules-citations.mjs",
     "diff:render": "node scripts/diff-render.mjs",
+    "gc:memory": "node scripts/gc-memory.mjs",
     "archive": "node scripts/archive-registers.mjs",
     "archive:stale": "node scripts/archive-stale.mjs",
     "archive:arch": "node scripts/archive-architecture.mjs",

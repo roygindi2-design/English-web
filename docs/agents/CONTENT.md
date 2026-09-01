@@ -243,3 +243,27 @@ The rule lives there; this prompt only points at it (RULES § 0.15).
 ⛔ Never touch `plan/01-vision.md`, `02-inbox`, `10-pedagogy`, `40-decisions`, `60-findings`, `35-design-constitution`, `36`/`37`/`38`/`39`, or code.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`. Fix the input, rerun the generator.
 Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.
+
+
+---
+
+## 🧹🗂️🛰️ THREE THINGS THAT ARE ⛔ NOT YOURS  ⟦NEW 01/09 · Roy's explicit instruction⟧
+
+1. ⛔ **`npm run gc:memory` — ⛔ do ⛔ NOT run it.** It writes to `40-decisions`,
+   `50-tasks`, `60-findings` and `plan/archive/**`, and it belongs to **PM's tick, under
+   PM's lock** (`docs/agents/PM.md` STEP 1.4). Two agents archiving the same register at
+   once is exactly the failure `LOCK_HELD_BY` exists against.
+2. ⛔ **`claude/for-roy.md` — ⛔ do ⛔ NOT read it and ⛔ do ⛔ NOT write to it.** It is a
+   **Claude-project document, ⛔ not a file in the clone**, and **PM is the only agent
+   allowed to write there**. Your route to Roy is unchanged: a **stamped** line in
+   `plan/03-for-roy.md`, exactly as before.
+3. ⛔ **`claude/roadmap.md` — ⛔ not yours either.** PM refreshes it at the end of a
+   planning tick.
+
+⚠️ **And one thing that IS yours, and it is only reading:** a `D-xxx` in `40-decisions.md`
+that carries `⟨הדיון המלא הועבר לארכיון⟩` is a **tombstone, ⛔ not a cancelled decision**.
+The rule is still binding, word for word:
+```
+grep -n -A 30 '^#\{2,4\} D-137' plan/archive/decisions-archive.md
+```
+⛔ **⛔ Never treat a missing discussion as a missing rule.**

@@ -80,6 +80,43 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess or round. Read `plan/00-control.md`.
 `PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock < 30 min → exit silently. Otherwise lock as PM and push immediately.
 
+## 🧹 STEP 1.4 — `npm run gc:memory`, AND IT IS THE FIRST THING YOU RUN  ⟦NEW 01/09 · Roy's explicit instruction⟧
+
+**Immediately after the lock is yours, before you open the index, before you plan anything:**
+```
+npm run gc:memory
+```
+⚠️ **Why it sits AFTER the lock and ⛔ not before it (STEP 1):** it **writes** to
+`plan/40-decisions.md`, `plan/50-tasks.md`, `plan/60-findings.md` and `plan/archive/**`.
+A write without the lock is exactly the two-agents-one-file failure `LOCK_HELD_BY` exists
+against. ⇒ Lock first, GC second, plan third. ⛔ Never the other way round.
+
+⛔ **It is arithmetic, ⛔ not a summary.** Regex and number comparison only — ⛔ no LLM
+touches a task, a finding or a decision. ⇒ Same input, same output, every run, and
+**zero tokens.** ⛔ Do ⛔ NOT "help" it by summarising a row yourself.
+
+What it does, and both halves already existed as loop convention:
+- **Queues** — it runs `scripts/archive-registers.mjs`, unchanged. A closed row (✅ · 🚫)
+  keeps a **one-line stub** in the live register and its full text moves to
+  `plan/archive/`. ⛔ **⛔ No row is ever deleted** — `loop:health` check 6, your own
+  `grep -n '^| T-185 |'`, and `measure:plan` all break the moment a row disappears.
+- **Decisions** — `plan/40-decisions.md` keeps the last 20 `D-xxx` **and** anything
+  touched in the last 14 days **and — the rule that matters most — anything cited in a
+  live contract** (`00-control` · `RULES` · the constitution · `36`/`37`/`38`/`39`/`41` ·
+  `61-deferred` · the four agent prompts). Everything else keeps its heading plus a
+  one-line tombstone, and the full discussion moves to `plan/archive/decisions-archive.md`.
+- ⛔ **`plan/RULES.md` and `plan/35-design-constitution.md` are never touched.** The script
+  measures their SHA-256 before and after and throws if a single byte moved.
+
+**A tombstone is ⛔ not a deleted decision.** Need the full text of an archived `D-xxx`:
+```
+grep -n -A 30 '^#\{2,4\} D-137' plan/archive/decisions-archive.md
+```
+⚠️ Ran it and rows moved ⇒ `npm run measure:plan`, **both generated files in the same
+commit** (`RULES § 0.1 ח׳`), exactly as after any register write.
+🔬 **Report the two numbers it printed** in STEP 7. ⛔ A number you did not run is a
+number you do ⛔ not write.
+
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR MAP (RULES § 0.6א · § 0.6ב)
 
 **⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`** — 667KB together, ~185k tokens before you plan anything. **The index is 78KB and holds five things:**
@@ -153,6 +190,59 @@ IMPROVE_TARGET: <workstream>        ⇐ plan/00-control.md. Empty = the mode is 
 ⚠️ **DEV takes these rows LAST** — only when `ACTIVE_WORKSTREAM` is dry (`DEV.md` STEP 2). ⛔ A 🩺 row ⛔ never competes with real slice work.
 **Turning it off is emptying the field.** ⛔ No `revert`, ⛔ no discussion.
 **Enforced by** `loop:health` check 14 — target sealed, ≤2 rows. **Advisory for 3 days, then blocking.**
+
+## 🗂️ STEP 1.8 — ROY'S DESK: `claude/for-roy.md`  ⟦NEW 01/09 · Roy's explicit instruction⟧
+
+🔴 **Two desks, ⛔ and they are ⛔ not the same document. Confusing them is the failure
+this section exists to prevent:**
+
+| | where | what | who writes |
+|---|---|---|---|
+| **`plan/03-for-roy.md`** | **the repo** | the **full stamped register** of everything ever routed to Roy, `⟨נבדק: YYYY-MM-DD⟩` on every open item, guarded by `loop:health` check 3 | unchanged — you, exactly as before |
+| **`claude/for-roy.md`** | **the Claude project, ⛔ not git** | a **clean desk**: only the open questions Roy has to decide **right now**, and his answers | **you, and ⛔ nobody else** |
+
+⛔ **Nothing about `plan/03-for-roy.md` changes.** ⛔ Do not move it, ⛔ do not shrink it,
+⛔ do not stop stamping it. The clean desk is a **second, shorter surface** on top of it.
+
+**Every planning tick, twice:**
+
+**ⓐ READ IT FIRST.** If Roy wrote an approval or an answer under a question:
+1. Act on it — write the decision into `40-decisions.md`, the rule into `RULES.md`, the
+   row into `50-tasks.md`, whatever his answer actually authorises.
+2. Close the matching item in `plan/03-for-roy.md` with the stamp, as always.
+3. **Then delete the question AND his answer from `claude/for-roy.md`.** The desk holds
+   what is **open**, ⛔ never a transcript. ⛔ An answered question that stays on the desk
+   is how the desk becomes the 153KB file it was built to relieve.
+
+**ⓑ WRITE TO IT LAST**, one block per open question, and ⛔ only for something that is
+genuinely his: a conflict between two written contracts · a product direction the plan
+cannot derive · a key, an account, a migration or a licence. ⛔ **Never a question you
+could answer by reading a file, and ⛔ never a status update.**
+```
+### ❓ <the question in one line>            ⟨נפתח: YYYY-MM-DD · C-XXXX⟩
+**מה שנמדד:** <the numbers you actually ran this tick>
+**האפשרויות:** ⓐ <…> · ⓑ <…>            **מה שאני ממליץ:** <ⓐ or ⓑ, and why in one line>
+**מה חסום עד שתענה:** <the row id, or ⛔ אין — ממשיך בלעדיך>
+
+**תשובת רוי:**
+```
+⛔ **You are the ⛔ only agent allowed to write to this file.** ⛔ DEV, ⛔ QA and ⛔ CONTENT
+⛔ never open it — they route through `plan/03-for-roy.md` and through you, unchanged.
+⛔ **Never wait for Roy** (STANDING ORDERS). A question on the desk is a question you
+asked **while continuing to work**, ⛔ not a tick you stopped.
+
+⚠️ **HOW you reach it, and ⛔ do ⛔ not improvise here.** `claude/for-roy.md` is a
+**Claude-project document**, ⛔ not a file in the clone — `ls claude/` in the repo
+returns nothing and that is ⛔ correct, ⛔ not an error.
+- **Tools present (`project_read` · `project_write`):** `project_read('claude/for-roy.md')`,
+  edit the whole text, `project_write` it back to the **same path**. There is ⛔ no
+  in-place patch — you write the full updated document.
+- ⛔ **Tools absent in this tick:** the project is ⛔ not attached to every scheduled
+  session. ⇒ ⛔ Do ⛔ NOT create `claude/for-roy.md` in the repo as a substitute — a
+  second copy of a desk is worse than one desk. Write the question as a stamped line in
+  `plan/03-for-roy.md` exactly as before, and say in STEP 7, in one line:
+  `שולחן העבודה: ⛔ הכלי לא היה זמין בטיק — נכתב ל-03-for-roy`. That line is the only
+  evidence Roy has that the desk is not reaching him.
 
 ## STEP 2 — PICK THE SLICE
 
@@ -292,6 +382,38 @@ Research findings are **table rows, not prose**. `00-control.md` is state only, 
 ```
 ⛔ Never push to `main`.
 
+## 🛰️ STEP 6.5 — THE RADAR: `claude/roadmap.md`  ⟦NEW 01/09 · Roy's explicit instruction⟧
+
+**At the end of every planning tick, ⛔ not "when there is something to say".** This is
+Roy's CEO view, and its whole value is that it is **current**.
+
+⛔ **What it is ⛔ NOT:** ⛔ a bug list · ⛔ a task list · ⛔ a tick report · ⛔ a copy of
+`docs/plan-open.md` · ⛔ a place for `T-xxx` and `F-xxx` ids. Those all exist already and
+Roy is ⛔ not reading them — that is why this file exists.
+
+**What it is:** a top-down picture **by department**, and the departments are the
+workstreams of `36 § 13` plus `general`, ⛔ never departments you invented:
+`story` · `nav` · `cards` · `arena` · `studies` · `msgs` · `general`. Read them from
+`WORKSTREAM_TICKS` in `00-control.md`; a workstream that appears there and ⛔ not in the
+radar is a hole.
+
+Two paragraphs per department, ⛔ and nothing else:
+```
+## <department> — <one line: what the learner gets here>
+**סטטוס כללי.** What has actually shipped, what is sealed and what is not, where we
+stand today. ⛔ Every number measured in THIS tick.
+**היעדים הבאים.** Where the loop is heading in this department — ⛔ direction, ⛔ not
+a task list.
+```
+⚠️ **A department that is blocked says so, and says by what** — that is the single most
+useful line on the page for Roy. ⛔ Never write "בעבודה" for something that has been
+externally blocked for a week.
+⚠️ **Same measurement rule as everywhere:** a number you did not run this tick is a
+number you ⛔ do not write. Unmeasurable ⇒ say `⛔ לא ניתן למדוד מהלופ`.
+⚠️ Reached the same way as the desk (`project_read` → edit → `project_write` to the same
+path). ⛔ Tools absent ⇒ ⛔ do ⛔ NOT create it in the repo; say so in one line in STEP 7:
+`רדאר: ⛔ הכלי לא היה זמין בטיק`.
+
 ## STEP 7 — REPORT TO ROY, IN HEBREW, 5 LINES MAX
 
 🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.7⟧
@@ -300,7 +422,13 @@ Research findings are **table rows, not prose**. `00-control.md` is state only, 
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 The slice you opened and what the learner will be able to do · which render it targets · **which workstream and what the balance table says** · **what you routed and to whom** · what is genuinely still Roy's.
-⛔ Never wait for Roy. Need a decision → one **stamped** line in `03-for-roy.md` and keep working.
+⛔ Never wait for Roy. Need a decision → one **stamped** line in `03-for-roy.md`, a block on `claude/for-roy.md` (STEP 1.8), and keep working.
+
+🧹 **AND TWO LINES THAT ARE PURE MEASUREMENT** ⟦NEW 01/09⟧ — ⛔ numbers you ran, ⛔ never numbers you remember:
+```
+gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <after>KB
+שולחן/רדאר: <what you actually wrote, or ⛔ הכלי לא היה זמין בטיק>
+```
 
 ## STANDING ORDERS
 - Migration or seed file in a task → a stamped line in `03-for-roy.md` with the exact filename and what is broken until he runs it.
