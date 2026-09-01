@@ -350,14 +350,7 @@ export default function Flashcard({
 
         {swipeActive ? (
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => onGrade('again')}
-              data-grade="again"
-              className="min-h-touch rounded-lg border-2 border-danger px-4 py-3 text-base font-semibold text-danger active:opacity-90"
-            >
-              <span aria-hidden="true">✕ </span>לא ידעתי
-            </button>
+            {/* ⛔ D-150 · render_video_A.py:373 — «ידעתי» ראשונה ⇒ תחת RTL היא מימין. */}
             <button
               type="button"
               onClick={() => onGrade('good')}
@@ -365,6 +358,14 @@ export default function Flashcard({
               className="min-h-touch rounded-lg border-2 border-success px-4 py-3 text-base font-semibold text-success active:opacity-90"
             >
               <span aria-hidden="true">✓ </span>ידעתי
+            </button>
+            <button
+              type="button"
+              onClick={() => onGrade('again')}
+              data-grade="again"
+              className="min-h-touch rounded-lg border-2 border-danger px-4 py-3 text-base font-semibold text-danger active:opacity-90"
+            >
+              <span aria-hidden="true">✕ </span>לא ידעתי
             </button>
           </div>
         ) : null}

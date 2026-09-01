@@ -290,6 +290,24 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
   });
 
   /**
+   * D-150 (סוגר את F-102) — `render_video_A.py:373`: `# RTL: "ידעתי" on the right`,
+   * ו-`:374` מציב את «ידעתי» ב-`bx = 30 + bw + 14` (הימני). תחת `dir="rtl"` פריט
+   * ה-grid הראשון יושב מימין ⇒ «ידעתי» חייבת להיות הראשונה.
+   * ⛔ שתי הטענות באותו `it` בכוונה: הן אותה טענה. כפתור שהתהפך בלי המחווה, או
+   * מחווה שהתהפכה בלי הכפתור, הם בדיוק אותו באג בכיוון ההפוך.
+   */
+  it('D-150 — «ידעתי» היא פריט ה-grid הראשון, והמחווה ימינה מסכימה איתה', () => {
+    const good = T085_CARD_SRC.indexOf('data-grade="good"');
+    const again = T085_CARD_SRC.indexOf('data-grade="again"');
+    expect(good).toBeGreaterThan(-1);
+    expect(again).toBeGreaterThan(-1);
+    expect(good, '«ידעתי» ⛔ אינה הכפתור הראשון ב-grid').toBeLessThan(again);
+
+    const pure = readFileSync('lib/core/swipeGrade.ts', 'utf8');
+    expect(pure, 'המחווה ימינה ⛔ אינה `good` יותר').toContain("dx > 0 ? 'good' : 'again'");
+  });
+
+  /**
    * F-106 — התוכנית הכתיבה כאן `expect(SRC).not.toContain('preventDefault')` וניבאה
    * שהיא «עוברת כבר עכשיו». ⛔ היא ⛔ אינה יכולה לעבור: `onSubmit` של טופס ההקלדה
    * קורא `e.preventDefault()` מאז T-085, וזו קריאה **נכונה ולא קשורה** — בלעדיה
