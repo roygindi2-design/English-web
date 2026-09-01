@@ -204,6 +204,7 @@ Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `supe
 ⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.6ג`).
 
 ## STEP 4 — SKILLS
+🔴 **HARD RULE, no discretion ⟦NEW 01/09 · Roy's explicit instruction · loop-overload emergency response⟧:** You MUST load and read all specified SKILL files *before* writing any code. Verifying compliance retroactively is strictly forbidden. ⛔ Writing the code first and then checking whether it happened to match the skill is not loading — it is a claim written after the fact, exactly the class of unmeasured claim `RULES § 0.18`/`loop:health` exist against.
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.7⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
 ⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`, and `RULES § 0.7` ⛔ did not carry it. That is why dozens of plans were "delivered" with unticked boxes.
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
@@ -323,6 +324,13 @@ item for a migration. What still goes to Roy: a **key, an account, a paid plan, 
 database URL into the repo** — `scripts/agent-prompts.test.ts` fails the build if one returns.
 
 ### 🗺️ THE ARCHITECTURE MAP — REGENERATE IT, EVERY TICK THAT TOUCHED `app/`, `components/` OR `lib/`  ⟦NEW 31/08 · `D-165` · `T-235`⟧
+🔴 **Precondition ⟦NEW 01/09 · Roy's explicit instruction · F-179, C-0381⟧:** `T-235` — building the
+`generate-map` script itself — is ⛔ still ⬜ open in some clones, which is exactly what produced
+F-179 on 01/09. Run `npm run generate-map` ONLY if the script exists in `package.json`. ⛔ A
+missing script is not a tick-blocking failure — it is a note in your report, not a `verify` red.
+```
+grep -q '"generate-map"' package.json && npm run generate-map || echo '⛔ generate-map not in package.json yet (T-235) — skipped, not failed'
+```
 ```
 npm run generate-map      ⇐ madge --extensions ts,tsx --json app components lib > docs/architecture-map.json
 ```

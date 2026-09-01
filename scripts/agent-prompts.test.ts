@@ -652,4 +652,30 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
       'When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.',
     );
   });
+
+  /**
+   * 🔴 **01/09 · חסם עומס (loop-overload emergency response), הוראת רוי.** DEV נתפס בטיקים
+   * קודמים כותב קוד לפני שטען סקיל שהתג `[SKILL: X]` חייב, ואז «מוודא ציות» בדיעבד —
+   * בדיוק ההצהרה-שלא-נבדקה ש-`RULES § 0.18` קיים נגדה. הכלל נבדק כאן, לא רק נכתב,
+   * כי טקסט פרומפט שאין לו בדיקה הוא כלל שהעריכה הבאה יכולה למחוק בלי שאיש ישים לב.
+   */
+  it('DEV: STEP 4 — טעינת סקילים היא לפני קוד, ⛔ ואימות למפרע אסור (01/09, חסם עומס)', () => {
+    const dev = text('DEV');
+    expect(dev, 'DEV: הנוסח המדויק שהוראת רוי נתנה').toContain(
+      'You MUST load and read all specified SKILL files *before* writing any code. Verifying compliance retroactively is strictly forbidden.',
+    );
+  });
+
+  /**
+   * 🔴 **01/09 · F-179 (C-0381) — DEV.md חייב תמיד `npm run generate-map`, אבל T-235
+   * (בניית הסקריפט עצמו) ⛔ עדיין ⬜ בהרבה שיבוטים** ⇒ הצעד נכשל בכל טיק כזה. הכלל כאן
+   * הופך אותו לתנאי, ⛔ ולא מוחלט, ומאמת שה«ONLY IF» לא נמחק בעריכה הבאה.
+   */
+  it('DEV: STEP 7 — generate-map רק אם הסקריפט קיים ב-package.json (01/09, F-179)', () => {
+    const dev = text('DEV');
+    expect(dev, 'DEV: התנאי המדויק').toContain(
+      'Run `npm run generate-map` ONLY if the script exists in `package.json`.',
+    );
+    expect(dev, 'DEV: הפקודה המותנית').toContain('grep -q \'"generate-map"\' package.json');
+  });
 });

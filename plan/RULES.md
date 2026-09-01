@@ -898,3 +898,25 @@ npm run generate-map     ⇐ madge --extensions ts,tsx --json app components lib
 🔬 **האכיפה, ⛔ ולא ההבטחה:** `lib/core/planTable.ts` (‏`WORKSTREAMS` · `CROSS_CUTTING`) ·
 `scripts/loop-health.mjs` (בדיקות 11 · 13 · 14) · `scripts/loop-health.test.ts` (4 טענות) ·
 `scripts/agent-prompts.test.ts` (4 טענות, מהן אחת שלילית).
+
+---
+
+### 0.27 · Playwright — נפילת «Executable doesn't exist» ⛔ אינה סיבה לדלג  ⟦01/09/2026 · הוראת רוי · חסם עומס C-0381/DEV⟧
+
+**המצב הקיים, נמדד בריפו החי ⛔ ולא הונח:** `scripts/verify-mobile.mjs` וגם
+`scripts/diff-render.mjs` **כבר** מנסים לאתר Chromium מותקן לבד לפני שהם נכשלים
+(‏`resolveChromiumPath` · `CHROME_PATH` · `PLAYWRIGHT_BROWSERS_PATH`) — זה הפתרון הקיים
+ל-F-007/TD-3 (05/08, ⛔ סגור), וההודעה `✗ no Chromium executable found... npx playwright
+install chromium` ב-`scripts/verify-mobile.mjs:612` היא **כבר** ההצעה של הסקריפט עצמו
+כשגם האיתור האוטומטי נכשל. ⛔ **הסעיף הזה ⛔ אינו מבטל את `resolveChromiumPath`** —
+הוא קובע מה קורה **אחרי** שגם הוא נכשל, ומחייב, ⛔ ולא רק מציע:
+
+> **Playwright Environment Fallback:** If you execute a Playwright script and it fails with
+> an "Executable doesn't exist" or "npx playwright install" error, do NOT skip the test. You
+> must explicitly run `npx playwright install chromium`, wait for the installation to
+> complete, and then re-run your script.
+
+⛔ **לדלג על הבדיקה ולדווח «ירוק» או «לא רץ» בלי ההתקנה הוא הצהרה לא נבדקת** — בדיוק
+המחלקה ש-`RULES § 0.18`/`loop:health` קיימים נגדה. ⚠️ **וזה ⛔ אינו פטור אוטומטי:** אם
+גם `npx playwright install chromium` נכשל (למשל רשת חסומה באותה סביבה) — זה ⛔ אינו
+«דלג בשקט», זו **הודעת השגיאה המדויקת ל-`60-findings.md`**, כדי שהבא בתור לא ינחש.
