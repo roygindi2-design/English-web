@@ -116,6 +116,18 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
     expect(branch.endsWith('}')).toBe(true);
   });
 
+  /**
+   * T-225 — הראוט ⛔ אינו יכול לדעת מאיזו חפיסה הגיע הדירוג אלא אם המסך אומר. בלי
+   * השדה הזה, `deck=level` מקבל 404 על כל מילה חדשה — כלומר על **רוב** החפיסה.
+   */
+  it('T-225 — גוף הבקשה ל-/api/practice נושא את שם החפיסה', () => {
+    const branch = braceRegion(CODE, UNKNOWN_GATE);
+    expect(branch).toContain('/api/practice');
+    expect(branch, 'שם החפיסה ⛔ אינו נשלח').toMatch(/deck,|deck:\s*deck/);
+    // ⛔ ⛔ לא מחרוזת קבועה: המסך משרת שתי חפיסות דרך אותו קריאה.
+    expect(branch).not.toMatch(/deck:\s*'(level|unknown)'/);
+  });
+
   it('asks the queue endpoint for the deck it was given', () => {
     expect(CODE).toMatch(/\/api\/study\/queue\?deck=/);
   });

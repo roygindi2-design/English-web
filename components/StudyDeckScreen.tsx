@@ -109,12 +109,16 @@ async function sendGrade(
   if (deck === 'unknown' || deck === 'level') {
     // D-033: two counters, ⛔ no scheduling fields. The route rejects a word with no
     // progress row with 404 rather than inventing one, so a failure here is real.
-    // ⚠️ **F-140 (C-0318):** for `level` that 404 is the COMMON case, ⛔ not the stray one —
-    // a word the learner never met has no row. The write path for it is ⛔ undefined by any
-    // signed decision, which is why the `סינון מילים` tile ships LOCKED this tick.
+    // ⚠️ **T-225 (D-142, closes F-140):** for `level` a missing row is the COMMON case —
+    // the route now opens one (⛔ zero SM-2), so the write path is defined and the
+    // `סינון מילים` tile is unlocked.
     const practice = await apiPost<GradeResponse>('/api/practice', {
       word_id: card.word_id,
       grade,
+      // T-225 — ⛔ המשתנה, ⛔ ולא מחרוזת: אותה קריאה משרתת `unknown` ו-`level`, ורק
+      // `level` זכאית לפתוח שורה. מחרוזת קבועה כאן הייתה נותנת ל-`unknown` את
+      // הזכות הזאת בשקט.
+      deck,
     });
     if (!practice.ok) throw new Error('practice rejected');
     return;
