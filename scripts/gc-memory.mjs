@@ -271,6 +271,163 @@ export function runDecisions({ dry = DRY, keepN = KEEP_N, days = KEEP_DAYS, toda
   };
 }
 
+/* ═══════════════ שלב ג׳ — יומן העברות המקל (`00-control.md § 0.1`) ═══════════════
+ *
+ * `T-249` — `plan/00-control.md § 0.1` חצה את תקרת ה-12KB (`RULES § 0.2 ב׳` ·
+ * `scripts/loop-health.mjs` בדיקה 9) כי `gc-memory.mjs` מעולם לא נגע בו. אותו
+ * דפוס בדיוק כמו שלב א׳: ⛔ אפס מחיקה — שורה שיוצאת מהקובץ החי נוחתת מילה
+ * במילה ב-`plan/archive/handoff-log.md`, שכבר קיים ובאותו פורמט טבלה.
+ */
+const CONTROL = 'plan/00-control.md';
+const CONTROL_HISTORY_ARCHIVE = 'plan/archive/handoff-log.md';
+
+/** ⛔ מועתק במכוון מ-`scripts/loop-health.mjs` בדיקה 9 — אותה תקרה בדיוק, ⛔ בלי תלות בין הסקריפטים. */
+export const CONTROL_CEILING = 12 * 1024;
+
+/**
+ * ⛔ **תקרה על שאיפה, ⛔ ולא יעד קבוע.** `T-249` ⓑ ביקש «5–10, נגזר ממדידה חיה,
+ * ⛔ לא מנוחש». המדידה החיה בקלון הזה, 01/09/2026: הקובץ כולו 11,595 בתים ·
+ * שתי שורות הטבלה 1,515 בתים (ממוצע 757.5 בתים/שורה) · כל השאר 10,080 בתים ·
+ * מרווח עד התקרה 12,288−10,080=2,208 בתים ⇒ ⌊2208/757.5⌋=**2** שורות בלבד
+ * נכנסות היום. ⇒ 5–10 ⛔ אינו בר-השגה בלי לצמצם קודם את מה שאינו §0.1 (מחוץ
+ * לתחום T-249 — נפתח כממצא נפרד). המספר שאסור לנחש הוא ⛔ המספר הבטוח, ולכן
+ * הקבוע הזה הוא רק תקרה עליונה; `safeHistoryKeepN` הוא מה שבאמת מכריע — הוא
+ * מודד מחדש בכל הרצה ו⛔ לעולם לא נותן לקובץ לחצות את `CONTROL_CEILING`.
+ */
+export const CONTROL_HISTORY_MAX_KEEP = 10;
+
+/**
+ * ⛔ **טהורה — בלי fs.** בהינתן כמה בתים כבר תפוסים מחוץ לטבלה (`otherBytes`)
+ * וגודל כל שורת מועמדת (מהחדשה לישנה), מחזירה כמה מהן יכולות להישאר בלי
+ * שהקובץ יחצה את `ceiling`. ⛔ אף פעם פחות מ-`min` ו⛔ אף פעם יותר מ-`maxKeep`.
+ */
+export function safeHistoryKeepN({ otherBytes, rowSizes, ceiling = CONTROL_CEILING, maxKeep = CONTROL_HISTORY_MAX_KEEP, min = 1 }) {
+  let budget = ceiling - otherBytes;
+  let n = 0;
+  for (const size of rowSizes) {
+    if (n >= maxKeep) break;
+    if (budget - size < 0 && n >= min) break;
+    budget -= size;
+    n += 1;
+  }
+  return Math.max(min, n);
+}
+
+const HISTORY_HEADING = /^### 0\.1\b/;
+
+/** גבולות סעיף 0.1: מהכותרת ועד הכותרת הבאה ברמה ⛔1-3, או סוף הקובץ. */
+export function controlHistorySection(lines) {
+  const start = lines.findIndex((l) => HISTORY_HEADING.test(l));
+  if (start === -1) return null;
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i += 1) {
+    if (/^#{1,3}\s/.test(lines[i])) { end = i; break; }
+  }
+  return { start, end };
+}
+
+const HISTORY_ROW = /^\| (C-\d{4}) \|/;
+
+/** כל שורת `| C-XXXX | ... |` בתוך גבולות הסעיף, בסדר הופעתן בקובץ. */
+export function controlHistoryRows(lines, section) {
+  const rows = [];
+  for (let i = section.start; i < section.end; i += 1) {
+    const m = HISTORY_ROW.exec(lines[i]);
+    if (m !== null) rows.push({ line: i, cycle: m[1], raw: lines[i] });
+  }
+  return rows;
+}
+
+/**
+ * ⛔ **הגנה נמדדת, ⛔ לא מובטחת** — אותה מוסכמה בדיוק כמו בדיקת ה-SHA-256 על
+ * `NEVER_TOUCH`. הסינון שמסיר שורות טבלה הוא שומר-סדר, ⇒ הקידומת (לפני
+ * `section.start`) חייבת להישאר זהה בתים-לבתים, והסיומת (אחרי `section.end`)
+ * חייבת להישאר זהה ולהופיע בדיוק באותו אורך בסוף המערך החדש.
+ */
+export function assertOnlyHistoryRowsChanged(beforeLines, afterLines, section) {
+  const prefixBefore = beforeLines.slice(0, section.start).join('\n');
+  const prefixAfter = afterLines.slice(0, section.start).join('\n');
+  const suffixLen = beforeLines.length - section.end;
+  const suffixBefore = beforeLines.slice(section.end).join('\n');
+  const suffixAfter = afterLines.slice(afterLines.length - suffixLen).join('\n');
+  if (prefixBefore !== prefixAfter || suffixBefore !== suffixAfter) {
+    throw new Error('gc: 🔴 pruneControlHistory נגע במשהו מחוץ ל-§0.1 — בוטל');
+  }
+}
+
+/**
+ * ⛔ **ההכרעה, כולה מספרים.** שורות מדורגות לפי מספר ה-Cycle (החדש ביותר
+ * ראשון) — ⛔ ולא לפי מיקום בקובץ, כדי לשרוד גם אם סדר ההוספה אי-פעם ישתנה.
+ * ⛔ **אידמפוטנטי** — פחות שורות מ-`keepN` ⇐ `changed: false`, שום דבר לא נכתב.
+ */
+export function pruneControlHistory(text, { maxKeep = CONTROL_HISTORY_MAX_KEEP, ceiling = CONTROL_CEILING } = {}) {
+  const lines = text.split('\n');
+  const section = controlHistorySection(lines);
+  if (section === null) return { changed: false, lines, archived: [], keepN: null };
+
+  const rows = controlHistoryRows(lines, section);
+  const rowBytes = (r) => Buffer.byteLength(r.raw, 'utf8') + 1;
+  const totalBytes = Buffer.byteLength(text, 'utf8');
+  const otherBytes = totalBytes - rows.reduce((sum, r) => sum + rowBytes(r), 0);
+
+  const byRecency = [...rows].sort((a, b) => Number(b.cycle.slice(2)) - Number(a.cycle.slice(2)));
+  const keepN = safeHistoryKeepN({ otherBytes, rowSizes: byRecency.map(rowBytes), ceiling, maxKeep });
+
+  if (rows.length <= keepN) return { changed: false, lines, archived: [], keepN };
+
+  const keepIds = new Set(byRecency.slice(0, keepN).map((r) => r.line));
+  const toArchive = rows.filter((r) => !keepIds.has(r.line));
+  const dropLines = new Set(toArchive.map((r) => r.line));
+  const after = lines.filter((_, i) => !dropLines.has(i));
+
+  assertOnlyHistoryRowsChanged(lines, after, section);
+
+  return { changed: true, lines: after, archived: toArchive.map((r) => r.raw), keepN };
+}
+
+const CONTROL_ARCHIVE_HEADER = [
+  '# ארכיון יומן העברות המקל',
+  '',
+  '> נשלף מ-plan/00-control.md כדי לשמור עליו קטן. קריאה בלבד, לתחקור בלבד.',
+  '',
+  '| Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |',
+  '|---|---|---|---|---|---|',
+  '',
+].join('\n');
+
+export function runControlHistory({ dry = DRY } = {}) {
+  const path = at(CONTROL);
+  if (!existsSync(path)) throw new Error(`gc: ⛔ אין ${path}`);
+  const before = readFileSync(path, 'utf8');
+  const result = pruneControlHistory(before);
+
+  if (!result.changed) {
+    return {
+      archived: 0,
+      keepN: result.keepN,
+      beforeBytes: Buffer.byteLength(before, 'utf8'),
+      afterBytes: Buffer.byteLength(before, 'utf8'),
+    };
+  }
+
+  const after = result.lines.join('\n');
+  if (!dry) {
+    const head = existsSync(at(CONTROL_HISTORY_ARCHIVE))
+      ? readFileSync(at(CONTROL_HISTORY_ARCHIVE), 'utf8')
+      : CONTROL_ARCHIVE_HEADER;
+    const stampedHead = head.endsWith('\n') ? head : `${head}\n`;
+    writeFileSync(at(CONTROL_HISTORY_ARCHIVE), `${stampedHead}${result.archived.join('\n')}\n`, 'utf8');
+    writeFileSync(path, after, 'utf8');
+  }
+
+  return {
+    archived: result.archived.length,
+    keepN: result.keepN,
+    beforeBytes: Buffer.byteLength(before, 'utf8'),
+    afterBytes: Buffer.byteLength(after, 'utf8'),
+  };
+}
+
 function main() {
   const guard = Object.fromEntries(NEVER_TOUCH.map((p) => [p, sha(p)]));
 
@@ -299,6 +456,16 @@ function main() {
   console.log(`  מתוכם ${r.liveKept} נשמרו כי הם **מצוטטים בחוזה חי** — ⛔ לא בגלל גיל`);
   console.log(`  ${DECISIONS}: ${kb(r.beforeBytes)} ⇐ ${kb(r.afterBytes)}`);
   console.log(`  כלל השמירה: ${KEEP_N} ההחלטות האחרונות · או ${KEEP_DAYS} יום · היום ${TODAY}`);
+
+  /* ── שלב ג׳ — יומן העברות המקל (`00-control.md § 0.1`). ── */
+  console.log('\nשלב ג׳ — יומן העברות מקל (`00-control.md § 0.1`)');
+  const c = runControlHistory();
+  console.log(`  ${c.archived} שורות הועברו לארכיון · נשמרות ${c.keepN ?? '—'} האחרונות בקובץ החי`);
+  console.log(`  ${CONTROL}: ${kb(c.beforeBytes)} ⇐ ${kb(c.afterBytes)} (תקרה ${kb(CONTROL_CEILING)})`);
+  if (c.afterBytes > CONTROL_CEILING) {
+    console.error('  🔴 עדיין מעל התקרה גם אחרי הגיזום — החלק שאינו §0.1 גדול מדי. דווח, ⛔ אל תמציא ניקוי כאן.');
+    process.exitCode = 1;
+  }
 
   /* ── חוק הברזל — נמדד, ⛔ לא מובטח. ── */
   console.log('\nחוק הברזל');

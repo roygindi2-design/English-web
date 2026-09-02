@@ -79,3 +79,55 @@ export declare function runDecisions(opts?: {
   beforeBytes: number;
   afterBytes: number;
 };
+
+/* ─────────────── שלב ג׳ — יומן העברות המקל (`00-control.md § 0.1`), T-249 ─────────────── */
+
+/** ⛔ מועתק במכוון מ-`scripts/loop-health.mjs` בדיקה 9 — אותה תקרה בדיוק. */
+export declare const CONTROL_CEILING: number;
+
+/** ⛔ תקרה על שאיפה, ⛔ ולא יעד קבוע — ר׳ ההערה במימוש למדידה החיה שמאחורי המספר. */
+export declare const CONTROL_HISTORY_MAX_KEEP: number;
+
+/** גבולות סעיף 0.1: מהכותרת ועד הכותרת הבאה ברמה 1-3, או סוף הקובץ. `null` ⇐ אין כותרת. */
+export declare function controlHistorySection(lines: string[]): { start: number; end: number } | null;
+
+/** כל שורת `| C-XXXX | ... |` בתוך גבולות הסעיף, בסדר הופעתן בקובץ. */
+export declare function controlHistoryRows(
+  lines: string[],
+  section: { start: number; end: number },
+): { line: number; cycle: string; raw: string }[];
+
+/** ⛔ טהורה — כמה מהשורות (מהחדשה לישנה) יכולות להישאר בלי לחצות את `ceiling`. */
+export declare function safeHistoryKeepN(input: {
+  otherBytes: number;
+  rowSizes: number[];
+  ceiling?: number;
+  maxKeep?: number;
+  min?: number;
+}): number;
+
+/** ⛔ זורקת אם משהו מחוץ לגבולות הסעיף השתנה בין `beforeLines` ל-`afterLines`. */
+export declare function assertOnlyHistoryRowsChanged(
+  beforeLines: string[],
+  afterLines: string[],
+  section: { start: number; end: number },
+): void;
+
+/** ⛔ ההכרעה הטהורה — מגזום ⛔ אפס מחיקה: מה שיוצא מהקובץ החי חוזר ב-`archived`. */
+export declare function pruneControlHistory(
+  text: string,
+  opts?: { maxKeep?: number; ceiling?: number },
+): {
+  changed: boolean;
+  lines: string[];
+  archived: string[];
+  keepN: number | null;
+};
+
+/** שלב ג׳ בלבד — יומן העברות המקל. מחזיר את המדידה, ⛔ ואינו מדפיס. */
+export declare function runControlHistory(opts?: { dry?: boolean }): {
+  archived: number;
+  keepN: number | null;
+  beforeBytes: number;
+  afterBytes: number;
+};

@@ -17,6 +17,13 @@ import {
   sectionsOf,
   shouldTombstone,
   tombstoneFor,
+  controlHistorySection,
+  controlHistoryRows,
+  safeHistoryKeepN,
+  CONTROL_CEILING,
+  CONTROL_HISTORY_MAX_KEEP,
+  assertOnlyHistoryRowsChanged,
+  pruneControlHistory,
 } from './gc-memory.mjs';
 
 const base = {
@@ -168,5 +175,216 @@ describe('tombstoneFor', () => {
     expect(stone).toHaveLength(3);
     expect(stone[1]).toContain('lib/core/x.ts');
     expect(tombstoneFor({ id: 'D-1', title: 'x', cites: [], today: '2026-09-01' })).toHaveLength(2);
+  });
+});
+
+/* T-249 — שלב ג׳: יומן העברות המקל ב-`00-control.md § 0.1`. */
+describe('controlHistorySection', () => {
+  it('⛔ אין כותרת 0.1 בקובץ ⇐ null, ⛔ ולא שגיאה', () => {
+    expect(controlHistorySection(['אין כאן שום דבר', 'שורה שנייה'])).toBeNull();
+  });
+
+  it('בלי כותרת הבאה — הסעיף נמשך עד סוף הקובץ', () => {
+    const lines = ['לפני', '### 0.1 יומן העברות מקל', 'שורה בתוך הסעיף'];
+    const section = controlHistorySection(lines);
+    expect(section).toEqual({ start: 1, end: 3 });
+  });
+
+  it('עם כותרת הבאה ברמה 1-3 — הסעיף נעצר שם, ⛔ ולא בולע אותה', () => {
+    const lines = ['### 0.1 יומן העברות מקל', 'שורה', '### 0.2 סעיף אחר', 'לא שייך'];
+    const section = controlHistorySection(lines);
+    expect(section).toEqual({ start: 0, end: 2 });
+  });
+});
+
+describe('controlHistoryRows', () => {
+  it('אוסף רק שורות `| C-XXXX |`, בסדר הופעתן, בתוך גבולות הסעיף', () => {
+    const lines = [
+      '### 0.1 יומן העברות מקל',
+      '| Cycle | מסוכן | לסוכן |',
+      '|---|---|---|',
+      '| C-0003 | DEV | CRITIC |',
+      '| C-0002 | DEV | CRITIC |',
+      '| C-0001 | DEV | CRITIC |',
+    ];
+    const section = controlHistorySection(lines)!;
+    const rows = controlHistoryRows(lines, section);
+    expect(rows.map((r) => r.cycle)).toEqual(['C-0003', 'C-0002', 'C-0001']);
+    expect(rows[0]).toMatchObject({ line: 3, raw: '| C-0003 | DEV | CRITIC |' });
+  });
+});
+
+describe('safeHistoryKeepN', () => {
+  it('שומר את כל השורות כשהתקציב מספיק', () => {
+    const n = safeHistoryKeepN({ otherBytes: 1000, rowSizes: [100, 100, 100], ceiling: 2000, maxKeep: 10 });
+    expect(n).toBe(3);
+  });
+
+  it('⛔ אף פעם פחות מ-1, גם כשהתקציב שלילי כבר מהשורה הראשונה', () => {
+    const n = safeHistoryKeepN({ otherBytes: 5000, rowSizes: [800, 800, 800], ceiling: 4000, maxKeep: 10 });
+    expect(n).toBe(1);
+  });
+
+  it('⛔ אף פעם יותר מ-maxKeep, גם כשיש מרווח שנשאר', () => {
+    const n = safeHistoryKeepN({ otherBytes: 0, rowSizes: Array(20).fill(10), ceiling: 100_000, maxKeep: 4 });
+    expect(n).toBe(4);
+  });
+
+  it('אין שורות מועמדות כלל ⇐ עדיין מחזירה min, ⛔ ולא 0', () => {
+    const n = safeHistoryKeepN({ otherBytes: 0, rowSizes: [], ceiling: 100_000, maxKeep: 10 });
+    expect(n).toBe(1);
+  });
+
+  it('נמדד — `CONTROL_CEILING` זהה לתקרה ב-`loop-health.mjs` בדיקה 9 (12 * 1024)', () => {
+    expect(CONTROL_CEILING).toBe(12 * 1024);
+  });
+
+  it('ⓑ — `CONTROL_HISTORY_MAX_KEEP` הוא תקרה בטווח 5–10 שביקש T-249, ⛔ ולא יעד קבוע', () => {
+    expect(CONTROL_HISTORY_MAX_KEEP).toBeGreaterThanOrEqual(5);
+    expect(CONTROL_HISTORY_MAX_KEEP).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('assertOnlyHistoryRowsChanged — ⓒ: ⛔ שום דבר מחוץ ל-§0.1 לא זז', () => {
+  it('לא זורקת כשרק שורות בתוך הסעיף הוסרו', () => {
+    const before = ['מחוץ א', '### 0.1', 'r1', 'r2', 'מחוץ ב'];
+    const section = { start: 1, end: 4 };
+    const after = ['מחוץ א', '### 0.1', 'r1', 'מחוץ ב'];
+    expect(() => assertOnlyHistoryRowsChanged(before, after, section)).not.toThrow();
+  });
+
+  it('🔴 זורקת כשמשהו מחוץ לסעיף השתנה — הגנה על בלוק המשתנים', () => {
+    const before = ['ACTIVE_TASK_ID: T-249', '### 0.1', 'r1', 'r2', 'סוף'];
+    const section = { start: 1, end: 4 };
+    const corrupted = ['ACTIVE_TASK_ID: T-999', '### 0.1', 'r1', 'r2', 'סוף'];
+    expect(() => assertOnlyHistoryRowsChanged(before, corrupted, section)).toThrow(/מחוץ ל-§0\.1/);
+  });
+
+  it('🔴 זורקת גם כשהסיומת (אחרי הטבלה) השתנתה', () => {
+    const before = ['ראש', '### 0.1', 'r1', 'r2', 'סוף מקורי'];
+    const section = { start: 1, end: 4 };
+    const corrupted = ['ראש', '### 0.1', 'r1', 'r2', 'סוף שונה'];
+    expect(() => assertOnlyHistoryRowsChanged(before, corrupted, section)).toThrow();
+  });
+});
+
+/**
+ * `pruneControlHistory` — האינטגרציה הטהורה. ⛔ **הבדיקות כאן הן ⓒ בשורת
+ * T-249**: שום הרצה ⛔ לא מסירה ו⛔ לא משנה אף אחד ממשתני המצב הקריטיים
+ * (`ACTIVE_TASK_ID` · `NEXT_AGENT` · `ACTIVE_WORKSTREAM` · `STATE` ·
+ * `WORKING_BRANCH` · `MERGE_TARGET`), כולל fixture גבולי שבו שורה נשמרת
+ * נושאת בפרוזה שלה טקסט חופשי שנראה כמו שם משתנה מצב.
+ */
+const CRITICAL_BLOCK = [
+  '<!--',
+  'NEXT_AGENT: CRITIC                 # לא נוגעים כאן',
+  'STATE: EXECUTING',
+  'ACTIVE_MILESTONE: M0',
+  'ACTIVE_TASK_ID: T-249             # note',
+  'WORKING_BRANCH: work/current',
+  'MERGE_TARGET: dev',
+  'ACTIVE_WORKSTREAM: studies',
+  '-->',
+].join('\n');
+
+const FOOTER = ['---', '', '**החוקים המלאים:** `plan/RULES.md`'].join('\n');
+
+function row(cycle: string, body = 'טיק'): string {
+  return `| ${cycle} | DEV | CRITIC | 2026-09-01T00:00:00Z | ${body} | תוצר |`;
+}
+
+function controlText(rows: string[]): string {
+  return [
+    CRITICAL_BLOCK,
+    '',
+    '### 0.1 יומן העברות מקל',
+    '',
+    '| Cycle | מסוכן | לסוכן | בשעה | סיבה | תוצר |',
+    '|---|---|---|---|---|---|',
+    ...rows,
+    FOOTER,
+  ].join('\n');
+}
+
+describe('pruneControlHistory', () => {
+  it('⛔ אינה נוגעת כשיש פחות שורות מהתקרה הבטוחה', () => {
+    const text = controlText([row('C-0002'), row('C-0001')]);
+    const result = pruneControlHistory(text);
+    expect(result.changed).toBe(false);
+    expect(result.archived).toEqual([]);
+  });
+
+  it('מגזמת לפי מספר Cycle יורד, ⛔ ולא לפי מיקום בקובץ', () => {
+    /* C-0001 מופיעה מעל C-0002 בכוונה — הדירוג חייב לתקן את הסדר. */
+    const rows = [row('C-0001', 'ישנה'), row('C-0002', 'חדשה'), row('C-0000', 'הכי ישנה')];
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { maxKeep: 1, ceiling: 100_000 });
+    expect(result.changed).toBe(true);
+    expect(result.keepN).toBe(1);
+    expect(result.lines.join('\n')).toContain('C-0002');
+    expect(result.lines.join('\n')).not.toContain('| C-0001 |');
+    expect(result.archived).toHaveLength(2);
+    expect(result.archived.some((r) => r.includes('C-0001'))).toBe(true);
+    expect(result.archived.some((r) => r.includes('C-0000'))).toBe(true);
+  });
+
+  it('⛔ אפס מחיקה — כל שורה שהוסרה מהקובץ החי חוזרת מילה במילה ב-archived', () => {
+    const rows = [row('C-0003', 'גוף מדויק ⛔ ⚠️ 🔴'), row('C-0002'), row('C-0001')];
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { maxKeep: 1, ceiling: 100_000 });
+    expect(result.archived).toContain(rows[1]);
+    expect(result.archived).toContain(rows[2]);
+  });
+
+  it('🔴 אידמפוטנטי — הרצה שנייה על התוצאה של הראשונה היא no-op', () => {
+    const rows = Array.from({ length: 6 }, (_, i) => row(`C-${String(6 - i).padStart(4, '0')}`));
+    const text = controlText(rows);
+    const first = pruneControlHistory(text, { maxKeep: 3, ceiling: 100_000 });
+    expect(first.changed).toBe(true);
+    const second = pruneControlHistory(first.lines.join('\n'), { maxKeep: 3, ceiling: 100_000 });
+    expect(second.changed).toBe(false);
+  });
+
+  it('⛔ בלוק המשתנים הקריטיים (`<!-- ... -->`) נשאר זהה בתים-לבתים אחרי הגיזום', () => {
+    const rows = Array.from({ length: 8 }, (_, i) => row(`C-${String(8 - i).padStart(4, '0')}`));
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { maxKeep: 2, ceiling: 100_000 });
+    expect(result.changed).toBe(true);
+    const afterCriticalBlock = result.lines.slice(0, CRITICAL_BLOCK.split('\n').length).join('\n');
+    expect(afterCriticalBlock).toBe(CRITICAL_BLOCK);
+  });
+
+  it('🎯 גבולי — שורה נשמרת שנושאת בפרוזה שלה שם משתנה מצב אמיתי ⛔ אינה מבלבלת את ההכרעה', () => {
+    /* השורה שנשמרת מזכירה בפרוזה שלה ACTIVE_TASK_ID ו-NEXT_AGENT — בדיוק כמו
+     * שדיווח DEV אמיתי מתאר מה הוא כתב ל-00-control.md. */
+    const suspiciousRow = row('C-0003', 'עדכן ACTIVE_TASK_ID ל-T-250 ו-NEXT_AGENT=CRITIC בקומיט');
+    const rows = [suspiciousRow, row('C-0002'), row('C-0001')];
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { maxKeep: 2, ceiling: 100_000 });
+
+    expect(result.changed).toBe(true);
+    /* השורה החשודה נשמרה מילה במילה — הפרוזה שלה ⛔ לא נגזרה ו⛔ לא נערכה. */
+    expect(result.lines).toContain(suspiciousRow);
+    /* ובלוק המשתנים האמיתי, מעל הסעיף, ⛔ לא זז ולא השתנה בגלל הטקסט הדומה. */
+    const afterCriticalBlock = result.lines.slice(0, CRITICAL_BLOCK.split('\n').length).join('\n');
+    expect(afterCriticalBlock).toBe(CRITICAL_BLOCK);
+    expect(afterCriticalBlock).toContain('ACTIVE_TASK_ID: T-249');
+    expect(afterCriticalBlock).toContain('NEXT_AGENT: CRITIC');
+  });
+
+  it('⛔ ה-footer שאחרי הטבלה נשאר זהה בתים-לבתים', () => {
+    const rows = Array.from({ length: 6 }, (_, i) => row(`C-${String(6 - i).padStart(4, '0')}`));
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { maxKeep: 2, ceiling: 100_000 });
+    expect(result.lines.join('\n')).toContain(FOOTER);
+  });
+
+  it('⛔ הקובץ החי לעולם לא נכתב מעל התקרה, גם עם הרבה שורות מועמדות גדולות', () => {
+    const rows = Array.from({ length: 15 }, (_, i) => row(`C-${String(15 - i).padStart(4, '0')}`, 'גוף'.repeat(50)));
+    const text = controlText(rows);
+    const result = pruneControlHistory(text, { ceiling: CONTROL_CEILING });
+    expect(result.changed).toBe(true);
+    expect(result.keepN).toBeLessThanOrEqual(CONTROL_HISTORY_MAX_KEEP);
+    expect(Buffer.byteLength(result.lines.join('\n'), 'utf8')).toBeLessThanOrEqual(CONTROL_CEILING);
   });
 });
