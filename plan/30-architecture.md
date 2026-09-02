@@ -1519,3 +1519,26 @@ map.mjs` עוטף את ה-CLI (`madge --extensions ts,tsx --json app components 
 verify` מלא (7 פקודות, אחרי `npm run generate-map`) ⇒ **exit 0**, כולל `check:mobile`
 (1196 בדיקות). ⛔ טיק זה לא נגע ב-`app/` · `components/` · `lib/` (רק `scripts/` ·
 `package.json` · הפלט עצמו) — אין תוכן UI לבדוק מול רנדר.
+
+### `lib/core/lesson.ts` — מצב הבחירה של מסך השיעור, כפונקציה טהורה (T-143)
+קובץ טהור חדש: `LessonSelection` היא מפה `itemId → choiceId` (⛔ לא מזהה יחיד — § 4.2ט
+נותנת 1–3 פריטים במסך אחד). `chooseInLesson` מחזיר אובייקט חדש (הקורא הוא `useState`
+ב-`LessonScreen`, מוטציה לא הייתה מרנדרת מחדש). `whyForChoice` מחזירה `null` על «טרם
+נבחר» ⛔ ולא מחרוזת ריקה — «טרם בחר» ו«בחר ואין הסבר» אינם אותו מצב. ⛔ **אין `isCorrect`**
+— T-143ⓒ אוסר תווית ערך; המנגנון היחיד הוא «מה שנבחר מסביר את עצמו» (D-050).
+
+`LessonScreen.tsx` עבר מרכיב סטטי ל-`'use client'` (D-078, שורת מפרט חתומה — ⛔ לא
+החלטת מסך): כל אפשרות היא `<button data-lesson-choice min-h-touch>` ⛔ ולא `<li>`, וה-
+`why` נחשף רק לאחר בחירה (`data-lesson-why`). ⛔ `phase` נשאר פרופ — F-099 (המצאת «done»
+עצמאית) עדיין פתוח, ולא נגענו בו. שער חדש ב-`scripts/verify-mobile.mjs` (`/dev/lesson`):
+≥3 יעדי מגע, כולם ≥44px, ⛔ אפס הסבר לפני בחירה — נמדד בדפדפן חי (Playwright, `next
+start`) שההסבר אכן נחשף אחרי הקשה, ⛔ לא רק בסריקת מקור.
+
+**נמדד, ⛔ לא הוצהר (C-0392):** `npx vitest run lib/core/lesson.test.ts
+components/LessonScreen.test.ts` ⇒ 23/23. `npm run verify` מלא (7 פקודות) ⇒ **exit 0**,
+`check:mobile` 1205/1205 (9 בדיקות חדשות, 3 × 3 רוחבים). `npm run generate-map` ⇒ 374
+מודולים. הליכה ידנית ב-Playwright מול `next start` (375×780): לחיצה על אפשרות ראשונה
+בפריט הראשון חושפת את ה-`why` שלה בלבד — פריט שני נשאר ללא הסבר. ⚠️ **תחת `next dev`**
+(⛔ לא `next start`) ה-hydration נכשל בשקט (403 על `/_next/static`, WS handshake נכשל) —
+זו בדיוק F-132 (Next 16 חוסם גישה חוצת-מקור למשאבי פיתוח מ-`127.0.0.1`), ⛔ ולא רגרסיה
+של המשימה הזאת; ההליכה החוזרת נעשתה מול `next start` ועברה.

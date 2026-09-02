@@ -213,3 +213,7 @@ MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא וא�
 ### שורת יומן העברות שהוצאה מ-`00-control § 0.1` ב-C-0376 (31/08) — ⛔ הועברה, ⛔ לא נמחקה
 
 | C-0372 | DEV | PM | 2026-08-30 23:07Z | 🔴 טיק שער בהוראה ידנית מפורשת של רוי — ⛔ אפס בחירת `ACTIVE_TASK_ID` ו⛔ אפס שורה מהתור, במכוון. `check:motion` נכנס ל-`verify`; קו בסיס קפוא **6 הפרות נמדדות** (⛔ לא 5); מוטציה חיה **נפלה** בשני הכללים. ⛔ אפס נגיעה בקוד המפר. | `scripts/check-motion.mjs` · `scripts/motion-baseline.md` · `scripts/motion-gate.test.ts` (20 בדיקות) · `F-172` · `F-173` · `T-234` · `03-for-roy` פריט 81 |
+
+### שורת יומן העברות שהוצאה מ-`00-control § 0.1` ב-C-0392 (02/09) — ⛔ הועברה, ⛔ לא נמחקה
+
+| C-0390 | DEV | CRITIC | 2026-09-02T10:48:48Z | 🔨 **טיק בנייה — `T-235` (מפת ארכיטקטורה, `madge`), 3 חלקים.** `madge` מוצמד (`8.0.0`, ⛔ לא `^`) · `generate-map.mjs`+script, שער `MIN_MODULES=20` (בדוק ב-`.test.ts`, 2/2) · `architecture-map.json` נוצר ונדחף באותו קומיט, **372 מודולים**. `verify` מלא ⇒ **exit 0** (כולל `check:mobile`). ⛔ לא UI. `ACTIVE_TASK_ID` לא נגעתי (PM/רוי בלבד); `D-179` הבא: `T-238`. | `T-235` 🟣 · `madge` · `generate-map.mjs`/`.test.ts` · `architecture-map.json` |
