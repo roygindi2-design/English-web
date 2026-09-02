@@ -28,6 +28,7 @@
     "measure:plan": "node scripts/measure-plan-tables.mjs",
     "build:ingest": "node scripts/build-ingest-sql.mjs",
     "build:levels": "node scripts/build-word-levels-sql.mjs",
+    "build:preview": "node scripts/build-preview-cards.mjs",
     "build:stories": "node scripts/build-stories-sql.mjs",
     "build:questions": "node scripts/build-story-questions-sql.mjs",
     "build:surfaces": "node scripts/build-surfaces.mjs",
