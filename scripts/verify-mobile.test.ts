@@ -814,9 +814,16 @@ describe('the lesson anatomy is measured at all three widths (T-089)', () => {
    * ⛔ אין להן רשומת EXPECTED_CONSOLE, וזה השקט שמוכיח שהן מקבלות את הפריטים
    * כ-prop ו⛔ אינן מבקשות מהשרת דבר. רשומה שתופיע כאן מאוחר יותר פירושה
    * שהפיקסטורה התחילה לרשת — כלומר שהמדידה חזרה בשקט למסך הכשל.
+   *
+   * ⚠️ עודכן ב-T-143: הבדיקה חייבת להיעצר ב-`}` הסוגר של האובייקט עצמו,
+   * ⛔ ולא לקרוא עד סוף הקובץ — שער `route === '/dev/lesson'` שהמשימה הזאת
+   * הוסיפה (ל-`check:mobile`, אחרי בלוק `/dev/deck/done`) מזכיר את המחרוזת
+   * `/dev/lesson` לגיטימית וזה **אינו** רשומת EXPECTED_CONSOLE.
    */
   it('⛔ grants them no console allowance — they request nothing', () => {
-    const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
+    const start = source.indexOf('const EXPECTED_CONSOLE');
+    const end = source.indexOf('\n};', start);
+    const expected = source.slice(start, end);
     expect(expected).not.toContain('/dev/lesson');
   });
 });

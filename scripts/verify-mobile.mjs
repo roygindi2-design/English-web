@@ -1632,6 +1632,38 @@ try {
         }
       }
 
+      // T-143 · § 4.2יד — «⛔ אין פריט תרגול בלי יעד מגע». שלוש טענות, וכולן
+      // על פיקסלים ⛔ ולא על מרקאפ: האפשרויות קיימות, האגודל מגיע לכל אחת,
+      // ו⛔ אין הסבר על המסך לפני שהלומד בחר (הסבר שמוצג תמיד אינו הסבר).
+      if (route === '/dev/lesson') {
+        const lesson = await page.evaluate(() => {
+          const choices = [...document.querySelectorAll('main [data-lesson-choice]')];
+          return {
+            count: choices.length,
+            small: choices.filter((el) => {
+              const r = el.getBoundingClientRect();
+              return r.width < 44 || r.height < 44;
+            }).length,
+            whys: document.querySelectorAll('main [data-lesson-why]').length,
+          };
+        });
+        check(
+          lesson.count >= 3,
+          `${at} the lesson offers at least 3 tappable choices`,
+          `found ${lesson.count} [data-lesson-choice]`,
+        );
+        check(
+          lesson.small === 0,
+          `${at} every lesson choice clears ${MIN_TAP}px`,
+          `${lesson.small} of ${lesson.count} are below the floor`,
+        );
+        check(
+          lesson.whys === 0,
+          `${at} no explanation is on screen before a choice is made`,
+          `found ${lesson.whys} [data-lesson-why]`,
+        );
+      }
+
       // T-054 — the loading state. «שלד בצורת הכרטיס ולא מסך לבן» is a claim about pixels:
       // three boxes that paint, and ⛔ no element that spins.
       if (route === '/dev/deck/skeleton') {

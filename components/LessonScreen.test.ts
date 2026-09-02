@@ -77,13 +77,23 @@ describe('<LessonScreen> — ארבעת הבלוקים של § 4.2ט (T-089)', (
   /**
    * ⓓ הוא בלוק ולא מסך שני, ו-`phase` הוא פרופ ולא מצב: המעבר בין השניים הוא
    * החלטת מסך של ה-PM ש-§ 4.2ט שותקת בה (F-099). ⛔ אין להמציא אותו כאן.
+   *
+   * ⚠️ עודכן ב-T-143 (§ 4.2יד, D-078): הרכיב **כן** מחזיק `useState` כעת —
+   * `selection`, ההכרעות עליו חיות ב-`lib/core/lesson.ts` (ⓘ למטה). מה שהבדיקה
+   * הזו עדיין אוסרת הוא **המצאת ⓓ עצמה** — קידום `phase` מ-ⓒ ל-'done' בלי
+   * מקור במפרט (F-099 נשאר פתוח).
    */
-  it('מפריד את שני המצבים על הפרופ phase ⛔ ואינו מחזיק מצב משלו', () => {
+  it('מפריד את שני המצבים על הפרופ phase — ⛔ ואינו מקדם phase בעצמו', () => {
     expect(CODE).toMatch(/phase === 'done'/);
     expect(CODE).toMatch(/phase === 'items'/);
-    expect(CODE).not.toContain('useState');
-    expect(CODE).not.toContain('onClick');
-    expect(CODE).not.toContain("'use client'");
+    // ⛔ שום מקום בקובץ לא כותב ל-phase — הוא פרופ קבוע, ⛔ אין setPhase/useState<LessonPhase>.
+    expect(CODE).not.toContain('setPhase');
+    expect(CODE).not.toContain('useState<LessonPhase>');
+  });
+
+  it('ⓘ ההכרעה מי נבחר חיה ב-lib/core/lesson.ts — ⛔ אינה state עצמאי ברכיב', () => {
+    expect(CODE).toContain("from '@/lib/core/lesson'");
+    expect(CODE).toMatch(/useState<LessonSelection>/);
   });
 
   it('יוצא ל-לשונית לימודים דרך קבוע מיוצא (§ 4.2ט שאלה 6)', () => {
@@ -114,5 +124,37 @@ describe('<LessonScreen> — ארבעת הבלוקים של § 4.2ט (T-089)', (
 
   it('מחזיק בדיוק כותרת h1 אחת — היררכיית כותרות לקורא מסך', () => {
     expect((CODE.match(/<h1/g) ?? []).length).toBe(1);
+  });
+});
+
+describe('T-143 · § 4.2יד — האפשרות נעשית יעד מגע שאפשר לבחור בו', () => {
+  it('⛔ אפס `<li>` כאפשרות — נשאר בדיוק אחד, עוטף הפריט', () => {
+    const openTags = CODE.match(/<li\b/g) ?? [];
+    expect(openTags.length, 'each choice must be a <button>, not a list item').toBe(1);
+  });
+
+  it('כל אפשרות היא `<button type="button">` מסומן, בעל מטפל הקשה', () => {
+    expect(CODE).toMatch(/<button[\s\S]{0,300}?data-lesson-choice/);
+    expect(CODE).toMatch(/<button[\s\S]{0,300}?type="button"/);
+    expect(CODE).toMatch(/onClick=\{\(\) =>/);
+  });
+
+  it('האפשרות נושאת את רצפת יעד המגע של החוקה', () => {
+    const choiceBlock = CODE.slice(CODE.indexOf('data-lesson-choice'));
+    expect(choiceBlock, 'a choice below 44px is not a target').toContain('min-h-touch');
+  });
+
+  it('ההכרעה מי נבחר ומה נחשף מגיעה מהשכבה הטהורה — ⛔ ואינה משוכפלת ב-JSX', () => {
+    expect(CODE).toContain("from '@/lib/core/lesson'");
+    for (const fn of ['chooseInLesson', 'selectedChoiceId', 'whyForChoice']) {
+      expect(CODE, `${fn} is not used`).toContain(fn);
+    }
+    // ⛔ אין השוואת מזהים ידנית ברכיב — זו בדיוק ההגדרה השנייה ש-lib/core מונע.
+    expect(CODE).not.toMatch(/choice\.id === /);
+  });
+
+  it('ההסבר ⛔ אינו מרונדר בלי בחירה — הוא תלוי בתוצאת `whyForChoice`', () => {
+    expect(CODE).toContain('data-lesson-why');
+    expect(CODE).toMatch(/why !== null \?/);
   });
 });

@@ -379,6 +379,10 @@
   "lib/core/lastNode.ts": [
     "lib/core/worldRing.ts"
   ],
+  "lib/core/lesson.test.ts": [
+    "lib/core/lesson.ts"
+  ],
+  "lib/core/lesson.ts": [],
   "lib/core/levelGate.test.ts": [],
   "lib/core/levelGate.ts": [],
   "lib/core/levelHeadroom.test.ts": [
