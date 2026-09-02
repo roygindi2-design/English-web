@@ -1496,3 +1496,26 @@ check:rules (**310/40/0**) · test (**3137/3137**) · build · check:mobile (**1
 320/375/414px, `next start`). `npm run build:surfaces` — `/studies` מסומן ✅ בעמודת «מצב
 ריק».
 
+
+## T-235 — `docs/architecture-map.json`, מפת הארכיטקטורה הנגזרת (`madge`) — C-0390
+
+סוגר את `F-179` שתועד למעלה. שלושת החלקים כפי שהמשימה דרשה, ⛔ ולא יותר:
+
+`madge` נוסף כ-`devDependency` **מוצמד** (`"madge": "8.0.0"`, ⛔ לא `^`). `scripts/generate-
+map.mjs` עוטף את ה-CLI (`madge --extensions ts,tsx --json app components lib`) — ⛔ לא
+`./src`: נמדד 31/08 שלריפו הזה אין תיקיית `src/`, והקוד יושב ב-`app/` · `components/` ·
+`lib/`. השער: `MIN_MODULES=20` — אם הגרף שחזר קטן מ-20 מודולים, הסקריפט **יוצא בקוד שאינו
+אפס ולא כותב קובץ**, כדי שנתיב שגוי (למשל `./src`) ייכשל בקול במקום להפיק מפה ריקה ששקטה
+לנצח. `ROOT`/`OUT`/`MIN_MODULES` ניתנים לדריסה ב-`GENERATE_MAP_ROOT`/`GENERATE_MAP_OUT`/
+`GENERATE_MAP_MIN_MODULES` — כך `scripts/generate-map.test.ts` בודק את שני הענפים (מספיק
+מודולים / מתחת לרצפה) נגד עץ-פיקסצ'ר זמני, ⛔ ולא נגד `app/` האמיתי.
+
+הרצה ראשונה נדחפה **באותו קומיט**: `docs/architecture-map.json` — גרף `{ "<קובץ>":
+["<קבצים שהוא מייבא>"] }`, **372 מודולים** (נמדד חי 02/09). הקובץ נכנס לרשימת הקבצים
+הנגזרים ב-`DEV.md` HARD INVARIANTS (כבר נכתב שם) — ⛔ עריכה ידנית אסורה, לתקן את הסקריפט
+ולהריץ מחדש.
+
+**נמדד, ⛔ לא הוצהר:** `npx vitest run scripts/generate-map.test.ts` ⇒ **2/2**. `npm run
+verify` מלא (7 פקודות, אחרי `npm run generate-map`) ⇒ **exit 0**, כולל `check:mobile`
+(1196 בדיקות). ⛔ טיק זה לא נגע ב-`app/` · `components/` · `lib/` (רק `scripts/` ·
+`package.json` · הפלט עצמו) — אין תוכן UI לבדוק מול רנדר.
