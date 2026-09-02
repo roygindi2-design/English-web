@@ -425,6 +425,31 @@ check('10', 'work/current ⛔ אינו רחוק מדי מ-dev', () => {
 });
 
 /**
+ * ⛔ **HELPER FOR CHECK 11 — F-169.** A row can open `⬜` (the first glyph wins,
+ * `taskState` below) and still name itself blocked **in the same cell**:
+ * `T-220` read «ⓐ ו-ⓓ ⛔ נשארות ⬜, חסומות ב-F-164». ⛔ There is ⛔ no `חסם:`
+ * marker on that prose, so `citedTasks`/`staleTaskBlocks` cannot see it either
+ * — and `balance()` below reads only the FINISHED NUMBER out of
+ * `docs/plan-open.md`, ⛔ never the cell text behind it. ⇒ this reads the raw
+ * task register directly and names every row the generated count still calls
+ * "open" that the row's own status cell already calls blocked. ⛔ Not a second
+ * classification system — the threshold is exactly the substring already
+ * sitting in the cell, per F-169's own fix direction.
+ */
+const textuallyBlockedOpenTasks = (names) => {
+  const out = [];
+  for (const line of rows(read(at('plan', '50-tasks.md')), 'T')) {
+    const tags = taskCell(line, TASK_MILESTONE_INDEX)
+      .split('·')
+      .map((s) => s.trim());
+    if (!names.some((n) => tags.includes(n))) continue;
+    if (taskState(line) !== '⬜') continue;
+    if (taskCell(line, TASK_STATUS_INDEX).includes('חסומ')) out.push(idOf(line));
+  }
+  return out;
+};
+
+/**
  * 11 — ⛔ **THE ACTIVE WORKSTREAM RAN DRY AND NOBODY MOVED IT.**
  * ‏DEV takes work **only** from `ACTIVE_WORKSTREAM`. When that workstream has no
  * open row left, every DEV tick until QA moves the focus is a **clone, a prompt
@@ -449,21 +474,24 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
    * lines below it — the same silent-zero this check exists to catch.
    */
   const names = CROSS_CUTTING.has(active) ? [...CROSS_CUTTING] : [active];
-  const rows = table.filter((w) => names.includes(w.name));
-  if (rows.length === 0) {
+  const rows_ = table.filter((w) => names.includes(w.name));
+  if (rows_.length === 0) {
     return { ok: false, detail: `⛔ לא נמדד — \`${active}\` ⛔ אינו בטבלת המאזן` };
   }
-  if (rows.some((w) => !Number.isFinite(w.open))) {
+  if (rows_.some((w) => !Number.isFinite(w.open))) {
     return { ok: false, detail: '⛔ לא נמדד — עמודת ⬜ ⛔ אינה מספר' };
   }
-  const open = rows.reduce((n, w) => n + w.open, 0);
+  const countedOpen = rows_.reduce((n, w) => n + w.open, 0);
+  const textBlocked = textuallyBlockedOpenTasks(names);
+  const open = Math.max(0, countedOpen - textBlocked.length);
   const how = CROSS_CUTTING.has(active) ? `${active} (חוצה-מערכת: ${names.join(' · ')})` : active;
+  const caveat = textBlocked.length > 0 ? ` (F-169: ${textBlocked.length} מסומנות ⬜ אך חסומות בתא — ${textBlocked.join(' · ')})` : '';
   return {
     ok: open > 0,
     detail:
       open > 0
-        ? `${how} — ${open} משימות ⬜`
-        : `⛔ ${how} מוצתה — כל טיק DEV עד שהמיקוד יוזז הוא טיק ריק`,
+        ? `${how} — ${open} משימות ⬜${caveat}`
+        : `⛔ ${how} מוצתה — כל טיק DEV עד שהמיקוד יוזז הוא טיק ריק${caveat}`,
   };
 });
 
