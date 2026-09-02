@@ -32,7 +32,6 @@
 ⚠️ **המפתח ⛔ אינו מספר שורה.** מספר שורה זז עם כל עריכה מעליו, וקו בסיס שנעוץ במספרי
 שורות מרקיב בתוך שבוע. המפתח הוא שם ה-`@keyframes` או **הביטוי** שבתוך הרוחב.
 
-- app/globals.css · A · kol-world-pulse · F-172 · T-230
 - app/arcade/arcade-tokens.css · A · arena-impact-a · F-172 · T-234
 - app/arcade/arcade-tokens.css · A · arena-impact-b · F-172 · T-234
 - components/ArenaBattle.tsx · B · telegraph.frac * 100 · F-173 · T-231

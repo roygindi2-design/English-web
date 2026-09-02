@@ -121,31 +121,58 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
     0 0 26px 8px color-mix(in srgb, var(--brand) 26%, transparent);
 }
 
+/* T-230 — `box-shadow` is a PAINT property, not a compositor one: animating it directly
+   (as this rule used to) forces the browser to repaint the circle and its blur halo on
+   every frame, forever, on 5/5 tab routes (`apple-design` § 11 — animate only
+   `transform`/`opacity`). ⇒ `[data-tab-world]` itself now carries a STATIC box-shadow —
+   the resting (0%/100%) keyframe values — and is never animated. The pulse moves entirely
+   to `[data-tab-world-glow]` below. */
 [data-tab-world] {
+  position: relative;
   box-shadow:
     0 0 0 5px color-mix(in srgb, var(--brand-surface) 18%, transparent),
     0 0 22px 6px color-mix(in srgb, var(--brand-surface) 34%, transparent);
+}
+
+/* T-230 — the animated half of the glow, on a dedicated `aria-hidden` sibling
+   (`components/TabBar.tsx`). It carries a STATIC box-shadow of its own — the 50%
+   keyframe's values, the peak of the old pulse — and what's animated on it is
+   `opacity` + `transform: scale()` only, both compositor-friendly. Resting, it is
+   invisible and at rest scale; at 50% it fades to full opacity and its natural size,
+   reproducing the same breathing glow the eye saw before, without ever touching paint.
+   ⛔ Zero change to the colour tokens · ⛔ zero change to the constitution B3 glow budget
+   (still one glow — a resting layer plus its animated peak, exactly as `--brand-surface`
+   was budgeted before). */
+[data-tab-world-glow] {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, var(--brand-surface) 10%, transparent),
+    0 0 30px 10px color-mix(in srgb, var(--brand-surface) 22%, transparent);
   animation: kol-world-pulse 2600ms ease-in-out infinite;
 }
 
 @keyframes kol-world-pulse {
   0%, 100% {
-    box-shadow:
-      0 0 0 5px color-mix(in srgb, var(--brand-surface) 18%, transparent),
-      0 0 22px 6px color-mix(in srgb, var(--brand-surface) 34%, transparent);
+    opacity: 0;
+    transform: scale(0.85);
   }
   50% {
-    box-shadow:
-      0 0 0 8px color-mix(in srgb, var(--brand-surface) 10%, transparent),
-      0 0 30px 10px color-mix(in srgb, var(--brand-surface) 22%, transparent);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 /* ⛔ `animation: none` ו⛔ לא רק `animation-duration: 0.01ms` של הבלוק הגלובלי
-   למעלה: זו הלולאה ה**אינסופית** היחידה במוצר, ומשך 0.01ms על `infinite` הוא
-   לולאה בתדר גבוה ⛔ ולא עצירה. חוקה שכבה A דורשת שהתנועה תיפסק, ⛔ לא שתואץ. */
+   למעלה: משך 0.01ms על `infinite` הוא לולאה בתדר גבוה ⛔ ולא עצירה. חוקה שכבה A דורשת
+   שהתנועה תיפסק, ⛔ לא שתואץ.
+   ⚠️ **תוקן ב-T-230:** השורה כאן טענה בעבר לבלעדיות ברמת המוצר כולו — ⛔ זו לא הייתה
+   אמת: ל-`arena-idle` (למטה) יש גם הוא `infinite`. שתי לולאות אינסופיות קיימות
+   במוצר, שתיהן מכובות כאן תחת `prefers-reduced-motion`. */
 @media (prefers-reduced-motion: reduce) {
-  [data-tab-world] { animation: none; }
+  [data-tab-world-glow] { animation: none; }
 }
 
 /* T-178 · 37 § 5 — **השחרור** של קלף הלחש. ⛔ הגרירה עצמה היא מניפולציה ישירה ו⛔ אין

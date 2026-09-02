@@ -117,6 +117,14 @@ const ITEM_ACTIVE = 'border-t-2 border-brand font-semibold text-ink';
  * `prefers-reduced-motion` in `app/globals.css`. `-mt-6` is what lifts it above the bar's
  * top edge exactly as the render draws it; the 44×44 target is unaffected because the
  * ITEM, ⛔ not the circle, is the hit area.
+ *
+ * T-230 — the pulse itself lives on `data-tab-world-glow`, a dedicated `aria-hidden`
+ * sibling, ⛔ not on `data-tab-world` any more: `box-shadow` is a paint property, so
+ * animating it on the circle itself repainted it every frame, forever, on all 5 tab
+ * routes. `data-tab-world` now carries a static glow; the glow child animates only
+ * `opacity`/`transform` (`app/globals.css`), which the compositor can run on its own
+ * thread. It sits behind the icon (`-z-10`) and never intercepts a tap
+ * (`pointer-events: none` in CSS).
  */
 function WorldMark({ active }: { readonly active: boolean }): React.JSX.Element {
   return (
@@ -126,6 +134,7 @@ function WorldMark({ active }: { readonly active: boolean }): React.JSX.Element 
         active ? 'border-brand' : 'border-transparent'
       }`}
     >
+      <span data-tab-world-glow aria-hidden="true" className="-z-10" />
       <GlobeIcon className="h-7 w-7" />
     </span>
   );
