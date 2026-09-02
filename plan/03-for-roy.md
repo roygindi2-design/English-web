@@ -256,3 +256,7 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 את המונה ב-1 — כלומר המונה מודד גם המתנה לתשובה שלך. לכן כל מספר קבוע ייפרץ שוב, ורק
 שאלה אחת באמת פותרת: **האם לספור טיקים שלא נכתבה בהם שורת קוד?**
 ⛔ **לא קבעתי `HUMAN_DECISION_REQUIRED=true`** — אין כאן החלטה עסקית, רק מספר.
+
+---
+
+- **[C-0388, 2026-09-02T06:49:13Z]** 🔴 **K-005 blocked: no programmatic access to licensed translation sources.** K-005 (Amirnet vocab) is active and unblocked (brief + gate exist), with 1187 rows currently in the database (50 words per batch × 23 batches). Per RULES § 0.1 ז׳ and D-021, each row requires `translation_he` verified against licensed sources (CEFR-J, Octanove). Current marker: "pour" in Tier 1 (A2), 210 eligible titles remaining. ⛔ **This scheduled task cannot proceed without external lookup access to CEFR-J and Octanove translation databases.** Batch generation halted per R-010: zero invention. ⟨נבדק: 2026-09-02⟩
