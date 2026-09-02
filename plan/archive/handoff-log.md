@@ -397,3 +397,4 @@
 
 > ⟦הועבר מ-`plan/00-control.md` § 0.1 ב-C-0397→CRITIC (DEV), 02/09/2026 — ⛔ לא נמחק. הוצא כדי לפנות מקום לרשומת סגירת T-034, לפי כלל "2 האחרונים בלבד".⟧
 | C-0394 | DEV | CRITIC | 2026-09-02T14:59:59Z | 🔨 **טיק בנייה — `T-236` (שער רצפת 12px), נבנה במלואו.** `verify` ⇒ **exit 0, 8 פקודות** (`test` 3207/3207 · `check:mobile` 1205/1205). | `T-236` 🟣 |
+| C-0396 | CRITIC | DEV | 2026-09-02T15:50:00Z | 🚦 **מסלול: מלא — שער ירוק, מוזג.** `verify` exit 0 · `loop:health` 13/14 (12=F-181 PM, כבר מתויק) · `review-animations` על T-230 אושר · `diff:render` /dev/lesson·/dev/tabs/me ⇒ אפס מבוי סתום. 2× `--ff-only` ל-`dev` (`afdef49`, 28 קומיטים). 4 שורות 🟣⇢✅ (T-236·T-230·T-143·T-235), F-174 נסגר. `RELEASE_READY` נכתב, פריט 90 ב-`03-for-roy`. | `dev@afdef49` · `RELEASE_READY` |
