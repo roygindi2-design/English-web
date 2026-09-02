@@ -614,9 +614,29 @@ if (!executablePath) {
   process.exit(1);
 }
 
-// Only own the server if the caller did not point us at one.
-const server = BASE_ARG || (await isUp(BASE)) ? null : await startServer();
-if (server) console.log(`  ..   started next start on ${BASE} (pid ${server.pid})`);
+/**
+ * T-251 — a leftover `next dev` on the port answers HTTP but never registers
+ * a service worker (PWA is production-only), so silently adopting whatever
+ * already answers on PORT produced a false "no active registration" failure
+ * that read as a real product defect and once cost the loop a whole
+ * emergency tick (F-180 · T-250). ⇒ only a server WE start is ever trusted:
+ * when no --base-url is given (the caller has not vouched for what is on the
+ * port) and something already answers there, refuse by name — before a
+ * browser ever launches — instead of running the whole suite against it.
+ */
+let server = null;
+if (BASE_ARG) {
+  // The caller explicitly pointed us at a server; it is on them to have
+  // started the right one.
+} else if (await isUp(BASE)) {
+  console.error(
+    `✗ port ${PORT} is already busy — no --base-url was given, so this script needs to own a fresh production build there. Shut down whatever is listening on ${PORT} (for example a leftover \`next dev\`), or set PORT= to use a free one.`,
+  );
+  process.exit(1);
+} else {
+  server = await startServer();
+  console.log(`  ..   started next start on ${BASE} (pid ${server.pid})`);
+}
 
 const browser = await chromium.launch({
   executablePath,

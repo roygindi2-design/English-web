@@ -312,6 +312,7 @@ npm install && (npx next dev -p 3000 &) && sleep 25
 Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
 **What one minute caught on 23/08:** `/dev/lesson` → `taps=1` on a 593-character screen. `/dev/tabs/studies` → 116 characters, unchanged from 21/08.
 ⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
+🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next dev"` (T-251).** A `next dev` left on port 3000 answers HTTP but never registers a service worker (PWA is production-only); `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
 
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."

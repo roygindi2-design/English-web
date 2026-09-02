@@ -1,3 +1,6 @@
+import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -1081,5 +1084,71 @@ describe('the 44px exemption is narrow and it is paid for (T-183 · 36 § 3)', (
 
   it('runs the audit inside the width loop, so it is measured at 320/375/414', () => {
     expect(CODE.indexOf('for (const route of ROUTES)')).toBeLessThan(CODE.indexOf('auditStoryBody(storyBody)'));
+  });
+});
+
+/**
+ * T-251 — measured live, three runs on the same clone: with `next dev -p
+ * 3000` already answering on the port, `npm run verify` reported `exit 1`,
+ * and the only failure was "service worker registers and activates — no
+ * active registration". After `pkill -f "next dev"` alone, with no code
+ * change, the same command was `exit 0`. The cause is `scripts/verify-mobile.mjs`
+ * silently adopting whatever already answers on the port when no --base-url
+ * is given, instead of owning a fresh `next start`. A `next dev` server never
+ * registers a service worker (PWA is production-only), so the adopted server
+ * produced a false PWA defect — and that exact false-defect class already
+ * cost the loop a whole emergency tick once (F-180 · T-250).
+ *
+ * ⇒ the harness must refuse to adopt a server it did not start, and it must
+ * refuse BEFORE it launches a browser or runs a single check, so the failure
+ * is legible by name instead of surfacing as an unrelated PWA finding three
+ * checks later.
+ */
+describe('the harness refuses to silently adopt a server it did not start (T-251)', () => {
+  it('exits naming the busy port — ⛔ not "service worker" — when something else already answers there and no --base-url was given', async () => {
+    const decoy = createServer((_req, res) => {
+      res.end('not next — just something answering on the port, like a leftover `next dev`');
+    });
+    // No explicit host: bind every interface, the same as `next start`/`next
+    // dev` do, so `fetch('http://localhost:PORT')` — which may resolve to
+    // ::1 or 127.0.0.1 depending on the machine — reaches it either way.
+    const port = await new Promise<number>((resolve, reject) => {
+      decoy.once('error', reject);
+      decoy.listen(0, () => resolve((decoy.address() as AddressInfo).port));
+    });
+
+    try {
+      // ⛔ Deliberately `spawn`, not `execFileSync`: the decoy server above runs
+      // in THIS process, and a synchronous spawn blocks this process's event
+      // loop until the child exits — which means the decoy could never accept
+      // the child's connection at all, and `isUp` would fail for a reason that
+      // has nothing to do with the behaviour under test.
+      const { status, stderr } = await new Promise<{ status: number | null; stderr: string }>(
+        (resolve, reject) => {
+          const child = spawn('node', ['scripts/verify-mobile.mjs'], {
+            env: { ...process.env, PORT: String(port) },
+          });
+          let err = '';
+          child.stderr.on('data', (d) => {
+            err += String(d);
+          });
+          const timer = setTimeout(() => {
+            child.kill('SIGKILL');
+            reject(new Error('scripts/verify-mobile.mjs did not exit within 20s'));
+          }, 20_000);
+          child.on('error', reject);
+          child.on('close', (code) => {
+            clearTimeout(timer);
+            resolve({ status: code, stderr: err });
+          });
+        },
+      );
+
+      expect(status, `expected the script to refuse the busy port; stderr:\n${stderr}`).toBe(1);
+      expect(stderr).toMatch(/port .*(busy|already in use)/i);
+      expect(stderr).not.toContain('service worker');
+    } finally {
+      await new Promise<void>((resolve) => decoy.close(() => resolve()));
+    }
   });
 });
