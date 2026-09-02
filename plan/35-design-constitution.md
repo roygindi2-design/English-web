@@ -107,6 +107,11 @@ Clash Display · PP Editorial New · Comic Neue · Baloo 2 — לשלושת הא
 ‏D-137 (רצפת 12px **בזירה**) נבלעת בכלל הזה ו⛔ אינה סותרת אותו.
 ▶️ **האכיפה היא שורת DEV, ⛔ לא הבטחה:** `T-236` — כלל ב-`npm run verify` שנופל על
 `text-[<11 או פחות>px]` ועל כל `font-size` מתחת ל-12px ב-`app/globals.css`.
+✅ **נבנה 02/09/2026 (C-0394, DEV) — `npm run check:text-floor`, שער שמיני ב-`verify`.**
+`scripts/check-text-floor.mjs` + קו בסיס קפוא `scripts/text-floor-baseline.md` (⛔ לא
+חלון `SOFT_UNTIL` — `D-177` אסר את המחלקה הזאת כליל). סריקה חיה בטיק מצאה **3** הפרות
+קיימות (⛔ לא 1 כפי שנמדד ב-28/08) — הוקפאו, ⛔ לא תוקנו. פירוט מלא ⇒ `plan/50-tasks.md`
+T-236.
 
 ---
 

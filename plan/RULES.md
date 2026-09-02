@@ -200,12 +200,15 @@ npm run verify הוא הפעולה האחרונה לפני הקומיט.
 | 4 | ~~`[skip ci]` בכל קומיט~~ **בוטל 06/08** — ראה `§ 0.8` | — |
 
 **חוק «אין בדיקות על השרת החי»:** כל בדיקה, טסט ובנייה רצים מקומית בסביבת הסוכן —
-**`npm run verify`, ו⛔ הוא ⛔ אינו ארבע ו⛔ אינו חמש ו⛔ אינו שש: הוא **שבע** —
-`typecheck · check:core · check:motion · **check:rules** · test · build · check:mobile`.
-🔴 **והמספר הזה כבר התיישן כאן פעמיים** (ארבע⇢חמש 23/08 · חמש⇢שש 31/08), ⇒ מ-C-0376
-**הוא ⛔ אינו נסמך על זיכרון: `scripts/rules-citations.test.ts` משווה את השורה הזאת
-ל-`package.json` ונופל כשהן נפרדות.** ⛔ שורה שאיש ⛔ אינו מודד היא שורה שתשקר שוב.
-⛔ אל תריץ פחות ותכריז ירוק. קוד שלא עבר את **שבע** הפקודות מקומית ⛔ אינו נדחף כלל,
+**`npm run verify`, ו⛔ הוא ⛔ אינו ארבע ו⛔ אינו חמש ו⛔ אינו שש ו⛔ אינו שבע: הוא
+**שמונה** — `typecheck · check:core · check:motion · check:text-floor ·
+**check:rules** · test · build · check:mobile`.
+🔴 **והמספר הזה כבר התיישן כאן פעמיים** (ארבע⇢חמש 23/08 · חמש⇢שש 31/08), **ועכשיו
+בפעם השלישית** (שבע⇢שמונה 02/09, `T-236` · `check:text-floor`), ⇒ מ-C-0376 **הוא
+⛔ אינו נסמך על זיכרון:
+`scripts/rules-citations.test.ts` משווה את השורה הזאת ל-`package.json` ונופל כשהן
+נפרדות.** ⛔ שורה שאיש ⛔ אינו מודד היא שורה שתשקר שוב.
+⛔ אל תריץ פחות ותכריז ירוק. קוד שלא עבר את **שמונה** הפקודות מקומית ⛔ אינו נדחף כלל,
 ⛔ גם לא ל-`work/current`. ⛔ אסור לדחוף קוד כדי «לראות אם זה עובד בפרודקשן».
 
 ---
@@ -762,7 +765,7 @@ npm run loop:health          # ⛔ קריאה בלבד · ⛔ אינו כותב 
 
 **QA מריץ על `work/current`:**
 ```
-npm run verify        ⇐ שבע פקודות  (typecheck · check:core · check:motion · check:rules · test · build · check:mobile)
+npm run verify        ⇐ שמונה פקודות  (typecheck · check:core · check:motion · check:text-floor · check:rules · test · build · check:mobile)
 npm run loop:health   ⇐ הרשימה חיה ב-scripts/loop-health.mjs (12·13·14 אזהרה עד 2026-09-02)
 ```
 + **הליכת דפדפן ב-375×780** על המסכים שהענף נגע בהם.
