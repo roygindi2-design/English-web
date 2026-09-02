@@ -144,14 +144,12 @@ if (isUi) {
  * question «is this an extension?» has an answer, and the plan must ⛔ not be silent:
  * either `המשך של: T-XXX`, or one sentence saying why it is ⛔ not one.
  *
- * ⚠️ **BORN SOFT, and that is Roy's phase-7 lesson applied:** 58 plans predate this
- * element and every one of them would fail it today. Making it blocking on day one
- * teaches every agent to ignore the whole gate. ⇒ until `SOFT_UNTIL` it prints, in
- * full, with the rows it found — and it ⛔ does NOT enter `missing`, ⛔ does not move
- * the `shape: X/Y` total, and ⛔ does not touch the exit code.
+ * ✅ **WAS SOFT THROUGH 2026-09-02 (`D-177`), and is ⛔ no longer.** The soft window
+ * existed so day-one adoption did not fail all 58 pre-existing plans at once. That
+ * window closed (`F-180`): the element is now permanent, like the other nine — it
+ * enters `missing`, moves the `shape: X/Y` total, and affects the exit code same as
+ * any other element. ⛔ No new date flag replaces it.
  */
-const SOFT_UNTIL = '2026-09-02';
-const TODAY = new Date().toISOString().slice(0, 10);
 const ROOT = process.env.CHECK_PLAN_ROOT ?? '.';
 
 const PLAN_PATH = /`((?:[a-z][\w.\-]*\/)+[\w.\-]*\.(?:ts|tsx|mjs|js|sql|css))`/g;
@@ -194,10 +192,8 @@ const extension = {
             .join(' · ')}`,
 };
 
-const softNow = TODAY < SOFT_UNTIL;
-// ⛔ After the soft window it becomes an element like any other — ⛔ no second edit,
-// ⛔ no flag to remember to flip.
-if (!softNow) ELEMENTS.push(extension);
+// ⛔ Permanent as of `D-177`/`F-180` — no soft window, no flag to remember to flip.
+ELEMENTS.push(extension);
 
 const missing = ELEMENTS.filter((e) => !e.ok);
 console.log(`plan: ${file}`);
@@ -205,14 +201,6 @@ for (const e of ELEMENTS) {
   console.log(`${e.ok ? '  ok  ' : 'MISS  '}${e.key.padEnd(11)}${e.label}${e.detail ? ` — ${e.detail}` : ''}`);
 }
 console.log(`shape: ${ELEMENTS.length - missing.length}/${ELEMENTS.length} elements present`);
-if (softNow) {
-  console.log(
-    `${extension.ok ? ' soft ok ' : ' soft ⚠️  '}${extension.key.padEnd(11)}${extension.label} — ${extension.detail}`,
-  );
-  console.log(
-    `         ⚠️ רכיב עשירי, **מייעץ בלבד עד ${SOFT_UNTIL}** — ⛔ אינו נספר בציון ו⛔ אינו משפיע על קוד היציאה.`,
-  );
-}
 if (missing.length > 0) {
   console.log('');
   console.log('⇒ שורה ל-plan/26-plan-feedback.md:');

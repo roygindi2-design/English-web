@@ -542,7 +542,6 @@ check(
       items: blocking,
     };
   },
-  '2026-09-02',
 );
 
 /**
@@ -591,7 +590,6 @@ check(
       items: missing,
     };
   },
-  '2026-09-02',
 );
 
 /**
@@ -633,7 +631,6 @@ check(
     }
     return { ok: items.length === 0, detail: `יעד \`${target}\` · ${there.open} ⬜`, items };
   },
-  '2026-09-02',
 );
 
 /**

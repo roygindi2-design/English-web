@@ -419,15 +419,18 @@ describe('scripts/loop-health.mjs', () => {
    * ⛔ A check observed only passing has ⛔ not been tested — and these three were
    * written against a live repo where two of them are green, which is precisely the
    * situation in which a broken checker looks perfect.
+   * ✅ **PERMANENT AS OF `D-177` (`F-180`):** their soft window closed 2026-09-02 —
+   * each now FAILs like any other check, ⛔ never warns.
    */
-  it('12 · warns on a PM-owned finding that blocks a written row', () => {
+  it('12 · fails on a PM-owned finding that blocks a written row', () => {
     const root = healthy();
     patch(root, 'plan/60-findings.md', (s) => s.replace('⬜ פתוח', '⬜ פתוח → **PM**'));
     patch(root, 'plan/50-tasks.md', (s) =>
       s.replace('| ⬜ |', '| ⛔ חסום על F-001 |').replace('uses', 'F-001 blocks: uses'),
     );
     const r = run(root);
-    expect(warned(r.out, '12'), 'soft window ⇒ warn, ⛔ not FAIL').toBe(true);
+    expect(failed(r.out, '12'), 'soft window closed 2026-09-02 ⇒ FAIL, ⛔ not warn').toBe(true);
+    expect(warned(r.out, '12')).toBe(false);
     expect(r.out).toContain('F-001');
     expect(r.out).toContain('T-001');
   });
@@ -440,7 +443,7 @@ describe('scripts/loop-health.mjs', () => {
     expect(warned(r.out, '12')).toBe(false);
   });
 
-  it('13 · warns when the sequence moved past a workstream that has ⛔ no deferred row', () => {
+  it('13 · fails when the sequence moved past a workstream that has ⛔ no deferred row', () => {
     const root = healthy();
     // `cards` is item 3 of the build order ⇒ `story` and `nav` are behind it, and the
     // fixture register is empty ⇒ both are owed a row and ⛔ neither has one.
@@ -448,7 +451,8 @@ describe('scripts/loop-health.mjs', () => {
       s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: cards'),
     );
     const r = run(root);
-    expect(warned(r.out, '13')).toBe(true);
+    expect(failed(r.out, '13')).toBe(true);
+    expect(warned(r.out, '13')).toBe(false);
     expect(r.out).toContain('story');
     expect(r.out).toContain('nav');
   });
@@ -459,11 +463,11 @@ describe('scripts/loop-health.mjs', () => {
     const root = healthy();
     writeFileSync(join(root, 'plan/61-deferred.md'), '', 'utf8');
     const r = run(root);
-    expect(warned(r.out, '13')).toBe(true);
+    expect(failed(r.out, '13')).toBe(true);
     expect(r.out).toContain('⛔ לא נמדד');
   });
 
-  it('14 · warns when IMPROVE_TARGET points at a workstream the sequence has ⛔ not passed', () => {
+  it('14 · fails when IMPROVE_TARGET points at a workstream the sequence has ⛔ not passed', () => {
     // 🔴 This is the failure mode the whole fence exists for: `arena` sits AFTER the
     // active `story`, so pointing IMPROVE_TARGET at it is a **second active
     // workstream through the back door** — the one rule that keeps the product from
@@ -473,7 +477,8 @@ describe('scripts/loop-health.mjs', () => {
       s.replace('IMPROVE_TARGET: ""', 'IMPROVE_TARGET: arena'),
     );
     const r = run(root);
-    expect(warned(r.out, '14')).toBe(true);
+    expect(failed(r.out, '14')).toBe(true);
+    expect(warned(r.out, '14')).toBe(false);
     expect(r.out).toContain('בדלת האחורית');
   });
 

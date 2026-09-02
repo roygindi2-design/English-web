@@ -65,7 +65,7 @@ it('does the thing', () => {
 describe('scripts/check-plan-shape.mjs', () => {
   it('passes a plan that carries every element, and exits 0', () => {
     const r = run(write('complete.md', COMPLETE));
-    expect(r.out).toContain('shape: 7/7');
+    expect(r.out).toContain('shape: 8/8');
     expect(r.code).toBe(0);
   });
 
@@ -94,7 +94,7 @@ describe('scripts/check-plan-shape.mjs', () => {
   it('asks a UI plan for the render and the finish clause, and a non-UI plan for neither', () => {
     // The two extra elements exist only where `36 § 14.4` applies. Demanding them of a
     // pure-logic plan would train the PM to paste a render name that means nothing.
-    expect(run(write('logic.md', COMPLETE)).out).toContain('shape: 7/7');
+    expect(run(write('logic.md', COMPLETE)).out).toContain('shape: 8/8');
     const ui = run(write('ui.md', `${COMPLETE}\nEdit \`components/Thing.tsx\`.\n`));
     expect(ui.out).toMatch(/^MISS  render/m);
     expect(ui.out).toMatch(/^MISS  finish/m);
@@ -144,41 +144,44 @@ describe('scripts/check-plan-shape.mjs', () => {
   });
 
   /**
-   * 🔟 **ELEMENT TEN — «extend before you create», and it is SOFT on purpose.**
-   * ⛔ All 58 existing plans would fail it today, which is exactly the situation
-   * Roy's phase-7 lesson names: a gate that goes red on day one is a gate every
-   * agent learns to ignore. ⇒ it prints in full and ⛔ does not touch the score or
-   * the exit code until 2026-09-02.
+   * 🔟 **ELEMENT TEN — «extend before you create», and it is PERMANENT (`D-177`).**
+   * ⛔ Its soft window closed 2026-09-02 (`F-180`) — it is now an element like any
+   * other: a plan that fails it MISSes, the `shape: X/Y` total drops, and the exit
+   * code goes non-zero.
    */
   const OVERLAP_ROW =
     '| T-001 | M0 · loop · מבנה | touches `lib/core/thing.ts` | — | ⬜ | 0 | `lib/core/thing.ts` | — |\n';
 
-  it('10 · flags a plan whose file is already named by a task row — ⛔ and does ⛔ not fail the gate', () => {
+  it('10 · flags a plan whose file is already named by a task row — and DOES fail the gate', () => {
     const r = run(write('overlap.md', COMPLETE), fixtureRoot(OVERLAP_ROW));
-    expect(r.out).toMatch(/^ soft ⚠️ +extend/m);
+    expect(r.out).toMatch(/^MISS  extend/m);
     expect(r.out).toContain('T-001');
-    // ⛔ THE POINT: still 7/7, still exit 0. Soft means visible, ⛔ not counted.
-    expect(r.out).toContain('shape: 7/7');
-    expect(r.code).toBe(0);
+    expect(r.out).toContain('shape: 7/8');
+    expect(r.code).toBe(1);
   });
 
   it('10 · a declared lineage answers it — `המשך של: T-001`', () => {
     const declared = `${COMPLETE}\n**המשך של: T-001**\n`;
     const r = run(write('declared.md', declared), fixtureRoot(OVERLAP_ROW));
-    expect(r.out).toMatch(/^ soft ok +extend/m);
+    expect(r.out).toMatch(/^  ok  extend/m);
+    expect(r.out).toContain('shape: 8/8');
+    expect(r.code).toBe(0);
   });
 
   it('10 · an explicit «⛔ אינה הרחבה» answers it too — the plan is ⛔ never forced to lie', () => {
     const argued = `${COMPLETE}\n⛔ אינה הרחבה: T-001 נגעה בקובץ כדי לקרוא ממנו, וזו כתיבה חדשה.\n`;
     const r = run(write('argued.md', argued), fixtureRoot(OVERLAP_ROW));
-    expect(r.out).toMatch(/^ soft ok +extend/m);
+    expect(r.out).toMatch(/^  ok  extend/m);
+    expect(r.code).toBe(0);
   });
 
   it('10 · ⛔ no overlap ⇒ ⛔ nothing to answer', () => {
     const empty = '| T-002 | M0 · loop · מבנה | unrelated | — | ⬜ | 0 | `lib/core/other.ts` | — |\n';
     const r = run(write('no-overlap.md', COMPLETE), fixtureRoot(empty));
-    expect(r.out).toMatch(/^ soft ok +extend/m);
+    expect(r.out).toMatch(/^  ok  extend/m);
     expect(r.out).toContain('⛔ אין חפיפה');
+    expect(r.out).toContain('shape: 8/8');
+    expect(r.code).toBe(0);
   });
 
 });
