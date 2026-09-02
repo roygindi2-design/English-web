@@ -1542,3 +1542,33 @@ components/LessonScreen.test.ts` ⇒ 23/23. `npm run verify` מלא (7 פקוד�
 (⛔ לא `next start`) ה-hydration נכשל בשקט (403 על `/_next/static`, WS handshake נכשל) —
 זו בדיוק F-132 (Next 16 חוסם גישה חוצת-מקור למשאבי פיתוח מ-`127.0.0.1`), ⛔ ולא רגרסיה
 של המשימה הזאת; ההליכה החוזרת נעשתה מול `next start` ועברה.
+
+### `lib/core/previewCards.generated.ts` — הכרטיסיות שלפני הרשמה, כקובץ נגזר (T-034 · F-012)
+הדפוס: `lib/core/previewSelection.ts` (טהור — `BatchRecord[] → PreviewCard[]`, שמונה
+כללי סינון/מיון) → `scripts/build-preview-cards.mjs` (הכתובת האחת הבלתי-טהורה — קורא
+`data/generated/batch-*.jsonl`, קורא ל-`parseBatchFile` + `selectPreviewCards`, כותב את
+הקובץ הנגזר) → `lib/core/previewCards.generated.ts` (מערך `PreviewCard[]` מילולי, ⛔
+עריכה ידנית אסורה) → `lib/core/landing.ts` מייצא אותו כ-`PREVIEW_CARDS`.
+`scripts/build-preview-cards.test.ts` הוא **מנעול סנכרון**: משווה את הקובץ הנגזר
+המחויב מול מה שהסקריפט מפיק *עכשיו* — סוכן Content שדוחף אצווה בלי `npm run
+build:preview` יאדים את הבדיקה, ⛔ לא בשקט.
+
+⚠️ **סטייה מהתוכנית, נמדדת חיה 02/09:** `docs/superpowers/plans/2026-08-16-preview-before-signup.md`
+כתב את הרג׳קס `/^batch-\d{4}-\d{2}-\d{2}\.jsonl$/`, שהתאים ל-9 קבצי האצווה שהיו קיימים
+ב-16/08. הקלון הזה מחזיק היום **23** קבצים תואמי `batch-*.jsonl`, כולל ימים מרובי-חלקים
+(`batch-2026-08-29-2.jsonl` … `-8.jsonl`) שהרג׳קס הישן היה מדלג עליהם בשקט. הוחלף ב-
+`/^batch-.*\.jsonl$/` — הדפוס הקיים כבר ב-`build-ingest-sql.mjs` · `measure-gate.mjs` ·
+`build-word-levels-sql.mjs` · `build-stories-sql.mjs`, ואומת בבדיקה ידנית שכל קובצי
+`batch-*` חולקים את אותה סכמת-חוש (⛔ ולא `messages-*`/`stories-*`/`story-questions-*`,
+שהם סוג תוכן אחר). התוצאה: **1,187 חושים מ-23 קבצים**, תואם למספר שכבר נמדד ב-`npm run
+measure:gate`.
+
+**נמדד, ⛔ לא הוצהר (C-0397):** `npx vitest run lib/core/previewSelection.test.ts` ⇒
+16/16 (15 מהתוכנית + בדיקת סדר אחת שנוספה — ראה הקומיט). שש בדיקות-מוטציה על הבורר,
+כל השש נכשלות בשם הבדיקה הנכון (שתיים מהן — #3 ו-#6 — לא נכשלו עם הפיקסצ׳ר המקורי של
+התוכנית ותוקנו, ראה יומן הקומיט). `npx vitest run scripts/build-preview-cards.test.ts`
+⇒ 6/6, ארבע בדיקות-מוטציה על המחולל, כולן נכשלות כראוי. `npx vitest run
+lib/core/landing.test.ts` ⇒ 15/15 (כולל הבדיקה הישנה `PREVIEW_CARDS.toHaveLength(0)`
+שהוחלפה — כבר לא נכונה). `npm run verify` מלא ⇒ **exit 0** (`test` 3235/3235 · `build`
+ירוק · `check:mobile` 1205/1205, `/` @320/375/414 ללא גלילה אופקית, כל יעדי המגע ≥44px).
+שש הכרטיסיות נקראו בקול לפני הקומיט — אין אף אפשרות שהיא תשובה שנייה סבירה.

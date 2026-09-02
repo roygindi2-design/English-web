@@ -371,7 +371,9 @@
   "lib/core/landing.test.ts": [
     "lib/core/landing.ts"
   ],
-  "lib/core/landing.ts": [],
+  "lib/core/landing.ts": [
+    "lib/core/previewCards.generated.ts"
+  ],
   "lib/core/lastNode.test.ts": [
     "lib/core/lastNode.ts",
     "lib/core/worldRing.ts"
@@ -435,6 +437,17 @@
     "lib/core/planTable.ts"
   ],
   "lib/core/planTable.ts": [],
+  "lib/core/previewCards.generated.ts": [
+    "lib/core/landing.ts"
+  ],
+  "lib/core/previewSelection.test.ts": [
+    "lib/core/batchRecord.ts",
+    "lib/core/previewSelection.ts"
+  ],
+  "lib/core/previewSelection.ts": [
+    "lib/core/batchRecord.ts",
+    "lib/core/landing.ts"
+  ],
   "lib/core/profile.ts": [],
   "lib/core/progress.test.ts": [],
   "lib/core/progress.ts": [],

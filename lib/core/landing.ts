@@ -9,6 +9,7 @@
  *
  * Pure by contract — no React, no DOM, no I/O (lib/core/README.md).
  */
+import { GENERATED_PREVIEW_CARDS } from './previewCards.generated';
 
 /** Words we do not put in front of a learner, and why (R-011 · D-017). */
 export const FORBIDDEN_MARKETING_TERMS = [
@@ -49,24 +50,30 @@ export interface PreviewCard {
   /** Index into `options`. */
   correctIndex: number;
   /**
-   * Which licensed dataset this row came from — NGSL, CEFR-J, Hebrew Wordnet…
-   * Never a person, never an agent, never a copied exam item (R-010).
+   * Where this row came from, in the form `dataset` or `generated:<headword
+   * source>`. The Hebrew in the content bank was written for this project and
+   * the headword list was read from NGSL v1.2 (CC BY-SA 4.0, column 1 only) —
+   * data/generated/manifest.json records both halves, and calling that 'ngsl'
+   * would credit NGSL with a gloss it never contained.
+   * ⛔ Never a copied exam item (R-010), never an AnkiWeb deck (R-013).
    */
   sourceId: string;
 }
 
 /**
- * TODO:CONTENT-PLACEHOLDER — deliberately empty.
+ * The cards a learner can try before signing up (F-012 · T-034).
  *
- * A preview card needs an English headword *and* a Hebrew gloss. No licensed
- * Hebrew source has been ingested yet (T-007 · T-013/T-016/T-017 are the
- * measurements that pick one, R-005 is still open), and inventing a word pair
- * here — or lifting one from a MAL"O practice exam — is exactly what R-010 and
- * the content rule forbid. So the slot ships empty and the screen renders
- * without it; the day a source lands, this array is the only thing that
- * changes. See plan/20-alerts.md.
+ * Empty from T-027 until 2026-08-16, for the reason the deleted comment gave:
+ * no licensed Hebrew existed. That stopped being true on 2026-08-07, when the
+ * Content agent began writing senses into data/generated/*.jsonl; by the time
+ * this landed the bank held 1,187 gate-verified senses across 23 batches and
+ * the gate re-check rejected none of them (docs/gate-recheck.md).
+ *
+ * ⛔ The rows are GENERATED, not authored here — see previewCards.generated.ts
+ *    and scripts/build-preview-cards.mjs. Editing this array by hand puts
+ *    unverified content in front of a learner.
  */
-export const PREVIEW_CARDS: readonly PreviewCard[] = [];
+export const PREVIEW_CARDS: readonly PreviewCard[] = GENERATED_PREVIEW_CARDS;
 
 /** Is there any real content to show before signup yet? */
 export function hasPreviewContent(): boolean {

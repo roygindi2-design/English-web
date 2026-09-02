@@ -70,10 +70,12 @@ describe('landing copy — R-011', () => {
 });
 
 describe('preview card — content provenance', () => {
-  it('ships empty while no licensed Hebrew source exists (R-005)', () => {
-    expect(PREVIEW_CARDS).toHaveLength(0);
-    expect(hasPreviewContent()).toBe(false);
-    expect(landingPreviewCard()).toBeNull();
+  it('has real content now that a licensed Hebrew source has been ingested (T-034 · F-012)', () => {
+    // Empty from T-027 until 2026-08-16 (R-005) — the array is generated from
+    // the content bank as of T-034; see lib/core/previewCards.generated.ts.
+    expect(PREVIEW_CARDS.length).toBeGreaterThan(0);
+    expect(hasPreviewContent()).toBe(true);
+    expect(landingPreviewCard()).not.toBeNull();
   });
 
   it('rejects a card with no source attribution', () => {
@@ -87,5 +89,36 @@ describe('preview card — content provenance', () => {
 
   it('every card that ever ships carries provenance', () => {
     for (const card of PREVIEW_CARDS) expect(isAttributedCard(card)).toBe(true);
+  });
+});
+
+describe('preview content has landed (F-012)', () => {
+  it('has preview content', () => {
+    expect(hasPreviewContent()).toBe(true);
+  });
+
+  it('returns a card from the landing helper', () => {
+    expect(landingPreviewCard()).not.toBeNull();
+  });
+
+  it('every shipped card is attributed', () => {
+    for (const card of PREVIEW_CARDS) expect(isAttributedCard(card)).toBe(true);
+  });
+
+  it('no card option sells the technology (R-011)', () => {
+    for (const card of PREVIEW_CARDS) {
+      expect(forbiddenTermsIn([card.headword, ...card.options].join(' '))).toEqual([]);
+    }
+  });
+
+  it('the placeholder marker is gone from the source', () => {
+    const source = readFileSync('lib/core/landing.ts', 'utf8');
+    expect(source).not.toContain('TODO:CONTENT-PLACEHOLDER');
+  });
+
+  it('the landing page no longer calls the slot empty', () => {
+    const source = readFileSync('app/page.tsx', 'utf8');
+    expect(source).not.toContain('TODO:CONTENT-PLACEHOLDER');
+    expect(source).not.toContain('the array is empty on purpose');
   });
 });

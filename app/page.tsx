@@ -17,10 +17,11 @@ import {
  * two lines of text inside the whole flexible area. The text is now anchored to
  * the top and the space carries three lines of what the learner actually gets.
  *
- * F-012 (no way to see the product before handing over an email) is only half
- * addressed here: the slot for a real flashcard exists and renders the moment
- * `PREVIEW_CARDS` has a row, but no licensed Hebrew source has been ingested
- * yet (R-005), and inventing a word pair is forbidden. See plan/20-alerts.md.
+ * F-012 (no way to see the product before handing over an email): the slot for
+ * a real flashcard exists and, since 2026-08-16, holds gate-verified rows from
+ * the content bank — see lib/core/previewCards.generated.ts. The `preview ?`
+ * guard stays: it is what keeps this screen renderable if the bank is ever
+ * emptied.
  *
  * A learner with a live session never reaches this screen — proxy.ts sends them
  * to /onboarding first, which is what keeps this page static.
@@ -65,11 +66,8 @@ export default function HomePage() {
         </ul>
       </section>
 
-      {/*
-        TODO:CONTENT-PLACEHOLDER — the taste-before-signup card (T-027 ⓑ/ⓒ).
-        Renders only when a licensed source has been ingested; today the array
-        is empty on purpose, so nothing invented ships to production.
-      */}
+      {/* The taste-before-signup card (T-027 ⓑ/ⓒ · T-034). Content is generated
+          — lib/core/previewCards.generated.ts — never hand-written here. */}
       {preview ? (
         <section
           aria-label="דוגמה לכרטיסייה"
