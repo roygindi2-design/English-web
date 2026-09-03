@@ -1,6 +1,7 @@
 'use client';
 
 import EnWord from '@/components/EnWord';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 
 /**
  * הפופאובר של הקשה על מילה — T-187 · `36 § 7`.
@@ -17,17 +18,27 @@ import EnWord from '@/components/EnWord';
  *
  * ⛔ **מצב «נוספה» ⛔ אינו צבע בלבד** (חוקה שכבה A): וי מצויר **ו**מילה כתובה.
  * ⛔ אמוג'י אסור — SVG מוטבע, בדיוק כמו `components/CloseIcon.tsx`.
+ *
+ * 🆕 **מצב שלישי — T-238ⓑ · `D-183`.** הכפתור ⛔ אינו הופך ל-«נוספה לחזרה» עד
+ * שהכתיבה חוזרת `ok` בפועל (`status === 'added'`): `'pending'` משאיר את אותו כפתור
+ * על מקומו, מנוטרל (⛔ בלי מחרוזת חדשה — אין ספינר לנצח, יש מניעת לחיצה כפולה
+ * בלבד). `'error'` מציג `FAILURE_HE.save` **וגם** כפתור `RETRY_HE` שמריץ מחדש את
+ * אותה קריאה — ⛔ אפס מחרוזת חדשה, ⛔ אפס מסך שני (חוקה שכבה A: וי ⛔ לעולם לא
+ * שקרי). זהו **מצב שלישי של הרכיב הקיים**, ⛔ לא רכיב חדש ו⛔ לא מסך חדש.
  */
 
 const ADD_HE = 'הוסף לכרטיסיות';
 const ADDED_HE = 'נוספה לחזרה';
 const CLOSE_HE = 'סגור';
 
+/** ⛔ ⛔ אין רכיב שלישי — `'idle' | 'pending' | 'added' | 'error'`, אותו כפתור בכל ארבעה. */
+export type WordPopoverStatus = 'idle' | 'pending' | 'added' | 'error';
+
 export interface WordPopoverProps {
   readonly word: string;
   readonly translationHe: string;
   readonly posHe: string;
-  readonly added: boolean;
+  readonly status: WordPopoverStatus;
   readonly onAdd: () => void;
   readonly onClose: () => void;
 }
@@ -53,7 +64,7 @@ export default function WordPopover({
   word,
   translationHe,
   posHe,
-  added,
+  status,
   onAdd,
   onClose,
 }: WordPopoverProps): React.JSX.Element {
@@ -69,16 +80,28 @@ export default function WordPopover({
       <p className="mt-1 text-2xl font-bold leading-tight text-ink">{translationHe}</p>
       {posHe === '' ? null : <p className="mt-1 text-xs text-brand-surface">{posHe}</p>}
 
-      {added ? (
+      {status === 'added' ? (
         <p className="mt-3 inline-flex min-h-touch w-full items-center justify-center gap-2 rounded-lg border border-success bg-success/20 px-4 text-sm font-bold text-success">
           <CheckIcon />
           {ADDED_HE}
         </p>
+      ) : status === 'error' ? (
+        <>
+          <p className="mt-3 text-sm text-danger">{FAILURE_HE.save}</p>
+          <button
+            type="button"
+            onClick={onAdd}
+            className="mt-2 inline-flex min-h-touch w-full items-center justify-center rounded-lg border-2 border-danger px-4 text-sm font-bold text-danger active:opacity-90"
+          >
+            {RETRY_HE}
+          </button>
+        </>
       ) : (
         <button
           type="button"
           onClick={onAdd}
-          className="mt-3 inline-flex min-h-touch w-full items-center justify-center rounded-lg bg-brand-surface px-4 text-sm font-bold text-brand-on active:opacity-90"
+          disabled={status === 'pending'}
+          className="mt-3 inline-flex min-h-touch w-full items-center justify-center rounded-lg bg-brand-surface px-4 text-sm font-bold text-brand-on active:opacity-90 disabled:opacity-60"
         >
           {ADD_HE}
         </button>

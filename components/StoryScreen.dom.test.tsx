@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StoryScreenView, type StoryPayload } from '@/components/StoryScreen';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import {
   FIXTURE_BODY_EN,
   FIXTURE_COUNTS,
@@ -100,5 +101,130 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
   it('⛔ the intro layer belongs to the READING phase only', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />);
     expect(screen.queryByText(new RegExp(`בסיפור הזה ${GLOSS_COUNT} מילים\\.`))).toBeNull();
+  });
+});
+
+/**
+ * T-238ⓑ · `D-183` — **הפופאובר בסיפור מדווח מה שקרה באמת, ⛔ ולא וי מיידי.**
+ *
+ * ⛔ **עד הטיק הזה, אפס בדיקה הרכיבה את הזרימה הזאת בכלל** (לא `WordPopover`, לא
+ * `StoryScreen`'s `add`) — בדיוק כמו שהיה חסר לפני T-239 בזירה (`ArenaBattle.dom.test.tsx`).
+ * `components/StoryScreen.tsx:285-296` סימן «נוספה לחזרה» **מיד**, לפני הרשת, ו-
+ * `.catch(() => {})` בלע כל כישלון — כתיבה שנכשלה תמיד (`42P10`, מ-T-187ⓕ עד C-0405)
+ * הראתה ללומד וי ירוק שקרי בלי שאף בדיקה תפסה זאת.
+ *
+ * ⚠️ **תשתית הבדיקה כאן, ⛔ ולא רק בדיקה:** `onWordClick` (`StoryScreen.tsx`) מכריע איזו
+ * מילה נלחצה על ידי הצלבת קואורדינטות הלחיצה מול `getBoundingClientRect` של כל
+ * `[data-story-word]` — וב-jsdom כל אלמנט מחזיר מלבן אפס כברירת מחדל, כך שלחיצה לא
+ * מסויעת הייתה פוגעת בכל שבע המילים בבת אחת ופותחת את שבב האי-ודאות ⛔ במקום הפופאובר.
+ * `layoutStoryWords` נותן לכל מילה מלבן ייחודי ולא חופף כדי שלחיצה במרכזו תפגע **רק** בה.
+ */
+function layoutStoryWords(container: HTMLElement): void {
+  const buttons = Array.from(container.querySelectorAll('[data-story-word]'));
+  buttons.forEach((el, i) => {
+    Object.defineProperty(el, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        left: i * 20,
+        right: i * 20 + 15,
+        top: 0,
+        bottom: 20,
+        width: 15,
+        height: 20,
+        x: i * 20,
+        y: 0,
+        toJSON: () => ({}),
+      }),
+    });
+  });
+}
+
+function clickWord(el: Element): void {
+  const rect = el.getBoundingClientRect();
+  fireEvent.click(el, {
+    clientX: (rect.left + rect.right) / 2,
+    clientY: (rect.top + rect.bottom) / 2,
+  });
+}
+
+function stubFetch(impl: () => Promise<Response> | Response): void {
+  vi.stubGlobal('fetch', vi.fn(impl));
+}
+
+function openPopoverOnLibrary(): void {
+  const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+  layoutStoryWords(container);
+  clickWord(screen.getByRole('button', { name: 'library' }));
+}
+
+describe('T-238ⓑ — הפופאובר בסיפור מדווח מה שקרה באמת (D-183)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('⬜ מצב פתיחה — «הוסף לכרטיסיות» מוצג, ⛔ ולא «נוספה לחזרה»', () => {
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })));
+    openPopoverOnLibrary();
+    expect(screen.getByRole('button', { name: 'הוסף לכרטיסיות' })).toBeTruthy();
+    expect(screen.queryByText('נוספה לחזרה')).toBeNull();
+  });
+
+  it('⛔ pending — לפני שהכתיבה חזרה, «נוספה לחזרה» ⛔ אינו מוצג, והכפתור מנוטרל מפני לחיצה כפולה', async () => {
+    let resolveFetch: (v: Response) => void = () => {};
+    const pending = new Promise<Response>((resolve) => {
+      resolveFetch = resolve;
+    });
+    stubFetch(() => pending);
+    openPopoverOnLibrary();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: 'הוסף לכרטיסיות' }) as HTMLButtonElement;
+      expect(btn.disabled).toBe(true);
+    });
+    expect(screen.queryByText('נוספה לחזרה')).toBeNull();
+
+    resolveFetch(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 }));
+    expect(await screen.findByText('נוספה לחזרה')).toBeTruthy();
+  });
+
+  it('הכתיבה חוזרת ok:false — FAILURE_HE.save + כפתור RETRY_HE, ⛔ לעולם ⛔ לא «נוספה לחזרה»', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 })),
+    );
+    openPopoverOnLibrary();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+
+    expect(await screen.findByText(FAILURE_HE.save)).toBeTruthy();
+    expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+    expect(screen.queryByText('נוספה לחזרה')).toBeNull();
+  });
+
+  it('כשל רשת (fetch עצמו נכשל) — אותו מסך כשל, ⛔ לא בליעה שקטה', async () => {
+    stubFetch(() => {
+      throw new TypeError('Failed to fetch');
+    });
+    openPopoverOnLibrary();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+
+    expect(await screen.findByText(FAILURE_HE.save)).toBeTruthy();
+    expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+  });
+
+  it('⛔ לחיצה על RETRY_HE מריצה מחדש את אותו POST — ⛔ לא מסך שני (D-183 ⓑ2)', async () => {
+    let calls = 0;
+    stubFetch(() => {
+      calls += 1;
+      if (calls === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 }));
+    });
+    openPopoverOnLibrary();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await screen.findByRole('button', { name: RETRY_HE });
+    expect(calls).toBe(1);
+
+    fireEvent.click(screen.getByRole('button', { name: RETRY_HE }));
+    expect(await screen.findByText('נוספה לחזרה')).toBeTruthy();
+    expect(calls).toBe(2);
   });
 });

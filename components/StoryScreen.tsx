@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import StoryEndScreen from '@/components/StoryEndScreen';
-import WordPopover from '@/components/WordPopover';
+import WordPopover, { type WordPopoverStatus } from '@/components/WordPopover';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { storyIntro } from '@/lib/core/storyIntro';
@@ -250,7 +250,7 @@ function StoryReady({
 
   const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading');
   const [openLemma, setOpenLemma] = useState<string | null>(null);
-  const [addedLemmas, setAddedLemmas] = useState<ReadonlySet<string>>(new Set());
+  const [wordStatus, setWordStatus] = useState<Readonly<Record<string, WordPopoverStatus>>>({});
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
 
   /**
@@ -282,14 +282,25 @@ function StoryReady({
     setOpenLemma(lemma);
   }, []);
 
+  /**
+   * T-238ⓑ · `D-183` — **הכתיבה היא `attempts + 1` בלבד (D-084), אבל «נוספה לחזרה»
+   * ⛔ עולה רק כשהיא חוזרת `ok`.** עד כאן זה סומן `pending` -> אופטימי מיד, ו-
+   * `.catch(() => {})` בלע כל כישלון — כישלון ⛔ אינו הופך את המסך למסך שגיאה, אבל
+   * ⛔ גם אינו מוסתר: `WordPopover` עובר ל-`'error'` (`FAILURE_HE.save` + `RETRY_HE`),
+   * ולחיצה על `RETRY_HE` מריצה מחדש בדיוק את אותה קריאה — קריאה חוזרת ל-`add`.
+   */
   const add = useCallback(
     (lemma: string) => {
       const wordId = payload.glosses[lemma]?.wordId;
       if (wordId === undefined) return;
-      // ⛔ סימון מיידי ו⛔ בלי טעינה מחדש: הלומד לחץ, והכתיבה היא `attempts + 1` בלבד
-      // (D-084). כישלון רשת ⛔ אינו הופך את המסך למסך שגיאה — הקריאה הבאה תגלה את האמת.
-      setAddedLemmas((prev) => new Set([...prev, lemma]));
-      void apiPost('/api/review/context', { wordId }).catch(() => {});
+      setWordStatus((prev) => ({ ...prev, [lemma]: 'pending' }));
+      void apiPost<{ ok: boolean }>('/api/review/context', { wordId })
+        .then((body) => {
+          setWordStatus((prev) => ({ ...prev, [lemma]: body.ok ? 'added' : 'error' }));
+        })
+        .catch(() => {
+          setWordStatus((prev) => ({ ...prev, [lemma]: 'error' }));
+        });
     },
     [payload.glosses],
   );
@@ -389,7 +400,7 @@ function StoryReady({
               word={openLemma}
               translationHe={openGloss.translationHe}
               posHe={openGloss.posHe}
-              added={addedLemmas.has(openLemma)}
+              status={wordStatus[openLemma] ?? 'idle'}
               onAdd={() => add(openLemma)}
               onClose={() => setOpenLemma(null)}
             />
