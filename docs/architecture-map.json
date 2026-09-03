@@ -435,6 +435,13 @@
   "lib/core/messageGate.ts": [
     "lib/core/storyGate.ts"
   ],
+  "lib/core/mixReport.test.ts": [
+    "lib/core/contentSchema.ts",
+    "lib/core/mixReport.ts"
+  ],
+  "lib/core/mixReport.ts": [
+    "lib/core/contentSchema.ts"
+  ],
   "lib/core/onboarding.test.ts": [
     "lib/core/onboarding.ts"
   ],

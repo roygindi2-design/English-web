@@ -25,6 +25,7 @@
     "measure:sense": "node scripts/measure-sense-accuracy.mjs",
     "measure:headroom": "node scripts/measure-level-headroom.mjs",
     "measure:gate": "node scripts/measure-gate.mjs",
+    "measure:mix": "node scripts/measure-mix.mjs",
     "measure:continuations": "node scripts/measure-continuations.mjs",
     "measure:plan": "node scripts/measure-plan-tables.mjs",
     "build:ingest": "node scripts/build-ingest-sql.mjs",

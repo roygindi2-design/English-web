@@ -1574,3 +1574,27 @@ lib/core/landing.test.ts` ⇒ 15/15 (כולל הבדיקה הישנה `PREVIEW_C
 שהוחלפה — כבר לא נכונה). `npm run verify` מלא ⇒ **exit 0** (`test` 3235/3235 · `build`
 ירוק · `check:mobile` 1205/1205, `/` @320/375/414 ללא גלילה אופקית, כל יעדי המגע ≥44px).
 שש הכרטיסיות נקראו בקול לפני הקומיט — אין אף אפשרות שהיא תשובה שנייה סבירה.
+
+### `scripts/measure-mix.mjs` — הבדיקה השנייה של K-004, כפקודה (T-221 · F-163 · D-138 § ג׳)
+עד 03/09 `docs/content-distractors-brief.md` הפנה לתנאי הקבלה השני של K-004 — "המשמעויות
+עם תמהיל D-023 מלא עולות מ-127 לכיוון 445" — כ**משפט בלבד**; אין פקודה בריפו שמחשבת
+את המספר, ושחזורו דרש `python3` אד-הוק (C-0342). הדפוס זהה ל-`scripts/measure-gate.mjs`:
+הסקריפט קורא כל `data/generated/batch-*.jsonl` דרך `parseBatchFile` (`lib/core/batchRecord.ts`)
+ומעביר את החושים לפונקציה **טהורה** ב-`lib/core/mixReport.ts` (`measureMix`).
+
+**"נפתר לתרגום שכבר במאגר"** = אותו חיבור ש-`arcadeRound.ts` מבצע מול Postgres בשביל
+`taggedHe` (D-138 § ב׳ — `distractor.word → words.headword → senses.translation_he`),
+מחושב כאן טהור מתוך קובצי ה-batch עצמם: `buildTranslationBank` אוספת כל `headword` עם
+`translation_he` לא-ריק, ו-`measureMix` בודקת לכל מסיח מתויג (`semantic`/`orthographic`
+בלבד — D-023; `collocational`/`near_synonym` ⛔ אינם נספרים) אם המילה שלו נמצאת בבנק.
+תמהיל מלא = ≥2 `semantic` + ≥1 `orthographic` **נפתרים**; לפחות-מסיח-מתויג-אחד = ≥1
+מכל אחד מהשניים, נפתר. ⛔ **אינה שער** (ⓑ בשורת המשימה) — לא נכנסה ל-`verify`, בדיוק
+כמו `measure:coverage`.
+
+**נמדד, ⛔ לא הוצהר (C-0410):** `lib/core/mixReport.test.ts` — 7 בדיקות יחידה, פיקסטורות
+כתובות ביד (הדפוס של `gateReport.test.ts`). `scripts/measure-mix.test.ts` — 4 בדיקות
+אינטגרציה על הדאטה החי, עם רצפות ממדידת T-221 עצמה (787 שורות · 216 מלא · 704
+לפחות-אחד, אחרי `batch-2026-08-28`). `npm run measure:mix` נמדד חי ב-03/09 12:42Z:
+`1187 senses read from 23 batch files · 341/1187 = 28.7% full D-023 mix · 1078/1187 =
+90.8% at least one resolved tagged distractor` — עלייה מ-127/737=17.2% (D-138), בכיוון
+היעד המוצהר 445/737=60.4% (K-004 מלא).
