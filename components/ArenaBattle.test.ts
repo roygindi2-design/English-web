@@ -196,6 +196,29 @@ describe('T-231 — פריים-הזמן חי ב-ref, ⛔ ולא ב-state; המד
   });
 });
 
+/**
+ * T-239 · `D-065` · `docs/api-contract.md:1150` (D-052) — **`no_level` הוא קוד מת שהוסר.**
+ * ⛔ **נמדד בטיק הזה, ⛔ ולא שוער:** `GET /api/arcade/round` שולח `gameLevel` ו-`band`
+ * בלבד — ⛔ **אף פעם לא `level`** — ⇒ `if (body.level === null)` היה תמיד `undefined === null`
+ * (`false`), וענף `no_level` בלתי-מושג מהרגע שנכתב (`components/ArenaBattle.dom.test.tsx`
+ * מודד את ארבעת ענפי הכשל שכן מושגים ומראה שלכל אחד יש יציאה).
+ */
+describe('T-239 — no_level הוסר: קוד מת ⛔ לא נכנס חזרה', () => {
+  it('⛔ אפס אזכור של no_level / NO_LEVEL_HE / body.level ברכיב', () => {
+    expect(CODE).not.toMatch(/no_level/);
+    expect(CODE).not.toMatch(/NO_LEVEL_HE/);
+    expect(CODE).not.toMatch(/body\.level/);
+  });
+
+  it('`RoundBody` נושא `band`, בדיוק כמו שהנתיב שולח — ⛔ ולא שדה שאינו קיים', () => {
+    expect(CODE).toMatch(/readonly band: string/);
+  });
+
+  it('`ready.level` מוזן מ-`body.band` — השדה שהשרת אכן שולח', () => {
+    expect(CODE).toMatch(/setScreen\(\{ kind: 'ready', level: body\.band \}\)/);
+  });
+});
+
 describe('אינווריאנט 37 § 13.5 — התוספת ⛔ לא הדליפה ולו ערך אחד', () => {
   it('⛔ אפס hex חדש בקובץ הטוקנים, ⛔ ואפס שם זירה ב-globals/palette', () => {
     const globals = readFileSync('app/globals.css', 'utf8');

@@ -138,6 +138,7 @@
   "components/ArcadeEntry.tsx": [],
   "components/ArenaAvatar.test.ts": [],
   "components/ArenaAvatar.tsx": [],
+  "components/ArenaBattle.dom.test.tsx": [],
   "components/ArenaBattle.test.ts": [],
   "components/ArenaBattle.tsx": [],
   "components/ArenaHome.test.ts": [],

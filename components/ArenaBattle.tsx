@@ -62,10 +62,16 @@ import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
  * ⛔ אין כאן סרגל לשוניות — בדיוק כפי שהרנדר מראה.
  */
 
+/**
+ * ⚠️ **`level` הוסר — T-239 · `docs/api-contract.md:1150` (D-052).** השדה מעולם לא נשלח
+ * על ידי `GET /api/arcade/round` (הנתיב שולח `gameLevel` ו-`band` בלבד), ⇒ `body.level`
+ * היה תמיד `undefined`, ובדיקת `body.level === null` שהיה תלוי בה — קוד מת שלעולם לא
+ * ירה. `band` הוא השדה שהשרת **אכן** שולח, ואת מה שנמסר ל-`ready.level` היום.
+ */
 type RoundBody =
   | {
       readonly ok: true;
-      readonly level: string | null;
+      readonly band: string;
       readonly round: { readonly questions: readonly ArcadeQuestion[] } | null;
       readonly reason?: 'level_too_small';
       readonly eligible?: number;
@@ -106,10 +112,11 @@ export interface ArenaBattleProps {
   readonly initialRound?: ArenaRound;
 }
 
+/** ⚠️ **`no_level` הוסר — T-239 · D-052.** «רמת המשחק מתחילה ב-1 לכל לומד»: הנתיב
+ *  ⛔ אינו שולח יותר מצב «טרם בחרת רמה», והמצב כאן היה בלתי-מושג מהרגע שנכתב. */
 type ScreenState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'ready'; readonly level: string }
-  | { readonly kind: 'no_level' }
   | { readonly kind: 'too_small'; readonly eligible: number | null; readonly required: number | null }
   | { readonly kind: 'session_expired' }
   | { readonly kind: 'schema_missing' }
@@ -154,7 +161,6 @@ const SAVING_HE = 'שומר את הקרב…';
 const FINISHED_HE = 'הקרב נגמר';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
 const CHOOSE_LEVEL_HE = 'בחירת רמה';
-const NO_LEVEL_HE = 'עוד לא בחרת רמה, ובלעדיה אין למי להעמיד יריב.';
 const TOO_SMALL_HE = 'ברמה הזאת עוד אין מספיק מילים לקרב.';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
@@ -306,10 +312,6 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         else setScreen({ kind: 'error' });
         return;
       }
-      if (body.level === null) {
-        setScreen({ kind: 'no_level' });
-        return;
-      }
       if (body.round === null) {
         setScreen({
           kind: 'too_small',
@@ -325,7 +327,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       setTelegraphPhase('quiet');
       setRaging(false);
       setTimeUp(false);
-      setScreen({ kind: 'ready', level: body.level });
+      setScreen({ kind: 'ready', level: body.band });
     } catch {
       setScreen({ kind: 'error' });
     }
@@ -557,13 +559,11 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
 
   if (screen.kind !== 'ready' || battle === null) {
     const message =
-      screen.kind === 'no_level'
-        ? NO_LEVEL_HE
-        : screen.kind === 'too_small'
-          ? TOO_SMALL_HE
-          : screen.kind === 'schema_missing'
-            ? SCHEMA_MISSING_HE
-            : FAILURE_HE.load;
+      screen.kind === 'too_small'
+        ? TOO_SMALL_HE
+        : screen.kind === 'schema_missing'
+          ? SCHEMA_MISSING_HE
+          : FAILURE_HE.load;
     return (
       <section className="flex min-h-[100dvh] flex-col gap-4 pb-28">
         {topBar(CLOCK_HE)}
@@ -578,7 +578,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
             <a href="/login" data-primary-action="true" className={PRIMARY_ACTION_CLASS}>
               {SIGN_IN_AGAIN_HE}
             </a>
-          ) : screen.kind === 'no_level' || screen.kind === 'too_small' ? (
+          ) : screen.kind === 'too_small' ? (
             <Link href="/cards" data-primary-action="true" className={PRIMARY_ACTION_CLASS}>
               {CHOOSE_LEVEL_HE}
             </Link>
