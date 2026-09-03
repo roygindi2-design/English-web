@@ -1,11 +1,11 @@
+'use client';
+
 /**
- * The body of the אני tab — one progress number, the attribution link, and the
- * way out. No session read and no data access of its own.
- *
- * Same reason as `StudiesScreen`: `/me` answers 307 without Supabase env
- * (TD-13), so its geometry is measured through the `/dev/tabs/me` fixture, and
- * the fixture renders THIS component rather than a copy of the screen's JSX.
- * F-027 cause 2 is a fixture that drifts from the screen it stands for.
+ * The body of the אני tab — progress, the primary continue action, the
+ * attribution link, and the way out. T-145 (D-079): ⛔ no session read and no
+ * data access of its own beyond the ONE call this file owns — `GET
+ * /api/levels/summary` through `apiGet` (lib/api/client.ts), the same route
+ * and the same pattern `<StudiesScreen>` and `<LevelMapScreen>` already use.
  *
  * `wordsLearned` is `null` when the read failed — ⛔ never `0`. A failed read
  * and a learner who has learned nothing look identical on screen, and only one
@@ -13,12 +13,51 @@
  *
  * ⛔ No readiness estimate and ⛔ no predicted score (§ 4.2ב question 4 · 4.4.3)
  * — neither has a measurement behind it. ⛔ No `<ActionBar>`: D-028 forbids two
- * bottom-anchored bars on one screen and this screen carries the tab bar, so the
- * sign-out sits in normal flow.
+ * bottom-anchored bars on one screen and this screen carries the tab bar, so
+ * the primary action and the sign-out both sit in normal flow.
+ *
+ * ⚠️ **T-145 (D-079 · § 4.2טז · D-180) — the primary action stopped being
+ * «יציאה מהחשבון» (measured C-0398: `data-primary-action="true"` sat on
+ * `POST /logout`, so the most prominent thing a learner could do on their own
+ * tab was leave).**
+ * ⓐ The marker moved OFF the sign-out button — it is ⛔ NOT removed (ⓒ): it
+ *   stays in normal flow, this tab's home (F-027 — no screen without a way out).
+ * ⓑ The primary action is «המשך למידה», to `/studies`. What track it names is
+ *   DERIVED — `primaryStudyTrack` (lib/core/studyTracks.ts), the first track
+ *   in `STUDY_TRACKS` order whose metric is not `'empty'`. ⛔ Zero new module,
+ *   zero new query: the input is the same `levels[]` `<StudiesScreen>` already
+ *   fetches, and today it always resolves to `vocabulary` because that is the
+ *   only track with real content (D-176 §ד) — the day that changes, this walk
+ *   changes with it, with no edit here.
+ * ⓓ Three D-034 counts for the active level (known · in review list · unseen)
+ *   render underneath, sourced from the SAME `levels[]` — the active band is
+ *   looked up by the `level` the route also returns (D-037: `null` is «not
+ *   chosen yet», a real state, ⛔ never defaulted to A1). ⛔ No second
+ *   definition of the three counts (§ 4.2ז: `classifyProgress` in
+ *   `lib/core/levelSummary.ts` is the only one) — this file only reads fields
+ *   `summarizeAllLevels` already computed.
+ * ⚠️ D-110 latitude, logged in the tick report: these two blocks render
+ *   ABOVE the «המטרה שלך» goal block (learning progress grouped together),
+ *   ⛔ not below it — no render or anchor section orders this row, so the
+ *   order is Dev's call.
+ * ⚠️ D-110 latitude, logged in the tick report: ⓓ's three tiles reuse the
+ *   `known`/`inReviewList`/`unseen` numbers `<FilterBar>` already renders on
+ *   the cards screen, but ⛔ not the `<FilterBar>` component itself — its
+ *   copy ("ידעתי"/"לא ידעתי"/"לא סוננו" · "X / Y סוננו") is a FILTERING frame
+ *   for the cards screen (36 § 5), and would misname an action nothing here
+ *   performs. This tile uses § 4.2ז's own vocabulary instead — «ידוע» ·
+ *   «ברשימת החזרה» · «טרם נראה» — the three names T-145's own task cell
+ *   quotes, so the tab's copy matches the spec it was opened against rather
+ *   than borrowing another screen's.
  */
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
+import { apiGet } from '@/lib/api/client';
+import type { CefrBand } from '@/lib/core/cefrLevels';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import type { LevelSummary } from '@/lib/core/levelSummary';
+import { primaryStudyTrack, trackLabelHe } from '@/lib/core/studyTracks';
 
 const HEADING_HE = 'אני';
 const WORDS_LEARNED_HE = 'מילים שנלמדו';
@@ -27,6 +66,13 @@ const SIGN_OUT_HE = 'יציאה מהחשבון';
 const GOAL_HEADING_HE = 'המטרה שלך';
 const GOAL_SCORE_LABEL_HE = 'ציון יעד';
 const GOAL_DATE_LABEL_HE = 'תאריך המבחן';
+/** T-145ⓑ · D-079 · D-180. */
+const CONTINUE_LEARNING_HE = 'המשך למידה';
+/** T-145ⓓ · D-034 · § 4.2ז — see the file header for why this is not `<FilterBar>`'s wording. */
+const PROGRESS_HEADING_HE = 'התקדמות ברמה הנוכחית';
+const KNOWN_HE = 'ידוע';
+const IN_REVIEW_HE = 'ברשימת החזרה';
+const UNSEEN_HE = 'טרם נראה';
 
 /**
  * The three onboarding answers § 4.2ד puts on this tab, exactly as stored —
@@ -40,13 +86,63 @@ export type LearnerGoal = {
   readonly examDate: string | null;
 };
 
+type LevelsResponse =
+  | { readonly ok: true; readonly level: CefrBand | null; readonly levels?: readonly LevelSummary[] }
+  | { readonly ok: false; readonly code: string };
+
 export default function MeScreen({
   wordsLearned,
   goal,
+  fixtureLevels,
+  fixtureLevel,
 }: {
   wordsLearned: number | null;
   goal: LearnerGoal;
+  /**
+   * Harness-only override, exactly `<StudiesScreen>`'s `fixtureLevels` (T-210):
+   * ⛔ no product screen passes these — `app/(tabs)/me/page.tsx` renders
+   * `<MeScreen>` bare, and only `/dev/tabs/me` supplies fixed values so
+   * geometry is measured without Supabase env or a live network read.
+   */
+  readonly fixtureLevels?: readonly LevelSummary[];
+  readonly fixtureLevel?: CefrBand | null;
 }): React.JSX.Element {
+  const fixtureGiven = fixtureLevels !== undefined;
+  const [levels, setLevels] = useState<readonly LevelSummary[] | null>(fixtureLevels ?? null);
+  const [activeLevel, setActiveLevel] = useState<CefrBand | null>(fixtureLevel ?? null);
+
+  useEffect(() => {
+    if (fixtureGiven) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const body = await apiGet<LevelsResponse>('/api/levels/summary');
+        if (cancelled) return;
+        if (body.ok) {
+          setLevels(body.levels ?? []);
+          setActiveLevel(body.level);
+        } else {
+          setLevels(null);
+          setActiveLevel(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setLevels(null);
+          setActiveLevel(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // `fixtureGiven` only — a fixture cannot start `true` and become `false` mid-life.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixtureGiven]);
+
+  const primaryTrack = levels === null ? null : primaryStudyTrack(levels);
+  const activeSummary =
+    levels !== null && activeLevel !== null ? (levels.find((l) => l.level === activeLevel) ?? null) : null;
+
   return (
     <section className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
@@ -75,6 +171,48 @@ export default function MeScreen({
           <p className="text-4xl font-bold leading-none">{wordsLearned}</p>
           <p className="text-lg text-ink-muted">{WORDS_LEARNED_HE}</p>
         </div>
+      )}
+
+      {/* T-145ⓑ. The learner's one way forward from their own tab — see the
+          file header for why the track name is derived and why this block
+          sits here, above the goal block (D-110 latitude, logged). */}
+      <Link
+        href="/studies"
+        data-primary-action="true"
+        className="flex w-full min-h-touch flex-col items-start justify-center gap-0.5 rounded-lg bg-brand-surface px-5 py-3 text-brand-on active:opacity-90"
+      >
+        <span className="text-lg font-semibold">{CONTINUE_LEARNING_HE}</span>
+        {primaryTrack !== null && <span className="text-sm text-brand-on/80">{trackLabelHe(primaryTrack)}</span>}
+      </Link>
+
+      {/* T-145ⓓ. ⛔ Rendered only once a real active level is known — `null`
+          (no level chosen, D-037, or the read failed/is still loading) shows
+          nothing here rather than three invented zeros (same rule
+          `wordsLearned` already follows above). */}
+      {activeSummary !== null && (
+        <section className="flex flex-col gap-2" data-progress-block>
+          <h2 className="text-lg font-semibold text-ink">{PROGRESS_HEADING_HE}</h2>
+          <ul className="grid list-none grid-cols-3 gap-2.5 p-0">
+            <li>
+              <div className="flex flex-col items-center gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-2 py-3">
+                <span className="text-2xl font-bold leading-none">{activeSummary.known}</span>
+                <span className="text-xs text-ink-muted">{KNOWN_HE}</span>
+              </div>
+            </li>
+            <li>
+              <div className="flex flex-col items-center gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-2 py-3">
+                <span className="text-2xl font-bold leading-none">{activeSummary.inReviewList}</span>
+                <span className="text-xs text-ink-muted">{IN_REVIEW_HE}</span>
+              </div>
+            </li>
+            <li>
+              <div className="flex flex-col items-center gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-2 py-3">
+                <span className="text-2xl font-bold leading-none">{activeSummary.unseen}</span>
+                <span className="text-xs text-ink-muted">{UNSEEN_HE}</span>
+              </div>
+            </li>
+          </ul>
+        </section>
       )}
 
       {/* § 4.2ד. ⛔ Hidden when institution AND score are both empty — a heading
@@ -124,11 +262,13 @@ export default function MeScreen({
           who has not finished that form is redirected there from `/` by
           `proxy.ts`, and `/onboarding` lives outside `app/(tabs)` and so has no
           tab bar — removing it there would leave exactly the dead end 🔴 F-027
-          was opened for. This tab is the sign-out's home, not its only place. */}
+          was opened for. This tab is the sign-out's home, not its only place.
+          ⚠️ T-145ⓐⓒ: ⛔ no `data-primary-action` here any more — «המשך למידה»
+          above carries it now — the form itself and its position are
+          unchanged: signing out stays a secondary action in normal flow. */}
       <form action="/logout" method="post">
         <button
           type="submit"
-          data-primary-action="true"
           className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong bg-surface-raised px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
         >
           {SIGN_OUT_HE}

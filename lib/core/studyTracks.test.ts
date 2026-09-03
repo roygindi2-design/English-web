@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   STUDY_TRACKS,
   emptyTrackMetric,
+  primaryStudyTrack,
   trackLabelHe,
   vocabularyMetric,
 } from './studyTracks';
@@ -43,6 +44,27 @@ describe('vocabularyMetric — אפס הגדרה שנייה (§ 4.2ז)', () => {
       level({ level: l as LevelSummary['level'] }),
     );
     expect(vocabularyMetric(levels)).toEqual({ kind: 'measured', summaryHe: '0 מתוך 0 מילים ידועות' });
+  });
+});
+
+describe('primaryStudyTrack — T-145ⓑ, נגזר מ-STUDY_TRACKS ⛔ ולא קשיח', () => {
+  it('אוצר מילים תמיד ⛔ אינו empty (vocabularyMetric תמיד measured) ⇒ הוא הראשון בסדר ⇒ הוא הראש', () => {
+    const empty = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((l) =>
+      level({ level: l as LevelSummary['level'] }),
+    );
+    expect(primaryStudyTrack(empty)).toBe('vocabulary');
+  });
+
+  it('גם עם התקדמות אמיתית — עדיין vocabulary, הראשון ב-STUDY_TRACKS', () => {
+    const levels = [
+      level({ level: 'A1', totalInLevel: 315, known: 189, inReviewList: 18, unseen: 108 }),
+      level({ level: 'A2' }),
+      level({ level: 'B1' }),
+      level({ level: 'B2' }),
+      level({ level: 'C1' }),
+      level({ level: 'C2' }),
+    ];
+    expect(primaryStudyTrack(levels)).toBe('vocabulary');
   });
 });
 

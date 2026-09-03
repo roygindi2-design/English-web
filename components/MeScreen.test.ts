@@ -33,9 +33,21 @@ describe('<MeScreen> — the learner tab body (T-051 · § 4.2ב)', () => {
     expect(CODE).toMatch(/<form[^>]*action="\/logout"[^>]*method="post"/);
   });
 
-  it("marks the sign-out as the screen's single primary action", () => {
-    expect(CODE).toContain('data-primary-action="true"');
-    expect(CODE.match(/data-primary-action/g)?.length).toBe(1);
+  /**
+   * T-145ⓐⓒ · D-079: the sign-out stopped being the primary action 26/08 — it
+   * measured `data-primary-action="true"` on `POST /logout`, which made
+   * "leave" the most prominent thing a learner could do on their own tab.
+   * ⛔ It is NOT removed (ⓒ) — it stays in normal flow, still this tab's home
+   * (F-027: no screen without a way out) — it just carries no marker any more.
+   */
+  it('⛔ no longer marks the sign-out as the primary action (D-079 · T-145ⓐ)', () => {
+    const form = CODE.match(/<form action="\/logout"[\s\S]*?<\/form>/)?.[0];
+    expect(form, 'the /logout form was not found').toBeDefined();
+    expect(form).not.toContain('data-primary-action');
+  });
+
+  it('carries exactly one [data-primary-action] (F-027 · check:mobile)', () => {
+    expect(CODE.match(/data-primary-action="true"/g)?.length).toBe(1);
   });
 
   it('carries ⛔ no ActionBar — D-028 forbids two bottom bars on one screen', () => {
@@ -163,5 +175,52 @@ describe('the /me route reads the goal it renders (F-027 cause 2)', () => {
 
   it('⛔ never turns a failed profile read into an invented goal', () => {
     expect(page).toMatch(/institution:\s*(profile|null)/);
+  });
+});
+
+describe('T-145 — «אני» מקבלת פעולה אמיתית (D-079 · § 4.2טז)', () => {
+  it("is a client component — needed to fetch GET /api/levels/summary itself, the <StudiesScreen> pattern", () => {
+    expect(SRC.trimStart().startsWith("'use client';")).toBe(true);
+  });
+
+  it('reads progress through apiGet, ⛔ never a bare fetch (lib/api/client.ts is the only HTTP layer)', () => {
+    expect(CODE).toMatch(/import \{ apiGet \} from '@\/lib\/api\/client'/);
+    expect(CODE).toContain("apiGet<");
+    expect(CODE).not.toMatch(/[^.]fetch\(/);
+  });
+
+  it('ⓑ the primary action leads to /studies, labelled «המשך למידה»', () => {
+    expect(CODE).toContain('המשך למידה');
+    expect(CODE).toMatch(/href="\/studies"[^>]*data-primary-action="true"|data-primary-action="true"[^>]*href="\/studies"/);
+  });
+
+  it('ⓑ the track named on the button is DERIVED — primaryStudyTrack, ⛔ never a hard-coded "אוצר מילים"', () => {
+    expect(CODE).toMatch(/import \{[^}]*primaryStudyTrack[^}]*\} from '@\/lib\/core\/studyTracks'/);
+    expect(CODE).toContain('primaryStudyTrack(');
+    // The literal label string belongs to trackLabelHe/STUDY_TRACKS (studyTracks.ts) alone.
+    expect(CODE).not.toMatch(/['"`]אוצר מילים['"`]/);
+  });
+
+  it('ⓓ shows the three D-034 counts for the active level — known · in-review · unseen, ⛔ never invented zeros', () => {
+    expect(CODE).toContain('ידוע');
+    expect(CODE).toContain('ברשימת החזרה');
+    expect(CODE).toContain('טרם נראה');
+    // `.known` / `.inReviewList` / `.unseen` are levelSummary.ts's own field names —
+    // ⛔ no second count anywhere in this file (§ 4.2ז: "אין הגדרה שנייה").
+    expect(CODE).toMatch(/\.known\b/);
+    expect(CODE).toMatch(/\.inReviewList\b/);
+    expect(CODE).toMatch(/\.unseen\b/);
+  });
+
+  it('ⓓ the three counts render only once a real level is known, ⛔ never a silent zero while loading/unreachable', () => {
+    // The active-level summary is looked up from `levels` — a `null`-guarded
+    // lookup, never a bare access that would throw or default to zero.
+    expect(CODE).toMatch(/activeSummary\s*!==\s*null/);
+  });
+
+  it('the fixture provides a fixed level and levels array, ⛔ not a network-dependent one (T-210/T-246 pattern)', () => {
+    const fixture = readFileSync('app/dev/tabs/me/page.tsx', 'utf8');
+    expect(fixture).toMatch(/fixtureLevels=/);
+    expect(fixture).toMatch(/fixtureLevel=/);
   });
 });

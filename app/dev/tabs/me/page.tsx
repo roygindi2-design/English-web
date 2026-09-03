@@ -1,5 +1,6 @@
 import MeScreen from '@/components/MeScreen';
 import TabBar from '@/components/TabBar';
+import type { LevelSummary } from '@/lib/core/levelSummary';
 
 /**
  * Layout harness for check:mobile. NOT a product screen and NOT linked from
@@ -20,6 +21,23 @@ import TabBar from '@/components/TabBar';
 const SAMPLE_WORDS_LEARNED = 128;
 
 /**
+ * T-145ⓑⓓ. Fixed, ⛔ not network-dependent — exactly `/dev/tabs/studies`'
+ * `FIXTURE_LEVELS` (same learner, same numbers, so the two harnesses cannot
+ * silently disagree about what "189 known in A1" looks like). `fixtureLevel`
+ * is the active band the three ⓓ counters read; A1 is chosen because it is
+ * the only band with real (non-zero) numbers, which is also the tallest
+ * composition of the three-tile row.
+ */
+const FIXTURE_LEVELS: readonly LevelSummary[] = [
+  { level: 'A1', totalInLevel: 315, known: 189, inReviewList: 18, unseen: 108 },
+  { level: 'A2', totalInLevel: 80, known: 10, inReviewList: 4, unseen: 66 },
+  { level: 'B1', totalInLevel: 20, known: 0, inReviewList: 0, unseen: 20 },
+  { level: 'B2', totalInLevel: 2, known: 0, inReviewList: 0, unseen: 2 },
+  { level: 'C1', totalInLevel: 0, known: 0, inReviewList: 0, unseen: 0 },
+  { level: 'C2', totalInLevel: 0, known: 0, inReviewList: 0, unseen: 0 },
+];
+
+/**
  * A fixed sample goal, ⛔ not a read. The values are chosen to measure the
  * TALLEST and WIDEST realistic composition at once: a long Hebrew institution
  * name (which is what the one-line overflow rule exists for), a score and a
@@ -34,7 +52,12 @@ const SAMPLE_GOAL = {
 export default function DevTabsMePage() {
   return (
     <>
-      <MeScreen wordsLearned={SAMPLE_WORDS_LEARNED} goal={SAMPLE_GOAL} />
+      <MeScreen
+        wordsLearned={SAMPLE_WORDS_LEARNED}
+        goal={SAMPLE_GOAL}
+        fixtureLevels={FIXTURE_LEVELS}
+        fixtureLevel="A1"
+      />
       <TabBar />
     </>
   );

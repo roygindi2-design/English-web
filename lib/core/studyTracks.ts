@@ -81,3 +81,27 @@ export function emptyTrackMetric(
   // must never carry one. Parentheses replace the dash; the number stays real.
   return { kind: 'empty', summaryHe: `אין עדיין פריטים ב${trackLabelHe(id)} (0 מתוך 0)` };
 }
+
+/**
+ * T-145ⓑ · D-180. The primary action on `<MeScreen>` names the first track a
+ * learner would actually continue — DERIVED, not hard-coded to `'vocabulary'`.
+ * The rule is exactly `STUDY_TRACKS`' own order: the first track whose metric
+ * is not `'empty'`. Today that is always `vocabulary`, because
+ * `vocabularyMetric` never returns `'empty'` and it sits first in the array —
+ * ⛔ but the day grammar/writing/reading gain real content (D-176 §ד stops
+ * saying otherwise), this walk starts returning them without a code change
+ * here.
+ *
+ * ⛔ Zero new query: `levels` is the same six-band array `<StudiesScreen>`
+ * already fetches from `GET /api/levels/summary`.
+ */
+export function primaryStudyTrack(levels: readonly LevelSummary[]): StudyTrackId {
+  for (const track of STUDY_TRACKS) {
+    const metric = track.id === 'vocabulary' ? vocabularyMetric(levels) : emptyTrackMetric(track.id);
+    if (metric.kind !== 'empty') return track.id;
+  }
+  // Unreachable while `vocabularyMetric` never returns 'empty' and it is
+  // STUDY_TRACKS[0] — kept so the function has a total return type instead of
+  // a `!` assertion.
+  return STUDY_TRACKS[0].id;
+}
