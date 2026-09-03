@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   WORLD_APP_ORDER,
@@ -193,5 +194,36 @@ describe('libraryTile (T-137ⓒ · ⓓ)', () => {
     // סריקת מקור: הגבול נאכף **בהיעדר**, בדיוק כמו ב-`0018_stories.sql`.
     const src = readFileSync('lib/core/worldApps.ts', 'utf8');
     expect(src).not.toContain('arcade_collected_words');
+  });
+});
+
+/**
+ * T-159ⓑ — כל ערך ב-`WORLD_APP_HREF` חייב להצביע על עמוד שקיים ב-`app/`, ⛔ ולא
+ * להסתמך על כך שהאריח נשאר מושבת. ⚠️ קבוצות מסלול (`(tabs)`) ⛔ אינן חלק מה-URL
+ * ב-Next.js — נסרקות ומדולגות, ⛔ ולא נספרות כמקטע נתיב.
+ */
+function collectPageRoutes(dir: string, urlSegments: readonly string[] = []): string[] {
+  const routes: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      const isRouteGroup = entry.startsWith('(') && entry.endsWith(')');
+      routes.push(...collectPageRoutes(full, isRouteGroup ? urlSegments : [...urlSegments, entry]));
+    } else if (entry === 'page.tsx') {
+      routes.push(`/${urlSegments.join('/')}`);
+    }
+  }
+  return routes;
+}
+
+describe('WORLD_APP_HREF ⇔ app/**/page.tsx (T-159ⓑ)', () => {
+  it('⛔ לכל יעד ב-WORLD_APP_HREF יש עמוד אמיתי — נכשלת בשם על יעד מת', () => {
+    const routes = new Set(collectPageRoutes('app'));
+    for (const id of WORLD_APP_ORDER) {
+      const href = WORLD_APP_HREF[id];
+      expect(routes.has(href), `${id} → ${href} — ⛔ אין app/**/page.tsx שמייצר את הנתיב הזה`).toBe(
+        true,
+      );
+    }
   });
 });
