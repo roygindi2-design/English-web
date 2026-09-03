@@ -184,6 +184,18 @@ def icon_lock(c, cx, cy, col, sc=1.0):
     c.d.arc([(cx-3.4*sc)*S, (cy-7.5*sc)*S, (cx+3.4*sc)*S, (cy+1*sc)*S],
             180, 360, fill=col, width=int(1.6*sc*S))
 
+# ⟦added 03/09 · D-182 · T-252 · ring goes 8→9⟧ — matches the WorldRing.tsx SVG
+# paths for the same two node ids (`components/WorldRing.tsx` ICON_PATHS).
+def icon_mail(c, cx, cy, col, sc=1.0):
+    c.rr(cx-9*sc, cy-6*sc, 18*sc, 12*sc, 2.4*sc, outline=col, width=1.6*sc)
+    c.line(cx-7.5*sc, cy-4*sc, cx, cy+1.5*sc, col, 1.6*sc)
+    c.line(cx, cy+1.5*sc, cx+7.5*sc, cy-4*sc, col, 1.6*sc)
+
+def icon_target(c, cx, cy, col, sc=1.0):
+    c.circ(cx, cy, 9*sc, outline=col, width=1.6*sc)
+    c.circ(cx, cy, 4.8*sc, outline=col, width=1.6*sc)
+    c.circ(cx, cy, 1.4*sc, fill=col)
+
 NAV_Y = LH - 78          # top of nav bar
 TABS = [                 # left -> right; RTL reading: לימודים, כרטיסיות, העולם, אני, הגדרות
     ("הגדרות",   icon_gear,   0.10),
@@ -430,8 +442,12 @@ def scene_cards(t):
     return c.img
 
 # =========================================================== SCENE 2
+# ⟦עודכן 03/09 · D-182 · T-252 — 7⇢9: המחולל היה חסר `הודעות` ו`אמירנט`⟧
+# הסדר מיושר ל-`36 § 6` / `lib/core/worldRing.ts` `RING_ORDER`, ⛔ ולא הפוך.
 WORLD_NODES = [
     ("זירת קרב",     icon_sword),
+    ("הודעות",       icon_mail),
+    ("אמירנט",       icon_target),
     ("סיפורים",      icon_story),
     ("כתיבה חופשית", icon_pen),
     ("משפטים",       icon_quote),
@@ -440,6 +456,12 @@ WORLD_NODES = [
     ("חברים",        icon_people),
 ]
 RING_CX, RING_CY, RING_R = LW / 2, 402, 108
+
+# ⟦עודכן 03/09 · D-182 · T-252⟧ אינדקס `סיפורים` ב-`WORLD_NODES` — היה קבוע `1`
+# ב-`scene_story` כשהרשימה מנתה שבעה פריטים (`סיפורים` היה שם ב-index 1);
+# אחרי הוספת `הודעות`/`אמירנט` `סיפורים` זז ל-index 3. ⛔ שם אחד ⛔ ולא ארבעה
+# מספרי-קסם — `scene_story` קורא אותו במקום לחזור על ה-`1`.
+STORY_NODE = 3
 
 def node_pos(i):
     ang = -math.pi / 2 + i * math.tau / len(WORLD_NODES)
@@ -1036,12 +1058,12 @@ def scene_story(t):
     tap_node, rev_a, rev_b = .85, .85, 1.62
     w1, add_t, w2, q_t, q_ans = 2.45, 3.65, 5.05, 6.45, 7.45
     if t < rev_a:
-        screen_world(c, t, appear=1.0, tap_idx=1,
+        screen_world(c, t, appear=1.0, tap_idx=STORY_NODE,
                      tap_p=clamp(1 - abs(t - tap_node) / .3) if abs(t - tap_node) < .3 else 0)
         bottom_nav(c, active="העולם", world_pulse=t * .5)
     else:
         base = C(); status_bar(base)
-        screen_world(base, t, appear=1.0, tap_idx=1, tap_p=1.0)
+        screen_world(base, t, appear=1.0, tap_idx=STORY_NODE, tap_p=1.0)
         bottom_nav(base, active="העולם", world_pulse=t * .5)
         top = C(); status_bar(top)
         active, pop = None, 0.0
@@ -1054,7 +1076,7 @@ def scene_story(t):
                      q_rev=(t >= q_ans + .08))
         bottom_nav(top, active="העולם", world_pulse=t * .5)
         pr = ease_out(seg(t, rev_a, rev_b))
-        nx, ny = node_pos(1)
+        nx, ny = node_pos(STORY_NODE)
         R_ = math.hypot(W, H)
         mask = Image.new("L", (W, H), 0)
         ImageDraw.Draw(mask).ellipse([nx*S - pr*R_, ny*S - pr*R_, nx*S + pr*R_, ny*S + pr*R_],
@@ -1062,7 +1084,7 @@ def scene_story(t):
         base.img.paste(top.img, (0, 0), mask)
         c.img = base.img; c.d = ImageDraw.Draw(c.img, "RGBA")
     if abs(t - tap_node) < .5:
-        nx, ny = node_pos(1)
+        nx, ny = node_pos(STORY_NODE)
         touch(c, nx, ny, press=clamp(1 - abs(t - tap_node) / .3),
               ripple=seg(t, tap_node, tap_node + .55))
     for wt, key in ((w1, "library"), (w2, "sentence")):

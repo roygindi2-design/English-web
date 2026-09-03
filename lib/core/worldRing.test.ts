@@ -38,10 +38,11 @@ const stateOf = (nodes: readonly { id: RingNodeId; state: RingNodeState }[], id:
   nodes.find((n) => n.id === id)?.state;
 
 describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
-  it('⛔ eight nodes, in `36 § 6`’s order, ⛔ with no duplicate', () => {
+  it('⛔ nine nodes, in `36 § 6`’s order, ⛔ with no duplicate (`D-182` · `T-252`)', () => {
     expect([...RING_ORDER]).toEqual([
       'arena',
       'msgs',
+      'amirnet',
       'stories',
       'compose',
       'sentences',
@@ -49,7 +50,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
       'leaders',
       'friends',
     ]);
-    expect(new Set(RING_ORDER).size).toBe(8);
+    expect(new Set(RING_ORDER).size).toBe(9);
   });
 
   it('every node carries a Hebrew label, ⛔ and none is empty', () => {
@@ -58,6 +59,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     }
     expect(RING_LABEL_HE.arena).toBe('זירת קרב');
     expect(RING_LABEL_HE.msgs).toBe('הודעות');
+    expect(RING_LABEL_HE.amirnet).toBe('אמירנט');
   });
 
   // ⛔ The geometry is DATA — that is what lets the ring be measured with no DOM.
@@ -68,12 +70,23 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     expect(Math.abs(p.y - -108)).toBeLessThan(1e-9);
   });
 
-  it('the eight angles are 45° apart and go clockwise from the top, as the render draws them', () => {
-    const seen = new Set(RING_ORDER.map((id) => ((RING_ANGLE_DEG[id] % 360) + 360) % 360));
-    expect(seen.size).toBe(8);
-    for (const deg of seen) expect(deg % 45).toBe(0);
+  it('the nine angles are 40° apart and go clockwise from the top, as the render draws them (`D-182`)', () => {
+    const deg = (id: RingNodeId) => ((RING_ANGLE_DEG[id] % 360) + 360) % 360;
+    const seen = new Set(RING_ORDER.map(deg));
+    expect(seen.size).toBe(9);
+    expect(deg('arena')).toBe(90); // the anchor — `זירת קרב` sits at the top, unchanged from the 8-node ring
+    // every consecutive pair in RING_ORDER is exactly 40° apart, clockwise (angle decreases, wraps at 360)
+    const order = [...RING_ORDER];
+    for (let i = 0; i < order.length; i++) {
+      const a = deg(order[i] as RingNodeId);
+      const b = deg(order[(i + 1) % order.length] as RingNodeId);
+      expect((a - b + 360) % 360).toBe(40);
+    }
     // clockwise on screen ⇒ x grows before it shrinks: `הודעות` is to the RIGHT of `זירת קרב`
     expect(ringPoint('msgs').x).toBeGreaterThan(0);
+    // `אמירנט` sits between `הודעות` and `סיפורים` — further right, closer to the horizon
+    expect(ringPoint('amirnet').x).toBeGreaterThan(ringPoint('msgs').x);
+    expect(ringPoint('amirnet').x).toBeGreaterThan(0);
     expect(ringPoint('friends').x).toBeLessThan(0);
     expect(ringPoint('sentences').y).toBeGreaterThan(0);
   });
@@ -99,7 +112,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     expect(ringScreen(ALL_UNKNOWN, '/world', 'unavailable').kind).toBe('empty');
   });
 
-  it('a healthy read draws the ring — ⛔ and it draws all eight', () => {
+  it('a healthy read draws the ring — ⛔ and it draws all nine', () => {
     const screen = ringScreen(inputs(), '/world', 'unavailable');
     expect(screen.kind).toBe('ring');
     if (screen.kind !== 'ring') throw new Error('unreachable');
@@ -145,7 +158,13 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     const screen = ringScreen(inputs(), '/world', 'unavailable');
     if (screen.kind !== 'ring') throw new Error('unreachable');
     const infra = screen.nodes.filter((n) => n.state.kind === 'locked_infra');
-    expect(infra.map((n) => n.id).sort()).toEqual(['friends', 'leaders', 'msgs', 'sentences']);
+    expect(infra.map((n) => n.id).sort()).toEqual([
+      'amirnet',
+      'friends',
+      'leaders',
+      'msgs',
+      'sentences',
+    ]);
     for (const node of infra) {
       if (node.state.kind !== 'locked_infra') throw new Error('unreachable');
       expect(/\d/.test(node.state.noteHe)).toBe(false);

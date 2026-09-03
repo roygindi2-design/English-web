@@ -130,6 +130,13 @@ const ICON_PATHS: Readonly<Record<RingNodeId, React.JSX.Element>> = {
       <path d="M8 12.5h5" />
     </>
   ),
+  amirnet: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4.3" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
   stories: (
     <>
       <path d="M12 6.5C10 5 7.5 4.7 4.5 5v13c3-.3 5.5 0 7.5 1.5" />
@@ -264,7 +271,7 @@ function RingNodeItem({
 }): React.JSX.Element {
   const { x, y } = ringPoint(node.id);
   // ⚠️ התווית **מחוץ לעיגול** כמו ברנדר, ומעליו בחצי העליון ומתחתיו בחצי התחתון
-  // — בדיוק כפי ש-`kol-world-ring.png` מצייר את שמונת הצמתים.
+  // — בדיוק כפי ש-`kol-D-01-world.png` מצייר את תשעת הצמתים (`D-182`).
   const labelAbove = y <= 0;
   const style = { left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)` } as const;
   const note = noteOf(node.state);
@@ -507,7 +514,7 @@ export default function WorldRing(): React.JSX.Element {
   };
 
   if (loading) {
-    // אזור חי אחד — קורא מסך שומע «טוען», ⛔ ולא שמונה עיגולים ריקים.
+    // אזור חי אחד — קורא מסך שומע «טוען», ⛔ ולא תשעה עיגולים ריקים.
     return (
       <section data-world-ring aria-busy="true" className="flex flex-col gap-6">
         <header className="flex flex-col gap-1">
