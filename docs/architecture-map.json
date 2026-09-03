@@ -22,6 +22,8 @@
   "app/api/auth/login/route.ts": [],
   "app/api/auth/signup/route.test.ts": [],
   "app/api/auth/signup/route.ts": [],
+  "app/api/dev/session/route.test.ts": [],
+  "app/api/dev/session/route.ts": [],
   "app/api/health/route.test.ts": [],
   "app/api/health/route.ts": [],
   "app/api/levels/current/route.test.ts": [],
@@ -337,6 +339,10 @@
     "lib/core/deckTiles.ts"
   ],
   "lib/core/deckTiles.ts": [],
+  "lib/core/devUser.test.ts": [
+    "lib/core/devUser.ts"
+  ],
+  "lib/core/devUser.ts": [],
   "lib/core/entryRoute.test.ts": [
     "lib/core/entryRoute.ts"
   ],
@@ -634,6 +640,10 @@
   "lib/supabase/cookieOptions.test.ts": [
     "lib/supabase/auth.ts"
   ],
+  "lib/supabase/devUser.test.ts": [
+    "lib/supabase/devUser.ts"
+  ],
+  "lib/supabase/devUser.ts": [],
   "lib/supabase/layer2.test.ts": [],
   "lib/supabase/learnerLevel.test.ts": [],
   "lib/supabase/lexicalClassBackfill.test.ts": [],
