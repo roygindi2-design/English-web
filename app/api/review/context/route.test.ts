@@ -62,6 +62,66 @@ function stubClient({
   };
 }
 
+/**
+ * T-238 — root cause: `word_progress`'s real primary key (as created in
+ * `0003b_provenance_telemetry.sql`, never altered since — grepped across every
+ * migration in this clone) is `(user_id, word_id)`. PostgREST's `upsert` rejects an
+ * `onConflict` target that does not name an existing unique/exclusion constraint
+ * with error 42P10 — so an `onConflict` naming a third column that is not part of
+ * any constraint fails on EVERY call, in production, and the route's own
+ * `failureFor()` turns that into a swallowed `{ ok: false }` the client never reads
+ * (`components/StoryScreen.tsx` does `.catch(() => {})` on a discarded promise).
+ * This is why a word tapped in a story never reaches `word_progress` for the
+ * learner. Fixed at the source (`CONFLICT_KEY`), and guarded here so it cannot
+ * silently drift from the real schema again.
+ */
+describe('T-238 — the upsert target matches the real primary key, not an aspirational one', () => {
+  it('onConflict names exactly the columns of the live word_progress primary key', () => {
+    const migration = readFileSync('supabase/migrations/0003b_provenance_telemetry.sql', 'utf8');
+    const tableBody = migration.match(
+      /create table if not exists public\.word_progress \(([\s\S]*?)\n\);/,
+    )?.[1];
+    if (tableBody === undefined) throw new Error('word_progress table definition not found');
+
+    const pkList = tableBody.match(/primary key \(([^)]+)\)/)?.[1];
+    if (pkList === undefined) throw new Error('primary key clause not found on word_progress');
+    const pkColumns = pkList
+      .split(',')
+      .map((c) => c.trim())
+      .sort();
+
+    const conflictList = SRC.match(/CONFLICT_KEY\s*=\s*'([^']+)'/)?.[1];
+    if (conflictList === undefined) throw new Error('CONFLICT_KEY not found in route source');
+    const conflictColumns = conflictList
+      .split(',')
+      .map((c) => c.trim())
+      .sort();
+
+    expect(conflictColumns).toEqual(pkColumns);
+  });
+
+  it('the actual upsert call receives that same onConflict value', async () => {
+    let seenOnConflict: string | undefined;
+    const supabase = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: null, error: null }),
+            }),
+          }),
+        }),
+        upsert: async (_row: Record<string, unknown>, options: { onConflict: string }) => {
+          seenOnConflict = options.onConflict;
+          return { error: null };
+        },
+      }),
+    };
+    await handleContextTap(supabase as never, 'user-1', 'word-3');
+    expect(seenOnConflict).toBe('user_id,word_id');
+  });
+});
+
 describe('D-084 — the row itself, ⛔ not the source text', () => {
   it('a word at three consecutive correct answers comes out exactly where it went in', async () => {
     const existing = { attempts: 7, repetition: 3, next_review_at: '2026-09-01T00:00:00Z' };

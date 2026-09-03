@@ -16,9 +16,17 @@ export const dynamic = 'force-dynamic';
  * `RULES § 0.22`, logged in the tick summary).
  *
  * ⛔ **One row per pair, ⛔ not one row per event (W4).** `word_progress` is
- * `primary key (user_id, word_id, track_id)` and `0003b_provenance_telemetry.sql` states
- * outright that an event log on a spaced-repetition app grows without a ceiling. The write
- * is therefore an upsert on that key.
+ * `primary key (user_id, word_id)` — measured against the live `0003b_provenance_telemetry.sql`
+ * definition (never altered by a later migration; `track_id` there is a plain
+ * `not null default 'amiram'` column, not part of any constraint) — because an event log on
+ * a spaced-repetition app grows without a ceiling. The write is therefore an upsert on that
+ * key. ⚠️ **T-238 (03/09):** this comment used to claim `track_id` was part of the key, and
+ * `CONFLICT_KEY` below named it — PostgREST rejects an `onConflict` target that names no
+ * real constraint (`42P10`), so every upsert from this route failed, in production, on every
+ * call, and the failure was invisible: the client discards the response
+ * (`components/StoryScreen.tsx`'s `.catch(() => {})` is on the fetch itself, not on the
+ * `{ ok: false }` body). Fixed at the source; `route.test.ts` now cross-checks this string
+ * against the migration file so it cannot drift from the schema again.
  *
  * ⛔ **It ⛔ never touches the arena's decoupled table (D-052 · D-053)** — the boundary is
  * enforced here by absence, ⛔ not only by review.
@@ -30,7 +38,7 @@ export const dynamic = 'force-dynamic';
 
 /** ⛔ Two columns on the read, and one on the write. The narrowness IS the guard. */
 const READ_COLUMNS = 'attempts';
-const CONFLICT_KEY = 'user_id,word_id,track_id';
+const CONFLICT_KEY = 'user_id,word_id';
 
 export interface ContextTapClient {
   from: (table: string) => {
