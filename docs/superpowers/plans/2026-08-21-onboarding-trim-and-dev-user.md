@@ -446,7 +446,7 @@ npm run check:mobile
 
 **סדר ההכרעה מחייב, ⛔ ואינו טעם:** `production` נבדק **ראשון**. ⇒ הודעת «לא הוגדר» ⛔ לעולם ⛔ אינה מגיעה בייצור, ולכן היא ⛔ אינה מלמדת קורא לא-מורשה שהפיצ׳ר קיים ומה חסר לו כדי להפעיל אותו. זו בדיוק תבנית «‏a status oracle answered late is still an oracle» מ-`app/api/auth/login/route.ts` (F-008ⓑ).
 
-- [ ] **Step 1: כתוב את הבדיקות — הן נופלות כי אין קובץ**
+- [x] **Step 1: כתוב את הבדיקות — הן נופלות כי אין קובץ**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -525,9 +525,9 @@ describe('devUserGate (D-057 · T-113)', () => {
 
 ⚠️ **הבדיקה האחרונה נועלת גם את `nodeEnv: 'test'`** — כלומר השער סגור גם כשהסוויטה עצמה רצה. ⛔ **זה מכוון:** ‏`vitest` מגדיר `NODE_ENV='test'`, ופיצ׳ר שנפתח בזמן בדיקות היה נפתח בכל CI.
 
-- [ ] **Step 2: הרץ — נופל בהעמסה** (`Cannot find module './devUser'`). ⛔ זו ⛔ אינה נפילה טובה מספיק כדי לסמוך עליה — היא הופכת למדידה אמיתית רק ב-Step 4.
+- [x] **Step 2: הרץ — נופל בהעמסה** (`Cannot find module './devUser'`). ⛔ זו ⛔ אינה נפילה טובה מספיק כדי לסמוך עליה — היא הופכת למדידה אמיתית רק ב-Step 4.
 
-- [ ] **Step 3: כתוב את `lib/core/devUser.ts`**
+- [x] **Step 3: כתוב את `lib/core/devUser.ts`**
 
 הכללים המחייבים לגוף הפונקציה:
 - ⛔ **אפס `process.env`** — ‏`check:core` יתפוס.
@@ -536,7 +536,7 @@ describe('devUserGate (D-057 · T-113)', () => {
 - מחזיר `as const`-ים כך שהטיפוס הוא בדיוק ה-union שהוצהר.
 - JSDoc בן 6–10 שורות שמצטט את D-057 ואת «נכשל סגור», ומסביר **למה** `production` ראשון.
 
-- [ ] **Step 4: הרץ + מוטציה — שתי מוטציות, ⛔ ולא אחת**
+- [x] **Step 4: הרץ + מוטציה — שתי מוטציות, ⛔ ולא אחת**
 
 ```bash
 npx vitest run lib/core/devUser.test.ts && npm run check:core
@@ -566,7 +566,7 @@ npx vitest run lib/core/devUser.test.ts && npm run check:core
 
 ⚠️ **`process.env.X` ⛔ ולא `process.env[VAR]`.** נמדד: Next מחליף גישה **סטטית** בלבד בזמן בנייה; גישה דינמית דרך משתנה מחזירה `undefined` בחבילה שנבנתה. ⇒ הקבועים משמשים ל**בדיקה ולתיעוד**, והקריאה עצמה סטטית — וזה נאמר בהערה כדי שאיש לא "ינקה" אותה לגישה דינמית.
 
-- [ ] **Step 1: כתוב את הבדיקות**
+- [x] **Step 1: כתוב את הבדיקות**
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -631,11 +631,11 @@ describe('readDevUserGate (D-057 · T-113)', () => {
 
 ⚠️ **`sourceFilesUnder` ⛔ אינו מיובא מ-`serviceRole.test.ts`** (הוא ⛔ אינו מיוצא שם). העתק את שש השורות שלו לראש הקובץ — ⛔ **ורשום בהערה שזו העתקה מכוונת**: קובץ בדיקה שמייצא עוזרים מושך את vitest לגרף ייבוא של קובץ בדיקה אחר, וזו תקלה גרועה מכפילות של שש שורות.
 
-- [ ] **Step 2: הרץ — נופל בהעמסה.**
+- [x] **Step 2: הרץ — נופל בהעמסה.**
 
-- [ ] **Step 3: כתוב את `lib/supabase/devUser.ts`** — שני הקבועים, ה-JSDoc, ו-`readDevUserGate()` שמעביר `process.env.NODE_ENV` · `process.env.DEV_TEST_USER_EMAIL` · `process.env.DEV_TEST_USER_PASSWORD` ל-`devUserGate`. ⛔ אפס לוגיקה משלו — כל `if` כאן הוא ההכרעה שכפולה.
+- [x] **Step 3: כתוב את `lib/supabase/devUser.ts`** — שני הקבועים, ה-JSDoc, ו-`readDevUserGate()` שמעביר `process.env.NODE_ENV` · `process.env.DEV_TEST_USER_EMAIL` · `process.env.DEV_TEST_USER_PASSWORD` ל-`devUserGate`. ⛔ אפס לוגיקה משלו — כל `if` כאן הוא ההכרעה שכפולה.
 
-- [ ] **Step 4: הוסף ל-`.env.example`** — בסוף הקובץ, **בערך ריק**:
+- [x] **Step 4: הוסף ל-`.env.example`** — בסוף הקובץ, **בערך ריק**:
 
 ```
 # --- D-057 · T-113 — משתמש בדיקה לפיתוח. ⛔ לפיתוח מקומי בלבד. ---
@@ -647,7 +647,7 @@ DEV_TEST_USER_EMAIL=
 DEV_TEST_USER_PASSWORD=
 ```
 
-- [ ] **Step 5: הרץ + מוטציה**
+- [x] **Step 5: הרץ + מוטציה**
 
 ```bash
 npx vitest run lib/supabase/devUser.test.ts && npm run check:core
@@ -679,7 +679,7 @@ npx vitest run lib/supabase/devUser.test.ts && npm run check:core
 | שער פתוח · `signInWithPassword` נכשל | **401** `{ ok: false, code: 'dev_user_missing', message: <עברית שנוקבת בצעד הידני> }` |
 | שער פתוח · הצלחה | **302** ל-`/` עם עוגיית הסשן |
 
-- [ ] **Step 1: כתוב את בדיקת הסריקה**
+- [x] **Step 1: כתוב את בדיקת הסריקה**
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -740,9 +740,9 @@ describe('GET /api/dev/session — the gate', () => {
 });
 ```
 
-- [ ] **Step 2: הרץ — נופל בהעמסה** (`ENOENT … app/api/dev/session/route.ts`).
+- [x] **Step 2: הרץ — נופל בהעמסה** (`ENOENT … app/api/dev/session/route.ts`).
 
-- [ ] **Step 3: כתוב את הנתיב**
+- [x] **Step 3: כתוב את הנתיב**
 
 מבנה מחייב, בסדר הזה בדיוק:
 1. `export const dynamic = 'force-dynamic';`
@@ -756,7 +756,7 @@ describe('GET /api/dev/session — the gate', () => {
 
 ⚠️ **העוגיות והפניה — הפגם שקל ליפול בו:** ‏`createRouteClient` כותב את הסשן ל-`cookies()` של הבקשה. ‏`NextResponse.redirect` יוצר תשובה **חדשה**. אמת ידנית (Step 5) שהעוגייה אכן נשלחת; אם לא — בנה את התשובה כ-`NextResponse.redirect` **לפני** ההתחברות והעבר את מאגר העוגיות שלה, בדיוק כמו `redirectPreservingCookies` ב-`proxy.ts:80`. ⛔ **אל תדווח ירוק על סמך הבדיקות בלבד** — הן סריקת מקור ו⛔ אינן יכולות לראות עוגייה.
 
-- [ ] **Step 4: עדכן חוזה, מרשם החוב, ופריט 36**
+- [x] **Step 4: עדכן חוזה, מרשם החוב, ופריט 36**
 
 `docs/api-contract.md` — סעיף חדש **בסוף**, `GET /api/dev/session`: ארבעת המצבים מהטבלה למעלה + שלוש שורות: ⛔ לפיתוח מקומי בלבד · השער ב-`lib/core/devUser.ts` · **⛔ בייצור הנתיב מחזיר 404 ו⛔ אינו מסגיר את קיומו**.
 
@@ -765,7 +765,7 @@ describe('GET /api/dev/session — the gate', () => {
 `plan/03-for-roy.md` — **עדכון במקום** של פריט 36. ⛔ **אל תפתח פריט חדש ו⛔ אל תסגור אותו** (הוא של ה-PM). הוסף לתא «מה נדרש»:
 > ⚠️ **עודכן C-XXXX (DEV) — הפיצ׳ר נבנה ונדחף ל-`dev`, וכעת שלושת הצעדים קונקרטיים:** ⓐ שני המשתנים הם `DEV_TEST_USER_EMAIL` ו-`DEV_TEST_USER_PASSWORD`, והם ⛔ **אינם** מוגדרים ב-Netlify ואינם אמורים להיות · ⓑ המשתמש עצמו **נוצר על ידך פעם אחת** ב-Supabase → Authentication → Users (⛔ הקוד ⛔ אינו יוצר אותו — ראה סטייה 4 בתוכנית), ולכן המחיקה לפני ההשקה היא מחיקת אותה שורה · ⓖ הנתיב הוא `GET /api/dev/session`, והוא מחזיר **404** בכל סביבה שבה `NODE_ENV=production` — כלומר **הוא כבר לא נגיש באתר החי היום**. ⚠️ **אין צורך בתשובה** — ⛔ הלופ ⛔ לא נעצר.
 
-- [ ] **Step 5: אימות מלא + בדיקה ידנית אחת שאינה ניתנת לאוטומציה**
+- [x] **Step 5: אימות מלא + בדיקה ידנית אחת שאינה ניתנת לאוטומציה**
 
 ```bash
 npm run typecheck && npm run check:core && npm test && npm run build
@@ -774,7 +774,7 @@ npm run typecheck && npm run check:core && npm test && npm run build
 
 ⚠️ **והצעד הידני, שנרשם כמוגבלות ⛔ ולא נטען כירוק:** ‏`build` מריץ עם `NODE_ENV=production` ⇒ הוא מוכיח שהנתיב **מתקמפל**, ⛔ ולא שהוא מחבר. הרצה חיה דורשת `.env.local` + משתמש אמיתי, ⛔ ואין לסוכן פרויקט Supabase. ⇒ **דווח במפורש: «‏הנתיב נבנה ונבדק בסריקה; ⛔ הוא ⛔ לא הורץ מול Supabase חי»**, והוסף את זה כשורה בפריט 36. ⛔ **אל תכתוב «עובד».**
 
-- [ ] **Step 6: סגירת T-113 וקומיט**
+- [x] **Step 6: סגירת T-113 וקומיט**
 
 `plan/50-tasks.md` — T-113 ⇒ **🟣 לביקורת**. הרץ `npm run measure:plan` וחייב את `docs/plan-tables.md`.
 `loop(DEV): C-XXXX T-113 — משתמש בדיקה לפיתוח, שער שנכשל סגור (D-057)`
@@ -783,12 +783,12 @@ npm run typecheck && npm run check:core && npm test && npm run build
 
 ## סגירה — ⛔ חובה בכל טיק שנכתב בו קוד
 
-- [ ] `plan/30-architecture.md` — שתי רשומות החוב (Task 2 · Task 6)
-- [ ] `plan/50-tasks.md` — T-111 · T-113 ⇒ 🟣
-- [ ] `plan/60-findings.md` — כל ממצא שנמדד תוך כדי. ⛔ **אל תמציא ממצא כדי למלא שורה**
-- [ ] **`npm run measure:plan` ו-`docs/plan-tables.md` בקומיט — בכל אחד משני הקומיטים** (‏F-111)
-- [ ] `plan/00-control.md` — `CYCLE_ID` (‏`git pull` ואז מקסימום+1) · `ACTIVE_TASK_ID` · `NEXT_AGENT=CRITIC` · שחרור `LOCK` · `MILESTONE_TICKS` +1 · שורה ביומן 0.1 (עד 2 שורות, ⛔ **ותקרת 12KB לקובץ**)
-- [ ] ⛔ **בלי `[skip ci]`** · ⛔ `git push origin dev` בלבד
+- [x] `plan/30-architecture.md` — שתי רשומות החוב (Task 2 · Task 6)
+- [x] `plan/50-tasks.md` — T-111 · T-113 ⇒ 🟣
+- [x] `plan/60-findings.md` — כל ממצא שנמדד תוך כדי. ⛔ **אל תמציא ממצא כדי למלא שורה**
+- [x] **`npm run measure:plan` ו-`docs/plan-tables.md` בקומיט — בכל אחד משני הקומיטים** (‏F-111)
+- [x] `plan/00-control.md` — `CYCLE_ID` (‏`git pull` ואז מקסימום+1) · `ACTIVE_TASK_ID` · `NEXT_AGENT=CRITIC` · שחרור `LOCK` · `MILESTONE_TICKS` +1 · שורה ביומן 0.1 (עד 2 שורות, ⛔ **ותקרת 12KB לקובץ**)
+- [x] ⛔ **בלי `[skip ci]`** · ⛔ `git push origin dev` בלבד
 
 ## Self-Review — נבדק מול המפרט
 
