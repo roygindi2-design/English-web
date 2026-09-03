@@ -184,7 +184,14 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   const due = Math.floor(Math.max(0, elapsedMs) / ENEMY_SWING_MS);
   const applied = Math.floor(Math.max(0, state.lastSwingMs) / ENEMY_SWING_MS);
   const swings = due - applied;
-  if (swings <= 0) return { ...state, lastSwingMs: Math.max(state.lastSwingMs, elapsedMs) };
+  // T-231 ⓒ · `apple-design` § 1/§ 11 — **אותה הפניה, ⛔ ולא עותק שווה, כשלא זזה מכה.**
+  // ⛔ עד כאן הענף הזה עשה `{...state, lastSwingMs: elapsedMs}` על **כל** פריים —
+  // כלומר הפניה חדשה 60 פעם בשנייה, ו-`setBattle((prev) => tick(prev, next))` ⛔ לעולם
+  // לא בלם רינדור. ⚠️ **הרפיה חסרת סיכון:** `applied` נועד רק לספור כמה מכות כבר
+  // יושמו, ו-`floor(elapsedMs/ENEMY_SWING_MS)` הוא אותו מספר בלי קשר לאיזה ערך בתוך
+  // אותו חלון `lastSwingMs` מחזיק — קבוע לעדכן אותו על כל פריים ⛔ אינו נדרש לחשבון,
+  // רק לגריפה חדשה. `lastSwingMs` ⛔ אינו נקרא מחוץ לקובץ הזה (נבדק ב-grep).
+  if (swings <= 0) return state;
 
   // `§ 6` — ⛔ החסינות מבטלת **מכה אחת מזוהה**, ⛔ ולא «את הנזק»: אם שתי מכות התאחדו
   // בפריים אחד (חלון שנרדם, מכשיר איטי), השנייה עדיין פוגעת. ⛔ «התגלגלתי פעם אחת

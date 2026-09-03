@@ -104,6 +104,26 @@ describe('battle', () => {
     expect(outcomeAt({ ...FRESH, enemyHp: 0 }, 3_000)).toBe('victory');
   });
 
+  /**
+   * T-231 ⓒ — **`setBattle` הופך ל-no-op רק אם `tick` מחזירה את אותה הפניה.**
+   * נמדד C-0371: הענף `swings <= 0` (>99% מהפריימים) עשה תמיד `{...state, lastSwingMs}`,
+   * כלומר הפניה חדשה בכל קריאה ⇒ React ⛔ לעולם לא בולם רינדור. ⛔ **הבדיקה על הפניה
+   * (`toBe`), ⛔ ולא על ערך (`toEqual`)** — זו בדיוק הנקודה שנמדדה.
+   */
+  it('T-231 ⓒ — פריים בלי מכה מחזיר את אותה הפניה בדיוק, ⛔ ולא עותק שווה', () => {
+    const first = tick(FRESH, 100);
+    expect(first).toBe(FRESH); // 100ms < 8000ms ⇒ אפס מכות באותה קריאה הראשונה
+    const second = tick(first, 200);
+    expect(second).toBe(first);
+  });
+
+  it('T-231 ⓒ — ומכה אמיתית עדיין מחזירה הפניה חדשה עם הנזק הנכון', () => {
+    let s = FRESH;
+    for (let ms = 0; ms <= ENEMY_SWING_MS; ms += 1000) s = tick(s, ms);
+    expect(s).not.toBe(FRESH);
+    expect(s.learnerHp).toBe(FRESH.learnerHp - 1);
+  });
+
   it('⛔ אין בקובץ שעון נסתר — הזמן הוא קלט (D-126 § ג׳)', () => {
     const code = readFileSync('lib/core/battle.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');

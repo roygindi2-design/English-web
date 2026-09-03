@@ -34,6 +34,3 @@
 
 - app/arcade/arcade-tokens.css · A · arena-impact-a · F-172 · T-234
 - app/arcade/arcade-tokens.css · A · arena-impact-b · F-172 · T-234
-- components/ArenaBattle.tsx · B · telegraph.frac * 100 · F-173 · T-231
-- components/ArenaBattle.tsx · B · enemyPct · F-173 · T-231
-- components/ArenaBattle.tsx · B · (mana / MANA_CAP) * 100 · F-173 · T-231

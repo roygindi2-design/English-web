@@ -26,6 +26,7 @@ import {
   telegraphAt,
   tick,
   type BattleState,
+  type TelegraphPhase,
 } from '@/lib/core/battle';
 import type { ArcadeAnswer } from '@/lib/core/arcadeResult';
 import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
@@ -204,7 +205,28 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       ? null
       : startBattle(wordsOf(initialRound.questions), LEARNER_HP, ENEMY_HP),
   );
-  const [elapsedMs, setElapsedMs] = useState(0);
+  /**
+   * T-231 ⓐ · `apple-design` § 1 · § 11 — **פריים-הזמן ⛔ אינו נכנס ל-state.**
+   * ⛔ נמדד C-0371: `setElapsedMs` בכל פריים = ~5,400 סבבי רינדור של רכיב 755 שורות
+   * בקרב אחד. ⇒ `elapsedRef` הוא מקור האמת החי, ולולאת ה-rAF כותבת ישירות ל-DOM
+   * (שעון · שני מדים) דרך ה-refs שמתחתיו. React state נשאר **רק** למעברים הבדידים
+   * (ⓓ): שלב הטלגרף, זמן-זעם כן/לא, ו-`timeUp` (הרגע היחיד שבו תום השעון עצמו,
+   * ⛔ ולא שינוי בחיים, חייב לגרום לרינדור — סיום הקרב בתום הזמן).
+   */
+  const elapsedRef = useRef(0);
+  const [telegraphPhase, setTelegraphPhase] = useState<TelegraphPhase>('quiet');
+  const [raging, setRaging] = useState(false);
+  const [timeUp, setTimeUp] = useState(false);
+  const clockRef = useRef<HTMLParagraphElement>(null);
+  const clockTextRef = useRef<HTMLSpanElement>(null);
+  const castMeterWrapRef = useRef<HTMLDivElement>(null);
+  const castMeterFillRef = useRef<HTMLSpanElement>(null);
+  const manaTextRef = useRef<HTMLSpanElement>(null);
+  const manaMeterWrapRef = useRef<HTMLDivElement>(null);
+  const manaFillRef = useRef<HTMLSpanElement>(null);
+  /** ⛔ עותק קריא-בזמן-פריים של `battle` — הלולאה צריכה `manaSpent` חי בלי לתלות בו. */
+  const battleRef = useRef<BattleState | null>(battle);
+  useEffect(() => { battleRef.current = battle; }, [battle]);
   const [chosenSoFar, setChosenSoFar] = useState<readonly string[]>([]);
   const [outcome, setOutcome] = useState<ResultBody | null>(null);
   const [pendingResult, setPendingResult] = useState<ResultPayload | null>(null);
@@ -260,14 +282,19 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
     catch { setShowHint(false); }
   }, []);
 
-  /** ⛔ ההטלה חיה **במקום אחד** — שני המסלולים (`§ 5`) נכנסים לכאן, ⛔ ולא כל אחד לעצמו. */
+  /**
+   * ⛔ ההטלה חיה **במקום אחד** — שני המסלולים (`§ 5`) נכנסים לכאן, ⛔ ולא כל אחד לעצמו.
+   * T-231 — הזמן הנוכחי נקרא מ-`elapsedRef` **בזמן הקריאה**, ⛔ ולא מ-state: `fire`
+   * היה נבנה מחדש בכל פריים כש-`elapsedMs` היה תלות (60 סגירות חדשות בשנייה), וה-ref
+   * נותן את אותו ערך חי בלי לשבור את הזהות של הפונקציה בין רינדורים.
+   */
   const fire = useCallback((option: string) => {
     setSelected(null);
     setShowHint(false);
     try { window.localStorage.setItem(ARENA_TAUGHT_KEY, '1'); } catch { /* ⛔ אחסון חסום ⛔ אינו שגיאה */ }
     setChosenSoFar((prev) => [...prev, option]);
-    setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedMs)));
-  }, [elapsedMs]);
+    setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedRef.current)));
+  }, []);
 
   const load = useCallback(async () => {
     setScreen({ kind: 'loading' });
@@ -294,7 +321,10 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
       setQuestions(body.round.questions);
       setBattle(startBattle(wordsOf(body.round.questions), LEARNER_HP, ENEMY_HP));
       originRef.current = null;
-      setElapsedMs(0);
+      elapsedRef.current = 0;
+      setTelegraphPhase('quiet');
+      setRaging(false);
+      setTimeUp(false);
       setScreen({ kind: 'ready', level: body.level });
     } catch {
       setScreen({ kind: 'error' });
@@ -311,16 +341,82 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
    * היא מודדת כמה זמן עבר ומוסרת את המספר ל-`tick`, שהוא **אידמפוטנטי ביחס לשעון** —
    * ‏60 קריאות בשנייה ⛔ אינן 60 מכות.
    * ⛔ היא נעצרת כשהקרב נגמר: לולאה שממשיכה לרוץ על מסך תוצאות היא סוללה שנשרפת בשקט.
+   *
+   * T-231 · `apple-design` § 1 · § 11 — **הפריים כותב ל-DOM, ⛔ ולא ל-state, וגורם
+   * לרינדור רק במעבר בדיד.** ⓐ השעון ומד הטלגרף עוברים דרך `ref.current.style` /
+   * ‏`textContent` — כתיבה ל-DOM היא לא-רינדור. ⓑ `setBattle` נשאר updater פונקציונלי:
+   * ‏`tick` מחזירה עכשיו **את אותה הפניה** כשלא זזה מכה (`battle.test.ts` T-231 ⓒ),
+   * ו-React בולם רינדור על `Object.is` זהה — ⇒ בלי שינוי כאן. ⓒ `telegraph.phase` /
+   * `raging` נכנסים ל-state **רק כשהערך עצמו השתנה**, ⛔ לא בכל פריים — הם המעברים
+   * הבדידים (ⓓ). ⓓ `timeUp` הוא state שנדלק **פעם אחת** ברגע ש-`BATTLE_MS` חלף, כדי
+   * שסיום קרב **על השעון בלבד** (⛔ בלי שינוי חיים) עדיין יגרום לרינדור שמפיל את
+   * `finished`.
    */
   useEffect(() => {
     if (battle === null || screen.kind !== 'ready') return;
     let frame = 0;
     let stopped = false;
+    let lastPhase: TelegraphPhase = telegraphAt(elapsedRef.current).phase;
+    let lastRaging = isRage(elapsedRef.current);
+    let lastTimeUp = elapsedRef.current >= BATTLE_MS;
+    let lastClockText = '';
+    let lastMana = -1;
     const step = (now: number) => {
       if (originRef.current === null) originRef.current = now;
       const next = now - originRef.current;
-      setElapsedMs(next);
+      elapsedRef.current = next;
+
       setBattle((prev) => (prev === null ? prev : tick(prev, next)));
+
+      const telegraph = telegraphAt(next);
+      if (telegraph.phase !== lastPhase) {
+        lastPhase = telegraph.phase;
+        setTelegraphPhase(telegraph.phase);
+      }
+
+      const nowRaging = isRage(next);
+      if (nowRaging !== lastRaging) {
+        lastRaging = nowRaging;
+        setRaging(nowRaging);
+      }
+
+      const nowTimeUp = next >= BATTLE_MS;
+      if (nowTimeUp !== lastTimeUp) {
+        lastTimeUp = nowTimeUp;
+        setTimeUp(nowTimeUp);
+      }
+
+      // ⓐ השעון — DOM ישיר, כתיבה רק כשהטקסט המוצג באמת השתנה (פעם בשנייה לכל היותר).
+      const clockText = clockHe(BATTLE_MS - next);
+      if (clockText !== lastClockText) {
+        lastClockText = clockText;
+        if (clockRef.current !== null) clockRef.current.setAttribute('aria-label', `${CLOCK_HE} ${clockText}`);
+        if (clockTextRef.current !== null) clockTextRef.current.textContent = clockText;
+      }
+
+      // ⓑ מד הטלגרף — `transform: scaleX`, נכתב כל פריים (הרמפה חייבת להיות חלקה).
+      const fillEl = castMeterFillRef.current;
+      if (fillEl !== null) fillEl.style.transform = `scaleX(${telegraph.frac})`;
+      const wrapEl = castMeterWrapRef.current;
+      if (wrapEl !== null) {
+        wrapEl.setAttribute('aria-label', `${CASTING_METER_HE} ${Math.round(telegraph.frac * 100)} אחוז`);
+      }
+
+      // ⓔ מד המאנה — נגזר מ-`elapsedRef` + `battleRef`, נכתב רק כשהערך השלם השתנה.
+      const currentBattle = battleRef.current;
+      if (currentBattle !== null) {
+        const mana = manaAt(next, currentBattle.manaSpent);
+        if (mana !== lastMana) {
+          lastMana = mana;
+          if (manaTextRef.current !== null) manaTextRef.current.textContent = `${mana} / ${MANA_CAP}`;
+          if (manaFillRef.current !== null) manaFillRef.current.style.transform = `scaleX(${mana / MANA_CAP})`;
+          const manaWrap = manaMeterWrapRef.current;
+          if (manaWrap !== null) {
+            manaWrap.setAttribute('aria-label', `${nowRaging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`);
+          }
+        }
+      }
+
       if (!stopped) frame = window.requestAnimationFrame(step);
     };
     frame = window.requestAnimationFrame(step);
@@ -357,7 +453,14 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
     }
   }, []);
 
-  const result = battle === null ? 'running' : outcomeAt(battle, elapsedMs);
+  /**
+   * T-231 ⓓ — `elapsedRef` ⛔ אינו state, ⇒ `outcomeAt` צריכה נקודת רינדור מובטחת
+   * ברגע ש-`BATTLE_MS` חלף גם כשאף חיים לא זזו. `timeUp` (state בדיד) הוא בדיוק זה:
+   * לפניו `outcomeAt` נשענת רק על הענפים המידיים (חיים ≤0), ואחריו הזמן הנמסר הוא
+   * ‏`BATTLE_MS` עצמו — בדיוק הגבול ש-`outcomeAt` בודקת.
+   */
+  const result =
+    battle === null ? 'running' : outcomeAt(battle, timeUp ? BATTLE_MS : elapsedRef.current);
   const finished = result !== 'running';
 
   /**
@@ -401,7 +504,10 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
     setSubmitted(false);
     setChosenSoFar([]);
     originRef.current = null;
-    setElapsedMs(0);
+    elapsedRef.current = 0;
+    setTelegraphPhase('quiet');
+    setRaging(false);
+    setTimeUp(false);
     if (initialRound !== undefined) {
       setQuestions(initialRound.questions);
       setBattle(startBattle(wordsOf(initialRound.questions), LEARNER_HP, ENEMY_HP));
@@ -426,10 +532,12 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
     </div>
   );
 
-  const mana = useMemo(
-    () => (battle === null ? 0 : manaAt(elapsedMs, battle.manaSpent)),
-    [battle, elapsedMs],
-  );
+  /**
+   * T-231 ⓔ — ערך **הפתיחה** בלבד (רינדור ראשון של הקרב, ורינדורים על מעברים בדידים
+   * כמו `cast`). ⛔ אינו `useMemo` על `elapsedMs` — אין יותר state כזה; העדכון הרציף
+   * בין רינדורים חי בכתיבת ה-ref שבלולאת ה-rAF (`manaTextRef` / `manaFillRef`).
+   */
+  const mana = battle === null ? 0 : manaAt(elapsedRef.current, battle.manaSpent);
 
   if (screen.kind === 'loading') {
     return (
@@ -553,9 +661,13 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
   const word = battle.words[battle.index];
   const hand = word === undefined ? [] : byWordId.get(word.wordId)?.options ?? [];
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
-  const raging = isRage(elapsedMs);
-  /** ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו חלון. */
-  const telegraph = useMemo(() => telegraphAt(elapsedMs), [elapsedMs]);
+  /**
+   * ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו
+   * חלון. T-231 ⓓ — `raging` ו-`telegraphPhase` הם עכשיו ה-state (מוגדר למעלה), ומתעדכנים
+   * רק כשהערך הבדיד עצמו משתנה. `telegraphFrac` הוא ערך **פתיחה** בלבד, בדיוק כמו `mana`
+   * למעלה — העדכון הרציף חי בכתיבת ה-ref שבלולאת ה-rAF.
+   */
+  const telegraphFrac = telegraphAt(elapsedRef.current).frac;
 
   return (
     <section
@@ -569,12 +681,19 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           שהזירה אמורה לאמן. הערך מגיע מ-`BATTLE_MS` ⛔ ואינו נספר כאן. */}
       <div className="flex flex-col items-center gap-1" data-arena-clock>
         <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
+        {/* T-231 ⓐ — הטקסט וה-`aria-label` נכתבים מהלולאה דרך `clockRef`/`clockTextRef`;
+            ⛔ ה-ref יושב על `<span>` **בתוך** `<EnWord>`, ⛔ ולא על העטיפה עצמה — `EnWord`
+            אינו מעביר `ref` הלאה, וזו הדרך היחידה לכתוב טקסט בלי לפרק את שלוש תכונות
+            ה-bidi שהעטיפה קובעת פנימה (T-009). ערך הפתיחה כאן הוא רינדור ראשון בלבד. */}
         <p
+          ref={clockRef}
           className="text-4xl font-black tabular-nums text-[color:var(--arena-ink)]"
           role="timer"
-          aria-label={`${CLOCK_HE} ${clockHe(BATTLE_MS - elapsedMs)}`}
+          aria-label={`${CLOCK_HE} ${clockHe(BATTLE_MS - elapsedRef.current)}`}
         >
-          <EnWord>{clockHe(BATTLE_MS - elapsedMs)}</EnWord>
+          <EnWord>
+            <span ref={clockTextRef}>{clockHe(BATTLE_MS - elapsedRef.current)}</span>
+          </EnWord>
         </p>
       </div>
 
@@ -599,22 +718,31 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
             ‏(«מטיל!») ⛔ ולעולם לא בגוון בלבד (א2), והיא `aria-live` כדי שהגלגול יהיה
             נגיש בלי לראות את שינוי הצבע. תחת `prefers-reduced-motion` הפעימה נעצרת
             ⛔ והמילה **נשארת**. */}
-        {telegraph.phase !== 'quiet' && (
-          <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraph.phase}>
-            {telegraph.phase !== 'charging' && (
+        {telegraphPhase !== 'quiet' && (
+          <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraphPhase}>
+            {telegraphPhase !== 'charging' && (
               <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
                 {CASTING_HE}
               </p>
             )}
+            {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width`: apple-design § 11 («animate only
+                compositor-friendly properties»). `castMeterWrapRef`/`castMeterFillRef`
+                נכתבים מהלולאה כל פריים (הרמפה חייבת להיות חלקה); הערך כאן הוא פתיחה. */}
             <div
+              ref={castMeterWrapRef}
               role="img"
-              aria-label={`${CASTING_METER_HE} ${Math.round(telegraph.frac * 100)} אחוז`}
+              aria-label={`${CASTING_METER_HE} ${Math.round(telegraphFrac * 100)} אחוז`}
               className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--arena-cast-edge)] bg-[color:var(--arena-night)]"
             >
+              {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: `width` פיזי על `<span>` לא
+                  ממוקם (⛔ לא `absolute`) תמיד מתחיל בקצה **הפיזי השמאלי** של המכיל,
+                  בלי קשר ל-`dir` — זו בדיוק ההתנהגות הישנה שנמדדה חזותית (`arena_t3.png`),
+                  ולכן העוגן החדש חייב להיות אותו צד, ⛔ לא «right» שמתאים ל-RTL תוכנית. */}
               <span
+                ref={castMeterFillRef}
                 aria-hidden
-                className={`block h-full ${telegraph.phase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
-                style={{ width: `${telegraph.frac * 100}%` }}
+                className={`block h-full w-full ${telegraphPhase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
+                style={{ transform: `scaleX(${telegraphFrac})`, transformOrigin: 'left center', willChange: 'transform' }}
               />
             </div>
           </div>
@@ -636,11 +764,13 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           >
             {/* T-214 · ⛔ `bg-danger` יצא: `--danger` מתחלף ב-`globals` לפי הסכימה
                 (`#b91c1c` בהירה · `#f87171` כהה) ⇒ בסכימה כהה המספר הלבן ישב עליו
-                ב-**2.70:1**. הערך כאן הוא של הרנדר, מוגה כלפי מעלה בשכבה א׳. */}
+                ב-**2.70:1**. הערך כאן הוא של הרנדר, מוגה כלפי מעלה בשכבה א׳.
+                T-231 ⓑ — `scaleX` במקום `width` (apple-design § 11); `end-0` + `w-full`
+                נותנים את אותו עוגן ימני שה-`width` הישן ייצר בעקיפין. */}
             <span
               aria-hidden
-              className="absolute inset-y-0 end-0 bg-[color:var(--arena-hp)]"
-              style={{ width: `${enemyPct}%` }}
+              className="absolute inset-y-0 end-0 w-full bg-[color:var(--arena-hp)]"
+              style={{ transform: `scaleX(${enemyPct / 100})`, transformOrigin: 'right center' }}
             />
             {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
                 המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
@@ -681,7 +811,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           });
           // ⛔ `move` ⛔ אינו «התחמקות» — `dodge` בליבה מכריע אם הוא נפל בתוך החלון.
           // ⛔ הרכיב ⛔ אינו יודע מהו חלון, ו⛔ אינו סופר 400 מילישניות.
-          if (gesture?.kind === 'move') setBattle((prev) => (prev === null ? prev : dodge(prev, elapsedMs)));
+          if (gesture?.kind === 'move') setBattle((prev) => (prev === null ? prev : dodge(prev, elapsedRef.current)));
         }}
         onPointerCancel={() => { stageFrom.current = null; }}
       >
@@ -704,19 +834,27 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
           >
             {raging ? RAGE_HE : MANA_HE}
           </span>
+          {/* T-231 ⓔ — ref פנימי בתוך `<EnWord>` (T-009: העטיפה עצמה לא מעבירה ref). */}
           <span className={`text-sm font-bold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink)]'}`}>
-            <EnWord>{`${mana} / ${MANA_CAP}`}</EnWord>
+            <EnWord>
+              <span ref={manaTextRef}>{`${mana} / ${MANA_CAP}`}</span>
+            </EnWord>
           </span>
         </div>
+        {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width` (apple-design § 11). */}
         <div
+          ref={manaMeterWrapRef}
           role="img"
           aria-label={`${raging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`}
           className="h-4 w-full overflow-hidden rounded-full border border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)]"
         >
+          {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: אותו נימוק כמו מד הטלגרף למעלה —
+              `width` פיזי על `<span>` שאינו `absolute` תמיד עוגן שמאל, בלי קשר ל-`dir`. */}
           <span
+            ref={manaFillRef}
             aria-hidden
-            className={`block h-full ${raging ? 'bg-[color:var(--arena-cast-warn)]' : 'bg-[color:var(--arena-mana)]'}`}
-            style={{ width: `${(mana / MANA_CAP) * 100}%` }}
+            className={`block h-full w-full ${raging ? 'bg-[color:var(--arena-cast-warn)]' : 'bg-[color:var(--arena-mana)]'}`}
+            style={{ transform: `scaleX(${mana / MANA_CAP})`, transformOrigin: 'left center', willChange: 'transform' }}
           />
         </div>
       </div>

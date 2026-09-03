@@ -159,6 +159,43 @@ describe('חוקה שכבה א׳ א7 — `prefers-reduced-motion` מסיר את 
   });
 });
 
+/**
+ * T-231 · `apple-design` § 1 · § 11 · `37-arena-spec § 6` — **פריים-הזמן ⛔ אינו נכנס
+ * ל-state של React, ושלושת המדים עוברים ל-`transform: scaleX()`.**
+ * 🎯 נמדד C-0371: לולאת ה-`requestAnimationFrame` קראה ל-`setElapsedMs` בכל פריים ⇒
+ * ‏~5,400 סבבי רינדור בקרב אחד, ושלושה מדים צוירו ב-`style={{ width: ... }}` —
+ * פריסה וציור בכל פריים על שלושה אלמנטים.
+ */
+describe('T-231 — פריים-הזמן חי ב-ref, ⛔ ולא ב-state; המדים עוברים ל-scaleX', () => {
+  it('⛔ `elapsedMs` ⛔ אינו state — אין `useState` שמאתחל שעון, ויש `elapsedRef`', () => {
+    expect(CODE).not.toMatch(/const \[elapsedMs, setElapsedMs\] = useState/);
+    expect(CODE).not.toMatch(/\bsetElapsedMs\b/);
+    expect(CODE).toMatch(/elapsedRef/);
+  });
+
+  it('⛔ אפס `style={{ width: ... }}` על מד — שלושתם `scaleX`, ⛔ ולא `width`', () => {
+    expect(CODE).not.toMatch(/style=\{\{\s*width:/);
+    const scaleXCount = (CODE.match(/scaleX\(/g) ?? []).length;
+    expect(scaleXCount, 'שלושה מדים: טלגרף · חיי היריב · מאנה').toBeGreaterThanOrEqual(3);
+  });
+
+  it('מוצא הטרנספורם תואם RTL — הפס גדל מהצד שממנו הוא צויר ב-`width` (ימין)', () => {
+    expect(CODE).toMatch(/transformOrigin:\s*['"]right/);
+  });
+
+  it('⛔ `setBattle` בלולאת ה-rAF נשען על הפניה זהה של `tick` — ⛔ אין תלות ב-`battle` המלא', () => {
+    // הבדיקה בליבה (`battle.test.ts`, T-231 ⓒ) מוכיחה ש-`tick` מחזירה את אותה הפניה
+    // כשלא זזה מכה; כאן נמדד שהרכיב עדיין קורא ל-`tick` דרך העדכון הפונקציונלי
+    // (⛔ ולא קורא ל-`battle` ישירות מתוך הלולאה, מה שהיה שובר את הבלימה).
+    expect(CODE).toMatch(/setBattle\(\(prev\) => \(prev === null \? prev : tick\(prev, next\)\)\)/);
+  });
+
+  it('⛔ `fire` ⛔ אינו נבנה מחדש בכל פריים — הזמן הנוכחי נקרא מ-ref בזמן הקריאה', () => {
+    // לפני התיקון: `useCallback(..., [elapsedMs])` יצר פונקציה חדשה בכל פריים.
+    expect(CODE).not.toMatch(/\}, \[elapsedMs\]\)/);
+  });
+});
+
 describe('אינווריאנט 37 § 13.5 — התוספת ⛔ לא הדליפה ולו ערך אחד', () => {
   it('⛔ אפס hex חדש בקובץ הטוקנים, ⛔ ואפס שם זירה ב-globals/palette', () => {
     const globals = readFileSync('app/globals.css', 'utf8');
