@@ -11,6 +11,7 @@
     "test": "vitest run",
     "check:core": "node scripts/check-core-purity.mjs",
     "check:mobile": "node scripts/verify-mobile.mjs",
+    "walk:journey": "node scripts/verify-mobile.mjs --journeys-only",
     "check:palette": "node scripts/validate_palette.mjs",
     "check:motion": "node scripts/check-motion.mjs",
     "check:text-floor": "node scripts/check-text-floor.mjs",

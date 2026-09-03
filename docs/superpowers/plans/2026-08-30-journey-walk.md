@@ -104,7 +104,7 @@ export function driftingNames(
 
 ## 4 · הצעדים
 
-- [ ] **צעד 1 — הבדיקה הנופלת, ⛔ לפני כל שורת מימוש.** צור `lib/core/journeyDrift.test.ts` והרץ `npx vitest run lib/core/journeyDrift.test.ts` — **חייב להיכשל על מודול חסר**, ו⛔ לא על טענה:
+- [x] **צעד 1 — הבדיקה הנופלת, ⛔ לפני כל שורת מימוש.** צור `lib/core/journeyDrift.test.ts` והרץ `npx vitest run lib/core/journeyDrift.test.ts` — **חייב להיכשל על מודול חסר**, ו⛔ לא על טענה:
 ```ts
 import { describe, expect, it } from 'vitest';
 import { driftingNames } from './journeyDrift';
@@ -124,14 +124,14 @@ describe('driftingNames', () => {
   });
 });
 ```
-- [ ] **צעד 2 — המימוש הטהור.** כתוב `lib/core/journeyDrift.ts` עד שהבדיקה ירוקה: `npx vitest run lib/core/journeyDrift.test.ts`. ואז `npm run check:core` — ⛔ אפס React, ⛔ אפס `window`.
-- [ ] **צעד 3 — רשומת המסעות.** הוסף `JOURNEYS` ל-`scripts/verify-mobile.mjs` ליד `FLOW_ARRIVAL` (‏`sed -n '275,355p' scripts/verify-mobile.mjs` — אותו דפוס, אותה הצדקה `why` לכל שורה). ⛔ **⛔ אל תיגע ב-`FLOW_ARRIVAL`** — הוא מודד הקשה בודדת ונשאר.
-- [ ] **צעד 4 — ההליכה.** מַמֵּש `walkJourney` ב-`scripts/verify-mobile.mjs`, בתוך ה-`browser` שכבר פתוח. אמת: `npm run walk:journey`. לכל צעד: קרא את התווית העברית של הבורר, הקש, אמת שהכתובת היא `to` (או ש⛔ לא זזה כש-`stays`), וספור. ⛔ **⛔ אל תפתח דפדפן שני** — ההרמה עולה ~25 שניות והיא כבר שולמה.
-- [ ] **צעד 5 — דרך חזרה.** ב-`scripts/verify-mobile.mjs`, לכל מסך שאינו הראשון במסע, אמת פקד חזרה. אמת: `npm run walk:journey`. ⛔ **מסך בלי דרך חזרה הוא `deadEnd` ⛔ גם אם יש לו פעולה קדימה** — זה בדיוק המבוי הסתום שרוי פגש באתר החי.
-- [ ] **צעד 6 — דיווח, ⛔ ולא הפלה.** ב-`scripts/verify-mobile.mjs` הדפס בלוק אחד (`npm run walk:journey`): `journey <name>: taps=N · deadEnd=… · nameDrift=… · wayBack=…`. 🔴 **הרשומה נולדת כאזהרה** — ‏`check(...)` ⛔ אינו נקרא עליה בהרצה הראשונה; היא נכנסת ל-`notes`. ⛔ **קו בסיס שמפיל את הבנייה ביום שהוא נמדד הוא הדרך ללמד כל סוכן להתעלם ממנו.**
-- [ ] **צעד 7 — הפקודה.** הוסף ל-`package.json`: `"walk:journey": "node scripts/verify-mobile.mjs --journeys-only"`, ודגל שמדלג על שאר הבדיקות. אמת: `npm run walk:journey`.
-- [ ] **צעד 8 — קו הבסיס נרשם.** הרץ `npm run walk:journey` ורשום את שלושת מספרי ה-`taps` בשורת `T-227` ב-`plan/50-tasks.md`. 🔴 **המספר הזה הוא כל התוצר** — ממנו ה-PM גוזר פרוסת D-144ⓑ («מ-7 הקשות ל-4»), ו⛔ בלעדיו ⛔ אין ממה לגזור.
-- [ ] **צעד 9 — השער המלא, אחרון.** `npm run verify` — ⛔ חמש הפקודות, ו⛔ אין טענת «עובר» בלי הפלט הטרי (`RULES § 0.6`). ואז `npm run measure:plan` באותו קומיט.
+- [x] **צעד 2 — המימוש הטהור.** כתוב `lib/core/journeyDrift.ts` עד שהבדיקה ירוקה: `npx vitest run lib/core/journeyDrift.test.ts`. ואז `npm run check:core` — ⛔ אפס React, ⛔ אפס `window`.
+- [x] **צעד 3 — רשומת המסעות.** הוסף `JOURNEYS` ל-`scripts/verify-mobile.mjs` ליד `FLOW_ARRIVAL` (‏`sed -n '275,355p' scripts/verify-mobile.mjs` — אותו דפוס, אותה הצדקה `why` לכל שורה). ⛔ **⛔ אל תיגע ב-`FLOW_ARRIVAL`** — הוא מודד הקשה בודדת ונשאר.
+- [x] **צעד 4 — ההליכה.** מַמֵּש `walkJourney` ב-`scripts/verify-mobile.mjs`, בתוך ה-`browser` שכבר פתוח. אמת: `npm run walk:journey`. לכל צעד: קרא את התווית העברית של הבורר, הקש, אמת שהכתובת היא `to` (או ש⛔ לא זזה כש-`stays`), וספור. ⛔ **⛔ אל תפתח דפדפן שני** — ההרמה עולה ~25 שניות והיא כבר שולמה.
+- [x] **צעד 5 — דרך חזרה.** ב-`scripts/verify-mobile.mjs`, לכל מסך שאינו הראשון במסע, אמת פקד חזרה. אמת: `npm run walk:journey`. ⛔ **מסך בלי דרך חזרה הוא `deadEnd` ⛔ גם אם יש לו פעולה קדימה** — זה בדיוק המבוי הסתום שרוי פגש באתר החי.
+- [x] **צעד 6 — דיווח, ⛔ ולא הפלה.** ב-`scripts/verify-mobile.mjs` הדפס בלוק אחד (`npm run walk:journey`): `journey <name>: taps=N · deadEnd=… · nameDrift=… · wayBack=…`. 🔴 **הרשומה נולדת כאזהרה** — ‏`check(...)` ⛔ אינו נקרא עליה בהרצה הראשונה; היא נכנסת ל-`notes`. ⛔ **קו בסיס שמפיל את הבנייה ביום שהוא נמדד הוא הדרך ללמד כל סוכן להתעלם ממנו.**
+- [x] **צעד 7 — הפקודה.** הוסף ל-`package.json`: `"walk:journey": "node scripts/verify-mobile.mjs --journeys-only"`, ודגל שמדלג על שאר הבדיקות. אמת: `npm run walk:journey`.
+- [x] **צעד 8 — קו הבסיס נרשם.** הרץ `npm run walk:journey` ורשום את שלושת מספרי ה-`taps` בשורת `T-227` ב-`plan/50-tasks.md`. 🔴 **המספר הזה הוא כל התוצר** — ממנו ה-PM גוזר פרוסת D-144ⓑ («מ-7 הקשות ל-4»), ו⛔ בלעדיו ⛔ אין ממה לגזור.
+- [x] **צעד 9 — השער המלא, אחרון.** `npm run verify` — ⛔ חמש הפקודות, ו⛔ אין טענת «עובר» בלי הפלט הטרי (`RULES § 0.6`). ואז `npm run measure:plan` באותו קומיט.
 
 ---
 

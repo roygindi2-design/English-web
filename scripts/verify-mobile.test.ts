@@ -1152,3 +1152,71 @@ describe('the harness refuses to silently adopt a server it did not start (T-251
     }
   });
 });
+
+/**
+ * T-227 · plan/docs/superpowers/plans/2026-08-30-journey-walk.md. `FLOW_ARRIVAL`
+ * measures one screen at a time; `JOURNEYS` crosses them — a learner's actual
+ * path from one fixed screen to the next, three of them, declared here and never
+ * inferred by the harness at runtime.
+ */
+describe('journey walks cross screens instead of measuring one at a time (T-227)', () => {
+  const CODE = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { scripts: Record<string, string> };
+
+  it('declares the three journeys — join, learn, play — and leaves FLOW_ARRIVAL untouched', () => {
+    expect(CODE).toContain('const FLOW_ARRIVAL = {');
+    expect(CODE).toContain('const JOURNEYS = {');
+    expect(CODE).toMatch(/join:\s*\{/);
+    expect(CODE).toMatch(/learn:\s*\{/);
+    expect(CODE).toMatch(/play:\s*\{/);
+  });
+
+  it('exposes walk:journey, and only walk:journey skips the rest of the suite', () => {
+    expect(pkg.scripts['walk:journey']).toBe('node scripts/verify-mobile.mjs --journeys-only');
+    expect(CODE).toContain("JOURNEYS_ONLY = ARGV.includes('--journeys-only')");
+  });
+
+  it('the JOURNEYS table names a real selector on every step, ⛔ except the journey’s own arrival', () => {
+    const start = CODE.indexOf('const JOURNEYS = {');
+    const end = CODE.indexOf('\n};\n', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const table = CODE.slice(start, end);
+
+    // ⛔ Declared, ⛔ never inferred (plan § 2): four routes per journey, three of
+    // which carry a selector to tap — the fourth is the arrival, checked below.
+    const routeCount = [...table.matchAll(/route: '[^']+'/g)].length;
+    const actionCount = [...table.matchAll(/action: '[^']+'/g)].length;
+    expect(routeCount).toBe(12); // 3 journeys × 4 routes
+    expect(actionCount).toBeGreaterThan(0);
+    expect(actionCount).toBeLessThan(routeCount); // every journey has an arrival with none
+
+    for (const journeyName of ['join', 'learn', 'play']) {
+      const journeyStart = table.indexOf(`${journeyName}: {`);
+      expect(journeyStart, `journey "${journeyName}" missing`).toBeGreaterThan(-1);
+    }
+  });
+
+  it('reads the way-back control by name, ⛔ never by a bare "contains חזרה" that would also catch the cards review chip', () => {
+    expect(CODE).toContain('BACK_CONTROL_RE');
+    expect(CODE).toMatch(/BACK_CONTROL_RE\s*=\s*\/\^חזרה/);
+  });
+
+  it('the baseline is born as a note, ⛔ never a failing check, on its first measured run', () => {
+    const walkSection = CODE.slice(CODE.indexOf('journey walks — crossing screens'));
+    expect(walkSection).toContain('report(');
+    expect(walkSection).not.toMatch(/check\(\s*\n?\s*result\./);
+  });
+
+  it('never launches a second browser for the walk — reuses the one already open for the checks above', () => {
+    const walkerBody = CODE.slice(
+      CODE.indexOf('async function walkJourney'),
+      CODE.indexOf('\n}\n', CODE.indexOf('async function walkJourney')),
+    );
+    expect(walkerBody).not.toContain('chromium.launch');
+  });
+
+  it('driftingNames is imported from lib/core, ⛔ not reimplemented inline', () => {
+    expect(CODE).toContain("await import('../lib/core/journeyDrift.ts')");
+  });
+});

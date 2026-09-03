@@ -22,7 +22,17 @@ import { chromium } from 'playwright';
 // be unit tested against production-shaped geometry; this file only measures.
 import { auditStoryBody } from './story-tap-audit.mjs';
 
-const BASE_ARG = process.argv[2];
+// T-227 · plan/docs/superpowers/plans/2026-08-30-journey-walk.md. Pure, so it is
+// unit-testable without a browser (check:core owns it) — see lib/core/journeyDrift.ts.
+const { driftingNames } = await import('../lib/core/journeyDrift.ts');
+
+// T-227 — `--journeys-only` runs ONLY the three journey walks below (`npm run
+// walk:journey`) and skips every per-route/per-width check in this file. A flag,
+// not a positional arg, so it must be filtered out before BASE_ARG is read —
+// otherwise `--journeys-only` itself would be parsed as the base URL.
+const ARGV = process.argv.slice(2);
+const JOURNEYS_ONLY = ARGV.includes('--journeys-only');
+const BASE_ARG = ARGV.find((a) => !a.startsWith('--'));
 const PORT = Number(process.env.PORT) || 3000;
 const BASE = BASE_ARG || `http://localhost:${PORT}`;
 const WIDTHS = [320, 375, 414];
@@ -342,6 +352,201 @@ const FLOW_ARRIVAL = {
 };
 
 /**
+ * T-227 · plan/docs/superpowers/plans/2026-08-30-journey-walk.md — crosses SCREENS
+ * instead of measuring one at a time (that is `FLOW_ARRIVAL`, above; ⛔ do not touch
+ * it). Three journeys, declared and ⛔ never inferred, § 1 of the plan:
+ *
+ *   join  — the one journey a learner walks exactly once (‏/ → /signup →
+ *           /dev/onboarding → /dev/tabs/studies)
+ *   learn — the daily loop, measured in `36 § 5`
+ *   play  — the only journey that crosses three flows (nav · story · arena), so it
+ *           is the only one where the same destination could carry two Hebrew names
+ *
+ * Every step's `action`, `to`/`stays` and `why` were read live off the running
+ * fixtures for this tick (C-0403) — not copied from the plan's illustrative
+ * interface, which pre-dates T-246/C-0381 removing `/dev/tabs/studies`'s only
+ * primary action. A step with no `action` is the journey's arrival screen, or a
+ * screen this harness found with no forward control at all — both are real,
+ * MEASURED facts, not implementation gaps in this file. This harness has no
+ * Supabase env, so a tap whose real destination cannot render here (`to`) still
+ * gets clicked and counted, and the walk then continues from the next fixture
+ * route in the table — the same bridge `join`'s `stays` steps already need.
+ */
+const JOURNEYS = {
+  join: {
+    steps: [
+      {
+        route: '/',
+        action: 'main [data-primary-action]',
+        to: '/signup',
+        why: 'a plain <Link>, no session needed — same tap FLOW_ARRIVAL["/"] already proves navigates',
+      },
+      {
+        route: '/signup',
+        action: 'main [data-primary-action]',
+        stays: true,
+        why: 'the empty-form submit announces AUTH_MESSAGES_HE.invalid_email and stays (FLOW_ARRIVAL["/signup"]) — a real submit would have moved on, so the walk bridges to the next fixture',
+      },
+      {
+        route: '/dev/onboarding',
+        action: 'main [data-primary-action]',
+        stays: true,
+        why: 'POST /api/profile answers 503 without env (FLOW_ARRIVAL["/dev/onboarding"]); the walk bridges onward the same way',
+      },
+      {
+        route: '/dev/tabs/studies',
+        why: 'arrival — the daily home screen. T-246 (C-0381) left it with no primary action; measured live, not assumed',
+      },
+    ],
+    why: 'the one journey a learner walks exactly once — every extra tap in it is counted twice',
+  },
+  learn: {
+    steps: [
+      {
+        route: '/dev/tabs/studies',
+        why: 'daily-loop entry — same T-246 gap as join’s arrival: no forward control to walk on',
+      },
+      {
+        route: '/dev/tabs/cards',
+        action: 'main [data-primary-action]',
+        to: '/study',
+        why: 'DeckSelector (T-225) renders a real <Link data-primary-action> to /study?deck=level; /study 503s without env, so the walk bridges to /dev/deck — the fixture standing in for the review screen it would show',
+      },
+      {
+        route: '/dev/deck',
+        why: 'the card stack has no single primary action by design — each card reveals its own grade buttons on tap, one level below what this macro-navigation walk drives',
+      },
+      {
+        route: '/dev/deck/done',
+        why: 'arrival — the daily loop measured in `36 § 5`',
+      },
+    ],
+    why: 'the daily loop — the walk a learner repeats every day',
+  },
+  play: {
+    steps: [
+      {
+        route: '/dev/world/ring',
+        action: '[data-ring-node="stories"]',
+        to: '/world/story',
+        why: 'the ring node that opens the stories app (components/WorldRing.tsx, lib/core/worldRing.ts); /world/story has no env-free content, so the walk bridges to /dev/story, the fixture for the reading screen it would show',
+      },
+      {
+        route: '/dev/story',
+        action: 'main button:has-text("סיימתי לקרוא")',
+        stays: true,
+        why: 'the fixture opens in the "reading" phase — DONE_READING_HE only moves phase to "question" locally (components/StoryScreen.tsx); the exit Link renders in the question/finished phase only, so the walk bridges to /dev/arcade/home',
+      },
+      {
+        route: '/dev/arcade/home',
+        action: 'main button:has-text("התחל קרב")',
+        stays: true,
+        why: 'app/dev/arcade/home/page.tsx wires onStart to a no-op by design (a real battle needs a live session) — the tap is real, the fixture just does not move; the walk bridges to /dev/arcade',
+      },
+      {
+        route: '/dev/arcade',
+        why: 'arrival — the battle screen. The only journey crossing three flows, so the only one where a shared destination could carry two different Hebrew names',
+      },
+    ],
+    why: 'the journey that crosses three flows (nav · story · arena) — the only one where name drift can appear',
+  },
+};
+
+/**
+ * A control this codebase's own screens use for "go back" (`ArenaHome.BACK_HE`,
+ * `StoryScreen.BACK_TO_WORLD_HE`, `CardDeck`'s "חזרה לכרטיסיות"): the accessible
+ * name is exactly `חזרה`, or starts with `חזרה ` followed by a destination.
+ * ⛔ Deliberately narrower than "contains חזרה" — `/dev/tabs/cards` carries a
+ * filter chip labelled `חזרה— מילים שסימנת לא ידעתי` ("review", not "return"),
+ * and a plain substring match would count it as a way back it is not.
+ */
+const BACK_CONTROL_RE = /^חזרה(\s|$)/;
+
+/**
+ * @param page   a page on the already-open `browser` — T-227's plan bans a second
+ *               browser launch (~25s already paid for the checks above)
+ * @param name   journey name, for labels only
+ * @param journey {steps, why}
+ * @returns {Promise<{name: string, taps: number, deadEnd: string[], nameDrift: string[], wayBack: string[]}>}
+ */
+async function walkJourney(page, name, journey) {
+  const { steps } = journey;
+  let taps = 0;
+  const deadEnd = [];
+  const wayBack = [];
+  /** @type {Map<string, Set<string>>} */
+  const labelsByDestination = new Map();
+
+  await page.goto(`${BASE}${steps[0].route}`, { waitUntil: 'networkidle' });
+
+  for (let i = 0; i < steps.length; i += 1) {
+    const step = steps[i];
+    const landedOn = new URL(page.url()).pathname;
+    if (landedOn !== step.route) {
+      // The previous step's bridge did not land where the table says it should —
+      // a real gap, not a fixture limit. Record it and keep walking from where we
+      // actually are so the rest of the journey still yields real numbers.
+      deadEnd.push(`${step.route} (bridge landed on ${landedOn})`);
+    }
+
+    // Playwright's `hasText` filter reads textContent only — `/dev/arcade/home`'s
+    // back control is an icon-only <a aria-label="חזרה">, empty text — so this has
+    // to read BOTH textContent and aria-label itself, in the page.
+    const hasBack = await page.evaluate((source) => {
+      const re = new RegExp(source);
+      return [...document.querySelectorAll('a, button')].some(
+        (el) => re.test((el.textContent || '').trim()) || re.test(el.getAttribute('aria-label') || ''),
+      );
+    }, BACK_CONTROL_RE.source);
+    if (i > 0 && !hasBack) wayBack.push(step.route);
+
+    let hasAction = false;
+    if (step.action) {
+      const control = page.locator(step.action).first();
+      hasAction = (await control.count()) > 0;
+      if (hasAction) {
+        const label = ((await control.textContent()) ?? '').trim();
+        const destination = step.to ?? steps[i + 1]?.route;
+        if (destination) {
+          if (!labelsByDestination.has(destination)) labelsByDestination.set(destination, new Set());
+          labelsByDestination.get(destination).add(label);
+        }
+        await control.click();
+        taps += 1;
+        // Same wait shape as FLOW_ARRIVAL's own `navigates` branch above (F-101,
+        // C-0250): `waitForLoadState('networkidle')` can resolve before the SPA
+        // transition it is meant to wait for even starts, and reading the URL then
+        // is a race, not a measurement.
+        if (step.to) {
+          await page.waitForURL(`**${step.to}`, { timeout: 5000 }).catch(() => {});
+        } else {
+          await page.waitForTimeout(300);
+        }
+        const after = new URL(page.url()).pathname;
+        if (step.stays) {
+          if (after !== step.route) {
+            deadEnd.push(`${step.route} — expected to stay, moved to ${after}`);
+          }
+        } else if (step.to && after !== step.to) {
+          deadEnd.push(`${step.route} — tap did not arrive at ${step.to} (landed on ${after})`);
+        }
+      }
+    }
+
+    if (!hasAction && !hasBack) deadEnd.push(step.route);
+
+    // Bridge to the next fixture in the table. This harness has no Supabase env, so
+    // a real tap either stays (announces) or leaves the fixture set entirely (`to`)
+    // — either way the walk continues from the declared next route, exactly the
+    // stand-in every other fixture in this file already is.
+    const nextRoute = steps[i + 1]?.route;
+    if (nextRoute) await page.goto(`${BASE}${nextRoute}`, { waitUntil: 'networkidle' });
+  }
+
+  return { name, taps, deadEnd, nameDrift: driftingNames(labelsByDestination), wayBack };
+}
+
+/**
  * The console lines a route is ALLOWED to produce, per route and per exact request.
  *
  * Added C-0102 (T-065 task 6), and deliberately as narrow as it can be written. This
@@ -644,6 +849,11 @@ const browser = await chromium.launch({
 });
 
 try {
+  // T-227 — `--journeys-only` skips every per-route/per-width check below (sections
+  // 1 through 4) and runs only the journey walks further down, so `npm run
+  // walk:journey` is fast enough to run on its own. Full `check:mobile`/`verify`
+  // runs both: nothing here is weakened, only wrapped.
+  if (!JOURNEYS_ONLY) {
   // ---- 1. manifest is valid and complete (PW-1) -----------------------------
   {
     const page = await browser.newPage();
@@ -2189,6 +2399,30 @@ try {
         `got: ${body.slice(0, 120)}`,
       );
       await context.setOffline(false);
+    }
+    await context.close();
+  }
+  } // if (!JOURNEYS_ONLY)
+
+  // ---- 5. journey walks — crossing screens, not measuring one (T-227) -------
+  {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 780 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    for (const [name, journey] of Object.entries(JOURNEYS)) {
+      const result = await walkJourney(page, name, journey);
+      // 🔴 The baseline is born as a WARNING, not a failure (plan step 6): `check()`
+      // is never called on it. A number that fails the build the day it is first
+      // measured teaches every agent after this one to stop trusting it.
+      report(
+        `journey ${result.name}: taps=${result.taps} · ` +
+          `deadEnd=${result.deadEnd.length ? result.deadEnd.join(' · ') : '—'} · ` +
+          `nameDrift=${result.nameDrift.length ? result.nameDrift.join(' · ') : '—'} · ` +
+          `wayBack=${result.wayBack.length ? result.wayBack.join(' · ') : '—'}`,
+      );
     }
     await context.close();
   }

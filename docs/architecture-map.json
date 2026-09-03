@@ -368,6 +368,10 @@
     "lib/core/installPrompt.ts"
   ],
   "lib/core/installPrompt.ts": [],
+  "lib/core/journeyDrift.test.ts": [
+    "lib/core/journeyDrift.ts"
+  ],
+  "lib/core/journeyDrift.ts": [],
   "lib/core/landing.test.ts": [
     "lib/core/landing.ts"
   ],
