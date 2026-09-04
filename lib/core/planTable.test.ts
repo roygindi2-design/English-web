@@ -241,6 +241,95 @@ describe('staleTaskBlocks', () => {
   });
 });
 
+import { releaseCondition, fulfilledReleaseConditions } from './planTable';
+import type { ReleaseCondition, FulfilledCondition } from './planTable';
+
+describe('releaseCondition', () => {
+  it('reads a have/need pair right after the marker', () => {
+    expect(releaseCondition('⛔ חסום. תנאי שחרור: 2/2')).toEqual({ have: 2, need: 2 });
+    expect(releaseCondition('⛔ חסום — עדיין. תנאי שחרור: 0/2 (ⓐ F-020 · ⓑ הבדיקה החוזרת)')).toEqual(
+      { have: 0, need: 2 },
+    );
+  });
+
+  it('returns null when the cell carries no marker', () => {
+    expect(releaseCondition('⛔ **חסום — פעולה אנושית**')).toBeNull();
+  });
+
+  it('returns null when the marker is present but is not followed by have/need', () => {
+    expect(releaseCondition('⛔ חסום. תנאי שחרור: עוד לא נספר')).toBeNull();
+  });
+
+  it('returns null when need is 0 — a condition cannot need zero of itself', () => {
+    expect(releaseCondition('⛔ חסום. תנאי שחרור: 0/0')).toBeNull();
+  });
+
+  it('reads only the first have/need pair after the marker, ignoring numbers in later prose', () => {
+    expect(releaseCondition('⛔ חסום. תנאי שחרור: 1/2 (עוד 3 ימים משוער)')).toEqual({
+      have: 1,
+      need: 2,
+    });
+  });
+});
+
+describe('fulfilledReleaseConditions', () => {
+  const row = (id: string, status: string): RowShape => ({
+    id,
+    cells: ['', '', '', '', status, '', '', ''],
+    expected: 8,
+    ok: true,
+  });
+  const finding = (id: string, status: string): RowShape => ({
+    id,
+    cells: ['', '', '', '', '', '', status, ''],
+    expected: 8,
+    ok: true,
+  });
+
+  it('flags a ⛔ task whose declared condition is fully met — the D-097 case', () => {
+    const rows = [row('T-199', '⛔ חסומה. תנאי שחרור: 2/2 (ⓐ F-020 נסגר · ⓑ נספר מחדש)')];
+    expect(fulfilledReleaseConditions(rows, TASK_STATUS_INDEX, 'blocked')).toEqual([
+      { id: 'T-199', have: 2, need: 2 },
+    ]);
+  });
+
+  it('stays silent when the declared condition is only partly met', () => {
+    const rows = [row('T-199', '⛔ חסומה. תנאי שחרור: 1/2 (ⓐ F-020 נסגר · ⓑ עדיין לא)')];
+    expect(fulfilledReleaseConditions(rows, TASK_STATUS_INDEX, 'blocked')).toEqual([]);
+  });
+
+  it('stays silent on a ⛔ row that carries no release-condition marker at all', () => {
+    const rows = [row('T-043', '⛔ **חסום — פעולה אנושית**')];
+    expect(fulfilledReleaseConditions(rows, TASK_STATUS_INDEX, 'blocked')).toEqual([]);
+  });
+
+  it('ignores a row whose state does not match targetState, even if fulfilled', () => {
+    // A task marked ✅ done that still carries a stale marker must not be reported —
+    // the marker only means something on the state the caller asks about.
+    const rows = [row('T-100', '✅ בוצעה. תנאי שחרור: 2/2 (נשאר מהניסוח הישן)')];
+    expect(fulfilledReleaseConditions(rows, TASK_STATUS_INDEX, 'blocked')).toEqual([]);
+  });
+
+  it('flags an open 🔓 finding whose declared condition is fully met (ⓑ)', () => {
+    const rows = [finding('F-050', '🔓 פתוח. תנאי שחרור: 3/3 (שלושת התיקונים נחתו)')];
+    expect(fulfilledReleaseConditions(rows, FINDING_STATUS_INDEX, 'open')).toEqual([
+      { id: 'F-050', have: 3, need: 3 },
+    ]);
+  });
+
+  it('over-fulfilled counts as fulfilled — have can exceed need', () => {
+    const rows = [row('T-005', '⛔ חסומה. תנאי שחרור: 3/2 (תנאי שלישי התווסף ומולא גם הוא)')];
+    expect(fulfilledReleaseConditions(rows, TASK_STATUS_INDEX, 'blocked')).toEqual([
+      { id: 'T-005', have: 3, need: 2 },
+    ]);
+  });
+
+  it('skips a malformed row', () => {
+    const malformed: RowShape = { id: 'T-999', cells: ['a', 'b'], expected: 8, ok: false };
+    expect(fulfilledReleaseConditions([malformed], TASK_STATUS_INDEX, 'blocked')).toEqual([]);
+  });
+});
+
 describe('eligibleTaskIds', () => {
   it('returns only ⬜ rows, and never a malformed one', () => {
     const malformed: RowShape = { id: 'T-042', cells: ['T-042'], expected: 8, ok: false };

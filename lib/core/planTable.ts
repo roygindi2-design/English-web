@@ -266,6 +266,79 @@ export function staleTaskBlocks(tasks: readonly RowShape[]): StaleTaskBlock[] {
   return out;
 }
 
+/**
+ * The declared numeric release-condition marker — the same idiom as `BLOCKER_MARKER` and
+ * `CONTINUATION_MARKER`: declared, never inferred. `D-046` already binds this exact rule
+ * onto the product itself — "an opening condition is a COUNT, never a date, never a
+ * judgment call" — this applies it reflexively to the registers that describe conditions.
+ * A ⛔ or 🔓 cell that carries a countable release condition writes
+ * `תנאי שחרור: <have>/<need>`, and `releaseCondition` reads it back exactly: no partial
+ * credit, no rounding, no guessing at a count from prose that does not use the marker.
+ */
+export const RELEASE_CONDITION_MARKER = 'תנאי שחרור:';
+
+export interface ReleaseCondition {
+  readonly have: number;
+  readonly need: number;
+}
+
+const RELEASE_CONDITION_RE = /(\d+)\s*\/\s*(\d+)/;
+
+/**
+ * Parses the `have/need` pair immediately after the marker. `null` when the cell carries
+ * no marker, when the text right after it does not start with a `have/need` pair, or when
+ * `need` is 0 (a condition cannot need zero of itself — that is a malformed marker, not a
+ * fulfilled one). A cell that declares the marker but writes it wrong stays silent here and
+ * is a register-hygiene defect for a human to fix, not something this function guesses at.
+ */
+export function releaseCondition(cell: string): ReleaseCondition | null {
+  const at = cell.indexOf(RELEASE_CONDITION_MARKER);
+  if (at === -1) return null;
+  const after = cell.slice(at + RELEASE_CONDITION_MARKER.length);
+  const match = RELEASE_CONDITION_RE.exec(after);
+  if (match === null) return null;
+  const have = Number(match[1]);
+  const need = Number(match[2]);
+  if (need === 0) return null;
+  return { have, need };
+}
+
+export interface FulfilledCondition {
+  readonly id: string;
+  readonly have: number;
+  readonly need: number;
+}
+
+/**
+ * Rows — task or finding, same 8-cell shape — sitting in `targetState` whose declared
+ * release condition is already met. `staleBlocks`/`staleTaskBlocks` catch a blocker that
+ * cites another row by ID; this catches the other kind `D-097` measured: a condition that
+ * was never a row ID at all, only a count nobody re-checked after `D-046` overrode `D-035`.
+ * ⛔ It does NOT change status — it only reports; the decision stays human (`T-166`).
+ *
+ * `targetState` is a parameter, not hard-coded, because the two callers need different
+ * states: a task's condition matters while it sits ⛔ blocked; a finding's condition
+ * matters while it sits 🔓 open (`classifyStatus` maps 🔓 to `'open'`, same as ⬜) — a
+ * finding has no separate "blocked" state of its own.
+ */
+export function fulfilledReleaseConditions(
+  rows: readonly RowShape[],
+  statusIndex: number,
+  targetState: TaskState,
+): FulfilledCondition[] {
+  const out: FulfilledCondition[] = [];
+  for (const row of rows) {
+    if (!row.ok) continue;
+    const cell = row.cells[statusIndex];
+    if (cell === undefined || classifyStatus(cell) !== targetState) continue;
+    const cond = releaseCondition(cell);
+    if (cond !== null && cond.have >= cond.need) {
+      out.push({ id: row.id, have: cond.have, need: cond.need });
+    }
+  }
+  return out;
+}
+
 export function eligibleTaskIds(tasks: readonly RowShape[]): string[] {
   return tasks
     .filter((row) => {
