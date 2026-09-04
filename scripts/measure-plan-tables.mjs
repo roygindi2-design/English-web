@@ -56,7 +56,7 @@ const TASKS_FILE = join('plan', '50-tasks.md');
 const FINDINGS_FILE = join('plan', '60-findings.md');
 const OUT = process.env.PLAN_TABLES_OUT || join('docs', 'plan-tables.md');
 const OPEN_OUT = process.env.PLAN_OPEN_OUT || join('docs', 'plan-open.md');
-const CONTROL_FILE = join('plan', '00-control.md');
+const CONTROL_FILE = process.env.PLAN_CONTROL_FILE || join('plan', '00-control.md');
 const PLANS_DIR = join('docs', 'superpowers', 'plans');
 const FEEDBACK_FILE = join('plan', '26-plan-feedback.md');
 
@@ -239,11 +239,23 @@ const index = [
  * nothing eligible left in it.
  * ───────────────────────────────────────────────────────────────────────────── */
 
+const CONTROL_TEXT = readFileSync(CONTROL_FILE, 'utf8');
+
 const TICKS = new Map(
-  [...readFileSync(CONTROL_FILE, 'utf8').matchAll(/^#\s+(\w+):\s+(\d+)\s*\/\s*(\d+)/gm)].map(
+  [...CONTROL_TEXT.matchAll(/^#\s+(\w+):\s+(\d+)\s*\/\s*(\d+)/gm)].map(
     (m) => [m[1], { spent: Number(m[2]), ceiling: Number(m[3]) }],
   ),
 );
+
+/**
+ * T-248 — the "active workstream exhausted" flag below used to fire for ANY workstream
+ * with spent > 0 and zero open rows, regardless of whether it was still the active one.
+ * `nav`/`story`/`cards` all carry spent > 0 from when each was active, and all three are
+ * long exhausted and sealed — but none of them is `ACTIVE_WORKSTREAM` any more, so the
+ * imperative "QA must move ACTIVE_WORKSTREAM now" flag was false for every one of them,
+ * every run. Read the field once here so the loop below can gate on it.
+ */
+const ACTIVE_WORKSTREAM = CONTROL_TEXT.match(/^ACTIVE_WORKSTREAM:\s*(\S+)/m)?.[1] ?? null;
 
 const classOf = (row) => classify(row.ok ? (row.cells[TASK_MILESTONE_INDEX] ?? '') : '');
 const streamOf = (row) => classOf(row).workstream;
@@ -287,24 +299,38 @@ for (let i = 0; i < ORDERED.length; i += 1) {
     }
     if (tally(byStream.get(here) ?? []).open === 0) {
       /**
-       * ⛔ **הדגל הזה ⛔ אינו מודיע — הוא **מטיל**, וזה תיקון מ-26/08.**
+       * ⛔ **הדגל המחייב ⛔ אינו מודיע — הוא **מטיל**, וזה תיקון מ-26/08.**
        * הנוסח הקודם הציג שתי אפשרויות («או גמור או שה-PM יפתח») ו⛔ **לא נקב באיש**.
        * נמדד: `story` התרוקן ב-05:29, DEV מדד זאת ב-07:03, ו-`ACTIVE_WORKSTREAM`
        * עדיין עמד על `story` — כלומר **שני טיקי DEV ריקים** עד טיק ה-QA הבא.
        * ⇒ הדגל נוקב ב**בעל התפקיד** וב**זרימה הבאה בשמה**, כי «מישהו יחליט» הוא
        * בדיוק הניסוח שאיש ⛔ אינו פועל לפיו.
+       *
+       * 🔴 **T-248 — ותיקון נוסף מ-04/09: הדגל המחייב הזה ⛔ חייב להצטמצם ל-`here
+       * === ACTIVE_WORKSTREAM`.** הלולאה רצה על **כל** זרימה ברצף עם `spent > 0`, ו-`nav`
+       * · `story` · `cards` נושאות `spent > 0` משעה שהיו פעילות — **וכולן חתומות ומאחור**.
+       * בלי התנאי הזה כל אחת מהן מטילה את ההודעה המחייבת «QA מזיז את `ACTIVE_WORKSTREAM`
+       * — בטיק הזה» כל הרצה, על אף ש-`ACTIVE_WORKSTREAM` כבר לא הן. זרימה שהתרוקנה ו⛔
+       * אינה הפעילה מקבלת מטה למטה ניסוח נפרד ונכון — מידע, ⛔ לא הטלה.
        */
       const next = ORDERED.slice(i + 1).find((w) => tally(byStream.get(w) ?? []).open > 0);
       const where = next === undefined
         ? '⛔ ו⛔ **אין אחריו זרימה עם עבודה פנויה** — ⇒ זו הכרעה לרוי, ⛔ לא לסוכן.'
         : `⇒ **הבא ברצף עם עבודה פנויה הוא \`${next}\`** (${tally(byStream.get(next) ?? []).open} משימות ⬜).`;
-      flags.push(
-        `🔴 **הזרימה הפעילה מוצתה — \`${here}\` (${spent} טיקים) ו⛔ אין בו אף משימה ⬜ פנויה.** ${where}
+      if (here === ACTIVE_WORKSTREAM) {
+        flags.push(
+          `🔴 **הזרימה הפעילה מוצתה — \`${here}\` (${spent} טיקים) ו⛔ אין בו אף משימה ⬜ פנויה.** ${where}
 ` +
-          `  **QA מזיז את \`ACTIVE_WORKSTREAM\` ב-\`plan/00-control.md\` — בטיק הזה, ⛔ ולא בבא.** ` +
-          `⚠️ **ו⛔ «אין ⬜» ⛔ אינו «הפיצ׳ר גמור»:** ⛔ יש לוודא מול \`36 § 13\` שהפריט אכן נמסר, ⛔ ולא שאיש פשוט לא כתב את הפרוסה הבאה. ` +
-          `כל טיק DEV שנופל בחלון הזה הוא **טיק ריק** — שכפול, קריאת פרומפט, ו⛔ אפס תוצר.`,
-      );
+            `  **QA מזיז את \`ACTIVE_WORKSTREAM\` ב-\`plan/00-control.md\` — בטיק הזה, ⛔ ולא בבא.** ` +
+            `⚠️ **ו⛔ «אין ⬜» ⛔ אינו «הפיצ׳ר גמור»:** ⛔ יש לוודא מול \`36 § 13\` שהפריט אכן נמסר, ⛔ ולא שאיש פשוט לא כתב את הפרוסה הבאה. ` +
+            `כל טיק DEV שנופל בחלון הזה הוא **טיק ריק** — שכפול, קריאת פרומפט, ו⛔ אפס תוצר.`,
+        );
+      } else {
+        flags.push(
+          `ℹ️ \`${here}\` מוצתה (${spent} טיקים, ⛔ אין בו אף משימה ⬜ פנויה) ⛔ אינה הזרימה הפעילה ` +
+            `(\`ACTIVE_WORKSTREAM\` הוא \`${ACTIVE_WORKSTREAM ?? '—'}\`) ⇒ ⛔ אין פעולה — זה מידע, ⛔ ולא הטלה על QA.`,
+        );
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -294,6 +294,52 @@ describe('scripts/measure-plan-tables.mjs', () => {
   });
 });
 
+/**
+ * T-248 — הדגל «הזרימה הפעילה מוצתה» חייב לקרוא את `ACTIVE_WORKSTREAM` בפועל, ⛔ ולא
+ * להסיק אותו משדה `spent > 0`. `nav` ו-`studies` שתיהן זרימות שהתרוקנו בעבר (spent > 0,
+ * open === 0) ו⛔ אף אחת מהן אינה `ACTIVE_WORKSTREAM` כרגע — ⇒ אף אחת לא אמורה לקבל את
+ * הטלת ה-🔴 המחייבת (שהיא הודעה ל-QA, ⛔ לא תיאור מצב). כדי לבודד את `ACTIVE_WORKSTREAM`
+ * בלי לגעת ברגיסטר האמיתי, `PLAN_CONTROL_FILE` מפנה את הסקריפט לקובץ בקרה זמני שמכריז
+ * `studies` כפעילה — ⛔ תוך שימוש ב-`plan/50-tasks.md` האמיתי, כדי שהמספרים (0 פתוחות
+ * ב-`nav` וב-`studies`) יהיו נמדדים, ⛔ לא מבוימים.
+ */
+describe('🔴 הזרימה הפעילה מוצתה — חייב לקרוא ACTIVE_WORKSTREAM (T-248)', () => {
+  const CONTROL_DIR = mkdtempSync(join(tmpdir(), 'plan-control-'));
+  const FAKE_CONTROL = join(CONTROL_DIR, '00-control.md');
+  writeFileSync(
+    FAKE_CONTROL,
+    ['ACTIVE_WORKSTREAM: studies', '#   nav:     3 / 120', '#   studies: 3 / 120', ''].join('\n'),
+    'utf8',
+  );
+  const ACTIVE_OUT = join(CONTROL_DIR, 'plan-tables.md');
+  const ACTIVE_OPEN_OUT = join(CONTROL_DIR, 'plan-open.md');
+  const activeStdout = execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PLAN_TABLES_OUT: ACTIVE_OUT,
+      PLAN_OPEN_OUT: ACTIVE_OPEN_OUT,
+      PLAN_CONTROL_FILE: FAKE_CONTROL,
+    },
+  });
+  const activeOpen = readFileSync(ACTIVE_OPEN_OUT, 'utf8');
+
+  it('⛔ אינה מטילה את הדגל המחייב על `nav` — spent > 0 אך ⛔ אינה הפעילה', () => {
+    expect(activeOpen).not.toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `nav`/);
+  });
+
+  it('כן מטילה את הדגל המחייב על `studies` — היא `ACTIVE_WORKSTREAM` בקובץ הבקרה הזה', () => {
+    expect(activeOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `studies`/);
+  });
+
+  it('⛔ לא שותקת על `nav` — מקבלת ניסוח נפרד, נכון, ⛔ ולא הטלה על QA', () => {
+    expect(activeOpen).toMatch(/`nav`.*⛔ אינה הזרימה הפעילה.*⛔ אין פעולה/);
+  });
+
+  it('`balance:` ב-stdout סופר את שני הדגלים גם יחד', () => {
+    expect(activeStdout).toMatch(/balance: \d+ rows without a workstream, \d+ bad tags, \d+ flags/);
+  });
+});
 
 /**
  * ⛔ **עמודת הצעדים (שלב 3 · P3-2).** הטענה ⛔ אינה «יש עמודה» — היא ש**שתי
