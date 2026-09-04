@@ -4200,3 +4200,16 @@ illustration and ⛔ not the content** — note that it uses first names (`Tom`,
 `Mr. Levi`) while `docs/content-stories-brief.md` forbids first names in stories. **For
 messages a sender name is structurally required**, so the brief must state its own rule
 explicitly rather than inherit one written for prose. → T-192.
+
+<!-- gc:memory 2026-09-04 · 1 סעיפים -->
+
+### D-072 — **אישור סטיית מיגרציה בשורת T-120**  *(PM, C-0233 · פותר F-086 🟠)*
+
+**מקבל את הסטייה שה-Dev פתח (F-086):** T-120 נכתבה «אין לגעת במיגרציות», ⛔ אך העמודה
+`words.lexical_class` יושבת NULL בכל שורה, ולכן `.eq('lexical_class','function')` היה
+מחזיר בנק ריק. הפתרון של ה-Dev — `docs/superpowers/plans/2026-08-20-lexical-class-retirement.md`
+משימה 1 → מיגרציית מילוי `0016_lexical_class_backfill.sql` **לפני** החלפת הקוד — הוא
+הפתרון הנכון, ⛔ ולא סטייה מהעקרון של T-120: העמודה `is_function_word` היא `not null
+default false`, ולכן `false` ⛔ אינו טענה, והמילוי חייב לצמצם את `content` ל-`origin =
+'generated'` בלבד (‏שם `lib/core/batchRecord.ts:170` דורש את השדה). **⛔ אין תיקון לשורת
+T-120** — הסטייה מתועדת כאן, וה-Dev ממשיך לפי התוכנית.
