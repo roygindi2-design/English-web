@@ -454,6 +454,18 @@ export function excerpt(cell: string, limit: number): string {
  *            200 rows are these, and 61 of them are already ✅. Leaving them in an
  *            «unclassified» bucket would have made that bucket the biggest column
  *            in the balance table and drowned the signal it exists to give.
+ *   `amirnet` — added 04/09 (`T-226`; `F-165`/`F-166` are cited in that task row
+ *            as prior context and are ⛔ NOT closed by this change): the ninth node of
+ *            `36 § 6`, ⛔ not a `36 § 13` build-order item — placed right after
+ *            `msgs` (the last real § 13 stream) rather than inside that sequence.
+ *            It landed here BEFORE the first row was tagged with it: PM's C-0348
+ *            rows had to be tagged `base`/`cards`/`loop` instead, because tagging
+ *            them `amirnet` then would have made every one an «unknown tag»,
+ *            silently unclassified and unreachable (`measure-plan-tables.mjs`
+ *            «ללא זרימה» bucket). ⚠️ It is ⛔ NOT in `OUTSIDE_SEQUENCE` /
+ *            `CROSS_CUTTING` — that is a separate call about whether it should be
+ *            exempt from the § 13 build-order-violation flag, left to whoever
+ *            tags the first `amirnet` row (out of scope for T-226).
  */
 export const WORKSTREAMS = [
   'story',
@@ -462,6 +474,7 @@ export const WORKSTREAMS = [
   'arena',
   'studies',
   'msgs',
+  'amirnet',
   'loop',
   'base',
   'general',

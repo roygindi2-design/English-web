@@ -8,6 +8,7 @@ import {
   WORKSTREAMS,
   WORK_KINDS,
   LAYERS,
+  CROSS_CUTTING,
   TASK_COLUMNS,
 } from './planTable';
 
@@ -498,6 +499,26 @@ describe('classify', () => {
     for (const w of WORKSTREAMS) expect(classify(`M0 · ${w}`).workstream).toBe(w);
     for (const k of WORK_KINDS) expect(classify(`M0 · ${k}`).kind).toBe(k);
     for (const l of LAYERS) expect(classify(`M0 · ${l}`).layer).toBe(l);
+  });
+
+  /**
+   * T-226 — `amirnet` must be a recognised workstream tag BEFORE the first row is
+   * tagged with it (F-165/F-166): a tag outside `WORKSTREAM_SET` is reported as
+   * `unknown` and the row falls into the "ללא זרימה" (no-flow) bucket in
+   * `measure-plan-tables.mjs`, which is exactly the failure this task closes.
+   */
+  it('T-226: recognises `amirnet` as a workstream tag, not an unknown one', () => {
+    const c = classify('M0 · amirnet · תשתית');
+    expect(c.workstream).toBe('amirnet');
+    expect(c.unknown).toEqual([]);
+  });
+
+  it('T-226: `amirnet` sits after `msgs` and is a feature stream, not cross-cutting', () => {
+    // Position matches `36 § 6` (the ninth node) — ⛔ not `36 § 13`'s build order,
+    // which `amirnet` is not part of. `loop`/`base`/`general` stay the only
+    // cross-cutting tags; `amirnet` must not join them.
+    expect(WORKSTREAMS.indexOf('amirnet')).toBe(WORKSTREAMS.indexOf('msgs') + 1);
+    expect(CROSS_CUTTING.has('amirnet')).toBe(false);
   });
 
   /**
