@@ -439,6 +439,24 @@ describe('scripts/loop-health.mjs', () => {
     expect(failed(run(root).out, '7')).toBe(false);
   });
 
+  it('7 · a CLOSED row whose status text quotes a 🔴/🟣/🔧 finding does not count as a second open "files" row — the surrogate-pair trap (T-213)', () => {
+    // ⛔ Same class of bug as the check-2 test below, a different regex: `/[⬜🔵]/`
+    // at `scripts/loop-health.mjs` (check 7's "is this row still open" test) does
+    // not carry the `u` flag either. `C-0002` here is CLOSED (✅) — its status cell
+    // just happens to name the finding it closed, "F-100 🔴" — and the unflagged
+    // class reads that 🔴's leading surrogate as if it were a ⬜/🔵 open-glyph, so
+    // the checker double-counts "files" (once for the healthy fixture's genuinely
+    // open `C-0001`, once for this closed row) and fails a PM that repeated
+    // nothing.
+    const root = healthy();
+    patch(
+      root,
+      'plan/26-plan-feedback.md',
+      (s) => `${s}| C-0002 | \`q.md\` | \`files\` | already closed | ✅ **סגור — ראה F-100 🔴** |\n`,
+    );
+    expect(failed(run(root).out, '7')).toBe(false);
+  });
+
   it('does not mistake a 🔴 finding for a closed one — the surrogate-pair trap', () => {
     // ⛔ THE BUG THIS PINS, found before shipping: `/[✅🚫]/` WITHOUT the `u` flag
     // splits 🚫 into its surrogate halves, so the class matches anything opening

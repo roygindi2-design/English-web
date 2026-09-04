@@ -497,12 +497,16 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
 
 /* 7 — the DEV→PM lane only works if the PM actually learns. ⛔ No invented
  * threshold: the same missing element on two open rows IS the PM not learning,
- * which RULES § 0.6ג already calls a 🟡 finding. */
+ * which RULES § 0.6ג already calls a 🟡 finding.
+ * ⛔ THE `u` FLAG ON `/[⬜🔵]/` IS LOAD-BEARING (T-213) — same bug class as
+ * `CLOSED_GLYPH` just above: without it, a CLOSED row whose status text merely
+ * names a 🔴/🟠/🟡/🟣/🚫/🔧 finding matches the leading surrogate and is
+ * double-counted as open, failing a PM that repeated nothing. */
 check('7', 'אף חסר בתוכנית אינו חוזר פעמיים', () => {
   const seen = new Map();
   for (const line of read(at('plan', '26-plan-feedback.md')).split('\n')) {
     if (!/^\| C-\d{4} *\|/.test(line)) continue;
-    if (!/[⬜🔵]/.test(line.split('|').slice(-2).join('|'))) continue;
+    if (!/[⬜🔵]/u.test(line.split('|').slice(-2).join('|'))) continue;
     for (const key of line.match(/`(tasks|files|interfaces|tests|steps|addressed|verify|render|finish)`/g) ?? [])
       seen.set(key, (seen.get(key) ?? 0) + 1);
   }

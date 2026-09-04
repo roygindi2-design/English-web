@@ -409,7 +409,18 @@ const feedbackRows = readFileSync(FEEDBACK_FILE, 'utf8')
   .split('\n')
   .filter((line) => /^\| C-\d{4} \|/.test(line))
   .map((line) => splitRow(line));
-const openFeedback = feedbackRows.filter((cells) => /[⬜🔵]/.test(cells[cells.length - 1] ?? ''));
+/**
+ * ⛔ THE `u` FLAG IS LOAD-BEARING (T-213). Without it, 🔵 (U+1F535) splits into its two
+ * surrogate halves inside the character class, so the class silently becomes "⬜, or
+ * anything opening with `\uD83D`" — which matches every glyph in U+1F400–U+1F7FF, 🔴
+ * 🟠 🟡 🟣 🚫 🔧 included. Measured: `/[⬜🔵]/.test('🔴')` is TRUE, `/[⬜🔵]/u.test('🔴')`
+ * is false. ⇒ the un-flagged version treated any CLOSED row whose prose merely named
+ * one of those emoji (e.g. `plan/26-plan-feedback.md` row C-0318, closed, quoting
+ * "F-140 🔴") as still open. Same class of bug as `scripts/loop-health.mjs`'s
+ * `CLOSED_GLYPH` and `scripts/archive-registers.mjs`'s `STATUS_GLYPH`.
+ */
+const OPEN_GLYPH = /[⬜🔵]/u;
+const openFeedback = feedbackRows.filter((cells) => OPEN_GLYPH.test(cells[cells.length - 1] ?? ''));
 
 /**
  * ⛔ **כיסוי התוכנית — הצעדים, ⛔ ולא רק המשימות** (שלב 3 · P3-2).

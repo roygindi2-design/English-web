@@ -264,14 +264,35 @@ describe('scripts/measure-plan-tables.mjs', () => {
       .split('\n')
       .filter((l) => /^\| C-\d{4} \|/.test(l))
       .map((l) => splitRow(l))
-      .filter((cells) => /[⬜🔵]/.test(cells[cells.length - 1] ?? '')).length;
-    expect(open).toBeGreaterThan(0);
+      .filter((cells) => /[⬜🔵]/u.test(cells[cells.length - 1] ?? '')).length;
+    // ⛔ NO FLOOR ON `open` (T-213). This used to assert `toBeGreaterThan(0)` — a queue
+    // this test happened to find non-empty the day it was written, promoted to a
+    // permanent invariant. The moment the PM closes the last row honestly, `open`
+    // becomes 0 and `npm run verify` goes red on the loop working correctly (measured
+    // C-0324). The real invariant is covariant with the count, not a floor under it:
+    // the section renders, and every open row it counts appears in it — empty queue
+    // included — which the two assertions below already prove either way.
     expect(fresh).toContain('## 🔁 משוב על תוכניות');
     const shown = [...fresh.matchAll(/^\| C-\d{4} \|/gm)].length;
     expect(shown).toBe(open);
     // The DEV→PM lane only works if the PM is actually sent here, so the section must
     // exist even when it is empty — an absent section reads as "nothing to do".
     expect(fresh).toMatch(/## 🔁 משוב על תוכניות[\s\S]{0,400}(אין|מחזור)/);
+  });
+
+  it('does not list a CLOSED plan-feedback row whose prose merely quotes a 🔴/🟣/🔧 finding — the surrogate-pair trap (T-213)', () => {
+    // ⛔ THE BUG THIS PINS, measured live 2026-09-04 on this exact clone: `/[⬜🔵]/`
+    // WITHOUT the `u` flag does not see 🔵 (U+1F535) as one code point — inside an
+    // unflagged class, its high surrogate `\uD83D` is matched on its own, and that
+    // half is shared by EVERY glyph in U+1F400–U+1F7FF: 🔴 🟠 🟡 🟣 🚫 🔧 included.
+    // `node -e "/[⬜🔵]/.test('🔴')"` → true; the `/u` version → false.
+    // Row `C-0318` in `plan/26-plan-feedback.md` is ✅ CLOSED — its closing note
+    // just happens to quote the finding it resolved: "F-140 היא 🔴 CRITICAL". The
+    // unflagged regex read that 🔴 as if it were a ⬜/🔵 open-glyph and rendered the
+    // row into "## 🔁 משוב על תוכניות" (open plan feedback) as still open — the exact
+    // inverse of what the section exists to tell the PM.
+    const fresh = readFileSync(FRESH_OPEN, 'utf8');
+    expect(fresh).not.toMatch(/\| C-0318 \|/);
   });
 
   it('carries no date, so the snapshot cannot rot on its own', () => {
