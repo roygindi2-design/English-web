@@ -1598,3 +1598,30 @@ lib/core/landing.test.ts` ⇒ 15/15 (כולל הבדיקה הישנה `PREVIEW_C
 `1187 senses read from 23 batch files · 341/1187 = 28.7% full D-023 mix · 1078/1187 =
 90.8% at least one resolved tagged distractor` — עלייה מ-127/737=17.2% (D-138), בכיוון
 היעד המוצהר 445/737=60.4% (K-004 מלא).
+
+### `lib/core/planTable.ts` — `releaseCondition` / `fulfilledReleaseConditions` (T-166 · D-097)
+`plan/50-tasks.md`/`60-findings.md` register rows can now declare a countable release
+condition inline — `תנאי שחרור: <have>/<need>`, the same "cell carries a hidden field"
+idiom as `BLOCKER_MARKER`/`CONTINUATION_MARKER`. `releaseCondition(cell)` parses one
+`have/need` pair right after the marker (`null` on no marker, malformed text, or
+`need === 0`). `fulfilledReleaseConditions(rows, statusIndex, targetState)` filters rows
+sitting in `targetState` (tasks: `'blocked'`; findings: `'open'`, since 🔓 maps there —
+findings have no separate blocked state) whose declared condition is already met
+(`have >= need`) and returns `{ id, have, need }` for each. Pure, no I/O — same file,
+same pattern as `staleTaskBlocks` beside it.
+
+`scripts/measure-plan-tables.mjs` wires both into the report it already writes every
+tick: a new `## תנאי שחרור שהתמלא — והשורה עדיין נעולה` section in `docs/plan-tables.md`,
+plus `fulfilled release conditions (tasks|findings): ...` stdout lines. Report-only — it
+never flips a status cell; the decision stays human, per the task row's own text.
+`TASKS_FILE` is now overridable via `PLAN_TASKS_FILE` (needed so the new fixture test can
+point the generator at a temp copy of the register instead of mutating the live one — same
+pattern `PLAN_TABLES_OUT`/`PLAN_OPEN_OUT` already use).
+
+**Measured (C-0424):** `npm run measure:plan` against the live registers — `fulfilled
+release conditions (tasks): none` / `(findings): none` (no row in the wild currently
+declares the marker; T-166 was the first, and it closed on delivery). `npm run verify`
+exit 0 — `test` 3345/3345 · `check:mobile` 1208 checks. 17 new tests (13 in
+`lib/core/planTable.test.ts`, 2 CLI-level + fixture-based in
+`scripts/measure-plan-tables.test.ts`, all passing, no regressions in either file's
+pre-existing suite).
