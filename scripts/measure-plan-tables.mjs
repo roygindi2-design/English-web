@@ -50,9 +50,11 @@ const {
   FINDING_COLUMNS,
   TASK_STATUS_INDEX,
   FINDING_STATUS_INDEX,
+  fulfilledReleaseConditions,
+  RELEASE_CONDITION_MARKER,
 } = await import('../lib/core/planTable.ts');
 
-const TASKS_FILE = join('plan', '50-tasks.md');
+const TASKS_FILE = process.env.PLAN_TASKS_FILE || join('plan', '50-tasks.md');
 const FINDINGS_FILE = join('plan', '60-findings.md');
 const OUT = process.env.PLAN_TABLES_OUT || join('docs', 'plan-tables.md');
 const OPEN_OUT = process.env.PLAN_OPEN_OUT || join('docs', 'plan-open.md');
@@ -81,6 +83,12 @@ const badFindings = findingRows.filter((r) => !r.ok);
 const eligible = eligibleTaskIds(taskRows);
 const stale = staleBlocks(taskRows, findingStates);
 const staleTasks = staleTaskBlocks(taskRows);
+const fulfilledTaskConditions = fulfilledReleaseConditions(taskRows, TASK_STATUS_INDEX, 'blocked');
+const fulfilledFindingConditions = fulfilledReleaseConditions(
+  findingRows,
+  FINDING_STATUS_INDEX,
+  'open',
+);
 
 const shapeLine = (r) => `| \`${r.id}\` | ${r.cells.length} | ${r.expected} |`;
 const report = [
@@ -114,6 +122,18 @@ const report = [
     : staleTasks
         .map((s) => `- \`${s.taskId}\` ממתינה ל-\`${s.blockerId}\`, שסטטוסה \`${s.blockerState}\``)
         .join('\n'),
+  '',
+  '## תנאי שחרור שהתמלא — והשורה עדיין נעולה',
+  '',
+  '⛔ **דיווח בלבד — הסטטוס לא משתנה כאן.** ⓐ+ⓑ (`T-166`): כל שורה ⛔ או 🔓 שמצהירה',
+  `\`${RELEASE_CONDITION_MARKER}\` עם תנאי שמולא, ⛔ ואיש עדיין לא עדכן את הסטטוס.`,
+  '',
+  fulfilledTaskConditions.length === 0 && fulfilledFindingConditions.length === 0
+    ? '⛔ אין.'
+    : [
+        ...fulfilledTaskConditions.map((c) => `- \`${c.id}\` (משימה) — ${c.have}/${c.need}`),
+        ...fulfilledFindingConditions.map((c) => `- \`${c.id}\` (ממצא) — ${c.have}/${c.need}`),
+      ].join('\n'),
   '',
 ].join('\n');
 
@@ -548,6 +568,19 @@ if (staleTasks.length === 0) console.log('stale task blockers: none');
 for (const s of staleTasks) {
   console.log(`stale task blockers: ${s.taskId} waits on ${s.blockerId} (${s.blockerState})`);
 }
+const conditionLine = (c) => `${c.id} (${c.have}/${c.need})`;
+console.log(
+  `fulfilled release conditions (tasks): ${
+    fulfilledTaskConditions.length === 0 ? 'none' : fulfilledTaskConditions.map(conditionLine).join(', ')
+  }`,
+);
+console.log(
+  `fulfilled release conditions (findings): ${
+    fulfilledFindingConditions.length === 0
+      ? 'none'
+      : fulfilledFindingConditions.map(conditionLine).join(', ')
+  }`,
+);
 console.log(`open index: ${openTasks.length} tasks, ${openFindings.length} findings`);
 console.log(`wrote ${OUT}`);
 console.log(`wrote ${OPEN_OUT}`);
