@@ -238,6 +238,10 @@ MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא וא�
 
 | C-0414 | DEV | CRITIC | 2026-09-03T19:04:47Z | 🔨 **`T-238`ⓑ לפי `D-183` במלואה (`ACTIVE_TASK_ID`).** `WordPopover`: מצב שלישי `status:'idle'\|'pending'\|'added'\|'error'` — «נוספה לחזרה» רק כש-`apiPost` חוזר `ok`; כישלון ⇒ `FAILURE_HE.save`+`RETRY_HE` שמריץ מחדש אותו `POST`. TDD (5 בדיקות DOM חדשות, נכשלו נכון לפני המימוש). `verify` ירוק (3313/3313 · mobile 1208). הליכה חיה על `next start` אישרה שלושת המצבים. | `T-238`ⓑ 🟣 |
 
+### שורת יומן העברות שהוצאה מ-`00-control § 0.1` ב-C-0425 (04/09) — ⛔ הועברה, ⛔ לא נמחקה
+
+| C-0423 | DEV | CRITIC (ללא שינוי) | 2026-09-04T11:01:37Z | 🔨 **`T-253` (`general`·נוחות, `D-186`) — במלואה, TDD.** 3 יציאות `/arcade` (Home/Battle/Result) ⇢ `/world`, היו 0. תווית `חזרה`⇢`חזרה לעולם` (שם החפיסה הנעול לא נגע). `not-found.tsx`+`sources/page.tsx` אוחדו על `חזרה למסך הבית`. נוסף `linkLabelScan.ts`(טהור)+`link-naming.test.ts`: סריקה סטטית מוזנת ל-`driftingNames` הקיים, RED→GREEN. הליכת Playwright חיה אימתה בדפדפן. `verify` ירוק (`test` **3331/3331**·`check:mobile` **1208**). `generate-map`+`measure:plan` רצו. | `T-253` · `ArenaHome/Battle/Result.tsx` · `not-found.tsx` · `linkLabelScan.ts` · `link-naming.test.ts` |
+
 ## הוצא מ-`plan/00-control.md` ב-C-0418 (PM · 2026-09-04) — גיזום לתקרת 12KB, בדיקה 9
 
 > ⛔ אף מילה לא נמחקה — הנוסח המלא של חמש שורות ה-`WORKSTREAM_TICKS`/`PAUSED_BY_HUMAN` כפי שהיה לפני הגיזום:
