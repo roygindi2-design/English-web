@@ -130,6 +130,7 @@ function WorldMark({ active }: { readonly active: boolean }): React.JSX.Element 
   return (
     <span
       data-tab-world
+      data-glow="true"
       className={`-mt-6 flex h-[54px] w-[54px] items-center justify-center rounded-full border bg-brand-surface text-brand-on ${
         active ? 'border-brand' : 'border-transparent'
       }`}

@@ -932,6 +932,14 @@ try {
       const lang = await page.evaluate(() => document.documentElement.lang);
       check(lang === 'he', `${at} lang=he`, `got "${lang}"`);
 
+      // Glow budget (T-169 · חוקה שכבה ב3) — `--glow-brand` in app/globals.css is the
+      // one recipe; `data-glow` is what makes the count of it measurable per screen. A
+      // glow with no budget is how the blanket ban was born in the first place (D-102):
+      // it leaks onto every card within a few ticks, and then no screen has a focal
+      // point left. Two is the ceiling the constitution names, not a preference here.
+      const glowing = await page.locator('[data-glow]').count();
+      check(glowing <= 2, `${at} ≤2 glowing elements`, `found ${glowing}`);
+
       // T-246 · C-0381: /dev/tabs/studies הפך לבורר ארבעת המסלולים. ⚠️ המספרים כאן
       // (≥4 · ≥400) הם השער שכתבה PM ב-T-246 עצמה (`plan/50-tasks.md`), ⛔ לא המצאה
       // של הבדיקה. **≥400 תווים נמדד בפועל 155 בטיק הזה** (`main` מרונדר: כותרת ·

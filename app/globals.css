@@ -108,17 +108,29 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
 }
 
 
-/* T-205 · T-174 · חוקה שכבה ב3 — **שני הזוהרים היחידים במסך `העולם`**, וזו כל
-   התקרה שההחלטה נותנת: מוקד `קול` במרכז הטבעת, והעיגול המרכזי בסרגל הלשוניות.
-   ⛔ שניהם על `--brand`/`--brand-surface` בלבד, ⛔ ואף אחד מהם ⛔ אינו על טקסט גוף.
-
-   `color-mix` ו⛔ לא `bg-brand/40`: כל טוקן צבע הוא `var(--x)` בלי חריץ
-   `<alpha-value>`, ולכן Tailwind ⛔ אינו יכול לגזור ממנו שקיפות (נמדד ב-C-0163 —
-   `bg-ink/40` ⛔ אינו פולט כלל בכלל). ⇒ השקיפות נגזרת ב-CSS, מאותו טוקן. */
-[data-ring-focus] {
-  box-shadow:
+/* T-169 · חוקה שכבה ב3 — **האסימון היחיד לזוהר.** ערימת `box-shadow`, ⛔ לא
+   `filter: blur` (blur על שכבה שלמה עולה בפריים — ראה T-230 למטה, שהעביר בדיוק
+   את הבעיה הזאת מ-`box-shadow` מונפש לפתרון compositor-only). זהו המתכון
+   שהחוקה קוראת לו "זוהר": ערימת שני `color-mix` על `var(--brand)`, בלי חריץ
+   `<alpha-value>` — כמו כל טוקן צבע כאן — כי Tailwind ⛔ אינו יכול לגזור שקיפות
+   מ-`var(--x)` (נמדד ב-C-0163: `bg-ink/40` ⛔ אינו פולט כלל).
+   ⛔ **התקציב הוא על אלמנטים, ⛔ לא על שימושי הטוקן**: `--glow-brand` הוא
+   המתכון על `--brand` (המוקד `קול`); הזוהר השני במוצר (סרגל הלשוניות) הוא על
+   `--brand-surface` בכוונה — צבע אחר, אותה משפחת מתכון — ושניהם יחד הם
+   **שני** הזוהרים שמותרים למסך (חוקה ב3). `data-glow` על כל אלמנט זוהר הוא
+   מה שהופך את התקציב למדיד: `scripts/verify-mobile.mjs` סופר
+   `[data-glow]` בכל מסך ונופל מעל שניים. */
+:root {
+  --glow-brand:
     0 0 0 6px color-mix(in srgb, var(--brand) 14%, transparent),
     0 0 26px 8px color-mix(in srgb, var(--brand) 26%, transparent);
+}
+
+/* T-205 · T-174 · חוקה שכבה ב3 — **שני הזוהרים היחידים במסך `העולם`**, וזו כל
+   התקרה שההחלטה נותנת: מוקד `קול` במרכז הטבעת, והעיגול המרכזי בסרגל הלשוניות.
+   ⛔ שניהם על `--brand`/`--brand-surface` בלבד, ⛔ ואף אחד מהם ⛔ אינו על טקסט גוף. */
+[data-ring-focus] {
+  box-shadow: var(--glow-brand);
 }
 
 /* T-230 — `box-shadow` is a PAINT property, not a compositor one: animating it directly

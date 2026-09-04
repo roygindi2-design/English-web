@@ -393,6 +393,7 @@ export function WorldRingView({
               מרשה לעצמו (חוקה ב3), והשני הוא העיגול המרכזי בסרגל. */}
           <span
             data-ring-focus
+            data-glow="true"
             className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-brand bg-surface-raised text-brand"
           >
             <GlobeIcon />

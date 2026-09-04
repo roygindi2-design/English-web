@@ -1625,3 +1625,46 @@ exit 0 — `test` 3345/3345 · `check:mobile` 1208 checks. 17 new tests (13 in
 `lib/core/planTable.test.ts`, 2 CLI-level + fixture-based in
 `scripts/measure-plan-tables.test.ts`, all passing, no regressions in either file's
 pre-existing suite).
+
+## `--glow-brand` — one token, and a per-screen budget that can actually fail ⟦C-0430 (DEV) · T-169 · 35-design-constitution ב3⟧
+
+Before this tick, constitution layer ב3's "two glows, on `--brand`/`--brand-surface`
+only" was true by inspection of two call sites (`[data-ring-focus]` in `WorldRing.tsx`,
+`[data-tab-world]`/`[data-tab-world-glow]` in `TabBar.tsx`) and nothing else — the
+budget existed in prose, and a third glow added anywhere in the product would have
+shipped silently. The failure scenario the task row names is specific: glow without a
+budget leaks onto every card within a few ticks, and the screen loses its focal point —
+exactly how the old blanket ban was born (D-102).
+
+**What changed:**
+- `app/globals.css` gains one `:root` custom property, `--glow-brand` — the two-layer
+  `color-mix(in srgb, var(--brand) …%, transparent)` box-shadow stack, unchanged in
+  value from what `[data-ring-focus]` already painted. `[data-ring-focus]` now reads
+  `box-shadow: var(--glow-brand)` instead of repeating the recipe inline.
+- The tab-bar glow (`--brand-surface`, its own T-230 compositor-only animation split)
+  is left exactly as it was — same color channel the constitution already names, same
+  performance-motivated structure. It is not forced onto `--glow-brand`: the token is
+  the *recipe* for a brand-colour glow, not a claim that every glow in the product is
+  visually identical.
+- `data-glow="true"` is added to `[data-ring-focus]` and to `[data-tab-world]` (⛔ not
+  to the `data-tab-world-glow` animated sibling — that span is the same conceptual
+  glow's moving half, and counting it separately would double-count one glow as two).
+  This is what turns "two glows" from a claim into something `document.querySelectorAll`
+  can check.
+- `scripts/verify-mobile.mjs` adds one `check()` per route×width, right beside the
+  existing RTL/lang checks: `page.locator('[data-glow]').count() <= 2`. It runs across
+  all `ROUTES` at 320/375/414px, the same harness every other mobile guarantee in this
+  file goes through — not a bespoke one-off script.
+
+**Measured (C-0430), fresh in this clone:** `npm run verify` — `typecheck` clean ·
+`check:core` OK · `check:motion` OK (2 known baseline violations, 0 new) ·
+`check:text-floor` OK (3 known baseline, 0 new) · `check:rules` OK (334 citations, 0
+broken) · `test` **3356/3356** · `build` succeeded · `check:mobile` **1325/1325 checks**
+across 320/375/414px, including a `≤2 glowing elements` line for every route×width pair
+in `ROUTES`, zero failures. `npm run generate-map` ran (391 modules, 0 delta — no file
+added or removed, only edited).
+
+⛔ **Out of scope, and deliberately not touched:** T-168 half B (`tailwind.config.ts`
+radius tokens, `rounded-full` on the primary "סינון מילים" action) is a separate open
+row — this tick did not decide it, and `components/DeckSelector.tsx` /
+`components/LevelPath.tsx` / `components/LevelCard.tsx` carry no changes here.
