@@ -19,16 +19,16 @@
 | `/cards` | ⛔ — | `/dev/tabs/cards` · `/dev/tabs/probe` · `components/AppGrid.tsx` … +11 | ⛔ — | ✅ | `components/LevelMapScreen` |
 | `/me` | `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` | `/settings` · `app/api/profile/route.ts` · `/dev/tabs/me` … +3 | `/studies` · `/sources` | ✅ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
-| `/studies` | ⛔ — | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `components/LessonScreen.tsx` … +5 | ⛔ — | ✅ | `components/StudiesScreen` |
+| `/studies` | ⛔ — | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `components/ArenaHome.tsx` … +6 | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/world/chain` | `כתוב את המשפט הראשון שלך` | `/world/collected` · `components/RecallCard.tsx` | `/login` | ✅ | `components/WritingChain` |
 | `/world/collected` | `לזירה` | `/world/story` · `/dev/world/ring` · `components/WorldRing.tsx` … +1 | `/login` | ✅ | `components/CollectedWords` |
-| `/world` | ⛔ — | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +6 | ⛔ — | ✅ | `components/WorldRing` |
+| `/world` | ⛔ — | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +9 | ⛔ — | ✅ | `components/WorldRing` |
 | `/world/story` | `חזרה לעולם` · `לבחירת הרמה` · `התחברות מחדש` | `/dev/story` · `/dev/world/ring` · `components/StoryScreen.tsx` … +1 | ⛔ — | ✅ | `components/StoryScreen` |
 | `/arcade` | ⛔ — | `/dev/arcade/home` · `/dev/arcade` · `/dev/arcade/result` … +6 | ⛔ — | ⛔ | `components/ArenaShell` |
 | `/login` | `להתחברות` | `/` · `components/ArenaBattle.tsx` · `components/ArenaHome.tsx` … +10 | ⛔ — | ⛔ | `components/AuthForm` |
 | `/offline` | ⛔ — | ⛔ — | `/` | ⛔ | `—` |
 | `/onboarding` | `יציאה מהחשבון` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +5 | ⛔ — | ⛔ | `components/RegisteredAddress` |
-| `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` … +1 | `/signup` · `/login` | ⛔ | `components/EnWord` |
+| `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` | `/signup` · `/login` | ⛔ | `components/EnWord` |
 | `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` | ⛔ — | ⛔ | `components/AuthForm` |
 | `/sources` | `לעמוד המקור` · `חזרה למסך הבית` | `app/layout.tsx` · `components/ActionBar.tsx` · `components/MeScreen.tsx` … +1 | `/` | ⛔ | `components/EnWord` |
 | `/study` | `התחברות מחדש` | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +4 | `/cards` | ✅ | `components/StudyDeckScreen` |
@@ -39,7 +39,7 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
-| `/dev/arcade/home` | `להתחברות מחדש` · `התחל קרב` · `עיצוב דמות` | ⛔ — | `/` · `/login` | ✅ | `components/ArenaHome` |
+| `/dev/arcade/home` | `להתחברות מחדש` · `התחל קרב` · `עיצוב דמות` | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
 | `/dev/arcade` | ⛔ — | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +3 | ⛔ — | ✅ | `—` |
 | `/dev/arcade/result` | ⛔ — | `/dev/arcade/summary` | ⛔ — | ⛔ | `—` |
 | `/dev/arcade/summary` | `חזור לזירה` | ⛔ — | ⛔ — | ✅ | `components/ArenaSummary` |
