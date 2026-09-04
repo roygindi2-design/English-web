@@ -52,7 +52,13 @@ const NOTHING_MISSED_HE = 'לא פספסת אף מילה';
 const ANSWER_HE = 'התשובה';
 const CHOSEN_HE = 'בחרת';
 const AGAIN_HE = 'עוד קרב';
-const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+/**
+ * T-253ⓐ · D-186 — מסך תוצאת הקרב הוא הצומת האחרון בטבעת; היציאה חייבת
+ * לחזור אליה, ⛔ לא ל-`/cards`. אותה תווית ששני צמתי הטבעת האחרים כבר נושאים
+ * (`ComposeDraft.tsx` · `StoryScreen.tsx`). ⛔ **הגדר:** `onAgain` /
+ * `data-arena-again` לא זזים — רק היעד והתווית של `data-arena-back`.
+ */
+const BACK_TO_WORLD_HE = 'חזרה לעולם';
 
 const PRIMARY_ACTION_CLASS =
   'inline-flex w-full min-h-touch items-center justify-between rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
@@ -129,8 +135,8 @@ export default function ArenaResult({
           >
             {AGAIN_HE}
           </button>
-          <Link data-arena-back href="/cards" className={SECONDARY_ACTION_CLASS}>
-            {BACK_TO_CARDS_HE}
+          <Link data-arena-back href="/world" className={SECONDARY_ACTION_CLASS}>
+            {BACK_TO_WORLD_HE}
           </Link>
         </div>
       </ActionBar>

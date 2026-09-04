@@ -11,11 +11,13 @@ export default function NotFound() {
         </p>
       </div>
 
+      {/* T-253ⓒ · D-186 — `/` נקרא בשני שמות (כאן ו-`app/sources/page.tsx`);
+          `חזרה למסך הבית` היא הקבועה שהמוצר כבר משתמש בה בכל מקום אחר. */}
       <Link
         href="/"
         className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
       >
-        חזרה למסך הפתיחה
+        חזרה למסך הבית
       </Link>
     </div>
   );

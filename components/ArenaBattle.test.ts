@@ -371,3 +371,24 @@ describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פרי
     }
   });
 });
+
+/**
+ * T-253ⓐ · D-186 — מסך «הקרב נגמר» עם שגיאת שמירה הוביל ל-`/cards`, ⛔ ולא
+ * לטבעת שממנה הכניסה הגיעה (`lib/core/worldApps.ts`). ⛔ **גדר:** רק ה-`href`
+ * והתווית של היציאה הזאת זזים — `data-arena-close` (ה-X ב-`topBar`) ו-`בחירת
+ * רמה` (מסך `too_small`) הם פעולות אחרות ו⛔ אינם בתחום המשימה.
+ */
+describe('T-253ⓐ — «חזרה» ממסך הסיום חוזרת לטבעת', () => {
+  it('הפעולה הראשית של מסך «הקרב נגמר» (שגיאת שמירה) מובילה ל-`/world`', () => {
+    const finishedBlock = CODE.slice(CODE.indexOf('if (finished) {'));
+    const primaryExit = finishedBlock.slice(finishedBlock.indexOf('FINISHED_HE'));
+    expect(primaryExit).toContain('href="/world"');
+    expect(primaryExit).toContain('BACK_TO_WORLD_HE');
+    expect(SRC).toContain('חזרה לעולם');
+  });
+
+  it('⛔ שני הפעולות האחרות ל-`/cards` (ה-X ו-`בחירת רמה`) ⛔ לא זזות (D-186 הגדר)', () => {
+    expect(CODE).toContain('data-arena-close href="/cards"');
+    expect(CODE).toContain('CHOOSE_LEVEL_HE');
+  });
+});

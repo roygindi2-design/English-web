@@ -159,7 +159,14 @@ export const ARENA_TAUGHT_KEY = 'kol.arena.dragTaught';
 const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · או הקש על קלף ואז על היריב';
 const SAVING_HE = 'שומר את הקרב…';
 const FINISHED_HE = 'הקרב נגמר';
-const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+/**
+ * T-253ⓐ · D-186 — היציאה היחידה ממסך «הקרב נגמר» (שגיאת שמירה) חוזרת לטבעת,
+ * ⛔ לא ל-`/cards`: הכניסה לזירה עברה בטבעת, והיציאה חייבת לחזור אליה — אותה
+ * תווית ששני צמתי הטבעת האחרים כבר נושאים (`ComposeDraft.tsx` · `StoryScreen.tsx`).
+ * ⛔ **הגדר:** ה-X של `topBar` (`data-arena-close`) ו-`CHOOSE_LEVEL_HE` (מסך
+ * `too_small`) הם פעולות אחרות — ⛔ לא זזות.
+ */
+const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const CHOOSE_LEVEL_HE = 'בחירת רמה';
 const TOO_SMALL_HE = 'ברמה הזאת עוד אין מספיק מילים לקרב.';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
@@ -649,8 +656,8 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
                 {RETRY_HE}
               </button>
             )}
-            <Link href="/cards" data-primary-action="true" className={PRIMARY_ACTION_CLASS}>
-              {BACK_TO_CARDS_HE}
+            <Link href="/world" data-primary-action="true" className={PRIMARY_ACTION_CLASS}>
+              {BACK_TO_WORLD_HE}
             </Link>
           </div>
         </ActionBar>

@@ -73,7 +73,7 @@ describe('<ArenaResult>', () => {
 
   it('שתי דרכים החוצה, שתיהן יעד מגע', () => {
     expect(CODE).toContain('עוד קרב');
-    expect(CODE).toMatch(/href="\/cards"/);
+    expect(CODE).toMatch(/href="\/world"/); // T-253ⓐ · D-186 — היה `/cards`, חוזר לטבעת
     expect(CODE).toMatch(/onAgain/);
     const again = CODE.match(/<button[^>]*data-arena-again[\s\S]*?>/);
     expect(again, 'הכפתור חייב לשאת data-arena-again').not.toBeNull();
@@ -109,5 +109,17 @@ describe('<ArenaResult>', () => {
 
   it('⛔ רכיב ממשק אינו ניגש לדאטהבייס', () => {
     expect(CODE).not.toMatch(/supabase|\.from\(/);
+  });
+
+  /**
+   * T-253ⓐ · D-186 — היציאה השנייה (`data-arena-back`) ממסך תוצאת הקרב הובילה
+   * ל-`/cards`, ⛔ ולא לטבעת שממנה הכניסה הגיעה. ⛔ **גדר:** ⛔ אין שינוי
+   * בארוקאה של הקרב (`onAgain` · `data-arena-again`) — רק היעד והתווית של
+   * `data-arena-back`.
+   */
+  it('T-253ⓐ — `data-arena-back` חוזר ל-`/world`, ⛔ לא ל-`/cards`', () => {
+    expect(CODE).toContain('data-arena-back href="/world"');
+    expect(CODE).not.toMatch(/data-arena-back href="\/cards"/);
+    expect(SRC).toContain('חזרה לעולם');
   });
 });

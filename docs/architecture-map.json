@@ -117,6 +117,7 @@
   "app/loading.tsx": [],
   "app/login/page.tsx": [],
   "app/logout/route.ts": [],
+  "app/not-found.test.ts": [],
   "app/not-found.tsx": [],
   "app/offline/page.test.ts": [],
   "app/offline/page.tsx": [],
@@ -430,6 +431,10 @@
     "lib/core/lexicon.ts"
   ],
   "lib/core/lexicon.ts": [],
+  "lib/core/linkLabelScan.test.ts": [
+    "lib/core/linkLabelScan.ts"
+  ],
+  "lib/core/linkLabelScan.ts": [],
   "lib/core/messageGate.test.ts": [
     "lib/core/messageGate.ts"
   ],

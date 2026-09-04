@@ -68,7 +68,13 @@ interface HomeBody {
 
 const TITLE_HE = 'זירת קרב';
 const SUBTITLE_HE = 'ארקייד · מבודד מהתקדמות הלמידה';
-const BACK_HE = 'חזרה';
+/**
+ * T-253ⓑ · D-186 — ⛔ לא `'חזרה'` החשופה: אותה מילה בדיוק היא שם חפיסת
+ * החזרות (`components/DeckSelector.tsx`, `36 § 5`, נעול). מ-2 משמעויות ל-1 —
+ * שם החפיסה לא זז, החץ הוא שקיבל תווית שנוקבת ביעד שלו, כמו שני צמתי הטבעת
+ * האחרים (`ComposeDraft.tsx` · `StoryScreen.tsx`).
+ */
+const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const LEVEL_HE = 'רמת זירה';
 const ISOLATION_HE = 'נפרדת מרמת האנגלית שלך';
 const GEAR_HEADING_HE = 'ציוד';
@@ -203,10 +209,13 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
 
   const header = (
     <header className="relative flex flex-col items-center gap-1 pt-8">
-      {/* `:122` — ה-chevron בקצה הימני. אזור פגיעה 44×44, הגליף בגודל הרנדר. */}
+      {/* `:122` — ה-chevron בקצה הימני. אזור פגיעה 44×44, הגליף בגודל הרנדר.
+          T-253ⓐ · D-186 — `/world` ישירות: הכניסה לזירה עוברת בטבעת
+          (`lib/core/worldApps.ts`), ⛔ ולא ל-`/`, שנופל ל-`signedInRedirect`
+          ⇒ `/studies` — לשונית שהלומד לא ביקש. */}
       <Link
-        href="/"
-        aria-label={BACK_HE}
+        href="/world"
+        aria-label={BACK_TO_WORLD_HE}
         className="absolute end-1 top-6 flex min-h-touch min-w-touch items-center justify-center text-[color:var(--arena-ink-dim)]"
       >
         <ChevronGlyph />

@@ -118,4 +118,22 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
     const paths = [...CODE.matchAll(/'(\/api\/[^']+)'/g)].map((m) => m[1]);
     expect(new Set(paths)).toEqual(new Set(['/api/arcade/home']));
   });
+
+  /**
+   * T-253 · D-186 — הכניסה לזירה עוברת בטבעת (`lib/core/worldApps.ts`), והחץ
+   * היחיד ביציאה הוביל ל-`/` ⇒ `signedInRedirect` ⇒ `/studies` — לשונית שהלומד
+   * לא ביקש. ⓑ: `BACK_HE = 'חזרה'` היא גם שם חפיסת החזרות (`DeckSelector.tsx`,
+   * `36 § 5`, נעול) — מילה אחת, שתי משמעויות. שתיהן נסגרות באותה תווית: החץ
+   * חוזר ישירות לטבעת, ונקרא בשם היעד שלו — אותה תווית ששני צמתי הטבעת
+   * האחרים כבר נושאים (`ComposeDraft.tsx` · `StoryScreen.tsx`).
+   */
+  it('T-253 — חץ החזרה מוביל ישירות לטבעת, ⛔ לא ל-`/`', () => {
+    expect(CODE).toContain('href="/world"');
+    expect(CODE).not.toMatch(/href="\/"/);
+  });
+
+  it('T-253ⓑ — תווית החץ היא `חזרה לעולם`, ⛔ לא `חזרה` החשופה שמתנגשת בשם החפיסה', () => {
+    expect(SRC).toContain('חזרה לעולם');
+    expect(SRC).not.toMatch(/aria-label=\{?['"]חזרה['"]\}?/);
+  });
 });
