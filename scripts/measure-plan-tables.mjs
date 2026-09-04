@@ -52,6 +52,7 @@ const {
   FINDING_STATUS_INDEX,
   fulfilledReleaseConditions,
   RELEASE_CONDITION_MARKER,
+  cancelledStatusGaps,
 } = await import('../lib/core/planTable.ts');
 
 const TASKS_FILE = process.env.PLAN_TASKS_FILE || join('plan', '50-tasks.md');
@@ -89,6 +90,7 @@ const fulfilledFindingConditions = fulfilledReleaseConditions(
   FINDING_STATUS_INDEX,
   'open',
 );
+const cancelledGaps = cancelledStatusGaps(taskRows);
 
 const shapeLine = (r) => `| \`${r.id}\` | ${r.cells.length} | ${r.expected} |`;
 const report = [
@@ -134,6 +136,16 @@ const report = [
         ...fulfilledTaskConditions.map((c) => `- \`${c.id}\` (משימה) — ${c.have}/${c.need}`),
         ...fulfilledFindingConditions.map((c) => `- \`${c.id}\` (ממצא) — ${c.have}/${c.need}`),
       ].join('\n'),
+  '',
+  '## שורות שבוטלו בתא המשימה ותא הסטטוס שלהן לא עודכן',
+  '',
+  '⛔ **דגל, ⛔ ולא כישלון (T-229 · D-157 · F-125).** תא משימה שכבר מספר «בוטלה» ותא',
+  'סטטוס ש⛔ אינו `🚫`/`✅` — הבלוק ⛔ לא עודכן באותה עריכה, והשורה נספרת כעבודה פתוחה־וחסומה',
+  'בכל אינדקס שקורא `TASK_STATUS_INDEX`.',
+  '',
+  cancelledGaps.length === 0
+    ? '⛔ אין.'
+    : cancelledGaps.map((g) => `- \`${g.id}\` — תא הסטטוס מסווג \`${g.state}\``).join('\n'),
   '',
 ].join('\n');
 
@@ -579,6 +591,11 @@ console.log(
     fulfilledFindingConditions.length === 0
       ? 'none'
       : fulfilledFindingConditions.map(conditionLine).join(', ')
+  }`,
+);
+console.log(
+  `cancelled status gaps: ${
+    cancelledGaps.length === 0 ? 'none' : cancelledGaps.map((g) => `${g.id} (${g.state})`).join(', ')
   }`,
 );
 console.log(`open index: ${openTasks.length} tasks, ${openFindings.length} findings`);

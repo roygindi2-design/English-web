@@ -339,6 +339,52 @@ export function fulfilledReleaseConditions(
   return out;
 }
 
+/**
+ * F-125's rule, mechanised (T-229 · D-157): a task cell that OPENS by declaring itself
+ * "🚫 בוטלה" (cancelled) but whose status cell has not been flipped to 🚫/✅ is counted by
+ * `classifyStatus` as `open` or `blocked` work forever — measured C-0370 on six live rows
+ * (`T-136` · `T-151` · `T-160` · `T-161` · `T-162` · `T-163`): every one opened its task
+ * cell with "🚫 **בוטלה** …" while its status cell still carried a plain ⛔, so the row
+ * counted as open-and-blocked in every register and index that reads `TASK_STATUS_INDEX`.
+ *
+ * ⚠️ **Anchored at the START of the cell, ⛔ not "contains" anywhere.** Measured live on
+ * this clone: a plain substring match also fires on `T-168` ("… חוקה שבוטלה …"), `T-175`
+ * ("… רשת האריחים שבוטלה") and `T-199` ("מחליפה את T-164 שבוטלה") — three open rows that
+ * merely NARRATE something else's cancellation, not their own. Every genuine self-declared
+ * row, live and in the six-row bug, opens the cell with the `🚫` glyph immediately before
+ * the word — the same leading-classifier-emoji convention every other task cell uses
+ * (`🔧`/`🔴`/`🟠`/`📖`/…). Anchoring on that start avoids the false positives without
+ * inventing a second vocabulary.
+ *
+ * ⛔ This is a FLAG, not a failure. An `expect().toBe()` assertion built on it would fail
+ * `npm run verify` — and stop the whole loop — the next time some agent writes a freshly
+ * cancelled row and forgets the status glyph in the same edit, instead of lighting one line
+ * for a human (or the next tick) to fix.
+ */
+// ⚠️ NO `\b` — `\w` (and therefore `\b`) is ASCII-only, so a boundary after a Hebrew word
+// never fires: both sides of "בוטלה " read as `\W`, and `\b` finds no transition at all.
+// Measured: `/…בוטלה\b/u.test('🚫 **בוטלה** …')` is `false`. The negative lookahead below
+// is the Hebrew-safe equivalent — it only rules out the marker being a PREFIX of a longer
+// word (e.g. a future inflection), which `\b` was added to guard against in the first place.
+const SELF_CANCELLED_RE = /^\s*🚫\s*\*{0,2}\s*בוטלה(?![א-ת])/u;
+
+export interface CancelledStatusGap {
+  readonly id: string;
+  readonly state: TaskState;
+}
+
+export function cancelledStatusGaps(tasks: readonly RowShape[]): CancelledStatusGap[] {
+  const out: CancelledStatusGap[] = [];
+  for (const row of tasks) {
+    if (!row.ok) continue;
+    const task = row.cells[2];
+    if (task === undefined || !SELF_CANCELLED_RE.test(task)) continue;
+    const state = classifyStatus(row.cells[TASK_STATUS_INDEX] ?? '');
+    if (state !== 'cancelled' && state !== 'done') out.push({ id: row.id, state });
+  }
+  return out;
+}
+
 export function eligibleTaskIds(tasks: readonly RowShape[]): string[] {
   return tasks
     .filter((row) => {

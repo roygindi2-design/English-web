@@ -330,6 +330,63 @@ describe('fulfilledReleaseConditions', () => {
   });
 });
 
+import { cancelledStatusGaps } from './planTable';
+import type { CancelledStatusGap } from './planTable';
+
+describe('cancelledStatusGaps', () => {
+  // ⛔ Unlike `taskRow` above, this needs the TASK cell (cells[2]) populated too, since
+  // the rule reads prose ("בוטלה") from the task cell and the glyph from the status cell.
+  const row = (id: string, task: string, status: string): RowShape => ({
+    id,
+    cells: ['', '', task, '', status, '', '', ''],
+    expected: 8,
+    ok: true,
+  });
+
+  it('flags a task cell that OPENS with "🚫 בוטלה" while the status cell is still ⛔ — the six-row F-125/C-0370 bug, mechanised', () => {
+    const rows = [row('T-160', '🚫 **בוטלה 23/08** — מתארת את הזירה הישנה.', '⛔ C-0370 ⟨מואַרך⟩')];
+    expect(cancelledStatusGaps(rows)).toEqual<CancelledStatusGap[]>([
+      { id: 'T-160', state: 'blocked' },
+    ]);
+  });
+
+  it('flags it on an ⬜ open status cell too — the marker is not only about ⛔', () => {
+    const rows = [row('T-999', '🚫 **בוטלה** בטעות ואיש לא עדכן את הסטטוס', '⬜')];
+    expect(cancelledStatusGaps(rows)).toEqual<CancelledStatusGap[]>([
+      { id: 'T-999', state: 'open' },
+    ]);
+  });
+
+  it('stays silent once the status cell is flipped to 🚫 — the fix that C-0370 actually applied', () => {
+    const rows = [row('T-160', '🚫 **בוטלה 23/08** — מתארת את הזירה הישנה.', '🚫 C-0370 ⟨מואַרך⟩')];
+    expect(cancelledStatusGaps(rows)).toEqual([]);
+  });
+
+  it('stays silent when the status cell is ✅ done instead — also a valid closed state', () => {
+    const rows = [row('T-070', '🚫 **בוטלה** בהחלטה אחת, נבנתה בפועל תחת שם אחר', '✅ נמסרה')];
+    expect(cancelledStatusGaps(rows)).toEqual([]);
+  });
+
+  it('ignores a row whose task cell never mentions "בוטלה"', () => {
+    const rows = [row('T-201', 'בלוק במקלדת ⛔ לעולם ⛔ אינו מוצג בלי המקרא הכתוב שלו', '⬜')];
+    expect(cancelledStatusGaps(rows)).toEqual([]);
+  });
+
+  it('ignores a row that merely NARRATES something else\'s cancellation, ⛔ not its own — measured live: T-168 / T-175 / T-199 all say "…שבוטלה" mid-sentence about a rule/grid/sibling-task, and none of the three is itself cancelled', () => {
+    const rows = [
+      row('T-168', 'היא אוכפת חוקה שבוטלה (D-102). התיקון: לגזור את ALLOWED מסולם...', '⬜'),
+      row('T-175', 'מחליפה את רשת האריחים שבוטלה. מוקד מרכזי קול...', '🟣 נמסרה'),
+      row('T-199', 'משפטים נעשה מסלול חי — מחליפה את T-164 שבוטלה.', '⬜'),
+    ];
+    expect(cancelledStatusGaps(rows)).toEqual([]);
+  });
+
+  it('skips a malformed row', () => {
+    const malformed: RowShape = { id: 'T-042', cells: ['בוטלה'], expected: 8, ok: false };
+    expect(cancelledStatusGaps([malformed])).toEqual([]);
+  });
+});
+
 describe('eligibleTaskIds', () => {
   it('returns only ⬜ rows, and never a malformed one', () => {
     const malformed: RowShape = { id: 'T-042', cells: ['T-042'], expected: 8, ok: false };
