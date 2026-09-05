@@ -1,15 +1,15 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0439 (DEV) — **טיק בנייה. T-167/T-195 נסגרו כ«אין יקף עצמאי», F-184 נפתחה ל-PM.** ראה יומן ההעברות למטה לראיות מדודות.
-STATE: BUILD                      # ▶️ C-0439 (DEV) — נשאר BUILD.
+NEXT_AGENT: CRITIC                 # ▶️ C-0440 (DEV) — **טיק תכנון, אפס קוד (STEP 4.5: "planning tick — you touch no code, never").** תוכנית ל-T-244 נכתבה ונבדקה (`npm run check:plan` ⇒ 8/8); הטיק הבא של Dev מבצע אותה (STEP 3: "Plan exists? → BUILD TICK").
+STATE: BUILD                      # ▶️ C-0440 (DEV) — נשאר BUILD (כמו ב-C-0439, גם טיק זה היה אפס-קוד).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: T-261             # ⚠️ ▶️ C-0438 (DEV) — **T-261 עצמה נבנתה 🟣 בטיק הזה.** ⛔ אני ⛔ אינו כותב לשדה הזה (`DEV.md` STEP 2) — נשאר כפי שהיה, ל-PM/רוי להזיז.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-05T12:58:22Z
+LAST_HANDOFF_AT: 2026-09-05T14:46:51Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: DEV                    # ננעלה C-0440 (DEV) — טיק תכנון: כתיבת docs/superpowers/plans/2026-09-05-amirnet-coverage-gate.md ל-T-244.
+LOCK_HELD_BY: ""                     # שוחררה C-0440 (DEV) — טיק תכנון, T-244: תוכנית נכתבה ונדחפה, `check:plan` 8/8.
 LOCK_AT: "2026-09-05T14:46:51Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
@@ -47,12 +47,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0433` הועבר 05/09/2026 (C-0435) · `C-0434` הועבר 05/09/2026 (C-0436) · `C-0436` הועבר 05/09/2026 (C-0438) — כולן שתי שורות בלבד, פירוט המדידה בארכיון (`plan/archive/control-log.md`).
+> 🧹 `C-0434` הועבר 05/09/2026 (C-0436) · `C-0436` הועבר 05/09/2026 (C-0438) · `C-0438` הועבר 05/09/2026 (C-0440) — כולן שתי שורות בלבד, פירוט המדידה בארכיון (`plan/archive/control-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0438 | DEV | CRITIC | 2026-09-05T11:00:24Z | 🔨 **טיק בנייה — `T-261`+`T-262` שתיהן 🟣, שתי המשימות מהתוכנית.** `extractLinkLabels` פותר קבוע ברמת המודול (‏גם href וגם תווית); שער כיסוי חדש (`resolveLinkElements`/`linkElementCount`) מדפיס **18/57** (עץ גדל 40→57 מאז `D-187`) ונכשל אם יורד. `LevelScan.tsx:43`⇒`חזרה לכרטיסיות`, `ArenaSummary.tsx:46`⇒`חזרה לזירה`. `TRACK_HE` הוסר מ-`LevelMapScreen.tsx`; שער חדש קורא את כותרת `app/layout.tsx` בעצמו ונכשל אם היא חוזרת ב-`components/`. 🔴 **נמצא, ⛔ ולא שוער:** הכיסוי החדש חשף סחיפת-שם אמיתית ב-`/cards`+`/world/compose`; `exitLabelsOnly` (מקומי ל-`link-naming.test.ts` בלבד) מיישם את הכלל **הכתוב** ב-`D-187 § ג׳` (יציאה=`חזרה ל…`, CTA פטור) — ⛔ לא הכרעת UX חדשה. `verify` ירוק טרי (`test` **3415/3416** [1 כשל קדם-קיים לא-קשור, `plan-hygiene.test.ts`, אומת ב-`git stash`] · `check:mobile` **1325/1325**, exit 0). `generate-map` — 395 מודולים, 0 דלתא. | `T-261` · `T-262` · `lib/core/linkLabelScan.ts` · `scripts/link-naming.test.ts` · `components/LevelScan.tsx` · `components/ArenaSummary.tsx` · `components/LevelMapScreen.tsx` |
 | C-0439 | DEV | CRITIC | 2026-09-05T12:58:22Z | 🔨 **טיק בנייה — T-167 ו-T-195 שתיהן נסגרות כ«אין יקף עצמאי» (ⓐⓑⓒ כבר בנויות במקום אחר, נמדד בגְרֶפּ), ⛔ אפס קוד יישומי.** T-167ⓔ («הבלוק מחליף את הקודם — `03-for-roy.md` לא גדל בלי גבול») סותרת בפועל את `RULES § 0.21` (פריטים פתוחים נשארים עם חותמת שבועית עד תשובת רוי) — נמדד חי: `plan/03-for-roy.md` מחזיק 93·94·95·96 זה לצד זה, ⛔ ולא בלוק יחיד. נפתחה **F-184** ל-PM (הכרעה בין ארכוב תקופתי ל-בלוק נפרד-ומוחלף). 🔴 **`loop:health` בדיקה 12 FAIL בכוונה** — F-184 חוסמת T-167, בדיוק התפקיד של הבדיקה (⛔ אינו חוסם מיזוג/DEV). `verify` ירוק טרי מלבד אותו כשל קדם-קיים ולא-קשור מ-C-0438 (`plan-hygiene.test.ts`, `T-254…T-260`, F-183, ⛔ לא נגעתי בו) — `test` **3414/3415** · `build` עבר · `check:mobile` **1325/1325**, exit 0. `generate-map` — 395 מודולים, 0 דלתא (⛔ לא נגעתי ב-app/components/lib). `loop:health` **13/14** (ירידה מ-14/14, מוסברת: F-184). | `T-167` · `T-195` · `F-184` · `plan/50-tasks.md` · `plan/60-findings.md` |
+| C-0440 | DEV | CRITIC | 2026-09-05T14:46:51Z | 📝 **טיק תכנון — T-244 (`base`·תשתית, K-007), ⛔ אפס קוד (STEP 4.5).** `T-197` (ראש התור לפי `general∪loop∪base`) תלויה ב-T-184 ⛔ עדיין 🔵 — לא נלקחה. `docs/superpowers/plans/2026-09-05-amirnet-coverage-gate.md` (2 משימות: `lib/core/amirnetCoverage.ts` טהור + `scripts/measure-amirnet-coverage.mjs`), `npm run check:plan` ⇒ **8/8**. 🔴 **נמדד, ⛔ ולא שוער:** `data/amirnet-vocab.csv` ו-`data/generated/amirnet-vocab.csv` **אינם** מוחרגים ב-`.gitignore` היום (`git check-ignore -v` ⇒ אין התאמה; `!` מפורש נוסף 28/08) — שורת T-244 עצמה טוענת ההפך, מיושן, מתועד בתוכנית. | `docs/superpowers/plans/2026-09-05-amirnet-coverage-gate.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

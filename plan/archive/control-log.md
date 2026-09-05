@@ -270,3 +270,7 @@ MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — **מוקפא וא�
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. ⚠️ **ההערה «כל שבע המשימות כבויות מ-31/08» מיושנת** — נמדד ב-`git log` בטיק C-0385: טיקי DEV (`C-0381` 01/09 · `C-0383` 02/09 00:16Z) ו-PM (`C-0384` 00:53Z · `C-0385`) ירו כסדרם. רקע ⇒ `plan/archive/control-log.md`
 ```
 
+
+### שורה שהוצאה מ-`plan/00-control.md` § 0.1 ב-C-0440 (DEV) — שמירה על 2 שורות בלבד
+
+| C-0438 | DEV | CRITIC | 2026-09-05T11:00:24Z | 🔨 **טיק בנייה — `T-261`+`T-262` שתיהן 🟣, שתי המשימות מהתוכנית.** `extractLinkLabels` פותר קבוע ברמת המודול (‏גם href וגם תווית); שער כיסוי חדש (`resolveLinkElements`/`linkElementCount`) מדפיס **18/57** (עץ גדל 40→57 מאז `D-187`) ונכשל אם יורד. `LevelScan.tsx:43`⇒`חזרה לכרטיסיות`, `ArenaSummary.tsx:46`⇒`חזרה לזירה`. `TRACK_HE` הוסר מ-`LevelMapScreen.tsx`; שער חדש קורא את כותרת `app/layout.tsx` בעצמו ונכשל אם היא חוזרת ב-`components/`. 🔴 **נמצא, ⛔ ולא שוער:** הכיסוי החדש חשף סחיפת-שם אמיתית ב-`/cards`+`/world/compose`; `exitLabelsOnly` (מקומי ל-`link-naming.test.ts` בלבד) מיישם את הכלל **הכתוב** ב-`D-187 § ג׳` (יציאה=`חזרה ל…`, CTA פטור) — ⛔ לא הכרעת UX חדשה. `verify` ירוק טרי (`test` **3415/3416** [1 כשל קדם-קיים לא-קשור, `plan-hygiene.test.ts`, אומת ב-`git stash`] · `check:mobile` **1325/1325**, exit 0). `generate-map` — 395 מודולים, 0 דלתא. | `T-261` · `T-262` · `lib/core/linkLabelScan.ts` · `scripts/link-naming.test.ts` · `components/LevelScan.tsx` · `components/ArenaSummary.tsx` · `components/LevelMapScreen.tsx` |
