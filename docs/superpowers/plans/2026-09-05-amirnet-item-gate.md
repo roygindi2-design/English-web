@@ -1,6 +1,6 @@
 # Amirnet Item Gate Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Land `T-223` — the gate that opens content commission K-006 (amirnet practice items) — as a pure, tested module plus the CLI command `npm run measure:amirnet-gate` that F-163 requires before any gate counts as real.
 
@@ -102,7 +102,7 @@
   ): AmirnetGateResult;
   ```
 
-- [ ] **Step 1: Write the failing test file with the full negative control**
+- [x] **Step 1: Write the failing test file with the full negative control**
 
 Create `lib/core/amirnetItemGate.test.ts`:
 
@@ -312,12 +312,12 @@ describe('amirnetItemGate', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test file to verify it fails**
+- [x] **Step 2: Run the test file to verify it fails**
 
 Run: `npx vitest run lib/core/amirnetItemGate.test.ts`
 Expected: FAIL — `Cannot find module './amirnetItemGate'` (the module does not exist yet).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `lib/core/amirnetItemGate.ts`:
 
@@ -477,17 +477,17 @@ export function amirnetItemGate(
 }
 ```
 
-- [ ] **Step 4: Run the test file to verify it passes**
+- [x] **Step 4: Run the test file to verify it passes**
 
 Run: `npx vitest run lib/core/amirnetItemGate.test.ts`
 Expected: PASS, all cases green.
 
-- [ ] **Step 5: Run core-purity and typecheck guards**
+- [x] **Step 5: Run core-purity and typecheck guards**
 
 Run: `npm run check:core && npm run typecheck`
 Expected: both exit 0 — `amirnetItemGate.ts` must show zero React/DOM/env/fetch usage and zero `any`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 ./scripts/g add lib/core/amirnetItemGate.ts lib/core/amirnetItemGate.test.ts
@@ -531,7 +531,7 @@ Expected: both exit 0 — `amirnetItemGate.ts` must show zero React/DOM/env/fetc
   ): AmirnetChapterGateResult;
   ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/core/amirnetChapterGate.test.ts`:
 
@@ -646,12 +646,12 @@ describe('amirnetChapterGate', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `npx vitest run lib/core/amirnetChapterGate.test.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `lib/core/amirnetChapterGate.ts`:
 
@@ -719,17 +719,17 @@ export function amirnetChapterGate(
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `npx vitest run lib/core/amirnetChapterGate.test.ts`
 Expected: PASS, all cases green.
 
-- [ ] **Step 5: Run core-purity and typecheck guards**
+- [x] **Step 5: Run core-purity and typecheck guards**
 
 Run: `npm run check:core && npm run typecheck`
 Expected: both exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 ./scripts/g add lib/core/amirnetChapterGate.ts lib/core/amirnetChapterGate.test.ts
@@ -749,7 +749,7 @@ Expected: both exit 0.
 - Consumes: `amirnetItemGate`/`AmirnetGateOptions` from `lib/core/amirnetItemGate.ts`, `amirnetChapterGate` from `lib/core/amirnetChapterGate.ts` (both via the `registerHooks` `.ts`-import pattern already used in `scripts/measure-gate.mjs`); `data/generated/amirnet-vocab.csv` (T-222, columns `headword,pos,cefr,tier,tier_name,amirnet_level,is_connector,source`).
 - Produces: reads every `data/generated/amirnet-items-*.jsonl` file (new naming convention — none exist yet; CONTENT starts writing them once this task lands and K-006 unblocks). Each line is JSON: either a single `sc`/`rs` item shaped like `AmirnetItemRecord`, or an `rc` chapter shaped `{ passageEn, level, questions: AmirnetItemRecord[] }` with 5 entries (`questions` omits `passageEn`/`level` per-question — the script fills those from the chapter wrapper before calling the gate, since the schema stores it once per chapter, not once per question). Prints a summary and writes `docs/amirnet-gate-report.md`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `scripts/measure-amirnet-gate.test.ts`:
 
@@ -887,12 +887,12 @@ describe('scripts/measure-amirnet-gate.mjs', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `npx vitest run scripts/measure-amirnet-gate.test.ts`
 Expected: FAIL — `scripts/measure-amirnet-gate.mjs` does not exist (`ENOENT`/module not found on `execFileSync`).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `scripts/measure-amirnet-gate.mjs`:
 
@@ -1017,12 +1017,12 @@ console.log(`wrote ${OUT}`);
 
 ⚠️ `mkdirSync(join(OUT, '..'), { recursive: true })` — `OUT` defaults to `docs/amirnet-gate-report.md`, so this creates `docs/` if absent (it already exists in this repo, so this is a no-op in the real run; it only matters for the test's temp-dir `OUT`, which is one directory level — verify in Step 4 that the temp path used by the test IS itself a directory that already exists, since the test's `FRESH` path's parent (`OUT_DIR`) is created by `mkdtempSync` already, so `mkdirSync(join(OUT,'..'))` there is also a no-op).
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `npx vitest run scripts/measure-amirnet-gate.test.ts`
 Expected: PASS, all three cases green.
 
-- [ ] **Step 5: Wire the npm script**
+- [x] **Step 5: Wire the npm script**
 
 Modify `package.json` — add this line inside `"scripts"`, alongside the other `measure:*` entries (after `"measure:continuations"`, before `"measure:plan"`):
 
@@ -1030,17 +1030,17 @@ Modify `package.json` — add this line inside `"scripts"`, alongside the other 
     "measure:amirnet-gate": "node scripts/measure-amirnet-gate.mjs",
 ```
 
-- [ ] **Step 6: Run it for real once, against zero content, to prove the command exists and behaves**
+- [x] **Step 6: Run it for real once, against zero content, to prove the command exists and behaves**
 
 Run: `npm run measure:amirnet-gate`
 Expected: exit 0, prints `0 amirnet item files found` (or more, if a prior tick already added fixtures under `data/generated/amirnet-items-*.jsonl` — unlikely at this point since K-006 was blocked until this very task), writes `docs/amirnet-gate-report.md`.
 
-- [ ] **Step 7: Run the full verify gate**
+- [x] **Step 7: Run the full verify gate**
 
 Run: `npm run verify`
 Expected: exit 0 (`typecheck` · `check:core` · `check:motion` · `check:text-floor` · `check:rules` · `test` · `build` · `check:mobile`, per `package.json`'s `verify` script).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 ./scripts/g add scripts/measure-amirnet-gate.mjs scripts/measure-amirnet-gate.test.ts package.json docs/amirnet-gate-report.md
