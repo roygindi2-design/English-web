@@ -32,7 +32,7 @@
 | `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` | ⛔ — | ⛔ | `components/AuthForm` |
 | `/sources` | `לעמוד המקור` · `חזרה למסך הבית` | `app/layout.tsx` · `components/ActionBar.tsx` · `components/MeScreen.tsx` … +1 | `/` | ⛔ | `components/EnWord` |
 | `/study` | `התחברות מחדש` | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +4 | `/cards` | ✅ | `components/StudyDeckScreen` |
-| `/study/scan` | `למפת הרמה` · `חזרה למפת הרמה` | `/settings` · `lib/core/worldApps.ts` | ⛔ — | ✅ | `components/LevelScan` |
+| `/study/scan` | `למפת הרמה` · `חזרה לכרטיסיות` | `/settings` · `lib/core/worldApps.ts` | ⛔ — | ✅ | `components/LevelScan` |
 | `/world/compose` | `חזרה לעולם` · `ביטול` | `/dev/world` · `/dev/world/ring` · `components/AppGrid.tsx` … +7 | `/login` | ✅ | `components/ComposeDraft` |
 
 ### מסכי הפיקסצ׳ר — `/dev/*` (⛔ אינם נספרים בדגלים)
@@ -42,7 +42,7 @@
 | `/dev/arcade/home` | `להתחברות מחדש` · `התחל קרב` · `עיצוב דמות` | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
 | `/dev/arcade` | ⛔ — | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +3 | ⛔ — | ✅ | `—` |
 | `/dev/arcade/result` | ⛔ — | `/dev/arcade/summary` | ⛔ — | ⛔ | `—` |
-| `/dev/arcade/summary` | `חזור לזירה` | ⛔ — | ⛔ — | ✅ | `components/ArenaSummary` |
+| `/dev/arcade/summary` | `חזרה לזירה` | ⛔ — | ⛔ — | ✅ | `components/ArenaSummary` |
 | `/dev/card` | `בדיקה` | `/dev/card/typed` · `/dev/deck` · `/dev/deck/skeleton` | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/swap` | `בדיקה` | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/typed` | `בדיקה` | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
@@ -53,7 +53,7 @@
 | `/dev/lesson/done` | ⛔ — | ⛔ — | ⛔ — | ✅ | `components/LessonScreen` |
 | `/dev/lesson` | ⛔ — | `/dev/lesson/done` | ⛔ — | ✅ | `—` |
 | `/dev/onboarding` | `יציאה מהחשבון` | `/onboarding` | ⛔ — | ⛔ | `components/RegisteredAddress` |
-| `/dev/scan` | `למפת הרמה` · `חזרה למפת הרמה` | `components/LevelScan.tsx` | ⛔ — | ✅ | `components/LevelScan` |
+| `/dev/scan` | `למפת הרמה` · `חזרה לכרטיסיות` | `components/LevelScan.tsx` | ⛔ — | ✅ | `components/LevelScan` |
 | `/dev/story/done` | ⛔ — | `app/dev/story/story-fixture.ts` | ⛔ — | ⛔ | `—` |
 | `/dev/story` | ⛔ — | `app/dev/story/story-fixture.ts` | ⛔ — | ⛔ | `—` |
 | `/dev/tabs/cards` | ⛔ — | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +1 | ⛔ — | ✅ | `components/LevelMapScreen` |
