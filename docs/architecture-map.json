@@ -218,6 +218,17 @@
   "components/WritingChain.tsx": [],
   "lib/api/client.test.ts": [],
   "lib/api/client.ts": [],
+  "lib/core/amirnetChapterGate.test.ts": [
+    "lib/core/amirnetChapterGate.ts",
+    "lib/core/amirnetItemGate.ts"
+  ],
+  "lib/core/amirnetChapterGate.ts": [
+    "lib/core/amirnetItemGate.ts"
+  ],
+  "lib/core/amirnetItemGate.test.ts": [
+    "lib/core/amirnetItemGate.ts"
+  ],
+  "lib/core/amirnetItemGate.ts": [],
   "lib/core/apkg.test.ts": [
     "lib/core/apkg.ts"
   ],
