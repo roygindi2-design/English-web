@@ -61,7 +61,7 @@ const AGAIN_HE = 'עוד קרב';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 
 const PRIMARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center justify-between rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
+  'inline-flex w-full min-h-touch items-center justify-between rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
 
 const SECONDARY_ACTION_CLASS =
   'inline-flex w-full min-h-touch items-center justify-between rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';

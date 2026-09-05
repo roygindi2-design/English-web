@@ -122,7 +122,7 @@ type ScreenState =
   | { readonly kind: 'error' };
 
 const PRIMARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-50';
+  'inline-flex w-full min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-50';
 
 const SECONDARY_ACTION_CLASS =
   'inline-flex min-h-touch items-center justify-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';

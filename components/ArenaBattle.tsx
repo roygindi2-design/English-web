@@ -175,7 +175,7 @@ const LOADING_HE = 'טוען את הזירה…';
 const MISSING_NUMBER_HE = '—';
 
 const PRIMARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-center text-lg font-semibold text-brand-on active:opacity-90';
+  'inline-flex w-full min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-center text-lg font-semibold text-brand-on active:opacity-90';
 const CLOSE_CLASS =
   'inline-grid min-h-touch min-w-touch place-items-center rounded-lg text-ink active:opacity-90';
 

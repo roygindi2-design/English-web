@@ -304,7 +304,7 @@ export default function Flashcard({
             />
             <button
               type="submit"
-              className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+              className="min-h-touch rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
             >
               בדיקה
             </button>
@@ -341,7 +341,7 @@ export default function Flashcard({
               type="button"
               onClick={() => onGrade(grade ?? 'again')}
               data-continue
-              className="min-h-touch rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+              className="min-h-touch rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
             >
               המשך
             </button>

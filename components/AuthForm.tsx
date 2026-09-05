@@ -244,7 +244,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
             form="auth-form"
             data-primary-action="true"
             disabled={busy}
-            className="flex w-full min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+            className="flex w-full min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
           >
             {busy ? copy.busy : copy.submit}
           </button>

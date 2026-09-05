@@ -179,7 +179,7 @@ export default function MeScreen({
       <Link
         href="/studies"
         data-primary-action="true"
-        className="flex w-full min-h-touch flex-col items-start justify-center gap-0.5 rounded-lg bg-brand-surface px-5 py-3 text-brand-on active:opacity-90"
+        className="flex w-full min-h-touch flex-col items-start justify-center gap-0.5 rounded-full bg-brand-surface px-5 py-3 text-brand-on active:opacity-90"
       >
         <span className="text-lg font-semibold">{CONTINUE_LEARNING_HE}</span>
         {primaryTrack !== null && <span className="text-sm text-brand-on/80">{trackLabelHe(primaryTrack)}</span>}

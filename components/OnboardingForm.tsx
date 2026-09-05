@@ -171,7 +171,7 @@ export default function OnboardingForm() {
           form="onboarding-form"
           data-primary-action="true"
           disabled={saving}
-          className="flex w-full min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
+          className="flex w-full min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90 disabled:opacity-60"
         >
           {saving ? 'שומר…' : ONBOARDING_SUBMIT_HE}
         </button>

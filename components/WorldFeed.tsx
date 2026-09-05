@@ -80,7 +80,7 @@ type FeedState =
 /** The one action, in the one shape the constitution allows for a primary action: a real
  *  ≥44px target (`min-h-touch`), brand surface, radius from § 3. */
 const PRIMARY_ACTION_CLASS =
-  'inline-flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
+  'inline-flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
 
 export default function WorldFeed(): React.JSX.Element {
   const [state, setState] = useState<FeedState>({ kind: 'loading' });

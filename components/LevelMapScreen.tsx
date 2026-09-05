@@ -200,7 +200,7 @@ export default function LevelMapScreen({
               הייתה מוחקת בדיקה שנמדדה. */}
           <a
             href={failureExit(state.code).href}
-            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {failureExit(state.code).labelHe}
           </a>

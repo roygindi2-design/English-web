@@ -271,7 +271,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <a
             href={failureExit('session_expired').href}
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {SIGN_IN_AGAIN_HE}
           </a>
@@ -283,7 +283,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <a
             href={failureExit('schema_missing').href}
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {failureExit('schema_missing').labelHe}
           </a>
@@ -296,7 +296,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           <Link
             href={deck === 'due' ? '/study?deck=unknown' : '/cards'}
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
           >
             {deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE}
           </Link>

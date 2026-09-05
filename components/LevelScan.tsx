@@ -193,7 +193,7 @@ export default function LevelScan({
           <Link
             href={CARDS_HREF}
             data-primary-action="true"
-            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {CHOOSE_FIRST_ACTION_HE}
           </Link>
@@ -216,7 +216,7 @@ export default function LevelScan({
               להפנות — הראוטר של הלקוח עלול לענות מהמטמון. */}
           <a
             href={failureExit(state.code).href}
-            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {failureExit(state.code).labelHe}
           </a>
@@ -256,7 +256,7 @@ export default function LevelScan({
             onClick={() => void advance(words)}
             disabled={saving}
             data-primary-action="true"
-            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {CONTINUE_HE}
           </button>
@@ -273,7 +273,7 @@ export default function LevelScan({
           <Link
             href={CARDS_HREF}
             data-primary-action="true"
-            className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {BACK_HE}
           </Link>

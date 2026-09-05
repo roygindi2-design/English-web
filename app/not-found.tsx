@@ -15,7 +15,7 @@ export default function NotFound() {
           `חזרה למסך הבית` היא הקבועה שהמוצר כבר משתמש בה בכל מקום אחר. */}
       <Link
         href="/"
-        className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+        className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
       >
         חזרה למסך הבית
       </Link>

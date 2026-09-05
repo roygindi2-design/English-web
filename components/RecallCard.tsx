@@ -91,7 +91,7 @@ type ScreenState =
 
 const SECTION_CLASS = 'flex flex-col gap-3';
 const PRIMARY_ACTION_CLASS =
-  'inline-flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
+  'inline-flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
 const RETRY_CLASS =
   'inline-flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';
 const OPTION_CLASS =

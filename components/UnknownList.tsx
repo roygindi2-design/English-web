@@ -90,7 +90,7 @@ export default function UnknownList(): React.JSX.Element {
       {cards.length > 0 ? (
         <Link
           href={ACTION_HREF}
-          className="flex min-h-touch items-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          className="flex min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
         >
           {ACTION_HE}
         </Link>

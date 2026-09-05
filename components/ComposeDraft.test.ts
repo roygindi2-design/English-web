@@ -118,9 +118,14 @@ describe('<ComposeDraft>', () => {
     expect(CODE).not.toMatch(/spinner|animate-spin/);
   });
 
-  it('⛔ uses no radius outside the frozen constitution § 3', () => {
+  it('⛔ uses no radius outside constitution v2 layer B\'s five-value scale (D-102 · T-168)', () => {
+    // ⚠️ UPDATED T-168 half B: the frozen v1 list {md, lg, 2xl} predates Roy's product
+    // vision (D-102, 23/08) and rejected `full`, which D-102 explicitly allows for the
+    // primary button and the chip. `scripts/radius-hygiene.test.ts` is the single source
+    // of truth for the five allowed values; this assertion mirrors it rather than a dead
+    // v1 list, so a real sixth value is still caught here.
     const radii = [...CODE.matchAll(/rounded-([a-z0-9]+)/g)].map((m) => m[1] ?? '');
-    expect([...new Set(radii)].filter((r) => !['md', 'lg', '2xl'].includes(r))).toEqual([]);
+    expect([...new Set(radii)].filter((r) => !['md', 'lg', 'xl', '2xl', 'full'].includes(r))).toEqual([]);
   });
 
   it('⛔ shows no draft-length counter — § 4.2ה forbids an artificial ceiling', () => {

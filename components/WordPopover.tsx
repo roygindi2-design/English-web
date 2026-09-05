@@ -101,7 +101,7 @@ export default function WordPopover({
           type="button"
           onClick={onAdd}
           disabled={status === 'pending'}
-          className="mt-3 inline-flex min-h-touch w-full items-center justify-center rounded-lg bg-brand-surface px-4 text-sm font-bold text-brand-on active:opacity-90 disabled:opacity-60"
+          className="mt-3 inline-flex min-h-touch w-full items-center justify-center rounded-full bg-brand-surface px-4 text-sm font-bold text-brand-on active:opacity-90 disabled:opacity-60"
         >
           {ADD_HE}
         </button>

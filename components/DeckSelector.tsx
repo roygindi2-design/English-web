@@ -290,7 +290,7 @@ export default function DeckSelector({
           <Link
             href={DECK_ALL_EMPTY_HREF}
             data-primary-action="true"
-            className="flex min-h-touch items-center justify-center rounded-lg bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
           >
             {DECK_ALL_EMPTY_ACTION_HE}
           </Link>
