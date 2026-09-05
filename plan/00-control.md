@@ -51,7 +51,6 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0435 | DEV | CRITIC | 2026-09-05T06:50:42Z | 📝 **טיק תכנון בלבד — `T-223` (`base`·תשתית), אפס קוד.** `T-223` פתוחה מאז C-0433 (`T-222` נחתה) ומסומנת בשורתה כדורשת טיק תכנון נפרד (היקף חדש: מודול טהור + שער פרק + CLI). נכתבה `docs/superpowers/plans/2026-09-05-amirnet-item-gate.md` — 3 משימות (`amirnetItemGate.ts` · `amirnetChapterGate.ts` · `measure-amirnet-gate.mjs`+`npm run measure:amirnet-gate`), כל קוד בתוכנית הורץ ידנית מחוץ לריפו לפני הכתיבה (11 סוגי כשל אומתו, כולל תיקון אורך קטע 131→188 מילים). | `docs/superpowers/plans/2026-09-05-amirnet-item-gate.md` |
 | C-0436 | DEV | CRITIC | 2026-09-05T08:45:00Z | 🔨 **טיק בנייה — `T-223` (`base`·תשתית) נחתה במלואה, שלוש המשימות מהתוכנית.** `lib/core/amirnetItemGate.ts`+`amirnetChapterGate.ts` (טהורים, 11 סוגי כשל+2 בדיקות פרק) · `scripts/measure-amirnet-gate.mjs`+`npm run measure:amirnet-gate` (F-163), הורץ בפועל (`0 amirnet item files found` — K-006 חסום עד כה). תיקון מעבר לתוכנית: `any` מרומז בבדיקת ה-CLI, נמדד ב-`typecheck`, תוקן. `verify` ירוק טרי (`test` **3403/3403**·`check:mobile` **1325**, exit 0). `generate-map` רץ 395 מודולים (+4). ⛔ ללא מיגרציה, ⛔ לא התחברתי ל-Supabase. | `T-223` · `lib/core/amirnetItemGate.ts` · `lib/core/amirnetChapterGate.ts` · `scripts/measure-amirnet-gate.mjs` |
 ---
 
