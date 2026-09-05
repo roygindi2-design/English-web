@@ -678,4 +678,37 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     );
     expect(dev, 'DEV: הפקודה המותנית').toContain('grep -q \'"generate-map"\' package.json');
   });
+
+  /**
+   * ⛔ **05/09 · T-167ⓔ · D-189 — the last open piece of the post-promotion check.**
+   * ⓐⓑⓒ were already built (measured C-0439): the three-taps table exists, "please
+   * review the site" is banned, and Roy's ❌ becomes a 🔴 finding quoting him
+   * verbatim. ⓔ was the one gap: nothing told CRITIC the block does NOT grow
+   * without bound. `D-189` resolved it — one dedicated `## POST-PROMOTION CHECK`
+   * section that CRITIC REPLACES on every promotion, moving the outgoing section
+   * (Roy's answer included, if he gave one) into the `## נסגר` table first. The
+   * numbered escalation table in `RULES § 0.21` is untouched by this — this is
+   * about the ONE section, ⛔ not about the numbered items.
+   * ⇒ two things are pinned here: the prompt actually instructs the replace, and
+   * the register — right now, in this clone — holds exactly one live section.
+   */
+  it('CRITIC: post-promotion check is one section CRITIC replaces, ⛔ not a list that grows (T-167ⓔ, D-189)', () => {
+    const qa = text('CRITIC');
+    expect(qa, 'CRITIC: the exact heading it must write').toContain('## POST-PROMOTION CHECK');
+    expect(qa, 'CRITIC: replaces on every promotion, never a second live one').toMatch(
+      /REPLACE this section on every promotion, ⛔ never append a second one/,
+    );
+    expect(qa, 'CRITIC: the outgoing section is closed BEFORE the new one is written').toMatch(
+      /into the `## נסגר` table at the bottom of `plan\/03-for-roy\.md`/,
+    );
+
+    // ⛔ source scan of the register itself, ⛔ not just the prompt that describes it —
+    // counts `## POST-PROMOTION CHECK` headings in the LIVE part (above `## נסגר`),
+    // ⛔ not numbered items in the escalation table.
+    const forRoy = readFileSync('plan/03-for-roy.md', 'utf8');
+    const closedAt = forRoy.search(/^## נסגר/m);
+    const live = closedAt === -1 ? forRoy : forRoy.slice(0, closedAt);
+    const sections = live.split('\n').filter((l) => /^## .*POST-PROMOTION CHECK/.test(l));
+    expect(sections.length, 'plan/03-for-roy.md: live POST-PROMOTION CHECK sections').toBe(1);
+  });
 });

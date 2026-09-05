@@ -435,7 +435,9 @@ RELEASE_READY: <sha> · <date> · <N commits> · <what the learner gets, one lin
 git checkout main && git merge --ff-only origin/dev && git push origin main
 ```
 Verify the fast-forward first (`./scripts/g merge-base --is-ancestor origin/main origin/dev`) and say so. If it is not possible — Roy merged through the GitHub UI — merge `main` back into `dev`, push, then the ff is clean.
-**And the three taps (T-167):** three named taps on the slice that just became ready — **screen · action · what he should see**. ⛔ Not "please review the site". Next tick you **read his answer**: ✅ → mark it done · ❌ → a 🔴 finding with his words quoted verbatim.
+**And the three taps (T-167):** they live in exactly ONE section in `plan/03-for-roy.md`, headed `## POST-PROMOTION CHECK` — three named taps on the slice that just became ready — **screen · action · what he should see**. ⛔ Not "please review the site".
+⚠️ **You REPLACE this section on every promotion, ⛔ never append a second one (T-167ⓔ · D-189).** Before writing the new section: move the outgoing one's full content — including Roy's ✅/❌ answer, if he gave one — into the `## נסגר` table at the bottom of `plan/03-for-roy.md` as one closed row (next `#` · requester `CRITIC` · today's date · what the check found and how Roy answered). Only then write the new `## POST-PROMOTION CHECK` section with the three fresh taps. ⛔ `plan/03-for-roy.md` must never hold more than one live `## POST-PROMOTION CHECK` section above `## נסגר`. This is about that ONE section only — the numbered escalation table under `RULES § 0.21` is untouched, and every open numbered item keeps its own `⟨נבדק⟩` stamp exactly as before.
+Next tick you **read his answer**: ✅ → mark it done · ❌ → a 🔴 finding with his words quoted verbatim.
 ⚠️ **This is the only path by which an answer from Roy re-enters the loop.** Without it his verification never closes.
 ⚠️ **Soft brake, ⛔ not a halt:** over **150 unshipped commits** → say so loudly; the PM stops opening new slices and Dev takes only findings. **The loop keeps working.**
 
