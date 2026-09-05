@@ -634,10 +634,30 @@ check(
  * workstream the sequence has already passed, and it holds **at most two** rows.
  * ⚠️ Empty field = the mode is OFF, and that is a PASS, ⛔ not a gap.
  */
+/**
+ * ⛔ **CHECK 14's CEILING MUST COUNT `שיפור` ROWS ONLY, ⛔ NOT EVERY OPEN ROW IN THE
+ * TARGET WORKSTREAM.**  ⟦T-255 · D-190 § 1.3⟧
+ * `there.open` (from `balance()`, i.e. `docs/plan-open.md`) counts every open row in
+ * the target's build-order slot — including ordinary feature/infra rows that predate
+ * 🩺 IMPROVE and have nothing to do with it. Measured 2026-09-04: pointing
+ * `IMPROVE_TARGET` at `story` failed on 3 pre-existing ⬜ rows against a ceiling of 2,
+ * blocking the mode from ever turning on. ⇒ this reads `plan/50-tasks.md` directly
+ * (same technique as `workTypeMix` below) and counts only rows carrying the
+ * `שיפור` tag — the tag PM/Roy write by hand (RULES § IMPROVE fence 6), ⛔ never DEV.
+ */
+const IMPROVE_ROW_TAG = 'שיפור';
+const improveTaggedOpenCount = (target) =>
+  rows(read(at('plan', '50-tasks.md')), 'T').filter((line) => {
+    const tags = taskCell(line, TASK_MILESTONE_INDEX)
+      .split('·')
+      .map((t) => t.trim());
+    return tags.includes(target) && tags.includes(IMPROVE_ROW_TAG) && taskOpen(line);
+  }).length;
+
 const IMPROVE_ROW_CEILING = 2;
 check(
   '14',
-  'IMPROVE_TARGET מצביע על זרימה חתומה ומחזיק ≤2 שורות',
+  'IMPROVE_TARGET מצביע על זרימה חתומה ומחזיק ≤2 שורות מתויגות שיפור',
   () => {
     const control = read(at('plan', '00-control.md'));
     const m = /^IMPROVE_TARGET:\s*"?([^"\s#]*)"?/m.exec(control);
@@ -658,10 +678,17 @@ check(
     if (!new RegExp(`^\\|\\s*\`${target}\``, 'm').test(read(at('plan', '61-deferred.md')))) {
       items.push(`⛔ \`${target}\` ⛔ אינה ב-61-deferred ⇒ ⛔ אין ממה לצטט (D-144ⓑ)`);
     }
-    if (there.open > IMPROVE_ROW_CEILING) {
-      items.push(`⛔ ${there.open} שורות ⬜ ב-\`${target}\` — התקרה ${IMPROVE_ROW_CEILING}`);
+    const tagged = improveTaggedOpenCount(target);
+    if (tagged > IMPROVE_ROW_CEILING) {
+      items.push(
+        `⛔ ${tagged} שורות \`${IMPROVE_ROW_TAG}\` פתוחות ב-\`${target}\` — התקרה ${IMPROVE_ROW_CEILING}`,
+      );
     }
-    return { ok: items.length === 0, detail: `יעד \`${target}\` · ${there.open} ⬜`, items };
+    return {
+      ok: items.length === 0,
+      detail: `יעד \`${target}\` · ${tagged} ⬜ מתויגות ${IMPROVE_ROW_TAG}`,
+      items,
+    };
   },
 );
 

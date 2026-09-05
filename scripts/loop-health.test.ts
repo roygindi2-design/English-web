@@ -37,6 +37,10 @@ const failed = (out: string, n: string): boolean =>
 const warned = (out: string, n: string): boolean =>
   new RegExp(`^ warn ${n}\\.`, 'm').test(out);
 
+/** Mirrors `IMPROVE_ROW_TAG` in scripts/loop-health.mjs — kept as a literal here so
+ *  the test does not import implementation internals, only observable output. */
+const IMPROVE_ROW_TAG_LITERAL = 'שיפור';
+
 /** A repo where all eight checks pass. Each test then breaks exactly one thing. */
 const healthy = (): string => {
   const root = mkdtempSync(join(tmpdir(), 'lh-'));
@@ -538,6 +542,55 @@ describe('scripts/loop-health.mjs', () => {
     expect(failed(r.out, '14')).toBe(true);
     expect(warned(r.out, '14')).toBe(false);
     expect(r.out).toContain('בדלת האחורית');
+  });
+
+  it('14 · שורות פתוחות בלי תג שיפור ⛔ אינן נספרות לתקרה — גם אם הן מעל 2', () => {
+    // `loop` is a cross-cutting workstream (order: null in balance()), so condition 1
+    // (`there.order >= here.order`) never fires against it regardless of the active
+    // workstream — this isolates the test to the ceiling condition alone.
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) => s.replace('IMPROVE_TARGET: ""', 'IMPROVE_TARGET: loop'));
+    patch(
+      root,
+      'plan/61-deferred.md',
+      (s) => s + '| `loop` | 2026-09-01 | 3 | F-000 | x | C-0001 |\n',
+    );
+    patch(
+      root,
+      'plan/50-tasks.md',
+      (s) =>
+        s +
+        '| T-900 | M0 · loop · נוחות | קיימת מלפני IMPROVE, ⛔ ללא תג | — | ⬜ | 0 | — | — |\n' +
+        '| T-901 | M0 · loop · נוחות | קיימת מלפני IMPROVE, ⛔ ללא תג | — | ⬜ | 0 | — | — |\n' +
+        '| T-902 | M0 · loop · נוחות | קיימת מלפני IMPROVE, ⛔ ללא תג | — | ⬜ | 0 | — | — |\n',
+    );
+    const r = run(root);
+    expect(
+      failed(r.out, '14'),
+      'שלוש שורות פתוחות ⛔ ללא התג לא היו אמורות להפיל את הבדיקה',
+    ).toBe(false);
+  });
+
+  it('14 · שורות פתוחות עם תג שיפור נספרות, ומעל התקרה מפילות', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) => s.replace('IMPROVE_TARGET: ""', 'IMPROVE_TARGET: loop'));
+    patch(
+      root,
+      'plan/61-deferred.md',
+      (s) => s + '| `loop` | 2026-09-01 | 3 | F-000 | x | C-0001 |\n',
+    );
+    patch(
+      root,
+      'plan/50-tasks.md',
+      (s) =>
+        s +
+        '| T-900 | M0 · loop · נוחות · שיפור | שורת שיפור 1 | — | ⬜ | 0 | — | — |\n' +
+        '| T-901 | M0 · loop · נוחות · שיפור | שורת שיפור 2 | — | ⬜ | 0 | — | — |\n' +
+        '| T-902 | M0 · loop · נוחות · שיפור | שורת שיפור 3 | — | ⬜ | 0 | — | — |\n',
+    );
+    const r = run(root);
+    expect(failed(r.out, '14'), 'שלוש שורות מתויגות מעל תקרה 2 חייבות להפיל').toBe(true);
+    expect(r.out, 'הפירוט מזכיר את התג').toContain(IMPROVE_ROW_TAG_LITERAL);
   });
 
   it('14 · an empty field is the mode being OFF, and that is a PASS', () => {
