@@ -97,6 +97,81 @@ const componentBody = (path) => {
 };
 
 /**
+ * ⛔ **DEPTH 1 OF AN IMPORT TREE — ⛔ nothing deeper, and only `@/components/*`
+ * + `@/lib/core/*` (T-263 · D-191).** Measured 05/09: a page's markup can sit
+ * one layer past the component the page itself imports — `/arcade` hands its
+ * markup to `ArenaShell`, and `ArenaShell` hands ITS markup to `ArenaBattle`,
+ * which is where the real «start battle» button and the written empty state
+ * (`kind: 'too_small'`) actually live. A scan that stops at
+ * `screenComponent`/`componentBody` (depth 0) never sees either, and reports
+ * «⛔ no action» and «⛔ no empty state» on a screen that has both.
+ * ⛔ **NOT recursive, and that is deliberate:** following what a depth-1 file
+ * imports in turn is depth 2, and depth 2 is indistinguishable from scanning
+ * `components/` wholesale — exactly the cross-screen pollution `T-263` rules
+ * out (a screen must not absorb another screen's buttons because they share a
+ * distant common import).
+ *
+ * ⚠️ **`@/components/*` and `@/lib/core/*` are ⛔ NOT folded in the same way,
+ * and that split is a CORRECTION found while building this, ⛔ not the
+ * original plan.** A `@/components/*` child is real markup — its full body is
+ * legitimately part of what renders on the screen, so it is folded in whole
+ * (this is what fixes `/arcade`). A `@/lib/core/*` file is a logic/constants
+ * module, ⛔ not markup: `/login` and `/signup` (`AuthForm.tsx`) and
+ * `/onboarding` (`RegisteredAddress.tsx`) all import `lib/core/auth.ts` for
+ * its `AUTH_MESSAGES_HE` constant — and that same file also contains an
+ * unrelated password-validation check, `password.length === 0`. Folding the
+ * WHOLE file in made the generic `EMPTY` regex (which matches bare
+ * `length === 0`) fire on that unrelated line, and **three real «⛔ no empty
+ * state» flags silently disappeared** — a false ✅ is worse than the false
+ * ⚠️ this task exists to remove. ⇒ a `lib/core` file therefore contributes
+ * ONLY its exported `..._HE`/`..He`-style Hebrew string constants (exactly
+ * what `constantsIn` below would have extracted from it anyway), ⛔ never its
+ * raw prose or logic.
+ */
+const CHILD_COMPONENT_IMPORT = /from\s+'@\/components\/([\w./-]+)'/g;
+const CHILD_LIB_CORE_IMPORT = /from\s+'@\/lib\/core\/([\w./-]+)'/g;
+const readComponentFile = (relPath) => {
+  for (const ext of ['.tsx', '.ts']) {
+    try {
+      return read(join(ROOT, 'components', `${relPath}${ext}`));
+    } catch {
+      /* next */
+    }
+  }
+  return '';
+};
+const readLibCoreFile = (relPath) => {
+  for (const ext of ['.ts', '.tsx']) {
+    try {
+      return read(join(ROOT, 'lib', 'core', `${relPath}${ext}`));
+    } catch {
+      /* next */
+    }
+  }
+  return '';
+};
+/** The full body of every `@/components/*` file a given file imports — depth 1, real markup. */
+const childComponentBodiesOf = (fileBody) =>
+  [...fileBody.matchAll(CHILD_COMPONENT_IMPORT)].map((m) => readComponentFile(m[1])).filter((s) => s !== '');
+/**
+ * ⛔ Only the exported Hebrew string constants of every `@/lib/core/*` file a
+ * given file imports — depth 1, ⛔ never the file's own logic or prose (see
+ * the block comment above for why: a raw fold reintroduces exactly the kind
+ * of unrelated match `T-263` exists to remove).
+ */
+const CONST_EXPORT = /\bexport\s+const\s+([A-Z][A-Z0-9_]*)\s*=\s*'([^']{1,60})'/g;
+const childLibConstantsOf = (fileBody) => {
+  const lines = [];
+  for (const m of fileBody.matchAll(CHILD_LIB_CORE_IMPORT)) {
+    const libBody = readLibCoreFile(m[1]);
+    for (const c of libBody.matchAll(CONST_EXPORT)) {
+      if (HEB.test(c[2])) lines.push(`const ${c[1]} = '${c[2]}';`);
+    }
+  }
+  return lines.join('\n');
+};
+
+/**
  * ⛔ **THE MAIN ACTION IS READ FROM THE MARKUP, ⛔ NOT NAMED BY A HUMAN.** A label a
  * person types into a register is a label that stops matching the button the day it
  * is renamed — and "three names for one action" is exactly the defect this file
@@ -120,6 +195,10 @@ const ACTION = /<(button|Link|a)\b[^>]*>([\s\S]{0,400}?)<\/\1>/g;
  * is hoisted to a `const` at the top of the file, precisely so it can be asserted
  * on. Stripping `{…}` therefore threw away exactly the labels this column exists to
  * collect. ⇒ the constants are resolved first, from the same surface.
+ * ⚠️ **«the same surface» now includes the depth-1 `@/lib/core/*` constant
+ * lines folded in by `childLibConstantsOf` above (T-263 · D-191)** —
+ * `const NAME_HE = '…'` matches this same regex whether it was written here or
+ * synthesized from an imported constants module's exports.
  */
 const constantsIn = (surface) => {
   const map = new Map();
@@ -169,7 +248,18 @@ const rows = pages.map((file) => {
   const body = read(file);
   const comp = screenComponent(body);
   const compBody = comp === null ? '' : componentBody(comp.path);
-  const surface = `${body}\n${compBody}`;
+  /**
+   * ⛔ Depth 1 is read off **whichever file is the actual top of this screen's
+   * markup** — the page itself when it has no separate component (`/offline`
+   * renders its own JSX inline and imports `RETRY_HE` straight from
+   * `lib/core/failure`), and the screen component when it exists (`/arcade` →
+   * `ArenaShell`). Both are scanned; scanning only one would miss the other
+   * shape.
+   */
+  const topBodies = compBody === '' ? [body] : [compBody];
+  const childComponentSurfaces = topBodies.flatMap(childComponentBodiesOf);
+  const childLibConstants = topBodies.map(childLibConstantsOf).join('\n');
+  const surface = [body, compBody, ...childComponentSurfaces, childLibConstants].join('\n');
   return {
     route: routeOf(file),
     file: relative(ROOT, file).replace(/\\/g, '/'),
