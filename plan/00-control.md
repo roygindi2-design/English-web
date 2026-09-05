@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0432 (DEV) — `T-245` (`loop`·תשתית) במלואה. 13 שורות `plan/60-findings.md` תוקנו ל-8 תאים (תו `\|` יחיד בהיסט מדויק, ⛔ לא שחזור מתאים מפוענחים) + `measure-plan-tables.mjs` מדפיס `.../findings malformed ids: …`. verify ירוק טרי (test 3359/3359 · check:mobile 1325 · build · exit 0). קוד: `plan/60-findings.md` · `scripts/measure-plan-tables.mjs` · `scripts/measure-plan-tables.test.ts`.
+NEXT_AGENT: CRITIC                 # ▶️ C-0433 (DEV) — `T-222` (`base`·תשתית) במלואה. `scripts/build-amirnet-vocab.mjs`+test חדשים: גוזר את בנק אוצר המילים של אמירנט מ-`data/cefrj-vocabulary-profile-1.5.csv`+`data/octanove-vocabulary-profile-c1c2-1.0.csv` ל-`data/generated/amirnet-vocab.csv` (6,715 שורות · Tier 1=1244·2=2140·3=2417·4=914 · 42 מחברים ב-Tier1+2, כל המספרים נמדדו בטיק זה). מיזוג headword **case-sensitive** ו-`is_connector` כאיחוד-כל-שורה הם שני הבחירות היחידות שנוסו ומשחזרות בדיוק את הספירות שהמשימה דרשה. verify ירוק טרי (typecheck·check:core·check:motion·check:text-floor·check:rules 333/41/0·test 3373/3373·build·check:mobile 1325, exit 0). קוד: `scripts/build-amirnet-vocab.mjs` · `scripts/build-amirnet-vocab.test.ts` · `package.json` · `data/generated/amirnet-vocab.csv`. **T-223 שוחררה** (הייתה תלויה ב-T-222) — לא נבנתה בטיק הזה, היקף חדש שדורש טיק תכנון נפרד.
 STATE: BUILD                      # ▶️ C-0422 (PM) — נשאר BUILD. **17 ⬜ כשירות ל-`general`** (בדיקה 11), ובהן `T-253` שנפתחה בטיק.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: T-253             # ⚠️ ▶️ C-0429 (DEV) — **נמדד: מצביע תקוע.** `grep -n '^\| T-253 \|' plan/50-tasks.md` ⇒ תא סטטוס `✅ C-0428 (QA): על dev` — השורה כבר נמסרה ונמזגה **לפני** תחילת הטיק הזה. ⛔ DEV לא כותב לשדה הזה בעצמו (RULES); דווח ב-`03-for-roy` שהמצביע דורש שורה כשירה חדשה מ-PM/QA. ⚠️ ▶️ C-0430 (DEV) — נמדד שוב, אותו מצב בדיוק (`✅ C-0428 (QA): על dev`); ⛔ לא נגעתי בשדה.
+ACTIVE_TASK_ID: T-253             # ⚠️ ▶️ C-0429 (DEV) — **נמדד: מצביע תקוע.** `grep -n '^\| T-253 \|' plan/50-tasks.md` ⇒ תא סטטוס `✅ C-0428 (QA): על dev` — השורה כבר נמסרה ונמזגה **לפני** תחילת הטיק הזה. ⛔ DEV לא כותב לשדה הזה בעצמו (RULES); דווח ב-`03-for-roy` שהמצביע דורש שורה כשירה חדשה מ-PM/QA. ⚠️ ▶️ C-0430 (DEV) — נמדד שוב, אותו מצב בדיוק (`✅ C-0428 (QA): על dev`); ⛔ לא נגעתי בשדה. ⚠️ ▶️ C-0433 (DEV) — נמדד פעם שלישית, אותו מצב בדיוק; ⛔ לא נגעתי בשדה. כבר מתועד ב-`03-for-roy` פריט 96 (נוסף שם, לא כאן, כדי לא לנפח קובץ שכבר מעל התקרה).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-05T00:59:35Z
+LAST_HANDOFF_AT: 2026-09-05T02:53:58Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                    # שוחררה C-0432 (DEV) 00:59:35Z — T-245 נבנתה במלואה, verify ירוק טרי, נדחפה ל-work/current.
-LOCK_AT: "2026-09-05T00:37:18Z"
+LOCK_HELD_BY: ""                    # שוחררה C-0433 (DEV) 02:53:58Z — T-222 נבנתה במלואה, verify ירוק טרי, נדחפה ל-work/current.
+LOCK_AT: "2026-09-05T02:36:53Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -47,12 +47,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0427` הועבר 04/09/2026 (C-0429) · `C-0428` הועבר 04/09/2026 (C-0430) · `C-0429` הועבר 05/09/2026 (C-0432) — כולן שתי שורות בלבד, פירוט המדידה בארכיון.
+> 🧹 `C-0428` הועבר 04/09/2026 (C-0430) · `C-0429` הועבר 05/09/2026 (C-0432) · `C-0430` הועבר 05/09/2026 (C-0433) — כולן שתי שורות בלבד, פירוט המדידה בארכיון.
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0430 | DEV | CRITIC | 2026-09-04T22:50:51Z | 🔨 **`T-169` (`base`·נוחות) — `ACTIVE_TASK_ID` (`T-253`) נמדד תקוע שוב, אותו מצב בדיוק ⇒ נלקחה הבאה בסדר ב-`general`∪`loop`∪`base`.** `--glow-brand` (טוקן יחיד, `color-mix` על `var(--brand)`) ב-`app/globals.css`; `[data-ring-focus]` (`WorldRing.tsx`) קורא ממנו. `data-glow="true"` על שני מקורות הזוהר (`WorldRing.tsx`·`TabBar.tsx`, אחד לכל זוהר מושגי). תקציב אכיף: `scripts/verify-mobile.mjs` סופר `[data-glow]` בכל מסך/רוחב, נופל מעל שניים. `verify` ירוק טרי (`test` **3356/3356**·`check:mobile` **1325**·`build` עבר, exit 0). `measure:plan`+`generate-map` רצו (391 מודולים, 0 דלתא). | `T-169` · `app/globals.css` · `verify-mobile.mjs` |
 | C-0432 | DEV | CRITIC | 2026-09-05T00:59:35Z | 🔨 **`T-245` (`loop`·תשתית) — `ACTIVE_TASK_ID` (`T-253`) עדיין תקוע (`✅ C-0428 (QA): על dev`, קדם לטיק) ⇒ נלקחה הבאה בסדר ב-`general`∪`loop`∪`base`.** 13 שורות מוגדמות ב-`plan/60-findings.md` תוקנו ל-8 תאים — תו `\|` יחיד בהיסט התו המדויק של הצינור הלא-מוברח (מחושב מכללי הבריחה של `splitRow` עצמו, ⛔ לא שחזור מתאים מפוענחים, שהיה מוחק בשקט את ה-`\|` שכבר ישב בתוך `F-048`). `measure-plan-tables.mjs` מדפיס עכשיו `tasks/findings malformed ids: …` (שורה נפרדת, ⛔ לא שוברת את רגקסי הריצ׳ט). `verify` ירוק טרי (`test` **3359/3359**·`check:mobile` **1325**·`build` עבר, exit 0). לא נגעתי ב-`app/`/`components/`/`lib/` ⇒ `generate-map` לא רץ (T-235 חל רק שם). | `T-245` · `plan/60-findings.md` · `measure-plan-tables.mjs` |
+| C-0433 | DEV | CRITIC | 2026-09-05T02:53:58Z | 🔨 **`T-222` (`base`·תשתית) — `ACTIVE_TASK_ID` (`T-253`) נמדד תקוע פעם שלישית, אותו מצב בדיוק ⇒ נלקחה הבאה בסדר ב-`general`∪`loop`∪`base`.** `scripts/build-amirnet-vocab.mjs`+test חדשים גוזרים את בנק אוצר המילים של אמירנט מ-`data/{cefrj,octanove}-vocabulary-profile-*.csv` ל-`data/generated/amirnet-vocab.csv` — 6,715 שורות (Tier 1=1244·2=2140·3=2417·4=914), 42 מחברים ב-Tier1+2, כולם נמדדו בטיק. מיזוג headword case-sensitive + `is_connector` כאיחוד-כל-שורה הם הבחירות שמשחזרות את הספירות שהמשימה דרשה (נוסו חלופות, ראה שורת המשימה). `verify` ירוק טרי (`test` **3373/3373**·`check:mobile` **1325**·`build` עבר, exit 0). לא נגעתי ב-`app/`/`components/`/`lib/` ⇒ `generate-map` לא רץ. `T-223` שוחררה. | `T-222` · `scripts/build-amirnet-vocab.mjs` · `data/generated/amirnet-vocab.csv` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

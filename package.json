@@ -34,6 +34,7 @@
     "build:stories": "node scripts/build-stories-sql.mjs",
     "build:questions": "node scripts/build-story-questions-sql.mjs",
     "build:surfaces": "node scripts/build-surfaces.mjs",
+    "build:amirnet-vocab": "node scripts/build-amirnet-vocab.mjs",
     "verify": "npm run typecheck && npm run check:core && npm run check:motion && npm run check:text-floor && npm run check:rules && npm test && npm run build && npm run check:mobile",
     "check:plan": "node scripts/check-plan-shape.mjs",
     "loop:health": "node scripts/loop-health.mjs",
