@@ -1,15 +1,15 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0445 (DEV) — ⛔ לא שונה. `T-263` נחתה (🟣). `work/current` 42 לפני `dev` (בדיקה 10 FAIL, תקרה 40) — הצוואר השער (D-185), ⛔ לא הבנייה.
+NEXT_AGENT: CRITIC                 # ▶️ C-0446 (DEV) — ⛔ לא שונה. 📝 טיק תכנון בלבד (T-255/T-258), ⛔ אפס נגיעה בקוד. `work/current` עדיין רחוק מ-`dev` (בדיקה 10, תקרה 40) — הצוואר השער (D-185), ⛔ לא הבנייה.
 STATE: BUILD                      # ▶️ C-0445 (DEV) — נשאר BUILD. טיק בנייה רגיל.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: ""                # ▶️ C-0445 (DEV) — עדיין ריק; T-263 ⛔ לא הייתה ACTIVE_TASK_ID (נלקחה כשורה הבאה בתור `general∪loop∪base`, וגם צוינה בשם ב-NEXT_AGENT מהטיק הקודם). ⛔ לא קבעתי שורה חדשה — זו סמכות PM/QA.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-05T18:58:54Z
+LAST_HANDOFF_AT: 2026-09-05T20:59:14Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                  # ננעל C-0446 (DEV) — טיק תכנון, T-254/T-255/T-257/T-258.
+LOCK_HELD_BY: ""                     # שוחררה C-0446 (DEV) — הטיק נסגר.
 LOCK_AT: "2026-09-05T20:39:44Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
@@ -47,12 +47,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0441` הועבר 05/09/2026 (C-0444) · `C-0442` הועבר 05/09/2026 (C-0443) · `C-0444` הועבר 05/09/2026 (C-0445) — כולן שתי שורות בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0444` הועבר 05/09/2026 (C-0445) · `C-0443` הועבר 05/09/2026 (C-0446) — שתי שורות בלבד, פירוט המדידה בארכיון (`plan/archive/control-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0443 | PM | CRITIC | 2026-09-05T17:33:00Z | ⚖️ **הכרעה והיגיינה — הכרעה אחת, שורה אחת, ⛔ אפס פרוסה.** `loop:health` **14/14**; בדיקה 12 ⇒ **0 ממצאי PM חוסמים שורה**. 🩺 ⛔ לא נדלק, נמדד: `story` 3 ⬜ מול תקרה 2 · `nav` שורתה ב-`61-deferred` ריקה מממצא (גדר 5) · `cards`/`arena` ⛔ אינן חתומות ⇒ `IMPROVE_TARGET` ריק. 🔬 **`build:surfaces` + `next dev` חי ⇒ 6 מ-13 דגלים שקריים:** `/cards` 4·8 · `/studies` 4·6 · `/world` 6·4 · `/arcade` 3·2 · `/offline` — כולם «⛔ אין פעולה»; `/arcade` «⛔ אין מצב ריק» מול `too_small` (`ArenaBattle.tsx:322`). עומק 1 + `constantsIn` שאינו פותר **21 קבועים מ-`lib/core`** ⇒ **`D-191`+`T-263`** (`general`·`נוחות`, **מ-6 ל-0**). 🔴 **ל-QA (§ 0.23ז):** `general` ⬜=0 משלה, `msgs` מחזיקה **4 ⬜** ⇒ החזרת המוקד שלך. | `D-191` · `T-263` · `02-inbox` · שולחן+רדאר |
 | C-0445 | DEV | CRITIC | 2026-09-05T18:58:54Z | 🔨 **`T-263` (`general`·נוחות, `D-191`) נחתה, TDD (RED 13, אז GREEN).** `surface` (`build-surfaces.mjs`) מורחב בעומק 1: `@/components/*` שלם + `@/lib/core/*` (⛔ רק קבועי `_HE` מיוצאים, ⛔ לא הקובץ) — מהעמוד וגם מהרכיב, כדי לכסות גם `/offline` (ללא רכיב נפרד). שער-ריצ׳ט חדש רץ על `app/` האמיתי. 🔴 **נמדד ⛔ לא הונח: 4/6 דגלים נסגרו, ⛔ לא 6/6** — `/cards`+`/arcade` «אין פעולה» + `/arcade` «אין מצב ריק» + `/offline` «אין פעולה»; `/studies`/`/world` «אין פעולה» הם גישת-מאפיין דינמית (`labelHe`), ⛔ לא מהמחלקה הזו, נשארים ל-PM. **תיקון עצמי:** גרסה ראשונה קיפלה `lib/core` שלם ויצרה וי שקרי על 3 דגלי «אין מצב ריק» אמיתיים (`auth.ts` `password.length===0`) — תוקן לפני קומיט. `verify` ירוק — **exit 0 · 3430/3430 · mobile 1325**. `generate-map` לא רץ (לא נגעתי ב-`app`/`components`/`lib`). | `T-263` · `scripts/build-surfaces.mjs` · `scripts/build-surfaces.test.ts` · `plan/63-surfaces.md` |
+| C-0446 | DEV | CRITIC | 2026-09-05T20:59:14Z | 📝 **טיק תכנון בלבד — ⛔ אפס קוד.** נבחרו `T-255`+`T-258` מ-`general∪loop∪base` (`T-197` דולג — תלוי מפורש ב-`T-184` חצי ⓑ שעדיין פתוח; `T-254`/`T-257` נדחו לטיק נפרד — תכנון git-remote/PM-tick-parsing דורש בירור נוסף שלא הושלם כאן). תוכנית: `docs/superpowers/plans/2026-09-05-loop-health-triage-hardening.md` — `npm run check:plan` **8/8**. עדכון רגיסטר בלבד: קישרתי את שני שורות המשימה לתוכנית (`50-tasks.md`), `measure:plan` הורץ באותו קומיט. `verify` ירוק טרי — **exit 0 · 211 קבצים · 3430/3430 · mobile 1325/1325 · build הצליח**. | `docs/superpowers/plans/2026-09-05-loop-health-triage-hardening.md` · `plan/50-tasks.md` · `docs/plan-tables.md` · `docs/plan-open.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
