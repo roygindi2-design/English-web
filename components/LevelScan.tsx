@@ -40,7 +40,10 @@ const CHOOSE_FIRST_HE = 'בחר רמה כדי להתחיל בסריקה';
 const CHOOSE_FIRST_ACTION_HE = 'למפת הרמה';
 const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
-const BACK_HE = 'חזרה למפת הרמה';
+// D-187 §ג׳.1 — «מפת הרמה» אינו שם של יעד, הוא מקטע בתוך `כרטיסיות`; שם היציאה
+// היחיד לכל יעד הוא `חזרה ל<שם היעד כפי שהמוצר מדפיס אותו>`. `CHOOSE_FIRST_ACTION_HE`
+// (למעלה) היא ה-CTA של הכניסה הראשונה ⛔ ונשארת כפי שהיא.
+const BACK_HE = 'חזרה לכרטיסיות';
 const CARDS_HREF = '/cards';
 
 type ScanResponse =
