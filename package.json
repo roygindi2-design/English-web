@@ -27,6 +27,7 @@
     "measure:gate": "node scripts/measure-gate.mjs",
     "measure:mix": "node scripts/measure-mix.mjs",
     "measure:continuations": "node scripts/measure-continuations.mjs",
+    "measure:amirnet-gate": "node scripts/measure-amirnet-gate.mjs",
     "measure:plan": "node scripts/measure-plan-tables.mjs",
     "build:ingest": "node scripts/build-ingest-sql.mjs",
     "build:levels": "node scripts/build-word-levels-sql.mjs",
