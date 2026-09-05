@@ -108,7 +108,7 @@
   export function parsePreviousCoverageReport(text: string): PreviousCoverageReport | null;
   ```
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/amirnetCoverage.test.ts
@@ -249,12 +249,12 @@ describe('report round-trip', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/core/amirnetCoverage.test.ts`
 Expected: FAIL — `Cannot find module './amirnetCoverage'` (the module does not exist yet).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```ts
 // lib/core/amirnetCoverage.ts
@@ -496,17 +496,17 @@ export function parsePreviousCoverageReport(text: string): PreviousCoverageRepor
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/core/amirnetCoverage.test.ts`
 Expected: PASS, all cases green.
 
-- [ ] **Step 5: Core purity check**
+- [x] **Step 5: Core purity check**
 
 Run: `npm run check:core`
 Expected: `OK` — `lib/core/amirnetCoverage.ts` imports nothing but is otherwise plain TypeScript (no `fs`, no `process.env`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 ./scripts/g add lib/core/amirnetCoverage.ts lib/core/amirnetCoverage.test.ts
@@ -533,7 +533,7 @@ Expected: `OK` — `lib/core/amirnetCoverage.ts` imports nothing but is otherwis
   - `AMIRNET_BATCH_DIR` (default `data/generated`)
   - `AMIRNET_COVERAGE_REPORT_OUT` (default `docs/amirnet-coverage-report.md`) — also the path read back as "the previous report" before being overwritten.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // scripts/measure-amirnet-coverage.test.ts
@@ -668,12 +668,12 @@ describe('scripts/measure-amirnet-coverage.mjs', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run scripts/measure-amirnet-coverage.test.ts`
 Expected: FAIL — `scripts/measure-amirnet-coverage.mjs` does not exist yet (`ENOENT`).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```js
 #!/usr/bin/env node
@@ -779,12 +779,12 @@ console.log(`shallow: ${counts.polysemousShallowCount} (polysemous headwords wit
 console.log(`wrote ${OUT}`);
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `npx vitest run scripts/measure-amirnet-coverage.test.ts`
 Expected: PASS, all three cases green.
 
-- [ ] **Step 5: Add the `package.json` script entry**
+- [x] **Step 5: Add the `package.json` script entry**
 
 Edit `package.json`, in the `measure:*` group (alongside `"measure:amirnet-gate": "node scripts/measure-amirnet-gate.mjs",`):
 
@@ -792,17 +792,17 @@ Edit `package.json`, in the `measure:*` group (alongside `"measure:amirnet-gate"
     "measure:amirnet-coverage": "node scripts/measure-amirnet-coverage.mjs",
 ```
 
-- [ ] **Step 6: Run it once for real, against the live repo, to confirm it behaves against real data**
+- [x] **Step 6: Run it once for real, against the live repo, to confirm it behaves against real data**
 
 Run: `npm run measure:amirnet-coverage`
 Expected: exits 0, prints the three numbers against the live `data/amirnet-vocab.csv` and `data/generated/batch-*.jsonl`, writes `docs/amirnet-coverage-report.md`. Whatever numbers this prints ARE the first real measurement — record them in the tick's report to Roy as freshly measured, not copied from this plan (this plan's own numbers are all synthetic fixtures, per the Global Constraints section).
 
-- [ ] **Step 7: Full verification gate**
+- [x] **Step 7: Full verification gate**
 
 Run: `npm run verify`
 Expected: green (includes `typecheck`, `test`, `build`, `check:mobile`, `check:core` per `docs/agents/DEV.md` STEP 6 — five commands).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 ./scripts/g add scripts/measure-amirnet-coverage.mjs scripts/measure-amirnet-coverage.test.ts package.json docs/amirnet-coverage-report.md

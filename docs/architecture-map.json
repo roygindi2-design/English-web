@@ -225,6 +225,10 @@
   "lib/core/amirnetChapterGate.ts": [
     "lib/core/amirnetItemGate.ts"
   ],
+  "lib/core/amirnetCoverage.test.ts": [
+    "lib/core/amirnetCoverage.ts"
+  ],
+  "lib/core/amirnetCoverage.ts": [],
   "lib/core/amirnetItemGate.test.ts": [
     "lib/core/amirnetItemGate.ts"
   ],
