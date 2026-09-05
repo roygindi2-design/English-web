@@ -48,7 +48,7 @@ No new files. Every file below already exists and is extended in place — none 
 - Consumes: `rows(text, prefix)`, `read(path)`, `at(...parts)`, `taskCell(line, i)`, `TASK_MILESTONE_INDEX`, `taskOpen(line)` — all already defined earlier in `scripts/loop-health.mjs` (lines 32-35, 148, 211, 233). Do not redefine any of these.
 - Produces: `const IMPROVE_ROW_TAG = 'שיפור'` and `const improveTaggedOpenCount = (target) => number` — a new named export-free module-level function, used only inside check 14's callback. No other task in this plan consumes it.
 
-- [ ] **Step 1: Write the two failing tests**
+- [x] **Step 1: Write the two failing tests**
 
   Open `scripts/loop-health.test.ts`. Immediately after the existing test block that starts `it('14 · fails when IMPROVE_TARGET points at a workstream the sequence has ⛔ not passed', () => {` (and its closing `});`, currently ending around line 545), insert:
 
@@ -111,12 +111,12 @@ No new files. Every file below already exists and is extended in place — none 
   const IMPROVE_ROW_TAG_LITERAL = 'שיפור';
   ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
   Run: `npx vitest run scripts/loop-health.test.ts -t "שיפור"`
   Expected: both new tests FAIL. The first fails because today's check 14 counts `there.open` from `balance()` (all 6 real open `loop` rows plus the 3 fixture rows), which is `> 2`, so check 14 already reports FAIL before your fixture rows are even considered — i.e. it fails for the wrong reason today. The second fails to fail — actually still records the same generic count, not the specific "שיפור" wording. Confirm both failure messages reference the assertion you wrote, not a crash.
 
-- [ ] **Step 3: Implement the tag-filtered counting helper and swap it into check 14**
+- [x] **Step 3: Implement the tag-filtered counting helper and swap it into check 14**
 
   In `scripts/loop-health.mjs`, locate the existing block (currently lines 628-661):
 
@@ -215,7 +215,7 @@ No new files. Every file below already exists and is extended in place — none 
   );
   ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
   Run: `npx vitest run scripts/loop-health.test.ts -t "שיפור"`
   Expected: both new tests PASS.
@@ -223,7 +223,7 @@ No new files. Every file below already exists and is extended in place — none 
   Then run the full file to confirm nothing else regressed: `npx vitest run scripts/loop-health.test.ts`
   Expected: all tests pass, including the pre-existing `'14 · fails when IMPROVE_TARGET points at a workstream the sequence has ⛔ not passed'` test (its scenario never reaches the tag-count branch, since it fails on condition 1 first).
 
-- [ ] **Step 5: Update `plan/RULES.md` § IMPROVE to six fences**
+- [x] **Step 5: Update `plan/RULES.md` § IMPROVE to six fences**
 
   In `plan/RULES.md`, find the heading `#### 🩺 מצב IMPROVE — חמש גדרות, וכולן נמדדות  ⟦D-146⟧` and the fenced block immediately under it:
 
@@ -244,7 +244,7 @@ No new files. Every file below already exists and is extended in place — none 
 
   ⚠️ **Do not touch `docs/agents/PM.md`'s "FIVE FENCES" block in this task.** `plan/50-tasks.md`'s `T-255` row lists only `scripts/loop-health.mjs · scripts/loop-health.test.ts · plan/RULES.md` as files — `PM.md` is out of this task's declared scope. Note the resulting drift (`PM.md` STEP 1.7 will still say "FIVE FENCES" until a PM tick updates it) in your tick report so QA/PM can reconcile it deliberately.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
   ```bash
   ./scripts/g add scripts/loop-health.mjs scripts/loop-health.test.ts plan/RULES.md
@@ -267,7 +267,7 @@ No new files. Every file below already exists and is extended in place — none 
 - Consumes: `text(name)` helper (reads `docs/agents/{name}.md`, already defined at the top of `scripts/agent-prompts.test.ts`) and the already-imported `readFileSync` from `node:fs` (used here to read `plan/RULES.md`, which lives outside the `docs/agents/` directory `text()` is scoped to).
 - Produces: no new shared symbol — this task only edits prose and adds one test.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
   Open `scripts/agent-prompts.test.ts`. Add a new `it(...)` inside the existing `describe('docs/agents/*.md — ...')` block, near the other IMPROVE-related test (`it('🔴 שני צדי מצב IMPROVE כתובים...')`):
 
@@ -292,12 +292,12 @@ No new files. Every file below already exists and is extended in place — none 
   });
   ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
   Run: `npx vitest run scripts/agent-prompts.test.ts -t "T-258"`
   Expected: FAIL — neither `plan/RULES.md` nor `docs/agents/PM.md` contains the five-flows string yet.
 
-- [ ] **Step 3: Add the trigger condition to `plan/RULES.md` § 0.6's four-mode table**
+- [x] **Step 3: Add the trigger condition to `plan/RULES.md` § 0.6's four-mode table**
 
   Find this table in `plan/RULES.md` § 0.6:
 
@@ -316,7 +316,7 @@ No new files. Every file below already exists and is extended in place — none 
   | 📐 **תכנון** | אין BLOCKER, ולמשימה הבאה אין תוכנית UX **· או** `story` · `nav` · `cards` · `arena` · `studies` מדדו ⬜=0 **בו-זמנית** — ⛔ **חובה, גוברת על 🩺 ועל 💤** (`T-258` · `D-190`) | `15-syllabus-digest.md` + `docs/plan-open.md` + `40-decisions.md` (‏`50-tasks.md` ב-`grep` בלבד) | **0** |
   ```
 
-- [ ] **Step 4: Add the same condition to `docs/agents/PM.md` STEP 1.7**
+- [x] **Step 4: Add the same condition to `docs/agents/PM.md` STEP 1.7**
 
   In `docs/agents/PM.md`, find STEP 1.7's opening block:
 
@@ -342,7 +342,7 @@ No new files. Every file below already exists and is extended in place — none 
 
   ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
   Run: `npx vitest run scripts/agent-prompts.test.ts -t "T-258"`
   Expected: PASS.
@@ -350,12 +350,12 @@ No new files. Every file below already exists and is extended in place — none 
   Then run the full file: `npx vitest run scripts/agent-prompts.test.ts`
   Expected: all tests pass (no other assertion reads the 📐 row or STEP 1.7's opening paragraph in a way this edit could break — confirm by reading the diff of `scripts/agent-prompts.test.ts` test failures, if any, before concluding).
 
-- [ ] **Step 6: Run `npm run check:rules`**
+- [x] **Step 6: Run `npm run check:rules`**
 
   Run: `npm run check:rules`
   Expected: exit 0 — the edit added a bracketed `T-258`/`D-190` reference, not a `RULES § x.y` citation, so no new citation needs an anchor; and no anchor heading text was renumbered or removed.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
   ```bash
   ./scripts/g add plan/RULES.md docs/agents/PM.md scripts/agent-prompts.test.ts
