@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -174,5 +175,47 @@ describe('T-124 · D-065 — כל ענף כשל נושא יציאה', () => {
     const start = CODE.indexOf("state.kind === 'failed'");
     const block = CODE.slice(start, start + 1400);
     expect(block).not.toContain('data-primary-action');
+  });
+});
+
+/**
+ * T-262 · D-188 · F-176 — כותרת הגג של המוצר («אנגלית · מסלול אמיר״ם»,
+ * `app/layout.tsx:38`) הודפסה גם כאן (`TRACK_HE`, ‏:54/:153) — נמדד חי ב-
+ * `/dev/tabs/cards` ב-375×780: פעמיים במסך הזה, פעם אחת בכל שאר המסכים.
+ * `app/layout.tsx` הוא הבעלים היחיד; הקובץ הזה ⛔ אינו נגוע — הבדיקה קוראת
+ * אותו read-only כדי לגזור את מחרוזת הכותרת בעצמה, ⛔ ולא כדי לשכפל אותה ביד
+ * וליצור עותק שלישי שיכול לסטות מהמקור.
+ */
+function walkComponents(): string[] {
+  const root = 'components';
+  const out: string[] = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (!entry.isFile() || /\.(test|spec)\.(ts|tsx)$/.test(entry.name)) continue;
+    if (!/\.(ts|tsx)$/.test(entry.name)) continue;
+    out.push(join(root, entry.name));
+  }
+  return out;
+}
+
+function layoutMasthead(): string {
+  const layout = readFileSync('app/layout.tsx', 'utf8');
+  const match = /<header[^>]*>[\s\S]*?<span[^>]*>\s*([^<]+?)\s*<\/span>/.exec(layout);
+  if (!match?.[1]) {
+    throw new Error('app/layout.tsx masthead <span> not found — update this gate (D-188)');
+  }
+  return match[1].trim();
+}
+
+describe('T-262 · D-188 — כותרת הגג נכתבת במקום אחד, ⛔ ואינה חוזרת ב-components/', () => {
+  it('`TRACK_HE` הוסר — הכותרת ⛔ אינה מודפסת יותר בקובץ הזה', () => {
+    expect(CODE).not.toContain('TRACK_HE');
+    expect(CODE).not.toContain(layoutMasthead());
+  });
+
+  it('⛔ שום קובץ אחר תחת components/ אינו מדפיס את כותרת הגג של app/layout.tsx', () => {
+    const heading = layoutMasthead();
+    const offenders = walkComponents().filter((file) => readFileSync(file, 'utf8').includes(heading));
+
+    expect(offenders).toEqual([]);
   });
 });

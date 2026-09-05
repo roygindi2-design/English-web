@@ -50,8 +50,6 @@ import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
  */
 
 const HEADING_HE = 'כרטיסיות';
-/** `render_video_A.py:255` — השורה הקטנה מעל הכותרת. ⛔ נלקחה, ⛔ ולא הומצאה. */
-const TRACK_HE = 'אנגלית · מסלול אמיר״ם';
 /**
  * ⛔ **ההערה הקבועה של `36 § 5`, והיא נושאת את האינווריאנט:** «אין דרך לסמן ידעתי/לא
  * ידעתי מחוץ לכרטיסייה». המסך מציג מצב ופותח חפיסות — הוא ⛔ אינו עורך מצב.
@@ -147,10 +145,10 @@ export default function LevelMapScreen({
 
   return (
     <section className="flex flex-col gap-6" data-level-map>
-      {/* הכותרת — `render_video_A.py:255-256`: שורת המסלול הקטנה, ואז שם המסך.
-          ⛔ הרמה ⛔ אינה כאן עוד: היא הכרטיס שמתחת (`36 § 5` שורה 1). */}
+      {/* T-262 · D-188 — שורת המסלול הקטנה (`render_video_A.py:255`) הוסרה מכאן:
+          `app/layout.tsx` הוא הבעלים היחיד שלה, וזה היה המסך היחיד שמדפיס אותה
+          פעמיים. ⛔ הרמה ⛔ אינה כאן עוד: היא הכרטיס שמתחת (`36 § 5` שורה 1). */}
       <header className="flex flex-col gap-1">
-        <p className="text-sm text-ink-muted">{TRACK_HE}</p>
         <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
       </header>
 
