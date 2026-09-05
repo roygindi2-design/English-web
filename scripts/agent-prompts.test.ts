@@ -343,6 +343,25 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(dev, 'DEV: אחרון בסדר הבחירה').toMatch(/LAST STEP OF THE PICK ORDER/);
   });
 
+  /**
+   * 🔴 T-258 — measured `docs/superpowers/plans/2026-09-05-improvement-plan.md` § 3:
+   * all five feature workflows measured ⬜=0 at once and no rule forced PM into 📐
+   * planning, so the loop idled on 🩺/💤 instead of cutting a new slice for five days.
+   * Same pattern as `scripts/rules-citations.test.ts`'s "npm run verify has N commands"
+   * guard: the condition is asserted to exist, word-for-word, in BOTH the rules
+   * document and the agent prompt that must obey it — a wording drift between them is
+   * exactly the defect class `D-190`/`RULES § 0.12` exists against.
+   */
+  it('🔴 T-258 — תכנון-חובה על חמישיית הזרימות כתוב זהה גם ב-RULES וגם ב-PM.md', () => {
+    const rules = readFileSync('plan/RULES.md', 'utf8');
+    const pm = text('PM');
+    const FIVE_FLOWS = '`story` · `nav` · `cards` · `arena` · `studies`';
+    expect(rules, 'RULES § 0.6: תנאי התכנון-חובה מזכיר את חמישיית הזרימות').toContain(FIVE_FLOWS);
+    expect(pm, 'PM STEP 1.7: אותה חמישייה, מילה במילה').toContain(FIVE_FLOWS);
+    expect(rules, 'RULES: התנאי מדבר על בו-זמנית').toContain('בו-זמנית');
+    expect(pm, 'PM: גובר על IMPROVE ועל שקט').toMatch(/OUTRANKS 🩺 IMPROVE/);
+  });
+
   /** ⛔ D-145 — QA כותב את החוב הנדחה **בזמן החתימה**, ⛔ ו-`36 § 13.1` ⛔ אינו משתנה. */
   it('QA נושא את הרגיסטר הנדחה, ⛔ ובלי לגעת בשלוש החותמות', () => {
     const qa = text('CRITIC');

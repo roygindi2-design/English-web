@@ -313,7 +313,7 @@ QA    → אותו חסר פעמיים = ממצא 🟡 נגד ה-PM, ⛔ לא נ
 | מצב | התנאי המפעיל | מה קורא | סוכני משנה |
 |---|---|---|---|
 | 🔬 **מחקר** | יש 🔴 BLOCKER פתוח ב-`20-alerts.md` | `10-pedagogy.md` המלא + `20-alerts.md` | 2–4 |
-| 📐 **תכנון** | אין BLOCKER, ולמשימה הבאה אין תוכנית UX | `15-syllabus-digest.md` + `docs/plan-open.md` + `40-decisions.md` (‏`50-tasks.md` ב-`grep` בלבד) | **0** |
+| 📐 **תכנון** | אין BLOCKER, ולמשימה הבאה אין תוכנית UX **· או** `story` · `nav` · `cards` · `arena` · `studies` מדדו ⬜=0 **בו-זמנית** — ⛔ **חובה, גוברת על 🩺 ועל 💤** (`T-258` · `D-190`) | `15-syllabus-digest.md` + `docs/plan-open.md` + `40-decisions.md` (‏`50-tasks.md` ב-`grep` בלבד) | **0** |
 | 💤 **שקט** | אין BLOCKER, ולמשימה הבאה יש תוכנית UX | כלום נוסף | 0 |
 | 🩺 **IMPROVE** | ‏`ACTIVE_WORKSTREAM` בלי שורה כשירה **או** טיק 17:00Z | `plan/61-deferred.md` + `docs/plan-open.md` | 0 |
 

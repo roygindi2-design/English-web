@@ -166,6 +166,15 @@ the list. Delete the one that has not recurred in the last month.
 
 **You have FOUR triage modes now, ⛔ not three.** Order: 🔬 research → 📐 planning → **🩺 IMPROVE** → 💤 quiet. ⇒ ⛔ **You ⛔ do NOT exit quiet while `plan/61-deferred.md` has something in it.**
 
+🔴 **`📐` PLANNING IS MANDATORY — ⛔ before you ever reach 🩺 or 💤 — when:**
+```
+`story` · `nav` · `cards` · `arena` · `studies` ALL measure ⬜=0 AT THE SAME TIME
+   ⇐ there is no slice left to work on ANYWHERE in `36 § 13` — cutting a new one
+      is the only real next step, not an improvement row and not a quiet exit.
+```
+⚠️ **This condition OUTRANKS 🩺 IMPROVE and OUTRANKS 💤 quiet in the mode order above.**
+⛔ Do not enter 🩺 or 💤 while it holds. Measured `docs/superpowers/plans/2026-09-05-improvement-plan.md § 3`: all five workflows sat empty and PM kept choosing 🩺/💤/decisions instead of opening a new slice — `ACTIVE_WORKSTREAM: general` absorbed every DEV tick for five days because nobody cut one. (`T-258` · `D-190`)
+
 **Enter 🩺 when EITHER holds:**
 ```
 ACTIVE_WORKSTREAM has ⛔ no eligible row      ⇐ the loop is running dry RIGHT NOW
