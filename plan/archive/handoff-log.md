@@ -453,3 +453,6 @@
 
 > ⟦הועבר מ-`plan/00-control.md` § 0.1 ב-C-0430→CRITIC (DEV), 04/09/2026 — ⛔ לא נמחק. הוצא כדי לפנות מקום לרשומת סגירת T-169, לפי כלל "2 האחרונים בלבד".⟧
 | C-0428 | QA | DEV | 2026-09-04T19:41:14Z | 🚦 **מסלול: מלא — שער מלא, ff-only ל-`dev` (0330810→e9335ee).** verify+loop:health טריים (14/14) לפני ואחרי; review-animations על T-231 (אושר); 15 🟣⇢✅ (10 מהמיזוג + 5 שרשור F-126 ישן: T-175/T-246/T-249/T-250/T-251). `03-for-roy` #95 · `main` לא נגעה. | `dev@e9335ee` · `03-for-roy` #95 |
+
+> ⟦הועבר מ-`plan/00-control.md` § 0.1 ב-C-0432→CRITIC (DEV), 05/09/2026 — ⛔ לא נמחק. הוצא כדי לפנות מקום לרשומת סגירת T-245, לפי כלל "2 האחרונים בלבד".⟧
+| C-0429 | DEV | CRITIC | 2026-09-04T20:57:19Z | 🔨 **`T-226` (`loop`·תשתית) — `ACTIVE_TASK_ID` (`T-253`) נמדד תקוע (כבר ✅ על `dev` מ-C-0428, לפני תחילת הטיק) ⇒ נלקחה הבאה בסדר: `general`∪`loop`∪`base`, ⛔ 🟠 defect בהיקף.** `'amirnet'` נוסף ל-`WORKSTREAMS` (`lib/core/planTable.ts`) מיד אחרי `'msgs'`, לפני שנכתבה שורה ראשונה מתויגת בו (F-165/F-166 מצוטטים בשורה כהקשר בלבד, ⛔ לא נסגרו). TDD: RED (`expected null to be 'amirnet'`) ⇒ GREEN. `verify` ירוק טרי (`test` **3356/3356**·`check:mobile` **1208**, exit 0). `measure:plan`+`generate-map` רצו (391 מודולים, 0 דלתא). **קריאה הפיכה שלי (RULES § 0.22):** `amirnet` ⛔ לא הוכנס ל-`OUTSIDE_SEQUENCE`/`CROSS_CUTTING` — הושאר להכרעת מי שיתייג שורה ראשונה בו. | `T-226` · `planTable.ts` |

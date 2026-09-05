@@ -56,7 +56,7 @@ const {
 } = await import('../lib/core/planTable.ts');
 
 const TASKS_FILE = process.env.PLAN_TASKS_FILE || join('plan', '50-tasks.md');
-const FINDINGS_FILE = join('plan', '60-findings.md');
+const FINDINGS_FILE = process.env.PLAN_FINDINGS_FILE || join('plan', '60-findings.md');
 const OUT = process.env.PLAN_TABLES_OUT || join('docs', 'plan-tables.md');
 const OPEN_OUT = process.env.PLAN_OPEN_OUT || join('docs', 'plan-open.md');
 const CONTROL_FILE = process.env.PLAN_CONTROL_FILE || join('plan', '00-control.md');
@@ -572,7 +572,15 @@ console.log(`plans: ${planFiles.length} files, ${planFiles.filter((n) => (tasksC
 console.log(`plan feedback: ${openFeedback.length} open of ${feedbackRows.length}`);
 
 console.log(`tasks: ${taskRows.length} rows, ${badTasks.length} malformed`);
+// T-245 · badFindings sat at 13 for cycles with no agent knowing which 13 without opening
+// the register — the count alone told nobody where to look. ⛔ Only printed when non-empty,
+// so the ratchet's exact-line assertions (`^tasks: \d+ rows, \d+ malformed$`) above stay
+// intact: this is an ADDITIONAL line, never appended to that one.
+if (badTasks.length > 0) console.log(`tasks malformed ids: ${badTasks.map((r) => r.id).join(' ')}`);
 console.log(`findings: ${findingRows.length} rows, ${badFindings.length} malformed`);
+if (badFindings.length > 0) {
+  console.log(`findings malformed ids: ${badFindings.map((r) => r.id).join(' ')}`);
+}
 console.log(`eligible: ${eligible.length === 0 ? 'none' : eligible.join(' ')}`);
 if (stale.length === 0) console.log('stale blockers: none');
 for (const s of stale) console.log(`stale blockers: ${s.taskId} cites ${s.findingId} (closed)`);
