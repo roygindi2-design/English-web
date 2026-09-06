@@ -1,5 +1,26 @@
+import type { Metadata } from 'next';
 import StudyDeckScreen from '@/components/StudyDeckScreen';
 import { parseFlashcardDeckName } from '@/lib/core/deck';
+
+/**
+ * T-264 — `<StudyDeckScreen>` renders one of three `<h1>` values by `?deck=`
+ * (`components/StudyDeckScreen.tsx` `HEADING_HE` / `LEVEL_HEADING_HE` /
+ * `PRACTICE_HEADING_HE`, `'מנת היום'` / `'סינון מילים'` / `'לא ידעתי'`), and this
+ * Server Component already parses the same `deck` value below — `generateMetadata`
+ * mirrors exactly that branch, ⛔ not a fourth copy of the parsing rule, so the title
+ * always names the deck the screen actually opened, not just the default.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const raw = params.deck;
+  const deck = parseFlashcardDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
+  const title = deck === 'due' ? 'מנת היום' : deck === 'level' ? 'סינון מילים' : 'לא ידעתי';
+  return { title };
+}
 
 /**
  * The study screen — T-041, rewired in T-065 (plan `2026-08-13-study-queue.md` task 6).

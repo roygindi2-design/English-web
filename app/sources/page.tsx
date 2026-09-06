@@ -16,8 +16,10 @@ import {
  * inside a `flex-1 justify-center` wrapper, and check:mobile measures the gap
  * between the header and `main h1` on every route including this one.
  */
+// T-264 — the exact string already on this screen's `<h1>` below, ⛔ not a new one;
+// the suffix comes from `app/layout.tsx`'s `title.template`.
 export const metadata = {
-  title: 'מקורות הנתונים — אנגלית לאמיר״ם',
+  title: SOURCES_PAGE_TITLE,
 };
 
 export default function SourcesPage() {

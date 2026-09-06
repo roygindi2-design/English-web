@@ -1,5 +1,10 @@
 import CollectedWords from '@/components/CollectedWords';
 
+// T-264 — the exact string `<CollectedWords>`'s own `<h1>` already renders
+// (`components/CollectedWords.tsx` `HEADING_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'המילים שאספתי' };
+
 /**
  * «המילים שאספתי» — T-110 · § 4.2יב.
  *

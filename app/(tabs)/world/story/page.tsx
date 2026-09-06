@@ -1,6 +1,17 @@
 import StoryScreen from '@/components/StoryScreen';
 
 /**
+ * T-264 · reversible call under `RULES § 0.22`, logged: this screen's real `<h1>` is
+ * the story's English title, fetched client-side inside `<StoryScreen>` (no data
+ * access happens in this Server Component — see the note below), so it is not known
+ * at the time the static `metadata` export runs and cannot be the tab/history title.
+ * Used `KICKER_HE` instead (`components/StoryScreen.tsx` `'העולם · סיפורים'`) — the
+ * nearest already-written, static text identifying this screen, sitting directly
+ * above the dynamic `<h1>` in the same header block. ⛔ Zero new wording either way.
+ */
+export const metadata = { title: 'העולם · סיפורים' };
+
+/**
  * `/world/story` — T-186 · `36 § 7` · D-108. סוגר את D-091: `WORLD_APP_HREF.library`
  * הצביע לכאן והעמוד ⛔ לא היה קיים (404 נמדד C-0273).
  *

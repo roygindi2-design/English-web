@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import AuthForm from '@/components/AuthForm';
 
-export const metadata = { title: 'יצירת חשבון · English Web' };
+// T-264 — the suffix comes from `app/layout.tsx`'s `title.template` now, ⛔ not typed here.
+export const metadata = { title: 'יצירת חשבון' };
 
 /** /signup — UX plan T-002. Email, password, one primary button. Nothing else. */
 export default function SignupPage() {

@@ -137,7 +137,7 @@ Add a line to `plan/80-content-lessons.md` §A. **A lesson, not a statistic.**
 Repeated twice → move the rule to §A1. No lesson? "No new lesson." ⛔ Never invent one. Over 120 lines? Merge. ⛔ §B and §C belong to the Critic.
 
 ## STEP 9 — CLOSE
-`npm run verify` — **eight commands, and the LAST thing you run.** ⟦02/09 · T-236 added `check:text-floor`: it said «five» while it was already six (31/08), then seven, and now it is eight. `scripts/rules-citations.test.ts` measures this line against `package.json` so it ⛔ cannot go stale again.⟧
+`npm run verify` — **nine commands, and the LAST thing you run.** ⟦06/09 · T-264 added `check:titles`: it said «five» while it was already six (31/08), then seven, then eight (02/09), and now it is nine. `scripts/rules-citations.test.ts` measures this line against `package.json` so it ⛔ cannot go stale again.⟧
 Update `plan/00-control.md`: release LOCK, one journal line, max 2 lines. Raise the right `WORKSTREAM_TICKS` counter **only if this tick ended in a commit**.
 ⚠️ **Wrote an item for Roy? It carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise.
 New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — on 24/08 two agents both used `C-0284`.

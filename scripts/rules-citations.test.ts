@@ -58,8 +58,8 @@ describe('🔢 מספר הפקודות ב-`npm run verify` נגזר, ⛔ ולא 
   const verify = (JSON.parse(read('package.json')) as { scripts: Record<string, string> }).scripts
     .verify as string;
   const commands = verify.split('&&').map((c) => c.trim().replace(/^npm (run )?/, ''));
-  const WORDS: Record<number, string> = { 5: 'five', 6: 'six', 7: 'seven', 8: 'eight' };
-  const HEB: Record<number, string> = { 5: 'חמש', 6: 'שש', 7: 'שבע', 8: 'שמונה' };
+  const WORDS: Record<number, string> = { 5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine' };
+  const HEB: Record<number, string> = { 5: 'חמש', 6: 'שש', 7: 'שבע', 8: 'שמונה', 9: 'תשע' };
 
   it('כל פקודה ב-`verify` היא סקריפט אמיתי ב-`package.json`', () => {
     const scripts = (JSON.parse(read('package.json')) as { scripts: Record<string, string> }).scripts;

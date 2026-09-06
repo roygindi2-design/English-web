@@ -1,5 +1,10 @@
 import WritingChain from '@/components/WritingChain';
 
+// T-264 — the exact string `<WritingChain>`'s own `<h1>` already renders
+// (`components/WritingChain.tsx` `HEADING_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'שרשרת הכתיבה' };
+
 /**
  * «שרשרת הכתיבה» — T-106 · § 4.2יב.
  *

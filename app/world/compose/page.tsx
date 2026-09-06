@@ -1,5 +1,10 @@
 import ComposeDraft from '@/components/ComposeDraft';
 
+// T-264 — the exact string `<ComposeDraft>`'s own `<h1>` already renders in every one
+// of its states (`components/ComposeDraft.tsx` `HEADING_HE`); the suffix is
+// `app/layout.tsx`'s `title.template`.
+export const metadata = { title: 'הרכיבו פוסט' };
+
 /**
  * `/world/compose` — the compose flow. Plan `2026-08-14-world-compose.md` task 8, § 4.2ה.
  *

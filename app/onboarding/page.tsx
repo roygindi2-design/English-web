@@ -29,6 +29,10 @@ import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
 
+// T-264 — the exact `ONBOARDING_TITLE_HE` string this screen's own `<h1>` already
+// renders (already imported above); the suffix is `app/layout.tsx`'s `title.template`.
+export const metadata = { title: ONBOARDING_TITLE_HE };
+
 export default async function OnboardingPage() {
   const env = readSupabaseEnv();
   if (!env) redirect('/login?expired=1');

@@ -1,5 +1,10 @@
 import LevelScan from '@/components/LevelScan';
 
+// T-264 — the exact string `<LevelScan>`'s own `<h1>` already renders
+// (`components/LevelScan.tsx` `HEADING_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'סריקת רמה' };
+
 /**
  * מסך הזרימה של סריקת הרמה — T-082 · D-041.
  *

@@ -1668,3 +1668,68 @@ added or removed, only edited).
 radius tokens, `rounded-full` on the primary "סינון מילים" action) is a separate open
 row — this tick did not decide it, and `components/DeckSelector.tsx` /
 `components/LevelPath.tsx` / `components/LevelCard.tsx` carry no changes here.
+
+## Every screen names itself — `title.template` + one guard, ⛔ not 18 hand-typed strings ⟦C-0453 (DEV) · T-264 · D-193⟧
+
+Before this tick, `document.title` was one string across the whole product: 18
+`page.tsx` routes existed, only 3 exported `metadata`, and a live Playwright walk
+measured `distinct document.title: 1` across 12 screens. The failure scenario was
+specific and PWA-shaped: after "add to home screen," an app-switcher or a long browser
+"back" history shows every screen under the same name, with no way to tell them apart —
+exactly what the task row's ⓐⓑⓒ conditions exist to close.
+
+**What changed:**
+- `app/layout.tsx`'s `metadata.title` becomes `{ default, template: '%s · English Web' }`
+  instead of a bare string. A route sets `metadata.title` (or `generateMetadata`) to a
+  plain string — its own `<h1>`, unchanged — and Next wraps it; a route with none falls
+  back to `default`, the one string every screen showed before this task.
+- **The suffix used to be typed by hand, twice, disagreeing:** `app/login/page.tsx` and
+  `app/signup/page.tsx` had `'… · English Web'`, `app/sources/page.tsx` had
+  `'… — אנגלית לאמיר״ם'`. All three now emit a bare string (`'התחברות'` ·
+  `'יצירת חשבון'` · `SOURCES_PAGE_TITLE`) and let the template own the suffix.
+- **`app/(tabs)/settings/` gets a new `layout.tsx`, ⛔ not a `metadata` export on
+  `page.tsx`** — that page opens with `'use client'` (`useState`/`useEffect`), and
+  Next.js refuses `metadata`/`generateMetadata` on a Client Component page. A sibling
+  Server Component `layout.tsx` in the same route folder carries the title instead; it
+  renders `children` and nothing else, so zero pixels move.
+- **`app/study/page.tsx` gets `generateMetadata`, ⛔ not `metadata`** — the screen's
+  `<h1>` depends on `?deck=`, and the page already parses that query param into `deck`
+  for `<StudyDeckScreen>`. `generateMetadata` re-parses the same `searchParams` the same
+  way and returns the matching one of the three literal strings the component already
+  renders (`'מנת היום'` / `'סינון מילים'` / `'לא ידעתי'`) — not a fourth copy of the
+  parsing rule.
+- **Two reversible calls under `RULES § 0.22`, both logged in the file itself:**
+  `/world/story`'s real `<h1>` is the story's English title, fetched client-side inside
+  `<StoryScreen>` — unknown when the static `metadata` export runs — so the title is
+  `KICKER_HE` (`'העולם · סיפורים'`), the nearest already-written static text in the same
+  header block. `/arcade` renders `<ArenaShell>`, a Client Component holding
+  `'home' | 'battle'` state that a static title cannot follow, so the title is
+  `<ArenaHome>`'s own `<h1>` — the screen the route always opens on (T-181).
+- **`app/page.tsx` (the root landing page) hand-builds its own `· English Web` suffix**
+  — measured live: `title.template` set on the root layout does not apply to a `title`
+  defined in a `page.js` of the *same* route segment (confirmed against this repo's own
+  `node_modules/next/dist/docs/.../generate-metadata.md`, since this Next.js version can
+  differ from training data). Every other route sits in a child segment and gets the
+  template automatically; this one is the one documented exception.
+- **`scripts/check-page-titles.mjs`** (guard ⓒ) walks `app/**/page.tsx`, excludes
+  `app/dev/**` (fixtures, not product), and passes a route when its own `page.tsx` or a
+  sibling `layout.tsx` exports `metadata`/`generateMetadata`. Wired into `package.json`
+  as `check:titles`, inside `npm run verify` (now **nine** commands — `plan/RULES.md`,
+  `docs/agents/CRITIC.md`, `docs/agents/CONTENT.md` and
+  `scripts/rules-citations.test.ts`'s own word maps updated in the same commit, the
+  exact staleness class that test exists to catch).
+
+**Measured (C-0453), fresh in this clone:** `npm run verify` — `typecheck` clean ·
+`check:core` OK · `check:motion` OK (2 known baseline, 0 new) · `check:text-floor` OK (3
+known baseline, 0 new) · `check:rules` OK · `check:titles` OK (18 routes checked, 0
+missing) · `test` **3459/3459** · `build` succeeded · `check:mobile` **1325/1325
+checks**. A live Playwright walk against `next dev` on all 15 non-session-gated routes
+(the other 3 — `/cards` · `/me` · `/studies` · `/settings` · `/onboarding` — redirect to
+`/login` without a session, unchanged) measured **15/15 distinct `document.title`
+values**, including all three `/study?deck=` branches. `npm run generate-map` ran — 398
+modules (+1, `app/(tabs)/settings/layout.tsx`).
+
+⛔ **Out of scope, and deliberately not touched:** `meta description` (not measured by
+this task), `lang`/`dir` (already 12/12 correct, per C-0451's walk), and the 5
+session-gated `app/dev/**` fixtures (excluded from the guard on purpose — they are the
+harness, never shipped).

@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0452 (DEV) — 🔨 טיק בנייה, T-265 (`general`) נחתה, קומיט אחד. `T-264` (`general`) נשארת ⬜ לטיק DEV הבא.
-STATE: BUILD                      # ▶️ C-0452 (DEV) — טיק בנייה רגיל.
+NEXT_AGENT: CRITIC                 # ▶️ C-0453 (DEV) — 🔨 טיק בנייה, `T-264` (`general`) נחתה, קומיט אחד. `general∪loop∪base` חוזרת ל-6 ⬜ (נמדד: T-197·T-201·T-224·T-254·T-257·T-260).
+STATE: BUILD                      # ▶️ C-0453 (DEV) — טיק בנייה רגיל.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: ""                # ▶️ C-0448 (DEV) — עדיין ריק; T-255/T-258 נלקחו כתוכנית קיימת מ-`general∪loop∪base` (STEP 3), ⛔ לא כ-ACTIVE_TASK_ID. ⛔ לא קבעתי שורה חדשה — זו סמכות PM/QA.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T03:07:38Z
+LAST_HANDOFF_AT: 2026-09-06T05:06:01Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                     # שוחררה C-0452 (DEV) — הטיק נסגר.
-LOCK_AT: "2026-09-06T03:07:38Z"
+LOCK_HELD_BY: ""                     # שוחררה C-0453 (DEV) — הטיק נסגר.
+LOCK_AT: "2026-09-06T05:06:01Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -47,12 +47,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0450` הועבר 06/09/2026 (C-0452) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0451` הועבר 06/09/2026 (C-0453) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0451 | PM | DEV | 2026-09-06T01:52:00Z | 📐 **טיק תכנון. `general` נמדדה ⬜=0 בפתיחה ⇒ 2 שורות, 2 הכרעות.** `gc:memory` ראשון אחרי הנעילה: **0 שורות · 0 סעיפי D · ⛔ אפס תזוזה**. בדיקה 12: **0 ממצאי PM חוסמים שורה**. הליכה חיה (Playwright · 375×780 · 24 מסכים): **0 מתחת ל-44px · 0 גלילה אופקית · `he`/`rtl` 12/12**, ושני פערים: `document.title` **זהה ב-12 מסכים** (18 נתיבי מוצר, **3** מייצאים `metadata`) ⇒ `D-193`/`T-264`; ו-2 דגלי `63-surfaces` ששרדו את `T-263` — `/studies`+`/world` מדווחים ⛔ 0 פעולות מול **10 ברי-הקשה** כל אחד (תווית = ביטוי-חבר על משתנה לולאה) ⇒ `D-192`/`T-265`. `build:surfaces` ⇒ **⛔ אפס דיף**. `measure:plan` רץ. `loop:health` **12/14 ⇒ 13/14** (בדיקה 3 תוקנה — פריט 77 נמדד מחדש ונחתם). 🔴 **בדיקה 10 אדומה ו⛔ אינה שלי: 53 לפני `dev`, ⛔ 0 קומיטי QA מ-04/09 19:49Z, 15 שורות 🟣.** פריט 98 הוחמר: `D-174` חד-כיוונית ⇒ ⛔ אין מי שיזיז את המוקד. | `D-192` · `D-193` · `T-264` · `T-265` · `plan/03-for-roy.md` · `claude/for-roy.md` · `claude/roadmap.md` |
 | C-0452 | DEV | CRITIC | 2026-09-06T03:07:38Z | 🔨 **טיק בנייה — `T-265` (`general`), קומיט אחד. `T-264` נשארת ⬜.** השורש היה עמוק יותר מהתיאור המקורי — גם `ACTION` (לא רק `labelOf`) נכשלה על `/studies`, `[^>]*` לא עובר `>` שב-`onClick={() => …}`; נפתר לבלוק `{…}` מאוזן עד עומק 2. `/studies`: `childLibLabelsOf` חדשה שולפת `שם-He: 'עברית'` מכל `lib/core` מיובא במלואו, ⛔ לא רק `export const` עליון; `labelOf` פותר גם ביטוי-חבר (`{track.labelHe}`). `/world`: שכבה נוספת — `node.labelHe` מאחורי `const label`/`const inner` וטרנרי; נפתר בטרנרי-עם-`null` + `withLocalLabels` (שני מעברים) + מילון `_HE` עליון הנרשם תחת `labelHe`. ⛔ אף שלב אינו ניחוש — כל ערך ליטרלי במקור. **נמדד:** `build:surfaces` ⇒ `9→7` דגלים, בדיוק `/studies`+`/world` נסגרו. TDD (RED אז GREEN). `verify` ירוק — **exit 0 · 3454/3454 · mobile 1325/1325**. `generate-map` — 397 מודולים, ⛔ ללא שינוי. ⛔ קבצי המוצר ⛔ לא נגעו — התיקון כולו בסורק. | `T-265` · `scripts/build-surfaces.mjs` · `scripts/build-surfaces.test.ts` · `plan/63-surfaces.md` |
+| C-0453 | DEV | CRITIC | 2026-09-06T05:06:01Z | 🔨 **טיק בנייה — `T-264` (`general`, כותרות מסך), קומיט אחד. `general∪loop∪base` חוזרת ל-6 ⬜.** TDD: `scripts/check-page-titles.test.ts` נכתב קודם ונצפה נופל (RED — הסקריפט חסר), אז `scripts/check-page-titles.mjs` + `check:titles` ב-`verify` (תשע פקודות עכשיו). 15 מסלולים קיבלו כותרת = בדיוק ה-`<h1>` הקיים (⛔ אפס ניסוח חדש); `app/(tabs)/settings/layout.tsx` חדש (page.tsx שם הוא Client Component, Next מסרב `metadata` עליו); `/study` מקבל `generateMetadata` על אותו `deck` שכבר מפוצל בקובץ. `app/layout.tsx` מקבל `title.template`; `login`/`signup`/`sources` (שהתנגשו בשתי סיומות שונות — נמדד) עברו למחרוזת חשופה תחתיו; `app/page.tsx` (השורש) חייב סיומת ידנית — נמדד חי ש-`title.template` **לא** חל על page.tsx באותו segment כמו ה-layout. שתי קריאות הפיכות מתועדות בקוד (`RULES § 0.22`): `/world/story` ו-`/arcade`. **נמדד אחרי הבנייה** (Playwright, 375×780, 15 מסלולים פומביים): **15/15 כותרות שונות**. `verify` ירוק טרי — **exit 0 · 3459/3459 · mobile 1325/1325 · build הצליח**. `generate-map` — 398 מודולים (+1). ⛔ ללא מיגרציה. ⚠️ **ממצא עצמי, כמו ב-C-0448:** לא כתבתי `LOCK_HELD_BY: DEV` בתחילת הטיק. | `T-264` · `app/layout.tsx` · `app/(tabs)/settings/layout.tsx` · `scripts/check-page-titles.mjs`+`.test.ts` · `package.json` · `plan/RULES.md` · `docs/agents/CRITIC.md` · `docs/agents/CONTENT.md` · `scripts/rules-citations.test.ts` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

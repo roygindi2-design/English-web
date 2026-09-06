@@ -3,8 +3,24 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 
+/**
+ * T-264 / D-193 — `title.template` is the ONE product-name suffix for the whole
+ * product (`36 § 14` / `RULES § 0.22` "one visual language" applied to metadata).
+ * A route sets `metadata.title` to a plain string (its own `<h1>`, unchanged, zero
+ * new wording) and Next.js wraps it in the template below; a route with no title of
+ * its own falls back to `default`, exactly the one string every screen already
+ * showed before this task.
+ *
+ * ⛔ Before this: `app/login/page.tsx` and `app/signup/page.tsx` hand-typed
+ * `'… · English Web'`, `app/sources/page.tsx` hand-typed `'… — אנגלית לאמיר״ם'` — the
+ * same suffix written twice, disagreeing (measured, `plan/50-tasks.md` T-264). Both
+ * now emit a bare string and let this template own the suffix.
+ */
 export const metadata: Metadata = {
-  title: 'English Web — אנגלית לאמיר״ם',
+  title: {
+    default: 'English Web — אנגלית לאמיר״ם',
+    template: '%s · English Web',
+  },
   description: 'תרגול אנגלית יומי קצר לדוברי עברית — 10 דקות ביום, עד תאריך המבחן. מסלול ראשון: אמיר״ם.',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'English Web' },

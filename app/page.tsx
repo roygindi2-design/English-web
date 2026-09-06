@@ -9,6 +9,16 @@ import {
   landingPreviewCard,
 } from '@/lib/core/landing';
 
+// T-264 — the exact `LANDING_HEADLINE` string this screen's own `<h1>` already
+// renders (already imported above). ⚠️ **This one hand-builds the `· English Web`
+// suffix, ⛔ unlike every other route** — `title.template` "will not apply to a
+// title defined in a page.js of the same route segment" as the layout that sets it
+// (`node_modules/next/dist/docs/.../generate-metadata.md` § template), and this page
+// IS the root segment. Measured live: without this, `/` rendered the bare headline,
+// ⛔ zero suffix, while every other route showed it — a second inconsistency this
+// task exists to close.
+export const metadata = { title: `${LANDING_HEADLINE} · English Web` };
+
 /**
  * Landing screen — T-027 (docs/ui-proposal.html), replacing the T-001 version.
  *

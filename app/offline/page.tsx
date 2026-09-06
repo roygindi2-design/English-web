@@ -1,5 +1,9 @@
 import { RETRY_HE } from '@/lib/core/failure';
 
+// T-264 — the exact string the `<h1>` below already renders, literal; the suffix is
+// `app/layout.tsx`'s `title.template`.
+export const metadata = { title: 'אין חיבור כרגע' };
+
 /**
  * Offline screen — precached by the service worker and served when a navigation
  * request fails. UX plan T-001 fixes the copy; no infinite retry loop, no spinner.

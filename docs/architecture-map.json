@@ -3,6 +3,7 @@
   "app/(tabs)/layout.tsx": [],
   "app/(tabs)/me/page.test.ts": [],
   "app/(tabs)/me/page.tsx": [],
+  "app/(tabs)/settings/layout.tsx": [],
   "app/(tabs)/settings/page.test.ts": [],
   "app/(tabs)/settings/page.tsx": [],
   "app/(tabs)/studies/page.tsx": [],

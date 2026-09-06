@@ -1,5 +1,10 @@
 import LevelMapScreen from '@/components/LevelMapScreen';
 
+// T-264 — the exact string `<LevelMapScreen>`'s own `<h1>` already renders
+// (`components/LevelMapScreen.tsx` `HEADING_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'כרטיסיות' };
+
 /**
  * כרטיסיות — the word tab (D-027 · § 4.2ב: "כל מה שהוא מילה").
  *

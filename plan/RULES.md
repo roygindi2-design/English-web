@@ -766,7 +766,7 @@ npm run loop:health          # ⛔ קריאה בלבד · ⛔ אינו כותב 
 
 **QA מריץ על `work/current`:**
 ```
-npm run verify        ⇐ שמונה פקודות  (typecheck · check:core · check:motion · check:text-floor · check:rules · test · build · check:mobile)
+npm run verify        ⇐ תשע פקודות  (typecheck · check:core · check:motion · check:text-floor · check:rules · check:titles · test · build · check:mobile)
 npm run loop:health   ⇐ הרשימה חיה ב-scripts/loop-health.mjs (12·13·14 אזהרה עד 2026-09-02)
 ```
 + **הליכת דפדפן ב-375×780** על המסכים שהענף נגע בהם.

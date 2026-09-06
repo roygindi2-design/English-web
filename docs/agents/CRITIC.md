@@ -274,7 +274,7 @@ The index — every skill, its trigger, its path — is **`docs/skills-registry.
 ```
 ./scripts/g fetch origin
 ./scripts/g rev-list --count origin/dev..origin/work/current     ⇐ how much is waiting
-npm run verify                                                    ⇐ eight commands
+npm run verify                                                    ⇐ nine commands
 npm run loop:health                                               ⇐ 14 checks
 ```
 + **the browser walk at 375×780** (STEP 4) on the screens the branch touched. `./scripts/g diff --name-only origin/dev..origin/work/current` tells you which.

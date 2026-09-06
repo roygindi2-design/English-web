@@ -2,6 +2,15 @@ import ArenaShell from '@/components/ArenaShell';
 import './arcade-tokens.css';
 
 /**
+ * T-264 · reversible call under `RULES § 0.22`, logged: `<ArenaShell>` is a Client
+ * Component holding `'home' | 'battle'` internal state (T-181, above), so the title
+ * cannot follow that state — a static `metadata` export runs once, server-side. Used
+ * the screen this route always opens on (`36 § 13`, T-181): `<ArenaHome>`'s own
+ * `<h1>` (`components/ArenaHome.tsx` `TITLE_HE`, `'זירת קרב'`). ⛔ Zero new wording.
+ */
+export const metadata = { title: 'זירת קרב' };
+
+/**
  * `/arcade` — הקרב. T-177 · `37-arena-spec § 12` · `36 § 8`.
  *
  * ⛔ **הקובץ יושב מחוץ ל-`app/(tabs)/`, וזה מבנה ⛔ ולא סגנון.** § 4.2י קורא לזה מסך זרימה

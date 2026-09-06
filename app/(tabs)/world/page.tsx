@@ -1,5 +1,10 @@
 import WorldRing from '@/components/WorldRing';
 
+// T-264 — the exact string `<WorldRing>`'s own `<h1>` already renders
+// (`components/WorldRing.tsx` `HEADING_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'העולם' };
+
 /**
  * העולם — the ring (T-205 · D-117 · `36 § 6`).
  *

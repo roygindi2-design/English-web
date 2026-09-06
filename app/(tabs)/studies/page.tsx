@@ -17,6 +17,11 @@ import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
  */
 export const dynamic = 'force-dynamic';
 
+// T-264 — the exact string `<StudiesScreen>`'s own `<h1>` already renders
+// (`components/StudiesScreen.tsx` `TITLE_HE`); the suffix is `app/layout.tsx`'s
+// `title.template`.
+export const metadata = { title: 'לימודים' };
+
 export default async function StudiesPage() {
   const env = readSupabaseEnv();
   if (!env) redirect('/login?expired=1');
