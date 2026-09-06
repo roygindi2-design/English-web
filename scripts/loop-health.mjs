@@ -699,6 +699,71 @@ check(
  * fails. ⛔ It is deliberately ⛔ not a `check()` — a number in the pass/fail column
  * is a number somebody will start optimising.
  */
+/**
+ * ⛔ **SOFT, PRINT-ONLY — MIRRORS `workTypeMix` BELOW, ⛔ NOT A NUMBERED CHECK.**  ⟦T-257 · D-190 § 3.3⟧
+ * The failure this catches: all five feature workstreams (`story`/`nav`/`cards`/
+ * `arena`/`studies`) measured ⬜=0 SIMULTANEOUSLY on 2026-09-05, the loop kept
+ * spinning on `general`/`loop`/`base` (D-174, working as designed), and ⛔ no
+ * counter anywhere showed that nobody had opened a new feature slice in days —
+ * it looked exactly like a healthy loop. ⇒ this counts consecutive PM ticks
+ * (commits whose subject starts with `loop(PM)`) since the last one that added
+ * a new task row tagged with a feature workstream to `plan/50-tasks.md`.
+ * ⚠️ Source is `git log` on `origin/dev` (ⓑ of the task row: "the source is
+ * WORKSTREAM_TICKS and git log on loop(PM), not memory") — ⛔ never a running
+ * total kept in this script's own memory across invocations, which would drift
+ * the moment anyone force-pushed or rewrote history.
+ * ⚠️ **Measured in this clone, 2026-09-06:** only checks 1–14 exist today —
+ * the task row's own wording ("numbering 1–16 doesn't move") assumed a check
+ * 15 that was never added. This line is print-only regardless, exactly as the
+ * row's ⓐ requires, so the discrepancy doesn't change what gets built here —
+ * recorded so the next reader doesn't re-derive it.
+ */
+const PM_COMMIT_PREFIX = 'loop(PM)';
+const FEATURE_SLICE_LINE = /^\+\|\s*T-\d+\s*\|\s*M\d+\s*·\s*([a-z]+)\s*·/;
+const PM_LOOKBACK_COMMITS = 30;
+const pmTicksSinceLastSlice = () => {
+  const git = (...args) => {
+    try {
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      return null;
+    }
+  };
+  const featureNames = new Set(balance().filter((w) => w.order !== null).map((w) => w.name));
+  const log = git('log', 'origin/dev', '--format=%H%x1f%s', `-${PM_LOOKBACK_COMMITS}`);
+  if (log === null) return { measured: false };
+  const commits = log
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => {
+      const [hash, subject] = l.split('\x1f');
+      return { hash, subject: subject ?? '' };
+    });
+  const pmCommits = commits.filter((c) => c.subject.startsWith(PM_COMMIT_PREFIX));
+  let ticks = 0;
+  let openedSliceSeen = false;
+  for (const c of pmCommits) {
+    const diff = git('show', c.hash, '--', 'plan/50-tasks.md');
+    const openedSlice =
+      diff !== null &&
+      diff.split('\n').some((l) => {
+        const m = FEATURE_SLICE_LINE.exec(l);
+        return m !== null && featureNames.has(m[1]);
+      });
+    if (openedSlice) {
+      openedSliceSeen = true;
+      break;
+    }
+    ticks += 1;
+  }
+  return { measured: true, ticks, scanned: pmCommits.length, capped: !openedSliceSeen && pmCommits.length === PM_LOOKBACK_COMMITS };
+};
+
 const workTypeMix = () => {
   const tasks = rows(read(at('plan', '50-tasks.md')), 'T').filter(taskOpen);
   const TAGS = ['מבנה', 'תוכן', 'נוחות', 'מעברים', 'תשתית'];
@@ -747,6 +812,13 @@ const mix = workTypeMix();
 console.log(
   `\nתמהיל (דיווח רך · D-147 · ⛔ לא ציון): ${mix.open} שורות פתוחות — ` +
     `מבנה ${mix.מבנה} · נוחות ${mix.נוחות} · תוכן ${mix.תוכן} · ⛔ ללא תג ${mix.untagged}`,
+);
+const slice = pmTicksSinceLastSlice();
+console.log(
+  slice.measured
+    ? `טיקי PM מאז פרוסת פיצ'ר אחרונה (דיווח רך · D-190 § 3.3 · ⛔ לא ציון): ${slice.ticks}` +
+        (slice.capped ? ` (⚠️ אף פרוסה לא נפתחה ב-${slice.scanned} טיקי PM האחרונים שנבדקו — ייתכן שהחלון קצר מדי)` : '')
+    : `טיקי PM מאז פרוסת פיצ'ר אחרונה: ⛔ לא נמדד — git אינו נגיש`,
 );
 console.log(`\nloop health: ${results.length - failed.length - softFailed.length}/${results.length} checks pass`);
 if (softFailed.length > 0) {

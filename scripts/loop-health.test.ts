@@ -137,6 +137,31 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.code).toBe(1);
   });
 
+  /**
+   * T-257 — a soft, PRINT-ONLY report line, explicitly not a numbered check
+   * (mirrors `workTypeMix`; see the task row and `2026-09-06-loop-infra-hardening.md`).
+   * The only path a fixture (a plain temp dir, never a real git repo) can exercise
+   * is the "git not reachable" fallback — exactly the same limitation `check 10`
+   * already has in this file (see the comment on its own healthy-fixture assertion
+   * above). The counting logic itself is verified live against the real repo as
+   * part of this task's commit step, not re-created here with a fake git repo.
+   */
+  describe('T-257 — טיקי PM מאז פרוסת פיצ׳ר אחרונה (דיווח רך)', () => {
+    it('מדפיסה "⛔ לא נמדד" כש-git אינו נגיש (הפיקסצ׳ר אינו ריפו git)', () => {
+      const r = run(healthy());
+      expect(r.out).toMatch(/טיקי PM מאז פרוסת פיצ'ר אחרונה.*⛔ לא נמדד/);
+    });
+
+    it('⛔ אינה מופיעה בין הבדיקות הממוספרות — אינה FAIL ואינה warn', () => {
+      const r = run(healthy());
+      expect(r.out).not.toMatch(/^ FAIL 15\./m);
+      expect(r.out).not.toMatch(/^ warn 15\./m);
+      // ⛔ הסכום הכולל (14) ⛔ אינו זז — זו אינה בדיקה ממוספרת.
+      const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
+      expect(total?.[1]).toBe('14');
+    });
+  });
+
   it('exits 0 only when every check passes — measured against the live repo', () => {
     // The live repo is the one place check 8 can be satisfied. Today checks 1, 3
     // and 6 fail there, so the exit code is 1 and that is the honest state.
