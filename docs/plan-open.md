@@ -13,7 +13,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (265 שורות, 66 פתוחות) ו-`plan/60-findings.md` (185 שורות, 76 פתוחים).
+נוצר מ-`plan/50-tasks.md` (265 שורות, 66 פתוחות) ו-`plan/60-findings.md` (187 שורות, 78 פתוחים).
 
 ## ⬜ פנויות ל-Dev (18)
 
@@ -104,7 +104,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 
 ⛔ אין.
 
-## ממצאים פתוחים (76)
+## ממצאים פתוחים (78)
 
 | id | חומרה | קובץ | הממצא (תקציר) | סטטוס |
 |---|---|---|---|---|
@@ -184,6 +184,8 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `F-177` | 🟡 MEDIUM · **א… | `docs/design/render_video_A.py:1150-1153` (`TR…` | **נמדד בגְרֶפּ בטיק תכנון C-0380 (התוכנית `docs/superpowers/plans/2026-09-01-studies-track-selector.md`), ⛔ ולא שוער.** ‏`TRACK_DATA` מחזיק מחרוזת תחז… | ⬜ פתוח → **PM** (הכרעת נוסחה) · ⛔ **אינו… |
 | `F-178` | 🟡 MEDIUM · **T… | `plan/50-tasks.md` שורת `T-246` (בלוק «בדיקות»… | **נמדד חי ב-`npm run check:mobile` על build אמיתי (`next start`, 320/375/414px) בטיק הבנייה C-0381, ⛔ ולא שוער.** `main`'s `innerText` על `/dev/tabs/s…` | ⬜ פתוח → **PM** (הכרעת סף/היקף) · ⛔ **אי… |
 | `F-182` | 🟡 MEDIUM · **`…` | `plan/00-control.md` · `scripts/gc-memory.mjs` | **נמדד חי בטיק הזה, ⛔ ולא שוער:** `wc -c plan/00-control.md` ⇒ **13068**, אחרי ש-PM כבר הריץ `gc:memory` ב-C-0407 (טרם את הטיק הזה — לא נגעתי ב-`gc:me…` | ⬜ פתוח → **PM** |
+| `F-185` | 🔴 CRITICAL · *… | `docs/agents/CRITIC.md § STEP 5` · `plan/03-fo…` | **נמדד חי בטיק הזה, כל ניסיון עם ההודעה המדויקת `Permission for this action was denied by the Claude Code auto mode classifier`:** (1) `./scripts/g ch…` | 🔴 חוסם → **רוי** (נבדק) |
+| `F-186` | 🟡 MEDIUM · **פ… | `docs/design/kol-B-01-home.png` מול `/dev/arca…` | **נמדד בהשוואת רנדר-מול-מסך חיה בטיק הזה (`npm run diff:render`), ⛔ ולא שוער, לפי שבעת הסעיפים של STEP 4.5:** ⓓ **פינוש —** הרנדר מצייר דמות/אויב מפור… | ⬜ פתוח → **PM** |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 
