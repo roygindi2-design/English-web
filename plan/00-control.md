@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: CRITIC                       # ▶️ C-0474 (DEV) — T-272 נבנתה במלואה, `verify` ירוק טרי (exit 0 · 3523/3523 · check:mobile 1325/1325), דוחפת ל-`work/current`.
+NEXT_AGENT: CRITIC                       # ▶️ C-0476 (DEV) — הנחיה חד-פעמית מרוי (Cowork): שער סקיל ב-DEV.md/PM.md + 3 טענות, `verify` ירוק טרי (exit 0 · 3526/3526 · check:mobile 1325/1325), נדחף ל-`work/current`. T-273 עדיין ⬜ בתור.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: [T-273]   # ▶️ C-0474 (DEV) — `T-272` יצאה מכאן כי היא 🟣 (בתור הביקורת), ⛔ ולא כי נסגרה. נותרה שורה פתוחה אחת ב-`general`: T-273.
@@ -7,12 +7,12 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175, הכרעת רוי — "להסיר", 03-for-roy פריט 87 נסגר).
 # היה בלם מת (מוצהר, ⛔ אף קוד לא העלה אותו) — שדה שמצהיר על בלם שאינו קיים גרוע משדה שאינו קיים.
 # מפסק איש-המת (36 שעות) ובדיקות 11·13·17 מכסות "הלופ מסתובב ריק" בלעדיו. ⛔ ⛔ לא נשמר במקום אחר בחוזה חי.
-LAST_HANDOFF_AT: 2026-09-06T22:51:13Z
+LAST_HANDOFF_AT: 2026-09-06T23:41:21Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                   # C-0476 (DEV) — נעילה מ-2026-09-06T23:34:00Z: הנחיה חד-פעמית מרוי (סשן ארכיטקטורה ב-Cowork) — שער סקיל ל-DEV.md/PM.md + טענת בדיקה
-LOCK_AT: "2026-09-06T23:34:00Z"
+LOCK_HELD_BY: ""                      # שוחררה 2026-09-06T23:41:21Z — C-0476 (DEV): הנחיה חד-פעמית מרוי — שער סקיל נחת, F-189 🟣
+LOCK_AT: "2026-09-06T23:41:21Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -58,11 +58,12 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 > 🧹 `C-0469` הועבר 06/09/2026 (C-0471) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 > 🧹 `C-0471` הועבר 06/09/2026 (C-0472) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 > 🧹 `C-0472` הועבר 06/09/2026 (C-0473) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0473` הועבר 06/09/2026 (C-0476) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0473 | PM | DEV | 2026-09-06T22:34:00Z | 🔤 **פרוסה ⓑ ב-`general`: `T-273` — היציאה מכשל־סשן נושאת בזירה שם אחר מכל שאר המוצר. מ-2 ל-1.** נמדד בקלון: `SIGN_IN_AGAIN_HE` מוכרז **10 פעמים** (9 × `'התחברות מחדש'` · 1 × `'להתחברות מחדש'` — `components/ArenaHome.tsx:88`), `SCHEMA_MISSING_HE` ב-**11 קבצים**, ומתוך **12** הקבצים הנושאים אחד מהם **8 ⛔ אינם מייבאים `failureExit`** — המודול ש-`D-065`/`T-124` כתבו נגד המחלקה הזאת בדיוק. ⛔ **`T-274` נכתבה ואז הוסרה באותו טיק:** הטענה «`/settings` בלי כותרת» **הופרכה במדידה** — `app/(tabs)/settings/layout.tsx` נושא `metadata: { title: 'הגדרות' }`, ו-`node scripts/check-page-titles.mjs` ⇒ `checked 18 routes … OK`. ⛔ **`R-027ⓐ` נסגרה בלי שורה** — CEFR-J ו-Octanove כבר מיוחסים ב-`lib/core/dataSources.ts:57,68` ומרונדרים ב-`/sources`. ⛔ אפס ממצא בבעלות PM חוסם שורה (בדיקה 12: 0/41). | `plan/50-tasks.md` (T-273 ⬜) · `plan/20-alerts.md` (R-027ⓐ) · `plan/02-inbox.md` (רעיון C-0473) · `docs/plan-open.md` · `docs/plan-tables.md` |
 | C-0474 | DEV | CRITIC | 2026-09-06T22:51:13Z | 🧭 **`T-272` — דגל שקרי בשער המשטחים: `public/sw.js` ⛔ מעולם לא נסרק כמקור כניסה, אז `/offline` (שנגיש רק דרך ה-service worker) סומן «⛔ אינו נגיש בהקשות» באותה ריצת `verify` שבה שער המובייל מוכיח שהוא נגיש.** RED נמדד (`git stash` ⇒ `7 flags`), GREEN אחרי התיקון (`6 flags`, `/offline` מציג `service worker` בעמודת «מאיפה מגיעים»). מבחן פיקסצ'ר ייעודי נוסף, שער הרצפה בקובץ הבדיקה ירד 7→6. `npm run verify` ירוק טרי: exit 0 · 3523/3523 · check:mobile 1325/1325 · build ok. | `scripts/build-surfaces.mjs` · `scripts/build-surfaces.test.ts` · `plan/63-surfaces.md` · `plan/50-tasks.md` (T-272 🟣) · `docs/plan-open.md` · `docs/plan-tables.md` |
+| C-0476 | DEV | CRITIC | 2026-09-06T23:41:21Z | 🚪 **הנחיה חד-פעמית מרוי דרך סשן ארכיטקטורה (Cowork) — ⛔ לא ליקוט מ-`ACTIVE_TASK_ID`, T-273 ⛔ לא נלקחה בכוונה.** שער סקיל בינארי (`[SKILL: <שם>] — כי …` / `[SKILL: none] — נבדק מול האינדקס …`) נוסף כ-STEP 2.5 ב-`DEV.md` וכ-STEP 2.6 ב-`PM.md`, נוסח זהה, לפני `using-superpowers`; STEP 4/STEP 3 הקיימים ⛔ לא זזו. `agent-prompts.test.ts` סורק את **שני** הקבצים יחד (3 טענות: קיום · זהות · סדר). RED נמדד (3/59) ⇢ GREEN 62/62 · `verify` exit 0 (216 · 3526/3526 · mobile 1325). F-189 נפתח ונסגר 🟣. `9f647a4`. | `docs/agents/DEV.md` · `docs/agents/PM.md` · `scripts/agent-prompts.test.ts` · `plan/60-findings.md` (F-189 🟣) · `docs/plan-open.md` · `docs/plan-tables.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
