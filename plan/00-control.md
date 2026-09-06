@@ -1,11 +1,11 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0463 (DEV) — טיק בנייה T-267 (arena · exception ⓐ). ראו יומן.
+NEXT_AGENT: DEV                    # ▶️ C-0465 (Cowork, טיק אופרטור) — F-185 נסגר, הצינור נפתח עד `main`. המשך בנייה רגיל על `general`∪`loop`∪`base`.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T13:09:14Z
+LAST_HANDOFF_AT: 2026-09-06T13:30:00Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
@@ -19,11 +19,11 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "e9335ee · 2026-09-04 · 36 commits לפני main (נמדד: ./scripts/g rev-list --count origin/main..origin/dev) · יציאת הזירה חוזרת לטבעת ⛔ לא ל-/cards (T-253/D-186) + הוסף-לכרטיסיות מפסיק להראות וי שקרי כשהכתיבה נכשלת (T-238ⓑ) + הזירה מפסיקה לרנדר 60fps מיותר (T-231)"  # C-0428 (QA) · verify ירוק טרי (3354/3354 · check:mobile 1208, exit 0) · review-animations על T-231 — אושר · הליכה חיה ב-375×780 + Playwright על שלושת המסכים שהשתנו (home/battle/result) + מסך הסיפור (add-to-cards error state) · 03-for-roy #95.
+RELEASE_READY: "0d7ccc9 · 2026-09-06 · **נשלח ל-`main` באישור מפורש של רוי — 107 קומיטים, ff-only** (נמדד: `./scripts/g ls-remote --heads origin`)"  # C-0465 · `verify` exit 0 טרי על `dev` (`check:mobile` 1325) · `loop:health` 15/15. ⚠️ שלוש ההקשות של רוי ⛔ לא נכתבו מחדש — השער המלא של C-0462 הוא הראיה.
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
-LAST_REVIEWED_COMMIT: "fb808a4"  # main אחרי PR #2. ⚠️ מיזוג דרך ה-UI מפצל ענפים — פירוט ⇒ `plan/archive/control-log.md`
+LAST_REVIEWED_COMMIT: "0d7ccc9"  # main אחרי הקידום של 06/09. `verify` exit 0 נרץ על `dev` באותו SHA לפני הקידום.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -33,10 +33,10 @@ IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** 
 # (SEALS · nav ו-story — הוצאו ל-`plan/archive/control-log.md` ב-C-0318, אותו דפוס בדיוק שבו story הוצא ב-C-0316 כשהמוקד זז. ⛔ לא נמחקו.)
 # (SEALS · arena — הוצאו ל-`plan/archive/control-log.md` ב-C-0368, אותו דפוס שבו nav · story · cards הוצאו ב-C-0318 ו-C-0367. **arena ⛔ אינה חתומה** — שלוש החותמות ⛔ לא ניתנות למדידה מהלופ, `03-for-roy` פריט 77. ⛔ לא נמחקו.)
 # (SEALS · cards — הוצאו ל-`plan/archive/control-log.md` ב-C-0367, אותו דפוס שבו nav ו-story הוצאו ב-C-0318. **cards ⛔ אינה חתומה** — הוזזה חסומה-חיצונית · F-142/F-143 · ראה `plan/61-deferred.md`.)
-RELEASE_BLOCKERS: "F-185 — מיזוג work/current→dev חסום סביבתית (מסווג ההרשאות), ⛔ לא בעיית קוד. ff-only מוכן ונבדק מקומית (b7d0645→507cfdf). דורש הרצה ידנית של רוי או תיקון הרשאות."  # QA כותב כאן כשמיזוג נחסם — **המינימום שנדרש כדי למזג**, ⛔ ולא כל הממצאים. DEV לוקח אותה לפני כל דבר אחר.
+RELEASE_BLOCKERS: ""  # ✅ רוקן 06/09 (C-0465) — F-185 נסגר: הסיבה הייתה `GIT_ASKPASS=` ריק שהסביבה מייצאת, ⛔ לא מסווג הרשאות. QA כותב כאן כשמיזוג נחסם — **המינימום שנדרש כדי למזג**, ⛔ ולא כל הממצאים. DEV לוקח אותה לפני כל דבר אחר.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
-LAST_PROMOTED_AT: "2026-08-23T11:03:26Z"  # קודם בידי רוי ידנית (PR #2), ⛔ לא בידי ה-Critic. פירוט ⇒ `plan/archive/control-log.md`
-PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longer a reason to delay (D-086).
+LAST_PROMOTED_AT: "2026-09-06T13:07Z"  # ⚠️ **באישור מפורש של רוי בצ'אט, ⛔ לא ביוזמת הלופ.** `7a5f61b..0d7ccc9` ff-only, 107 קומיטים. קודם לכן 23/08 בידי רוי (PR #2).
+PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפורש). ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
@@ -52,8 +52,8 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0461..C-0462 | CRITIC | DEV | 2026-09-06T11:37:51Z | 🚦 **מסלול: מלא — שער מלא. `verify`+`loop:health` ירוקים (3476/3476 · mobile 1325 · 14/15), הליכה חיה 375×780 + השוואת רנדר (`diff:render`) על שלושת מסכי הזירה, `review-animations` על הדיף — אושר (⛔ אין שינוי תנועה). 🔴 המיזוג ל-`dev` נחסם סביבתית (F-185, 03-for-roy #99) — ff נבדק ועובד מקומית, ⛔ push נדחה.** 2 ממצאים חדשים (F-185 חוסם · F-186 פינוש-רנדר). ⬜ **⛔ אין `RELEASE_READY` חדש, ⛔ אין 🟣⇢✅** — שום דבר לא מוזג. | F-185 · F-186 · `docs/plan-open.md` · `plan/03-for-roy.md` #99 |
 | C-0463 | DEV | CRITIC | 2026-09-06T13:09:14Z | 🔨 **טיק בנייה — `T-267` (`arena`, exception ⓐ), קומיט אחד.** נתיב-החשד הקודם (mount `<ArenaBattle>`) הופרך בעדות חיה (jsdom+Playwright); אותה בדיקה חשפה קריסה תואמת-תסמין: `round.questions` שאינו מערך מפיל `byWordId` (`useMemo`). תוקן ⓐ `load()` מאמת `Array.isArray` ⓑ `app/error.tsx`/`global-error.tsx` תיעדו `error` ל-`console.error` (עד כה שותקו). `verify` ירוק — **3482/3482 · mobile 1325 · build OK**. ⚠️ לא ✅ — פרטים מלאים ב-`T-267`. | `T-267` · `app/error.tsx` · `app/global-error.tsx` · `components/ArenaBattle.tsx`+tests |
+| C-0465 | CRITIC (Cowork) | DEV | 2026-09-06T13:30:00Z | 🚢 **טיק אופרטור — `F-185` נסגר והצינור נפתח עד `main`, באישור מפורש של רוי.** הסיבה שנרשמה ב-C-0462 (מסווג הרשאות) **הייתה שגויה**: הסביבה מייצאת `GIT_ASKPASS=` **ריק**, git קורא אותו לפני `core.askpass`, וערך ריק נחשב מוגדר ⇒ ⛔ שום עוזר-אישורים ⛔ אינו נשאל. `scripts/g` מייצא אותו מחדש בעצמו, הטוקן ירד מה-URL לקובץ 600 מחוץ לריפו, וארבעת הפרומפטים + 2 בדיקות חדשות אוסרים טוקן ב-URL. **נמדד:** `dev` `b7d0645..0d7ccc9` (70) · `verify` exit 0 · `loop:health` **15/15** · `main` `7a5f61b..0d7ccc9` (107). פריטי `03-for-roy` **98+99** נסגרו, `RELEASE_BLOCKERS` רוקן. | `F-185` ✅ · `scripts/g` · 4 פרומפטים · `claude/LOOP-ARCHITECTURE.md` § 0.13 |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

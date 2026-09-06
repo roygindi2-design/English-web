@@ -1,13 +1,26 @@
 #!/usr/bin/env bash
-# ⛔ THE PROXY WRAPPER. It cost the loop three days of shipping without it.
+# ⛔ THE PROXY WRAPPER — and, since 06/09, THE CREDENTIAL WRAPPER TOO.
 #
-# Every Bash call an agent makes is a FRESH SHELL, so `export` never survives to
-# the next call, and the sandbox re-injects proxy variables that git cannot reach
-# GitHub through. Measured: the identical `git push` fails without the unset and
-# succeeds with it, one second apart.
+# ⓐ PROXY. Every Bash call an agent makes is a FRESH SHELL, so `export` never
+# survives to the next call, and the sandbox re-injects proxy variables that git
+# cannot reach GitHub through. Measured: the identical `git push` fails without
+# the unset and succeeds with it, one second apart.
 #
-# ⇒ `./scripts/g <any git command>` — the unset travels with the command instead
-# of depending on an agent remembering to prepend it.
+# ⓑ CREDENTIALS ⟦NEW 06/09⟧. The sandbox exports **`GIT_ASKPASS=` — set, and
+# EMPTY** (measured live, 06/09 13:05Z: `env | grep GIT_` returns `GIT_ASKPASS=`
+# alongside `GIT_TERMINAL_PROMPT=0` and `credential.interactive=false`). git
+# checks `GIT_ASKPASS` **before** `core.askpass`, and an EMPTY value still counts
+# as set ⇒ `core.askpass` is never consulted, no helper is ever asked, and every
+# authenticated git command dies with
+#   `fatal: could not read Username for 'https://github.com': terminal prompts disabled`
+# ⇒ ⛔ That, and ⛔ NOT a permissions classifier, was `F-185` — the finding that
+# held **70 commits** off `dev` from 04/09 19:12Z to 06/09 13:06Z.
+#
+# ⇒ The wrapper now re-exports `GIT_ASKPASS` to the helper whenever the helper
+# exists, so the fix travels with the command exactly like the unset does, and
+# ⛔ no agent has to remember it.
+#
+# ⇒ `./scripts/g <any git command>`
 #
 # ⚠️ This does NOT remove the discipline, it moves it: an agent still has to call
 # the wrapper. What closes the hole is the RETRY RULE in every agent prompt —
@@ -15,6 +28,14 @@
 # this wrapper before the failure is believed. That turns a three-day outage
 # into one second.
 set -euo pipefail
+
+# ⛔ NEVER a token on the command line. The helper reads the secret from a file
+# outside the repo and hands it to git on a pipe git opens itself.
+ASKPASS="${HOME}/.git-askpass.sh"
+CREDS=()
+[ -x "$ASKPASS" ] && CREDS=(GIT_ASKPASS="$ASKPASS")
+
 exec env -u https_proxy -u HTTPS_PROXY -u http_proxy -u HTTP_PROXY \
          -u all_proxy -u ALL_PROXY -u no_proxy -u NO_PROXY \
+         ${CREDS[@]+"${CREDS[@]}"} \
          git "$@"

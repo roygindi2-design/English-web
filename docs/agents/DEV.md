@@ -17,7 +17,7 @@ git command failed with a network / proxy error?
   ⇒ retry ONCE through ./scripts/g before you believe the failure.
   ⛔ only if that also fails — report it.
 ```
-Cloning (before `scripts/g` exists) still needs the inline form.
+Cloning happens before `scripts/g` exists, so it is the one raw `git` call — and it clones a **clean URL** with `GIT_ASKPASS` already exported (STEP 0). ⛔ The token is ⛔ never concatenated into it.
 
 
 ## STEP C — SQL and migrations (Supabase). ⛔ Only when a task actually changes the schema.
@@ -127,8 +127,30 @@ Every screen shares one language: `palette.ts` tokens · the constitution · ful
 
 ## STEP 0 — CONNECT (cheap)  ⟦CHANGED 24/08 · RULES § 0.23⟧
 ```
-export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/current https://${GITHUB_PAT}@github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "dev-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
+# ⓐ CREDENTIALS FIRST — ⛔ the token NEVER touches a URL, an argv, or a log line.
+printf '%s' "${GITHUB_PAT}" > "$HOME/.gh-pat" && chmod 600 "$HOME/.gh-pat"
+cat > "$HOME/.git-askpass.sh" <<'ASK'
+#!/usr/bin/env bash
+case "$1" in
+  Username*) printf 'x-access-token\n' ;;
+  Password*) cat "$HOME/.gh-pat" ;;
+esac
+ASK
+chmod 700 "$HOME/.git-askpass.sh"
+# ⓑ CLONE A CLEAN URL. `scripts/g` picks the helper up by itself from here on.
+export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY= GIT_ASKPASS="$HOME/.git-askpass.sh"
+git clone -b work/current https://github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "dev-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
 ```
+🔴 **⟦NEW 06/09 · Roy's explicit instruction · `F-185`⟧ ⛔ ABSOLUTE BAN — ⛔ NEVER concatenate the token into a git URL.**
+```
+⛔ git push https://${GITHUB_PAT}@github.com/...      ⛔ FORBIDDEN
+⛔ git remote set-url origin https://${GITHUB_PAT}@…  ⛔ FORBIDDEN
+✅ ./scripts/g push origin <branch>                   ✅ the ONLY shape
+```
+⇒ **Two independent reasons, both measured, ⛔ neither of them theoretical:**
+ⓐ a token in the URL is a token in `argv`, in the process table, in `git remote -v`, and in every error line git prints — that is exactly the class of leak that cost the loop `F-120` (Supabase token in public history) and `F-166` (three days of failed Netlify builds on `Exposed secrets detected`);
+ⓑ it is what a permission filter can see and refuse, and for **40 hours** the loop believed that refusal WAS `F-185`. ⛔ It was not — see the real cause below.
+⚠️ **THE REAL `F-185`, measured live on 06/09 13:05Z:** the sandbox exports **`GIT_ASKPASS=` — set, and EMPTY.** git reads `GIT_ASKPASS` **before** `core.askpass`, and an empty value still counts as set ⇒ ⛔ no helper is ever asked and every authenticated command dies with `could not read Username … terminal prompts disabled`. ⇒ `scripts/g` now re-exports `GIT_ASKPASS` to the helper, exactly like it unsets the proxy variables. **Proof, both run in the same clean shell:** `./scripts/g ls-remote origin` exits **0** against a remote URL that carries ⛔ no token; bare `git ls-remote origin` exits **128**.
 ⛔ Do NOT run `npm install` yet. Auth fails → report "GitHub key invalid" and stop.
 
 ### ⛔ STEP 0.5 — REBASE, AND ⛔ NEVER RESOLVE A CONFLICT

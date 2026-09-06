@@ -61,8 +61,30 @@ Then, and only then, `npm run verify` — which is the **LAST** action before th
 
 ## STEP 0 — CONNECT
 ```
-export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/current https://${GITHUB_PAT}@github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "content-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
+# ⓐ CREDENTIALS FIRST — ⛔ the token NEVER touches a URL, an argv, or a log line.
+printf '%s' "${GITHUB_PAT}" > "$HOME/.gh-pat" && chmod 600 "$HOME/.gh-pat"
+cat > "$HOME/.git-askpass.sh" <<'ASK'
+#!/usr/bin/env bash
+case "$1" in
+  Username*) printf 'x-access-token\n' ;;
+  Password*) cat "$HOME/.gh-pat" ;;
+esac
+ASK
+chmod 700 "$HOME/.git-askpass.sh"
+# ⓑ CLONE A CLEAN URL. `scripts/g` picks the helper up by itself from here on.
+export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY= GIT_ASKPASS="$HOME/.git-askpass.sh"
+git clone -b work/current https://github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "content-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
 ```
+🔴 **⟦NEW 06/09 · Roy's explicit instruction · `F-185`⟧ ⛔ ABSOLUTE BAN — ⛔ NEVER concatenate the token into a git URL.**
+```
+⛔ git push https://${GITHUB_PAT}@github.com/...      ⛔ FORBIDDEN
+⛔ git remote set-url origin https://${GITHUB_PAT}@…  ⛔ FORBIDDEN
+✅ ./scripts/g push origin <branch>                   ✅ the ONLY shape
+```
+⇒ **Two independent reasons, both measured, ⛔ neither of them theoretical:**
+ⓐ a token in the URL is a token in `argv`, in the process table, in `git remote -v`, and in every error line git prints — that is exactly the class of leak that cost the loop `F-120` (Supabase token in public history) and `F-166` (three days of failed Netlify builds on `Exposed secrets detected`);
+ⓑ it is what a permission filter can see and refuse, and for **40 hours** the loop believed that refusal WAS `F-185`. ⛔ It was not — see the real cause below.
+⚠️ **THE REAL `F-185`, measured live on 06/09 13:05Z:** the sandbox exports **`GIT_ASKPASS=` — set, and EMPTY.** git reads `GIT_ASKPASS` **before** `core.askpass`, and an empty value still counts as set ⇒ ⛔ no helper is ever asked and every authenticated command dies with `could not read Username … terminal prompts disabled`. ⇒ `scripts/g` now re-exports `GIT_ASKPASS` to the helper, exactly like it unsets the proxy variables. **Proof, both run in the same clean shell:** `./scripts/g ls-remote origin` exits **0** against a remote URL that carries ⛔ no token; bare `git ls-remote origin` exits **128**.
 
 ## STEP 1 — LESSONS, THEN COMMISSIONS
 `plan/80-content-lessons.md` — §A1 is your standing order list, derived from your own past mistakes. §B is what the Critic caught that you missed; more important, because the gate did not catch those.

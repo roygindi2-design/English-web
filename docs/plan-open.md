@@ -13,7 +13,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (270 שורות, 71 פתוחות) ו-`plan/60-findings.md` (187 שורות, 78 פתוחים).
+נוצר מ-`plan/50-tasks.md` (270 שורות, 71 פתוחות) ו-`plan/60-findings.md` (188 שורות, 78 פתוחים).
 
 ## ⬜ פנויות ל-Dev (22)
 
@@ -189,8 +189,8 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `F-177` | 🟡 MEDIUM · **א… | `docs/design/render_video_A.py:1150-1153` (`TR…` | **נמדד בגְרֶפּ בטיק תכנון C-0380 (התוכנית `docs/superpowers/plans/2026-09-01-studies-track-selector.md`), ⛔ ולא שוער.** ‏`TRACK_DATA` מחזיק מחרוזת תחז… | ⬜ פתוח → **PM** (הכרעת נוסחה) · ⛔ **אינו… |
 | `F-178` | 🟡 MEDIUM · **T… | `plan/50-tasks.md` שורת `T-246` (בלוק «בדיקות»… | **נמדד חי ב-`npm run check:mobile` על build אמיתי (`next start`, 320/375/414px) בטיק הבנייה C-0381, ⛔ ולא שוער.** `main`'s `innerText` על `/dev/tabs/s…` | ⬜ פתוח → **PM** (הכרעת סף/היקף) · ⛔ **אי… |
 | `F-182` | 🟡 MEDIUM · **`…` | `plan/00-control.md` · `scripts/gc-memory.mjs` | **נמדד חי בטיק הזה, ⛔ ולא שוער:** `wc -c plan/00-control.md` ⇒ **13068**, אחרי ש-PM כבר הריץ `gc:memory` ב-C-0407 (טרם את הטיק הזה — לא נגעתי ב-`gc:me…` | ⬜ פתוח → **PM** |
-| `F-185` | 🔴 CRITICAL · *… | `docs/agents/CRITIC.md § STEP 5` · `plan/03-fo…` | **נמדד חי בטיק הזה, כל ניסיון עם ההודעה המדויקת `Permission for this action was denied by the Claude Code auto mode classifier`:** (1) `./scripts/g ch…` | 🔴 חוסם → **רוי** (נבדק) |
 | `F-186` | 🟡 MEDIUM · **פ… | `docs/design/kol-B-01-home.png` מול `/dev/arca…` | **נמדד בהשוואת רנדר-מול-מסך חיה בטיק הזה (`npm run diff:render`), ⛔ ולא שוער, לפי שבעת הסעיפים של STEP 4.5:** ⓓ **פינוש —** הרנדר מצייר דמות/אויב מפור… | ⬜ פתוח → **PM** |
+| `F-187` | 🔴 CRITICAL · *… | `data/generated/batch-2026-09-06-9.jsonl` · `d…` | **נמדד חי בטיק הזה על clone טרי של `81e2649`, ⛔ לא שוער.** `npm run verify` ⇒ **exit 1 · 8 קובצי בדיקה אדומים · 2 בדיקות נכשלות**. שלוש הסיבות, כל אחת… | 🔴 ⓐ נסגר · ⓑ פתוח → **רוי** (נבדק) |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 
@@ -404,7 +404,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `2026-09-05-improvement-plan` | `T-254` `T-255` `T-256` `T-257` `T-258` `T-259` `T-260` | ⛔ אין צעדים | 1 פתוחות · 5 בביקורת · 1 נמסרו |
 | `2026-09-05-loop-health-triage-hardening` | `T-255` `T-258` | ✅ 13/13 | 0 פתוחות · 2 בביקורת · 0 נמסרו |
 | `2026-09-06-loop-infra-hardening` | `T-254` `T-257` `T-260` | 0/23 | 0 פתוחות · 3 בביקורת · 0 נמסרו |
-| `2026-09-06-sense-items-level-tagging` | — | 0/27 | ⛔ **יתומה** — אף שורה אינה מצטטת אותה |
+| `2026-09-06-sense-items-level-tagging` | `T-224` | 0/27 | 1 פתוחות · 0 בביקורת · 0 נמסרו |
 
 ## 🔁 משוב על תוכניות — פתוח מ-DEV אל ה-PM
 

@@ -760,4 +760,48 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     const sections = live.split('\n').filter((l) => /^## .*POST-PROMOTION CHECK/.test(l));
     expect(sections.length, 'plan/03-for-roy.md: live POST-PROMOTION CHECK sections').toBe(1);
   });
+
+  /**
+   * 🔴 **⟦NEW 06/09 · `F-185` · Roy's explicit instruction⟧ ⛔ NO TOKEN IN A GIT URL.**
+   *
+   * ⚠️ **What this is actually guarding, and why a rule in prose was not enough.**
+   * `F-120` (a live Supabase token in public git history) and `F-166` (three days
+   * of `dev` builds failing on `Exposed secrets detected`) were both the SAME
+   * shape: a secret written where it could be read. A token concatenated into a
+   * remote URL is in `argv`, in the process table, in `git remote -v`, and in
+   * every error line git prints. ⇒ the ban is a TEST, ⛔ not a paragraph.
+   *
+   * ⇒ the prompts may still SHOW the forbidden form — that is how an agent learns
+   * to recognise it — so the assertion is: any line that concatenates the token
+   * into a URL must be marked ⛔, ⛔ never offered as a command to run.
+   */
+  it('⛔ no agent prompt offers a token-in-URL git command (F-185)', () => {
+    for (const a of AGENTS) {
+      const offending = text(a)
+        .split('\n')
+        .filter((l) => /\$\{GITHUB_PAT\}@/.test(l))
+        .filter((l) => !l.includes('⛔'));
+      expect(offending, `${a}: token concatenated into a URL on an unmarked line`).toEqual([]);
+    }
+  });
+
+  /**
+   * The other half: the clone each prompt actually tells the agent to run must be
+   * the CLEAN url. ⛔ A ban on `push` alone leaves the same secret in the same
+   * process table one command earlier.
+   */
+  it('every STEP 0 clones a clean URL and exports GIT_ASKPASS (F-185)', () => {
+    for (const a of AGENTS) {
+      const body = text(a);
+      expect(body, `${a}: clean clone URL`).toContain(
+        'git clone -b work/current https://github.com/roygindi2-design/English-web.git repo',
+      );
+      expect(body, `${a}: askpass helper is written before the clone`).toContain(
+        '$HOME/.git-askpass.sh',
+      );
+      expect(body, `${a}: GIT_ASKPASS exported for the clone itself`).toMatch(
+        /GIT_ASKPASS="\$HOME\/\.git-askpass\.sh"/,
+      );
+    }
+  });
 });
