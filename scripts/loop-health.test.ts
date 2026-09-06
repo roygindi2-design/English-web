@@ -767,14 +767,35 @@ describe('scripts/loop-health.mjs', () => {
       expect(line, 'המספר בשעות, ⛔ לא «כנראה»').toMatch(/\d+\.\d+ש׳|⛔/u);
     });
 
-    it('הרשימה בריפו מצהירה על ארבעת הסוכנים ועל תחילית הקומיט של כל אחד', () => {
+    /**
+     * 🆕 ⟦06/09 · `RULES § 0.29`⟧ **חמישה, ⛔ ולא ארבעה — `PROMOTER` נכנס לרשימה.**
+     * ⛔ והוא נכנס דווקא מפני שהוא ⛔ אינו סוכן בנייה: הוא מקדם `dev`⇢`main` ו⛔ אינו
+     * דוחף קוד ל-`work/current`, ולכן **בלי שורת יומן יומית הוא ⛔ אינו נבדל מסוכן מת**
+     * בעיני בדיקה 17 — בדיוק `F-188`. ⇒ הוא מחויב לשורה ב-`plan/archive/control-log.md`
+     * בכל ריצה, בתחילית `loop(PROMOTER`.
+     * ⚠️ **`maxSilentHours` שלו הוא 30, ⛔ ולא 24, וזה ⛔ אינו שרירותי:** הוא יורה פעם
+     * ביום ב-23:00Z ⇒ הפער בין הקומיט שלו לריצה הבאה מגיע ל-~23.5 שעות **בלופ בריא
+     * לגמרי**. תקרה של 24 הייתה מאדימה את הבדיקה על שגרה תקינה.
+     */
+    it('הרשימה בריפו מצהירה על חמשת הסוכנים ועל תחילית הקומיט של כל אחד', () => {
       const roster = JSON.parse(readFileSync('docs/agents/roster.json', 'utf8')) as {
-        agents: { name: string; commitPrefix: string; enabled: boolean }[];
+        agents: { name: string; commitPrefix: string; enabled: boolean; maxSilentHours?: number }[];
       };
-      expect(roster.agents.map((a) => a.name).sort()).toEqual(['CONTENT', 'DEV', 'PM', 'QA']);
+      expect(roster.agents.map((a) => a.name).sort()).toEqual([
+        'CONTENT',
+        'DEV',
+        'PM',
+        'PROMOTER',
+        'QA',
+      ]);
       for (const a of roster.agents) {
         expect(a.commitPrefix, `${a.name}: תחילית`).toMatch(/^loop\(/);
       }
+      const promoter = roster.agents.find((a) => a.name === 'PROMOTER');
+      expect(promoter, '⛔ PROMOTER חייב להיות ברשימה — אחרת ⛔ אף בדיקה ⛔ אינה מודדת אותו').toBeDefined();
+      expect(promoter?.commitPrefix, 'התחילית שבדיקה 17 מחפשת').toBe('loop(PROMOTER');
+      // ⛔ תקרה של 24 על סוכן שיורה פעם ביום היא אזהרה על לופ בריא.
+      expect(promoter?.maxSilentHours ?? 24, '⛔ תקרת השקט חייבת לכסות מחזור יומי מלא').toBeGreaterThan(24);
     });
   });
 

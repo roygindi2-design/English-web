@@ -14,15 +14,27 @@ import { describe, expect, it } from 'vitest';
  */
 const DIR = 'docs/agents';
 const AGENTS = ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const;
+/**
+ * ⛔ **`PROMOTER` ⛔ אינו סוכן בנייה, ולכן הוא ⛔ אינו ב-`AGENTS`.** ⟦NEW 06/09 · הוראת רוי⟧
+ * ארבעת הסוכנים שב-`AGENTS` חולקים חוזה אחד — נעילה, ענף עבודה, תור, שער דחיפה — וכל
+ * טענה בקובץ הזה שרצה עליהם היא כלל מ-`RULES § 0.23`. ‏`PROMOTER` ⛔ אינו בונה, ⛔ אינו
+ * פותח שורות, ⛔ אינו קורא תור, והוא הסוכן היחיד שנוגע ב-`main` ⇒ החלת 48 הטענות ההן
+ * עליו הייתה **בודקת חוזה שהוא ⛔ אינו צד לו**.
+ * ⚠️ ⛔ **וזה ⛔ אינו פטור מהכלל של § 9.9** («מה שנכתב לפרומפט אחד נכתב לארבעה»): מה
+ * שמשותף לכולם — ⛔ אפס סוד בריפו, `${GITHUB_PAT}` כמצייה, ⛔ אפס טוקן ב-URL — נבדק על
+ * **חמשת** הקבצים למטה, ו-`PROMOTER` מקבל בנוסף את הטענות על גבול הסמכות שלו.
+ */
+const PROMOTER = 'PROMOTER';
+const ALL_PROMPTS = [...AGENTS, PROMOTER] as const;
 const text = (name: string): string => readFileSync(join(DIR, `${name}.md`), 'utf8');
 
 describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ לא סוד במשימה מתוזמנת', () => {
-  it('ארבעת הסוכנים קיימים, ו⛔ אין קובץ חמישי שאיש לא מכיר', () => {
+  it('חמשת הפרומפטים קיימים, ו⛔ אין קובץ שישי שאיש לא מכיר', () => {
     const found = readdirSync(DIR)
       .filter((f) => f.endsWith('.md'))
       .map((f) => f.replace(/\.md$/, ''))
       .sort();
-    expect(found).toEqual([...AGENTS].sort());
+    expect(found).toEqual([...ALL_PROMPTS].sort());
   });
 
   /**
@@ -43,14 +55,14 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   ];
 
   it('⛔ אפס סודות בריפו — כל אחד מהם חי במשימה המתוזמנת בלבד', () => {
-    for (const a of AGENTS) {
+    for (const a of ALL_PROMPTS) {
       const body = text(a);
       for (const [pattern, label] of SECRETS) {
         expect(body, `${a}: ⛔ ${label}`).not.toMatch(pattern);
       }
     }
     // ⛔ ומפתח ה-GitHub עדיין **נדרש כמצייה**, אחרת הסוכן ⛔ אינו יודע מה להחליף.
-    for (const a of AGENTS) expect(text(a), a).toContain('${GITHUB_PAT}');
+    for (const a of ALL_PROMPTS) expect(text(a), a).toContain('${GITHUB_PAT}');
   });
 
   /**
@@ -863,5 +875,62 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(qa, 'שער — ארבע יריות').toContain('01:45Z · 07:45Z · 13:45Z · 19:45Z');
     expect(qa, 'מלא — ארבע יריות').toContain('05:15Z · 11:15Z · 15:15Z · 21:15Z');
     expect(qa, '⛔ הזמנים הישנים ⛔ לא חזרו').not.toContain('05:00Z and 23:00Z');
+  });
+});
+
+/**
+ * 🚢 **`docs/agents/PROMOTER.md` — הסוכן היחיד שנוגע ב-`main`.**  ⟦NEW 06/09 · הוראת רוי⟧
+ *
+ * ⛔ **למה יש כאן בדיקות בכלל, ולמה הן ⛔ אינן בדיקות סגנון.** עד היום הקידום ל-`main`
+ * היה **פעולה של רוי** (`RULES § 0.1 ב׳`), וזה היה שער אנושי: מישהו הסתכל לפני שמשהו
+ * עלה לאוויר. ⇒ ברגע שהשער הזה עובר לסוכן, **שתי ההגנות היחידות שנשארו הן ⓐ שהוא ⛔ לא
+ * ידלג על `verify` ועל בדיקת העשן, ו-ⓑ שהוא ⛔ לא יכריע במה שרוי שמר לעצמו.** שתיהן
+ * טקסט בפרומפט, וטקסט בפרומפט ⛔ אינו חוזה עד שמשהו מודד אותו — זה השיעור של § 8.4,
+ * שמונה פעמים.
+ */
+describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידום', () => {
+  const body = text(PROMOTER);
+
+  it('רשימת ההחרגה קיימת במלואה — שבעה סעיפים, ⛔ ולא שישה', () => {
+    for (const rule of [
+      'Layer A',
+      'Scheduling',
+      'brake',
+      'D-101',
+      'product direction',
+      'licences',
+      'word_progress',
+    ]) {
+      expect(body, `⛔ החרגה חסרה: ${rule}`).toContain(rule);
+    }
+  });
+
+  it('שער הקידום ⛔ אינו ניתן לדילוג — verify · ff-only · בדיקת עשן', () => {
+    expect(body, 'תשע הפקודות').toContain('npm run verify');
+    expect(body, 'ff-only בלבד').toContain('--ff-only');
+    expect(body, 'בדיקת עשן חובה — RULES § 0.1 ד׳').toContain('/api/health');
+    expect(body, 'התוצאה הנדרשת').toContain('"ok": true');
+    expect(body, 'כישלון עשן ⇒ בן אדם').toContain('NEXT_AGENT: HUMAN');
+    // ⛔ מוצא החירום של הכרעה 100 ⛔ אינו שלו — הוא קיים כדי ש-verify שבור לא ינעל את
+    // הריפו, ⛔ ולא כדי לשלוח מעבר לשער אדום.
+    expect(body, '⛔ SKIP_VERIFY ⛔ אינו שלו').toMatch(/`SKIP_VERIFY=1` is ⛔ NEVER yours/);
+  });
+
+  it('הבלמים שהוא ⛔ אינו רשאי לעקוף מוזכרים במפורש', () => {
+    expect(body, 'תקרת הפריסות החודשית').toContain('PROMOTIONS_THIS_MONTH');
+    expect(body, '⛔ לא יותר מאחת ליממה').toMatch(/one in 24 hours|24 hours/);
+    expect(body, 'תקרת 00-control').toContain('12,288');
+    expect(body, 'תקרת ההכרעות').toMatch(/THREE decisions per run/);
+  });
+
+  it('הוא כותב שורת יומן בכל ריצה — אחרת בדיקה 17 מודדת אותו כמת', () => {
+    expect(body, 'תחילית הקומיט שבדיקה 17 מחפשת').toContain('loop(PROMOTER)');
+    expect(body, 'היעד').toContain('plan/archive/control-log.md');
+    expect(body, 'גם בריצה שקטה').toMatch(/EVERY RUN, INCLUDING THE QUIET ONES/);
+  });
+
+  it('⛔ אינו סוכן בנייה — האיסור כתוב, ⛔ ולא מונח', () => {
+    expect(body, '⛔ לא כותב קוד מוצר').toMatch(/⛔ NOT A BUILDING AGENT/);
+    expect(body, '⛔ לא נוגע בתורים').toContain('plan/50-tasks.md');
   });
 });
