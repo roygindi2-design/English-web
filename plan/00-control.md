@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0455..C-0459 (DEV) — 🔨 טיק בנייה, ⛔ לא תכנון: `T-254`/`T-257`/`T-260` (`general∪loop∪base`) נבנו ונמסרו 🟣, לפי `docs/superpowers/plans/2026-09-06-loop-infra-hardening.md`. `npm run verify` ירוק טרי.
-STATE: BUILD                      # ▶️ C-0455..C-0459 (DEV) — קוד לופ בלבד נגע (scripts/·docs/agents/·plan/RULES.md·00-control.md), ⛔ אפס קוד מוצר (app/·components/·lib/).
+NEXT_AGENT: CRITIC                 # ▶️ C-0460 (DEV) — 📝 טיק תכנון, ⛔ לא בנייה: `T-224` (`base`) — `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md`, `check:plan` 8/8. ⛔ אפס קוד נגע.
+STATE: PLANNING                    # ▶️ C-0460 (DEV) — קומיט אחד: קובץ התוכנית בלבד. ⛔ אפס קוד מוצר, ⛔ אפס מיגרציה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T09:02:20Z
+LAST_HANDOFF_AT: 2026-09-06T10:53:52Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                     # שוחררה C-0459 (DEV) — הטיק נסגר. שלוש המשימות (T-254/T-257/T-260) נבנו, נמסרו 🟣, verify ירוק טרי.
-LOCK_AT: "2026-09-06T08:38:27Z"
+LOCK_HELD_BY: ""                     # שוחררה C-0460 (DEV) — טיק תכנון נסגר, קומיט אחד (התוכנית בלבד).
+LOCK_AT: "2026-09-06T10:53:52Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -47,12 +47,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0453` הועבר 06/09/2026 (C-0459) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0454` הועבר 06/09/2026 (C-0460) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0454 | DEV | CRITIC | 2026-09-06T06:57:00Z | 📝 **טיק תכנון — `T-254`/`T-257`/`T-260` (`general∪loop∪base`), קומיט אחד (התוכנית).** `docs/superpowers/plans/2026-09-06-loop-infra-hardening.md` — 3 משימות, בלוק `Interfaces`, קוד בדיקה אמיתי, `check:plan` 8/8 (תוקנו `files`+`extend` לפני קומיט). **נמדד, ⛔ לא הונח:** אף אחת מ-`scripts/loop-health.mjs`/`scripts/agent-prompts.test.ts` לא מכילה כבר לוגיקת ACTIVE_TASK_ID/cycle-id שהשורות הניחו — התוכנית מתעדת את הפער. ⛔ אין קוד מוצר שנגע. | `T-254` · `T-257` · `T-260` · `docs/superpowers/plans/2026-09-06-loop-infra-hardening.md` |
 | C-0455..C-0459 | DEV | CRITIC | 2026-09-06T09:02:20Z | 🔨 **טיק בנייה — ביצוע `2026-09-06-loop-infra-hardening.md` במלואה, 3 משימות · 5 קומיטים.** TDD על כל שלוש (RED אז GREEN): `next-cycle-id.mjs` פותר התנגשות `C-0426`; דיווח-רך «טיקי PM מאז פרוסה» — נמדד חי **3**; `check('15', …)` אוכף צורת `ACTIVE_TASK_ID` (עד 3, ⛔ כפילויות) + `RULES § 0.28` + השדה ב-`00-control` עבר ל-`[]`. ⚠️ **שני ממצאים עצמיים הפיכים, תוקנו באותו טיק (RULES § 0.22):** ⓐ `npm run verify` חשף ש-`next-cycle-id.mjs` זקוק ל-`.d.mts` ידני — נוסף + בדיקת-סטייה. ⓑ שתי הנחות `'14'` קשיחות נוספות ב-`loop-health.test.ts` שהתוכנית לא ציינה — עודכנו ל-`'15'`. `verify` ירוק טרי קצה־לקצה: **214/214 · 3476/3476 · build · mobile 1325**. `loop:health` 9+15 `ok`. ⛔ ללא מיגרציה. `T-254`/`T-257`/`T-260` 🟣, `measure:plan` רץ. | `T-254` · `T-257` · `T-260` · `scripts/next-cycle-id.mjs`+`.d.mts`+`.test.ts` · `scripts/loop-health.mjs`+`.test.ts` · `scripts/agent-prompts.test.ts` · `plan/RULES.md` · `docs/agents/DEV.md`+`PM.md`+`CRITIC.md` · `package.json` · `plan/50-tasks.md` |
+| C-0460 | DEV | CRITIC | 2026-09-06T10:53:52Z | 📝 **טיק תכנון — `T-224` (`base`), קומיט אחד (התוכנית בלבד, ⛔ אפס קוד).** `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md` — `check:plan` 8/8 (תוקנו `addressed`+`extend` לפני קומיט). `T-197`/`T-201` נבדקו ונדחו: `T-197` תלוי מפורש ב-`T-184` חצי ⓑ (עדיין 🔵 פתוח); `T-201` תלוי ברכיב מקלדת-הבלוקים (`39 § 3`) שעדיין אינו קיים בקוד (`msgs` עדיין ⬜, לא זרימה פעילה) — הקובץ `files` שלה עצמה אומר «ייקבע עם רכיב המקלדת». **שני ממצאים תיעודיים בתוכנית עצמה (⛔ לא בקוד):** ⓐ רדיוס הפגיעה שמדדה `T-224` שגוי — `senseAccuracy.ts` הוא false positive (שדה `items` לא קשור), ו-`lib/core/batchRecord.ts`+`scripts/build-ingest-sql.mjs` חסרים מהרשימה לגמרי. ⓑ `docs/agents/CONTENT.md` ו-`F-168` שניהם מצטטים `T-223` (שנחת — `amirnetItemGate`, לא קשור) במקום `T-224` — התוכנית מתקנת את שניהם כצעד בנייה עתידי. | `T-224` · `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
