@@ -236,6 +236,14 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 ⚠️ **Edited a register? `npm run measure:plan`, and BOTH `docs/plan-tables.md` and `docs/plan-open.md` in the SAME commit** (`RULES § 0.1 ח׳`) — it has reddened the tree twice, once on a markdown-only edit.
 ⛔ **Never hand-edit `docs/plan-open.md`.** Fix the register row, then regenerate.
 
+## 🚪 STEP 2.5 — שער סקיל, לפני כל פעולה אחרת על המשימה:  ⟦NEW 06/09 · Roy's explicit instruction · Cowork architecture session · C-0476⟧
+קרא את docs/skills-registry.md מול המשימה שנבחרה.
+חובה לכתוב בדוח שלך שורה אחת, לפני כל שורת קוד/עריכה — שתי אפשרויות בלבד:
+  א) "[SKILL: <שם>] — כי <משפט אחד>" ⇒ הפעל את הסקיל הזה, ורק אותו, לפני קוד/סקירה.
+  ב) "[SKILL: none] — נבדק מול האינדקס, אין סקיל ייעודי רלוונטי למשימה הזאת".
+אסור להפעיל superpowers:using-superpowers (או כל סקיל כללי אחר) כברירת מחדל בלי לעבור את השלב הזה קודם.
+דיווח בדיעבד ("הייתי צריך להפעיל X") אינו סוגר את השלב — הוא קורה לפני קוד, לא אחריו.
+
 ## STEP 3 — PLAN OR BUILD?
 Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `superpowers:executing-plans`, go to STEP 5.
 ⚠️ **Check the plans index first — 46 exist and 8 are orphaned.** ⛔ Do not write plan 47 for what plan 31 covers.

@@ -355,6 +355,14 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed famili
 ⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
 🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next dev"` (T-251).** A `next dev` left on port 3000 answers HTTP but never registers a service worker (PWA is production-only); `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
 
+## 🚪 STEP 2.6 — שער סקיל, לפני כל פעולה אחרת על המשימה:  ⟦NEW 06/09 · Roy's explicit instruction · Cowork architecture session · C-0476⟧
+קרא את docs/skills-registry.md מול המשימה שנבחרה.
+חובה לכתוב בדוח שלך שורה אחת, לפני כל שורת קוד/עריכה — שתי אפשרויות בלבד:
+  א) "[SKILL: <שם>] — כי <משפט אחד>" ⇒ הפעל את הסקיל הזה, ורק אותו, לפני קוד/סקירה.
+  ב) "[SKILL: none] — נבדק מול האינדקס, אין סקיל ייעודי רלוונטי למשימה הזאת".
+אסור להפעיל superpowers:using-superpowers (או כל סקיל כללי אחר) כברירת מחדל בלי לעבור את השלב הזה קודם.
+דיווח בדיעבד ("הייתי צריך להפעיל X") אינו סוגר את השלב — הוא קורה לפני קוד, לא אחריו.
+
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.7⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.

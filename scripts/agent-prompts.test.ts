@@ -606,6 +606,62 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
         /⛔ A `\[SKILL: X\]` tag ⛔ does not unblock them/,
       );
     });
+
+    /**
+     * 🚪 **שער הסקיל — 06/09, הנחיה חד-פעמית של רוי דרך סשן ארכיטקטורה (Cowork), C-0476.**
+     *
+     * הכשל שנמדד (ברמת התהליך): DEV ו-PM דילגו על `docs/skills-registry.md` בפתיחת הטיק,
+     * או הפעילו את `superpowers:using-superpowers` בעיוורון כברירת מחדל, ודיווחו על כך
+     * **בדיעבד** כ«פספוס תהליכי». ⇒ הכרעה בינארית מפורשת ומדווחת, **לפני** קוד/סקירה:
+     * `[SKILL: <שם>] — כי …` או `[SKILL: none] — נבדק מול האינדקס …`.
+     *
+     * ⛔ הבדיקה סורקת את **שני** הקבצים יחד — בדיקה על קובץ אחד היא בדיוק הכשל של
+     * `§ 8.4` / `§ 0.16`: כלל שחי בכמה מקומות ונבדק באחד הוא כלל שנשבר בשאר.
+     */
+    describe('🚪 שער הסקיל — הכרעה בינארית לפני כל פעולה על המשימה  ⟦06/09 · C-0476⟧', () => {
+      const GATE = ['DEV', 'PM'] as const;
+      const HEAD = 'שער סקיל, לפני כל פעולה אחרת על המשימה';
+      const TAIL = 'הוא קורה לפני קוד, לא אחריו.';
+      const gateBlock = (a: (typeof GATE)[number]): string => {
+        const t = text(a);
+        const from = t.indexOf(HEAD);
+        const to = t.indexOf(TAIL, from);
+        expect(from, `${a}: כותרת השער`).toBeGreaterThan(-1);
+        expect(to, `${a}: סוף השער`).toBeGreaterThan(from);
+        return t.slice(from, to + TAIL.length);
+      };
+
+      it('ⓕ השער קיים בשני הקבצים, על ארבעת חלקיו — ⛔ לא באחד בלבד', () => {
+        for (const a of GATE) {
+          const g = gateBlock(a);
+          expect(g, `${a}: קורא את האינדקס מול המשימה`).toContain('קרא את docs/skills-registry.md מול המשימה שנבחרה');
+          expect(g, `${a}: אפשרות א — סקיל אחד, ורק הוא`).toContain('"[SKILL: <שם>] — כי <משפט אחד>"');
+          expect(g, `${a}: אפשרות ב — none`).toContain(
+            '"[SKILL: none] — נבדק מול האינדקס, אין סקיל ייעודי רלוונטי למשימה הזאת"',
+          );
+          expect(g, `${a}: ⛔ אין ברירת מחדל`).toContain(
+            'אסור להפעיל superpowers:using-superpowers (או כל סקיל כללי אחר) כברירת מחדל בלי לעבור את השלב הזה קודם',
+          );
+          expect(g, `${a}: דיווח בדיעבד ⛔ אינו סוגר`).toContain('דיווח בדיעבד ("הייתי צריך להפעיל X") אינו סוגר את השלב');
+        }
+      });
+
+      it('ⓖ הנוסח זהה מילה במילה ב-DEV וב-PM — מלבד מספר ה-STEP', () => {
+        expect(gateBlock('DEV')).toEqual(gateBlock('PM'));
+      });
+
+      it('ⓗ השער קודם לקריאת `superpowers:using-superpowers` ולפרק הסקילים — ⛔ לא אחריהם', () => {
+        for (const a of GATE) {
+          const t = text(a);
+          const gate = t.indexOf(HEAD);
+          const general = t.indexOf('run `superpowers:using-superpowers`');
+          expect(general, `${a}: הקריאה הכללית עדיין קיימת — STEP 4/3 ⛔ לא בוטל`).toBeGreaterThan(-1);
+          expect(gate, `${a}: השער לפני הקריאה הכללית`).toBeLessThan(general);
+          // ⛔ ומספר ה-STEP של השער עצמו נכתב בכותרת — הוא חלק מאנטומיית הטיק, ⛔ לא הערת שוליים.
+          expect(t.slice(Math.max(0, gate - 80), gate), `${a}: כותרת STEP עשרונית`).toMatch(/STEP \d+\.\d+ —\s*$/);
+        }
+      });
+    });
   });
 
   /**
