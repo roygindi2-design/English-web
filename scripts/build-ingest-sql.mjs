@@ -260,14 +260,16 @@ if (counts.examples > 0) {
 }
 
 if (counts.items > 0) {
-  scoringLines.push('with incoming (headword, pos, sense_index, item_index, stem) as (');
+  scoringLines.push('with incoming (headword, pos, sense_index, item_index, stem, level, level_rationale) as (');
   scoringLines.push('  values');
   scoringLines.push(
-    scoring.items.map((r) => `    (${identity(r)}, ${num(r.itemIndex)}, ${q(r.stem)})`).join(',\n'),
+    scoring.items
+      .map((r) => `    (${identity(r)}, ${num(r.itemIndex)}, ${q(r.stem)}, ${num(r.level)}, ${q(r.levelRationale)})`)
+      .join(',\n'),
   );
   scoringLines.push(')');
-  scoringLines.push('insert into public.sense_items (sense_id, stem, item_index)');
-  scoringLines.push('select s.id, i.stem, i.item_index');
+  scoringLines.push('insert into public.sense_items (sense_id, stem, item_index, level, level_rationale)');
+  scoringLines.push('select s.id, i.stem, i.item_index, i.level, i.level_rationale');
   scoringLines.push('from incoming i');
   scoringLines.push('join public.words w on w.headword = i.headword and w.pos = i.pos');
   scoringLines.push('join public.senses s on s.word_id = w.id and s.sense_index = i.sense_index');

@@ -80,4 +80,22 @@ describe('scripts/measure-continuations.mjs', () => {
     const dir = mkdtempSync(join(tmpdir(), 'continuations-empty-'));
     expect(() => run(dir)).toThrow(/no batch files/);
   });
+
+  it('D-141: counts a tagged object item\'s stem as a sentence, not just a bare-string item', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'continuations-items-'));
+    writeFileSync(
+      join(dir, 'batch-2026-01-01.jsonl'),
+      `${JSON.stringify({
+        headword: 'test',
+        pos: 'verb',
+        examples: { supportive: 'They test the machine.', neutral: 'She will test it soon.' },
+        items: [
+          'They ____ the machine every day.',
+          { stem: 'She will ____ it again tomorrow.', level: 2, level_rationale: 'x' },
+        ],
+      })}\n`,
+    );
+    const out = run(dir);
+    expect(out).toContain('1 קבצי אצווה · 1 שורות משמעות · 4 משפטים');
+  });
 });

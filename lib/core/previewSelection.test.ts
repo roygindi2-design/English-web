@@ -10,7 +10,7 @@ function rec(over: Partial<BatchRecord> & { headword: string; he: string; distra
       translationHe: over.he,
       definitionEn: 'a definition',
       examples: { supportive: 'A supportive line.', neutral: 'A neutral line.' },
-      items: ['The ____ is here.'],
+      items: [{ stem: 'The ____ is here.', level: null, levelRationale: null }],
       distractors: (over.distractors ?? []).map((word) => ({ word, relationType: 'semantic' as const })),
     },
     senseIndex: over.senseIndex ?? 1,

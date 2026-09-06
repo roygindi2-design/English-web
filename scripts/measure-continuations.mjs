@@ -84,7 +84,10 @@ for (const file of files) {
       if (typeof s === 'string') sentences.push(s);
     }
     if (Array.isArray(record.items)) {
-      for (const s of record.items) if (typeof s === 'string') sentences.push(s);
+      for (const s of record.items) {
+        if (typeof s === 'string') sentences.push(s);
+        else if (s && typeof s === 'object' && typeof s.stem === 'string') sentences.push(s.stem);
+      }
     }
   }
 }

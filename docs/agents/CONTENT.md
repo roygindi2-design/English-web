@@ -114,7 +114,9 @@ Headwords come from **NGSL v1.2 (2,809 entries, CC BY-SA 4.0)**, from `newgenera
  "translation_he":"מכוון","cefr_level":"B2","translation_confidence":"high",
  "examples":{"supportive":"It was a deliberate choice, not an accident.",
              "neutral":"Her answer was deliberate."},
- "items":["His silence was ____, not shy.","She made a ____ effort.","It was no accident — it was ____."],
+ "items":[{"stem":"His silence was ____, not shy.","level":3,"level_rationale":"concession without a connective ⇒ 3"},
+          {"stem":"She made a ____ effort.","level":1,"level_rationale":"short sentence, one blank, common vocabulary ⇒ 1"},
+          {"stem":"It was no accident — it was ____.","level":2,"level_rationale":"one implicit contrast, no connective word ⇒ 2"}],
  "distractors":[{"word":"accidental","relation_type":"semantic"},
                 {"word":"delicate","relation_type":"orthographic"},
                 {"word":"careless","relation_type":"semantic"},
@@ -201,14 +203,17 @@ level 3 (`41 § 6.2`).
   retro-tagging thousands of rows later costs a re-read of every one. ⇒ `§ 4.3.3` item 1
   is exactly this pattern, and it was right the first time.
 
-🔴 **⛔ NOT YET — and this line was wrong before, see F-168.** An earlier version told you
-to write `level` into the JSONL before the schema landed. ⛔ **That was impossible:**
-`contentSchema.ts:321` runs `stem.split(BLANK)` on every item, so an object ⛔ throws.
-⇒ **Keep `items` as strings until `T-223` lands.** When it has, the gate itself will
-reject an item with no level, and you will ⛔ not need this paragraph.
-⚠️ ⛔ **A prompt line ⛔ never overrides a machine-enforced gate.** If the two disagree,
-**obey the gate and report the contradiction** — that is exactly what the 29/08 run did,
-and it was right.
+🔴 **THIS HAS NOW LANDED (`T-224`, closes `F-168`).** An earlier version of this
+paragraph named `T-223` as the landing task — measured live: `T-223` is
+`lib/core/amirnetItemGate.ts`, the unrelated AMIRNET exam-item gate, and landed
+without touching `sense_items` at all. The real fix was always `T-224`, this
+paragraph's own subject. ⇒ **Write every item as
+`{"stem": …, "level": 1-4, "level_rationale": "…"}`** — the schema, the gate
+(`lib/core/contentSchema.ts`), and the migration (`0021_sense_items_level.sql`)
+all exist now. A plain string is still accepted (it normalises to a declared
+"written before D-141" untagged item) but is no longer what you should write.
+⚠️ ⛔ **A prompt line never overrides a machine-enforced gate.** If the two
+disagree, obey the gate and report the contradiction.
 
 ## 🔴 THE WORD LIST IS THE QUEUE — AND IT IS ROY'S STANDING ORDER  ⟦28/08 · D-140ⓑ · restated by Roy 23:3xZ⟧
 

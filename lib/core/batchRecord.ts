@@ -14,6 +14,7 @@
 import {
   POS_VALUES,
   RELATION_TYPES,
+  type GeneratedItem,
   type GeneratedSense,
   type Pos,
   type RelationType,
@@ -108,12 +109,36 @@ function examples(raw: Row): { readonly supportive: string; readonly neutral: st
   return { supportive: text(obj, 'supportive'), neutral: text(obj, 'neutral') };
 }
 
-function items(raw: Row): readonly string[] {
+/**
+ * D-141: an array element is either a legacy bare string (written before the
+ * level/rationale rule existed — normalised to a declared-null, grandfathered
+ * item) or a tagged object. Both shapes must keep parsing forever: 787 rows in
+ * data/generated/batch-*.jsonl today use the bare-string shape, and re-running
+ * `npm run build:ingest` over them must never throw or drop them.
+ */
+function items(raw: Row): readonly GeneratedItem[] {
   const value = field(raw, 'items');
   if (!Array.isArray(value)) throw new RangeError('items is not an array');
-  return value.map((stem, i) => {
-    if (typeof stem !== 'string') throw new RangeError(`items[${i}] is not a string`);
-    return stem;
+  return value.map((entry, i) => {
+    if (typeof entry === 'string') return { stem: entry, level: null, levelRationale: null };
+    if (typeof entry !== 'object' || entry === null) {
+      throw new RangeError(`items[${i}] is not a string or an object`);
+    }
+    const obj = entry as Row;
+    const stem = text(obj, 'stem');
+    const rawLevel = obj.level;
+    if (rawLevel !== undefined && rawLevel !== null && (typeof rawLevel !== 'number' || !Number.isInteger(rawLevel))) {
+      throw new RangeError(`items[${i}].level is not an integer`);
+    }
+    const rawRationale = obj.level_rationale;
+    if (rawRationale !== undefined && rawRationale !== null && typeof rawRationale !== 'string') {
+      throw new RangeError(`items[${i}].level_rationale is not a string`);
+    }
+    return {
+      stem,
+      level: (rawLevel ?? null) as GeneratedItem['level'],
+      levelRationale: rawRationale ?? null,
+    };
   });
 }
 

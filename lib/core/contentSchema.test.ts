@@ -3,11 +3,23 @@ import { describe, expect, it } from 'vitest';
 import {
   BLANK,
   gateSense,
+  ITEM_LEVELS,
   locateTarget,
   POS_VALUES,
   RELATION_TYPES,
   targetForms,
+  type GeneratedItem,
 } from './contentSchema';
+
+/** D-141: an item written before the level/rationale rule existed. Both null, together. */
+const untagged = (stem: string): GeneratedItem => ({ stem, level: null, levelRationale: null });
+
+/** D-141: a fully-tagged item, for tests that need one specific level. */
+const tagged = (stem: string, level: 1 | 2 | 3 | 4, levelRationale: string): GeneratedItem => ({
+  stem,
+  level,
+  levelRationale,
+});
 
 const ok = {
   headword: 'deliberate',
@@ -18,7 +30,7 @@ const ok = {
     supportive: 'It was a deliberate choice, not an accident.',
     neutral: 'Her answer was deliberate.',
   },
-  items: ['His silence was ____, not shy.', 'She made a ____ effort.', 'It was no accident — it was ____.'],
+  items: ['His silence was ____, not shy.', 'She made a ____ effort.', 'It was no accident — it was ____.'].map(untagged),
   distractors: [
     { word: 'accidental', relationType: 'semantic' as const },
     { word: 'delicate', relationType: 'orthographic' as const },
@@ -56,13 +68,13 @@ describe('gateSense', () => {
   });
 
   it('rejects a stem that has no blank', () => {
-    const r = gateSense({ ...ok, items: ['His silence was loud.', ...ok.items.slice(1)] }, opts);
+    const r = gateSense({ ...ok, items: [untagged('His silence was loud.'), ...ok.items.slice(1)] }, opts);
     expect(r.ok).toBe(false);
     expect(r.reasons.join()).toContain('blank');
   });
 
   it('rejects a stem that leaks the answer', () => {
-    const r = gateSense({ ...ok, items: ['A deliberate act is ____.', ...ok.items.slice(1)] }, opts);
+    const r = gateSense({ ...ok, items: [untagged('A deliberate act is ____.'), ...ok.items.slice(1)] }, opts);
     expect(r.ok).toBe(false);
     expect(r.reasons.join()).toContain('leaks');
   });
@@ -108,6 +120,45 @@ describe('gateSense', () => {
     expect(r.reasons.length).toBeGreaterThan(1);
   });
 
+  describe('D-141 — item level + level_rationale', () => {
+    it('accepts a fully-tagged item — level 1-4 with a non-empty rationale', () => {
+      const r = gateSense({ ...ok, items: [tagged('His silence was ____.', 3, 'concession without a connective ⇒ 3')] }, opts);
+      expect(r.reasons.join()).not.toContain('level');
+    });
+
+    it('accepts an untagged item — level and level_rationale both null (D-141 § ג, written before the rule)', () => {
+      const r = gateSense(ok, opts);
+      expect(r.reasons.join()).not.toContain('level');
+    });
+
+    it('rejects a level outside 1-4', () => {
+      const r = gateSense({ ...ok, items: [tagged('His silence was ____.', 5 as never, 'x')] }, opts);
+      expect(r.reasons.join()).toContain('level "5" is not one of 1|2|3|4');
+    });
+
+    it('rejects a set level with an empty level_rationale', () => {
+      const r = gateSense({ ...ok, items: [{ stem: 'His silence was ____.', level: 2, levelRationale: '' }] }, opts);
+      expect(r.reasons.join()).toContain('level_rationale is empty');
+    });
+
+    it('rejects a level_rationale with no level — a half-tagged item is not a valid untagged one', () => {
+      const r = gateSense({ ...ok, items: [{ stem: 'His silence was ____.', level: null, levelRationale: 'x' }] }, opts);
+      expect(r.reasons.join()).toContain('level and level_rationale must both be present or both be absent');
+    });
+
+    it('rejects a level with no level_rationale, the other half of the same rule', () => {
+      const r = gateSense({ ...ok, items: [{ stem: 'His silence was ____.', level: 2, levelRationale: null }] }, opts);
+      expect(r.reasons.join()).toContain('level and level_rationale must both be present or both be absent');
+    });
+
+    it('stays in lock-step with the CHECK constraint of migration 0021', () => {
+      const sql = readFileSync(new URL('../../supabase/migrations/0021_sense_items_level.sql', import.meta.url), 'utf8');
+      const m = /level between (\d+) and (\d+)/.exec(sql);
+      expect(m).not.toBeNull();
+      expect([Number(m?.[1]), Number(m?.[2])]).toEqual([Math.min(...ITEM_LEVELS), Math.max(...ITEM_LEVELS)]);
+    });
+  });
+
   // ── C-0008: findings from the subagent review, each proven against the old code ──
 
   it('stays in lock-step with the CHECK constraints of migration 0002', () => {
@@ -144,7 +195,7 @@ describe('gateSense', () => {
     const near = {
       ...ok, headword: 'note', pos: 'noun' as const, translationHe: 'פתק',
       examples: { supportive: 'This is not important at all.', neutral: 'This is not important.' },
-      items: ['She left a short ____.', 'He read the ____ twice.', 'They found a ____ on the desk.'],
+      items: ['She left a short ____.', 'He read the ____ twice.', 'They found a ____ on the desk.'].map(untagged),
     };
     const r = gateSense(near, { allowedWords: new Set(['this', 'is', 'not', 'important', 'at', 'all', 'she', 'left', 'short', 'he', 'read', 'the', 'twice', 'they', 'found', 'on', 'desk', 'a']) });
     expect(r.ok).toBe(false);
@@ -155,7 +206,7 @@ describe('gateSense', () => {
     const be = {
       ...ok, headword: 'be', pos: 'verb' as const, translationHe: 'להיות',
       examples: { supportive: 'The bureaucracy behaved badly.', neutral: 'It will be here.' },
-      items: ['It will ____ fine.', 'They should ____ here.', 'She wants to ____ ready.'],
+      items: ['It will ____ fine.', 'They should ____ here.', 'She wants to ____ ready.'].map(untagged),
     };
     const r = gateSense(be, { allowedWords: new Set(['the', 'it', 'will', 'here', 'they', 'should', 'she', 'wants', 'to', 'ready', 'fine']) });
     expect(r.ok).toBe(false);
@@ -166,7 +217,7 @@ describe('gateSense', () => {
     const care = {
       ...ok, headword: 'care', pos: 'noun' as const, translationHe: 'אכפתיות',
       examples: { supportive: 'She showed real care for them.', neutral: 'He took care of it.' },
-      items: ['The ____ drove past the car.', 'She showed no ____.', 'They took good ____ of him.'],
+      items: ['The ____ drove past the car.', 'She showed no ____.', 'They took good ____ of him.'].map(untagged),
     };
     const r = gateSense(care, { allowedWords: new Set(['she', 'showed', 'real', 'for', 'them', 'he', 'took', 'of', 'it', 'the', 'drove', 'past', 'car', 'no', 'they', 'good', 'him']) });
     expect(r.reasons.join()).not.toContain('leaks');
@@ -176,7 +227,7 @@ describe('gateSense', () => {
     const phrasal = {
       ...ok, headword: 'give up', pos: 'verb' as const, translationHe: 'לוותר',
       examples: { supportive: 'Do not give up before the end.', neutral: 'She gives up too fast.' },
-      items: ['Do not ____ now.', 'He wanted to ____ early.', 'They never ____ at all.'],
+      items: ['Do not ____ now.', 'He wanted to ____ early.', 'They never ____ at all.'].map(untagged),
     };
     const r = gateSense(phrasal, { allowedWords: new Set(['do', 'not', 'before', 'the', 'end', 'she', 'too', 'fast', 'now', 'he', 'wanted', 'to', 'early', 'they', 'never', 'at', 'all']) });
     expect(r).toEqual({ ok: true, reasons: [] });
@@ -234,14 +285,14 @@ describe('gateSense', () => {
 
   it('applies the level and length checks to item stems, not only to examples', () => {
     // Stems are shown to the learner exactly like examples.
-    const drifty = gateSense({ ...ok, items: ['The obfuscatory ratiocination was ____.', ...ok.items.slice(1)] }, opts);
+    const drifty = gateSense({ ...ok, items: [untagged('The obfuscatory ratiocination was ____.'), ...ok.items.slice(1)] }, opts);
     expect(drifty.reasons.join()).toContain('drift');
-    const empty = gateSense({ ...ok, items: ['____', ...ok.items.slice(1)] }, opts);
+    const empty = gateSense({ ...ok, items: [untagged('____'), ...ok.items.slice(1)] }, opts);
     expect(empty.ok).toBe(false);
   });
 
   it('rejects a stem with more than one blank — it is unanswerable with one key', () => {
-    const r = gateSense({ ...ok, items: ['It was ____ and ____ shy.', ...ok.items.slice(1)] }, opts);
+    const r = gateSense({ ...ok, items: [untagged('It was ____ and ____ shy.'), ...ok.items.slice(1)] }, opts);
     expect(r.reasons.join()).toContain('blank');
   });
 
@@ -274,7 +325,7 @@ describe('gateSense · inflections are morphologically constrained (F-020)', () 
     translationHe: 'מכונית',
     definitionEn: 'a road vehicle with four wheels',
     examples: { supportive: 'She made a car choice.', neutral: 'The car was her answer.' },
-    items: ['His ____ was silence.', 'She made a ____ effort.', 'It was no accident — a ____.'],
+    items: ['His ____ was silence.', 'She made a ____ effort.', 'It was no accident — a ____.'].map(untagged),
     distractors: [
       { word: 'accidental', relationType: 'semantic' as const },
       { word: 'delicate', relationType: 'orthographic' as const },

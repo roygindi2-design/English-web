@@ -228,6 +228,11 @@ describe('supabase/seed/0003_scoring_material.sql', () => {
     expect(sql).toContain('insert into public.sense_distractors');
   });
 
+  it('D-141: the sense_items insert names level and level_rationale', () => {
+    const sql = fresh();
+    expect(sql).toContain('insert into public.sense_items (sense_id, stem, item_index, level, level_rationale)');
+  });
+
   it('emits exactly two examples per PASSING sense — D-022, measured against 0001, ⛔ not a literal', () => {
     const sql = fresh();
     // 0001 states "N of M rows pass the gate" per batch. Summing N is the passing count,

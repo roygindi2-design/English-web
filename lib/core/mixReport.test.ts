@@ -18,7 +18,7 @@ function sense(
     translationHe,
     definitionEn: `definition of ${headword}`,
     examples: { supportive: 'x', neutral: 'y' },
-    items: ['____'],
+    items: [{ stem: '____', level: null, levelRationale: null }],
     distractors,
   };
 }

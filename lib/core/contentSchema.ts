@@ -33,8 +33,24 @@ export type RelationType = (typeof RELATION_TYPES)[number];
 /** The blank marker in an item stem. Pinned to sense_items.blank_token's default. */
 export const BLANK = '____';
 
+/** D-141 · 41 § 6.2 — difficulty 1-4. Mirrors migration 0021's CHECK (asserted in the test). */
+export const ITEM_LEVELS = [1, 2, 3, 4] as const;
+export type ItemLevel = (typeof ITEM_LEVELS)[number];
+
 /** near_synonym is stored for analysis but is NOT a scorable option (migration 0002). */
 const SCORABLE = (r: RelationType): boolean => r !== 'near_synonym';
+
+/**
+ * D-141 — a practice-sentence stem, tagged with a difficulty level at write time.
+ * `level`/`levelRationale` are BOTH null together (written before D-141 — a
+ * declared legal, ungraded state) or BOTH set together (a real 1-4 level with
+ * its § 6.2 criterion named) — never one without the other; see `gateSense`.
+ */
+export interface GeneratedItem {
+  readonly stem: string;
+  readonly level: ItemLevel | null;
+  readonly levelRationale: string | null;
+}
 
 export interface GeneratedSense {
   readonly headword: string;
@@ -42,7 +58,7 @@ export interface GeneratedSense {
   readonly translationHe: string;
   readonly definitionEn: string;
   readonly examples: { readonly supportive: string; readonly neutral: string };
-  readonly items: readonly string[];
+  readonly items: readonly GeneratedItem[];
   readonly distractors: readonly { readonly word: string; readonly relationType: RelationType }[];
 }
 
@@ -318,7 +334,8 @@ export function gateSense(input: GeneratedSense, opts: GateOptions): GateResult 
 
   // --- items ---
   if (input.items.length < 3) reasons.push('items: fewer than 3');
-  input.items.forEach((stem, i) => {
+  input.items.forEach((item, i) => {
+    const stem = item.stem;
     const blanks = stem.split(BLANK).length - 1;
     if (blanks === 0) reasons.push(`item ${i}: no blank`);
     else if (blanks > 1) reasons.push(`item ${i}: more than one blank`);
@@ -326,6 +343,23 @@ export function gateSense(input: GeneratedSense, opts: GateOptions): GateResult 
     if (containsHeadword(body, forms)) reasons.push(`item ${i}: leaks the answer`);
     if (tokens(body).length < minStemWords) reasons.push(`item ${i}: fewer than ${minStemWords} words`);
     checkSentence(`item ${i}`, body, maxWords);
+
+    // D-141: level and level_rationale are tagged together (a real 1-4 level with its
+    // § 6.2 criterion named) or both absent (a declared-legal, written-before-D-141
+    // item) — never one without the other.
+    const { level, levelRationale } = item;
+    if (level === null || levelRationale === null) {
+      if (level !== null || levelRationale !== null) {
+        reasons.push(`item ${i}: level and level_rationale must both be present or both be absent (D-141)`);
+      }
+    } else {
+      if (!(ITEM_LEVELS as readonly number[]).includes(level as number)) {
+        reasons.push(`item ${i}: level "${level}" is not one of ${ITEM_LEVELS.join('|')}`);
+      }
+      if (levelRationale.trim() === '') {
+        reasons.push(`item ${i}: level_rationale is empty`);
+      }
+    }
   });
 
   // --- distractors ---

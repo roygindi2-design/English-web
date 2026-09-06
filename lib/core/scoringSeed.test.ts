@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { BatchRecord } from './batchRecord';
-import { gateSense } from './contentSchema';
+import { gateSense, type GeneratedItem } from './contentSchema';
 import { scoringCounts, scoringRowsFor } from './scoringSeed';
+
+/** D-141: an item written before the level/rationale rule existed. Both null, together. */
+const untagged = (stem: string): GeneratedItem => ({ stem, level: null, levelRationale: null });
 
 /** A record shaped exactly like a parsed jsonl row, ⛔ not read from data/generated/. */
 function record(overrides: Partial<BatchRecord['sense']> = {}, senseIndex = 1): BatchRecord {
@@ -12,7 +15,7 @@ function record(overrides: Partial<BatchRecord['sense']> = {}, senseIndex = 1): 
       translationHe: 'תמיד',
       definitionEn: 'at every time',
       examples: { supportive: 'He always walks to work.', neutral: 'She always says that.' },
-      items: ['The train ____ leaves at nine.', 'She ____ helps her friends.'],
+      items: ['The train ____ leaves at nine.', 'She ____ helps her friends.'].map(untagged),
       distractors: [
         { word: 'quite', relationType: 'semantic' },
         { word: 'alone', relationType: 'orthographic' },
@@ -43,9 +46,16 @@ describe('scoringRowsFor', () => {
 
   it('numbers item stems by array position — sense_items.item_index is unique per sense', () => {
     const rows = scoringRowsFor([record()]);
-    expect(rows.items.map((row) => [row.itemIndex, row.stem])).toEqual([
-      [0, 'The train ____ leaves at nine.'],
-      [1, 'She ____ helps her friends.'],
+    expect(rows.items).toEqual([
+      { headword: 'always', pos: 'adverb', senseIndex: 1, itemIndex: 0, stem: 'The train ____ leaves at nine.', level: null, levelRationale: null },
+      { headword: 'always', pos: 'adverb', senseIndex: 1, itemIndex: 1, stem: 'She ____ helps her friends.', level: null, levelRationale: null },
+    ]);
+  });
+
+  it('D-141: carries level and levelRationale through unchanged', () => {
+    const rows = scoringRowsFor([record({ items: [{ stem: 'It ____ rains here.', level: 3, levelRationale: 'concession ⇒ 3' }] })]);
+    expect(rows.items).toEqual([
+      { headword: 'always', pos: 'adverb', senseIndex: 1, itemIndex: 0, stem: 'It ____ rains here.', level: 3, levelRationale: 'concession ⇒ 3' },
     ]);
   });
 
@@ -119,7 +129,7 @@ describe('the gate is the caller’s job — R-014', () => {
       'The train ____ leaves at nine.',
       'She ____ helps her friends.',
       'He ____ walks to work.',
-    ],
+    ].map(untagged),
     distractors: [
       { word: 'quite', relationType: 'semantic' },
       { word: 'alone', relationType: 'orthographic' },

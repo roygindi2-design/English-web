@@ -1,5 +1,5 @@
 import type { BatchRecord } from './batchRecord';
-import type { RelationType } from './contentSchema';
+import type { ItemLevel, RelationType } from './contentSchema';
 
 /**
  * The rows that scripts/build-ingest-sql.mjs has withheld since T-042 — sense_examples,
@@ -24,6 +24,8 @@ export interface ItemRow {
   readonly senseIndex: number;
   readonly itemIndex: number;
   readonly stem: string;
+  readonly level: ItemLevel | null;
+  readonly levelRationale: string | null;
 }
 
 export interface DistractorRow {
@@ -62,8 +64,8 @@ export function scoringRowsFor(records: readonly BatchRecord[]): ScoringRows {
       examples.push({ ...identity, kind, textEn: record.sense.examples[kind] });
     }
 
-    record.sense.items.forEach((stem, itemIndex) => {
-      items.push({ ...identity, itemIndex, stem });
+    record.sense.items.forEach((item, itemIndex) => {
+      items.push({ ...identity, itemIndex, stem: item.stem, level: item.level, levelRationale: item.levelRationale });
     });
 
     /**

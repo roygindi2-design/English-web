@@ -20,6 +20,15 @@ const ROW = {
   spot_check: true,
 };
 
+/** D-141: a batch row using the tagged item shape, alongside a legacy bare-string one. */
+const TAGGED_ROW = {
+  ...ROW,
+  items: [
+    'Only ____ people are at the meeting.',
+    { stem: 'Very ____ students finished early.', level: 2, level_rationale: 'one connective-free comparative ⇒ 2' },
+  ],
+};
+
 describe('parseBatchRecord', () => {
   it('renames every snake_case field the gate reads', () => {
     const r = parseBatchRecord(ROW);
@@ -33,6 +42,33 @@ describe('parseBatchRecord', () => {
     expect(Object.keys(r.sense).sort()).toEqual(
       ['definitionEn', 'distractors', 'examples', 'headword', 'items', 'pos', 'translationHe'],
     );
+  });
+
+  it('D-141: normalises a legacy bare-string item to { stem, level: null, levelRationale: null }', () => {
+    const r = parseBatchRecord(ROW);
+    expect(r.sense.items).toEqual([{ stem: 'Only ____ people are at the meeting.', level: null, levelRationale: null }]);
+  });
+
+  it('D-141: parses a tagged object item, camelCasing level_rationale', () => {
+    const r = parseBatchRecord(TAGGED_ROW);
+    expect(r.sense.items).toEqual([
+      { stem: 'Only ____ people are at the meeting.', level: null, levelRationale: null },
+      { stem: 'Very ____ students finished early.', level: 2, levelRationale: 'one connective-free comparative ⇒ 2' },
+    ]);
+  });
+
+  it('D-141: rejects a tagged item whose level is not an integer', () => {
+    const bad = { ...ROW, items: [{ stem: 'x ____ y', level: 'two', level_rationale: 'r' }] };
+    expect(() => parseBatchRecord(bad)).toThrow(/items\[0\]\.level/);
+  });
+
+  it('D-141: rejects a tagged item whose level_rationale is not a string', () => {
+    const bad = { ...ROW, items: [{ stem: 'x ____ y', level: 2, level_rationale: 7 }] };
+    expect(() => parseBatchRecord(bad)).toThrow(/items\[0\]\.level_rationale/);
+  });
+
+  it('D-141: rejects an item that is neither a string nor an object', () => {
+    expect(() => parseBatchRecord({ ...ROW, items: [42] })).toThrow(/items\[0\]/);
   });
 
   it('derives needsHumanReview from confidence — D-024, not a copy of spot_check', () => {
