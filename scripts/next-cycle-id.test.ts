@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { formatCycleId, maxCycleNumber } from './next-cycle-id.mjs';
 
@@ -42,5 +43,22 @@ describe('scripts/next-cycle-id.mjs', () => {
   it('ignores ids embedded in unrelated tokens (word boundary, not substring)', () => {
     // "XC-0426Y" must not match — only a real `C-####` token counts.
     expect(maxCycleNumber(['XC-0426Y really-not-an-id'])).toBe(0);
+  });
+});
+
+/**
+ * ⛔ The declaration file is hand-written (`next-cycle-id.d.mts`), so it can drift
+ * from the module. The block above catches a changed BEHAVIOUR; this one catches
+ * a changed SHAPE — the same pairing `motion-gate.test.ts`/`story-tap-audit.test.ts` use.
+ */
+describe('the hand-written declaration file', () => {
+  it('declares exactly the names the module exports', async () => {
+    const mod = await import('./next-cycle-id.mjs');
+    const declared = [
+      ...readFileSync('scripts/next-cycle-id.d.mts', 'utf8').matchAll(
+        /export declare (?:const|function)\s+([A-Za-z_$][\w$]*)/g,
+      ),
+    ].map((m) => m[1]);
+    expect([...declared].sort()).toEqual(Object.keys(mod).sort());
   });
 });
