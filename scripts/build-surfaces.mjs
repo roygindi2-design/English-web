@@ -459,6 +459,42 @@ for (const file of linkSources) {
   }
 }
 
+/**
+ * ⛔ **T-272 · a route can have a real entrance that is ⛔ NOT A TAP.** `/offline`
+ * measured 7 flags → `⛔ אינו נגיש בהקשות` for a screen `npm run verify`'s own
+ * mobile gate proves reachable in the SAME run («ok offline reload serves a real
+ * Hebrew screen»). ⛔ **The gap is not the screen — it is this scanner:**
+ * `linkSources` above walks `app/`, `components/`, `lib/` only, and the ⛔ ONLY
+ * thing that ever navigates to `/offline` is the **service worker**
+ * (`public/sw.js:6` `const OFFLINE_ROUTE = '/offline'`, called from
+ * `offlineResponse()` at `:43`, itself called from `:67`/`:70`/`:99`) — a file
+ * this scanner ⛔ never reads, because it is not `app/`, `components/` or
+ * `lib/`. ⇒ `public/sw.js` is scanned the SAME way `entrances` already scans
+ * every other source — a quoted route string anywhere in the file — and a hit
+ * is recorded under the synthetic source name `service worker`, ⛔ never the
+ * file path, so the register reads "how" the learner gets there, not "which
+ * file mentions it". A screen no source EXCEPT the service worker reaches is
+ * ⛔ still not a tap-navigable screen ⇒ ⛔ NOT the same class as an entrance from
+ * `app/`/`components/`/`lib/`, which is exactly why this stays a separate,
+ * narrow scan instead of adding `public/` to `linkSources` wholesale (that
+ * would also start counting `manifest.json`, icons, etc. as "sources").
+ */
+let swBody = '';
+try {
+  swBody = read(join(ROOT, 'public', 'sw.js'));
+} catch {
+  swBody = '';
+}
+if (swBody !== '') {
+  for (const r of rows) {
+    const quoted = new RegExp(`['"\`]${r.route.replace(/\//g, '\\/')}['"\`]`);
+    if (!quoted.test(swBody)) continue;
+    const set = entrances.get(r.route) ?? new Set();
+    set.add('service worker');
+    entrances.set(r.route, set);
+  }
+}
+
 const cell = (list, max = 4) => {
   if (list.length === 0) return '⛔ —';
   const shown = list.slice(0, max).map((s) => `\`${s}\``).join(' · ');

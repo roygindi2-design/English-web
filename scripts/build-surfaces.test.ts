@@ -117,6 +117,26 @@ describe('scripts/build-surfaces.mjs', () => {
     expect(md).toMatch(/🔴 `\/studies` — \*\*3 שמות שונים לאותה פעולה/);
   });
 
+  /**
+   * ⛔ **T-272 — an entrance can be the SERVICE WORKER, ⛔ not a tap.** `/offline`
+   * measured `⛔ אינו נגיש בהקשות` in the same clone where `npm run verify`'s
+   * mobile gate proved the screen reachable — because `public/sw.js` navigates
+   * to it (`OFFLINE_ROUTE`) and this scanner never reads `public/`. ⛔ THE BUG
+   * THIS PINS: no source in `app/`/`components/`/`lib/` mentions `/offline` in
+   * this fixture, so before the fix the register calls it unreachable.
+   */
+  it('T-272: counts an entrance a route gets ONLY from `public/sw.js`, labelled `service worker`', () => {
+    const md = run(
+      fixture({
+        ...BASE,
+        'app/offline/page.tsx': `export default function Offline() { return <p>אין חיבור כרגע</p>; }\n`,
+        'public/sw.js': `const OFFLINE_ROUTE = '/offline';\nself.addEventListener('fetch', () => {});\n`,
+      }),
+    );
+    expect(md).toMatch(/`\/offline` \| .* \| `service worker`/);
+    expect(md).not.toMatch(/`\/offline` — ⛔ אף מסך ⛔ אינו מקשר אליו/);
+  });
+
   it('keeps `/dev/*` fixtures in their own table and out of the flags', () => {
     const md = run(
       fixture({
@@ -250,15 +270,23 @@ export default function RingPage() { return <RingNode />; }
    * and was wrong. ⇒ `lib/core` depth-1 folding is constants-only (see the
    * block comment above `childLibConstantsOf`); `components/*` depth-1 folding
    * stays whole-file, because there the full markup is the point.
-   * ⛔ **CEILING, ⛔ not a target.** A number above 7 means a phantom flag came
+   * ⛔ **CEILING, ⛔ not a target.** A number above 6 means a phantom flag came
    * back — the scanner regressed, ⛔ not that a real product screen broke (a
    * real regression is caught by `check:mobile`/`verify`, not by this file).
    * Lower the ceiling only when a flag closes for real, never raise it to make
-   * a red run green. The remaining 7 are `/offline` "not reachable by taps"
-   * (real — pulled by the service worker) plus six "no empty state" left for
+   * a red run green.
+   * 🔵 **T-272, measured live in this clone, ⛔ not guessed: `7 → 6`.** The
+   * `/offline` "not reachable by taps" flag was ITSELF a phantom, not a real
+   * gap: `public/sw.js` is the only thing that ever navigates there
+   * (`OFFLINE_ROUTE`), and this scanner read `app/`/`components/`/`lib/` only
+   * — never `public/`. `npm run verify`'s own mobile gate proved the screen
+   * reachable in the SAME run this scanner called it orphaned. ⇒ `public/sw.js`
+   * is now scanned the same way every other source is (a quoted route string
+   * anywhere in the file), and a hit is recorded under the synthetic entrance
+   * `service worker`. The remaining 6 are all "no empty state", left for
    * judgment (`login`·`offline`·`onboarding`·`/`·`signup`·`sources`).
    */
-  it('gate: phantom flags on the real app tree may only go down, never back up (D-191 · T-263 · T-265)', () => {
+  it('gate: phantom flags on the real app tree may only go down, never back up (D-191 · T-263 · T-265 · T-272)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'surfaces-real-'));
     const out = join(dir, 'real.md');
     execFileSync('node', ['scripts/build-surfaces.mjs'], {
@@ -269,6 +297,6 @@ export default function RingPage() { return <RingNode />; }
     const match = /### דגלים — (\d+)/.exec(md);
     expect(match).not.toBeNull();
     const flagCount = Number(match?.[1]);
-    expect(flagCount).toBeLessThanOrEqual(7);
+    expect(flagCount).toBeLessThanOrEqual(6);
   });
 });

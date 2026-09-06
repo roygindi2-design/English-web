@@ -25,11 +25,11 @@
 | `/world` | `חברים חברים` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +9 | ⛔ — | ✅ | `components/WorldRing` |
 | `/world/story` | `חזרה לעולם` · `סיימתי לקרוא` · `לבחירת הרמה` … +5 | `/dev/story` · `/dev/world/ring` · `components/StoryScreen.tsx` … +1 | ⛔ — | ✅ | `components/StoryScreen` |
 | `/arcade` | `סגור` · `להתחברות מחדש` · `בחירת רמה` … +4 | `/dev/arcade/home` · `/dev/arcade` · `/dev/arcade/result` … +6 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
-| `/login` | `להתחברות` | `/` · `components/ArenaBattle.tsx` · `components/ArenaHome.tsx` … +10 | ⛔ — | ⛔ | `components/AuthForm` |
-| `/offline` | `נסה שוב` | ⛔ — | `/` | ⛔ | `—` |
-| `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +5 | ⛔ — | ⛔ | `components/RegisteredAddress` |
-| `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` | `/signup` · `/login` | ⛔ | `components/EnWord` |
-| `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` | ⛔ — | ⛔ | `components/AuthForm` |
+| `/login` | `להתחברות` | `/` · `components/ArenaBattle.tsx` · `components/ArenaHome.tsx` … +11 | ⛔ — | ⛔ | `components/AuthForm` |
+| `/offline` | `נסה שוב` | `service worker` | `/` | ⛔ | `—` |
+| `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +6 | ⛔ — | ⛔ | `components/RegisteredAddress` |
+| `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` … +1 | `/signup` · `/login` | ⛔ | `components/EnWord` |
+| `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` … +1 | ⛔ — | ⛔ | `components/AuthForm` |
 | `/sources` | `לעמוד המקור` · `חזרה למסך הבית` | `app/layout.tsx` · `components/ActionBar.tsx` · `components/MeScreen.tsx` … +1 | `/` | ⛔ | `components/EnWord` |
 | `/study` | `התחברות מחדש` · `נסה שוב` · `חזרה לכרטיסיות` | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +4 | `/cards` | ✅ | `components/StudyDeckScreen` |
 | `/study/scan` | `למפת הרמה` · `נסה שוב` · `המשך` … +1 | `/settings` · `lib/core/worldApps.ts` | ⛔ — | ✅ | `components/LevelScan` |
@@ -65,9 +65,8 @@
 | `/dev/world/ring/expired` | `חברים חברים` | ⛔ — | ⛔ — | ✅ | `—` |
 | `/dev/world/ring` | `חברים חברים` | `/dev/world/ring/expired` | ⛔ — | ✅ | `—` |
 
-### דגלים — 7
+### דגלים — 6
 
-- ⚠️ `/offline` — ⛔ אף מסך ⛔ אינו מקשר אליו ⇒ ⛔ אינו נגיש בהקשות
 - ⚠️ `/login` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/offline` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/onboarding` — ⛔ אין מצב ריק כתוב
