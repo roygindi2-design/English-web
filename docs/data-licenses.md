@@ -17,6 +17,7 @@ credit we owe it, and the only host a file of it may come from (R-004).
 | English Wiktionary (EN→HE) | CC BY-SA 4.0 | yes | allowed | `en.wiktionary.org` | https://en.wiktionary.org/ |
 | Kaikki.org / wiktextract | CC BY-SA 4.0 | yes | allowed | `kaikki.org` | https://kaikki.org/dictionary/English/ |
 | word2word | Apache-2.0 | no | allowed | `github.com` | https://github.com/kakaobrain/word2word |
+| WordNet 3.1 (Princeton University) | רישיון WordNet של אוניברסיטת פרינסטון — שימוש מסחרי מותר בלי תמלוגים, בתנאי שהודעת הזכויות היוצרים המקורית נשארת על כל עותק (ללא share-alike) | no | allowed-with-citation | `wordnetcode.princeton.edu` | https://wordnetcode.princeton.edu/ |
 
 ## Required attribution
 
@@ -29,6 +30,7 @@ These lines are what the learner sees on `/sources`, in Hebrew.
 - **English Wiktionary (EN→HE)** — תרגומים מתוך ויקימילון האנגלי, ברישיון CC BY-SA 4.0.
 - **Kaikki.org / wiktextract** — חילוץ מובנה של ויקימילון מאת Kaikki.org (wiktextract), ברישיון CC BY-SA 4.0.
 - **word2word** — מילון word2word, ברישיון Apache-2.0.
+- **WordNet 3.1 (Princeton University)** — מאגר WordNet 3.1 של אוניברסיטת פרינסטון. "WordNet 3.0 Copyright 2006 by Princeton University. All rights reserved." — הודעת הזכויות הנדרשת ברישיון, כלשונה.
 
 ## Rejected sources
 

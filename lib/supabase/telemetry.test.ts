@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DATA_SOURCES } from '../core/dataSources';
 
@@ -49,17 +50,44 @@ describe('the data_sources table mirrors the code registry exactly', () => {
   // constraint `('seed','ngsl','generated')` and reports a phantom source
   // called "seed". Scoping the scan to the insert statement is what the test
   // actually means, and it keeps the check-constraint text free to change.
-  const INSERT_BLOCK = MIGRATION.match(/insert into public\.data_sources[\s\S]*?;/i)?.[0] ?? '';
-  const seeded = [...INSERT_BLOCK.matchAll(/\(\s*'([a-z0-9-]+)'\s*,\s*'/g)].map((m) => m[1]);
+  //
+  // ⛔ Scans EVERY migration under `supabase/migrations/`, ⛔ not only 0003b —
+  // T-198 (`0020_data_sources_wordnet.sql`) is the reason: 0003b already shipped
+  // to the live project outside `supabase db push` tracking (measured this tick:
+  // only `0019_story_questions` appears in `supabase_migrations.schema_migrations`
+  // on `zsnqeaajnbrnnahdunof`), so a NEW source id after 0003b belongs in a NEW
+  // migration, never an edit to one already applied. Pinning this scan to one
+  // filename would have made this test fail forever the moment that happened —
+  // exactly what it just did before this line was written.
+  const MIGRATIONS_DIR = 'supabase/migrations';
+  // `noUncheckedIndexedAccess` makes a regex capture group `string | undefined`
+  // (the C-0023 lesson, same named-accessor pattern as dataSources.test.ts's
+  // `bySourceId`) — the filter below drops a match that somehow lacked group 1,
+  // which regex semantics never actually produce here, so it is inert in practice.
+  const seeded: string[] = readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql'))
+    .flatMap((f) => {
+      const text = readFileSync(join(MIGRATIONS_DIR, f), 'utf8');
+      const block = text.match(/insert into public\.data_sources[\s\S]*?;/i)?.[0] ?? '';
+      return [...block.matchAll(/\(\s*'([a-z0-9-]+)'\s*,\s*'/g)]
+        .map((m) => m[1])
+        .filter((id): id is string => id !== undefined);
+    });
 
-  it('has an insert statement at all — an empty scan must not pass vacuously', () => {
-    expect(INSERT_BLOCK).not.toBe('');
+  it('has at least one insert statement somewhere — an empty scan must not pass vacuously', () => {
     expect(seeded.length).toBe(DATA_SOURCES.length);
   });
 
-  it('seeds a row for every id, and no extra ids', () => {
+  it('seeds a row for every id, across all migrations combined, and no extra ids', () => {
     const inCode = DATA_SOURCES.map((s) => s.id).sort();
     expect([...new Set(seeded)].sort()).toEqual(inCode);
+  });
+
+  it('never seeds the same id twice across migrations — that is a conflict, not idempotency', () => {
+    const counts = new Map<string, number>();
+    for (const id of seeded) counts.set(id, (counts.get(id) ?? 0) + 1);
+    const duped = [...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id);
+    expect(duped).toEqual([]);
   });
 });
 

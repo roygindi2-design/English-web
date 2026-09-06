@@ -31,6 +31,7 @@ describe('the data source registry', () => {
       'octanove',
       'wiktionary-en-he',
       'word2word',
+      'wordnet',
     ]);
   });
 
@@ -62,6 +63,17 @@ describe('the data source registry', () => {
   it('pins NGSL to its own domain — R-004', () => {
     expect(bySourceId('ngsl').host).toBe('newgeneralservicelist.com');
     expect(bySourceId('ngsl').name).toContain('1.2');
+  });
+
+  it('pins WordNet to Princeton’s own host and marks it not share-alike (T-198)', () => {
+    // scripts/fetch-wordnet.mjs is the only reader allowed to download from this
+    // host (R-004 pattern) — checksum-verified against a value measured independently
+    // off a Gentoo distfiles mirror in this tick, not merely computed and trusted.
+    const wn = bySourceId('wordnet');
+    expect(wn.host).toBe('wordnetcode.princeton.edu');
+    expect(wn.shareAlike).toBe(false);
+    expect(wn.commercialUse).toBe('allowed-with-citation');
+    expect(wn.name).toContain('3.1');
   });
 
   it('throws by name on an unknown id rather than returning undefined', () => {

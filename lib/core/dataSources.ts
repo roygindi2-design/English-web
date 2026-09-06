@@ -21,7 +21,8 @@ export type SourceId =
   | 'hebrew-wordnet'
   | 'wiktionary-en-he'
   | 'kaikki'
-  | 'word2word';
+  | 'word2word'
+  | 'wordnet';
 
 export interface DataSource {
   readonly id: SourceId;
@@ -117,6 +118,22 @@ export const DATA_SOURCES: readonly DataSource[] = Object.freeze([
     host: 'github.com',
     attributionHe: 'מילון word2word, ברישיון Apache-2.0.',
     usedFor: 'מועמדי תרגום לעברית',
+  }),
+  Object.freeze({
+    id: 'wordnet',
+    name: 'WordNet 3.1 (Princeton University)',
+    licence:
+      'רישיון WordNet של אוניברסיטת פרינסטון — שימוש מסחרי מותר בלי תמלוגים, בתנאי ' +
+      'שהודעת הזכויות היוצרים המקורית נשארת על כל עותק (ללא share-alike)',
+    shareAlike: false,
+    commercialUse: 'allowed-with-citation',
+    url: 'https://wordnetcode.princeton.edu/',
+    host: 'wordnetcode.princeton.edu',
+    attributionHe:
+      'מאגר WordNet 3.1 של אוניברסיטת פרינסטון. ' +
+      '"WordNet 3.0 Copyright 2006 by Princeton University. All rights reserved." — ' +
+      'הודעת הזכויות הנדרשת ברישיון, כלשונה.',
+    usedFor: 'מספר החישה (sense_number) ותדירות תיוג הקורפוס (tag_count) לכל synset',
   }),
 ]);
 
