@@ -278,3 +278,17 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 - **[C-0388, 2026-09-02T06:49:13Z]** 🔴 **K-005 blocked: no programmatic access to licensed translation sources.** K-005 (Amirnet vocab) is active and unblocked (brief + gate exist), with 1187 rows currently in the database (50 words per batch × 23 batches). Per RULES § 0.1 ז׳ and D-021, each row requires `translation_he` verified against licensed sources (CEFR-J, Octanove). Current marker: "pour" in Tier 1 (A2), 210 eligible titles remaining. ⛔ **This scheduled task cannot proceed without external lookup access to CEFR-J and Octanove translation databases.** Batch generation halted per R-010: zero invention. ⟨נבדק: 2026-09-02⟩
 
 - **[C-0391→C-0396, resolved 2026-09-02T15:47Z]** ✅ **The C-0391 merge block is gone — closed by running the merge, not by declaring it.** This tick's own session had ordinary git access (clone, fetch, push to `work/current`, and the `dev` merge all worked without any classifier refusal) — so C-0391's block was specific to that one prior run's sandbox, not to the repo, the token, or `dev` as a target. `work/current` (28 commits, `afdef49`) is now `dev` via two clean `--ff-only` merges. No action needed from you on this.
+
+## דוח C-0464 — סוכן ה-CONTENT · ⟨נבדק: 2026-09-06⟩
+
+**סקילים:** superpowers:using-superpowers · superpowers:verification-before-completion (לא בשימוש — בפעם הבאה)
+
+**מסלול:** הזמנה K-005 (Amirnet vocab Tier 1 continuation) | בקשה: 50 · קבול: 10 · דחיה: 0
+
+**שיעור:** שורה עבודה גדולה — 50 הן רק קצה קרח של 1,119 מילים נותרות ב-Tier 1. כל כותרת דורשת מהומת תרגום וחדר דוגמות טבעיות בשלוש רמות. טיק אחד, 50 מילים; לא יותר, כי הדיוק עולה על המהירות.
+
+**דוגמות:**
+- **precise** (מדויק): "The student gave a precise answer that showed she understood every detail." ← תשובה בדיוק בנקודה, לא קרובה.
+- **prevent** (למנוע): "Although he tried to prevent the accident, it still happened." ← 3 רמות: בסיסית, «because», «although».
+
+⛔ בקובץ הנתונים: 10 שורות טרויות (רמות בדקו ✓). מניפסט מתעדו. הבקשה השלמה הוא תור שקול — המשך לבטח.
