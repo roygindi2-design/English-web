@@ -347,7 +347,7 @@ to that question, it is **derived**, and it ⛔ cannot drift as long as this lin
 
 Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK) + one journal line.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.21` makes an item unchecked for 7 days a finding in itself.
-New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
+New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
 ```
 ./scripts/g commit -m "loop(DEV): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```

@@ -383,7 +383,7 @@ Yours: `10-pedagogy` · `15-syllabus-digest` (cap 150 lines) · `20-alerts` · `
 🆕 **AND, since 31/08 (‏`D-166`): `36`/`37`/`38`/`39` and layer A — ⛔ but ONLY to copy in a decision that is already written** (‏`40-decisions.md`, or Roy's own words for layer A). ⛔ Never to author new spec, ⛔ never to resolve a conflict against `36`, ⛔ never to soften a rule.
 🆕 **When writing tasks in `50-tasks.md` — task batching, ‏01/09 · Roy's explicit decision:** When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.
 Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.
-Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
+Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
 
 ## STEP 6 — CLOSE
 `00-control`: `NEXT_AGENT=DEV` when a slice is ready. Release the LOCK. One journal line.

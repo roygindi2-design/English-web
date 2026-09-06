@@ -446,7 +446,7 @@ Your files: `60-findings` · append to `20-alerts` · `30-architecture` verifica
 ⛔ Never touch code, `10-pedagogy`, `15-syllabus-digest`, `01-vision`, `35-design-constitution`, `36`/`37`/`38`/`39`.
 ⚠️ **Wrote an item for Roy? It carries `⟨נבדק: YYYY-MM-DD⟩`** — check 3 fails otherwise.
 🔴 **AND THE STAMPS ARE NOW YOURS ALONE, ⛔ BECAUSE THE SWEEP THAT USED TO REFRESH THEM IS GONE.** `plan/03-for-roy.md` holds **21 open items**; `RULES § 0.21` makes any item unchecked for 7 days a finding in itself, and `loop:health` check 3 goes red on it. ⇒ **every tick, re-read each open item, and for each one either: refresh the stamp because it still holds, or close it because it no longer does.** ⛔ **Refreshing a stamp without re-reading the item is the lie this rule exists against** — it converts «Roy still needs this» into «the date is recent».
-New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — two agents collided on `C-0284` on 24/08.
+New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
 ```
 ./scripts/g commit -m "loop(QA): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```

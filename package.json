@@ -17,6 +17,7 @@
     "check:text-floor": "node scripts/check-text-floor.mjs",
     "check:rules": "node scripts/check-rules-citations.mjs",
     "check:titles": "node scripts/check-page-titles.mjs",
+    "cycle-id": "node scripts/next-cycle-id.mjs",
     "diff:render": "node scripts/diff-render.mjs",
     "gc:memory": "node scripts/gc-memory.mjs",
     "archive": "node scripts/archive-registers.mjs",
