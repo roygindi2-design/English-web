@@ -172,6 +172,50 @@ const childLibConstantsOf = (fileBody) => {
 };
 
 /**
+ * ⛔ **T-265 · D-192/D-193 fallout.** `constantsIn`'s second pattern already trusts
+ * a `nameHe: 'Hebrew'` PAIR as a label wherever it sits — `childLibConstantsOf`
+ * above just never handed it one, because it only forwards `export const NAME =
+ * 'string'` lines. `STUDY_TRACKS` in `lib/core/studyTracks.ts` is an
+ * `Object.freeze([{ id: …, labelHe: '…' }, …])` array — the pair is real, ⛔ it is
+ * just written inside an array literal instead of at the top level. ⇒ forward the
+ * pair itself (⓵ below), not only the top-level-const shape.
+ * ⚠️ **⓶ is the one that is NOT already a `…He: '…'` pair.**
+ * `RING_LABEL_HE` in `lib/core/worldRing.ts` is `Record<RingNodeId, string>` keyed
+ * by NODE ID (`arena: '…'`, `msgs: '…'`) — the key never ends in `He`, so ⓵ cannot
+ * see it. It is a Hebrew-label dictionary by the SAME `_HE`-suffix convention
+ * `constantsIn`'s first pattern already trusts for a single string constant
+ * (`RETRY_HE`, `AUTH_MESSAGES_HE`) — applied here to a dictionary of them instead
+ * of one. `WorldRing.tsx:247` (`lib/core/worldRing.ts`) is what actually assigns
+ * these values onto each node's `labelHe` field, so every value inside an
+ * `_HE`-suffixed export is registered under the synthetic key `labelHe` — the
+ * exact property name every call site reads (`track.labelHe`, `node.labelHe`).
+ * ⛔ **This is NOT the runtime-data guess `T-263`'s gate test warned off** — both
+ * sources are literal Hebrew strings sitting in the imported source file, ⛔ not
+ * data fetched at runtime; only the ROUTE from property name to value was the
+ * missing piece.
+ */
+const KEYVAL_HE = /\b[a-zA-Z][\w]*\s*:\s*'([^']{1,60})'/g;
+const DICT_HE_EXPORT = /\bexport\s+const\s+[A-Z][A-Z0-9_]*_HE\b[^=\n]*=\s*\{([\s\S]{0,2000}?)\n\};/g;
+const childLibLabelsOf = (fileBody) => {
+  const lines = [];
+  for (const m of fileBody.matchAll(CHILD_LIB_CORE_IMPORT)) {
+    const libBody = readLibCoreFile(m[1]);
+    // ⓵ a `nameHe: 'Hebrew'` pair anywhere in the file — not only at the top level.
+    for (const c of libBody.matchAll(/\b([a-zA-Z][\w]*He)\s*:\s*'([^']{1,60})'/g)) {
+      if (HEB.test(c[2])) lines.push(`${c[1]}: '${c[2]}';`);
+    }
+    // ⓶ every value inside an exported `_HE`-suffixed dictionary, whatever its own
+    // key is named — the dictionary's name is the label, not the per-entry key.
+    for (const d of libBody.matchAll(DICT_HE_EXPORT)) {
+      for (const v of d[1].matchAll(KEYVAL_HE)) {
+        if (HEB.test(v[1])) lines.push(`labelHe: '${v[1]}';`);
+      }
+    }
+  }
+  return lines.join('\n');
+};
+
+/**
  * ⛔ **THE MAIN ACTION IS READ FROM THE MARKUP, ⛔ NOT NAMED BY A HUMAN.** A label a
  * person types into a register is a label that stops matching the button the day it
  * is renamed — and "three names for one action" is exactly the defect this file
@@ -187,8 +231,25 @@ const HEB = /[֐-׿]/;
  * `/world`, which are nothing but buttons. Real buttons wrap their label in a
  * `<span>`, an icon and a conditional. ⇒ take everything up to the closing tag,
  * strip the tags and the expressions, and keep the Hebrew that is left.
+ * ⛔ **FOURTH CORRECTION (T-265) — `[^>]*` cannot see PAST an attribute's OWN
+ * `>`.** `onClick={() => setActive(track.id)}` puts a bare `>` (from `=>`)
+ * INSIDE the opening tag, and a plain `[^>]*` — unable to match `>` at all —
+ * stops there instead of at the tag's real close. Measured on
+ * `StudiesScreen.tsx`: the captured "inner" then starts mid-attribute, and the
+ * real closing tag sits **766 characters** later — past the 400-char bound,
+ * so the match fails OUTRIGHT and the button is invisible to this scanner, not
+ * merely mislabeled. ⇒ an attribute region is now read as a run of
+ * non-`>`-non-`{` characters OR a balanced `{…}` block, so `{() => …}` is
+ * skipped as ONE unit and the scan reaches the real `>`.
+ * ⚠️ **The block allows ONE level of nesting, ⛔ not zero.**
+ * `WorldRing.tsx`'s `aria-label={wasHere ? \`${node.labelHe} · …\` : …}` puts a
+ * template literal's `${…}` INSIDE the attribute's own `{…}` — a single-level
+ * `\{[^{}]*\}` cannot cross that inner `{`, and reproduces the identical
+ * failure one brace deeper. ⛔ **Not a general JSX parser — bounded to depth 2
+ * on purpose**, which is what a JSX attribute value actually nests to in this
+ * codebase; deeper would start guessing at structure this scanner never reads.
  */
-const ACTION = /<(button|Link|a)\b[^>]*>([\s\S]{0,400}?)<\/\1>/g;
+const ACTION = /<(button|Link|a)\b(?:[^>{]|\{(?:[^{}]|\{[^{}]*\})*\})*>([\s\S]{0,400}?)<\/\1>/g;
 /**
  * ⛔ **AND THE LABEL IS USUALLY A CONSTANT, ⛔ not a literal.** Third correction,
  * measured: `<button>{RETRY_HE}</button>` is the house style — every Hebrew string
@@ -199,6 +260,8 @@ const ACTION = /<(button|Link|a)\b[^>]*>([\s\S]{0,400}?)<\/\1>/g;
  * lines folded in by `childLibConstantsOf` above (T-263 · D-191)** —
  * `const NAME_HE = '…'` matches this same regex whether it was written here or
  * synthesized from an imported constants module's exports.
+ * ⚠️ **And, since T-265, the `nameHe: '…'`/`labelHe: '…'` lines folded in by
+ * `childLibLabelsOf` above** — same pattern, same map.
  */
 const constantsIn = (surface) => {
   const map = new Map();
@@ -210,16 +273,77 @@ const constantsIn = (surface) => {
   }
   return map;
 };
+/**
+ * ⛔ **T-265 — a bare identifier is ⛔ NOT the only shape a hoisted label takes.**
+ * `{track.labelHe}` / `{node.labelHe}` (`StudiesScreen.tsx` · `WorldRing.tsx`) are
+ * a PROPERTY READ on a loop variable, ⛔ not a bare `{NAME}` — the prior regex
+ * required no dot, so both fell through to the generic `{…}` wipe below and the
+ * screen measured as having ⛔ no Hebrew action. ⇒ an optional single-level
+ * `ident.` prefix is now allowed, and resolution keys ONLY on the trailing
+ * property name (`labelHe`), which is exactly what `childLibLabelsOf` populates
+ * the map with. ⛔ **Still never a guess:** an unresolved name still falls through
+ * unchanged to the wipe below, precisely as before.
+ */
+/**
+ * ⛔ **T-265 — «above the icon, or below it» is ⛔ NOT a shape `labelOf` could see
+ * either.** `WorldRing.tsx`'s ring node renders `{labelAbove ? label : null}` /
+ * `{labelAbove ? null : label}` — a **conditional on which SIDE the same label
+ * sits**, ⛔ not a different label. The prior regex required the brace to hold
+ * NOTHING but a name, so a ternary — even one where the only two possible
+ * outcomes are "the label" and "nothing" — fell through to the generic wipe.
+ * ⇒ a `{cond ? A : B}` where one of `A`/`B` is `null` and the other is a bare
+ * name or `ident.prop` now resolves exactly like a bare name would.
+ * ⛔ **Still not a guess:** `null` is a literal, not inferred, and the branch
+ * that is not `null` is still looked up in the SAME `consts` map as everywhere
+ * else — an unresolved name still falls through unchanged.
+ */
+const TERNARY_OR_NULL = /\{\s*[\w.]+\s*\?\s*(?:null|([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)?))\s*:\s*(?:null|([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)?))\s*\}/g;
+const BARE_OR_MEMBER = /\{\s*(?:[A-Za-z_][\w]*\.)?([A-Za-z_][\w]*)\s*\}/g;
 const labelOf = (inner, consts) =>
   inner
-    .replace(/\{\s*([A-Za-z_][\w]*)\s*\}/g, (whole, name) => consts.get(name) ?? whole)
+    .replace(TERNARY_OR_NULL, (whole, a, b) => {
+      const nameOf = (ident) => (ident === undefined ? undefined : ident.split('.').pop());
+      return consts.get(nameOf(a)) ?? consts.get(nameOf(b)) ?? whole;
+    })
+    .replace(BARE_OR_MEMBER, (whole, name) => consts.get(name) ?? whole)
     .replace(/<[^>]*>/g, ' ')
     .replace(/\{[^{}]*\}/g, ' ')
     .replace(/['"`]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+
+/**
+ * ⛔ **T-265 — the label is sometimes hoisted PAST a constant, to a small JSX
+ * snippet.** `WorldRing.tsx` hoists `<span>{node.labelHe}</span>` to
+ * `const label = (…)`, then hoists `{labelAbove ? label : null}` (twice) to
+ * `const inner = (…)`, and the Link/button renders only `{inner}` — a BARE
+ * name whose own value is never a Hebrew string, only markup that eventually
+ * contains one. ⇒ every local `const name = ( … );` in the surface is resolved
+ * the SAME way a button's own inner content is (`labelOf`, above — ternaries,
+ * member reads, already-known constants), and — only if that resolves to real
+ * Hebrew — registered under its own name for the NEXT pass. Two passes cover
+ * exactly the measured depth here (`label` before `inner`); ⛔ this does not
+ * walk arbitrary depth, and an unresolved local stays unresolved, exactly like
+ * an unresolved bare name today.
+ * ⛔ **Bounded, and bounded on purpose:** `{0,600}` mirrors `ACTION`'s own
+ * bound — a local past that size is not "a hoisted label", and this must never
+ * become a JSX interpreter.
+ */
+const LOCAL_JSX_CONST = /\bconst\s+([a-z][\w]*)\s*=\s*\(([\s\S]{0,600}?)\n\s*\);/g;
+const withLocalLabels = (surface, consts) => {
+  const map = new Map(consts);
+  for (let pass = 0; pass < 2; pass++) {
+    for (const m of surface.matchAll(LOCAL_JSX_CONST)) {
+      const [, name, body] = m;
+      if (map.has(name)) continue;
+      const resolved = labelOf(body, map);
+      if (HEB.test(resolved) && resolved.length <= 60) map.set(name, resolved);
+    }
+  }
+  return map;
+};
 const actionsIn = (body) => {
-  const consts = constantsIn(body);
+  const consts = withLocalLabels(body, constantsIn(body));
   return [
     ...new Set(
       [...body.matchAll(ACTION)]
@@ -259,7 +383,10 @@ const rows = pages.map((file) => {
   const topBodies = compBody === '' ? [body] : [compBody];
   const childComponentSurfaces = topBodies.flatMap(childComponentBodiesOf);
   const childLibConstants = topBodies.map(childLibConstantsOf).join('\n');
-  const surface = [body, compBody, ...childComponentSurfaces, childLibConstants].join('\n');
+  const childLibLabels = topBodies.map(childLibLabelsOf).join('\n');
+  const surface = [body, compBody, ...childComponentSurfaces, childLibConstants, childLibLabels].join(
+    '\n',
+  );
   return {
     route: routeOf(file),
     file: relative(ROOT, file).replace(/\\/g, '/'),

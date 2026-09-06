@@ -133,6 +133,92 @@ describe('scripts/build-surfaces.mjs', () => {
   });
 
   /**
+   * ⛔ **T-265ⓑ — pins the `/studies` half of D-192/D-193.** `{track.labelHe}` is
+   * a PROPERTY READ on a loop variable, ⛔ not a bare `{NAME}` — a real Hebrew
+   * string, sitting in the imported `lib/core` array literal the loop iterates,
+   * ⛔ not runtime data this scanner would have to fetch. `npm run build:surfaces`
+   * must print it as a real action, ⛔ not `⛔ —`.
+   */
+  it('T-265: resolves a label read off a loop variable, sourced from an array in `lib/core`', () => {
+    const md = run(
+      fixture({
+        ...BASE,
+        'lib/core/tracks.ts': `export const TRACKS: readonly { id: string; labelHe: string }[] = [
+  { id: 'reading', labelHe: 'הבנת הנקרא' },
+];
+`,
+        'components/TrackTabs.tsx': `import { TRACKS } from '@/lib/core/tracks';
+export default function TrackTabs() {
+  return (
+    <div>
+      {TRACKS.map((track) => (
+        <button key={track.id} type="button" onClick={() => console.log(track.id)}>
+          {track.labelHe}
+        </button>
+      ))}
+      {items.length === 0 ? <p>עוד אין כלום</p> : null}
+    </div>
+  );
+}
+`,
+        'app/tracks/page.tsx': `import TrackTabs from '@/components/TrackTabs';
+export default function TracksPage() { return <TrackTabs />; }
+`,
+      }),
+    );
+    expect(md).toMatch(/\| `\/tracks` \| `הבנת הנקרא` \|/);
+    expect(md).not.toMatch(/`\/tracks` — ⛔ אף פעולה בהקשה/);
+  });
+
+  /**
+   * ⛔ **T-265ⓑ — pins the `/world` half.** The real label sits two hoists away
+   * from the tag: a `_HE`-suffixed `Record` in `lib/core` seeds a `.labelHe`
+   * field, a local `const label = (…)` wraps it in markup, a SECOND local
+   * `const inner = (…)` picks `label` or `null` by a ternary depending on which
+   * side of the icon it renders, and the tag itself renders only `{inner}`.
+   * ⛔ Every hop is a literal in the source, ⛔ never data fetched at runtime —
+   * this pins that the chain resolves end to end, ⛔ not just one hop of it.
+   */
+  it('T-265: resolves a label hoisted through a local JSX const and a ternary, sourced from a `_HE` dictionary', () => {
+    const md = run(
+      fixture({
+        ...BASE,
+        'lib/core/ringLabels.ts': `export const RING_LABEL_HE: Readonly<Record<string, string>> = {
+  arena: 'זירת קרב',
+};
+`,
+        'components/RingNode.tsx': `import { RING_LABEL_HE } from '@/lib/core/ringLabels';
+type Node = { readonly id: string; readonly labelHe: string };
+function Item({ node, above }: { readonly node: Node; readonly above: boolean }) {
+  const label = (
+    <span>{node.labelHe}</span>
+  );
+  const inner = (
+    <>
+      {above ? label : null}
+      {above ? null : label}
+    </>
+  );
+  return (
+    <a href="/world/ring" onClick={() => console.log(node.id)}>
+      {inner}
+    </a>
+  );
+}
+export default function RingNode() {
+  return <Item node={{ id: 'arena', labelHe: RING_LABEL_HE.arena }} above />;
+}
+`,
+        'app/ring/page.tsx': `import RingNode from '@/components/RingNode';
+export default function RingPage() { return <RingNode />; }
+`,
+      }),
+    );
+    expect(md).toMatch(/\| `\/ring` \| `זירת קרב.*` \|/);
+    expect(md).not.toMatch(/`\/ring` — ⛔ אף פעולה בהקשה/);
+  });
+
+  /**
    * ⛔ **GATE ON THE REAL TREE, ⛔ NOT ON A FIXTURE — this is the one test in this
    * file that runs against `app/` itself.** T-263 (`D-191`) measured **13 flags**
    * live on 05/09. The task's own hypothesis was six phantoms (depth-0 scanning
@@ -142,12 +228,18 @@ describe('scripts/build-surfaces.mjs', () => {
    * state", and `/offline` "no action" (the page's own `RETRY_HE` import from
    * `lib/core/failure`, resolved only once depth-1 lib-core constants are read
    * off the PAGE too, not only off a screen component — `/offline` has none).
-   * `/studies` and `/world` "no action" are ⛔ **NOT** phantoms of this class:
-   * their real labels are `{track.labelHe}` / property access on runtime data
-   * (`StudiesScreen.tsx`/`WorldRing.tsx`), ⛔ not a `NAME_HE` constant or a
-   * deeper component — no import-depth fix reaches those, and resolving an
-   * arbitrary property path against data this script never fetches is a
-   * different, much riskier kind of guess. ⇒ 13 − 4 = **9**, ⛔ not 7.
+   * `/studies` and `/world` "no action" were ⛔ **NOT** phantoms of this class:
+   * their real labels are `{track.labelHe}` / property access, ⛔ not a
+   * `NAME_HE` constant or a deeper component — no import-depth fix reached
+   * those. ⇒ 13 − 4 = **9**, ⛔ not 7, *as measured on 05/09*.
+   * 🔵 **T-265, measured live in this clone, ⛔ not guessed: both close for
+   * real.** Neither was runtime data — `{track.labelHe}` is a literal Hebrew
+   * string sitting in an imported `lib/core` array, and `{node.labelHe}`
+   * traces, through a local JSX const and a ternary, to a literal in a
+   * `_HE`-suffixed `lib/core` dictionary. `npm run build:surfaces` on this
+   * clone now prints `9 → 7` flags, and the two closed are exactly `/studies`
+   * and `/world` "no action" — see the two fixture tests above that pin each
+   * hop. ⇒ **9 − 2 = 7**, and the ceiling drops with it.
    * ⛔ **A DISCOVERED, ⛔ NOT HIDDEN, REGRESSION AVOIDED ALONG THE WAY:** an
    * earlier version of this fix folded the WHOLE imported `lib/core/*` file
    * into the surface (not just its exported constants), and `lib/core/auth.ts`
@@ -158,14 +250,15 @@ describe('scripts/build-surfaces.mjs', () => {
    * and was wrong. ⇒ `lib/core` depth-1 folding is constants-only (see the
    * block comment above `childLibConstantsOf`); `components/*` depth-1 folding
    * stays whole-file, because there the full markup is the point.
-   * ⛔ **CEILING, ⛔ not a target.** A number above 9 means a phantom flag came
+   * ⛔ **CEILING, ⛔ not a target.** A number above 7 means a phantom flag came
    * back — the scanner regressed, ⛔ not that a real product screen broke (a
    * real regression is caught by `check:mobile`/`verify`, not by this file).
    * Lower the ceiling only when a flag closes for real, never raise it to make
-   * a red run green. `/studies`·`/world` "no action" are left for the PM/`D-191`
-   * follow-up this test does ⛔ NOT decide.
+   * a red run green. The remaining 7 are `/offline` "not reachable by taps"
+   * (real — pulled by the service worker) plus six "no empty state" left for
+   * judgment (`login`·`offline`·`onboarding`·`/`·`signup`·`sources`).
    */
-  it('gate: phantom flags on the real app tree may only go down, never back up (D-191 · T-263)', () => {
+  it('gate: phantom flags on the real app tree may only go down, never back up (D-191 · T-263 · T-265)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'surfaces-real-'));
     const out = join(dir, 'real.md');
     execFileSync('node', ['scripts/build-surfaces.mjs'], {
@@ -176,6 +269,6 @@ describe('scripts/build-surfaces.mjs', () => {
     const match = /### דגלים — (\d+)/.exec(md);
     expect(match).not.toBeNull();
     const flagCount = Number(match?.[1]);
-    expect(flagCount).toBeLessThanOrEqual(9);
+    expect(flagCount).toBeLessThanOrEqual(7);
   });
 });
