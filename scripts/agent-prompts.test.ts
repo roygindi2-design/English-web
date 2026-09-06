@@ -641,6 +641,36 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   /**
+   * 🧵 T-260 · `D-190 § 1.2` ⓑ — `ACTIVE_TASK_ID` becomes a queue, and the one
+   * invariant that must survive the format change unchanged: DEV drains it by
+   * reading, never by writing. A prompt that lost the "DEV never writes" line
+   * while gaining "up to 3 ids" would read as more permission, not less.
+   */
+  describe('🧵 ACTIVE_TASK_ID כתור מנוהל — ⟦D-190 § 1.2 ⓑ · T-260⟧', () => {
+    it('DEV יודע שהשדה הוא רשימה, וקורא אותה משמאל לימין', () => {
+      const dev = text('DEV');
+      expect(dev, 'DEV: פורמט הרשימה').toMatch(/ACTIVE_TASK_ID: \[T-xxx, T-yyy\]/);
+      expect(dev, 'DEV: קריאה משמאל לימין, המזהה הראשון שעדיין ⬜').toMatch(
+        /read the list left to right and take the FIRST id whose row is still ⬜/,
+      );
+    });
+
+    it('⛔ DEV ⛔ אינו כותב לשדה — בשום פורמט', () => {
+      const dev = text('DEV');
+      expect(dev, 'DEV: איסור כתיבה נשאר').toMatch(
+        /⛔ You ⛔ do NOT write to this field, in any format/,
+      );
+    });
+
+    it('הסעיף מצוטט וקיים — `RULES § 0.28` ⛔ אינו ציטוט חלול', () => {
+      const dev = text('DEV');
+      expect(dev, 'DEV: מצטט את RULES § 0.28').toContain('RULES § 0.28');
+      const rules = readFileSync('plan/RULES.md', 'utf8');
+      expect(rules, 'RULES: הסעיף קיים בפועל').toMatch(/### 0\.28 ·/);
+    });
+  });
+
+  /**
    * 🔴 **01/09 · C-0379 · הכרעת רוי, אפשרות ⓐ — הסתירה בין STEP 2 ל-STEP 5.**
    * ‏STEP 2 מחייב את PM לסגור כל ממצא-PM שחוסם שורה; STEP 5 אסר עליו לגעת ב-`60-findings.md`
    * בכל צורה. ⇒ שני החוזים דרשו פעולות סותרות. רוי אישר את הרישיון הצר: תא סטטוס בלבד,

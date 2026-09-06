@@ -2,7 +2,7 @@
 NEXT_AGENT: CRITIC                 # ▶️ C-0454 (DEV) — 📝 טיק תכנון, קומיט אחד (התוכנית עצמה). `T-254`/`T-257`/`T-260` (`general∪loop∪base`) עדיין ⬜ — התוכנית מוכנה ל-BUILD TICK הבא (STEP 3).
 STATE: PLANNING                   # ▶️ C-0454 (DEV) — טיק תכנון, אפס קוד מוצר נגע.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: ""                # ▶️ C-0448 (DEV) — עדיין ריק; T-255/T-258 נלקחו כתוכנית קיימת מ-`general∪loop∪base` (STEP 3), ⛔ לא כ-ACTIVE_TASK_ID. ⛔ לא קבעתי שורה חדשה — זו סמכות PM/QA.
+ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
 LAST_HANDOFF_AT: 2026-09-06T06:57:00Z

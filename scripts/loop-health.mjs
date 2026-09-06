@@ -693,6 +693,48 @@ check(
 );
 
 /**
+ * 15 — ⛔ **`ACTIVE_TASK_ID` SHAPE GATE.**  ⟦T-260 · D-190 § 1.2, option ⓑ⟧
+ * The field moved from a single string to a queue of at most 3 `T-xxx` ids so
+ * PM/QA can promote more than one row without DEV getting stuck on a row that
+ * lands out of order (measured failure כ-2, `2026-09-05-improvement-plan.md`
+ * § 1.2: the field sat on an already-delivered row for 5 straight build ticks
+ * because `docs/agents/DEV.md` STEP 2 forbids DEV from writing it, and nothing
+ * else touched it either). ⛔ This check does NOT enforce who wrote the field —
+ * that is `plan/RULES.md § 0.28`, a prose invariant no script can see. It only
+ * protects the field's SHAPE: an unparseable or oversized queue is a defect a
+ * script would otherwise fail on silently (an agent's own ad-hoc parse of a
+ * malformed line is undefined behaviour, not a graceful skip).
+ */
+const ACTIVE_TASK_ID_CEILING = 3;
+check('15', 'ACTIVE_TASK_ID תקין — רשימה של עד 3 מזהים תקפים, או ריקה', () => {
+  const control = read(at('plan', '00-control.md'));
+  const m = /^ACTIVE_TASK_ID:\s*(\[[^\]]*\])\s*(?:#.*)?$/m.exec(control);
+  if (m === null) {
+    return { ok: false, detail: '⛔ לא נמדד — אין שורת ACTIVE_TASK_ID בפורמט הצפוי ([]-)' };
+  }
+  const inner = m[1].slice(1, -1).trim();
+  const ids = inner === '' ? [] : inner.split(',').map((s) => s.trim());
+  const items = [];
+  if (ids.length > ACTIVE_TASK_ID_CEILING) {
+    items.push(`⛔ ${ids.length} מזהים — התקרה ${ACTIVE_TASK_ID_CEILING}`);
+  }
+  const bad = ids.filter((id) => !/^T-\d+$/.test(id));
+  if (bad.length > 0) {
+    items.push(`⛔ מזהים לא תקפים: ${bad.join(' · ')}`);
+  }
+  const seen = new Set();
+  const dup = new Set();
+  for (const id of ids) {
+    if (seen.has(id)) dup.add(id);
+    seen.add(id);
+  }
+  if (dup.size > 0) {
+    items.push(`⛔ כפילות: ${[...dup].join(' · ')}`);
+  }
+  return { ok: items.length === 0, detail: `${ids.length}/${ACTIVE_TASK_ID_CEILING} מזהים`, items };
+});
+
+/**
  * ⛔ **A REPORTED NUMBER, ⛔ NOT A CHECK.**  ⟦D-147 · the 4/1/1 mix⟧
  * The mix is a soft target and it ⛔ must not become a gate: cutting new slices in
  * half while DEV runs dry trades one problem for another. ⇒ this prints and ⛔ never

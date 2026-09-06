@@ -70,7 +70,10 @@ const healthy = (): string => {
     '| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n' +
       `| 1 | PM (C-0001) | 2026-08-01 | לעשות משהו · נבדק: ${today} | כי | לא |\n`,
   );
-  write('plan/00-control.md', 'RELEASE_READY: ""\nACTIVE_WORKSTREAM: story\nIMPROVE_TARGET: ""\n');
+  write(
+    'plan/00-control.md',
+    'RELEASE_READY: ""\nACTIVE_WORKSTREAM: story\nIMPROVE_TARGET: ""\nACTIVE_TASK_ID: []\n',
+  );
   // ⛔ `story` is item 1 of the build order, so ⛔ nothing precedes it and check 13 has
   // ⛔ nothing to demand — the file still has to EXIST, because «missing register»
   // reports «⛔ לא נמדד» and goes red, ⛔ never green.
@@ -115,12 +118,12 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('14');
-    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14']
+    expect(total?.[2]).toBe('15');
+    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15']
       .filter((n) => failed(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length).toBe(14);
-    for (const n of ['1', '2', '3', '4', '5', '6', '7', '9']) {
+    expect(Number(total?.[1]) + failing.length).toBe(15);
+    for (const n of ['1', '2', '3', '4', '5', '6', '7', '9', '15']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
     // ⛔ Check 10 shells out to git inside the fixture root, which is ⛔ not a repo.
@@ -156,9 +159,67 @@ describe('scripts/loop-health.mjs', () => {
       const r = run(healthy());
       expect(r.out).not.toMatch(/^ FAIL 15\./m);
       expect(r.out).not.toMatch(/^ warn 15\./m);
-      // ⛔ הסכום הכולל (14) ⛔ אינו זז — זו אינה בדיקה ממוספרת.
+      // ⛔ T-257 עצמה ⛔ אינה מזיזה את הסכום — היא אינה בדיקה ממוספרת. הסכום כאן
+      // הוא 15 כי T-260 (שנחתה באותו טיק) הוסיפה check('15', …) אמיתי — לא כי
+      // השורה הזו נספרת. ⚠️ תוקן מ-'14' ל-'15' עם נחיתת T-260 (ראה תיאור התוכנית).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('14');
+      expect(total?.[1]).toBe('15');
+    });
+  });
+
+  /**
+   * T-260 — `ACTIVE_TASK_ID` moves from a single string to a short bracketed
+   * list of at most 3 valid `T-xxx` ids (`D-190 § 1.2`, option ⓑ). This check
+   * protects the shape of that field the same way check 9 protects the file's
+   * byte budget: a malformed field is a defect nobody notices until an agent's
+   * hand-parse of it silently does the wrong thing.
+   */
+  describe('T-260 — check 15 · ACTIVE_TASK_ID תקין', () => {
+    const withControl = (activeTaskIdLine: string): string => {
+      const root = healthy();
+      const controlPath = join(root, 'plan', '00-control.md');
+      const original = readFileSync(controlPath, 'utf8');
+      const patched = original.replace(/^ACTIVE_TASK_ID:.*$/m, activeTaskIdLine);
+      writeFileSync(controlPath, patched, 'utf8');
+      return root;
+    };
+
+    it('ריק ("[]") — תקין', () => {
+      const r = run(withControl('ACTIVE_TASK_ID: []'));
+      expect(failed(r.out, '15')).toBe(false);
+    });
+
+    it('רשימה תקינה של עד 3 מזהים — תקין', () => {
+      const r = run(withControl('ACTIVE_TASK_ID: [T-235, T-238]'));
+      expect(failed(r.out, '15')).toBe(false);
+    });
+
+    it('⛔ 4 מזהים — נופלת, התקרה 3', () => {
+      const r = run(withControl('ACTIVE_TASK_ID: [T-1, T-2, T-3, T-4]'));
+      expect(failed(r.out, '15')).toBe(true);
+      expect(r.out).toContain('התקרה 3');
+    });
+
+    it('⛔ מזהה בפורמט לא תקף — נופלת', () => {
+      const r = run(withControl('ACTIVE_TASK_ID: [T-235, banana]'));
+      expect(failed(r.out, '15')).toBe(true);
+      expect(r.out).toContain('banana');
+    });
+
+    it('⛔ כפילות — נופלת', () => {
+      const r = run(withControl('ACTIVE_TASK_ID: [T-235, T-235]'));
+      expect(failed(r.out, '15')).toBe(true);
+      expect(r.out).toContain('כפילות');
+    });
+
+    it('⛔ שורה חסרה — לא נמדד, ⛔ ולא ok בשתיקה', () => {
+      const root = healthy();
+      const controlPath = join(root, 'plan', '00-control.md');
+      const original = readFileSync(controlPath, 'utf8');
+      writeFileSync(controlPath, original.replace(/^ACTIVE_TASK_ID:.*$/m, ''), 'utf8');
+      const r = run(root);
+      expect(failed(r.out, '15')).toBe(true);
+      expect(r.out).toContain('⛔ לא נמדד');
     });
   });
 
@@ -172,7 +233,8 @@ describe('scripts/loop-health.mjs', () => {
     expect(passes).toBeDefined();
     // ⛔ ids 1–10, contiguous since 25/08: check 9 (the control-register ceiling)
     // was lit early — the file was measured 661 bytes OVER its own rule.
-    expect(total).toBe('14');
+    // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06).
+    expect(total).toBe('15');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -630,7 +692,8 @@ describe('scripts/loop-health.mjs', () => {
     // somebody starts optimising, so it is deliberately ⛔ not a `check()`.
     const r = run('.');
     expect(r.out).toContain('תמהיל (דיווח רך');
-    expect(r.out).toMatch(/loop health: \d+\/14 checks pass/);
+    // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06) — unrelated to this mix line.
+    expect(r.out).toMatch(/loop health: \d+\/15 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );
