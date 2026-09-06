@@ -19,11 +19,11 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "0d7ccc9 · 2026-09-06 · **נשלח ל-`main` באישור מפורש של רוי — 107 קומיטים, ff-only** (נמדד: `./scripts/g ls-remote --heads origin`)"  # C-0465 · `verify` exit 0 טרי על `dev` (`check:mobile` 1325) · `loop:health` 15/15. ⚠️ שלוש ההקשות של רוי ⛔ לא נכתבו מחדש — השער המלא של C-0462 הוא הראיה.
+RELEASE_READY: "807ae72 · 2026-09-06 · **נשלח — `main` = `dev` = `work/current` = `807ae72`, 0 פער** (נמדד: `./scripts/g ls-remote --heads origin`)"  # C-0465 · `verify` exit 0 טרי (215 קבצים · 3484 בדיקות · `check:mobile` 1325) · `loop:health` 15/15 · הקידום ל-`main` באישור מפורש של רוי. ⚠️ שלוש ההקשות ⛔ לא נכתבו מחדש — השער המלא של C-0462 הוא הראיה.
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
-LAST_REVIEWED_COMMIT: "0d7ccc9"  # main אחרי הקידום של 06/09. `verify` exit 0 נרץ על `dev` באותו SHA לפני הקידום.
+LAST_REVIEWED_COMMIT: "807ae72"  # main אחרי הקידום של 06/09. `verify` exit 0 נרץ על אותו SHA לפני הקידום.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -35,7 +35,7 @@ IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** 
 # (SEALS · cards — הוצאו ל-`plan/archive/control-log.md` ב-C-0367, אותו דפוס שבו nav ו-story הוצאו ב-C-0318. **cards ⛔ אינה חתומה** — הוזזה חסומה-חיצונית · F-142/F-143 · ראה `plan/61-deferred.md`.)
 RELEASE_BLOCKERS: ""  # ✅ רוקן 06/09 (C-0465) — F-185 נסגר: הסיבה הייתה `GIT_ASKPASS=` ריק שהסביבה מייצאת, ⛔ לא מסווג הרשאות. QA כותב כאן כשמיזוג נחסם — **המינימום שנדרש כדי למזג**, ⛔ ולא כל הממצאים. DEV לוקח אותה לפני כל דבר אחר.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. רק ה-Critic מקדם לכאן.
-LAST_PROMOTED_AT: "2026-09-06T13:07Z"  # ⚠️ **באישור מפורש של רוי בצ'אט, ⛔ לא ביוזמת הלופ.** `7a5f61b..0d7ccc9` ff-only, 107 קומיטים. קודם לכן 23/08 בידי רוי (PR #2).
+LAST_PROMOTED_AT: "2026-09-06T14:10Z"  # ⚠️ **באישור מפורש של רוי בצ'אט, ⛔ לא ביוזמת הלופ.** `7a5f61b..807ae72` ff-only. קודם לכן 23/08 בידי רוי (PR #2).
 PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפורש). ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
