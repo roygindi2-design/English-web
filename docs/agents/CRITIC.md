@@ -131,7 +131,11 @@ export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY=; git clone -b work/curr
 
 ## STEP 1 — STATE
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ NEVER guess a timestamp. Read `plan/00-control.md` ONLY.
-`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock under 30 min → exit silently. Otherwise lock as CRITIC and push immediately.
+`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock under 30 min → **exit — and ⛔ NEVER silently.** Otherwise lock as CRITIC and push immediately.
+🔴 **⟦CHANGED 06/09 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
+⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס מיזוג. ‏`origin/dev..origin/work/current` = `<M>` קומיטים.»
+**What was measured on 06/09, on a live clone and on the live scheduler:** between **04/09 19:12Z** (the last QA tick that produced a commit, `C-0428`) and **06/09 11:00Z** — **seven consecutive QA windows produced ⛔ zero commits**, and ⛔ nothing anywhere said why. `origin/dev..origin/work/current` went from **41** to **66**. The 06/09 05:06Z gate tick ran **2 min 17 s** end to end; DEV had fired at **04:36Z** and was still committing at **05:13Z**. On the four full-lane windows since 03/09 where a DEV commit landed **after** the QA fire minute, QA produced **⛔ nothing, 4 times out of 4**; on the three where DEV had finished first, QA ran **3 out of 3**.
+⛔ **The yield itself is ⛔ correct and ⛔ unchanged** (`RULES § 0.4` · `F-121` — a merge under a live lock split the branch on 25/08). What was wrong is that **a yield that leaves no trace is indistinguishable from a loop that is dead**, and it stayed invisible for **40 hours**. ⚠️ `loop:health` check 10 did go red (41/40) and the PM filed it (`03-for-roy` item 98) — ⛔ but the cause was ⛔ nowhere, because the only agent that knew ⛔ never said it.
 ⚠️ `WORKSTREAM_TICKS` counts **work-ticks only** — a tick that ended in a commit — ceiling **per item** of `36 § 13`. Binding text `RULES § 0.1 ו׳`.
 
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR QUEUE AND YOUR DASHBOARD (RULES § 0.6א · § 0.6ב)
