@@ -327,6 +327,15 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         });
         return;
       }
+      // T-267 · **נמדד חי, ⛔ ולא שוער** (Playwright, `round.questions` שאינו מערך): החוזה
+      // הטיפוסי של `RoundBody` הוא בדיקת קומפילציה בלבד — תשובת רשת אמיתית שאינה תואמת
+      // אותו (קאש ישן, פרוקסי שמסלף, שינוי חוזה עתידי) עוברת בשקט ומגיעה ל-`.map` למטה.
+      // ⛔ בלי השומר הזה זו קריסה שמגיעה ל-`app/error.tsx` (נצפה ונרשם ליומן שם, אותו
+      // טיק) — עם השומר היא אותו מסך כשל קיים שכל כשל-רשת אחר כבר מקבל, ⛔ ולא חדש.
+      if (!Array.isArray(body.round.questions)) {
+        setScreen({ kind: 'error' });
+        return;
+      }
       setQuestions(body.round.questions);
       setBattle(startBattle(wordsOf(body.round.questions), LEARNER_HP, ENEMY_HP));
       originRef.current = null;

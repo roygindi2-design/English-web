@@ -2,6 +2,7 @@
 
 import './globals.css';
 
+import { useEffect } from 'react';
 import { FAILURE_HE, FAILURE_TITLE_HE, RETRY_HE } from '@/lib/core/failure';
 
 /**
@@ -12,8 +13,14 @@ import { FAILURE_HE, FAILURE_TITLE_HE, RETRY_HE } from '@/lib/core/failure';
  * boundaries fail differently, but the sentence and the button label come from
  * the shared module. `lib/core/failure.ts` is a constants module with zero
  * imports, so it stays safe to pull in from the root boundary.
+ *
+ * T-267 — same gap as `app/error.tsx`, same fix: `error` reaches this boundary
+ * too (a crash in the root layout itself), and used to be discarded unread.
  */
-export default function GlobalError({ reset }: { error: Error; reset: () => void }) {
+export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => {
+    console.error('[app/global-error.tsx] root error boundary caught:', error);
+  }, [error]);
   return (
     <html lang="he" dir="rtl">
       <body className="bg-surface text-ink antialiased">

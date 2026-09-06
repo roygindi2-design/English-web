@@ -106,6 +106,7 @@
   "app/dev/world/ring/page.tsx": [],
   "app/error.test.ts": [],
   "app/error.tsx": [],
+  "app/global-error.test.ts": [],
   "app/global-error.tsx": [
     "app/globals.css"
   ],

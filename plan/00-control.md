@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0462 (QA · מסלול: מלא) — שער מלא: verify+loop:health ירוקים, ⛔ מיזוג ל-`dev` נחסם סביבתית (F-185, 03-for-roy #99). המשך בנייה רגיל על `general`∪`loop`∪`base`.
-STATE: BUILD                       # ▶️ C-0462 (QA) — חוזר ל-BUILD אחרי טיק התכנון של C-0460.
+NEXT_AGENT: CRITIC                 # ▶️ C-0463 (DEV) — טיק בנייה T-267 (arena · exception ⓐ). ראו יומן.
+STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T11:37:51Z
+LAST_HANDOFF_AT: 2026-09-06T13:09:14Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                     # שוחררה C-0462 (QA) 11:37:51Z — שער מלא הושלם (verify/loop:health/הליכה), מיזוג ל-dev נחסם סביבתית (F-185).
-LOCK_AT: "2026-09-06T11:05:09Z"
+LOCK_HELD_BY: ""                     # שוחררה C-0463 (DEV) 13:09:14Z. ⛔ ממצא עצמי: לא ננעלה בפתיחת הטיק (כמו T-264/C-0453) — סוכן יחיד, ⛔ אין תחרות.
+LOCK_AT: "2026-09-06T13:09:14Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -48,11 +48,12 @@ PROMOTIONS_THIS_MONTH: 13         # 13 this month. ⛔ Credit budget is no longe
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
 > 🧹 `C-0455..C-0459` הועבר 06/09/2026 (C-0462) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0460` הועבר 06/09/2026 (C-0463) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0460 | DEV | CRITIC | 2026-09-06T10:53:52Z | 📝 **טיק תכנון — `T-224` (`base`), קומיט אחד (התוכנית בלבד, ⛔ אפס קוד).** `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md` — `check:plan` 8/8 (תוקנו `addressed`+`extend` לפני קומיט). `T-197`/`T-201` נבדקו ונדחו: `T-197` תלוי מפורש ב-`T-184` חצי ⓑ (עדיין 🔵 פתוח); `T-201` תלוי ברכיב מקלדת-הבלוקים (`39 § 3`) שעדיין אינו קיים בקוד (`msgs` עדיין ⬜, לא זרימה פעילה) — הקובץ `files` שלה עצמה אומר «ייקבע עם רכיב המקלדת». **שני ממצאים תיעודיים בתוכנית עצמה (⛔ לא בקוד):** ⓐ רדיוס הפגיעה שמדדה `T-224` שגוי — `senseAccuracy.ts` הוא false positive (שדה `items` לא קשור), ו-`lib/core/batchRecord.ts`+`scripts/build-ingest-sql.mjs` חסרים מהרשימה לגמרי. ⓑ `docs/agents/CONTENT.md` ו-`F-168` שניהם מצטטים `T-223` (שנחת — `amirnetItemGate`, לא קשור) במקום `T-224` — התוכנית מתקנת את שניהם כצעד בנייה עתידי. | `T-224` · `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md` |
 | C-0461..C-0462 | CRITIC | DEV | 2026-09-06T11:37:51Z | 🚦 **מסלול: מלא — שער מלא. `verify`+`loop:health` ירוקים (3476/3476 · mobile 1325 · 14/15), הליכה חיה 375×780 + השוואת רנדר (`diff:render`) על שלושת מסכי הזירה, `review-animations` על הדיף — אושר (⛔ אין שינוי תנועה). 🔴 המיזוג ל-`dev` נחסם סביבתית (F-185, 03-for-roy #99) — ff נבדק ועובד מקומית, ⛔ push נדחה.** 2 ממצאים חדשים (F-185 חוסם · F-186 פינוש-רנדר). ⬜ **⛔ אין `RELEASE_READY` חדש, ⛔ אין 🟣⇢✅** — שום דבר לא מוזג. | F-185 · F-186 · `docs/plan-open.md` · `plan/03-for-roy.md` #99 |
+| C-0463 | DEV | CRITIC | 2026-09-06T13:09:14Z | 🔨 **טיק בנייה — `T-267` (`arena`, exception ⓐ), קומיט אחד.** נתיב-החשד הקודם (mount `<ArenaBattle>`) הופרך בעדות חיה (jsdom+Playwright); אותה בדיקה חשפה קריסה תואמת-תסמין: `round.questions` שאינו מערך מפיל `byWordId` (`useMemo`). תוקן ⓐ `load()` מאמת `Array.isArray` ⓑ `app/error.tsx`/`global-error.tsx` תיעדו `error` ל-`console.error` (עד כה שותקו). `verify` ירוק — **3482/3482 · mobile 1325 · build OK**. ⚠️ לא ✅ — פרטים מלאים ב-`T-267`. | `T-267` · `app/error.tsx` · `app/global-error.tsx` · `components/ArenaBattle.tsx`+tests |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

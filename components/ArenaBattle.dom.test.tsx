@@ -118,3 +118,46 @@ describe('T-239 ⓑ — כל מסך כשל נושא משפט ופעולת יצי
     await waitFor(() => expect(calls).toBe(2));
   });
 });
+
+/**
+ * T-267 · **הקריסה נמדדה חי בטיק הזה, ⛔ ולא שוערה** — Playwright, 375×780, `next dev`
+ * חי, `GET /api/arcade/round` הוחזר עם `ok: true, round: { questions: null }` (צורה
+ * שהשרת עצמו ⛔ אינו מייצר היום — `buildRound` תמיד מחזירה מערך אמיתי — אבל שאין שום
+ * דבר בצד הלקוח שמונע: החוזה הטיפוסי `RoundBody` הוא ⛔ אך ורק בזמן קומפילציה, ותשובת
+ * רשת שגויה — קאש ישן, פרוקסי שמסלף, גרסת API עתידית ששינתה צורה — עוברת אותו בשקט).
+ * ⇒ `byWordId = useMemo(() => new Map(questions.map(...)), [questions])` זרק
+ * `TypeError: Cannot read properties of null (reading 'map')`, נתפס ב-error boundary
+ * של הנתיב, ומוצג ללומד כ«משהו נתקע» — **בדיוק** התסמין ש-T-267 דיווח עליו.
+ * `app/error.tsx` (אותו טיק) עכשיו מתעד את זה ל-`console.error` — לפני התיקון הזה
+ * היה בלתי אפשרי אפילו לדעת שזו הסיבה.
+ *
+ * ⚠️ **התיקון כאן הוא באחריות הלקוח לאמת את צורת התשובה** ⛔ ולפני שהוא סומך עליה —
+ * בדיוק כמו `body.round === null` שכבר קיים שורה מעליו. `questions` שאינו מערך הופך
+ * לאותו מסך כשל קיים (`FAILURE_HE.load` + `RETRY_HE`), ⛔ ולא לקריסה.
+ */
+describe('T-267 — תשובת שרת שגויה (round.questions אינו מערך) מוצגת כמסך כשל, ⛔ ולא קורסת', () => {
+  it('round.questions === null — מסך כשל עם כפתור חזרה, ⛔ אפס קריסה', async () => {
+    stubFetch(() =>
+      new Response(
+        JSON.stringify({ ok: true, band: 'A1', round: { questions: null } }),
+        { status: 200 },
+      ),
+    );
+    render(<ArenaBattle />);
+    expect(await screen.findByText(FAILURE_HE.load)).toBeTruthy();
+    expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+  });
+
+  it('round.questions הוא מחרוזת (עוד צורה שגויה) — אותו מסך כשל, ⛔ אפס קריסה', async () => {
+    stubFetch(
+      () =>
+        new Response(
+          JSON.stringify({ ok: true, band: 'A1', round: { questions: 'not-an-array' } }),
+          { status: 200 },
+        ),
+    );
+    render(<ArenaBattle />);
+    expect(await screen.findByText(FAILURE_HE.load)).toBeTruthy();
+    expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+  });
+});
