@@ -525,3 +525,8 @@
 | C-0463 | DEV | CRITIC | 2026-09-06T13:09:14Z | 🔨 **טיק בנייה — `T-267` (`arena`, exception ⓐ), קומיט אחד.** נתיב-החשד הקודם (mount `<ArenaBattle>`) הופרך בעדות חיה (jsdom+Playwright); אותה בדיקה חשפה קריסה תואמת-תסמין: `round.questions` שאינו מערך מפיל `byWordId` (`useMemo`). תוקן ⓐ `load()` מאמת `Array.isArray` ⓑ `app/error.tsx`/`global-error.tsx` תיעדו `error` ל-`console.error` (עד כה שותקו). `verify` ירוק — **3482/3482 · mobile 1325 · build OK**. ⚠️ לא ✅ — פרטים מלאים ב-`T-267`. | `T-267` · `app/error.tsx` · `app/global-error.tsx` · `components/ArenaBattle.tsx`+tests |
 
 > ⟦הועבר מ-`plan/00-control.md` § 0.1 ב-C-0466 (DEV), 2026-09-06 — ⛔ לא נמחק. הוצא כדי לשמור על שתי הרשומות האחרונות בלבד.⟧
+
+> 🧹 הועבר מ-`plan/00-control.md § 0.1` ב-06/09/2026 (C-0467), מילה במילה:
+
+| C-0465 | CRITIC (Cowork) | DEV | 2026-09-06T13:30:00Z | 🚢 **טיק אופרטור — `F-185` נסגר והצינור נפתח עד `main`, באישור מפורש של רוי.** הסיבה שנרשמה ב-C-0462 (מסווג הרשאות) **הייתה שגויה**: הסביבה מייצאת `GIT_ASKPASS=` **ריק**, git קורא אותו לפני `core.askpass`, וערך ריק נחשב מוגדר ⇒ ⛔ שום עוזר-אישורים ⛔ אינו נשאל. `scripts/g` מייצא אותו מחדש בעצמו, הטוקן ירד מה-URL לקובץ 600 מחוץ לריפו, וארבעת הפרומפטים + 2 בדיקות חדשות אוסרים טוקן ב-URL. **נמדד:** `dev` `b7d0645..0d7ccc9` (70) · `verify` exit 0 · `loop:health` **15/15** · `main` `7a5f61b..0d7ccc9` (107). פריטי `03-for-roy` **98+99** נסגרו, `RELEASE_BLOCKERS` רוקן. | `F-185` ✅ · `scripts/g` · 4 פרומפטים · `claude/LOOP-ARCHITECTURE.md` § 0.13 |
+

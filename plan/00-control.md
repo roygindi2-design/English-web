@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0466 (DEV) — T-224 נבנתה ונדחפה ל-`work/current`, מיגרציה `0021` נחתה על הפרויקט החי ואומתה. תור לביקורת.
+NEXT_AGENT: DEV                    # ▶️ C-0467 (Cowork, טיק אופרטור) — שער verify בדחיפה, בדיקות 16·17, סוף הנסיגה השקטה. המשך בנייה רגיל.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T14:58:44Z
+LAST_HANDOFF_AT: 2026-09-06T15:04:54Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                     # שוחררה 2026-09-06T14:58:44Z — C-0466 טיק DEV (T-224 · sense_items.level + level_rationale, closes F-168)
-LOCK_AT: "2026-09-06T14:58:44Z"
+LOCK_HELD_BY: "CRITIC"               # 🔒 ננעלה 2026-09-06T15:04:54Z — C-0467 טיק אופרטור (Cowork), הכרעות 100·101·23·22
+LOCK_AT: "2026-09-06T15:04:54Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -50,10 +50,12 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 > 🧹 `C-0460` הועבר 06/09/2026 (C-0463) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 > 🧹 `C-0463` הועבר 06/09/2026 (C-0466) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
+> 🧹 `C-0465` הועבר 06/09/2026 (C-0467) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0465 | CRITIC (Cowork) | DEV | 2026-09-06T13:30:00Z | 🚢 **טיק אופרטור — `F-185` נסגר והצינור נפתח עד `main`, באישור מפורש של רוי.** הסיבה שנרשמה ב-C-0462 (מסווג הרשאות) **הייתה שגויה**: הסביבה מייצאת `GIT_ASKPASS=` **ריק**, git קורא אותו לפני `core.askpass`, וערך ריק נחשב מוגדר ⇒ ⛔ שום עוזר-אישורים ⛔ אינו נשאל. `scripts/g` מייצא אותו מחדש בעצמו, הטוקן ירד מה-URL לקובץ 600 מחוץ לריפו, וארבעת הפרומפטים + 2 בדיקות חדשות אוסרים טוקן ב-URL. **נמדד:** `dev` `b7d0645..0d7ccc9` (70) · `verify` exit 0 · `loop:health` **15/15** · `main` `7a5f61b..0d7ccc9` (107). פריטי `03-for-roy` **98+99** נסגרו, `RELEASE_BLOCKERS` רוקן. | `F-185` ✅ · `scripts/g` · 4 פרומפטים · `claude/LOOP-ARCHITECTURE.md` § 0.13 |
 | C-0466 | DEV (Cowork) | CRITIC | 2026-09-06T14:58:44Z | 🔨 **טיק בנייה — `T-224` (`base`), קומיט אחד, לפי `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md`.** TDD על כל שלב (RED אז GREEN). מיגרציה `0021_sense_items_level.sql` (nullable, ⛔ אין ברירת מחדל) הורצה על הפרויקט החי דרך מחבר ה-MCP של Supabase — ⚠️ **`supabase` CLI חסום ברשת הסביבה הזאת**: `migration list`/`db push` מנסים חיבור פוסטגרס ישיר ל-pooler ונתקעים ב-timeout (רשת הסנדבוקס מרשה רק דומיינים ברשימה לבנה); ה-MCP מחובר לאותו פרויקט (`zsnqeaajnbrnnahdunof`, אומת לפי שם+טבלאות) ואומת אחרי הריצה: שתי העמודות nullable ללא ברירת מחדל, שני האילוצים קיימים, 1,602/1,602 שורות עדיין `level` null. סוגר את `F-168`. **ממצא עצמי, תוקן באותו קומיט (RULES § 0.22):** התוכנית פספסה `lib/core/mixReport.test.ts`+`lib/core/previewSelection.test.ts` (בונים fixture ביד) — `tsc --noEmit` תפס, תוקנו. `verify` ירוק טרי — **exit 0 · 3499/3499 · mobile 1325/1325**. `generate-map` רץ — 399 מודולים, ⛔ ללא שינוי. | `T-224` ✅ · `supabase/migrations/0021_sense_items_level.sql` · `lib/core/contentSchema.ts`+`batchRecord.ts`+`scoringSeed.ts` · `scripts/build-ingest-sql.mjs`+`measure-continuations.mjs` · `docs/agents/CONTENT.md` · `F-168` |
+| C-0467 | CRITIC (Cowork) | DEV | 2026-09-06T15:04:54Z | ⚙️ **טיק אופרטור — ארבע הכרעות של רוי (100 · 101 · 23 · 22), באישור מפורש.** **100:** `scripts/hooks/pre-push` מריץ `verify` בדחיפה וחוסם אדום, ורושם `git-note`; מותקן מ-npm `prepare`; **בדיקה 16** מודדת התקנה + הערה. **101:** `DEV`/`PM`/`CONTENT` ⛔ אינם «exit silently» עוד — שורת נסיגה מחייבת (מחזיק · גיל נעילה · מספר קומיטים); **בדיקה 17** מודדת שקט >24ש׳ מול `docs/agents/roster.json`; cron CONTENT 01:15⇒03:15. **23:** שני מסלולי QA מ-2 ל-4 ליום (`45 1,7,13,19` · `15 5,11,15,21`). **22:** הצהרות המודל הותאמו למדוד ב-`list_triggers`. `loop:health` **17**, 16·17 רכות עד 13/09. פירוט ⇒ `claude/LOOP-ARCHITECTURE.md` § 0.14. | `scripts/hooks/pre-push` · `scripts/install-hooks.mjs` · `docs/agents/roster.json` · 4 פרומפטים · `loop-health.mjs` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
