@@ -43,7 +43,9 @@
     "verify": "npm run typecheck && npm run check:core && npm run check:motion && npm run check:text-floor && npm run check:rules && npm run check:titles && npm test && npm run build && npm run check:mobile",
     "check:plan": "node scripts/check-plan-shape.mjs",
     "loop:health": "node scripts/loop-health.mjs",
-    "generate-map": "node scripts/generate-map.mjs"
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "generate-map": "node scripts/generate-map.mjs",
+    "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

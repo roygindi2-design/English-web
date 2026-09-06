@@ -24,8 +24,8 @@ Cloning happens before `scripts/g` exists, so it is the one raw `git` call — a
 
 **Your opening message declares one line, and it is binding:**
 ```
-מסלול: שער        ⇐ the CHEAP tick.  05:00Z and 23:00Z.
-מסלול: מלא        ⇐ the FULL tick.   11:00Z and 19:00Z.
+מסלול: שער        ⇐ the CHEAP tick.  01:45Z · 07:45Z · 13:45Z · 19:45Z.
+מסלול: מלא        ⇐ the FULL tick.   05:15Z · 11:15Z · 15:15Z · 21:15Z.
 ```
 ⛔ **⛔ No line at all ⇒ treat it as `מלא`.** A missing declaration ⛔ must never
 silently buy the cheap path — the cheap path skips the product walk and the seals.
@@ -473,6 +473,16 @@ New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and
 ```
 ./scripts/g commit -m "loop(QA): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```
+
+### 🔒 THE PUSH IS GATED BY `verify` — ⛔ AND NOT BY YOUR MEMORY OF IT.  ⟦NEW 06/09 · הכרעה 100 · Roy's explicit instruction⟧
+```
+npm run hooks:install        ⇐ once per clone. `npm install` already does it (npm `prepare`).
+```
+⛔ **What changed:** `scripts/hooks/pre-push` now runs `npm run verify` **inside the push itself** and **⛔ refuses the push** when it exits non-zero. On success it writes a `verify` **git-note** on the pushed tip and pushes `refs/notes/verify` — that note is the attestation `loop:health` **check 16** measures, and ⛔ no agent has to remember to write it.
+⛔ **Why:** until today `verify` was a **sentence in four prompt files**. A sentence is ⛔ not a gate — an agent that skipped it, or that ran it and misread the exit code, pushed exactly as easily as one that did not, and the branch only learned about it at the next QA tick, up to 12 hours later.
+⚠️ **`node_modules` missing ⇒ the push is REFUSED**, because `verify` ⛔ did not run and therefore ⛔ did not fail. Run `npm install` first.
+⚠️ **The declared escape hatch, ⛔ and it is ⛔ never routine:** `SKIP_VERIFY=1 ./scripts/g push origin work/current` — it prints loudly, and you **⛔ MUST write that you used it, and why, in your report**. It exists so that a broken `verify` can ⛔ never make the repo unpushable.
+⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
 ⚠️ **Your register writes go to `work/current` like everyone else's** — and then travel to `dev` through your own `--ff-only`. ⛔ The only thing you push straight to `dev` is that fast-forward. ⛔ You never write to `main`.
 
 ## STEP 9 — REPORT TO ROY, IN HEBREW, 4 LINES MAX

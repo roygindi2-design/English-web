@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════════════════════
+# ⛔ PRE-PUSH — THE VERIFY GATE.  ⟦NEW 06/09 · הכרעה 100 · הוראה מפורשת של רוי⟧
+#
+# WHY THIS FILE EXISTS, precisely. Until today `npm run verify` was a SENTENCE in
+# four prompt files. A sentence is not a gate: an agent that skipped it, or that
+# ran it and misread the exit code, pushed exactly as easily as one that did not —
+# and the branch only learned about it at the next QA tick, up to 12 hours later.
+# ⇒ this hook makes the sentence mechanical. A red `verify` ⛔ cannot leave a clone.
+#
+# ⚠️ IT VERIFIES THE WORKING TREE, ⛔ NOT THE COMMIT RANGE — and that is deliberate,
+# ⛔ not a shortcut: every agent in this loop commits and pushes in the same tick, so
+# the tree at push time IS the tip being pushed. `git status --porcelain` is printed
+# whenever it is NOT, so the gap is visible instead of assumed.
+#
+# ⇒ ON SUCCESS it records a `verify` git-note on every pushed tip and pushes the
+#   notes ref. That note is what `loop:health` check 16 measures — an attestation
+#   ⛔ no agent has to remember to write, and one that ⛔ cannot be back-dated.
+#
+# ESCAPE HATCH: `SKIP_VERIFY=1 ./scripts/g push …` — loud, printed, and ⛔ never the
+# routine. It exists so a broken `verify` can never make the repo unpushable.
+# ═══════════════════════════════════════════════════════════════════════════════
+set -uo pipefail
+
+# ⛔ The notes push below re-enters this hook. Without this guard it recurses.
+if [ "${VERIFY_HOOK_INTERNAL:-0}" = "1" ]; then exit 0; fi
+
+REMOTE="${1:-origin}"
+ZERO=0000000000000000000000000000000000000000
+
+TIPS=()
+while read -r _localref localsha _remoteref _remotesha; do
+  [ -z "${localsha:-}" ] && continue
+  [ "$localsha" = "$ZERO" ] && continue   # ⛔ a branch deletion carries no tree to verify
+  TIPS+=("$localsha")
+done
+if [ "${#TIPS[@]}" -eq 0 ]; then exit 0; fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+if [ "${SKIP_VERIFY:-0}" = "1" ]; then
+  echo "⚠️  SKIP_VERIFY=1 — הדחיפה עוברת ⛔ בלי verify."
+  echo "⚠️  זו חריגה מוצהרת, ⛔ ולא נוהל. כתוב אותה בדוח הטיק, אחרת אין לה עקבות."
+  exit 0
+fi
+
+if [ ! -d node_modules ]; then
+  echo "⛔ הדחיפה נחסמה: 'node_modules' חסר ⇒ 'npm run verify' ⛔ לא רץ, ⛔ ולא נכשל."
+  echo "⇒ npm install && ./scripts/g push $REMOTE …"
+  echo "⇒ או, אם verify עצמו שבור: SKIP_VERIFY=1 ./scripts/g push $REMOTE … (ודווח על כך)"
+  exit 1
+fi
+
+DIRTY="$(git status --porcelain 2>/dev/null)"
+if [ -n "$DIRTY" ]; then
+  echo "⚠️  עץ העבודה ⛔ אינו נקי — verify רץ על העץ, ⛔ לא על הקומיט הנדחף:"
+  echo "$DIRTY" | head -20
+fi
+
+echo "🔒 pre-push — מריץ npm run verify לפני הדחיפה ל-$REMOTE …"
+if ! npm run verify; then
+  echo ""
+  echo "⛔ הדחיפה נחסמה: 'npm run verify' יצא בקוד ⛔ לא-אפס."
+  echo "⛔ ⛔ אל תעקוף. תקן, או קרא את הכישלון והפוך אותו לממצא ב-plan/60-findings.md."
+  echo "⇒ מוצא חירום מוצהר בלבד: SKIP_VERIFY=1 ./scripts/g push $REMOTE …"
+  exit 1
+fi
+
+STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+for sha in "${TIPS[@]}"; do
+  git notes --ref=verify add -f -m "verify: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1 || true
+done
+
+# ⛔ Best-effort, ⛔ never fatal: a missing attestation is a warning in check 16,
+# ⛔ and a failed notes push must ⛔ never cost the branch its real commits.
+PUSH=git
+[ -x ./scripts/g ] && PUSH=./scripts/g
+VERIFY_HOOK_INTERNAL=1 "$PUSH" push -q --no-verify "$REMOTE" refs/notes/verify >/dev/null 2>&1 || \
+  echo "⚠️  ההערה נכתבה מקומית אך ⛔ לא נדחפה — בדיקה 16 תדווח «⛔ לא נמדד»."
+
+echo "✅ verify ירוק · הדחיפה ממשיכה · חותמת: $STAMP"
+exit 0

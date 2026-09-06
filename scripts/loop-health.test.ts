@@ -118,11 +118,14 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('15');
-    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15']
+    expect(total?.[2]).toBe('17');
+    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17']
       .filter((n) => failed(r.out, n));
+    // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
+    // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
+    const warning = ['12', '13', '14', '16', '17'].filter((n) => warned(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length).toBe(15);
+    expect(Number(total?.[1]) + failing.length + warning.length).toBe(17);
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9', '15']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -161,9 +164,10 @@ describe('scripts/loop-health.mjs', () => {
       expect(r.out).not.toMatch(/^ warn 15\./m);
       // ⛔ T-257 עצמה ⛔ אינה מזיזה את הסכום — היא אינה בדיקה ממוספרת. הסכום כאן
       // הוא 15 כי T-260 (שנחתה באותו טיק) הוסיפה check('15', …) אמיתי — לא כי
-      // השורה הזו נספרת. ⚠️ תוקן מ-'14' ל-'15' עם נחיתת T-260 (ראה תיאור התוכנית).
+      // השורה הזו נספרת. ⚠️ תוקן מ-'14' ל-'15' עם נחיתת T-260, ומ-'15' ל-'17' עם
+      // נחיתת בדיקות 16 (שער verify · הכרעה 100) ו-17 (סוכן שותק · הכרעה 101).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('15');
+      expect(total?.[1]).toBe('17');
     });
   });
 
@@ -234,7 +238,8 @@ describe('scripts/loop-health.mjs', () => {
     // ⛔ ids 1–10, contiguous since 25/08: check 9 (the control-register ceiling)
     // was lit early — the file was measured 661 bytes OVER its own rule.
     // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06).
-    expect(total).toBe('15');
+    // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
+    expect(total).toBe('17');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -246,7 +251,8 @@ describe('scripts/loop-health.mjs', () => {
      * quietly swallows a failure is the same lie as a check that passes because it
      * could not run.
      */
-    const soft = ['12', '13', '14'].filter((n) => warned(r.out, n));
+    // ⚠️ 16 ו-17 נוספו 06/09 עם חלון רך עד 2026-09-13 (הכרעות 100 · 101).
+    const soft = ['12', '13', '14', '16', '17'].filter((n) => warned(r.out, n));
     const hard = Number(total) - Number(passes) - soft.length;
     expect(r.code).toBe(hard === 0 ? 0 : 1);
   });
@@ -692,8 +698,8 @@ describe('scripts/loop-health.mjs', () => {
     // somebody starts optimising, so it is deliberately ⛔ not a `check()`.
     const r = run('.');
     expect(r.out).toContain('תמהיל (דיווח רך');
-    // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06) — unrelated to this mix line.
-    expect(r.out).toMatch(/loop health: \d+\/15 checks pass/);
+    // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
+    expect(r.out).toMatch(/loop health: \d+\/17 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );
@@ -714,6 +720,62 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.out, 'the row counts under its kind, ⛔ not as untagged').toMatch(
       /נוחות 1 · תוכן 0 · ⛔ ללא תג 0/,
     );
+  });
+
+  /**
+   * ⛔ **בדיקה 16 · שער ה-verify** ⟦הכרעה 100⟧ — הפיקסצ׳ר ⛔ אינו ריפו ו⛔ אין בו
+   * `scripts/hooks`, ולכן הבדיקה ⛔ אינה יכולה לעבור כאן. זה בדיוק מה שנדרש: בודק
+   * שעובר כי ⛔ לא הצליח לרוץ הוא בדיוק השקר שהקובץ הזה קיים נגדו.
+   * ⛔ ורכה ⇒ ` warn `, ⛔ לא ` FAIL ` — ⛔ ואינה נוגעת בקוד היציאה עד 2026-09-13.
+   */
+  describe('הכרעה 100 — check 16 · שער ה-verify', () => {
+    it('אומרת «⛔ hook חסר» על שורש שאין בו scripts/hooks, ובאזהרה בלבד', () => {
+      const r = run(healthy());
+      expect(warned(r.out, '16'), 'רכה ⇒ warn').toBe(true);
+      expect(failed(r.out, '16'), '⛔ לא FAIL בחלון הרך').toBe(false);
+      expect(r.out).toMatch(/16\..*hook/);
+      expect(r.out).toContain('npm run hooks:install');
+    });
+
+    it('מודדת את ההתקנה בריפו החי — ה-hook מותקן ⛔ ואינו ישן', () => {
+      // ⛔ נמדד על השיבוט הזה, ⛔ לא על פיקסצ׳ר: זה כל מה שהבדיקה מבטיחה.
+      const r = run('.');
+      expect(r.out, 'שורת הבדיקה נדפסת').toMatch(/16\. ה-hook של verify/);
+      expect(r.out, '⛔ hook חסר/ישן ⇒ הריפו החי אינו מותקן').not.toContain('⛔ hook חסר/ישן');
+    });
+  });
+
+  /**
+   * ⛔ **בדיקה 17 · סוכן שותק** ⟦הכרעה 101 ⓒ⟧ — הכשל הנמדד: שבעה חלונות QA רצופים
+   * בין 04/09 19:12Z ל-06/09 11:00Z הפיקו ⛔ אפס קומיטים, ו⛔ שום דבר לא אמר למה.
+   */
+  describe('הכרעה 101 — check 17 · סוכן דלוק ששותק מעל 24 שעות', () => {
+    it('אומרת «⛔ לא נמדד» כשאין roster.json, ובאזהרה בלבד', () => {
+      const r = run(healthy());
+      expect(warned(r.out, '17')).toBe(true);
+      expect(failed(r.out, '17'), '⛔ לא FAIL בחלון הרך').toBe(false);
+      expect(r.out).toMatch(/17\..*roster\.json/);
+    });
+
+    it('מודדת את ארבעת הסוכנים בריפו החי, ומדפיסה שעות לכל אחד', () => {
+      const r = run('.');
+      const line = /^(?:  ok  | FAIL | warn )17\. .*$/m.exec(r.out)?.[0] ?? '';
+      expect(line, 'שורת הבדיקה נדפסת').not.toBe('');
+      for (const name of ['DEV', 'PM', 'QA', 'CONTENT']) {
+        expect(line, `${name} נמדד בשם`).toContain(name);
+      }
+      expect(line, 'המספר בשעות, ⛔ לא «כנראה»').toMatch(/\d+\.\d+ש׳|⛔/u);
+    });
+
+    it('הרשימה בריפו מצהירה על ארבעת הסוכנים ועל תחילית הקומיט של כל אחד', () => {
+      const roster = JSON.parse(readFileSync('docs/agents/roster.json', 'utf8')) as {
+        agents: { name: string; commitPrefix: string; enabled: boolean }[];
+      };
+      expect(roster.agents.map((a) => a.name).sort()).toEqual(['CONTENT', 'DEV', 'PM', 'QA']);
+      for (const a of roster.agents) {
+        expect(a.commitPrefix, `${a.name}: תחילית`).toMatch(/^loop\(/);
+      }
+    });
   });
 
   it('writes nothing into the repo it measures', () => {

@@ -1,0 +1,11 @@
+{
+  "_why": "⛔ מי מהסוכנים דלוק, ובאיזה תחילית קומיט הוא חותם. ⟦NEW 06/09 · הכרעה 101 ⓒ⟧ המצב האמיתי של המשימות המתוזמנות חי בשרת ו⛔ לא בריפו — בדיוק סוג הערוץ הסמוי ש-RULES § 0.17ח קיים נגדו. ⇒ הקובץ הזה הוא ההצהרה שאפשר לקרוא, לבדוק ולסקור. בדיקה 17 ב-loop:health מודדת מולו. מי שמכבה או מדליק סוכן — מעדכן כאן ובאותה עריכה ב-claude/LOOP-ARCHITECTURE.md.",
+  "_measuredAt": "2026-09-06T14:41Z",
+  "_source": "list_triggers — נמדד חי בטיק האופרטור C-0466",
+  "agents": [
+    { "name": "DEV",     "commitPrefix": "loop(DEV",     "enabled": true, "maxSilentHours": 24, "cronUTC": "30 */2 * * *",        "model": "claude-sonnet-5" },
+    { "name": "PM",      "commitPrefix": "loop(PM",      "enabled": true, "maxSilentHours": 24, "cronUTC": "0 1,9,17 * * *",      "model": "claude-opus-5" },
+    { "name": "QA",      "commitPrefix": "loop(CRITIC",  "enabled": true, "maxSilentHours": 24, "cronUTC": "15 5,11,15,21 * * * · 45 1,7,13,19 * * *", "model": "claude-sonnet-5 (מלא) · claude-haiku-4-5 (שער)" },
+    { "name": "CONTENT", "commitPrefix": "loop(CONTENT", "enabled": true, "maxSilentHours": 24, "cronUTC": "15 3,7,13,19 * * *",  "model": "claude-haiku-4-5" }
+  ]
+}

@@ -93,7 +93,15 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 
 ## STEP 2 — LOCK
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess a timestamp.
-`PAUSED_BY_HUMAN: true` → exit in one line. Another agent holds the lock < 30 min → exit silently. Otherwise `LOCK_HELD_BY=CONTENT`, `LOCK_AT=<real time>`, push immediately.
+`PAUSED_BY_HUMAN: true` → exit in one line. Another agent holds the lock < 30 min → **yield — and ⛔ NEVER silently.** Otherwise `LOCK_HELD_BY=CONTENT`, `LOCK_AT=<real time>`, push immediately.
+
+🔴 **⟦CHANGED 06/09 · הכרעה 101 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
+⇒ **When you yield, the FIRST line of your report is, and it is ⛔ not optional:**
+«יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס קומיטים. ‏`origin/dev..origin/work/current` = `<M>` קומיטים.»
+⛔ **Three numbers, ⛔ and all three are MEASURED in this tick, ⛔ never remembered:** who holds it (`LOCK_HELD_BY`), the lock's age in minutes (`LOCK_AT` against `date -u +%Y-%m-%dT%H:%M:%SZ`), and `./scripts/g rev-list --count origin/dev..origin/work/current`.
+⛔ **Why this line exists, and it is ⛔ not tidiness.** Between **04/09 19:12Z** and **06/09 11:00Z** seven consecutive QA windows produced **⛔ zero commits**, and ⛔ nothing anywhere said why. `loop:health` check 10 did go red — ⛔ but on the SYMPTOM (41 commits ahead of `dev`), while the cause sat inside an agent that yielded and ⛔ said nothing. **A yield that leaves ⛔ no trace is indistinguishable from a loop that is dead**, and it stayed invisible for **40 hours**. ⇒ `loop:health` **check 17** now measures the silence itself (`docs/agents/roster.json`, ceiling 24h).
+⛔ **The yield itself is ⛔ correct and ⛔ unchanged** (`RULES § 0.4` · `F-121` — a write under a live lock split the branch on 25/08). What changed is only that it now leaves a trace.
+
 
 ## STEP 3 — WHICH TRACK
 **An unblocked commission?** → do it. Follow its brief exactly, run its gate, write to the output path the row names, mark the row **🟣 לביקורת**. ⛔ Skip STEP 4–5.
@@ -168,6 +176,16 @@ New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — on
 ```
 ./scripts/g commit -m "loop(CONTENT): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```
+
+### 🔒 THE PUSH IS GATED BY `verify` — ⛔ AND NOT BY YOUR MEMORY OF IT.  ⟦NEW 06/09 · הכרעה 100 · Roy's explicit instruction⟧
+```
+npm run hooks:install        ⇐ once per clone. `npm install` already does it (npm `prepare`).
+```
+⛔ **What changed:** `scripts/hooks/pre-push` now runs `npm run verify` **inside the push itself** and **⛔ refuses the push** when it exits non-zero. On success it writes a `verify` **git-note** on the pushed tip and pushes `refs/notes/verify` — that note is the attestation `loop:health` **check 16** measures, and ⛔ no agent has to remember to write it.
+⛔ **Why:** until today `verify` was a **sentence in four prompt files**. A sentence is ⛔ not a gate — an agent that skipped it, or that ran it and misread the exit code, pushed exactly as easily as one that did not, and the branch only learned about it at the next QA tick, up to 12 hours later.
+⚠️ **`node_modules` missing ⇒ the push is REFUSED**, because `verify` ⛔ did not run and therefore ⛔ did not fail. Run `npm install` first.
+⚠️ **The declared escape hatch, ⛔ and it is ⛔ never routine:** `SKIP_VERIFY=1 ./scripts/g push origin work/current` — it prints loudly, and you **⛔ MUST write that you used it, and why, in your report**. It exists so that a broken `verify` can ⛔ never make the repo unpushable.
+⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
 ⛔ No `[skip ci]`. ⛔ Never push to `main`.
 
 ## STEP 10 — REPORT TO ROY, IN HEBREW, 5 LINES MAX, WITH EVIDENCE

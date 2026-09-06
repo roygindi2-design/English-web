@@ -805,3 +805,49 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     }
   });
 });
+
+/**
+ * ⛔ **הכרעות 100 · 101 · 22 — 06/09, הוראה מפורשת של רוי.** שלושתן חיות בטקסט של
+ * הפרומפטים, ולכן ⛔ אין להן ראיה מלבד בדיקה. פרומפט שחזר לנוסח הישן הוא לופ ששקט
+ * בלי שאיש ידע — בדיוק הכשל של 04/09–06/09.
+ */
+describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה, וזמני המסלולים', () => {
+  const ALL = ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const;
+
+  it('⛔ אף פרומפט ⛔ אינו מורה עוד על יציאה שקטה (הכרעה 101)', () => {
+    for (const a of ALL) {
+      expect(text(a), `${a}: ⛔ «exit silently» חזר`).not.toMatch(/exit (?:immediately and )?silently/i);
+    }
+  });
+
+  it('שלושת הסוכנים שנסוגים מדווחים שורת סיבה עם מחזיק, גיל נעילה ומספר קומיטים', () => {
+    for (const a of ['DEV', 'PM', 'CONTENT', 'CRITIC'] as const) {
+      const body = text(a);
+      expect(body, `${a}: שורת הנסיגה`).toContain('יציאה מוקדמת — נעילה של');
+      expect(body, `${a}: מי מחזיק`).toContain('LOCK_HELD_BY');
+      expect(body, `${a}: גיל הנעילה`).toContain('LOCK_AT');
+      expect(body, `${a}: מספר הקומיטים`).toContain('origin/dev..origin/work/current');
+    }
+  });
+
+  it('ארבעת הפרומפטים מכירים את שער ה-verify בדחיפה (הכרעה 100)', () => {
+    for (const a of ALL) {
+      const body = text(a);
+      expect(body, `${a}: התקנת ההוק`).toContain('npm run hooks:install');
+      expect(body, `${a}: מוצא החירום המוצהר`).toContain('SKIP_VERIFY');
+      expect(body, `${a}: הבדיקה שמודדת`).toMatch(/check 16|בדיקה 16/);
+    }
+  });
+
+  /**
+   * ⛔ **הכרעה 22 — ההצהרה חייבת להתאים למה שנמדד בשרת.** המודל והשעות יושבים
+   * בהגדרת המשימה המתוזמנת ⛔ ולא בריפו; זו בדיוק הסיבה שהם מוצהרים כאן.
+   * נמדד ב-`list_triggers` ב-06/09 14:41Z.
+   */
+  it('זמני שני מסלולי QA בקובץ הם הזמנים שנמדדו בשרת (הכרעה 23)', () => {
+    const qa = text('CRITIC');
+    expect(qa, 'שער — ארבע יריות').toContain('01:45Z · 07:45Z · 13:45Z · 19:45Z');
+    expect(qa, 'מלא — ארבע יריות').toContain('05:15Z · 11:15Z · 15:15Z · 21:15Z');
+    expect(qa, '⛔ הזמנים הישנים ⛔ לא חזרו').not.toContain('05:00Z and 23:00Z');
+  });
+});

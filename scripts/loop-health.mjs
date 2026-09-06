@@ -24,6 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { hookState } from './install-hooks.mjs';
 
 /**
  * ⛔ Every path resolves through ROOT, and that is not decoration: without it the
@@ -733,6 +734,152 @@ check('15', 'ACTIVE_TASK_ID תקין — רשימה של עד 3 מזהים תק�
   }
   return { ok: items.length === 0, detail: `${ids.length}/${ACTIVE_TASK_ID_CEILING} מזהים`, items };
 });
+
+/**
+ * 16 — ⛔ **הקומיטים האחרונים על הענף עברו `verify` — או ש⛔ אין לכך ראיה.**  ⟦NEW 06/09 · הכרעה 100 ⓑ⟧
+ * ⛔ **הכשל שזה קיים נגדו, ⛔ ואינו תיאורטי:** עד 06/09 `npm run verify` היה **משפט
+ * בארבעה קבצי פרומפט**. משפט ⛔ אינו שער: סוכן שדילג עליו, או שהריץ אותו וקרא את קוד
+ * היציאה לא נכון, דחף בדיוק באותה קלות כמו סוכן שלא — והענף גילה זאת רק בטיק ה-QA
+ * הבא, עד 12 שעות אחר כך.
+ * ⇒ `scripts/hooks/pre-push` מריץ את `verify` וחוסם דחיפה אדומה, ורושם `git note`
+ *   על כל ראש שנדחף. הבדיקה הזאת מודדת **שני דברים ⛔ ולא אחד**:
+ *     ⓐ שה-hook בכלל **מותקן בשיבוט הזה** ו⛔ אינו גרסה ישנה — כי כל טיק הוא שיבוט
+ *       חדש, ו-hook שלא הועתק פנימה הוא hook שאינו קיים;
+ *     ⓑ שראש `origin/work/current` נושא הערת `verify`.
+ * ⚠️ **⛔ הבדיקה ⛔ אינה מתקנת את מה שהיא מודדת** — היא ⛔ לעולם אינה מתקינה את ה-hook.
+ *    בודק שמתקן מה שהוא מודד יכול רק לדווח «ok».
+ * ⚠️ **רכה עד `2026-09-13`** לפי הכלל שכתוב בראש הקובץ: ההיסטוריה שקדמה ל-hook ⛔ אינה
+ *    יכולה לשאת הערה, וצבע אדום ביום הנחיתה מלמד כל סוכן שאדום הוא הצבע הרגיל.
+ */
+const VERIFY_NOTES_REF = 'refs/notes/verify';
+check(
+  '16',
+  'ה-hook של verify מותקן · ראש הענף נושא הערת verify',
+  () => {
+    const git = (...args) => {
+      try {
+        return execFileSync('./scripts/g', args, {
+          cwd: ROOT,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        }).trim();
+      } catch {
+        return null;
+      }
+    };
+    const items = [];
+    const parts = [];
+
+    const state = hookState(ROOT);
+    if (state.missing.length > 0) {
+      items.push(`⛔ hook ⛔ אינו מותקן: ${state.missing.join(' · ')} ⇒ npm run hooks:install`);
+    }
+    if (state.stale.length > 0) {
+      items.push(`⛔ hook ישן (⛔ אינו זהה למקור): ${state.stale.join(' · ')} ⇒ npm run hooks:install`);
+    }
+    parts.push(state.ok ? 'hook מותקן' : '⛔ hook חסר/ישן');
+
+    const tip = git('rev-parse', '--verify', 'refs/remotes/origin/work/current');
+    if (tip === null) {
+      items.push('⛔ לא נמדד — origin/work/current אינו נגיש');
+      parts.push('⛔ הערה לא נמדדה');
+      return { ok: false, detail: parts.join(' · '), items };
+    }
+    /**
+     * ⛔ ההערות ⛔ אינן מגיעות ב-clone רגיל — `refs/notes/*` אינו ב-refspec של origin.
+     * ⇒ משיכה **מפורשת, שקטה, ובלתי-קטלנית**: כישלון שלה הוא «⛔ לא נמדד», ⛔ ולא «נכשל».
+     */
+    git('fetch', '-q', 'origin', `+${VERIFY_NOTES_REF}:${VERIFY_NOTES_REF}`);
+    const note = git('notes', `--ref=${VERIFY_NOTES_REF}`, 'show', tip);
+    if (note === null) {
+      items.push(`⛔ אין הערת verify על ${tip.slice(0, 7)} — הראש נדחף בלי הראיה (או ש-refs/notes/verify עוד לא קיים)`);
+      parts.push('⛔ ראש ללא הערה');
+    } else {
+      parts.push(`ראש ${tip.slice(0, 7)} מאושר: ${note.split('\n')[0]}`);
+    }
+    return { ok: items.length === 0, detail: parts.join(' · '), items };
+  },
+  '2026-09-13',
+);
+
+/**
+ * 17 — ⛔ **סוכן דלוק שלא הפיק קומיט מעל 24 שעות.**  ⟦NEW 06/09 · הכרעה 101 ⓒ⟧
+ * ⛔ **נמדד, ⛔ לא משוער:** בין **04/09 19:12Z** ל-**06/09 11:00Z** שבעה חלונות QA
+ * רצופים הפיקו **⛔ אפס קומיטים**, ו⛔ שום דבר בשום מקום לא אמר למה. הנסיגה השקטה
+ * («lock < 30 min ⇒ exit silently») נראית מבחוץ **בדיוק כמו לופ מת**, והיא נשארה
+ * בלתי-נראית **40 שעות**. בדיקה 10 אכן האדימה — ⛔ אבל על הסימפטום (41 קומיטים לפני
+ * `dev`), ⛔ לא על הסיבה.
+ * ⇒ זה המונה שמודד **שתיקה**, ⛔ ולא נכונות. מקורו `git log` על `origin/work/current`,
+ *   ⛔ ולא מונה פנימי — מונה בזיכרון הסקריפט סוטה ברגע שמישהו כותב היסטוריה מחדש.
+ * ⚠️ הרשימה של מי דלוק חיה ב-`docs/agents/roster.json`, כי מצב המשימות המתוזמנות יושב
+ *    בשרת ⛔ ולא בריפו (`RULES § 0.17ח`) — ⇒ הצהרה שאפשר לקרוא, לבדוק ולסקור.
+ * ⚠️ **רכה עד `2026-09-13`**, מאותה סיבה שכתובה בראש הקובץ.
+ */
+const SILENCE_LOOKBACK_COMMITS = 400;
+check(
+  '17',
+  'כל סוכן דלוק הפיק קומיט ב-24 השעות האחרונות',
+  () => {
+    const git = (...args) => {
+      try {
+        return execFileSync('./scripts/g', args, {
+          cwd: ROOT,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        });
+      } catch {
+        return null;
+      }
+    };
+    const rosterRaw = read(at('docs', 'agents', 'roster.json'));
+    if (rosterRaw === '') {
+      return { ok: false, detail: '⛔ לא נמדד — docs/agents/roster.json חסר' };
+    }
+    const roster = JSON.parse(rosterRaw);
+    const active = (roster.agents ?? []).filter((a) => a.enabled === true);
+    if (active.length === 0) {
+      return { ok: true, detail: '⛔ אף סוכן ⛔ אינו דלוק ברשימה — ⛔ אין מה למדוד' };
+    }
+    const log = git(
+      'log',
+      'origin/work/current',
+      '--format=%ct%x1f%s',
+      `-${SILENCE_LOOKBACK_COMMITS}`,
+    );
+    if (log === null) {
+      return { ok: false, detail: '⛔ לא נמדד — git log על origin/work/current נכשל' };
+    }
+    const commits = log
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => {
+        const [ts, subject] = l.split('\x1f');
+        return { ts: Number(ts), subject: subject ?? '' };
+      });
+    const nowSec = Math.floor(Date.now() / 1000);
+    const items = [];
+    const parts = [];
+    for (const a of active) {
+      const newest = commits.find((c) => c.subject.startsWith(a.commitPrefix));
+      const ceiling = a.maxSilentHours ?? 24;
+      if (newest === undefined) {
+        items.push(`⛔ ${a.name} — ⛔ אף קומיט ב-${commits.length} האחרונים (חלון קצר מדי, או שקט ארוך)`);
+        parts.push(`${a.name} ⛔`);
+        continue;
+      }
+      const hours = (nowSec - newest.ts) / 3600;
+      parts.push(`${a.name} ${hours.toFixed(1)}ש׳`);
+      if (hours > ceiling) {
+        items.push(
+          `⛔ ${a.name} שותק ${hours.toFixed(1)} שעות (תקרה ${ceiling}) — הקומיט האחרון: ${newest.subject.slice(0, 60)}`,
+        );
+      }
+    }
+    return { ok: items.length === 0, detail: parts.join(' · '), items };
+  },
+  '2026-09-13',
+);
 
 /**
  * ⛔ **A REPORTED NUMBER, ⛔ NOT A CHECK.**  ⟦D-147 · the 4/1/1 mix⟧
