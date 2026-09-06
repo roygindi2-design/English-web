@@ -1,16 +1,18 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0467 (Cowork, טיק אופרטור) — שער verify בדחיפה, בדיקות 16·17, סוף הנסיגה השקטה. המשך בנייה רגיל.
+NEXT_AGENT: CRITIC                    # ▶️ C-0468 (DEV, Cowork Recovery, טיק מכוון) — F-175 הוכרע, Smart Wait בארבעת הפרומפטים, gc:memory הורץ.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []                # ▶️ C-0458 (DEV) — פורמט חדש: רשימה עד 3 מזהים (T-260 · D-190 § 1.2 ⓑ). עדיין ריקה — PM/QA כותבים אליה, DEV לעולם לא (RULES § 0.28).
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-CONSECUTIVE_NO_PROGRESS: 0        # תקרה: 2 → מעבר אוטומטי ל-HUMAN
-LAST_HANDOFF_AT: 2026-09-06T15:04:54Z
+# ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175, הכרעת רוי — "להסיר", 03-for-roy פריט 87 נסגר).
+# היה בלם מת (מוצהר, ⛔ אף קוד לא העלה אותו) — שדה שמצהיר על בלם שאינו קיים גרוע משדה שאינו קיים.
+# מפסק איש-המת (36 שעות) ובדיקות 11·13·17 מכסות "הלופ מסתובב ריק" בלעדיו. ⛔ ⛔ לא נשמר במקום אחר בחוזה חי.
+LAST_HANDOFF_AT: 2026-09-06T16:34:17Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV (Cowork Recovery)"  # נעילה 2026-09-06T16:19:17Z — טיק מכוון, הוראת רוי 06/09 16:05Z
-LOCK_AT: "2026-09-06T16:19:17Z"
+LOCK_HELD_BY: ""                     # שוחררה 2026-09-06T16:34:17Z — C-0468 (DEV, Cowork Recovery) טיק מכוון: F-175 · Smart Wait · gc:memory
+LOCK_AT: "2026-09-06T16:34:17Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -54,8 +56,7 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0466 | DEV (Cowork) | CRITIC | 2026-09-06T14:58:44Z | 🔨 **טיק בנייה — `T-224` (`base`), קומיט אחד, לפי `docs/superpowers/plans/2026-09-06-sense-items-level-tagging.md`.** TDD על כל שלב (RED אז GREEN). מיגרציה `0021_sense_items_level.sql` (nullable, ⛔ אין ברירת מחדל) הורצה על הפרויקט החי דרך מחבר ה-MCP של Supabase — ⚠️ **`supabase` CLI חסום ברשת הסביבה הזאת**: `migration list`/`db push` מנסים חיבור פוסטגרס ישיר ל-pooler ונתקעים ב-timeout (רשת הסנדבוקס מרשה רק דומיינים ברשימה לבנה); ה-MCP מחובר לאותו פרויקט (`zsnqeaajnbrnnahdunof`, אומת לפי שם+טבלאות) ואומת אחרי הריצה: שתי העמודות nullable ללא ברירת מחדל, שני האילוצים קיימים, 1,602/1,602 שורות עדיין `level` null. סוגר את `F-168`. **ממצא עצמי, תוקן באותו קומיט (RULES § 0.22):** התוכנית פספסה `lib/core/mixReport.test.ts`+`lib/core/previewSelection.test.ts` (בונים fixture ביד) — `tsc --noEmit` תפס, תוקנו. `verify` ירוק טרי — **exit 0 · 3499/3499 · mobile 1325/1325**. `generate-map` רץ — 399 מודולים, ⛔ ללא שינוי. | `T-224` ✅ · `supabase/migrations/0021_sense_items_level.sql` · `lib/core/contentSchema.ts`+`batchRecord.ts`+`scoringSeed.ts` · `scripts/build-ingest-sql.mjs`+`measure-continuations.mjs` · `docs/agents/CONTENT.md` · `F-168` |
-| C-0467 | CRITIC (Cowork) | DEV | 2026-09-06T15:04:54Z | ⚙️ **טיק אופרטור — ארבע הכרעות של רוי (100 · 101 · 23 · 22), באישור מפורש.** **100:** `scripts/hooks/pre-push` מריץ `verify` בדחיפה וחוסם אדום, ורושם `git-note`; מותקן מ-npm `prepare`; **בדיקה 16** מודדת התקנה + הערה. **101:** `DEV`/`PM`/`CONTENT` ⛔ אינם «exit silently» עוד — שורת נסיגה מחייבת (מחזיק · גיל נעילה · מספר קומיטים); **בדיקה 17** מודדת שקט >24ש׳ מול `docs/agents/roster.json`; cron CONTENT 01:15⇒03:15. **23:** שני מסלולי QA מ-2 ל-4 ליום (`45 1,7,13,19` · `15 5,11,15,21`). **22:** הצהרות המודל הותאמו למדוד ב-`list_triggers`. `loop:health` **17**, 16·17 רכות עד 13/09. פירוט ⇒ `claude/LOOP-ARCHITECTURE.md` § 0.14. | `scripts/hooks/pre-push` · `scripts/install-hooks.mjs` · `docs/agents/roster.json` · 4 פרומפטים · `loop-health.mjs` |
+| C-0468 | DEV (Cowork Recovery) | CRITIC | 2026-09-06T16:34:17Z | 🔨 **טיק מכוון (הוראת רוי 06/09 16:05Z) — F-175 הוכרע ("להסיר"), Smart Wait בארבעת הפרומפטים, `gc:memory` הורץ.** `CONSECUTIVE_NO_PROGRESS` הוצא מ-`00-control` (שורות AGENT_BLUEPRINT/mermaid סומנו היסטוריות, `03-for-roy` 87 נסגר). Smart Wait: `sleep 180` + קריאה חוזרת לפני נסיגה מנעילה זרה, בארבעתם (בדיקה חדשה ב-`agent-prompts.test.ts`, 54/54). `gc:memory`: `00-control` 12,590⇐11,024 בתים (תקרה 12,288). `roster.json` אושש מול `list_triggers` חי (DEV=claude-sonnet-5, ⛔ ללא שינוי). ⛔ **5ב (הצהרת מודל בטקסט הפרומפט של DEV, דרך `update_trigger`) נדחה במכוון** — סיכון שגיאת-תו על שלושת סודות Supabase שהפרומפט נושא, ⛔ ולא הוצע לרוי לוותר עליו. `verify` **exit 0** (216 קבצים · 3515 בדיקות · `check:mobile` 1325) · `loop:health` **16/17** (בדיקה 16 באזהרה — קומיט הנעילה נדחף לפני `npm install`, רך עד 13/09). | `plan/00-control.md` · `docs/AGENT_BLUEPRINT.md` · `docs/handoff_flow.mermaid` · `docs/agents/{DEV,PM,CONTENT,CRITIC}.md` · `scripts/agent-prompts.test.ts` · `docs/agents/roster.json` · `plan/60-findings.md` (F-175) · `plan/03-for-roy.md` (87) |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

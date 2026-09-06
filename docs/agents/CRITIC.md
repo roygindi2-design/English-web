@@ -150,7 +150,9 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 
 ## STEP 1 — STATE
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ NEVER guess a timestamp. Read `plan/00-control.md` ONLY.
-`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock under 30 min → **exit — and ⛔ NEVER silently.** Otherwise lock as CRITIC and push immediately.
+`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock under 30 min → **Smart Wait, then exit if still held — and ⛔ NEVER silently.**
+🆕 **⟦NEW 06/09 · Smart Wait · Roy's explicit instruction⟧ Do not exit immediately on a foreign lock:** `sleep 180`, then re-read `plan/00-control.md`. Released in the meantime ⇒ continue the tick normally. Still held after the wait ⇒ exit now, and write the mandatory retreat line below. ⛔ **The retreat itself and the 30-minute threshold are unchanged** — this only delays the *decision* to exit by one wait.
+Otherwise lock as CRITIC and push immediately.
 🔴 **⟦CHANGED 06/09 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
 ⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס מיזוג. ‏`origin/dev..origin/work/current` = `<M>` קומיטים.»
 **What was measured on 06/09, on a live clone and on the live scheduler:** between **04/09 19:12Z** (the last QA tick that produced a commit, `C-0428`) and **06/09 11:00Z** — **seven consecutive QA windows produced ⛔ zero commits**, and ⛔ nothing anywhere said why. `origin/dev..origin/work/current` went from **41** to **66**. The 06/09 05:06Z gate tick ran **2 min 17 s** end to end; DEV had fired at **04:36Z** and was still committing at **05:13Z**. On the four full-lane windows since 03/09 where a DEV commit landed **after** the QA fire minute, QA produced **⛔ nothing, 4 times out of 4**; on the three where DEV had finished first, QA ran **3 out of 3**.

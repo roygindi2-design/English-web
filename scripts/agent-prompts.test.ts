@@ -830,6 +830,20 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     }
   });
 
+  /**
+   * ⛔ **Smart Wait — 06/09, הוראה מפורשת של רוי.** נסיגה מנעילה זרה ⛔ אינה
+   * מיידית עוד: `sleep 180`, קריאה חוזרת של `plan/00-control.md`, ורק אם עדיין
+   * תפוסה — נסיגה עם שורת הדיווח. הספים עצמם (DEV 90 דק׳, השאר 30) ⛔ לא השתנו.
+   */
+  it('ארבעת הפרומפטים ממתינים 3 דקות ובודקים שוב לפני נסיגה מנעילה זרה (Smart Wait)', () => {
+    for (const a of ALL) {
+      const body = text(a);
+      expect(body, `${a}: Smart Wait מוזכר`).toMatch(/Smart Wait/);
+      expect(body, `${a}: sleep 180`).toContain('sleep 180');
+      expect(body, `${a}: קריאה חוזרת של 00-control.md`).toMatch(/re-read `plan\/00-control\.md`/);
+    }
+  });
+
   it('ארבעת הפרומפטים מכירים את שער ה-verify בדחיפה (הכרעה 100)', () => {
     for (const a of ALL) {
       const body = text(a);

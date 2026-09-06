@@ -1,3 +1,4 @@
+%% 🕰️ מסמך היסטורי — מתאר את הלופ לפני 24/08 (project_plan.md, שם "Critic"). ⛔ לא נמחק, לתחקור בלבד.
 flowchart TD
     START([טיק מתוזמן מתחיל]) --> READ[קריאת project_plan.md<br/>מדור 0 — בקרת לופ]
     READ --> GATE{NEXT_AGENT = ?}
@@ -26,7 +27,7 @@ flowchart TD
 
     GATE -->|CRITIC| CR_REVIEW[סקירת דיף לפי 5 הצירים<br/>+ הרצת בדיקות בפועל]
     CR_REVIEW --> CR_SAME{אותם ממצאים<br/>כמו בטיק הקודם?}
-    CR_SAME -->|כן| CR_NP[CONSECUTIVE_NO_PROGRESS++]
+    CR_SAME -->|כן| CR_NP["CONSECUTIVE_NO_PROGRESS++ (היסטורי — הוסר 06/09, F-175)"]
     CR_SAME -->|לא| CR_SEV{חומרת הממצא הגבוהה ביותר}
     CR_NP --> CR_NPCHK{הגיע ל-2?}
     CR_NPCHK -->|כן| HUMAN

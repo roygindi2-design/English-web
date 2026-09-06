@@ -100,7 +100,9 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 
 ## STEP 1 — STATE
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess or round. Read `plan/00-control.md`.
-`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock < 30 min → **yield — and ⛔ NEVER silently.** Otherwise lock as PM and push immediately.
+`PAUSED_BY_HUMAN: true` → exit in one line. Another agent's lock < 30 min → **Smart Wait, then yield if still held — and ⛔ NEVER silently.**
+🆕 **⟦NEW 06/09 · Smart Wait · Roy's explicit instruction⟧ Do not yield immediately on a foreign lock:** `sleep 180`, then re-read `plan/00-control.md`. Released in the meantime ⇒ continue the tick normally. Still held after the wait ⇒ yield now, and write the mandatory retreat line below. ⛔ **The retreat itself and the 30-minute threshold are unchanged** — this only delays the *decision* to yield by one wait.
+Otherwise lock as PM and push immediately.
 
 🔴 **⟦CHANGED 06/09 · הכרעה 101 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
 ⇒ **When you yield, the FIRST line of your report is, and it is ⛔ not optional:**
