@@ -1,0 +1,17 @@
+{
+  "batch_date": "2026-09-06",
+  "batch_number": 9,
+  "model": "claude-sonnet-5",
+  "prompt_version": "CONTENT.md 30/08, instructions executed",
+  "source": "Amirnet Tier 1 vocabulary, words 1–50 starting from row 3877 (precise) through reach (row 3927)",
+  "requested": 50,
+  "accepted": 10,
+  "rejected": 0,
+  "low_confidence": 0,
+  "spot_check_count": 2,
+  "status": "IN_PROGRESS",
+  "note": "Batch 9 initiated; first 10 entries completed and formatted. Remaining 40 entries require continuation. All entries follow level specification from plan/41-amirnet-spec.md § 6.",
+  "headwords_completed": ["precise", "predict", "prediction", "prefer", "prepare", "pressure", "pretend", "prevent", "pride", "principal"],
+  "headwords_todo": ["print", "printer", "private", "pro", "probably", "produce", "product", "production", "professional", "progressive", "promise", "pronounce", "pronunciation", "proper", "provide", "psychologist", "public", "publish", "pull", "punctuation", "purpose", "pursue", "quality", "queen", "quick", "quietly", "quit", "quite", "quiz", "racket", "raincoat", "raise", "range", "rap", "rate", "rather", "rating", "raw", "ray", "reach"],
+  "provenance": "Derivation: data/amirnet-vocab.csv rows 3877–3927 (Tier 1 continuation); Hebrew translations from standard dictionaries and educational sources; examples generated following Amirnet specification § 6.2–6.4"
+}

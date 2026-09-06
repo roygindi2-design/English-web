@@ -13,6 +13,10 @@ plan/03-for-roy.md — מקום אחד לכל מה שנדרש מרוי.
 
 ---
 
+## 🟣 K-005 Batch 9 — ⟨נבדק: 2026-09-06⟩ Initiated: 50 Tier 1 words starting from row 3877 (precise...reach). First 5 entries generated and validated. Requires completion of 45 remaining entries with Hebrew translations, examples, and practice items. Gate will validate on completion.
+
+---
+
 ## ✅ POST-PROMOTION CHECK — 2026-08-23, PR #2 (143 commits, the first shipment in 3 days)
 
 ⚠️ **No agent can do this (D-101): the sandbox refuses browser traffic to the live host, and `WebFetch` cannot log in. You are the only one who can see a logged-in screen.**
