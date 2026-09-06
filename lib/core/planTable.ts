@@ -521,9 +521,29 @@ export type WorkKind = (typeof WORK_KINDS)[number];
 export const LAYERS = ['שכבה א׳', 'שכבה ב׳'] as const;
 export type Layer = (typeof LAYERS)[number];
 
+/**
+ * ⛔ **הציר הרביעי, הרשות — בדיוק בדפוס `LAYERS` שמעליו, ⛔ ולא ציר חדש ב-`WORK_KINDS`.**
+ * `T-271` (המשך של `T-255`) — `IMPROVE_ROW_TAG` ב-`scripts/loop-health.mjs` כבר קרא את
+ * התג `שיפור` ישירות מהתא כטוקן גולמי (בדיקה 14, D-190 § 1.3), ⛔ אבל `classify` עצמו —
+ * המקור היחיד שגם `measure-plan-tables.mjs` וגם הסטנדרט הכללי סומכים עליו — ⛔ לא הכיר
+ * אותו, ⇒ כל שורה שנשאה אותו נספרה `unknown` ומטילה את הדגל «תג שאינו באוצר המילים».
+ * זה מה שהופך את מצב 🩺 IMPROVE ל⛔ ניתן להדלקה: PM שכותב את התג מקבל דגל שגוי שאומר
+ * לו «תקן או הסר» על תג שהוא **כן** באוצר המילים.
+ *
+ * ⚠️ **⛔ אין לו ברירת מחדל, ורוב השורות ⛔ אינן נושאות אותו — שורה בלי `שיפור`
+ * ⛔ אינה שגיאה ו⛔ אינה `unknown`,** בדיוק כמו `layer`. ⛔ **הוא ⛔ אינו סוג עבודה** —
+ * שורת 🩺 IMPROVE נשארת מתויגת `נוחות` ב-`WORK_KINDS` לצידו (גדר 4 של `D-146`),
+ * ו-`שיפור` הוא תג נוסף על גביה, ⛔ לא תחליף.
+ * 🔴 **ומי כותב אותו: PM או רוי, ⛔ לעולם לא DEV** (`RULES § IMPROVE` fence 6) — אותו
+ * טעם בדיוק כמו `layer`: סוכן שמסמן לעצמו את התג ואז פועל על סמכו כותב לעצמו רשות.
+ */
+export const IMPROVEMENT_TAGS = ['שיפור'] as const;
+export type ImprovementTag = (typeof IMPROVEMENT_TAGS)[number];
+
 const WORKSTREAM_SET: ReadonlySet<string> = new Set(WORKSTREAMS);
 const KIND_SET: ReadonlySet<string> = new Set(WORK_KINDS);
 const LAYER_SET: ReadonlySet<string> = new Set(LAYERS);
+const IMPROVEMENT_TAG_SET: ReadonlySet<string> = new Set(IMPROVEMENT_TAGS);
 
 /** 0-based index of `אבן דרך`, the cell that carries both tags. */
 export const TASK_MILESTONE_INDEX = 1;
@@ -536,6 +556,8 @@ export interface Classification {
   readonly kind: WorkKind | null;
   /** ⛔ Optional by design — `null` on almost every row, and that is ⛔ not a defect. */
   readonly layer: Layer | null;
+  /** ⛔ Optional by design, exactly like `layer` — `null` on almost every row. */
+  readonly improvementTag: ImprovementTag | null;
   /** Tokens that are neither a milestone nor a known tag. ⛔ Never silently dropped. */
   readonly unknown: readonly string[];
 }
@@ -559,12 +581,18 @@ export interface Classification {
  * workstream and kind are expected on an open row; the layer is ⛔ not, and a row
  * without it is ⛔ not a bad tag. It exists so a skill that is safe on the arena's
  * visual layer cannot be reached from a row that is ⛔ not that.
+ *
+ * ⚠️ **06/09 · T-271 — a FOURTH vocabulary joined, on the same optional pattern as
+ * the layer.** `שיפור` marks a row opened under 🩺 IMPROVE mode (`IMPROVE_TARGET`).
+ * It is ⛔ never a `kind` — the row keeps `נוחות` there — and a row without it is
+ * ⛔ not a bad tag either.
  */
 export function classify(cell: string): Classification {
   let milestone: string | null = null;
   let workstream: Workstream | null = null;
   let kind: WorkKind | null = null;
   let layer: Layer | null = null;
+  let improvementTag: ImprovementTag | null = null;
   const unknown: string[] = [];
 
   for (const raw of cell.split('·')) {
@@ -592,9 +620,15 @@ export function classify(cell: string): Classification {
       else unknown.push(token);
       continue;
     }
+    if (IMPROVEMENT_TAG_SET.has(token)) {
+      // Two improvement tags on one row is a contradiction, ⛔ not a tag — report it.
+      if (improvementTag === null) improvementTag = token as ImprovementTag;
+      else unknown.push(token);
+      continue;
+    }
     unknown.push(token);
   }
-  return { milestone, workstream, kind, layer, unknown };
+  return { milestone, workstream, kind, layer, improvementTag, unknown };
 }
 
 /**

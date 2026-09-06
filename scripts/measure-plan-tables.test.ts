@@ -10,6 +10,7 @@ import {
   TASK_COLUMNS,
   FINDING_COLUMNS,
   TASK_STATUS_INDEX,
+  TASK_MILESTONE_INDEX,
   FINDING_STATUS_INDEX,
 } from '../lib/core/planTable';
 
@@ -494,6 +495,54 @@ describe('scripts/measure-plan-tables.mjs', () => {
     // The committed docs/plan-tables.md is evidence, ⛔ not decoration: if it drifts from
     // what the script produces, the next agent reads a stale answer and trusts it.
     expect(readFileSync(join('docs', 'plan-tables.md'), 'utf8')).toBe(readFileSync(FRESH, 'utf8'));
+  });
+});
+
+/**
+ * T-271 (המשך של T-255) — **הרצה 2 מתוך השלוש שהמשימה מדדה כשבורות:** עם התג `שיפור`
+ * על שורה פתוחה, `measure:plan` היה מוציא «⚠️ ⁣\`<id>\` נושאת תג שאינו באוצר המילים:
+ * \`שיפור\`. ⛔ תקן או הסר» — כי `classify` (לפני התיקון בקובץ זה) דיווח עליו כ-`unknown`.
+ * ⛔ שום שורה בריפו האמיתי לא נושאת את התג היום (הרצת הבסיס למעלה מדדה `0 bad tags`),
+ * ⇒ הפיקסצ'ר כאן היא עותק של `plan/50-tasks.md` האמיתי עם `· שיפור` אחד מוסף לתא
+ * `אבן דרך` של שורה קיימת (`T-271` עצמה) — ⛔ לא רישום בדוי. **`TASK_STATUS_INDEX`
+ * נכתב מפורשות ל-`⬜`** באותו דפוס בדיוק כמו הפיקסצ'ר של T-229 למעלה: השורה הזאת
+ * עצמה סוגרת ל-🟣 בטיק שכתב אותה, וקריאת הסטטוס החי (⛔ ולא כתיבתו) הייתה הופכת את
+ * הבדיקה לתלויה בדריפט של הרגיסטר החי — בדיוק המחלקה שההערה שם מזהירה מפניה.
+ */
+describe('🔴 T-271: שיפור אינו תג לא-מוכר (בדיקה 14 · D-190 § 1.3)', () => {
+  it('does not flag a row carrying שיפור as an unknown-vocabulary tag', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-improve-tag-'));
+
+    const taskLines = readFileSync(join('plan', '50-tasks.md'), 'utf8').split('\n');
+    const taskIdx = taskLines.findIndex((l) => l.startsWith('| T-271 |'));
+    expect(taskIdx).toBeGreaterThanOrEqual(0);
+    const cells = splitRow(taskLines[taskIdx] ?? '');
+    cells[TASK_MILESTONE_INDEX] = `${cells[TASK_MILESTONE_INDEX]} · שיפור`;
+    cells[TASK_STATUS_INDEX] = '⬜';
+    taskLines[taskIdx] = `| ${cells.join(' | ')} |`;
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    writeFileSync(fixtureTasks, taskLines.join('\n'), 'utf8');
+
+    const fixtureStdout = execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: join(tmp, 'plan-open.md'),
+        PLAN_TASKS_FILE: fixtureTasks,
+      },
+    });
+
+    // The failing horn, exactly as T-271 measured it: 0 bad tags, ⛔ not 1, and no
+    // mention of T-271 in the "unknown vocabulary" flag.
+    expect(fixtureStdout).toMatch(/balance: \d+ rows without a workstream, 0 bad tags, \d+ flags/);
+    expect(fixtureStdout).not.toMatch(/T-271.*אוצר המילים/);
+    const report = readFileSync(join(tmp, 'plan-tables.md'), 'utf8');
+    expect(report).not.toContain('נושאת תג שאינו באוצר המילים');
+
+    // The row still classifies correctly on the axis שיפור does not touch —
+    // `T-271` stays eligible (⬜) rather than falling into a malformed/unknown bucket.
+    expect(report).toMatch(/`T-271`/);
   });
 });
 

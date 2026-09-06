@@ -8,6 +8,7 @@ import {
   WORKSTREAMS,
   WORK_KINDS,
   LAYERS,
+  IMPROVEMENT_TAGS,
   CROSS_CUTTING,
   TASK_COLUMNS,
 } from './planTable';
@@ -456,6 +457,7 @@ describe('classify', () => {
       workstream: 'story',
       kind: 'נוחות',
       layer: null,
+      improvementTag: null,
       unknown: [],
     });
   });
@@ -472,6 +474,7 @@ describe('classify', () => {
       workstream: null,
       kind: null,
       layer: null,
+      improvementTag: null,
       unknown: [],
     });
   });
@@ -495,10 +498,11 @@ describe('classify', () => {
     expect(classify('M1 · —').unknown).toEqual([]);
   });
 
-  it('accepts every token in all three published vocabularies', () => {
+  it('accepts every token in all four published vocabularies', () => {
     for (const w of WORKSTREAMS) expect(classify(`M0 · ${w}`).workstream).toBe(w);
     for (const k of WORK_KINDS) expect(classify(`M0 · ${k}`).kind).toBe(k);
     for (const l of LAYERS) expect(classify(`M0 · ${l}`).layer).toBe(l);
+    for (const t of IMPROVEMENT_TAGS) expect(classify(`M0 · ${t}`).improvementTag).toBe(t);
   });
 
   /**
@@ -549,6 +553,47 @@ describe('classify', () => {
     const c = classify('M2 · arena · שכבה א׳ · שכבה ב׳');
     expect(c.layer).toBe('שכבה א׳');
     expect(c.unknown).toEqual(['שכבה ב׳']);
+  });
+
+  /**
+   * 🔴 **T-271 (המשך של T-255) — `שיפור` נכנס בדיוק בדפוס `LAYERS` שמעליו, ואותם
+   * שלושה תנאים נבדקים כאן ⛔ ולא רק בהשוואה למקור.**
+   *
+   * ① לפני התיקון `classify('M2 · story · נוחות · שיפור')` היה מחזיר
+   * `unknown: ['שיפור']` — בדיוק כפי שהמשימה מדדה (הרצה 1). ② `שיפור` ⛔ אינו הופך
+   * ל-`kind` — השורה נשארת מתויגת `נוחות` (גדר 4 של `D-146`), והוא נספר בשדה נפרד
+   * משלו. ③ הוא **רשות**: שורה בלעדיו ⛔ אינה `unknown` ו⛔ אינה שגיאה — 190+ שורות
+   * פתוחות שקיימות היום היו מתלקחות בבת אחת אחרת.
+   */
+  it('🔴 T-271: the שיפור tag is optional, closed, order-free, and never a kind', () => {
+    // 1 · optional — ⛔ absent is ⛔ not an error
+    expect(classify('M2 · story · נוחות').improvementTag).toBeNull();
+    expect(classify('M2 · story · נוחות').unknown).toEqual([]);
+
+    // 2 · present — recognised in its own field, ⛔ never in `unknown`, and the
+    // `kind` axis is untouched (this is the exact scenario T-271's horn ① measured
+    // as broken: `classify('M2 · story · נוחות · שיפור')` used to report `unknown`)
+    const tagged = classify('M2 · story · נוחות · שיפור');
+    expect(tagged.improvementTag).toBe('שיפור');
+    expect(tagged.kind).toBe('נוחות');
+    expect(tagged.unknown).toEqual([]);
+
+    // 3 · closed — a near-miss is reported, ⛔ never accepted
+    expect(classify('M2 · story · שיפורים').improvementTag).toBeNull();
+    expect(classify('M2 · story · שיפורים').unknown).toEqual(['שיפורים']);
+
+    // 4 · disjoint — order is irrelevant, exactly like the other axes
+    expect(classify('שיפור · story · M2 · נוחות')).toEqual(
+      classify('M2 · story · נוחות · שיפור'),
+    );
+
+    // 5 · ⛔ never added to WORK_KINDS — it is a fourth, separate axis
+    expect((WORK_KINDS as readonly string[]).includes('שיפור')).toBe(false);
+
+    // and a second improvement tag on one row is a contradiction, ⛔ not a tag
+    const doubled = classify('M2 · story · נוחות · שיפור · שיפור');
+    expect(doubled.improvementTag).toBe('שיפור');
+    expect(doubled.unknown).toEqual(['שיפור']);
   });
 });
 
