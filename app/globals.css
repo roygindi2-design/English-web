@@ -210,6 +210,43 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   [data-arena-cast-phase='window'] { animation: none; }
 }
 
+/* T-157 · D-090ⓑ · T-233 · **T-243 · T-259 (07/09)** — the card during and after the finger.
+   ⚠️ Rewritten 07/09. The sentence that stood here — a 200ms easing «returns the card to its
+   place or takes it out» — described a TIMED transition on a gesture-released element, which
+   35 § ב6 (31/08) names as the contradiction: a fixed duration cuts the finger's velocity to
+   zero and cannot be grabbed mid-flight. It is deliberately ⛔ not quoted.
+
+   Three states, ⛔ not two:
+   ⓐ **dragging** — `[data-dragging]`: inline transform per frame, ⛔ no transition (direct
+      manipulation, ⛔ not an animation the product plays).
+   ⓑ **released** — `[data-release]`: the SPRING. `lib/core/spring.ts` samples the critically
+      damped solution (damping 1.0 · response 0.3) into a `linear()` easing whose shape carries
+      the finger's velocity, and the settle time that EMERGES is the duration. The component
+      writes both as custom properties; this rule only consumes them. Measured: 355ms for a
+      100px return at rest, 421–429ms for the render's exit — ⛔ not «150–300ms», a spring has
+      no duration (35 § ב6). Where `linear()` is unsupported the two defaults below stand and
+      the release is today's 200ms ease-out.
+   ⓒ **sent** — `[data-swipe]`: the grade left; opacity dims (D-090ⓑ) and the badge stays lit.
+
+   ⛔ `prefers-reduced-motion` ⇒ **zero motion**: `dragOffset` returns `x: 0`, `releaseCurve`
+   returns `ms: 0`, and the global 0.01ms block above catches anything else. The feedback
+   survives as the badge and the dim — state, ⛔ not movement (שכבה א׳ · apple-design § 14).
+   ⛔ The badge transition is opacity only; `check:motion` rule ⓐ. */
+[data-flashcard] {
+  --kol-release-ms: 200ms;
+  --kol-release-ease: ease-out;
+  transition: opacity 200ms ease-out;
+}
+[data-flashcard][data-release] {
+  transition: transform var(--kol-release-ms) var(--kol-release-ease), opacity 200ms ease-out;
+}
+[data-flashcard][data-dragging] {
+  transition: none;
+}
+[data-flashcard][data-swipe] {
+  opacity: 0.6;
+}
+
 /* T-259ⓑ · render_video_A.py:366-372 — the badge on the card face. Lit by the look-ahead
    during the drag (`data-swipe-preview`, written by `Flashcard.tsx` from `resolveSwipe`) and
    by the sent grade (`data-swipe`). Opacity only — `check:motion` rule ⓐ; 200ms is a timed
@@ -271,36 +308,6 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
    הוא לולאה בתדר גבוה ⛔ ולא עצירה. חוקה שכבה א׳ א7 דורשת שהתנועה **תיפסק**. */
 @media (prefers-reduced-motion: reduce) {
   [data-arena-stage] [data-arena-idle='on'] { animation: none; }
-}
-
-/* T-157 · D-090ⓑ — ההיזון החזותי של ההחלקה, **אחרי** שהכרטיס נצמד לאצבע.
-   ⚠️ **שוכתב 26/08. הניסוח הקודם כאן קבע «⛔ מעבר בדיד, ⛔ ולא מעקב אחרי האצבע» ו-8px
-   ‏— D-090ⓑ הפכה את שניהם**, ולכן ההנמקה ההיא חדלה להתקיים ⛔ ואינה מצוטטת כאן.
-
-   שתי תנועות, ⛔ ולא אחת, וזו ההפרדה כולה:
-   ⓐ **בזמן הגרירה** — `[data-dragging]`: הכרטיס נושא `transform` inline שנקבע בכל
-      `pointermove`, ולכן ⛔ **אין כאן מעבר בכלל**. מעבר מתוזמן על ערך רציף הוא פיגור
-      בין האצבע לכרטיס, ⛔ והוא גם ⛔ אינו מה שחוקה § 5 מסדירה: גרירה היא **מניפולציה
-      ישירה**, ⛔ ולא אנימציה שהמוצר מנגן.
-   ⓑ **בשחרור** — הענף השני: ההיסט המוטבע יורד, ו-200ms ב-easing אחד מחזירים את הכרטיס
-      למקומו או מוציאים אותו לכיוון המחווה. **זה** מה ש-§ 5 מסדירה, וזה בטווח 150–300ms.
-
-   ⛔ `prefers-reduced-motion` ⇒ **אפס תנועה**: הבלוק הגלובלי למעלה מאפס את המשך, ובנוסף
-   ‏`dragOffset` מחזיר `x: 0` בשכבה הטהורה ⇒ ⛔ אין היסט מוטבע כלל. שני מחסומים, כי
-   ‏`transition-duration: 0.01ms` על `transform` מוטבע עדיין **מזיז** את הכרטיס. */
-[data-flashcard] {
-  transition: transform 200ms ease-out, opacity 200ms ease-out;
-}
-[data-flashcard][data-dragging] {
-  transition: none;
-}
-[data-flashcard][data-swipe='good'] {
-  transform: translateX(32px);
-  opacity: 0.6;
-}
-[data-flashcard][data-swipe='again'] {
-  transform: translateX(-32px);
-  opacity: 0.6;
 }
 
 /* T-100 · D-043 — ההיחלשות החזותית. ⛔ חלה על מילת הכותרת בלבד (--ink, ~17:1),

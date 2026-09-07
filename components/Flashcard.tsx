@@ -3,7 +3,14 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcard';
-import { dragOffset, resolveSwipe } from '@/lib/core/swipeGrade';
+import { pushSample, releaseCurve, releaseVelocity, type PointerSample } from '@/lib/core/spring';
+import {
+  dragOffset,
+  resolveSwipe,
+  swipeExitX,
+  swipePose,
+  swipeTransform,
+} from '@/lib/core/swipeGrade';
 import { DECAY_LABEL, decayLevel, parseReviewAt } from '@/lib/core/decay';
 import type { QueueCardReview } from '@/lib/core/deck';
 
@@ -43,7 +50,9 @@ export default function Flashcard({
   /** ⛔ אופציונלי: פיקסטורות `/dev/card*` בונות `Card` ישירות ⛔ ואין להן תזמון
    *  להמציא. חסר ⇒ `'none'`, ⛔ ולא ניחוש. */
   readonly review?: QueueCardReview;
-  readonly onGrade: (grade: CardGrade) => void;
+  /** T-259 — a consumer that returns the grade's promise lets the card learn the grade was
+   *  NOT taken (resolved while this card is still mounted) and spring back. `void` is fine. */
+  readonly onGrade: (grade: CardGrade) => void | Promise<void>;
 }) {
   const [revealed, setRevealed] = useState(false);
   const [typed, setTyped] = useState('');
@@ -70,6 +79,24 @@ export default function Flashcard({
   /** T-259ⓑ — one pending write per frame carries the offset AND the look-ahead verdict. */
   const pending = useRef<{ x: number; preview: CardGrade | null }>({ x: 0, preview: null });
   const frame = useRef<number | null>(null);
+  /** T-243 · `apple-design` § 2 — the last pointer samples, stamped by the event, ⛔ no clock. */
+  const samples = useRef<readonly PointerSample[]>([]);
+  /** T-243 · § 3 — where the card WAS when the finger grabbed it mid-flight. */
+  const baseX = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const shownRef = useRef(card);
+  shownRef.current = card;
+  /** `linear()` easing — Chromium 113+, Safari 17.2+, Firefox 112+. Elsewhere the CSS
+   *  defaults (200ms ease-out) stay in force and the two properties are never written. */
+  const supportsSpringEasing = () =>
+    typeof CSS !== 'undefined' && CSS.supports('animation-timing-function', 'linear(0, 1)');
+
   /** Writes the drag to the node. `x === 0` drops `data-dragging` (globals.css restores the
    *  transition) and the preview; the badge follows `data-swipe-preview` in CSS. */
   const writeDrag = (x: number, preview: CardGrade | null) => {
@@ -79,7 +106,9 @@ export default function Flashcard({
       node.style.transform = '';
       node.removeAttribute('data-dragging');
     } else {
-      node.style.transform = `translateX(${x}px)`;
+      // T-259 — the pose during the DRAG is the render's exit curve (drop + rotate), so the
+      // finger draws the same line the spring finishes.
+      node.style.transform = swipeTransform(swipePose(x, window.innerWidth));
       node.setAttribute('data-dragging', 'true');
     }
     if (preview === null) node.removeAttribute('data-swipe-preview');
@@ -95,6 +124,50 @@ export default function Flashcard({
     }
     pending.current = { x: 0, preview: null };
     writeDrag(0, null);
+    const node = sectionRef.current;
+    if (node !== null) {
+      node.removeAttribute('data-release');
+      node.style.removeProperty('--kol-release-ms');
+      node.style.removeProperty('--kol-release-ease');
+    }
+    samples.current = [];
+    baseX.current = 0;
+  };
+
+  /** The release: from the card's CURRENT pose to `target`, at the finger's velocity. The
+   *  browser runs the curve (`globals.css` `[data-flashcard][data-release]`); this writes
+   *  two custom properties and the target pose, ⛔ no JS clock. One forced style flush
+   *  (`getBoundingClientRect`) so the transition starts from the pose just written. */
+  const release = (node: HTMLElement, fromX: number, target: number, velocity: number) => {
+    const curve = releaseCurve({ from: fromX, velocity, target, reducedMotion });
+    if (reducedMotion) {
+      // שכבה א׳ א7 — ZERO motion, ⛔ not «an instant jump to the exit pose»: the card stays
+      // where it is; the verdict is the badge and the dim (`data-swipe`), both state.
+      node.style.transform = '';
+      node.removeAttribute('data-dragging');
+      node.removeAttribute('data-swipe-preview');
+      node.removeAttribute('data-release');
+      return;
+    }
+    node.style.transform = swipeTransform(swipePose(fromX, window.innerWidth));
+    node.setAttribute('data-dragging', 'true');
+    node.getBoundingClientRect();
+    node.removeAttribute('data-dragging');
+    node.removeAttribute('data-swipe-preview');
+    if (supportsSpringEasing()) {
+      node.style.setProperty('--kol-release-ms', `${curve.ms}ms`);
+      node.style.setProperty('--kol-release-ease', curve.easing);
+    }
+    node.setAttribute('data-release', 'true');
+    node.style.transform = swipeTransform(swipePose(target, window.innerWidth));
+  };
+
+  /** The card's on-screen translateX right now — the presentation value, ⛔ the target. */
+  const presentationX = (node: HTMLElement): number => {
+    const t = getComputedStyle(node).transform;
+    if (t === 'none' || t === '') return 0;
+    const m = new DOMMatrixReadOnly(t);
+    return Number.isFinite(m.m41) ? m.m41 : 0;
   };
 
   const queueDrag = (x: number, preview: CardGrade | null) => {
@@ -200,29 +273,42 @@ export default function Flashcard({
          אותו בשחרור — מעבר מתוזמן על ערך שמשתנה בכל `pointermove` הוא פיגור בין
          האצבע לכרטיס. */
       onPointerDown={(e) => {
-        setSwipe(null);
-        resetDrag();
+        if (swipe !== null) return; // the grade is sent and the card is leaving — ⛔ not grabbable
         if (!swipeActive) {
           swipeFrom.current = null;
           return;
         }
-        // T-233ⓑ · `apple-design` § 2 — הלכידה, בתקדים `SpellCard.tsx:79`: המעקב נמשך
-        // גם כשהאצבע יוצאת מגבולות הכרטיס, ו-`pointerup` מגיע לכאן מכל מקום.
-        // 🔴 **נמדד בכרומיום (C-0488), ⛔ לא הונח:** לכידה על ה-`<section>` מפנה את
-        // ה-`click` הבא אל ה-section, וכפתור-ילד ⛔ אינו מקבל אותו לעולם. שני כפתורי
-        // הסימון יושבים כאן בפנים (D-042 — הערוץ הקנוני) ⇒ מחווה שמתחילה על פקד ⛔ אינה
-        // נלכדת ו⛔ אינה מחווה: הפקד הוא הערוץ שלה.
+        // T-233ⓑ · `apple-design` § 2 — capture, precedent `SpellCard.tsx:79`: tracking goes
+        // on when the finger leaves the card, and `pointerup` reaches here from anywhere.
+        // 🔴 **Measured in Chromium (C-0488), ⛔ not assumed:** capture on the `<section>`
+        // retargets the next `click` to the section and a child button never receives it.
+        // The reveal button and both grade buttons live inside ⇒ a gesture that starts on a
+        // control is ⛔ not captured and ⛔ not a gesture: the control is its own channel.
         const target = e.target instanceof Element ? e.target : null;
         if (target !== null && target.closest('button, input, a') !== null) {
           swipeFrom.current = null;
           return;
         }
+        const node = e.currentTarget;
+        // T-243 · `apple-design` § 3 — grab MID-FLIGHT: read where the card is on screen,
+        // freeze it there (transition off), and let the drag continue from that value.
+        // ⛔ Not `resetDrag()`: that would snap the card to 0 under the finger — the jump
+        // the skill calls out.
+        if (frame.current !== null) {
+          cancelAnimationFrame(frame.current);
+          frame.current = null;
+        }
+        baseX.current = presentationX(node);
+        node.removeAttribute('data-release');
+        writeDrag(baseX.current, null);
         swipeFrom.current = { x: e.clientX, y: e.clientY };
-        e.currentTarget.setPointerCapture(e.pointerId);
+        samples.current = [{ x: e.clientX, tMs: e.timeStamp }];
+        node.setPointerCapture(e.pointerId);
       }}
       onPointerMove={(e) => {
         const from = swipeFrom.current;
         if (from === null) return;
+        samples.current = pushSample(samples.current, { x: e.clientX, tMs: e.timeStamp });
         // T-259ⓑ — the look-ahead is the SAME rule that will grade on release (D-042):
         // the badge lights exactly when lifting now would count. ⛔ It never grades.
         // ⛔ The whole decision is in the pure layer: `prefers-reduced-motion` ⇒ ZERO motion,
@@ -234,37 +320,72 @@ export default function Flashcard({
           endY: e.clientY,
           viewportWidth: window.innerWidth,
         });
-        queueDrag(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x, preview);
+        queueDrag(
+          dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion, baseX: baseX.current }).x,
+          preview,
+        );
       }}
       onPointerCancel={(e) => {
-        // מחווה שהמערכת חטפה (שיחה נכנסת, מחוות מערכת) — הכרטיס **חוזר למקומו**,
-        // ⛔ ואינו נשאר תלוי באמצע המסך בלי שאיש דירג אותו.
+        // A gesture the system took (incoming call, system gesture) — the card SPRINGS BACK
+        // to its place, ⛔ and does not hang mid-screen with nobody grading it.
         swipeFrom.current = null;
         releaseCapture(e.currentTarget, e.pointerId);
-        resetDrag();
+        const node = e.currentTarget;
+        if (frame.current !== null) {
+          cancelAnimationFrame(frame.current);
+          frame.current = null;
+        }
+        release(node, pending.current.x, 0, 0);
+        pending.current = { x: 0, preview: null };
+        samples.current = [];
+        baseX.current = 0;
       }}
       onPointerUp={(e) => {
         const from = swipeFrom.current;
         swipeFrom.current = null;
         releaseCapture(e.currentTarget, e.pointerId);
-        // ⛔ מתאפס **תמיד**, בשני הענפים: מעל הסף `data-swipe` נושא את היציאה, ומתחתיו
-        // הכרטיס חוזר למקומו — ובשניהם המעבר של `globals.css` מנגן את ההשתקעות.
-        resetDrag();
         if (from === null) return;
+        const node = e.currentTarget;
+        if (frame.current !== null) {
+          cancelAnimationFrame(frame.current);
+          frame.current = null;
+        }
+        const fromX = pending.current.x;
+        pending.current = { x: 0, preview: null };
         const resolved = resolveSwipe({
           startX: from.x,
           startY: from.y,
           endX: e.clientX,
           endY: e.clientY,
-          // ⛔ `window.innerWidth` ⛔ אינו נקרא ב-`/lib/core` — הרכיב הוא שמודד
-          // את המסך ומוסר את המספר, וזה בדיוק גבול הטהרה של הפרויקט.
+          // ⛔ `window.innerWidth` is ⛔ not read in `/lib/core` — the component measures the
+          // screen and hands over the number; that is exactly the project's purity boundary.
           viewportWidth: window.innerWidth,
         });
-        if (resolved === null) return;
-        // ⛔ אפס `setTimeout`: הציון יוצא **מיד**, והמעבר של 200ms מתנגן בזמן
-        // שהבקשה בדרך. השהיית הציון הייתה מירוץ (התקדים הוא F-101).
+        const velocity = releaseVelocity(samples.current);
+        samples.current = [];
+        baseX.current = 0;
+        if (resolved === null) {
+          // Under the threshold: back to rest, carrying the finger's velocity (§ 5).
+          release(node, fromX, 0, velocity);
+          return;
+        }
+        // Over it: out along the render's exit (swipeExitX), same velocity handoff. The
+        // grade leaves NOW (F-101 precedent — ⛔ no setTimeout) and the card flies while
+        // the request is in the air.
+        release(node, fromX, swipeExitX(resolved, window.innerWidth), velocity);
         setSwipe(resolved);
-        onGrade(resolved);
+        void Promise.resolve(onGrade(resolved)).then(() => {
+          // One frame later — React commits the deck's removal on its own scheduler; if
+          // this card is STILL here with the SAME `card`, the grade was not taken (CardDeck
+          // swallows the network error on purpose) and the card comes back. Measured in
+          // `verify-mobile.mjs` on `/dev/card`, whose onGrade is a no-op.
+          requestAnimationFrame(() => {
+            if (!mounted.current || shownRef.current !== card || sectionRef.current === null) return;
+            const current = sectionRef.current;
+            release(current, presentationX(current), 0, 0);
+            setSwipe(null);
+          });
+        });
       }}
     >
       {/* פני הכרטיס.

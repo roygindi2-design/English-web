@@ -1722,6 +1722,35 @@ try {
             `${at} T-259ⓑ: both badges exist and are invisible at rest`,
             `opacities ${JSON.stringify(badges)}`,
           );
+          // T-259 · T-243 — this fixture's onGrade is a no-op ⇒ the grade is NOT taken ⇒ the
+          // card must come back to rest, and the release must be the spring (linear()).
+          const cardEl = page.locator('[data-flashcard]');
+          const cbox = await cardEl.boundingBox();
+          const cx = Math.round(width / 2) - 50;
+          const cy = Math.round(cbox.y + cbox.height / 2);
+          await page.mouse.move(cx, cy);
+          await page.mouse.down();
+          await page.mouse.move(cx + 120, cy, { steps: 10 });
+          await page.mouse.up();
+          const easing = await page.evaluate(() => getComputedStyle(document.querySelector('[data-flashcard]')).transitionTimingFunction);
+          check(easing.startsWith('linear('), `${at} T-243: the release is a linear() spring easing`, `timing-function "${easing.slice(0, 40)}"`);
+          const settled = await page
+            .waitForFunction(
+              () => {
+                const t = getComputedStyle(document.querySelector('[data-flashcard]')).transform;
+                return t === 'none' || Math.abs(new DOMMatrixReadOnly(t).m41) < 1;
+              },
+              null,
+              { timeout: 2000 },
+            )
+            .then(() => true)
+            .catch(() => false);
+          check(settled, `${at} T-259: a grade the consumer did not take brings the card back to rest`, 'still off its slot after 2s');
+          check(
+            (await page.locator('[data-flashcard][data-swipe]').count()) === 0,
+            `${at} T-259: the sent-state is cleared when the grade comes back`,
+            'data-swipe still set',
+          );
         } else {
           // The typed direction is auto-graded, so the ONLY way the learner learns
           // anything is the verdict on screen. Before this ran, submitting left a
@@ -2310,6 +2339,13 @@ try {
           `${at} finger that leaves the card still grades (T-233 · pointer capture)`,
           `remaining ${beforeLeave} → ${await remainingNow()} — the card hung mid-gesture`,
         );
+        // T-259 — a TAKEN grade removes the card; it must ⛔ never spring back into the deck.
+        await page.waitForTimeout(600);
+        check(
+          (await remainingNow()) === beforeLeave - 1,
+          `${at} T-259: a taken grade stays taken after the spring settles`,
+          `remaining is ${await remainingNow()}, expected ${beforeLeave - 1}`,
+        );
       }
 
       // A 404 route legitimately logs a 404; every other route must be silent — except for
@@ -2356,6 +2392,63 @@ try {
     check(dark.bg !== light.bg, 'dark mode changes the page background', `both are ${dark.bg}`);
     check(dark.fg !== light.fg, 'dark mode changes the body text colour', `both are ${dark.fg}`);
     check(dark.bg === 'rgb(15, 23, 42)', 'dark surface is the --surface token', `got ${dark.bg}`);
+  }
+
+  // ---- 2b′. reduced motion is measured, not declared (T-243 · T-259 · שכבה א׳ א7) ------
+  // One route, one width: `/dev/card` under `prefers-reduced-motion: reduce`. The drag must
+  // move NOTHING (`dragOffset` ⇒ x 0), the badge must still light (feedback survives as
+  // state, ⛔ not as motion — apple-design § 14), and the release must have no duration and
+  // no pose (`releaseCurve` ⇒ ms 0; `release()` writes no transform).
+  {
+    const rmCtx = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      reducedMotion: 'reduce',
+    });
+    const rmPage = await rmCtx.newPage();
+    await rmPage.goto(`${BASE}/dev/card`, { waitUntil: 'networkidle' });
+    await rmPage.locator('[data-reveal]').click();
+    const rmBox = await rmPage.locator('[data-flashcard]').boundingBox();
+    const rmX = Math.round(375 / 2) - 50;
+    const rmY = Math.round(rmBox.y + rmBox.height / 2);
+    await rmPage.mouse.move(rmX, rmY);
+    await rmPage.mouse.down();
+    await rmPage.mouse.move(rmX + 100, rmY, { steps: 8 });
+    await rmPage
+      .waitForFunction(
+        () => document.querySelector('[data-flashcard]').getAttribute('data-swipe-preview') === 'good',
+        null,
+        { timeout: 1000 },
+      )
+      .catch(() => null);
+    const rmDuring = await rmPage.evaluate(() => {
+      const card = document.querySelector('[data-flashcard]');
+      return {
+        transform: getComputedStyle(card).transform,
+        preview: card.getAttribute('data-swipe-preview'),
+        badge: getComputedStyle(document.querySelector('[data-swipe-badge="good"]')).opacity,
+      };
+    });
+    check(
+      rmDuring.transform === 'none',
+      'reduced motion: the card does not move under the finger (שכבה א׳ א7)',
+      `transform ${rmDuring.transform}`,
+    );
+    check(
+      rmDuring.preview === 'good' && rmDuring.badge === '1',
+      'reduced motion: the badge still lights — feedback as state, not motion',
+      JSON.stringify(rmDuring),
+    );
+    await rmPage.mouse.up();
+    const rmAfter = await rmPage.evaluate(() => {
+      const card = document.querySelector('[data-flashcard]');
+      return { transform: getComputedStyle(card).transform, ms: card.style.getPropertyValue('--kol-release-ms') };
+    });
+    check(
+      rmAfter.transform === 'none' && (rmAfter.ms === '' || rmAfter.ms === '0ms'),
+      'reduced motion: the release has no duration and moves nothing',
+      JSON.stringify(rmAfter),
+    );
+    await rmCtx.close();
   }
 
   // ---- 2c. the arena is measured where it is painted (T-214 · D-134) -------

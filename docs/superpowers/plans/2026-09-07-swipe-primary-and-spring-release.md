@@ -934,7 +934,7 @@ npm run generate-map
   - DOM: `section[data-flashcard][data-release]` with inline `--kol-release-ms` / `--kol-release-ease` — set only when `CSS.supports('animation-timing-function', 'linear(0, 1)')`; otherwise the CSS defaults (200ms ease-out) apply.
   - `data-swipe` (existing) still marks a sent grade; `data-swipe-preview` is cleared on release.
 
-- [ ] **Step 1: Write the failing tests** — append to `components/Flashcard.test.ts` inside the face `describe`
+- [x] **Step 1: Write the failing tests** — append to `components/Flashcard.test.ts` inside the face `describe`
 
 ```ts
   it('T-243 — the release is a spring from lib/core/spring, with the velocity of the finger', () => {
@@ -987,12 +987,12 @@ Append to `components/CardDeck.test.ts`:
 
 Append to `app/globals.css` guard tests? None exist for this block — the walk measures it (Step 6).
 
-- [ ] **Step 2: Run to confirm red**
+- [x] **Step 2: Run to confirm red**
 
 Run: `npx vitest run components/Flashcard.test.ts components/CardDeck.test.ts`
 Expected: FAIL — five new `T-243`/`T-259` cases red.
 
-- [ ] **Step 3: Implement the component** — `components/Flashcard.tsx`
+- [x] **Step 3: Implement the component** — `components/Flashcard.tsx`
 
 Imports:
 ```ts
@@ -1177,7 +1177,7 @@ The card-change effect (`:149-152`) stays `resetDrag()` (which now also clears t
               onGrade={(value) => grade(card.word_id, value)}
 ```
 
-- [ ] **Step 4: The CSS** — `app/globals.css:261-289`, replace the whole `[data-flashcard]` block
+- [x] **Step 4: The CSS** — `app/globals.css:261-289`, replace the whole `[data-flashcard]` block
 
 ```css
 /* T-157 · D-090ⓑ · T-233 · **T-243 · T-259 (07/09)** — the card during and after the finger.
@@ -1231,12 +1231,12 @@ The card-change effect (`:149-152`) stays `resetDrag()` (which now also clears t
 ```
 ⚠️ `scripts/check-motion.mjs:115-121` splits a `transition:` value on commas — a `var(--x, fallback)` **with a comma** would be read as a second property. That is why the defaults live on the selector, ⛔ not inside `var()`.
 
-- [ ] **Step 5: Run the unit gates**
+- [x] **Step 5: Run the unit gates**
 
 Run: `npx vitest run components/Flashcard.test.ts components/CardDeck.test.ts && npm run typecheck && npm run check:motion && npm run check:core`
 Expected: PASS · `check:motion` reports the same baseline count as before (6 lines in `scripts/motion-baseline.md`, ⛔ no new violation).
 
-- [ ] **Step 6: Measure the spring in a real engine** — `scripts/verify-mobile.mjs`
+- [x] **Step 6: Measure the spring in a real engine** — `scripts/verify-mobile.mjs`
 
 ⓐ `/dev/card` (after the Step 8 ⓐ block of Task 3): a full swipe on a no-op consumer flies out and **comes back**, and the release used the spring easing:
 ```js
@@ -1282,12 +1282,12 @@ Expected: PASS · `check:motion` reports the same baseline count as before (6 li
 ```
 ⓒ Reduced motion, one width (add next to the dark-mode block at `:2247+`, same shape: a `newContext({ reducedMotion: 'reduce', viewport: { width: 375, height: 812 } })`): on `/dev/card`, reveal, drag 100px right, assert the card's computed `transform` is `none` **during** the drag and the badge is lit; release; assert `transform` still `none` and `--kol-release-ms` is `0ms` or unset.
 
-- [ ] **Step 7: Run the walk and look at the screen**
+- [x] **Step 7: Run the walk and look at the screen**
 
 Run: `npm run build && npm run check:mobile`
 Expected: all new lines `ok` at 320 · 375 · 414; console clean. Then STEP 6.5 at 375×780 on `/dev/card`: swipe right slowly, release under 64px — the card **eases back with no visible seam**; flick — the card leaves, badge lit, and (no-op consumer) returns. Record the numbers.
 
-- [ ] **Step 8: Commit (task 4 of 6)**
+- [x] **Step 8: Commit (task 4 of 6)**
 
 ```bash
 npm run generate-map

@@ -474,6 +474,55 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     const d150 = decisions.indexOf('### D-150');
     expect(decisions.slice(d150, d150 + 2500)).toContain('T-259ⓕ');
   });
+
+  it('T-243 — the release is a spring from lib/core/spring, with the velocity of the finger', () => {
+    const up = T085_CARD_SRC.indexOf('onPointerUp=');
+    const block = T085_CARD_SRC.slice(up, T085_CARD_SRC.indexOf('{/* פני הכרטיס', up));
+    expect(block).toContain('releaseVelocity(');
+    expect(block).toContain('swipeExitX(');
+    // The curve itself is computed in the one `release` helper every path shares (under the
+    // threshold · over it · not taken · cancelled) — ⛔ never inline per handler.
+    expect(block).toContain('release(');
+    expect(T085_CARD_SRC).toContain('releaseCurve(');
+    expect(T085_CARD_SRC).toContain('--kol-release-ms');
+    expect(T085_CARD_SRC).toContain('--kol-release-ease');
+    // The samples that feed the velocity come from pointermove, stamped by the EVENT.
+    const move = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('onPointerMove='), T085_CARD_SRC.indexOf('onPointerCancel='));
+    expect(move).toContain('pushSample(');
+    expect(move).toContain('e.timeStamp');
+    // ⛔ No clock in the gesture path. (`Date.now()` after mount for the DECAY level is T-100's
+    // and sits outside every pointer handler — measured by the slice, ⛔ not by the whole file.)
+    const gesture = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('onPointerDown='), T085_CARD_SRC.indexOf('{/* פני הכרטיס'));
+    expect(gesture).not.toContain('Date.now()');
+    expect(gesture).not.toContain('setTimeout(');
+  });
+
+  it('T-243 · apple-design § 3 — a pointerdown mid-flight starts from the PRESENTATION value', () => {
+    const down = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('onPointerDown='), T085_CARD_SRC.indexOf('onPointerMove='));
+    // The presentation value is read in ONE helper (`presentationX`: computed transform →
+    // `DOMMatrixReadOnly`), and `pointerdown` hands it to the drag as `baseX`.
+    expect(down).toContain('presentationX(');
+    const helper = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('const presentationX'), T085_CARD_SRC.indexOf('onPointerDown='));
+    expect(helper).toContain('getComputedStyle(');
+    expect(helper).toContain('DOMMatrixReadOnly(');
+    expect(T085_CARD_SRC).toMatch(/dragOffset\(\{[^}]*baseX/);
+  });
+
+  it('T-259 — the pose during the drag is the render’s (swipePose), ⛔ not a bare translateX', () => {
+    const write = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('const writeDrag'), T085_CARD_SRC.indexOf('const resetDrag'));
+    expect(write).toContain('swipeTransform(swipePose(');
+    expect(write).not.toContain('`translateX(');
+  });
+
+  it('T-259 — a grade the consumer did not take brings the card back (onGrade may return a promise)', () => {
+    expect(T085_CARD_SRC).toMatch(/onGrade:\s*\(grade: CardGrade\) => void \| Promise<void>/);
+    const up = T085_CARD_SRC.slice(T085_CARD_SRC.indexOf('onPointerUp='));
+    expect(up).toContain('Promise.resolve(onGrade(resolved))');
+  });
+
+  it('שכבה א׳ — reduced motion: releaseCurve receives the live preference, ⛔ not a constant', () => {
+    expect(T085_CARD_SRC).toMatch(/releaseCurve\(\{[^}]*reducedMotion/);
+  });
 });
 
 describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {

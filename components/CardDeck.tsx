@@ -286,9 +286,10 @@ export default function CardDeck({
               // T-100 — מצב התזמון עובר כמו שהוא. ⛔ הדק ⛔ אינו גוזר ממנו דבר:
               // ההכרעה טהורה ויושבת ב-lib/core/decay.ts.
               review={card.review}
-              onGrade={(value) => {
-                void grade(card.word_id, value);
-              }}
+              // T-259 — the PROMISE is handed over, ⛔ not discarded: a grade this deck did not
+              // take (network failure ⇒ `grade` returns early) resolves while the card is
+              // still mounted, and the card springs back instead of staying off-screen.
+              onGrade={(value) => grade(card.word_id, value)}
             />
           </article>
         ))}

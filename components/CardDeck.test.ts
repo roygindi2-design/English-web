@@ -423,4 +423,9 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
     expect(CODE).not.toContain('preventDefault');
     expect(CODE).not.toContain('onPointerDown');
   });
+
+  it('T-259 — the deck hands Flashcard the grade promise, so a not-taken grade can spring back', () => {
+    expect(SRC).toMatch(/onGrade=\{\(value\) => grade\(card\.word_id, value\)\}/);
+    expect(SRC).not.toContain('void grade(');
+  });
 });

@@ -196,10 +196,16 @@ describe('dragOffset — מעקב 1:1 אחרי האצבע', () => {
     expect(SWIPE_FEEDBACK_MAX_MS).toBeLessThanOrEqual(300);
   });
 
-  it('מוטציה: המעבר מכובה בזמן הגרירה, ⛔ ומוחזר בשחרור', () => {
+  it('מוטציה: המעבר מכובה בזמן הגרירה, ⛔ ומוחזר בשחרור — כקפיץ (T-243 · 35 § ב6)', () => {
     const css = readFileSync('app/globals.css', 'utf8');
     expect(css).toMatch(/\[data-flashcard\]\[data-dragging\]\s*\{\s*transition:\s*none;/);
-    expect(css).toMatch(/\[data-flashcard\]\s*\{\s*transition:\s*transform\s+200ms/);
+    // T-243 (07/09): the RELEASE transition consumes the two custom properties the component
+    // writes from `lib/core/spring.ts`; the 200ms default lives on the selector, ⛔ not in the
+    // `transition:` value (a `var(--x, 200ms)` comma would split `check-motion.mjs:115`).
+    expect(css).toMatch(/\[data-flashcard\]\s*\{[^}]*--kol-release-ms:\s*200ms;/);
+    expect(css).toMatch(
+      /\[data-flashcard\]\[data-release\]\s*\{\s*transition:\s*transform\s+var\(--kol-release-ms\)\s+var\(--kol-release-ease\)/,
+    );
   });
 });
 
