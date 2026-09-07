@@ -168,7 +168,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `F-188` | 🟠 HIGH · **CON… | `docs/agents/CONTENT.md:96` · `docs/agents/PM.…` | **נמדד מ-`git log` על clone חי, ⛔ ולא שוער.** מאז 02/09: **DEV 100 קומיטים · PM 24 · QA 15 · CONTENT 2** — ושני הקומיטים של CONTENT הם **שניהם מהיום, … | 🟠 פתוח → **רוי** (נבדק) |
 | `F-189` | 🟠 HIGH · **DEV… | `docs/agents/DEV.md` STEP 2.5 · `docs/agents/P…` | **תהליכי, ⛔ לא קוד מוצר.** סשן הארכיטקטורה של רוי ניסה לבצע את השינוי בעצמו (git read-only ואז edit+push) ונחסם שלוש פעמים על ידי מסווג ההרשאות של סבי… | 🟣 **נסגר C-0476 — נבנה · ירוק · ⛔ עדיין … |
 | `F-191` | 🔴 CRITICAL · *… | `plan/60-findings.md` (קומיט `05563b5`) | **נמדד ב-`git show 05563b5 --stat` בקלון הזה, ⛔ לא שוער:** `1 file changed, 18 insertions(+), 229 deletions(-)`. `git log --oneline -- plan/60-finding…` | 🔴 שוחזר · **האכיפה הוכרעה C-0486 — `D-19…` |
-| `F-192` | 🔴 CRITICAL · *… | `scripts/build-ingest-sql.test.ts:210-211` (הב… | **נמדד חי בקלון הזה, בשתי דרכים בלתי-תלויות, ⛔ לא שוער:** ⓐ הרצה ידנית — `SEED_OUT_DIR=/tmp/seedtest node scripts/build-ingest-sql.mjs` מדפיסה «1200 r… | 🔴 פתוח → **DEV** (חוסם מיזוג) · **הוכרע … |
+| `F-192` | 🔴 CRITICAL · *… | `scripts/build-ingest-sql.test.ts:210-211` (הב… | **נמדד חי בקלון הזה, בשתי דרכים בלתי-תלויות, ⛔ לא שוער:** ⓐ הרצה ידנית — `SEED_OUT_DIR=/tmp/seedtest node scripts/build-ingest-sql.mjs` מדפיסה «1200 r… | 🟣 **נסגר C-0487 (DEV) — נבנה · ירוק · ⛔ … |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 

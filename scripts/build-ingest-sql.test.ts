@@ -207,7 +207,10 @@ describe('build-ingest-sql', () => {
   it('emits batches in sorted filename order, not in readdir order', () => {
     // Byte-identity across two runs does NOT catch this: a stable-but-wrong order is
     // still stable. The order is what makes a diff of this file readable.
-    const emitted = [...sql.matchAll(/^-- (batch-[\d-]+\.jsonl) —/gm)].map((m) => m[1]);
+    // F-192 / D-196 ⓐ: the filename pattern here is SOURCE's own (`batch-.*\.jsonl`), not
+    // digits-only — the generator accepts any suffix (`batch-2026-09-07-connectors.jsonl`),
+    // and a test that assumes less than the generator silently under-counts.
+    const emitted = [...sql.matchAll(/^-- (batch-.*\.jsonl) —/gm)].map((m) => m[1]);
     expect(emitted).toEqual(SOURCE);
     expect(emitted).toEqual([...emitted].sort());
   });
