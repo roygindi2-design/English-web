@@ -2161,6 +2161,39 @@ try {
           `${at} edge-zone swipe ⛔ does not grade (D-042ⓐ)`,
           `remaining moved ${beforeEdge} → ${await remainingNow()}`,
         );
+
+        // ⓓ T-233 · `apple-design` § 2 — `setPointerCapture`: a finger that LEAVES the
+        // section before it lifts still grades. Measured before the fix: without capture
+        // the `pointerup` lands on whatever is under the finger (here the deck header),
+        // the section never hears it, and the card hangs mid-gesture with nobody grading
+        // it. The gesture starts 12px inside the section's top edge and lifts 24px above
+        // it, so the horizontal run (+120px) stays well inside `SWIPE_MAX_ANGLE_DEG` and
+        // the ONLY thing this measures is where the finger let go.
+        // ⚠️ Measured C-0488, ⛔ not assumed: the deck renders EVERY remaining card as its
+        // own `[data-flashcard]` section, and after ⓒ the FIRST card is still revealed
+        // (the edge swipe graded nothing). A bare `[data-reveal]` click here would reveal
+        // the SECOND card and scroll it into view, pushing the first section to y≈−478 —
+        // the gesture below would then land off-screen and "measure" a hang that is not
+        // one. ⇒ reveal the first section only if it is not revealed yet, and pin the
+        // scroll to the top so its box is the one on screen.
+        const firstCard = page.locator('[data-flashcard]').first();
+        if ((await firstCard.locator('[data-reveal]').count()) > 0) {
+          await firstCard.locator('[data-reveal]').click();
+        }
+        await page.evaluate(() => window.scrollTo(0, 0));
+        const beforeLeave = await remainingNow();
+        const section = await firstCard.boundingBox();
+        const leaveStartX = Math.round(width / 2) - 60;
+        const leaveStartY = Math.round(section.y) + 12;
+        await page.mouse.move(leaveStartX, leaveStartY);
+        await page.mouse.down();
+        await page.mouse.move(leaveStartX + 120, Math.round(section.y) - 24, { steps: 8 });
+        await page.mouse.up();
+        check(
+          (await remainingNow()) === beforeLeave - 1,
+          `${at} finger that leaves the card still grades (T-233 · pointer capture)`,
+          `remaining ${beforeLeave} → ${await remainingNow()} — the card hung mid-gesture`,
+        );
       }
 
       // A 404 route legitimately logs a 404; every other route must be silent — except for

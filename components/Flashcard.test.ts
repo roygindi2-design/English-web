@@ -340,6 +340,62 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(T085_CARD_SRC).not.toContain('style={{');
     expect(T085_CARD_SRC).toContain('data-swipe');
   });
+
+  /**
+   * T-233 · `apple-design` § 1 · § 2 — the drag offset is written to the node, ⛔ not
+   * to React state. Measured C-0371: `setDragX` on every `pointermove` re-rendered the
+   * whole card subtree to move one `translateX` (a ProMotion device sends up to 120
+   * events a second). The offset goes through a `ref` and is coalesced to one write
+   * per frame with `requestAnimationFrame`; the pending frame is cancelled on
+   * `up`/`cancel`, otherwise a stale offset lands AFTER the card was reset.
+   * ⛔ `dragOffset` still decides in the pure layer — this moves the WRITE, not the rule.
+   * ⛔ The `data-dragging` hook stays: `globals.css:279` switches the transition off
+   * through it, and a transition on a per-frame value is lag between finger and card.
+   */
+  it('T-233ⓐ — ההיסט נכתב לצומת דרך `ref` ומאוחד לפריים, ⛔ ולא דרך state', () => {
+    expect(T085_CARD_SRC, 'ההיסט ⛔ אינו state — כל `pointermove` רינדר את כל הכרטיס').not.toContain(
+      'setDragX',
+    );
+    expect(T085_CARD_SRC, 'ההיסט ⛔ אינו מוזן כ-`style` prop').not.toContain('style={');
+    expect(T085_CARD_SRC, 'כתיבה אחת לפריים').toContain('requestAnimationFrame(');
+    expect(T085_CARD_SRC, 'פריים תלוי מתבטל בשחרור, אחרת היסט ישן נוחת אחרי האיפוס').toContain(
+      'cancelAnimationFrame(',
+    );
+    expect(T085_CARD_SRC, 'ההכרעה נשארת בשכבה הטהורה').toContain('dragOffset(');
+    expect(T085_CARD_SRC, 'הוו של `globals.css` — המעבר כבוי בזמן הגרירה').toContain('data-dragging');
+  });
+
+  /**
+   * T-233 · `apple-design` § 2 — `setPointerCapture`, the precedent is
+   * `components/SpellCard.tsx:79`. Without it a finger that leaves the section stops
+   * delivering `pointermove`/`pointerup`, and the card hangs mid-gesture with nobody
+   * grading it. Released explicitly on `up`/`cancel`.
+   *
+   * ⚠️ **Measured in Chromium (C-0488), ⛔ not assumed:** capture set on the parent
+   * `<section>` retargets the following `click` to the section — a tap on a child
+   * `<button>` never reaches the button's handler. The section holds the reveal button
+   * and both grade buttons (D-042's canonical channel), so an unconditional capture on
+   * `pointerdown` would have killed all three. ⇒ capture only when the gesture is live
+   * AND it did not start on a control. `/dev/card/swap` in `verify-mobile.mjs` clicks
+   * `[data-grade="good"]` after a reveal and is the live guard for that.
+   */
+  it('T-233ⓑ — `setPointerCapture` ב-`pointerdown`, ⛔ ולא על הקשה בכפתור', () => {
+    expect(T085_CARD_SRC, 'התקדים: SpellCard.tsx:79').toContain('setPointerCapture(');
+    expect(T085_CARD_SRC, 'שחרור מפורש ב-up/cancel').toContain('releasePointerCapture(');
+    // The guard: the capture is skipped when the pointer went down on a control.
+    expect(
+      T085_CARD_SRC,
+      'לכידה ללא סייג גונבת את ה-click משלושת הכפתורים — נמדד בכרומיום',
+    ).toMatch(/closest\(\s*['"][^'"]*\bbutton\b[^'"]*['"]\s*\)/);
+    // …and the capture sits inside the pointerdown handler, ⛔ not on first move: a tap
+    // that never moves must never capture, and a swipe must be captured from its start.
+    const down = T085_CARD_SRC.indexOf('onPointerDown');
+    const move = T085_CARD_SRC.indexOf('onPointerMove');
+    const capture = T085_CARD_SRC.indexOf('setPointerCapture(');
+    expect(down).toBeGreaterThan(-1);
+    expect(capture, '`setPointerCapture` חייב לשבת בתוך `onPointerDown`').toBeGreaterThan(down);
+    expect(capture).toBeLessThan(move);
+  });
 });
 
 describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {

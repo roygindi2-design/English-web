@@ -55,11 +55,59 @@ export default function Flashcard({
   const swipeFrom = useRef<{ x: number; y: number } | null>(null);
   const [swipe, setSwipe] = useState<CardGrade | null>(null);
   /**
-   * T-157 · D-090ⓑ — ההיסט החי של הגרירה. ⛔ **state ו⛔ לא ref**, בניגוד ל-`swipeFrom`
-   * שמעליו: נקודת ההתחלה ⛔ אינה משנה פיקסל על המסך, וההיסט **הוא** הפיקסלים. ⛔ אפס
-   * `Date.now()` ואפס `matchMedia` ברינדור — ⛔ אין כאן שעון, וההעדפה נקראת אחרי ההרכבה.
+   * T-157 · D-090ⓑ · **T-233** — ההיסט החי של הגרירה.
+   *
+   * 🔴 **הפוך מ-T-157 (26/08), ובמדידה:** ההיסט היה `useState`, וכל `pointermove`
+   * רינדר מחדש את כל תת-העץ של הכרטיס רק כדי להזיז `translateX` אחד — מכשיר ProMotion
+   * שולח עד 120 אירועים בשנייה (C-0371). ⇒ ההיסט נכתב **ישירות לצומת** דרך `ref`,
+   * ומאוחד ל**כתיבה אחת לפריים** ב-`requestAnimationFrame` (`apple-design` § 1 · § 11:
+   * המשוב רציף בזמן המחווה, והשעון המסונכרן לתצוגה הוא rAF).
+   * ⛔ ההכרעה ⛔ לא זזה: `dragOffset` בשכבה הטהורה עדיין מחזיר את המספר, ו-`reducedMotion`
+   * עדיין מאפס אותו שם. מה שזז הוא **הכתיבה**, ⛔ לא הכלל.
+   * ⛔ אפס `Date.now()` ואפס `matchMedia` ברינדור — ⛔ אין כאן שעון, וההעדפה נקראת אחרי ההרכבה.
    */
-  const [dragX, setDragX] = useState(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const pendingX = useRef(0);
+  const frame = useRef<number | null>(null);
+
+  /** כותב את ההיסט לצומת. `0` ⇒ מוריד גם את `data-dragging`, ו-`globals.css` מחזיר את המעבר. */
+  const writeDrag = (x: number) => {
+    const node = sectionRef.current;
+    if (node === null) return;
+    if (x === 0) {
+      node.style.transform = '';
+      node.removeAttribute('data-dragging');
+    } else {
+      node.style.transform = `translateX(${x}px)`;
+      node.setAttribute('data-dragging', 'true');
+    }
+  };
+
+  /** מבטל פריים תלוי ומאפס — בשחרור, בביטול, ובהחלפת כרטיס. ⛔ בלי הביטול היסט ישן
+   *  היה נוחת **אחרי** האיפוס, והכרטיס היה נשאר זז על כרטיס שכבר דורג. */
+  const resetDrag = () => {
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current);
+      frame.current = null;
+    }
+    pendingX.current = 0;
+    writeDrag(0);
+  };
+
+  const queueDrag = (x: number) => {
+    pendingX.current = x;
+    if (frame.current !== null) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null;
+      writeDrag(pendingX.current);
+    });
+  };
+
+  /** שחרור מפורש של הלכידה ב-`up`/`cancel` (T-233ⓑ). `hasPointerCapture` קודם: שחרור
+   *  של מצביע שלא נלכד זורק `NotFoundError`. */
+  const releaseCapture = (node: HTMLElement, pointerId: number) => {
+    if (node.hasPointerCapture(pointerId)) node.releasePointerCapture(pointerId);
+  };
 
   /**
    * ⛔ `prefers-reduced-motion` נקרא **אחרי** ההרכבה ו⛔ לא ברינדור: `matchMedia` ⛔ אינו
@@ -94,8 +142,14 @@ export default function Flashcard({
     setTyped('');
     setGrade(null);
     setSwipe(null);
-    setDragX(0);
   }
+  // T-233 — the drag lives on the DOM node now, so a card that swaps mid-gesture is
+  // reset in an effect, ⛔ not during render: render may not touch the node.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    swipeFrom.current = null;
+    resetDrag();
+  }, [card]);
 
   const primary = (text: string, lang: 'en' | 'he') =>
     lang === 'en' ? <EnWord>{text}</EnWord> : <span>{text}</span>;
@@ -136,36 +190,54 @@ export default function Flashcard({
          שומר המקור ב-`Flashcard.test.ts` מסיר הערות-בלוק בלבד, ולכן שם של מטפל
          שנכתב בהערת-שורה היה מפיל אותו כאילו הוא קוד חי. */
       data-swipe={swipe ?? undefined}
-      data-dragging={dragX !== 0 ? 'true' : undefined}
-      /* T-157 · D-090ⓑ — הכרטיס עוקב אחרי האצבע **1:1**, ⛔ ולא ב-8 פיקסלים.
-         ⛔ `transition` ⛔ אינו מוגדר כאן בזמן הגרירה: מעבר מתוזמן על ערך שמשתנה בכל
-         `pointermove` הוא פיגור בין האצבע לכרטיס. ה-CSS ב-`globals.css` מכבה את המעבר
-         בדיוק כשהתכונה `data-dragging` נוכחת, ומחזיר אותו בשחרור. */
-      style={dragX === 0 ? undefined : { transform: `translateX(${dragX}px)` }}
+      ref={sectionRef}
+      /* T-157 · D-090ⓑ · T-233 — הכרטיס עוקב אחרי האצבע **1:1**, ⛔ ולא ב-8 פיקסלים.
+         ההיסט ו-`data-dragging` נכתבים לצומת ב-`writeDrag`, ⛔ ולא כ-props: ה-CSS
+         ב-`globals.css` מכבה את המעבר בדיוק כשהתכונה `data-dragging` נוכחת, ומחזיר
+         אותו בשחרור — מעבר מתוזמן על ערך שמשתנה בכל `pointermove` הוא פיגור בין
+         האצבע לכרטיס. */
       onPointerDown={(e) => {
         setSwipe(null);
-        setDragX(0);
-        swipeFrom.current = swipeActive ? { x: e.clientX, y: e.clientY } : null;
+        resetDrag();
+        if (!swipeActive) {
+          swipeFrom.current = null;
+          return;
+        }
+        // T-233ⓑ · `apple-design` § 2 — הלכידה, בתקדים `SpellCard.tsx:79`: המעקב נמשך
+        // גם כשהאצבע יוצאת מגבולות הכרטיס, ו-`pointerup` מגיע לכאן מכל מקום.
+        // 🔴 **נמדד בכרומיום (C-0488), ⛔ לא הונח:** לכידה על ה-`<section>` מפנה את
+        // ה-`click` הבא אל ה-section, וכפתור-ילד ⛔ אינו מקבל אותו לעולם. שני כפתורי
+        // הסימון יושבים כאן בפנים (D-042 — הערוץ הקנוני) ⇒ מחווה שמתחילה על פקד ⛔ אינה
+        // נלכדת ו⛔ אינה מחווה: הפקד הוא הערוץ שלה.
+        const target = e.target instanceof Element ? e.target : null;
+        if (target !== null && target.closest('button, input, a') !== null) {
+          swipeFrom.current = null;
+          return;
+        }
+        swipeFrom.current = { x: e.clientX, y: e.clientY };
+        e.currentTarget.setPointerCapture(e.pointerId);
       }}
       onPointerMove={(e) => {
         const from = swipeFrom.current;
         if (from === null) return;
         // ⛔ ההכרעה כולה בשכבה הטהורה: `prefers-reduced-motion` ⇒ **אפס תנועה**
         // ⛔ ולא «פחות», ומספר לא-סופי ⛔ אינו אפס ו⛔ אינו הרבה.
-        setDragX(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x);
+        queueDrag(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x);
       }}
-      onPointerCancel={() => {
+      onPointerCancel={(e) => {
         // מחווה שהמערכת חטפה (שיחה נכנסת, מחוות מערכת) — הכרטיס **חוזר למקומו**,
         // ⛔ ואינו נשאר תלוי באמצע המסך בלי שאיש דירג אותו.
         swipeFrom.current = null;
-        setDragX(0);
+        releaseCapture(e.currentTarget, e.pointerId);
+        resetDrag();
       }}
       onPointerUp={(e) => {
         const from = swipeFrom.current;
         swipeFrom.current = null;
+        releaseCapture(e.currentTarget, e.pointerId);
         // ⛔ מתאפס **תמיד**, בשני הענפים: מעל הסף `data-swipe` נושא את היציאה, ומתחתיו
         // הכרטיס חוזר למקומו — ובשניהם המעבר של `globals.css` מנגן את ההשתקעות.
-        setDragX(0);
+        resetDrag();
         if (from === null) return;
         const resolved = resolveSwipe({
           startX: from.x,
