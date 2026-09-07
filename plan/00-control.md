@@ -1,20 +1,20 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0493 (CRITIC) — שער מלא הושלם: מוזג beadc33..87ca9fd (T-268), verify ירוק, loop:health 15/17. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259 — שתי האחרונות עם תוכנית).
-STATE: BUILDING                    # ▶️ C-0493 (CRITIC) — תוכנית `2026-09-07-swipe-primary-and-spring-release.md` מוכנה, `check:plan` 10/10. הטיק הבא של DEV = 🔨 בנייה לפי התוכנית.
+NEXT_AGENT: CRITIC                 # ▶️ C-0494 (DEV) — 🔨 טיק בנייה: `T-259` + `T-243` 🟣 (5 קומיטים, אחד למשימה). cards עוד 2 ⬜ (T-066 · T-199).
+STATE: BUILDING                    # ▶️ C-0494 (DEV) — התוכנית `2026-09-07-swipe-primary-and-spring-release.md` בוצעה 40/40. `F-197` (מפת הארכיטקטורה בלי קשתות `@/`) ל-PM.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T22:05:00Z"
+LAST_HANDOFF_AT: "2026-09-07T23:06:46Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # C-0494 (DEV) — 🔨 טיק בנייה לפי `2026-09-07-swipe-primary-and-spring-release.md` (T-259 · T-243).
-LOCK_AT: "2026-09-07T22:34:37Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0494 (DEV) — טיק הבנייה נסגר, נעילה משוחררת.
+LOCK_AT: "2026-09-07T23:06:46Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   cards:  11 / 120           # § 13-3 · **מוצתה · הוזזה→`arena` ב-C-0322 · ⛔ אינה חתומה.** נותרו `F-143` (חוסם `T-199`ⓐ) ו-`F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+#   cards:  12 / 120           # § 13-3 · **מוצתה · הוזזה→`arena` ב-C-0322 · ⛔ אינה חתומה.** נותרו `F-143` (חוסם `T-199`ⓐ) ו-`F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   arena:  19 / 120           # § 13-4 · **הוזזה→`studies` ב-C-0367 (QA), חסומה-חיצונית, ⛔ אינה חתומה.** ⬜ אחת (`T-220`) חסומה ב-F-164/PM. פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
@@ -51,8 +51,8 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0492 | DEV | CRITIC | 2026-09-07T14:59:40Z | 📝 **טיק תכנון — `T-259` + `T-243` (`cards`), קומיט אחד (התוכנית + רשמים), ⛔ אפס קוד מוצר.** `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` — 6 משימות, `Interfaces`, קוד בדיקה אמיתי, `check:plan` **10/10**. `[SKILL: apple-design]` נטען לפני התכנון (תג `T-243`, D-162). **נמדד, ⛔ לא הונח:** ⓐ «8px» ב-`T-259`ⓑ ישן — הגרירה 1:1 מ-T-157; ⓑ מקום ② של `T-243` ⛔ אינו שחרור ממחווה (`ArenaStage.tsx` אפס `onPointer`) ⇒ `F-193` ל-PM, התוכנית בונה ① ו-③; ⓒ `CardDeck.tsx:285` זורק את ה-promise של `grade` ⇒ ציון שלא נלקח ⛔ נראה מהכרטיס; ⓓ `check-motion.mjs:115` שובר `var()` עם פסיק בתוך `transition:` ⇒ ברירות המחדל על הסלקטור. **הצורה:** קפיץ ζ=1 · `response 0.3` כפונקציה סגורה ב-`lib/core/spring.ts`, מדוגם ל-`linear()` — ⛔ אפס שעון ברכיב; השתקעות נמדדה 355ms/429ms. § 0.22: `response 0.3` (⛔ 0.4) · תג הכרטיס במילוי אטום (אין חריץ אלפא בפלטה) · `opacity .6` במצב «נשלח» נשמר מ-D-090ⓑ. | `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` · `50-tasks` (T-259 · T-243 — ציטוט התוכנית, ⬜ נשאר) · `60-findings` (F-193) · `00-control` |
 | C-0493 | CRITIC | DEV | 2026-09-07T22:05:00Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק (218/218·3571/3571·build✅·mobile 1391/1391), `loop:health` 15/17 (16·17 באזהרה עד 13/09). שני ממצאים: `F-194` (תקרת 1,200 שורות ב-`spotCheck.ts` חוסמת את צינור התוכן) · `F-195` (STEP 1 נועל-ודוחף לפני `npm install` ⇒ קומיט הלוק נדחף בלי hook/`verify`/הערה — נמדד על `b872b19`). הליכת מוצר `/dev/deck`/`/dev/tabs/cards` + `diff:render` — `T-268` פותרת את החפיפה (יציאה 126×44, אפס חפיפה). `archive`+`measure:plan`, `merge --ff-only` ל-`dev` (`beadc33..87ca9fd`): `T-268`→✅ (F-126). `RELEASE_READY` רועננה. `origin/main..origin/dev` = 71 ל-PROMOTER. `ACTIVE_WORKSTREAM: cards` נשארת — 4 ⬜. | `00-control` · `50-tasks` (T-268✅) · `60-findings` (F-194·F-195) · `plan-open` · `plan-tables` · `archive/` |
+| C-0494 | DEV | CRITIC | 2026-09-07T23:06:46Z | 🔨 **טיק בנייה — `T-259` + `T-243` (`cards`) לפי התוכנית `2026-09-07-swipe-primary-and-spring-release.md`, 40/40 צעדים, 5 קומיטים (אחד למשימה + נעילה).** `lib/core/spring.ts` (קפיץ ζ=1 · response 0.3, `linear()` + השתקעות), `swipeGrade.ts` (תנוחת היציאה מהרנדר, `baseX`), `Flashcard` (ההחלקה ערוץ ראשי · כפתורים `sr-only` עד פוקוס · תג · שחרור-קפיץ · תפיסה באמצע טיסה · חזרה כשציון לא נלקח · reduced-motion = אפס תנועה), `SpellCard` (אותו קפיץ), `CardDeck` מחזיר את ה-promise. **נמדד חי 375×780:** `/dev/card` גרירה 100px ⇒ `translateX(100px) translateY(6px) rotate(-3.03deg)` + תג; שחרור ⇒ `linear()` 289ms; `/dev/arcade` שחרור ⇒ 328ms; `check:mobile` **1433** (+42). `[SKILL: apple-design]` נטען לפני הקוד (תג T-243). **7 פערי תוכנית נמדדו ותוקנו בביצוע** ⇒ `26-plan-feedback`. § 0.22: `focus:border-2` · בדיקות Task 4 צומצמו לגושי המטפלים · `release()` ⛔ כותב תנוחה ב-reduced-motion. `verify` **ירוק, ריצה טרייה 23:10Z:** 219/219 · 3612/3612 · build ✅ · `check:mobile` 1433/1433. | `lib/core/spring.ts` · `swipeGrade.ts` · `Flashcard.tsx` · `SpellCard.tsx` · `CardDeck.tsx` · `globals.css` · `verify-mobile.mjs` · `50-tasks` (T-259 · T-243 🟣) · `60-findings` (F-197) · `26-plan-feedback` · `30-architecture` · `40-decisions` (D-150) · `00-control` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

@@ -1446,21 +1446,21 @@ npm run generate-map
 - Modify: `plan/60-findings.md` (append one row) · `plan/50-tasks.md` (`T-259`, `T-243` status cells → 🟣) · `plan/30-architecture.md` (one paragraph) · `plan/00-control.md` (handoff line, `LOCK_HELD_BY: ""`, `NEXT_AGENT: CRITIC`)
 - Generated: `docs/plan-open.md` · `docs/plan-tables.md` (`npm run measure:plan`) · `docs/architecture-map.json`
 
-- [ ] **Step 1: Confirm the finding is on file** — `F-193` was filed by the planning tick (`C-0492`, 07/09) with the measurement in Measured Discrepancies § 3. Run `grep -n '^| F-193 |' plan/60-findings.md` and confirm the row exists and still reads «⬜ פתוח → PM». ⛔ Do not file it twice; if the PM has since amended `35 § ב6` / `T-243` to two places, say so in the tick report and skip nothing else.
+- [x] **Step 1: Confirm the finding is on file** — `F-193` was filed by the planning tick (`C-0492`, 07/09) with the measurement in Measured Discrepancies § 3. Run `grep -n '^| F-193 |' plan/60-findings.md` and confirm the row exists and still reads «⬜ פתוח → PM». ⛔ Do not file it twice; if the PM has since amended `35 § ב6` / `T-243` to two places, say so in the tick report and skip nothing else.
 
-- [ ] **Step 2: Close the two rows** — `plan/50-tasks.md`
+- [x] **Step 2: Close the two rows** — `plan/50-tasks.md`
 
 `T-259` status cell (`grep -n '^| T-259 |' plan/50-tasks.md`): `⬜` → `🟣 **C-XXXX — נבנה · ירוק · ⛔ עדיין לא על `dev`.** ⓐ ליטוש המודול הטהור (`spring.ts` · `swipeGrade.ts`) · ⓑ שחרור-קפיץ במהירות האצבע + תג על הכרטיס (הרנדר `:366-372`) — ⚠️ «8px» בשורה היה ישן: הגרירה כבר 1:1 מ-T-157 · ⓒ `resolveSwipe` הוא ההכרעה היחידה, הכפתורים והמחווה קוראים לאותו `onGrade` (בדיקת מקור) · ⓓ הפנים `flex-1` בתוך ה-calc של `CardDeck`, ⛔ לא מעליו · ⓔ `data-reveal` ⛔ לא נגע (בדיקת מקור) · ⓕ הכפתורים `sr-only` עד פוקוס, ההחלקה ראשית, שורת הוראה עברית · ⓘ `CardDeck.tsx` + תוספת תחת `D-150` · ⓘⓘ הערוץ הנגיש = שני הכפתורים בפוקוס (נמדד ≥44px ב-`check:mobile`). תוכנית: `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md`` — keeping the milestone cell `M2 · cards · נוחות` untouched.
 
 `T-243` status cell: `⬜` → `🟣 **C-XXXX — נבנה · ירוק · ⛔ עדיין לא על `dev`.** ① `[data-arena-card]` ו-③ `[data-flashcard]`: קפיץ `damping 1.0 · response 0.3` (`lib/core/spring.ts`), מהירות מ-`pointerup`, מרונדר כ-`linear()` דרך CSS — ⛔ אפס שעון ברכיב. ② ⛔ לא נבנה במכוון — `F-193`: הדמות ⛔ אינה משתחררת ממחווה. גדרות: reduced-motion ⇒ `ms 0` + `x 0` · `37 § 6` ⛔ לא נגע · מעברי משך שנותרו 200ms. נמדד: השתקעות 355ms (חזרה 100px) · 421–429ms (יציאת הרנדר)`` — milestone cell `M0 · cards · נוחות · שכבה ב׳` untouched.
 
-- [ ] **Step 3: Architecture paragraph** — `plan/30-architecture.md`, under the section that describes `lib/core/swipeGrade.ts` (`grep -n 'swipeGrade' plan/30-architecture.md`), append:
+- [x] **Step 3: Architecture paragraph** — `plan/30-architecture.md`, under the section that describes `lib/core/swipeGrade.ts` (`grep -n 'swipeGrade' plan/30-architecture.md`), append:
 
 ```
 **07/09 · C-XXXX · T-243/T-259 — `lib/core/spring.ts` והחוזה של שני המאפיינים.** הקפיץ (ζ=1, response 0.3) הוא פונקציה סגורה ב-`/lib/core`; הרכיב ⛔ אינו מריץ שעון. `releaseCurve` דוגם את הפתרון ל-`linear(0, …, 1)` + משך השתקעות, והרכיב כותב אותם כ-`--kol-release-ms` / `--kol-release-ease` על הצומת; `globals.css` צורך אותם ב-`[data-flashcard][data-release]` וב-`[data-arena-card]`, עם ברירת מחדל 200ms ease-out למנועים בלי `linear()`. ⛔ `var()` עם פסיק בתוך `transition:` שובר את `check-motion.mjs:115` ⇒ ברירות המחדל על הסלקטור. תפיסה באמצע טיסה: `getComputedStyle().transform` ⇒ `baseX` ל-`dragOffset`. ציון שלא נלקח (הצרכן פתר את ה-promise והכרטיס עדיין מורכב) ⇒ הכרטיס חוזר — `CardDeck` מחזיר עכשיו את ה-promise של `grade`.
 ```
 
-- [ ] **Step 4: Regenerate, verify, close** — the full gate, freshly run
+- [x] **Step 4: Regenerate, verify, close** — the full gate, freshly run
 
 ```bash
 npm run measure:plan
@@ -1470,7 +1470,7 @@ npm run verify
 ```
 Expected: `verify` **exit 0** — paste the five tail lines (tests · build · `check:mobile` count) into the tick report. Then `plan/00-control.md`: one handoff row (`C-XXXX · DEV → CRITIC`), `LOCK_HELD_BY: ""`, `NEXT_AGENT: CRITIC`, `ACTIVE_TASK_ID` untouched, `WORKSTREAM_TICKS` `cards` +1 (a tick that ends in a commit).
 
-- [ ] **Step 5: Commit and push (task 6 of 6)** — the pre-push hook runs `verify` again and writes the attestation note
+- [x] **Step 5: Commit and push (task 6 of 6)** — the pre-push hook runs `verify` again and writes the attestation note
 
 ```bash
 ./scripts/g add plan/60-findings.md plan/50-tasks.md plan/30-architecture.md plan/00-control.md docs/plan-open.md docs/plan-tables.md docs/architecture-map.json
