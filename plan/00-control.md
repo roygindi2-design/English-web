@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                # ▶️ C-0488 (DEV) — `T-233` 🟣 (🟠 defect · `cards` · `apple-design` § 1·§ 2). קומיט אחד + נעילה. CRITIC: הדיף `origin/dev..origin/work/current`.
+NEXT_AGENT: DEV                    # ▶️ C-0489 (CRITIC) — שער הושלם, מוזג ל-dev, נעילה שוחררה. cards עדיין 4 ⬜ פנויות.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: []   # ▶️ C-0488 (DEV) — ריק, ⛔ לא נכתב. `T-233` נלקחה כ-🟠 defect לפי סדר STEP 2.
+ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T11:03:45Z"
+LAST_HANDOFF_AT: "2026-09-07T12:00:00Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CRITIC"             # ▶️ C-0489 (CRITIC) — נעילה ל-מסלול: מלא, 11:15Z
-LOCK_AT: "2026-09-07T11:23:00Z"
+LOCK_HELD_BY: ""                  # ✅ C-0489 סיים
+LOCK_AT: "2026-09-07T12:00:00Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -19,7 +19,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "fbdd61e · 2026-09-06T14:12Z · **נמדד C-0478 ב-`./scripts/g ls-remote --heads origin`: `main`=`fbdd61e` · `dev`=`ddbc851` · `work/current`=`87cf891`. ⚠️ הערך הקודם (`807ae72`) ⛔ לא היה נכון — `main` ⛔ מעולם לא הצביע עליו. `origin/main..origin/dev` = **18 קומיטים** ממתינים לקידום (‏PROMOTER, `RULES § 0.29`, `0 23 * * *`) ו-`origin/dev..origin/main` = 0."
+RELEASE_READY: "beadc33 · 2026-09-07T11:48Z · **נמדד C-0489 (CRITIC, מסלול: מלא) ב-`./scripts/g ls-remote --heads origin`: `main`=`fbdd61e` · `dev`=`beadc33` · `work/current`=`19c6196`. `verify` ירוק טרי בדחיפה עצמה (218/218 · 3569/3569 · build ✅ · check:mobile 1370/1370), `loop:health` 17/17. השורה הזאת מוזגה ל-`dev` ב-`--ff-only` (`f16dc6c..beadc33`): T-233 (תיקון גרירת כרטיסייה, apple-design § 1·§ 2) · T-276 (מסך סיום החפיסה אומר מה זז בסבב) · F-192 (תיקון רגקס). `origin/main..origin/dev` = **56 קומיטים** ממתינים לקידום (PROMOTER, `RULES § 0.29`, `0 23 * * *`) ו-`origin/dev..origin/main` = 0 (ff-only נקי, מאומת `merge-base --is-ancestor`)."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
@@ -47,26 +47,12 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 > ⚠️ **שורה אחת ביומן, ⛔ ולא שתיים** — התקרה נפרצה פעמיים כך (C-0261 · C-0293). שתי המדידות ⇢ `plan/archive/handoff-log.md`.
 
 > 2 שורות לרשומה. ישן יותר → `plan/archive/handoff-log.md`. ההיסטוריה המלאה בגיט.
-> 🧹 `C-0460` הועבר 06/09/2026 (C-0463) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0463` הועבר 06/09/2026 (C-0466) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-
-> 🧹 `C-0465` הועבר 06/09/2026 (C-0467) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-
-> 🧹 `C-0468` הועבר 06/09/2026 (C-0469) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0469` הועבר 06/09/2026 (C-0471) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0471` הועבר 06/09/2026 (C-0472) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0472` הועבר 06/09/2026 (C-0473) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0473` הועבר 06/09/2026 (C-0476) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0474` הועבר 07/09/2026 (C-0477) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0479` הועבר 07/09/2026 (C-0482) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0481` הועבר 07/09/2026 (C-0485) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0485` הועבר 07/09/2026 (C-0486) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
-> 🧹 `C-0486` הועבר 07/09/2026 (C-0488) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 **C-0489 (CRITIC):** כווצו 13 שורות `🧹 הועבר…` (‏`C-0460`…`C-0486`, 06–07/09) לשורה זו — כל אחת מהן הייתה עצמה רק מצביע לארכיון, אפס תוכן חדש, וזו הייתה הסיבה שהקובץ עבר את תקרת ה-12KB (בדיקה 9) בטיק הזה. הרשימה המלאה ב-`git log -p` על הקובץ.
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0487 | DEV | CRITIC | 2026-09-07T10:05:32Z | 🔨 **בנייה · `cards`.** ⓐ `F-192` (`D-196` ⓐ): הרגקס בבדיקה = תבנית `SOURCE`; 1 failed⇢**22/22**, `RELEASE_BLOCKERS` רוקן. ⓑ `T-276`: `lib/core/roundSummary.ts` (טהור) + `CardDeck` סופר את הסבב; מסלול `/dev/deck/done/due`; נמדד 375×780: **163** תווים · 2 שורות · taps=1 · under44=0 · hscroll=false; `/dev/deck/done` **48** ⛔ ללא שינוי. | `build-ingest-sql.test.ts` · `lib/core/roundSummary.ts` · `CardDeck.tsx` · `app/dev/deck/done/due/` · `verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-276) · `60-findings` (F-192) |
 | C-0488 | DEV | CRITIC | 2026-09-07T11:03:45Z | 🔨 **בנייה · `cards`.** `T-233` (🟠 defect, `[SKILL: apple-design]` נטען לפני קוד): ⓐ היסט הגרירה נכתב לצומת דרך `ref` + rAF אחד לפריים, ⛔ אפס `setDragX`/`style=`; ⓑ `setPointerCapture` ב-`pointerdown`, שחרור ב-up/cancel. 🔴 נמדד בכרומיום: לכידה על ה-section גונבת `click` מכפתורי-ילד ⇒ לכידה רק כשהמחווה ⛔ לא התחילה על פקד (§ 0.22, שורה אחת). **נמדד:** `verify` **exit 0** · 218/218 · **3569/3569** · mobile **1370/1370** (בדיקה חיה חדשה: אצבע שיוצאת מהמקטע מדרגת — לפני: `5→5` תלוי, אחרי: `4→3`). `origin/dev..origin/work/current` = 14 לפני הדחיפה. | `components/Flashcard.tsx` · `Flashcard.test.ts` · `scripts/verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-233) · `docs/architecture-map.json` |
+| C-0489 | CRITIC | DEV | 2026-09-07T12:00:00Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק טרי דרך ה-`pre-push` (218/218 · 3569/3569 · build ✅ · mobile 1370/1370), `loop:health` 17/17. סקירת המחווה (`review-animations`, הדיף הגע `transition`/`motion`): rAF-batched דרך `ref`, `setPointerCapture`/שחרור תקינים, `resetDrag` על ביטול-פריים — ⛔ אין ממצא. `diff:render` על `/dev/deck/done/due` ו-`/dev/deck/done` מול `kol-A-02-deck.png` — מסך שונה במהותו (הרנדר הוא מסך הכרטיסיות, ⛔ לא מסך סיום ייעודי) ⇒ ⛔ אין דלתא לשכבה A, ⛔ אין ממצא חדש. `merge --ff-only` ל-`dev` (`f16dc6c..beadc33`), נדחף וירוק. `T-233`·`T-276`·`F-192` הפכו ✅ (F-126 class). `build:surfaces`/`generate-map`/`measure:plan` רועננו, ⛔ אפס דגל 🔴 חדש. `00-control` כווץ מ-12454B (מעל התקרה!) ל-**10901B** — 13 שורות `🧹 הועבר…` שהצטברו ל-שורה אחת. `RELEASE_READY` רועננה (‏`beadc33`). `origin/main..origin/dev` = 56 קומיטים ל-PROMOTER. `ACTIVE_WORKSTREAM: cards` — 4 ⬜ פנויות, ⛔ אינה מוצתה, ⛔ אין הזזה/חתימה הטיק הזה. | `plan/00-control.md` · `plan/50-tasks.md` (T-233·T-276 ✅) · `plan/60-findings.md` (F-192 ✅) · `docs/plan-open.md` · `docs/plan-tables.md` · `plan/63-surfaces.md` · `plan/archive/handoff-log.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
