@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0492 (DEV) — 📝 טיק תכנון, ⛔ לא בנייה: `T-259`+`T-243` (`cards`) — `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md`, `check:plan` 10/10. ⛔ אפס קוד מוצר נגע. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259 — שתי האחרונות עם תוכנית).
-STATE: PLANNING                    # ▶️ C-0492 (DEV) — קומיט אחד: התוכנית + רשמים. ⛔ אפס קוד מוצר, ⛔ אפס מיגרציה. הטיק הבא של DEV = 🔨 בנייה לפי התוכנית.
+NEXT_AGENT: DEV                    # ▶️ C-0493 (CRITIC) — שער מלא הושלם: מוזג beadc33..87ca9fd (T-268), verify ירוק, loop:health 15/17. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259 — שתי האחרונות עם תוכנית).
+STATE: BUILDING                    # ▶️ C-0493 (CRITIC) — תוכנית `2026-09-07-swipe-primary-and-spring-release.md` מוכנה, `check:plan` 10/10. הטיק הבא של DEV = 🔨 בנייה לפי התוכנית.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T14:59:40Z"
+LAST_HANDOFF_AT: "2026-09-07T22:05:00Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CRITIC"             # ננעלה C-0493 (CRITIC, מסלול: מלא) בתחילת הטיק.
-LOCK_AT: "2026-09-07T21:21:01Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0493 (CRITIC) — שער מלא נסגר, נעילה משוחררת.
+LOCK_AT: "2026-09-07T22:05:00Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -19,7 +19,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "beadc33 · 2026-09-07T11:48Z · **נמדד C-0489 (CRITIC, מסלול: מלא) ב-`./scripts/g ls-remote --heads origin`: `main`=`fbdd61e` · `dev`=`beadc33` · `work/current`=`19c6196`. `verify` ירוק טרי בדחיפה עצמה (218/218 · 3569/3569 · build ✅ · check:mobile 1370/1370), `loop:health` 17/17. השורה הזאת מוזגה ל-`dev` ב-`--ff-only` (`f16dc6c..beadc33`): T-233 (תיקון גרירת כרטיסייה, apple-design § 1·§ 2) · T-276 (מסך סיום החפיסה אומר מה זז בסבב) · F-192 (תיקון רגקס). `origin/main..origin/dev` = **56 קומיטים** ממתינים לקידום (PROMOTER, `RULES § 0.29`, `0 23 * * *`) ו-`origin/dev..origin/main` = 0 (ff-only נקי, מאומת `merge-base --is-ancestor`)."
+RELEASE_READY: "87ca9fd · 2026-09-07T21:56Z · **נמדד C-0493 (CRITIC, מסלול: מלא) ב-`./scripts/g ls-remote --heads origin`: `main`=`fbdd61e` · `dev`=`87ca9fd` · `work/current`=`8ffe0d8`. `verify` ירוק טרי בדחיפה עצמה (218/218 · 3571/3571 · build ✅ · check:mobile 1391/1391), `loop:health` 15/17 (16 · 17 באזהרה עד 2026-09-13, נמדדו ותועדו: F-195). השורה הזאת מוזגה ל-`dev` ב-`--ff-only` (`beadc33..87ca9fd`): **T-268** — היציאה הכתובה «חזרה לכרטיסיות» מחליפה את אייקון הסגירה שישב על כותרת החפיסה עצמה (נבדק חי ב-`/dev/deck`, 375×780, אפס חפיפה). `origin/main..origin/dev` = **71 קומיטים** ממתינים לקידום (PROMOTER, `RULES § 0.29`, `21 23 * * *`) ו-`origin/dev..origin/main` = 0 (ff-only נקי, מאומת `merge-base --is-ancestor`)."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
@@ -52,7 +52,7 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
 | C-0492 | DEV | CRITIC | 2026-09-07T14:59:40Z | 📝 **טיק תכנון — `T-259` + `T-243` (`cards`), קומיט אחד (התוכנית + רשמים), ⛔ אפס קוד מוצר.** `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` — 6 משימות, `Interfaces`, קוד בדיקה אמיתי, `check:plan` **10/10**. `[SKILL: apple-design]` נטען לפני התכנון (תג `T-243`, D-162). **נמדד, ⛔ לא הונח:** ⓐ «8px» ב-`T-259`ⓑ ישן — הגרירה 1:1 מ-T-157; ⓑ מקום ② של `T-243` ⛔ אינו שחרור ממחווה (`ArenaStage.tsx` אפס `onPointer`) ⇒ `F-193` ל-PM, התוכנית בונה ① ו-③; ⓒ `CardDeck.tsx:285` זורק את ה-promise של `grade` ⇒ ציון שלא נלקח ⛔ נראה מהכרטיס; ⓓ `check-motion.mjs:115` שובר `var()` עם פסיק בתוך `transition:` ⇒ ברירות המחדל על הסלקטור. **הצורה:** קפיץ ζ=1 · `response 0.3` כפונקציה סגורה ב-`lib/core/spring.ts`, מדוגם ל-`linear()` — ⛔ אפס שעון ברכיב; השתקעות נמדדה 355ms/429ms. § 0.22: `response 0.3` (⛔ 0.4) · תג הכרטיס במילוי אטום (אין חריץ אלפא בפלטה) · `opacity .6` במצב «נשלח» נשמר מ-D-090ⓑ. | `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` · `50-tasks` (T-259 · T-243 — ציטוט התוכנית, ⬜ נשאר) · `60-findings` (F-193) · `00-control` |
-| C-0491 | CONTENT | CONTENT | 2026-09-07T13:50:25Z | 🔴 **חסם מבני נמדד: `npm run build:ingest` קורס מעל 1,200 שורות מאושרות בבנק — `lib/core/spotCheck.ts` מחזיק שורת ISO 2859-1 אחת בלבד (501–1,200) וזורק בכוונה מעליה; הבנק עמד בדיוק על 1,200 לפני הטיק. K-005 ⌒a (קישור) מוצה במלואו (33/35 — 2 הנותרות נכשלות במבחן הכשירות בכוונה). 10 שורות ⌒b (`adjective`…`ankle`, A2) נכתבו ואומתו — `gateSense` האמיתי 10/10, `0` דחיות — אך נשמרו מקומית ⛔ ולא נדחפו: דחיפה הייתה משאירה `supabase/seed/*` בלתי-ניתנים-לרגנרציה. `03-for-roy` פריט 102 (חדש, DEV/הכרעה נדרשת) + לקח 36 ב-`80-content-lessons.md`. ⛔ `WORKSTREAM_TICKS` לא הועלה — אין קומיט תוכן. | 0 קומיטי תוכן — 1 קומיט תיעוד (`03-for-roy` · `25-content-commissions` · `80-content-lessons` · `amirnet-coverage-report`) |
+| C-0493 | CRITIC | DEV | 2026-09-07T22:05:00Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק (218/218·3571/3571·build✅·mobile 1391/1391), `loop:health` 15/17 (16·17 באזהרה עד 13/09). שני ממצאים: `F-194` (תקרת 1,200 שורות ב-`spotCheck.ts` חוסמת את צינור התוכן) · `F-195` (STEP 1 נועל-ודוחף לפני `npm install` ⇒ קומיט הלוק נדחף בלי hook/`verify`/הערה — נמדד על `b872b19`). הליכת מוצר `/dev/deck`/`/dev/tabs/cards` + `diff:render` — `T-268` פותרת את החפיפה (יציאה 126×44, אפס חפיפה). `archive`+`measure:plan`, `merge --ff-only` ל-`dev` (`beadc33..87ca9fd`): `T-268`→✅ (F-126). `RELEASE_READY` רועננה. `origin/main..origin/dev` = 71 ל-PROMOTER. `ACTIVE_WORKSTREAM: cards` נשארת — 4 ⬜. | `00-control` · `50-tasks` (T-268✅) · `60-findings` (F-194·F-195) · `plan-open` · `plan-tables` · `archive/` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
