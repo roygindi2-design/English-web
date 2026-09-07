@@ -1,18 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                       # ▶️ C-0477 (DEV) — T-273 נבנתה 🟣 (ACTIVE_TASK_ID · `general`): נוסח `schema_missing` ותווית `session_expired` במקום אחד, 21 הכרזות מקומיות ⇢ 0, הזירה מיישרת קו. `verify` ירוק טרי (exit 0 · 3532/3532 · check:mobile 1325/1325). ⚠️ `general` ⬜=0 עכשיו — ההחזרה למוקד פיצ׳ר היא של QA.
+NEXT_AGENT: DEV                       # ▶️ C-0478 (PM) — `T-274` נפתחה ⬜ ב-`general` לפי `D-195`: הענף `ApiUnreachableError` ב-`AuthForm.tsx:134-137` ששני צדדיו זהים מילה במילה. `general` ⬜ **0 ⇢ 1**. שלוש שורות 🟣 ממתינות ל-CRITIC/QA (T-271 · T-272 · T-273) ו⛔ אינן נלקחות על ידי DEV.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: [T-273]   # ▶️ C-0474 (DEV) — `T-272` יצאה מכאן כי היא 🟣 (בתור הביקורת), ⛔ ולא כי נסגרה. נותרה שורה פתוחה אחת ב-`general`: T-273.
+ACTIVE_TASK_ID: [T-274]   # ▶️ C-0478 (PM) — `T-273` יצאה מכאן כי היא 🟣 (בתור הביקורת), ⛔ ולא כי נסגרה. שורה פתוחה אחת ב-`general`: T-274.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-# ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175, הכרעת רוי — "להסיר", 03-for-roy פריט 87 נסגר).
-# היה בלם מת (מוצהר, ⛔ אף קוד לא העלה אותו) — שדה שמצהיר על בלם שאינו קיים גרוע משדה שאינו קיים.
-# מפסק איש-המת (36 שעות) ובדיקות 11·13·17 מכסות "הלופ מסתובב ריק" בלעדיו. ⛔ ⛔ לא נשמר במקום אחר בחוזה חי.
-LAST_HANDOFF_AT: 2026-09-07T00:53:57Z
+# ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
+LAST_HANDOFF_AT: 2026-09-07T01:38:00Z
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "PM"                    # ננעלה 2026-09-07T01:09Z — C-0478 (PM): טיק תכנון, `general` ⬜=0
-LOCK_AT: "2026-09-07T01:09:00Z"
+LOCK_HELD_BY: ""                      # שוחררה 2026-09-07T01:38Z — C-0478 (PM): T-274 ⬜, 6 חותמות רועננו, בדיקות 3 ו-9 ירוקות
+LOCK_AT: "2026-09-07T01:38:00Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -21,7 +19,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "807ae72 · 2026-09-06 · **נשלח — `main` = `dev` = `work/current` = `807ae72`, 0 פער** (נמדד: `./scripts/g ls-remote --heads origin`)"  # C-0465 · `verify` exit 0 טרי (215 קבצים · 3484 בדיקות · `check:mobile` 1325) · `loop:health` 15/15 · הקידום ל-`main` באישור מפורש של רוי. ⚠️ שלוש ההקשות ⛔ לא נכתבו מחדש — השער המלא של C-0462 הוא הראיה.
+RELEASE_READY: "fbdd61e · 2026-09-06T14:12Z · **נמדד C-0478 ב-`./scripts/g ls-remote --heads origin`: `main`=`fbdd61e` · `dev`=`ddbc851` · `work/current`=`87cf891`. ⚠️ הערך הקודם (`807ae72`) ⛔ לא היה נכון — `main` ⛔ מעולם לא הצביע עליו. `origin/main..origin/dev` = **18 קומיטים** ממתינים לקידום (‏PROMOTER, `RULES § 0.29`, `0 23 * * *`) ו-`origin/dev..origin/main` = 0."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 DEPLOYS_THIS_MONTH: 5            # PR #2 built and deployed; smoke test green.
 LAST_DEPLOYED_AT: "2026-08-23T11:03:26Z"
@@ -29,7 +27,7 @@ LAST_REVIEWED_COMMIT: "807ae72"  # main אחרי הקידום של 06/09. `verif
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: general         # 🔴 C-0389 (PM · `D-179` · הרשאת `D-174`): הוזז `studies` ⇢ `general`. ▶️ **עודכן C-0451 (PM) — נמדד, ⛔ לא שוער:** ההערה הקודמת נקבה ב-`T-235`/`T-143`/`T-145` כפתוחות — **שלושתן ✅ מזמן** (C-0396/C-0409). המצב היום: `general` ⬜=0 בפתיחת הטיק, `general ∪ loop ∪ base` = **6 ⬜**; אחרי `T-264`/`T-265` ⇒ **8 ⬜** (בדיקה 11 ok). ⚠️ **⛔ אינה חותמת ו⛔ אינה מעבר לזרימת פיצ׳ר** — החזרה ל-`msgs` (4 ⬜) היא של QA לבדו (§ 0.23ז), ו-`D-174` היא הרשאה **חד-כיוונית**.
+ACTIVE_WORKSTREAM: general         # ▶️ **עודכן C-0478 (PM) — נמדד בטיק הזה, ⛔ לא נזכר:** בפתיחת הטיק `general` ⬜=**0**, ו-`general ∪ loop ∪ base` = **2 ⬜** ששתיהן ⛔ אינן נלקחות (‏`T-197` אחרי `T-184` ⛔ · `T-201` ממתינה לרכיב מקלדת שאינו קיים) ⇒ DEV היה מתייבש. נפתחה `T-274` ⇒ **1 ⬜ נלקחת**. ⚠️ **19 ⬜ ממתינות בזרימות הפיצ׳ר** (`story` 5 · `cards` 6 · `arena` 3 · `msgs` 4 · `amirnet` 1), וההחזרה למוקד פיצ׳ר היא של **QA לבדו** (§ 0.23ז) — `D-174` היא הרשאה חד-כיוונית, והמוקד יושב ב-`general` מ-31/08.
 PREV_WORKSTREAM: "studies"     # 🆕 D-174 · נכתב ב-C-0389 באותה עריכה שהזיזה את המוקד ל-`general` — בדיקות 13·14 מודדות ממנו. הזרימה שממנה זזנו: `studies`, אחרי שפרוסה A שלה (`T-246`) נבנתה במלואה ב-C-0381.
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
 # (SEALS · nav ו-story — הוצאו ל-`plan/archive/control-log.md` ב-C-0318, אותו דפוס בדיוק שבו story הוצא ב-C-0316 כשהמוקד זז. ⛔ לא נמחקו.)
@@ -63,8 +61,7 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0476 | DEV | CRITIC | 2026-09-06T23:41:21Z | 🚪 **הנחיה חד-פעמית מרוי דרך סשן ארכיטקטורה (Cowork) — ⛔ לא ליקוט מ-`ACTIVE_TASK_ID`, T-273 ⛔ לא נלקחה בכוונה.** שער סקיל בינארי (`[SKILL: <שם>] — כי …` / `[SKILL: none] — נבדק מול האינדקס …`) נוסף כ-STEP 2.5 ב-`DEV.md` וכ-STEP 2.6 ב-`PM.md`, נוסח זהה, לפני `using-superpowers`; STEP 4/STEP 3 הקיימים ⛔ לא זזו. `agent-prompts.test.ts` סורק את **שני** הקבצים יחד (3 טענות: קיום · זהות · סדר). RED נמדד (3/59) ⇢ GREEN 62/62 · `verify` exit 0 (216 · 3526/3526 · mobile 1325). F-189 נפתח ונסגר 🟣. `9f647a4`. | `docs/agents/DEV.md` · `docs/agents/PM.md` · `scripts/agent-prompts.test.ts` · `plan/60-findings.md` (F-189 🟣) · `docs/plan-open.md` · `docs/plan-tables.md` |
-| C-0477 | DEV | CRITIC | 2026-09-07T00:53:57Z | 🔤 **`T-273` (ACTIVE_TASK_ID · `general`) — נוסח `schema_missing` ותווית `session_expired` חיים במקום אחד: `SCHEMA_MISSING_HE` מ-`lib/core/failure.ts`, `SIGN_IN_AGAIN_HE` מ-`lib/core/failureExit.ts`, 12 מסכים מייבאים (21 הכרזות מקומיות ⇢ **0**, נמדד `grep`), והזירה מדפיסה `'התחברות מחדש'` כמו כולם — מ-2 ל-1.** בדיקה סופרת (5 טענות) RED 5/18 ⇢ GREEN 18/18; `linkLabelScan` פותר `export const` + המודולים המשותפים מחובררים לפני העץ ⇒ כיסוי הקישורים נשאר 18/57. מסך נמדד: `/arcade` ב-401, 375×780, קישור 287×58, 0 מתחת ל-44px. `verify` ירוק טרי: exit 0 · 216 · 3532/3532 · mobile 1325. ⚠️ **`general` ⬜=0** — 19 ⬜ ממתינות בזרימות הפיצ׳ר; `loop`/`base` ⬜ אחת כל אחת, שתיהן ⛔ לא ניתנות ללקיחה (T-197 אחרי T-184 ⛔ · T-201 ממתינה לרכיב מקלדת שאינו קיים). | `lib/core/failure.ts` · `lib/core/failureExit.ts` · `lib/core/failureExit.test.ts` · `lib/core/linkLabelScan.ts` · 12 מסכים · `scripts/link-naming.test.ts` · `docs/architecture-map.json` · `plan/50-tasks.md` (T-273 🟣) · `plan/60-findings.md` (F-138) · `plan/30-architecture.md` |
+| C-0478 | PM | DEV | 2026-09-07T01:38:00Z | 🔌 **טיק תכנון. `general` נפתח ב-⬜=0 ⇒ DEV היה מתייבש — נפתחה `T-274` לפי `D-195`.** נמדד בקלון הזה: `grep -rl RETRY_HE components app --include=*.tsx` ⇒ **17 קבצים**, ו-`components/AuthForm.tsx` (‏`/login` **וגם** `/signup`) ⛔ אינו בהם; `AuthForm.tsx:134-137` הוא תנאי ש**שני ענפיו זהים מילה במילה** ⇒ לומד בלי רשת קורא `'לא הצלחנו להתחבר כרגע'` ומנחש שהאשם בו. 🎨 `taste-skill § 4.5` שינה את ההכרעה: ⛔ **אין** כפתור `נסה שוב` ליד `התחברות` — כפתור השליחה הוא ההקשה החוזרת. 🧹 `F-176`+`F-145` נסגרו (תא סטטוס בלבד · `T-262`/`D-188`) · 6 חותמות רועננו ⇒ בדיקה 3 ok · תמצית `CONSECUTIVE_NO_PROGRESS` לארכיון ⇒ בדיקה 9 ok. 🔴 `RELEASE_READY` תוקן: `main`=`fbdd61e`, ⛔ לא `807ae72`; `origin/main..origin/dev` = **18** ממתינים ל-PROMOTER. פירוט ⇒ `plan/archive/handoff-log.md`. | `plan/40-decisions.md` (D-195) · `plan/50-tasks.md` (T-274 ⬜) · `plan/60-findings.md` (F-176 ✅ · F-145 ✅) · `plan/03-for-roy.md` · `plan/00-control.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
