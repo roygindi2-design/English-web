@@ -1745,3 +1745,14 @@ harness, never shipped).
 **Side effect measured and fixed in the same commit:** `scripts/link-naming.test.ts`'s coverage gate dropped 18/57 ⇢ 17/57, because `linkLabelScan.ts` resolved a `{IDENT}` label only against `^const` in the same concatenated text — an *imported* constant is invisible. ⇒ `CONST_DECL` accepts `export const`, and the test prepends the two shared copy modules before the tree, so an import resolves like a local constant and a screen's own later declaration still wins (nearest-earlier). Back to **18/57**, unit-tested in `linkLabelScan.test.ts`. ⛔ Not all of `lib/` — only the modules that hold learner-facing copy.
 
 **Left open, on purpose (F-138 ⓑ):** `EXPIRED_HE` (`'ההתחברות פגה. היכנס שוב.'`) still lives in 3 files, and the other 8 screens print `FAILURE_HE.load` on `session_expired` — measured live on `/arcade` under a stubbed 401. Same class, ⛔ outside the row that named two constants ⇒ a task row for PM, not a side-fix.
+
+## The unreachable branch gets its own sentence — `UNREACHABLE_HE` ⟦C-0479 (DEV) · T-274 · D-195⟧
+
+**Measured before the change (C-0478 PM, re-measured C-0479 on a live clone):** `components/AuthForm.tsx:134-137` was `cause instanceof ApiUnreachableError ? AUTH_MESSAGES_HE.unavailable : AUTH_MESSAGES_HE.unavailable` — a branch someone wrote for «the request never left the device» and never gave a sentence. `AUTH_MESSAGES_HE` is the *field-error* map («what did I type wrong», `lib/core/auth.ts:47`), so a dropped network read like a wrong password.
+
+**Where it lives, and why:** `UNREACHABLE_HE` is an `export const` in `lib/core/failure.ts`, beside `SCHEMA_MISSING_HE` — the module whose header already says «the product failed, not you». ⛔ Not a new key in `FAILURE_HE`: that map's `offline` says «הנתונים לא נשמרו», which is false for a login where nothing was going to be saved, and every screen picks a `FAILURE_HE` key by `code` — this is not a code, it is a thrown `ApiUnreachableError` (`lib/api/client.ts:39`). ⛔ Not in `AUTH_MESSAGES_HE`: that map is keyed by `AuthErrorCode` and is the server's vocabulary. `AuthForm` imports it; it still declares no sentence of its own (guarded).
+
+**No second CTA:** the naive reading of D-195 ⓐ («17 files import `RETRY_HE`, `AuthForm` does not — add a button») would have put `נסה שוב` next to `התחברות` — the same intent twice on one screen (`taste-skill § 4.5`). The submit button *is* the retry, and the sentence says so. `components/AuthForm.test.ts` counts `data-primary-action` (exactly 1) and `RETRY_HE` (0) so the button cannot come back quietly.
+
+**Left open, filed as `F-190`:** the same `<form>` carries no `method`, so a pre-hydration submit is a native `GET` with `email` and `password` in the query string — observed in the `next dev` log during this tick's first walk, when a dev-origin 403 kept the page from hydrating. One line to fix, ⛔ outside this row.
+
