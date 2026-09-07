@@ -38,6 +38,20 @@ export const FAILURE_HE = Object.freeze({
  */
 export const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 
+/**
+ * T-274 · D-195 — the request never left the device on a login / signup attempt
+ * (`ApiUnreachableError`, lib/api/client.ts). Until 07/09 that branch in
+ * `AuthForm` printed `AUTH_MESSAGES_HE.unavailable` — a sentence that sounds
+ * like "what you typed is wrong" — so a learner whose network dropped guessed
+ * the fault was theirs. This one names the cause and says what a retry does.
+ * ⛔ Not `FAILURE_HE.offline`: its «הנתונים לא נשמרו» is false for a login,
+ * where nothing was ever going to be saved. ⛔ And no second button: the submit
+ * button IS the retry (taste-skill § 4.5 — one CTA per intent), so the sentence
+ * says so instead.
+ */
+export const UNREACHABLE_HE =
+  'הבקשה לא הגיעה אלינו בגלל בעיה ברשת. הפרטים שהקלדת נשארו כאן — כשהחיבור יחזור, לחץ שוב על הכפתור.';
+
 export const FAILURE_TITLE_HE = Object.freeze({
   route: 'משהו נתקע',
   app: 'האפליקציה לא נטענה',

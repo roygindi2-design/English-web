@@ -153,6 +153,7 @@
   "components/ArenaStage.tsx": [],
   "components/ArenaSummary.test.ts": [],
   "components/ArenaSummary.tsx": [],
+  "components/AuthForm.test.ts": [],
   "components/AuthForm.tsx": [],
   "components/CardDeck.test.ts": [],
   "components/CardDeck.tsx": [],

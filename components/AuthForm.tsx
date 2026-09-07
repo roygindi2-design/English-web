@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import LatinField from '@/components/LatinField';
 import { ApiUnreachableError, apiPost } from '@/lib/api/client';
+import { UNREACHABLE_HE } from '@/lib/core/failure';
 import {
   type AuthMode,
   AUTH_MESSAGES_HE,
@@ -132,9 +133,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       if (result.code === 'email_taken') setShowLoginLink(true);
       setError(result.message ?? AUTH_MESSAGES_HE.unavailable);
     } catch (cause) {
-      setError(
-        cause instanceof ApiUnreachableError ? AUTH_MESSAGES_HE.unavailable : AUTH_MESSAGES_HE.unavailable
-      );
+      // T-274 · D-195: the request never left the device — say so, and say that
+      // the submit button is the retry. Anything the server answered is data
+      // (above); only a dropped network lands here.
+      setError(cause instanceof ApiUnreachableError ? UNREACHABLE_HE : AUTH_MESSAGES_HE.unavailable);
     } finally {
       setBusy(false);
     }

@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FAILURE_HE, FAILURE_TITLE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, FAILURE_TITLE_HE, RETRY_HE, UNREACHABLE_HE } from '@/lib/core/failure';
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -84,5 +84,30 @@ describe('the failure copy is one sentence, in one place (T-056 · constitution 
 
   it('gives the two boundary screens their own titles, ⛔ not one generic one', () => {
     expect(FAILURE_TITLE_HE.route).not.toBe(FAILURE_TITLE_HE.app);
+  });
+});
+
+/**
+ * T-274 · D-195 § 1 — the sentence for "the request never left the device" on
+ * an auth attempt. It must name the cause (the network) and say what a retry
+ * does; and it is ⛔ not `FAILURE_HE.offline`, whose second sentence («הנתונים
+ * לא נשמרו») is false for a login, where nothing was ever going to be saved.
+ */
+describe('UNREACHABLE_HE (T-274)', () => {
+  it('is Hebrew, ends in a full stop, ⛔ carries no English and no error code', () => {
+    expect(UNREACHABLE_HE).toMatch(/^[֐-׿]/);
+    expect(UNREACHABLE_HE).not.toMatch(/[A-Za-z0-9]/);
+    expect(UNREACHABLE_HE).toMatch(/\.$/);
+  });
+
+  it('names the network as the cause, and ⛔ is not the offline sentence reused', () => {
+    expect(UNREACHABLE_HE).toMatch(/רשת|חיבור/);
+    expect(UNREACHABLE_HE).not.toBe(FAILURE_HE.offline);
+    expect(UNREACHABLE_HE).not.toContain('לא נשמרו');
+  });
+
+  it('⛔ no screen restates it as a literal', () => {
+    const offenders = SCREENS.filter((file) => readFileSync(file, 'utf8').includes(UNREACHABLE_HE));
+    expect(offenders).toEqual([]);
   });
 });
