@@ -20,7 +20,26 @@
 # exists, so the fix travels with the command exactly like the unset does, and
 # ⛔ no agent has to remember it.
 #
-# ⇒ `./scripts/g <any git command>`
+# ⓒ ⛔ THE SECOND RUNTIME ⟦NEW 07/09⟧ — and it is the ⛔ EXACT INVERSE of ⓐ.
+#
+# The loop also runs as scheduled Routines on **Claude Code Remote** (cloud).
+# There, the proxy is ⛔ NOT the obstacle — **the proxy IS the credential.** The
+# runtime exports `GITHUB_TOKEN=proxy-injected` and `CLAUDE_CODE_REMOTE=true`,
+# git reaches GitHub **only** through `$HTTPS_PROXY`, and ⛔ no PAT, ⛔ no vault
+# and ⛔ no askpass helper exist or are needed. ⇒ The unset in ⓐ, the one line
+# that saved the loop on 06/09, is the one line that ⛔ KILLS it here.
+#
+# 🔬 Measured live, 07/09, in a CCR session, one second apart, same repo:
+#     ./scripts/g ls-remote --heads origin   ⇒ exit 128, "could not read Username"
+#     git         ls-remote --heads origin   ⇒ exit 0, three refs
+#     git push --dry-run origin HEAD:work/current ⇒ exit 0, "Everything up-to-date"
+#
+# ⇒ ⛔ The detection is ⛔ NOT a convenience and ⛔ NOT a fallback: a wrapper that
+# unsets the proxy in CCR reproduces `F-185` **letter for letter** from the
+# opposite direction — same error string, same silent three-day shape.
+#
+# ⇒ `./scripts/g <any git command>`  — correct in BOTH runtimes, and the agent
+# ⛔ does not have to know which one it woke up in.
 #
 # ⚠️ This does NOT remove the discipline, it moves it: an agent still has to call
 # the wrapper. What closes the hole is the RETRY RULE in every agent prompt —
@@ -29,6 +48,16 @@
 # into one second.
 set -euo pipefail
 
+# ⓒ CLAUDE CODE REMOTE — pass straight through to git.
+# ⛔ Do ⛔ NOT unset the proxy here, and ⛔ do ⛔ NOT override GIT_ASKPASS: the
+# runtime injects the credential itself, and both would break an authenticated
+# command that works untouched. Two independent markers, because either one
+# alone is a single point of silent failure.
+if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || [ "${GITHUB_TOKEN:-}" = "proxy-injected" ]; then
+  exec git "$@"
+fi
+
+# ⓐ + ⓑ THE LEGACY SANDBOX — unchanged, ⛔ byte for byte.
 # ⛔ NEVER a token on the command line. The helper reads the secret from a file
 # outside the repo and hands it to git on a pipe git opens itself.
 ASKPASS="${HOME}/.git-askpass.sh"

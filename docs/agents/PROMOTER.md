@@ -20,6 +20,22 @@ git command failed with a network / proxy error?
 ```
 
 ## STEP A — GIT ACCESS & AUTHENTICATION
+🚦 **⓪ WHICH RUNTIME ARE YOU IN? ⛔ ANSWER THIS BEFORE YOU RUN A SINGLE LINE BELOW.**  ⟦NEW 07/09 · Roy's explicit instruction⟧
+
+The loop runs in **two** runtimes now, and their git setup is the ⛔ **exact inverse** of each other. ⛔ Guessing wrong is not a slow tick — it is `F-185` again, with the same error string.
+
+⇒ **`CLAUDE_CODE_REMOTE=true` — a scheduled Routine on Claude Code Remote (cloud).**
+git is **already authenticated**: the runtime injects the credential through `$HTTPS_PROXY` and exports `GITHUB_TOKEN=proxy-injected`.
+⇒ ⛔ **Skip ⓐ below completely.** ⛔ There is ⛔ no `${GITHUB_PAT}`, ⛔ no vault, ⛔ no `.gh-pat` and ⛔ no askpass helper in this runtime — ⛔ and you ⛔ do not need one.
+⇒ **⛔ You still clone.** Run ⓑ **without** its `export https_proxy= …` prefix — that line and nothing else:
+```
+git clone https://github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "promoter-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
+```
+🔴 ⛔ **And ⛔ do ⛔ NOT work inside the checkout the session handed you.** **Measured 07/09:** that checkout is **shallow and single-branch** — `git rev-parse --is-shallow-repository` ⇒ `true`, and `git branch -r` ⇒ `origin/work/current` **alone**. ⇒ ⛔ no `origin/dev` and ⛔ no `origin/main`, which silently breaks `rebase origin/dev`, the `--ff-only` merge, `rev-list origin/dev..origin/work/current` in your report, and **check 10 of `loop:health`** (measured failing on exactly this). Your own clone is full: 4 refs, `is-shallow=false`, verified live.
+⚠️ ⛔ **Do ⛔ NOT unset the proxy, ⛔ do ⛔ NOT write an askpass helper, and ⛔ do ⛔ NOT "repair" git by hand here.** `scripts/g` detects this runtime and passes straight through to `git`. **Measured live 07/09, same repo, one second apart:** against the old wrapper `./scripts/g ls-remote` exited **128** («could not read Username») while bare `git ls-remote` exited **0** — ⛔ the inverse of the sandbox. An unset here reproduces `F-185` letter for letter, from the other direction.
+
+⇒ **Anything else — the legacy sandbox.** Run ⓐ and ⓑ below **exactly as written**. ⛔ Nothing in them changed.
+
 
 ```
 # ⓐ CREDENTIALS FIRST — ⛔ the token NEVER touches a URL, an argv, or a log line.
