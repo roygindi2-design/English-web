@@ -87,7 +87,7 @@
   export function releaseVelocity(samples: readonly PointerSample[], windowMs?: number): number   // px/s
   ```
 
-- [ ] **Step 1: Write the failing tests** — `lib/core/spring.test.ts`
+- [x] **Step 1: Write the failing tests** — `lib/core/spring.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -205,12 +205,12 @@ describe('releaseVelocity — px/s from the last samples (apple-design § 2 · �
 });
 ```
 
-- [ ] **Step 2: Run to confirm red**
+- [x] **Step 2: Run to confirm red**
 
 Run: `npx vitest run lib/core/spring.test.ts`
 Expected: FAIL — `Cannot find module './spring'`.
 
-- [ ] **Step 3: Implement** — `lib/core/spring.ts`
+- [x] **Step 3: Implement** — `lib/core/spring.ts`
 
 ```ts
 /**
@@ -361,12 +361,12 @@ export function releaseVelocity(
 }
 ```
 
-- [ ] **Step 4: Run to confirm green, and the purity gate**
+- [x] **Step 4: Run to confirm green, and the purity gate**
 
 Run: `npx vitest run lib/core/spring.test.ts && npm run check:core`
 Expected: all `it`s PASS · `/lib/core purity: OK`.
 
-- [ ] **Step 5: Commit (task 1 of 6)**
+- [x] **Step 5: Commit (task 1 of 6)**
 
 ```bash
 ./scripts/g add lib/core/spring.ts lib/core/spring.test.ts
