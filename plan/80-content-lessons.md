@@ -113,3 +113,6 @@
 * שיעור קבלה מתחת ל-70% בריצה בודדת → ממצא 🟡
 * שיעור קבלה יורד שלוש ריצות ברצף → ממצא 🟠, גם אם עדיין מעל 70%
 * יותר מ-2 פגמים בדגימת 80 הפריטים → **האצווה נדחית כולה**, ממצא 🔴
+
+| 11 | Batch generation attempt failed level/vocabulary gate checks | 1 | **Attempted to generate 10 B1/B2 words; all rejected for: distractor inclusion of headword, and vocabulary level drift.** The issue: without direct access to the current level-specific vocabulary bank, hand-curated sentences risk introducing out-of-level words (e.g., "rubber" for A1/A2 level, "thousands" for B1). Rule: **do not generate vocabulary without a word-selection tool that cross-checks against the current bank per level**. Alternative: load the Amirnet vocab brief and generate from Tier 1 (already approved words) instead of free-form NGSL selection. | C-0???  |
+
