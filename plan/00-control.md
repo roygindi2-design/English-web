@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0490 (DEV) — T-268 🟣 (`cards`). שער ל-CRITIC. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259).
-STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
+NEXT_AGENT: CRITIC                 # ▶️ C-0492 (DEV) — 📝 טיק תכנון, ⛔ לא בנייה: `T-259`+`T-243` (`cards`) — `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md`, `check:plan` 10/10. ⛔ אפס קוד מוצר נגע. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259 — שתי האחרונות עם תוכנית).
+STATE: PLANNING                    # ▶️ C-0492 (DEV) — קומיט אחד: התוכנית + רשמים. ⛔ אפס קוד מוצר, ⛔ אפס מיגרציה. הטיק הבא של DEV = 🔨 בנייה לפי התוכנית.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T13:50:39Z"
+LAST_HANDOFF_AT: "2026-09-07T14:59:40Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # 🔒 C-0492 — planning tick (T-259 + T-243)
-LOCK_AT: "2026-09-07T14:39:04Z"
+LOCK_HELD_BY: ""                  # שוחררה C-0492 (DEV) — טיק תכנון נסגר, קומיט אחד (התוכנית + רשמים).
+LOCK_AT: "2026-09-07T14:59:40Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -51,8 +51,8 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
+| C-0492 | DEV | CRITIC | 2026-09-07T14:59:40Z | 📝 **טיק תכנון — `T-259` + `T-243` (`cards`), קומיט אחד (התוכנית + רשמים), ⛔ אפס קוד מוצר.** `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` — 6 משימות, `Interfaces`, קוד בדיקה אמיתי, `check:plan` **10/10**. `[SKILL: apple-design]` נטען לפני התכנון (תג `T-243`, D-162). **נמדד, ⛔ לא הונח:** ⓐ «8px» ב-`T-259`ⓑ ישן — הגרירה 1:1 מ-T-157; ⓑ מקום ② של `T-243` ⛔ אינו שחרור ממחווה (`ArenaStage.tsx` אפס `onPointer`) ⇒ `F-193` ל-PM, התוכנית בונה ① ו-③; ⓒ `CardDeck.tsx:285` זורק את ה-promise של `grade` ⇒ ציון שלא נלקח ⛔ נראה מהכרטיס; ⓓ `check-motion.mjs:115` שובר `var()` עם פסיק בתוך `transition:` ⇒ ברירות המחדל על הסלקטור. **הצורה:** קפיץ ζ=1 · `response 0.3` כפונקציה סגורה ב-`lib/core/spring.ts`, מדוגם ל-`linear()` — ⛔ אפס שעון ברכיב; השתקעות נמדדה 355ms/429ms. § 0.22: `response 0.3` (⛔ 0.4) · תג הכרטיס במילוי אטום (אין חריץ אלפא בפלטה) · `opacity .6` במצב «נשלח» נשמר מ-D-090ⓑ. | `docs/superpowers/plans/2026-09-07-swipe-primary-and-spring-release.md` · `50-tasks` (T-259 · T-243 — ציטוט התוכנית, ⬜ נשאר) · `60-findings` (F-193) · `00-control` |
 | C-0491 | CONTENT | CONTENT | 2026-09-07T13:50:25Z | 🔴 **חסם מבני נמדד: `npm run build:ingest` קורס מעל 1,200 שורות מאושרות בבנק — `lib/core/spotCheck.ts` מחזיק שורת ISO 2859-1 אחת בלבד (501–1,200) וזורק בכוונה מעליה; הבנק עמד בדיוק על 1,200 לפני הטיק. K-005 ⌒a (קישור) מוצה במלואו (33/35 — 2 הנותרות נכשלות במבחן הכשירות בכוונה). 10 שורות ⌒b (`adjective`…`ankle`, A2) נכתבו ואומתו — `gateSense` האמיתי 10/10, `0` דחיות — אך נשמרו מקומית ⛔ ולא נדחפו: דחיפה הייתה משאירה `supabase/seed/*` בלתי-ניתנים-לרגנרציה. `03-for-roy` פריט 102 (חדש, DEV/הכרעה נדרשת) + לקח 36 ב-`80-content-lessons.md`. ⛔ `WORKSTREAM_TICKS` לא הועלה — אין קומיט תוכן. | 0 קומיטי תוכן — 1 קומיט תיעוד (`03-for-roy` · `25-content-commissions` · `80-content-lessons` · `amirnet-coverage-report`) |
-| C-0490 | DEV | CRITIC | 2026-09-07T12:51:42Z | 🔨 **בנייה · `cards`.** `T-268` (`[SKILL: ui-styling]` נטען לפני קוד): ⓑ **שוחזר חי לפני כל שינוי** — הסגירה-אייקון של T-087 (`absolute start-2 top-2`) ישבה על שורת הכותרת של `<CardDeck>` (אייקון x=303..347·y=60..104 מול המקרא x=140..355·y=60..80); `/dev/deck` ⛔ מעולם לא רינדר אותה. ⓐ+ⓑ: היציאה הכתובה «חזרה לכרטיסיות» היא חריץ `exit` ש-`<CardDeck>` מרנדר בשורה הראשונה של כותרתו (בתוך ה-calc, ⛔ שורה ב-section, ⛔ `data-primary-action`); `/dev/deck` מעביר אותו ⇒ 5 בדיקות חיות חדשות ב-`check:mobile`. § 0.22 שורה אחת: סטייה מ-«absolute על ה-section» — הפינה ההיא **היא** הכותרת. **נמדד אחרי:** יציאה 126×44 · מקרא y=108 (אפס חפיפה) · כרטיס 519px ב-snap 535px · דק 52..672 בתוך main. **נמדד:** `verify` **exit 0** · 218/218 · **3571/3571** · build ✅ · mobile **1391/1391** (‏+21 = 7 בדיקות × 3 רוחבים; לפני: 1370). `origin/dev..origin/work/current` = 4 לפני הדחיפה. | `components/CardDeck.tsx` · `components/StudyDeckScreen.tsx` · `app/dev/deck/page.tsx` · `scripts/verify-mobile.mjs` · `CardDeck.test.ts` · `StudyDeckScreen.test.ts` · `30-architecture` · `50-tasks` (T-268) · `docs/architecture-map.json` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
