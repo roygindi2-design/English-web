@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import CardDeck from '@/components/CardDeck';
 import CardSkeleton from '@/components/CardSkeleton';
-import CloseIcon from '@/components/CloseIcon';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
@@ -193,29 +192,25 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
 
   if (state.kind === 'cards') {
     return (
-      // T-087 · § 4.2ח ⓒ — פעולת סגירה מעוגנת למעלה.
+      // T-087 · § 4.2ח ⓒ → T-268 — the way out of the deck is WRITTEN, and it is the deck's.
       //
-      // שלוש הכרעות מדידות:
-      // 1. `absolute` על `<section>` `relative` ⛔ ⛔ תוספת שורה בתוך `<CardDeck>`:
-      //    `<CardDeck>` מחשב `h-[calc(100dvh-10rem)]` על chrome קבוע של `app/layout.tsx`
-      //    (CardDeck.tsx:130-148), וכל תוספת גובה כאן שוברת את החישוב הזה בשקט
-      //    ומפילה את T-086 (בדיקות ההארנס ב-`/dev/deck`).
-      // 2. `start-2` וְ⛔ ⛔ `right-2` — CSS logical, נפתר תחת RTL לפינה הימנית העליונה
-      //    (בעברית) ולפינה השמאלית העליונה בכיוון LTR.
-      // 3. `aria-label="סגור"` על הקישור — `<CloseIcon>` נושא `aria-hidden` (שם נגיש
-      //    כפול היה גורם לקורא-מסך להקריא «סגור סגור»). ⛔ ⛔ `data-primary-action`
-      //    על הסגירה — /study הוא FLOW_ROUTE וסלקטור `main [data-primary-action]`
-      //    דורש **סימון אחד בדיוק** (verify-mobile.mjs). הענף `cards` היום
-      //    ⛔ ⛔ נושא סימון כזה (הכרעת T-065), והסגירה ⛔ ⛔ הופכת אותו לסימון־ראשי.
-      <section className="relative">
-        <Link
-          href="/cards"
-          data-close
-          aria-label="סגור"
-          className="absolute start-2 top-2 z-10 flex min-h-touch min-w-touch items-center justify-center rounded-lg text-ink active:opacity-90"
-        >
-          <CloseIcon />
-        </Link>
+      // Measured C-0490 (07/09) on `/study?deck=level` at 375×780 with the queue mocked: the
+      // T-087 close — `<Link absolute start-2 top-2>` with `<CloseIcon>` alone — sat ON
+      // `<CardDeck>`'s own header row: icon box x=303..347 · y=60..104 against the notice
+      // «תרגול — לא משנה את מועד החזרה» at x=140..355 · y=60..80, its glyph straddling the
+      // header border at y=89. That is the broken card view Roy reported (T-268 ⓑ), and
+      // `/dev/deck` never rendered the close, so no harness run had ever seen it.
+      //
+      // Two constraints survive from T-087 and both are kept:
+      // 1. ⛔ No row inside this `<section>` before `<CardDeck>` — it computes
+      //    `h-[calc(100dvh-10rem)]` on the root layout's fixed chrome (CardDeck.tsx), and a
+      //    sibling row here pushes the grade buttons under the fold (T-086). ⇒ the exit is
+      //    a slot `<CardDeck>` renders INSIDE its own column, absorbed by its scroller.
+      // 2. ⛔ No `data-primary-action` on the exit — `/study` is a FLOW_ROUTE and
+      //    `verify-mobile.mjs` counts exactly one per screen (F-027).
+      // The wording is the product's own (D-187 §ג׳.1 · `LevelScan.tsx`): `חזרה ל<יעד>`,
+      // the constant this file already prints on the empty practice deck.
+      <section>
         {gradeError !== '' && (
           // Above the deck and ⛔ not a toast: the card the grade belongs to is still on
           // screen and still gradable, so the message has to stay until the retry lands.
@@ -226,7 +221,12 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
         {/* ⛔ No <ActionBar> in this state: it is `fixed` to the bottom edge and would sit
             directly on top of the two grade buttons — the only controls this screen exists
             for. The way forward here IS grading. */}
-        <CardDeck deck={deck} cards={state.cards} onGraded={onGraded} />
+        <CardDeck
+          deck={deck}
+          cards={state.cards}
+          onGraded={onGraded}
+          exit={{ href: '/cards', labelHe: BACK_TO_CARDS_HE }}
+        />
       </section>
     );
   }

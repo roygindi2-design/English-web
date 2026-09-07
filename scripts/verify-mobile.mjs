@@ -1792,6 +1792,45 @@ try {
           );
         }
 
+        // T-268 — the written way out, measured where it broke. Roy reported the level deck's
+        // card view as broken (06/09); measured C-0490 at 375×780 the T-087 icon close sat ON
+        // the deck header's notice text (icon x=303..347 · y=60..104 vs notice x=140..355 ·
+        // y=60..80). This fixture never rendered that exit, so no run ever saw it. Now the
+        // fixture passes the same `exit` slot production does, and four things are measured:
+        // it exists and reads «חזרה לכרטיסיות», it is a 44px target, it overlaps neither
+        // header text, and it ends above the snap viewport (⛔ over the first card).
+        const exit = await page.evaluate(() => {
+          const el = document.querySelector('[data-deck-exit]');
+          if (!el) return null;
+          const box = (node) => {
+            const r = node.getBoundingClientRect();
+            return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) };
+          };
+          const me = box(el);
+          const others = ['[data-practice-notice]', '[data-remaining]']
+            .map((sel) => document.querySelector(sel))
+            .filter(Boolean)
+            .map(box);
+          const scroller = document.querySelector('[data-deck-scroll]');
+          const intersects = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          return {
+            text: (el.textContent ?? '').trim(),
+            ...me,
+            collides: others.filter((o) => intersects(me, o)).length,
+            scrollerTop: scroller ? Math.round(scroller.getBoundingClientRect().top) : -1,
+            primary: el.hasAttribute('data-primary-action'),
+          };
+        });
+        check(exit !== null, `${at} T-268: the deck carries a written way out ([data-deck-exit])`, 'no [data-deck-exit] in the deck header');
+        if (exit) {
+          check(exit.text === 'חזרה לכרטיסיות', `${at} T-268: the exit is written, ⛔ not an icon`, `reads "${exit.text}"`);
+          check(exit.height >= MIN_TAP && exit.width >= MIN_TAP, `${at} T-268: the exit is a ${MIN_TAP}px target`, `${exit.width}×${exit.height}px`);
+          check(exit.collides === 0, `${at} T-268: the exit overlaps no header text`, `${exit.collides} header element(s) under the exit box`);
+          check(exit.bottom <= exit.scrollerTop, `${at} T-268: the exit ends above the snap viewport`, `exit bottom ${exit.bottom} vs viewport top ${exit.scrollerTop}`);
+          check(!exit.primary, `${at} T-268: the exit carries no data-primary-action`, 'it does — /study is a FLOW_ROUTE with exactly one');
+          report(`${at} T-268: exit ${exit.left}..${exit.right}×${exit.top}..${exit.bottom} (${exit.width}×${exit.height}px) · snap viewport from y=${exit.scrollerTop}`);
+        }
+
         // The grade buttons only exist after the answer is revealed — measuring the front of
         // the card would have printed green on a screen with no controls at all.
         await page.locator('[data-reveal]').first().click();

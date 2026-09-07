@@ -300,6 +300,54 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
       expect(CODE).toContain('initialGrades = []');
     });
   });
+
+  /**
+   * T-268 — the written way out lives INSIDE the deck's own flex column, ⛔ not above it.
+   *
+   * Measured live 2026-09-07 (C-0490) on `/study?deck=level` at 375×780 with the queue
+   * mocked: the T-087 close was `absolute start-2 top-2` on the section around this deck,
+   * and that corner is ⛔ not empty — it is this file's own `<header>` row (37px tall,
+   * y=52..89) holding «תרגול — לא משנה את מועד החזרה» (x=140..355). The 44×44 icon box
+   * (x=303..347 · y=60..104) sat ON the notice text and its glyph straddled the header
+   * border. That is the «broken card view» Roy reported (T-268 ⓑ). `/dev/deck` never
+   * rendered the close at all, so the harness never saw it — a fixture that differs from
+   * production is a hole, ⛔ not a test.
+   *
+   * ⇒ The exit is a slot this component renders as the first header row. Inside the
+   * `h-[calc(100dvh-10rem)]` column it is absorbed by the `min-h-0 flex-1` scroller, so
+   * the calc on the outer chrome (T-086) is untouched by construction. A row added by the
+   * screen ABOVE this component would push the deck under the fold instead.
+   */
+  describe('the written exit slot (T-268 · D-187 §ג׳.1)', () => {
+    it('accepts an optional `exit` — href and the Hebrew label, ⛔ no icon-only path', () => {
+      expect(CODE).toMatch(/exit\?: \{\s*readonly href: string;\s*readonly labelHe: string;?\s*\}/);
+    });
+
+    it('renders the exit in the scrolling header, above the snap viewport', () => {
+      const headerAt = CODE.indexOf('<header');
+      const exitAt = CODE.indexOf('data-deck-exit');
+      const scrollAt = CODE.indexOf('data-deck-scroll');
+      expect(exitAt, 'no `data-deck-exit` in the scrolling deck').toBeGreaterThan(-1);
+      expect(exitAt, 'the exit sits inside the `<header>` row').toBeGreaterThan(headerAt);
+      expect(exitAt, 'the exit must come BEFORE the snap viewport in the DOM').toBeLessThan(scrollAt);
+    });
+
+    it('the exit is a written link — 44px, `<Link>`, ⛔ no `data-primary-action`', () => {
+      const at = CODE.indexOf('data-deck-exit');
+      const near = CODE.slice(Math.max(0, at - 400), at + 400);
+      expect(near).toMatch(/<Link/);
+      expect(near).toContain('min-h-touch');
+      expect(near).toContain('{exit.labelHe}');
+      expect(near).not.toContain('data-primary-action');
+      expect(near).not.toContain('aria-label');
+    });
+
+    it('⛔ the exit slot never reaches the finish state — that screen has its own way out', () => {
+      const done = braceRegion(CODE, 'if (remaining.length === 0) {');
+      expect(done).not.toContain('data-deck-exit');
+      expect((CODE.match(/data-deck-exit/g) ?? []).length).toBe(1);
+    });
+  });
 });
 
 describe('the brace extractor itself is measured, so the guard above is not vacuous', () => {

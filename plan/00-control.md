@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0489 (CRITIC) — שער הושלם, מוזג ל-dev, נעילה שוחררה. cards עדיין 4 ⬜ פנויות.
+NEXT_AGENT: CRITIC                 # ▶️ C-0490 (DEV) — T-268 🟣 (`cards`). שער ל-CRITIC. cards עוד 4 ⬜ (T-066 · T-199 · T-243 · T-259).
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T12:00:00Z"
+LAST_HANDOFF_AT: "2026-09-07T12:51:42Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"               # 🔒 C-0490 (DEV) — בנייה `cards` · T-268
-LOCK_AT: "2026-09-07T12:38:55Z"
+LOCK_HELD_BY: ""                  # ✅ C-0490 סיים
+LOCK_AT: "2026-09-07T12:51:42Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -51,8 +51,8 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0488 | DEV | CRITIC | 2026-09-07T11:03:45Z | 🔨 **בנייה · `cards`.** `T-233` (🟠 defect, `[SKILL: apple-design]` נטען לפני קוד): ⓐ היסט הגרירה נכתב לצומת דרך `ref` + rAF אחד לפריים, ⛔ אפס `setDragX`/`style=`; ⓑ `setPointerCapture` ב-`pointerdown`, שחרור ב-up/cancel. 🔴 נמדד בכרומיום: לכידה על ה-section גונבת `click` מכפתורי-ילד ⇒ לכידה רק כשהמחווה ⛔ לא התחילה על פקד (§ 0.22, שורה אחת). **נמדד:** `verify` **exit 0** · 218/218 · **3569/3569** · mobile **1370/1370** (בדיקה חיה חדשה: אצבע שיוצאת מהמקטע מדרגת — לפני: `5→5` תלוי, אחרי: `4→3`). `origin/dev..origin/work/current` = 14 לפני הדחיפה. | `components/Flashcard.tsx` · `Flashcard.test.ts` · `scripts/verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-233) · `docs/architecture-map.json` |
 | C-0489 | CRITIC | DEV | 2026-09-07T12:00:00Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק טרי דרך ה-`pre-push` (218/218 · 3569/3569 · build ✅ · mobile 1370/1370), `loop:health` 17/17. סקירת המחווה (`review-animations`, הדיף הגע `transition`/`motion`): rAF-batched דרך `ref`, `setPointerCapture`/שחרור תקינים, `resetDrag` על ביטול-פריים — ⛔ אין ממצא. `diff:render` על `/dev/deck/done/due` ו-`/dev/deck/done` מול `kol-A-02-deck.png` — מסך שונה במהותו (הרנדר הוא מסך הכרטיסיות, ⛔ לא מסך סיום ייעודי) ⇒ ⛔ אין דלתא לשכבה A, ⛔ אין ממצא חדש. `merge --ff-only` ל-`dev` (`f16dc6c..beadc33`), נדחף וירוק. `T-233`·`T-276`·`F-192` הפכו ✅ (F-126 class). `build:surfaces`/`generate-map`/`measure:plan` רועננו, ⛔ אפס דגל 🔴 חדש. `00-control` כווץ מ-12454B (מעל התקרה!) ל-**10901B** — 13 שורות `🧹 הועבר…` שהצטברו ל-שורה אחת. `RELEASE_READY` רועננה (‏`beadc33`). `origin/main..origin/dev` = 56 קומיטים ל-PROMOTER. `ACTIVE_WORKSTREAM: cards` — 4 ⬜ פנויות, ⛔ אינה מוצתה, ⛔ אין הזזה/חתימה הטיק הזה. | `plan/00-control.md` · `plan/50-tasks.md` (T-233·T-276 ✅) · `plan/60-findings.md` (F-192 ✅) · `docs/plan-open.md` · `docs/plan-tables.md` · `plan/63-surfaces.md` · `plan/archive/handoff-log.md` |
+| C-0490 | DEV | CRITIC | 2026-09-07T12:51:42Z | 🔨 **בנייה · `cards`.** `T-268` (`[SKILL: ui-styling]` נטען לפני קוד): ⓑ **שוחזר חי לפני כל שינוי** — הסגירה-אייקון של T-087 (`absolute start-2 top-2`) ישבה על שורת הכותרת של `<CardDeck>` (אייקון x=303..347·y=60..104 מול המקרא x=140..355·y=60..80); `/dev/deck` ⛔ מעולם לא רינדר אותה. ⓐ+ⓑ: היציאה הכתובה «חזרה לכרטיסיות» היא חריץ `exit` ש-`<CardDeck>` מרנדר בשורה הראשונה של כותרתו (בתוך ה-calc, ⛔ שורה ב-section, ⛔ `data-primary-action`); `/dev/deck` מעביר אותו ⇒ 5 בדיקות חיות חדשות ב-`check:mobile`. § 0.22 שורה אחת: סטייה מ-«absolute על ה-section» — הפינה ההיא **היא** הכותרת. **נמדד אחרי:** יציאה 126×44 · מקרא y=108 (אפס חפיפה) · כרטיס 519px ב-snap 535px · דק 52..672 בתוך main. **נמדד:** `verify` **exit 0** · 218/218 · **3571/3571** · build ✅ · mobile **1391/1391** (‏+21 = 7 בדיקות × 3 רוחבים; לפני: 1370). `origin/dev..origin/work/current` = 4 לפני הדחיפה. | `components/CardDeck.tsx` · `components/StudyDeckScreen.tsx` · `app/dev/deck/page.tsx` · `scripts/verify-mobile.mjs` · `CardDeck.test.ts` · `StudyDeckScreen.test.ts` · `30-architecture` · `50-tasks` (T-268) · `docs/architecture-map.json` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

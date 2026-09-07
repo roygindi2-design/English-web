@@ -111,6 +111,11 @@ export default function DevDeckPage() {
       // (that is `<CardDeck>`'s contract), and the harness could then never measure the
       // advance; a stub that recorded anything would be state the real screen owns.
       onGraded={() => Promise.resolve()}
+      // T-268 — the SAME exit slot the real study screen passes, so the harness measures the
+      // header production renders. Until C-0490 this fixture rendered no exit at all, and
+      // the overlay that broke the real screen was invisible to every run (§ 5 lesson:
+      // a fixture that differs from production in any dimension is a hole, not a test).
+      exit={{ href: '/cards', labelHe: 'חזרה לכרטיסיות' }}
     />
   );
 }

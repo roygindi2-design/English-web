@@ -63,6 +63,7 @@ export default function CardDeck({
   cards,
   onGraded,
   initialGrades = [],
+  exit,
 }: {
   readonly deck: DeckName;
   readonly cards: readonly QueueCardInput[];
@@ -76,6 +77,19 @@ export default function CardDeck({
    * Product screens ⛔ never pass it; the default is the empty round the product starts in.
    */
   readonly initialGrades?: readonly CardGrade[];
+  /**
+   * T-268 — the written way out of the scrolling deck, rendered as the FIRST row of the
+   * deck's own header so it lives inside `h-[calc(100dvh-10rem)]` and is absorbed by the
+   * `min-h-0 flex-1` scroller. ⛔ Not a row in the screen above: measured C-0490 at
+   * 375×780, T-087's `absolute` icon close sat on this header's notice text (icon
+   * x=303..347 · y=60..104 vs notice x=140..355 · y=60..80) — the broken card view Roy
+   * reported — and a sibling row outside this component pushes the deck under the fold.
+   * Optional so the finish-state fixtures need not carry it; the finish state has its own.
+   */
+  readonly exit?: {
+    readonly href: string;
+    readonly labelHe: string;
+  };
 }) {
   const [graded, setGraded] = useState<readonly string[]>([]);
   // T-276 — the round's own grades, in order. `graded` holds WHICH cards left; this holds
@@ -203,15 +217,31 @@ export default function CardDeck({
       className="flex h-[calc(100dvh-10rem)] flex-col"
       data-card-deck={deck}
     >
-      <header className="flex flex-none items-center justify-between gap-3 border-b border-border-subtle bg-surface py-2 text-sm text-ink-muted">
-        {/* T-155 — התווית הקבועה חלה על **כל** חפיסה שדירוגה עובר ב-`/api/practice`,
-            ⛔ ולא על `unknown` בלבד: ההבטחה היא על מה שהכפתורים ⛔ אינם עושים, והיא חייבת
-            להיות נכונה על הכרטיס שהלומד מסתכל בו (D-033). */}
-        {deck === 'due' && <span>מנת היום</span>}
-        {deck !== 'due' && (
-          <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
+      <header className="flex flex-none flex-col gap-1 border-b border-border-subtle bg-surface py-2 text-sm text-ink-muted">
+        {/* T-268 — the written exit is the header's own first row, ⛔ never an overlay: the
+            top-start corner it used to float over IS this row. `-ms-2` folds the link's tap
+            padding back into the gutter so the label aligns with the notice below it.
+            ⛔ No `data-primary-action`: `/study` is a FLOW_ROUTE and `check:mobile` counts
+            exactly one per screen (F-027). */}
+        {exit !== undefined && (
+          <Link
+            href={exit.href}
+            data-deck-exit
+            className="-ms-2 flex min-h-touch min-w-touch items-center self-start rounded-lg px-2 text-base text-ink underline active:opacity-90"
+          >
+            {exit.labelHe}
+          </Link>
         )}
-        <span data-remaining={remaining.length}>נותרו {remaining.length}</span>
+        <div className="flex items-center justify-between gap-3">
+          {/* T-155 — התווית הקבועה חלה על **כל** חפיסה שדירוגה עובר ב-`/api/practice`,
+              ⛔ ולא על `unknown` בלבד: ההבטחה היא על מה שהכפתורים ⛔ אינם עושים, והיא חייבת
+              להיות נכונה על הכרטיס שהלומד מסתכל בו (D-033). */}
+          {deck === 'due' && <span>מנת היום</span>}
+          {deck !== 'due' && (
+            <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
+          )}
+          <span data-remaining={remaining.length}>נותרו {remaining.length}</span>
+        </div>
       </header>
 
       {/* The scroll container. `h-dvh` lives on the section above, so one card fills exactly

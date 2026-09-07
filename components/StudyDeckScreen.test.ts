@@ -308,58 +308,51 @@ function cardsBranch(src: string): string {
   return '';
 }
 
-describe('the study screen carries a top-anchored close (T-087 · § 4.2ח ⓒ)', () => {
+describe('the study screen carries a WRITTEN way out (T-087 · § 4.2ח ⓒ → T-268)', () => {
+  // T-268 (Roy, live product, 06/09) supersedes T-087's icon-only close. Measured C-0490
+  // at 375×780: the `absolute start-2 top-2` icon sat ON `<CardDeck>`'s own header row
+  // (notice x=140..355 · y=60..80 vs icon x=303..347 · y=60..104) — the «broken card
+  // view». The exit is now the deck's `exit` slot: written «חזרה לכרטיסיות» (D-187 §ג׳.1),
+  // rendered by `<CardDeck>` inside its own height calc, so nothing is added to the
+  // section around it (T-086 stays whole).
   it('קורא מקור עם ענף `cards` תקין', () => {
     expect(T087_SRC.length).toBeGreaterThan(1000);
     const branch = cardsBranch(T087_SRC);
     expect(branch, 'ענף `cards` לא נמצא').toContain('<CardDeck');
   });
 
-  it('הענף `cards` מכיל אלמנט עם `data-close` ו-`href="/cards"`', () => {
+  it('הענף `cards` מוסר ל-`<CardDeck>` יציאה כתובה — `exit` עם `href="/cards"` ו-`BACK_TO_CARDS_HE`', () => {
     const branch = cardsBranch(T087_SRC);
-    expect(branch, 'חסרה יציאה — `data-close` לא נמצא בענף `cards`').toContain('data-close');
-    expect(branch, 'היציאה חייבת לחזור לבורר `/cards` (§ 4.2ח ⓒ)').toMatch(/href="\/cards"/);
-  });
-
-  it('היציאה נושאת `<CloseIcon />` מיובא ⛔ ⛔ SVG שני', () => {
-    const branch = cardsBranch(T087_SRC);
-    expect(branch, 'האייקון חייב להיות `<CloseIcon />`').toContain('<CloseIcon');
-    expect(branch, 'SVG מוטבע נוסף ⛔ ⛔ מותר — השתמש ב-`<CloseIcon />`').not.toMatch(/<svg\b/);
-    expect(T087_SRC).toMatch(/from ['"]@\/components\/CloseIcon['"]/);
-  });
-
-  it('יעד המגע של היציאה ≥44px (`min-h-touch min-w-touch`)', () => {
-    const branch = cardsBranch(T087_SRC);
-    const at = branch.indexOf('data-close');
-    const near = branch.slice(Math.max(0, at - 300), at + 300);
-    expect(near, 'היעד חייב להיות ≥44px גובה (`min-h-touch`)').toContain('min-h-touch');
-    expect(near, 'היעד חייב להיות ≥44px רוחב (`min-w-touch`)').toContain('min-w-touch');
-  });
-
-  it('היציאה נושאת `aria-label="סגור"` — האייקון בלבד ⛔ ⛔ שם נגיש', () => {
-    const branch = cardsBranch(T087_SRC);
-    const at = branch.indexOf('data-close');
-    const near = branch.slice(Math.max(0, at - 300), at + 300);
-    expect(near, '`<CloseIcon>` נושא `aria-hidden` ⇒ הקישור עצמו חייב `aria-label`').toMatch(
-      /aria-label="סגור"/,
+    expect(branch, 'חסרה יציאה — `exit=` לא נמסר ל-`<CardDeck>`').toMatch(/<CardDeck[\s\S]*?exit=\{\{/);
+    expect(branch, 'היציאה חייבת לחזור לבורר `/cards` (§ 4.2ח ⓒ)').toMatch(/href: '\/cards'/);
+    expect(branch, 'הנוסח הוא `חזרה ל<יעד>` (D-187 §ג׳.1) — הקבוע הקיים, ⛔ מחרוזת חדשה').toMatch(
+      /labelHe: BACK_TO_CARDS_HE/,
     );
+  });
+
+  it('⛔ אין יותר סגירה-אייקון `absolute` על ה-`<section>` — היא ישבה על כותרת החפיסה (T-268 ⓑ)', () => {
+    const branch = cardsBranch(T087_SRC);
+    expect(branch).not.toContain('data-close');
+    expect(branch).not.toContain('<CloseIcon');
+    expect(branch).not.toMatch(/aria-label="סגור"/);
+    expect(branch).not.toMatch(/\babsolute\b/);
+    expect(T087_SRC).not.toMatch(/from ['"]@\/components\/CloseIcon['"]/);
+  });
+
+  it('⛔ שום שורה נוספת בתוך ה-`<section>` לפני `<CardDeck>` — חישוב הגובה של T-086', () => {
+    // Only the grade-error status line may precede the deck, and it is conditional.
+    const branch = cardsBranch(T087_SRC);
+    const inner = branch.slice(branch.indexOf('<section'), branch.indexOf('<CardDeck'));
+    const rows = inner.match(/<(p|div|nav|header|a|Link|button)\b/g) ?? [];
+    expect(rows, `לפני <CardDeck> מותרת רק שורת השגיאה המותנית, נמצא: ${rows.join(' ')}`).toEqual(['<p']);
   });
 
   it('⛔ ⛔ `data-primary-action` על היציאה — עלול לשבור F-027 של `/study`', () => {
     const branch = cardsBranch(T087_SRC);
-    const at = branch.indexOf('data-close');
-    const near = branch.slice(Math.max(0, at - 300), at + 300);
-    expect(near, '⛔ ⛔ `data-primary-action` על הסגירה').not.toMatch(/data-primary-action/);
-  });
-
-  it('⛔ ⛔ `data-close` בענפים אחרים (`error`/`empty`/`session_expired`/`schema_missing`/`loading`)', () => {
-    const branch = cardsBranch(T087_SRC);
-    const total = (T087_SRC.match(/data-close/g) || []).length;
-    const inBranch = (branch.match(/data-close/g) || []).length;
-    expect(total, `\`data-close\` מופיע ${total} פעמים בסה"כ ובלוק \`cards\` ${inBranch}; חייב להיות שווה`).toBe(inBranch);
+    expect(branch, '⛔ ⛔ `data-primary-action` בענף `cards`').not.toMatch(/data-primary-action/);
   });
 
   it('⛔ ⛔ SVG מוטבע נוסף בכל הקובץ (חוקה § 6)', () => {
-    expect(T087_SRC.match(/<svg\b/g) ?? [], 'SVG מוטבע חדש ⛔ ⛔ בקובץ הזה — השתמש ב-`<CloseIcon>`').toHaveLength(0);
+    expect(T087_SRC.match(/<svg\b/g) ?? [], 'SVG מוטבע חדש ⛔ ⛔ בקובץ הזה').toHaveLength(0);
   });
 });

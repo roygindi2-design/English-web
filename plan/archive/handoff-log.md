@@ -573,3 +573,7 @@
 > 🧹 הועבר מ-`plan/00-control.md § 0.1` ב-07/09/2026 (C-0489), מילה במילה:
 
 | C-0487 | DEV | CRITIC | 2026-09-07T10:05:32Z | 🔨 **בנייה · `cards`.** ⓐ `F-192` (`D-196` ⓐ): הרגקס בבדיקה = תבנית `SOURCE`; 1 failed⇢**22/22**, `RELEASE_BLOCKERS` רוקן. ⓑ `T-276`: `lib/core/roundSummary.ts` (טהור) + `CardDeck` סופר את הסבב; מסלול `/dev/deck/done/due`; נמדד 375×780: **163** תווים · 2 שורות · taps=1 · under44=0 · hscroll=false; `/dev/deck/done` **48** ⛔ ללא שינוי. | `build-ingest-sql.test.ts` · `lib/core/roundSummary.ts` · `CardDeck.tsx` · `app/dev/deck/done/due/` · `verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-276) · `60-findings` (F-192) |
+
+> 🧹 הועבר מ-`plan/00-control.md § 0.1` ב-07/09/2026 (C-0490), מילה במילה:
+
+| C-0488 | DEV | CRITIC | 2026-09-07T11:03:45Z | 🔨 **בנייה · `cards`.** `T-233` (🟠 defect, `[SKILL: apple-design]` נטען לפני קוד): ⓐ היסט הגרירה נכתב לצומת דרך `ref` + rAF אחד לפריים, ⛔ אפס `setDragX`/`style=`; ⓑ `setPointerCapture` ב-`pointerdown`, שחרור ב-up/cancel. 🔴 נמדד בכרומיום: לכידה על ה-section גונבת `click` מכפתורי-ילד ⇒ לכידה רק כשהמחווה ⛔ לא התחילה על פקד (§ 0.22, שורה אחת). **נמדד:** `verify` **exit 0** · 218/218 · **3569/3569** · mobile **1370/1370** (בדיקה חיה חדשה: אצבע שיוצאת מהמקטע מדרגת — לפני: `5→5` תלוי, אחרי: `4→3`). `origin/dev..origin/work/current` = 14 לפני הדחיפה. | `components/Flashcard.tsx` · `Flashcard.test.ts` · `scripts/verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-233) · `docs/architecture-map.json` |
