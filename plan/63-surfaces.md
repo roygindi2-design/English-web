@@ -7,7 +7,7 @@
 > ⇒ **מסך בלי שורה כאן = מסך שאינו קיים ב-`app/`**, ⛔ ולא מסך שמישהו שכח לתאר.
 > ⚠️ **מודד חיווט, ⛔ לא איכות.** מסך יכול לעבור כאן במלואו ולא ללמד דבר.
 
-**18 מסכי מוצר · 25 מסכי פיקסצ׳ר (`/dev/*`)**
+**18 מסכי מוצר · 26 מסכי פיקסצ׳ר (`/dev/*`)**
 > ⛔ **⛔ אין חותמת תאריך בקובץ הזה, ובכוונה:** תאריך ריצה היה משנה את הפלט בכל יום
 > ⇒ דיף בכל טיק ⇒ «הקובץ הזה תמיד משתנה» ⇒ איש ⛔ אינו קורא אותו. הפלט הוא **פונקציה
 > של הקוד בלבד**, ולכן דיף כאן פירושו **המשטחים זזו**, ⛔ ולא שהשעון התקדם.
@@ -46,8 +46,9 @@
 | `/dev/card` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | `/dev/card/typed` · `/dev/deck` · `/dev/deck/skeleton` | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/swap` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/typed` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
-| `/dev/deck/done` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/result` · `/dev/lesson/done` | `/cards` | ✅ | `components/CardDeck` |
-| `/dev/deck` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/home` · `/dev/arcade` · `/dev/deck/done` … +4 | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck/done/due` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | ⛔ — | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck/done` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/result` · `/dev/deck/done/due` · `/dev/lesson/done` … +1 | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/home` · `/dev/arcade` · `/dev/deck/done/due` … +5 | `/cards` | ✅ | `components/CardDeck` |
 | `/dev/deck/skeleton` | ⛔ — | `components/StudyDeckScreen.tsx` | ⛔ — | ⛔ | `components/CardSkeleton` |
 | `/dev/identity` | `לא הכתובת שלי — להירשם מחדש` | ⛔ — | ⛔ — | ⛔ | `components/RegisteredAddress` |
 | `/dev/lesson/done` | ⛔ — | ⛔ — | ⛔ — | ✅ | `components/LessonScreen` |
