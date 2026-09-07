@@ -396,7 +396,7 @@ Expected: all `it`s PASS · `/lib/core purity: OK`.
   export function swipeTransform(pose: SwipePose): string   // '' at rest
   ```
 
-- [ ] **Step 1: Write the failing tests** — append to `lib/core/swipeGrade.test.ts`
+- [x] **Step 1: Write the failing tests** — append to `lib/core/swipeGrade.test.ts`
 
 ```ts
 import {
@@ -446,12 +446,12 @@ describe('T-259 — the exit pose is the render (render_video_A.py:364, :424-425
 });
 ```
 
-- [ ] **Step 2: Run to confirm red**
+- [x] **Step 2: Run to confirm red**
 
 Run: `npx vitest run lib/core/swipeGrade.test.ts`
 Expected: FAIL — `swipeExitX is not a function` (and `baseX` ignored ⇒ `110` expected, `30` received).
 
-- [ ] **Step 3: Implement** — edit `lib/core/swipeGrade.ts`
+- [x] **Step 3: Implement** — edit `lib/core/swipeGrade.ts`
 
 Replace the `dragOffset` signature and body (`:63-77`):
 ```ts
@@ -513,12 +513,12 @@ export function swipeTransform(pose: SwipePose): string {
 }
 ```
 
-- [ ] **Step 4: Run to confirm green**
+- [x] **Step 4: Run to confirm green**
 
 Run: `npx vitest run lib/core/swipeGrade.test.ts components/Flashcard.test.ts && npm run check:core`
 Expected: PASS (the `MUTATION` test at `Flashcard.test.ts:265` still green — no `Math.min/max/sign` in `dragOffset`).
 
-- [ ] **Step 5: Commit (task 2 of 6)**
+- [x] **Step 5: Commit (task 2 of 6)**
 
 ```bash
 ./scripts/g add lib/core/swipeGrade.ts lib/core/swipeGrade.test.ts

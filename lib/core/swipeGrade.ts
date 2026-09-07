@@ -52,12 +52,16 @@ export function dragOffset(input: {
   readonly startX: number;
   readonly currentX: number;
   readonly reducedMotion: boolean;
+  /** T-259 · `apple-design` § 3 — the card's presentation offset at `pointerdown`, when the
+   *  finger grabs it MID-FLIGHT. Default 0: a grab at rest is the old behaviour exactly. */
+  readonly baseX?: number;
 }): DragOffset {
   // ⛔ `prefers-reduced-motion` נבדק **ראשון** ומחזיר **אפס תנועה**, ⛔ ולא מספר קטן
   // יותר: חוקה שכבה A דורשת שהתנועה **תיפסק**. המחווה עצמה עדיין מוכרעת ב-`resolveSwipe`,
   // ⇒ לומד שכיבה תנועה עדיין מדרג בהחלקה.
   if (input.reducedMotion) return { x: 0, settleMs: 0 };
-  const delta = input.currentX - input.startX;
+  const base = input.baseX ?? 0;
+  const delta = input.currentX - input.startX + base;
   // אותו כלל של `resolveSwipe`: מספר שאינו סופי ⛔ אינו «אפס» ו⛔ אינו «הרבה».
   if (!Number.isFinite(delta)) return { x: 0, settleMs: 0 };
   // ⛔ `settleMs: 0` **בזמן הגרירה** — 1:1 הוא מניפולציה ישירה ⛔ ולא אנימציה, וכל
@@ -95,4 +99,42 @@ export function resolveSwipe(input: SwipeInput): CardGrade | null {
   if (Math.atan2(Math.abs(dy), Math.abs(dx)) > MAX_ANGLE_RAD) return null;
 
   return dx > 0 ? 'good' : 'again';
+}
+
+/**
+ * T-259 · 36 § 14.4 — the exit pose is the RENDER, quoted, ⛔ not designed:
+ *   `render_video_A.py:424`  dx  = p * (LW + 120)        ⇒ the card leaves the viewport by 120px
+ *   `render_video_A.py:425`  rot = -p * 15               ⇒ −15° at full travel, rightward
+ *   `render_video_A.py:364`  y   = CARD_Y + abs(dx) * .06 ⇒ it drops 6% of its travel
+ * A leftward swipe is the mirror. `p` is the fraction of the travel, so the pose during the
+ * DRAG is the same function of `x` — the finger draws the same curve the spring finishes.
+ */
+export const SWIPE_EXIT_OVERSHOOT_PX = 120;
+export const SWIPE_EXIT_ROTATE_DEG = 15;
+export const SWIPE_EXIT_DROP_RATIO = 0.06;
+
+export function swipeExitX(grade: CardGrade, viewportWidth: number): number {
+  const travel = viewportWidth + SWIPE_EXIT_OVERSHOOT_PX;
+  return grade === 'good' ? travel : -travel;
+}
+
+export interface SwipePose {
+  readonly x: number;
+  readonly y: number;
+  readonly rotateDeg: number;
+}
+
+const REST_POSE: SwipePose = { x: 0, y: 0, rotateDeg: 0 };
+
+export function swipePose(x: number, viewportWidth: number): SwipePose {
+  if (!Number.isFinite(x) || !Number.isFinite(viewportWidth) || x === 0) return REST_POSE;
+  const travel = viewportWidth + SWIPE_EXIT_OVERSHOOT_PX;
+  if (!(travel > 0)) return REST_POSE;
+  const p = x / travel;
+  return { x, y: Math.abs(x) * SWIPE_EXIT_DROP_RATIO, rotateDeg: -SWIPE_EXIT_ROTATE_DEG * p };
+}
+
+export function swipeTransform(pose: SwipePose): string {
+  if (pose.x === 0 && pose.y === 0 && pose.rotateDeg === 0) return '';
+  return `translateX(${pose.x}px) translateY(${pose.y}px) rotate(${pose.rotateDeg}deg)`;
 }

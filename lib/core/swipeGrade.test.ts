@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   dragOffset,
   resolveSwipe,
+  swipeExitX,
+  swipePose,
+  swipeTransform,
   SWIPE_EDGE_PX,
+  SWIPE_EXIT_OVERSHOOT_PX,
+  SWIPE_EXIT_ROTATE_DEG,
   SWIPE_FEEDBACK_MAX_MS,
   SWIPE_MAX_ANGLE_DEG,
   SWIPE_MIN_DISTANCE_PX,
@@ -195,5 +200,42 @@ describe('dragOffset — מעקב 1:1 אחרי האצבע', () => {
     const css = readFileSync('app/globals.css', 'utf8');
     expect(css).toMatch(/\[data-flashcard\]\[data-dragging\]\s*\{\s*transition:\s*none;/);
     expect(css).toMatch(/\[data-flashcard\]\s*\{\s*transition:\s*transform\s+200ms/);
+  });
+});
+
+describe('T-259 · T-243 — a grab mid-flight starts from the presentation value (apple-design § 3)', () => {
+  it('baseX is added to the finger delta', () => {
+    expect(dragOffset({ startX: 200, currentX: 230, reducedMotion: false, baseX: 80 }).x).toBe(110);
+  });
+  it('baseX defaults to 0 — every existing caller is unchanged', () => {
+    expect(dragOffset({ startX: 200, currentX: 230, reducedMotion: false }).x).toBe(30);
+  });
+  it('reduced motion still returns zero, baseX or not (שכבה A)', () => {
+    expect(dragOffset({ startX: 200, currentX: 230, reducedMotion: true, baseX: 80 }).x).toBe(0);
+  });
+});
+
+describe('T-259 — the exit pose is the render (render_video_A.py:364, :424-425)', () => {
+  it('«ידעתי» exits to the right by viewport + 120, «לא ידעתי» mirrors it', () => {
+    expect(swipeExitX('good', 375)).toBe(375 + SWIPE_EXIT_OVERSHOOT_PX);
+    expect(swipeExitX('again', 375)).toBe(-(375 + SWIPE_EXIT_OVERSHOOT_PX));
+  });
+  it('at rest the pose is zero and the transform is the empty string', () => {
+    expect(swipePose(0, 375)).toEqual({ x: 0, y: 0, rotateDeg: 0 });
+    expect(swipeTransform(swipePose(0, 375))).toBe('');
+  });
+  it('at the exit the card has turned −15° and dropped 6% of its travel', () => {
+    const pose = swipePose(swipeExitX('good', 375), 375);
+    expect(pose.rotateDeg).toBeCloseTo(-SWIPE_EXIT_ROTATE_DEG, 6);
+    expect(pose.y).toBeCloseTo(495 * 0.06, 6);
+  });
+  it('a leftward swipe turns the other way — the mirror of the render, ⛔ not a second rule', () => {
+    expect(swipePose(swipeExitX('again', 375), 375).rotateDeg).toBeCloseTo(SWIPE_EXIT_ROTATE_DEG, 6);
+  });
+  it('the transform names translateX, translateY and rotate in that order', () => {
+    expect(swipeTransform({ x: 100, y: 6, rotateDeg: -3 })).toBe('translateX(100px) translateY(6px) rotate(-3deg)');
+  });
+  it('a non-finite offset is treated as rest', () => {
+    expect(swipePose(Number.NaN, 375)).toEqual({ x: 0, y: 0, rotateDeg: 0 });
   });
 });
