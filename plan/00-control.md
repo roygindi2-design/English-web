@@ -1,20 +1,20 @@
 <!--
-NEXT_AGENT: DEV                   # ▶️ C-0486 (PM) — הוכרעו `F-192` (⇒`D-196`, חלופה ⓐ, **משחרר את חסם המיזוג**) ו-`F-191` (⇒`D-197` ⇒ `T-275`). נפתחה `T-276` ב-`cards`. **DEV: `F-192` לפני כל דבר אחר.** RELEASE_BLOCKERS: F-192.
+NEXT_AGENT: CRITIC                # ▶️ C-0487 (DEV) — `F-192` 🟣 (חסם המיזוג רוקן) · `T-276` 🟣. שני קומיטים. CRITIC: הדיף `origin/dev..origin/work/current`.
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: []   # ▶️ C-0486 (PM) — טיק תכנון. DEV בוחר: `F-192` ⇒ ואז `T-275` / `T-276`.
+ACTIVE_TASK_ID: []   # ▶️ C-0487 (DEV) — ריק. `T-275` (‏`loop`) ⛔ אינה כשירה תחת `cards`.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T09:20:00Z"
+LAST_HANDOFF_AT: "2026-09-07T10:05:32Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"               # 🔒 C-0487 (DEV) — F-192 ⇒ T-276
+LOCK_HELD_BY: ""                  # ✅ C-0487 סיים
 LOCK_AT: "2026-09-07T09:49:08Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   cards:   9 / 120           # § 13-3 · **מוצתה · הוזזה→`arena` ב-C-0322 · ⛔ אינה חתומה.** נותרו `F-143` (חוסם `T-199`ⓐ) ו-`F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+#   cards:  10 / 120           # § 13-3 · **מוצתה · הוזזה→`arena` ב-C-0322 · ⛔ אינה חתומה.** נותרו `F-143` (חוסם `T-199`ⓐ) ו-`F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   arena:  19 / 120           # § 13-4 · **הוזזה→`studies` ב-C-0367 (QA), חסומה-חיצונית, ⛔ אינה חתומה.** ⬜ אחת (`T-220`) חסומה ב-F-164/PM. פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
@@ -33,7 +33,7 @@ IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** 
 # (SEALS · nav ו-story — הוצאו ל-`plan/archive/control-log.md` ב-C-0318, אותו דפוס בדיוק שבו story הוצא ב-C-0316 כשהמוקד זז. ⛔ לא נמחקו.)
 # (SEALS · arena — הוצאו ל-`plan/archive/control-log.md` ב-C-0368, אותו דפוס שבו nav · story · cards הוצאו ב-C-0318 ו-C-0367. **arena ⛔ אינה חתומה** — שלוש החותמות ⛔ לא ניתנות למדידה מהלופ, `03-for-roy` פריט 77. ⛔ לא נמחקו.)
 # (SEALS · cards — הוצאו ל-`plan/archive/control-log.md` ב-C-0367, אותו דפוס שבו nav ו-story הוצאו ב-C-0318. **cards ⛔ אינה חתומה** — הוזזה חסומה-חיצונית · F-142/F-143 · ראה `plan/61-deferred.md`.)
-RELEASE_BLOCKERS: ""  # ▶️ רוקן C-0487 (DEV) — `F-192` נבנה 🟣 (`D-196` ⓐ: הרגקס ב-`build-ingest-sql.test.ts` = תבנית `SOURCE`; נמדד 22/22 ירוק). ההיסטוריה המלאה של השורה ⇒ git.
+RELEASE_BLOCKERS: ""  # ▶️ רוקן C-0487 (DEV) — `F-192` 🟣 (‏`D-196` ⓐ, 22/22).
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `0 23 * * *` UTC). רוי גובר תמיד.
 LAST_PROMOTED_AT: "2026-09-06T14:10Z"  # ⚠️ **באישור מפורש של רוי בצ'אט, ⛔ לא ביוזמת הלופ.** `7a5f61b..807ae72` ff-only. קודם לכן 23/08 בידי רוי (PR #2).
 PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפורש). ⛔ Credit budget is no longer a reason to delay (D-086).
@@ -65,6 +65,7 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
 | C-0486 | PM | DEV | 2026-09-07T09:20:00Z | 📐 **טיק תכנון · `cards`.** ⚖️ **שתי הכרעות, שתיהן על ממצא 🔴 חי:** `D-196` מכריע את `F-192` בחלופה ⓐ (‏הרגקס בבדיקה מרפה לתבנית ש-`SOURCE` עצמו נבנה בה) ⇒ **חסם המיזוג משוחרר לביצוע**; `D-197` מכריע את שורש `F-191` — **`SKIP_VERIFY=1` מפסיק להיות עקיפה מוחלטת**, תת-קבוצת שלמות-הרגיסטרים רצה תמיד ⇒ `T-275`. **נמדד:** `verify` exit 1 · 3541/3542 · 93.32ש׳; `plan-hygiene.test.ts` 13 בדיקות · 538ms ⇒ **<1% מעלות השער**; `loop:health` **15/17** (9 FAIL · 16 warn). 🃏 **פרוסה:** `T-276` — מסך סיום החפיסה אומר מה זז בסבב, **מ-0 ל-2 אמירות**; נמדד חי: `/dev/deck/done` **127 תווים** · `/dev/lesson/done` 118 · `/dev/story/done` **399** (המודל כבר קיים בשליש מהמוצר). 🧹 `00-control` **13019B ⇒ מתחת לתקרה** (F-182). ⚠️ **שתי דחיפות ב-`SKIP_VERIFY=1`** — `verify` אדום על `F-192`, ⛔ לא על עבודתי. | `plan/40-decisions.md` (D-196·D-197·D-198) · `plan/50-tasks.md` (T-275·T-276) · `plan/60-findings.md` (תאי סטטוס F-191·F-192) · `plan/00-control.md` · `plan/archive/` |
+| C-0487 | DEV | CRITIC | 2026-09-07T10:05:32Z | 🔨 **בנייה · `cards`.** ⓐ `F-192` (`D-196` ⓐ): הרגקס בבדיקה = תבנית `SOURCE`; 1 failed⇢**22/22**, `RELEASE_BLOCKERS` רוקן. ⓑ `T-276`: `lib/core/roundSummary.ts` (טהור) + `CardDeck` סופר את הסבב; מסלול `/dev/deck/done/due`; נמדד 375×780: **163** תווים · 2 שורות · taps=1 · under44=0 · hscroll=false; `/dev/deck/done` **48** ⛔ ללא שינוי. | `build-ingest-sql.test.ts` · `lib/core/roundSummary.ts` · `CardDeck.tsx` · `app/dev/deck/done/due/` · `verify-mobile.mjs` · `30-architecture` · `50-tasks` (T-276) · `60-findings` (F-192) |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

@@ -1220,3 +1220,42 @@ describe('journey walks cross screens instead of measuring one at a time (T-227)
     expect(CODE).toContain("await import('../lib/core/journeyDrift.ts')");
   });
 });
+
+/**
+ * T-276 · D-198 — the finish state with a round summary is a SECOND branch of the same
+ * screen, and `/dev/deck/done` (`cards={[]}`, no grades) can never reach it: the summary is
+ * state that only grading produces. Same reasoning as `/dev/deck` vs `/dev/deck/done`
+ * (`phase` is a prop; the block is unreachable from the route above it). Without this
+ * fixture the two new sentences would ⛔ never be measured at 320/375/414 — T-276 ⓔ.
+ */
+describe('the harness measures the finish state WITH a round summary (T-276 · D-198)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const fixture = readFileSync('app/dev/deck/done/due/page.tsx', 'utf8');
+
+  it('visits /dev/deck/done/due right after /dev/deck/done', () => {
+    const routes = code.slice(code.indexOf('const ROUTES = ['), code.indexOf('const MIN_TAP'));
+    expect(routes).toContain("'/dev/deck/done/due'");
+    expect(routes.indexOf("'/dev/deck/done/due'")).toBeGreaterThan(routes.indexOf("'/dev/deck/done'"));
+  });
+
+  it('seeds a finished DUE round with both grades, so both sentences render (the widest text)', () => {
+    expect(fixture).toContain('CardDeck');
+    expect(fixture).toContain('deck="due"');
+    expect(fixture).toContain('cards={[]}');
+    expect(fixture).toMatch(/initialGrades=\{\[[^\]]*'good'[^\]]*\]\}/);
+    expect(fixture).toMatch(/initialGrades=\{\[[^\]]*'again'[^\]]*\]\}/);
+  });
+
+  it('touches no network and no session', () => {
+    expect(fixture).not.toMatch(/\bfetch\(/);
+    expect(fixture).not.toContain('apiGet');
+    expect(fixture).not.toContain('supabase');
+  });
+
+  it('runs the T-055 finish-state checks on BOTH done routes, and adds the summary to the second', () => {
+    expect(code).toContain("DONE_ROUTES.has(route)");
+    expect(code).toContain("const DONE_ROUTES = new Set(['/dev/deck/done', '/dev/deck/done/due'])");
+    expect(code).toContain("'[data-round-summary]'");
+    expect(code).toContain("route === '/dev/deck/done/due'");
+  });
+});

@@ -73,6 +73,7 @@
   "app/dev/card/page.tsx": [],
   "app/dev/card/swap/page.tsx": [],
   "app/dev/card/typed/page.tsx": [],
+  "app/dev/deck/done/due/page.tsx": [],
   "app/dev/deck/done/page.tsx": [],
   "app/dev/deck/layout.tsx": [],
   "app/dev/deck/page.tsx": [],
@@ -509,6 +510,8 @@
   "lib/core/rateLimit.ts": [],
   "lib/core/reviewRequest.test.ts": [],
   "lib/core/reviewRequest.ts": [],
+  "lib/core/roundSummary.test.ts": [],
+  "lib/core/roundSummary.ts": [],
   "lib/core/scheduler.test.ts": [],
   "lib/core/scheduler.ts": [],
   "lib/core/scoringSeed.test.ts": [

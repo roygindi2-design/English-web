@@ -1764,3 +1764,13 @@ harness, never shipped).
 
 **Deliberately ⛔ not done here:** `action="/api/auth/{mode}"` plus form-urlencoded parsing in the route, which would make the form work with no JS at all. It changes the API contract (`docs/api-contract.md`) and the route's response shape (redirect vs JSON) — a PM row, as `F-190` itself routes it.
 
+
+## The deck finish screen counts its own round — `lib/core/roundSummary.ts` ⟦C-0487 (DEV) · T-276 · D-198⟧
+
+**Measured before the change (this clone, `next dev`, 375×780, `[data-deck-done]` text only):** `/dev/deck/done` painted **48** visible characters and **0** sentences about the round (the 127 in `D-198` counts the page chrome too; same screen, different denominator). `CardDeck` already received every grade through `onGraded(wordId, grade)` (`CardGrade = 'again' | 'good'`) and stored only *which* cards left (`graded`), never *what* was marked.
+
+**The shape, and why it is split in two:** the counting and the Hebrew live in `lib/core/roundSummary.ts` (pure: `tallyGrades`, `describeRound(deck, tally)`), the component only holds a second state array `grades` and renders whatever the helper returns inside `[data-round-summary]`. The split is what makes the three fences *unit-testable* instead of source-guarded: `D-033` (a practice deck gets exactly one line and ⛔ no word from {מועד, חזרה, יחזרו, נדחו, בקרוב}), `§ 4.2יג-ב ⓒ` (⛔ never «יודע» — the copy quotes the two button labels, «ידעתי»/«לא ידעתי», i.e. what was *marked*), `D-198 ⓓ` (zero grades ⇒ `[]` ⇒ the screen is byte-for-byte what it was). `components/CardDeck.test.ts` then proves only the wiring: the count sits after the `catch` (a rejected grade is ⛔ not counted), the helper is called with `deck`, and the component mints no sentence of its own.
+
+**The due-deck sentence is phrased on what `scheduleReview` guarantees, ⛔ not on what it usually does:** «נקבע מחדש» (always true — `next_review_at` is rewritten on every grade) and «יחזור/יחזרו אליך בקרוב» for `again` (true at `FIRST_INTERVAL_DAYS`=1 *and* under triage=today). «נדחו» was deliberately ⛔ not written: under triage a `good` card also returns today, and a sentence true only outside triage is the arena's 23/08 class.
+
+**Fixture seam, ⛔ not a product input:** `initialGrades?: readonly CardGrade[]` (default `[]`) exists so `/dev/deck/done/due` can render the branch with a seeded finished round; `check:mobile` now asserts 2 summary lines on that route, all inside the viewport, and **0** on `/dev/deck/done`. Measured after: `/dev/deck/done/due` **163** characters, 2 lines (bottoms 194/270px at 320, 170/246 at 375/414), `taps=1`, `under44=0`, `hscroll=false` at all three widths; `/dev/deck/done` unchanged at **48**.

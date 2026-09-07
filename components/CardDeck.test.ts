@@ -22,8 +22,8 @@ import { describe, expect, it } from 'vitest';
  *     single line that blocks scrolling
  *   ✔ `Flashcard` is rendered with a `key`, because the reveal state inside it is per-card
  *     and a keyless sibling list hands card n+1 to the learner already revealed
- *   ✔ the completion state is a heading and a link, and ⛔ nothing more (T-055 is blocked on
- *     F-032 — the finish SCREEN is the PM's to design, not this component's to invent)
+ *   ✔ the completion state is a heading, a link, and (since T-276 · D-198) the round summary
+ *     the pure helper produced — ⛔ nothing this component invents on its own
  *
  * ⛔ What it cannot prove, named so nobody mistakes green here for coverage: that the scroll
  * actually lands on the next card in a real engine, and that the two grade buttons clear
@@ -253,6 +253,52 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
   it('uses semantic colour tokens only (the palette ratchet, per file)', () => {
     expect(CODE).not.toMatch(/\b(?:bg|text|border)-slate-\d{2,3}\b/);
     expect(CODE).not.toMatch(/\bbg-brand(?![-\w])/);
+  });
+
+  /**
+   * T-276 · D-198 — the finish state says what moved in the round. The WORDING is measured
+   * in `lib/core/roundSummary.test.ts` (one test per fence: D-033 · § 4.2יג-ב ⓒ · D-198 ⓓ);
+   * what this file can prove is the WIRING — that the deck counts the grades it already
+   * passes, hands them to the pure helper with the deck's own name, and renders the result
+   * inside the finish state and nowhere else.
+   */
+  describe('the round summary (T-276 · D-198)', () => {
+    it('counts each grade that reached the server — beside `graded`, from the same `value`', () => {
+      const gradeFn = braceRegion(CODE, 'const grade = useCallback(');
+      expect(gradeFn).toContain('setGrades((previous) => [...previous, value])');
+    });
+
+    it('⛔ never counts a grade the server rejected — the count sits after the catch, with setGraded', () => {
+      const gradeFn = braceRegion(CODE, 'const grade = useCallback(');
+      const rejected = gradeFn.indexOf('catch {');
+      const counted = gradeFn.indexOf('setGrades(');
+      expect(rejected).toBeGreaterThan(-1);
+      expect(counted).toBeGreaterThan(rejected);
+    });
+
+    it('asks the pure helper with the deck name — D-033 is decided by `deck`, ⛔ not re-derived here', () => {
+      expect(CODE).toContain("from '@/lib/core/roundSummary'");
+      const done = braceRegion(CODE, 'if (remaining.length === 0) {');
+      expect(done).toContain('describeRound(deck, tallyGrades(grades))');
+    });
+
+    it('renders the lines inside the finish state, marked for the harness', () => {
+      const done = braceRegion(CODE, 'if (remaining.length === 0) {');
+      expect(done).toContain('data-round-summary');
+      expect(CODE.match(/data-round-summary/g)?.length, 'only the finish state carries it').toBe(1);
+    });
+
+    it('⛔ mints no sentence of its own — every visible string about the round comes from the helper', () => {
+      const done = braceRegion(CODE, 'if (remaining.length === 0) {');
+      for (const minted of ['יחזרו', 'נקבע מחדש', 'דירגת', 'ידעתי']) {
+        expect(done, `«${minted}» belongs to lib/core/roundSummary.ts`).not.toContain(minted);
+      }
+    });
+
+    it('the fixture seam is optional and defaults to an empty round', () => {
+      expect(CODE).toMatch(/initialGrades\?: readonly CardGrade\[\]/);
+      expect(CODE).toContain('initialGrades = []');
+    });
   });
 });
 

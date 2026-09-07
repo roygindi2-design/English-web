@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
 import { buildCard, type CardGrade } from '@/lib/core/flashcard';
+import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
 
 /**
  * The scrolling deck — T-065 part א׳ (§ 4.2ו), plan `2026-08-13-study-queue.md` task 5.
@@ -61,13 +62,25 @@ export default function CardDeck({
   deck,
   cards,
   onGraded,
+  initialGrades = [],
 }: {
   readonly deck: DeckName;
   readonly cards: readonly QueueCardInput[];
   /** Rejects ⇒ the grade did NOT reach the server ⇒ the card stays. See `grade` below. */
   readonly onGraded: (wordId: string, grade: CardGrade) => Promise<void>;
+  /**
+   * T-276 ⓔ — a fixture seam, ⛔ not a product input. The round summary below is state
+   * that only grading produces, and `/dev/deck/done` cannot click through a stub grade
+   * (the harness would then depend on grading succeeding against nothing). Seeding the
+   * finished round is what makes the summary's geometry measurable at 320/375/414 at all.
+   * Product screens ⛔ never pass it; the default is the empty round the product starts in.
+   */
+  readonly initialGrades?: readonly CardGrade[];
 }) {
   const [graded, setGraded] = useState<readonly string[]>([]);
+  // T-276 — the round's own grades, in order. `graded` holds WHICH cards left; this holds
+  // WHAT the learner marked on them, and it is the only source the finish state counts.
+  const [grades, setGrades] = useState<readonly CardGrade[]>(initialGrades);
   const [pending, setPending] = useState<string | null>(null);
   const [scrollTo, setScrollTo] = useState<string | null>(null);
   const nodes = useRef(new Map<string, HTMLElement>());
@@ -106,12 +119,16 @@ export default function CardDeck({
       const index = cards.findIndex((card) => card.word_id === wordId);
       const next = cards.slice(index + 1).find((card) => !graded.includes(card.word_id));
       setGraded((previous) => [...previous, wordId]);
+      setGrades((previous) => [...previous, value]);
       setScrollTo(next?.word_id ?? null);
     },
     [cards, graded, onGraded, pending],
   );
 
   if (remaining.length === 0) {
+    // T-276 · D-198 — the two (or one, or zero) sentences about the round. The wording and
+    // its three fences live in `lib/core/roundSummary.ts`; `deck` decides D-033 there.
+    const summary = describeRound(deck, tallyGrades(grades));
     return (
       // The finish state — T-055, § 4.2ו («בסוף המחזור מסך סיום» · «יוצאים — מסך הסיום,
       // ומשם חזרה לבורר» · «המילה האחרונה — מסך סיום ולא מסך לבן»).
@@ -125,8 +142,10 @@ export default function CardDeck({
       //    sentence is minted: T-055 says «טקסט קיים בלבד», so this reuses the header's own.
       //
       // 2. **One way out, and it goes to the בורר.** § 4.2ו q6 fixes the exit as `/cards`.
-      //    ⛔ No count, no streak, no score, no readiness (`לא בתחולה` · T-032) — the finish
-      //    state is a closure, and a number here would be a claim no decision makes.
+      //    ⛔ No streak, no score, no readiness (`לא בתחולה` · T-032). ⚠️ «no count» was
+      //    REVISED 07/09 (D-198 · T-276): the round's own grade counts are now a decision,
+      //    and they come from `lib/core/roundSummary.ts` — still ⛔ no number that no
+      //    decision makes.
       <section className="flex flex-col gap-4" data-card-deck={deck} data-deck-done>
         {/* T-155 — `level` נושא את **אותה** הבטחה של `unknown`, כי הוא כותב את אותן שתי
             עמודות בדיוק (D-032 · D-033). ⛔ לא «מנת היום»: זו חפיסה שלישית.
@@ -139,6 +158,19 @@ export default function CardDeck({
           <p className="text-base text-ink-muted">תרגול — לא משנה את מועד החזרה</p>
         )}
         <h1 className="text-3xl font-bold leading-tight text-ink">סיימת</h1>
+        {/* T-276 · D-198 — what moved in the round. Zero grades ⇒ `summary` is empty and the
+            screen is exactly what it was (D-198 ⓓ). Body text, ⛔ no glow, ⛔ no number the
+            helper did not produce. `text-base` and ⛔ not smaller: § א9 floor, and this is the
+            line a learner reads last. */}
+        {summary.length > 0 && (
+          <div className="flex flex-col gap-1" data-round-summary>
+            {summary.map((line) => (
+              <p key={line} className="text-base text-ink-muted">
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
         <Link
           href="/cards"
           data-primary-action="true"

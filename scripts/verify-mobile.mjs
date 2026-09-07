@@ -62,6 +62,11 @@ const ROUTES = [
   // ungraded cards, so the finish branch is unreachable there; this fixture renders it
   // directly. Measured and ⛔ not asserted: "not blank" is a claim about pixels.
   '/dev/deck/done',
+  // T-276 · D-198 — the finish state WITH a round summary. `/dev/deck/done` has zero grades
+  // and therefore (D-198 ⓓ) no summary; the two new sentences are state only grading makes,
+  // so this fixture seeds a finished `due` round. Same reasoning as `/dev/deck` vs
+  // `/dev/deck/done`: a branch unreachable from the route above it gets its own route.
+  '/dev/deck/done/due',
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
@@ -1831,13 +1836,18 @@ try {
       // T-055 — the finish state. Three properties, and «מסך סיום ולא מסך לבן» is only true
       // when all three hold: the node is there, it actually paints something, and the one
       // way out is a real touch target rather than a link the thumb cannot land on.
-      if (route === '/dev/deck/done') {
+      // T-276 · D-198 — the same three properties hold on the finish state WITH a round
+      // summary; that route then also proves the summary is on screen, ⛔ not merely in the DOM.
+      const DONE_ROUTES = new Set(['/dev/deck/done', '/dev/deck/done/due']);
+      if (DONE_ROUTES.has(route)) {
         const done = await page.evaluate(() => {
           const node = document.querySelector('[data-deck-done]');
           if (!node) return { present: false };
           const box = node.getBoundingClientRect();
           const exits = [...node.querySelectorAll('[data-primary-action="true"]')];
           const exit = exits[0]?.getBoundingClientRect();
+          const summary = node.querySelector('[data-round-summary]');
+          const lines = summary ? [...summary.querySelectorAll('p')] : [];
           return {
             present: true,
             // Rounded: sub-pixel layout is not a defect (same rule as the deck block above).
@@ -1848,9 +1858,37 @@ try {
             exits: exits.length,
             exitWidth: exit ? Math.round(exit.width) : 0,
             exitHeight: exit ? Math.round(exit.height) : 0,
+            // T-276 — the summary: how many sentences, and whether every one of them is
+            // painted inside the viewport (a line pushed below the fold is a line unread).
+            summaryLines: lines.length,
+            summaryVisible: lines.every((p) => {
+              const r = p.getBoundingClientRect();
+              return r.height > 0 && r.bottom <= window.innerHeight && r.left >= 0 && r.right <= window.innerWidth;
+            }),
           };
         });
         check(done.present, `${at} the finish state is in the DOM`, 'no [data-deck-done]');
+        if (done.present && route === '/dev/deck/done/due') {
+          // D-198: two sentences on `due`, and both on screen above the way out.
+          check(
+            done.summaryLines === 2,
+            `${at} the due finish state says two things about the round`,
+            `found ${done.summaryLines} [data-round-summary] lines`,
+          );
+          check(
+            done.summaryVisible,
+            `${at} every round-summary line is painted inside the viewport`,
+            'a summary line sits outside the viewport or has no height',
+          );
+        }
+        if (done.present && route === '/dev/deck/done') {
+          // D-198 ⓓ: zero grades ⇒ ⛔ no summary — the screen is exactly what it was.
+          check(
+            done.summaryLines === 0,
+            `${at} a round with zero grades prints no summary`,
+            `found ${done.summaryLines} [data-round-summary] lines`,
+          );
+        }
         if (done.present) {
           check(
             done.height > 0 && done.text > 0,
