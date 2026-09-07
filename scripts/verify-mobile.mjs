@@ -988,6 +988,9 @@ try {
             const own = el.getBoundingClientRect();
             // A control with no box of its own is hidden, not undersized.
             if (own.width <= 0 || own.height <= 0) return false;
+            // T-259ⓕ — `sr-only` (Tailwind): 1×1px, clipped to nothing. Hidden, not undersized;
+            // its 44px is measured when FOCUSED, in the T-259 blocks, ⛔ never here.
+            if (getComputedStyle(el).clip === 'rect(0px, 0px, 0px, 0px)') return false;
             // T-183 · `36 § 3`. The ONLY exemption from the 44px floor, and it is
             // spent, not given: `el.matches(exempt)` is true only for a
             // `data-story-word` that is INSIDE a `data-story-body`, and every
@@ -1623,7 +1626,9 @@ try {
           // rendered revealed with no reveal button.
           await page.locator('[data-reveal]').click();
           const aFront = await page.locator('[data-card-front]').innerText();
-          await page.locator('[data-grade="good"]').click();
+          // T-259ⓕ · שכבה א׳ — the button is sr-only; grade it the way a keyboard user does.
+          await page.focus('[data-grade="good"]');
+          await page.keyboard.press('Enter');
 
           const bFront = await page.locator('[data-card-front]').innerText();
           check(bFront.trim() !== aFront.trim(), `${at} grading advances to the next card`, `still on "${bFront}"`);
@@ -1684,6 +1689,39 @@ try {
               `label was "${label}"`,
             );
           }
+          // T-259ⓕ · שכבה א׳ — the two buttons are the ACCESSIBLE channel: in the DOM,
+          // invisible at rest (sr-only), and ≥44px the moment a keyboard user focuses one.
+          const rest = await page.evaluate(() =>
+            [...document.querySelectorAll('[data-grade]')].map((el) => el.getBoundingClientRect().height),
+          );
+          check(
+            rest.length === 2 && rest.every((h) => h <= 1),
+            `${at} T-259ⓕ: both grade buttons are sr-only at rest`,
+            `heights ${JSON.stringify(rest)}`,
+          );
+          for (const grade of ['good', 'again']) {
+            await page.focus(`[data-grade="${grade}"]`);
+            const box = await page.locator(`[data-grade="${grade}"]`).boundingBox();
+            check(
+              box !== null && box.height >= MIN_TAP && box.width >= MIN_TAP,
+              `${at} T-259ⓕ: focused "${grade}" is a ≥${MIN_TAP}px target`,
+              `box ${JSON.stringify(box)}`,
+            );
+          }
+          const hint = (await page.locator('[data-swipe-hint]').allInnerTexts()).join('');
+          check(
+            hint.includes('ידעתי') && hint.includes('לא ידעתי') && hint.includes('ימינה'),
+            `${at} T-259ⓕ: the swipe instruction names both directions in Hebrew`,
+            `hint was "${hint}"`,
+          );
+          const badges = await page.evaluate(() =>
+            [...document.querySelectorAll('[data-swipe-badge]')].map((el) => getComputedStyle(el).opacity),
+          );
+          check(
+            badges.length === 2 && badges.every((o) => o === '0'),
+            `${at} T-259ⓑ: both badges exist and are invisible at rest`,
+            `opacities ${JSON.stringify(badges)}`,
+          );
         } else {
           // The typed direction is auto-graded, so the ONLY way the learner learns
           // anything is the verdict on screen. Before this ran, submitting left a
@@ -1834,41 +1872,33 @@ try {
         // The grade buttons only exist after the answer is revealed — measuring the front of
         // the card would have printed green on a screen with no controls at all.
         await page.locator('[data-reveal]').first().click();
-        const grades = await page.evaluate(
-          ([minTap, minGap]) => {
-            const buttons = [...document.querySelectorAll('[data-grade]')].slice(0, 2);
-            if (buttons.length < 2) return { count: buttons.length };
-            const boxes = buttons
-              .map((el) => el.getBoundingClientRect())
-              .sort((a, b) => a.left - b.left);
-            return {
-              count: buttons.length,
-              small: boxes.filter((r) => r.width < minTap || r.height < minTap).length,
-              // The pair sits side by side in a two-column grid, so the gap that a thumb
-              // aims into is the HORIZONTAL one — the flow-screen scan measures vertical
-              // neighbours and would have had nothing to say about this pair.
-              gap: Math.round(boxes[1].left - boxes[0].right),
-              floors: { minTap, minGap },
-            };
-          },
-          [MIN_TAP, MIN_GAP],
+        // T-259ⓕ · שכבה א׳ — the same claim as `/dev/card`, on the REAL deck: the two buttons
+        // are the ACCESSIBLE channel — in the DOM, sr-only at rest, ≥44px the moment a keyboard
+        // user focuses one. (Until 07/09 this block measured them as the visible pair with a
+        // ≥8px gap; the swipe is the visible channel now — T-259ⓕ.)
+        const gradeRest = await page.evaluate(() =>
+          [...document.querySelectorAll('[data-grade]')].slice(0, 2).map((el) => el.getBoundingClientRect().height),
         );
         check(
-          grades.count === 2,
+          gradeRest.length === 2,
           `${at} both grade buttons are on the revealed card`,
-          `found ${grades.count} [data-grade] controls`,
+          `found ${gradeRest.length} [data-grade] controls`,
         );
-        if (grades.count === 2) {
+        if (gradeRest.length === 2) {
           check(
-            grades.small === 0,
-            `${at} both grade buttons >= ${MIN_TAP}px`,
-            `${grades.small} of the two are below the floor`,
+            gradeRest.every((h) => h <= 1),
+            `${at} T-259ⓕ: both grade buttons are sr-only at rest`,
+            `heights ${JSON.stringify(gradeRest)}`,
           );
-          check(
-            grades.gap >= MIN_GAP,
-            `${at} grade buttons are separated by >= ${MIN_GAP}px`,
-            `they sit ${grades.gap}px apart — one thumb, two answers`,
-          );
+          for (const grade of ['good', 'again']) {
+            await page.focus(`[data-grade="${grade}"]`);
+            const box = await page.locator(`[data-grade="${grade}"]`).first().boundingBox();
+            check(
+              box !== null && box.height >= MIN_TAP && box.width >= MIN_TAP,
+              `${at} T-259ⓕ: focused "${grade}" is a ≥${MIN_TAP}px target`,
+              `box ${JSON.stringify(box)}`,
+            );
+          }
         }
       }
 
@@ -2200,6 +2230,53 @@ try {
           `${at} edge-zone swipe ⛔ does not grade (D-042ⓐ)`,
           `remaining moved ${beforeEdge} → ${await remainingNow()}`,
         );
+
+        // ⚠️ Placed AFTER ⓒ on purpose (measured C-0494): ⓒ's bare `[data-reveal]` click reveals
+        // the first UNREVEALED card; had this block revealed it first, ⓒ would have revealed
+        // the next card and scrolled the deck to it, and the T-233 drive below landed off-screen.
+        // T-259ⓑ — the look-ahead: 100px to the right lights the «ידעתי» badge; back
+        // under the 64px threshold puts it out; lifting there grades NOTHING (D-042ⓑ).
+        {
+          const previewCard = page.locator('[data-flashcard]').first();
+          if ((await previewCard.locator('[data-reveal]').count()) > 0) {
+            await previewCard.locator('[data-reveal]').click();
+          }
+          // ⚠️ Measured C-0494: ⓒ's drag from the page margin across the card SELECTED its text,
+          // and a mousedown on selected text starts a native drag ⇒ `pointercancel`, one
+          // `pointermove` delivered, the gesture dead. A learner has nothing selected; the
+          // harness clears its own artefact before it measures.
+          await page.evaluate(() => {
+            window.getSelection()?.removeAllRanges();
+            window.scrollTo(0, 0);
+          });
+          const beforePreview = await remainingNow();
+          const pbox = await previewCard.boundingBox();
+          const px0 = Math.round(width / 2) - 50;
+          const py0 = Math.round(pbox.y + pbox.height / 2);
+          await page.mouse.move(px0, py0);
+          await page.mouse.down();
+          await page.mouse.move(px0 + 100, py0, { steps: 8 });
+          await page.waitForFunction(
+            () => getComputedStyle(document.querySelector('[data-swipe-badge="good"]')).opacity === '1',
+            null,
+            { timeout: 1000 },
+          ).catch(() => null);
+          const lit = await page.evaluate(() => ({
+            preview: document.querySelector('[data-flashcard]').getAttribute('data-swipe-preview'),
+            badge: getComputedStyle(document.querySelector('[data-swipe-badge="good"]')).opacity,
+          }));
+          check(lit.preview === 'good' && lit.badge === '1', `${at} T-259ⓑ: 100px right lights «ידעתי» on the card`, JSON.stringify(lit));
+          await page.mouse.move(px0 + 10, py0, { steps: 4 });
+          await page.waitForFunction(
+            () => document.querySelector('[data-flashcard]').getAttribute('data-swipe-preview') === null,
+            null,
+            { timeout: 1000 },
+          ).catch(() => null);
+          const out = await page.evaluate(() => document.querySelector('[data-flashcard]').getAttribute('data-swipe-preview'));
+          check(out === null, `${at} T-259ⓑ: back under the threshold, the preview is gone`, `preview="${out}"`);
+          await page.mouse.up();
+          check((await remainingNow()) === beforePreview, `${at} T-259ⓑ: lifting under 64px grades nothing`, `remaining ${beforePreview} → ${await remainingNow()}`);
+        }
 
         // ⓓ T-233 · `apple-design` § 2 — `setPointerCapture`: a finger that LEAVES the
         // section before it lifts still grades. Measured before the fix: without capture

@@ -546,7 +546,7 @@ Expected: PASS (the `MUTATION` test at `Flashcard.test.ts:265` still green — n
   - `[data-swipe-hint]` — the Hebrew instruction line, rendered exactly when `swipeActive`.
   - `button[data-grade]` ×2 — unchanged handlers, now `sr-only focus:not-sr-only`.
 
-- [ ] **Step 1: Write the failing tests** — edit `components/Flashcard.test.ts`
+- [x] **Step 1: Write the failing tests** — edit `components/Flashcard.test.ts`
 
 Replace the `it` at `:275-280` (`'D-042 — שני הכפתורים נשארים הערוץ הקנוני'`) with:
 ```ts
@@ -637,12 +637,12 @@ Append inside the same `describe` (`'the card face is the button …'`, before i
   });
 ```
 
-- [ ] **Step 2: Run to confirm red**
+- [x] **Step 2: Run to confirm red**
 
 Run: `npx vitest run components/Flashcard.test.ts`
 Expected: FAIL on the seven `T-259` cases (`sr-only` missing, `data-swipe-hint` missing, `data-swipe-badge` missing, `data-swipe-preview` missing, `flex-1` missing, `canonical channel` still present).
 
-- [ ] **Step 3: Implement the preview write** — `components/Flashcard.tsx:69-104`
+- [x] **Step 3: Implement the preview write** — `components/Flashcard.tsx:69-104`
 
 Replace `pendingX`/`writeDrag`/`queueDrag` with a pending **pose**:
 ```ts
@@ -703,7 +703,7 @@ And `onPointerMove` (`:220-226`):
       }}
 ```
 
-- [ ] **Step 4: Implement the layout (ⓓ) and the badges** — `components/Flashcard.tsx:266-345`
+- [x] **Step 4: Implement the layout (ⓓ) and the badges** — `components/Flashcard.tsx:266-345`
 
 Front face (`<button … data-reveal>`): className becomes
 `"rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center"`
@@ -744,7 +744,7 @@ Revealed face (`<div className="rounded-2xl …">`): className becomes
           </span>
 ```
 
-- [ ] **Step 5: Implement the channel (ⓕ · ⓘⓘ)** — `components/Flashcard.tsx:423-443`
+- [x] **Step 5: Implement the channel (ⓕ · ⓘⓘ)** — `components/Flashcard.tsx:423-443`
 
 Replace the `{swipeActive ? (<div className="grid grid-cols-2 gap-3">…) : null}` block with:
 ```tsx
@@ -789,7 +789,7 @@ Replace the `{swipeActive ? (<div className="grid grid-cols-2 gap-3">…) : null
         ) : null}
 ```
 
-- [ ] **Step 6: Close contradiction ⓘ in writing** — `components/CardDeck.tsx:22-43` and `plan/40-decisions.md:1993`
+- [x] **Step 6: Close contradiction ⓘ in writing** — `components/CardDeck.tsx:22-43` and `plan/40-decisions.md:1993`
 
 In `CardDeck.tsx`, replace the sentence beginning `What survives, and is not negotiable:` through `— ⛔ never a second path with its own logic.` with:
 ```
@@ -805,12 +805,12 @@ In `plan/40-decisions.md`, directly after line `1993` (`> [D-150] …`), add:
 > ✏️ **תוספת 07/09 (DEV, `C-XXXX` · `T-259ⓕ` · הוראה מפורשת של רוי 06/09):** ההחלקה היא ערוץ הסימון **הראשי**; שני הכפתורים נשארים ב-DOM כערוץ הנגיש שווה-הערך (`sr-only` עד פוקוס — שכבה א׳). **סדרם** («ידעתי» ראשונה ⇒ מימין) **וכיוון ההחלקה** (ימין = «ידעתי») ⛔ לא זזו — ההכרעה הזאת עומדת כלשונה; מה שהשתנה הוא **הנראוּת** בלבד. ⛔ אין כאן הכרעת PM חדשה: המקור הכתוב הוא שורת `T-259` ברשם, והשורה הזאת רק מצביעה אליה.
 ```
 
-- [ ] **Step 7: Run the unit gate**
+- [x] **Step 7: Run the unit gate**
 
 Run: `npx vitest run components/Flashcard.test.ts components/CardDeck.test.ts && npm run typecheck`
 Expected: PASS · `tsc` clean.
 
-- [ ] **Step 8: Measure the channel in a real engine** — `scripts/verify-mobile.mjs`
+- [x] **Step 8: Measure the channel in a real engine** — `scripts/verify-mobile.mjs`
 
 ⓐ At `:1677-1683` (`/dev/card`, the `for (const grade of ['again', 'good'])` loop), keep the label check and add after the loop:
 ```js
@@ -901,14 +901,14 @@ Expected: PASS · `tsc` clean.
         }
 ```
 
-- [ ] **Step 9: Run the mobile walk on the three routes**
+- [x] **Step 9: Run the mobile walk on the three routes**
 
 Run: `npm run build && npm run check:mobile`
 Expected: every new `T-259` line prints `ok` at 320 · 375 · 414; zero horizontal scroll; clean console. ⚠️ If a focused button measures under 44px, the fix is `focus:block` on the button — ⛔ not a lower floor.
 
-- [ ] **Step 10: Look at the screen (STEP 6.5)** — `(npx next dev -p 3000 &) && sleep 25`, drive `http://127.0.0.1:3000/dev/card` at 375×780: record heading · text length · tappable count · under-44px · horizontal scroll · console errors · word y-position as a fraction of the card height (render: 0.34) · hint at the card's bottom edge. Write the numbers into the tick report.
+- [x] **Step 10: Look at the screen (STEP 6.5)** — `(npx next dev -p 3000 &) && sleep 25`, drive `http://127.0.0.1:3000/dev/card` at 375×780: record heading · text length · tappable count · under-44px · horizontal scroll · console errors · word y-position as a fraction of the card height (render: 0.34) · hint at the card's bottom edge. Write the numbers into the tick report.
 
-- [ ] **Step 11: Commit (task 3 of 6)**
+- [x] **Step 11: Commit (task 3 of 6)**
 
 ```bash
 npm run generate-map

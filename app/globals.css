@@ -210,6 +210,21 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   [data-arena-cast-phase='window'] { animation: none; }
 }
 
+/* T-259ⓑ · render_video_A.py:366-372 — the badge on the card face. Lit by the look-ahead
+   during the drag (`data-swipe-preview`, written by `Flashcard.tsx` from `resolveSwipe`) and
+   by the sent grade (`data-swipe`). Opacity only — `check:motion` rule ⓐ; 200ms is a timed
+   emphasis inside 35 § ב6's 150–300ms, ⛔ not a gesture release. */
+[data-swipe-badge] {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+[data-flashcard][data-swipe-preview='good'] [data-swipe-badge='good'],
+[data-flashcard][data-swipe='good'] [data-swipe-badge='good'],
+[data-flashcard][data-swipe-preview='again'] [data-swipe-badge='again'],
+[data-flashcard][data-swipe='again'] [data-swipe-badge='again'] {
+  opacity: 1;
+}
+
 /* ⚠️ **המיקום כאן הוא חוק, ⛔ ולא סדר.** `components/ArenaStage.test.ts` לוקח את
    בלוק הבמה כ-`CSS.slice(indexOf('/* arena-stage'))` — כלומר **עד סוף הקובץ**.
    ⇒ כלל שנוסף בסוף `globals.css` נמדד כאילו הוא חלק מכללי הבמה, והלולאה הפועמת

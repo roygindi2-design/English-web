@@ -25,9 +25,13 @@ import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
  *    file and found it does not apply: this container scrolls **vertically**
  *    (`snap-y snap-mandatory`), and the gesture is **horizontal**. The two axes are not the
  *    same axis, so the blanket ban was wider than the evidence that justified it.
- *    What survives, and is not negotiable: the two ≥44px buttons with a Hebrew label and a
- *    glyph stay **the canonical channel**, and the swipe calls **exactly the same handler**
- *    — ⛔ never a second path with its own logic. Two caveats come from measurement:
+ *    ⚠️ **REVISED 07/09 (T-259ⓕ · Roy's explicit instruction, 06/09).** The swipe is the
+ *    PRIMARY grade channel; the two ≥44px buttons stay in the DOM as the accessible
+ *    equivalent (שכבה א׳ — `sr-only` until focused) and the swipe calls **exactly the
+ *    same handler** — ⛔ never a second path with its own logic. The sentence that stood
+ *    here until 07/09 named the buttons as the channel and is deliberately ⛔ not quoted:
+ *    a dead instruction in a live file is one some agent will still obey (`36 § 14.4`).
+ *    Two caveats come from measurement:
  *    ⓐ a **20px** strip at each edge does not respond (iOS Safari back-swipe), ⓑ the
  *    gesture needs ≥**64px** of travel at ≤**30°** off the horizontal.
  *    ⚠️ **The third caveat was REVERSED on 26/08 (D-090ⓑ · T-157), and it is deliberately

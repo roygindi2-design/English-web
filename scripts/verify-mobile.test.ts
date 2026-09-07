@@ -610,8 +610,17 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(code).toContain('both grade buttons');
   });
 
-  it('measures the gap between the two grade buttons', () => {
-    expect(code).toContain('grade buttons are separated');
+  /**
+   * T-259ⓕ (07/09) — the two buttons are the ACCESSIBLE channel now: measured sr-only at rest
+   * (≤1px) and ≥44px the moment one is focused. The pre-07/09 gap measurement described a
+   * visible pair that no longer exists and is deliberately ⛔ not quoted.
+   */
+  it('measures the two grade buttons as the accessible channel: sr-only at rest, ≥44px focused', () => {
+    const start = code.indexOf("route === '/dev/deck'");
+    const block = code.slice(start, code.indexOf('clean console', start));
+    expect(block).toContain('both grade buttons are sr-only at rest');
+    expect(block).toContain('page.focus(`[data-grade="${grade}"]`)');
+    expect(block).toContain('is a ≥${MIN_TAP}px target');
   });
 
   /**
@@ -631,11 +640,11 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
    * names still appear in the check LABELS. It now measures the argument itself, and the
    * same mutation turns it red.
    */
-  it('hands the named floors to the in-page scan', () => {
+  it('hands the named floor to the focused-button measurement', () => {
     const start = code.indexOf("route === '/dev/deck'");
     const block = code.slice(start, code.indexOf('clean console', start));
-    expect(block).toMatch(/\[MIN_TAP, MIN_GAP\]/);
-    expect(block).not.toMatch(/\[\s*44\s*,\s*8\s*\]/);
+    expect(block).toMatch(/box\.height >= MIN_TAP && box\.width >= MIN_TAP/);
+    expect(block).not.toMatch(/>=\s*44\b/);
   });
 });
 

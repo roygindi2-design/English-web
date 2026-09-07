@@ -67,11 +67,12 @@ export default function Flashcard({
    * ⛔ אפס `Date.now()` ואפס `matchMedia` ברינדור — ⛔ אין כאן שעון, וההעדפה נקראת אחרי ההרכבה.
    */
   const sectionRef = useRef<HTMLElement | null>(null);
-  const pendingX = useRef(0);
+  /** T-259ⓑ — one pending write per frame carries the offset AND the look-ahead verdict. */
+  const pending = useRef<{ x: number; preview: CardGrade | null }>({ x: 0, preview: null });
   const frame = useRef<number | null>(null);
-
-  /** כותב את ההיסט לצומת. `0` ⇒ מוריד גם את `data-dragging`, ו-`globals.css` מחזיר את המעבר. */
-  const writeDrag = (x: number) => {
+  /** Writes the drag to the node. `x === 0` drops `data-dragging` (globals.css restores the
+   *  transition) and the preview; the badge follows `data-swipe-preview` in CSS. */
+  const writeDrag = (x: number, preview: CardGrade | null) => {
     const node = sectionRef.current;
     if (node === null) return;
     if (x === 0) {
@@ -81,25 +82,27 @@ export default function Flashcard({
       node.style.transform = `translateX(${x}px)`;
       node.setAttribute('data-dragging', 'true');
     }
+    if (preview === null) node.removeAttribute('data-swipe-preview');
+    else node.setAttribute('data-swipe-preview', preview);
   };
 
-  /** מבטל פריים תלוי ומאפס — בשחרור, בביטול, ובהחלפת כרטיס. ⛔ בלי הביטול היסט ישן
-   *  היה נוחת **אחרי** האיפוס, והכרטיס היה נשאר זז על כרטיס שכבר דורג. */
+  /** Cancels a pending frame and resets — on release, on cancel, on card change. Without the
+   *  cancel a stale offset would land AFTER the reset, on a card that was already graded. */
   const resetDrag = () => {
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
       frame.current = null;
     }
-    pendingX.current = 0;
-    writeDrag(0);
+    pending.current = { x: 0, preview: null };
+    writeDrag(0, null);
   };
 
-  const queueDrag = (x: number) => {
-    pendingX.current = x;
+  const queueDrag = (x: number, preview: CardGrade | null) => {
+    pending.current = { x, preview };
     if (frame.current !== null) return;
     frame.current = requestAnimationFrame(() => {
       frame.current = null;
-      writeDrag(pendingX.current);
+      writeDrag(pending.current.x, pending.current.preview);
     });
   };
 
@@ -220,9 +223,18 @@ export default function Flashcard({
       onPointerMove={(e) => {
         const from = swipeFrom.current;
         if (from === null) return;
-        // ⛔ ההכרעה כולה בשכבה הטהורה: `prefers-reduced-motion` ⇒ **אפס תנועה**
-        // ⛔ ולא «פחות», ומספר לא-סופי ⛔ אינו אפס ו⛔ אינו הרבה.
-        queueDrag(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x);
+        // T-259ⓑ — the look-ahead is the SAME rule that will grade on release (D-042):
+        // the badge lights exactly when lifting now would count. ⛔ It never grades.
+        // ⛔ The whole decision is in the pure layer: `prefers-reduced-motion` ⇒ ZERO motion,
+        // ⛔ not less, and a non-finite number is neither zero nor a lot.
+        const preview = resolveSwipe({
+          startX: from.x,
+          startY: from.y,
+          endX: e.clientX,
+          endY: e.clientY,
+          viewportWidth: window.innerWidth,
+        });
+        queueDrag(dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion }).x, preview);
       }}
       onPointerCancel={(e) => {
         // מחווה שהמערכת חטפה (שיחה נכנסת, מחוות מערכת) — הכרטיס **חוזר למקומו**,
@@ -264,36 +276,46 @@ export default function Flashcard({
           ⛔ ⛔ שני כפתורי הסימון (revealed && input==='self') נמצאים בחוץ ומעולם
              לא בתוך הכפתור — כפתור בתוך כפתור שובר HTML וקורא-מסך. */}
       {!revealed && card.input === 'self' ? (
+        /* T-259ⓓ · render_video_A.py:326,:349-356 — the card is 315×372 on a 375 screen, the
+           word sits at 34% of its height (oy+128 of 372) and the hint at the bottom edge
+           (oy+h-40). The face is `flex-1` INSIDE CardDeck's `h-[calc(100dvh-10rem)]` slot
+           (`CardDeck.tsx:217`) — ⛔ no height of its own, that calc is T-086's and breaks
+           silently. Three auto margins (word top/bottom, hint top) put the word at ⅓ —
+           the render's 34%. ⛔ Not vertical centring at screen level (F-011 · F-016): the
+           section is still top-anchored; only the word inside the card is. */
         <button
           type="button"
           onClick={reveal}
           data-reveal
-          className="w-full rounded-2xl border border-border-subtle bg-surface-raised p-6 text-start"
+          className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center"
         >
-          <p className="text-sm text-ink-muted">{prompt}</p>
-          <p
-            className="mt-2 text-4xl font-bold leading-tight"
-            data-card-front
-            data-decay={decay}
-          >
-            {primary(card.front.primary, card.front.primaryLang)}
-          </p>
-          {decay === 'none' ? null : (
-            /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
-               ואין צבע חדש: `text-ink-muted` הוא המשלב הדיסקרטי, בדיוק כמו
-               «טרם אומת». ⛔ והשורה הזאת ⛔ אינה דועכת — היא תישבר מ-4.5:1. */
-            <p className="mt-2 flex items-center gap-2 text-sm text-ink-muted">
-              <span aria-hidden="true">◷</span>
-              {DECAY_LABEL}
+          <div className="my-auto">
+            <p className="text-sm text-ink-muted">{prompt}</p>
+            <p
+              className="mt-2 text-4xl font-bold leading-tight"
+              data-card-front
+              data-decay={decay}
+            >
+              {primary(card.front.primary, card.front.primaryLang)}
             </p>
-          )}
+            {decay === 'none' ? null : (
+              /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
+                 ואין צבע חדש: `text-ink-muted` הוא המשלב הדיסקרטי, בדיוק כמו
+                 «טרם אומת». ⛔ והשורה הזאת ⛔ אינה דועכת — היא תישבר מ-4.5:1. */
+              <p className="mt-2 flex items-center justify-center gap-2 text-sm text-ink-muted">
+                <span aria-hidden="true">◷</span>
+                {DECAY_LABEL}
+              </p>
+            )}
+          </div>
           {/* הרמז חי בתוך הכפתור — תווית מחוץ לו אינה נלחצת עם הכפתור. */}
-          <p className="mt-6 text-sm text-ink-muted" data-reveal-hint>
+          <p className="mt-auto pt-6 text-sm text-ink-muted" data-reveal-hint>
             {'הקש להצגת התשובה'}
           </p>
         </button>
       ) : (
-        <div className="rounded-2xl border border-border-subtle bg-surface-raised p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center">
+          <div className="my-auto">
           <p className="text-sm text-ink-muted">{prompt}</p>
           <p
             className="mt-2 text-4xl font-bold leading-tight"
@@ -306,7 +328,7 @@ export default function Flashcard({
             /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
                ואין צבע חדש: `text-ink-muted` הוא המשלב הדיסקרטי, בדיוק כמו
                «טרם אומת». ⛔ והשורה הזאת ⛔ אינה דועכת — היא תישבר מ-4.5:1. */
-            <p className="mt-2 flex items-center gap-2 text-sm text-ink-muted">
+            <p className="mt-2 flex items-center justify-center gap-2 text-sm text-ink-muted">
               <span aria-hidden="true">◷</span>
               {DECAY_LABEL}
             </p>
@@ -334,13 +356,36 @@ export default function Flashcard({
                 the sentence rather than on decoration.
               */}
               {card.back.unverified ? (
-                <p className="flex items-center gap-2 text-sm text-ink-muted" data-card-unverified>
+                <p className="flex items-center justify-center gap-2 text-sm text-ink-muted" data-card-unverified>
                   <span aria-hidden="true">◇</span>
                   טרם אומת — התרגום ממתין לאישור אנושי
                 </p>
               ) : null}
             </div>
           ) : null}
+          </div>
+          {/* T-259ⓑ · render_video_A.py:366-372 — the badge the render draws ON the card
+              from p > .12: a pill at the card's vertical centre, glyph + label. Two are
+              always in the DOM; CSS shows the one `data-swipe-preview` / `data-swipe`
+              names. `aria-hidden`: the accessible channel is the two buttons below, and
+              a screen reader announcing «ידעתי» mid-drag would announce a guess.
+              § 0.22: the render fills the pill at 20% of the grade colour; the palette
+              carries no alpha slot (`globals.css:111-116`) ⇒ `bg-surface-raised`, opaque,
+              which also keeps the label ≥ 4.5:1 over any card content. */}
+          <span
+            aria-hidden="true"
+            data-swipe-badge="good"
+            className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto flex w-fit -translate-y-1/2 items-center gap-2 rounded-full border-2 border-success bg-surface-raised px-6 py-3 text-base font-bold text-success"
+          >
+            ✓ ידעתי
+          </span>
+          <span
+            aria-hidden="true"
+            data-swipe-badge="again"
+            className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto flex w-fit -translate-y-1/2 items-center gap-2 rounded-full border-2 border-danger bg-surface-raised px-6 py-3 text-base font-bold text-danger"
+          >
+            ✕ לא ידעתי
+          </span>
         </div>
       )}
 
@@ -421,25 +466,43 @@ export default function Flashcard({
         ) : null}
 
         {swipeActive ? (
-          <div className="grid grid-cols-2 gap-3">
-            {/* ⛔ D-150 · render_video_A.py:373 — «ידעתי» ראשונה ⇒ תחת RTL היא מימין. */}
-            <button
-              type="button"
-              onClick={() => onGrade('good')}
-              data-grade="good"
-              className="min-h-touch rounded-lg border-2 border-success px-4 py-3 text-base font-semibold text-success active:opacity-90"
-            >
-              <span aria-hidden="true">✓ </span>ידעתי
-            </button>
-            <button
-              type="button"
-              onClick={() => onGrade('again')}
-              data-grade="again"
-              className="min-h-touch rounded-lg border-2 border-danger px-4 py-3 text-base font-semibold text-danger active:opacity-90"
-            >
-              <span aria-hidden="true">✕ </span>לא ידעתי
-            </button>
-          </div>
+          <>
+            {/* T-259ⓕ (Roy, 06/09) — the swipe IS the grade channel. The instruction is
+                text: direction ⇢ verdict, both directions, glyph + word (שכבה א׳ — never
+                colour alone, and F-102 measured that «right» is ambiguous under RTL
+                unless it is written). D-042 · D-150: physical right = «ידעתי». */}
+            <p data-swipe-hint className="text-center text-sm text-ink-muted">
+              {'החלק ימינה — '}
+              <span aria-hidden="true">✓</span>
+              {' ידעתי · שמאלה — '}
+              <span aria-hidden="true">✕</span>
+              {' לא ידעתי'}
+            </p>
+            {/* ⓘⓘ · שכבה א׳ — a gesture is not reachable by keyboard or screen reader, so the
+                two buttons SURVIVE as the accessible equivalent: in the DOM and focusable,
+                `sr-only` until a keyboard user reaches them, then visible at ≥44px. Same
+                handler as the swipe — ⛔ never a second grading path (D-042).
+                ⛔ D-150 · render_video_A.py:373 — «ידעתי» is still the first grid item ⇒
+                on the right under RTL. Order unchanged; only visibility changed. */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => onGrade('good')}
+                data-grade="good"
+                className="sr-only focus:not-sr-only focus:min-h-touch focus:px-4 focus:py-3 focus:border-2 rounded-lg border-success text-base font-semibold text-success active:opacity-90"
+              >
+                <span aria-hidden="true">✓ </span>ידעתי
+              </button>
+              <button
+                type="button"
+                onClick={() => onGrade('again')}
+                data-grade="again"
+                className="sr-only focus:not-sr-only focus:min-h-touch focus:px-4 focus:py-3 focus:border-2 rounded-lg border-danger text-base font-semibold text-danger active:opacity-90"
+              >
+                <span aria-hidden="true">✕ </span>לא ידעתי
+              </button>
+            </div>
+          </>
         ) : null}
       </div>
     </section>

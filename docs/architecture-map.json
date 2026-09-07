@@ -577,6 +577,10 @@
     "lib/core/spotCheck.ts"
   ],
   "lib/core/spotCheck.ts": [],
+  "lib/core/spring.test.ts": [
+    "lib/core/spring.ts"
+  ],
+  "lib/core/spring.ts": [],
   "lib/core/storyGate.test.ts": [],
   "lib/core/storyGate.ts": [
     "lib/core/cefrLevels.ts"

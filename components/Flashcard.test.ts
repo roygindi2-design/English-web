@@ -272,9 +272,26 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(body).not.toMatch(/Math\.(min|max|sign)/);
   });
 
-  it('D-042 — שני הכפתורים נשארים הערוץ הקנוני', () => {
-    expect(T085_CARD_SRC).toContain('data-grade="again"');
-    expect(T085_CARD_SRC).toContain('data-grade="good"');
+  /**
+   * T-259ⓕ (Roy, 06/09) · שכבה א׳ (ⓘⓘ) — the swipe is the PRIMARY channel; the two buttons
+   * are ⛔ not deleted, they become the accessible equivalent: in the DOM, focusable,
+   * labelled, and visible the moment a keyboard user reaches them (`focus:not-sr-only`).
+   * ⛔ `display: none` / `hidden` would remove them from the accessibility tree too.
+   */
+  it('T-259ⓕ — שני הכפתורים נשארים ב-DOM כערוץ הנגיש: sr-only עד פוקוס, ⛔ לא נמחקו', () => {
+    for (const grade of ['good', 'again'] as const) {
+      const at = T085_CARD_SRC.indexOf(`data-grade="${grade}"`);
+      expect(at, `data-grade="${grade}" חייב להתקיים`).toBeGreaterThan(-1);
+      const open = T085_CARD_SRC.lastIndexOf('<button', at);
+      const close = T085_CARD_SRC.indexOf('</button>', at);
+      const block = T085_CARD_SRC.slice(open, close);
+      expect(block).toContain('sr-only');
+      expect(block).toContain('focus:not-sr-only');
+      expect(block).toContain('focus:min-h-touch');
+      // ⛔ the Tailwind class `hidden` (display:none) — ⛔ not the `aria-hidden` on the glyph,
+      // which is exactly what keeps the glyph out of the accessible name.
+      expect(block).not.toMatch(/(?<![\w-])hidden\b/);
+    }
     expect(T085_CARD_SRC).toContain('לא ידעתי');
     expect(T085_CARD_SRC).toContain('ידעתי');
   });
@@ -395,6 +412,67 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(down).toBeGreaterThan(-1);
     expect(capture, '`setPointerCapture` חייב לשבת בתוך `onPointerDown`').toBeGreaterThan(down);
     expect(capture).toBeLessThan(move);
+  });
+
+  it('T-259ⓕ — the visible instruction is Hebrew, names BOTH directions, and glyphs are aria-hidden', () => {
+    const at = T085_CARD_SRC.indexOf('data-swipe-hint');
+    expect(at).toBeGreaterThan(-1);
+    const block = T085_CARD_SRC.slice(at, T085_CARD_SRC.indexOf('</p>', at));
+    expect(block).toContain('החלק ימינה');
+    expect(block).toContain('שמאלה');
+    expect(block).toContain('ידעתי');
+    expect(block).toContain('לא ידעתי');
+    expect(block).toMatch(/aria-hidden="true">✓/);
+    expect(block).toMatch(/aria-hidden="true">✕/);
+  });
+
+  it('T-259ⓑ — two badges on the card face, text + glyph + colour, ⛔ never colour alone (שכבה א׳)', () => {
+    for (const grade of ['good', 'again'] as const) {
+      const at = T085_CARD_SRC.indexOf(`data-swipe-badge="${grade}"`);
+      expect(at, `badge ${grade}`).toBeGreaterThan(-1);
+      const block = T085_CARD_SRC.slice(T085_CARD_SRC.lastIndexOf('<span', at), T085_CARD_SRC.indexOf('</span>', at));
+      expect(block).toContain('aria-hidden="true"');
+      expect(block).toContain(grade === 'good' ? 'text-success' : 'text-danger');
+      expect(block).toContain(grade === 'good' ? '✓' : '✕');
+      expect(block).toContain(grade === 'good' ? 'ידעתי' : 'לא ידעתי');
+    }
+    expect((T085_CARD_SRC.match(/data-swipe-badge=/g) ?? []).length).toBe(2);
+  });
+
+  it('T-259ⓑ — the preview is `resolveSwipe`, written in the pointermove path, ⛔ not a second rule', () => {
+    const move = T085_CARD_SRC.indexOf('onPointerMove=');
+    const cancel = T085_CARD_SRC.indexOf('onPointerCancel=');
+    const block = T085_CARD_SRC.slice(move, cancel);
+    expect(block).toContain('resolveSwipe(');
+    expect(T085_CARD_SRC).toContain('data-swipe-preview');
+    // The preview must NEVER call onGrade: it is a look-ahead, not a verdict.
+    expect(block).not.toContain('onGrade(');
+  });
+
+  it('T-259ⓓ — the face fills the deck slot (flex-1) and the height stays CardDeck’s calc', () => {
+    const faces = T085_CARD_SRC.match(/rounded-2xl border border-border-subtle bg-surface-raised[^"]*"/g) ?? [];
+    expect(faces.length).toBe(2);
+    for (const face of faces) {
+      expect(face).toContain('flex-1');
+      expect(face).toContain('text-center');
+      expect(face).toContain('relative');
+    }
+    expect(T085_CARD_SRC).not.toContain('h-[calc(');
+    expect(readFileSync(join('components', 'CardDeck.tsx'), 'utf8')).toContain('h-[calc(100dvh-10rem)]');
+  });
+
+  it('T-259ⓔ — the reveal button is byte-for-byte the native <button> (⛔ not a div, ⛔ not a gesture)', () => {
+    expect(T085_CARD_SRC).toMatch(/<button\s+type="button"\s+onClick=\{reveal\}\s+data-reveal/);
+    expect(T085_CARD_SRC).not.toContain('role="button"');
+  });
+
+  it('T-259ⓘ — CardDeck no longer calls the buttons «the canonical channel»; it names T-259', () => {
+    const deck = readFileSync(join('components', 'CardDeck.tsx'), 'utf8');
+    expect(deck).not.toContain('canonical channel');
+    expect(deck).toContain('T-259');
+    const decisions = readFileSync(join('plan', '40-decisions.md'), 'utf8');
+    const d150 = decisions.indexOf('### D-150');
+    expect(decisions.slice(d150, d150 + 2500)).toContain('T-259ⓕ');
   });
 });
 
