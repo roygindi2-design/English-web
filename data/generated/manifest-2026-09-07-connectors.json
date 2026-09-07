@@ -1,0 +1,14 @@
+{
+  "batch_file": "batch-2026-09-07-connectors.jsonl",
+  "batch_date": "2026-09-07",
+  "batch_number": 0,
+  "model": "claude-haiku-4-5-20251001",
+  "prompt_version": "CONTENT.md 07/09, executing K-005 commission Priority ⓐ",
+  "source": "Amirnet Tier 1+2 connector words (pos ∈ {conjunction, preposition}); priority ⓐ from K-005 brief",
+  "requested": 10,
+  "accepted": 10,
+  "rejected": 0,
+  "selection_rule": "Priority ⓐ: 31 missing connectors identified from 35 total in Tier 1+2. 2 with slash variants skipped per K-005 § 3 rule (onto/on to, toward/towards). 10 valid headwords selected: according to (A2), because of (A2), including (B1), instead of (A2), minus (B1), next to (A2), out of (A2), provided (B1), regarding (B1), underneath (B1).",
+  "quota_rule": "BATCH_MIN_WORDS=50 default per lib/core/levelGate.ts; batch size=10 (limited by available eligible connectors in priority order)",
+  "note": "First batch of K-005 commission Priority ⓐ work. All 10 entries passed measure:gate (0 rejected). Each entry contains complete vocabulary data with 3 practice stems, 4 distractors (2 semantic, 1 orthographic, 1 unrelated), and Hebrew interference notes. Level rationale cites § 6.2 complexity scoring."
+}
