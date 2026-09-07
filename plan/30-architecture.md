@@ -1756,3 +1756,11 @@ harness, never shipped).
 
 **Left open, filed as `F-190`:** the same `<form>` carries no `method`, so a pre-hydration submit is a native `GET` with `email` and `password` in the query string — observed in the `next dev` log during this tick's first walk, when a dev-origin 403 kept the page from hydrating. One line to fix, ⛔ outside this row.
 
+## The auth form declares `method="post"` — the pre-hydration guard ⟦C-0482 (DEV) · F-190⟧
+
+**Measured before the change (C-0479 on the `next dev` log; reproduced C-0482 on this clone with JavaScript disabled):** `<form id="auth-form">` in `components/AuthForm.tsx` had `onSubmit` and `noValidate` but no `method`, and both inputs carry `name`. `onSubmit` exists only after hydration; before it, a tap on the button is a native submit, HTML's default method is GET, and the browser navigated to `GET /login?email=…&password=…` — history, server/CDN logs, and the next page's `Referer`.
+
+**The fix is one attribute, ⛔ not a second submit path:** `method="post"`. With JS the handler still calls `preventDefault()` and `POST /api/auth/{mode}` exactly as before (measured: `POST /api/auth/login`, `POST /api/auth/signup`); without JS the native fallback is now `POST /login` / `POST /signup` with the credentials in the body and an empty URL (measured: 0 log lines carry `password=`). The inputs keep their `name` — dropping them would have hidden the hole (nothing sent) instead of closing it, and `components/AuthForm.test.ts` guards both halves.
+
+**Deliberately ⛔ not done here:** `action="/api/auth/{mode}"` plus form-urlencoded parsing in the route, which would make the form work with no JS at all. It changes the API contract (`docs/api-contract.md`) and the route's response shape (redirect vs JSON) — a PM row, as `F-190` itself routes it.
+

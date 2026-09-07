@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: PM                    # ▶️ C-0481 (CRITIC) — שער מלא: verify ירוק (217/217·3540/3540) · loop:health 16/17 · הליכה חיה על /login+/signup אימתה T-274. מיזוג ל-`dev` (20 קומיטים) · T-271·T-272·T-273·T-274 ✅. `general` ⬜=0 שוב, `loop`/`base` 2 ⬜ לא ניתנות ללקיחה ⇒ PM להחליט: לפתוח עוד general, או לאשר ל-QA להחזיר את המוקד לפיצ'ר.
+NEXT_AGENT: CRITIC                # ▶️ C-0482 (DEV) — `general` ⬜=0 נמדד (‏`T-197` אחרי `T-184` ⛔ · `T-201` ממתינה לרכיב מקלדת) ⇒ נלקח `F-190` (🟠 defect · לומד · `AuthForm`) לפי סדר הבחירה של STEP 2. `method="post"` על טופס ההתחברות, נמדד לפני/אחרי עם JS כבוי. `verify` exit 0 (217/217 · 3542/3542 · mobile 1325). ⚠️ עדיין ⬜=0 ב-`general` — ההחזרה למוקד פיצ׳ר היא של QA בלבד (§ 0.23ז); 19 ⬜ ממתינות בזרימות הפיצ׳ר לפי טבלת המאזן (‏story 5 · cards 6 · arena 3 · msgs 4 · amirnet 1).
 STATE: BUILD                       # ⛔ ללא שינוי — טיק בנייה, ⛔ לא תכנון.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0481 (CRITIC) — ארבע שורות general (T-271·T-272·T-273·T-274) נסגרו ✅ על dev. אין שורה פתוחה ב-general כרגע.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 # ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
-LAST_HANDOFF_AT: "2026-09-07T05:50:00Z"
+LAST_HANDOFF_AT: "2026-09-07T06:46:57Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # ננעלה C-0482 (DEV) 06:38:50Z — F-190 (🟠 defect · `AuthForm` · general ⬜=0).
-LOCK_AT: "2026-09-07T06:38:50Z"
+LOCK_HELD_BY: ""                  # שוחררה C-0482 (DEV) 06:46:57Z — F-190 ✅, verify ירוק.
+LOCK_AT: "2026-09-07T06:46:57Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -59,11 +59,12 @@ PROMOTIONS_THIS_MONTH: 14         # 14 this month (➕ 06/09, באישור מפ�
 > 🧹 `C-0473` הועבר 06/09/2026 (C-0476) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 > 🧹 `C-0474` הועבר 07/09/2026 (C-0477) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 > 🧹 `C-0478` הועבר 07/09/2026 (C-0481) — שורה אחת בלבד, פירוט המדידה כבר בארכיון (`plan/archive/handoff-log.md`).
+> 🧹 `C-0479` הועבר 07/09/2026 (C-0482) — שורה אחת בלבד, פירוט המדידה בארכיון (`plan/archive/handoff-log.md`).
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0479 | DEV | CRITIC | 2026-09-07T02:48:28Z | 🔨 **טיק בנייה · `general` · `T-274` (‏`ACTIVE_TASK_ID`) ⬜⇢🟣.** נמדד בקלון הזה: `UNREACHABLE_HE` נוסף ל-`lib/core/failure.ts` לצד `SCHEMA_MISSING_HE`; הענף `ApiUnreachableError` ב-`components/AuthForm.tsx` מדפיס אותו והענף השני ⛔ לא זז; ⛔ אפס כפתור `נסה שוב` (‏`data-primary-action` ×1, `RETRY_HE` ×0 — נספר). TDD: 5 בדיקות חדשות ב-`components/AuthForm.test.ts` RED⇢GREEN, +3 ב-`failure.test.ts`. הליכה חיה 375×780 עם `POST /api/auth/*` מנותק: `/login`+`/signup` מציירים את המשפט ב-`role=alert`, 0 מתחת ל-44px, 0 גלילה אופקית. `npm run verify` exit 0 (217/3540 · mobile 1325). 🔴 תוך כדי: `<form>` בלי `method` ⇒ שליחה טרום-הידרציה שמה סיסמה ב-URL — `F-190`, ⛔ לא תוקן (מחוץ להיקף). `origin/dev..origin/work/current` = 15 לפני הדחיפה. | `lib/core/failure.ts` · `lib/core/failure.test.ts` · `components/AuthForm.tsx` · `components/AuthForm.test.ts` (חדש) · `docs/architecture-map.json` · `plan/50-tasks.md` (T-274 🟣) · `plan/60-findings.md` (F-190) · `plan/30-architecture.md` · `plan/00-control.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
 | C-0481 | CRITIC | PM | 2026-09-07T05:50:00Z | 🚦 **מסלול: מלא — שער על `work/current`: `verify` ירוק טרי דרך ה-`pre-push` (217/217 · 3540/3540 · mobile 1325/1325) · `loop:health` 16/17 (בדיקה 9 FAIL — עודכן F-182, ⛔ אינו חוסם) · הליכה חיה 375×780 (`next start`, אבליחת רשת ברמת ה-API) על `/login`+`/signup` אימתה ש-`T-274` מציירת את `UNREACHABLE_HE` ב-`role=alert`, 0 מתחת ל-44px, `taste-skill § 4.5` מתקיים (אפס כפתור כפול).** `merge --ff-only` ל-`dev` (ddbc851..1fab2a3, 20 קומיטים) — T-271·T-272·T-273·T-274 הפכו ✅ בתפזורת (F-126 class). `F-190` תויג defect (קיים כבר על `dev`, אינו חוסם את המיזוג הזה). `general` ⬜=0 שוב (‏`loop`/`base` 2 ⬜ לא ניתנות ללקיחה — T-197 אחרי T-184 · T-201 ממתין לרכיב מקלדת) ⇒ מוסר ל-PM להחליט: לפתוח עוד עבודה חוצת-מערכת, או להרשות ל-QA להחזיר את המוקד לזרימת פיצ׳ר. | `plan/50-tasks.md` (T-271·T-272·T-273·T-274 ✅) · `plan/60-findings.md` (F-182 · F-190) · `plan/00-control.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
+| C-0482 | DEV | CRITIC | 2026-09-07T06:46:57Z | 🔨 **טיק בנייה · `general` ⬜=0 נמדד ⇒ `F-190` (🟠 defect שמגיע ללומד · `AuthForm`) לפי סדר הבחירה של STEP 2, ⛔ ולא שורת משימה.** שורש: `<form id="auth-form">` בלי `method` ⇒ שליחה טרום-הידרציה היא `GET` עם הסיסמה ב-query. התיקון: `method="post"` (‏§ 0.22 — תכונה אחת, קומיט אחד מחזיר). **נמדד לפני/אחרי על אותו רתם (Playwright, JS כבוי, 375×780):** לפני `GET /login?email=…&password=…`; אחרי `POST /login`, 0 שורות `password=` ביומן. עם JS: `POST /api/auth/login`/`signup` כמו קודם. 0 מתחת ל-44px, 0 גלילה אופקית, כותרות `התחברות` · `יצירת חשבון`. TDD: 2 שומרי-מקור RED⇢GREEN. `npm run verify` exit 0 (217/217 · 3542/3542 · mobile 1325). המסלול ה«עדיף» (form-urlencoded בנתיב) נשאר ל-PM — משנה חוזה API. `origin/dev..work/current` = 2 לפני הדחיפה. | `components/AuthForm.tsx` · `components/AuthForm.test.ts` · `plan/60-findings.md` (F-190 ✅) · `plan/30-architecture.md` · `plan/00-control.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
