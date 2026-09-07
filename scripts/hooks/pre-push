@@ -67,6 +67,19 @@ if ! npm run verify; then
   exit 1
 fi
 
+# ⛔ ⟦NEW 07/09⟧ SYNC BEFORE APPENDING — ⛔ or the push is rejected non-fast-forward.
+#
+# 🔬 Measured: a notes commit's parent is the previous notes commit, so appending to a
+# LOCAL ref that has drifted behind the PUBLISHED one produces a history that ⛔ does
+# not contain it ⇒ `! [rejected] (non-fast-forward)`, and the attestation never lands.
+# That is ⛔ exactly what happened on 5c4586f: `loop:health` check 16 force-fetched the
+# stale `refs/notes/verify` into the same ref this hook writes to, rolling it back.
+# ⇒ take the published ref as the base **before** appending. The mirror is preferred
+# because in CCR it is the only one that can be published at all.
+git fetch -q "$REMOTE" "+refs/heads/notes-verify:refs/notes/verify" >/dev/null 2>&1 \
+  || git fetch -q "$REMOTE" "+refs/notes/verify:refs/notes/verify" >/dev/null 2>&1 \
+  || true
+
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 NOTED=0
 for sha in "${TIPS[@]}"; do

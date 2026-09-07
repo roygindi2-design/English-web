@@ -768,6 +768,7 @@ const VERIFY_NOTES_REF = 'refs/notes/verify';
  */
 const VERIFY_NOTES_MIRROR_REMOTE = 'refs/heads/notes-verify';
 const VERIFY_NOTES_MIRROR_LOCAL = 'refs/notes/verify-mirror';
+const VERIFY_NOTES_REMOTE_LOCAL = 'refs/notes/verify-remote';
 check(
   '16',
   'ה-hook של verify מותקן · ראש הענף נושא הערת verify',
@@ -805,12 +806,24 @@ check(
      * ⛔ ההערות ⛔ אינן מגיעות ב-clone רגיל — `refs/notes/*` אינו ב-refspec של origin.
      * ⇒ משיכה **מפורשת, שקטה, ובלתי-קטלנית**: כישלון שלה הוא «⛔ לא נמדד», ⛔ ולא «נכשל».
      */
-    git('fetch', '-q', 'origin', `+${VERIFY_NOTES_REF}:${VERIFY_NOTES_REF}`);
+    /**
+     * 🔴 ⛔ **⟦FIXED 07/09⟧ THIS CHECK USED TO CORRUPT WHAT IT MEASURES.**
+     * It force-fetched the remote into `refs/notes/verify` — **the very ref the
+     * pre-push hook appends to.** In CCR the remote copy of that ref ⛔ can never be
+     * updated (see above), so every run rolled the local ref back to a stale commit,
+     * and the next hook appended onto a history the published ref ⛔ does not contain
+     * ⇒ `! [rejected] (non-fast-forward)`, measured on `5c4586f`. ⛔ A checker that
+     * writes to the thing it checks ⛔ is not a checker.
+     * ⇒ both remote copies are now read into refs of their own, ⛔ and the hook's
+     * working ref is ⛔ never written by this file.
+     */
+    git('fetch', '-q', 'origin', `+${VERIFY_NOTES_REF}:${VERIFY_NOTES_REMOTE_LOCAL}`);
     git('fetch', '-q', 'origin', `+${VERIFY_NOTES_MIRROR_REMOTE}:${VERIFY_NOTES_MIRROR_LOCAL}`);
     // ⛔ Either name is the same evidence ⇒ either one satisfies the check.
     const note =
-      git('notes', `--ref=${VERIFY_NOTES_REF}`, 'show', tip) ??
-      git('notes', `--ref=${VERIFY_NOTES_MIRROR_LOCAL}`, 'show', tip);
+      git('notes', `--ref=${VERIFY_NOTES_MIRROR_LOCAL}`, 'show', tip) ??
+      git('notes', `--ref=${VERIFY_NOTES_REMOTE_LOCAL}`, 'show', tip) ??
+      git('notes', `--ref=${VERIFY_NOTES_REF}`, 'show', tip);
     if (note === null) {
       items.push(`⛔ אין הערת verify על ${tip.slice(0, 7)} — הראש נדחף בלי הראיה (⛔ לא תחת refs/notes/verify ו⛔ לא תחת ${VERIFY_NOTES_MIRROR_REMOTE})`);
       parts.push('⛔ ראש ללא הערה');
