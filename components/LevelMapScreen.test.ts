@@ -126,7 +126,10 @@ describe('מצבי הקצה שהמפרט נוקב בהם', () => {
 
   it('כשל סכמה ⇒ משפט עברי, ⛔ ולא «0 מילים»', () => {
     expect(CODE).toContain('schema_missing');
-    expect(CODE).toContain('המאגר עדיין לא הוקם');
+    // T-273: המשפט עצמו ⛔ כבר אינו מחרוזת כאן — הוא מיובא מהמקום היחיד שבו הוא חי
+    // (`lib/core/failure.ts`) ומודפס כקבוע.
+    expect(CODE).toContain('SCHEMA_MISSING_HE');
+    expect(CODE).not.toContain('המאגר עדיין לא הוקם');
   });
 
   it('טעינה ⇒ aria-busy עם השורות כבר במקום, ⛔ לא ספינר (חוקה § 5)', () => {

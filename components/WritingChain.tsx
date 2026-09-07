@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * «שרשרת הכתיבה» — T-106 · § 4.2יב · D-050 · E4 · תוכנית `2026-08-19-world-home.md` § 4.
@@ -42,8 +43,6 @@ const RECENT_HE = 'המשפטים האחרונים שלך';
 const UNKNOWN_COUNT_HE = '—';
 const EMPTY_HE = 'עוד לא כתבת משפט.';
 const FIRST_SENTENCE_HE = 'כתוב את המשפט הראשון שלך';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את המשפטים שלך…';
 const COMPOSE_HREF = '/world/compose';
 

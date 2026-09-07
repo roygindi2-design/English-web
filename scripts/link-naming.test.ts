@@ -44,11 +44,22 @@ function walk(dir: string): string[] {
   return out;
 }
 
+/**
+ * T-273 — the shared copy modules come FIRST. Since 06/09 the `session_expired`
+ * exit label is `export const SIGN_IN_AGAIN_HE` in `lib/core/failureExit.ts` and
+ * every screen imports it; `resolveLinkElements` resolves a `{IDENT}` label
+ * against the nearest earlier declaration in the concatenated text, so the two
+ * modules are prepended and an imported label resolves exactly like a local one.
+ * ⛔ Not the whole of `lib/`: only the modules that hold learner-facing copy.
+ */
+const SHARED_COPY_MODULES = ['lib/core/failure.ts', 'lib/core/failureExit.ts'] as const;
+
 function treeSource(): string {
   const files = [...walk(join(ROOT, 'app')), ...walk(join(ROOT, 'components'))].filter(
     (f) => /\.(ts|tsx)$/.test(f) && !/\.(test|spec)\.(ts|tsx)$/.test(f),
   );
-  return files.map((f) => readFileSync(f, 'utf8')).join('\n');
+  const shared = SHARED_COPY_MODULES.map((f) => readFileSync(join(ROOT, f), 'utf8'));
+  return [...shared, ...files.map((f) => readFileSync(f, 'utf8'))].join('\n');
 }
 
 /** D-187 §ג׳.1–3 — keep only exit-shaped labels (`חזרה ל…` / the deviant `חזור ל…`); a CTA is exempt from the one-name-per-destination rule. */

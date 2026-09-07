@@ -6,7 +6,8 @@ import EnWord from '@/components/EnWord';
 import StoryEndScreen from '@/components/StoryEndScreen';
 import WordPopover, { type WordPopoverStatus } from '@/components/WordPopover';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { storyIntro } from '@/lib/core/storyIntro';
 import type { StoryQuestion } from '@/lib/core/storyQuestion';
 import { buildStorySegments, type StoryGloss } from '@/lib/core/storyTapTargets';
@@ -76,8 +77,6 @@ const NO_LEVEL_HE = 'עוד לא בחרת רמה, ובלי רמה אין סיפ�
 const NO_LEVEL_ACTION_HE = 'לבחירת הרמה';
 const NO_STORIES_HE = 'עוד אין מספיק סיפורים ברמה שלך.';
 const NO_STORIES_ACTION_HE = 'חזרה לעולם';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOGIN_HREF = '/login?expired=1';
 const WORLD_HREF = '/world';
 

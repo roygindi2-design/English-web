@@ -184,7 +184,10 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
 
   it('tells the truth about schema_missing — ⛔ never "no cards"', () => {
     expect(CODE).toContain('schema_missing');
-    expect(CODE).toContain('המאגר עדיין לא הוקם');
+    // T-273: the sentence itself is ⛔ no longer a literal here — it is imported from the
+    // one place it lives (`lib/core/failure.ts`) and printed as the constant.
+    expect(CODE).toContain('SCHEMA_MISSING_HE');
+    expect(CODE).not.toContain('המאגר עדיין לא הוקם');
   });
 
   it('sends an expired session to /login and offers a retry otherwise', () => {

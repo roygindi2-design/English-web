@@ -7,6 +7,7 @@ import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
 import { bossTrack, homeSlots, winsToBoss, type BossNode, type HomeSlot } from '@/lib/core/arenaHome';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * `plan/37-arena-spec.md § 12` — **מסך הבית של הזירה.** T-181.
@@ -85,7 +86,6 @@ const DESIGN_SOON_HE = 'בחירת דמות תיפתח בקרוב';
 const DRAWER_NOTE_HE = 'פריטים מקרבות בלבד';
 const EMPTY_SLOT_HE = 'ריקה';
 const LOADING_HE = 'טוען את הזירה';
-const SIGN_IN_AGAIN_HE = 'להתחברות מחדש';
 
 /** שמות המצבים, בעברית — ⛔ **המצב ⛔ לעולם אינו בצבע בלבד** (חוקה שכבה א׳ א2). */
 const NODE_STATE_HE: Readonly<Record<BossNode['state'], string>> = {

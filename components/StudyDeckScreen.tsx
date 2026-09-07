@@ -9,8 +9,8 @@ import CloseIcon from '@/components/CloseIcon';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
 import type { DeckName, QueueCardInput } from '@/lib/core/deck';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
-import { failureExit, isRetryable } from '@/lib/core/failureExit';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE, failureExit, isRetryable } from '@/lib/core/failureExit';
 import type { CardGrade } from '@/lib/core/flashcard';
 import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
 
@@ -62,10 +62,8 @@ const HEADING_HE = 'מנת היום';
 const PRACTICE_HEADING_HE = 'לא ידעתי';
 /** T-155 · `36 § 5` — שם החפיסה כלשונו במפרט. ⛔ לא «מנת היום»: זו חפיסה אחרת. */
 const LEVEL_HEADING_HE = 'סינון מילים';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 
 type QueueResponse =
   | {

@@ -6,7 +6,8 @@ import ActionBar from '@/components/ActionBar';
 import EnWord from '@/components/EnWord';
 import WordBank, { type WordBankGroup } from '@/components/WordBank';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { PUNCTUATION_TOKENS, draftContainsTarget, renderDraft } from '@/lib/core/world';
 
 /**
@@ -72,8 +73,6 @@ const CANCEL_HE = 'ביטול';
 const USED_PREFIX_HE = 'השתמשת ב';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const NO_ACTIVE_WORDS_HE = 'עוד אין לך מילים פעילות להרכבה.';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הבנק…';
 const WORLD_HREF = '/world';
 

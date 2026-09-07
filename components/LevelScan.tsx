@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import { SCAN_PAGE_SIZE, pageCount, pageOf, type ScanWord } from '@/lib/core/levelScan';
 import type { LevelSummary } from '@/lib/core/levelSummary';
@@ -38,7 +38,6 @@ const CONTINUE_HE = 'המשך';
 const DONE_HE = 'סיימת את הסריקה';
 const CHOOSE_FIRST_HE = 'בחר רמה כדי להתחיל בסריקה';
 const CHOOSE_FIRST_ACTION_HE = 'למפת הרמה';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
 // D-187 §ג׳.1 — «מפת הרמה» אינו שם של יעד, הוא מקטע בתוך `כרטיסיות`; שם היציאה
 // היחיד לכל יעד הוא `חזרה ל<שם היעד כפי שהמוצר מדפיס אותו>`. `CHOOSE_FIRST_ACTION_HE`

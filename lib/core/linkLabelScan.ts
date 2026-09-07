@@ -35,8 +35,12 @@ const LINK_ELEMENT = /<Link\b([^>]*)>([\s\S]*?)<\/Link>/g;
 const HREF_STRING = /href=\{?['"`](\/[\w\-/]*)['"`]\}?/;
 const HREF_IDENT = /href=\{\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*\}/;
 const LABEL_IDENT = /^\{\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*\}$/;
+// T-273 — `export const` too: the shared copy modules (`lib/core/failure.ts` ·
+// `lib/core/failureExit.ts`) declare the one label a screen imports, and the
+// caller concatenates them BEFORE the tree so the import resolves like a
+// same-file constant. A screen's own later declaration still wins (nearest-earlier).
 const CONST_DECL =
-  /^const\s+([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*:\s*[^=]+)?\s*=\s*(['"`])((?:(?!\2)[\s\S])*)\2\s*;/gm;
+  /^(?:export\s+)?const\s+([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*:\s*[^=]+)?\s*=\s*(['"`])((?:(?!\2)[\s\S])*)\2\s*;/gm;
 const HEB = /[֐-׿]/;
 
 type ConstDecl = { readonly index: number; readonly name: string; readonly value: string };

@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPatch } from '@/lib/api/client';
 import { encountersHe, viewCollection, type CollectedWord } from '@/lib/core/arcadeCollection';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * «המילים שאספתי» — T-110 · § 4.2יב · D-053 · D-052 · D-050.
@@ -39,8 +40,6 @@ const ALL_HIDDEN_HE = 'הסתרת את כל המילים באוסף.';
 const PLAY_HE = 'לזירה';
 const HIDE_HE = 'הסתר';
 const LOADING_HE = 'טוען את המילים שלך…';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const ARCADE_HREF = '/arcade';
 
 /** בדיוק מה ש-`GET /api/arcade/collected` עונה (`docs/api-contract.md`), ⛔ ולא יותר. */

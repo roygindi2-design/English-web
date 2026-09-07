@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import type { RecallCard as RecallCardData } from '@/lib/core/worldRecall';
 
 /**
@@ -58,8 +59,6 @@ const FIRST_SENTENCE_HE = 'כתוב את המשפט הראשון שלך';
 /** ⚠️ D-075 נוקבת ביעד ⛔ ולא בתווית. ⛔ «הראשון» ללומד שכתב חמישה הוא בדיוק
  *  השקר הקטן ש-F-080 פתחה עליו ⇒ **F-108 🟡 → PM**. הפעולה זהה בשני המצבים. */
 const WRITE_MORE_HE = 'כתוב עוד משפט';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הכרטיס שלך…';
 const COMPOSE_HREF = '/world/compose';
 

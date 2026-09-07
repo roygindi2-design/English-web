@@ -27,6 +27,17 @@ export const FAILURE_HE = Object.freeze({
   crash: 'התקלה אצלנו, לא אצלך. ההתקדמות שלך לא נפגעה.',
 });
 
+/**
+ * T-273 · the set-up failure — migration 0013 has not run, and Roy has to run it.
+ * ⛔ Not in `FAILURE_HE`: that map is "the product failed, not you" with a full
+ * stop, and every screen chooses between the two by `code`. Until 06/09 eleven
+ * files under `app/` + `components/` each declared this sentence for themselves
+ * (measured, C-0477) — one sentence, one place, exactly as `RETRY_HE` above.
+ * The API routes send the same words in their JSON `message` (the contract),
+ * and the screens print THIS constant, ⛔ never the response body.
+ */
+export const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
+
 export const FAILURE_TITLE_HE = Object.freeze({
   route: 'משהו נתקע',
   app: 'האפליקציה לא נטענה',

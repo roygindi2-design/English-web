@@ -7,7 +7,7 @@ import FilterBar from '@/components/FilterBar';
 import LevelCard from '@/components/LevelCard';
 import UnknownList from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
@@ -57,7 +57,6 @@ const HEADING_HE = 'כרטיסיות';
 const INVARIANT_NOTE_HE = 'הסימון של מילים מתבצע בכרטיסיות בלבד';
 const CHOOSE_HE = 'בחר רמה להתחיל';
 const CHOOSE_HINT_HE = 'אפשר להחליף רמה בכל רגע.';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
 const PRACTICE_HE = 'דרכים לתרגל';
 

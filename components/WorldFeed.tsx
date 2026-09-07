@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { producedWordCount } from '@/lib/core/world';
 
 /**
@@ -52,8 +53,6 @@ const PRODUCED_WORDS_HE = 'מילים שהפקת';
 const UNKNOWN_COUNT_HE = '—';
 const EMPTY_HE = 'עוד לא כתבת פוסט.';
 const FIRST_POST_HE = 'כתוב את הפוסט הראשון';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הפוסטים שלך…';
 const COMPOSE_HREF = '/world/compose';
 

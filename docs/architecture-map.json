@@ -369,6 +369,7 @@
   "lib/core/failure.test.ts": [],
   "lib/core/failure.ts": [],
   "lib/core/failureExit.test.ts": [
+    "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
   "lib/core/failureExit.ts": [],

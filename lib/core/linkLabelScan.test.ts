@@ -63,6 +63,18 @@ const BACK_HE = 'חזרה לזירה';
     );
   });
 
+  // T-273 — התווית של `session_expired` חיה ב-`lib/core/failureExit.ts` כ-`export const`
+  // וכל מסך מייבא אותה. הסורק קורא את מודול-המקור לפני העץ, ולכן `export const` חייב
+  // להיפתר בדיוק כמו `const` — אחרת כל קישור שעבר מהכרזה מקומית לייבוא נעלם מהכיסוי.
+  it('פותרת `export const` ממודול משותף שחוברר לפני העץ', () => {
+    const source = `
+export const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
+      // קובץ מסך — מייבא את הקבוע, ⛔ לא מכריז עליו
+      <Link href="/login">{SIGN_IN_AGAIN_HE}</Link>
+    `;
+    expect(extractLinkLabels(source)).toEqual(new Map([['/login', new Set(['התחברות מחדש'])]]));
+  });
+
   it('קבוע שאינו נפתר (הוכרז אחרי השימוש, או לא קיים) ⇒ הקישור ⛔ אינו נספר', () => {
     expect(extractLinkLabels(`<Link href={UNKNOWN_HREF}>{UNKNOWN_HE}</Link>`)).toEqual(new Map());
   });

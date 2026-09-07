@@ -30,7 +30,8 @@ import {
 } from '@/lib/core/battle';
 import type { ArcadeAnswer } from '@/lib/core/arcadeResult';
 import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * T-177 · `37-arena-spec § 12` · `36 § 8` — **במת הקרב.**
@@ -169,8 +170,6 @@ const FINISHED_HE = 'הקרב נגמר';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const CHOOSE_LEVEL_HE = 'בחירת רמה';
 const TOO_SMALL_HE = 'ברמה הזאת עוד אין מספיק מילים לקרב.';
-const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const LOADING_HE = 'טוען את הזירה…';
 const MISSING_NUMBER_HE = '—';
 

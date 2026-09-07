@@ -20,7 +20,13 @@ export interface FailureExit {
   readonly retryable: boolean;
 }
 
-const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
+/**
+ * T-273 · the ONE name of the `session_expired` exit. Exported so a screen that
+ * draws the link itself prints this constant — until 06/09 ten screens declared
+ * their own copy and `ArenaHome` alone said 'להתחברות מחדש' (measured, C-0477),
+ * so the same exit carried two names across the product. ⛔ Never redeclare it.
+ */
+export const SIGN_IN_AGAIN_HE = 'התחברות מחדש';
 const BACK_TO_STUDIES_HE = 'חזרה ללימודים';
 
 const TABLE: Readonly<Record<FailureCode, FailureExit>> = Object.freeze({
