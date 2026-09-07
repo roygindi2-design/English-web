@@ -1733,3 +1733,15 @@ modules (+1, `app/(tabs)/settings/layout.tsx`).
 this task), `lang`/`dir` (already 12/12 correct, per C-0451's walk), and the 5
 session-gated `app/dev/**` fixtures (excluded from the guard on purpose — they are the
 harness, never shipped).
+
+## One wording, one exit label, one place — `SCHEMA_MISSING_HE` · `SIGN_IN_AGAIN_HE` ⟦C-0477 (DEV) · T-273 · F-138 ⓐ · D-065⟧
+
+**Measured before the change (C-0477, live clone):** `const SIGN_IN_AGAIN_HE` declared **10×** under `app/` + `components/` (9 × `'התחברות מחדש'`, 1 × `'להתחברות מחדש'` in `ArenaHome.tsx`), `const SCHEMA_MISSING_HE` declared **11×**, and 8 of the 12 carriers never imported `failureExit` at all. The arena therefore gave the same exit a different name than the table `D-065` wrote — the exact failure class `T-056` was written against, one layer up.
+
+**Where each now lives, and why there and not one file:** `failureExit.ts`'s own header routes «the failure wording» to `failure.ts` and keeps only «where can I go from here». So `SCHEMA_MISSING_HE` (a sentence) is `export const` in `lib/core/failure.ts`, beside `RETRY_HE`; `SIGN_IN_AGAIN_HE` (an exit label) is the already-existing constant in `lib/core/failureExit.ts`, now exported. ⛔ Not inside `FAILURE_HE`: that map is «the product failed, not you» with a full stop, and `failure.test.ts` enforces the full stop — the canonical set-up sentence has none, and inventing one was forbidden by the row.
+
+**The guard counts, ⛔ it does not trust:** `lib/core/failureExit.test.ts` walks `app/` + `components/` (non-test `.ts`/`.tsx`, comments stripped) and asserts **0** local declarations of either name, exactly **one** `SIGN_IN_AGAIN_HE = '…'` in the whole tree (`lib/core/failureExit.ts`), and no `.tsx` printing either string as a literal. `.tsx` only for the sentence: the API routes send the same words in their JSON `message`, and that is the contract, not a screen.
+
+**Side effect measured and fixed in the same commit:** `scripts/link-naming.test.ts`'s coverage gate dropped 18/57 ⇢ 17/57, because `linkLabelScan.ts` resolved a `{IDENT}` label only against `^const` in the same concatenated text — an *imported* constant is invisible. ⇒ `CONST_DECL` accepts `export const`, and the test prepends the two shared copy modules before the tree, so an import resolves like a local constant and a screen's own later declaration still wins (nearest-earlier). Back to **18/57**, unit-tested in `linkLabelScan.test.ts`. ⛔ Not all of `lib/` — only the modules that hold learner-facing copy.
+
+**Left open, on purpose (F-138 ⓑ):** `EXPIRED_HE` (`'ההתחברות פגה. היכנס שוב.'`) still lives in 3 files, and the other 8 screens print `FAILURE_HE.load` on `session_expired` — measured live on `/arcade` under a stubbed 401. Same class, ⛔ outside the row that named two constants ⇒ a task row for PM, not a side-fix.
