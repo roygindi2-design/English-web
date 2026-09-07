@@ -60,3 +60,33 @@ describe('T-274 · the network-failure branch on /login and /signup says what ha
     expect(CODE).not.toMatch(/RETRY_HE/);
   });
 });
+
+/**
+ * F-190 · measured C-0479 on a live `next dev` log: with the page served from
+ * SSR and the JS bundle not yet loaded (403 on the chunks that day, a slow
+ * network any other day), tapping «התחברות» performed a NATIVE submit and the
+ * server logged `GET /login?email=…&password=…`. HTML's default form method is
+ * GET, both inputs carry `name`, and the form had no `method` — so the
+ * learner's password landed in the URL bar, browser history, server/CDN logs
+ * and the next page's `Referer`. `onSubmit` only exists after hydration.
+ */
+describe('F-190 · a pre-hydration submit ⛔ never puts the password in the URL', () => {
+  /** The opening tag of the auth form, attributes and all. */
+  function authFormTag(): string {
+    const m = CODE.match(/<form\b[^>]*\bid="auth-form"[^>]*>/);
+    if (!m) throw new Error('AuthForm.tsx no longer renders <form id="auth-form">');
+    return m[0];
+  }
+
+  it('the auth <form> declares method="post" — the native fallback is a POST body, ⛔ not a GET query', () => {
+    expect(authFormTag()).toMatch(/\bmethod="post"/i);
+  });
+
+  it('the credential inputs still carry `name` — the guard above is what makes that safe', () => {
+    // If `name` were dropped instead, a native submit would silently send nothing
+    // and the JS path would keep working — a fix that hides the hole, not one
+    // that closes it. The guard is on the method; the names stay.
+    expect(CODE).toMatch(/name="email"/);
+    expect(CODE).toMatch(/name="password"/);
+  });
+});

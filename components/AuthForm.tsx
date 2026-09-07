@@ -164,7 +164,18 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           </p>
         )}
 
-        <form id="auth-form" className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+        {/* F-190: `method="post"` is the pre-hydration guard. `onSubmit` only exists
+            once the JS bundle has run; before that a tap on the button is a NATIVE
+            submit, and HTML's default method is GET — which put `email` and
+            `password` in the URL (measured C-0479 on the `next dev` log). With
+            POST the fallback is a body to this page, ⛔ never a query string. */}
+        <form
+          id="auth-form"
+          method="post"
+          className="flex flex-col gap-4"
+          onSubmit={onSubmit}
+          noValidate
+        >
           <LatinField
             name="email"
             label="אימייל"
