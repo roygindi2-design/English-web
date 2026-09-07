@@ -1308,7 +1308,7 @@ npm run generate-map
 - Consumes: `releaseCurve`, `releaseVelocity`, `pushSample`, `PointerSample` from `@/lib/core/spring`; `cardLift`, `resolveGesture` (unchanged).
 - Produces: `button[data-arena-card]` carries inline `--kol-release-ms` / `--kol-release-ease` after a release (only when `linear()` is supported); `[data-arena-lift='rest']` is the released state as before.
 
-- [ ] **Step 1: Write the failing test** — append to `components/SpellCard.test.ts` inside the first `describe`
+- [x] **Step 1: Write the failing test** — append to `components/SpellCard.test.ts` inside the first `describe`
 
 ```ts
   it('T-243 · 35 § ב6 — the release is a spring from lib/core/spring, ⛔ still no clock here', () => {
@@ -1325,12 +1325,12 @@ npm run generate-map
   });
 ```
 
-- [ ] **Step 2: Run to confirm red**
+- [x] **Step 2: Run to confirm red**
 
 Run: `npx vitest run components/SpellCard.test.ts`
 Expected: FAIL — `releaseCurve(` not found.
 
-- [ ] **Step 3: Implement** — `components/SpellCard.tsx`
+- [x] **Step 3: Implement** — `components/SpellCard.tsx`
 
 Imports:
 ```ts
@@ -1423,14 +1423,14 @@ Handlers:
 ```
 (Keep the `[data-arena-lift='ready']` glow rule exactly as it is.)
 
-- [ ] **Step 4: Run the gates**
+- [x] **Step 4: Run the gates**
 
 Run: `npx vitest run components/SpellCard.test.ts components/ArenaStage.test.ts && npm run typecheck && npm run check:motion`
 Expected: PASS · `ArenaStage.test.ts`'s slice from `/* arena-stage` is unchanged (the edited block is above the marker).
 
-- [ ] **Step 5: Walk `/arcade` (STEP 6.5)** — `(npx next dev -p 3000 &) && sleep 25`, drive `http://127.0.0.1:3000/arcade` at 375×780: drag a spell card up 40px and release under the 60px threshold — it springs back; flick past it — it casts. Record: computed `transitionTimingFunction` on `[data-arena-card]` after release starts with `linear(`; `--kol-release-ms` between 100 and 500. ⛔ Zero change to `37 § 6` timings.
+- [x] **Step 5: Walk `/arcade` (STEP 6.5)** — `(npx next dev -p 3000 &) && sleep 25`, drive `http://127.0.0.1:3000/arcade` at 375×780: drag a spell card up 40px and release under the 60px threshold — it springs back; flick past it — it casts. Record: computed `transitionTimingFunction` on `[data-arena-card]` after release starts with `linear(`; `--kol-release-ms` between 100 and 500. ⛔ Zero change to `37 § 6` timings.
 
-- [ ] **Step 6: Commit (task 5 of 6)**
+- [x] **Step 6: Commit (task 5 of 6)**
 
 ```bash
 npm run generate-map

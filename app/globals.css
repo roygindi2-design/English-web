@@ -187,11 +187,16 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   [data-tab-world-glow] { animation: none; }
 }
 
-/* T-178 · 37 § 5 — **השחרור** של קלף הלחש. ⛔ הגרירה עצמה היא מניפולציה ישירה ו⛔ אין
-   לה transition (ההיסט מגיע מ-`cardLift`, ⛔ ולא מכאן); מה שמושתק כאן הוא החזרה למקום.
-   חוקה § 5: 150–300ms, easing אחד. `prefers-reduced-motion` (:103) מאפס את המשך. */
+/* T-178 · 37 § 5 · **T-243 (07/09)** — the spell card's RELEASE is the spring, same contract
+   as `[data-flashcard]` below: `lib/core/spring.ts` writes `--kol-release-ms` / `--kol-release-ease`
+   at pointerup, this rule consumes them, the defaults are the pre-07/09 200ms ease-out for
+   engines without `linear()`. The drag itself has no transition (`[data-arena-lift='dragging']`,
+   the offset comes from `cardLift`, ⛔ not from here). `prefers-reduced-motion` (:103) zeroes
+   the duration; `cardLift` already returns y 0 and `releaseCurve` returns ms 0. */
 [data-arena-card] {
-  transition: transform 200ms ease-out;
+  --kol-release-ms: 200ms;
+  --kol-release-ease: ease-out;
+  transition: transform var(--kol-release-ms) var(--kol-release-ease);
 }
 [data-arena-card][data-arena-lift='dragging'] {
   transition: none;

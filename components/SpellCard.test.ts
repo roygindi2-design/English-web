@@ -25,6 +25,19 @@ describe('T-178 · 37 § 5 — הקלף מצייר ו⛔ אינו מחשב', () 
       expect(CODE).not.toContain(token);
     }
   });
+
+  it('T-243 · 35 § ב6 — the release is a spring from lib/core/spring, ⛔ still no clock here', () => {
+    expect(CODE).toContain("from '@/lib/core/spring'");
+    expect(CODE).toContain('releaseCurve(');
+    expect(CODE).toContain('releaseVelocity(');
+    expect(CODE).toContain('pushSample(');
+    expect(CODE).toContain('e.timeStamp');
+    expect(CODE).toContain('--kol-release-ms');
+    expect(CODE).toContain('--kol-release-ease');
+    for (const token of ['setTimeout', 'setInterval', 'requestAnimationFrame', 'Date.now']) {
+      expect(CODE).not.toContain(token);
+    }
+  });
 });
 
 describe('שכבה א׳ — הבחירה ⛔ אינה מקודדת בצבע בלבד', () => {

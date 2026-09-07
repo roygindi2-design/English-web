@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { cardLift, resolveGesture } from '@/lib/core/arenaGesture';
+import { pushSample, releaseCurve, releaseVelocity, type PointerSample } from '@/lib/core/spring';
 
 /**
  * T-178 · `37-arena-spec § 5` — **קלף לחש אחד.**
@@ -41,7 +42,26 @@ export default function SpellCard({
   // ⛔ ref ו⛔ לא state: נקודת ההתחלה ⛔ אינה משנה פיקסל על המסך. אותו נימוק בדיוק
   // שנרשם ב-`components/Flashcard.tsx:55-61`.
   const from = useRef<{ x: number; y: number } | null>(null);
-  const [drag, setDrag] = useState({ y: 0, lift: 0 });
+  const samples = useRef<readonly PointerSample[]>([]);
+  const [drag, setDrag] = useState<{ y: number; lift: number; releaseMs: number | null; releaseEase: string }>({
+    y: 0,
+    lift: 0,
+    releaseMs: null,
+    releaseEase: 'ease-out',
+  });
+  const supportsSpringEasing =
+    typeof CSS !== 'undefined' && CSS.supports('animation-timing-function', 'linear(0, 1)');
+  /* T-243 · 35 § ב6 — the release is the spring (`lib/core/spring.ts`), rendered by the
+     browser through the two custom properties `globals.css` `[data-arena-card]` consumes.
+     ⛔ No clock here (`SpellCard.test.ts:23`): the curve is a STRING, the duration a NUMBER,
+     both computed once at `pointerup`. Unsupported `linear()` ⇒ the properties are not
+     written and the CSS defaults (200ms ease-out) stand. */
+  const style: CSSProperties & Record<'--kol-release-ms' | '--kol-release-ease', string | undefined> = {
+    transform: `translateY(${drag.y}px)`,
+    touchAction: 'pan-y',
+    '--kol-release-ms': supportsSpringEasing && drag.releaseMs !== null ? `${drag.releaseMs}ms` : undefined,
+    '--kol-release-ease': supportsSpringEasing && drag.releaseMs !== null ? drag.releaseEase : undefined,
+  };
 
   return (
     <button
@@ -51,7 +71,7 @@ export default function SpellCard({
       // ⛔ `touch-action: pan-y` — האצבע עדיין גוללת את המסך אנכית, והגרירה שלנו היא
       // ⛔ לא חטיפה של הגלילה. הכיוון שלנו הוא מעלה, ולכן הדפדפן והמחווה חולקים ציר;
       // ⚠️ **הגלילה נבדקת בהליכה החיה** ⛔ ולא מונחת.
-      style={{ transform: `translateY(${drag.y}px)`, touchAction: 'pan-y' }}
+      style={style}
       data-arena-lift={drag.lift >= 1 ? 'ready' : drag.lift > 0 ? 'dragging' : 'rest'}
       className={[
         // ⛔ `min-h-touch` **וגם** `h-[100px]`, ⛔ ולא שני `min-h-*`: שתי מחלקות
@@ -76,17 +96,30 @@ export default function SpellCard({
       ].join(' ')}
       onPointerDown={(e) => {
         from.current = { x: e.clientX, y: e.clientY };
+        samples.current = [{ x: e.clientY, tMs: e.timeStamp }];
         e.currentTarget.setPointerCapture(e.pointerId);
       }}
       onPointerMove={(e) => {
         if (from.current === null) return;
+        // The sample's `x` carries clientY on purpose — this card moves on Y, and
+        // `releaseVelocity` is axis-agnostic.
+        samples.current = pushSample(samples.current, { x: e.clientY, tMs: e.timeStamp });
         const lift = cardLift({ startY: from.current.y, currentY: e.clientY, reducedMotion });
-        setDrag({ y: lift.y, lift: lift.lift });
+        setDrag((d) => ({ ...d, y: lift.y, lift: lift.lift, releaseMs: null }));
       }}
       onPointerUp={(e) => {
         const start = from.current;
         from.current = null;
-        setDrag({ y: 0, lift: 0 });
+        // T-243 — the release carries the finger's velocity into a critically damped spring;
+        // the settle time EMERGES (measured 355ms for 100px at rest), it is ⛔ not a duration.
+        const curve = releaseCurve({
+          from: drag.y,
+          velocity: releaseVelocity(samples.current),
+          target: 0,
+          reducedMotion,
+        });
+        samples.current = [];
+        setDrag({ y: 0, lift: 0, releaseMs: curve.ms, releaseEase: curve.easing });
         if (start === null) return;
         const gesture = resolveGesture({
           source: 'card',
@@ -98,7 +131,11 @@ export default function SpellCard({
         if (gesture?.kind === 'cast') onCast();
         else onSelect();
       }}
-      onPointerCancel={() => { from.current = null; setDrag({ y: 0, lift: 0 }); }}
+      onPointerCancel={() => {
+        from.current = null;
+        samples.current = [];
+        setDrag({ y: 0, lift: 0, releaseMs: null, releaseEase: 'ease-out' });
+      }}
     >
       {/* ⛔ **גימור הרנדר, ⛔ ולא קישוט** (`36 § 14.4`): `render_video_B.py:267` מצייר
           קו־שיער פנימי — `rr(pad+3, pad+3, W-6, H-6, r=9, לבן 28%, 1px)`.
