@@ -752,6 +752,22 @@ check('15', 'ACTIVE_TASK_ID תקין — רשימה של עד 3 מזהים תק�
  *    יכולה לשאת הערה, וצבע אדום ביום הנחיתה מלמד כל סוכן שאדום הוא הצבע הרגיל.
  */
 const VERIFY_NOTES_REF = 'refs/notes/verify';
+/**
+ * ⛔ **⟦NEW 07/09⟧ THE SAME ATTESTATION, PUBLISHED UNDER A SECOND REF NAME.**
+ *
+ * 🔬 Measured live in Claude Code Remote, three consecutive attempts, same repo:
+ * pushing `refs/notes/verify` dies in `send-pack` and leaves the remote UNCHANGED,
+ * while the identical object pushed to `refs/heads/notes-verify` exits 0 first try.
+ * ⇒ `refs/heads/*` is the **only** ref namespace that survives that runtime, so the
+ * hook now publishes the notes commit under **both** names.
+ *
+ * ⛔ This is ⛔ NOT a second source of truth: it is the ⛔ same commit object, and the
+ * mirror is fetched into a **separate local ref** precisely so a force-fetch of one
+ * ⛔ can never clobber the other — the failure mode that makes an attestation that WAS
+ * written look exactly like one that never was.
+ */
+const VERIFY_NOTES_MIRROR_REMOTE = 'refs/heads/notes-verify';
+const VERIFY_NOTES_MIRROR_LOCAL = 'refs/notes/verify-mirror';
 check(
   '16',
   'ה-hook של verify מותקן · ראש הענף נושא הערת verify',
@@ -790,9 +806,13 @@ check(
      * ⇒ משיכה **מפורשת, שקטה, ובלתי-קטלנית**: כישלון שלה הוא «⛔ לא נמדד», ⛔ ולא «נכשל».
      */
     git('fetch', '-q', 'origin', `+${VERIFY_NOTES_REF}:${VERIFY_NOTES_REF}`);
-    const note = git('notes', `--ref=${VERIFY_NOTES_REF}`, 'show', tip);
+    git('fetch', '-q', 'origin', `+${VERIFY_NOTES_MIRROR_REMOTE}:${VERIFY_NOTES_MIRROR_LOCAL}`);
+    // ⛔ Either name is the same evidence ⇒ either one satisfies the check.
+    const note =
+      git('notes', `--ref=${VERIFY_NOTES_REF}`, 'show', tip) ??
+      git('notes', `--ref=${VERIFY_NOTES_MIRROR_LOCAL}`, 'show', tip);
     if (note === null) {
-      items.push(`⛔ אין הערת verify על ${tip.slice(0, 7)} — הראש נדחף בלי הראיה (או ש-refs/notes/verify עוד לא קיים)`);
+      items.push(`⛔ אין הערת verify על ${tip.slice(0, 7)} — הראש נדחף בלי הראיה (⛔ לא תחת refs/notes/verify ו⛔ לא תחת ${VERIFY_NOTES_MIRROR_REMOTE})`);
       parts.push('⛔ ראש ללא הערה');
     } else {
       parts.push(`ראש ${tip.slice(0, 7)} מאושר: ${note.split('\n')[0]}`);

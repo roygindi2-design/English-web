@@ -68,16 +68,42 @@ if ! npm run verify; then
 fi
 
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+NOTED=0
 for sha in "${TIPS[@]}"; do
-  git notes --ref=verify add -f -m "verify: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1 || true
+  if git notes --ref=verify add -f -m "verify: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1; then
+    NOTED=$((NOTED + 1))
+  else
+    # ⛔ ⟦07/09⟧ This used to be `|| true` — a swallow, ⛔ not a decision. A note that
+    # was never written looks identical to a note that failed to push, and check 16
+    # reports the same «⛔ לא נמדד» for both ⇒ ⛔ the two causes were indistinguishable
+    # for as long as the swallow existed. ⛔ Still ⛔ never fatal: an attestation is
+    # evidence, ⛔ and evidence that fails to write ⛔ must not cost the branch its commits.
+    echo "⚠️  git notes add ⛔ נכשל על $(git rev-parse --short "$sha") — ⛔ אין ראיה לכתוב, ⛔ ולא רק לדחוף."
+  fi
 done
 
 # ⛔ Best-effort, ⛔ never fatal: a missing attestation is a warning in check 16,
 # ⛔ and a failed notes push must ⛔ never cost the branch its real commits.
 PUSH=git
 [ -x ./scripts/g ] && PUSH=./scripts/g
-VERIFY_HOOK_INTERNAL=1 "$PUSH" push -q --no-verify "$REMOTE" refs/notes/verify >/dev/null 2>&1 || \
-  echo "⚠️  ההערה נכתבה מקומית אך ⛔ לא נדחפה — בדיקה 16 תדווח «⛔ לא נמדד»."
+
+# ⛔ ⟦NEW 07/09⟧ TWO REF NAMES FOR ONE OBJECT — and it is ⛔ not belt-and-braces.
+#
+# 🔬 Measured live in Claude Code Remote, 07/09, three consecutive attempts, same repo:
+#     git push origin refs/notes/verify                  ⇒ send-pack disconnect, remote UNCHANGED
+#     git push origin refs/notes/verify:refs/heads/notes-verify ⇒ exit 0, first try
+#     git push origin <branch>                           ⇒ exit 0
+# ⇒ **`refs/heads/*` is the only ref namespace that survives that runtime.** The
+# object pushed is the ⛔ SAME notes commit — ⛔ only the ref name differs, so ⛔ no
+# second source of truth and ⛔ nothing to keep in sync by hand.
+#
+# ⛔ Both are attempted, ⛔ and the warning fires only when BOTH fail — a run that
+# publishes the attestation under either name is a run whose evidence is readable.
+NOTES_OK=0
+VERIFY_HOOK_INTERNAL=1 "$PUSH" push -q --no-verify "$REMOTE" refs/notes/verify >/dev/null 2>&1 && NOTES_OK=1
+VERIFY_HOOK_INTERNAL=1 "$PUSH" push -q --no-verify "$REMOTE" refs/notes/verify:refs/heads/notes-verify >/dev/null 2>&1 && NOTES_OK=1
+[ "$NOTES_OK" = "1" ] || \
+  echo "⚠️  ההערה נכתבה מקומית אך ⛔ לא נדחפה בשם אף אחד משני ה-refs — בדיקה 16 תדווח «⛔ לא נמדד»."
 
 echo "✅ verify ירוק · הדחיפה ממשיכה · חותמת: $STAMP"
 exit 0
