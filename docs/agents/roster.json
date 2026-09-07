@@ -1,11 +1,12 @@
 {
   "_why": "⛔ מי מהסוכנים דלוק, ובאיזה תחילית קומיט הוא חותם. ⟦NEW 06/09 · הכרעה 101 ⓒ⟧ המצב האמיתי של המשימות המתוזמנות חי בשרת ו⛔ לא בריפו — בדיוק סוג הערוץ הסמוי ש-RULES § 0.17ח קיים נגדו. ⇒ הקובץ הזה הוא ההצהרה שאפשר לקרוא, לבדוק ולסקור. בדיקה 17 ב-loop:health מודדת מולו. מי שמכבה או מדליק סוכן — מעדכן כאן ובאותה עריכה ב-claude/LOOP-ARCHITECTURE.md.",
-  "_measuredAt": "2026-09-07T17:30Z",
+  "_measuredAt": "2026-09-07T22:10Z",
+  "_whyQaHasTwoPrefixes": "⛔ נמדד 07/09 על origin/work/current, ⛔ לא שוער: QA כתב 16 קומיטים בתחילית `loop(QA` ו-13 בתחילית `loop(CRITIC` מאז 05/09. השורה הזאת הצהירה `loop(CRITIC` בלבד ⇒ בדיקה 17 קפאה על הקומיט האחרון בתחילית ההיא (06-09 21:07Z) ודיווחה «QA שותק 24.8 שעות» בזמן ש-QA דחף כל כמה דקות. ⛔ סוכן חי שנקרא כמת — F-188 בדיוק, הפוך. ⇒ שתי התחיליות מוצהרות, כי ההיסטוריה מחזיקה את שתיהן.",
   "_whyPromoterIs30": "⛔ 30 ולא 24, ובכוונה: PROMOTER יורה פעם ביום ב-23:00Z, ולכן הפער בין הקומיט שלו לריצה הבאה מגיע ל-~23.5 שעות בשגרה מלאה. תקרה של 24 הייתה מאדימה את בדיקה 17 על לופ בריא לגמרי. ⛔ 30 ⛔ אינו מספר נוח — הוא הפער המרבי הצפוי ועוד שוליים לריצה שנסוגה מפני נעילה.", "_source": "list_triggers — אושש חי בטיק DEV המכוון (Roy 06/09 16:05Z); DEV=claude-sonnet-5 זהה למדידה הקודמת (C-0466). ⛔ הפרומפט של DEV עצמו עדיין ⛔ אינו נושא הצהרת מודל בטקסט — update_trigger מחליף אותו במלואו ומחזיק את שלושת סודות Supabase, ולכן נדחה לטיק מבודד (§ 0.14, חסם 22).",
   "agents": [
     { "name": "DEV",     "commitPrefix": "loop(DEV",     "enabled": true, "maxSilentHours": 24, "cronUTC": "30 */2 * * *",        "model": "claude-fable-5-1" },
     { "name": "PM",      "commitPrefix": "loop(PM",      "enabled": true, "maxSilentHours": 24, "cronUTC": "0 1,9,17 * * *",      "model": "claude-opus-5" },
-    { "name": "QA",      "commitPrefix": "loop(CRITIC",  "enabled": true, "maxSilentHours": 24, "cronUTC": "15 5,11,15,21 * * * · 45 1,7,13,19 * * *", "model": "claude-sonnet-5 (מלא) · claude-haiku-4-5 (שער)" },
+    { "name": "QA",      "commitPrefix": ["loop(QA", "loop(CRITIC"], "enabled": true, "maxSilentHours": 24, "cronUTC": "15 5,11,15,21 * * * · 45 1,7,13,19 * * *", "model": "claude-sonnet-5 (מלא) · claude-haiku-4-5 (שער)" },
     { "name": "CONTENT", "commitPrefix": "loop(CONTENT", "enabled": true, "maxSilentHours": 24, "cronUTC": "15 3,7,13,19 * * *",  "model": "claude-sonnet-5" },
     { "name": "PROMOTER", "commitPrefix": "loop(PROMOTER", "enabled": true, "maxSilentHours": 30, "cronUTC": "21 23 * * *",        "model": "claude-sonnet-5" }
   ]

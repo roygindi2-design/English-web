@@ -779,7 +779,12 @@ describe('scripts/loop-health.mjs', () => {
      */
     it('הרשימה בריפו מצהירה על חמשת הסוכנים ועל תחילית הקומיט של כל אחד', () => {
       const roster = JSON.parse(readFileSync('docs/agents/roster.json', 'utf8')) as {
-        agents: { name: string; commitPrefix: string; enabled: boolean; maxSilentHours?: number }[];
+        agents: {
+          name: string;
+          commitPrefix: string | string[];
+          enabled: boolean;
+          maxSilentHours?: number;
+        }[];
       };
       expect(roster.agents.map((a) => a.name).sort()).toEqual([
         'CONTENT',
@@ -789,13 +794,65 @@ describe('scripts/loop-health.mjs', () => {
         'QA',
       ]);
       for (const a of roster.agents) {
-        expect(a.commitPrefix, `${a.name}: תחילית`).toMatch(/^loop\(/);
+        // ⛔ תחילית אחת או כמה — ⛔ אבל כל אחת מהן חייבת להיות תחילית קומיט אמיתית.
+        const prefixes = Array.isArray(a.commitPrefix) ? a.commitPrefix : [a.commitPrefix];
+        expect(prefixes.length, `${a.name}: ⛔ לפחות תחילית אחת`).toBeGreaterThan(0);
+        for (const p of prefixes) expect(p, `${a.name}: תחילית`).toMatch(/^loop\(/);
       }
       const promoter = roster.agents.find((a) => a.name === 'PROMOTER');
       expect(promoter, '⛔ PROMOTER חייב להיות ברשימה — אחרת ⛔ אף בדיקה ⛔ אינה מודדת אותו').toBeDefined();
       expect(promoter?.commitPrefix, 'התחילית שבדיקה 17 מחפשת').toBe('loop(PROMOTER');
       // ⛔ תקרה של 24 על סוכן שיורה פעם ביום היא אזהרה על לופ בריא.
       expect(promoter?.maxSilentHours ?? 24, '⛔ תקרת השקט חייבת לכסות מחזור יומי מלא').toBeGreaterThan(24);
+    });
+
+    /**
+     * 🔴 ⛔ **⟦NEW 07/09⟧ הכשל שהבדיקה הזאת נכתבה עליו — ⛔ נמדד, ⛔ לא שוער.**
+     *
+     * QA שינה את תחילית הקומיט שלו מ-`loop(CRITIC` ל-`loop(QA`, וה-roster ⛔ לא עודכן.
+     * נמדד על `origin/work/current` ב-07/09: **16** קומיטים בתחילית החדשה מול **13**
+     * בישנה מאז 05/09 ⇒ בדיקה 17 קפאה על 06-09 21:07Z ודיווחה «QA שותק 24.8 שעות»
+     * בזמן ש-QA דחף כל כמה דקות. ⛔ **סוכן חי שנקרא כמת — `F-188` בדיוק, הפוך.**
+     *
+     * ⚠️ **ולמה זה גרוע יותר ממספר שגוי:** אזהרה שלא יכולה להיסגר לעולם מאמנת כל סוכן
+     * שקורא `loop:health` להתעלם ממנה. ⇒ הבדיקה הזאת ⛔ אינה בודקת את הצורה בלבד, אלא
+     * ש**המספר המודפס נגזר מהקומיט האחרון שנכתב בפועל**, בכל אחת מהתחיליות.
+     */
+    it('⛔ בדיקה 17 מודדת את QA לפי התחילית שהוא כותב בפועל, ⛔ לא לפי השם הישן בלבד', () => {
+      const roster = JSON.parse(readFileSync('docs/agents/roster.json', 'utf8')) as {
+        agents: { name: string; commitPrefix: string | string[] }[];
+      };
+      const qa = roster.agents.find((a) => a.name === 'QA');
+      const prefixes = Array.isArray(qa?.commitPrefix) ? qa.commitPrefix : [qa?.commitPrefix ?? ''];
+      expect(prefixes, '⛔ התחילית שהוא כותב בפועל').toContain('loop(QA');
+      expect(prefixes, '⛔ וההיסטוריה מחזיקה גם את הישנה').toContain('loop(CRITIC');
+
+      // ⛔ המספר, ⛔ לא הצורה: הקומיט האחרון תחת **אחת** מהתחיליות, ישירות מ-git.
+      let newestTs: number | null = null;
+      try {
+        const log = execFileSync(
+          'git',
+          ['log', 'origin/work/current', '--format=%ct%x1f%s', '-400'],
+          { encoding: 'utf8' },
+        );
+        for (const line of log.trim().split('\n').filter(Boolean)) {
+          const [ts, subject = ''] = line.split('\x1f');
+          if (prefixes.some((p) => subject.startsWith(p))) {
+            newestTs = Number(ts);
+            break;
+          }
+        }
+      } catch {
+        newestTs = null; // ⛔ אין git/ref ⇒ נבדקת הצורה בלבד, ⛔ ולא נכשלים על הסביבה.
+      }
+
+      const line = /^(?:  ok  | FAIL | warn )17\. .*$/m.exec(run('.').out)?.[0] ?? '';
+      const printed = /QA (\d+\.\d+)ש׳/u.exec(line)?.[1];
+      if (newestTs !== null && printed !== undefined) {
+        const expected = (Date.now() / 1000 - newestTs) / 3600;
+        // ⛔ עם הבאג המספר היה של `loop(CRITIC` בלבד — שעות שלמות משעות הרחק מזה.
+        expect(Number(printed), '⛔ המספר נגזר מהקומיט האחרון בפועל').toBeCloseTo(expected, 0);
+      }
     });
   });
 

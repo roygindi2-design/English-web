@@ -894,7 +894,25 @@ check(
     const items = [];
     const parts = [];
     for (const a of active) {
-      const newest = commits.find((c) => c.subject.startsWith(a.commitPrefix));
+      /**
+       * 🔴 ⛔ **⟦FIXED 07/09⟧ ONE AGENT, TWO COMMIT PREFIXES — ⛔ and until today this
+       * check could ⛔ not see QA at all.**
+       *
+       * 🔬 Measured on `origin/work/current`, 07/09: QA had written **16** commits under
+       * `loop(QA` and **13** under `loop(CRITIC` since 05/09. The roster declared
+       * `loop(CRITIC` alone ⇒ this check froze on the newest `loop(CRITIC` commit
+       * (06-09 21:07Z) and reported «QA שותק 24.8 שעות» while QA was pushing every few
+       * minutes. ⇒ **a live agent read as a dead one — `F-188` exactly, inverted.**
+       *
+       * ⚠️ And the inversion is ⛔ worse than a wrong number: the warning ⛔ can never
+       * clear, so every agent that reads `loop:health` learns that «QA silent» is normal
+       * noise — the same rot that an unmeasurable check 16 produced.
+       *
+       * ⇒ `commitPrefix` accepts a **string or an array**. The old shape keeps working
+       * untouched; an agent whose name changed carries both, because the history holds both.
+       */
+      const prefixes = Array.isArray(a.commitPrefix) ? a.commitPrefix : [a.commitPrefix];
+      const newest = commits.find((c) => prefixes.some((p) => c.subject.startsWith(p)));
       const ceiling = a.maxSilentHours ?? 24;
       if (newest === undefined) {
         items.push(`⛔ ${a.name} — ⛔ אף קומיט ב-${commits.length} האחרונים (חלון קצר מדי, או שקט ארוך)`);
