@@ -144,7 +144,10 @@ Headwords come from **NGSL v1.2 (2,809 entries, CC BY-SA 4.0)**, from `newgenera
 **`he_interference_note`** — a mistake typical of a Hebrew speaker. Nothing real to say → `null`. ⛔ Never invent one.
 
 ## STEP 5.9 — SKILLS — 🔴 YOU HAD ⛔ NO ROW IN THE TABLE UNTIL 30/08  ⟦RULES § 0.7⟧
-⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.7⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
+🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
+⇒ **The twelve skills now live in the repo**, exactly like `taste-skill`: `skills/superpowers/<name>/SKILL.md`. ⇒ **whenever any instruction below names `superpowers:<name>`, that means: `Read` that file.** ⛔ There is ⛔ nothing to «run», ⛔ nothing to install, and ⛔ nothing that can be missing — the file ships in your clone.
+⚠️ **Read by trigger, ⛔ never all of them every tick** — that is what `docs/skills-registry.md` is for, and why it stays an index.
 🔴 **Before ANY claim of "gate passed / written / green" → `superpowers:verification-before-completion`.** ⛔ The table was written when there were **three** agents and you are the fourth — **the agent that wrote 1,200 practice sentences with ⛔ no level is exactly the one that carried ⛔ no verification duty.** That is now closed.
 **Executing a written commission brief → `superpowers:executing-plans`.**
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` (`RULES § 0.23א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**

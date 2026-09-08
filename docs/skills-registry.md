@@ -60,7 +60,7 @@
 | `dataviz` | לפני **כל** גרף, טבלת מדדים, סרגל התקדמות או דשבורד — בקוד המוצר ובכל ארטיפקט. חובה `npm run check:palette` | DEV · PM | סקיל סשן · `RULES § 0.9` |
 | `web-artifacts-builder` | ארטיפקט HTML **מורכב לרוי** בלבד | PM | סקיל סשן · `RULES § 0.9` |
 | `canvas-design` | נכס סטטי: לוגו, אייקון, תמונת שיתוף (`.png` / `.pdf`) | PM | סקיל סשן · `RULES § 0.9` |
-| `ui-styling` (‏`ui-ux-pro-max`) | 🆕 **רספונסיביות ב-Tailwind** — נקודות שבירה, `min-h-touch`, אסימוני `tailwind.config.ts`. **זה הבית של «`tailwind-responsive`»** | DEV | תוסף `ui-ux-pro-max` |
+| `ui-styling` (‏`ui-ux-pro-max`) | 🆕 **רספונסיביות ב-Tailwind** — נקודות שבירה, `min-h-touch`, אסימוני `tailwind.config.ts`. **זה הבית של «`tailwind-responsive`»** | DEV | ⛔ **⛔ אינו בענף הזה — הוא על הענף הקבוע `skills/superpowers`** (3.3MB, ⛔ נדיר מכדי לשאת בכל שכפול). קרא אותו כך, ⛔ בלי לשכפל: `./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md`. 🔬 **`FETCH_HEAD` ⛔ ולא `origin/skills/superpowers` — נמדד בשכפול אמיתי:** השכפול של הסוכן הוא `--single-branch`, ולכן `fetch` של ענף אחר ⛔ **אינו** יוצר ref עוקב, ו-`show origin/skills/superpowers:…` נכשל ב-`invalid object name`. ⛔ אל «תתקן» חזרה. |
 
 ### ⛔ הרשימה השלילית — סקילים שישברו את הלופ
 

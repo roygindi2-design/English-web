@@ -13,7 +13,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (281 שורות, 47 פתוחות) ו-`plan/60-findings.md` (206 שורות, 84 פתוחים).
+נוצר מ-`plan/50-tasks.md` (281 שורות, 47 פתוחות) ו-`plan/60-findings.md` (207 שורות, 85 פתוחים).
 
 ## ⬜ פנויות ל-Dev (18)
 
@@ -85,7 +85,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 
 ⛔ אין.
 
-## ממצאים פתוחים (84)
+## ממצאים פתוחים (85)
 
 | id | חומרה | קובץ | הממצא (תקציר) | סטטוס |
 |---|---|---|---|---|
@@ -173,6 +173,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `F-203` | 🟠 HIGH · **מסו… | `docs/agents/PROMOTER.md:142` (‏`./scripts/g p…` | **נמדד ב-C-0495 (07/09 23:33Z), ⛔ ולא שוער:** חמשת תנאי `§ 0.29ב` היו ירוקים — `verify` exit 0 (219 קבצים · 3612 בדיקות · build · `check:mobile` 1433)… | ⬜ פתוח → **רוי** |
 | `F-204` | 🟡 MEDIUM · **`…` | `docs/agents/CRITIC.md` STEP 4 (`npx next dev …` | **נמדד חי בקלון הזה, ⛔ ולא שוער:** תחת `next dev` על 127.0.0.1:3000, לחיצה על כרטיס «קוסם» ב-`/dev/arcade/character` השאירה `aria-pressed="false"` ו-`…` | ⬜ פתוח → **PM** |
 | `F-205` | 🟡 MEDIUM · **ס… | `plan/50-tasks.md` (שורת `T-281`, ⓑ) · `compon…` | **נמדד בקלון הזה, ⛔ ולא שוער:** השורה כותבת «`grep -rn 'arcade/character' components app` ⇒ `ArenaCharacterChoice` מגיע מהכניסה הראשונה בלבד, ו-`Arena…` | ⬜ פתוח → **PM** |
+| `F-206` | 🟠 HIGH · **בדי… | `scripts/loop-health.mjs` (בדיקה 17) · `script…` | **נמדד חי, ⛔ ולא שוער:** בקלון שבו `origin/work/current` ⛔ לא נמשך, בדיקה 17 מדפיסה «⛔ לא נמדד — git log על origin/work/current נכשל» ו-`loop-health.t…` | ⬜ פתוח → **PM** |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 

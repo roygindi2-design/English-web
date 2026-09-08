@@ -578,6 +578,45 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
       expect(paths).toContain('skills/imagegen-frontend-mobile/SKILL.md');
     });
 
+    /**
+     * 🔴 **⟦08/09 · הוראה מפורשת של רוי⟧ הסיבה האמיתית של `F-189`, כשער.**
+     *
+     * ‏`F-189` נרשם כ«‏DEV ו-PM דילגו על האינדקס, או הפעילו `superpowers:using-superpowers`
+     * בעיוורון». ⛔ **הם ⛔ לא דילגו.** נמדד 08/09 בסשן CCR: `ListPlugins` ⇒ `[]`,
+     * ‏`SearchPlugins(['superpowers'])` ⇒ `[]` — **התוסף ⛔ אינו בקטלוג של רוי כלל**,
+     * וכל שש המשימות המתוזמנות נושאות `enabled_plugins: []`. ⇒ 13 שורות באינדקס הפנו
+     * ל«תוסף» שאינו קיים, ו-`docs/agents/*.md` הורה עליו **17 פעמים**, מתוכן ארבע
+     * כ«⚡ לפני כל דבר אחר בסשן הזה» — בפתיחת **כל טיק**.
+     *
+     * ⇒ הסקילים הובאו לריפו (`skills/superpowers/**`), ⛔ והשער הזה הוא מה שמונע
+     * מהניתוק לחזור **בשקט**: כל שורה שנושאת תג `superpowers:` **חייבת** להצביע על
+     * קובץ בריפו. שורה שתחזור לומר «תוסף» ⛔ תיתפס כאן, ⛔ ולא בטיק.
+     *
+     * ⚠️ ⛔ **`ui-ux-pro-max` ⛔ אינו נתבע כאן, ובכוונה** — 3.3MB שנדרשים לפי תג ונדיר,
+     * ולכן הוא נשאר על הענף הקבוע `skills/superpowers` ונקרא ב-`git show`. שורתו
+     * ⛔ אינה נושאת נתיב בגרשיים, ולכן בדיקה ⓑ שמעל ⛔ אינה תובעת אותו.
+     */
+    it('ⓑ2 🔴 כל שורת `superpowers:` באינדקס מצביעה על קובץ בריפו — ⛔ ולא על «תוסף»', () => {
+      // ⛔ ⛔ רק הטבלה החיובית. **הרשימה השלילית נושאת אף היא תגי `superpowers:`**
+      // (`using-git-worktrees` חסום לארבעתם, ו-`finishing-a-development-branch` מוגבל
+      // ל-QA) — ולאלה ⛔ אין נתיב בריפו **בכוונה**: סקיל חסום בהישג יד הוא מלכודת.
+      const positive = registry().split('### ⛔ הרשימה השלילית')[0] ?? '';
+      const rows = positive
+        .split('\n')
+        .filter((l) => l.startsWith('|') && l.includes('`superpowers:'));
+
+      // ⛔ שער שפוי: אם השורות נעלמו, הבדיקה חלולה ⇒ היא נופלת, ⛔ לא עוברת.
+      expect(rows.length, '⛔ האינדקס ⛔ אינו נושא שורות superpowers').toBe(12);
+
+      for (const row of rows) {
+        const tag = /`(superpowers:[a-z-]+)`/.exec(row)?.[1] ?? row.slice(0, 40);
+        expect(row, `${tag}: ⛔ עדיין מפנה ל«תוסף» שאינו בקטלוג`).not.toContain('תוסף `superpowers`');
+        const path = /`(skills\/superpowers\/[A-Za-z0-9._-]+\/SKILL\.md)`/.exec(row)?.[1];
+        expect(path, `${tag}: ⛔ אין נתיב בריפו בעמודת «נתיב»`).toBeDefined();
+        expect(readFileSync(path!, 'utf8').length, `${tag} ⇒ ${path}`).toBeGreaterThan(1000);
+      }
+    });
+
     it('ⓒ ‏PM מחויב לקרוא את האינדקס בתכנון, ולהצמיד תג לשורה שהוא גוזר', () => {
       const pm = text('PM');
       expect(pm, 'PM: הנתיב עצמו').toContain('docs/skills-registry.md');

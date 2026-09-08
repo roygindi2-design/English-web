@@ -365,7 +365,10 @@ Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed famili
 
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
-⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: run `superpowers:using-superpowers`** ⟦NEW 30/08 · RULES § 0.7⟧ — it is what tells you which skills this session actually has. ⛔ Not available? ⛔ Do not invent it and ⛔ do not stop: work by the rules and write `סקילים: ⛔ אף אחד` in your report.
+⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
+🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
+⇒ **The twelve skills now live in the repo**, exactly like `taste-skill`: `skills/superpowers/<name>/SKILL.md`. ⇒ **whenever any instruction below names `superpowers:<name>`, that means: `Read` that file.** ⛔ There is ⛔ nothing to «run», ⛔ nothing to install, and ⛔ nothing that can be missing — the file ships in your clone.
+⚠️ **Read by trigger, ⛔ never all of them every tick** — that is what `docs/skills-registry.md` is for, and why it stays an index.
 ### 🧭 THE GENERAL SLICE — AND THE ONE FOCUS MOVE THAT IS YOURS  ⟦NEW 31/08 · `D-174` · Roy's explicit instruction⟧
 `general` is a **workstream in the rotation**, ⛔ not a parking bay. It is where cross-cutting fixes, logical bugs and system-wide upgrades live — the work that belongs to ⛔ no single feature.
 
