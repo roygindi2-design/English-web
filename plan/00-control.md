@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0494 (DEV) — 🔨 טיק בנייה: `T-259` + `T-243` 🟣 (5 קומיטים, אחד למשימה). cards עוד 2 ⬜ (T-066 · T-199).
-STATE: BUILDING                    # ▶️ C-0494 (DEV) — התוכנית `2026-09-07-swipe-primary-and-spring-release.md` בוצעה 40/40. `F-197` (מפת הארכיטקטורה בלי קשתות `@/`) ל-PM.
+NEXT_AGENT: CRITIC                 # ▶️ C-0497 (DEV) — 📝 טיק תכנון: `2026-09-08-sentences-deck-and-gate.md` (T-066 + T-199ⓐ, `check:plan` 10/10). ⛔ אפס קוד. cards עוד 2 ⬜ עם תוכנית.
+STATE: BUILDING                    # ▶️ C-0497 (DEV) — תוכנית ל-`cards` נכתבה; הטיק הבא של DEV = בנייה, משימה A (T-066) ואז B (T-199ⓐ). `RELEASE_BLOCKERS` (🟠, סביבה, לרוי) נשאר כלשונו — ⛔ אינו שורה של DEV.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-# ⛔ CONSECUTIVE_NO_PROGRESS הוסר 06/09 (F-175 · הכרעת רוי). הנימוק המלא ⇒ `plan/archive/control-log.md` (הוצא C-0478).
+LAST_HANDOFF_AT: "2026-09-08T00:44:20Z"
 LAST_HANDOFF_AT: "2026-09-07T23:06:46Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # ▶️ C-0497 (DEV) — ננעל 2026-09-08T00:33:22Z. `cards` · `T-066` + `T-199`ⓐ.
-LOCK_AT: "2026-09-08T00:33:22Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0497 (DEV) — טיק תכנון הסתיים, נעילה משוחררת.
+LOCK_AT: "2026-09-08T00:44:20Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -51,7 +51,7 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0494 | DEV | CRITIC | 2026-09-07T23:06:46Z | 🔨 **טיק בנייה — `T-259` + `T-243` (`cards`) לפי התוכנית `2026-09-07-swipe-primary-and-spring-release.md`, 40/40 צעדים, 5 קומיטים (אחד למשימה + נעילה).** `lib/core/spring.ts` (קפיץ ζ=1 · response 0.3, `linear()` + השתקעות), `swipeGrade.ts` (תנוחת היציאה מהרנדר, `baseX`), `Flashcard` (ההחלקה ערוץ ראשי · כפתורים `sr-only` עד פוקוס · תג · שחרור-קפיץ · תפיסה באמצע טיסה · חזרה כשציון לא נלקח · reduced-motion = אפס תנועה), `SpellCard` (אותו קפיץ), `CardDeck` מחזיר את ה-promise. **נמדד חי 375×780:** `/dev/card` גרירה 100px ⇒ `translateX(100px) translateY(6px) rotate(-3.03deg)` + תג; שחרור ⇒ `linear()` 289ms; `/dev/arcade` שחרור ⇒ 328ms; `check:mobile` **1433** (+42). `[SKILL: apple-design]` נטען לפני הקוד (תג T-243). **7 פערי תוכנית נמדדו ותוקנו בביצוע** ⇒ `26-plan-feedback`. § 0.22: `focus:border-2` · בדיקות Task 4 צומצמו לגושי המטפלים · `release()` ⛔ כותב תנוחה ב-reduced-motion. `verify` **ירוק, ריצה טרייה 23:10Z:** 219/219 · 3612/3612 · build ✅ · `check:mobile` 1433/1433. | `lib/core/spring.ts` · `swipeGrade.ts` · `Flashcard.tsx` · `SpellCard.tsx` · `CardDeck.tsx` · `globals.css` · `verify-mobile.mjs` · `50-tasks` (T-259 · T-243 🟣) · `60-findings` (F-197) · `26-plan-feedback` · `30-architecture` · `40-decisions` (D-150) · `00-control` |
+| C-0497 | DEV | CRITIC | 2026-09-08T00:44:20Z | 📝 **טיק תכנון — `cards`: `2026-09-08-sentences-deck-and-gate.md` ל-`T-066` + `T-199`ⓐ, ⛔ אפס קוד.** נמדד: `main`=`dev`=`87ca9fd`, `RELEASE_BLOCKERS` הוא חסם סביבה לרוי (644814f, ⛔ לא נגעתי) · שני ממצאי 🔴 (F-194 · F-195) ⛔ אינם עוצרים לומד ⇒ הבחירה נשארה ב-`cards`. התוכנית: הפריט הוא **וריאנט שלישי של `Card`** (`input: 'choice'`) על אותו `<Flashcard>`/`<CardDeck>` (D-169 ⛔ רכיב חדש) · 3 אפשרויות (D-156) · הגב = גזע מושלם + תרגום + דוגמה · דירוג ב-`/api/practice` עם פתיחת שורה כמו D-142 (§ 0.22 שורה 4 — לווטו של PM) · הסרת `parseFlashcardDeckName` + `href` לאריח (T-199ⓐ). `check:plan` **10/10**, 19 צעדים, 2 קומיטים. הנעילה נדחפה אחרי `npm install` (F-195 ⛔ לא חזר: hook מותקן, `verify` ירוק בדחיפה: 219/219 · 3612/3612 · build ✅ · check:mobile 1433). | `docs/superpowers/plans/2026-09-08-sentences-deck-and-gate.md` · `50-tasks` (T-066 · T-199 הפניה לתוכנית) · `00-control` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
