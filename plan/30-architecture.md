@@ -1822,3 +1822,14 @@ The render draws each deck as `rr(24, y, LW-48, 62, 16)` (radius corrected 18→
 
 **⛔ Not built, by measurement (F-202, PM):** a character **name** (`§ 7` names no closed list) and the biases as **battle numbers** (`battle.ts` holds no per-character constant). Both stay rows, ⛔ not guesses.
 
+
+
+## C-0505 (DEV) — `T-234` · `T-220` ⓐⓓ — the motion gate learns one declared exception; `?` becomes a property of the option's source
+
+**`scripts/check-motion.mjs` — `DECLARED_KEYFRAME_EXCEPTIONS` (T-234 · D-201 · 35 § ב6).** Rule ⓐ stays: any `@keyframes` on a paint property is a violation. The one exception is a frozen list of **file + name + property** — `app/arcade/arcade-tokens.css` · `arena-impact-a`/`-b` · `color` — and it holds only while every `animation:` naming the block is `steps(1, end) 1`; a fence that breaks is reported under the same key, so the baseline cannot absorb it. Adding an entry is a PM/Roy action, the same rule as the baseline. `scripts/motion-baseline.md` is now **0 rows**, `MAX_BASELINE` in `motion-gate.test.ts` is **0** — raising either is outside DEV.
+
+**`lib/core/arcadeRound.ts` — `ArcadeOption = { he, kind }` (T-220 ⓐ · D-143 § ד׳).** `options` is an array of objects on the wire (`docs/api-contract.md` updated in the same commit). `kind` is resolved in `buildRound` from a `translation ⇒ wordIds` map over **all** candidates against `touchedWordIds`: `unseen` iff every source word is untouched; unresolvable ⇒ `met`; no groups ⇒ `met` (the same «ignorance is not a category» default as `kindOf`). The answer is `met` by construction. `ArenaBattle.tsx` renders `unknown={option.kind === 'unseen'}` and the dead `option === '?'` branch is gone.
+
+**`lib/core/battle.ts` — `returnedSpell(state)` (T-220 ⓓ · D-139).** Derived, ⛔ not stored: `casts.at(-1)` wrong **and** `words[index-1].kind === 'unfiltered'`. The tail copy `cast` requeues is `base`, so the reveal happens once. `ArenaBattle` shows it as a `role="status"` line above the hand and the next cast clears it.
+
+⚠️ **Not measured live this tick:** `next dev` under CCR returns 403 on chunks (F-204); the 375×780 walk of `/dev/arcade` is QA's on `next start`.
