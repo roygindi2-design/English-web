@@ -1043,6 +1043,49 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
       expect(text(a), `${a}: נוסח שלפני 06/09 חזר`).not.toMatch(/promotion is Roy's manual action/i);
     }
   });
+
+  /**
+   * 🔴 **צינור על פקודת שער מחזיר את קוד היציאה של `tail`, ⛔ לא של הפקודה.**
+   *
+   * ⛔ **וזו ⛔ אינה מחלקת כשל חדשה — היא כבר מוכרת ונבדקת במאגר הזה,** ‏`scripts/g.test.ts`:
+   * «execs git rather than wrapping it in a subshell that swallows the exit code». ⇒ מה
+   * שחסר ⛔ אינו הידע, אלא **ההכללה**: `npm run verify | tail -20` מסיים ב-`0` גם כשהבנייה
+   * נפלה, ומדווח «ירוק» על ריצה אדומה. `scripts/hooks/pre-push` עצמו נקי (`if ! npm run
+   * verify; then`), ⇒ השער האמיתי תקין — מה ש⛔ לא היה מוגן הוא ה**טקסט** שסוכן מעתיק ממנו.
+   *
+   * ⚠️ **הטענה נבנתה נגד טקסט עתידי, ⛔ ולא כדי למחוק טקסט קיים:** ⛔ אף מופע ⛔ לא היה
+   * בסקריפט או בפרומפט — שבעת המופעים חיו ב-`docs/superpowers/plans/**`, ומשם DEV קורא
+   * הוראות בנייה. ⛔ נגענו בצורת הפקודה בלבד; ⛔ אף ציטוט, מדידה או מספר ⛔ לא שונה.
+   */
+  const EXIT_SWALLOWED =
+    /npm (?:run )?(?:verify|test|build|typecheck|lint|check:[a-z:-]+|loop:health|measure:[a-z-]+)\b[^\n`]*\|\s*(?:tail|head|tee|grep|cut|sed|awk)\b/;
+
+  const swallowingLines = (body: string): string[] =>
+    body.split('\n').filter((l) => EXIT_SWALLOWED.test(l));
+
+  it('⛔ אף פרומפט ⛔ אינו מדגים פקודת שער שקוד היציאה שלה נבלע בצינור', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      // ⛔ טענה חיובית תחילה — אחרת פרומפט ש⛔ אינו מזכיר את השער כלל «עובר» בריק.
+      expect(body, `${a}: השער עצמו מוזכר`).toMatch(/npm run verify/);
+      expect(swallowingLines(body), `${a}: צינור בולע קוד יציאה`).toEqual([]);
+    }
+  });
+
+  /**
+   * 🗂️ **וגם התוכניות — כי DEV קורא מהן פקודות ומריץ אותן כלשונן.** נמדד 08/09: שבעה
+   * מופעים חיים, הגרוע `2026-08-20-flashcard-interaction.md` — חמש פקודות שער ברצף
+   * שהסתיימו ב-`| tail -20`, כלומר `exit 0` מובטח.
+   */
+  it('⛔ אף תוכנית ב-docs/superpowers/plans ⛔ אינה מדגימה פקודת שער עם קוד יציאה בלוע', () => {
+    const dir = 'docs/superpowers/plans';
+    const plans = readdirSync(dir).filter((f) => f.endsWith('.md'));
+    expect(plans.length, '⛔ אין תוכניות — הבדיקה הייתה עוברת בריק').toBeGreaterThan(0);
+    const offenders = plans.flatMap((f) =>
+      swallowingLines(readFileSync(join(dir, f), 'utf8')).map((l) => `${f}: ${l.trim()}`),
+    );
+    expect(offenders, 'צינור בולע קוד יציאה בתוכנית').toEqual([]);
+  });
 });
 
 /**

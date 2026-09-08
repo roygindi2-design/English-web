@@ -328,7 +328,7 @@ harness itself is the reason the request cannot succeed.»
 - [ ] **4.1 · שחזר את סיבת הכשל.** `scripts/verify-mobile.mjs:473` → הגרסה בבלוק
       `Interfaces` למעלה (מוסיף `— ${r.failure()?.errorText}`). ⛔ זהו שינוי **מדידה**,
       ⛔ ולא תיקון ו⛔ לא השתקה.
-- [ ] **4.2 · הרץ ומדוד.** `npm run check:mobile 2>&1 | tee /tmp/mobile.txt`
+- [ ] **4.2 · הרץ ומדוד.** `npm run check:mobile > /tmp/mobile.txt 2>&1; echo "exit=$?"` ⟦תוקן 08/09 · שער `agent-prompts.test.ts` — הצינור החזיר את קוד היציאה של `tail`/`grep`, ⛔ לא של הפקודה⟧
       חלץ את שלוש השורות: `grep -n "request failed" /tmp/mobile.txt`
       **תעד את `errorText` המדויק בדיווח.** ⛔ בלי המחרוזת הזאת אין הכרעה.
 - [ ] **4.3 · הכרע לפי מה שנמדד, ⛔ ולא לפי מה שנוח.** שני ענפים, ו**רק** שניים:

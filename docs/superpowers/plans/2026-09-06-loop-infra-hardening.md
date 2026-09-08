@@ -395,7 +395,7 @@ Expected: PASS, 2 tests. Also re-run the full healthy-fixture test (`-t "is gree
 
 - [ ] **Step 5: Run the real script live, once, and record the output**
 
-Run: `npm run loop:health 2>&1 | grep "טיקי PM"`
+Run: `npm run loop:health > /tmp/health.txt 2>&1; echo "exit=$?"; grep "טיקי PM" /tmp/health.txt` ⟦תוקן 08/09 · שער `agent-prompts.test.ts` — הצינור החזיר את קוד היציאה של `tail`/`grep`, ⛔ לא של הפקודה⟧
 Expected: one line, either a number or `⛔ לא נמדד`. Paste this exact line into the tick's commit message / report — this is the "measured, not guessed" evidence the row's ⓑ requires.
 
 - [ ] **Step 6: Commit**
@@ -655,7 +655,7 @@ Expected: FAIL first (before Steps 6–7 land), then PASS once `plan/RULES.md §
 
 - [ ] **Step 9: Full verification**
 
-Run: `npm run check:rules && npm test && npm run loop:health | grep -E "^\s*(ok|FAIL|warn)\s*(9|15)\."`
+Run: `npm run check:rules && npm test && npm run loop:health > /tmp/health.txt 2>&1; echo "exit=$?"; grep -E "^\s*(ok|FAIL|warn)\s*(9|15)\." /tmp/health.txt` ⟦תוקן 08/09 · שער `agent-prompts.test.ts` — הצינור החזיר את קוד היציאה של `tail`/`grep`, ⛔ לא של הפקודה⟧
 Expected: `check:rules` green (the new `### 0.28 ·` heading satisfies the `RULES § 0.28` citations just added); `npm test` green including the 6 new check-15 fixture tests and the 3 new agent-prompts tests; `loop:health`'s printed lines for checks 9 and 15 both show `ok` against the real, now-`[]`-valued live control file.
 
 - [ ] **Step 10: Commit**

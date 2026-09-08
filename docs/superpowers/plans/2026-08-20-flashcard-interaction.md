@@ -539,7 +539,7 @@ const FIXTURE: readonly QueueCardInput[] = [
 - [ ] **Step 3: הרץ את `check:mobile` וקלוט את הפלט**
 
 ```bash
-npm run check:mobile 2>&1 | tail -80
+npm run check:mobile > /tmp/mobile.txt 2>&1; echo "exit=$?"; tail -80 /tmp/mobile.txt
 ```
 
 Expected: **ירוק** — 3 בלוקים חדשים ב-`/dev/deck` עוברים בשלושת הרחבים; שורות `T-086:` מודפסות עם המספרים. **שמור את הפלט המדויק** ל-Self-Review — זה תוצר המשימה. אם אחד מהם נופל, ⛔ ⛔ לתקן CSS בטיק הזה — סגור את T-086 עם דיווח הפגם ופתח ממצא חדש.
@@ -557,7 +557,7 @@ Expected: כל ארבעת ירוקים.
 הפוך זמנית ב-`components/CardDeck.tsx:170` את `className="flex h-full snap-start flex-col pt-4"` ל-`className="flex snap-start flex-col pt-4"` (הסר את `h-full`).
 
 ```bash
-npm run check:mobile 2>&1 | grep -E "one card per screen|deck fits" | head
+npm run check:mobile > /tmp/mobile.txt 2>&1; echo "exit=$?"; grep -E "one card per screen|deck fits" /tmp/mobile.txt
 ```
 
 Expected: **נפילה** של «one card per screen» — הכרטיסים מתכווצים ל-`min-content`. הַחזר, אמת ירוק שוב.
@@ -786,7 +786,7 @@ Expected: כל ארבעת ירוקים. סך הבדיקות עולה ב-7 (‏א
 - [ ] **Step 7: הרץ `check:mobile` ובדוק שאין רגרסיה על `/study` ו-`/dev/deck`**
 
 ```bash
-npm run check:mobile 2>&1 | tail -40
+npm run check:mobile > /tmp/mobile.txt 2>&1; echo "exit=$?"; tail -40 /tmp/mobile.txt
 ```
 
 Expected: **ירוק** — T-086 (᾿המדידה מ-Task 2) עדיין ירוקה, ו-`/study` בזרם FLOW_ROUTES ממשיך לספור סימון־ראשי אחד בדיוק (עדיין כשל env → error state, לא `cards`).
@@ -822,7 +822,7 @@ grep 'CYCLE_ID' plan/00-control.md | head -1
 - [ ] **Step 2: הרץ את השער-הכולל, פעם אחרונה, אחרי כל העריכות**
 
 ```bash
-npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile 2>&1 | tail -20
+npm run typecheck && npm run check:core && npm test && npm run build && npm run check:mobile
 ```
 
 Expected: כל חמישה ירוקים. קלוט את הפלט לדיווח.
