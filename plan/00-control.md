@@ -1,15 +1,15 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0501 (DEV) — 📝 טיק תכנון: תוכנית ל-`T-217` נכתבה (`check:plan` 10/10), ⛔ אפס קוד. `arena` ⬜=3: T-217 מתוכננת · T-220 ⓐⓓ סחף רישום (F-201) · T-234 הכרעת PM.
-STATE: PLANNED                     # ▶️ C-0501 (DEV) — התוכנית על `work/current`; טיק DEV הבא בונה אותה (6 משימות). `RELEASE_BLOCKERS` (🟠, סביבה, לרוי) נשאר כלשונו — ⛔ אינו שורה של DEV.
+NEXT_AGENT: CRITIC                 # ▶️ C-0502 (DEV) — 🔨 `T-217` נבנתה ⇒ 🟣. `arena` ⬜=2: T-220 (F-201, PM) · T-234 (הכרעה) ⇒ ⛔ אין בנייה ל-DEV הבא בלי PM.
+STATE: BUILT                       # ▶️ C-0502 (DEV) — `T-217` 🟣 על `work/current`, למיזוג `--ff-only` של QA. `RELEASE_BLOCKERS` (סביבה, לרוי) ⛔ אינו שורה של DEV.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0500 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-08T06:45:05Z"
+LAST_HANDOFF_AT: "2026-09-08T08:48:46Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # C-0502 (DEV) — 🔨 build tick, T-217 per docs/superpowers/plans/2026-09-08-arena-character-choice.md
-LOCK_AT: "2026-09-08T08:33:46Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0502 (DEV) — טיק בנייה הסתיים, נעילה משוחררת.
+LOCK_AT: "2026-09-08T08:48:46Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -50,8 +50,8 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0500 | CRITIC | DEV | 2026-09-08T05:16:06Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק (220/220·3638/3638·build✅·mobile 1490/1490), `loop:health` 15/17 (2·9 בדיקות פתוחות — פורטו כממצאים/רישום, 16 ירוק על ראש הענף). שני ממצאים חדשים: `F-199` (F-196 מצטט קובץ שלא קיים) · `F-200` (STEP 3 — בדיקת העשן ⛔ אינה ניתנת לביצוע ב-CCR: הפרוקסי חוסם CONNECT ל-Netlify ב-403 מדיניות, לא כשל אתר). `review-animations` על קפיץ-השחרור (`T-243`/`T-259`) — **Approve**, ⛔ ללא רגרסיה. הליכת מוצר 375×780 על `/dev/card/choice`·`/dev/tabs/cards`·`/dev/card` — נקי, 0<44px, אפס גלילה. `archive`+`measure:plan`, `merge --ff-only` ל-`dev`: 5 משימות 🟣→✅. `cards` מוצתה (⬜=0) שנית — 61-deferred + ⛔ אינה חתומה (ⓑⓒ חסומות ב-env, כמו `arena`/פריט 77) → `ACTIVE_WORKSTREAM: arena`. | `00-control` · `60-findings` (F-199·F-200) · `61-deferred` · `plan-open` · `plan-tables` · `archive/` |
 | C-0501 | DEV | CRITIC | 2026-09-08T06:45:05Z | 📝 **טיק תכנון — `arena`: תוכנית ל-`T-217` (בחירת דמות, `37 § 7`), ⛔ אפס קוד.** 6 משימות · 37 צעדים · `check:plan` 10/10. `arena` ⬜=3: T-234 = הכרעה · T-220 ⓐⓓ — תא הסטטוס «חסומות ב-F-164» מול D-143 «סוגר את F-164» ⇒ **F-201** (סחף, PM) · T-217 נלקחה. שני פערי `37 § 7` מוצאים מהתוכנית — ⛔ אין רשימת שמות · ⛔ אין מספרים להטיות ⇒ **F-202** (PM). D-152: ⛔ אפס מיגרציה. `[SKILL: ui-styling]` ⛔ לא מוצע בסשן. `verify` ירוק בדחיפת הנעילה (hook). | `docs/superpowers/plans/2026-09-08-arena-character-choice.md` · `50-tasks` (T-217) · `60-findings` (F-201·F-202) · `00-control` · `plan-open` · `plan-tables` |
+| C-0502 | DEV | CRITIC | 2026-09-08T08:48:46Z | 🔨 **טיק בנייה — `arena`: `T-217` (בחירת דמות, `37 § 7`) נבנתה מהתוכנית, 37/37 תיבות, 5 קומיטים + תיקון + סגירה ⇒ 🟣.** D-103 חי ב-375/320/414: `בחירת דמות` · 5 הקשות · 0<44px · אפס גלילה · 3 idle · 0 שגיאות ב-375 (403 פרוקסי ב-320/414, F-200). `verify` מפורש: 3 אדומות — `failure.test` (תוקן: `RETRY_HE`) + 2 `measure-plan-tables` (מרוץ, ירוק שוב); הריצה המלאה בדחיפה (hook). D-152 ⛔ מיגרציה · F-153 🟣 · `[SKILL: ui-styling]` ⛔ לא מוצע · `§ 0.22`: 4 קריאות ב-`30-architecture`. `arena` ⬜=2 (F-201 · הכרעה) ⇒ ⛔ אין בנייה ל-DEV הבא בלי PM. | `lib/core/arenaCharacter.ts` · `app/api/arcade/character/` · `components/ArenaCharacterChoice.tsx` · `ArenaAvatar`·`ArenaShell`·`ArenaHome` · `docs/api-contract.md` · `architecture-map.json` · `50-tasks` · `60-findings` · `30-architecture` · `00-control` · `plan-open`·`plan-tables` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

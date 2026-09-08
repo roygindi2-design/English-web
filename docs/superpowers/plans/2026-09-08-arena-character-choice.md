@@ -1,10 +1,11 @@
 # Arena character choice — first entry (`37 § 7`) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: `superpowers:executing-plans` (or
-> `superpowers:subagent-driven-development`). Every step is a `- [ ]` and closes only
+> `superpowers:subagent-driven-development`). Every step is a `- [x]` and closes only
 > after a fresh run whose output goes into the tick report.
 
 **Written:** C-0501 (DEV, 📝 planning tick) · 2026-09-08T06:38Z (`date -u`)
+**Built:** C-0502 (DEV, 🔨 build tick) · 2026-09-08 — 37/37 steps, five commits (one per task) + the close. Three test-shape corrections, each logged in the C-0502 report: the spec-substring test strips markdown `**` before matching (Task 1); the two «every string is Hebrew» regexes matched identifiers (`'use client'`, table names) and were replaced by the `ArenaHome.test.ts` text-node measure (Tasks 2 · 4); `app/arcade/page.test.ts` now asserts the three-state shell.
 
 **Covers:** **T-217** — character choice, first entry. **המשך של: T-181** (the home
 screen this plan re-wires: `components/ArenaHome.tsx` · `components/ArenaShell.tsx` ·
@@ -297,7 +298,7 @@ type Screen = 'home' | 'character' | 'battle';
 
 **Files:** Create `lib/core/arenaCharacter.ts`, `lib/core/arenaCharacter.test.ts`.
 
-- [ ] **Step 1: Write the failing test** — `lib/core/arenaCharacter.test.ts`:
+- [x] **Step 1: Write the failing test** — `lib/core/arenaCharacter.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -352,19 +353,19 @@ describe('arenaCharacter — `37 § 7`', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `npx vitest run lib/core/arenaCharacter.test.ts`
+- [x] **Step 2: Run it and watch it fail** — `npx vitest run lib/core/arenaCharacter.test.ts`
   ⇒ **FAIL** (`Cannot find module './arenaCharacter'`).
 
-- [ ] **Step 3: Write `lib/core/arenaCharacter.ts`** — the four exports above plus the two
+- [x] **Step 3: Write `lib/core/arenaCharacter.ts`** — the four exports above plus the two
   functions. `characterFromParts`: `typeof parts === 'object' && parts !== null &&
   !Array.isArray(parts) && isArenaCharacter((parts as Record<string, unknown>).character)`.
   `withCharacter`: spread the object form (or `{}`) and set `character`. ⛔ No import
   beyond the file itself.
 
-- [ ] **Step 4: Run it green** — `npx vitest run lib/core/arenaCharacter.test.ts` and
+- [x] **Step 4: Run it green** — `npx vitest run lib/core/arenaCharacter.test.ts` and
   `npm run check:core` (purity gate on `lib/core/`).
 
-- [ ] **Step 5: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 lib/core/arenaCharacter - closed set, labels, parser"`
+- [x] **Step 5: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 lib/core/arenaCharacter - closed set, labels, parser"`
   ⚠️ **One commit per task, ⛔ not per tick** (DEV.md STEP 4.5).
 
 ---
@@ -374,7 +375,7 @@ describe('arenaCharacter — `37 § 7`', () => {
 **Files:** Create `app/api/arcade/character/route.ts`, `app/api/arcade/character/route.test.ts`.
 Modify `docs/api-contract.md` (same commit).
 
-- [ ] **Step 1: Write the failing test** — `app/api/arcade/character/route.test.ts`, the
+- [x] **Step 1: Write the failing test** — `app/api/arcade/character/route.test.ts`, the
   repo's source-scan pattern (`app/api/arcade/collected/route.test.ts`):
 
 ```ts
@@ -424,9 +425,9 @@ describe('PATCH /api/arcade/character — T-217 · D-152', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `npx vitest run app/api/arcade/character/route.test.ts`.
+- [x] **Step 2: Run it and watch it fail** — `npx vitest run app/api/arcade/character/route.test.ts`.
 
-- [ ] **Step 3: Write `app/api/arcade/character/route.ts`** — copy the guard block of
+- [x] **Step 3: Write `app/api/arcade/character/route.ts`** — copy the guard block of
   `app/api/arcade/collected/route.ts:124-136` (env · session · `request.json()` try/catch
   ⇒ 400), then: `parse` ⇒ `isArenaCharacter(payload.character)` else **422**
   `{ ok:false, fieldErrors:{ character:'לא הצלחנו לשמור את הבחירה. נסה שוב.' } }`; read
@@ -435,15 +436,15 @@ describe('PATCH /api/arcade/character — T-217 · D-152', () => {
   { onConflict: 'user_id' })`; errors ⇒ `isSchemaMissing` ⇒ 503 bodies of the sibling
   routes; **200** `{ ok: true, character }`.
 
-- [ ] **Step 4: Contract** — `docs/api-contract.md`: add `## PATCH /api/arcade/character`
+- [x] **Step 4: Contract** — `docs/api-contract.md`: add `## PATCH /api/arcade/character`
   after `## PATCH /api/arcade/collected` (request · 200 · 422 · 401/503 · «⛔ אינו נוגע
   ב-`arcade_level`/`wins`/`unlocked_items` — `37 § 7`»), and add the `character` row to
   the `GET /api/arcade/home` field table (Task 3 fills the route; the contract line lands
   here so the two commits each leave the contract true for their own code).
 
-- [ ] **Step 5: Run green** — `npx vitest run app/api/arcade/character` · `npm run typecheck`.
+- [x] **Step 5: Run green** — `npx vitest run app/api/arcade/character` · `npm run typecheck`.
 
-- [ ] **Step 6: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 PATCH /api/arcade/character - one jsonb key, contract"`.
+- [x] **Step 6: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 PATCH /api/arcade/character - one jsonb key, contract"`.
 
 ---
 
@@ -453,7 +454,7 @@ describe('PATCH /api/arcade/character — T-217 · D-152', () => {
 `components/ArenaAvatar.tsx`, `components/ArenaAvatar.test.ts`, `components/ArenaStage.tsx`,
 `components/ArenaBattle.tsx`.
 
-- [ ] **Step 1: Failing tests** — add to `app/api/arcade/home/route.test.ts`:
+- [x] **Step 1: Failing tests** — add to `app/api/arcade/home/route.test.ts`:
 
 ```ts
 it('T-217 — the read plan selects avatar_parts and the body carries `character` (D-152)', () => {
@@ -487,27 +488,27 @@ it('the accessible name says which character it is (⛔ not shape alone)', () =>
 });
 ```
 
-- [ ] **Step 2: Run them red** — `npx vitest run app/api/arcade/home components/ArenaAvatar.test.ts`.
+- [x] **Step 2: Run them red** — `npx vitest run app/api/arcade/home components/ArenaAvatar.test.ts`.
 
-- [ ] **Step 3: Route** — `app/api/arcade/home/route.ts`: extend `HOME_SELECT`, import
+- [x] **Step 3: Route** — `app/api/arcade/home/route.ts`: extend `HOME_SELECT`, import
   `characterFromParts`, add `character: characterFromParts(data?.avatar_parts)` to the
   200 body. `NEW_LEARNER.character = null`.
 
-- [ ] **Step 4: Avatar** — `components/ArenaAvatar.tsx`: add `character?: ArenaCharacter | null`;
+- [x] **Step 4: Avatar** — `components/ArenaAvatar.tsx`: add `character?: ArenaCharacter | null`;
   a `CHARACTER_LAYERS: Record<ArenaCharacter, readonly { layer: Layer; shape: JSX }[]>` map
   using the anchor constants already in the file (`MAIN_HAND` · `BOOT_L/R` · `BODY_SIZE` ·
   `HEAD_RADIUS`, and `anchorFor('offHand')` / `mirror(anchorFor('shoulders'))`), rendered
   inside the existing `LAYER_ORDER.map` as `<g data-arena-character={character}>` after
   `base` and before `equipped` (`38 § 4`: base under equipment). Extend `label`.
 
-- [ ] **Step 5: Stage + battle pass-through** — `components/ArenaStage.tsx` gains
+- [x] **Step 5: Stage + battle pass-through** — `components/ArenaStage.tsx` gains
   `character` and forwards it to the hero `<ArenaAvatar>` (`ArenaStage.tsx:46`);
   `components/ArenaBattle.tsx` gains `character` in `ArenaBattleProps` and passes it at
   `ArenaBattle.tsx:833`. ⛔ Nothing else in the battle changes.
 
-- [ ] **Step 6: Green** — `npx vitest run app/api/arcade/home components/ArenaAvatar.test.ts components/ArenaStage components/ArenaBattle` · `npm run typecheck`.
+- [x] **Step 6: Green** — `npx vitest run app/api/arcade/home components/ArenaAvatar.test.ts components/ArenaStage components/ArenaBattle` · `npm run typecheck`.
 
-- [ ] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 home body carries character; ArenaAvatar draws three silhouettes"`.
+- [x] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 home body carries character; ArenaAvatar draws three silhouettes"`.
 
 ---
 
@@ -516,7 +517,7 @@ it('the accessible name says which character it is (⛔ not shape alone)', () =>
 **Files:** Create `components/ArenaCharacterChoice.tsx`, `components/ArenaCharacterChoice.test.ts`,
 `app/dev/arcade/character/page.tsx`. Modify `scripts/verify-mobile.mjs`.
 
-- [ ] **Step 1: Failing test** — `components/ArenaCharacterChoice.test.ts` (the
+- [x] **Step 1: Failing test** — `components/ArenaCharacterChoice.test.ts` (the
   `ArenaHome.test.ts` pattern — `SRC` raw for strings, `CODE` stripped for bans):
 
 ```ts
@@ -583,9 +584,9 @@ describe('ArenaCharacterChoice — `37 § 7` on the geometry of `docs/design/kol
 });
 ```
 
-- [ ] **Step 2: Run it red** — `npx vitest run components/ArenaCharacterChoice.test.ts`.
+- [x] **Step 2: Run it red** — `npx vitest run components/ArenaCharacterChoice.test.ts`.
 
-- [ ] **Step 3: Write `components/ArenaCharacterChoice.tsx`** — `'use client'`; imports
+- [x] **Step 3: Write `components/ArenaCharacterChoice.tsx`** — `'use client'`; imports
   from `@/lib/core/arenaCharacter`, `apiPatch` from `@/lib/api/client`, `ArenaAvatar`;
   `CARD_CLASS` · `START_CLASS` · `SECONDARY_CLASS` **copied verbatim** from
   `ArenaHome.tsx:101-116` (⚠️ ⛔ do not export them from `ArenaHome` — a screen importing
@@ -599,22 +600,22 @@ describe('ArenaCharacterChoice — `37 § 7` on the geometry of `docs/design/kol
   reason line · `חזרה למסך הבית` when `onBack !== undefined`. State machine: `idle` ·
   `saving` · `error` · `session_expired` (the `ArenaHome` set) — `save ?? apiPatch`.
 
-- [ ] **Step 4: Fixture** — `app/dev/arcade/character/page.tsx`, the
+- [x] **Step 4: Fixture** — `app/dev/arcade/character/page.tsx`, the
   `app/dev/arcade/home/page.tsx` shape: `initial={null}` · `onSaved={() => {}}` ·
   `save={async () => {}}` (⛔ no network from a fixture). A second fixture state is ⛔ not
   needed: the walk measures first entry, the harder case (no exit).
 
-- [ ] **Step 5: Per-screen gate** — `scripts/verify-mobile.mjs`: add `'/dev/arcade/character'`
+- [x] **Step 5: Per-screen gate** — `scripts/verify-mobile.mjs`: add `'/dev/arcade/character'`
   after `'/dev/arcade/home'` (`:182`) with the same two-line reason, and to `ARENA_SCREENS`
   (`:252`) so the arena contrast pairs are measured on it.
 
-- [ ] **Step 6: Green + look at it (D-103)** — `npx vitest run components/ArenaCharacterChoice.test.ts`,
+- [x] **Step 6: Green + look at it (D-103)** — `npx vitest run components/ArenaCharacterChoice.test.ts`,
   then `(npx next dev -p 3000 &) && sleep 25` and walk `http://127.0.0.1:3000/dev/arcade/character`
   at **375×780** and at 320 / 414: record heading · text length · tappable count ·
   under-44px (must be 0) · horizontal scroll (must be 0) · console errors. Then
   `npm run check:mobile`.
 
-- [ ] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 ArenaCharacterChoice screen + fixture + mobile gate"`.
+- [x] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 ArenaCharacterChoice screen + fixture + mobile gate"`.
 
 ---
 
@@ -623,7 +624,7 @@ describe('ArenaCharacterChoice — `37 § 7` on the geometry of `docs/design/kol
 **Files:** Modify `components/ArenaHome.tsx`, `components/ArenaHome.test.ts`,
 `components/ArenaShell.tsx`, `app/dev/arcade/home/page.tsx`. Create `components/ArenaShell.test.ts`.
 
-- [ ] **Step 1: Flip the failing test** — in `components/ArenaHome.test.ts` replace the
+- [x] **Step 1: Flip the failing test** — in `components/ArenaHome.test.ts` replace the
   «`עיצוב דמות` נושאת סיבה» test with:
 
 ```ts
@@ -663,16 +664,16 @@ describe('ArenaShell — `37 § 7`: once, full screen, before the first battle',
 });
 ```
 
-- [ ] **Step 2: Run them red** — `npx vitest run components/ArenaHome.test.ts components/ArenaShell.test.ts`.
+- [x] **Step 2: Run them red** — `npx vitest run components/ArenaHome.test.ts components/ArenaShell.test.ts`.
 
-- [ ] **Step 3: Home** — `components/ArenaHome.tsx`: `ArenaHomeState.character`; `HomeBody`
+- [x] **Step 3: Home** — `components/ArenaHome.tsx`: `ArenaHomeState.character`; `HomeBody`
   gains `character: ArenaCharacter | null`; `load()` copies it; `onStart(state)` and the new
   `onDesign(state)`; delete `DESIGN_SOON_HE`, the `disabled`, `aria-describedby` and the
   `<p id="arena-design-soon">`; pass `character={state.character}` to the pedestal avatar.
   ⚠️ **`SECONDARY_CLASS` keeps `disabled:opacity-100`** — harmless, and removing a token
   is a second diff for no reason.
 
-- [ ] **Step 4: Shell** — `components/ArenaShell.tsx`: `screen` · `character` · `next`
+- [x] **Step 4: Shell** — `components/ArenaShell.tsx`: `screen` · `character` · `next`
   state; `onStart={(s) => { setCharacter(s.character); setNext('battle'); setScreen(s.character === null ? 'character' : 'battle'); }}`;
   `onDesign={(s) => { setCharacter(s.character); setNext('home'); setScreen('character'); }}`;
   `<ArenaCharacterChoice initial={character} onSaved={(c) => { setCharacter(c); setScreen(next); }} onBack={character === null ? undefined : () => setScreen('home')} />`;
@@ -680,32 +681,32 @@ describe('ArenaShell — `37 § 7`: once, full screen, before the first battle',
   ⇒ it re-fetches `/api/arcade/home` ⇒ the pedestal shows the new character from the
   **server**, ⛔ not from a client copy — one source of truth.
 
-- [ ] **Step 5: Fixture** — `app/dev/arcade/home/page.tsx`: `character: 'warrior'` in
+- [x] **Step 5: Fixture** — `app/dev/arcade/home/page.tsx`: `character: 'warrior'` in
   `initialState`, `onDesign={() => {}}`.
 
-- [ ] **Step 6: Green** — `npx vitest run components/ArenaHome.test.ts components/ArenaShell.test.ts app/arcade` ·
+- [x] **Step 6: Green** — `npx vitest run components/ArenaHome.test.ts components/ArenaShell.test.ts app/arcade` ·
   `npm run typecheck` · the D-103 walk on `/dev/arcade/home` (the `עיצוב דמות` tap now
   counts as live: tappable count **+1** against C-0499's baseline).
 
-- [ ] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 home opens the choice; shell gates the first battle"`.
+- [x] **Step 7: Commit** — `git commit` through the wrapper: `./scripts/g commit -m "loop(DEV): C-XXXX T-217 home opens the choice; shell gates the first battle"`.
 
 ---
 
 ## Task 6: close — registers, map, the full gate
 
-- [ ] **Step 1:** `grep -q '"generate-map"' package.json && npm run generate-map` — the
+- [x] **Step 1:** `grep -q '"generate-map"' package.json && npm run generate-map` — the
   tree under `app/` · `components/` · `lib/` changed ⇒ `docs/architecture-map.json` in the
   **same** commit as the last code commit (DEV.md STEP 7). ⛔ Never hand-edit it.
-- [ ] **Step 2:** `plan/50-tasks.md` — `T-217` ⇒ **🟣 C-XXXX** (⛔ not ✅ — F-126) with the
+- [x] **Step 2:** `plan/50-tasks.md` — `T-217` ⇒ **🟣 C-XXXX** (⛔ not ✅ — F-126) with the
   two measured gaps named (name list · bias numbers ⇒ the two findings of C-0501); tick the
   boxes of this file; `plan/30-architecture.md` one section; `plan/00-control.md`
   (`CYCLE_ID` · `NEXT_AGENT=CRITIC` · release the lock) + one journal line.
-- [ ] **Step 3:** `npm run measure:plan` — `docs/plan-open.md` + `docs/plan-tables.md` in the
+- [x] **Step 3:** `npm run measure:plan` — `docs/plan-open.md` + `docs/plan-tables.md` in the
   **same** commit (`RULES § 0.1 ח׳`).
-- [ ] **Step 4:** `npm run verify` — **five** commands including `check:mobile`. Paste the
+- [x] **Step 4:** `npm run verify` — **five** commands including `check:mobile`. Paste the
   exact tail into the tick report. Red ⇒ fix in the tick; still red ⇒ `./scripts/g revert`
   + a debt line in `plan/30-architecture.md`. ⛔ Never push red.
-- [ ] **Step 5:** `git push` through the wrapper — `./scripts/g push origin work/current` — the pre-push hook (`scripts/hooks/pre-push`) re-runs `verify`
+- [x] **Step 5:** `git push` through the wrapper — `./scripts/g push origin work/current` — the pre-push hook (`scripts/hooks/pre-push`) re-runs `verify`
   and writes the attestation note. ⛔ No `SKIP_VERIFY`.
 
 ---
