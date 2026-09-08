@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -812,7 +812,7 @@ describe('scripts/loop-health.mjs', () => {
      * ⇒ הבדיקה בונה כאן ריפו git אמיתי בן שני קומיטים, כי ⛔ אין דרך לזייף `git log`.
      */
     describe('שלושת המצבים — חסום כדין ⛔ אינו נראה כמו מת (F-206 · T-280)', () => {
-      const gitRepo = (subjects: string[]): string => {
+      const gitRepo = (subjects: string[], paths?: string[]): string => {
         const root = healthy();
         const g = (...args: string[]) =>
           execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
@@ -825,11 +825,21 @@ describe('scripts/loop-health.mjs', () => {
         g('init', '-q', '-b', 'main');
         g('config', 'user.email', 't@t');
         g('config', 'user.name', 't');
-        for (const subject of subjects) {
-          writeFileSync(join(root, 'seq.txt'), subject, 'utf8');
+        // 🔴 ⛔ **קומיט בסיס בתחילית שאינה של סוכן — ⛔ ובלעדיו הפיקסצ׳ר משקר.**
+        // ‏`healthy()` יוצר עשרות קבצים; בלי לקבע אותם קודם, `git add -A` הראשון היה
+        // מכניס אותם לקומיט של הסוכן ⇒ כל קומיט ראשון היה נראה **עבודה**, וסיווג לפי דיף
+        // ⛔ לא היה ניתן לבדיקה כלל.
+        g('add', '-A');
+        g('commit', '-q', '-m', 'fixture: baseline');
+        // ⛔ נתיב לכל קומיט: בדיקה 17 מסווגת לפי הדיף, ⇒ הפיקסצ׳ר חייב לשלוט בו.
+        subjects.forEach((subject, i) => {
+          const rel = paths?.[i] ?? 'seq.txt';
+          const abs = join(root, rel);
+          mkdirSync(dirname(abs), { recursive: true });
+          writeFileSync(abs, subject, 'utf8');
           g('add', '-A');
           g('commit', '-q', '-m', subject);
-        }
+        });
         // ⛔ הבדיקה קוראת `origin/work/current` בשמו המלא — ⛔ לא ענף מקומי.
         g('update-ref', 'refs/remotes/origin/work/current', 'HEAD');
         return root;
@@ -855,7 +865,10 @@ describe('scripts/loop-health.mjs', () => {
        * ו⛔ אין כאן כישלון. ⛔ הדיווח ⛔ אינו נעלם: הוא מצטט את הסיבה מהיומן.
        */
       it('🟡 רק שורת יומן טרייה ⇒ «חי ללא עבודה», מדווח ו⛔ לא נכשל', () => {
-        const r = run(gitRepo(['loop(DEV): C-0002 idle — F-194 blocks every batch']));
+        // ⛔ שורת יומן היא קומיט ניהול — ⇒ הפיקסצ׳ר חייב לגעת בנתיב ניהול, ⛔ לא ב-seq.txt.
+        const r = run(
+          gitRepo(['loop(DEV): C-0002 idle — F-194 blocks every batch'], ['plan/archive/control-log.md']),
+        );
         expect(failed(r.out, '17'), '⛔ ⛔ לא כישלון — הוא אמר למה').toBe(false);
         expect(r.out, 'הסיבה מצוטטת מהיומן').toMatch(/חי ללא עבודה/);
         expect(r.out, 'ומצוטטת מילה במילה').toMatch(/F-194 blocks every batch/);
@@ -865,6 +878,26 @@ describe('scripts/loop-health.mjs', () => {
        * 🔴 ⛔ **⛔ אף קומיט בתחילית הסוכן — ⛔ ולא שורת יומן.** זה, ⛔ ורק זה, מפיל את
        * הבדיקה. ⛔ סוכן שנמדד כמת ⛔ אינו נבדל בשום ערוץ אחר — `git log` הוא היחיד שרואים.
        */
+      /**
+       * 🟠 ⛔ **הסיווג הוא לפי הדיף, ⛔ ולא לפי הנוסח — וזה נמדד, ⛔ לא הונח.**
+       *
+       * טיק CONTENT `C-0512` (08/09) עשה בדיוק את מה ש-`§ 0.29 ו׳` דורשת — עקבה כנה
+       * של «עדיין חסום, נבדק מחדש» במקום להיראות מת — ⛔ אבל בצורה משלו: נושא הקומיט היה
+       * «same ingest-cap block re-verified, zero content pushed», ⛔ בלי הסמן `idle`.
+       * ⇒ סיווג לפי הנושא היה קורא אותו **כקומיט עבודה: ירוק, בזמן שהסוכן חסום.**
+       * ⇒ הדיף מכריע; הסמן הופך לציפייה נפרדת שמדווחת, ⛔ ואינה מפילה.
+       */
+      it('🟠 טיק ניהול ⛔ ללא הסמן — מדווח כ«ללא הסמן המוצהר», ⛔ ולא כירוק (C-0512)', () => {
+        // ⛔ קומיט ניהול אחד בלבד: ⛔ אין קומיט עבודה בחלון, ⛔ ואין סמן בנושא —
+        // בדיוק הצורה של `C-0512`.
+        const r = run(
+          gitRepo(['loop(DEV): C-0512 same block re-verified, zero content pushed'], ['plan/00-control.md']),
+        );
+        expect(r.out, '⛔ ⛔ לא נקרא כעבודה').toMatch(/ללא הסמן המוצהר/);
+        expect(failed(r.out, '17'), '⛔ חי ⇒ ⛔ אינו מפיל').toBe(false);
+        expect(r.out, '⛔ ⛔ ולא «חי ללא עבודה» סתם — הסמן חסר').not.toMatch(/🟡/);
+      });
+
       it('🔴 ⛔ אף קומיט ⇒ שקט מוחלט, וזה המצב היחיד שמפיל', () => {
         const r = run(gitRepo(['ops(runtime): somebody else entirely']));
         // ⛔ **⛔ לא `warned` ו⛔ לא `failed` — הבדיקה נעשית על ה**וורדיקט**, ⛔ לא על

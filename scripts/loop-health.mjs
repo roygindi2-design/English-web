@@ -899,7 +899,8 @@ check(
     const log = git(
       'log',
       'origin/work/current',
-      '--format=%ct%x1f%s',
+      '--format=%x1e%ct%x1f%s',
+      '--name-only',
       `-${SILENCE_LOOKBACK_COMMITS}`,
     );
     if (log === null) {
@@ -910,13 +911,47 @@ check(
           '⛔ לא נמדד — git log על origin/work/current נכשל (הרף ⛔ אינו בקלון? `./scripts/g fetch origin work/current`)',
       };
     }
+    /**
+     * 🔴 ⛔ **THE DIFF DECIDES, ⛔ NOT THE WORDING.**  ⟦NEW 08/09⟧
+     *
+     * 🔬 **Measured the same evening the marker was introduced.** CONTENT's `C-0512` did
+     * ⛔ exactly what the rule asks — «closes that silence window with an honest *still
+     * blocked, re-verified* trace instead of leaving the loop looking dead» — but in its
+     * own shape: it wrote to `plan/archive/handoff-log.md`, and its subject was
+     * `«same ingest-cap block re-verified, zero content pushed»`, which carries ⛔ no
+     * `idle` marker. ⇒ classifying by SUBJECT read it as a **work commit: green, while
+     * the agent was blocked.** ⛔ That is the false green this check exists against.
+     * ⛔ **⛔ And it was ⛔ not a violation** — that tick ran the old prompt. It is proof
+     * that a convention ⛔ nothing enforces is a convention agents will each reinvent.
+     *
+     * ⇒ a commit that changed ⛔ NOTHING but bookkeeping paths is an idle tick **whatever
+     * it is called**, and the marker becomes a separate, reportable expectation (below).
+     */
+    const BOOKKEEPING_ONLY = (files) =>
+      files.length > 0 &&
+      files.every(
+        (f) =>
+          f === 'plan/00-control.md' ||
+          f.startsWith('plan/archive/') ||
+          /^docs\/plan-[a-z-]+\.md$/.test(f),
+      );
+
     const commits = log
-      .trim()
-      .split('\n')
+      .split('\x1e')
+      .map((block) => block.trim())
       .filter(Boolean)
-      .map((l) => {
-        const [ts, subject] = l.split('\x1f');
-        return { ts: Number(ts), subject: subject ?? '' };
+      .map((block) => {
+        const [head, ...rest] = block.split('\n');
+        const [ts, subject] = head.split('\x1f');
+        const files = rest.map((f) => f.trim()).filter(Boolean);
+        return {
+          ts: Number(ts),
+          subject: subject ?? '',
+          files,
+          // ⛔ A merge carries no file list under --name-only. It is ⛔ never an idle tick,
+          // and calling it one would hand every agent a free silence window.
+          bookkeeping: BOOKKEEPING_ONLY(files),
+        };
       });
     const nowSec = Math.floor(Date.now() / 1000);
     const items = [];
@@ -946,7 +981,8 @@ check(
       const mine = commits.filter((c) => prefixes.some((p) => c.subject.startsWith(p)));
       const ceiling = a.maxSilentHours ?? 24;
       const newestAny = mine[0];
-      const newestWork = mine.find((c) => !IDLE_SUBJECT.test(c.subject));
+      // ⛔ עבודה = קומיט שנגע במשהו מעבר לניהול. הנוסח ⛔ אינו קובע — הדיף קובע.
+      const newestWork = mine.find((c) => !c.bookkeeping);
 
       if (newestAny === undefined) {
         items.push(
@@ -963,14 +999,29 @@ check(
         continue;
       }
 
-      // ⛔ ⛔ אין קומיט עבודה בחלון. השאלה היחידה שמשנה: האם הוא **אמר למה**?
+      // ⛔ ⛔ אין קומיט עבודה בחלון. השאלה היחידה שמשנה: האם הוא **בכלל רץ**, ואמר למה?
       const idleHours = (nowSec - newestAny.ts) / 3600;
-      if (IDLE_SUBJECT.test(newestAny.subject) && idleHours <= ceiling) {
-        parts.push(`${a.name} 🟡 ${idleHours.toFixed(1)}ש׳`);
-        items.push(
-          `🟡 ${a.name} חי ללא עבודה — ⛔ אפס קומיט עבודה ${workHours === Infinity ? `ב-${commits.length} האחרונים` : `${workHours.toFixed(1)} שעות`}, ` +
-            `⛔ אבל שורת היומן שלו מלפני ${idleHours.toFixed(1)} שעות אומרת למה: ${newestAny.subject.slice(0, 90)}`,
-        );
+      if (newestAny.bookkeeping && idleHours <= ceiling) {
+        const noWork =
+          workHours === Infinity ? `ב-${commits.length} האחרונים` : `${workHours.toFixed(1)} שעות`;
+        if (IDLE_SUBJECT.test(newestAny.subject)) {
+          parts.push(`${a.name} 🟡 ${idleHours.toFixed(1)}ש׳`);
+          items.push(
+            `🟡 ${a.name} חי ללא עבודה — ⛔ אפס קומיט עבודה ${noWork}, ` +
+              `⛔ אבל שורת היומן שלו מלפני ${idleHours.toFixed(1)} שעות אומרת למה: ${newestAny.subject.slice(0, 90)}`,
+          );
+        } else {
+          /**
+           * 🟠 ⛔ **חי, ⛔ אבל בצורה שלו.** הדיף מוכיח שהטיק רץ ו⛔ לא עבד ⇒ ⛔ אינו מת,
+           * ⛔ ולכן ⛔ אינו מפיל. ⛔ אבל הוא ⛔ לא נשא את הסמן ש-`§ 0.29 ו׳` קובעת, ⇒
+           * **הסיבה ⛔ אינה ניתנת לקריאה** — וזו כל התועלת בשורת היומן. ⛔ בדיוק `C-0512`.
+           */
+          parts.push(`${a.name} 🟠 ${idleHours.toFixed(1)}ש׳`);
+          items.push(
+            `🟠 ${a.name} חי ללא עבודה, ⛔ אך ⛔ ללא הסמן המוצהר — ⛔ אפס קומיט עבודה ${noWork}. ` +
+              `‏\`§ 0.29 ו׳\` דורשת \`loop(${a.name}): <cycle> idle — <הסיבה>\`, והקומיט האחרון הוא: ${newestAny.subject.slice(0, 80)}`,
+          );
+        }
         continue;
       }
 
