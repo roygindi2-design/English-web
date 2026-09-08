@@ -13,6 +13,7 @@ import {
   isRage,
   manaAt,
   outcomeAt,
+  returnedSpell,
   startBattle,
   telegraphAt,
   tick,
@@ -90,6 +91,29 @@ describe('battle', () => {
     expect(FRESH.learnerHp - swung.learnerHp).toBeGreaterThan(
       FRESH.learnerHp - clean.learnerHp,
     );
+  });
+
+  it('T-220 ⓓ — שגויה על `unfiltered` ⇒ הלחש חוזר **גלוי**: `returnedSpell` נוקב במילה ובתרגומה', () => {
+    const w1: ArenaWord = { ...word(1), kind: 'unfiltered' };
+    const fresh = startBattle([w1, word(2), word(3)], 20, 10);
+    const missed = cast({ ...fresh, shownAtMs: 0 }, 'לא-נכון', 2_000);
+    expect(returnedSpell(missed)).toEqual(w1);            // headword + translationHe, revealed
+    expect(missed.words[missed.words.length - 1]?.wordId).toBe('w1'); // and it is back in the tail
+    // the next cast (any result) clears the reveal — it belongs to the moment of the error
+    const next = cast(missed, 'אפשרות 2', 3_000);
+    expect(returnedSpell(next)).toBeNull();
+    // the tail copy is `base` ⇒ a second miss on the same word ⛔ never reveals twice
+    const again = cast(cast(next, 'אפשרות 3', 4_000), 'לא-נכון', 5_000);
+    expect(again.words[again.index - 1]?.wordId).toBe('w1');
+    expect(returnedSpell(again)).toBeNull();
+  });
+
+  it('T-220 ⓓ — ⛔ אין חשיפה על נכונה, על `base`, או לפני ההטלה הראשונה', () => {
+    expect(returnedSpell(FRESH)).toBeNull();
+    expect(returnedSpell(cast({ ...FRESH, shownAtMs: 0 }, 'אפשרות 1', 1_000))).toBeNull();
+    expect(returnedSpell(cast({ ...FRESH, shownAtMs: 0 }, 'לא-נכון', 1_000))).toBeNull();
+    const known = startBattle([{ ...word(1), kind: 'known' }], 20, 10);
+    expect(returnedSpell(cast({ ...known, shownAtMs: 0 }, 'לא-נכון', 1_000))).toBeNull();
   });
 
   it('בתום השעון מנצח אחוז החיים הגבוה — ⛔ והפסד הוא מצב (D-126 § ד׳)', () => {

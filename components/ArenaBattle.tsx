@@ -22,6 +22,7 @@ import {
   isRage,
   manaAt,
   outcomeAt,
+  returnedSpell,
   stagePhase,
   startBattle,
   telegraphAt,
@@ -161,6 +162,8 @@ const FIRE_HINT_HE = 'בחר קלף לחש כדי לשגר';
 /** ⛔ זיכרון מכשיר, ⛔ ולא התקדמות למידה — ⛔ אינו נקודות, ⛔ אינו רצף, ⛔ אינו נוגע ב-`word_progress`. */
 export const ARENA_TAUGHT_KEY = 'kol.arena.dragTaught';
 const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · או הקש על קלף ואז על היריב';
+/** T-220 ⓓ · D-139 — the spell that came back, revealed: «<headword> — <translation>». */
+const RETURNED_HE = 'הלחש חוזר אליך';
 const SAVING_HE = 'שומר את הקרב…';
 const FINISHED_HE = 'הקרב נגמר';
 /**
@@ -678,6 +681,9 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
 
   const word = battle.words[battle.index];
   const hand = word === undefined ? [] : byWordId.get(word.wordId)?.options ?? [];
+  // T-220 ⓓ — derived from the battle, ⛔ not a second state: it is non-null exactly while
+  // the last cast missed an `unfiltered` word, and the next cast clears it.
+  const returned = returnedSpell(battle);
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
   /**
    * ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו
@@ -885,6 +891,21 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           ⛔ אינו זז, ולכן הרמז ⛔ אינו יכול להיות שכבה מעליו. */}
       {showHint && (
         <p data-arena-hint className="text-center text-xs text-[color:var(--arena-ink-dim)]">{DRAG_HINT_HE}</p>
+      )}
+      {/* T-220 ⓓ · D-139 — the card comes back REVEALED: the Hebrew translation is shown at
+          the moment of the error, then the learner is asked to produce it again at the tail
+          (`cast` in `battle.ts`). ⛔ Not a new mechanic (R-010): tap ⇒ translation is what
+          `StoryScreen` already does. ⛔ A state change, ⛔ not an animation (ⓔ): nothing here
+          moves, so `prefers-reduced-motion` has nothing to remove. Words, ⛔ not colour (א2),
+          and `aria-live` so a screen reader hears the return too. */}
+      {returned !== null && (
+        <p data-arena-returned role="status" aria-live="polite" className="text-center text-sm text-[color:var(--arena-ink)]">
+          {RETURNED_HE}
+          {' · '}
+          <EnWord className="font-bold">{returned.headword}</EnWord>
+          {' — '}
+          <span className="font-bold">{returned.translationHe}</span>
+        </p>
       )}
 
       <ul data-arena-hand className="grid grid-cols-4 gap-2">

@@ -176,6 +176,23 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
 }
 
 /**
+ * T-220 ⓓ · D-139 — **the spell comes back REVEALED.** After a wrong cast on an `unfiltered`
+ * word, `cast` above requeues it at the tail; this names that word so the screen can show
+ * its Hebrew translation at the moment of the error, before the learner meets it again.
+ * ⛔ Derived, ⛔ not stored: it is true exactly while the LAST cast was wrong on a word that
+ * was `unfiltered` when cast (the tail copy is `base`, so a second miss never reveals twice),
+ * and the next cast clears it by moving `index`. Not new pedagogy (R-010): tap ⇒ translation
+ * is what `StoryScreen` already does. `null` in every other state.
+ */
+export function returnedSpell(state: BattleState): ArenaWord | null {
+  const last = state.casts[state.casts.length - 1];
+  const word = state.words[state.index - 1];
+  if (last === undefined || word === undefined) return null;
+  if (last.correct || word.kind !== 'unfiltered' || word.wordId !== last.wordId) return null;
+  return word;
+}
+
+/**
  * `37 § 3` — קצב היריב. ⛔ **הפונקציה אידמפוטנטית ביחס לשעון**: `lastSwingMs` נושא את
  * המכה האחרונה שיושמה, ולכן קריאה שנייה על אותו `elapsedMs` ⛔ אינה מכה פעמיים.
  * זו הסיבה שהיא בטוחה בתוך לולאת `requestAnimationFrame` שרצה 60 פעמים בשנייה.
