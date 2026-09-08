@@ -7,7 +7,7 @@
 > ⇒ **מסך בלי שורה כאן = מסך שאינו קיים ב-`app/`**, ⛔ ולא מסך שמישהו שכח לתאר.
 > ⚠️ **מודד חיווט, ⛔ לא איכות.** מסך יכול לעבור כאן במלואו ולא ללמד דבר.
 
-**18 מסכי מוצר · 27 מסכי פיקסצ׳ר (`/dev/*`)**
+**18 מסכי מוצר · 28 מסכי פיקסצ׳ר (`/dev/*`)**
 > ⛔ **⛔ אין חותמת תאריך בקובץ הזה, ובכוונה:** תאריך ריצה היה משנה את הפלט בכל יום
 > ⇒ דיף בכל טיק ⇒ «הקובץ הזה תמיד משתנה» ⇒ איש ⛔ אינו קורא אותו. הפלט הוא **פונקציה
 > של הקוד בלבד**, ולכן דיף כאן פירושו **המשטחים זזו**, ⛔ ולא שהשעון התקדם.
@@ -24,8 +24,8 @@
 | `/world/collected` | `הסתר` · `לזירה` · `נסה שוב` | `/world/story` · `/dev/world/ring` · `components/WorldRing.tsx` … +1 | `/login` | ✅ | `components/CollectedWords` |
 | `/world` | `חברים חברים` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +9 | ⛔ — | ✅ | `components/WorldRing` |
 | `/world/story` | `חזרה לעולם` · `סיימתי לקרוא` · `לבחירת הרמה` … +5 | `/dev/story` · `/dev/world/ring` · `components/StoryScreen.tsx` … +1 | ⛔ — | ✅ | `components/StoryScreen` |
-| `/arcade` | `סגור` · `בחירת רמה` · `חזרה לעולם` … +3 | `/dev/arcade/home` · `/dev/arcade` · `/dev/arcade/result` … +6 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
-| `/login` | `להתחברות` | `/` · `components/ArenaBattle.tsx` · `components/ArenaHome.tsx` … +11 | ⛔ — | ⛔ | `components/AuthForm` |
+| `/arcade` | `סגור` · `בחירת רמה` · `חזרה לעולם` … +4 | `/dev/arcade/home` · `/dev/arcade` · `/dev/arcade/result` … +6 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
+| `/login` | `להתחברות` | `/` · `components/ArenaBattle.tsx` · `components/ArenaCharacterChoice.tsx` … +12 | ⛔ — | ⛔ | `components/AuthForm` |
 | `/offline` | `נסה שוב` | `service worker` | `/` | ⛔ | `—` |
 | `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +6 | ⛔ — | ⛔ | `components/RegisteredAddress` |
 | `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` … +1 | `/signup` · `/login` | ⛔ | `components/EnWord` |
@@ -39,6 +39,7 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
+| `/dev/arcade/character` | `התחברות מחדש` · `חזרה למסך הבית` | ⛔ — | `/login` | ✅ | `components/ArenaCharacterChoice` |
 | `/dev/arcade/home` | `התחברות מחדש` · `נסה שוב` · `התחל קרב` … +2 | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
 | `/dev/arcade` | `סגור` · `בחירת רמה` · `חזרה לעולם` | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +3 | `/cards` · `/login` · `/world` | ✅ | `—` |
 | `/dev/arcade/result` | `עוד קרב` · `חזרה לעולם` | `/dev/arcade/summary` | `/world` | ✅ | `—` |
