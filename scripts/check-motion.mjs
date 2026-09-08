@@ -37,6 +37,82 @@ export const BASELINE_PATH = 'scripts/motion-baseline.md';
 /** The only two properties a browser can animate on the compositor. */
 const COMPOSITOR_ONLY = new Set(['transform', 'opacity']);
 
+/**
+ * T-234 · D-201 · constitution § ב6 — THE ONE DECLARED EXCEPTION TO RULE ⓐ, BY NAME.
+ *
+ * `arena-impact-a` / `arena-impact-b` animate `color` — a paint property — for the
+ * arena's hit-stop flash. Why it is ⛔ not a softening of the rule: the ban on `color`
+ * exists against a REPAINT ON EVERY FRAME, and `steps(1, end)` does ⛔ not interpolate at
+ * all ⇒ one discrete value, one repaint, identical to toggling a class. Converting to
+ * `opacity` was measured MORE expensive (D-201 § ב׳): the silhouette is an SVG that
+ * inherits `currentColor`, so `opacity` fades it instead of tinting it, and equivalence
+ * would need a full second copy of the figure in the DOM.
+ *
+ * The five fences of § ב6, and the gate enforces the ones a scanner can see:
+ *   ⓐ the arena stage area only — the FILE is pinned, ⛔ not a glob;
+ *   ⓑ `steps(1, end)` and iteration `1` only — every `animation:` that names the
+ *      keyframes must match that timing, and ANY interpolating function is a violation;
+ *   ⓒ it accompanies the hit-stop, ⛔ never a motion channel of its own (spec, `37 § 6`);
+ *   ⓓ `prefers-reduced-motion` removes it (layer A · א7 — the CSS block after it);
+ *   ⓔ the exception is enforced for THESE TWO NAMES ONLY. ⛔ A third flash does not enter
+ *      quietly: a new `@keyframes` on `color` in the same file is a violation like any
+ *      other, and adding a name here is a PM or Roy action (same rule as the baseline).
+ */
+export const DECLARED_KEYFRAME_EXCEPTIONS = Object.freeze([
+  Object.freeze({
+    file: 'app/arcade/arcade-tokens.css',
+    keyframes: 'arena-impact-a',
+    property: 'color',
+    rule: 'D-201 · 35 § ב6 — one-frame hit-stop flash, steps(1, end) × 1',
+  }),
+  Object.freeze({
+    file: 'app/arcade/arcade-tokens.css',
+    keyframes: 'arena-impact-b',
+    property: 'color',
+    rule: 'D-201 · 35 § ב6 — one-frame hit-stop flash, steps(1, end) × 1',
+  }),
+]);
+
+/** Fence ⓑ, as a regex over the `animation:` shorthand value: `steps(1, end)` and exactly one iteration. */
+const ONE_FRAME_ONCE = /\bsteps\(\s*1\s*,\s*end\s*\)\s+1(?:\s|$)/;
+
+/**
+ * Every `animation:` shorthand value in `src` that names `keyframes`. ⛔ Longhands
+ * (`animation-name:` + `animation-timing-function:`) are not matched on purpose: the
+ * repo declares the two flashes as shorthands, and a longhand form would be a NEW shape
+ * the scanner cannot vouch for ⇒ it falls through to "no usage found" ⇒ a violation.
+ */
+function animationUsages(src, keyframes) {
+  const out = [];
+  for (const m of src.matchAll(/(^|[{;\s])animation\s*:\s*([^;}]+)/g)) {
+    const value = m[2].trim();
+    const names = value.split(',').map((part) => part.trim().split(/\s+/)).flat();
+    if (names.includes(keyframes)) out.push({ value: value.replace(/\s+/g, ' '), line: lineOf(src, m.index) });
+  }
+  return out;
+}
+
+/**
+ * `null` when the block is covered by a declared exception AND every fence a scanner can
+ * measure holds; otherwise the reason it is ⛔ not covered (which becomes the violation's
+ * detail). The exception is matched on file + name + the exact property set — a block that
+ * animates `color` AND anything else is ⛔ not the declared flash.
+ */
+function exceptionGap(file, keyframes, badProps, src) {
+  const ex = DECLARED_KEYFRAME_EXCEPTIONS.find((e) => e.file === file && e.keyframes === keyframes);
+  if (ex === undefined) return undefined;
+  if (badProps.length !== 1 || badProps[0] !== ex.property) {
+    return `declared exception covers \`${ex.property}\` only, block animates ${badProps.join(', ')}`;
+  }
+  const usages = animationUsages(src, keyframes);
+  if (usages.length === 0) return `declared exception requires an \`animation:\` shorthand with steps(1, end) 1 — none found`;
+  const broken = usages.filter((u) => !ONE_FRAME_ONCE.test(u.value));
+  if (broken.length) {
+    return `declared exception requires \`steps(1, end) 1\` (35 § ב6 fence ⓑ) — line ${broken[0].line} has \`animation: ${broken[0].value}\``;
+  }
+  return null;
+}
+
 /** Values of `transition:` that animate nothing and are therefore always fine. */
 const INERT_TRANSITION_VALUES = new Set(['none', 'initial', 'inherit', 'unset', 'revert']);
 
@@ -100,12 +176,20 @@ export function violationsInCss(file, source) {
     const { body } = balancedBlock(src, open);
     const bad = [...new Set(declaredProperties(body))].filter((p) => !COMPOSITOR_ONLY.has(p));
     if (bad.length) {
+      // T-234 · D-201 — a block named in DECLARED_KEYFRAME_EXCEPTIONS passes only while
+      // every measurable fence of 35 § ב6 holds; a fence that breaks is reported as the
+      // violation's detail, under the same key, so the baseline cannot absorb it either.
+      const gap = exceptionGap(file, m[1], bad, src);
+      if (gap === null) continue;
       out.push({
         file,
         rule: 'A',
         key: m[1],
         line: lineOf(src, m.index),
-        detail: `@keyframes ${m[1]} animates ${bad.join(', ')} — not a compositor property`,
+        detail:
+          gap === undefined
+            ? `@keyframes ${m[1]} animates ${bad.join(', ')} — not a compositor property`
+            : `@keyframes ${m[1]} animates ${bad.join(', ')} — ${gap}`,
       });
     }
   }

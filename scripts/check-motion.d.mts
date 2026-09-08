@@ -18,6 +18,18 @@ export declare const BASELINE_HEADER_RULE: string;
 /** Repo-relative path of the frozen baseline. */
 export declare const BASELINE_PATH: string;
 
+/**
+ * T-234 · D-201 · 35 § ב6 — the declared exceptions to rule ⓐ, by file + `@keyframes`
+ * name + the one property each may animate. ⛔ Adding an entry is a PM or Roy action.
+ */
+export interface DeclaredKeyframeException {
+  readonly file: string;
+  readonly keyframes: string;
+  readonly property: string;
+  readonly rule: string;
+}
+export declare const DECLARED_KEYFRAME_EXCEPTIONS: readonly DeclaredKeyframeException[];
+
 /** ⓐ = a non-compositor animated property · ⓑ = an inline % width in a rAF component. */
 export type MotionRule = 'A' | 'B';
 

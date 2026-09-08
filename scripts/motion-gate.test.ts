@@ -10,6 +10,7 @@ import {
   parseBaseline,
   BASELINE_HEADER_RULE,
   BASELINE_PATH,
+  DECLARED_KEYFRAME_EXCEPTIONS,
 } from './check-motion.mjs';
 
 /**
@@ -38,8 +39,10 @@ import {
  * diff QA reads.
  */
 
-/** ⛔ Raising this is a PM or Roy action. DEV may only lower it, when a finding closes. */
-const MAX_BASELINE = 6;
+/** ⛔ Raising this is a PM or Roy action. DEV may only lower it, when a finding closes.
+ *  Lowered 6 ⇒ 0 in C-0505 (T-234): the last two rows left the baseline through the
+ *  declared exception of 35 § ב6, and every other row had already closed. */
+const MAX_BASELINE = 0;
 
 const REPO_ROOT = process.cwd();
 
@@ -109,6 +112,78 @@ describe('rule ⓐ — animated properties that are not transform/opacity', () =
   it('does not read its own documentation as code', () => {
     const css = `/* box-shadow must never be animated; use transform. */\n.x { transition: transform 200ms ease-out; }`;
     expect(violationsInCss('a.css', css)).toHaveLength(0);
+  });
+});
+
+/**
+ * T-234 · D-201 · 35 § ב6 — the ONE declared exception to rule ⓐ, enforced by name.
+ * `arena-impact-a`/`arena-impact-b` animate `color` for one frame (`steps(1, end)`, once)
+ * as the arena's hit-stop flash. The tests below are fence ⓔ made executable: a third
+ * flash on `color` fails, and either of the two failing fence ⓑ (`steps(1, end)` × 1)
+ * fails — so the exception cannot widen from the inside.
+ */
+describe('rule ⓐ — the declared exception for the arena hit-stop flash (35 § ב6)', () => {
+  const FILE = 'app/arcade/arcade-tokens.css';
+  const flash = (name: string, timing = 'steps(1, end) 1') =>
+    `@keyframes ${name} { from { color: var(--arena-ink); } }\n` +
+    `[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure] { animation: ${name} var(--arena-impact-ms) ${timing}; }`;
+
+  it('names exactly the two flashes, in the arena token file, on `color` only (fence ⓔ)', () => {
+    expect(DECLARED_KEYFRAME_EXCEPTIONS.map((e) => `${e.file} · ${e.keyframes} · ${e.property}`)).toEqual([
+      `${FILE} · arena-impact-a · color`,
+      `${FILE} · arena-impact-b · color`,
+    ]);
+  });
+
+  it('passes both flashes as the repo declares them today', () => {
+    expect(violationsInCss(FILE, `${flash('arena-impact-a')}\n${flash('arena-impact-b')}`)).toHaveLength(0);
+  });
+
+  it('FAILS a third @keyframes that animates color in the same file — ⛔ no quiet third flash', () => {
+    const found = violationsInCss(FILE, `${flash('arena-impact-a')}\n${flash('arena-impact-c')}`);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ rule: 'A', key: 'arena-impact-c' });
+    expect(found[0]?.detail).toContain('color');
+  });
+
+  it('FAILS when one of the two stops being steps(1, end) — an interpolating timing function (fence ⓑ)', () => {
+    const found = violationsInCss(FILE, flash('arena-impact-a', 'ease-out 1'));
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ rule: 'A', key: 'arena-impact-a' });
+    expect(found[0]?.detail).toContain('steps(1, end) 1');
+  });
+
+  it('FAILS when one of the two stops being a single iteration (fence ⓑ)', () => {
+    const found = violationsInCss(FILE, flash('arena-impact-b', 'steps(1, end) infinite'));
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ rule: 'A', key: 'arena-impact-b' });
+  });
+
+  it('FAILS when the keyframes exist but nothing applies them with the fenced timing', () => {
+    const found = violationsInCss(FILE, `@keyframes arena-impact-a { from { color: var(--arena-ink); } }`);
+    expect(found).toHaveLength(1);
+    expect(found[0]?.detail).toMatch(/none found/);
+  });
+
+  it('FAILS the same name outside the arena token file (fence ⓐ — the stage area only)', () => {
+    expect(violationsInCss('app/globals.css', flash('arena-impact-a'))).toHaveLength(1);
+  });
+
+  it('FAILS a covered name that animates color AND another paint property', () => {
+    const css =
+      `@keyframes arena-impact-a { from { color: var(--arena-ink); background-color: red; } }\n` +
+      `.x { animation: arena-impact-a 66ms steps(1, end) 1; }`;
+    const found = violationsInCss(FILE, css);
+    expect(found).toHaveLength(1);
+    expect(found[0]?.detail).toContain('background-color');
+  });
+
+  it('holds on the real file: the two flashes are steps(1, end) × 1 and pass without a baseline row', () => {
+    const real = readFileSync(FILE, 'utf8');
+    expect(real).toMatch(/@keyframes arena-impact-a/);
+    expect(real).toMatch(/@keyframes arena-impact-b/);
+    expect(violationsInCss(FILE, real).filter((v) => /^arena-impact-[ab]$/.test(v.key))).toHaveLength(0);
+    expect(parseBaseline(readFileSync(BASELINE_PATH, 'utf8')).some((r) => /^arena-impact-[ab]$/.test(r.key))).toBe(false);
   });
 });
 
