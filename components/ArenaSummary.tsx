@@ -1,7 +1,7 @@
 'use client';
 
 import EnWord from '@/components/EnWord';
-import { firstMetHe, meanSecondsHe, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
+import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
 
 /**
  * T-180 · `37-arena-spec § 10` — **מסך התוצאות.**
@@ -30,7 +30,8 @@ import { firstMetHe, meanSecondsHe, type ArenaSummary as ArenaSummaryData } from
  */
 
 export interface ArenaSummaryProps {
-  readonly enemyDefeated: boolean;
+  /** T-283 — three endings, ⛔ not a boolean. Computed by `endingOf` in `lib/core`. */
+  readonly ending: ArenaEnding;
   readonly summary: ArenaSummaryData;
   /** wordId → headword. האנגלית ⛔ לעולם אינה מגיעה ללומד מחוץ ל-`<EnWord>`. */
   readonly headwords: Readonly<Record<string, string>>;
@@ -39,7 +40,11 @@ export interface ArenaSummaryProps {
 }
 
 const WON_HE = 'היריב נוצח';
-const OVER_HE = 'הקרב נגמר';
+// T-283 · `37 § 9` ח4 · R-016 — two FACTS, ⛔ not verdicts, each true in every state of its
+// kind (`battle.ts:187-194`): `outlasted` ⇔ alive at the clock with the higher share;
+// `survived` ⇔ the enemy still has HP. ⛔ No word for «loss» exists in this file.
+const OUTLASTED_HE = 'החזקת מעמד עד סוף השעון';
+const SURVIVED_HE = 'היריב החזיק מעמד';
 const CORRECT_HE = 'נכונות';
 const MEAN_HE = 'זמן תגובה ממוצע';
 const STREAK_HE = 'רצף מרבי';
@@ -56,17 +61,26 @@ const ROW_CLASS =
 const PANEL_CLASS = 'flex min-h-[66px] flex-col justify-center gap-1 rounded-2xl px-4 py-3';
 
 export default function ArenaSummary({
-  enemyDefeated,
+  ending,
   summary,
   headwords,
   onBack,
 }: ArenaSummaryProps): React.JSX.Element {
   return (
     <section className="flex min-h-[100dvh] flex-col gap-6 px-6 pb-8 pt-10">
-      {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`). ⛔ אין שבח ואין נזיפה (R-016). */}
-      <h1 className="text-center text-[34px] font-black leading-tight text-[color:var(--arena-gold-light)]">
-        {enemyDefeated ? WON_HE : OVER_HE}
-      </h1>
+      {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
+          ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
+          (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
+      <header className="flex flex-col items-center gap-0.5">
+        <h1 className="text-center text-[34px] font-black leading-tight text-[color:var(--arena-gold-light)]">
+          {ending.kind === 'victory' ? WON_HE : wordsFromBossHe(ending.wordsFromBoss)}
+        </h1>
+        {ending.kind !== 'victory' && (
+          <p data-arena-ending className="text-center text-[12.5px] font-medium text-ink-muted">
+            {ending.kind === 'outlasted' ? OUTLASTED_HE : SURVIVED_HE}
+          </p>
+        )}
+      </header>
 
       {/* שלוש שורות הסיכום. כל שורה נושאת **תווית עברית כתובה** — הצבע הוא הערוץ
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
@@ -113,9 +127,11 @@ export default function ArenaSummary({
           ⛔ קריאה בלבד (`36 § 12.3`): הלוח **נוקב** במילים שהקרב הראה לראשונה, ו⛔ אינו
           עושה בהן דבר. ⛔ מוצג אך ורק כש-N>0 — אותו כלל של הלוח האדום. שורת השמות יושבת
           במשבצת של `הוסף לכרטיסיות` (`:639`) כי חצי הכתיבה חסום (`03-for-roy` 105), ובגודל
-          12px ⛔ ולא 11.5 — רצפת שכבה א׳ (`scripts/check-text-floor.mjs`). ⛔ אין `○`. */}
+          12px ⛔ ולא 11.5 — רצפת שכבה א׳ (`scripts/check-text-floor.mjs`). ⛔ אין `○`.
+          המילוי הוא `bg-brand-surface/15` ⛔ ולא גוון ישיר של `--brand` (α38 ברנדר) — שומר F-036
+          (`lib/core/palette.test.ts`) אוסר את `brand` הבסיסי כמילוי בכל מסך; הכרעה הפיכה `RULES § 0.22`. */}
       {summary.firstMet.length > 0 && (
-        <div data-arena-first-met className={`${PANEL_CLASS} border border-brand bg-brand/15`}>
+        <div data-arena-first-met className={`${PANEL_CLASS} border border-brand bg-brand-surface/15`}>
           <p className="text-end text-[14px] font-bold text-ink">
             {firstMetHe(summary.firstMet.length)}
           </p>

@@ -50,4 +50,15 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
     // 11.5 would be a new baseline violation.
     expect((CODE.match(/text-\[11\.5px\]/g) ?? []).length).toBe(1);
   });
+
+  it('T-283 — שלושה סיומים, ⛔ לא בוליאני; ⛔ «הפסדת» ו⛔ «הקרב נגמר» אינם על המסך', () => {
+    expect(CODE).not.toMatch(/enemyDefeated/);
+    expect(CODE).not.toMatch(/הפסדת/);
+    expect(CODE).not.toMatch(/הקרב נגמר/);
+    expect(CODE).toMatch(/ending\.kind === 'victory'/);
+    expect(CODE).toMatch(/wordsFromBossHe\(/);
+    expect(CODE).toMatch(/data-arena-ending/);
+    expect(CODE).toContain('החזקת מעמד עד סוף השעון');
+    expect(CODE).toContain('היריב החזיק מעמד');
+  });
 });

@@ -13,7 +13,7 @@ import { apiGet, apiPost } from '@/lib/api/client';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { mixArenaWords, type ArenaWord, type ArenaWordKind } from '@/lib/core/arenaWords';
 import { resolveGesture } from '@/lib/core/arenaGesture';
-import { summarize } from '@/lib/core/arenaSummary';
+import { endingOf, summarize } from '@/lib/core/arenaSummary';
 import {
   BATTLE_MS,
   MANA_CAP,
@@ -21,7 +21,6 @@ import {
   dodge,
   isRage,
   manaAt,
-  outcomeAt,
   returnedSpell,
   stagePhase,
   startBattle,
@@ -480,9 +479,9 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
    * לפניו `outcomeAt` נשענת רק על הענפים המידיים (חיים ≤0), ואחריו הזמן הנמסר הוא
    * ‏`BATTLE_MS` עצמו — בדיוק הגבול ש-`outcomeAt` בודקת.
    */
-  const result =
-    battle === null ? 'running' : outcomeAt(battle, timeUp ? BATTLE_MS : elapsedRef.current);
-  const finished = result !== 'running';
+  const ending =
+    battle === null ? null : endingOf(battle, timeUp ? BATTLE_MS : elapsedRef.current);
+  const finished = ending !== null;
 
   /**
    * ⛔ חיפוש לפי `wordId` ⛔ ולא לפי אינדקס (T-219): `mixArenaWords` **משנה סדר**, ולכן
@@ -634,7 +633,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
               ⛔ ואין לו מחליף עדיין (§ 7 של תוכנית פרוסה C). ⛔ הסיכום ⛔ אינו מחשב כאן —
               `summarize` הוא `lib/core` טהור. */}
           <ArenaSummary
-            enemyDefeated={outcome.enemyDefeated}
+            ending={ending}
             summary={summarize(battle.casts)}
             headwords={Object.fromEntries(headwords)}
             onBack={again}

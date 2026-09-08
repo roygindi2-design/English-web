@@ -201,6 +201,19 @@ export function outcomeAt(state: BattleState, elapsedMs: number): BattleOutcome 
 }
 
 /**
+ * T-283 · `37 § 9` ח4 — «היית 2 מילים מהבוס». How many more CORRECT casts, at any speed,
+ * would have emptied the enemy's bar: `ceil(enemyHp / hitDamage)`. `0` once the enemy is
+ * down. ⛔ `hitDamage`, ⛔ not `criticalDamage` (RULES § 0.22 call, logged in the build
+ * report): the sentence must stay true WITHOUT a condition on speed — N slow correct
+ * answers always finish the enemy; N fast ones is a promise about tempo. ⛔ Never divides
+ * by zero: `§ 7` fence 3 keeps `hitDamage ≥ 1`, and `Math.max` guards an unknown row.
+ */
+export function wordsFromBoss(state: BattleState): number {
+  if (state.enemyHp <= 0) return 0;
+  return Math.ceil(state.enemyHp / Math.max(1, state.stats.hitDamage));
+}
+
+/**
  * `37 § 5` — הטלת לחש. **הנזק נגזר ממהירות התשובה**, ומתחת ל-1.5 שניות הוא קריטי.
  * ⛔ **ואין מצב כישלון על איטיות:** נכונה איטית עדיין פוגעת, רק פחות.
  * שגויה ⇒ הלחש מתפוגג (⛔ אפס נזק) והמכה הבאה של היריב חזקה יותר.

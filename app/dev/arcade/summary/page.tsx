@@ -73,7 +73,7 @@ const HEADWORDS: Readonly<Record<string, string>> = {
 export default function DevArcadeSummaryPage() {
   return (
     <ArenaSummary
-      enemyDefeated
+      ending={{ kind: 'victory', wordsFromBoss: 0 }}
       summary={summarize(FIXTURE)}
       headwords={HEADWORDS}
       onBack={() => {}}

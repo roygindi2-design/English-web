@@ -22,6 +22,7 @@ import {
   CHARACTER_STATS,
   ENEMY_HP,
   statsFor,
+  wordsFromBoss,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
 
@@ -424,5 +425,33 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
 
   it('⛔ אפס מספר על מסך הבחירה — הטבלה היא מפרט, ⛔ לא תוכן', () => {
     for (const c of ARENA_CHARACTERS) for (const s of CHARACTER_BIAS_HE[c]) expect(s).not.toMatch(/\d/);
+  });
+});
+
+describe('wordsFromBoss — T-283 · 37 § 9 ח4', () => {
+  it('שורת הבסיס: 20 חיים ÷ פגיעה 1 = 20 מילים; אחרי קריטי (2) — 18', () => {
+    expect(wordsFromBoss(FRESH)).toBe(ENEMY_HP);
+    const afterCritical = cast(FRESH, 'אפשרות 1', 500);
+    expect(wordsFromBoss(afterCritical)).toBe(ENEMY_HP - BASE_STATS.criticalDamage);
+  });
+
+  it('קוסם (פגיעה 2): 20 חיים = 10 מילים — המספר נגזר מ-`state.stats`, ⛔ לא מקבוע', () => {
+    const wizard = startBattle([word(1), word(2)], 'wizard');
+    expect(wordsFromBoss(wizard)).toBe(Math.ceil(ENEMY_HP / CHARACTER_STATS.wizard.hitDamage));
+  });
+
+  it('עיגול כלפי מעלה: 3 חיים ÷ פגיעה 2 = 2 מילים, ⛔ לא 1.5', () => {
+    const s = { ...startBattle([word(1)], 'wizard'), enemyHp: 3 };
+    expect(wordsFromBoss(s)).toBe(2);
+  });
+
+  it('היריב נוצח ⇒ 0, ⛔ לעולם לא שלילי', () => {
+    expect(wordsFromBoss({ ...FRESH, enemyHp: 0 })).toBe(0);
+    expect(wordsFromBoss({ ...FRESH, enemyHp: -3 })).toBe(0);
+  });
+
+  it('⛔ אין חלוקה באפס גם על שורה שבורה', () => {
+    const s = { ...FRESH, stats: { ...BASE_STATS, hitDamage: 0 } };
+    expect(wordsFromBoss(s)).toBe(ENEMY_HP);
   });
 });

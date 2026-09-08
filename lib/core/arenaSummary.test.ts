@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CRITICAL_MS } from '@/lib/core/battle';
+import { BATTLE_MS, CRITICAL_MS, ENEMY_HP, startBattle, type BattleState } from '@/lib/core/battle';
 import type { ArenaWordKind } from '@/lib/core/arenaWords';
-import { firstMetHe, meanSecondsHe, summarize } from '@/lib/core/arenaSummary';
+import { endingOf, firstMetHe, meanSecondsHe, summarize, wordsFromBossHe } from '@/lib/core/arenaSummary';
 
 const cast = (wordId: string, correct: boolean, responseMs: number, kind: ArenaWordKind = 'known') => ({
   wordId, correct, responseMs, critical: correct && responseMs < CRITICAL_MS, kind,
@@ -67,5 +67,39 @@ describe('firstMet — T-282 · 37 § 10 · קריאה בלבד', () => {
   it('«פגשת 4 מילים חדשות» מהרנדר, ו«מילה אחת» ליחיד', () => {
     expect(firstMetHe(4)).toBe('פגשת 4 מילים חדשות');
     expect(firstMetHe(1)).toBe('פגשת מילה אחת חדשה');
+  });
+});
+
+describe('endingOf — T-283 · 37 § 9 ח4 · 37 § 3', () => {
+  const fresh = (): BattleState =>
+    startBattle([{ wordId: 'w1', headword: 'Lorem1', translationHe: 'אפשרות 1', kind: 'base' }]);
+
+  it('קרב רץ ⇒ null — ⛔ אין סיכום לקרב שלא נגמר', () => {
+    expect(endingOf(fresh(), 0)).toBeNull();
+    expect(endingOf(fresh(), BATTLE_MS - 1)).toBeNull();
+  });
+
+  it('היריב ב-0 ⇒ victory, ו-wordsFromBoss = 0', () => {
+    expect(endingOf({ ...fresh(), enemyHp: 0 }, 10_000)).toEqual({ kind: 'victory', wordsFromBoss: 0 });
+  });
+
+  it('הלומד ב-0 ⇒ survived, והפער הוא חיי היריב שנותרו', () => {
+    expect(endingOf({ ...fresh(), learnerHp: 0, enemyHp: 7 }, 10_000)).toEqual({ kind: 'survived', wordsFromBoss: 7 });
+  });
+
+  it('השעון נגמר, אחוז חיים גבוה יותר ⇒ outlasted, והפער עדיין נקוב', () => {
+    const s = { ...fresh(), learnerHp: 10, enemyHp: 15 };     // 10/12 > 15/20
+    expect(endingOf(s, BATTLE_MS)).toEqual({ kind: 'outlasted', wordsFromBoss: 15 });
+  });
+
+  it('השעון נגמר, תיקו באחוזים ⇒ survived (§ 3: «מנצח אחוז החיים הגבוה», ⛔ לא השווה)', () => {
+    const s = { ...fresh(), learnerHp: 6, enemyHp: 10 };       // 6/12 = 10/20
+    expect(endingOf(s, BATTLE_MS)?.kind).toBe('survived');
+  });
+
+  it('«היית 2 מילים מהבוס» — נוסח § 9 ח4 מילה במילה, ו«מילה אחת» ליחיד', () => {
+    expect(wordsFromBossHe(2)).toBe('היית 2 מילים מהבוס');
+    expect(wordsFromBossHe(ENEMY_HP)).toBe(`היית ${ENEMY_HP} מילים מהבוס`);
+    expect(wordsFromBossHe(1)).toBe('היית מילה אחת מהבוס');
   });
 });

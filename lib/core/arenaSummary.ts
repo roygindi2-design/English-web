@@ -11,7 +11,7 @@
  * ל-`CRITICAL_MS`, ⇒ «נכונה איטית» היא בדיוק `correct && !critical`. סף שני היה חוק שני,
  * והשני תמיד סוטה.
  */
-import type { BattleCast } from './battle';
+import { outcomeAt, wordsFromBoss, type BattleCast, type BattleOutcome, type BattleState } from './battle';
 
 export interface ArenaSummary {
   /** כמה מילים הוטלו. ⛔ לא גודל הסבב: מילה שלא נענתה ⛔ אינה הטלה. */
@@ -77,4 +77,29 @@ export function firstMetHe(n: number): string {
 /** «1.8 ש׳» — ספרה אחת אחרי הנקודה, יחידה עברית. ⛔ הרכיב ⛔ אינו מפרמט בעצמו. */
 export function meanSecondsHe(meanResponseMs: number): string {
   return `${(meanResponseMs / 1000).toFixed(1)} ש׳`;
+}
+
+/**
+ * T-283 · `37 § 9` ח4 · D-202 § ה׳ — **the ending is three states, ⛔ not a boolean.**
+ * `battle.ts:104` already knows `victory` · `survived` · `outlasted`; until T-283 the screen
+ * folded the last two into one string. ⛔ `running` is not an ending: `endingOf` returns
+ * `null` and the screen never draws a summary for it.
+ */
+export type ArenaEndingKind = Exclude<BattleOutcome, 'running'>;
+
+export interface ArenaEnding {
+  readonly kind: ArenaEndingKind;
+  /** `wordsFromBoss(state)` at the end — the number the heading names. `0` on `victory`. */
+  readonly wordsFromBoss: number;
+}
+
+export function endingOf(state: BattleState, elapsedMs: number): ArenaEnding | null {
+  const outcome = outcomeAt(state, elapsedMs);
+  if (outcome === 'running') return null;
+  return { kind: outcome, wordsFromBoss: wordsFromBoss(state) };
+}
+
+/** `37 § 9` ח4, verbatim shape: «היית 2 מילים מהבוס». ⛔ The screen never names a loss as a verdict — only as this number. */
+export function wordsFromBossHe(n: number): string {
+  return n === 1 ? 'היית מילה אחת מהבוס' : `היית ${n} מילים מהבוס`;
 }
