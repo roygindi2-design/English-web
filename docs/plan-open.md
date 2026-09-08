@@ -13,7 +13,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (276 שורות, 43 פתוחות) ו-`plan/60-findings.md` (201 שורות, 84 פתוחים).
+נוצר מ-`plan/50-tasks.md` (276 שורות, 43 פתוחות) ו-`plan/60-findings.md` (203 שורות, 86 פתוחים).
 
 ## ⬜ פנויות ל-Dev (16)
 
@@ -80,10 +80,12 @@ grep -n '^| F-093 |' plan/60-findings.md
 
 ⛔ אין.
 
-## ממצאים פתוחים (84)
+## ממצאים פתוחים (86)
 
 | id | חומרה | קובץ | הממצא (תקציר) | סטטוס |
 |---|---|---|---|---|
+| `F-201` | 🟡 MEDIUM · **ס… | `plan/60-findings.md` שורת `F-164` (תא סטטוס) … | **נמדד ב-`grep` על שלושת הרגיסטרים בקלון הזה, ⛔ ולא שוער:** `grep -n '^\| F-164 \|' plan/60-findings.md` ⇒ תא הסטטוס `⬜ פתוח → **PM** (הכרעת מכניקה)`; `…` | ⬜ פתוח → **PM** |
+| `F-202` | 🟡 MEDIUM · **פ… | `plan/37-arena-spec.md § 7` (טבלת «הטיה» — מיל… | **נמדד, ⛔ ולא שוער:** ⓐ `grep -n 'נבחר מרשימה\|שם הדמות\|שמות לבחירה' plan/40-decisions.md` ⇒ 0 שורות; `37 § 7` ⇒ שלושה שמות **דמות** (קוסם · לוחם · שרי… | ⬜ פתוח → **PM** |
 | `F-200` | 🟠 HIGH · **`CR…` | `docs/agents/CRITIC.md` STEP 3 (`https://silly…` | **נמדד חי בסשן הזה, ⛔ ולא שוער:** `curl -sS -m 20 https://silly-medovik-b304e5.netlify.app/api/health` ⇒ `curl: (56) CONNECT tunnel failed, response 4…` | ⬜ פתוח → **PM/DEV** |
 | `F-199` | 🟡 MEDIUM · **`…` | `plan/60-findings.md` F-196 row (תיקון מוצע co… | **נמדד בקלון הזה, ⛔ ולא שוער:** `ls docs/agents/` ⇒ `CONTENT.md · CRITIC.md · DEV.md · PM.md · PROMOTER.md · roster.json` בלבד — אין קובץ ארכיטקטורה כ… | ⬜ פתוח → **PM** |
 | `F-196` | 🟠 HIGH · **`do…` | `docs/agents/roster.json` (QA row) · `docs/age…` | **נמדד בקלון הזה, ⛔ ולא שוער:** `./scripts/g log --oneline -30 origin/dev \| grep -oE 'loop\\([A-Z]+' \| sort \| uniq -c` ⇒ **10** `loop(QA` · **0** `loop…` | ⬜ פתוח → **PM** |
@@ -276,7 +278,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 - ⛔ `T-046` — **⛔ פעולת רוי — טוקן Netlify לקריאה בלבד.** צור Personal Access Token ב-Netlify …
 - ⛔ `T-090` — **תוכן השיעור הראשון — «ניסוח מחדש: איך מזהים».** הסבר בעברית + 1–3 פריטים **מקו…
 
-## 📐 אינדקס התוכניות — 70 קבצים ב-`docs/superpowers/plans`
+## 📐 אינדקס התוכניות — 71 קבצים ב-`docs/superpowers/plans`
 
 ⛔ נוצר, ⛔ לא נכתב. «יתומה» = תוכנית שאף שורת משימה אינה מצטטת — או שהיא נמסרה ואיש לא סגר את הלולאה, או שהיא נשכחה.
 
@@ -353,6 +355,7 @@ grep -n '^| F-093 |' plan/60-findings.md
 | `2026-09-06-loop-infra-hardening` | `T-254` `T-257` `T-260` | ⚪ 0/23 — ⛔ ולו תיבה אחת לא סומנה | ✅ נמסרה |
 | `2026-09-06-sense-items-level-tagging` | `T-224` | ⚪ 0/27 — ⛔ ולו תיבה אחת לא סומנה | ✅ נמסרה |
 | `2026-09-07-swipe-primary-and-spring-release` | `T-243` `T-259` | ✅ 40/40 | ✅ נמסרה |
+| `2026-09-08-arena-character-choice` | `T-217` | 0/37 | 1 פתוחות · 0 בביקורת · 0 נמסרו |
 | `2026-09-08-sentences-deck-and-gate` | — | ✅ 19/19 | ⛔ **יתומה** — אף שורה אינה מצטטת אותה |
 
 ## 🔁 משוב על תוכניות — פתוח מ-DEV אל ה-PM
