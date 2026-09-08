@@ -14,6 +14,14 @@
    ו-`CRITIC.md`. ⇒ **ארבעה בתים לאותו מידע.** הקובץ הזה הוא הבית החמישי ו**האינדקסי**;
    שלושת האחרים נשארים המקור המחייב לכללים עצמם.
 
+3. **⛔ התוסף ⛔ אינו מגיע לריצות הענן — נמדד, ⛔ לא שוער.** ⟦NEW 08/09⟧ בריצת ROUTINE
+   בסביבת CCR נמדד `~/.claude/plugins/synced/<bucket>/` **ריק**, ו-`superpowers:*` ⛔ לא
+   הופיע באף רשימת סקילים (דוח DEV C-0502, 08/09 10:33Z: «⛔ לא הוצעו: `superpowers:*`»).
+   הרשומה בשרת נושאת `enabled_plugins: []` בכל חמשת הסוכנים. ⇒ **שנים-עשר הסקילים של
+   `superpowers` יושבים מעכשיו בריפו עצמו**, בדיוק כמו שני סקילי העיצוב — ⛔ נקראים לפי
+   טריגר, ⛔ לעולם לא בכל טיק. המקור: `obra/superpowers` v6.3.0.
+   ⛔ `using-git-worktrees` ⛔ לא הובא — הוא חסום לארבעתם (הרשימה השלילית למטה).
+
 ## 🏷️ תג הסקיל בשורת משימה — `[SKILL: x]`
 
 **PM** מצמיד לכל שורה שהוא גוזר ב-`plan/50-tasks.md` תג בעמודת `סקיל`, בצורה `[SKILL: <שם>]`
@@ -28,18 +36,18 @@
 
 | הסקיל | מתי להשתמש בו — הטריגר | מי | נתיב |
 |---|---|---|---|
-| `superpowers:using-superpowers` | ⛔ **בפתיחת כל סשן, לפני כל דבר אחר.** הוא מה שמגלה אילו סקילים הסשן באמת מחזיק | ארבעתם | תוסף `superpowers` |
-| `superpowers:verification-before-completion` | לפני **כל** טענה של «עובד / עבר / הושלם / תוקן» | ארבעתם | תוסף `superpowers` |
-| `superpowers:test-driven-development` | לפני כתיבת קוד למשימה | DEV | תוסף `superpowers` |
-| `superpowers:systematic-debugging` | באג, טסט נופל, התנהגות לא צפויה | DEV | תוסף `superpowers` |
-| `superpowers:writing-plans` | משימה שאינה טריוויאלית — לפני קוד | DEV | תוסף `superpowers` |
-| `superpowers:executing-plans` | ביצוע תוכנית קיימת מ-`docs/superpowers/plans/` | DEV · CONTENT | תוסף `superpowers` |
-| `superpowers:subagent-driven-development` | תוכנית עם צעדים עצמאיים — לפני ביצוע | DEV | תוסף `superpowers` |
-| `superpowers:requesting-code-review` | סיום משימה, לפני העברה ל-QA | DEV | תוסף `superpowers` |
-| `superpowers:receiving-code-review` | קבלת ממצאי QA | DEV | תוסף `superpowers` |
-| `superpowers:brainstorming` | לפני עיצוב פיצ׳ר או שינוי התנהגות | PM | תוסף `superpowers` |
-| `superpowers:dispatching-parallel-agents` | 2+ משימות עצמאיות במקביל | PM · QA | תוסף `superpowers` |
-| `superpowers:finishing-a-development-branch` | הקוד מוכן — איך ממזגים | **QA בלבד** | תוסף `superpowers` |
+| `superpowers:using-superpowers` | ⛔ **בפתיחת כל סשן, לפני כל דבר אחר.** הוא מה שמגלה אילו סקילים הסשן באמת מחזיק | ארבעתם | **`skills/superpowers/using-superpowers/SKILL.md`** |
+| `superpowers:verification-before-completion` | לפני **כל** טענה של «עובד / עבר / הושלם / תוקן» | ארבעתם | **`skills/superpowers/verification-before-completion/SKILL.md`** |
+| `superpowers:test-driven-development` | לפני כתיבת קוד למשימה | DEV | **`skills/superpowers/test-driven-development/SKILL.md`** |
+| `superpowers:systematic-debugging` | באג, טסט נופל, התנהגות לא צפויה | DEV | **`skills/superpowers/systematic-debugging/SKILL.md`** |
+| `superpowers:writing-plans` | משימה שאינה טריוויאלית — לפני קוד | DEV | **`skills/superpowers/writing-plans/SKILL.md`** |
+| `superpowers:executing-plans` | ביצוע תוכנית קיימת מ-`docs/superpowers/plans/` | DEV · CONTENT | **`skills/superpowers/executing-plans/SKILL.md`** |
+| `superpowers:subagent-driven-development` | תוכנית עם צעדים עצמאיים — לפני ביצוע | DEV | **`skills/superpowers/subagent-driven-development/SKILL.md`** |
+| `superpowers:requesting-code-review` | סיום משימה, לפני העברה ל-QA | DEV | **`skills/superpowers/requesting-code-review/SKILL.md`** |
+| `superpowers:receiving-code-review` | קבלת ממצאי QA | DEV | **`skills/superpowers/receiving-code-review/SKILL.md`** |
+| `superpowers:brainstorming` | לפני עיצוב פיצ׳ר או שינוי התנהגות | PM | **`skills/superpowers/brainstorming/SKILL.md`** |
+| `superpowers:dispatching-parallel-agents` | 2+ משימות עצמאיות במקביל | PM · QA | **`skills/superpowers/dispatching-parallel-agents/SKILL.md`** |
+| `superpowers:finishing-a-development-branch` | הקוד מוכן — איך ממזגים | **QA בלבד** | **`skills/superpowers/finishing-a-development-branch/SKILL.md`** |
 | `codebase-investigator` | ⛔ לפני פתיחת פרוסה — לחקור מה כבר קיים | PM | סקיל סשן |
 | **`taste-skill`** | 🆕 **מיקרו-קופי · הצללות · ריווחים · «האם זה נראה תבניתי».** שורת `נוחות` שנוגעת בטקסט ממשק, במרווחים, בצללים או בהיררכיה ויזואלית | PM (בתכנון) · DEV (לפי תג) | **`skills/taste-skill/SKILL.md`** |
 | **`imagegen-frontend-mobile`** | 🆕 **חוקי מובייל-פירסט: אזורים בטוחים · ניווט תחתון · צפיפות · קריאוּת טקסט · «⛔ קופסה בתוך קופסה».** ⚠️ **הסקיל עצמו מייצר תמונות ⛔ ולא קוד** — מה שנלקח ממנו הוא **§ 13 · § 14 · § 15 · § 29 · § 30 · § 31** כעקרונות | PM (בתכנון) · DEV (לפי תג) | **`skills/imagegen-frontend-mobile/SKILL.md`** |
