@@ -185,17 +185,49 @@ describe('build-ingest-sql', () => {
     expect(sql).not.toMatch(/insert into public\.sense_examples/);
   });
 
-  it('reports the spot-check plan it used', () => {
-    // The plan is asserted against lib/core/spotCheck at the measured lot size, ⛔ not
-    // against a literal: a literal here says nothing about whether the script used the
-    // pure planner or invented its own sampling.
-    const plan = spotCheckPlan(RECORDS.length);
-    expect(out).toMatch(
-      new RegExp(
-        `lot ${plan.lotSize} · inspect ${plan.inspect} · accept up to ${plan.acceptUpTo}`,
-      ),
+  /**
+   * 🔴 **⟦REWRITTEN 08/09 · `F-194`⟧ THE PLAN IS PER BATCH, ⛔ NOT OVER THE BANK.**
+   *
+   * ⛔ **This test used to encode the bug.** It called `spotCheckPlan(RECORDS.length)` —
+   * every record in every batch — because that is what the script did, and that is the
+   * deviation `F-194` names: `R-014` (`plan/20-alerts.md`) says «דגימת בקרה אנושית **לכל
+   * אצווה**», per batch. The union grew monotonically and hit `DOCUMENTED_MAX` (1,200);
+   * measured 08/09 the bank stood at **exactly 1,200** and the next row anyone added threw
+   * `RangeError`, which is why CONTENT shipped ⛔ nothing for two days.
+   *
+   * ⇒ the assertion still runs against the **pure planner** — ⛔ never a literal, so it
+   * still catches a script that invents its own sampling — but at the granularity R-014
+   * actually mandates.
+   */
+  it('reports one spot-check plan PER BATCH, from the pure planner (R-014 · F-194)', () => {
+    // ⛔ Counted from the batch files themselves, ⛔ not from a literal — the same reason
+    // SOURCE is read from disk rather than hardcoded.
+    // ⚠️ These are ROWS READ, and the generator plans on rows that PASS the gate. They are
+    // equal only while nothing is rejected (measured: 0 rejected). The assertion below
+    // reads the count the report prints, so it stays honest if that ever diverges.
+    const perFile = SOURCE.map((f) => ({
+      file: f,
+      count: readFileSync(join(DATA, f), 'utf8').split('\n').filter(Boolean).length,
+    }));
+    expect(perFile.length, 'more than one batch, or this asserts nothing').toBeGreaterThan(1);
+    expect(out, '⛔ אפס נדחו ⇒ נקרא = עבר').toMatch(/^0 rejected by the gate$/m);
+
+    for (const { file, count } of perFile) {
+      const plan = spotCheckPlan(count);
+      expect(sql, `${file}: a lot header of its own`).toContain(
+        `-- lot ${plan.lotSize} · inspect ${plan.inspect} · accept up to ${plan.acceptUpTo}`,
+      );
+    }
+
+    // ⛔ **AND the bank-wide plan is ⛔ GONE.** Its absence IS the fix — asserting only the
+    // per-batch headers would still pass if the old whole-lot line came back beside them.
+    expect(
+      sql,
+      '⛔ ⛔ אין תוכנית אחת על הבנק כולו — היא מה שהתפוצץ ב-1,200',
+    ).not.toContain(`-- lot ${RECORDS.length} ·`);
+    expect(out, 'הדוח מונה מנות, ⛔ לא מספר אחד לבנק').toMatch(
+      new RegExp(`spot-check per batch \\(R-014\\): ${perFile.length} lots`),
     );
-    expect(sql).toContain(`-- lot ${plan.lotSize} · inspect ${plan.inspect} · accept up to ${plan.acceptUpTo}`);
   });
 
   it('is deterministic — a second run produces a byte-identical file', () => {
