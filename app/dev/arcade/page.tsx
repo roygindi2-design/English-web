@@ -42,7 +42,14 @@ function question(n: number): ArcadeQuestion {
     wordId: `w${n}`,
     headword: `Lorem${n}`,
     answer: `אפשרות ${n}`,
-    options: [`אפשרות ${n}`, `מסיח ${n}א`, `מסיח ${n}ב`, `מסיח ${n}ג`],
+    // T-220 ⓐ — one `unseen` option per question so `/dev/arcade` shows the «לחש לא מזוהה»
+    // card the way production does: a source word without a `word_progress` row.
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' },
+      { he: `מסיח ${n}א`, kind: 'met' },
+      { he: `מסיח ${n}ב`, kind: 'unseen' },
+      { he: `מסיח ${n}ג`, kind: 'met' },
+    ],
     kind: 'base',
   };
 }

@@ -47,11 +47,29 @@ export interface ArcadeCandidate {
   readonly taggedHe: readonly TaggedHeDistractor[];
 }
 
+/**
+ * T-220 ⓐ · D-143 § ד׳ — **`?` is a property of the OPTION'S SOURCE, ⛔ not of a card.**
+ * `unseen` = the option's Hebrew text was pulled from a word that has ⛔ no `word_progress`
+ * row at all ⇒ the learner sees «three words I have met and one I never saw». The banner
+ * word has, by definition, already been met ⇒ **the correct answer is ⛔ never `unseen`**.
+ * `met` is everything else — including a source the round cannot resolve and a caller that
+ * passed no `touchedWordIds` (ignorance is ⛔ not `unseen`, exactly as it is ⛔ not
+ * `unfiltered` in `kindOf` below).
+ */
+export type ArcadeOptionKind = 'met' | 'unseen';
+
+export interface ArcadeOption {
+  /** Hebrew, ⛔ always a value already in the bank (T-152 · D-087). */
+  readonly he: string;
+  readonly kind: ArcadeOptionKind;
+}
+
 export interface ArcadeQuestion {
   readonly wordId: string;
   readonly headword: string;
   readonly answer: string;
-  readonly options: readonly string[];
+  /** Exactly four, ⛔ no duplicate `he`, the answer among them (as `met`). */
+  readonly options: readonly ArcadeOption[];
   /** `37 § 2`. ⛔ הקורא לא מסר את הקבוצות ⇒ `'base'`, ⛔ ולעולם לא ניחוש מדבר אחר. */
   readonly kind: ArenaWordKind;
 }
@@ -114,6 +132,40 @@ function kindOf(
   return touched.has(wordId) ? 'base' : 'unfiltered';
 }
 
+/**
+ * T-220 ⓐ — every candidate word that carries a given Hebrew translation. Two words can
+ * share one translation, and the option text alone cannot say which of them it came from
+ * ⇒ the option is `unseen` only when **none** of its possible sources has a progress row.
+ */
+function sourcesByTranslation(candidates: readonly ArcadeCandidate[]): ReadonlyMap<string, readonly string[]> {
+  const out = new Map<string, string[]>();
+  for (const c of candidates) {
+    const t = c.translationHe.trim();
+    if (t.length === 0) continue;
+    const list = out.get(t);
+    if (list === undefined) out.set(t, [c.wordId]);
+    else list.push(c.wordId);
+  }
+  return out;
+}
+
+/**
+ * D-143 § ד׳ — `unseen` iff the text resolves to at least one candidate word and ⛔ none of
+ * them is touched. A text that resolves to no candidate (a tagged distractor whose source
+ * word is outside this level's rows) is `met`: the round ⛔ never claims «never seen» about
+ * a word it cannot name. No `touchedWordIds` ⇒ `met` for all, the same default as `kindOf`.
+ */
+function optionKindOf(
+  he: string,
+  sources: ReadonlyMap<string, readonly string[]>,
+  touched: ReadonlySet<string> | undefined,
+): ArcadeOptionKind {
+  if (touched === undefined) return 'met';
+  const ids = sources.get(he);
+  if (ids === undefined || ids.length === 0) return 'met';
+  return ids.every((id) => !touched.has(id)) ? 'unseen' : 'met';
+}
+
 export function buildRound(input: {
   readonly gameLevel: number;
   readonly candidates: readonly ArcadeCandidate[];
@@ -148,6 +200,9 @@ export function buildRound(input: {
   // ⛔ המסיחים נמשכים מ**כל הרמה** ⛔ ולא מהחלון: החלון הוא פרוסת התדירות של הקרב,
   // וצמצום המסיחים אליו היה מקטין את המאגר בלי סיבה לימודית.
   const translations = levelTranslations(pool);
+  // T-220 ⓐ — resolved over ALL candidates, ⛔ not the pool: a tagged distractor may come
+  // from a word the route passed in another band, and its progress row still counts.
+  const sources = sourcesByTranslation(input.candidates);
   const picked = shuffle(window, rnd).slice(0, ARCADE_ROUND_SIZE);
   const questions: ArcadeQuestion[] = [];
   for (const c of picked) {
@@ -168,7 +223,15 @@ export function buildRound(input: {
       wordId: c.wordId,
       headword: c.headword,
       answer,
-      options: shuffle([answer, ...wrong], rnd),
+      // ⛔ The answer is `met` by construction (D-143 § ד׳): the banner word is one the
+      // learner is being asked about, so `?` on it would hide the very thing being tested.
+      options: shuffle(
+        [
+          { he: answer, kind: 'met' as const },
+          ...wrong.map((he) => ({ he, kind: optionKindOf(he, sources, input.touchedWordIds) })),
+        ],
+        rnd,
+      ),
       kind: kindOf(c.wordId, input.knownWordIds, input.touchedWordIds),
     });
   }

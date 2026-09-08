@@ -1168,7 +1168,11 @@ character_id=null, needs_human_review=false)`.
   "round": {
     "questions": [
       { "wordId": "…", "headword": "table", "answer": "שולחן",
-        "options": ["מדף", "שולחן", "כיסא", "דלת"], "kind": "base" }
+        "options": [
+          { "he": "מדף", "kind": "met" }, { "he": "שולחן", "kind": "met" },
+          { "he": "כיסא", "kind": "unseen" }, { "he": "דלת", "kind": "met" }
+        ],
+        "kind": "base" }
     ]
   }
 }
@@ -1180,6 +1184,7 @@ character_id=null, needs_human_review=false)`.
 | `band` | ה-`CefrBand` שהסולם ב-`lib/core/arcadeLadder.ts` גוזר מ-`gameLevel`. ⛔ ⛔ אינו נקרא מהפרופיל |
 | `seed` | ה-seed שממנו נגזרה ההגרלה. מוחזר כדי שסיבוב יהיה ניתן לשחזור מהתשובה עצמה |
 | `questions` | 15 שאלות (`ARCADE_AMMO`), כל אחת עם **בדיוק 4** אפשרויות ⛔ בלי כפילות, והנכונה ביניהן |
+| `options[].he` · `options[].kind` | 🆕 **08/09 (T-220 ⓐ · D-143 § ד׳):** אפשרות היא אובייקט, ⛔ לא מחרוזת. `he` — הטקסט העברי. `kind` — `met` · `unseen`: **`unseen` = הטקסט נשלף ממילה שאין לה שורת `word_progress` כלל** (הזירה מציגה אותה כ-`?` · «לחש לא מזוהה»). ⛔ **הנכונה היא `met` תמיד** — מילת הבאנר כבר נפגשה. תרגום שחולק בין שתי מילים הוא `unseen` רק כששתיהן בלי שורה; מסיח שמקורו אינו בין המועמדים ⇒ `met`. ⛔ בלי `word_progress` נגיש (מחסן ריק) ⇒ הכול `met` |
 | `kind` | `known` · `unfiltered` · `base` — `37 § 2`. ⛔ נגזר מ-`word_progress` **בקריאה בלבד**: סומן `ידעתי` ⇒ `known` · יש שורה בלי הסימון ⇒ `base` · ⛔ אין שורה בכלל ⇒ `unfiltered`. מחסן ריק ⇒ כל 15 השאלות `base`, שהיא שורה 1 בטבלה |
 
 ⚠️ רמת משחק שאינה בסולם (שורה פגומה בדאטהבייס) ⛔ אינה 503 ו⛔ אינה שגיאה ללומד —

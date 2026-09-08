@@ -889,14 +889,17 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
 
       <ul data-arena-hand className="grid grid-cols-4 gap-2">
         {hand.map((option) => (
-          <li key={option}>
+          <li key={option.he}>
+            {/* T-220 ⓐ · D-143 § ד׳ — `?` is the OPTION SOURCE'S property (`ArcadeOption.kind`,
+                filled by `buildRound`), ⛔ not a card slot: `unseen` = pulled from a word with
+                no `word_progress` row. The answer is never `unseen` (`arcadeRound.ts`). */}
             <SpellCard
-              label={option}
-              unknown={option === '?'}
-              selected={selected === option}
+              label={option.he}
+              unknown={option.kind === 'unseen'}
+              selected={selected === option.he}
               reducedMotion={reducedMotion}
-              onSelect={() => setSelected((prev) => (prev === option ? null : option))}
-              onCast={() => fire(option)}
+              onSelect={() => setSelected((prev) => (prev === option.he ? null : option.he))}
+              onCast={() => fire(option.he)}
             />
           </li>
         ))}

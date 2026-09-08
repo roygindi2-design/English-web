@@ -7,6 +7,7 @@ import {
   buildRound,
   eligibleCandidates,
   type ArcadeCandidate,
+  type ArcadeQuestion,
 } from './arcadeRound';
 import type { TaggedHeDistractor } from './arcadeDistractors';
 import type { CefrBand } from './cefrLevels';
@@ -37,6 +38,9 @@ function makeCandidates(band: CefrBand, count: number): ArcadeCandidate[] {
 }
 
 const POOL = Array.from({ length: 20 }, (_, i) => candidate(i));
+
+/** T-220 ⓐ — the four Hebrew texts of a question; `kind` is tested on its own below. */
+const heOf = (q: ArcadeQuestion | undefined): string[] => (q?.options ?? []).map((o) => o.he);
 
 /** ⛔ רמת משחק ⛔ ולא רמת לומד: 5 ו-6 הן שתי הפרוסות של A2 בסולם (D-061). */
 const A2_FIRST = 5;
@@ -94,9 +98,9 @@ describe('הסיבוב עצמו', () => {
     expect(round.ok).toBe(true);
     if (!round.ok) return;
     for (const q of round.questions) {
-      expect(q.options).toHaveLength(ARCADE_OPTION_COUNT);
-      expect(new Set(q.options).size).toBe(ARCADE_OPTION_COUNT);
-      expect(q.options).toContain(q.answer);
+      expect(heOf(q)).toHaveLength(ARCADE_OPTION_COUNT);
+      expect(new Set(heOf(q)).size).toBe(ARCADE_OPTION_COUNT);
+      expect(heOf(q)).toContain(q.answer);
     }
   });
 
@@ -140,7 +144,7 @@ describe('T-152 — ארבע האפשרויות עבריות, ⛔ ואין נפ�
     if (!round.ok) return;
     const english = new Set(POOL.flatMap((c) => c.distractorsEn));
     for (const q of round.questions) {
-      for (const opt of q.options) expect(english.has(opt)).toBe(false);
+      for (const opt of heOf(q)) expect(english.has(opt)).toBe(false);
     }
   });
 
@@ -148,7 +152,7 @@ describe('T-152 — ארבע האפשרויות עבריות, ⛔ ואין נפ�
     expect(round.ok).toBe(true);
     if (!round.ok) return;
     for (const q of round.questions) {
-      for (const opt of q.options) {
+      for (const opt of heOf(q)) {
         expect(opt).toMatch(HEBREW);
         expect(opt).not.toMatch(LATIN);
       }
@@ -160,7 +164,7 @@ describe('T-152 — ארבע האפשרויות עבריות, ⛔ ואין נפ�
     if (!round.ok) return;
     const levelTranslations = new Set(POOL.map((c) => c.translationHe));
     for (const q of round.questions) {
-      for (const opt of q.options) expect(levelTranslations.has(opt)).toBe(true);
+      for (const opt of heOf(q)) expect(levelTranslations.has(opt)).toBe(true);
     }
   });
 
@@ -168,7 +172,7 @@ describe('T-152 — ארבע האפשרויות עבריות, ⛔ ואין נפ�
     expect(round.ok).toBe(true);
     if (!round.ok) return;
     for (const q of round.questions) {
-      const wrong = q.options.filter((o) => o !== q.answer);
+      const wrong = heOf(q).filter((o) => o !== q.answer);
       expect(wrong).toHaveLength(ARCADE_OPTION_COUNT - 1);
       expect(new Set(wrong).size).toBe(ARCADE_OPTION_COUNT - 1);
     }
@@ -283,6 +287,76 @@ describe('37 § 2 — כל שאלה נושאת את סוג המילה', () => {
   });
 });
 
+/**
+ * T-220 ⓐ · D-143 § ד׳ — `?` is a property of the option's SOURCE WORD. An option whose
+ * Hebrew text comes from a word with no `word_progress` row is `unseen`; the answer is
+ * `met` by construction; no groups ⇒ everything `met`.
+ */
+describe('T-220 ⓐ · D-143 § ד׳ — `ArcadeOption.kind`: «שלוש מילים שפגשתי ואחת שמעולם לא ראיתי»', () => {
+  it('⛔ בלי `touchedWordIds` — כל האפשרויות `met`, ⛔ אף `?` (אי-ידיעה ⛔ אינה `unseen`)', () => {
+    const r = buildRound({ gameLevel: 1, candidates: MIX_POOL, seed: 7 });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.questions.flatMap((q) => q.options).every((o) => o.kind === 'met')).toBe(true);
+  });
+
+  it('אפשרות שמקורה מילה בלי שורת התקדמות היא `unseen`; מילה עם שורה ⇒ `met`', () => {
+    const touched = new Set(MIX_POOL.slice(0, 10).map((c) => c.wordId));
+    const r = buildRound({ gameLevel: 1, candidates: MIX_POOL, seed: 7, knownWordIds: new Set(), touchedWordIds: touched });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const byHe = new Map(MIX_POOL.map((c) => [c.translationHe, c.wordId]));
+    let unseen = 0;
+    for (const q of r.questions) {
+      for (const o of q.options) {
+        if (o.he === q.answer) continue;
+        const source = byHe.get(o.he);
+        expect(source).toBeDefined();
+        expect(o.kind).toBe(touched.has(source ?? '') ? 'met' : 'unseen');
+        if (o.kind === 'unseen') unseen += 1;
+      }
+    }
+    // The fixture leaves 30 of 40 words untouched ⇒ the round must actually show a `?`.
+    expect(unseen).toBeGreaterThan(0);
+  });
+
+  it('⛔ הנכונה ⛔ אינה לעולם `unseen` — גם כשמילת הבאנר עצמה בלי שורת התקדמות', () => {
+    const r = buildRound({ gameLevel: 1, candidates: MIX_POOL, seed: 7, knownWordIds: new Set(), touchedWordIds: new Set() });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    for (const q of r.questions) {
+      expect(q.kind).toBe('unfiltered');
+      const answer = q.options.find((o) => o.he === q.answer);
+      expect(answer?.kind).toBe('met');
+      expect(q.options.filter((o) => o.kind === 'unseen')).toHaveLength(ARCADE_OPTION_COUNT - 1);
+    }
+  });
+
+  it('תרגום שחולק בין שתי מילים הוא `unseen` רק כששתיהן ⛔ בלי שורה', () => {
+    // w-00 and w-01 share one translation; only w-01 has a progress row.
+    const pool = makeCandidates('A2', 20).map((c, i) =>
+      i === 1 ? { ...c, translationHe: 'תרגום-0' } : c);
+    const touched = new Set(pool.map((c) => c.wordId).filter((id) => id !== 'w-00'));
+    const r = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 3, knownWordIds: new Set(), touchedWordIds: touched });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const shared = r.questions.flatMap((q) => q.options).filter((o) => o.he === 'תרגום-0');
+    expect(shared.length).toBeGreaterThan(0);
+    for (const o of shared) expect(o.kind).toBe('met');
+  });
+
+  it('מסיח מתויג שמקורו מחוץ למועמדים ⇒ `met` — הסיבוב ⛔ אינו טוען «מעולם לא» על מילה שאינו מכיר', () => {
+    const pool = makeCandidates('A2', 20).map((c, i) =>
+      i === 0 ? { ...c, taggedHe: [{ he: 'זר-1', relation: 'semantic' as const }, { he: 'זר-2', relation: 'semantic' as const }] } : c);
+    const r = buildRound({ gameLevel: A2_FIRST, candidates: pool, seed: 21, knownWordIds: new Set(), touchedWordIds: new Set() });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const q = r.questions.find((x) => x.wordId === 'w-00');
+    expect(heOf(q)).toContain('זר-1');
+    for (const o of q?.options ?? []) if (o.he.startsWith('זר-')) expect(o.kind).toBe('met');
+  });
+});
+
 describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויות', () => {
   const MIX: TaggedHeDistractor[] = [
     { he: 'תרגום-1', relation: 'semantic' },
@@ -300,7 +374,7 @@ describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויו
     const q = round.questions.find((x) => x.wordId === 'w-00');
     expect(q).toBeDefined();
     if (q === undefined) return;
-    const wrong = q.options.filter((o) => o !== q.answer);
+    const wrong = heOf(q).filter((o) => o !== q.answer);
     expect(new Set(wrong)).toEqual(new Set(['תרגום-1', 'תרגום-2', 'תרגום-3']));
   });
 
@@ -311,7 +385,7 @@ describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויו
     expect(round.ok).toBe(true);
     if (!round.ok) return;
     const q = round.questions.find((x) => x.wordId === 'w-00');
-    expect(q?.options).not.toContain('תרגום-4');
+    expect(heOf(q)).not.toContain('תרגום-4');
   });
 
   it('⛔ אפס רגרסיה: בריכה בלי תמהיל כלל מחזירה סיבוב מלא כמו היום (ⓗ)', () => {
@@ -329,7 +403,7 @@ describe('T-153 · D-138 — התמהיל המתויג מגיע לאפשרויו
     expect(round.ok).toBe(true);
     if (!round.ok) return;
     for (const q of round.questions) {
-      for (const opt of q.options) expect(opt).not.toMatch(LATIN);
+      for (const opt of heOf(q)) expect(opt).not.toMatch(LATIN);
     }
   });
 });
