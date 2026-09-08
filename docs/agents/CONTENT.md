@@ -60,37 +60,21 @@ Then, and only then, `npm run verify` — which is the **LAST** action before th
 **The block keyboard** (`39 § 3`) — ⛔ **do not invent continuation trees.** It is `K-003` and it is **🔴 BLOCKED on purpose**: what may legally follow what in English is a **grammatical claim**, R-010 forbids inventing it, and a wrong set **teaches wrong syntax and passes every test**. It opens only when Roy supplies a Tier A/B source.
 
 ## STEP 0 — CONNECT
-🚦 **⓪ WHICH RUNTIME ARE YOU IN? ⛔ ANSWER THIS BEFORE YOU RUN A SINGLE LINE BELOW.**  ⟦NEW 07/09 · Roy's explicit instruction⟧
+🚦 **⓪ THE RUNTIME — ⛔ ONE, ⛔ and it is ⛔ ALREADY AUTHENTICATED.**  ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 
-The loop runs in **two** runtimes now, and their git setup is the ⛔ **exact inverse** of each other. ⛔ Guessing wrong is not a slow tick — it is `F-185` again, with the same error string.
-
-⇒ **`CLAUDE_CODE_REMOTE=true` — a scheduled Routine on Claude Code Remote (cloud).**
-git is **already authenticated**: the runtime injects the credential through `$HTTPS_PROXY` and exports `GITHUB_TOKEN=proxy-injected`.
-⇒ ⛔ **Skip ⓐ below completely.** ⛔ There is ⛔ no `${GITHUB_PAT}`, ⛔ no vault, ⛔ no `.gh-pat` and ⛔ no askpass helper in this runtime — ⛔ and you ⛔ do not need one.
-⇒ **⛔ You still clone.** Run ⓑ **without** its `export https_proxy= …` prefix — that line and nothing else:
+The loop runs as a scheduled Routine on **Claude Code Remote**: `CLAUDE_CODE_REMOTE=true` and `GITHUB_TOKEN=proxy-injected`. **The proxy IS the credential** — the runtime injects it through `$HTTPS_PROXY`, and git reaches GitHub ⛔ only through it.
+⇒ ⛔ There is ⛔ no `${GITHUB_PAT}`, ⛔ no vault, ⛔ no `.gh-pat` and ⛔ no askpass helper here — ⛔ and you ⛔ need none. 🔴 ⛔ **Do ⛔ NOT write a credential to disk. ⛔ Ever.**
+⇒ **⛔ You still clone.** That line, and ⛔ nothing else:
 ```
 git clone -b work/current https://github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "content-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
 ```
 🔴 ⛔ **And ⛔ do ⛔ NOT work inside the checkout the session handed you.** **Measured 07/09:** that checkout is **shallow and single-branch** — `git rev-parse --is-shallow-repository` ⇒ `true`, and `git branch -r` ⇒ `origin/work/current` **alone**. ⇒ ⛔ no `origin/dev` and ⛔ no `origin/main`, which silently breaks `rebase origin/dev`, the `--ff-only` merge, `rev-list origin/dev..origin/work/current` in your report, and **check 10 of `loop:health`** (measured failing on exactly this). Your own clone is full: 4 refs, `is-shallow=false`, verified live.
 ⚠️ ⛔ **Do ⛔ NOT unset the proxy, ⛔ do ⛔ NOT write an askpass helper, and ⛔ do ⛔ NOT "repair" git by hand here.** `scripts/g` detects this runtime and passes straight through to `git`. **Measured live 07/09, same repo, one second apart:** against the old wrapper `./scripts/g ls-remote` exited **128** («could not read Username») while bare `git ls-remote` exited **0** — ⛔ the inverse of the sandbox. An unset here reproduces `F-185` letter for letter, from the other direction.
 
-⇒ **Anything else — the legacy sandbox.** Run ⓐ and ⓑ below **exactly as written**. ⛔ Nothing in them changed.
+⚠️ ⛔ **⟦08/09⟧ The legacy-sandbox credential block is ⛔ GONE — ⛔ and its deletion is the point.**
+🔬 **Measured live 08/09 in a CCR session, same repo:** `git ls-remote --heads origin` ⇒ exit **0**, `./scripts/g ls-remote --heads origin` ⇒ exit **0**, the askpass helper the deleted block used to write ⇒ ⛔ **does not exist on disk**, and `GITHUB_TOKEN` is ⛔ literally the marker `proxy-injected` (verified by comparing `sha256`, ⛔ never by printing a value) ⇒ **both** of `scripts/g`'s detection markers are live, ⛔ not one.
+⇒ a block that wrote a secret to disk was therefore ⛔ **dead code** — **and** the one shape a permission classifier can see and refuse. ⛔ **Do ⛔ not restore it**, and ⛔ do ⛔ not invent a replacement: if git fails here, the cause is ⛔ never a missing credential.
 
-```
-# ⓐ CREDENTIALS FIRST — ⛔ the token NEVER touches a URL, an argv, or a log line.
-printf '%s' "${GITHUB_PAT}" > "$HOME/.gh-pat" && chmod 600 "$HOME/.gh-pat"
-cat > "$HOME/.git-askpass.sh" <<'ASK'
-#!/usr/bin/env bash
-case "$1" in
-  Username*) printf 'x-access-token\n' ;;
-  Password*) cat "$HOME/.gh-pat" ;;
-esac
-ASK
-chmod 700 "$HOME/.git-askpass.sh"
-# ⓑ CLONE A CLEAN URL. `scripts/g` picks the helper up by itself from here on.
-export https_proxy= HTTPS_PROXY= http_proxy= HTTP_PROXY= GIT_ASKPASS="$HOME/.git-askpass.sh"
-git clone -b work/current https://github.com/roygindi2-design/English-web.git repo && cd repo && ./scripts/g config user.name "content-agent" && ./scripts/g config user.email "roygindi2@gmail.com"
-```
 🔴 **⟦NEW 06/09 · Roy's explicit instruction · `F-185`⟧ ⛔ ABSOLUTE BAN — ⛔ NEVER concatenate the token into a git URL.**
 ```
 ⛔ git push https://${GITHUB_PAT}@github.com/...      ⛔ FORBIDDEN

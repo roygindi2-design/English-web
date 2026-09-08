@@ -858,17 +858,41 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * the CLEAN url. ⛔ A ban on `push` alone leaves the same secret in the same
    * process table one command earlier.
    */
-  it('every STEP 0 clones a clean URL and exports GIT_ASKPASS (F-185)', () => {
+  it('every STEP 0 clones a clean URL (F-185)', () => {
     for (const a of AGENTS) {
-      const body = text(a);
-      expect(body, `${a}: clean clone URL`).toContain(
+      expect(text(a), `${a}: clean clone URL`).toContain(
         'git clone -b work/current https://github.com/roygindi2-design/English-web.git repo',
       );
-      expect(body, `${a}: askpass helper is written before the clone`).toContain(
-        '$HOME/.git-askpass.sh',
-      );
-      expect(body, `${a}: GIT_ASKPASS exported for the clone itself`).toMatch(
-        /GIT_ASKPASS="\$HOME\/\.git-askpass\.sh"/,
+    }
+  });
+
+  /**
+   * 🔴 **⟦08/09 · הוראה מפורשת של רוי⟧ ההנחה התהפכה, ⛔ ולכן גם השער.**
+   *
+   * עד היום הבדיקה הזאת דרשה ש**כל** פרומפט **יישא** עוזר askpass ויְיצא `GIT_ASKPASS` —
+   * הנוהל של הסנדבוקס הלגסי. ⛔ **המסלול הזה ⛔ אינו קיים עוד:** כל שש המשימות המתוזמנות
+   * רצות ב-Claude Code Remote, שם **הפרוקסי הוא האישור**.
+   *
+   * 🔬 **נמדד חי 08/09 בסשן CCR, אותו ריפו:** `git ls-remote --heads origin` ⇒ יציאה **0**,
+   * `./scripts/g ls-remote --heads origin` ⇒ יציאה **0**, `$HOME/.git-askpass.sh` ⛔ **אינו
+   * קיים**, ו-`GITHUB_TOKEN` שווה מילולית לסמן `proxy-injected` (אומת בהשוואת `sha256`,
+   * ⛔ לא בהדפסת ערך) ⇒ **שני** סמני הזיהוי של `scripts/g` חיים, ⛔ ולא אחד.
+   *
+   * ⇒ בלוק שכותב סוד לדיסק היה מכאן ואילך ⛔ **קוד מת** — **וגם** הצורה האחת שמסווג
+   * הרשאות רואה ומסרב לה. ⇒ ⛔ **הוא נמחק, ⛔ ולא הוסווה.** והשער שהגן עליו הפך לשער
+   * שאוסר אותו: ⛔ **אותה עוצמה בדיוק, כלל הפוך.**
+   *
+   * ⚠️ ⛔ **אל תרכך את זה ל-`toContain` יחיד.** ארבעת הביטויים תופסים ארבע צורות שונות
+   * של אותו כשל, וסוכן שממציא אחת מהן ⛔ אינו מעתיק את השלוש האחרות.
+   */
+  it('🔴 ⛔ אף פרומפט ⛔ אינו כותב סוד לדיסק — ⛔ ולא רק ⛔ אינו שם אותו ב-URL', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      expect(body, `${a}: ⛔ כתיבת הטוקן לקובץ`).not.toMatch(/printf[^\n]*GITHUB_PAT[^\n]*>/);
+      expect(body, `${a}: ⛔ chmod על קובץ סוד`).not.toMatch(/chmod [67]00 "\$HOME/);
+      expect(body, `${a}: ⛔ עוזר askpass על הדיסק`).not.toContain('$HOME/.git-askpass.sh');
+      expect(body, `${a}: ⛔ ביטול פרוקסי — ב-CCR הפרוקסי הוא האישור`).not.toMatch(
+        /export[^\n]*https_proxy=/,
       );
     }
   });
