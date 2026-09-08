@@ -65,7 +65,20 @@ cat plan/00-control.md               # and ⛔ NOTHING else yet
 
 ⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס קידום. ‏`origin/main..origin/dev` = `<M>` קומיטים.» **Three numbers, all measured in the tick, ⛔ none remembered.**
 
-Otherwise take the lock as `PROMOTER` on `work/current` and push it immediately.
+🔴 ⛔ **AND BEFORE THAT PUSH — ⛔ ONE LINE, ⛔ AND IT IS ⛔ NOT OPTIONAL:**  ⟦NEW 08/09 · `F-195` · `T-277`⟧
+```
+npm run hooks:install     # == node scripts/install-hooks.mjs — needs ⛔ NO node_modules
+```
+⛔ **`.git/hooks/` is ⛔ NOT part of `git clone`.** Every tick is a fresh clone, and until
+08/09 the hook arrived only with `npm install`, which runs **steps later — after this push.**
+⇒ **the FIRST commit of every tick, in every fresh clone, went out with ⛔ no `verify` gate
+at all.** Measured: `b872b19` (a lock commit) carries ⛔ no attestation, while `cbba5c1` and
+`87ca9fd` — both later in the same tick — carry `verify: exit 0`.
+⛔ **And the alternative was rejected:** exempting the lock commit from check 16 would punch a
+hole through the very gate הכרעה 100 built. `scripts/install-hooks.mjs` imports only
+`node:fs` and `node:path`, so this costs nothing and is idempotent.
+
+Otherwise take the lock as `PROMOTER` on `work/current` and push immediately.
 
 ## STEP C — THE UNBLOCKER: YOUR DECISION SPACE, AND ITS HARD EDGE
 

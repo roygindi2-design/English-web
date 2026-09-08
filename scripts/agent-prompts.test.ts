@@ -1077,6 +1077,30 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
    * מופעים חיים, הגרוע `2026-08-20-flashcard-interaction.md` — חמש פקודות שער ברצף
    * שהסתיימו ב-`| tail -20`, כלומר `exit 0` מובטח.
    */
+  /**
+   * 🪝 **`F-195` · `T-277` — ההוק מותקן לפני קומיט הלוק, ⛔ ולא אחריו.**  ⟦NEW 08/09⟧
+   *
+   * ‏`.git/hooks/` ⛔ אינו חלק מ-`git clone`, וכל טיק הוא קלון טרי. עד 08/09 ההוק הגיע רק
+   * עם `npm install` — שרץ **צעדים אחרי** דחיפת הלוק ⇒ **הקומיט הראשון של כל טיק, בכל
+   * קלון, נדחף בלי שער `verify` בכלל.** נמדד: `b872b19` (קומיט לוק) ⛔ ללא חותמת, מול
+   * `cbba5c1` ו-`87ca9fd` באותו טיק — `verify: exit 0`.
+   *
+   * ⛔ **הטענה היא על סֵדֶר, ⛔ ולא על נוכחות** — `:978` כבר בודקת שהמחרוזת קיימת, וזה
+   * בדיוק מה שלא הספיק: היא הייתה קיימת כל הזמן, 84–335 שורות **אחרי** הדחיפה.
+   */
+  it('חמשת הפרומפטים מתקינים את ההוק לפני קומיט הלוק, ⛔ ולא אחריו (F-195 · T-277)', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      const install = body.indexOf('npm run hooks:install');
+      const lockPush = body.indexOf('push immediately');
+      expect(install, `${a}: ⛔ אין התקנת hook כלל`).toBeGreaterThan(-1);
+      expect(lockPush, `${a}: ⛔ אין דחיפת לוק מזוהה`).toBeGreaterThan(-1);
+      expect(install, `${a}: ההוק מותקן אחרי דחיפת הלוק ⇒ הקומיט הראשון ללא שער`).toBeLessThan(
+        lockPush,
+      );
+    }
+  });
+
   it('⛔ אף תוכנית ב-docs/superpowers/plans ⛔ אינה מדגימה פקודת שער עם קוד יציאה בלוע', () => {
     const dir = 'docs/superpowers/plans';
     const plans = readdirSync(dir).filter((f) => f.endsWith('.md'));

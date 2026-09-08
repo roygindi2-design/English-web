@@ -95,6 +95,19 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess a timestamp.
 `PAUSED_BY_HUMAN: true` → exit in one line. Another agent holds the lock < 30 min → **Smart Wait, then yield if still held — and ⛔ NEVER silently.**
 🆕 **⟦NEW 06/09 · Smart Wait · Roy's explicit instruction⟧ Do not yield immediately on a foreign lock:** `sleep 180`, then re-read `plan/00-control.md`. Released in the meantime ⇒ continue the tick normally. Still held after the wait ⇒ yield now, and write the mandatory retreat line below. ⛔ **The retreat itself and the 30-minute threshold are unchanged** — this only delays the *decision* to yield by one wait.
+🔴 ⛔ **AND BEFORE THAT PUSH — ⛔ ONE LINE, ⛔ AND IT IS ⛔ NOT OPTIONAL:**  ⟦NEW 08/09 · `F-195` · `T-277`⟧
+```
+npm run hooks:install     # == node scripts/install-hooks.mjs — needs ⛔ NO node_modules
+```
+⛔ **`.git/hooks/` is ⛔ NOT part of `git clone`.** Every tick is a fresh clone, and until
+08/09 the hook arrived only with `npm install`, which runs **steps later — after this push.**
+⇒ **the FIRST commit of every tick, in every fresh clone, went out with ⛔ no `verify` gate
+at all.** Measured: `b872b19` (a lock commit) carries ⛔ no attestation, while `cbba5c1` and
+`87ca9fd` — both later in the same tick — carry `verify: exit 0`.
+⛔ **And the alternative was rejected:** exempting the lock commit from check 16 would punch a
+hole through the very gate הכרעה 100 built. `scripts/install-hooks.mjs` imports only
+`node:fs` and `node:path`, so this costs nothing and is idempotent.
+
 Otherwise `LOCK_HELD_BY=CONTENT`, `LOCK_AT=<real time>`, push immediately.
 
 🔴 **⟦CHANGED 06/09 · הכרעה 101 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
