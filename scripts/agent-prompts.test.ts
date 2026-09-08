@@ -995,6 +995,54 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(qa, 'מלא — ארבע יריות').toContain('05:15Z · 11:15Z · 15:15Z · 21:15Z');
     expect(qa, '⛔ הזמנים הישנים ⛔ לא חזרו').not.toContain('05:00Z and 23:00Z');
   });
+
+  /**
+   * 🔓 **`D-203` — הקידום `dev`⇢`main` מנותק מעבודת `work`⇢`dev`.** ⟦NEW 08/09 · הוראת רוי⟧
+   *
+   * ⛔ **שדה אחד בשתי משמעויות הוא הנזילה, ⛔ ולא השם.** עד 08/09 QA כתב «מה שחוסם את
+   * המיזוג» ו-PROMOTER כתב «מה שחוסם את הקידום» לאותה שורה בדיוק, ו-`DEV.md` הורה לקחת
+   * אותה **FIRST, before anything else** ⇒ חסם סביבה על `dev`⇢`main`, שאף סוכן בונה
+   * ⛔ אינו יכול לסגור, נכנס לראש תור DEV. ⇒ שני שדות, שני בעלים, ⛔ ואפס חפיפה.
+   */
+  it('שדה החוסמים מפוצל: DEV קורא MERGE_BLOCKERS ו⛔ אינו יודע על PROMOTION_BLOCKERS (D-203ⓒ)', () => {
+    for (const a of ALL_PROMPTS) {
+      expect(text(a), `${a}: ⛔ השם המאוחד חזר`).not.toContain('RELEASE_BLOCKERS');
+    }
+    const dev = text('DEV');
+    expect(dev, 'DEV: קורא את חסם המיזוג').toContain('MERGE_BLOCKERS');
+    // ⛔ המופע היחיד המותר ב-DEV הוא האיסור עצמו — ⛔ לא הוראת קריאה.
+    expect(dev, 'DEV: נאסר עליו במפורש').toMatch(/`PROMOTION_BLOCKERS` is ⛔ NOT yours/);
+    expect(text('CRITIC'), 'QA: כותב את חסם המיזוג').toContain('MERGE_BLOCKERS');
+    expect(text('PROMOTER'), 'PROMOTER: חסם הקידום').toContain('PROMOTION_BLOCKERS');
+  });
+
+  /**
+   * ⛔ **`NEXT_AGENT=HUMAN` עוצר את חמשת הסוכנים.** ⇒ כשל פריסה — שורת PROMOTER בלבד —
+   * היה מכבה לופ שלם על משהו שלאף סוכן בונה ⛔ אין בו נגיעה. `F-200` כבר מדד שהבדיקה
+   * ⛔ אינה יכולה לרוץ כאן כלל (403 `CONNECT tunnel failed`, 14 ניסיונות).
+   */
+  it('כשל בדיקת עשן ⛔ אינו מדליק NEXT_AGENT=HUMAN, ודומיין חסום ⛔ אינו «עבר» (D-203ⓑ)', () => {
+    // ⛔ **שורה שאוסרת ⛔ אינה שורה שמורה.** הטענה נקראת שורה-שורה כי הטקסט שמכיל את
+    // האיסור מכיל בהכרח גם את המחרוזת עצמה — רגקס על הקובץ כולו היה נופל על האיסור.
+    const FORBIDS = /⛔ ?not |⛔ NOT |never |⛔ אינו|⛔ אין/i;
+    for (const a of ['CRITIC', 'PROMOTER'] as const) {
+      const body = text(a);
+      const offenders = body
+        .split('\n')
+        .filter((l) => /NEXT_AGENT[:=] ?`?HUMAN/.test(l))
+        .filter((l) => /health|smoke|deploy|עשן|פריסה/i.test(l))
+        .filter((l) => !FORBIDS.test(l));
+      expect(offenders, `${a}: כשל פריסה מדליק NEXT_AGENT=HUMAN ⇒ עוצר חמישה סוכנים`).toEqual([]);
+      expect(body, `${a}: האיסור מוצהר`).toMatch(/`D-203`ⓑ/);
+      expect(body, `${a}: «⛔ לא נמדד» מוצהר`).toContain('⛔ לא נמדד');
+    }
+  });
+
+  it('⛔ אף פרומפט ⛔ אינו קורא לקידום «פעולה ידנית של רוי» עוד (D-203ⓔ)', () => {
+    for (const a of ALL_PROMPTS) {
+      expect(text(a), `${a}: נוסח שלפני 06/09 חזר`).not.toMatch(/promotion is Roy's manual action/i);
+    }
+  });
 });
 
 /**

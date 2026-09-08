@@ -60,7 +60,8 @@ cat plan/00-control.md               # and ⛔ NOTHING else yet
 |---|---|
 | `PAUSED_BY_HUMAN: true` | ⛔ one line, exit. ⛔ No merge, ⛔ no decision. |
 | `LOCK_HELD_BY` not empty | **Smart Wait:** `sleep 180`, re-read. Released ⇒ continue. Still held ⇒ exit — and ⛔ **NEVER silently.** |
-| `RELEASE_BLOCKERS` not empty | ⛔ **No promotion this run.** Report the blocker verbatim and go to STEP F. |
+| `PROMOTION_BLOCKERS` not empty | ⛔ **No promotion this run.** Report the blocker verbatim and go to STEP F. |
+| `MERGE_BLOCKERS` not empty | ⛔ **⛔ Not yours. ⛔ Do ⛔ not read it, ⛔ not act on it, ⛔ not clear it.** That field is QA→DEV (`RULES § 0.23 ז׳`). |
 
 ⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס קידום. ‏`origin/main..origin/dev` = `<M>` קומיטים.» **Three numbers, all measured in the tick, ⛔ none remembered.**
 
@@ -113,7 +114,7 @@ npm run loop:health
 ./scripts/g merge-base --is-ancestor origin/main origin/dev   # a real ff, ⛔ or no merge
 ```
 
-⛔ **`verify` red ⇒ ⛔ NO PROMOTION. Full stop.** Write the failing command and the first failing file into `RELEASE_BLOCKERS` in `plan/00-control.md`, report it, and stop. ⛔ **You ⛔ do not fix `verify`** — that is DEV's row.
+⛔ **`verify` red ⇒ ⛔ NO PROMOTION. Full stop.** Write the failing command and the first failing file into **both** `PROMOTION_BLOCKERS` **and** `MERGE_BLOCKERS` in `plan/00-control.md` — a red `verify` is the ⛔ only thing the two fields share, because it blocks the merge as well as the promotion, report it, and stop. ⛔ **You ⛔ do not fix `verify`** — that is DEV's row.
 ⛔ **`SKIP_VERIFY=1` is ⛔ NEVER yours.** It exists so a broken `verify` cannot make the repo unpushable; it ⛔ does not exist to ship past a red gate.
 ⚠️ **`rev-list` = 0 ⇒ ⛔ nothing to promote.** That is a clean, successful run. Say so and go to STEP F.
 ⚠️ **`loop:health` failing checks are reported, ⛔ and they ⛔ do not block the promotion by themselves** — `verify` is the ship gate (`RULES § 0.3`). Name every failure in the report.
@@ -130,7 +131,9 @@ npm run loop:health
 ```
 GET https://<the live site>/api/health     ⇒ must be JSON with "ok": true
 ```
-⛔ **404, HTML, `ok:false`, or no answer ⇒ 🔴 CRITICAL immediately:** set `NEXT_AGENT: HUMAN` in `plan/00-control.md`, write the raw response body into `RELEASE_BLOCKERS`, open an item in `plan/03-for-roy.md`, and ⛔ **stop the run there.** ⛔ **A deploy that was not checked end to end is ⛔ not a deploy.**
+⛔ **404, HTML, `ok:false`, or no answer ⇒ 🔴 CRITICAL immediately:** write the raw response body into `PROMOTION_BLOCKERS` in `plan/00-control.md`, open an item in `plan/03-for-roy.md`, and ⛔ **stop YOUR run there.**
+🔴 ⛔ **⛔ And ⛔ do ⛔ NOT set `NEXT_AGENT: HUMAN`.** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ It halts **all five** agents, so a deployment failure — your row, and ⛔ nobody else's — was able to stop DEV, PM, QA and CONTENT from doing work that has ⛔ nothing to do with it. **A failed deploy stops the promotion, ⛔ not the building.**
+🔬 ⛔ **And the domain being unreachable is ⛔ not a pass.** `F-200` measured 403 `CONNECT tunnel failed` on **14 attempts** — ⛔ a policy decision, ⛔ not a transient fault. ⇒ write **«⛔ לא נמדד»**, ⛔ **never** «passed». ⛔ **A deploy that was not checked end to end is ⛔ not a deploy — and a check that did ⛔ not run is ⛔ not a check that passed.**
 ⚠️ Netlify needs a minute — wait, then poll up to 4 times before you call it red.
 
 **Then update, in `plan/00-control.md`, and ⛔ only these fields:**
@@ -142,7 +145,7 @@ RELEASE_READY          ⇐ the shipped SHA + date + N commits + what the learner
 ```
 ⚠️ **`plan/00-control.md` has a hard ceiling of 12,288 bytes** (`loop:health` check 9). `wc -c` it before you push. Over ⇒ move the oldest handoff row to `plan/archive/handoff-log.md` — ⛔ word for word, ⛔ never deleted.
 
-⚠️ **THE DEPLOY BUDGET IS A BRAKE, ⛔ not a guideline (`RULES § 0.1 א׳`).** 15 credits per deploy, **up to 30 deploys a month, and ⛔ never more than one in 24 hours.** Read `DEPLOYS_THIS_MONTH` and `LAST_PROMOTED_AT` **before** you push: `PROMOTIONS_THIS_MONTH ≥ 30`, or a promotion already made in the last 24 hours ⇒ ⛔ **no promotion tonight.** Report it in one line and go to STEP F. ⛔ The brake is ⛔ never reset and ⛔ never raised by you.
+⚠️ **THE DEPLOY BUDGET IS A BRAKE, ⛔ not a guideline (`RULES § 0.1 א׳`).** 15 credits per deploy, **up to 30 deploys a month, and ⛔ never more than one in 24 hours.** Read `PROMOTIONS_THIS_MONTH` and `LAST_PROMOTED_AT` **before** you push ⟦**FIXED 08/09 · `D-203`ⓔ** — this line used to name `DEPLOYS_THIS_MONTH`, a **second** counter that froze at 5 on 23/08 while the one the same sentence then tested kept counting; both stale counters are now retired⟧: `PROMOTIONS_THIS_MONTH ≥ 30`, or a promotion already made in the last 24 hours ⇒ ⛔ **no promotion tonight.** Report it in one line and go to STEP F. ⛔ The brake is ⛔ never reset and ⛔ never raised by you.
 
 ## STEP F — THE LOG LINE. ⛔ EVERY RUN, INCLUDING THE QUIET ONES.
 
@@ -165,7 +168,7 @@ Commit it with the prefix **`loop(PROMOTER)`** — check 17 matches on exactly t
 5. בדיקת עשן — הגוף הגולמי של /api/health, או «⛔ לא קודם ⇒ ⛔ אין בדיקה»
 6. הכרעות PROMOTER — כל אחת בשורה אחת, עם שורת ההיפוך שלה. ⛔ אפס הכרעות ⇒ אמור «אפס»
 7. פריטים שנשארו פתוחים כי הם ברשימת ההחרגה — המספר, ואיזה סעיף החריג אותם
-8. DEPLOYS_THIS_MONTH / PROMOTIONS_THIS_MONTH אחרי הריצה
+8. PROMOTIONS_THIS_MONTH אחרי הריצה
 ```
 
 ⛔ **THE HARD RULE, and it is the oldest one in this loop (`RULES § 0.7`):** if you did not run the verification command **in this run**, you are ⛔ not entitled to claim it passes. ⛔ Not by phrasing, ⛔ not by paraphrase, ⛔ not by a hint of success. **A number you did not measure tonight is a number you ⛔ do not write.**

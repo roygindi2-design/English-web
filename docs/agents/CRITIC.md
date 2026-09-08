@@ -202,7 +202,7 @@ npm run loop:health
 `LAST_PROMOTED_AT` unchanged since your previous tick? **Skip.**
 Changed → mandatory. Pull `https://silly-medovik-b304e5.netlify.app/api/health`. Must be `"ok": true`.
 404 or HTML → check `netlify.toml` still declares `[[plugins]] package = "@netlify/plugin-nextjs"`.
-Any failure → 🔴 CRITICAL, `NEXT_AGENT=HUMAN`, ⛔ do not fix it yourself.
+Any failure → 🔴 CRITICAL and a finding, ⛔ do not fix it yourself. ⛔ **⛔ And ⛔ NOT `NEXT_AGENT=HUMAN`** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ — that halts **all five** agents over a deploy, which is PROMOTER's row alone. A failed deploy stops the promotion, ⛔ not the building. ⛔ **And when the domain is unreachable at all (`F-200`: 403 `CONNECT tunnel failed`, 14 attempts) write «⛔ לא נמדד» — ⛔ never «passed».**
 
 ## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.16)
 `plan/36-video-spec.md` — **the anchor**, beats every older decision; § 2 = eight cancellations · § 3 = the `MF-2` amendment · § 13 = build order. Derived: `37-arena-spec` · `38-character-base` · `39-messages-spec`. **In any conflict, 36 wins.** Renders: `docs/design/kol-A-*` (learning) · `kol-B-*` (arena) · `kol-C-*` (messages). **Open them with Read.**
@@ -365,7 +365,7 @@ with the same trust as a fresh one — that is worse than ⛔ no map.
 ### RED ⇒ FILE, AND NAME THE MINIMUM
 Findings into `plan/60-findings.md`, **and** write the minimum set into `plan/00-control.md`:
 ```
-RELEASE_BLOCKERS: F-NNN · F-NNN        ⇐ only what blocks THIS merge
+MERGE_BLOCKERS: F-NNN · F-NNN          ⇐ only what blocks THIS merge
 ```
 ⛔ **⛔ Not "all the findings".** DEV takes this list before anything else, so a padded list is a DEV tick wasted on things that were never blocking.
 ⚠️ **The branch STAYS.** ⛔ You never delete it, never reset it, never rebase it yourself. The loop ⛔ does not stop because a merge did not happen.
@@ -467,7 +467,7 @@ Verify the fast-forward first (`./scripts/g merge-base --is-ancestor origin/main
 ⚠️ **You REPLACE this section on every promotion, ⛔ never append a second one (T-167ⓔ · D-189).** Before writing the new section: move the outgoing one's full content — including Roy's ✅/❌ answer, if he gave one — into the `## נסגר` table at the bottom of `plan/03-for-roy.md` as one closed row (next `#` · requester `CRITIC` · today's date · what the check found and how Roy answered). Only then write the new `## POST-PROMOTION CHECK` section with the three fresh taps. ⛔ `plan/03-for-roy.md` must never hold more than one live `## POST-PROMOTION CHECK` section above `## נסגר`. This is about that ONE section only — the numbered escalation table under `RULES § 0.21` is untouched, and every open numbered item keeps its own `⟨נבדק⟩` stamp exactly as before.
 Next tick you **read his answer**: ✅ → mark it done · ❌ → a 🔴 finding with his words quoted verbatim.
 ⚠️ **This is the only path by which an answer from Roy re-enters the loop.** Without it his verification never closes.
-⚠️ **Soft brake, ⛔ not a halt:** over **150 unshipped commits** → say so loudly; the PM stops opening new slices and Dev takes only findings. **The loop keeps working.**
+⛔ **⟦REMOVED 08/09 · Roy's explicit instruction · `D-203`ⓐ⟧ The 150-unshipped-commit brake is ⛔ gone.** It was the one rule that explicitly conditioned PM and DEV work on a promotion to `main` having happened, and it contradicted `RULES § 0.1 ב׳` three lines above itself («the loop ⛔ never waits for a promotion»). ⛔ **You ⛔ do not measure `origin/main..origin/dev` and ⛔ do not report on it** — that is PROMOTER's number. **What actually matters is already guarded:** `loop:health` check 10 measures the diff that has ⛔ not been reviewed yet (`dev` ↔ `work/current`). That is the debt that grows; the distance from `main` is ⛔ not.
 
 ## STEP 8 — CLOSE
 Your files: `60-findings` · append to `20-alerts` · `30-architecture` verifications · `80-content-lessons` §B/§C · marking ✅/🚫 in `50-tasks` · the block in `03-for-roy` · `RELEASE_READY` in `00-control`.
