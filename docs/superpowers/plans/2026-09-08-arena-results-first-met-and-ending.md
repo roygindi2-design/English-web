@@ -5,7 +5,7 @@
 > after a fresh run whose output goes into the tick report.
 
 **Written:** C-0511 (DEV, 📝 planning tick) · 2026-09-08T18:36Z (`date -u`)
-**Built:** — (the next DEV build tick)
+**Built:** C-0513 (DEV, 🔨 build tick) · 2026-09-08T20:45:27Z (`date -u`) — 44/44 steps; three plan gaps logged in `plan/26-plan-feedback.md` (F-036 fill · T-253 anchor · D-126 `outcomeAt` guard)
 
 **Covers:** **T-282** — the end of the battle tells the learner which words it put in
 front of them for the first time (the render's blue board, **read-only**) · **T-283** —
@@ -251,7 +251,7 @@ is a verdict (R-016); neither carries a gendered form.
 - Consumes: `ArenaWordKind` from `lib/core/arenaWords.ts:23`.
 - Produces: `BattleCast.kind` — read by Task 2's `summarize`.
 
-- [ ] **Step 1: Write the failing test** — append to `lib/core/battle.test.ts`, inside the
+- [x] **Step 1: Write the failing test** — append to `lib/core/battle.test.ts`, inside the
   `describe` that contains the `:286` test (it already has `word(n)` with `kind: 'base'`):
 
 ```ts
@@ -269,17 +269,17 @@ is a verdict (R-016); neither carries a gendered form.
   });
 ```
 
-- [ ] **Step 2: Run it red** — `npx vitest run lib/core/battle.test.ts -t "T-282"`
+- [x] **Step 2: Run it red** — `npx vitest run lib/core/battle.test.ts -t "T-282"`
   Expected: FAIL — `toEqual` receives `[undefined, undefined, undefined]` (and `tsc` in
   `verify` would reject `c.kind` — both are the same missing field).
 
-- [ ] **Step 3: Implement** — in `lib/core/battle.ts`:
+- [x] **Step 3: Implement** — in `lib/core/battle.ts`:
   - `:24` → `import type { ArenaWord, ArenaWordKind } from './arenaWords';`
   - `BattleCast` (`:106-111`) → add the `kind` field with the doc comment from
     **Interfaces** above.
   - `:227` → `casts: [...state.casts, { wordId: word.wordId, correct, responseMs, critical, kind: word.kind }],`
 
-- [ ] **Step 4: Run it green, and the whole file** — `npx vitest run lib/core/battle.test.ts`
+- [x] **Step 4: Run it green, and the whole file** — `npx vitest run lib/core/battle.test.ts`
   Expected: every test passes, including the source scan (`kind` is not a banned token)
   and `'⛔ \`casts[i]\` עדיין תואם ל-\`words[i]\` אחרי חזרה'`. Then `npx tsc --noEmit`
   ⇒ **two** expected errors, and only two: `lib/core/arenaSummary.test.ts:5` and
@@ -301,7 +301,7 @@ is a verdict (R-016); neither carries a gendered form.
 - Consumes: `BattleCast.kind` (Task 1).
 - Produces: `ArenaSummary.firstMet`, `firstMetHe(n)` — read by the component in this task.
 
-- [ ] **Step 1: Write the failing core tests** — in `lib/core/arenaSummary.test.ts`, replace
+- [x] **Step 1: Write the failing core tests** — in `lib/core/arenaSummary.test.ts`, replace
   the `cast` helper (`:5-7`) and add one `describe`:
 
 ```ts
@@ -340,10 +340,10 @@ describe('firstMet — T-282 · 37 § 10 · קריאה בלבד', () => {
 });
 ```
 
-- [ ] **Step 2: Run red** — `npx vitest run lib/core/arenaSummary.test.ts`
+- [x] **Step 2: Run red** — `npx vitest run lib/core/arenaSummary.test.ts`
   Expected: FAIL — `firstMet` undefined, `firstMetHe` not exported.
 
-- [ ] **Step 3: Implement the core** — `lib/core/arenaSummary.ts`:
+- [x] **Step 3: Implement the core** — `lib/core/arenaSummary.ts`:
 
 ```ts
 export interface ArenaSummary {
@@ -400,10 +400,10 @@ export function firstMetHe(n: number): string {
 }
 ```
 
-- [ ] **Step 4: Run green** — `npx vitest run lib/core/arenaSummary.test.ts`
+- [x] **Step 4: Run green** — `npx vitest run lib/core/arenaSummary.test.ts`
   Expected: PASS, 8 tests (4 existing + 4 new).
 
-- [ ] **Step 5: Write the failing component scan** — `components/ArenaSummary.test.ts`, add one `it`
+- [x] **Step 5: Write the failing component scan** — `components/ArenaSummary.test.ts`, add one `it`
   inside the existing `describe`:
 
 ```ts
@@ -417,10 +417,10 @@ export function firstMetHe(n: number): string {
   });
 ```
 
-- [ ] **Step 6: Run red** — `npx vitest run components/ArenaSummary.test.ts -t "T-282"`
+- [x] **Step 6: Run red** — `npx vitest run components/ArenaSummary.test.ts -t "T-282"`
   Expected: FAIL on `data-arena-first-met`.
 
-- [ ] **Step 7: Implement the board** — `components/ArenaSummary.tsx`:
+- [x] **Step 7: Implement the board** — `components/ArenaSummary.tsx`:
   - `:4` → `import { firstMetHe, meanSecondsHe, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';`
   - Doc block `:19-24`: replace the four-deviation sentence with the five-line version below.
   - After the red board's closing `)}` (`:109`), add:
@@ -460,7 +460,7 @@ export function firstMetHe(n: number): string {
  * אותו פריט 105, ולכן ה-CTA נשלח כ-`חזרה לזירה` (מחרוזת ממשק, ⛔ לא תוכן לימודי).
 ```
 
-- [ ] **Step 8: The fixture** — `app/dev/arcade/summary/page.tsx`:
+- [x] **Step 8: The fixture** — `app/dev/arcade/summary/page.tsx`:
   - `:5` → `import { CRITICAL_MS, type BattleCast } from '@/lib/core/battle';` stays; add
     `import type { ArenaWordKind } from '@/lib/core/arenaWords';`
   - `:32-37` →
@@ -484,11 +484,11 @@ const cast = (n: number, correct: boolean, responseMs: number, kind: ArenaWordKi
   - `HEADWORDS` → add `w3: 'Lorem3', w7: 'Lorem7', w11: 'Lorem11', w15: 'Lorem15'`.
   - Update the fixture comment (`:39`) to say «4 × unfiltered ⇒ הלוח הכחול מציג 4».
 
-- [ ] **Step 9: Run green, typecheck, both scans** —
+- [x] **Step 9: Run green, typecheck, both scans** —
   `npx vitest run lib/core/arenaSummary.test.ts components/ArenaSummary.test.ts lib/core/battle.test.ts && npx tsc --noEmit`
   Expected: all green, `tsc` **0 errors** (the two Task 1 errors are gone).
 
-- [ ] **Step 10: Commit T-282** —
+- [x] **Step 10: Commit T-282** —
   `./scripts/g add lib/core/battle.ts lib/core/battle.test.ts lib/core/arenaSummary.ts lib/core/arenaSummary.test.ts components/ArenaSummary.tsx components/ArenaSummary.test.ts app/dev/arcade/summary/page.tsx && ./scripts/g commit -m "loop(DEV): C-XXXX T-282 arena results name the words met for the first time (read-only blue board, 37 § 10)"`
 
 ---
@@ -503,7 +503,7 @@ const cast = (n: number, correct: boolean, responseMs: number, kind: ArenaWordKi
 - Consumes: `BattleState.enemyHp` · `BattleState.stats.hitDamage` (T-281).
 - Produces: `wordsFromBoss(state): number` — read by Task 4's `endingOf`.
 
-- [ ] **Step 1: Write the failing tests** — append to `lib/core/battle.test.ts` (add
+- [x] **Step 1: Write the failing tests** — append to `lib/core/battle.test.ts` (add
   `wordsFromBoss` to the import list from `./battle`):
 
 ```ts
@@ -536,10 +536,10 @@ describe('wordsFromBoss — T-283 · 37 § 9 ח4', () => {
 });
 ```
 
-- [ ] **Step 2: Run red** — `npx vitest run lib/core/battle.test.ts -t "wordsFromBoss"`
+- [x] **Step 2: Run red** — `npx vitest run lib/core/battle.test.ts -t "wordsFromBoss"`
   Expected: FAIL — `wordsFromBoss` is not exported.
 
-- [ ] **Step 3: Implement** — `lib/core/battle.ts`, after `outcomeAt`:
+- [x] **Step 3: Implement** — `lib/core/battle.ts`, after `outcomeAt`:
 
 ```ts
 /**
@@ -556,7 +556,7 @@ export function wordsFromBoss(state: BattleState): number {
 }
 ```
 
-- [ ] **Step 4: Run green** — `npx vitest run lib/core/battle.test.ts`
+- [x] **Step 4: Run green** — `npx vitest run lib/core/battle.test.ts`
   Expected: PASS, whole file (the source scan does not ban `boss`).
 
 ---
@@ -575,7 +575,7 @@ export function wordsFromBoss(state: BattleState): number {
 - Produces: `ArenaEndingKind` · `ArenaEnding` · `endingOf` · `wordsFromBossHe` — read by
   `ArenaSummary.tsx` and `ArenaBattle.tsx`.
 
-- [ ] **Step 1: Write the failing core tests** — `lib/core/arenaSummary.test.ts`, add
+- [x] **Step 1: Write the failing core tests** — `lib/core/arenaSummary.test.ts`, add
   imports `import { BATTLE_MS, CRITICAL_MS, ENEMY_HP, startBattle, type BattleState } from '@/lib/core/battle';`
   and `endingOf, wordsFromBossHe` from `@/lib/core/arenaSummary`, then:
 
@@ -615,10 +615,10 @@ describe('endingOf — T-283 · 37 § 9 ח4 · 37 § 3', () => {
 });
 ```
 
-- [ ] **Step 2: Run red** — `npx vitest run lib/core/arenaSummary.test.ts -t "endingOf"`
+- [x] **Step 2: Run red** — `npx vitest run lib/core/arenaSummary.test.ts -t "endingOf"`
   Expected: FAIL — `endingOf` not exported.
 
-- [ ] **Step 3: Implement the core** — `lib/core/arenaSummary.ts`:
+- [x] **Step 3: Implement the core** — `lib/core/arenaSummary.ts`:
   - `:14` → `import { outcomeAt, wordsFromBoss, type BattleCast, type BattleOutcome, type BattleState } from './battle';`
     (⚠️ a **value** import now, not `import type` — `arenaSummary.ts` already lives in
     `lib/core` and `battle.ts` is pure, so `check:core` stays green.)
@@ -651,10 +651,10 @@ export function wordsFromBossHe(n: number): string {
 }
 ```
 
-- [ ] **Step 4: Run green** — `npx vitest run lib/core/arenaSummary.test.ts && npm run check:core`
+- [x] **Step 4: Run green** — `npx vitest run lib/core/arenaSummary.test.ts && npm run check:core`
   Expected: PASS (14 tests) · `check:core` green.
 
-- [ ] **Step 5: Write the failing component scan** — `components/ArenaSummary.test.ts`, one `it`:
+- [x] **Step 5: Write the failing component scan** — `components/ArenaSummary.test.ts`, one `it`:
 
 ```ts
   it('T-283 — שלושה סיומים, ⛔ לא בוליאני; ⛔ «הפסדת» ו⛔ «הקרב נגמר» אינם על המסך', () => {
@@ -669,10 +669,10 @@ export function wordsFromBossHe(n: number): string {
   });
 ```
 
-- [ ] **Step 6: Run red** — `npx vitest run components/ArenaSummary.test.ts -t "T-283"`
+- [x] **Step 6: Run red** — `npx vitest run components/ArenaSummary.test.ts -t "T-283"`
   Expected: FAIL on `enemyDefeated` still present.
 
-- [ ] **Step 7: Implement the heading** — `components/ArenaSummary.tsx`:
+- [x] **Step 7: Implement the heading** — `components/ArenaSummary.tsx`:
   - `:4` → `import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';`
   - Props (`:31-38`): replace `readonly enemyDefeated: boolean;` with
     `/** T-283 — three endings, ⛔ not a boolean. Computed by \`endingOf\` in \`lib/core\`. */ readonly ending: ArenaEnding;`
@@ -708,7 +708,7 @@ const SURVIVED_HE = 'היריב החזיק מעמד';
       </header>
 ```
 
-- [ ] **Step 8: Wire `ArenaBattle.tsx`** —
+- [x] **Step 8: Wire `ArenaBattle.tsx`** —
   - `:16` → `import { endingOf, summarize } from '@/lib/core/arenaSummary';`
   - `:483-485` →
 
@@ -726,17 +726,17 @@ const SURVIVED_HE = 'היריב החזיק מעמד';
   - `:636-641` → `<ArenaSummary ending={ending} summary={summarize(battle.casts)} headwords={Object.fromEntries(headwords)} onBack={again} />`.
     `<ArenaResult enemyDefeated={outcome.enemyDefeated} …>` **stays** — not this row.
 
-- [ ] **Step 9: The fixture** — `app/dev/arcade/summary/page.tsx:65-74` →
+- [x] **Step 9: The fixture** — `app/dev/arcade/summary/page.tsx:65-74` →
   `<ArenaSummary ending={{ kind: 'victory', wordsFromBoss: 0 }} summary={summarize(FIXTURE)} headwords={HEADWORDS} onBack={() => {}} />`
   (the render draws `ניצחון`, and the fixture keeps matching the render).
   Add `import type { ArenaEnding } from '@/lib/core/arenaSummary';` only if you type the
   literal separately; the inline literal needs no import.
 
-- [ ] **Step 10: Run green, typecheck** —
+- [x] **Step 10: Run green, typecheck** —
   `npx vitest run lib/core components/ArenaSummary.test.ts components/ArenaBattle.test.ts components/ArenaBattle.dom.test.tsx && npx tsc --noEmit`
   Expected: all green, 0 type errors, `grep -rn 'enemyDefeated' components/ArenaSummary.tsx app/dev/arcade/summary/page.tsx` ⇒ 0 lines.
 
-- [ ] **Step 11: Commit T-283** —
+- [x] **Step 11: Commit T-283** —
   `./scripts/g add lib/core/battle.ts lib/core/battle.test.ts lib/core/arenaSummary.ts lib/core/arenaSummary.test.ts components/ArenaSummary.tsx components/ArenaSummary.test.ts components/ArenaBattle.tsx app/dev/arcade/summary/page.tsx && ./scripts/g commit -m "loop(DEV): C-XXXX T-283 arena ending names the gap (37 § 9 ח4) — three endings, not a boolean"`
 
 ---
@@ -748,7 +748,7 @@ const SURVIVED_HE = 'היריב החזיק מעמד';
 cast time; the ending is three states computed in core»), regenerate `docs/plan-open.md` ·
 `docs/plan-tables.md` · `docs/architecture-map.json`.
 
-- [ ] **Step 1: The walk (D-103)** — `(npx next dev -p 3000 &) && sleep 25`, then a Playwright
+- [x] **Step 1: The walk (D-103)** — `(npx next dev -p 3000 &) && sleep 25`, then a Playwright
   script at **375×780** on `http://127.0.0.1:3000/dev/arcade/summary`. Record: `h1` text ·
   total characters · tappable count · elements under 44px · horizontal scroll · console
   errors · `[data-arena-first-met]` present with **4** `<EnWord>` · `[data-arena-slow]`
@@ -761,20 +761,20 @@ cast time; the ending is three states computed in core»), regenerate `docs/plan
   so in one line — ⛔ do not swap the fixture to a loss to "see it": the fixture is what
   `check:mobile` measures against the render.
 
-- [ ] **Step 2: The map** — `grep -q '"generate-map"' package.json && npm run generate-map || echo '⛔ generate-map not in package.json yet (T-235) — skipped, not failed'`
+- [x] **Step 2: The map** — `grep -q '"generate-map"' package.json && npm run generate-map || echo '⛔ generate-map not in package.json yet (T-235) — skipped, not failed'`
   ⇒ `docs/architecture-map.json` regenerated (D-165, same commit as the code).
 
-- [ ] **Step 3: The registers** — `T-282` and `T-283` status cells ⇒ `🟣 **C-XXXX (DEV) — …**`
+- [x] **Step 3: The registers** — `T-282` and `T-283` status cells ⇒ `🟣 **C-XXXX (DEV) — …**`
   with the numbers from Task 2 Step 9, Task 4 Step 10 and the walk; then
   `npm run measure:plan` (both `docs/plan-*.md` in the same commit, `RULES § 0.1 ח׳`).
   Tick every `- [ ]` in this file that closed. Log the one `RULES § 0.22` call:
   «`wordsFromBoss` divides by `hitDamage`, ⛔ not `criticalDamage`».
 
-- [ ] **Step 4: The gate** — `npm run verify` (five commands, `check:mobile` included).
+- [x] **Step 4: The gate** — `npm run verify` (five commands, `check:mobile` included).
   Paste the exact tail into the report. Red ⇒ fix in this tick; still red ⇒
   `./scripts/g revert` both task commits + a debt line in `30-architecture.md`.
 
-- [ ] **Step 5: Commit and push** — release the lock in `plan/00-control.md` (`LOCK_HELD_BY: ""`,
+- [x] **Step 5: Commit and push** — release the lock in `plan/00-control.md` (`LOCK_HELD_BY: ""`,
   `NEXT_AGENT: CRITIC`, `LAST_HANDOFF_AT` from `date -u`), then
   `./scripts/g commit -m "loop(DEV): C-XXXX close — T-282 · T-283 🟣, registers, map" && ./scripts/g push origin work/current`
   (the pre-push hook re-runs `npm run verify` and writes the attestation note — check 16).
@@ -783,13 +783,13 @@ cast time; the ending is three states computed in core»), regenerate `docs/plan
 
 ## Self-check (before the build tick calls this plan done)
 
-- [ ] `grep -n 'kind' lib/core/battle.ts | grep -c 'casts:'` ⇒ 1 (the stamp is in the cast literal).
-- [ ] `grep -rn 'enemyDefeated' components/ArenaSummary.tsx app/dev/arcade/summary/page.tsx` ⇒ 0 lines.
-- [ ] `grep -rn 'הפסדת\|הקרב נגמר' components/ArenaSummary.tsx lib/core/arenaSummary.ts` ⇒ 0 lines.
-- [ ] `grep -c 'text-\[11.5px\]' components/ArenaSummary.tsx` ⇒ 1 (unchanged — the new board is 12px).
-- [ ] `grep -rn 'apiPost\|fetch(\|word_progress' components/ArenaSummary.tsx lib/core/arenaSummary.ts` ⇒ 0.
-- [ ] `grep -rn 'xp\|score\|streak' components/ArenaSummary.tsx` ⇒ only the existing `bestStreak` row (`רצף מרבי`, T-180) — ⛔ nothing new (F-151).
-- [ ] `./scripts/g diff --stat origin/dev -- lib/core/arenaWords.ts lib/core/arcadeResult.ts components/ArenaResult.tsx app/arcade/arcade-tokens.css docs/api-contract.md package.json` ⇒ empty.
-- [ ] `npm run check:text-floor` green with `scripts/text-floor-baseline.md` **unchanged**.
-- [ ] The report names: `[SKILL: taste-skill]` (`skills/taste-skill/SKILL.md`) loaded before Task 1, and the § 4.9 copy audit result for the **five** new strings in `lib/core/arenaSummary.ts` and `components/ArenaSummary.tsx` (`פגשת N מילים חדשות` · `פגשת מילה אחת חדשה` · `היית N מילים מהבוס` · `החזקת מעמד עד סוף השעון` · `היריב החזיק מעמד`).
-- [ ] The report carries the one `RULES § 0.22` line: `wordsFromBoss` in `lib/core/battle.ts` divides by `hitDamage`, not `criticalDamage`.
+- [x] `grep -n 'kind' lib/core/battle.ts | grep -c 'casts:'` ⇒ 1 (the stamp is in the cast literal).
+- [x] `grep -rn 'enemyDefeated' components/ArenaSummary.tsx app/dev/arcade/summary/page.tsx` ⇒ 0 lines.
+- [x] `grep -rn 'הפסדת\|הקרב נגמר' components/ArenaSummary.tsx lib/core/arenaSummary.ts` ⇒ 0 lines.
+- [x] `grep -c 'text-\[11.5px\]' components/ArenaSummary.tsx` ⇒ 1 (unchanged — the new board is 12px).
+- [x] `grep -rn 'apiPost\|fetch(\|word_progress' components/ArenaSummary.tsx lib/core/arenaSummary.ts` ⇒ 0.
+- [x] `grep -rn 'xp\|score\|streak' components/ArenaSummary.tsx` ⇒ only the existing `bestStreak` row (`רצף מרבי`, T-180) — ⛔ nothing new (F-151).
+- [x] `./scripts/g diff --stat origin/dev -- lib/core/arenaWords.ts lib/core/arcadeResult.ts components/ArenaResult.tsx app/arcade/arcade-tokens.css docs/api-contract.md package.json` ⇒ empty.
+- [x] `npm run check:text-floor` green with `scripts/text-floor-baseline.md` **unchanged**.
+- [x] The report names: `[SKILL: taste-skill]` (`skills/taste-skill/SKILL.md`) loaded before Task 1, and the § 4.9 copy audit result for the **five** new strings in `lib/core/arenaSummary.ts` and `components/ArenaSummary.tsx` (`פגשת N מילים חדשות` · `פגשת מילה אחת חדשה` · `היית N מילים מהבוס` · `החזקת מעמד עד סוף השעון` · `היריב החזיק מעמד`).
+- [x] The report carries the one `RULES § 0.22` line: `wordsFromBoss` in `lib/core/battle.ts` divides by `hitDamage`, not `criticalDamage`.

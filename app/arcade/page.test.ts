@@ -119,7 +119,9 @@ describe('D-126 — השעון קיים, והוא חי במסך ⛔ ולא בל�
   });
 
   it('⛔ הרכיב מצייר ו⛔ אינו מחשב — החוקים מיובאים, ⛔ ולא משוכפלים', () => {
-    for (const fn of ['outcomeAt', 'manaAt', 'isRage', 'cast', 'tick', 'startBattle']) {
+    // T-283 (C-0513): the outcome reaches the screen as `endingOf` (`lib/core/arenaSummary`),
+    // which wraps `outcomeAt` — the law is still imported, ⛔ not duplicated (RULES § 0.22).
+    for (const fn of ['endingOf', 'manaAt', 'isRage', 'cast', 'tick', 'startBattle']) {
       expect(CODE, `${fn} מגיע מ-lib/core/battle`).toContain(fn);
     }
     // ⛔ אף מספר של חוק אינו מוטבע כאן: 90 שניות · 8 שניות · 1.5 שניות · תקרת 10.
