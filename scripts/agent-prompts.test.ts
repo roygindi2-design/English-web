@@ -1130,6 +1130,44 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(qa, '⛔ QA ⛔ אינו נמען').toMatch(/⛔ do not route a finding to yourself/i);
   });
 
+  /**
+   * 🩺 **`F-204` · `T-279` — ההליכה במוצר רצה מול `next start`, ⛔ ולא `next dev`.** ⟦NEW 08/09⟧
+   *
+   * 🔬 נמדד: בסביבת CCR `npx next dev` מחזיר **403 על כל chunk שבקשתו נושאת כותרת
+   * `Origin`** ⇒ הדף נצבע, ⛔ שום דבר ⛔ אינו עולה (hydration), והליכה שמקישה על משהו
+   * מודדת מוצר ש⛔ אינו קיים. ⛔ **צילום של דף מת ⛔ אינו הליכה.**
+   * ⇒ `next start` מגיש את **בניית הייצור** — בדיוק מה ש-`scripts/verify-mobile.mjs`
+   * עושה מאז ומתמיד, ⇒ ההליכה סוף-סוף תואמת את השער.
+   */
+  it('⛔ אף פרומפט ⛔ אינו מריץ next dev — ההליכה היא מול next start (F-204)', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      const runs = body
+        .split('\n')
+        .filter((l) => /`?(npx |npm run )?next dev/.test(l))
+        .filter((l) => !/⛔|403|F-204|pkill/.test(l));
+      expect(runs, `${a}: ⛔ next dev חזר כפקודה`).toEqual([]);
+    }
+    for (const a of ['DEV', 'PM', 'CRITIC'] as const) {
+      expect(text(a), `${a}: ההליכה מול next start`).toMatch(/npx next start -p 3000/);
+      expect(text(a), `${a}: build קודם — אחרת ⛔ אין מה להגיש`).toMatch(/npm run build && \(npx next start/);
+    }
+  });
+
+  /**
+   * 🚢 **`T-279` — לבדיקת העשן שני חצאים, ו⛔ אף אחד ⛔ אינו מחליף את השני.**
+   * ① מחבר Netlify מוכיח ש**הבנייה עלתה על ה-SHA שקודם**; ② `/api/health` מוכיח
+   * ש**המוצר עונה**. ⛔ `state: ready` על פונקציות שכולן 500 הוא עדיין `ready`.
+   */
+  it('PROMOTER בודק גם את commit_ref של הפריסה, וגם שהמוצר עונה (T-279)', () => {
+    const pr = text('PROMOTER');
+    expect(pr, 'מחבר Netlify').toMatch(/get-deploy-for-site/);
+    expect(pr, 'ה-SHA שקודם, ⛔ לא «main»').toMatch(/commit_ref/);
+    expect(pr, 'עדיין דורש את המוצר החי').toMatch(/api\/health/);
+    expect(pr, '⛔ ready ⛔ אינו מחליף בדיקה חיה').toMatch(/⛔ does ⛔ NOT say the product answers/);
+    expect(pr, 'חסם רשת ⇒ «⛔ לא נמדד»').toMatch(/connect_rejected/);
+  });
+
   it('חמשת הפרומפטים מחויבים בשורת יומן על ריצה בלי קומיט עבודה (T-280ⓒ)', () => {
     for (const a of ALL_PROMPTS) {
       const body = text(a);

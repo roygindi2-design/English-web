@@ -252,8 +252,18 @@ Any failure → 🔴 CRITICAL and a finding, ⛔ do not fix it yourself. ⛔ **�
 ## STEP 4 — LOOK AT THE PRODUCT (D-103)
 Headless Chromium has no public-internet egress **but reaches localhost perfectly.**
 ```
-npm install && (npx next dev -p 3000 &) && sleep 25
+npm install && npm run build && (npx next start -p 3000 &) && sleep 12
 ```
+🔴 ⛔ **`next start`, ⛔ NOT `next dev` — ⟦CHANGED 08/09 · `F-204`⟧ and it is a MEASUREMENT.**
+In this runtime `npx next dev` answers **403 on every script chunk whose request carries an
+`Origin` header** ⇒ the page paints, ⛔ nothing hydrates, and a walk that clicks anything
+measures a product that ⛔ does not exist. ⛔ **A screenshot of a dead page is ⛔ not a walk.**
+⇒ `next start` serves the **production build** — which is also what `npm run check:mobile`
+has always used (`scripts/verify-mobile.mjs`), so this is the walk finally matching the gate.
+⚠️ **`build` first, ⛔ or `next start` has nothing to serve.** ⚠️ **Port already busy? ⛔ Do
+⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
+kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
+`npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
 Drive `http://127.0.0.1:3000/dev/...` with Playwright at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login.
 Per screen: heading · text length · **tappable count** · how many under 44px · horizontal scroll · console errors. **Then compare to its render.**
 
@@ -269,8 +279,8 @@ on 24/08 was born the same way: **the intent was written, the action was not def
 "Compare to the render" is an intent. This is the action.
 
 1. `./scripts/g checkout work/current`
-2. `(npx next dev -p 3000 &) && sleep 25`
-   ⚠️ **And `pkill -f "next dev"` when you are done, BEFORE `npm run verify`.** Measured
+2. `npm run build && (npx next start -p 3000 &) && sleep 12` ⟦`next start`, ⛔ not `next dev` — `F-204`⟧
+   ⚠️ **And `pkill -f "next start"` when you are done, BEFORE `npm run verify`.** Measured
    24/08: a dev server left alive on 3000 made `check:mobile` test against it instead of
    `next start` — **two failures that looked real and ⛔ were not** (⛔ no service worker in
    dev, `/api/*` answers 503).

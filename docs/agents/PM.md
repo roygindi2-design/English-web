@@ -406,12 +406,22 @@ Every screen × its tappable actions × where learners arrive from × where they
 
 ## STEP 2.5 — LOOK AT THE PRODUCT (D-103)
 ```
-npm install && (npx next dev -p 3000 &) && sleep 25
+npm install && npm run build && (npx next start -p 3000 &) && sleep 12
 ```
+🔴 ⛔ **`next start`, ⛔ NOT `next dev` — ⟦CHANGED 08/09 · `F-204`⟧ and it is a MEASUREMENT.**
+In this runtime `npx next dev` answers **403 on every script chunk whose request carries an
+`Origin` header** ⇒ the page paints, ⛔ nothing hydrates, and a walk that clicks anything
+measures a product that ⛔ does not exist. ⛔ **A screenshot of a dead page is ⛔ not a walk.**
+⇒ `next start` serves the **production build** — which is also what `npm run check:mobile`
+has always used (`scripts/verify-mobile.mjs`), so this is the walk finally matching the gate.
+⚠️ **`build` first, ⛔ or `next start` has nothing to serve.** ⚠️ **Port already busy? ⛔ Do
+⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
+kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
+`npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
 Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
 **What one minute caught on 23/08:** `/dev/lesson` → `taps=1` on a 593-character screen. `/dev/tabs/studies` → 116 characters, unchanged from 21/08.
 ⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
-🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next dev"` (T-251).** A `next dev` left on port 3000 answers HTTP but never registers a service worker (PWA is production-only); `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
+🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next start"` (T-251).** ⟦`next dev` ⇢ `next start` 08/09 · `F-204`⟧ Any server left on port 3000 collides with the gate; `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
 
 ## 🚪 STEP 2.6 — שער סקיל, לפני כל פעולה אחרת על המשימה:  ⟦NEW 06/09 · Roy's explicit instruction · Cowork architecture session · C-0476⟧
 קרא את docs/skills-registry.md מול המשימה שנבחרה.

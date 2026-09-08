@@ -164,14 +164,62 @@ npm run loop:health
 ⛔ **`--ff-only`, always.** A merge commit on `main` is a `main` that Netlify skips (`RULES § 0.8`). ⛔ Never `--no-ff`, ⛔ never `-m`, ⛔ never force.
 ⛔ **A non-fast-forward ⇒ ⛔ STOP.** ⛔ Do not rebase, ⛔ do not merge the other way, ⛔ do not force. Write it as a 🔴 blocker and hand it to Roy.
 
-🔴 **THE SMOKE TEST IS MANDATORY AND IT IS ⛔ NOT OPTIONAL (`RULES § 0.1 ד׳`).**
+🔴 **THE SMOKE TEST IS MANDATORY AND IT IS ⛔ NOT OPTIONAL (`RULES § 0.1 ד׳`) — AND IT HAS TWO HALVES.**  ⟦REWRITTEN 08/09 · `T-279` · `F-200`⟧
+
+**① THE DEPLOY WENT UP — the Netlify connector, ⛔ which is already attached to your Routine.**
+```
+get-projects        name: silly-medovik-b304e5     ⇒ siteId
+get-deploy-for-site siteId + the site's current deploy
+```
+**The requirement, and ⛔ all four parts of it:**
+```
+state        == "ready"
+context      == "production"
+branch       == "main"
+commit_ref   == THE SHA YOU JUST PUSHED     ⇐ ⛔ the one that matters most
+```
+🔬 **Measured live 08/09, ⛔ so this is ⛔ not a hopeful instruction:** the connector returned
+`state: ready · context: production · branch: main · commit_ref: 87ca9fd88a…` — exactly
+`origin/main` — plus `error_message: null` and a secrets scan over 524 files with 0 matches.
+⚠️ **`commit_ref` ⛔ is the whole point.** A `ready` deploy of **yesterday's** SHA is a green
+light for a promotion that ⛔ never shipped. **Compare it to the SHA you pushed, ⛔ not to
+"main".**
+📎 ⛔ **`NETLIFY_AUTH_TOKEN` is ⛔ NOT needed** — `T-046`/`R-015` track that token for another
+purpose and ⛔ do ⛔ not block this.
+
+**② THE PRODUCT ANSWERS — and ⛔ this half is ⛔ not replaced by ①.**
 ```
 GET https://<the live site>/api/health     ⇒ must be JSON with "ok": true
 ```
+🔴 ⛔ **`state: ready` says the BUILD went up. It ⛔ does ⛔ NOT say the product answers.**
+⛔ A deploy can be `ready` with every function 500-ing. ⇒ ① ⛔ never excuses skipping ②.
 ⛔ **404, HTML, `ok:false`, or no answer ⇒ 🔴 CRITICAL immediately:** write the raw response body into `PROMOTION_BLOCKERS` in `plan/00-control.md`, open an item in `plan/03-for-roy.md`, and ⛔ **stop YOUR run there.**
 🔴 ⛔ **⛔ And ⛔ do ⛔ NOT set `NEXT_AGENT: HUMAN`.** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ It halts **all five** agents, so a deployment failure — your row, and ⛔ nobody else's — was able to stop DEV, PM, QA and CONTENT from doing work that has ⛔ nothing to do with it. **A failed deploy stops the promotion, ⛔ not the building.**
 🔬 ⛔ **And the domain being unreachable is ⛔ not a pass.** `F-200` measured 403 `CONNECT tunnel failed` on **14 attempts** — ⛔ a policy decision, ⛔ not a transient fault. ⇒ write **«⛔ לא נמדד»**, ⛔ **never** «passed». ⛔ **A deploy that was not checked end to end is ⛔ not a deploy — and a check that did ⛔ not run is ⛔ not a check that passed.**
 ⚠️ Netlify needs a minute — wait, then poll up to 4 times before you call it red.
+
+🔬 ⛔ **HOW TO TELL «THE PRODUCT IS BROKEN» FROM «I ⛔ COULD NOT REACH IT», AND ⛔ NEVER GUESS.**
+⟦NEW 08/09 · `F-200` · `T-279`⟧ The two look identical in a report and mean opposite things.
+The difference is measurable, and it is **where the failure happens**:
+```
+curl exits 56 · "CONNECT tunnel failed"     ⇒ ⛔ blocked at the PROXY, ⛔ before any request
+$HTTPS_PROXY/__agentproxy/status reports
+  "kind": "connect_rejected"                ⇒ same, confirmed from the proxy's own side
+```
+⇒ **that is «⛔ לא נמדד», ⛔ and it is ⛔ NEVER «עבר».** Measured **15 times** now — 14 in
+`F-200` on 08/09, and again this evening: `connect_rejected · policy denial ·
+silly-medovik-b304e5.netlify.app:443`. ⛔ **It is the environment's network policy, ⛔ not a
+transient fault and ⛔ not something any agent can fix.**
+**What you do when ② could ⛔ not be measured:**
+1. ① still had to pass. **A `ready` deploy on the pushed SHA is ⛔ not proof the product
+   answers — ⛔ but its absence IS proof that something is wrong.** ⛔ Never report ② as
+   passed on the strength of ①.
+2. Write **«⛔ בדיקת עשן: ⛔ לא נמדד — חסם רשת של הסביבה (`F-200`)»** in your report, ⛔ and
+   ⛔ do ⛔ not write `PROMOTION_BLOCKERS`: a check that ⛔ could not run is ⛔ not a red
+   deploy, and blocking tomorrow's promotion on it would stop shipping over a proxy rule.
+3. Refresh the item in `plan/03-for-roy.md` — ⛔ **only Roy can lift this**, by allowing
+   `silly-medovik-b304e5.netlify.app` in the environment's network policy. Until he does,
+   `RULES § 0.1 ד׳` is a mandatory gate that ⛔ nobody in the loop can walk through.
 
 **Then update, in `plan/00-control.md`, and ⛔ only these fields:**
 ```
