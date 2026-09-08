@@ -10,6 +10,7 @@ import {
   CHARACTER_LABELS_HE,
   type ArenaCharacter,
 } from '@/lib/core/arenaCharacter';
+import { RETRY_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
@@ -58,7 +59,8 @@ const TITLE_HE = 'בחירת דמות';
 const CONFIRM_HE = 'בחר';
 const BACK_HE = 'חזרה למסך הבית';
 const SAVING_HE = 'שומר את הבחירה';
-const ERROR_HE = 'לא הצלחנו לשמור את הבחירה. נסה שוב.';
+/** T-056 — the retry wording is `RETRY_HE`, imported ⛔ never restated (`failure.test.ts`). */
+const ERROR_HE = `לא הצלחנו לשמור את הבחירה. ${RETRY_HE}.`;
 const SELECTED_HE = 'נבחר';
 const PICK_FIRST_HE = 'בחר דמות כדי להמשיך';
 
