@@ -1,20 +1,20 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0499 (DEV) — 🔨 טיק בנייה: `T-228` נבנתה (🟣, קומיט אחד על `work/current`). `cards` ⬜=0 · נותרה ⛔ T-237 (ממתינה להליכה חוזרת של רוי על `main` המעודכן). `F-198` (🟡, פער 4px כלל-מסך) ל-PM.
-STATE: BUILDING                    # ▶️ C-0499 (DEV) — `cards`: `T-228` 🟣 על `work/current`; QA ממזג `--ff-only`. `RELEASE_BLOCKERS` (🟠, סביבה, לרוי) נשאר כלשונו — ⛔ אינו שורה של DEV.
+NEXT_AGENT: DEV                    # ▶️ C-0500 (CRITIC, מסלול: מלא) — מיזוג בוצע ל-`dev` (506c744), 5 🟣→✅. `ACTIVE_WORKSTREAM` הוזז ל-`arena` (2 ⬜: T-217·T-220).
+STATE: REVIEWED                    # ▶️ C-0500 (CRITIC) — שער מלא רץ, `verify`/`loop:health` ירוקים, מוזג. DEV לוקח מ-`arena` בטיק הבא.
 ACTIVE_MILESTONE: M0              # M0..M6
-ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
+ACTIVE_TASK_ID: []   # ▶️ C-0500 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-08T04:43:34Z"
+LAST_HANDOFF_AT: "2026-09-08T06:15:16Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CRITIC"             # ננעלה C-0500 (CRITIC, מסלול: מלא), תחילת הטיק.
-LOCK_AT: "2026-09-08T05:16:06Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0500 (CRITIC) — טיק שער הסתיים, נעילה משוחררת.
+LOCK_AT: "2026-09-08T06:15:16Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   cards:  14 / 120           # § 13-3 · **הוחזרה כמוקד C-0485 · ⛔ אינה חתומה.** ➕ C-0499 (DEV): `T-228` 🟣 (⬜=0, נותרה ⛔ T-237). ➕ C-0498 (DEV): `T-066` + `T-199`ⓐ 🟣 — `F-143` נסגר ב-`D-169`. נותר `F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
-#   arena:  19 / 120           # § 13-4 · **הוזזה→`studies` ב-C-0367 (QA), חסומה-חיצונית, ⛔ אינה חתומה.** ⬜ אחת (`T-220`) חסומה ב-F-164/PM. פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+#   cards:  14 / 120           # § 13-3 · **⬜=0 · מוצתה שנית · הוזזה→`arena` ב-C-0500 (QA), ⛔ אינה חתומה** (ⓑⓒ חסומות ב-env). 5 🟣 הפכו ✅ (T-066·T-199·T-228·T-243·T-259). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+#   arena:  19 / 120           # § 13-4 · **הוחזרה כמוקד C-0500 (QA) — 2 ⬜ פנויות (`T-217`·`T-220`, האחרונה חסומה בתא ב-F-164/PM), ⛔ אינה חתומה.** פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
@@ -51,7 +51,7 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
 | C-0499 | DEV | CRITIC | 2026-09-08T04:43:34Z | 🔨 **טיק בנייה — `cards`: `T-228` נבנתה, קומיט אחד (⛔ אין תוכנית — טריוויאלית, STEP 3).** ה-⛔ של השורה אמר «נלקחת כשהמוקד יחזור ל-`cards`» והמוקד חזר ב-C-0485 ⇒ נלקחה (§ 0.22, מתועד). נמדד חי 375×780 לפני/אחרי: אריחי החפיסה `x=20·w=335·h=78` ⇢ `x=24·w=327·h=62`, r=16, גם ב-320/414, 0<44px, אפס גלילה. `mx-1` על הרשימה · `py-1.5` · בלי `gap` · הרנדר 18⇢16 (3 קריאות). פער כלל-מסך 20-מול-24 נמדד ⇒ `F-198` (🟡, ל-PM). `[SKILL: ui-styling]` — ⛔ הסשן ⛔ אינו מציע אותו ⇒ לפי החוקה. `verify` ירוק בדחיפת הנעילה (220/220 · 3638/3638 · build ✅ · check:mobile 1490); על tip הדחיפה — ה-hook. ⚠️ `00-control` היה 13,110B לפני הטיק (תקרה 12KB, בדיקה 9) — ⛔ לא הורחב מעבר לשורה אחת. | `components/DeckSelector.tsx` · `docs/design/render_video_A.py` · `50-tasks` (T-228) · `60-findings` (F-198) · `30-architecture` · `00-control` · `docs/architecture-map.json` |
-| C-0500 | CRITIC | DEV | 2026-09-08T05:16:06Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק (220/220·3638/3638·build✅·mobile 1490/1490), `loop:health` 13/17 (2·9·11·16 בדיקות פתוחות — פורטו כממצאים/רישום). שני ממצאים חדשים: `F-199` (F-196 מצטט קובץ שלא קיים) · `F-200` (STEP 3 — בדיקת העשן ⛔ אינה ניתנת לביצוע ב-CCR: הפרוקסי חוסם CONNECT ל-Netlify ב-403 מדיניות, לא כשל אתר). `review-animations` על קפיץ-השחרור (`T-243`/`T-259`) — **Approve**, ⛔ ללא רגרסיה. הליכת מוצר 375×780 על `/dev/card/choice`·`/dev/tabs/cards`·`/dev/card` — נקי, 0<44px, אפס גלילה. `archive`+`measure:plan`, `merge --ff-only` ל-`dev`: 5 משימות 🟣→✅. `cards` מוצתה (⬜=0) שנית — 61-deferred + ⛔ אינה חתומה (ⓑⓒ חסומות ב-env, כמו `arena`/פריט 77) → `ACTIVE_WORKSTREAM: arena`. | `00-control` · `60-findings` (F-199·F-200) · `61-deferred` · `plan-open` · `plan-tables` · `archive/` |
+| C-0500 | CRITIC | DEV | 2026-09-08T05:16:06Z | 🚦 **מסלול: מלא — שער על `work/current`.** `verify` ירוק (220/220·3638/3638·build✅·mobile 1490/1490), `loop:health` 15/17 (2·9 בדיקות פתוחות — פורטו כממצאים/רישום, 16 ירוק על ראש הענף). שני ממצאים חדשים: `F-199` (F-196 מצטט קובץ שלא קיים) · `F-200` (STEP 3 — בדיקת העשן ⛔ אינה ניתנת לביצוע ב-CCR: הפרוקסי חוסם CONNECT ל-Netlify ב-403 מדיניות, לא כשל אתר). `review-animations` על קפיץ-השחרור (`T-243`/`T-259`) — **Approve**, ⛔ ללא רגרסיה. הליכת מוצר 375×780 על `/dev/card/choice`·`/dev/tabs/cards`·`/dev/card` — נקי, 0<44px, אפס גלילה. `archive`+`measure:plan`, `merge --ff-only` ל-`dev`: 5 משימות 🟣→✅. `cards` מוצתה (⬜=0) שנית — 61-deferred + ⛔ אינה חתומה (ⓑⓒ חסומות ב-env, כמו `arena`/פריט 77) → `ACTIVE_WORKSTREAM: arena`. | `00-control` · `60-findings` (F-199·F-200) · `61-deferred` · `plan-open` · `plan-tables` · `archive/` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
