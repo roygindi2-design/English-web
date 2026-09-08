@@ -130,12 +130,10 @@ type ScreenState =
 /**
  * ⚠️ **חיי הצדדים, ⛔ ולא מה שהפס מציג.** הרנדר מצייר `100/100`, ו-`render_video_B.py:475`
  * מראה מה זה **באמת**: `f"{int(st['hp']*100)}/100"` — כלומר **אחוז**, ⛔ ולא HP גולמי.
- * ⇒ הפס מציג אחוז (נאמנות לרנדר), והסולם הפנימי נבחר כך שהקרב יהיה **מרוץ**:
- * ‏11 מכות יריב ב-90 שניות מול 12 חיי לומד, ו-~16 אחזורים מול 20 חיי יריב.
- * ⛔ סולם של 100/100 עם נזק 1 למכה היה קרב שאי-אפשר להכריע בו — 11% נזק בקרב שלם.
+ * ⇒ הפס מציג אחוז (נאמנות לרנדר). T-281 · `37 § 7` גדר 4: **המספרים עצמם ⛔ אינם כאן** —
+ * חיי הלומד הם שורת הדמות ב-`lib/core/battle.ts` (`CHARACTER_STATS`), חיי היריב הם
+ * `ENEMY_HP` שם. הרכיב מוסר את `character` ל-`startBattle` ומצייר את מה שחוזר.
  */
-const LEARNER_HP = 12;
-const ENEMY_HP = 20;
 
 const CLOSE_HE = 'סגור';
 const CLOCK_HE = 'זמן קרב';
@@ -221,7 +219,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   const [battle, setBattle] = useState<BattleState | null>(
     initialRound === undefined
       ? null
-      : startBattle(wordsOf(initialRound.questions), LEARNER_HP, ENEMY_HP),
+      : startBattle(wordsOf(initialRound.questions), character),
   );
   /**
    * T-231 ⓐ · `apple-design` § 1 · § 11 — **פריים-הזמן ⛔ אינו נכנס ל-state.**
@@ -342,7 +340,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
         return;
       }
       setQuestions(body.round.questions);
-      setBattle(startBattle(wordsOf(body.round.questions), LEARNER_HP, ENEMY_HP));
+      setBattle(startBattle(wordsOf(body.round.questions), character));
       originRef.current = null;
       elapsedRef.current = 0;
       setTelegraphPhase('quiet');
@@ -533,7 +531,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     setTimeUp(false);
     if (initialRound !== undefined) {
       setQuestions(initialRound.questions);
-      setBattle(startBattle(wordsOf(initialRound.questions), LEARNER_HP, ENEMY_HP));
+      setBattle(startBattle(wordsOf(initialRound.questions), character));
       setScreen({ kind: 'ready', level: initialRound.level });
       return;
     }

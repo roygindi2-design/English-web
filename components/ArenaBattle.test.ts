@@ -392,3 +392,20 @@ describe('T-253ⓐ — «חזרה» ממסך הסיום חוזרת לטבעת', 
     expect(CODE).toContain('CHOOSE_LEVEL_HE');
   });
 });
+
+describe('T-281 · 37 § 7 גדר 4 — המספרים חיים ב-lib/core, ⛔ לא ברכיב', () => {
+  it('⛔ אין ברכיב קבוע חיים — LEARNER_HP ו-ENEMY_HP נמחקו', () => {
+    expect(CODE).not.toMatch(/\bconst (LEARNER_HP|ENEMY_HP)\b/);
+    expect(CODE).not.toMatch(/startBattle\([^)]*\b(12|20)\b/);
+  });
+
+  it('שלוש הקריאות ל-startBattle מוסרות את הדמות, ⛔ ולא מספרים', () => {
+    const calls = CODE.match(/startBattle\(wordsOf\([^)]*\),\s*character\)/g) ?? [];
+    expect(calls).toHaveLength(3);
+    expect(CODE).not.toMatch(/startBattle\(wordsOf\([^)]*\)\)/);   // ⛔ never the default row by omission
+  });
+
+  it('גדר 1 — המילים ⛔ אינן תלויות בדמות: wordsOf ⛔ אינה מקבלת אותה', () => {
+    expect(CODE).not.toMatch(/wordsOf\([^)]*character/);
+  });
+});
