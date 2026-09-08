@@ -164,7 +164,7 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 
 ## STEP 1 — STATE
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess. Read `plan/00-control.md` ONLY.
-`PAUSED_BY_HUMAN: true` → one line, exit. PM/CRITIC/CONTENT lock under 90 min → **Smart Wait, then yield if still held — and ⛔ NEVER silently.**
+`PAUSED_BY_HUMAN: true` → one line, exit. PM/QA/CONTENT lock under 90 min — **or a `PROMOTER` lock under 30** ⟦NEW 08/09 · `T-278` · `RULES § 0.4`: he ⛔ does take the lock, and until today ⛔ nothing told you to honour it⟧ → **Smart Wait, then yield if still held — and ⛔ NEVER silently.**
 🆕 **⟦NEW 06/09 · Smart Wait · Roy's explicit instruction⟧ Do not yield immediately on a foreign lock:** `sleep 180`, then re-read `plan/00-control.md`. Released in the meantime ⇒ continue the tick normally, as if the lock had never been held. Still held after the wait ⇒ yield now, and write the mandatory retreat line below. ⛔ **The retreat itself and the thresholds (DEV 90 min, everyone else 30 min) are unchanged** — this only delays the *decision* to yield by one wait, it never extends the age at which a lock counts as foreign.
 Own lock under 30 min → yield, ⛔ never silently; over 90 min = abandoned.
 

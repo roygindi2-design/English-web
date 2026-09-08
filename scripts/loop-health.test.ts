@@ -978,6 +978,39 @@ describe('scripts/loop-health.mjs', () => {
     });
   });
 
+  /**
+   * 🔓 **`T-278` — כל סוכן שנועל חייב להופיע ב-`§ 0.4`, גם כשורה וגם כמי שנסוגים מפניו.**
+   * ⟦NEW 08/09⟧
+   *
+   * 🔬 **הכשל שנמדד:** `loop(PROMOTER): C-0495 lock` נדחף 07/09 23:23Z ⇒ PROMOTER **כן**
+   * תופס `LOCK_HELD_BY`. ‏`§ 0.4` מנתה שלוש שורות ו⛔ **לא הזכירה אותו באף אחת** ⇒ ריצה
+   * שלו שנמתחה אל תוך חלון DEV העמידה את DEV מול נעילה שהחוקה ⛔ לא ציוותה עליו לכבד.
+   * ⛔ **תזמון מקטין הסתברות, ⛔ ואינו מגדיר התנהגות** — ולכן זו בדיקה, ⛔ ולא הערה.
+   *
+   * ⚠️ **המקור לרשימת הנועלים הוא `roster.json`, ⛔ ולא רשימה שנייה כאן** — רשימה שנייה
+   * היא בדיוק הדבר שהבדיקה הזאת קיימת כדי למנוע.
+   */
+  it('כל סוכן דלוק ב-roster מופיע ב-§ 0.4 — כשורה, וגם בתא «נסוג מפני» של אחר (T-278)', () => {
+    const roster = JSON.parse(readFileSync('docs/agents/roster.json', 'utf8')) as {
+      agents: { name: string; enabled: boolean }[];
+    };
+    const rules = readFileSync('plan/RULES.md', 'utf8');
+    const section = /### 0\.4 [\s\S]*?\n### /.exec(rules)?.[0] ?? '';
+    expect(section, '§ 0.4 נמצא').not.toBe('');
+
+    const rows = section.split('\n').filter((l) => /^\| \*\*[A-Z]+\*\* \|/.test(l));
+    const rowNames = rows.map((l) => /^\| \*\*([A-Z]+)\*\*/.exec(l)?.[1] ?? '');
+    const yieldedTo = rows.map((l) => l.split('|')[2] ?? '').join(' ');
+
+    for (const a of roster.agents.filter((x) => x.enabled)) {
+      expect(rowNames, `${a.name}: שורה משלו — למי הוא נסוג`).toContain(a.name);
+      expect(
+        yieldedTo,
+        `${a.name}: הוא נועל ⇒ מישהו חייב להיות מצווה לכבד את הנעילה שלו`,
+      ).toContain(a.name);
+    }
+  });
+
   it('writes nothing into the repo it measures', () => {
     // ⛔ A checker with side effects is a checker nobody can run safely.
     const root = healthy();
