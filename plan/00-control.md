@@ -1,20 +1,19 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0497 (DEV) — 📝 טיק תכנון: `2026-09-08-sentences-deck-and-gate.md` (T-066 + T-199ⓐ, `check:plan` 10/10). ⛔ אפס קוד. cards עוד 2 ⬜ עם תוכנית.
-STATE: BUILDING                    # ▶️ C-0497 (DEV) — תוכנית ל-`cards` נכתבה; הטיק הבא של DEV = בנייה, משימה A (T-066) ואז B (T-199ⓐ). `RELEASE_BLOCKERS` (🟠, סביבה, לרוי) נשאר כלשונו — ⛔ אינו שורה של DEV.
+NEXT_AGENT: CRITIC                 # ▶️ C-0498 (DEV) — 🔨 טיק בנייה: `T-066` + `T-199`ⓐ נבנו (🟣, שני קומיטים על `work/current`). `cards` ⬜=0 עם התוכנית הזאת (נותרו ⛔ T-228 · ⛔ T-237).
+STATE: BUILDING                    # ▶️ C-0498 (DEV) — `cards`: `T-066` ו-`T-199`ⓐ 🟣 על `work/current`; QA ממזג `--ff-only`. `RELEASE_BLOCKERS` (🟠, סביבה, לרוי) נשאר כלשונו — ⛔ אינו שורה של DEV.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0489 (CRITIC) — ריק, כרגיל בטיק שער.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-08T00:44:20Z"
-LAST_HANDOFF_AT: "2026-09-07T23:06:46Z"
+LAST_HANDOFF_AT: "2026-09-08T02:57:55Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # ▶️ C-0498 (DEV) — ננעל 2026-09-08T02:33:37Z. `cards` · טיק בנייה על `2026-09-08-sentences-deck-and-gate.md`: `T-066` ואז `T-199`ⓐ.
-LOCK_AT: "2026-09-08T02:33:37Z"
+LOCK_HELD_BY: ""                   # שוחררה C-0498 (DEV) — טיק בנייה הסתיים, נעילה משוחררת.
+LOCK_AT: "2026-09-08T02:57:55Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   cards:  12 / 120           # § 13-3 · **מוצתה · הוזזה→`arena` ב-C-0322 · ⛔ אינה חתומה.** נותרו `F-143` (חוסם `T-199`ⓐ) ו-`F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+#   cards:  13 / 120           # § 13-3 · **הוחזרה כמוקד C-0485 · ⛔ אינה חתומה.** ➕ C-0498 (DEV): `T-066` + `T-199`ⓐ 🟣 — `F-143` נסגר ב-`D-169`. נותר `F-144` (⛔ אינו חוסם). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   arena:  19 / 120           # § 13-4 · **הוזזה→`studies` ב-C-0367 (QA), חסומה-חיצונית, ⛔ אינה חתומה.** ⬜ אחת (`T-220`) חסומה ב-F-164/PM. פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
@@ -51,6 +50,7 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
+| C-0498 | DEV | CRITIC | 2026-09-08T02:57:55Z | 🔨 **טיק בנייה — `cards`: `T-066` + `T-199`ⓐ נבנו מהתוכנית `2026-09-08-sentences-deck-and-gate.md` (19/19 תיבות), שני קומיטים.** פריט ההשלמה = וריאנט `input: 'choice'` של `Card` על אותו `<Flashcard>`/`<CardDeck>` (D-169, ⛔ מסך חדש) · 3 אפשרויות (D-156) · גב = חסר מתמלא + תרגום + דוגמה ניטרלית · דירוג ב-`/api/practice` עם `deck: 'sentences'` ופתיחת שורה כמו `level` (D-142 — § 0.22 שורה 4, לווטו של PM) · `parseFlashcardDeckName` נמחק, האריח «משפטים» נפתח (`toEntry`, `href`). נמדד חי 375×780: `/dev/card/choice` (3×335×54 · «המשך» y=645 · 0<44px · scroll=375) · `/dev/tabs/cards` (0 מנעולים · primary=1) · `/study?deck=sentences` («משפטים» ב-h1 וב-title). `[SKILL: ui-styling]` על שתי השורות — ⛔ הסשן ⛔ אינו מציע אותו (⛔ `ui-ux-pro-max`, ⛔ `superpowers:*`) ⇒ נבנה לפי החוקה. `verify` טרי לפני קומיט A: 220/220 · 3639/3639 · build ✅ · check:mobile 1490; על tip הדחיפה — ה-hook. הגיינה: `LAST_HANDOFF_AT` הופיע פעמיים — כווץ לשורה אחת. | `lib/core/sentenceCard.ts` (+test) · `Flashcard` · `CardDeck` · `StudyDeckScreen` · `DeckSelector` · `deck.ts` · `sentenceItem.ts` · `queue/route.ts` · `practice/route.ts` · `app/study/page.tsx` · `app/dev/card/choice` · `verify-mobile.mjs` · `api-contract` · `50-tasks` · `30-architecture` · `00-control` |
 | C-0497 | DEV | CRITIC | 2026-09-08T00:44:20Z | 📝 **טיק תכנון — `cards`: `2026-09-08-sentences-deck-and-gate.md` ל-`T-066` + `T-199`ⓐ, ⛔ אפס קוד.** נמדד: `main`=`dev`=`87ca9fd`, `RELEASE_BLOCKERS` הוא חסם סביבה לרוי (644814f, ⛔ לא נגעתי) · שני ממצאי 🔴 (F-194 · F-195) ⛔ אינם עוצרים לומד ⇒ הבחירה נשארה ב-`cards`. התוכנית: הפריט הוא **וריאנט שלישי של `Card`** (`input: 'choice'`) על אותו `<Flashcard>`/`<CardDeck>` (D-169 ⛔ רכיב חדש) · 3 אפשרויות (D-156) · הגב = גזע מושלם + תרגום + דוגמה · דירוג ב-`/api/practice` עם פתיחת שורה כמו D-142 (§ 0.22 שורה 4 — לווטו של PM) · הסרת `parseFlashcardDeckName` + `href` לאריח (T-199ⓐ). `check:plan` **10/10**, 19 צעדים, 2 קומיטים. הנעילה נדחפה אחרי `npm install` (F-195 ⛔ לא חזר: hook מותקן, `verify` ירוק בדחיפה: 219/219 · 3612/3612 · build ✅ · check:mobile 1433). | `docs/superpowers/plans/2026-09-08-sentences-deck-and-gate.md` · `50-tasks` (T-066 · T-199 הפניה לתוכנית) · `00-control` |
 ---
 

@@ -811,7 +811,8 @@ in the book». שני מקורות אמיתיים, שניהם מצוטטים ב�
 - `lib/core/shuffle.ts` — טהור. `mulberry32` + `shuffle`, **מילה במילה** מ-
   `arcadeRound.ts:71-90`. `shuffle.test.ts` מחזיק את התמורות שנמדדו **לפני** ההעברה כזהב,
   ו-`arcadeRound.test.ts` נשאר ירוק ⛔ בלי שינוי ולו בציפייה אחת.
-- `lib/core/sentenceItem.ts` — טהור. מועמד ⇒ פריט: גזע, התשובה האנגלית, וארבע אפשרויות
+- `lib/core/sentenceCard.ts` — טהור (C-0498 · T-066 · D-156 · D-169). `SentenceItem` ⇒ `Card` בווריאנט השלישי `input: 'choice'`: `splitStem` · `completeStem` · `buildSentenceCard` · `gradeChoice` (התאמה מדויקת, ⛔ נרמול). ⛔ אין רכיב חדש — `<Flashcard>` מצייר את הענף, `<CardDeck>` גולל לפי `deckCardKey` (`wordId#itemIndex` — שני גזעים של מילה אחת הם שני כרטיסים).
+- `lib/core/sentenceItem.ts` — טהור. מועמד ⇒ פריט: גזע, התשובה האנגלית, ושלוש אפשרויות (D-156 · C-0498, היה ארבע)
   **אנגליות** (D-023). ⛔ אפס React, DOM, שעון, רשת.
 - ענף `deck=sentences` ב-`app/api/study/queue/route.ts`, באותה צורה בדיוק ש-`deck=level`
   כבר משתמש בה — ⛔ אפס מסלול חדש, ⛔ אפס קוד שגיאה חדש.
