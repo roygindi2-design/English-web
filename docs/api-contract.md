@@ -1246,12 +1246,13 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 
 ⛔ **הנתיב אינו כותב דבר** — אין בו `.insert(` · `.update(` · `.upsert(` · `.delete(`,
 ו⛔ הוא אינו נוגע במנוע החזרות (`37 § 13.1`) ו⛔ אינו קורא את טבלת הפרופיל (D-052).
-הטבלה היחידה שהוא קורא היא `arcade_progress`, ובדיוק בשלוש עמודות.
+הטבלה היחידה שהוא קורא היא `arcade_progress`, ובדיוק בארבע עמודות (T-217 הוסיפה את
+`avatar_parts`; הנתיב נשאר קריאה בלבד).
 
 **200:**
 
 ```json
-{ "ok": true, "arcadeLevel": 7, "wins": 3, "unlockedItems": ["helmet"] }
+{ "ok": true, "arcadeLevel": 7, "wins": 3, "unlockedItems": ["helmet"], "character": "warrior" }
 ```
 
 | השדה | ההגדרה |
@@ -1259,6 +1260,7 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 | `arcadeLevel` | `arcade_progress.arcade_level`. ⛔ **אינה רמת האנגלית של הלומד** (D-052 · D-061), והמסך אומר זאת במילים |
 | `wins` | `arcade_progress.wins`. ‏`lib/core/arenaHome.ts` גוזר ממנה את מסלול הבוס — `37 § 9`, «בוס כל 5 ניצחונות» |
 | `unlockedItems` | `arcade_progress.unlocked_items`. שם שאינו ב-`ARCADE_ITEMS` **מדולג בשקט**, וכך גם `banner`, שאינה משבצת ציוד (D-135) |
+| `character` | T-217 · `37 § 7` · D-152 — `characterFromParts(arcade_progress.avatar_parts)`: `"wizard"` · `"warrior"` · `"armorer"`, או **`null`** כשהמפתח `avatar_parts.character` חסר או אינו אחד משלושת הערכים. ⛔ ערך אחסון, ⛔ לעולם אינו טקסט על המסך. `null` ⇒ המעטפת פותחת את `בחירת דמות` לפני הקרב הראשון |
 
 ⚠️ **לומד בלי שורה ⛔ אינו כישלון:** מוחזרות ברירות המחדל של `0014_arcade.sql` —
 `arcadeLevel: 1` · `wins: 0` · `unlockedItems: []` — ⛔ ולא 503. מסך בית ריק הוא
@@ -1414,6 +1416,26 @@ F-004): `{ "ok": false, "code": "unavailable" }`
 **200:** `{ "ok": true, "wordId": "…", "hidden": true }`
 **422 — גוף פגום:** `{ "ok": false, "fieldErrors": { "wordId": "…" } }`
 **401 · 503:** זהים ל-`GET` שמעליו.
+
+## PATCH /api/arcade/character
+
+**בחירת דמות — מפתח jsonb אחד, טבלה אחת** (T-217 · `37 § 7` · D-152). דורש סשן חי;
+סדר השומרים הוא ENV ⇒ סשן ⇒ שאילתה (C-0032). ⛔ **אין מיגרציה:** הערך נכתב לתוך
+`arcade_progress.avatar_parts` (`0014_arcade.sql`, `jsonb default '{}'`) במיזוג — כל מפתח
+שכבר קיים בו נשמר, ומפתח אחד, `character`, נקבע. הכלל חי ב-`lib/core/arenaCharacter.ts`
+(‏`isArenaCharacter` · `withCharacter`); הנתיב מיישם ו⛔ אינו מכריע.
+
+**הבקשה:** `{ "character": "wizard" | "warrior" | "armorer" }` — קבוצה סגורה, ⛔ אין טקסט חופשי.
+
+**200:** `{ "ok": true, "character": "wizard" }`
+**422 — ערך שאינו מהשלושה:** `{ "ok": false, "fieldErrors": { "character": "לא הצלחנו לשמור את הבחירה. נסה שוב." } }`
+**400 — גוף שאינו JSON:** `{ "ok": false, "code": "unavailable" }`
+**401 · 503:** אותם שלושה גופים של `PATCH /api/arcade/collected`.
+
+⛔ **הנתיב ⛔ אינו נוגע ב-`arcade_level` · `wins` · `unlocked_items`** — ה-`upsert` נושא
+`user_id` ו-`avatar_parts` בלבד, ו-`route.test.ts` מודד זאת על המקור. כך «בלי לאבד רמה,
+גביעים, ציוד או שברים» (`37 § 7`) מתקיים **מבנייה**, ⛔ ולא מהבטחה. ⛔ `avatar_parts.name`
+⛔ אינו נכתב (F-202 — אין רשימת שמות סגורה). ⛔ `word_progress` ⛔ אינו נזכר (`37 § 13.1`).
 
 ---
 
