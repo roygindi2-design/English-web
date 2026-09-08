@@ -1,20 +1,20 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0508 (CRITIC, מלא) — שער ומיזוג בקרה בלבד (דיף עצמו: לוק+ארכוב). `arena` ⬜=**1** ללא שינוי (`T-281`, תוכנית מוכנה) ⇒ DEV הבא הוא 🔨 בנייה מהתוכנית.
+NEXT_AGENT: CRITIC                 # ▶️ C-0509 (DEV) — 🔨 בנייה: `T-281` 🟣 מהתוכנית (3 קומיטי משימה + סגירה). `arena` ⬜=**0** ⇒ המוקד מוצה; ההחזרה/ההזזה היא של QA בלבד (`RULES § 0.23ז`).
 STATE: PLANNING                    # ⛔ לא שונה — טיק ביקורת אינו קובע מצב בנייה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0508 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-08T15:45:00Z"
+LAST_HANDOFF_AT: "2026-09-08T16:44:40Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 BUDGET_NOTE: "כל מקורות התוכן מורשים לשימוש מסחרי בעלות אפס: NGSL (CC BY-SA 4.0) · CEFR-J (מסחרי בציטוט) · Octanove (CC BY-SA 4.0) · Hebrew Wordnet (רישיון פרמיסיבי של אונ׳ חיפה, ללא share-alike — אומת C-0001, H1g) · Kaikki/ויקימילון (CC BY-SA) · word2word (Apache-2.0). ⛔ PanLex ו-MUSE נפסלו ברישיון NC (1.6.3). שני סיכוני תקציב עתידיים תועדו ב-4.3.2: W3 (עלות יצירת תוכן AI) ו-W4 (שכבה חינמית של Supabase)."
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # C-0509 (DEV) — 🔨 build tick, T-281 from plan 2026-09-08-arena-character-bias.md
-LOCK_AT: "2026-09-08T16:33:41Z"
+LOCK_HELD_BY: ""                   # שוחררה — DEV סיים C-0509.
+LOCK_AT: "2026-09-08T16:44:40Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  14 / 120           # § 13-3 · **⬜=0 · מוצתה שנית · הוזזה→`arena` ב-C-0500 (QA), ⛔ אינה חתומה** (ⓑⓒ חסומות ב-env). 5 🟣 הפכו ✅ (T-066·T-199·T-228·T-243·T-259). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
-#   arena:  21 / 120           # § 13-4 · **המוקד. ⬜=1 · `T-281`, תוכנית מוכנה (`2026-09-08-arena-character-bias.md`, C-0506) — DEV הבא בונה ממנה.** `T-217`·`T-220`·`T-234` כבר 🟣/✅ ומוזגו ל-`dev` (C-0508). ⛔ אינה חתומה. פירוט ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md`.
+#   arena:  22 / 120           # § 13-4 · **המוקד. ⬜=0 · `T-281` 🟣 (C-0509, DEV — נבנתה מהתוכנית `2026-09-08-arena-character-bias.md`).** `T-217`·`T-220`·`T-234` כבר 🟣/✅ ומוזגו ל-`dev` (C-0508). ⛔ אינה חתומה. פירוט ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md`.
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
@@ -50,8 +50,8 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0506 | DEV | CRITIC | 2026-09-08T14:41:19Z | 📝 **תכנון, ⛔ אפס קוד.** `T-281` — תוכנית `2026-09-08-arena-character-bias.md` (`check:plan` 10/10): טבלת `37 § 7` נקראת מהמפרט בבדיקה, 4 גדרות = 4 בדיקות, `startBattle(words, character)`, `ArenaBattle.tsx` מאבד 12·20. **ⓑ נמדדה בנויה** (T-217: `ArenaHome.tsx:393` · `ArenaShell.tsx:43`) ⇒ F-205 (סחף רישום). סקילים: `taste-skill` (לפי תג); superpowers ⛔ לא מוצעים בסשן. ⛔ Supabase לא נגע. | `docs/superpowers/plans/2026-09-08-arena-character-bias.md` · `50-tasks` (T-281) · `60-findings` (F-205) · `00-control` · `plan-open`·`plan-tables` |
 | C-0508 | CRITIC | DEV | 2026-09-08T15:45:00Z | 🚦 **מסלול: מלא — שער על `work/current`, דיף עצמו רק בקרה (rev-list=1 לפני הלוק).** `verify` ירוק פעמיים (טרי + בדחיפת ה-hook): 224/224·3690/3690·build✅·mobile 1519/1519. `loop:health` עלה 14→15/17 בתוך הטיק — בדיקה 16 תוקנה בפועל (לא רק דווחה): הלוק-קומיט נדחף לפני `npm install` (F-195 קרה שוב, נמדד חי), קומיט המשך אחרי ההתקנה נשא הערה תקינה תחת שני ה-refs. בדיקות 2·17 נשארות (F-196·F-199·F-194 כבר פתוחות, ⛔ לא כפולות). `diff:render /dev/arcade/home` — תואם ל-F-170/F-186 הפתוחים, ⛔ אין סחיפה חדשה. `dev/arcade/character` נצפה חי — נקי. סקילים: `using-superpowers`·`verification-before-completion`·`finishing-a-development-branch`. `archive`+`measure:plan` (3 שורות · 8.0KB), `merge --ff-only` ל-`dev` (`7e90f43..6595d7d`): 0 משימות 🟣→✅ (דיף בקרה בלבד). `POST-PROMOTION CHECK` הוחלף — הישן (C-0500) מעולם לא קיבל תשובה ופיגר אחרי 3 מיזוגים; שלוש הקשות חדשות על `T-217`/`T-220`. `ACTIVE_WORKSTREAM: arena` נשארת — ⬜=1 (T-281 עם תוכנית, DEV הבא בונה). | `00-control` · `03-for-roy` · `plan/archive/handoff-log.md` |
+| C-0509 | DEV | CRITIC | 2026-09-08T16:44:40Z | 🔨 **בנייה — `arena`: `T-281` (ההטיה כמספרים, `37 § 7`) נבנתה מהתוכנית, 27/27 תיבות ⇒ 🟣.** `startBattle(words, character)`, `cast` קורא מ-`state.stats`; `ArenaBattle.tsx` איבד 12·20. TDD 8⇢47/47 · 77/77 · ⛔ אף `expect` לא זז. הליכה `/dev/arcade` 375×780: 7 מוקשים · 0<44 · `100/100` · 0 שגיאות. `verify` ירוק (224 · 3703/3703 · build · mobile 1519/1519). 2 פגמי תוכנית ⇢ `26-plan-feedback`. `arena` ⬜=0. סקילים: `executing-plans`·`test-driven-development`·`taste-skill`. | `battle.ts`·`ArenaBattle.tsx` (+tests) · `50-tasks` · `30-architecture` · `26-plan-feedback` · `architecture-map.json` · `00-control` · `plan-open`·`plan-tables` |
 ---
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)

@@ -5,7 +5,7 @@
 > after a fresh run whose output goes into the tick report.
 
 **Written:** C-0506 (DEV, 📝 planning tick) · 2026-09-08T14:35Z (`date -u`)
-**Built:** —
+**Built:** C-0509 (DEV, 🔨 build tick) · 2026-09-08 (`date -u`)
 
 **Covers:** **T-281** — the character choice stops being a skin: the bias becomes a
 number in battle. **המשך של: T-217** (the choice screen, `ArenaCharacterChoice.tsx`,
@@ -241,15 +241,15 @@ the row in `plan/26-plan-feedback.md` and fix the test's expectation to the base
 
 **Files:** none. Output: three lines in the tick report.
 
-- [ ] **Step 1: prove the path back exists** —
+- [x] **Step 1: prove the path back exists** —
   `grep -n 'onDesign\|DESIGN_HE' components/ArenaHome.tsx` ⇒ expect `:64` (prop),
   `:91` (`'עיצוב דמות'`), `:393` (`onClick={() => onDesign(state)}`).
   `grep -n "setNext('home')\|onBack=" components/ArenaShell.tsx` ⇒ expect `:43` and `:56`.
-- [ ] **Step 2: prove the tests already pin it** —
+- [x] **Step 2: prove the tests already pin it** —
   `npx vitest run components/ArenaHome.test.ts components/ArenaShell.test.ts` ⇒ green,
   and the test names `T-217 — \`עיצוב דמות\` is live` and `the battle receives the
   character as a prop` appear in the output.
-- [ ] **Step 3: report** — `grep -c 'onDesign' components/ArenaHome.tsx` ⇒ **3** goes into
+- [x] **Step 3: report** — `grep -c 'onDesign' components/ArenaHome.tsx` ⇒ **3** goes into
   the report as one line: «ⓑ נמדדה בנויה (T-217, C-0502) — `components/ArenaHome.tsx:393`
   · `components/ArenaShell.tsx:43`; ⛔ אפס קוד». ⛔ Do not touch either file.
 
@@ -259,7 +259,7 @@ the row in `plan/26-plan-feedback.md` and fix the test's expectation to the base
 
 **Files:** Modify `lib/core/battle.ts`, `lib/core/battle.test.ts`.
 
-- [ ] **Step 1: Write the failing tests** — append to `lib/core/battle.test.ts` (imports:
+- [x] **Step 1: Write the failing tests** — append to `lib/core/battle.test.ts` (imports:
   add `BASE_STATS`, `CHARACTER_STATS`, `ENEMY_HP`, `statsFor` from `./battle`, and
   `ARENA_CHARACTERS`, `CHARACTER_BIAS_HE` from `./arenaCharacter`):
 
@@ -382,12 +382,12 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `npx vitest run lib/core/battle.test.ts` ⇒
+- [x] **Step 2: Run it and watch it fail** — `npx vitest run lib/core/battle.test.ts` ⇒
   **FAIL** on the new `describe` (`statsFor` / `BASE_STATS` undefined) **and** a
   TypeScript complaint on every `startBattle(words, n, m)` once the signature changes —
   which is the next step, ⛔ not this one. Paste the failing names into the report.
 
-- [ ] **Step 3: Retire the numeric parameters in every existing call** — in
+- [x] **Step 3: Retire the numeric parameters in every existing call** — in
   `lib/core/battle.test.ts`, replace `startBattle(<words>, 20, 10)`, `(…, 12, 20)` and
   `(…, 3, 20)` with `startBattle(<words>)` at all **21** sites (`grep -c 'startBattle('
   lib/core/battle.test.ts` before and after ⇒ same count, zero digits after the words
@@ -396,7 +396,7 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
   Update the fixture comment at `:22-31` (it explains why `learnerHpMax` was 20): replace
   it with one sentence — the fixture is now the production base row, by construction.
 
-- [ ] **Step 4: Write `lib/core/battle.ts`** — the `Interfaces` block, exactly:
+- [x] **Step 4: Write `lib/core/battle.ts`** — the `Interfaces` block, exactly:
   ⓐ `import type { ArenaCharacter }` + `import { isArenaCharacter }` from
   `./arenaCharacter`; ⓑ delete the three constants `SWING_PENALTY` · `HIT_DAMAGE` ·
   `CRITICAL_DAMAGE` and their comments (keep `SWING_DAMAGE`); ⓒ add
@@ -406,14 +406,14 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
   `state.stats.criticalDamage` · `state.stats.hitDamage` · `state.stats.swingPenalty`.
   ⛔ `tick` untouched. ⛔ No `Date.now`, no `Math.random`.
 
-- [ ] **Step 5: Run it green** — `npx vitest run lib/core/battle.test.ts lib/core/arenaCharacter.test.ts`
+- [x] **Step 5: Run it green** — `npx vitest run lib/core/battle.test.ts lib/core/arenaCharacter.test.ts`
   ⇒ all green, and `npm run check:core` (purity gate) ⇒ exit 0. `npm run typecheck` will
   still be **red** on `components/ArenaBattle.tsx` (three calls with the old arity) —
   that is Task 2, and the two tasks land in **two commits** that are only green
   together; commit Task 1 now anyway (one commit per task), and ⛔ do not push between
   them (the hook runs `verify` on the tree, and the tree is green only after Task 2).
 
-- [ ] **Step 6: Commit** — `./scripts/g add lib/core/battle.ts lib/core/battle.test.ts &&
+- [x] **Step 6: Commit** — `./scripts/g add lib/core/battle.ts lib/core/battle.test.ts &&
   ./scripts/g commit -m "loop(DEV): C-XXXX T-281a battle.ts - character stats table from 37 § 7, startBattle(words, character)"`
 
 ---
@@ -422,7 +422,7 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
 
 **Files:** Modify `components/ArenaBattle.tsx`, `components/ArenaBattle.test.ts`.
 
-- [ ] **Step 1: Write the failing tests** — append to `components/ArenaBattle.test.ts`
+- [x] **Step 1: Write the failing tests** — append to `components/ArenaBattle.test.ts`
   (it already has `CODE`, the comment-stripped source):
 
 ```ts
@@ -444,28 +444,28 @@ describe('T-281 · 37 § 7 גדר 4 — המספרים חיים ב-lib/core, ⛔
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail** — `npx vitest run components/ArenaBattle.test.ts`
+- [x] **Step 2: Run it and watch it fail** — `npx vitest run components/ArenaBattle.test.ts`
   ⇒ **FAIL** (`const LEARNER_HP` still present; 0 calls match).
 
-- [ ] **Step 3: Edit `components/ArenaBattle.tsx`** — delete `:127-138` (the HP comment
+- [x] **Step 3: Edit `components/ArenaBattle.tsx`** — delete `:127-138` (the HP comment
   block and the two constants); change `:224` · `:345` · `:536` to
   `startBattle(wordsOf(…), character)`. ⚠️ `:224` is inside the `useState` initialiser
   and `character` is a destructured prop of the same function ⇒ in scope. ⛔ Nothing else
   in the file moves; the percent maths at `:687` and its learner twin read
   `learnerHpMax` / `enemyHpMax` from the state, exactly as before.
 
-- [ ] **Step 4: Run it green** — `npx vitest run components/ArenaBattle.test.ts
+- [x] **Step 4: Run it green** — `npx vitest run components/ArenaBattle.test.ts
   components/ArenaShell.test.ts app/arcade/page.test.ts` ⇒ green;
   `npm run typecheck` ⇒ exit 0 (the whole tree compiles again).
 
-- [ ] **Step 5: Look at the screen (STEP 6.5)** — `npm run build && (npx next start -p 3001 &)
+- [x] **Step 5: Look at the screen (STEP 6.5)** — `npm run build && (npx next start -p 3001 &)
   && sleep 8`, then Playwright at 375×780 on `http://127.0.0.1:3001/dev/arcade`
   (⛔ `next dev` — F-204: it 403s every chunk in CCR). Record heading · tappable count ·
   under-44px · horizontal scroll · console errors — and that the HP text still reads
   `100/100` at start (percent, `render_video_B.py:475`). ⛔ Nothing drawn changed; the
   numbers in the report are the proof.
 
-- [ ] **Step 6: Commit** — `./scripts/g add components/ArenaBattle.tsx components/ArenaBattle.test.ts &&
+- [x] **Step 6: Commit** — `./scripts/g add components/ArenaBattle.tsx components/ArenaBattle.test.ts &&
   ./scripts/g commit -m "loop(DEV): C-XXXX T-281b ArenaBattle - LEARNER_HP/ENEMY_HP leave the component, startBattle gets the character"`
 
 ---
@@ -477,16 +477,16 @@ describe('T-281 · 37 § 7 גדר 4 — המספרים חיים ב-lib/core, ⛔
 the enemy is a constant»), regenerate `docs/plan-open.md` · `docs/plan-tables.md` ·
 `docs/architecture-map.json`.
 
-- [ ] **Step 1: The map** — `grep -q '"generate-map"' package.json && npm run generate-map`
+- [x] **Step 1: The map** — `grep -q '"generate-map"' package.json && npm run generate-map`
   ⇒ `docs/architecture-map.json` regenerated (D-165, same commit as the code).
-- [ ] **Step 2: The registers** — `T-281` status cell ⇒ `🟣 **C-XXXX (DEV) — ⓐⓒⓓ נבנו, ⓑ
+- [x] **Step 2: The registers** — `T-281` status cell ⇒ `🟣 **C-XXXX (DEV) — ⓐⓒⓓ נבנו, ⓑ
   נמדדה בנויה (T-217)…**` with the numbers from Task 1 Step 5 and Task 2 Step 5; then
   `npm run measure:plan` (both `docs/plan-*.md` in the same commit, `RULES § 0.1 ח׳`).
   Tick every `- [ ]` in this file that closed.
-- [ ] **Step 3: The gate** — `npm run verify` (five commands, `check:mobile` included).
+- [x] **Step 3: The gate** — `npm run verify` (five commands, `check:mobile` included).
   Paste the exact tail into the report. Red ⇒ fix in this tick; still red ⇒
   `./scripts/g revert` both task commits + a debt line in `30-architecture.md`.
-- [ ] **Step 4: Commit and push** — release the lock in `plan/00-control.md` (`LOCK_HELD_BY: ""`,
+- [x] **Step 4: Commit and push** — release the lock in `plan/00-control.md` (`LOCK_HELD_BY: ""`,
   `NEXT_AGENT: CRITIC`, `LAST_HANDOFF_AT` from `date -u`), then
   `./scripts/g commit -m "loop(DEV): C-XXXX close — T-281 🟣, registers, map"
   && ./scripts/g push origin work/current` (the pre-push hook re-runs `npm run verify`
@@ -496,11 +496,11 @@ the enemy is a constant»), regenerate `docs/plan-open.md` · `docs/plan-tables.
 
 ## Self-check (before the build tick calls this plan done)
 
-- [ ] `grep -c 'startBattle(' lib/core/battle.test.ts` unchanged from before Task 1; `grep -n 'startBattle(.*, [0-9]' lib/core/battle.test.ts` ⇒ 0.
-- [ ] `grep -n 'LEARNER_HP\|ENEMY_HP' components/ArenaBattle.tsx` ⇒ 0 lines.
-- [ ] `grep -n 'character' lib/core/battle.ts` ⇒ > 0 lines (the row's own C-0503 measurement, inverted).
-- [ ] `grep -rn 'cooldown\|shield\|heal' lib/core/battle.ts` ⇒ 0 (ⓓ: nothing invented for the five word-only lines).
-- [ ] `lib/core/arenaCharacter.ts` — `git diff --stat` shows it **untouched**.
-- [ ] `docs/api-contract.md` — untouched (⛔ no endpoint changed).
-- [ ] `app/arcade/arcade-tokens.css` — untouched (⛔ no hex).
-- [ ] The report names: `[SKILL: taste-skill]` (`skills/taste-skill/SKILL.md`) loaded per the row tag, and which of its rules applied (this slice adds no learner-visible string and no motion ⇒ its copy audit and em-dash ban were checked against the four existing bias lines, unchanged).
+- [x] `grep -c 'startBattle(' lib/core/battle.test.ts` unchanged from before Task 1; `grep -n 'startBattle(.*, [0-9]' lib/core/battle.test.ts` ⇒ 0.
+- [x] `grep -n 'LEARNER_HP\|ENEMY_HP' components/ArenaBattle.tsx` ⇒ 0 lines.
+- [x] `grep -n 'character' lib/core/battle.ts` ⇒ > 0 lines (the row's own C-0503 measurement, inverted).
+- [x] `grep -rn 'cooldown\|shield\|heal' lib/core/battle.ts` ⇒ 0 (ⓓ: nothing invented for the five word-only lines).
+- [x] `lib/core/arenaCharacter.ts` — `git diff --stat` shows it **untouched**.
+- [x] `docs/api-contract.md` — untouched (⛔ no endpoint changed).
+- [x] `app/arcade/arcade-tokens.css` — untouched (⛔ no hex).
+- [x] The report names: `[SKILL: taste-skill]` (`skills/taste-skill/SKILL.md`) loaded per the row tag, and which of its rules applied (this slice adds no learner-visible string and no motion ⇒ its copy audit and em-dash ban were checked against the four existing bias lines, unchanged).

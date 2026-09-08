@@ -323,10 +323,12 @@
     "lib/core/contentSchema.ts"
   ],
   "lib/core/battle.test.ts": [
+    "lib/core/arenaCharacter.ts",
     "lib/core/arenaWords.ts",
     "lib/core/battle.ts"
   ],
   "lib/core/battle.ts": [
+    "lib/core/arenaCharacter.ts",
     "lib/core/arenaWords.ts"
   ],
   "lib/core/cefrLevels.test.ts": [
