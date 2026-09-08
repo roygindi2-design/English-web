@@ -207,7 +207,28 @@ push runs `verify` like every other push, and that is the point.
 ⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — with **exactly two** exceptions, and ⛔ no third:
   ⓐ a 🔴 finding that stops a learner;
   ⓑ **the row named in `ACTIVE_TASK_ID`.** ⟦NEW 31/08 · `D-171` · Roy's explicit instruction⟧
-Order: **`MERGE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`ACTIVE_TASK_ID`** → the next task in the active workstream that is not ⛔.
+  ⓒ 🆕 **THE NEXT WORKSTREAM IN `36 § 13`, when the active one is nearly dry.** ⟦NEW 08/09 · Roy's explicit instruction⟧
+
+🔬 **⛔ Why a third exception, and it is a MEASUREMENT, ⛔ not a loosening.** Measured over
+14 days: **you fired 308 times and only 107 of those ticks touched product code — 34%.**
+And the reason is visible in one number: **you fire every 2 hours — 12 times a day —
+against an eligible queue of 2 to 4 rows.** ⇒ the remaining ticks had ⛔ nothing eligible
+to build, so they went to planning and registers. ⛔ **A starved queue ⛔ does not make a
+careful agent; it makes a busy one.**
+
+⇒ **Fewer than 3 rows ⬜ in `ACTIVE_WORKSTREAM` ⇒ the NEXT workstream in `36 § 13`'s order
+is eligible too.** ⛔ **The NEXT one, ⛔ and ⛔ nothing else:**
+- ⛔ **⛔ Not "the whole register".** ⛔ Not the one with the most rows, ⛔ not the one you
+  find interesting.
+- ⛔ **⛔ Never to "balance the table"** — `RULES § 0.23 ז׳` is explicit that `36 § 13` is a
+  **sequence**, and that reason is ⛔ untouched: this reads **one step forward** in the
+  same sequence, it ⛔ does not reorder it.
+- ⛔ **`ACTIVE_WORKSTREAM` is still QA's to set, ⛔ and you ⛔ never move it.** You are
+  reading ahead, ⛔ not re-pointing.
+- **Say so in your report, in one line:** which workstream you read ahead into, and how
+  many ⬜ the active one had when you did.
+
+Order: **`MERGE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`ACTIVE_TASK_ID`** → the next task in the active workstream that is not ⛔ → **then, only if fewer than 3 remain, the next workstream in sequence.**
 
 ### 🧭 `ACTIVE_WORKSTREAM: general` — THE CROSS-CUTTING FOCUS  ⟦NEW 31/08 · `D-174` · Roy's explicit instruction⟧
 **When — and only when — `ACTIVE_WORKSTREAM` reads `general`, the eligible set is three tags, ⛔ not one:**
@@ -271,7 +292,17 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 ## STEP 3 — PLAN OR BUILD?
 Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `superpowers:executing-plans`, go to STEP 5.
 ⚠️ **Check the plans index first — 46 exist and 8 are orphaned.** ⛔ Do not write plan 47 for what plan 31 covers.
-**No, non-trivial** → 📝 **PLANNING TICK. You touch no code.** Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact file paths · an `Interfaces` block · **real test code** · steps of 2–5 minutes with `- [ ]` · a self-check. ⛔ No "TODO".
+**No, non-trivial** → 📝 **PLANNING TICK — ⛔ and it ⛔ no longer ends there.** ⟦CHANGED 08/09 · Roy's explicit instruction · `RULES § 0.12`⟧
+🔴 **Write the plan in full, push it, run `npm run check:plan <the plan file>` — and if it
+is green, LAND TASK 1 OF THE PLAN IN THE SAME TICK.**
+🔬 **Why, and it is a MEASUREMENT:** the old wording was «you touch no code», which spent a
+whole tick producing zero output. Measured: `C-0511` wrote a **795-line** plan and zero
+code; `C-0506` and `C-0497` the same. Over the same 14 days **only 107 of your 308 ticks
+touched product code — 34%.** ⛔ **If the plan is good enough to build from tomorrow, it is
+good enough to build from today.**
+⛔ **What is ⛔ NOT permitted:** ⛔ splitting the plan short to "fit"; ⛔ landing task 2 as
+well. **⛔ One task, the first, ⛔ and only after the whole plan is written and pushed.**
+Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact file paths · an `Interfaces` block · **real test code** · steps of 2–5 minutes with `- [ ]` · a self-check. ⛔ No "TODO".
 **A screen plan names the render it targets and quotes the layout values it took.**
 **Trivial** → do it directly. ⚠️ Then **keep going** — STEP 4.5, the tick ⛔ does not end on a task boundary.
 

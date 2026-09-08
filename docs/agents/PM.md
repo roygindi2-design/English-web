@@ -326,15 +326,36 @@ returns nothing and that is ⛔ correct, ⛔ not an error.
 
 ### ⚖️ FIRST, DECIDE ONE FINDING. ⛔ BEFORE YOU OPEN ANYTHING.  ⟦NEW 30/08 · D-147⟧
 **Measured 30/08: 87 open findings, most of them YOURS**, and six of them block rows that are already written — F-140 · F-142 · F-143 · F-144 · F-164 · F-167. ⇒ **you are blocking yourself**, and the loop has no other way to clear it.
-⇒ **Every tick, before you open a slice: resolve EVERY PM-owned finding that blocks a written row — up to THREE in one tick.**  🆕 ⟦quota raised from ONE, 31/08, Roy's explicit approval: «אם התכוונת לאשר ל-PM לקבל החלטות מכריעות במקום אחת — אני מאשר» · `D-164`⟧
+⇒ **Every tick, before you open a slice: resolve PM-owned findings.**  🆕 ⟦quota raised from ONE, 31/08 · `D-164`⟧
+
+🔴 **⟦REWRITTEN 08/09 · Roy's explicit instruction⟧ THE RULE WAS AIMED AT AN EMPTY SET, AND
+THAT IS ⛔ MEASURED, ⛔ not argued.** It said «findings **that block a written row**» — and
+`loop:health` **check 12** reports, live: **«0 of 44 open PM findings block a written row.»**
+⇒ the rule fired on **nothing** while you held **44**, and its own written justification —
+«3 ticks a day drains the pile in weeks» — ⛔ could ⛔ never come true, because it was
+draining a pile that ⛔ was not there.
+
+**⇒ The set is now every PM-owned open finding, ⛔ not the blocking subset:**
+```
+1. any PM-owned finding that BLOCKS a written row   ⇒ ⛔ always first, ⛔ all of them
+2. then PM-owned open findings, OLDEST FIRST        ⇒ ⛔ no ceiling
+```
+⛔ **The ceiling of three is ⛔ gone.** ⛔ What it was protecting is ⛔ not: ⛔ **never invent a
+decision to satisfy a rule**, ⛔ never bundle unrelated findings to raise a count, and a
+decision still needs its **reversal line** (`§ 0.22`). ⇒ **the brake was on the NUMBER; the
+brake that mattered was always on the QUALITY, and that one ⛔ does not move.**
+⚠️ **And a decision you ⛔ cannot make is ⛔ not yours to force:** if the row needs `36`, or
+a source, or Roy — route it (`§ 0.20`) and move on. **⛔ Routing is a resolution.**
 Write each decision, close each finding, unblock each row.
-⚠️ **Why the quota moved, and the number is measured:** at ONE a tick, `loop:health` check 12
-printed **5 PM-owned findings blocking rows on 31/08** (`F-052` · `F-127` · `F-142` · `F-143` ·
-`F-144`, four of them blocking the **same** row `T-199`) ⇒ five ticks, ⛔ and the row stays
-blocked for four of them. **Three is the ceiling, ⛔ not a target** — ⛔ never invent a
-fourth, and ⛔ never bundle unrelated findings to reach three.
-✅ 🔴 **A tick that decided one — or three — and opened ⛔ no slice is a SUCCESSFUL tick.** This **replaces** work, ⛔ it does not add any: 3 ticks a day drains the pile in weeks at ⛔ zero extra cost.
-⚠️ ⛔ **Nothing PM-owned is blocking a row?** Say that in one line and move on — ⛔ do not invent a decision to satisfy the rule.
+⚠️ **The history of this quota, kept because it is the reason it is now gone:** at ONE a
+tick, `loop:health` check 12 printed **5 PM-owned findings blocking rows on 31/08**
+(`F-052` · `F-127` · `F-142` · `F-143` · `F-144`, four of them blocking the **same** row
+`T-199`) ⇒ five ticks, and the row stayed blocked for four of them. The ceiling went to
+**three** on 31/08 — and on 08/09 check 12 read **0 of 44**, so the ceiling had ⛔ nothing
+left to cap. ⇒ **it is removed, ⛔ and the two rules it was confused with are ⛔ not:**
+⛔ never invent a decision, ⛔ never bundle unrelated findings.
+✅ 🔴 **A tick that decided findings and opened ⛔ no slice is a SUCCESSFUL tick.** This **replaces** work, ⛔ it does not add any.
+⚠️ ⛔ **⛔ Nothing PM-owned is open at all?** Say that in one line and move on — ⛔ do not invent a decision to satisfy the rule. **⛔ The absence of a ceiling is ⛔ not a quota to fill.**
 **Enforced by** `loop:health` check 12 — «no PM-owned finding open more than 3 days that blocks a row». **Advisory for 3 days, then blocking.**
 
 ### 📊 AND THE MIX YOU ARE AIMED AT — 4/1/1, SOFT  ⟦NEW 30/08 · D-147⟧

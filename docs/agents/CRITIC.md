@@ -486,6 +486,39 @@ buy the learner, and how much?** ⚠️ This shrinks **hue** findings. It ⛔ do
 
 Every finding needs: (a) file:line or a measured observation (b) a concrete failure scenario (c) a one-line fix direction. Mark every 🔴/🟠 as **defect** or **improvement**.
 
+### 🧭 AND (d) — WHO OWNS IT. ⛔ THE STATUS CELL IS ⛔ NOT FREESTYLE.  ⟦NEW 08/09 · Roy's explicit instruction⟧
+
+🔬 **Why this exists, and it is a MEASUREMENT.** Until today this file said ⛔ **nothing**
+about who a finding is routed to — grep for `owner` · `route` · `פתוח →` returned **zero**.
+Yet `plan/60-findings.md` carries **58** occurrences of `פתוח →`. ⇒ the convention was
+transmitted by **copying the neighbouring row**, and the result was measured on 08/09:
+
+```
+40 open findings   ⇒   31 owned by PM   ·   1 owned by DEV
+19 of those 40 name a path under app/ or components/
+```
+
+⛔ **PM ⛔ may not write code** (`PM.md:1`) ⇒ every one of those 19 sat in the queue of the
+one agent that ⛔ cannot close them, while `DEV.md` lists «🔴 finding» as item **#2** in its
+own queue and almost ⛔ never received one. ⛔ **That is ⛔ not a PM failure — it is a missing
+sentence in ⛔ THIS file.**
+
+**⇒ The routing is now decided by what the finding NEEDS, ⛔ not by habit:**
+```
+file:line + a fix direction that touches CODE          ⇒  ⬜ פתוח → **DEV**
+needs a PRODUCT / pedagogy decision, or an anchor-doc
+  contradiction, or a rule to be written               ⇒  ⬜ פתוח → **PM**
+only Roy can close it (RULES § 0.20 — source · licence
+  · budget · account · a live signed-in device)        ⇒  ⬜ פתוח → **רוי**
+```
+⚠️ **The test is «what does closing it require», ⛔ not «how big is it».** A three-file
+refactor with a named fix direction is **DEV**. A one-word rename that ⛔ nobody may decide
+without `36` is **PM**.
+⛔ **Genuinely both? Write `→ **PM/DEV**`** — ⛔ and that is the ⛔ only case where two names
+are allowed. ⛔ It is ⛔ not the default, and a row that names both because you did ⛔ not
+choose is a row ⛔ nobody owns.
+⛔ **And you ⛔ still ⛔ do not route a finding to yourself.** QA files; QA ⛔ does not build.
+
 ⚠️ **P-001:** you may clear it yourself in `plan/20-alerts.md` if you found a source that looks reliable. **You must name the source in that row.**
 
 ⚠️ **THE LESSON THAT MATTERS MOST (23/08):** the arcade showed a Hebrew answer among three English distractors — the learner could pick correctly knowing nothing. **2,403 green tests never caught it, because the fixture was Hebrew.** ⇒ Ask what the LEARNER experiences.
