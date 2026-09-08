@@ -22,6 +22,8 @@
  * `xp|score|points|coin` של `arcadeBattle.test.ts:100-102` ⛔ **אינו** עובר לכאן.
  */
 import type { ArenaWord } from './arenaWords';
+import type { ArenaCharacter } from './arenaCharacter';
+import { isArenaCharacter } from './arenaCharacter';
 
 /** `37 § 3` — **שעון אחד לקרב שלם**, ⛔ ולא טיימר לשאלה. */
 export const BATTLE_MS = 90_000;
@@ -36,18 +38,61 @@ export const MANA_CAP = 10;
 /** `37 § 5` — מתחת ל-1.5 שניות: קריטי. */
 export const CRITICAL_MS = 1_500;
 
-/** ⛔ מכה אחת = חיים אחד. הפער בין מכה למכה נוצר מ-`§ 5` («המכה הבאה חזקה יותר») ⛔ ולא מהבסיס. */
+/** ⛔ מכה אחת = חיים אחד. הפער בין מכה למכה נוצר מ-`§ 5` («המכה הבאה חזקה יותר») ⛔ ולא מהבסיס. ⛔ ⛔ אינו עמודה ב-`§ 7` — זהה לשלוש הדמויות (גדר 1). */
 const SWING_DAMAGE = 1;
-/** `37 § 5` — «שגויה: הלחש מתפוגג, **המכה הבאה של היריב חזקה יותר**». */
-const SWING_PENALTY = 1;
-const HIT_DAMAGE = 1;
-const CRITICAL_DAMAGE = 2;
 
 /**
  * `37 § 2` — «מילה לא מסוננת … צדקת — **נזק מוגבר**». ⛔ תוספת ⛔ ולא מכפיל: מכפיל היה
  * הופך קריטי על מילה לא מסוננת ל-4, כלומר 40% מחיי היריב בהטלה אחת.
  */
 export const UNFILTERED_BONUS_DAMAGE = 1;
+
+/**
+ * T-281 · `37 § 7` «ההטיה כמספרים» · D-200 — **the four columns of the table, ⛔ and no
+ * fifth.** The character choice stops being a skin: `startBattle` is given the character,
+ * and `cast` reads damage and penalty from `state.stats`, ⛔ never from a module constant.
+ * ⛔ The table is a spec, ⛔ not content — no number reaches the choice screen (`§ 7`, second
+ * bullet), and `battle.test.ts` parses the markdown table out of the spec so nothing here
+ * can be typed from memory. `lib/core/arenaCharacter.ts` stays the **words** file
+ * (`RULES § 0.22` ⓐ, logged in the tick report).
+ *
+ * ⛔ **The four fences of `§ 7`, each with its own test:** ⓵ the bias ⛔ never touches how
+ * much English the learner meets — `BATTLE_MS` · `MANA_MS` · `MANA_CAP` · `CRITICAL_MS` ·
+ * `ENEMY_SWING_MS` · the `§ 2` mix · what counts as correct are module constants, identical
+ * for all three; ⓶ `learnerHp ≥ 12` (11 clean swings ⛔ never lose a battle); ⓷
+ * `criticalDamage > hitDamage`; ⓸ the numbers live here, ⛔ not in a component, and an
+ * unknown or `null` character ⇒ the base row, ⛔ never a throw.
+ */
+export interface CharacterBattleStats {
+  readonly learnerHp: number;
+  readonly hitDamage: number;
+  readonly criticalDamage: number;
+  readonly swingPenalty: number;
+}
+
+/** `37 § 7` row «בסיס». Also the row for `null` and for anything unknown (fence 4). */
+export const BASE_STATS: CharacterBattleStats = Object.freeze({
+  learnerHp: 12,
+  hitDamage: 1,
+  criticalDamage: 2,
+  swingPenalty: 1,
+});
+
+/** `37 § 7`, the three rows under «בסיס», verbatim — the test parses the spec table. */
+export const CHARACTER_STATS: Readonly<Record<ArenaCharacter, CharacterBattleStats>> =
+  Object.freeze({
+    wizard: Object.freeze({ ...BASE_STATS, hitDamage: 2, criticalDamage: 3 }),
+    warrior: Object.freeze({ ...BASE_STATS, learnerHp: 18, criticalDamage: 3, swingPenalty: 0 }),
+    armorer: BASE_STATS,
+  });
+
+/** Moved from `ArenaBattle.tsx` (T-281, `RULES § 0.22` ⓑ). ⛔ One enemy for all three (fence 1). */
+export const ENEMY_HP = 20;
+
+/** Fence 4 — ⛔ never throws: `null`, `undefined`, `'Wizard'`, `7`, `{}` ⇒ `BASE_STATS`. */
+export function statsFor(character: unknown): CharacterBattleStats {
+  return isArenaCharacter(character) ? CHARACTER_STATS[character] : BASE_STATS;
+}
 
 /**
  * ⛔ **ארבעה מוצאים, ⛔ ולא שלושה** (D-126 § ד׳). ההערה ב-`arcadeBattle.ts:24` («⛔ שני
@@ -88,26 +133,34 @@ export interface BattleState {
   /** `37 § 6` — המכה שהלומד התגלגל ממנה. ⛔ אחת: החסינות שייכת למכה ש**הוכרזה**. */
   readonly dodgedSwing: number | null;
   readonly casts: readonly BattleCast[];
+  /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
+  readonly stats: CharacterBattleStats;
 }
 
+/**
+ * T-281 — `(words, character)`, ⛔ ולא `(words, learnerHpMax, enemyHpMax)`: פיקסצ׳ר
+ * שמתחיל קרב ב-`3/20` הוא קרב שאינו קיים בייצור. חיי הלומד הם שורת `§ 7` של הדמות,
+ * חיי היריב הם `ENEMY_HP` לכולן.
+ */
 export function startBattle(
   words: readonly ArenaWord[],
-  learnerHpMax: number,
-  enemyHpMax: number,
+  character: ArenaCharacter | null = null,
 ): BattleState {
+  const stats = statsFor(character);
   return {
     words,
     index: 0,
-    learnerHp: learnerHpMax,
-    learnerHpMax,
-    enemyHp: enemyHpMax,
-    enemyHpMax,
+    learnerHp: stats.learnerHp,
+    learnerHpMax: stats.learnerHp,
+    enemyHp: ENEMY_HP,
+    enemyHpMax: ENEMY_HP,
     manaSpent: 0,
     shownAtMs: 0,
     lastSwingMs: 0,
     pendingPenalty: 0,
     dodgedSwing: null,
     casts: [],
+    stats,
   };
 }
 
@@ -153,7 +206,7 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
   const correct = chosen === word.translationHe;
   const critical = correct && responseMs < CRITICAL_MS;
   const bonus = correct && word.kind === 'unfiltered' ? UNFILTERED_BONUS_DAMAGE : 0;
-  const damage = correct ? (critical ? CRITICAL_DAMAGE : HIT_DAMAGE) + bonus : 0;
+  const damage = correct ? (critical ? state.stats.criticalDamage : state.stats.hitDamage) + bonus : 0;
 
   // `§ 2` — «טעית — הלחש חוזר אליך». ⛔ **פעם אחת בלבד**: המילה החוזרת נכנסת כ-`base`,
   // ולכן שגיאה שנייה עליה ⛔ אינה מחזירה אותה שוב ו⛔ אין לולאה שאינה נגמרת.
@@ -170,7 +223,7 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
     // ⛔ `Math.max(0, …)` — חיים שליליים הם מצב שאין לו ציור.
     enemyHp: Math.max(0, state.enemyHp - damage),
     shownAtMs: elapsedMs,
-    pendingPenalty: correct ? 0 : SWING_PENALTY,
+    pendingPenalty: correct ? 0 : state.stats.swingPenalty,
     casts: [...state.casts, { wordId: word.wordId, correct, responseMs, critical }],
   };
 }

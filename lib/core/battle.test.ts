@@ -18,17 +18,19 @@ import {
   telegraphAt,
   tick,
   UNFILTERED_BONUS_DAMAGE,
+  BASE_STATS,
+  CHARACTER_STATS,
+  ENEMY_HP,
+  statsFor,
 } from './battle';
+import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
 
 /**
  * ⚠️ **הפיקסצ׳ר, ⛔ ולא TODO** (התוכנית, § 6 צעד 4): `startBattle` על ארבע `ArenaWord`.
  *
- * ⚠️ **סטייה מדודה, ⛔ ולא בחירה — `learnerHpMax` הוא 20 ⛔ ולא 10.** התוכנית נקבה
- * ב-10/10, ובדיקת קצב היריב שהיא עצמה כתבה דורשת
- * `FRESH.learnerHp - Math.floor(BATTLE_MS / ENEMY_SWING_MS)` = **11 מכות**. ⇒ ב-10
- * חיים הטענה נופלת על **קוד תקין**: חיים נחתכים באפס (⛔ חיים שליליים הם מצב שאין
- * לו ציור), והשוואה ל-`10 - 11 = -1` ⛔ לעולם אינה יכולה לעבור. הטענה של התוכנית
- * נשמרת **מילה במילה**; זז המספר בפיקסצ׳ר בלבד. נרשם ב-`26-plan-feedback.md`.
+ * T-281 — `startBattle` ⛔ אינו מקבל עוד מספרים: הפיקסצ׳ר הוא **שורת הבסיס של `37 § 7`
+ * (12 / 20) מעצם המבנה**, ⛔ ולא ערך שבדיקה בוחרת — פיקסצ׳ר ששונה מייצור הוא חור,
+ * ⛔ לא בדיקה (DEV.md STEP 5).
  */
 const word = (n: number): ArenaWord => ({
   wordId: `w${n}`,
@@ -37,7 +39,7 @@ const word = (n: number): ArenaWord => ({
   kind: 'base',
 });
 
-const FRESH = startBattle([word(1), word(2), word(3), word(4)], 20, 10);
+const FRESH = startBattle([word(1), word(2), word(3), word(4)]);
 
 describe('battle', () => {
   it('⛔ שעון אחד לקרב שלם, ⛔ ולא טיימר לשאלה', () => {
@@ -95,7 +97,7 @@ describe('battle', () => {
 
   it('T-220 ⓓ — שגויה על `unfiltered` ⇒ הלחש חוזר **גלוי**: `returnedSpell` נוקב במילה ובתרגומה', () => {
     const w1: ArenaWord = { ...word(1), kind: 'unfiltered' };
-    const fresh = startBattle([w1, word(2), word(3)], 20, 10);
+    const fresh = startBattle([w1, word(2), word(3)]);
     const missed = cast({ ...fresh, shownAtMs: 0 }, 'לא-נכון', 2_000);
     expect(returnedSpell(missed)).toEqual(w1);            // headword + translationHe, revealed
     expect(missed.words[missed.words.length - 1]?.wordId).toBe('w1'); // and it is back in the tail
@@ -112,7 +114,7 @@ describe('battle', () => {
     expect(returnedSpell(FRESH)).toBeNull();
     expect(returnedSpell(cast({ ...FRESH, shownAtMs: 0 }, 'אפשרות 1', 1_000))).toBeNull();
     expect(returnedSpell(cast({ ...FRESH, shownAtMs: 0 }, 'לא-נכון', 1_000))).toBeNull();
-    const known = startBattle([{ ...word(1), kind: 'known' }], 20, 10);
+    const known = startBattle([{ ...word(1), kind: 'known' }]);
     expect(returnedSpell(cast({ ...known, shownAtMs: 0 }, 'לא-נכון', 1_000))).toBeNull();
   });
 
@@ -198,23 +200,23 @@ describe('37 § 6 — הגלגול: חסינות למכה **המוכרזת**, �
   const words = [{ wordId: 'w1', headword: 'ONE', translationHe: 'אחת', kind: 'base' as const }];
 
   it('⛔ החלקה מחוץ לחלון ⛔ אינה עושה דבר — ⛔ ואינה עולה חיים', () => {
-    const s = startBattle(words, 12, 20);
+    const s = startBattle(words);
     expect(dodge(s, 3_000)).toEqual(s);
     expect(dodge(s, 2_000 + WINDOW_END_MS)).toEqual(s);
   });
 
   it('החלקה בתוך החלון מסמנת את המכה, והמכה נוחתת ב⛔ אפס נזק', () => {
-    const s = dodge(startBattle(words, 12, 20), 2_000 + ANNOUNCE_AT_MS);
+    const s = dodge(startBattle(words), 2_000 + ANNOUNCE_AT_MS);
     expect(s.dodgedSwing).toBe(1);
     expect(tick(s, ENEMY_SWING_MS).learnerHp).toBe(12);
   });
 
   it('⛔ בלי גלגול — המכה פוגעת, וזו ההוכחה שהבדיקה מודדת את הגלגול ⛔ ולא כלום', () => {
-    expect(tick(startBattle(words, 12, 20), ENEMY_SWING_MS).learnerHp).toBe(11);
+    expect(tick(startBattle(words), ENEMY_SWING_MS).learnerHp).toBe(11);
   });
 
   it('⛔ הגלגול מבטל את המכה **כולה**, כולל עונש התשובה השגויה שהיה תלוי בה', () => {
-    const wrong = cast(startBattle(words, 12, 20), 'לא נכון', 500);
+    const wrong = cast(startBattle(words), 'לא נכון', 500);
     expect(wrong.pendingPenalty).toBe(1);
     const rolled = dodge(wrong, 2_000 + ANNOUNCE_AT_MS);
     const after = tick(rolled, ENEMY_SWING_MS);
@@ -224,12 +226,12 @@ describe('37 § 6 — הגלגול: חסינות למכה **המוכרזת**, �
   });
 
   it('⛔ החסינות שייכת למכה אחת: אם שתי מכות התאחדו בפריים, השנייה עדיין פוגעת', () => {
-    const s = dodge(startBattle(words, 12, 20), 2_000 + ANNOUNCE_AT_MS);
+    const s = dodge(startBattle(words), 2_000 + ANNOUNCE_AT_MS);
     expect(tick(s, 2 * ENEMY_SWING_MS).learnerHp).toBe(11);
   });
 
   it('⛔ הגלגול ⛔ אינו עוצר את השעון — `outcomeAt` על אותו זמן ⛔ אינו משתנה', () => {
-    const s = startBattle(words, 12, 20);
+    const s = startBattle(words);
     expect(outcomeAt(dodge(s, 2_000 + ANNOUNCE_AT_MS), 50_000)).toBe(outcomeAt(s, 50_000));
   });
 });
@@ -247,20 +249,20 @@ const unfW = (id: string, kind: ArenaWord['kind']): ArenaWord => ({
 
 describe('37 § 2 — «צדקת: נזק מוגבר · טעית: הלחש חוזר אליך»', () => {
   it('מילה `unfiltered` נכונה ⇒ נזק גדול ב-UNFILTERED_BONUS_DAMAGE ממילה `base` נכונה', () => {
-    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'ת-a', 5_000);
-    const unf = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'ת-a', 5_000);
+    const base = cast(startBattle([unfW('a', 'base')]), 'ת-a', 5_000);
+    const unf = cast(startBattle([unfW('a', 'unfiltered')]), 'ת-a', 5_000);
     expect(20 - unf.enemyHp).toBe((20 - base.enemyHp) + UNFILTERED_BONUS_DAMAGE);
   });
 
   it('⛔ הבונוס ⛔ אינו חל על `known` ו⛔ לא על `base`', () => {
-    const known = cast(startBattle([unfW('a', 'known')], 3, 20), 'ת-a', 5_000);
-    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'ת-a', 5_000);
+    const known = cast(startBattle([unfW('a', 'known')]), 'ת-a', 5_000);
+    const base = cast(startBattle([unfW('a', 'base')]), 'ת-a', 5_000);
     expect(known.enemyHp).toBe(base.enemyHp);
   });
 
   it('`unfiltered` שגויה ⇒ המילה חוזרת לסוף התור **באותו קרב**', () => {
     const s = cast(
-      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')], 3, 20),
+      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')]),
       'לא נכון',
       5_000,
     );
@@ -269,26 +271,145 @@ describe('37 § 2 — «צדקת: נזק מוגבר · טעית: הלחש חוז
   });
 
   it('⛔ אין עונש כפול: `unfiltered` שגויה גורעת חיים **בדיוק** כמו כל שגיאה אחרת', () => {
-    const unf = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'לא נכון', 5_000);
-    const base = cast(startBattle([unfW('a', 'base')], 3, 20), 'לא נכון', 5_000);
+    const unf = cast(startBattle([unfW('a', 'unfiltered')]), 'לא נכון', 5_000);
+    const base = cast(startBattle([unfW('a', 'base')]), 'לא נכון', 5_000);
     expect(unf.pendingPenalty).toBe(base.pendingPenalty);
     expect(unf.learnerHp).toBe(base.learnerHp);
   });
 
   it('⛔ מילה חוזרת **פעם אחת בלבד** — שגיאה שנייה עליה ⛔ אינה מאריכה את התור לנצח', () => {
-    const first = cast(startBattle([unfW('a', 'unfiltered')], 3, 20), 'לא נכון', 5_000);
+    const first = cast(startBattle([unfW('a', 'unfiltered')]), 'לא נכון', 5_000);
     const second = cast(first, 'לא נכון', 9_000);
     expect(second.words.map((x) => x.wordId)).toEqual(['a', 'a']);
   });
 
   it('⛔ `casts[i]` עדיין תואם ל-`words[i]` אחרי חזרה', () => {
     const s = cast(
-      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')], 3, 20),
+      startBattle([unfW('a', 'unfiltered'), unfW('b', 'base')]),
       'לא נכון',
       5_000,
     );
     const t = cast(s, 'ת-b', 6_000);
     expect(t.casts.map((c) => c.wordId)).toEqual(['a', 'b']);
     expect(t.words.slice(0, 2).map((x) => x.wordId)).toEqual(['a', 'b']);
+  });
+});
+
+/**
+ * T-281 · `37 § 7` «ההטיה כמספרים» · D-200. ⛔ The numbers are read out of the spec's own
+ * markdown table, ⛔ never typed here twice: a second copy is a second owner.
+ */
+const SPEC_37 = readFileSync('plan/37-arena-spec.md', 'utf8').replace(/\*\*/g, '');
+
+/** The numeric § 7 rows: label cell, then four integer cells. The words table above it
+ *  has the same labels but ⛔ no integer cells, so it never matches. */
+function specRow(label: string): readonly number[] {
+  const row = SPEC_37.split('\n').find((l) => {
+    const cells = l.split('|').map((c) => c.trim());
+    return cells[1]?.startsWith(label) === true && cells.slice(2, 6).every((c) => /^\d+$/.test(c));
+  });
+  expect(row, `שורת ${label} בטבלת § 7`).toBeDefined();
+  return (row as string).split('|').map((c) => c.trim()).slice(2, 6).map(Number);
+}
+const asRow = (s: { learnerHp: number; hitDamage: number; criticalDamage: number; swingPenalty: number }) =>
+  [s.learnerHp, s.hitDamage, s.criticalDamage, s.swingPenalty];
+
+describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
+  it('הבסיס ושלוש הדמויות הם טבלת § 7, מילה במילה — ⛔ אפס מספר מומצא', () => {
+    expect(asRow(BASE_STATS)).toEqual(specRow('בסיס'));
+    expect(asRow(CHARACTER_STATS.wizard)).toEqual(specRow('קוסם'));
+    expect(asRow(CHARACTER_STATS.warrior)).toEqual(specRow('לוחם'));
+    expect(asRow(CHARACTER_STATS.armorer)).toEqual(specRow('שריונאי'));
+  });
+
+  it('גדר 4 — דמות לא מוכרת או null ⇒ הבסיס, ⛔ ולא זריקה', () => {
+    for (const bad of [null, undefined, 'Wizard', '', 7, {}, ['wizard']]) {
+      expect(statsFor(bad)).toBe(BASE_STATS);
+    }
+    for (const c of ARENA_CHARACTERS) expect(statsFor(c)).toBe(CHARACTER_STATS[c]);
+    expect(startBattle([word(1)]).stats).toBe(BASE_STATS);
+    expect(startBattle([word(1)], null).stats).toBe(BASE_STATS);
+  });
+
+  it('גדר 1 — ארבעה מפתחות בדיוק, ⛔ ואף אחד מהם אינו שעון, מאנה, תמהיל או «מה נכון»', () => {
+    const keys = ['criticalDamage', 'hitDamage', 'learnerHp', 'swingPenalty'];
+    expect(Object.keys(BASE_STATS).sort()).toEqual(keys);
+    for (const c of ARENA_CHARACTERS) expect(Object.keys(CHARACTER_STATS[c]).sort()).toEqual(keys);
+    // The engine reads the row through `state.stats.<key>` only — measured on the source.
+    const code = readFileSync('lib/core/battle.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    const reads = [...code.matchAll(/stats\.(\w+)/g)].map((m) => m[1]);
+    expect(reads.length).toBeGreaterThan(0);
+    for (const r of reads) expect(keys).toContain(r);
+    // and the clock, the mana and the enemy are module constants, ⛔ not row fields
+    for (const c of ARENA_CHARACTERS) {
+      expect(manaAt(10_000, 0)).toBe(manaAt(10_000, 0));          // no character parameter exists
+      expect(startBattle([word(1)], c).enemyHpMax).toBe(ENEMY_HP);
+      expect(startBattle([word(1)], c).words).toEqual([word(1)]);   // the mix is the mix
+    }
+  });
+
+  it('גדר 2 — LEARNER_HP ≥ 12 לכל דמות: 11 מכות נקיות ⛔ אינן מפסידות קרב', () => {
+    const swings = Math.floor(BATTLE_MS / ENEMY_SWING_MS);
+    expect(swings).toBe(11);
+    for (const c of ARENA_CHARACTERS) {
+      expect(CHARACTER_STATS[c].learnerHp).toBeGreaterThanOrEqual(swings + 1);
+      let s = startBattle([word(1)], c);
+      for (let ms = 0; ms <= BATTLE_MS; ms += 1000) s = tick(s, ms);
+      expect(s.learnerHp).toBeGreaterThan(0);
+    }
+  });
+
+  it('גדר 3 — CRITICAL_DAMAGE > HIT_DAMAGE לכל דמות', () => {
+    expect(BASE_STATS.criticalDamage).toBeGreaterThan(BASE_STATS.hitDamage);
+    for (const c of ARENA_CHARACTERS) {
+      expect(CHARACTER_STATS[c].criticalDamage).toBeGreaterThan(CHARACTER_STATS[c].hitDamage);
+    }
+  });
+
+  it('קוסם — «נזק לחש גבוה»: 2 באיטית, 3 בקריטית; 7 קריטיות מפילות 20', () => {
+    const w = startBattle([word(1), word(2)], 'wizard');
+    const slow = cast({ ...w, shownAtMs: 0 }, 'אפשרות 1', 5_000);
+    const fast = cast({ ...w, shownAtMs: 0 }, 'אפשרות 1', 1_000);
+    expect(ENEMY_HP - slow.enemyHp).toBe(2);
+    expect(ENEMY_HP - fast.enemyHp).toBe(3);
+    expect(Math.ceil(ENEMY_HP / CHARACTER_STATS.wizard.criticalDamage)).toBe(7);
+    expect(w.learnerHp).toBe(BASE_STATS.learnerHp);              // «חיים נמוכים» stays a word (fence 2)
+  });
+
+  it('לוחם — «חיים גבוהים» 18, «קריטי חזק» 3, «מגן מובנה» = ⛔ אין עונש על טעות', () => {
+    const w = startBattle([word(1), word(2)], 'warrior');
+    expect(w.learnerHp).toBe(18);
+    expect(w.learnerHpMax).toBe(18);
+    const fast = cast({ ...w, shownAtMs: 0 }, 'אפשרות 1', 1_000);
+    expect(ENEMY_HP - fast.enemyHp).toBe(3);
+    const missed = cast({ ...w, shownAtMs: 0 }, 'לא-נכון', 2_000);
+    expect(missed.pendingPenalty).toBe(0);
+    expect(tick(missed, ENEMY_SWING_MS).learnerHp).toBe(18 - 1);  // one swing, ⛔ not two
+    const baseMissed = cast({ ...startBattle([word(1), word(2)]), shownAtMs: 0 }, 'לא-נכון', 2_000);
+    expect(tick(baseMissed, ENEMY_SWING_MS).learnerHp).toBe(12 - 2);
+  });
+
+  it('שריונאי — «מאוזן»: הבסיס בדיוק, ⛔ ולא עותק שווה', () => {
+    expect(CHARACTER_STATS.armorer).toBe(BASE_STATS);
+    const a = startBattle([word(1)], 'armorer');
+    const b = startBattle([word(1)]);
+    expect({ ...a, stats: undefined }).toEqual({ ...b, stats: undefined });
+  });
+
+  it('ⓓ — שורות ה«⛔ טרם» נשארות מילים על המסך, ⛔ ואין להן מנגנון', () => {
+    for (const line of ['מאנה מהירה יותר', 'חיים נמוכים']) expect(CHARACTER_BIAS_HE.wizard).toContain(line);
+    for (const line of ['יכולות מתקררות מהר', 'ירי מטווח']) expect(CHARACTER_BIAS_HE.armorer).toContain(line);
+    const code = readFileSync('lib/core/battle.ts', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    // `(?<!Object\.)freeze` — `Object.freeze` is how the stats rows are sealed (the plan's own
+    // Interfaces block); the ban is on a freeze *ability* (§ 4 ק6), ⛔ not on the verb.
+    for (const banned of [/cooldown/i, /shield/i, /heal/i, /(?<!Object\.)freeze/i, /ranged/i, /manaMs\b/]) {
+      expect(code, `${banned} — § 4 ⛔ אינו בנוי`).not.toMatch(banned);
+    }
+  });
+
+  it('⛔ אפס מספר על מסך הבחירה — הטבלה היא מפרט, ⛔ לא תוכן', () => {
+    for (const c of ARENA_CHARACTERS) for (const s of CHARACTER_BIAS_HE[c]) expect(s).not.toMatch(/\d/);
   });
 });
