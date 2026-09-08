@@ -1,21 +1,21 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0514 (CRITIC, מלא) — נחתם ומוזג. `arena` נחתמה שנית (⬜=0), `ACTIVE_WORKSTREAM`→`msgs` (4 ⬜). `dev`=`work/current`=`9576af9`. RELEASE_READY רענן, שלוש הקשות טריות ב-`03-for-roy`.
+NEXT_AGENT: CRITIC                 # ▶️ C-0515 (DEV) — 📝 תכנון: `T-190`·`T-191`·`T-192` קיבלו תוכנית אחת (`2026-09-08-messages-inbox-slice.md`, `check:plan` 10/10, 62 צעדים). `msgs` ⬜=**4** ללא שינוי (T-193 של CONTENT); הטיק הבא של DEV הוא 🔨 בנייה מהתוכנית — Task 4 Step 9 (המיגרציה) דורש קונקטור `mcp__Supabase__*` בסשן.
 STATE: PLANNING                    # ⛔ לא שונה — טיק ביקורת אינו קובע מצב בנייה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0514 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-08T21:55:29Z"
+LAST_HANDOFF_AT: "2026-09-08T23:00:14Z"
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                # C-0515 (DEV) — planning tick on `msgs` (T-190 · T-191 · T-192).
-LOCK_AT: "2026-09-08T22:41:48Z"
+LOCK_HELD_BY: ""                   # שוחררה — DEV סיים C-0515 (תכנון).
+LOCK_AT: "2026-09-08T23:00:14Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  14 / 120           # § 13-3 · **⬜=0 · מוצתה שנית · הוזזה→`arena` ב-C-0500 (QA), ⛔ אינה חתומה** (ⓑⓒ חסומות ב-env). 5 🟣 הפכו ✅ (T-066·T-199·T-228·T-243·T-259). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
 #   arena:  24 / 120           # § 13-4 · **מוצתה שנית (⬜=0), הוזזה→`msgs` ב-C-0514 (QA).** `T-217`·`T-220`·`T-234`·`T-281`·`T-282`·`T-283` 🟣→✅ מוזגו ל-`dev` בטיק הזה. ⛔ אינה חתומה — ⓑⓒ חסומות ב-env. פירוט ⇒ `plan/61-deferred.md` (מעבר שני) · `plan/archive/control-log.md`.
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — T-190…T-193 בתור. ⛔ פריטים 2–5 חסומים ב-R-026
+#   msgs:    1 / 120           # 39-messages-spec § 9 · הודעות — **המוקד (הוזז C-0514).** ⬜=4: `T-190`·`T-191`·`T-192` קיבלו תוכנית אחת ב-C-0515 (תכנון, ⛔ לא נספר) · `T-193` של CONTENT. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
 RELEASE_READY: "9576af9 · 2026-09-08T21:54Z · **C-0514 (CRITIC, מלא).** `dev`=`9576af9`=`work/current`. `verify` ירוק, ריצה טרייה (224 · 3721/3721 · build · mobile 1519/1519), `loop:health` 15/17 (2 — F-196/F-182(check 9) פתוחים, לא חדשים; check 16 ✅ ראש מאושר). מוזג `--ff-only` פעמיים (`6595d7d..d05c4a3` ואז `d05c4a3..9576af9`): **T-282/T-283 (DEV, C-0513) — הלומד מקבל את הלוח הכחול «פגשת N מילים חדשות» ואת שלושת סיומי הקרב («היית N מילים מהבוס» / «החזקת מעמד עד סוף השעון» / «היריב החזיק מעמד»/«היריב נוצח») במסך תוצאות הזירה.** בנוסף: `arena` נחתמה שנית (⬜=0, הוזזה→`msgs`) עם שורת `61-deferred`, שורת `studies` (שנדלגה) נכתבה גם היא (בדיקה 13), וחמש משימות `arena` שהיו 🟣 תקועות מטיקים קודמים (T-220·T-234·T-281·T-282·T-283) הפכו ✅. שלוש הקשות טריות ב-`03-for-roy` על T-282/T-283. `origin/main..origin/dev`: `main` הוא אב קדמון של `dev` (נמדד `merge-base --is-ancestor`) — קידום נקי, ⛔ לא בוצע (PROMOTER/רוי בסמכות)."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
@@ -47,8 +47,8 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0513 | DEV | CRITIC | 2026-09-08T20:45:27Z | 🔨 **בנייה, שתי משימות, שני קומיטים.** `T-282` — `BattleCast.kind` נחתם ב-`cast`, `summarize.firstMet`, הלוח הכחול `[data-arena-first-met]` (12px, קריאה בלבד) · `T-283` — `wordsFromBoss` + `endingOf` בליבה, `ArenaSummary` מקבל `ending` (3 סיומים): «היית N מילים מהבוס» + עובדה אחת. הליכה 375×780: 253 תווים · 2 הקשות · 0<44 · 0 h-scroll · 4 `<EnWord>` בלוח הכחול. שלושה פערי תוכנית (F-036 `bg-brand` · עוגן T-253 · שומר D-126 `outcomeAt`) ⇢ `26-plan-feedback`. `arena` ⬜=0. סקילים: `using-superpowers`·`executing-plans`·`test-driven-development`·`systematic-debugging`·`taste-skill`. | 2 קומיטי משימה + נעילה + סגירה · `50-tasks` · `30-architecture` · `26-plan-feedback` · `00-control` · `architecture-map.json` · `plan-open`·`plan-tables` |
 | C-0514 | CRITIC | DEV | 2026-09-08T21:55:29Z | ✅ **ביקורת מלאה — שער ירוק, ⬆️ מוזג, נחתם.** `verify` 224/3721/build/mobile 1519 ירוק (נבדק 3 פעמים) · `loop:health` 15/17 (F-196/F-182 ידועים; בדיקה 16 ✅ אושרה חיה על הראש הסופי). הליכת מוצר על `/dev/arcade/summary` (המסך שהענף נגע בו) + `diff:render` מול `kol-B-07-results.png` — כל הפערים כבר עקובים (F-151/פריט 105), אפס ממצא חדש. ביקורת אנימציה: אין תנועה בדיף, לא רלוונטי. `arena` נחתמה שנית (⬜=0) — חותמת ⓐ חיה, ⓑⓒ חסומות ב-env (נמדד `/api/profile` 503 בלי Supabase env) — שורת `61-deferred` נכתבה; `studies` (שנדלגה בקפיצה ל-`msgs`) קיבלה שורה גם היא אחרי שבדיקה 13 תפסה את הפער באותו טיק. חמש משימות `arena` 🟣 ישנות (T-220·T-234·T-281·T-282·T-283) הפכו ✅ (הראיה: `git log`, ⛔ לא שיפוט). `ACTIVE_WORKSTREAM`→`msgs`. `RELEASE_READY` רענן, שלוש הקשות טריות ב-`03-for-roy`. | 5 קומיטים · `00-control`·`61-deferred`·`50-tasks`·`archive/tasks-archive`·`plan-open`·`03-for-roy` |
+| C-0515 | DEV | CRITIC | 2026-09-08T23:00:14Z | 📝 **תכנון, ⛔ אפס קוד.** `T-190`·`T-191`·`T-192` — תוכנית אחת `2026-09-08-messages-inbox-slice.md` (`check:plan` 10/10, 62 צעדים, 9 Tasks): מיגרציה `0022` (שתי טבלאות, ⛔ אפס FK לזירה/`word_progress`, מוחלת דרך קונקטור ה-MCP) ⇒ `lib/core/messages.ts` ⇒ `GET /api/world/messages` **רך** ⇒ פיקסטורה מוצמדת לרנדר (`render_video_C.py` MAILS) ⇒ `InboxList` (kol-C-13) + צומת `msgs` נפתח ⇒ `SimulationMessage` (kol-C-14) + `requiredWords` + `PATCH state`. שתי דחיפות נעילה נדחו (22:45Z «fetch first» · 22:57Z «cannot lock ref») מול קומיטי `ops(runtime)` של רוי — ⛔ אין נעילה זרה, `rebase` ודחיפה אחת מאוחדת. `verify` מלא ירוק ב-22:45Z על הנעילה. סקילים: `using-superpowers`·`writing-plans`. | תוכנית + נעילה + סגירה · `50-tasks` · `00-control` · `plan-open`·`plan-tables` |
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
