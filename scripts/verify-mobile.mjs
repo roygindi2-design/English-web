@@ -180,6 +180,10 @@ const ROUTES = [
   // ה**כשל**, וחמש צמתי הבוס, ארבע המשבצות ושלוש הפעולות מעולם אינן על המסך ב-320/375/414.
   // הפיקסצ׳ר מקבל את המצב כ-prop ו⛔ אינו מבקש מהשרת דבר ⇒ ⛔ אין לו רשומה ב-EXPECTED_CONSOLE.
   '/dev/arcade/home',
+  // T-217 · `37 § 7` — בחירת דמות, המצב השלישי של המעטפת. נפתח רק אחרי ש-`GET /api/arcade/home`
+  // מחזיר `character: null`, ⇒ בלי env של Supabase המסך ⛔ מעולם לא נמדד דרך `/arcade`.
+  // הפיקסצ׳ר מרנדר את הרכיב ישירות עם `save` ריק ⇒ ⛔ אין לו רשומה ב-EXPECTED_CONSOLE.
+  '/dev/arcade/character',
   // T-096 · § 4.2י. מסך הסיום ⛔ אינו נגיש דרך `/arcade` בלי סשן: הוא נפתח רק אחרי
   // ‏`POST /api/arcade/result` שעונה 200, וכאן אין env של Supabase ⇒ הנתיב האמיתי עוצר
   // ב-503 והמסך הזה מעולם לא נמדד. הפיקסטורה מרנדרת אותו ישירות ואינה מבקשת מהשרת דבר,
@@ -249,7 +253,7 @@ const MIN_GAP = 8;
  * body-level probe is blind to it. ⛔ A new arena screen that is ⛔ not in this list is a
  * screen nobody measured.
  */
-const ARENA_SCREENS = ['/dev/arcade', '/dev/arcade/home'];
+const ARENA_SCREENS = ['/dev/arcade', '/dev/arcade/home', '/dev/arcade/character'];
 
 const FLOW_ROUTES = ['/', '/signup', '/login', '/dev/onboarding', '/study', '/world/compose'];
 
