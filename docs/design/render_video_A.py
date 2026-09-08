@@ -297,12 +297,12 @@ def screen_deck(c, t, grow=1.0, cta=None, cta_press=0.0):
               BRAND_SURFACE)
     # ---- the two decks
     pr = 2.5 * (cta_press if cta == 1 else 0)
-    c.rr(24 + pr/2, 486 + pr/2, LW - 48 - pr, 62 - pr, 18, fill=BRAND_SURFACE)
+    c.rr(24 + pr/2, 486 + pr/2, LW - 48 - pr, 62 - pr, 16, fill=BRAND_SURFACE)
     c.txt(LW/2, 508, "סינון מילים", 16.5, "Bold", BRAND_ON)
     c.txt(LW/2, 531, f"{LV_REMAIN} מילים שעוד לא סוננו", 12, "Medium", (15, 23, 42, 190))
     pr = 2.5 * (cta_press if cta == 2 else 0)
-    c.rr(24 + pr/2, 558 + pr/2, LW - 48 - pr, 62 - pr, 18, fill=DANGER + (42,))
-    c.rr(24 + pr/2, 558 + pr/2, LW - 48 - pr, 62 - pr, 18, outline=DANGER + (255,), width=1.7)
+    c.rr(24 + pr/2, 558 + pr/2, LW - 48 - pr, 62 - pr, 16, fill=DANGER + (42,))
+    c.rr(24 + pr/2, 558 + pr/2, LW - 48 - pr, 62 - pr, 16, outline=DANGER + (255,), width=1.7)
     icon_x(c, 58, 589, DANGER, sc=1.2)
     c.txt(LW/2 + 12, 580, "חזרה", 16.5, "Bold", DANGER)
     c.txt(LW/2 + 12, 603, f"{LV_UNKNOWN} מילים שסימנת לא ידעתי", 12, "Medium",
