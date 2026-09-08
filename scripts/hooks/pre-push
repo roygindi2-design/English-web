@@ -29,15 +29,60 @@ REMOTE="${1:-origin}"
 ZERO=0000000000000000000000000000000000000000
 
 TIPS=()
-while read -r _localref localsha _remoteref _remotesha; do
+REFS=()
+while read -r _localref localsha remoteref _remotesha; do
   [ -z "${localsha:-}" ] && continue
   [ "$localsha" = "$ZERO" ] && continue   # ⛔ a branch deletion carries no tree to verify
   TIPS+=("$localsha")
+  REFS+=("${remoteref:-}")
 done
 if [ "${#TIPS[@]}" -eq 0 ]; then exit 0; fi
 
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ⛔ BRANCH OWNERSHIP — ⛔ WHO MAY PUSH WHERE.  ⟦NEW 08/09 · Roy's explicit instruction⟧
+#
+# `RULES § 0.1 ב׳` is the most load-bearing rule in the constitution:
+#   «⛔ אף סוכן ⛔ אינו דוחף ל-main — מלבד PROMOTER, פעם ביום, 5 0 * * * UTC.»
+# 🔬 **And ⛔ nothing enforced it.** Measured 08/09: `git grep origin/main -- scripts/`
+# returns **zero**. The rule was a sentence in a file, exactly like `npm run verify` was
+# before הכרעה 100 — and this is the same move, on the same hook, for the same reason.
+#
+# ⚠️ The identity is the one the agent sets itself in STEP A of its own prompt
+# (`./scripts/g config user.name`), which is the only agent identity that reaches git.
+#
+# 🔴 **AND ITS POSITION IS THE POINT: this runs BEFORE `SKIP_VERIFY`.** A broken `verify`
+# is a reason to skip `verify`. It is ⛔ NEVER a reason to push to `main`.
+#
+# ⚠️ Honest about what this is: a gate against ACCIDENT and DRIFT, ⛔ not against an
+# adversary — an agent can edit this file or pass `--no-verify`. ⛔ Exactly like the
+# verify gate, and ⛔ that was never a reason not to build it.
+# ═══════════════════════════════════════════════════════════════════════════════
+WHOAMI="$(git config user.name 2>/dev/null || echo '')"
+for ref in "${REFS[@]}"; do
+  case "$ref" in
+    refs/heads/main)
+      if [ "$WHOAMI" != "promoter-agent" ]; then
+        echo "⛔ הדחיפה ל-main נחסמה: הזהות היא '$WHOAMI', ⛔ ולא 'promoter-agent'."
+        echo "⛔ RULES § 0.1 ב׳ — ⛔ אף סוכן ⛔ אינו דוחף ל-main מלבד PROMOTER, פעם ביום."
+        echo "⇒ QA ממזג ל-dev; PROMOTER לוקח משם. ⛔ אין מסלול אחר, ו-SKIP_VERIFY ⛔ אינו פותח אותו."
+        exit 1
+      fi
+      ;;
+    refs/heads/dev)
+      case "$WHOAMI" in
+        critic-agent|qa-agent|promoter-agent) ;;
+        *)
+          echo "⛔ הדחיפה ל-dev נחסמה: הזהות היא '$WHOAMI'."
+          echo "⛔ RULES § 0.23 — ל-dev מגיעים רק דרך 'merge --ff-only' של QA."
+          exit 1
+          ;;
+      esac
+      ;;
+  esac
+done
 
 if [ "${SKIP_VERIFY:-0}" = "1" ]; then
   echo "⚠️  SKIP_VERIFY=1 — הדחיפה עוברת ⛔ בלי verify."
@@ -58,13 +103,69 @@ if [ -n "$DIRTY" ]; then
   echo "$DIRTY" | head -20
 fi
 
-echo "🔒 pre-push — מריץ npm run verify לפני הדחיפה ל-$REMOTE …"
-if ! npm run verify; then
-  echo ""
-  echo "⛔ הדחיפה נחסמה: 'npm run verify' יצא בקוד ⛔ לא-אפס."
-  echo "⛔ ⛔ אל תעקוף. תקן, או קרא את הכישלון והפוך אותו לממצא ב-plan/60-findings.md."
-  echo "⇒ מוצא חירום מוצהר בלבד: SKIP_VERIFY=1 ./scripts/g push $REMOTE …"
-  exit 1
+# ═══════════════════════════════════════════════════════════════════════════════
+# ⚡ THE FAST LANE — ⛔ RUN WHAT THE DIFF CAN ACTUALLY BREAK.  ⟦NEW 08/09⟧
+#
+# 🔬 **MEASURED, ⛔ not assumed.** Over 14 days: **161 of 516 loop commits (31%) touched
+# ⛔ NOTHING but `plan/00-control.md`** — the "I am starting" lock commit. Since הכרעה 100
+# every one of those runs a full `npm run verify`. At ~4 minutes that is **~11 hours of
+# compute per fortnight spent announcing a start.**
+#
+# ⛔ **THIS IS ⛔ NOT A HOLE IN THE GATE, AND THE DISTINCTION IS THE WHOLE DESIGN.**
+# The promise — «a red `verify` ⛔ cannot leave a clone» — is kept in full. What changes is
+# that a diff which ⛔ CANNOT break a check no longer waits for it. Measured in this clone:
+#
+#   diff confined to plan/** · docs/plan-*.md · docs/agents/**
+#     CAN break →  check:motion 1s · check:text-floor 0s · check:rules 1s
+#                  + vitest scripts/ lib/core/ 28s              ⇒ ~30 seconds
+#                  …those three scripts read plan/, and 8 test files read plan/ or
+#                  docs/agents/ (agent-prompts · loop-health · plan-hygiene ·
+#                  measure-plan-tables · rules-citations · motion-gate ·
+#                  text-floor-gate · gc-memory).
+#     ⛔ CANNOT break →  typecheck · check:core · check:titles · build · check:mobile
+#                  …⛔ no .ts changed, ⛔ no route changed, ⛔ no pixel changed.
+#
+# 🔴 **ONE path outside the set ⇒ the FULL run. ⛔ No exceptions, ⛔ no "mostly".**
+# ⛔ **And ⛔ no diff we could not read ⇒ the FULL run.** Doubt resolves to slow, ⛔ never fast.
+# ⚠️ The attestation says `verify(fast)`, ⛔ never `verify` — check 16 must ⛔ never tell a
+# different story from what actually ran.
+# ═══════════════════════════════════════════════════════════════════════════════
+CHANGED="$(git diff --name-only "$REMOTE/$(git rev-parse --abbrev-ref HEAD)"...HEAD 2>/dev/null || true)"
+[ -z "$CHANGED" ] && CHANGED="$(git diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
+
+REGISTER_ONLY=1
+if [ -z "$CHANGED" ]; then
+  REGISTER_ONLY=0                     # ⛔ ⛔ לא ידענו מה השתנה ⇒ מלא. ספק ⇒ איטי.
+else
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+      plan/*|docs/plan-*.md|docs/agents/*) ;;
+      *) REGISTER_ONLY=0; break ;;
+    esac
+  done <<< "$CHANGED"
+fi
+
+if [ "$REGISTER_ONLY" = "1" ]; then
+  VERIFY_LABEL="verify(fast)"
+  echo "⚡ pre-push — הדיף מוגבל ל-plan/ · docs/plan-* · docs/agents/ ⇒ מסלול מהיר."
+  echo "⛔ ⛔ זה ⛔ אינו דילוג: רץ כל מה שדיף כזה יכול לשבור, ו⛔ לא רץ מה שהוא ⛔ אינו יכול."
+  if ! { npm run check:motion && npm run check:text-floor && npm run check:rules && npx vitest run scripts/ lib/core/; }; then
+    echo ""
+    echo "⛔ הדחיפה נחסמה: המסלול המהיר יצא בקוד ⛔ לא-אפס."
+    echo "⛔ ⛔ אל תעקוף. תקן, או הפוך את הכישלון לממצא ב-plan/60-findings.md."
+    exit 1
+  fi
+else
+  VERIFY_LABEL="verify"
+  echo "🔒 pre-push — מריץ npm run verify לפני הדחיפה ל-$REMOTE …"
+  if ! npm run verify; then
+    echo ""
+    echo "⛔ הדחיפה נחסמה: 'npm run verify' יצא בקוד ⛔ לא-אפס."
+    echo "⛔ ⛔ אל תעקוף. תקן, או קרא את הכישלון והפוך אותו לממצא ב-plan/60-findings.md."
+    echo "⇒ מוצא חירום מוצהר בלבד: SKIP_VERIFY=1 ./scripts/g push $REMOTE …"
+    exit 1
+  fi
 fi
 
 # ⛔ ⟦NEW 07/09⟧ SYNC BEFORE APPENDING — ⛔ or the push is rejected non-fast-forward.
@@ -83,7 +184,10 @@ git fetch -q "$REMOTE" "+refs/heads/notes-verify:refs/notes/verify" >/dev/null 2
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 NOTED=0
 for sha in "${TIPS[@]}"; do
-  if git notes --ref=verify add -f -m "verify: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1; then
+  # ⛔ `$VERIFY_LABEL` is `verify` or `verify(fast)` — ⛔ never a label for a run that did
+  # ⛔ not happen. Check 16 reads this note; a note that overstates what ran would make the
+  # ⛔ attestation a claim instead of evidence, which is the one thing it exists against.
+  if git notes --ref=verify add -f -m "$VERIFY_LABEL: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1; then
     NOTED=$((NOTED + 1))
   else
     # ⛔ ⟦07/09⟧ This used to be `|| true` — a swallow, ⛔ not a decision. A note that
