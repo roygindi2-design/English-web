@@ -41,4 +41,13 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
   it('אנגלית מגיעה ללומד אך ורק בתוך <EnWord>', () => {
     expect(CODE).toMatch(/<EnWord/);
   });
+
+  it('T-282 — הלוח הכחול: כותרת הרנדר, hook למדידה, ו⛔ אפס חישוב ברכיב', () => {
+    expect(CODE).toMatch(/data-arena-first-met/);
+    expect(CODE).toMatch(/firstMetHe\(/);
+    expect(CODE).toMatch(/summary\.firstMet\.length > 0 &&/);
+    // 12px, ⛔ not the render's 11.5 — Layer A floor (scripts/check-text-floor.mjs). A new
+    // 11.5 would be a new baseline violation.
+    expect((CODE.match(/text-\[11\.5px\]/g) ?? []).length).toBe(1);
+  });
 });

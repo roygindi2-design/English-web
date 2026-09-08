@@ -21,7 +21,7 @@
  * ✅ **ניקוד בזירה מותר** (`36 § 2` שורה 7 הגבילה את D-050 ל«מחוץ לזירה»), ולכן האיסור
  * `xp|score|points|coin` של `arcadeBattle.test.ts:100-102` ⛔ **אינו** עובר לכאן.
  */
-import type { ArenaWord } from './arenaWords';
+import type { ArenaWord, ArenaWordKind } from './arenaWords';
 import type { ArenaCharacter } from './arenaCharacter';
 import { isArenaCharacter } from './arenaCharacter';
 
@@ -108,6 +108,13 @@ export interface BattleCast {
   readonly correct: boolean;
   readonly responseMs: number;
   readonly critical: boolean;
+  /**
+   * T-282 · `37 § 2` — the kind of the word AT CAST TIME. `cast` requeues a missed
+   * `unfiltered` spell as `base` (`:216-217`), so `unfiltered` here marks exactly the
+   * first meeting, once per word. ⛔ Read by `summarize`; ⛔ never sent to the API
+   * (`ArenaBattle.tsx:501-508` builds `ArcadeAnswer` by field).
+   */
+  readonly kind: ArenaWordKind;
 }
 
 export interface BattleState {
@@ -224,7 +231,7 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
     enemyHp: Math.max(0, state.enemyHp - damage),
     shownAtMs: elapsedMs,
     pendingPenalty: correct ? 0 : state.stats.swingPenalty,
-    casts: [...state.casts, { wordId: word.wordId, correct, responseMs, critical }],
+    casts: [...state.casts, { wordId: word.wordId, correct, responseMs, critical, kind: word.kind }],
   };
 }
 

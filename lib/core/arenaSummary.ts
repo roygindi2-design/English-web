@@ -23,6 +23,14 @@ export interface ArenaSummary {
   readonly bestStreak: number;
   /** `37 § 5`: נכונה שאינה קריטית — «נכונה איטית» של המפרט עצמו. */
   readonly slow: readonly BattleCast[];
+  /**
+   * T-282 · `37 § 10` («פגשת 4 מילים חדשות») · `36 § 12.3` — the casts on `unfiltered`
+   * words, first cast per `wordId`, right or wrong: a word the battle put in front of
+   * the learner for the first time. ⛔ Read-only: this is what the screen NAMES, ⛔ not
+   * what it writes anywhere. The requeued copy of a missed spell is `base` (`battle.ts:216`),
+   * so it never counts twice; the `seen` set is the guard for any other duplicate.
+   */
+  readonly firstMet: readonly BattleCast[];
 }
 
 export function summarize(casts: readonly BattleCast[]): ArenaSummary {
@@ -31,9 +39,15 @@ export function summarize(casts: readonly BattleCast[]): ArenaSummary {
   let bestStreak = 0;
   let run = 0;
   const slow: BattleCast[] = [];
+  const firstMet: BattleCast[] = [];
+  const seen = new Set<string>();
 
   for (const c of casts) {
     totalMs += c.responseMs;
+    if (c.kind === 'unfiltered' && !seen.has(c.wordId)) {
+      seen.add(c.wordId);
+      firstMet.push(c);
+    }
     if (c.correct) {
       correct += 1;
       run += 1;
@@ -51,7 +65,13 @@ export function summarize(casts: readonly BattleCast[]): ArenaSummary {
     meanResponseMs: total === 0 ? 0 : Math.round(totalMs / total),
     bestStreak,
     slow,
+    firstMet,
   };
+}
+
+/** «פגשת 4 מילים חדשות» — the render's own title (`render_video_B.py:637`). ⛔ The component ⛔ does not build the string. ⛔ Never called with 0 — the board is not drawn. */
+export function firstMetHe(n: number): string {
+  return n === 1 ? 'פגשת מילה אחת חדשה' : `פגשת ${n} מילים חדשות`;
 }
 
 /** «1.8 ש׳» — ספרה אחת אחרי הנקודה, יחידה עברית. ⛔ הרכיב ⛔ אינו מפרמט בעצמו. */

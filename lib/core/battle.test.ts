@@ -293,6 +293,19 @@ describe('37 § 2 — «צדקת: נזק מוגבר · טעית: הלחש חוז
     expect(t.casts.map((c) => c.wordId)).toEqual(['a', 'b']);
     expect(t.words.slice(0, 2).map((x) => x.wordId)).toEqual(['a', 'b']);
   });
+
+  it('T-282 — כל הטלה נושאת את סוג המילה ברגע ההטלה; העותק שחזר לזנב הוא `base`', () => {
+    const words: readonly ArenaWord[] = [
+      { ...word(1), kind: 'known' },
+      { ...word(2), kind: 'unfiltered' },
+    ];
+    let s = startBattle(words);
+    s = cast(s, 'אפשרות 1', 500);       // known, correct
+    s = cast(s, 'לא נכון', 1_000);      // unfiltered, wrong ⇒ requeued as base at the tail
+    s = cast(s, 'אפשרות 2', 1_500);     // the tail copy
+    expect(s.casts.map((c) => c.kind)).toEqual(['known', 'unfiltered', 'base']);
+    expect(s.casts.map((c) => c.wordId)).toEqual(['w1', 'w2', 'w2']);
+  });
 });
 
 /**

@@ -1,7 +1,7 @@
 'use client';
 
 import EnWord from '@/components/EnWord';
-import { meanSecondsHe, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
+import { firstMetHe, meanSecondsHe, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
 
 /**
  * T-180 · `37-arena-spec § 10` — **מסך התוצאות.**
@@ -16,12 +16,13 @@ import { meanSecondsHe, type ArenaSummary as ArenaSummaryData } from '@/lib/core
  * עמודה במנוע החזרות. זהו אינווריאנט `37 § 13.1` (הזירה ⛔ אינה מזיזה SM-2), והשורה
  * `הזירה לא שינתה דבר בהתקדמות הלמידה` היא בדיוק אותו אינווריאנט אמור בקול.
  *
- * ⛔ **ארבעה בלוקים שהרנדר מצייר ⛔ אינם כאן, וזו סטייה מוצהרת ⛔ ולא שכחה** — § 7 של
- * `docs/superpowers/plans/2026-08-27-arena-slice-c-results-and-idle.md` נושא לכל אחד את
- * המספר שנמדד: ⓐ `רמת זירה 7 · +48 XP` (`:604`) — ⛔ אין כלל XP ו⛔ אין עמודה (F-151) ·
- * ⓑ `תיבת ניצחון` (`:606-617`) — אותו שורש · ⓒ `פגשת 4 מילים חדשות` (`:631-640`) —
- * ⛔ אין מקור נתונים · ⓓ ה-CTA `הוסף הכול וחזור לזירה` (`:643`) — חצי הכתיבה חסום
- * ב-F-140, ולכן ה-CTA נשלח כ-`חזור לזירה` (מחרוזת ממשק, ⛔ לא תוכן לימודי).
+ * ⛔ **הבלוקים שהרנדר מצייר ו⛔ אינם כאן, וכל אחד סטייה מוצהרת ⛔ ולא שכחה** — § 7 של
+ * `docs/superpowers/plans/2026-08-27-arena-slice-c-results-and-idle.md` נושא את המספרים:
+ * ⓐ `רמת זירה 7 · +48 XP` (`:604`) — ⛔ אין כלל XP ו⛔ אין עמודה (F-151) · ⓑ `תיבת ניצחון`
+ * (`:606-617`) — אותו שורש · ⓒ **הלוח הכחול `פגשת 4 מילים חדשות` (`:631-640`) — נבנה
+ * ב-T-282 כקריאה בלבד**; ⛔ מה שעדיין אינו כאן הוא בקרת ה-`○` והשורה `הוסף לכרטיסיות`,
+ * שתיהן חצי הכתיבה של `03-for-roy` פריט 105 · ⓓ ה-CTA `הוסף הכול וחזור לזירה` (`:643`) —
+ * אותו פריט 105, ולכן ה-CTA נשלח כ-`חזרה לזירה` (מחרוזת ממשק, ⛔ לא תוכן לימודי).
  *
  * ⚠️ **רדיוס שורת הסטטיסטיקה ברנדר הוא 13** (`:618-620`) — ⛔ **אינו** אחד מחמשת ערכי
  * הסולם (6 · 8 · 12 · 16). הקרוב בסולם הוא `xl` = 12 ⇒ סטייה **מדודה של 1px**, אותה צורה
@@ -99,6 +100,27 @@ export default function ArenaSummary({
           </p>
           <p className="text-end text-[11.5px] leading-relaxed text-ink">
             {summary.slow.map((c, i) => (
+              <span key={c.wordId}>
+                {i > 0 && ' · '}
+                <EnWord>{headwords[c.wordId] ?? c.wordId}</EnWord>
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
+
+      {/* T-282 · הלוח הכחול — y=562 · h=66 · r=16 · BRAND (`render_video_B.py:633-640`).
+          ⛔ קריאה בלבד (`36 § 12.3`): הלוח **נוקב** במילים שהקרב הראה לראשונה, ו⛔ אינו
+          עושה בהן דבר. ⛔ מוצג אך ורק כש-N>0 — אותו כלל של הלוח האדום. שורת השמות יושבת
+          במשבצת של `הוסף לכרטיסיות` (`:639`) כי חצי הכתיבה חסום (`03-for-roy` 105), ובגודל
+          12px ⛔ ולא 11.5 — רצפת שכבה א׳ (`scripts/check-text-floor.mjs`). ⛔ אין `○`. */}
+      {summary.firstMet.length > 0 && (
+        <div data-arena-first-met className={`${PANEL_CLASS} border border-brand bg-brand/15`}>
+          <p className="text-end text-[14px] font-bold text-ink">
+            {firstMetHe(summary.firstMet.length)}
+          </p>
+          <p className="text-end text-[12px] leading-relaxed text-ink">
+            {summary.firstMet.map((c, i) => (
               <span key={c.wordId}>
                 {i > 0 && ' · '}
                 <EnWord>{headwords[c.wordId] ?? c.wordId}</EnWord>
