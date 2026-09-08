@@ -31,10 +31,14 @@ describe('POST /api/practice — D-033, ההגנה שמונעת נזק שקט', 
    * T-225ⓐⓑ — ה-404 ⛔ לא נמחק, הוא **הצטמצם**. `.insert(` מותר, ו⛔ רק בתוך הענף
    * של `deck === 'level'`; `.upsert(` ⛔ אסור בכל מקום (הנימוק ב-scan/route.ts:92).
    */
-  it("T-225 — insert חי ⛔ אך ורק בענף `level`, וה-404 שורד לכל חפיסה אחרת", () => {
+  it("T-225 · T-199ⓐ — insert חי ⛔ אך ורק בענף `level` / `sentences`, וה-404 שורד לכל חפיסה אחרת", () => {
     expect(CODE).not.toMatch(/\.upsert\(/);
     expect(CODE).toMatch(/\.insert\(/);
     expect(CODE).toMatch(/status:\s*404/);
+    // T-199ⓐ · D-142 — both decks are named, ⛔ and nothing wider (`deck !== 'due'` would
+    // hand `unknown` the insert path silently).
+    expect(CODE).toContain("payload.deck !== 'level' && payload.deck !== 'sentences'");
+    expect(CODE).not.toMatch(/payload\.deck !== 'due'/);
     const gate = CODE.indexOf("payload.deck !== 'level'");
     const insert = CODE.indexOf('.insert(');
     const notFound = CODE.indexOf('status: 404');

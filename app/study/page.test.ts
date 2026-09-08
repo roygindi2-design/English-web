@@ -39,18 +39,20 @@ describe('/study — the deck screen (T-065)', () => {
   });
 
   /**
-   * ⚠️ **C-0321 — the parser this screen uses is the NARROW one.** Until T-165 every deck
-   * name meant the same two-button self-grade card, so `parseDeckName` was the right gate.
-   * `'sentences'` is a cloze stem with four English options: handing it to
-   * `<StudyDeckScreen>` → `<CardDeck>` → `buildCard` renders a broken screen from a URL
-   * (the F-027 class). ⛔ The assertion below is therefore **negative as well as positive** —
-   * a future edit that widens this back to `parseDeckName` fails here **by name**.
+   * ⚠️ **T-199ⓐ · D-169 — the parser is the WIDE one again, and the assertion is inverted
+   * BY NAME.** C-0321 narrowed it to `parseFlashcardDeckName` while no screen could draw a
+   * cloze item (F-143); T-066 made `<Flashcard>` draw it, and the narrow gate was deleted.
+   * A future edit that re-introduces the narrow name fails here, exactly as the opposite
+   * edit used to.
    */
-  it('validates ?deck= through parseFlashcardDeckName and falls back to the day’s dose', () => {
+  it('validates ?deck= through parseDeckName — every served deck — and falls back to the day’s dose', () => {
     expect(CODE).toMatch(/from '@\/lib\/core\/deck'/);
-    expect(CODE).toContain('parseFlashcardDeckName');
-    expect(CODE).not.toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
+    expect(CODE).toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
+    expect(CODE).not.toContain('parseFlashcardDeckName');
     expect(CODE).toMatch(/\?\?\s*'due'/);
+    // T-264 — one title per deck, as a record; «משפטים» is in it.
+    expect(CODE).toMatch(/const TITLES: Record<DeckName, string> = \{/);
+    expect(CODE).toContain("sentences: 'משפטים'");
   });
 
   it('reads searchParams as a promise — Next 16 (⛔ not the Next 14 object)', () => {

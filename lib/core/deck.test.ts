@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   applyPractice, bandRank, checkPracticePayload, clampQueueLimit, deckCardKey, DEFAULT_QUEUE_LIMIT,
-  excludeSeen, isSentenceCard, isUnknownRow, parseDeckName, parseFlashcardDeckName, selectDeck,
+  excludeSeen, isSentenceCard, isUnknownRow, parseDeckName, selectDeck,
   sortQueue, toQueueCardInput, type QueueRow,
 } from '@/lib/core/deck';
 
@@ -161,16 +161,18 @@ describe('checkPracticePayload — T-225: החפיסה נוסעת בגוף הב�
     if (check.ok) expect(check.payload.deck).toBe('due');
   });
 
-  it('שלושת שמות חפיסת הכרטיס עוברים', () => {
-    for (const deck of ['due', 'unknown', 'level'] as const) {
+  it('ארבעת שמות החפיסה עוברים — `sentences` מאז T-199ⓐ (D-169 · D-142)', () => {
+    for (const deck of ['due', 'unknown', 'level', 'sentences'] as const) {
       const check = checkPracticePayload({ word_id: id, grade: 'good', deck });
       expect(check.ok, deck).toBe(true);
       if (check.ok) expect(check.payload.deck).toBe(deck);
     }
   });
 
-  it("⛔ `'sentences'` ⛔ אינו שם חוקי כאן — הוא ⛔ אינו כרטיס דו-כפתורי", () => {
-    expect(checkPracticePayload({ word_id: id, grade: 'good', deck: 'sentences' }).ok).toBe(false);
+  it("T-199ⓐ — `'sentences'` מתקבל: הדירוג של פריט השלמה נוסע בחוט התרגול (D-156 ⓑ)", () => {
+    const check = checkPracticePayload({ word_id: id, grade: 'good', deck: 'sentences' });
+    expect(check.ok).toBe(true);
+    if (check.ok) expect(check.payload.deck).toBe('sentences');
   });
 
   it('⛔ שם שאינו מוכר נדחה, ⛔ ולא נופל בשקט לברירת מחדל', () => {
@@ -327,33 +329,32 @@ describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)',
 });
 
 /**
- * T-165ⓐ · C-0321 — **שער המסך, ⛔ ולא שער המסלול.**
- *
- * ⛔ הבדיקה הזאת היא **בת הזוג של שגיאת ההידור**: `FlashcardDeckName` מונע מסירת שם
- * `'sentences'` ל-`<Flashcard>` בזמן הידור, והשורות כאן מונעות מהשער עצמו להיפתח בטעות
- * בעריכה עתידית. אחת בלי השנייה ⛔ אינה שמירה — טיפוס אפשר להרחיב בשורה אחת.
+ * T-199ⓐ · D-169 — the narrow screen gate is GONE, and this is its tombstone: a future edit
+ * that re-introduces `parseFlashcardDeckName` (or hands `/study` anything but the wide
+ * `parseDeckName`) fails here BY NAME. The compile-time half (`FlashcardDeckName`) went with it;
+ * what replaced both is `<Flashcard>`'s `choice` variant (T-066), which draws the item.
  */
-describe('parseFlashcardDeckName — פריט השלמה ⛔ אינו מגיע לכרטיס דו-כפתורי', () => {
-  it('שלוש חפיסות הכרטיסייה עוברות', () => {
-    expect(parseFlashcardDeckName('due')).toBe('due');
-    expect(parseFlashcardDeckName('unknown')).toBe('unknown');
-    expect(parseFlashcardDeckName('level')).toBe('level');
-    expect(parseFlashcardDeckName(null)).toBe('due');
+describe('T-199ⓐ — one gate, parseDeckName (D-169)', () => {
+  const stripped = (path: string) =>
+    readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const DECK_SOURCE = stripped('lib/core/deck.ts');
+
+  it('⛔ parseFlashcardDeckName ⛔ אינו קיים עוד — T-199ⓐ · D-169', () => {
+    expect(DECK_SOURCE).not.toContain('parseFlashcardDeckName');
+    expect(DECK_SOURCE).not.toContain('FLASHCARD_DECK_NAMES');
+    expect(DECK_SOURCE).not.toContain('FlashcardDeckName');
   });
 
-  it('⛔ `sentences` ⛔ אינו עובר — המסך אינו יודע לצייר אותו (F-143)', () => {
-    expect(parseFlashcardDeckName('sentences')).toBeNull();
+  it('`app/study/page.tsx` קורא ל-parseDeckName הרחב, ⛔ ולא לשער הצר', () => {
+    const src = stripped('app/study/page.tsx');
+    expect(src).toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
+    expect(src).not.toContain('parseFlashcardDeckName');
   });
 
-  it('⛔ ושם שאינו קיים כלל ⛔ אינו עובר גם הוא', () => {
-    expect(parseFlashcardDeckName('nope')).toBeNull();
-  });
-
-  it('מוטציה: `app/study/page.tsx` ⛔ אינו קורא ל-parseDeckName הרחב', () => {
-    const src = readFileSync('app/study/page.tsx', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/[^\n]*/g, '');
-    expect(src).toContain('parseFlashcardDeckName');
-    expect(src).not.toMatch(/[^a-zA-Z]parseDeckName\s*\(/);
+  it('`sentences` עובר את שער המסלול ⛔ ואת שער התרגול', () => {
+    expect(parseDeckName('sentences')).toBe('sentences');
+    expect(
+      checkPracticePayload({ word_id: '00000000-0000-4000-8000-000000000001', grade: 'again', deck: 'sentences' }).ok,
+    ).toBe(true);
   });
 });

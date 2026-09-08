@@ -1,15 +1,21 @@
 import type { Metadata } from 'next';
 import StudyDeckScreen from '@/components/StudyDeckScreen';
-import { parseFlashcardDeckName } from '@/lib/core/deck';
+import { parseDeckName, type DeckName } from '@/lib/core/deck';
 
 /**
- * T-264 — `<StudyDeckScreen>` renders one of three `<h1>` values by `?deck=`
- * (`components/StudyDeckScreen.tsx` `HEADING_HE` / `LEVEL_HEADING_HE` /
- * `PRACTICE_HEADING_HE`, `'מנת היום'` / `'סינון מילים'` / `'לא ידעתי'`), and this
- * Server Component already parses the same `deck` value below — `generateMetadata`
- * mirrors exactly that branch, ⛔ not a fourth copy of the parsing rule, so the title
- * always names the deck the screen actually opened, not just the default.
+ * T-264 → T-199ⓐ — `<StudyDeckScreen>` renders one `<h1>` per deck (`HEADINGS` in
+ * `components/StudyDeckScreen.tsx`), and this Server Component parses the same `deck`
+ * value below — `generateMetadata` mirrors exactly that record, ⛔ not a second copy of the
+ * parsing rule, so the title always names the deck the screen actually opened. A record
+ * over `DeckName`, ⛔ not a ternary chain: a fifth deck without a title fails to compile.
  */
+const TITLES: Record<DeckName, string> = {
+  due: 'מנת היום',
+  unknown: 'לא ידעתי',
+  level: 'סינון מילים',
+  sentences: 'משפטים',
+};
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -17,9 +23,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams;
   const raw = params.deck;
-  const deck = parseFlashcardDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
-  const title = deck === 'due' ? 'מנת היום' : deck === 'level' ? 'סינון מילים' : 'לא ידעתי';
-  return { title };
+  const deck = parseDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
+  return { title: TITLES[deck] };
 }
 
 /**
@@ -44,13 +49,11 @@ export async function generateMetadata({
  * way to get one is a stale bookmark or a typo, and neither is something the learner can act
  * on.
  *
- * ⚠️ **C-0321 — the parser here is `parseFlashcardDeckName`, ⛔ deliberately ⛔ not
- * `parseDeckName`.** The sentence about "a third deck lands here without this file changing"
- * held while every deck name meant the same two-button self-grade card. `'sentences'`
- * (T-165) does ⛔ not: it is a cloze stem with four English options, and handing it to
- * `<StudyDeckScreen>` → `<CardDeck>` → `buildCard` would render a broken screen from a
- * URL — the F-027 class. `FlashcardDeckName` excludes it at the type level, so this falls
- * back to «מנת היום» **until the sentences screen exists** (F-143, PM).
+ * ⚠️ **T-199ⓐ · D-169 — the parser is the WIDE `parseDeckName` again.** C-0321 narrowed it
+ * because `'sentences'` was a cloze item no screen could draw (F-143). Since T-066 the same
+ * `<Flashcard>` draws it as its `choice` variant, so every deck the route serves is a deck
+ * this screen renders, and the narrow gate was deleted from `lib/core/deck.ts` — a URL can
+ * ⛔ no longer reach a broken screen (the F-027 class) through it.
  */
 export default async function StudyPage({
   searchParams,
@@ -59,7 +62,7 @@ export default async function StudyPage({
 }) {
   const params = await searchParams;
   const raw = params.deck;
-  const deck = parseFlashcardDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
+  const deck = parseDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
 
   return <StudyDeckScreen deck={deck} />;
 }

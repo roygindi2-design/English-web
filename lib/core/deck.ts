@@ -31,22 +31,10 @@ export type DeckName = 'due' | 'unknown' | 'level' | 'sentences';
 export const DECK_NAMES: readonly DeckName[] = ['due', 'unknown', 'level', 'sentences'];
 
 /**
- * T-165ⓐ · C-0321 — **שני שמות, שני שערים, ⛔ ולא שם אחד לשניהם.**
- *
- * `DeckName` הוא מה ש**המסלול** מקבל. `FlashcardDeckName` הוא מה ש**המסך** מקבל, וההפרש
- * ביניהם הוא `'sentences'` בלבד.
- *
- * ⚠️ הסיבה נמדדה, ⛔ ואינה טעם: `app/study/page.tsx` מוסר את שם החפיסה ל-`<StudyDeckScreen>`
- * ומשם ל-`buildCard`, שבונה **כרטיס דו-כפתורי של דירוג עצמי**. פריט השלמה ⛔ אינו כרטיס
- * כזה — הוא גזע וארבע אפשרויות. בלי ההפרדה, לומד שמגיע ל-`/study?deck=sentences` מכתובת
- * מקבל מסך שבור מ-URL, וזו בדיוק מחלקת F-027.
- *
- * ⇒ `Exclude` הופך את מסירת פריט השלמה ל-`<Flashcard>` ל**שגיאת הידור**, ⛔ ולא לכלל
- * בהערה. ⚠️ נרשם תחת `RULES § 0.22` כהכרעה הפיכה (גבול מודול / שמות פונקציות): קומיט אחד
- * מבטל אותה.
+ * T-199ⓐ · D-169 — ONE gate, `parseDeckName`: the screen draws every deck the route serves.
+ * The narrow screen-only gate of C-0321 (F-143) was deleted here once `<Flashcard>` learned
+ * the `choice` variant (T-066); `/study?deck=sentences` opens. `deck.test.ts` pins the absence.
  */
-export type FlashcardDeckName = Exclude<DeckName, 'sentences'>;
-export const FLASHCARD_DECK_NAMES: readonly FlashcardDeckName[] = ['due', 'unknown', 'level'];
 export const DEFAULT_QUEUE_LIMIT = 20;
 export const MAX_QUEUE_LIMIT = 50;
 /** סדר הרמות. ⛔ המקור הוא words.cefr_profile_band בלבד (D-034). */
@@ -121,18 +109,6 @@ export function parseDeckName(value: string | null): DeckName | null {
   // never a silent fallback to a deck the learner did not ask for.
   if (value === null) return 'due';
   return DECK_NAMES.includes(value as DeckName) ? (value as DeckName) : null;
-}
-
-/**
- * שער ה**מסך**. ⛔ `'sentences'` מחזיר `null` כאן ⛔ ולא כי הוא שם פסול — הוא שם חוקי
- * לגמרי במסלול — אלא כי `<StudyDeckScreen>` ⛔ אינו יודע לצייר פריט השלמה (F-143: ⛔ אין
- * רנדר למסך הזה). ⇒ הכתובת נופלת ל«מנת היום», ⛔ ולא למסך שבור.
- */
-export function parseFlashcardDeckName(value: string | null): FlashcardDeckName | null {
-  if (value === null) return 'due';
-  return FLASHCARD_DECK_NAMES.includes(value as FlashcardDeckName)
-    ? (value as FlashcardDeckName)
-    : null;
 }
 
 export function clampQueueLimit(value: string | null): number {
@@ -268,9 +244,11 @@ export type PracticePayload = {
    * ⛔ NOT decoration. The route's 404 for a missing `word_progress` row is correct for
    * every deck except this one: `level` is BY DEFINITION the words that have no row yet.
    * The discriminator is what lets the route narrow that 404 instead of deleting it.
-   * ⛔ `'sentences'` is absent — `FlashcardDeckName` excludes it (`deck.ts:47`).
+   * T-199ⓐ · D-142 — `'sentences'` is a legal value here since `/study?deck=sentences`
+   * opened: its grade travels the practice wire (D-156 ⓑ · § 4.2ו), and a band word with
+   * no row yet is the SAME «never met» class `level` opened the insert path for.
    */
-  readonly deck: FlashcardDeckName;
+  readonly deck: DeckName;
 };
 export type PracticeCheck =
   | { readonly ok: true; readonly payload: PracticePayload }
@@ -300,9 +278,9 @@ export function checkPracticePayload(body: unknown): PracticeCheck {
   if (typeof grade !== 'string' || !BINARY_GRADES.includes(grade as CardGrade)) return REJECT;
   // ⛔ `undefined` בלבד נופל ל-`'due'`. `null`, `''` ומחרוזת לא מוכרת נדחים — ברירת
   // מחדל שבולעת קלט פסול היא בדיוק המחלקה של F-004.
-  if (deck !== undefined && (typeof deck !== 'string' || !FLASHCARD_DECK_NAMES.includes(deck as FlashcardDeckName))) {
+  if (deck !== undefined && (typeof deck !== 'string' || !DECK_NAMES.includes(deck as DeckName))) {
     return REJECT;
   }
-  const deckName: FlashcardDeckName = deck === undefined ? 'due' : (deck as FlashcardDeckName);
+  const deckName: DeckName = deck === undefined ? 'due' : (deck as DeckName);
   return { ok: true, payload: { wordId, grade: grade as CardGrade, deck: deckName } };
 }

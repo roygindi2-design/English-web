@@ -329,7 +329,9 @@ describe('חפיסת «משפטים» — deck=sentences (T-165 · D-097)', () =
   it('החוזה מתאר את החפיסה ואת צורת התשובה השונה שלה', () => {
     expect(CONTRACT).toContain('deck=sentences');
     expect(CONTRACT).toContain('near_synonym');
-    expect(CONTRACT).toContain('parseFlashcardDeckName');
+    // T-199ⓐ · D-169 — the contract names the OPEN screen, ⛔ never the deleted narrow gate.
+    expect(CONTRACT).toContain('D-169');
+    expect(CONTRACT).not.toContain('parseFlashcardDeckName');
   });
 
   /**

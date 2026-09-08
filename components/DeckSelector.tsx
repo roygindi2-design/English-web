@@ -45,10 +45,8 @@ import {
  *    whether the product changed or they did, and «לא ידעתי · 0» is itself information —
  *    it says the drill deck is clear.
  *
- * 3. **The sentences deck is locked with `href: null` and ⛔ no navigation** (D-035). T-066
- *    is blocked on two measurable conditions that are still open (F-033); the 806 sentences
- *    behind it were gated by `contentSchema.ts` before F-020 was fixed, and a "locked" card
- *    that navigates is not locked.
+ * 3. **The sentences deck OPENS — `T-199ⓐ` · `D-169`.** It goes through `toEntry` like the
+ *    other three: an empty band is DISABLED WITH ITS NUMBER (§ 4.2ו), ⛔ never locked.
  *
  * 4. **A failed read leaves all three disabled reading «—», ⛔ and shows no error screen.**
  *    That is the state the task names, and it is also the state the harness measures: the
@@ -245,24 +243,16 @@ export default function DeckSelector({
       count: counts.due,
       note: DUE_NOTE_HE(noteFor(counts.due)),
     }),
-    // ⛔ **`href: null` and `locked: true` stay** — T-199ⓐ (the tile becoming navigable) is
-    // ⛔ NOT this commit. Two homes claim this feature and neither has been chosen: `36 § 5`
-    // fixes TWO decks and the render draws two, while `36 § 6` and the delivered ring
-    // (`lib/core/worldRing.ts:78,138`) carry `sentences` as a `locked_infra` node. That is
-    // **F-142**, a PM navigation decision. And the SCREEN itself has no render at all
-    // (**F-143**). ⇒ ⛔ Do NOT flip this to an href before both close.
-    //
-    // ⚠️ What DID change (T-199ⓑ · D-096): the second line is the COUNT, ⛔ no longer
-    // `«נעול»`. A disabled tile with no number is ⛔ not a legal state on this screen, and
-    // this was the only tile in `36 § 5` whose second line was not a number.
-    {
+    // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
+    // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
+    // «disabled WITH the number» (§ 4.2ו), ⛔ not locked. The ring node stays `nav`'s (D-149 § ד׳).
+    toEntry({
       key: 'sentences',
       label: SENTENCES_LABEL_HE,
-      href: null,
+      href: '/study?deck=sentences',
+      count: counts.sentences,
       note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
-      enabled: false,
-      locked: true,
-    },
+    }),
   ];
 
   /**

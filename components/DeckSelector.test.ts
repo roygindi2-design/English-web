@@ -19,8 +19,8 @@ import { describe, expect, it } from 'vitest';
  *   ✔ **there are always THREE cards.** An empty deck is disabled WITH its number and
  *     ⛔ never hidden: a learner who sees two cards today and three tomorrow cannot tell
  *     whether the product changed or they did
- *   ✔ the locked sentences deck carries `aria-disabled` and ⛔ no `href` (D-035 — T-066 is
- *     blocked on two measurable conditions, and a link that 404s is not "locked")
+ *   ✔ the sentences deck OPENS through `toEntry` (T-199ⓐ · D-169) — disabled WITH its number
+ *     when the band is empty, ⛔ never locked, ⛔ never hand-built with `enabled: true`
  *   ✔ a failed fetch leaves all three disabled reading «—», ⛔ not an error screen and
  *     ⛔ not an empty one
  *   ✔ ⛔ no `<ActionBar>` — D-028 forbids two bottom-anchored bars, and this screen carries
@@ -143,17 +143,18 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * D-035, measured as CONTAINMENT and ⛔ not as proximity: the sentences entry must carry
-   * `href: null`, because "locked" that navigates is not locked. T-066 is blocked on two
-   * conditions that are still open (F-033), and 806 sentences behind a broken gate are
-   * exactly what the block exists to keep off a learner's screen.
+   * T-199ⓐ · D-169 — the INVERSE of the D-035 lock this test used to measure, and inverted
+   * by name: the entry carries the URL, ⛔ no `href: null`, ⛔ no `locked: true`, and it is
+   * built by `toEntry` so an empty band is disabled WITH its number (§ 4.2ו) rather than
+   * hand-enabled.
    */
-  it('locks the sentences deck with href: null — ⛔ no navigation (F-142 · F-143)', () => {
+  it('T-199ⓐ — the sentences tile opens to /study?deck=sentences through toEntry (D-169)', () => {
     const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
-    expect(region).toContain('href: null');
-    expect(region).toContain('locked: true');
-    expect(region).not.toContain('/study');
-    expect(region).not.toContain('/sentences');
+    expect(region).toContain("href: '/study?deck=sentences'");
+    expect(region).not.toContain('href: null');
+    expect(region).not.toContain('locked: true');
+    expect(region).not.toContain('enabled: true');
+    expect(CODE).toMatch(/toEntry\(\{\s*\n\s*key: 'sentences'/);
   });
 
   /**

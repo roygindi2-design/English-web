@@ -55,9 +55,12 @@ export async function POST(request: Request) {
   if (row === null) {
     // T-225ⓐⓑ · D-142 — the 404 NARROWS, it is ⛔ not deleted. The reason written here
     // before («a word that was never answered cannot be in a practice deck») is true of
-    // every deck and false of exactly one: `deck=level` IS the collection of words that
-    // were never answered. ⛔ Any other deck still gets the 404.
-    if (payload.deck !== 'level') {
+    // every deck and false of exactly two: `deck=level` IS the collection of words that
+    // were never answered, and `deck=sentences` (T-199ⓐ · D-156 ⓑ) is the SAME band query
+    // (`words.cefr_profile_band = profiles.current_level`, queue/route.ts) — the same
+    // «never met» class, word for word (plan `2026-09-08-sentences-deck-and-gate.md`
+    // § 0.22 line 4). ⛔ `due` and `unknown` still get the 404.
+    if (payload.deck !== 'level' && payload.deck !== 'sentences') {
       return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 404 });
     }
 
