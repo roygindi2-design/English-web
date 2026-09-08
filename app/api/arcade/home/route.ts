@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { characterFromParts, type ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +9,10 @@ export const dynamic = 'force-dynamic';
  * `GET /api/arcade/home` — T-181 · `37 § 12`. **המצב המתמיד של מסך הבית, ⛔ ותו לא.**
  *
  * ⛔ `37 § 13.1`: הזירה ⛔ אינה כותבת למנוע החזרות — הקובץ הזה ⛔ אינו כותב **כלל**.
- * ⛔ `D-052`: טבלת הפרופיל והצד הלימודי ⛔ אינם נקראים. שלוש עמודות, מטבלה אחת.
+ * ⛔ `D-052`: טבלת הפרופיל והצד הלימודי ⛔ אינם נקראים. ארבע עמודות, מטבלה אחת.
+ * ⚠️ **T-217 · D-152 — העמודה הרביעית היא `avatar_parts`**, והגוף נושא ממנה
+ * `character` אחד דרך `characterFromParts` (‏`lib/core/arenaCharacter.ts`) — `null` ללומד
+ * שטרם בחר, ⇒ המעטפת פותחת את `בחירת דמות` לפני הקרב הראשון. ⛔ הנתיב נשאר קריאה בלבד.
  *
  * ⚠️ ⛔ **ושמות הטבלאות האסורות ⛔ אינם נכתבים כאן אפילו בהערה** — `route.test.ts` סורק
  * את הקובץ **גולמי**, ומילה בהערה הייתה מפילה שומר שאין לו ולו הפרה אחת (F-039).
@@ -19,7 +23,7 @@ export const dynamic = 'force-dynamic';
  *
  * ⛔ שלושת גופי הכשל הם אלה של `GET /api/arcade/collected` **מילה במילה** — ⛔ ואין רביעי.
  */
-const HOME_SELECT = 'arcade_level, wins, unlocked_items';
+const HOME_SELECT = 'arcade_level, wins, unlocked_items, avatar_parts';
 
 /**
  * ברירות המחדל של `0014_arcade.sql:24-27`, ⛔ מועתקות ⛔ ולא נבחרות: `arcade_level`
@@ -29,6 +33,7 @@ const NEW_LEARNER = Object.freeze({
   arcadeLevel: 1,
   wins: 0,
   unlockedItems: Object.freeze([]) as readonly string[],
+  character: null as ArenaCharacter | null,
 });
 
 function isSchemaMissing(code: string | undefined): boolean {
@@ -71,5 +76,6 @@ export async function GET() {
     arcadeLevel: data?.arcade_level ?? NEW_LEARNER.arcadeLevel,
     wins: data?.wins ?? NEW_LEARNER.wins,
     unlockedItems: data?.unlocked_items ?? NEW_LEARNER.unlockedItems,
+    character: characterFromParts(data?.avatar_parts) ?? NEW_LEARNER.character,
   });
 }

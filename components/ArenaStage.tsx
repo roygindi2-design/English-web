@@ -1,4 +1,5 @@
 import ArenaAvatar from '@/components/ArenaAvatar';
+import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
 import type { StagePhase } from '@/lib/core/battle';
 
@@ -28,6 +29,8 @@ export interface ArenaStageProps {
   readonly items: readonly string[];
   /** ⛔ ברירת המחדל היא `ARENA_IDLE_LOOP`. הבמה נשארת **ציור טהור**. */
   readonly idle?: boolean;
+  /** T-217 — הדמות שנבחרה (`37 § 7`), מועברת לגיבור בלבד. */
+  readonly character?: ArenaCharacter | null;
 }
 
 const STAGE_CLASS = 'flex flex-row items-end justify-between gap-4';
@@ -37,13 +40,14 @@ export default function ArenaStage({
   phase,
   items,
   idle = ARENA_IDLE_LOOP,
+  character = null,
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
       {/* העוטף נושא את הלולאה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש
           `transition: transform` ש-`hit`/`dodge` מפעילים. */}
       <span data-arena-idle={idle ? 'on' : 'off'} className="inline-flex">
-        <ArenaAvatar role="hero" items={items} className={FIGURE_CLASS} />
+        <ArenaAvatar role="hero" items={items} character={character} className={FIGURE_CLASS} />
       </span>
       <ArenaAvatar role="enemy" items={[]} className={FIGURE_CLASS} />
     </div>

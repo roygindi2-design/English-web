@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const SRC = readFileSync(new URL('./route.ts', import.meta.url), 'utf8');
+const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
 
 describe('GET /api/arcade/home — `37 § 13.1`: קריאה, ⛔ ואפס כתיבה', () => {
   it('⛔ אין בקובץ ולו פעולת כתיבה אחת', () => {
@@ -15,7 +16,7 @@ describe('GET /api/arcade/home — `37 § 13.1`: קריאה, ⛔ ואפס כתי
     expect(SRC).not.toContain('profiles');
   });
 
-  it("קורא `arcade_progress` ובדיוק שלוש עמודות — ⛔ ולא `select('*')`", () => {
+  it("קורא `arcade_progress` ובדיוק ארבע עמודות — ⛔ ולא `select('*')`", () => {
     expect(SRC).toContain('arcade_progress');
     expect(SRC).toContain('arcade_level, wins, unlocked_items');
     expect(SRC).not.toContain("select('*')");
@@ -37,5 +38,14 @@ describe('GET /api/arcade/home — `37 § 13.1`: קריאה, ⛔ ואפס כתי
 
   it('⛔ הנתיב דינמי — אחרת Next היה משרת שורה של לומד אחר מהמטמון', () => {
     expect(SRC).toContain("export const dynamic = 'force-dynamic'");
+  });
+
+  it('T-217 — the read plan selects avatar_parts and the body carries `character` (D-152)', () => {
+    expect(SRC).toMatch(/HOME_SELECT = 'arcade_level, wins, unlocked_items, avatar_parts'/);
+    expect(SRC).toContain('character: characterFromParts(');
+  });
+
+  it('⛔ still read-only — no insert/update/upsert/delete', () => {
+    expect(CODE).not.toMatch(/\.(insert|update|upsert|delete)\(/);
   });
 });

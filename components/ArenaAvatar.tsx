@@ -1,4 +1,5 @@
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
+import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharacter';
 import {
   BELT_SIZE,
   BODY_SIZE,
@@ -44,6 +45,11 @@ export interface ArenaAvatarProps {
   // פריטים שנפתחו. ⛔ שם שאינו ב-`ARCADE_ITEMS` מדולג בשקט.
   readonly items: readonly string[];
   readonly role: 'hero' | 'enemy';
+  /**
+   * T-217 · `37 § 7` · `38 § 6` — «שריונאי … נבנית על אותו שלד». `undefined`/`null`
+   * ⇒ הציור של היום, ⛔ ללא שינוי. עם דמות ⇒ שכבת חתימה אחת על העוגנים הקיימים.
+   */
+  readonly character?: ArenaCharacter | null;
   readonly className?: string;
 }
 
@@ -212,18 +218,86 @@ const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
   },
 };
 
+/**
+ * T-217 — **שלוש צלליות על שלד אחד.** לכל דמות של `37 § 7` שכבת חתימה אחת, על שכבות
+ * `LAYER_ORDER` (`38 § 4`) ועל עוגני `characterBase.ts` בלבד — ⛔ אפס קואורדינטה מוחלטת.
+ * ⛔ **`38 § 5` — ⛔ אף צורה כאן ⛔ אינה `wizard_sprite` · `knight_sprite` · `hero_sprite`.**
+ * הקוסם: מטה ביד הראשית וקצה גלימה על הרגליים · הלוחם: מגן עגול ביד המשנית ולוח חזה ·
+ * השריונאי: מצחייה, שתי כתפיות (`mirror`) וקנה ביד הראשית. הצורה ⛔ אינה הערוץ היחיד —
+ * השם הנגיש נוקב בדמות (`CHARACTER_LABELS_HE`).
+ */
+const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
+  wizard: [
+    {
+      layer: 'legs',
+      shape: (
+        <path
+          d={`M${BODY.x - BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2}L${BOOT_L.x - 22} ${BOOT_L.y - 6}H${BOOT_R.x + 22}L${BODY.x + BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2}z`}
+        />
+      ),
+    },
+    {
+      layer: 'mainHand',
+      shape: (
+        <>
+          <path d={`M${MAIN_HAND.x} ${MAIN_HAND.y - 78}V${MAIN_HAND.y + 66}`} />
+          <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y - 78} r={9} />
+        </>
+      ),
+    },
+  ],
+  warrior: [
+    { layer: 'offHand', shape: <circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={26} /> },
+    {
+      layer: 'chest',
+      shape: (
+        <rect
+          x={BODY.x - (BODY_SIZE.width - 12) / 2}
+          y={BODY.y - 20}
+          width={BODY_SIZE.width - 12}
+          height={40}
+          rx={8}
+        />
+      ),
+    },
+  ],
+  armorer: [
+    {
+      layer: 'headgear',
+      shape: <rect x={HEAD.x - 22} y={HEAD.y - 11} width={44} height={10} rx={3} />,
+    },
+    {
+      layer: 'shoulders',
+      shape: (
+        <>
+          <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={14} />
+          <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={14} />
+        </>
+      ),
+    },
+    {
+      layer: 'mainHand',
+      shape: <rect x={MAIN_HAND.x - 24} y={MAIN_HAND.y - 5} width={48} height={10} rx={4} />,
+    },
+  ],
+};
+
 export default function ArenaAvatar({
   items,
   role,
+  character,
   className,
 }: ArenaAvatarProps): React.JSX.Element {
   // הסינון עובר על הרשימה הקנונית ⛔ ולא על הקלט: כך הסדר קבוע, ושם שאינו ברשימה נופל
   // בשקט במקום לצייר שכבה ריקה.
   const worn = ARCADE_ITEMS.filter((name) => items.includes(name));
-  const label =
-    worn.length === 0
+  const signature = character === undefined || character === null ? [] : CHARACTER_LAYERS[character];
+  const who =
+    character === undefined || character === null
       ? ROLE_LABEL_HE[role]
-      : `${ROLE_LABEL_HE[role]}, ${worn.map((name) => ITEM_LABELS_HE[name]).join(', ')}`;
+      : `${ROLE_LABEL_HE[role]} · ${CHARACTER_LABELS_HE[character]}`;
+  const label =
+    worn.length === 0 ? who : `${who}, ${worn.map((name) => ITEM_LABELS_HE[name]).join(', ')}`;
 
   return (
     <svg
@@ -243,10 +317,25 @@ export default function ArenaAvatar({
       {LAYER_ORDER.map((layer) => {
         const base = BASE_LAYERS[layer];
         const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer);
-        if (base === undefined && equipped.length === 0) return null;
+        const marks = signature.filter((mark) => mark.layer === layer);
+        if (base === undefined && equipped.length === 0 && marks.length === 0) return null;
         return (
           <g key={layer} data-arena-layer={layer}>
             {base !== undefined && <g fill="currentColor">{base}</g>}
+            {/* `38 § 4` — הבסיס מתחת לציוד: חתימת הדמות יושבת בין השניים. */}
+            {marks.length > 0 && (
+              <g
+                data-arena-character={character}
+                className={OUTLINE_CLASS}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={5}
+              >
+                {marks.map((mark, i) => (
+                  <g key={i}>{mark.shape}</g>
+                ))}
+              </g>
+            )}
             {equipped.length > 0 && (
               <g
                 data-arena-equipment

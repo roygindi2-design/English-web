@@ -10,6 +10,7 @@ import SpellCard from '@/components/SpellCard';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
+import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { mixArenaWords, type ArenaWord, type ArenaWordKind } from '@/lib/core/arenaWords';
 import { resolveGesture } from '@/lib/core/arenaGesture';
 import { summarize } from '@/lib/core/arenaSummary';
@@ -111,6 +112,8 @@ export interface ArenaRound {
  */
 export interface ArenaBattleProps {
   readonly initialRound?: ArenaRound;
+  /** T-217 · `37 § 7` — הדמות שנבחרה, מהמעטפת. ⛔ הקרב ⛔ אינו שואל עליה את השרת. */
+  readonly character?: ArenaCharacter | null;
 }
 
 /** ⚠️ **`no_level` הוסר — T-239 · D-052.** «רמת המשחק מתחילה ב-1 לכל לומד»: הנתיב
@@ -205,7 +208,7 @@ function wordsOf(questions: readonly ArcadeQuestion[]): readonly ArenaWord[] {
   });
 }
 
-export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): React.JSX.Element {
+export default function ArenaBattle({ initialRound, character = null }: ArenaBattleProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
     initialRound === undefined ? { kind: 'loading' } : { kind: 'ready', level: initialRound.level },
   );
@@ -830,7 +833,7 @@ export default function ArenaBattle({ initialRound }: ArenaBattleProps = {}): Re
         }}
         onPointerCancel={() => { stageFrom.current = null; }}
       >
-        <ArenaStage phase={stagePhase(battle)} items={[]} />
+        <ArenaStage phase={stagePhase(battle)} items={[]} character={character} />
         {battle.dodgedSwing !== null && (
           <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
             {DODGED_HE}

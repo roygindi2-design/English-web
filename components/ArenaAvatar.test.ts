@@ -109,4 +109,21 @@ describe('<ArenaAvatar>', () => {
     expect(CODE).toMatch(/text-brand/);
     expect(CODE).toMatch(/text-ink-muted/);
   });
+
+  it('T-217 — three silhouettes on one skeleton: one signature layer per character, ⛔ no sprite copy', () => {
+    expect(SRC).toContain('data-arena-character');
+    for (const c of ['wizard', 'warrior', 'armorer']) expect(SRC).toContain(`${c}:`);
+    expect(CODE).not.toMatch(/wizard_sprite|knight_sprite|hero_sprite/);
+  });
+
+  it('the signature shapes are anchored — every coordinate comes from characterBase', () => {
+    const block = SRC.slice(SRC.indexOf('CHARACTER_LAYERS'), SRC.indexOf('export default function'));
+    expect(block).toMatch(/anchorFor\('mainHand'\)|MAIN_HAND/);
+    expect(block).toMatch(/anchorFor\('offHand'\)|OFF_HAND/);
+    expect(block).not.toMatch(/\bd="M-?\d{2,}/);
+  });
+
+  it('the accessible name says which character it is (⛔ not shape alone)', () => {
+    expect(SRC).toContain('CHARACTER_LABELS_HE[character]');
+  });
 });
