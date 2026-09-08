@@ -29,8 +29,14 @@ import '../../../arcade/arcade-tokens.css';
 export default function DevArenaHomePage() {
   return (
     <ArenaHome
-      initialState={{ arcadeLevel: 7, wins: 3, unlockedItems: ['helmet', 'lantern', 'banner'] }}
+      initialState={{
+        arcadeLevel: 7,
+        wins: 3,
+        unlockedItems: ['helmet', 'lantern', 'banner'],
+        character: 'warrior',
+      }}
       onStart={() => {}}
+      onDesign={() => {}}
     />
   );
 }

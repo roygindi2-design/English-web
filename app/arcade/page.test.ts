@@ -273,7 +273,9 @@ describe('T-181 · `37 § 12` — `/arcade` נפתח על מסך הבית, ⛔ �
 
   it('⛔ המעטפת מחזיקה מצב, ⛔ ואינה מוסיפה ראוט (`RULES § 0.22`)', () => {
     const shell = readFileSync('components/ArenaShell.tsx', 'utf8');
-    expect(shell).toContain("'home' | 'battle'");
+    // T-217 — המצב השלישי, `character`, הוא גבול מודול ⛔ ולא ראוט (`37 § 7`).
+    expect(shell).toContain("'home' | 'character' | 'battle'");
+    expect(shell).toContain('<ArenaCharacterChoice');
     expect(shell).toContain('<ArenaHome');
     expect(shell).toContain('<ArenaBattle');
     // ⛔ ⛔ אינה מבקשת נתונים ו⛔ אינה מציירת — כל מסך טוען את שלו.

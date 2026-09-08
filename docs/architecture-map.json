@@ -11,6 +11,8 @@
   "app/(tabs)/world/collected/page.tsx": [],
   "app/(tabs)/world/page.tsx": [],
   "app/(tabs)/world/story/page.tsx": [],
+  "app/api/arcade/character/route.test.ts": [],
+  "app/api/arcade/character/route.ts": [],
   "app/api/arcade/collected/route.test.ts": [],
   "app/api/arcade/collected/route.ts": [],
   "app/api/arcade/home/route.test.ts": [],
@@ -58,6 +60,9 @@
   "app/arcade/arcade-tokens.css": [],
   "app/arcade/page.test.ts": [],
   "app/arcade/page.tsx": [
+    "app/arcade/arcade-tokens.css"
+  ],
+  "app/dev/arcade/character/page.tsx": [
     "app/arcade/arcade-tokens.css"
   ],
   "app/dev/arcade/home/page.tsx": [
@@ -146,10 +151,13 @@
   "components/ArenaBattle.dom.test.tsx": [],
   "components/ArenaBattle.test.ts": [],
   "components/ArenaBattle.tsx": [],
+  "components/ArenaCharacterChoice.test.ts": [],
+  "components/ArenaCharacterChoice.tsx": [],
   "components/ArenaHome.test.ts": [],
   "components/ArenaHome.tsx": [],
   "components/ArenaResult.test.ts": [],
   "components/ArenaResult.tsx": [],
+  "components/ArenaShell.test.ts": [],
   "components/ArenaShell.tsx": [],
   "components/ArenaStage.test.ts": [],
   "components/ArenaStage.tsx": [],
@@ -281,6 +289,10 @@
     "lib/core/cefrLevels.ts",
     "lib/core/shuffle.ts"
   ],
+  "lib/core/arenaCharacter.test.ts": [
+    "lib/core/arenaCharacter.ts"
+  ],
+  "lib/core/arenaCharacter.ts": [],
   "lib/core/arenaGesture.test.ts": [
     "lib/core/arenaGesture.ts"
   ],

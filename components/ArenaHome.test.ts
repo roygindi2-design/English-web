@@ -100,10 +100,14 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
     expect(SRC).toContain('motion-reduce:animate-none');
   });
 
-  it('⛔ פעולה מושבתת ⛔ בלי סיבה כתובה היא מבוי סתום — `עיצוב דמות` נושאת אחת', () => {
-    expect(SRC).toContain('disabled');
-    expect(SRC).toContain('aria-describedby');
-    expect(SRC).toContain('בחירת דמות תיפתח בקרוב');
+  it('T-217 — `עיצוב דמות` is live: ⛔ no `disabled`, ⛔ no «תיפתח בקרוב», and it calls onDesign', () => {
+    expect(SRC).not.toContain('בחירת דמות תיפתח בקרוב');
+    expect(SRC).not.toContain('arena-design-soon');
+    expect(SRC).toContain('onDesign(');
+  });
+
+  it('the pedestal avatar draws the stored character', () => {
+    expect(SRC).toMatch(/<ArenaAvatar role="hero" items=\{state\.unlockedItems\} character=\{state\.character\}/);
   });
 
   it('⛔ אפס hex ברכיב — הצבע מגיע מטוקני הזירה (חוקה § 2)', () => {

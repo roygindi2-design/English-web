@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ArenaAvatar, { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
+import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { bossTrack, homeSlots, winsToBoss, type BossNode, type HomeSlot } from '@/lib/core/arenaHome';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
@@ -51,12 +52,17 @@ export interface ArenaHomeState {
   readonly arcadeLevel: number;
   readonly wins: number;
   readonly unlockedItems: readonly string[];
+  /** T-217 · `37 § 7` — `null` ⇒ הלומד טרם בחר, והמעטפת פותחת את הבחירה לפני הקרב. */
+  readonly character: ArenaCharacter | null;
 }
 
 export interface ArenaHomeProps {
   /** נמסר על ידי המעטפת ⇒ הפיקסצ׳ר מרנדר את המסך ⛔ בלי רשת. */
   readonly initialState?: ArenaHomeState;
-  readonly onStart: () => void;
+  /** נושא את המצב, כדי שהמעטפת תדע אם יש דמות (T-217). */
+  readonly onStart: (state: ArenaHomeState) => void;
+  /** `עיצוב דמות` (`37 § 12`) — פותח את אותו מסך בחירה, עם יציאה (T-217). */
+  readonly onDesign: (state: ArenaHomeState) => void;
 }
 
 interface HomeBody {
@@ -65,6 +71,7 @@ interface HomeBody {
   readonly arcadeLevel: number;
   readonly wins: number;
   readonly unlockedItems: readonly string[];
+  readonly character: ArenaCharacter | null;
 }
 
 const TITLE_HE = 'זירת קרב';
@@ -82,7 +89,6 @@ const GEAR_HEADING_HE = 'ציוד';
 const START_HE = 'התחל קרב';
 const DRAWER_HE = 'ארון ציוד';
 const DESIGN_HE = 'עיצוב דמות';
-const DESIGN_SOON_HE = 'בחירת דמות תיפתח בקרוב';
 const DRAWER_NOTE_HE = 'פריטים מקרבות בלבד';
 const EMPTY_SLOT_HE = 'ריקה';
 const LOADING_HE = 'טוען את הזירה';
@@ -179,7 +185,7 @@ function slotLabel(slot: HomeSlot): string {
   return slot.item === null ? slot.label : labels[slot.item] ?? slot.label;
 }
 
-export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): React.JSX.Element {
+export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHomeProps): React.JSX.Element {
   const [state, setState] = useState<ArenaHomeState | null>(initialState ?? null);
   const [screen, setScreen] = useState<'loading' | 'ready' | 'session_expired' | 'error'>(
     initialState === undefined ? 'loading' : 'ready',
@@ -194,7 +200,12 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
         setScreen(body.code === 'session_expired' ? 'session_expired' : 'error');
         return;
       }
-      setState({ arcadeLevel: body.arcadeLevel, wins: body.wins, unlockedItems: body.unlockedItems });
+      setState({
+        arcadeLevel: body.arcadeLevel,
+        wins: body.wins,
+        unlockedItems: body.unlockedItems,
+        character: body.character ?? null,
+      });
       setScreen('ready');
     } catch {
       setScreen('error');
@@ -275,7 +286,7 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
           data-arena-idle="on"
           className="animate-[arena-idle-bob_4.19s_ease-in-out_infinite] motion-reduce:animate-none"
         >
-          <ArenaAvatar role="hero" items={state.unlockedItems} />
+          <ArenaAvatar role="hero" items={state.unlockedItems} character={state.character} />
         </div>
         <svg aria-hidden viewBox="0 0 128 40" className="-mt-3 h-10 w-[128px]" fill="currentColor">
           <ellipse cx="64" cy="23" rx="64" ry="17" className="text-[color:var(--arena-card)]" fill="currentColor" />
@@ -354,7 +365,7 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
 
       {/* `:179-191` — שלוש הפעולות. */}
       <div className="mt-auto flex flex-col gap-3 pt-4">
-        <button type="button" className={START_CLASS} onClick={onStart}>
+        <button type="button" className={START_CLASS} onClick={() => onStart(state)}>
           {START_HE}
         </button>
         <div className="flex flex-row-reverse gap-[10px]">
@@ -366,20 +377,12 @@ export default function ArenaHome({ initialState, onStart }: ArenaHomeProps): Re
           >
             {DRAWER_HE}
           </button>
-          {/* ⛔ פעולה מושבתת ⛔ בלי סיבה כתובה היא מבוי סתום: `37 § 7` הוא **T-217**,
-              והוא חסום. השורה למטה היא הסיבה, והיא **נראית** ⛔ ולא רק נגישה. */}
-          <button
-            type="button"
-            disabled
-            aria-describedby="arena-design-soon"
-            className={`${SECONDARY_CLASS} opacity-70`}
-          >
+          {/* T-217 · `37 § 7` — «ניתן לשינוי בכל רגע ממסך הבית»: פותח את מסך הבחירה
+              עם יציאה. ⛔ המעטפת מחליטה, ⛔ לא המסך. */}
+          <button type="button" className={SECONDARY_CLASS} onClick={() => onDesign(state)}>
             {DESIGN_HE}
           </button>
         </div>
-        <p id="arena-design-soon" className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
-          {DESIGN_SOON_HE}
-        </p>
       </div>
 
       {/* `:194-201` — ארון הציוד. ⛔ **⛔ אינו הרשימה של `DRAWER_ITEMS`** (D-132): הוא
