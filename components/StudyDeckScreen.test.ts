@@ -71,7 +71,7 @@ function braceRegion(source: string, open: string): string {
  * for the same reason it always was: `deck !== 'due'` would let a fourth deck inherit the
  * practice wire silently, and this test would ⛔ not notice.
  */
-const UNKNOWN_GATE = "if (deck === 'unknown' || deck === 'level') {";
+const UNKNOWN_GATE = "if (deck === 'unknown' || deck === 'level' || deck === 'sentences') {";
 
 describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.2ו)', () => {
   it('is a client component', () => {
@@ -354,5 +354,32 @@ describe('the study screen carries a WRITTEN way out (T-087 · § 4.2ח ⓒ → 
 
   it('⛔ ⛔ SVG מוטבע נוסף בכל הקובץ (חוקה § 6)', () => {
     expect(T087_SRC.match(/<svg\b/g) ?? [], 'SVG מוטבע חדש ⛔ ⛔ בקובץ הזה').toHaveLength(0);
+  });
+});
+
+/**
+ * T-066 · D-156 · D-169 — the fourth deck on the same screen. Three facts a reader would
+ * otherwise take on trust: the screen READS `items` (the sentences wire) beside `cards`, the
+ * heading is a record over every `DeckName` (so «משפטים» exists by construction), and a
+ * sentence item grades through the practice wire — never `/api/review`.
+ */
+describe('T-066 — «משפטים» on the same screen (D-169)', () => {
+  it('reads `items` beside `cards` inside load()', () => {
+    const load = braceRegion(CODE, 'const load = useCallback(async () => {');
+    expect(load).toContain('body.items');
+    expect(load).toContain('body.cards');
+  });
+
+  it('the heading is a Record<DeckName, string> that carries «משפטים»', () => {
+    expect(CODE).toMatch(/const HEADINGS: Record<DeckName, string> = \{/);
+    expect(CODE).toContain("const SENTENCES_HEADING_HE = 'משפטים'");
+    expect(CODE).toContain('{HEADINGS[deck]}');
+  });
+
+  it('a sentence item can never reach /api/review — the guard sits before the call', () => {
+    const guard = CODE.indexOf('if (isSentenceCard(card)) throw');
+    const review = CODE.indexOf("apiPost<GradeResponse>('/api/review'");
+    expect(guard).toBeGreaterThan(-1);
+    expect(review).toBeGreaterThan(guard);
   });
 });

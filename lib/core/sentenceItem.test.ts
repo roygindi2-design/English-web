@@ -7,6 +7,8 @@ import {
 const alter: SentenceCandidate = {
   wordId: '11111111-1111-4111-8111-111111111111',
   headword: 'alter',
+  translationHe: 'לשנות',
+  exampleNeutral: 'They may alter the plan.',
   cefrProfileBand: 'A1',
   stems: [{ itemIndex: 0, stem: 'The workers had to ____ the design after the first test.' }],
   distractors: [
@@ -25,7 +27,7 @@ describe('sentenceItem', () => {
     expect(item?.answer).toBe('alter');
   });
 
-  it('ארבע אפשרויות, כולן אנגלית, והתשובה ביניהן', () => {
+  it('שלוש אפשרויות (D-156), כולן אנגלית, והתשובה ביניהן', () => {
     const [item] = buildSentenceItems([alter], 7, 10);
     const options = item?.options ?? [];
     expect(options).toHaveLength(SENTENCE_OPTION_COUNT);
@@ -45,8 +47,9 @@ describe('sentenceItem', () => {
     expect(usableDistractors(shady)).not.toContain('change');
   });
 
-  it('פחות משלושה מסיחים כשירים ⇒ המועמד יורד, ⛔ ולא פריט עם שתי אפשרויות', () => {
-    const thin: SentenceCandidate = { ...alter, distractors: alter.distractors.slice(0, 2) };
+  it('פחות משני מסיחים כשירים ⇒ המועמד יורד, ⛔ ולא פריט עם שתי אפשרויות', () => {
+    // D-156: שלוש אפשרויות ⇒ שני מסיחים מספיקים, ומסיח אחד ⛔ אינו מספיק.
+    const thin: SentenceCandidate = { ...alter, distractors: alter.distractors.slice(0, 1) };
     expect(isUsableCandidate(thin)).toBe(false);
     expect(buildSentenceItems([thin], 7, 10)).toHaveLength(0);
   });
@@ -61,6 +64,15 @@ describe('sentenceItem', () => {
   it('גזע בלי החסר ⛔ אינו הופך לפריט', () => {
     const blankless: SentenceCandidate = { ...alter, stems: [{ itemIndex: 0, stem: 'The workers had to decide.' }] };
     expect(buildSentenceItems([blankless], 7, 10)).toHaveLength(0);
+  });
+
+  it('T-066 · D-156 ⓒ — התרגום והדוגמה הניטרלית נוסעים עם הפריט, ⛔ ואינם אפשרות', () => {
+    const [item] = buildSentenceItems([alter], 7, 10);
+    expect(item?.translationHe).toBe('לשנות');
+    expect(item?.exampleNeutral).toBe('They may alter the plan.');
+    expect(item?.options).not.toContain('לשנות');
+    const bare: SentenceCandidate = { ...alter, exampleNeutral: null };
+    expect(buildSentenceItems([bare], 7, 10)[0]?.exampleNeutral).toBeNull();
   });
 
   it('אותו seed ⇒ אותו סדר, ⛔ תמיד', () => {

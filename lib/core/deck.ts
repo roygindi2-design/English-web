@@ -15,6 +15,7 @@
  */
 
 import { BINARY_GRADES, directionFor, type CardDirection, type CardGrade } from './flashcard';
+import type { SentenceItem } from './sentenceItem';
 
 /**
  * T-155 · D-089 — `'level'` is ADDITIVE and the two names above it ⛔ do not move.
@@ -90,6 +91,28 @@ export interface QueueCardInput {
   };
   /** ⛔ תוספת בלבד — ארבעת השדות שמעליה ⛔ לא זזו (התקדים הוא T-102). */
   readonly review: QueueCardReview;
+}
+
+/**
+ * T-066 · D-169 — what `<CardDeck>` scrolls: a word card OR a sentence item, on the SAME
+ * card component. ⛔ Not a second deck component (D-169 forbids one); the union is what lets
+ * one `<CardDeck>` key, remove and scroll both shapes with one list.
+ */
+export type DeckCard = QueueCardInput | SentenceItem;
+
+/** `'stem' in card` — the one field a word card never carries. */
+export function isSentenceCard(card: DeckCard): card is SentenceItem {
+  return 'stem' in card;
+}
+
+/**
+ * The key `<CardDeck>` removes and scrolls by. A word is one card ⇒ `word_id`; a word can
+ * carry up to three stems (`sentenceItem.ts` flattens BEFORE the shuffle, T-165) ⇒ two stems
+ * of one word are TWO cards, keyed `wordId#itemIndex`. ⛔ Keying a sentence item by `wordId`
+ * alone would remove both when the learner answers one.
+ */
+export function deckCardKey(card: DeckCard): string {
+  return isSentenceCard(card) ? `${card.wordId}#${card.itemIndex}` : card.word_id;
 }
 
 export function parseDeckName(value: string | null): DeckName | null {

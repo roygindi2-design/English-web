@@ -91,7 +91,23 @@ interface CardBase {
  */
 export type Card =
   | (CardBase & { readonly direction: 'recognition'; readonly input: 'self' })
-  | (CardBase & { readonly direction: 'production'; readonly input: 'typed' });
+  | (CardBase & { readonly direction: 'production'; readonly input: 'typed' })
+  /**
+   * T-066 · D-156 · D-169 — the «משפטים» item as a THIRD variant of this union, ⛔ not a
+   * new component (D-169: «אין צורך במסך חדש»). Recognition, because the learner picks the
+   * English word from options rather than producing it; `choice`, because the answer is
+   * graded by exact match against `answer` (`lib/core/sentenceCard.ts`), ⛔ never
+   * self-rated. Built by `buildSentenceCard`; `buildCard` never produces it.
+   */
+  | (CardBase & {
+      readonly direction: 'recognition';
+      readonly input: 'choice';
+      /** Exactly SENTENCE_OPTION_COUNT English options, already shuffled. */
+      readonly options: readonly string[];
+      readonly answer: string;
+      /** The stem split at `____` — the component draws `before`, the frame, `after`. */
+      readonly stem: { readonly before: string; readonly after: string };
+    });
 
 /** The parts of a stored sense a card actually renders. Tied to the stored shape on purpose. */
 export type CardSense = Pick<GeneratedSense, 'headword' | 'translationHe' | 'examples'> & {
@@ -153,8 +169,9 @@ function usableSentence(value: string | undefined): string | null {
 }
 
 /** One marked segment at most. An unlocatable word yields one unmarked segment, never a throw:
- *  a card that renders without the highlight is a degraded card; a crash is no card. */
-function splitAroundTarget(sentence: string | null, headword: string): ExampleSegment[] {
+ *  a card that renders without the highlight is a degraded card; a crash is no card.
+ *  Exported since T-066: `sentenceCard.ts` marks the answer in the neutral example with it. */
+export function splitAroundTarget(sentence: string | null, headword: string): ExampleSegment[] {
   if (sentence === null) return [];
   const span = locateTarget(sentence, headword);
   if (!span) return [{ text: sentence, isTarget: false }];

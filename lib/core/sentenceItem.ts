@@ -2,7 +2,8 @@
  * PURE. ⛔ אפס React, DOM, שעון, `window`, `fetch`, `process.env`.
  *
  * T-165ⓑ ⓔ — הפיכת שורה מהמאגר לפריט אחד של חפיסת «משפטים»: **גזע השלמה** (`sense_items`,
- * למשל «I have too much ____ this week.») וארבע אפשרויות **באנגלית**.
+ * למשל «I have too much ____ this week.») ושלוש אפשרויות **באנגלית** (D-156 — ⛔ לא ארבע:
+ * מנוע 7.5 · D-012 · Rodriguez 2005).
  *
  * ⚠️ **וכאן, ⛔ בשונה מהזירה, האפשרויות האנגליות הן הנכונות** (D-023): התשובה היא המילה
  * האנגלית עצמה, וזה בדיוק התרגיל ש-`sense_distractors` נבנו בשבילו. ⛔ **אין להכניס
@@ -16,7 +17,7 @@
 
 import { mulberry32, shuffle } from './shuffle';
 
-export const SENTENCE_OPTION_COUNT = 4;
+export const SENTENCE_OPTION_COUNT = 3;
 export const BLANK_TOKEN = '____';
 
 /**
@@ -40,6 +41,13 @@ export interface SentenceCandidate {
   readonly wordId: string;
   /** המילה האנגלית. היא **התשובה** (T-165ⓑ), ⛔ ולא ההנחיה. */
   readonly headword: string;
+  /**
+   * T-066 · D-156 ⓒ — the BACK of the card: `senses.translation_he` and the `neutral`
+   * example. ⛔ No new column — both ride the row the route already joins. A candidate
+   * with no translation is ⛔ not a candidate (the route drops it, `toSentenceCandidate`).
+   */
+  readonly translationHe: string;
+  readonly exampleNeutral: string | null;
   readonly stems: readonly { readonly itemIndex: number; readonly stem: string }[];
   readonly distractors: readonly { readonly text: string; readonly relationType: string }[];
   readonly cefrProfileBand: string | null;
@@ -52,6 +60,9 @@ export interface SentenceItem {
   readonly answer: string;
   /** בדיוק SENTENCE_OPTION_COUNT, מוגרלות, ⛔ כולן אנגלית. */
   readonly options: readonly string[];
+  /** T-066 · D-156 ⓒ — travel as-is from the candidate; the card's back is built from them. */
+  readonly translationHe: string;
+  readonly exampleNeutral: string | null;
 }
 
 function escapeForRegExp(value: string): string {
@@ -134,6 +145,8 @@ export function buildSentenceItems(
         stem,
         answer,
         options: shuffle([answer, ...wrong], rnd),
+        translationHe: candidate.translationHe,
+        exampleNeutral: candidate.exampleNeutral,
       };
     });
 }

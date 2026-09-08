@@ -7,7 +7,7 @@
 > ⇒ **מסך בלי שורה כאן = מסך שאינו קיים ב-`app/`**, ⛔ ולא מסך שמישהו שכח לתאר.
 > ⚠️ **מודד חיווט, ⛔ לא איכות.** מסך יכול לעבור כאן במלואו ולא ללמד דבר.
 
-**18 מסכי מוצר · 26 מסכי פיקסצ׳ר (`/dev/*`)**
+**18 מסכי מוצר · 27 מסכי פיקסצ׳ר (`/dev/*`)**
 > ⛔ **⛔ אין חותמת תאריך בקובץ הזה, ובכוונה:** תאריך ריצה היה משנה את הפלט בכל יום
 > ⇒ דיף בכל טיק ⇒ «הקובץ הזה תמיד משתנה» ⇒ איש ⛔ אינו קורא אותו. הפלט הוא **פונקציה
 > של הקוד בלבד**, ולכן דיף כאן פירושו **המשטחים זזו**, ⛔ ולא שהשעון התקדם.
@@ -16,7 +16,7 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
-| `/cards` | `נסה שוב` · `שינוי רמה · הגדרות` · `תרגל את הרשימה` | `/dev/tabs/cards` · `/dev/tabs/probe` · `components/AppGrid.tsx` … +11 | `/settings` | ✅ | `components/LevelMapScreen` |
+| `/cards` | `נסה שוב` · `שינוי רמה · הגדרות` · `תרגל את הרשימה` | `/dev/deck` · `/dev/tabs/cards` · `/dev/tabs/probe` … +12 | `/settings` | ✅ | `components/LevelMapScreen` |
 | `/me` | `נסה שוב` · `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` … +1 | `/settings` · `app/api/profile/route.ts` · `/dev/tabs/me` … +3 | `/studies` · `/sources` | ✅ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
 | `/studies` | `הבנת הנקרא` | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `components/ArenaHome.tsx` … +6 | ⛔ — | ✅ | `components/StudiesScreen` |
@@ -31,7 +31,7 @@
 | `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` … +1 | `/signup` · `/login` | ⛔ | `components/EnWord` |
 | `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` … +1 | ⛔ — | ⛔ | `components/AuthForm` |
 | `/sources` | `לעמוד המקור` · `חזרה למסך הבית` | `app/layout.tsx` · `components/ActionBar.tsx` · `components/MeScreen.tsx` … +1 | `/` | ⛔ | `components/EnWord` |
-| `/study` | `התחברות מחדש` · `נסה שוב` · `חזרה לכרטיסיות` | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +4 | `/cards` | ✅ | `components/StudyDeckScreen` |
+| `/study` | `התחברות מחדש` · `נסה שוב` · `חזרה לכרטיסיות` | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +5 | `/cards` | ✅ | `components/StudyDeckScreen` |
 | `/study/scan` | `למפת הרמה` · `נסה שוב` · `המשך` … +1 | `/settings` · `lib/core/worldApps.ts` | ⛔ — | ✅ | `components/LevelScan` |
 | `/world/compose` | `חזרה לעולם` · `נסה שוב` · `מפרסם…` … +1 | `/dev/world` · `/dev/world/ring` · `components/AppGrid.tsx` … +7 | `/login` | ✅ | `components/ComposeDraft` |
 
@@ -43,12 +43,13 @@
 | `/dev/arcade` | `סגור` · `בחירת רמה` · `חזרה לעולם` | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +3 | `/cards` · `/login` · `/world` | ✅ | `—` |
 | `/dev/arcade/result` | `עוד קרב` · `חזרה לעולם` | `/dev/arcade/summary` | `/world` | ✅ | `—` |
 | `/dev/arcade/summary` | `חזרה לזירה` | ⛔ — | ⛔ — | ✅ | `components/ArenaSummary` |
-| `/dev/card` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | `/dev/card/typed` · `/dev/deck` · `/dev/deck/skeleton` | ⛔ — | ✅ | `components/Flashcard` |
-| `/dev/card/swap` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
-| `/dev/card/typed` | `בדיקה` · `המשך` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
-| `/dev/deck/done/due` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | ⛔ — | `/cards` | ✅ | `components/CardDeck` |
-| `/dev/deck/done` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/result` · `/dev/deck/done/due` · `/dev/lesson/done` … +1 | `/cards` | ✅ | `components/CardDeck` |
-| `/dev/deck` | `חזרה לכרטיסיות` · `בדיקה` · `המשך` … +2 | `/dev/arcade/home` · `/dev/arcade` · `/dev/deck/done/due` … +5 | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/card/choice` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
+| `/dev/card` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | `/dev/card/typed` · `/dev/deck` · `/dev/deck/skeleton` … +1 | ⛔ — | ✅ | `components/Flashcard` |
+| `/dev/card/swap` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
+| `/dev/card/typed` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | `/dev/card/choice` | ⛔ — | ✅ | `components/Flashcard` |
+| `/dev/deck/done/due` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | ⛔ — | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck/done` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/arcade/result` · `/dev/deck/done/due` · `/dev/lesson/done` … +1 | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/arcade/home` · `/dev/arcade` · `/dev/deck/done/due` … +5 | `/cards` | ✅ | `components/CardDeck` |
 | `/dev/deck/skeleton` | ⛔ — | `components/StudyDeckScreen.tsx` | ⛔ — | ⛔ | `components/CardSkeleton` |
 | `/dev/identity` | `לא הכתובת שלי — להירשם מחדש` | ⛔ — | ⛔ — | ⛔ | `components/RegisteredAddress` |
 | `/dev/lesson/done` | ⛔ — | ⛔ — | ⛔ — | ✅ | `components/LessonScreen` |
@@ -62,7 +63,7 @@
 | `/dev/tabs/probe` | `פתיחת הכרטיסיות` | `components/DeckSelector.tsx` | ⛔ — | ✅ | `components/DeckSelector` |
 | `/dev/tabs/studies` | `הבנת הנקרא` | `/studies` · `/dev/tabs/me` · `components/StudiesScreen.tsx` | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/dev/world` | `חזרה לעולם` · `מפרסם…` · `ביטול` | `/dev/arcade` · `/dev/arcade/result` · `app/dev/world/layout.tsx` … +3 | `/login` | ✅ | `—` |
-| `/dev/world/recall` | `שרשרת הכתיבה` · `כתוב את המשפט הראשון שלך` · `כתוב עוד משפט` | ⛔ — | `/login` | ✅ | `—` |
+| `/dev/world/recall` | `שרשרת הכתיבה` · `כתוב את המשפט הראשון שלך` · `כתוב עוד משפט` | `components/Flashcard.tsx` | `/login` | ✅ | `—` |
 | `/dev/world/ring/expired` | `חברים חברים` | ⛔ — | ⛔ — | ✅ | `—` |
 | `/dev/world/ring` | `חברים חברים` | `/dev/world/ring/expired` | ⛔ — | ✅ | `—` |
 

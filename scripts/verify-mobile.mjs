@@ -52,6 +52,11 @@ const ROUTES = [
   '/dev/card',
   '/dev/card/typed',
   '/dev/card/swap',
+  // T-066 · D-156 · D-169 — the «משפטים» item on the SAME card, as `input: 'choice'`. Same
+  // reason as the two above: `/study?deck=sentences` answers 503 without env, so without
+  // this fixture the three options and the post-tap state would never be in the DOM while
+  // the 44px scan ran.
+  '/dev/card/choice',
   // T-065 task 8, and the same reason as the three above one level up: `/study` IS in this
   // list, but `next start` has no Supabase env, so the queue answers 503 by its own
   // contract and every `ok /study` line here has described the FAILURE state. The scrolling
@@ -1750,6 +1755,71 @@ try {
             (await page.locator('[data-flashcard][data-swipe]').count()) === 0,
             `${at} T-259: the sent-state is cleared when the grade comes back`,
             'data-swipe still set',
+          );
+        } else if (route === '/dev/card/choice') {
+          // T-066 · D-156 · D-169 — the «משפטים» item on the SAME card: three options ≥44px
+          // (⛔ not four — D-156), the blank EMPTY before the tap, and after the tap the back,
+          // the Hebrew meaning, a written verdict, a way forward, and the three options still
+          // in the DOM as aria-disabled (Layer A — a screen reader must still find them).
+          const options = page.locator('[data-option]');
+          const optionCount = await options.count();
+          check(optionCount === 3, `${at} T-066: three options (D-156), not four`, `found ${optionCount}`);
+          const heights = await page.evaluate(() =>
+            [...document.querySelectorAll('[data-option]')].map((el) => el.getBoundingClientRect().height),
+          );
+          check(
+            heights.length === 3 && heights.every((h) => h >= MIN_TAP),
+            `${at} T-066: every option is a ≥${MIN_TAP}px target`,
+            `heights ${JSON.stringify(heights)}`,
+          );
+          const blankBefore = (await page.locator('[data-stem-blank]').allInnerTexts())
+            .join('')
+            .replace(/\u200B/g, '')
+            .trim();
+          check(blankBefore === '', `${at} T-066: the blank is empty before the tap`, `blank read "${blankBefore}"`);
+          check(
+            (await page.locator('[data-continue]').count()) === 0,
+            `${at} T-066: no «המשך» before an option is tapped`,
+            'a way forward existed before the answer',
+          );
+
+          // The second option is the fixture's answer — the correct path is the one measured
+          // here; the wrong path shares every node and differs in the verdict text alone.
+          await options.nth(1).click();
+
+          check(
+            (await page.locator('[data-card-back]').count()) === 1,
+            `${at} T-066: the tap reveals the back`,
+            'still hidden after choosing',
+          );
+          const verdict = await page.locator('[data-verdict]').allInnerTexts();
+          check(
+            verdict.length === 1 && (verdict[0] ?? '').replace(/[✓✕\s]/g, '').length > 0,
+            `${at} T-066: a written verdict, not colour alone`,
+            `verdict ${JSON.stringify(verdict)}`,
+          );
+          check(
+            (await page.locator('[data-continue]').count()) === 1,
+            `${at} T-066: a way forward after answering`,
+            'no [data-continue] — the card dead-ends',
+          );
+          check(
+            (await page.locator('[data-option][aria-disabled="true"]').count()) === 3,
+            `${at} T-066: the options stay in the DOM, aria-disabled (Layer A)`,
+            'options vanished or stayed live after the answer',
+          );
+          const blankAfter = (await page.locator('[data-stem-blank]').allInnerTexts()).join('').trim();
+          check(blankAfter === 'Lorem', `${at} T-066: the blank is filled with the answer after the tap`, `blank read "${blankAfter}"`);
+          check(
+            (await page.locator('[data-card-back] [data-card-secondary]').count()) === 1,
+            `${at} T-066: the back carries the Hebrew meaning (D-156 ⓒ)`,
+            'no [data-card-secondary] inside the revealed block',
+          );
+          const marks = await page.locator('[data-card-back] strong').allInnerTexts();
+          check(
+            marks.length === 1 && (marks[0] ?? '').trim() === 'Lorem',
+            `${at} T-066: the answer is marked in the neutral example`,
+            `marked ${JSON.stringify(marks)}`,
           );
         } else {
           // The typed direction is auto-graded, so the ONLY way the learner learns

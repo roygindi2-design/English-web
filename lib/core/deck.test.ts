@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  applyPractice, bandRank, checkPracticePayload, clampQueueLimit, DEFAULT_QUEUE_LIMIT,
-  excludeSeen, isUnknownRow, parseDeckName, parseFlashcardDeckName, selectDeck, sortQueue,
-  toQueueCardInput, type QueueRow,
+  applyPractice, bandRank, checkPracticePayload, clampQueueLimit, deckCardKey, DEFAULT_QUEUE_LIMIT,
+  excludeSeen, isSentenceCard, isUnknownRow, parseDeckName, parseFlashcardDeckName, selectDeck,
+  sortQueue, toQueueCardInput, type QueueRow,
 } from '@/lib/core/deck';
 
 const row = (over: Partial<QueueRow>): QueueRow => ({
@@ -211,6 +211,38 @@ describe('T-100 · D-043 — התזמון נוסע בחוט, ⛔ ואפס עמו
   it('מילה שטרם תוזמנה ⇒ null ⛔ ולא אפוק 0', () => {
     const fresh = { ...row, nextReviewAtMs: null, intervalDays: 0, attempts: 0 };
     expect(toQueueCardInput(fresh, 3).review).toEqual({ next_review_at: null, interval_days: 0 });
+  });
+});
+
+/**
+ * T-066 · D-169 — one deck, two shapes. The key is what «a graded card is REMOVED» removes by
+ * (`CardDeck.tsx`), so a key that collides is a card that vanishes unanswered.
+ */
+describe('deckCardKey · isSentenceCard — T-066', () => {
+  const word = toQueueCardInput(row({ wordId: '00000000-0000-4000-8000-0000000000aa' }), 3);
+  const sentence = (itemIndex: number) => ({
+    wordId: '00000000-0000-4000-8000-0000000000bb',
+    itemIndex,
+    stem: 'The ____ is here.',
+    answer: 'word',
+    options: ['word', 'ward', 'wood'],
+    translationHe: 'מילה',
+    exampleNeutral: null,
+  });
+
+  it('כרטיס מילה נמפתח לפי word_id', () => {
+    expect(isSentenceCard(word)).toBe(false);
+    expect(deckCardKey(word)).toBe('00000000-0000-4000-8000-0000000000aa');
+  });
+
+  it('פריט משפט נמפתח לפי wordId#itemIndex', () => {
+    expect(isSentenceCard(sentence(0))).toBe(true);
+    expect(deckCardKey(sentence(0))).toBe('00000000-0000-4000-8000-0000000000bb#0');
+  });
+
+  it('שני גזעים של מילה אחת ⇒ שני מפתחות, ⛔ ולא כרטיס אחד שנעלם פעמיים', () => {
+    expect(deckCardKey(sentence(0))).not.toBe(deckCardKey(sentence(2)));
+    expect(new Set([sentence(0), sentence(1), sentence(2)].map(deckCardKey)).size).toBe(3);
   });
 });
 

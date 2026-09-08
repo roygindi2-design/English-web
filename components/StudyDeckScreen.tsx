@@ -7,11 +7,12 @@ import CardDeck from '@/components/CardDeck';
 import CardSkeleton from '@/components/CardSkeleton';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
-import type { DeckName, QueueCardInput } from '@/lib/core/deck';
+import { isSentenceCard, type DeckCard, type DeckName, type QueueCardInput } from '@/lib/core/deck';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE, failureExit, isRetryable } from '@/lib/core/failureExit';
 import type { CardGrade } from '@/lib/core/flashcard';
 import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
+import type { SentenceItem } from '@/lib/core/sentenceItem';
 
 /**
  * The screen that owns the network for `/study` — T-065 part ב׳, plan
@@ -61,6 +62,19 @@ const HEADING_HE = 'מנת היום';
 const PRACTICE_HEADING_HE = 'לא ידעתי';
 /** T-155 · `36 § 5` — שם החפיסה כלשונו במפרט. ⛔ לא «מנת היום»: זו חפיסה אחרת. */
 const LEVEL_HEADING_HE = 'סינון מילים';
+/** T-066 · D-169 — the fourth deck, by the label `DeckSelector.tsx` already carries. */
+const SENTENCES_HEADING_HE = 'משפטים';
+/**
+ * One heading per deck, as a RECORD and ⛔ not a ternary chain: a fifth deck would fail to
+ * compile here instead of silently inheriting the last branch's name (the C-0318 defect —
+ * `level` once read «לא ידעתי» from a binary expression).
+ */
+const HEADINGS: Record<DeckName, string> = {
+  due: HEADING_HE,
+  unknown: PRACTICE_HEADING_HE,
+  level: LEVEL_HEADING_HE,
+  sentences: SENTENCES_HEADING_HE,
+};
 const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
 
@@ -69,7 +83,10 @@ type QueueResponse =
       readonly ok: true;
       readonly deck: DeckName;
       readonly total: number;
-      readonly cards: readonly QueueCardInput[];
+      /** The three word decks answer `cards`… */
+      readonly cards?: readonly QueueCardInput[];
+      /** …and `sentences` answers `items` (docs/api-contract.md) — T-066 · D-169. */
+      readonly items?: readonly SentenceItem[];
     }
   | { readonly ok: false; readonly code: string };
 
@@ -77,7 +94,7 @@ type GradeResponse = { readonly ok: boolean };
 
 type ScreenState =
   | { readonly kind: 'loading' }
-  | { readonly kind: 'cards'; readonly cards: readonly QueueCardInput[] }
+  | { readonly kind: 'cards'; readonly cards: readonly DeckCard[] }
   | { readonly kind: 'empty' }
   | { readonly kind: 'schema_missing' }
   | { readonly kind: 'session_expired' }
@@ -94,7 +111,7 @@ type ScreenState =
  */
 async function sendGrade(
   deck: DeckName,
-  card: QueueCardInput,
+  card: DeckCard,
   grade: CardGrade,
   elapsedMs: number,
 ): Promise<void> {
@@ -103,14 +120,17 @@ async function sendGrade(
   // as an explicit list and ⛔ not as `deck !== 'due'`: a fourth deck added later would
   // inherit the practice wire silently, and which endpoint a deck grades through is the
   // one decision on this screen that D-033 makes load-bearing.
-  if (deck === 'unknown' || deck === 'level') {
+  // T-066 · D-156 ⓑ · § 4.2ו — `sentences` is that fourth deck, and it is listed HERE on
+  // purpose: «`לא ידעתי` · `משפטים` ⇒ `POST /api/practice` — `attempts`/`correct_attempts`
+  // בלבד». ⛔ Never `/api/review` — a cloze item is practice, not a scheduled exposure.
+  if (deck === 'unknown' || deck === 'level' || deck === 'sentences') {
     // D-033: two counters, ⛔ no scheduling fields. The route rejects a word with no
     // progress row with 404 rather than inventing one, so a failure here is real.
     // ⚠️ **T-225 (D-142, closes F-140):** for `level` a missing row is the COMMON case —
     // the route now opens one (⛔ zero SM-2), so the write path is defined and the
     // `סינון מילים` tile is unlocked.
     const practice = await apiPost<GradeResponse>('/api/practice', {
-      word_id: card.word_id,
+      word_id: isSentenceCard(card) ? card.wordId : card.word_id,
       grade,
       // T-225 — ⛔ המשתנה, ⛔ ולא מחרוזת: אותה קריאה משרתת `unknown` ו-`level`, ורק
       // `level` זכאית לפתוח שורה. מחרוזת קבועה כאן הייתה נותנת ל-`unknown` את
@@ -121,6 +141,9 @@ async function sendGrade(
     return;
   }
 
+  // Only `due` reaches here, and `due` never carries a sentence item — the route serves
+  // `items` for `sentences` alone. The guard makes that a checked fact, ⛔ not a cast.
+  if (isSentenceCard(card)) throw new Error('a sentence item grades through practice only');
   const review = await apiPost<GradeResponse>('/api/review', {
     word_id: card.word_id,
     grade,
@@ -158,7 +181,11 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
         else setState({ kind: 'error' });
         return;
       }
-      setState(body.cards.length === 0 ? { kind: 'empty' } : { kind: 'cards', cards: body.cards });
+      // T-066 — `sentences` answers `items`, the word decks answer `cards`; both scroll in the
+      // same `<CardDeck>`. ⛔ `??` and not a deck check: the SHAPE of the response is the
+      // contract, and a deck that answered neither is an empty deck, ⛔ not a crash.
+      const list: readonly DeckCard[] = body.items ?? body.cards ?? [];
+      setState(list.length === 0 ? { kind: 'empty' } : { kind: 'cards', cards: list });
     } catch {
       // `apiGet` only rejects when the answer never arrived or was not JSON — either way
       // there is no code to act on, so this is the generic failure and not a lie about why.
@@ -173,7 +200,10 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
   const onGraded = useCallback(
     async (wordId: string, grade: CardGrade) => {
       if (state.kind !== 'cards') return;
-      const card = state.cards.find((candidate) => candidate.word_id === wordId);
+      // A sentence item is looked up by its WORD — two stems of one word grade the same row.
+      const card = state.cards.find(
+        (candidate) => (isSentenceCard(candidate) ? candidate.wordId : candidate.word_id) === wordId,
+      );
       if (card === undefined) return;
       try {
         await sendGrade(deck, card, grade, boundElapsed(Date.now() - shownAt.current));
@@ -234,9 +264,11 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-3xl font-bold leading-tight">
-        {/* ⛔ שלוש חפיסות, שלוש כותרות. קודם לכן הביטוי היה בינארי, ולכן `level`
-            היה מקבל «לא ידעתי» — שם של חפיסה אחרת על מסך שהלומד פתח בשם אחר. */}
-        {deck === 'due' ? HEADING_HE : deck === 'level' ? LEVEL_HEADING_HE : PRACTICE_HEADING_HE}
+        {/* ⛔ ארבע חפיסות, ארבע כותרות — רשומה ⛔ ולא שרשרת תנאים. קודם לכן הביטוי היה
+            בינארי, ולכן `level` היה מקבל «לא ידעתי» — שם של חפיסה אחרת על מסך שהלומד
+            פתח בשם אחר (C-0318). `Record<DeckName, string>` הופך חפיסה חמישית בלי כותרת
+            לשגיאת הידור. */}
+        {HEADINGS[deck]}
       </h1>
 
       {/* The shape of what is coming, ⛔ not a spinner (constitution § 5). The markup lives

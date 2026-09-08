@@ -99,7 +99,10 @@ const WORDS_SELECT =
  */
 const SENTENCES_SELECT =
   'id, headword, cefr_profile_band, ' +
-  'senses!inner(sense_items!inner(item_index, stem), ' +
+  // T-066 · D-156 ⓒ — the back of the card: `translation_he` and the `neutral` example ride
+  // the sense the stems already come from. ⛔ No new column, ⛔ no fourth join.
+  'senses!inner(sense_index, translation_he, sense_examples(kind, text_en), ' +
+  'sense_items!inner(item_index, stem), ' +
   'sense_distractors!inner(distractor, relation_type))';
 
 type ExampleRow = { kind: string | null; text_en: string | null };
@@ -107,6 +110,9 @@ type ExampleRow = { kind: string | null; text_en: string | null };
 type SenseItemRow = { item_index: number | null; stem: string | null };
 type SenseDistractorRow = { distractor: string | null; relation_type: string | null };
 type SentenceSenseRow = {
+  sense_index?: number | null;
+  translation_he?: string | null;
+  sense_examples?: ExampleRow[] | null;
   sense_items?: SenseItemRow[] | null;
   sense_distractors?: SenseDistractorRow[] | null;
 };
@@ -145,9 +151,28 @@ function toSentenceCandidate(row: SentenceWordRow): SentenceCandidate | null {
     }
   }
   if (stems.length === 0) return null;
+  // T-066 · D-156 ⓒ — the back reads the FIRST sense (lowest `sense_index`) that carries a
+  // translation, the same rule `pickSense` applies to the word decks. A word none of whose
+  // senses has a translation is ⛔ no card: the back would be a sentence with no meaning.
+  // ⛔ A scan, ⛔ not a second `.sort(`: `queue/route.test.ts` pins the file to ONE sort
+  // (the sense pick, D-021) so that queue ORDER can never be duplicated here (D-034).
+  let backSense: SentenceSenseRow | undefined;
+  for (const sense of row.senses ?? []) {
+    if (typeof sense.translation_he !== 'string' || sense.translation_he.trim() === '') continue;
+    const index = sense.sense_index ?? Number.MAX_SAFE_INTEGER;
+    if (backSense === undefined || index < (backSense.sense_index ?? Number.MAX_SAFE_INTEGER)) {
+      backSense = sense;
+    }
+  }
+  if (backSense === undefined) return null;
+  const neutral = (backSense.sense_examples ?? []).find((example) => example.kind === 'neutral');
+  const exampleNeutral =
+    typeof neutral?.text_en === 'string' && neutral.text_en.trim() !== '' ? neutral.text_en.trim() : null;
   return {
     wordId,
     headword,
+    translationHe: (backSense.translation_he ?? '').trim(),
+    exampleNeutral,
     stems,
     distractors,
     cefrProfileBand: row.cefr_profile_band,

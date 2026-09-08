@@ -69,6 +69,7 @@
   ],
   "app/dev/arcade/result/page.tsx": [],
   "app/dev/arcade/summary/page.tsx": [],
+  "app/dev/card/choice/page.tsx": [],
   "app/dev/card/layout.tsx": [],
   "app/dev/card/page.tsx": [],
   "app/dev/card/swap/page.tsx": [],
@@ -354,7 +355,8 @@
   "lib/core/decay.ts": [],
   "lib/core/deck.test.ts": [],
   "lib/core/deck.ts": [
-    "lib/core/flashcard.ts"
+    "lib/core/flashcard.ts",
+    "lib/core/sentenceItem.ts"
   ],
   "lib/core/deckTiles.test.ts": [
     "lib/core/deckTiles.ts"
@@ -555,6 +557,13 @@
   "lib/core/senseSelection.ts": [
     "lib/core/contentSchema.ts",
     "lib/core/senseInventory.ts"
+  ],
+  "lib/core/sentenceCard.test.ts": [
+    "lib/core/sentenceCard.ts"
+  ],
+  "lib/core/sentenceCard.ts": [
+    "lib/core/flashcard.ts",
+    "lib/core/sentenceItem.ts"
   ],
   "lib/core/sentenceItem.test.ts": [
     "lib/core/sentenceItem.ts"

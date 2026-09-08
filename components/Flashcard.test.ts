@@ -553,3 +553,67 @@ describe('T-100 · D-043 — הדעיכה על הכרטיס', () => {
     }
   });
 });
+
+/**
+ * The balanced-brace region opened by `open`, `open` included — the same extractor
+ * `CardDeck.test.ts` uses, for the same reason: containment is the claim, ⛔ not distance.
+ */
+function braceRegion(source: string, open: string): string {
+  const start = source.indexOf(open);
+  expect(start, `expected to find ${open} in Flashcard.tsx`).toBeGreaterThan(-1);
+  let depth = 0;
+  for (let i = start; i < source.length; i += 1) {
+    if (source[i] === '{') depth += 1;
+    else if (source[i] === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, i + 1);
+    }
+  }
+  throw new Error(`unbalanced braces after ${open} in Flashcard.tsx`);
+}
+
+/**
+ * T-066 · D-156 · D-169 — the «משפטים» item on THIS card, as a third `input` branch.
+ * ⛔ Not a new component: D-169 forbids one, and every guard below reads `Flashcard.tsx`.
+ * The plan's five guards, plus one: the choice front is drawn by the SAME `data-card-front`
+ * node the word decks use, so `check:mobile` measures it through the same selector.
+ */
+describe('T-066 — the choice card (D-156 · D-169)', () => {
+  const CODE = T085_CARD_SRC;
+
+  it('draws the options as native buttons ≥44px, each inside <EnWord>', () => {
+    const region = braceRegion(CODE, "{card.input === 'choice' && !revealed ? (");
+    expect(region).toContain('data-option');
+    expect(region).toContain('min-h-touch');
+    expect(region).toContain('<EnWord>{option}</EnWord>');
+  });
+
+  it('a tapped option grades AND reveals in one handler — D-024, no second button before the answer', () => {
+    const region = braceRegion(CODE, "{card.input === 'choice' && !revealed ? (");
+    expect(region).toContain('setGrade(gradeChoice(card, option))');
+    expect(region).toContain('reveal()');
+  });
+
+  it('after the answer the options stay in the DOM, aria-disabled — Layer A', () => {
+    const region = braceRegion(CODE, "{card.input === 'choice' && revealed ? (");
+    expect(region).toContain('aria-disabled="true"');
+    expect(region).toContain('data-continue');
+  });
+
+  it('the blank is a frame, ⛔ never the answer text before the tap', () => {
+    expect(CODE).toContain('data-stem-blank');
+    expect(CODE).toMatch(/data-stem-blank[\s\S]{0,200}ZERO_WIDTH_SPACE/);
+  });
+
+  it('⛔ the choice card never activates the swipe', () => {
+    expect(CODE).toContain("const swipeActive = revealed && card.input === 'self';");
+  });
+
+  it('the choice front lives in the shared `data-card-front` node, and the back carries the Hebrew', () => {
+    expect(CODE).toContain('data-card-secondary');
+    const front = CODE.indexOf('data-stem-blank');
+    const node = CODE.lastIndexOf('data-card-front', front);
+    expect(node, 'the stem must sit inside a data-card-front paragraph').toBeGreaterThan(-1);
+    expect(front - node).toBeLessThan(600);
+  });
+});

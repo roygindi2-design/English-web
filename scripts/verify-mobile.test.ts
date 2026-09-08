@@ -1268,3 +1268,40 @@ describe('the harness measures the finish state WITH a round summary (T-276 · D
     expect(code).toContain("route === '/dev/deck/done/due'");
   });
 });
+
+/**
+ * T-066 · D-156 · D-169 — the choice card is measured, not declared. `/study?deck=sentences`
+ * answers 503 without env, so the fixture is the only place a real engine ever holds the
+ * three options, taps one, and finds the back, the verdict and the way forward.
+ */
+describe('the harness measures the choice card (T-066)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+  const fixture = readFileSync('app/dev/card/choice/page.tsx', 'utf8');
+
+  it('visits /dev/card/choice, beside the other card fixtures', () => {
+    const routes = code.slice(code.indexOf('const ROUTES = ['), code.indexOf('const MIN_TAP'));
+    expect(routes).toContain("'/dev/card/choice'");
+    expect(routes.indexOf("'/dev/card/choice'")).toBeGreaterThan(routes.indexOf("'/dev/card/swap'"));
+  });
+
+  it('renders <Flashcard> through buildSentenceCard — the same component, the third variant', () => {
+    expect(fixture).toContain('buildSentenceCard');
+    expect(fixture).toContain('<Flashcard');
+    expect(fixture).not.toMatch(/[^i]fetch\(/);
+    expect(fixture).not.toContain('apiGet');
+  });
+
+  it('names every check the choice branch makes', () => {
+    const block = code.slice(code.indexOf("route === '/dev/card/choice'"), code.indexOf('T-065 · § 4.2ו · T-086'));
+    expect(block).toContain('[data-option]');
+    expect(block).toContain('optionCount === 3');
+    expect(block).toContain('h >= MIN_TAP');
+    expect(block).toContain('[data-stem-blank]');
+    expect(block).toContain('options.nth(1).click()');
+    expect(block).toContain('[data-card-back]');
+    expect(block).toContain('[data-verdict]');
+    expect(block).toContain('[data-continue]');
+    expect(block).toContain('[data-option][aria-disabled="true"]');
+    expect(block).toContain('[data-card-secondary]');
+  });
+});

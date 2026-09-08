@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
-import type { DeckName, QueueCardInput } from '@/lib/core/deck';
+import { deckCardKey, isSentenceCard, type DeckCard, type DeckName } from '@/lib/core/deck';
 import { buildCard, type CardGrade } from '@/lib/core/flashcard';
+import { buildSentenceCard } from '@/lib/core/sentenceCard';
 import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
 
 /**
@@ -70,7 +71,12 @@ export default function CardDeck({
   exit,
 }: {
   readonly deck: DeckName;
-  readonly cards: readonly QueueCardInput[];
+  /**
+   * T-066 · D-169 — a word card OR a sentence item, on the SAME `<Flashcard>`. The deck keys,
+   * removes and scrolls by `deckCardKey` (two stems of one word are two cards); the grade it
+   * reports upward still carries the WORD id, which is what both grade routes take.
+   */
+  readonly cards: readonly DeckCard[];
   /** Rejects ⇒ the grade did NOT reach the server ⇒ the card stays. See `grade` below. */
   readonly onGraded: (wordId: string, grade: CardGrade) => Promise<void>;
   /**
@@ -103,7 +109,7 @@ export default function CardDeck({
   const [scrollTo, setScrollTo] = useState<string | null>(null);
   const nodes = useRef(new Map<string, HTMLElement>());
 
-  const remaining = cards.filter((card) => !graded.includes(card.word_id));
+  const remaining = cards.filter((card) => !graded.includes(deckCardKey(card)));
 
   // Scrolling in an effect and not inside the click handler is load-bearing: at click time
   // the graded card is still in the DOM, so the next card has not yet moved to where it
@@ -116,11 +122,11 @@ export default function CardDeck({
   }, [scrollTo]);
 
   const grade = useCallback(
-    async (wordId: string, value: CardGrade) => {
+    async (key: string, wordId: string, value: CardGrade) => {
       // One in flight at a time. Without this a double tap sends two grades for one card,
       // and on the `due` deck the second one schedules a word the learner answered once.
       if (pending !== null) return;
-      setPending(wordId);
+      setPending(key);
       try {
         await onGraded(wordId, value);
       } catch {
@@ -134,11 +140,11 @@ export default function CardDeck({
       }
       // The next card is the one after this one that is still un-graded — ⛔ not "the first
       // remaining", which would yank a learner who scrolled ahead back up the deck.
-      const index = cards.findIndex((card) => card.word_id === wordId);
-      const next = cards.slice(index + 1).find((card) => !graded.includes(card.word_id));
-      setGraded((previous) => [...previous, wordId]);
+      const index = cards.findIndex((card) => deckCardKey(card) === key);
+      const next = cards.slice(index + 1).find((card) => !graded.includes(deckCardKey(card)));
+      setGraded((previous) => [...previous, key]);
       setGrades((previous) => [...previous, value]);
-      setScrollTo(next?.word_id ?? null);
+      setScrollTo(next === undefined ? null : deckCardKey(next));
     },
     [cards, graded, onGraded, pending],
   );
@@ -260,10 +266,10 @@ export default function CardDeck({
       >
         {remaining.map((card) => (
           <article
-            key={card.word_id}
+            key={deckCardKey(card)}
             ref={(node) => {
-              if (node) nodes.current.set(card.word_id, node);
-              else nodes.current.delete(card.word_id);
+              if (node) nodes.current.set(deckCardKey(card), node);
+              else nodes.current.delete(deckCardKey(card));
             }}
             className="flex h-full snap-start flex-col pt-4"
           >
@@ -273,23 +279,31 @@ export default function CardDeck({
               // per render, so identity changes whenever this list does — which is exactly
               // the reset the learner needs and the reason a keyless list handed card n+1
               // over already revealed.
-              card={buildCard(
-                {
-                  headword: card.sense.headword,
-                  translationHe: card.sense.translation_he,
-                  examples: card.sense.examples,
-                  needsHumanReview: card.sense.needs_human_review,
-                },
-                card.direction,
-                { isFirstEncounter: card.is_first_encounter },
-              )}
+              // T-066 · D-169 — a sentence item is the third `Card` variant, built by its own
+              // pure builder; a word card is `buildCard` exactly as before.
+              card={
+                isSentenceCard(card)
+                  ? buildSentenceCard(card)
+                  : buildCard(
+                      {
+                        headword: card.sense.headword,
+                        translationHe: card.sense.translation_he,
+                        examples: card.sense.examples,
+                        needsHumanReview: card.sense.needs_human_review,
+                      },
+                      card.direction,
+                      { isFirstEncounter: card.is_first_encounter },
+                    )
+              }
               // T-100 — מצב התזמון עובר כמו שהוא. ⛔ הדק ⛔ אינו גוזר ממנו דבר:
-              // ההכרעה טהורה ויושבת ב-lib/core/decay.ts.
-              review={card.review}
+              // ההכרעה טהורה ויושבת ב-lib/core/decay.ts. A sentence item has none.
+              review={isSentenceCard(card) ? undefined : card.review}
               // T-259 — the PROMISE is handed over, ⛔ not discarded: a grade this deck did not
               // take (network failure ⇒ `grade` returns early) resolves while the card is
               // still mounted, and the card springs back instead of staying off-screen.
-              onGrade={(value) => grade(card.word_id, value)}
+              onGrade={(value) =>
+                grade(deckCardKey(card), isSentenceCard(card) ? card.wordId : card.word_id, value)
+              }
             />
           </article>
         ))}

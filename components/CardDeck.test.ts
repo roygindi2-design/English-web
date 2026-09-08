@@ -205,9 +205,16 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(CODE).not.toContain('overflow-hidden');
   });
 
-  it('keys each Flashcard by word_id — reveal state is per card', () => {
-    expect(CODE).toMatch(/key=\{[^}]*word_id[^}]*\}/);
+  it('keys each Flashcard by deckCardKey — reveal state is per card, and two stems of one word are two cards (T-066)', () => {
+    expect(CODE).toMatch(/key=\{deckCardKey\(card\)\}/);
+    expect(CODE).not.toMatch(/key=\{[^}]*word_id[^}]*\}/);
+    // Both builders by name: a word card is `buildCard`, a sentence item `buildSentenceCard`
+    // (D-169 — the SAME `<Flashcard>`, ⛔ no second deck component).
     expect(CODE).toContain('buildCard');
+    expect(CODE).toContain('buildSentenceCard');
+    expect(CODE).toMatch(/isSentenceCard\(card\)\s*\?\s*buildSentenceCard\(card\)/);
+    // The removal list is keyed the same way — a key that collides is a card that vanishes.
+    expect(CODE).toContain('graded.includes(deckCardKey(card))');
   });
 
   it('⛔ does not reimplement the grade controls — Flashcard already carries them', () => {
@@ -425,7 +432,9 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
   });
 
   it('T-259 — the deck hands Flashcard the grade promise, so a not-taken grade can spring back', () => {
-    expect(SRC).toMatch(/onGrade=\{\(value\) => grade\(card\.word_id, value\)\}/);
+    // T-066 widened the call to (key, wordId, value) — still an expression arrow, ⛔ never a
+    // block that drops the promise, and ⛔ never `void`.
+    expect(SRC).toMatch(/onGrade=\{\(value\) =>\s*grade\(deckCardKey\(card\), .*card\.word_id, value\)\s*\}/);
     expect(SRC).not.toContain('void grade(');
   });
 });

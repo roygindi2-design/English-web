@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import EnWord, { EnText } from '@/components/EnWord';
 import { gradeTypedAnswer, type Card, type CardGrade } from '@/lib/core/flashcard';
+import { gradeChoice } from '@/lib/core/sentenceCard';
 import { pushSample, releaseCurve, releaseVelocity, type PointerSample } from '@/lib/core/spring';
 import {
   dragOffset,
@@ -13,6 +14,17 @@ import {
 } from '@/lib/core/swipeGrade';
 import { DECAY_LABEL, decayLevel, parseReviewAt } from '@/lib/core/decay';
 import type { QueueCardReview } from '@/lib/core/deck';
+
+/**
+ * T-066 — the blank's frame, quoted from `RecallCard.tsx` (⛔ the component is not reused:
+ * it fetches `/api/world/recall` and owns its own states — only these classes are shared).
+ * `inline-block` at line height with a minimum width, ⛔ not `border-b`: a thin underline
+ * reads as emphasis on a word that is written there, and the word is exactly what is MISSING.
+ */
+const BLANK_CLASS =
+  'inline-block min-w-[4ch] rounded-md border border-border-strong px-1 align-baseline';
+/** U+200B — holds the line height inside the empty frame. */
+const ZERO_WIDTH_SPACE = '\u200B';
 
 /**
  * The card, per the UI spec in docs/superpowers/plans/2026-08-06-content-bank.md.
@@ -57,6 +69,8 @@ export default function Flashcard({
   const [revealed, setRevealed] = useState(false);
   const [typed, setTyped] = useState('');
   const [grade, setGrade] = useState<CardGrade | null>(null);
+  /** T-066 — the option the learner tapped on a `choice` card; echoed as «בחרת:» when wrong. */
+  const [chosen, setChosen] = useState<string | null>(null);
   const answerId = useId();
 
   // ⛔ ref ולא state: נקודת ההתחלה ⛔ אינה משנה ולו פיקסל אחד על המסך, ורינדור
@@ -217,6 +231,7 @@ export default function Flashcard({
     setRevealed(false);
     setTyped('');
     setGrade(null);
+    setChosen(null);
     setSwipe(null);
   }
   // T-233 — the drag lives on the DOM node now, so a card that swaps mid-gesture is
@@ -241,7 +256,11 @@ export default function Flashcard({
    * ⛔ ⛔ להוציא את `data-card-front` החוצה — `<CardDeck>` מודד את החזית דרכו.
    * ⛔ ⛔ להעביר את הרמז מחוץ לכפתור — תווית מחוץ לו היא הבטחה שלא נאכפת. */
   const prompt =
-    card.direction === 'recognition' ? 'מה הפירוש?' : 'איך אומרים באנגלית?';
+    card.input === 'choice'
+      ? 'השלם את המשפט'
+      : card.direction === 'recognition'
+        ? 'מה הפירוש?'
+        : 'איך אומרים באנגלית?';
 
   /** ⛔ תנאי אחד לשני הערוצים: הכפתורים למטה נבדקים באותו ביטוי בדיוק. */
   const swipeActive = revealed && card.input === 'self';
@@ -438,12 +457,33 @@ export default function Flashcard({
         <div className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center">
           <div className="my-auto">
           <p className="text-sm text-ink-muted">{prompt}</p>
+          {/* T-066 · D-156 ⓐ — on a `choice` card the front is the STEM with its blank, drawn in
+              the SAME `data-card-front` node the word decks use (⛔ not a sibling: `check:mobile`
+              and `<CardDeck>` measure the front through this selector). One `<EnWord>` wraps
+              all three parts ⇒ one bidi isolate ⇒ LTR order for before · blank · after under
+              the RTL page. The answer enters the frame only once revealed — ⛔ never before
+              the tap, not for the eye and not for a screen reader. § 0.22: a sentence at the
+              headword's 4xl wraps to 4–5 lines at 320px, so the stem is `text-2xl`. */}
           <p
-            className="mt-2 text-4xl font-bold leading-tight"
+            className={
+              card.input === 'choice'
+                ? 'mt-2 text-2xl font-semibold leading-relaxed'
+                : 'mt-2 text-4xl font-bold leading-tight'
+            }
             data-card-front
             data-decay={decay}
           >
-            {primary(card.front.primary, card.front.primaryLang)}
+            {card.input === 'choice' ? (
+              <EnWord>
+                {card.stem.before}
+                <span data-stem-blank className={BLANK_CLASS}>
+                  {revealed ? card.answer : ZERO_WIDTH_SPACE}
+                </span>
+                {card.stem.after}
+              </EnWord>
+            ) : (
+              primary(card.front.primary, card.front.primaryLang)
+            )}
           </p>
           {decay === 'none' ? null : (
             /* D-043 · חוקה § 1 — צבע ⛔ אינו הערוץ היחיד. ⛔ אין כאן אסימון חדש
@@ -457,9 +497,25 @@ export default function Flashcard({
 
           {revealed ? (
             <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-5" data-card-back>
-              <p className="text-2xl font-semibold" data-card-answer>
-                {primary(card.back.primary, card.back.primaryLang)}
-              </p>
+              {/* T-066 · § 0.22 — on a `choice` card the completed sentence is drawn ONCE, in
+                  the front's filled blank (the node the learner was looking at), ⛔ not again
+                  here: measured 375×780, the duplicate line cost ~70px of a 620px deck slot
+                  (`CardDeck.tsx`) and pushed «המשך» under the fold at 320px. The model still
+                  carries `back.primary` (`sentenceCard.test.ts`); only the paint is elided. */}
+              {card.input === 'choice' ? null : (
+                <p className="text-2xl font-semibold" data-card-answer>
+                  {primary(card.back.primary, card.back.primaryLang)}
+                </p>
+              )}
+              {/* T-066 · D-156 ⓒ — the choice back stacks like the render's back
+                  (`render_video_A.py:357-365`): the Hebrew meaning under the completed
+                  sentence, then the neutral example. `secondary` is null on every other
+                  variant, so this line exists on the choice card alone. */}
+              {card.input === 'choice' && card.back.secondary !== null ? (
+                <p className="text-2xl font-semibold" data-card-secondary>
+                  {card.back.secondary}
+                </p>
+              ) : null}
               {card.back.exampleSegments.length > 0 ? (
                 <p className="text-base leading-relaxed text-ink-muted">
                   <EnText segments={card.back.exampleSegments} />
@@ -512,6 +568,86 @@ export default function Flashcard({
 
       {/* Actions live in the lower half for thumb reach (MF-5). */}
       <div className="mt-auto flex flex-col gap-3">
+        {/* T-066 · D-156 ⓑ — the three options ARE the action on a `choice` card: native
+            `<button>`s (Enter/Space/`:focus-visible` for free), `min-h-touch` each, in ONE
+            column. § 0.22: the render's two-button row (`render_video_A.py:381-392`) holds
+            two fixed labels; three options of unequal length in a 2-column grid at 320px wrap
+            ~11-char words (measured on `/dev/world/recall`), one column keeps every label on
+            one line. A tap grades and reveals in one handler — D-024, the answer shows at
+            once; `onGrade` waits for «המשך» exactly as the typed direction does. */}
+        {card.input === 'choice' && !revealed ? (
+          <ul className="flex list-none flex-col gap-3 p-0" data-options>
+            {card.options.map((option) => (
+              <li key={option}>
+                <button
+                  type="button"
+                  data-option
+                  onClick={() => {
+                    setGrade(gradeChoice(card, option));
+                    setChosen(option);
+                    reveal();
+                  }}
+                  className="flex w-full min-h-touch items-center justify-center rounded-lg border border-border-strong px-4 py-3 text-lg text-ink active:opacity-90"
+                >
+                  <EnWord>{option}</EnWord>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {/* After the tap: the same three options STAY in the DOM, `aria-disabled` and without a
+            handler (the `RecallCard.tsx` / `<AppGrid>` pattern) so a screen reader still finds
+            them and hears they are done — Layer A. The chosen one carries the verdict glyph
+            AND a heavier border; the verdict line below is text + glyph, ⛔ never colour
+            alone. «בחרת:» mirrors the typed direction's «כתבת:». */}
+        {card.input === 'choice' && revealed ? (
+          <div className="flex flex-col gap-3">
+            <ul className="flex list-none flex-col gap-3 p-0" data-options>
+              {card.options.map((option) => (
+                <li key={option}>
+                  <button
+                    type="button"
+                    data-option
+                    data-chosen={option === chosen ? 'true' : undefined}
+                    aria-disabled="true"
+                    className={`flex w-full min-h-touch items-center justify-center gap-2 rounded-lg px-4 py-2 text-lg ${
+                      option === chosen
+                        ? 'border-2 border-border-strong text-ink'
+                        : 'border border-border-subtle text-ink-muted'
+                    }`}
+                  >
+                    {option === chosen ? (
+                      <span aria-hidden="true">{grade === 'good' ? '✓' : '✕'}</span>
+                    ) : null}
+                    <EnWord>{option}</EnWord>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p
+              data-verdict={grade ?? 'again'}
+              className={`text-lg font-semibold ${grade === 'good' ? 'text-success' : 'text-danger'}`}
+            >
+              <span aria-hidden="true">{grade === 'good' ? '✓ ' : '✕ '}</span>
+              {grade === 'good' ? 'נכון' : 'לא נכון'}
+            </p>
+            {grade !== 'good' && chosen !== null ? (
+              <p className="text-base text-ink-muted">
+                בחרת: <EnWord>{chosen}</EnWord>
+              </p>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => onGrade(grade ?? 'again')}
+              data-continue
+              className="min-h-touch rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+            >
+              המשך
+            </button>
+          </div>
+        ) : null}
+
         {!revealed && card.input === 'typed' ? (
           <form
             className="flex flex-col gap-3"

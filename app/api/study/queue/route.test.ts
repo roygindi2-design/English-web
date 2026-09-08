@@ -331,4 +331,26 @@ describe('חפיסת «משפטים» — deck=sentences (T-165 · D-097)', () =
     expect(CONTRACT).toContain('near_synonym');
     expect(CONTRACT).toContain('parseFlashcardDeckName');
   });
+
+  /**
+   * T-066 · D-156 ⓒ — the back of the card rides the row: `translation_he` and the neutral
+   * example are SELECTED, ⛔ not fetched by a second query, and a word with no translation
+   * is dropped in `toSentenceCandidate` ⛔ rather than rendered with an empty back.
+   */
+  it('T-066 — SENTENCES_SELECT נושא translation_he ו-sense_examples, ⛔ ואפס צירוף רביעי', () => {
+    const select = CODE.slice(CODE.indexOf('const SENTENCES_SELECT'), CODE.indexOf('type ExampleRow'));
+    expect(select).toContain('translation_he');
+    expect(select).toContain('sense_examples(kind, text_en)');
+    expect((select.match(/!inner/g) ?? []).length).toBe(3);
+  });
+
+  it('T-066 — מילה בלי תרגום ⛔ אינה מועמדת: toSentenceCandidate מחזירה null', () => {
+    const fn = CODE.slice(CODE.indexOf('function toSentenceCandidate'));
+    const body = fn.slice(0, fn.indexOf('\n}\n'));
+    expect(body).toContain('translation_he');
+    expect(body).toContain("kind === 'neutral'");
+    expect(body).toMatch(/backSense === undefined\) return null/);
+    expect(body).toContain('translationHe:');
+    expect(body).toContain('exampleNeutral');
+  });
 });
