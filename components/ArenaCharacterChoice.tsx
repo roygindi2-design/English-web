@@ -28,7 +28,10 @@ import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
  *
  * ⚠️ **שכבה א׳, נמדד ⛔ ולא שוער:** כל כרטיס הוא `<button>` בגובה ≥160 (הדמות `h-40`);
  * `בחר` = 58 (הרנדר); `חזרה למסך הבית` — הרנדר מצייר **42** (`:187`) ורצפת שכבה א׳ היא
- * 44 ⇒ `min-h-touch`. ⛔ **המצב ⛔ לעולם אינו בצבע בלבד:** הכרטיס הנבחר נושא
+ * 44 ⇒ `min-h-touch`. **שתי סטיות שכבה א׳ נוספות, נמדדו C-0502 ב-`check:mobile`:**
+ * ⓐ `בחר` מושבת ב-`opacity-70` ⇒ הטקסט **1.07:1** ⇒ המצב המושבת הוא טוקנים (כרטיס ·
+ * קצה-כרטיס · `--arena-ink-dim`, הצמד שנמדד ירוק ב-`SECONDARY_CLASS`), ⛔ לא שקיפות.
+ * ⓑ הכן של הרנדר (`--arena-stone`) בתוך כרטיס לחיץ ⇒ **1.8:1** ⇒ אליפסה אחת ב-`--arena-ink-dim`. ⛔ **המצב ⛔ לעולם אינו בצבע בלבד:** הכרטיס הנבחר נושא
  * `aria-pressed`, את המילה `נבחר` ואת גליף הווי — ומסגרת הזהב היא הערוץ הרביעי.
  * ⛔ **⛔ אין מבוי סתום:** `בחר` מושבת נושא סיבה כתובה ונראית (הדפוס של `ArenaHome`).
  * ⛔ **⛔ אין יציאה בכניסה ראשונה** (`§ 7`: «מוצג פעם אחת … לפני הקרב הראשון»); עם דמות
@@ -146,9 +149,8 @@ export default function ArenaCharacterChoice({
                   >
                     <ArenaAvatar role="hero" items={[]} character={character} className="h-28 w-auto" />
                   </span>
-                  <svg aria-hidden viewBox="0 0 128 40" className="-mt-2 h-7 w-[90px]" fill="currentColor">
-                    <ellipse cx="64" cy="23" rx="64" ry="17" className="text-[color:var(--arena-card-edge)]" fill="currentColor" />
-                    <ellipse cx="64" cy="17" rx="64" ry="17" className="text-[color:var(--arena-stone)]" fill="currentColor" />
+                  <svg aria-hidden viewBox="0 0 128 40" className="-mt-2 h-7 w-[90px] text-[color:var(--arena-ink-dim)]" fill="currentColor">
+                    <ellipse cx="64" cy="20" rx="64" ry="17" />
                   </svg>
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -188,7 +190,7 @@ export default function ArenaCharacterChoice({
         ) : (
           <button
             type="button"
-            className={`${START_CLASS} disabled:opacity-70`}
+            className={`${START_CLASS} disabled:border-[color:var(--arena-card-edge)] disabled:bg-[color:var(--arena-card)] disabled:text-[color:var(--arena-ink-dim)]`}
             disabled={chosen === null || state === 'saving'}
             aria-describedby={chosen === null ? 'arena-character-pick-first' : undefined}
             onClick={() => void confirm()}

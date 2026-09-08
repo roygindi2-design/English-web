@@ -222,9 +222,14 @@ const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
  * T-217 — **שלוש צלליות על שלד אחד.** לכל דמות של `37 § 7` שכבת חתימה אחת, על שכבות
  * `LAYER_ORDER` (`38 § 4`) ועל עוגני `characterBase.ts` בלבד — ⛔ אפס קואורדינטה מוחלטת.
  * ⛔ **`38 § 5` — ⛔ אף צורה כאן ⛔ אינה `wizard_sprite` · `knight_sprite` · `hero_sprite`.**
- * הקוסם: מטה ביד הראשית וקצה גלימה על הרגליים · הלוחם: מגן עגול ביד המשנית ולוח חזה ·
- * השריונאי: מצחייה, שתי כתפיות (`mirror`) וקנה ביד הראשית. הצורה ⛔ אינה הערוץ היחיד —
- * השם הנגיש נוקב בדמות (`CHARACTER_LABELS_HE`).
+ * הקוסם: מטה ביד הראשית וגלימה על הרגליים · הלוחם: מגן עגול ביד המשנית ולוח חזה רחב
+ * מהגוף · השריונאי: מצחייה רחבה מהראש, שתי כתפיות (`mirror`) וקנה ביד הראשית.
+ * ⚠️ **החתימה היא מילוי בצבע התפקיד, ⛔ ולא קו** — נמדד C-0502 ב-`check:mobile`, ⛔ ולא
+ * שוער: במסך הבחירה הדמות יושבת **בתוך `<button>`**, והשער מודד כל צורה נגד רקע
+ * הכרטיס (מילוי SVG ⛔ אינו `background-color`): קו ב-`text-ink` (כחול-הליל בזירה) ⇒
+ * **1.12:1**. מילוי בצבע התפקיד (זהב הגיבור) ⇒ עובר 3:1 כמו שכבת הבסיס, ולכן כל צורה
+ * **בולטת מעבר לקו הגוף** — צללית, ⛔ ולא קישוט על הגוף, שהיה נעלם בזהב על זהב.
+ * הצורה ⛔ אינה הערוץ היחיד — השם הנגיש נוקב בדמות (`CHARACTER_LABELS_HE`).
  */
 const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
   wizard: [
@@ -232,7 +237,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       layer: 'legs',
       shape: (
         <path
-          d={`M${BODY.x - BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2}L${BOOT_L.x - 22} ${BOOT_L.y - 6}H${BOOT_R.x + 22}L${BODY.x + BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2}z`}
+          d={`M${BODY.x - BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2 - 10}L${BOOT_L.x - 24} ${BOOT_L.y - 6}H${BOOT_R.x + 24}L${BODY.x + BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2 - 10}z`}
         />
       ),
     },
@@ -240,7 +245,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       layer: 'mainHand',
       shape: (
         <>
-          <path d={`M${MAIN_HAND.x} ${MAIN_HAND.y - 78}V${MAIN_HAND.y + 66}`} />
+          <rect x={MAIN_HAND.x - 3} y={MAIN_HAND.y - 78} width={6} height={144} rx={3} />
           <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y - 78} r={9} />
         </>
       ),
@@ -252,9 +257,9 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       layer: 'chest',
       shape: (
         <rect
-          x={BODY.x - (BODY_SIZE.width - 12) / 2}
-          y={BODY.y - 20}
-          width={BODY_SIZE.width - 12}
+          x={BODY.x - (BODY_SIZE.width + 16) / 2}
+          y={BODY.y - 22}
+          width={BODY_SIZE.width + 16}
           height={40}
           rx={8}
         />
@@ -264,20 +269,22 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
   armorer: [
     {
       layer: 'headgear',
-      shape: <rect x={HEAD.x - 22} y={HEAD.y - 11} width={44} height={10} rx={3} />,
+      shape: (
+        <rect x={HEAD.x - HEAD_RADIUS - 8} y={HEAD.y - 11} width={(HEAD_RADIUS + 8) * 2} height={10} rx={3} />
+      ),
     },
     {
       layer: 'shoulders',
       shape: (
         <>
-          <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={14} />
-          <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={14} />
+          <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={16} />
+          <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={16} />
         </>
       ),
     },
     {
       layer: 'mainHand',
-      shape: <rect x={MAIN_HAND.x - 24} y={MAIN_HAND.y - 5} width={48} height={10} rx={4} />,
+      shape: <rect x={MAIN_HAND.x - 25} y={MAIN_HAND.y - 6} width={50} height={12} rx={4} />,
     },
   ],
 };
@@ -324,13 +331,7 @@ export default function ArenaAvatar({
             {base !== undefined && <g fill="currentColor">{base}</g>}
             {/* `38 § 4` — הבסיס מתחת לציוד: חתימת הדמות יושבת בין השניים. */}
             {marks.length > 0 && (
-              <g
-                data-arena-character={character}
-                className={OUTLINE_CLASS}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={5}
-              >
+              <g data-arena-character={character} fill="currentColor">
                 {marks.map((mark, i) => (
                   <g key={i}>{mark.shape}</g>
                 ))}
