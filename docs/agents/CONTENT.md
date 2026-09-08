@@ -117,6 +117,30 @@ Otherwise `LOCK_HELD_BY=CONTENT`, `LOCK_AT=<real time>`, push immediately.
 ⛔ **Why this line exists, and it is ⛔ not tidiness.** Between **04/09 19:12Z** and **06/09 11:00Z** seven consecutive QA windows produced **⛔ zero commits**, and ⛔ nothing anywhere said why. `loop:health` check 10 did go red — ⛔ but on the SYMPTOM (41 commits ahead of `dev`), while the cause sat inside an agent that yielded and ⛔ said nothing. **A yield that leaves ⛔ no trace is indistinguishable from a loop that is dead**, and it stayed invisible for **40 hours**. ⇒ `loop:health` **check 17** now measures the silence itself (`docs/agents/roster.json`, ceiling 24h).
 ⛔ **The yield itself is ⛔ correct and ⛔ unchanged** (`RULES § 0.4` · `F-121` — a write under a live lock split the branch on 25/08). What changed is only that it now leaves a trace.
 
+📓 🔴 ⛔ **AND THE REPORT LINE IS ⛔ NOT ENOUGH — ⛔ THE LOOP ⛔ CANNOT SEE IT.**  ⟦NEW 08/09 · `RULES § 0.29 ו׳` · `T-280` · `F-206`⟧
+
+⛔ **A run that produced ⛔ no WORK commit pushes exactly ⛔ one line** to
+`plan/archive/control-log.md`, in your own commit prefix, in this shape:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line>
+```
+⛔ **And the reason is the ⛔ only part that matters:** whose lock and how old · empty
+queue · a blocker **by its id** (`F-194`, ⛔ not "blocked").
+
+🔬 ⛔ **Why, and it is a MEASUREMENT:** `git log` is the ⛔ only channel in which this
+loop is visible from outside. `loop:health` check 17 reads exactly that ⇒ until 08/09
+**a legitimately blocked agent looked identical to a dead one.** Measured 08/09:
+CONTENT was silent for **three consecutive windows** (19:15 · 03:15 · 07:15) with runs
+that ended `SUCCEEDED` and ⛔ zero commits — because `F-194` blocks every batch, ⛔ not
+because it died; PM, 23 hours. ⛔ **«⛔ NEVER silently» above is ⛔ not enough** — it
+produces text in the session output, and ⛔ nothing reads that.
+
+⚠️ **You are racing the lock holder for `work/current`** ⇒ `./scripts/g fetch origin`,
+`rebase`, push, and on a second rejection **exit** — ⛔ do ⛔ not loop.
+⛔ **⛔ And ⛔ never `SKIP_VERIFY=1` for it.** A journal line is ⛔ not an emergency; the
+push runs `verify` like every other push, and that is the point.
+
+
 
 ## STEP 3 — WHICH TRACK
 **An unblocked commission?** → do it. Follow its brief exactly, run its gate, write to the output path the row names, mark the row **🟣 לביקורת**. ⛔ Skip STEP 4–5.

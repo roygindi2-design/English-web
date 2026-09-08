@@ -65,6 +65,30 @@ cat plan/00-control.md               # and ⛔ NOTHING else yet
 
 ⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס קידום. ‏`origin/main..origin/dev` = `<M>` קומיטים.» **Three numbers, all measured in the tick, ⛔ none remembered.**
 
+📓 🔴 ⛔ **AND THE REPORT LINE IS ⛔ NOT ENOUGH — ⛔ THE LOOP ⛔ CANNOT SEE IT.**  ⟦NEW 08/09 · `RULES § 0.29 ו׳` · `T-280` · `F-206`⟧
+
+⛔ **A run that produced ⛔ no WORK commit pushes exactly ⛔ one line** to
+`plan/archive/control-log.md`, in your own commit prefix, in this shape:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line>
+```
+⛔ **And the reason is the ⛔ only part that matters:** whose lock and how old · empty
+queue · a blocker **by its id** (`F-194`, ⛔ not "blocked").
+
+🔬 ⛔ **Why, and it is a MEASUREMENT:** `git log` is the ⛔ only channel in which this
+loop is visible from outside. `loop:health` check 17 reads exactly that ⇒ until 08/09
+**a legitimately blocked agent looked identical to a dead one.** Measured 08/09:
+CONTENT was silent for **three consecutive windows** (19:15 · 03:15 · 07:15) with runs
+that ended `SUCCEEDED` and ⛔ zero commits — because `F-194` blocks every batch, ⛔ not
+because it died; PM, 23 hours. ⛔ **«⛔ NEVER silently» above is ⛔ not enough** — it
+produces text in the session output, and ⛔ nothing reads that.
+
+⚠️ **You are racing the lock holder for `work/current`** ⇒ `./scripts/g fetch origin`,
+`rebase`, push, and on a second rejection **exit** — ⛔ do ⛔ not loop.
+⛔ **⛔ And ⛔ never `SKIP_VERIFY=1` for it.** A journal line is ⛔ not an emergency; the
+push runs `verify` like every other push, and that is the point.
+
+
 🔴 ⛔ **AND BEFORE THAT PUSH — ⛔ ONE LINE, ⛔ AND IT IS ⛔ NOT OPTIONAL:**  ⟦NEW 08/09 · `F-195` · `T-277`⟧
 ```
 npm run hooks:install     # == node scripts/install-hooks.mjs — needs ⛔ NO node_modules

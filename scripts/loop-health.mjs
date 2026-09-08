@@ -67,12 +67,24 @@ const results = [];
  * ⛔ **Soft is ⛔ NOT silent, and that distinction is the whole design:** a check
  * nobody can see is a check nobody will fix before it bites.
  */
+/**
+ * 🔴 ⛔ **AND A THIRD STATE, ⛔ BECAUSE TWO WERE ⛔ NOT ENOUGH.**  ⟦added 08/09 · `F-206`⟧
+ *
+ * `ok:false` used to mean two unrelated things at once: «I measured, and it is broken»
+ * and «⛔ I could ⛔ not measure at all». Check 17 printed the ⛔ same shape of line for a
+ * missing `roster.json`, an unfetched ref, and an agent that had genuinely gone dark —
+ * ⛔ and the third is the reason the check exists.
+ * ⇒ a check may return `notMeasured: true`. It prints ` n/m `, its detail is shown in
+ * full, and it ⛔ NEVER counts toward the exit code — ⛔ regardless of any soft date,
+ * because a checker that ⛔ could not run has ⛔ found nothing, and «found nothing» is
+ * ⛔ not «found it clean». ⛔ A gap that reports itself is ⛔ not the same as a defect.
+ */
 const TODAY = new Date().toISOString().slice(0, 10);
 const check = (id, title, fn, softUntil = null) => {
   const soft = softUntil !== null && TODAY < softUntil;
   try {
-    const { ok, detail, items = [] } = fn();
-    results.push({ id, title, ok, detail, items, soft, softUntil });
+    const { ok, detail, items = [], notMeasured = false } = fn();
+    results.push({ id, title, ok, detail, items, soft, softUntil, notMeasured });
   } catch (e) {
     results.push({
       id,
@@ -849,6 +861,17 @@ check(
  * ⚠️ **רכה עד `2026-09-13`**, מאותה סיבה שכתובה בראש הקובץ.
  */
 const SILENCE_LOOKBACK_COMMITS = 400;
+/**
+ * 📓 **שורת היומן — הקומיט שאומר «רצתי, ⛔ ולא הייתה עבודה, וזאת הסיבה».**  ⟦NEW 08/09 · `T-280`⟧
+ *
+ * ‏`RULES § 0.29 ו׳` מחייב אותה מכל חמשת הסוכנים, בצורה:
+ * ```
+ * loop(<AGENT>): <cycle> idle — <the reason, in one line>
+ * ```
+ * ⇒ התחילית ⛔ אינה משתנה, ולכן ההתאמה ב-`commitPrefix` ממשיכה לעבוד כמו שהיא;
+ * מה שנוסף הוא **הסמן שמבדיל בין «חי» ל«עבד»**.
+ */
+const IDLE_SUBJECT = /\bidle\b\s*(?:—|--|-|:)\s*\S/;
 check(
   '17',
   'כל סוכן דלוק הפיק קומיט ב-24 השעות האחרונות',
@@ -866,7 +889,7 @@ check(
     };
     const rosterRaw = read(at('docs', 'agents', 'roster.json'));
     if (rosterRaw === '') {
-      return { ok: false, detail: '⛔ לא נמדד — docs/agents/roster.json חסר' };
+      return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — docs/agents/roster.json חסר' };
     }
     const roster = JSON.parse(rosterRaw);
     const active = (roster.agents ?? []).filter((a) => a.enabled === true);
@@ -880,7 +903,12 @@ check(
       `-${SILENCE_LOOKBACK_COMMITS}`,
     );
     if (log === null) {
-      return { ok: false, detail: '⛔ לא נמדד — git log על origin/work/current נכשל' };
+      return {
+        ok: false,
+        notMeasured: true,
+        detail:
+          '⛔ לא נמדד — git log על origin/work/current נכשל (הרף ⛔ אינו בקלון? `./scripts/g fetch origin work/current`)',
+      };
     }
     const commits = log
       .trim()
@@ -893,6 +921,9 @@ check(
     const nowSec = Math.floor(Date.now() / 1000);
     const items = [];
     const parts = [];
+    /** ⛔ **רק שקט מוחלט מפיל את הבדיקה.** «חי ללא עבודה» מדווח ו⛔ אינו כישלון — אחרת
+     *  סוכן שנחסם כדין וכתב למה, מלמד כל קורא ש-`FAIL` הוא הצבע הרגיל. */
+    const silent = [];
     for (const a of active) {
       /**
        * 🔴 ⛔ **⟦FIXED 07/09⟧ ONE AGENT, TWO COMMIT PREFIXES — ⛔ and until today this
@@ -912,22 +943,44 @@ check(
        * untouched; an agent whose name changed carries both, because the history holds both.
        */
       const prefixes = Array.isArray(a.commitPrefix) ? a.commitPrefix : [a.commitPrefix];
-      const newest = commits.find((c) => prefixes.some((p) => c.subject.startsWith(p)));
+      const mine = commits.filter((c) => prefixes.some((p) => c.subject.startsWith(p)));
       const ceiling = a.maxSilentHours ?? 24;
-      if (newest === undefined) {
-        items.push(`⛔ ${a.name} — ⛔ אף קומיט ב-${commits.length} האחרונים (חלון קצר מדי, או שקט ארוך)`);
-        parts.push(`${a.name} ⛔`);
+      const newestAny = mine[0];
+      const newestWork = mine.find((c) => !IDLE_SUBJECT.test(c.subject));
+
+      if (newestAny === undefined) {
+        items.push(
+          `🔴 ${a.name} — ⛔ אף קומיט ב-${commits.length} האחרונים, ⛔ ולא שורת יומן. ⛔ שקט מוחלט.`,
+        );
+        parts.push(`${a.name} 🔴`);
+        silent.push(a.name);
         continue;
       }
-      const hours = (nowSec - newest.ts) / 3600;
-      parts.push(`${a.name} ${hours.toFixed(1)}ש׳`);
-      if (hours > ceiling) {
-        items.push(
-          `⛔ ${a.name} שותק ${hours.toFixed(1)} שעות (תקרה ${ceiling}) — הקומיט האחרון: ${newest.subject.slice(0, 60)}`,
-        );
+
+      const workHours = newestWork === undefined ? Infinity : (nowSec - newestWork.ts) / 3600;
+      if (workHours <= ceiling) {
+        parts.push(`${a.name} ${workHours.toFixed(1)}ש׳`);
+        continue;
       }
+
+      // ⛔ ⛔ אין קומיט עבודה בחלון. השאלה היחידה שמשנה: האם הוא **אמר למה**?
+      const idleHours = (nowSec - newestAny.ts) / 3600;
+      if (IDLE_SUBJECT.test(newestAny.subject) && idleHours <= ceiling) {
+        parts.push(`${a.name} 🟡 ${idleHours.toFixed(1)}ש׳`);
+        items.push(
+          `🟡 ${a.name} חי ללא עבודה — ⛔ אפס קומיט עבודה ${workHours === Infinity ? `ב-${commits.length} האחרונים` : `${workHours.toFixed(1)} שעות`}, ` +
+            `⛔ אבל שורת היומן שלו מלפני ${idleHours.toFixed(1)} שעות אומרת למה: ${newestAny.subject.slice(0, 90)}`,
+        );
+        continue;
+      }
+
+      parts.push(`${a.name} 🔴 ${idleHours.toFixed(1)}ש׳`);
+      items.push(
+        `🔴 ${a.name} שותק ${idleHours.toFixed(1)} שעות (תקרה ${ceiling}) — ⛔ ולא הותיר שורת יומן. הקומיט האחרון: ${newestAny.subject.slice(0, 60)}`,
+      );
+      silent.push(a.name);
     }
-    return { ok: items.length === 0, detail: parts.join(' · '), items };
+    return { ok: silent.length === 0, detail: parts.join(' · '), items };
   },
   '2026-09-13',
 );
@@ -1035,15 +1088,20 @@ const workTypeMix = () => {
   };
 };
 
-const failed = results.filter((r) => !r.ok && !r.soft);
-const softFailed = results.filter((r) => !r.ok && r.soft);
+const notMeasured = results.filter((r) => r.notMeasured);
+const failed = results.filter((r) => !r.ok && !r.soft && !r.notMeasured);
+const softFailed = results.filter((r) => !r.ok && r.soft && !r.notMeasured);
 /** ⛔ מוין לפי מספר, ⛔ ולא לפי סדר הרישום בקובץ — בדיקה חדשה נכתבת ליד הקוד
  *  שהיא בודקת, ⛔ ולא בסוף, ודוח שקופץ מ-6 ל-10 ובחזרה ל-7 הוא דוח שקוראים לא נכון. */
 const ordered = [...results].sort((a, b) => Number(a.id) - Number(b.id));
 console.log('בריאות הלופ — כל בדיקה היא קצה פתוח שכבר קרה\n');
 for (const r of ordered) {
-  const mark = r.ok ? '  ok  ' : r.soft ? ' warn ' : ' FAIL ';
-  const tail = r.ok || !r.soft ? '' : `   ⚠️ אזהרה בלבד עד ${r.softUntil}`;
+  const mark = r.notMeasured ? ' n/m  ' : r.ok ? '  ok  ' : r.soft ? ' warn ' : ' FAIL ';
+  const tail = r.notMeasured
+    ? '   ⛔ לא נמדד — ⛔ ואינה נספרת בקוד היציאה. ⛔ «לא נמדד» ⛔ אינו «עבר».'
+    : r.ok || !r.soft
+      ? ''
+      : `   ⚠️ אזהרה בלבד עד ${r.softUntil}`;
   console.log(`${mark}${r.id}. ${r.title} — ${r.detail}${tail}`);
   for (const item of r.items.slice(0, 8)) console.log(`         ${item}`);
   if (r.items.length > 8) console.log(`         … ועוד ${r.items.length - 8}`);
@@ -1060,7 +1118,12 @@ console.log(
         (slice.capped ? ` (⚠️ אף פרוסה לא נפתחה ב-${slice.scanned} טיקי PM האחרונים שנבדקו — ייתכן שהחלון קצר מדי)` : '')
     : `טיקי PM מאז פרוסת פיצ'ר אחרונה: ⛔ לא נמדד — git אינו נגיש`,
 );
-console.log(`\nloop health: ${results.length - failed.length - softFailed.length}/${results.length} checks pass`);
+console.log(
+  `\nloop health: ${results.length - failed.length - softFailed.length - notMeasured.length}/${results.length} checks pass`,
+);
+if (notMeasured.length > 0) {
+  console.log(`⛔ ${notMeasured.length} ⛔ לא נמדדו — ⛔ ואינן נספרות כעוברות ו⛔ לא כנכשלות.`);
+}
 if (softFailed.length > 0) {
   console.log(`⚠️ ${softFailed.length} באזהרה — ⛔ אינן נספרות בקוד היציאה עד התאריך שלהן.`);
 }

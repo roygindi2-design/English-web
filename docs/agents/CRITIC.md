@@ -172,6 +172,30 @@ Otherwise lock as CRITIC and push immediately.
 ⛔ **The yield itself is ⛔ correct and ⛔ unchanged** (`RULES § 0.4` · `F-121` — a merge under a live lock split the branch on 25/08). What was wrong is that **a yield that leaves no trace is indistinguishable from a loop that is dead**, and it stayed invisible for **40 hours**. ⚠️ `loop:health` check 10 did go red (41/40) and the PM filed it (`03-for-roy` item 98) — ⛔ but the cause was ⛔ nowhere, because the only agent that knew ⛔ never said it.
 ⚠️ `WORKSTREAM_TICKS` counts **work-ticks only** — a tick that ended in a commit — ceiling **per item** of `36 § 13`. Binding text `RULES § 0.1 ו׳`.
 
+📓 🔴 ⛔ **AND THE REPORT LINE IS ⛔ NOT ENOUGH — ⛔ THE LOOP ⛔ CANNOT SEE IT.**  ⟦NEW 08/09 · `RULES § 0.29 ו׳` · `T-280` · `F-206`⟧
+
+⛔ **A run that produced ⛔ no WORK commit pushes exactly ⛔ one line** to
+`plan/archive/control-log.md`, in your own commit prefix, in this shape:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line>
+```
+⛔ **And the reason is the ⛔ only part that matters:** whose lock and how old · empty
+queue · a blocker **by its id** (`F-194`, ⛔ not "blocked").
+
+🔬 ⛔ **Why, and it is a MEASUREMENT:** `git log` is the ⛔ only channel in which this
+loop is visible from outside. `loop:health` check 17 reads exactly that ⇒ until 08/09
+**a legitimately blocked agent looked identical to a dead one.** Measured 08/09:
+CONTENT was silent for **three consecutive windows** (19:15 · 03:15 · 07:15) with runs
+that ended `SUCCEEDED` and ⛔ zero commits — because `F-194` blocks every batch, ⛔ not
+because it died; PM, 23 hours. ⛔ **«⛔ NEVER silently» above is ⛔ not enough** — it
+produces text in the session output, and ⛔ nothing reads that.
+
+⚠️ **You are racing the lock holder for `work/current`** ⇒ `./scripts/g fetch origin`,
+`rebase`, push, and on a second rejection **exit** — ⛔ do ⛔ not loop.
+⛔ **⛔ And ⛔ never `SKIP_VERIFY=1` for it.** A journal line is ⛔ not an emergency; the
+push runs `verify` like every other push, and that is the point.
+
+
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR QUEUE AND YOUR DASHBOARD (RULES § 0.6א · § 0.6ב)
 
 **⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`.** They are **667KB** together — ~230k tokens before you review anything. The index is **78KB** and holds: the open rows by state · 🧭 the balance table · 🌳 the work tree · 📐 the 46 plans · flags.

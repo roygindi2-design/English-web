@@ -1101,6 +1101,24 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     }
   });
 
+  /**
+   * 📓 **`T-280`ⓒ — חמשת הסוכנים מחויבים בשורת יומן על ריצה בלי קומיט עבודה.**  ⟦NEW 08/09⟧
+   *
+   * ⛔ **עד 08/09 רק PROMOTER חויב** (`RULES § 0.29 ו׳`), ⇒ **סוכן שנחסם כדין נראה מבחוץ
+   * זהה לסוכן מת.** נמדד: CONTENT — שלושה חלונות רצופים, ריצות `SUCCEEDED`, אפס קומיטים,
+   * ⛔ כי `F-194` חוסם כל אצווה; PM — 23 שעות.
+   * ⚠️ **ו«⛔ NEVER silently» ש⛔ כבר היה בארבעת הפרומפטים ⛔ אינו זה:** הוא מייצר טקסט
+   * בפלט הסשן, ו-`git log` הוא הדבר היחיד שבדיקה 17 יכולה לקרוא.
+   */
+  it('חמשת הפרומפטים מחויבים בשורת יומן על ריצה בלי קומיט עבודה (T-280ⓒ)', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      expect(body, `${a}: היעד`).toContain('plan/archive/control-log.md');
+      expect(body, `${a}: הצורה שבדיקה 17 מזהה`).toMatch(/idle — <the reason/);
+      expect(body, `${a}: ⛔ ולא דרך מוצא החירום`).toMatch(/⛔ never `SKIP_VERIFY=1` for it/);
+    }
+  });
+
   it('⛔ אף תוכנית ב-docs/superpowers/plans ⛔ אינה מדגימה פקודת שער עם קוד יציאה בלוע', () => {
     const dir = 'docs/superpowers/plans';
     const plans = readdirSync(dir).filter((f) => f.endsWith('.md'));

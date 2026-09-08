@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -36,6 +44,13 @@ const failed = (out: string, n: string): boolean =>
  */
 const warned = (out: string, n: string): boolean =>
   new RegExp(`^ warn ${n}\\.`, 'm').test(out);
+/**
+ * 🔴 ⛔ **«⛔ לא נמדד» הוא מצב שלישי, ⛔ ולא גוון של כישלון.**  ⟦NEW 08/09 · `F-206`⟧
+ * בדיקה שלא הצליחה לרוץ ⛔ לא מצאה דבר, ו«לא מצאה דבר» ⛔ אינו «מצאה נקי». ⇒ היא
+ * ⛔ אינה נספרת בקוד היציאה **בשום תאריך**, ⛔ ולכן טענה עליה ⛔ אינה יכולה להתהפך.
+ */
+const notMeasured = (out: string, n: string): boolean =>
+  new RegExp(`^ n/m  ${n}\\.`, 'm').test(out);
 
 /** Mirrors `IMPROVE_ROW_TAG` in scripts/loop-health.mjs — kept as a literal here so
  *  the test does not import implementation internals, only observable output. */
@@ -124,8 +139,17 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
     const warning = ['12', '13', '14', '16', '17'].filter((n) => warned(r.out, n));
+    /**
+     * 🔴 ⛔ **⟦08/09 · `F-206`⟧ ומצב שלישי נכנס למשוואה: «⛔ לא נמדד».** בדיקה שלא
+     * הצליחה לרוץ (‏17 כאן — ⛔ אין `roster.json` בפיקסצ׳ר) ⛔ אינה עוברת, ⛔ אינה נכשלת
+     * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
+     * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
+     */
+    const unmeasured = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17']
+      .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length).toBe(17);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(17);
+    expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9', '15']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -726,13 +750,22 @@ describe('scripts/loop-health.mjs', () => {
    * ⛔ **בדיקה 16 · שער ה-verify** ⟦הכרעה 100⟧ — הפיקסצ׳ר ⛔ אינו ריפו ו⛔ אין בו
    * `scripts/hooks`, ולכן הבדיקה ⛔ אינה יכולה לעבור כאן. זה בדיוק מה שנדרש: בודק
    * שעובר כי ⛔ לא הצליח לרוץ הוא בדיוק השקר שהקובץ הזה קיים נגדו.
-   * ⛔ ורכה ⇒ ` warn `, ⛔ לא ` FAIL ` — ⛔ ואינה נוגעת בקוד היציאה עד 2026-09-13.
+   * 🔴 ⛔ **⟦REWRITTEN 08/09 · אותה מחלקה של `F-206`, שנמצאה בהרצת ההוכחה שלו⟧ הטענה כאן
+   * הייתה `warned === true` ו-`failed === false`, והחלון הרך של בדיקה 16 נסגר ב-`2026-09-13`
+   * — **אותו תאריך בדיוק** של בדיקה 17. ⇒ באותו יום, בלי ⛔ שום עריכה, הסימון היה עובר
+   * ל-` FAIL `, שתי השורות היו נופלות, ו-`npm run verify` היה מאדים לחמשת הסוכנים.
+   * ⛔ **נמדד ⛔ ולא שוער:** הרצת הבדיקות מול `softUntil` מוקדם הפילה בדיוק את השורה הזאת.
+   * ⇒ הטענה היא על ה**וורדיקט** — «הבדיקה אמרה שה-hook חסר, והיא ⛔ לא שתקה» — ⛔ ולא על
+   * הצבע שהתאריך קובע.
    */
   describe('הכרעה 100 — check 16 · שער ה-verify', () => {
-    it('אומרת «⛔ hook חסר» על שורש שאין בו scripts/hooks, ובאזהרה בלבד', () => {
+    it('אומרת «⛔ hook חסר» על שורש שאין בו scripts/hooks, ומדווחת ⛔ בכל תאריך', () => {
       const r = run(healthy());
-      expect(warned(r.out, '16'), 'רכה ⇒ warn').toBe(true);
-      expect(failed(r.out, '16'), '⛔ לא FAIL בחלון הרך').toBe(false);
+      expect(
+        warned(r.out, '16') || failed(r.out, '16'),
+        '⛔ הבדיקה מדווחת — רכה עד 13/09, קשה אחריו, ⛔ ולא שקטה',
+      ).toBe(true);
+      expect(notMeasured(r.out, '16'), '⛔ היא כן מדדה — ה-hook פשוט ⛔ אינו שם').toBe(false);
       expect(r.out).toMatch(/16\..*hook/);
       expect(r.out).toContain('npm run hooks:install');
     });
@@ -750,11 +783,100 @@ describe('scripts/loop-health.mjs', () => {
    * בין 04/09 19:12Z ל-06/09 11:00Z הפיקו ⛔ אפס קומיטים, ו⛔ שום דבר לא אמר למה.
    */
   describe('הכרעה 101 — check 17 · סוכן דלוק ששותק מעל 24 שעות', () => {
-    it('אומרת «⛔ לא נמדד» כשאין roster.json, ובאזהרה בלבד', () => {
+    /**
+     * 🔴 ⛔ **⟦REWRITTEN 08/09 · `F-206` · `T-280`⟧ הטענה הזאת הייתה תלוית-תאריך, וב-13/09
+     * היא הייתה מתהפכת ומאדימה את `npm run verify` לחמשת הסוכנים.**
+     *
+     * ⛔ נמדד ⛔ ולא שוער: היא טענה `warned === true` ו-`failed === false` על בדיקה שהחלון
+     * הרך שלה נסגר ב-`2026-09-13` (`loop-health.mjs`). ⇒ ביום הזה, בלי ⛔ שום עריכה, הסימון
+     * היה הופך ל-`FAIL`, שתי השורות היו נופלות, ו**הבדיקה הייתה שוברת את השער עצמו** —
+     * ⛔ לא רק את דוח הבריאות.
+     * ⇒ הטענה החדשה היא על ה**סיווג**, ⛔ ולא על המצב הרך/קשה: «roster חסר» הוא
+     * **⛔ לא נמדד**, ⛔ ולעולם ⛔ לא כישלון — בשום תאריך.
+     */
+    it('roster.json חסר ⇒ «⛔ לא נמדד», ⛔ ולא כישלון — ⛔ בשום תאריך (F-206)', () => {
       const r = run(healthy());
-      expect(warned(r.out, '17')).toBe(true);
-      expect(failed(r.out, '17'), '⛔ לא FAIL בחלון הרך').toBe(false);
+      expect(notMeasured(r.out, '17'), '⛔ הסימון הוא n/m').toBe(true);
+      expect(failed(r.out, '17'), '⛔ ⛔ אינה נספרת ככישלון').toBe(false);
+      expect(warned(r.out, '17'), '⛔ ⛔ ואינה אזהרה — היא פשוט ⛔ לא נמדדה').toBe(false);
       expect(r.out).toMatch(/17\..*roster\.json/);
+      expect(r.out, '⛔ «לא נמדד» ⛔ אינו «עבר», והדוח אומר זאת').toMatch(/⛔ לא נמדד/);
+    });
+
+    /**
+     * 🟡 🔴 ⛔ **שלושה מצבים, ⛔ ולא שניים — זה כל `F-206`.**
+     *
+     * עד 08/09 «‏ref חסר בקלון», «סוכן חסום כדין» ו«סוכן מת» הדפיסו **את אותה שורה בדיוק**,
+     * והשלישי הוא הסיבה שהבדיקה קיימת. ⛔ נמדד: CONTENT שתק **שלושה חלונות רצופים** עם
+     * ריצות `SUCCEEDED` — ⛔ כי `F-194` חסם כל אצווה, ⛔ ולא כי הוא מת.
+     * ⇒ הבדיקה בונה כאן ריפו git אמיתי בן שני קומיטים, כי ⛔ אין דרך לזייף `git log`.
+     */
+    describe('שלושת המצבים — חסום כדין ⛔ אינו נראה כמו מת (F-206 · T-280)', () => {
+      const gitRepo = (subjects: string[]): string => {
+        const root = healthy();
+        const g = (...args: string[]) =>
+          execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
+        // ⛔ `loop-health.mjs` קורא ל-`./scripts/g` יחסית ל-ROOT ⇒ עותק אמיתי, ⛔ לא בדל.
+        mkdirSync(join(root, 'scripts'), { recursive: true });
+        mkdirSync(join(root, 'docs', 'agents'), { recursive: true });
+        copyFileSync('scripts/g', join(root, 'scripts', 'g'));
+        chmodSync(join(root, 'scripts', 'g'), 0o755);
+        writeFileSync(join(root, 'docs', 'agents', 'roster.json'), ROSTER_ONE, 'utf8');
+        g('init', '-q', '-b', 'main');
+        g('config', 'user.email', 't@t');
+        g('config', 'user.name', 't');
+        for (const subject of subjects) {
+          writeFileSync(join(root, 'seq.txt'), subject, 'utf8');
+          g('add', '-A');
+          g('commit', '-q', '-m', subject);
+        }
+        // ⛔ הבדיקה קוראת `origin/work/current` בשמו המלא — ⛔ לא ענף מקומי.
+        g('update-ref', 'refs/remotes/origin/work/current', 'HEAD');
+        return root;
+      };
+
+      const ROSTER_ONE = JSON.stringify({
+        agents: [{ name: 'DEV', commitPrefix: 'loop(DEV', enabled: true, maxSilentHours: 24 }],
+      });
+
+      const line17 = (out: string): string =>
+        /^(?:  ok  | FAIL | warn | n\/m  )17\. .*$/m.exec(out)?.[0] ?? '';
+
+      it('🟢 קומיט עבודה טרי ⇒ ok', () => {
+        const r = run(gitRepo(['loop(DEV): C-0001 built the thing']));
+        expect(line17(r.out), 'שורת הבדיקה נדפסת').not.toBe('');
+        expect(failed(r.out, '17')).toBe(false);
+        expect(warned(r.out, '17')).toBe(false);
+        expect(notMeasured(r.out, '17')).toBe(false);
+      });
+
+      /**
+       * ⛔ **הקומיט טרי, ⛔ אבל הוא שורת יומן — ⛔ לא עבודה.** ⇒ הסוכן חי, הסיבה כתובה,
+       * ו⛔ אין כאן כישלון. ⛔ הדיווח ⛔ אינו נעלם: הוא מצטט את הסיבה מהיומן.
+       */
+      it('🟡 רק שורת יומן טרייה ⇒ «חי ללא עבודה», מדווח ו⛔ לא נכשל', () => {
+        const r = run(gitRepo(['loop(DEV): C-0002 idle — F-194 blocks every batch']));
+        expect(failed(r.out, '17'), '⛔ ⛔ לא כישלון — הוא אמר למה').toBe(false);
+        expect(r.out, 'הסיבה מצוטטת מהיומן').toMatch(/חי ללא עבודה/);
+        expect(r.out, 'ומצוטטת מילה במילה').toMatch(/F-194 blocks every batch/);
+      });
+
+      /**
+       * 🔴 ⛔ **⛔ אף קומיט בתחילית הסוכן — ⛔ ולא שורת יומן.** זה, ⛔ ורק זה, מפיל את
+       * הבדיקה. ⛔ סוכן שנמדד כמת ⛔ אינו נבדל בשום ערוץ אחר — `git log` הוא היחיד שרואים.
+       */
+      it('🔴 ⛔ אף קומיט ⇒ שקט מוחלט, וזה המצב היחיד שמפיל', () => {
+        const r = run(gitRepo(['ops(runtime): somebody else entirely']));
+        // ⛔ **⛔ לא `warned` ו⛔ לא `failed` — הבדיקה נעשית על ה**וורדיקט**, ⛔ לא על
+        // החלון הרך. ‏17 עוברת מ-` warn ` ל-` FAIL ` ב-13/09 **בלי שום עריכה**, וטענה
+        // על אחד מהשניים הייתה מתהפכת באותו יום. זו בדיוק התקלה ש-`F-206` פתח עליה.
+        expect(warned(r.out, '17') || failed(r.out, '17'), '⛔ נספר — רך עד 13/09, קשה אחריו').toBe(
+          true,
+        );
+        expect(notMeasured(r.out, '17'), '⛔ נמדד — יש roster ויש git').toBe(false);
+        expect(r.out, 'שקט מוחלט, ⛔ ולא «חי ללא עבודה»').toMatch(/שקט מוחלט/);
+        expect(r.out).not.toMatch(/חי ללא עבודה/);
+      });
     });
 
     it('מודדת את ארבעת הסוכנים בריפו החי, ומדפיסה שעות לכל אחד', () => {
