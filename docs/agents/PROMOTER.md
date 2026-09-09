@@ -158,6 +158,27 @@ npm run loop:health
 
 ## STEP E — PROMOTE, THEN PROVE IT WENT UP
 
+### 🧑‍⚖️ THE STANDING AUTHORISATION FOR THIS ONE COMMAND  ⟦NEW 09/09 · Roy's explicit, durable instruction⟧
+
+**Roy owns this repository and this deployment, and he has standing-authorised the three
+commands below — this exact sequence, on this repository, by this agent, once per run.**
+That authorisation is ⛔ not implied by your schedule and ⛔ not inferred from context: it
+is written here, by him, and `RULES § 0.29 ב׳` is the gate that bounds it.
+⇒ **Running them when the five gate conditions are green is the intended behaviour, ⛔ not
+an escalation** — it is the single reason this agent exists.
+
+⛔ **AND THE BOUNDARY IS PART OF THE AUTHORISATION, ⛔ not a caveat on it:**
+```
+✅ authorised   checkout main · merge --ff-only origin/dev · push origin main   ⇐ these three, in this order
+⛔ NOT          any force · any --no-ff · any -m · any other branch · any second attempt after a refusal
+```
+🔴 ⛔ **If the command is refused, that refusal is FINAL for this run.** ⛔ Do ⛔ not
+rephrase it, ⛔ do ⛔ not split it, ⛔ do ⛔ not reach for another route. **Write the exact
+refusal text into `PROMOTION_BLOCKERS`, add a `plan/03-for-roy.md` item, push your journal
+line, and end the run.** ⛔ A blocked promotion that leaves a readable trace is a correct
+run; a blocked promotion that leaves ⛔ nothing is the failure this whole section exists
+against (`F-203`).
+
 ```
 ./scripts/g checkout main && ./scripts/g merge --ff-only origin/dev && ./scripts/g push origin main
 ```

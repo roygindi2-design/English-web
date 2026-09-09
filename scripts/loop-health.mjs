@@ -1031,6 +1031,33 @@ check(
       );
       silent.push(a.name);
     }
+    /**
+     * 🔴 ⛔ **ALL OF THEM AT ONCE IS ⛔ NOT THE SAME DIAGNOSIS AS ONE OF THEM.**
+     * ⟦NEW 09/09 · measured the morning it happened⟧
+     *
+     * One agent silent ⇒ that agent is stuck. **Every** enabled agent silent ⇒ the loop
+     * itself is not running, and ⛔ nothing in this repository says so.
+     *
+     * 🔬 **Measured 09/09 09:03–09:06Z, ⛔ not hypothesised:** all six scheduled Routines
+     * were switched off, one after another, ~30 seconds apart. From inside the repo that
+     * is invisible: `PAUSED_BY_HUMAN` in `plan/00-control.md` still read `false`, every
+     * register was clean, and `verify` was green. The loop had simply stopped, and the
+     * ⛔ only readable symptom was five separate "agent is silent" lines that each
+     * suggested five separate problems.
+     *
+     * ⇒ the check says the systemic thing when the systemic thing is true. ⛔ It ⛔ cannot
+     * read the scheduler — that state lives on the server, ⛔ not in git (`RULES § 0.17ח`)
+     * — so it names the two possibilities and ⛔ does not pick one it cannot measure.
+     */
+    if (silent.length > 0 && silent.length === active.length) {
+      items.unshift(
+        `🔴 **כל ${active.length} הסוכנים הדלוקים שותקים בבת אחת.** ⛔ זה ⛔ אינו ${active.length} תקלות נפרדות — ` +
+          `זו תקלה אחת ברמת הלופ: או שהמשימות המתוזמנות כבויות/מושהות בשרת, או שכולן נכשלות באותה נקודה. ` +
+          `⛔ מצב המתזמן ⛔ אינו בגיט (\`RULES § 0.17ח\`) ⇒ ⛔ אי אפשר להכריע מכאן — ` +
+          `לבדוק את רשימת ה-Routines. ⚠️ ואם הלופ הושהה בכוונה, \`PAUSED_BY_HUMAN\` ב-\`plan/00-control.md\` ` +
+          `אמור לומר זאת, והוא כרגע ⛔ אינו הערוץ שמשמש לכך.`,
+      );
+    }
     return { ok: silent.length === 0, detail: parts.join(' · '), items };
   },
   '2026-09-13',

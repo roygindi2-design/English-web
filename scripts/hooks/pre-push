@@ -45,7 +45,7 @@ cd "$ROOT" || exit 1
 # ⛔ BRANCH OWNERSHIP — ⛔ WHO MAY PUSH WHERE.  ⟦NEW 08/09 · Roy's explicit instruction⟧
 #
 # `RULES § 0.1 ב׳` is the most load-bearing rule in the constitution:
-#   «⛔ אף סוכן ⛔ אינו דוחף ל-main — מלבד PROMOTER, פעם ביום, 5 0 * * * UTC.»
+#   «⛔ אף סוכן ⛔ אינו דוחף ל-main — מלבד PROMOTER, פעמיים ביום, 5 0,12 * * * UTC.»
 # 🔬 **And ⛔ nothing enforced it.** Measured 08/09: `git grep origin/main -- scripts/`
 # returns **zero**. The rule was a sentence in a file, exactly like `npm run verify` was
 # before הכרעה 100 — and this is the same move, on the same hook, for the same reason.
@@ -66,7 +66,7 @@ for ref in "${REFS[@]}"; do
     refs/heads/main)
       if [ "$WHOAMI" != "promoter-agent" ]; then
         echo "⛔ הדחיפה ל-main נחסמה: הזהות היא '$WHOAMI', ⛔ ולא 'promoter-agent'."
-        echo "⛔ RULES § 0.1 ב׳ — ⛔ אף סוכן ⛔ אינו דוחף ל-main מלבד PROMOTER, פעם ביום."
+        echo "⛔ RULES § 0.1 ב׳ — ⛔ אף סוכן ⛔ אינו דוחף ל-main מלבד PROMOTER."
         echo "⇒ QA ממזג ל-dev; PROMOTER לוקח משם. ⛔ אין מסלול אחר, ו-SKIP_VERIFY ⛔ אינו פותח אותו."
         exit 1
       fi

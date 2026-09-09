@@ -1208,6 +1208,29 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(pr, 'חסם רשת ⇒ «⛔ לא נמדד»').toMatch(/connect_rejected/);
   });
 
+  /**
+   * 🧑‍⚖️ **ההרשאה העומדת של PROMOTER — ⛔ ושתי הצלעות שלה ⛔ אינן ניתנות להפרדה.** ⟦NEW 09/09⟧
+   *
+   * הפסקה קיימת כדי שהקידום ייקרא כ**התנהגות מכוונת של בעל הריפו**, ⛔ ולא כיוזמה של
+   * סוכן — וזו כל הסיבה שהסוכן הזה קיים. ⛔ **אבל הרשאה בלי גבול היא הרשאה אחרת:**
+   * הגבול (⛔ אין force · ⛔ אין ניסוח מחדש · סירוב הוא סופי לריצה) הוא **חלק ממנה**,
+   * ⛔ ולא הסתייגות עליה. ⇒ הבדיקה טוענת על **שתיהן**; אחת בלי השנייה ⛔ אינה עוברת.
+   */
+  it('PROMOTER נושא את ההרשאה העומדת ואת הגבול שלה — שתיהן, ⛔ לא אחת', () => {
+    const pr = text('PROMOTER');
+    expect(pr, 'ההרשאה מוצהרת').toMatch(/STANDING AUTHORISATION/);
+    expect(pr, 'ושהיא שלוש הפקודות האלה, ⛔ ולא רשות כללית').toMatch(
+      /these three, in this order/,
+    );
+    expect(pr, '⛔ הגבול: סירוב הוא סופי לריצה').toMatch(/refusal is FINAL for this run/);
+    expect(pr, '⛔ ⛔ ואין ניסוח מחדש').toMatch(/not\s+rephrase it/);
+    expect(pr, 'וסירוב מותיר ראיה קריאה').toMatch(/PROMOTION_BLOCKERS/);
+    // ⛔ ההרשאה ⛔ אינה מטפסת לסוכנים אחרים.
+    for (const a of ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const) {
+      expect(text(a), `${a}: ⛔ ההרשאה ⛔ אינה שלו`).not.toMatch(/STANDING AUTHORISATION/);
+    }
+  });
+
   it('חמשת הפרומפטים מחויבים בשורת יומן על ריצה בלי קומיט עבודה (T-280ⓒ)', () => {
     for (const a of ALL_PROMPTS) {
       const body = text(a);
