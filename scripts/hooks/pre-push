@@ -85,8 +85,14 @@ for ref in "${REFS[@]}"; do
       esac
       ;;
     refs/heads/dev)
+      # 🧑‍⚖️ ⟦09/09⟧ **`ops-agent` נוסף כאן גם — כי בלעדיו השער היה **הפוך**.**
+      # 🔬 נמדד: `main` (הענף הרגיש) התיר `ops-agent` מאז הסבב הקודם, בעוד `dev`
+      # (הרפוי ממנו) ⛔ לא ⇒ סשן תפעול יכול היה לקדם ל-`main` ו⛔ לא ל-`dev`, כלומר
+      # ⛔ לא לקדם את השרשרת **לפי הסדר**. ⇒ ⛔ זו ⛔ אינה הרחבה — זו הסרת אי-סימטריה
+      # שנוצרה מכך ש-`main` עודכן ו-`dev` ⛔ לא, באותו קומיט.
+      # 🔴 **ומה שנשאר אסור ⛔ אינו זז:** `dev-agent` · `pm-agent` · `content-agent`.
       case "$WHOAMI" in
-        critic-agent|qa-agent|promoter-agent) ;;
+        critic-agent|qa-agent|promoter-agent|ops-agent) ;;
         *)
           echo "⛔ הדחיפה ל-dev נחסמה: הזהות היא '$WHOAMI'."
           echo "⛔ RULES § 0.23 — ל-dev מגיעים רק דרך 'merge --ff-only' של QA."

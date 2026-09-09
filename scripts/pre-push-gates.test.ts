@@ -392,6 +392,27 @@ describe('scripts/hooks/pre-push — מי רשאי לדחוף ל-main אחרי 0
     });
   }
 
+  /**
+   * 🔴 **ו-`dev` היה עד 09/09 **מחמיר יותר** מ-`main`, וזו הייתה תקלה ⛔ ולא מדיניות.**
+   * `main` התיר `ops-agent` מאז הסבב הקודם; `dev` ⛔ לא עודכן באותו קומיט ⇒ סשן תפעול
+   * יכול היה לקדם את הענף הרגיש ו⛔ לא את זה שלפניו בשרשרת, כלומר ⛔ לא לקדם **לפי
+   * הסדר** כלל. ⇒ שתי הטענות: מי נכנס, ⛔ ומי עדיין ⛔ לא.
+   */
+  for (const who of ['critic-agent', 'qa-agent', 'promoter-agent', 'ops-agent']) {
+    it(`✅ ${who} ⛔ אינו נחסם על בעלות הענף ב-dev`, () => {
+      const r = runHook(repo(who), 'refs/heads/dev', { SKIP_VERIFY: '1' });
+      expect(r.out, `${who}: ⛔ לא נחסם על dev`).not.toMatch(/הדחיפה ל-dev נחסמה/);
+    });
+  }
+
+  for (const who of ['dev-agent', 'pm-agent', 'content-agent']) {
+    it(`⛔ ${who} ⛔ עדיין נדחה מ-dev`, () => {
+      const r = runHook(repo(who), 'refs/heads/dev');
+      expect(r.code, `⛔ ${who} חייב להידחות`).not.toBe(0);
+      expect(r.out).toMatch(/הדחיפה ל-dev נחסמה/);
+    });
+  }
+
   it('⛔ ו-SKIP_VERIFY ⛔ עדיין אינו פותח את main לסוכן לופ', () => {
     const r = runHook(repo('dev-agent'), 'refs/heads/main', { SKIP_VERIFY: '1' });
     expect(r.code).not.toBe(0);
