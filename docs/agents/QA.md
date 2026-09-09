@@ -305,7 +305,7 @@ has always used (`scripts/verify-mobile.mjs`), so this is the walk finally match
 ⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
 kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
 `npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
-Drive `http://127.0.0.1:3000/dev/...` with Playwright at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login.
+Drive `http://localhost:3000/dev/...` with Playwright at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login.
 Per screen: heading · text length · **tappable count** · how many under 44px · horizontal scroll · console errors. **Then compare to its render.**
 
 **Three questions per screen — your real job:**

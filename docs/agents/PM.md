@@ -479,7 +479,7 @@ has always used (`scripts/verify-mobile.mjs`), so this is the walk finally match
 ⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
 kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
 `npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
-Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
+Drive `http://localhost:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
 **What one minute caught on 23/08:** `/dev/lesson` → `taps=1` on a 593-character screen. `/dev/tabs/studies` → 116 characters, unchanged from 21/08.
 ⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
 

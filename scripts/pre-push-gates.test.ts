@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -223,5 +223,53 @@ describe('scripts/hooks/pre-push — שער הנעילה (RULES § 0.4)', () => 
   it('✅ נעילה ריקה ⛔ אינה חוסמת דבר', () => {
     const r = runHook(lockedRepo('dev-agent', '""', 'lib/core/thing.ts'), 'refs/heads/work/current');
     expect(r.out).not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+});
+
+/**
+ * 🧱 **שער רביעי — שלמות הרגיסטרים תחת `SKIP_VERIFY`.**  ⟦NEW 09/09 · `T-275` · `D-197` · `F-191`⟧
+ *
+ * 🔬 **⛔ לא היפותטי — זה `F-191`, 🔴 CRITICAL שכבר קרה.** ב-07/09 טיק CONTENT הוריד את
+ * `plan/60-findings.md` מ-**237 שורות ל-26** (`git show 05563b5 --stat` ⇒
+ * `18 insertions(+), 229 deletions(-)`), וכל הרישום ההיסטורי נמחק. ⇒ `SKIP_VERIFY=1`
+ * מפסיק להיות עקיפה **מוחלטת**: מוצא החירום נשאר פתוח כדי ש-`verify` שבור ⛔ לא ינעל
+ * את הריפו (הכרעה 100), ⛔ אבל «`verify` שבור» ⛔ אינו סיבה להשמיד רגיסטר בדרך החוצה.
+ */
+describe('scripts/hooks/pre-push — שלמות הרגיסטרים ⛔ אינה מדלגת (T-275)', () => {
+  /** ריפו עם עותק אמיתי של הסקריפטים והרגיסטרים, כדי שהשער יוכל לרוץ בכלל. */
+  const integrityRepo = (mutate?: (root: string) => void): string => {
+    const root = repo('dev-agent');
+    for (const d of ['scripts', 'plan', 'docs']) mkdirSync(join(root, d), { recursive: true });
+    copyFileSync('scripts/check-rules-citations.mjs', join(root, 'scripts', 'check-rules-citations.mjs'));
+    copyFileSync('plan/RULES.md', join(root, 'plan', 'RULES.md'));
+    mutate?.(root);
+    execFileSync('git', ['add', '-A'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+    execFileSync('git', ['commit', '-q', '-m', 'integrity'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+    return root;
+  };
+
+  it('✅ מריץ את שער הציטוטים גם כש-SKIP_VERIFY=1', () => {
+    const r = runHook(integrityRepo(), 'refs/heads/work/current', { SKIP_VERIFY: '1' });
+    expect(r.out, 'הוא אומר במפורש שהוא ⛔ אינו מדלג').toMatch(/שלמות הרגיסטרים ⛔ אינה מדלגת/);
+    expect(r.out, 'והשער עצמו רץ').toMatch(/RULES citations/);
+  });
+
+  it('⛔ חוסם את הדחיפה כשציטוט RULES שבור — גם עם SKIP_VERIFY=1', () => {
+    // ⛔ הציטוט המזויף נבנה מחלקים, בדיוק כמו ב-`rules-citations.test.ts`: כתוב שלם,
+    // `npm run check:rules` היה נופל **על קובץ הבדיקה הזה עצמו**.
+    const fake = `RULES § 0.${'9'}9`;
+    const root = integrityRepo((r) => {
+      writeFileSync(join(r, 'plan', 'broken.md'), `ראה \`${fake}\`\n`, 'utf8');
+    });
+    const res = runHook(root, 'refs/heads/work/current', { SKIP_VERIFY: '1' });
+    expect(res.code, '⛔ מוצא החירום ⛔ אינו פותח ציטוט שבור').not.toBe(0);
+    expect(res.out).toMatch(/ציטוט RULES שבור/);
+  });
+
+  it('⚠️ ⛔ בלי node_modules — «⛔ לא נמדד», ⛔ ואינו נועל את מוצא החירום', () => {
+    // 🔴 בריחת מוצא החירום היא הכשל היחיד שהוא קיים כדי למנוע ⇒ ⛔ אסור לו לחסום כאן.
+    const r = runHook(integrityRepo(), 'refs/heads/work/current', { SKIP_VERIFY: '1' });
+    expect(r.out, '⛔ «⛔ לא נמדד» ⛔ אינו «עבר», והוא נאמר בקול').toMatch(/⛔ לא נמדד/);
+    expect(r.code, 'ו⛔ אינו חוסם').toBe(0);
   });
 });

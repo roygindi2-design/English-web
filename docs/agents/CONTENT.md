@@ -252,7 +252,7 @@ and `npm run verify` still has to run in STEP 9. **`pkill -f "next start"` BEFOR
 header ⇒ the page paints and ⛔ nothing hydrates — **a screenshot of a dead page is ⛔ not
 a walk**).
 
-**Drive `http://127.0.0.1:3200/dev/...` at 375×780, and answer ⛔ one question per screen:**
+**Drive `http://localhost:3200/dev/...` at 375×780, and answer ⛔ one question per screen:**
 ```
 /dev/card · /dev/card/choice · /dev/card/typed   ⇒ does a SENSE read like yours?
 /dev/story                                       ⇒ does a sentence sit at its level?

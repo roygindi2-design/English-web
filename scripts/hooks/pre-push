@@ -153,9 +153,53 @@ if [ -n "$LOCK" ] && [ "$LOCK" != "$MINE" ] && [ "$REGISTER_ONLY" != "1" ]; then
   exit 1
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🧱 REGISTER INTEGRITY — ⛔ RUNS EVEN UNDER `SKIP_VERIFY`.  ⟦NEW 09/09 · `T-275` · `D-197` · `F-191`⟧
+#
+# 🔬 **Why, and it is ⛔ not hypothetical — it is `F-191`, a 🔴 CRITICAL that already
+# happened.** On 07/09 a CONTENT tick reduced `plan/60-findings.md` from **237 rows to
+# 26** — `git show 05563b5 --stat` ⇒ `18 insertions(+), 229 deletions(-)` — wiping the
+# entire historical record. `D-197` decided the answer and `T-275` wrote it down:
+# **`SKIP_VERIFY=1` stops being a total bypass.**
+#
+# ⇒ the escape hatch exists so a broken `verify` ⛔ cannot make the repo unpushable
+# (הכרעה 100), and that reason is ⛔ untouched. But «`verify` is broken» is ⛔ never a
+# reason to let a register be destroyed on the way past it. **Two different promises.**
+#
+# ⚠️ **And the hatch stays usable when the clone has no dependencies.** The citation gate
+# is plain `node` and always runs; the register tests need `node_modules`, so when it is
+# absent this says «⛔ לא נמדד» **out loud** and lets the push through — ⛔ because a
+# check that could ⛔ not run is ⛔ not a check that passed, and ⛔ because bricking the
+# escape hatch is the one failure it exists to prevent.
+# ═══════════════════════════════════════════════════════════════════════════════
 if [ "${SKIP_VERIFY:-0}" = "1" ]; then
   echo "⚠️  SKIP_VERIFY=1 — הדחיפה עוברת ⛔ בלי verify."
   echo "⚠️  זו חריגה מוצהרת, ⛔ ולא נוהל. כתוב אותה בדוח הטיק, אחרת אין לה עקבות."
+  echo "🧱 שלמות הרגיסטרים ⛔ אינה מדלגת (T-275 · F-191) — רצה עכשיו:"
+
+  # ⛔ ⛔ ולא «אם הקובץ חסר — תיפול». מוצא חירום שנועל את עצמו כשמשהו חסר הוא בדיוק
+  # ⛔ הכשל היחיד שהוא קיים כדי למנוע ⇒ חסר ⇒ «⛔ לא נמדד», בקול, ⛔ ולא חסימה.
+  if [ -f scripts/check-rules-citations.mjs ] && [ -f plan/RULES.md ]; then
+    if ! node scripts/check-rules-citations.mjs; then
+      echo ""
+      echo "⛔ הדחיפה נחסמה: ציטוט RULES שבור. ⛔ SKIP_VERIFY ⛔ אינו פותח את זה."
+      exit 1
+    fi
+  else
+    echo "⚠️  ⛔ לא נמדד — שער הציטוטים או `plan/RULES.md` ⛔ אינם בעץ הזה."
+  fi
+
+  if [ -d node_modules ]; then
+    if ! npx vitest run scripts/plan-hygiene.test.ts scripts/measure-plan-tables.test.ts; then
+      echo ""
+      echo "⛔ הדחיפה נחסמה: שלמות הרגיסטרים אדומה. ⛔ SKIP_VERIFY ⛔ אינו פותח את זה."
+      echo "⇒ זה בדיוק F-191: 60-findings.md ירד מ-237 שורות ל-26, ו⛔ שום דבר ⛔ לא עצר את הדחיפה."
+      exit 1
+    fi
+  else
+    echo "⚠️  ⛔ לא נמדד — 'node_modules' חסר ⇒ בדיקות הרגיסטרים ⛔ לא רצו."
+    echo "⚠️  ⛔ «⛔ לא נמדד» ⛔ אינו «עבר». רשום את זה בדוח."
+  fi
   exit 0
 fi
 

@@ -282,7 +282,7 @@ and `verify` may still run in this session. **`pkill -f "next start"` before you
 🔴 **`next start`, ⛔ NEVER `next dev`** (`F-204`: 403 on every chunk carrying an `Origin`
 header ⇒ the page paints and ⛔ nothing hydrates).
 
-**Drive `http://127.0.0.1:3100/dev/...` at 375×780 and record, ⛔ per screen:**
+**Drive `http://localhost:3100/dev/...` at 375×780 and record, ⛔ per screen:**
 ```
 /dev/world  ·  /dev/tabs/cards  ·  /dev/story  ·  /dev/arcade/home  ·  /dev/tabs/studies
 ⇒ console errors · tappable count · anything under 44px · horizontal scroll · taps to reach
