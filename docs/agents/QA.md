@@ -61,7 +61,7 @@ than ⛔ not doing them.
       ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
     verify RED ⇒ ⛔ NO merge. Report the failing command's output verbatim. ⛔ Nothing else.
 7.  REPORT, 4 lines, Hebrew:
-      מסלול: שער · verify ✅/❌ · loop health: N/19 · merged / ⛔ not merged and why ·
+      מסלול: שער · verify ✅/❌ · loop health: N/20 · merged / ⛔ not merged and why ·
       how many commits wait · סקילים: <…>
 ```
 
@@ -274,7 +274,7 @@ npm run loop:health
 
 ⛔ **ADVISORY, ⛔ NOT BLOCKING — this is Roy's decision, not a phase.** It exits 1 so a script can branch on it, **but it ⛔ never blocks a merge and ⛔ never stops DEV.** An orphan plan does not mean the code is broken, and a good merge blocked for a bad reason teaches every agent to ignore the gate.
 ⇒ **Every failure becomes a finding in `60-findings.md`, in this tick, by you.** ⛔ A failure you neither fix nor file is the ninth open end.
-⚠️ Report the score (`loop health: N/19`) in your Hebrew summary, every tick, **and how many are in the soft window**.
+⚠️ Report the score (`loop health: N/20`) in your Hebrew summary, every tick, **and how many are in the soft window**.
 
 ## STEP 3 — SMOKE TEST, ONLY WHEN ROY HAS MERGED
 `LAST_PROMOTED_AT` unchanged since your previous tick? **Skip.**
@@ -391,7 +391,7 @@ The index — every skill, its trigger, its path — is **`docs/skills-registry.
 ./scripts/g fetch origin
 ./scripts/g rev-list --count origin/dev..origin/work/current     ⇐ how much is waiting
 npm run verify                                                    ⇐ nine commands
-npm run loop:health                                               ⇐ 19 checks
+npm run loop:health                                               ⇐ 20 checks
 ```
 + **the browser walk at 375×780** (STEP 4) on the screens the branch touched. `./scripts/g diff --name-only origin/dev..origin/work/current` tells you which.
 
@@ -704,7 +704,7 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-🚦 **`מסלול: שער` or `מסלול: מלא` — the FIRST word of the report, every tick** (`STEP 0.1`) · `loop health: N/19` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
+🚦 **`מסלול: שער` or `מסלול: מלא` — the FIRST word of the report, every tick** (`STEP 0.1`) · `loop health: N/20` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 
 ## AMIRNET — a new review axis  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
