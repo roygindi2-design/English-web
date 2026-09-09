@@ -1711,3 +1711,53 @@ describe('🔴 CONTENT מחויב ב-`hebrew-content-writer` — ⛔ בכל רי
     expect(registry, 'ומסומן חובה').toMatch(/חובה ל-CONTENT בכל ריצה/);
   });
 });
+
+/**
+ * 🧹 **שרידי Cowork — הכלים ש⛔ אינם קיימים באף משימה מתוזמנת.**  ⟦NEW 09/09⟧
+ *
+ * 🔬 **נמדד ב-`allowed_tools` של שש המשימות, 09/09:** ⛔ אין `project_read` ו⛔ אין
+ * `project_write` באף אחת. ⇒ `PM.md` החזיק **53 שורות** (STEP 1.8) ועוד צעד שלם
+ * (STEP 6.5) שנשענו עליהם, **וכל טיק PM מאז המעבר ל-CCR ביצע את ענף הגיבוי** ⛔ בלי
+ * לדעת שזה כל מה שיש. ⛔ **ענף שלא ניתן לביצוע ⛔ אינו «לא מזיק» — הוא הוראה שקרית.**
+ * ⚠️ **וגם הראיה השלילית שלו נפלה:** הצעד טען ש-`ls claude/` מחזיר ריק, ומאז 09/09
+ * `claude/LOOP-ARCHITECTURE.md` יושב שם.
+ */
+describe('🧹 ⛔ אף פרומפט ⛔ אינו מורה לקרוא או לכתוב דרך כלי Cowork', () => {
+  const PHANTOM_TOOLS = ['project_read', 'project_write'];
+  const PHANTOM_DOCS = ['claude/for-roy.md', 'claude/roadmap.md'];
+
+  it('⛔ אין הוראה חיה שנשענת על `project_read`/`project_write`', () => {
+    for (const a of ALL_PROMPTS) {
+      for (const line of text(a).split('\n')) {
+        if (!PHANTOM_TOOLS.some((t) => line.includes(t))) continue;
+        // ⚠️ אזכור **שמסביר שהכלי ⛔ אינו קיים** הוא תיעוד ⇒ מותר, ומזוהה לפי כך.
+        expect(
+          /⛔ אינם קיימים|⛔ אינם באף|was removed|⛔ in ⛔ no scheduled task|הצעד הורה|היו מסמכי-פרויקט/.test(line) ||
+            PHANTOM_TOOLS.every((t) => !line.includes(t)),
+          `${a}: הוראה חיה על כלי Cowork — ${line.slice(0, 90)}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('⛔ ואף פרומפט ⛔ אינו שולח לכתוב לשני מסמכי הפרויקט שנעלמו', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      for (const doc of PHANTOM_DOCS) {
+        if (!body.includes(doc)) continue;
+        // ⛔ הם מותרים **רק** בתוך המשפט שאומר שהם ⛔ אינם קיימים.
+        const lines = body.split('\n').filter((l) => l.includes(doc));
+        for (const l of lines) {
+          expect(
+            /⛔ אינם קיימים|אל תיצור|was removed|הצעד הורה|⛔ אינו קיים|היו מסמכי-פרויקט/.test(l),
+            `${a}: ${doc} מוזכר כיעד חי — ${l.slice(0, 90)}`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('🗂️ ושולחן העבודה היחיד נקוב בשמו', () => {
+    expect(text('PM'), 'PM: השולחן היחיד').toMatch(/שולחן העבודה של רוי הוא `plan\/03-for-roy\.md`/);
+  });
+});

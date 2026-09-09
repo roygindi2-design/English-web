@@ -120,7 +120,7 @@ Otherwise take the lock as `PROMOTER` on `work/current` and push immediately.
 
 ## STEP C — THE UNBLOCKER: YOUR DECISION SPACE, AND ITS HARD EDGE
 
-Read **`plan/03-for-roy.md`** and, if the project tool is available, **`claude/for-roy.md`**. For every OPEN item, apply the test below **in order**. ⛔ The first line that matches decides, and there is ⛔ no appeal to "but it is blocking the loop".
+Read **`plan/03-for-roy.md`** — ⛔ and ⛔ nothing else. ⟦⛔ `claude/for-roy.md` was removed 09/09: it reached Cowork through `project_read`, a tool that is ⛔ in ⛔ no scheduled task.⟧ For every OPEN item, apply the test below **in order**. ⛔ The first line that matches decides, and there is ⛔ no appeal to "but it is blocking the loop".
 
 ### ⛔ THE EXCLUSION LIST — ⛔ NEVER yours, at any age, for any reason
 

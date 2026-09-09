@@ -481,13 +481,10 @@ Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_H
    `50-tasks`, `60-findings` and `plan/archive/**`, and it belongs to **PM's tick, under
    PM's lock** (`docs/agents/PM.md` STEP 1.4). Two agents archiving the same register at
    once is exactly the failure `LOCK_HELD_BY` exists against.
-2. ⛔ **`claude/for-roy.md` — ⛔ do ⛔ NOT read it and ⛔ do ⛔ NOT write to it.** It is a
-   **Claude-project document, ⛔ not a file in the clone**, and **PM is the only agent
-   allowed to write there**. Your route to Roy is unchanged: a **stamped** line in
-   `plan/03-for-roy.md`, exactly as before.
-3. ⛔ **`claude/roadmap.md` — ⛔ not yours either.** PM refreshes it at the end of a
-   planning tick.
-
+2. ⛔ **`claude/for-roy.md` ו-`claude/roadmap.md` — ⛔ אינם קיימים, ו⛔ לא ייווצרו.**
+   ⟦נמדד 09/09⟧ הם היו מסמכי-פרויקט של Cowork שהגיעו דרך `project_read`/`project_write`,
+   ו**⛔ שני הכלים ⛔ אינם באף אחת משש המשימות המתוזמנות**. ⇒ ⛔ אל תקרא, ⛔ אל תכתוב,
+   ⛔ ואל תיצור אותם בריפו. **שולחן העבודה היחיד של רוי הוא `plan/03-for-roy.md`.**
 ⚠️ **And one thing that IS yours, and it is only reading:** a `D-xxx` in `40-decisions.md`
 that carries `⟨הדיון המלא הועבר לארכיון⟩` is a **tombstone, ⛔ not a cancelled decision**.
 The rule is still binding, word for word:

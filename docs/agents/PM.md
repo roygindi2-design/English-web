@@ -284,58 +284,25 @@ IMPROVE_TARGET: <workstream>        ⇐ plan/00-control.md. Empty = the mode is 
 **Turning it off is emptying the field.** ⛔ No `revert`, ⛔ no discussion.
 **Enforced by** `loop:health` check 14 — target sealed, ≤2 rows. **Advisory for 3 days, then blocking.**
 
-## 🗂️ STEP 1.8 — ROY'S DESK: `claude/for-roy.md`  ⟦NEW 01/09 · Roy's explicit instruction⟧
+## 🗂️ STEP 1.8 — ⛔ בוטל. שולחן העבודה של רוי הוא `plan/03-for-roy.md`, ⛔ ואין שני.  ⟦שוכתב 09/09 · מדידה⟧
 
-🔴 **Two desks, ⛔ and they are ⛔ not the same document. Confusing them is the failure
-this section exists to prevent:**
+🔬 **⛔ נמדד, ⛔ ולא שוער.** הצעד הזה החזיק 53 שורות שהורו לך לתחזק מסמך בשם
+`claude/for-roy.md` דרך `project_read` ו-`project_write`. **⛔ שני הכלים ⛔ אינם קיימים
+באף אחת משש המשימות המתוזמנות** — נמדד ב-`allowed_tools` של כולן, 09/09. ⇒ הענף
+«הכלים נוכחים» ⛔ **מעולם ⛔ לא היה ניתן לביצוע**, וכל טיק PM מאז המעבר ל-CCR ביצע
+את ענף הגיבוי ו⛔ לא ידע שזה כל מה שיש.
+⚠️ **וגם המשפט שהצדיק אותו התיישן:** הצעד אמר «`ls claude/` בריפו מחזיר ריק — וזה
+נכון». **היום `claude/` מכיל את `LOOP-ARCHITECTURE.md`**, ⇒ גם הראיה השלילית נפלה.
 
-| | where | what | who writes |
-|---|---|---|---|
-| **`plan/03-for-roy.md`** | **the repo** | the **full stamped register** of everything ever routed to Roy, `⟨נבדק: YYYY-MM-DD⟩` on every open item, guarded by `loop:health` check 3 | unchanged — you, exactly as before |
-| **`claude/for-roy.md`** | **the Claude project, ⛔ not git** | a **clean desk**: only the open questions Roy has to decide **right now**, and his answers | **you, and ⛔ nobody else** |
-
-⛔ **Nothing about `plan/03-for-roy.md` changes.** ⛔ Do not move it, ⛔ do not shrink it,
-⛔ do not stop stamping it. The clean desk is a **second, shorter surface** on top of it.
-
-**Every planning tick, twice:**
-
-**ⓐ READ IT FIRST.** If Roy wrote an approval or an answer under a question:
-1. Act on it — write the decision into `40-decisions.md`, the rule into `RULES.md`, the
-   row into `50-tasks.md`, whatever his answer actually authorises.
-2. Close the matching item in `plan/03-for-roy.md` with the stamp, as always.
-3. **Then delete the question AND his answer from `claude/for-roy.md`.** The desk holds
-   what is **open**, ⛔ never a transcript. ⛔ An answered question that stays on the desk
-   is how the desk becomes the 153KB file it was built to relieve.
-
-**ⓑ WRITE TO IT LAST**, one block per open question, and ⛔ only for something that is
-genuinely his: a conflict between two written contracts · a product direction the plan
-cannot derive · a key, an account, a migration or a licence. ⛔ **Never a question you
-could answer by reading a file, and ⛔ never a status update.**
+⇒ ⛔ **⛔ אין שני שולחנות. יש אחד:**
 ```
-### ❓ <the question in one line>            ⟨נפתח: YYYY-MM-DD · C-XXXX⟩
-**מה שנמדד:** <the numbers you actually ran this tick>
-**האפשרויות:** ⓐ <…> · ⓑ <…>            **מה שאני ממליץ:** <ⓐ or ⓑ, and why in one line>
-**מה חסום עד שתענה:** <the row id, or ⛔ אין — ממשיך בלעדיך>
-
-**תשובת רוי:**
+plan/03-for-roy.md    ⇐ הרשם המלא, בגיט, עם ⟨נבדק: YYYY-MM-DD⟩ על כל פריט פתוח.
+                         ⛔ זהו. ⛔ אין «שולחן נקי» שני ו⛔ אין מסמך פרויקט.
 ```
-⛔ **You are the ⛔ only agent allowed to write to this file.** ⛔ DEV, ⛔ QA and ⛔ CONTENT
-⛔ never open it — they route through `plan/03-for-roy.md` and through you, unchanged.
-⛔ **Never wait for Roy** (STANDING ORDERS). A question on the desk is a question you
-asked **while continuing to work**, ⛔ not a tick you stopped.
-
-⚠️ **HOW you reach it, and ⛔ do ⛔ not improvise here.** `claude/for-roy.md` is a
-**Claude-project document**, ⛔ not a file in the clone — `ls claude/` in the repo
-returns nothing and that is ⛔ correct, ⛔ not an error.
-- **Tools present (`project_read` · `project_write`):** `project_read('claude/for-roy.md')`,
-  edit the whole text, `project_write` it back to the **same path**. There is ⛔ no
-  in-place patch — you write the full updated document.
-- ⛔ **Tools absent in this tick:** the project is ⛔ not attached to every scheduled
-  session. ⇒ ⛔ Do ⛔ NOT create `claude/for-roy.md` in the repo as a substitute — a
-  second copy of a desk is worse than one desk. Write the question as a stamped line in
-  `plan/03-for-roy.md` exactly as before, and say in STEP 7, in one line:
-  `שולחן העבודה: ⛔ הכלי לא היה זמין בטיק — נכתב ל-03-for-roy`. That line is the only
-  evidence Roy has that the desk is not reaching him.
+⛔ **⛔ אל תיצור `claude/for-roy.md`**, ⛔ אל תחפש אותו, ו⛔ אל תדווח שהכלי חסר — **הכלי
+⛔ אינו קיים, וזה ⛔ אינו אירוע.** ⚠️ ומה שכן נשמר מהצעד הישן, כי הוא היה הנקודה
+האמיתית שלו: **`## פתוח` נשאר קצר.** ‏`loop:health` בדיקה 3.5 נכשלת על שורה סגורה
+שנשארה שם, ובדיקה 3 על פריט שלא זז 30 יום. ⇒ **הניקיון נאכף, ⛔ ולא מתוחזק ביד.**
 
 ## STEP 1.9 — 🔴 READ WHAT DEV ACTUALLY BUILT. ⛔ FROM `git log`, ⛔ NOT FROM THE REGISTER.  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
@@ -744,37 +711,21 @@ npm run hooks:install        ⇐ once per clone. `npm install` already does it (
 ⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
 ⛔ Never push to `main`.
 
-## 🛰️ STEP 6.5 — THE RADAR: `claude/roadmap.md`  ⟦NEW 01/09 · Roy's explicit instruction⟧
+## 🛰️ STEP 6.5 — ⛔ בוטל. הרדאר חי ב-`plan/00-control.md` ובדוח שלך.  ⟦שוכתב 09/09 · אותה מדידה⟧
 
-**At the end of every planning tick, ⛔ not "when there is something to say".** This is
-Roy's CEO view, and its whole value is that it is **current**.
+⛔ **אותה סיבה בדיוק כמו `STEP 1.8`:** הצעד הורה להגיע ל-`claude/roadmap.md` דרך
+`project_read`/`project_write` — **כלים ש⛔ אינם קיימים באף משימה מתוזמנת**, נמדד.
+⇒ הצעד ⛔ מעולם ⛔ לא רץ, והשורה `רדאר: ⛔ הכלי לא היה זמין בטיק` הייתה כל תוצרתו.
 
-⛔ **What it is ⛔ NOT:** ⛔ a bug list · ⛔ a task list · ⛔ a tick report · ⛔ a copy of
-`docs/plan-open.md` · ⛔ a place for `T-xxx` and `F-xxx` ids. Those all exist already and
-Roy is ⛔ not reading them — that is why this file exists.
-
-**What it is:** a top-down picture **by department**, and the departments are the
-workstreams of `36 § 13` plus `general`, ⛔ never departments you invented:
-`story` · `nav` · `cards` · `arena` · `studies` · `msgs` · `general`. Read them from
-`WORKSTREAM_TICKS` in `00-control.md`; a workstream that appears there and ⛔ not in the
-radar is a hole.
-
-Two paragraphs per department, ⛔ and nothing else:
+⇒ **מה שהרדאר ניסה לומר, ולאן זה הולך מעכשיו:**
 ```
-## <department> — <one line: what the learner gets here>
-**סטטוס כללי.** What has actually shipped, what is sealed and what is not, where we
-stand today. ⛔ Every number measured in THIS tick.
-**היעדים הבאים.** Where the loop is heading in this department — ⛔ direction, ⛔ not
-a task list.
+איזו מחלקה בעבודה         ⇒ ACTIVE_WORKSTREAM ב-plan/00-control.md
+מחלקה שמתקרבת לסיום       ⇒ WORKSTREAM_ENDING (STEP 5.7)
+מחלקה חסומה, ובמה         ⇒ שורה בדוח שלך (STEP 7), ⛔ ובשמו של החסם
+מה DEV באמת בנה           ⇒ STEP 1.9, מ-git log
 ```
-⚠️ **A department that is blocked says so, and says by what** — that is the single most
-useful line on the page for Roy. ⛔ Never write "בעבודה" for something that has been
-externally blocked for a week.
-⚠️ **Same measurement rule as everywhere:** a number you did not run this tick is a
-number you ⛔ do not write. Unmeasurable ⇒ say `⛔ לא ניתן למדוד מהלופ`.
-⚠️ Reached the same way as the desk (`project_read` → edit → `project_write` to the same
-path). ⛔ Tools absent ⇒ ⛔ do ⛔ NOT create it in the repo; say so in one line in STEP 7:
-`רדאר: ⛔ הכלי לא היה זמין בטיק`.
+⚠️ **⛔ ואל תיצור `claude/roadmap.md`** — קובץ מצב שני הוא בדיוק מה ש-`§ 0.15` אוסר.
+
 
 
 ## 🚪 THE ONE QUIET EXIT — ⛔ AND IT IS THE ⛔ ONLY ONE  ⟦NEW 09/09 · Roy's explicit instruction · identical in all five prompts⟧
@@ -826,12 +777,12 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
 The slice you opened and what the learner will be able to do · which render it targets · **which workstream and what the balance table says** · **what you routed and to whom** · what is genuinely still Roy's.
-⛔ Never wait for Roy. Need a decision → one **stamped** line in `03-for-roy.md`, a block on `claude/for-roy.md` (STEP 1.8), and keep working.
+⛔ Never wait for Roy. Need a decision → one **stamped** line in `03-for-roy.md`, and keep working.
 
 🧹 **AND TWO LINES THAT ARE PURE MEASUREMENT** ⟦NEW 01/09⟧ — ⛔ numbers you ran, ⛔ never numbers you remember:
 ```
 gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <after>KB
-שולחן/רדאר: <what you actually wrote, or ⛔ הכלי לא היה זמין בטיק>
+מחלקה: <ACTIVE_WORKSTREAM> · <N> ⬜ נותרו · <בעבודה / מתקרבת לסיום / חסומה ב-<שם החסם>>
 ```
 
 ## STANDING ORDERS
