@@ -133,6 +133,25 @@ stood here before, grouped — ⛔ nothing was dropped; ① absorbed the smoke t
 ⛔ **⛔ Nothing here says «build».** ⛔ You ⛔ do ⛔ not fix what you found, and you
 ⛔ never route a finding to yourself.
 
+### 📇 AND THE DEPARTMENT'S GOALS — `plan/05-departments.md`  ⟦NEW 09/09⟧
+
+**You seal departments. ⛔ You were never shown what a department was FOR.** ⟦measured
+09/09: this file mentioned `plan/05-departments.md` ⛔ zero times⟧ ⇒ «exhausted» could
+only ever mean «⛔ zero ⬜ rows», which is a fact about the REGISTER, ⛔ not about the
+learner.
+
+```
+plan/05-departments.md   ⇐ PM writes it. ⛔ You ⛔ never edit it. ≤4,096 bytes (check 19).
+                            One summary line per department + the goals still OPEN.
+```
+⇒ **Read it before ④, next to `WORKSTREAM_ENDING`, and ask ⛔ one question:** the rows are
+gone — **are the GOALS gone?** ⛔ A department whose rows ran out while a goal is still
+listed open is ⛔ not exhausted; it is **under-written**, and that is a finding routed to
+**PM**, ⛔ not a seal.
+⚠️ **⛔ And it ⛔ does ⛔ not change what «exhausted» means** (`§ 0.23 ז׳`, untouched: zero
+⬜ rows). It changes what you SAY when you move the field — and a goal left behind is
+exactly what `plan/61-deferred.md` exists to record.
+
 ### 📥 AND ONE FIELD YOU ⛔ MUST READ BEFORE ④ — `WORKSTREAM_ENDING`  ⟦NEW 09/09⟧
 PM now writes one line into `plan/00-control.md` the moment a department drops to **≤ 5**
 open ⬜ rows:

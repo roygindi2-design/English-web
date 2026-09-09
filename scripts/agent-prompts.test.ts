@@ -1869,3 +1869,26 @@ describe('🗺️ `docs/plan-open.md` ⛔ אינו נקרא במלואו', () =>
     expect(text('DEV'), 'DEV: ⛔ בספק קרא').toMatch(/⛔ בספק: קרא/);
   });
 });
+
+/**
+ * 📇 **`plan/05-departments.md` — מי קורא אותו, ומי נאמר לו במפורש ש⛔ לא.**  ⟦NEW 09/09⟧
+ * 🔬 נמדד: `QA.md` הזכיר את הקובץ **אפס פעמים** בעוד QA הוא זה שחותם מחלקות ⇒
+ * «מוצתה» יכלה לומר רק «⛔ אפס שורות ⬜», שזו עובדה על **הרגיסטר** ו⛔ לא על הלומד.
+ * ⚠️ **והשתיקה היא הבעיה השנייה:** סוכן ש⛔ לא נאמר לו שקובץ ⛔ אינו שלו — קורא אותו.
+ */
+describe('📇 קובץ המחלקות — נמען מוצהר לכל סוכן', () => {
+  it('‏PM כותב · DEV ו-QA קוראים', () => {
+    for (const a of ['PM', 'DEV', 'QA'] as const) {
+      expect(text(a), `${a}: הקובץ נקוב`).toContain('plan/05-departments.md');
+    }
+    expect(text('QA'), 'QA: ⛔ אינו עורך אותו').toMatch(/⛔ You ⛔ never edit it/);
+    // 🔴 הטענה שמונעת את הקריאה השגויה «יעד פתוח ⇒ אסור לחתום».
+    expect(text('QA'), 'QA: «מוצתה» ⛔ לא זזה').toMatch(/⛔ does ⛔ not change what «exhausted» means/);
+  });
+
+  it('⛔ ו-CONTENT ו-PROMOTER נאמר להם במפורש שהוא ⛔ אינו שלהם', () => {
+    for (const a of ['CONTENT', 'PROMOTER'] as const) {
+      expect(text(a), `${a}: נאמר במפורש`).toMatch(/⛔ `plan\/05-departments\.md` ⛔ אינו שלך/);
+    }
+  });
+});

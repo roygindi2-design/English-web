@@ -1163,20 +1163,42 @@ describe('scripts/loop-health.mjs', () => {
       expect(prefixes, '⛔ התחילית שהוא כותב בפועל').toContain('loop(QA');
       expect(prefixes, '⛔ וההיסטוריה מחזיקה גם את הישנה').toContain('loop(CRITIC');
 
-      // ⛔ המספר, ⛔ לא הצורה: הקומיט האחרון תחת **אחת** מהתחיליות, ישירות מ-git.
+      /**
+       * 🔴 ⛔ **הטענה הזאת מידלה את הבודק **לא נכון** עד 09/09, ועברה במקרה.**
+       *
+       * היא השוותה את המספר המודפס לקומיט האחרון של QA **מכל סוג**. ⛔ אבל בדיקה 17
+       * מדפיסה, לסוכן במצב 🟢, את גיל קומיט ה**עבודה** האחרון — `newestWork`, ⛔ לא
+       * `newestAny`. כל עוד קומיט העבודה היה גם הקומיט האחרון, השניים הסכימו ו⛔ אף
+       * אחד ⛔ לא ידע שהטענה מודדת דבר אחר.
+       *
+       * 🔬 **נמדד חי 09/09 בזמן ריצת QA אמיתית:** QA דחף קומיט נעילה (רק
+       * `plan/00-control.md` ⇒ **bookkeeping**), והשניים נפרדו מיד — הבדיקה ציפתה
+       * ל-0.2 שעות והבודק הדפיס 21.1, שהוא **הערך הנכון**. ⇒ הבודק צדק, והטענה
+       * ⛔ לא. **⇒ הטענה משכפלת עכשיו את `BOOKKEEPING_ONLY` של הבודק.**
+       */
+      const BOOKKEEPING_ONLY = (files: string[]): boolean =>
+        files.length > 0 &&
+        files.every(
+          (f) =>
+            f === 'plan/00-control.md' ||
+            f.startsWith('plan/archive/') ||
+            /^docs\/plan-[a-z-]+\.md$/.test(f),
+        );
       let newestTs: number | null = null;
       try {
         const log = execFileSync(
           'git',
-          ['log', 'origin/work/current', '--format=%ct%x1f%s', '-400'],
+          ['log', 'origin/work/current', '--format=%x1e%ct%x1f%s', '--name-only', '-400'],
           { encoding: 'utf8' },
         );
-        for (const line of log.trim().split('\n').filter(Boolean)) {
-          const [ts, subject = ''] = line.split('\x1f');
-          if (prefixes.some((p) => subject.startsWith(p))) {
-            newestTs = Number(ts);
-            break;
-          }
+        for (const block of log.split('\x1e').map((b) => b.trim()).filter(Boolean)) {
+          const [head = '', ...rest] = block.split('\n');
+          const [ts, subject = ''] = head.split('\x1f');
+          if (!prefixes.some((p) => subject.startsWith(p))) continue;
+          const files = rest.map((f) => f.trim()).filter(Boolean);
+          if (BOOKKEEPING_ONLY(files)) continue; // ⛔ טיק ללא עבודה ⛔ אינו מה שנמדד כאן
+          newestTs = Number(ts);
+          break;
         }
       } catch {
         newestTs = null; // ⛔ אין git/ref ⇒ נבדקת הצורה בלבד, ⛔ ולא נכשלים על הסביבה.

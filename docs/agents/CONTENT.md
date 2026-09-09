@@ -156,6 +156,11 @@ push runs `verify` like every other push, and that is the point.
 
 
 
+⚠️ **⛔ `plan/05-departments.md` ⛔ אינו שלך.** ⟦09/09⟧ הוא הערוץ של PM אל DEV ואל QA —
+יעדי המחלקות. ⛔ אל תקרא אותו ו⛔ אל תכתוב אליו; הוא ⛔ אינו משנה דבר בטיק שלך,
+והקריאה בו היא טוקנים שנשרפו. ⇒ **התור שלך כתוב במקום אחר, וזה נאמר במפורש כדי
+שלא תחפש.**
+
 ## STEP 3 — WHICH TRACK
 **An unblocked commission?** → do it. Follow its brief exactly, run its gate, write to the output path the row names, mark the row **🟣 לביקורת**. ⛔ Skip STEP 4–5.
 **A blocked commission?** → rule ⓐ: report it, mark it ⛔, then fall through — **and say so**.

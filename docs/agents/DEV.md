@@ -265,6 +265,15 @@ general · loop · base          ⇐ all three are eligible while the focus is `
 «⛔ never a licence for more than one pick per tick» — **סתר אותם ישירות.** מה שהוא כן
 אומר: שלושה מזהים בתור ⛔ אינם הוראה לקחת שלושה; קח לפי סדר הבחירה, ⛔ לא לפי אורך התור. An empty list (`[]`) means ⛔ no exception, exactly as an empty string did before. ⛔ You ⛔ do NOT write to this field, in any format — not to add, not to remove a finished id. Clearing a delivered id remains PM/QA's job, exactly as before.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
+### 📇 AND THE GOALS THEMSELVES ARE IN A FILE — `plan/05-departments.md`  ⟦NEW 09/09⟧
+**⛔ Read it in STEP 2, before you pick.** PM writes it; you ⛔ never edit it. It is ≤4KB
+and holds one summary line per department plus **the goals still open** in each.
+⇒ **This is what «build toward a goal» means concretely** — the section below tells you
+you may open the next obvious row of a goal the department already carries, and **this
+file is where that goal is written down.** ⛔ Without it, «the next obvious step» is
+something you would have had to infer from the row list, which is exactly the inference
+that produced rows nobody asked for.
+
 ### 🔴 ⛔ YOU BUILD TOWARD A GOAL, ⛔ NOT DOWN A LIST — AND YOU ⛔ NEVER WAIT  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
 **The queue is an INPUT, ⛔ not a boundary.** A workstream is a *department* with goals;
