@@ -366,16 +366,45 @@ describe('scripts/loop-health.mjs', () => {
     expect(failed(run(root).out, '2')).toBe(true);
   });
 
-  it('3 · goes red on a Roy item with no stamp, and on one stamped over a week ago', () => {
-    const noStamp = healthy();
-    patch(noStamp, 'plan/03-for-roy.md', (s) => s.replace(/ · נבדק: \d{4}-\d{2}-\d{2}/, ''));
-    expect(failed(run(noStamp).out, '3')).toBe(true);
+  /**
+   * 🔴 ⛔ **בדיקה 3 מודדת תנועה, ⛔ ולא חותמת.**  ⟦שוכתבה 09/09 · הוראת רוי⟧
+   * החותמת ניתנת לרענון **בלי לגעת בבעיה** — `C-0478` ריענן שישה פריטים וכתב «⛔ אין
+   * שינוי» על כולם ⇒ הבדיקה תגמלה בדיוק את הפעולה שאינה עולה דבר ואינה משנה דבר.
+   * ⇒ המדידה היא `git log -G` על שורת הפריט: **האם מישהו נגע בה ב-30 יום.**
+   */
+  const royRepo = (committedDaysAgo: number): string => {
+    const root = healthy();
+    const g = (args: string[], env: Record<string, string> = {}) =>
+      execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'], env: { ...process.env, ...env } });
+    mkdirSync(join(root, 'scripts'), { recursive: true });
+    copyFileSync('scripts/g', join(root, 'scripts', 'g'));
+    chmodSync(join(root, 'scripts', 'g'), 0o755);
+    g(['init', '-q', '-b', 'main']);
+    g(['config', 'user.email', 't@t']);
+    g(['config', 'user.name', 't']);
+    const when = new Date(Date.now() - committedDaysAgo * 864e5).toISOString();
+    g(['add', '-A']);
+    g(['commit', '-q', '-m', 'fixture'], { GIT_AUTHOR_DATE: when, GIT_COMMITTER_DATE: when });
+    return root;
+  };
 
-    const old = healthy();
-    patch(old, 'plan/03-for-roy.md', (s) => s.replace(/נבדק: \d{4}-\d{2}-\d{2}/, 'נבדק: 2026-01-01'));
-    const r = run(old);
-    expect(failed(r.out, '3')).toBe(true);
-    expect(r.out).toContain('2026-01-01');
+  it('3 · ירוקה כשהשורה של רוי זזה לאחרונה', () => {
+    expect(failed(run(royRepo(2)).out, '3'), 'זזה לפני יומיים ⇒ ⛔ אינה מפילה').toBe(false);
+  });
+
+  it('3 · 🔴 אדומה כששורה של רוי ⛔ לא זזה 30 יום — ⛔ גם עם חותמת טרייה', () => {
+    // ⚠️ **הפיקסצ׳ר נושא חותמת של היום** — ⇒ לו הבדיקה עדיין מדדה חותמות, היא הייתה
+    // עוברת. זו בדיוק ההבחנה שהשכתוב קיים בשבילה.
+    const r = run(royRepo(45));
+    expect(failed(r.out, '3'), '⛔ לא זזה 45 יום ⇒ אדומה').toBe(true);
+    expect(r.out, 'והיא אומרת כמה ימים').toMatch(/⛔ לא זז \d+ ימים/);
+  });
+
+  it('3 · ⛔ «⛔ לא נמדד» כש-git ⛔ אינו זמין — ⛔ ולא «עברה»', () => {
+    // 🔴 שיבוט בלי git ⛔ אינו ראיה ששורה זזה. «⛔ לא נמדד» ⛔ אינו «עבר».
+    const r = run(healthy());
+    expect(notMeasured(r.out, '3'), '⛔ אין git ⇒ n/m').toBe(true);
+    expect(failed(r.out, '3'), '⛔ ואינה מאשימה').toBe(false);
   });
 
   it('3.5 · goes red on a CLOSED row still sitting in Roy\'s open table', () => {

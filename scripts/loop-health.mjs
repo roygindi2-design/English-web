@@ -292,22 +292,76 @@ check('2', 'קובץ:שורה של כל ממצא פתוח — קיים', () => {
   return { ok: missing.length === 0, detail: `${missing.length} מתים`, items: missing };
 });
 
-/* 3 — RULES § 0.21, enforced for the first time. The 7 days is the rule's own
- * number, ⛔ not one invented here. A date is fine: this is a report on stdout,
- * ⛔ never a committed snapshot, so a clock cannot rot anything. */
+/**
+ * 3 — `RULES § 0.21`, and ⛔ **it measures MOVEMENT now, ⛔ not a stamp.**
+ * ⟦REWRITTEN 09/09 · Roy's explicit instruction · שלב 5⟧
+ *
+ * 🔬 **Why the stamp stopped working, measured.** The old rule was «every open item
+ * carries a `נבדק:` stamp from this week», and it is trivially satisfiable **without
+ * touching the problem**: `C-0478` refreshed six items in one tick and wrote «⛔ אין
+ * שינוי» on every one of them. ⇒ the check rewarded the one action that costs nothing
+ * and changes nothing, and the pile grew underneath a wall of fresh dates.
+ *
+ * ⇒ **the question is now «did this row MOVE», and git is the only honest answer.**
+ * `git log -G'^\| <id> \|' -- plan/03-for-roy.md` finds the last commit whose diff
+ * actually touched that row. A stamp refresh DOES count as movement — it is a real
+ * edit — but it can no longer be repeated for free: **30 days**, ⛔ not seven, so a
+ * row that only ever gets its date bumped still has 29 days to become work or leave.
+ *
+ * 🔴 ⛔ **AND IT REPORTS «⛔ לא נמדד» WHEN GIT CANNOT ANSWER**, ⛔ never «passed» — a
+ * shallow clone, a missing file or a git failure is ⛔ not evidence that a row moved.
+ */
 const STAMP = /נבדק:\s*(\d{4}-\d{2}-\d{2})/;
-check('3', 'כל פריט פתוח לרוי נושא חותמת נבדק מהשבוע', () => {
+const ROY_ITEM_STALE_DAYS = 30;
+check('3', `כל פריט פתוח לרוי זז ב-${ROY_ITEM_STALE_DAYS} הימים האחרונים`, () => {
+  const file = at('plan', '03-for-roy.md');
+  const text = read(file);
+  if (text === '') return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — ⛔ אין 03-for-roy.md' };
+
+  const git = (...args) => {
+    try {
+      // ⛔ `cwd: ROOT` ⛔ ואינו ברירת המחדל — הבודק רץ מהריפו החי בעוד הפיקסצ׳ר
+      // יושב ב-`LOOP_HEALTH_ROOT`. בלי זה, בדיקה של פיקסצ׳ר הייתה מודדת את הריפו
+      // האמיתי ועוברת תמיד — בודק שאפשר לראות רק עובר ⛔ לא נבדק.
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+    } catch {
+      return null;
+    }
+  };
+  if (git('rev-parse', '--git-dir') === null) {
+    return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — git ⛔ אינו זמין כאן' };
+  }
+
+  const cutoff = Date.now() - ROY_ITEM_STALE_DAYS * 864e5;
   const stale = [];
-  const week = Date.now() - 7 * 864e5;
-  for (const line of read(at('plan', '03-for-roy.md')).split('\n')) {
-    if (!/^\| *\d+ *\| *(PM|DEV|CRITIC|CONTENT|QA)/.test(line)) continue;
+  const unmeasured = [];
+  for (const line of text.split('\n')) {
+    if (!/^\| *\d+ *\| *(PM|DEV|CRITIC|CONTENT|QA|OPERATOR|סשן)/.test(line)) continue;
     if (isClosed(line)) continue;
     const id = /^\| *(\d+)/.exec(line)?.[1];
-    const m = STAMP.exec(line);
-    if (m === null) stale.push(`פריט ${id} — ⛔ ללא חותמת`);
-    else if (Date.parse(m[1]) < week) stale.push(`פריט ${id} — נבדק ${m[1]}`);
+    if (id === undefined) continue;
+    const when = git('log', '-1', '--format=%cI', `-G^\\| ${id} \\|`, '--', 'plan/03-for-roy.md');
+    if (when === null || when === '') {
+      // ⛔ «⛔ לא נמדד» ⛔ אינו «עבר», ⇒ ניפול חזרה לחותמת ⛔ ורק כדי לומר מה כן ידוע.
+      const m = STAMP.exec(line);
+      unmeasured.push(`פריט ${id} — ⛔ git ⛔ לא החזיר תאריך${m === null ? '' : ` (חותמת: ${m[1]})`}`);
+      continue;
+    }
+    const days = Math.floor((Date.now() - Date.parse(when)) / 864e5);
+    if (Date.parse(when) < cutoff) stale.push(`פריט ${id} — ⛔ לא זז ${days} ימים (אחרון: ${when.slice(0, 10)})`);
   }
-  return { ok: stale.length === 0, detail: `${stale.length} ללא חותמת טרייה`, items: stale };
+  if (unmeasured.length > 0 && stale.length === 0) {
+    return { ok: false, notMeasured: true, detail: `⛔ לא נמדד — ${unmeasured.length} פריטים`, items: unmeasured };
+  }
+  return {
+    ok: stale.length === 0,
+    detail: `${stale.length} ⛔ לא זזו ${ROY_ITEM_STALE_DAYS} יום`,
+    items: [...stale, ...unmeasured],
+  };
 });
 
 /* 3.5 — ⛔ THE OPEN TABLE HOLDS ⛔ ONLY WHAT IS OPEN.
