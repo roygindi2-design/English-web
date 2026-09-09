@@ -143,3 +143,85 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
     );
   });
 });
+
+/**
+ * 🔒 **שער שלישי — הנעילה.**  ⟦NEW 09/09 · הוראת רוי⟧
+ *
+ * 🔬 **נמדד 09/09:** `LOCK_HELD_BY` ב-`plan/00-control.md` הוא המנעול היחיד של הלופ,
+ * ו-`git grep LOCK_HELD_BY -- scripts/` החזיר **אפס** — ⛔ אף בדיקה ו⛔ אף הוק ⛔ לא
+ * קראו אותו. ⇒ «כבד את הנעילה» היה עצה, ו-`F-191` הוא מה שעצה עולה: CONTENT דרס את
+ * `plan/60-findings.md` כולו בזמן שסוכן אחר החזיק אותה.
+ *
+ * ⇒ שלוש הטענות למטה הן **כל** ההתנהגות: נעילה זרה חוסמת קוד · מרשה עקבה · ו-נעילה
+ * שלי ⛔ אינה חוסמת דבר.
+ */
+describe('scripts/hooks/pre-push — שער הנעילה (RULES § 0.4)', () => {
+  /** ריפו עם `plan/00-control.md` שנושא נעילה, ועם קומיט שני שמכתיב את הדיף. */
+  const lockedRepo = (userName: string, holder: string, touched: string): string => {
+    const root = repo(userName);
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    mkdirSync(join(root, 'plan'), { recursive: true });
+    writeFileSync(join(root, 'plan', '00-control.md'), `LOCK_HELD_BY: ${holder}\n`, 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'lock');
+    mkdirSync(join(root, dirnameOf(touched)) , { recursive: true });
+    writeFileSync(join(root, touched), 'change\n', 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'work');
+    return root;
+  };
+  const dirnameOf = (p: string): string => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '.');
+
+  it('⛔ חוסם דחיפה שנוגעת בקוד כשהנעילה בידי סוכן אחר', () => {
+    const r = runHook(lockedRepo('dev-agent', 'PM', 'lib/core/thing.ts'), 'refs/heads/work/current');
+    expect(r.code, '⛔ הדחיפה חייבת להיכשל').not.toBe(0);
+    expect(r.out).toMatch(/הנעילה מוחזקת בידי 'PM'/);
+    expect(r.out, 'הכלל מצוטט').toMatch(/RULES § 0\.4/);
+  });
+
+  /**
+   * ⚠️ **הפטור ⛔ אינו חור — הוא מה שמאפשר את `§ 0.29 ו׳` בכלל.** סוכן שנסוג **חייב**
+   * לדחוף שורת יומן אחת בזמן שהנעילה מוחזקת נגדו; שער בלי הפטור היה מכריח אותו
+   * לבחור בין שני כללים.
+   */
+  it('✅ מרשה עקבה — שורת יומן ברגיסטר — תחת אותה נעילה זרה', () => {
+    const r = runHook(
+      lockedRepo('dev-agent', 'PM', 'plan/archive/control-log.md'),
+      'refs/heads/work/current',
+    );
+    expect(r.out, '⛔ ⛔ לא נחסם על הנעילה').not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+
+  it('✅ ⛔ אינו חוסם את מחזיק הנעילה עצמו', () => {
+    const r = runHook(
+      lockedRepo('dev-agent', 'DEV', 'lib/core/thing.ts'),
+      'refs/heads/work/current',
+    );
+    expect(r.out, '⛔ הנעילה שלי ⛔ אינה חוסמת אותי').not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+
+  /** ⛔ `CRITIC` ו-`QA` הם אותו סוכן בשתי איותים שהרגיסטר עדיין נושא. */
+  it('✅ נעילת `CRITIC` ⛔ אינה חוסמת את `critic-agent`', () => {
+    const r = runHook(
+      lockedRepo('critic-agent', 'CRITIC', 'lib/core/thing.ts'),
+      'refs/heads/work/current',
+    );
+    expect(r.out).not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+
+  it('⛔ ⛔ ו-SKIP_VERIFY=1 ⛔ אינו פותח את הנעילה', () => {
+    const r = runHook(
+      lockedRepo('dev-agent', 'PM', 'lib/core/thing.ts'),
+      'refs/heads/work/current',
+      { SKIP_VERIFY: '1' },
+    );
+    expect(r.code, '⛔ מוצא החירום מדלג על verify, ⛔ לא על הנעילה').not.toBe(0);
+    expect(r.out).toMatch(/הנעילה מוחזקת בידי 'PM'/);
+  });
+
+  it('✅ נעילה ריקה ⛔ אינה חוסמת דבר', () => {
+    const r = runHook(lockedRepo('dev-agent', '""', 'lib/core/thing.ts'), 'refs/heads/work/current');
+    expect(r.out).not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+});

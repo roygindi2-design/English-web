@@ -92,6 +92,20 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 ⚠️ **Need the task register? Read `docs/plan-open.md`** — 78KB, open rows only — ⛔ **not** `plan/50-tasks.md`, which is 412KB. One row in full: `grep -n '^| T-189 |' plan/50-tasks.md`.
 
 ## STEP 2 — LOCK
+
+🔒 **⟦NEW 09/09⟧ AND THE LOCK IS NOW A MECHANICAL GATE, ⛔ NOT A SENTENCE.**
+`scripts/hooks/pre-push` reads `LOCK_HELD_BY` from `plan/00-control.md` and compares it
+to `git config user.name`:
+```
+lock empty · lock is MINE        ⇒ push freely
+lock is SOMEONE ELSE'S           ⇒ a diff confined to plan/ · docs/plan-* · docs/agents/
+                                    passes  ·  ⛔ anything touching code is REFUSED
+```
+⇒ **first-come-first-served, and the trace you owe under `§ 0.29 ו׳` still gets through.**
+🔬 Measured 09/09: `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ nothing read
+the field but the agents themselves, which is what `F-191` cost (CONTENT overwrote the
+whole of `plan/60-findings.md` under a foreign lock). ⛔ **And `SKIP_VERIFY` ⛔ does ⛔ not
+open it** — it skips `verify`, ⛔ not the lock.
 `date -u +%Y-%m-%dT%H:%M:%SZ` — ⛔ never guess a timestamp.
 `PAUSED_BY_HUMAN: true` → exit in one line. Another agent holds the lock < 30 min → **Smart Wait, then yield if still held — and ⛔ NEVER silently.**
 🆕 **⟦NEW 06/09 · Smart Wait · Roy's explicit instruction⟧ Do not yield immediately on a foreign lock:** `sleep 180`, then re-read `plan/00-control.md`. Released in the meantime ⇒ continue the tick normally. Still held after the wait ⇒ yield now, and write the mandatory retreat line below. ⛔ **The retreat itself and the 30-minute threshold are unchanged** — this only delays the *decision* to yield by one wait.

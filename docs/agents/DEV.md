@@ -479,6 +479,21 @@ hole through the very gate הכרעה 100 built. `scripts/install-hooks.mjs` imp
 `node:fs` and `node:path`, so this costs nothing and is idempotent.
 
 Lock as DEV, push immediately, then `npm install`.
+
+🔒 **⟦NEW 09/09⟧ AND THE LOCK IS NOW A MECHANICAL GATE, ⛔ NOT A SENTENCE.**
+`scripts/hooks/pre-push` reads `LOCK_HELD_BY` from `plan/00-control.md` and compares it
+to `git config user.name`:
+```
+lock empty · lock is MINE        ⇒ push freely
+lock is SOMEONE ELSE'S           ⇒ a diff confined to plan/ · docs/plan-* · docs/agents/
+                                    passes  ·  ⛔ anything touching code is REFUSED
+```
+⇒ **first-come-first-served, and the trace you owe under `§ 0.29 ו׳` still gets through.**
+🔬 Measured 09/09: `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ nothing read
+the field but the agents themselves, which is what `F-191` cost (CONTENT overwrote the
+whole of `plan/60-findings.md` under a foreign lock). ⛔ **And `SKIP_VERIFY` ⛔ does ⛔ not
+open it** — it skips `verify`, ⛔ not the lock.
+
 - `/lib/core/` is PURE — zero React, window, document, localStorage, fetch, process.env.
 - A UI component NEVER touches the database — everything through `/app/api/` and `lib/api/client.ts`.
 - Mobile-first 375px · 44px targets · RTL with bidi · PWA · TypeScript, no `any`.

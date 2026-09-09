@@ -84,6 +84,75 @@ for ref in "${REFS[@]}"; do
   esac
 done
 
+CHANGED="$(git diff --name-only "$REMOTE/$(git rev-parse --abbrev-ref HEAD)"...HEAD 2>/dev/null || true)"
+[ -z "$CHANGED" ] && CHANGED="$(git diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
+
+REGISTER_ONLY=1
+if [ -z "$CHANGED" ]; then
+  REGISTER_ONLY=0                     # ⛔ ⛔ לא ידענו מה השתנה ⇒ מלא. ספק ⇒ איטי.
+else
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+      plan/*|docs/plan-*.md|docs/agents/*) ;;
+      *) REGISTER_ONLY=0; break ;;
+    esac
+  done <<< "$CHANGED"
+fi
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔒 THE LOCK IS FIRST-COME-FIRST-SERVED — ⛔ AND ⛔ NOT A SENTENCE.  ⟦NEW 09/09 · הוראת רוי⟧
+#
+# 🔬 **What was actually there, measured 09/09.** `LOCK_HELD_BY` in `plan/00-control.md`
+# is the loop's only mutex, and **⛔ nothing read it but the agents themselves**:
+# `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ not one check, ⛔ not one
+# hook. ⇒ «respect the lock» was advice, and `F-191` is what advice costs: CONTENT
+# overwrote the whole of `plan/60-findings.md` while another agent held it.
+#
+# ⇒ **the rule, and it is the same one the prompts already state:** whoever took the
+# lock owns the tick. Anyone else may still leave a TRACE — the retreat line and the
+# idle journal line that `RULES § 0.29 ו׳` makes mandatory — but ⛔ may ⛔ not push code.
+#
+#   lock empty                      ⇒ push freely
+#   lock is MINE                    ⇒ push freely
+#   lock is SOMEONE ELSE'S          ⇒ register-only diff passes · ⛔ anything else refused
+#
+# ⚠️ **The register-only carve-out is ⛔ not a loophole — it is what makes § 0.29 ו׳
+# possible at all.** A retreating agent is REQUIRED to push one journal line while the
+# lock is held against it; a gate without this exemption would force it to choose
+# between two rules.
+#
+# 🔴 **AND IT RUNS BEFORE `SKIP_VERIFY`, for the same reason branch ownership does:**
+# a broken `verify` is a reason to skip `verify`. It is ⛔ never a reason to write over
+# an agent that is mid-tick.
+#
+# ⚠️ Honest about what this is: a gate against ACCIDENT and DRIFT, ⛔ not against an
+# adversary — exactly like the two gates above it, and ⛔ that was never a reason not
+# to build it.
+# ═══════════════════════════════════════════════════════════════════════════════
+LOCK="$(sed -n 's/^LOCK_HELD_BY:[[:space:]]*"\{0,1\}\([A-Za-z]*\).*/\1/p' plan/00-control.md 2>/dev/null | head -1)"
+case "$WHOAMI" in
+  dev-agent)      MINE=DEV ;;
+  pm-agent)       MINE=PM ;;
+  critic-agent)   MINE=QA ;;
+  content-agent)  MINE=CONTENT ;;
+  promoter-agent) MINE=PROMOTER ;;
+  *)              MINE="" ;;
+esac
+# ⛔ `CRITIC` and `QA` are the same agent under two spellings the register still
+# carries (`docs/agents/roster.json` keeps both commit prefixes for the same reason).
+if [ "$LOCK" = "CRITIC" ]; then LOCK=QA; fi
+
+if [ -n "$LOCK" ] && [ "$LOCK" != "$MINE" ] && [ "$REGISTER_ONLY" != "1" ]; then
+  echo "⛔ הדחיפה נחסמה: הנעילה מוחזקת בידי '$LOCK', והזהות כאן היא '$WHOAMI'."
+  echo "⛔ RULES § 0.4 — מי שלקח את הנעילה מחזיק את הטיק. ⛔ כל הקודם זוכה."
+  echo "⇒ מותר לך לדחוף **עקבה בלבד**: שורת נסיגה או שורת יומן ב-plan/ · docs/plan-* · docs/agents/."
+  echo "⇒ הדיף הזה נוגע גם בקוד ⇒ נסוג, כתוב את שורת היומן (§ 0.29 ו׳), וצא."
+  echo "⛔ ו-SKIP_VERIFY ⛔ אינו פותח את זה — הוא מדלג על verify, ⛔ לא על הנעילה."
+  exit 1
+fi
+
 if [ "${SKIP_VERIFY:-0}" = "1" ]; then
   echo "⚠️  SKIP_VERIFY=1 — הדחיפה עוברת ⛔ בלי verify."
   echo "⚠️  זו חריגה מוצהרת, ⛔ ולא נוהל. כתוב אותה בדוח הטיק, אחרת אין לה עקבות."
@@ -130,22 +199,6 @@ fi
 # ⚠️ The attestation says `verify(fast)`, ⛔ never `verify` — check 16 must ⛔ never tell a
 # different story from what actually ran.
 # ═══════════════════════════════════════════════════════════════════════════════
-CHANGED="$(git diff --name-only "$REMOTE/$(git rev-parse --abbrev-ref HEAD)"...HEAD 2>/dev/null || true)"
-[ -z "$CHANGED" ] && CHANGED="$(git diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
-
-REGISTER_ONLY=1
-if [ -z "$CHANGED" ]; then
-  REGISTER_ONLY=0                     # ⛔ ⛔ לא ידענו מה השתנה ⇒ מלא. ספק ⇒ איטי.
-else
-  while IFS= read -r f; do
-    [ -z "$f" ] && continue
-    case "$f" in
-      plan/*|docs/plan-*.md|docs/agents/*) ;;
-      *) REGISTER_ONLY=0; break ;;
-    esac
-  done <<< "$CHANGED"
-fi
-
 if [ "$REGISTER_ONLY" = "1" ]; then
   VERIFY_LABEL="verify(fast)"
   echo "⚡ pre-push — הדיף מוגבל ל-plan/ · docs/plan-* · docs/agents/ ⇒ מסלול מהיר."

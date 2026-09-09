@@ -117,6 +117,21 @@ hole through the very gate הכרעה 100 built. `scripts/install-hooks.mjs` imp
 
 Otherwise lock as PM and push immediately.
 
+🔒 **⟦NEW 09/09⟧ AND THE LOCK IS NOW A MECHANICAL GATE, ⛔ NOT A SENTENCE.**
+`scripts/hooks/pre-push` reads `LOCK_HELD_BY` from `plan/00-control.md` and compares it
+to `git config user.name`:
+```
+lock empty · lock is MINE        ⇒ push freely
+lock is SOMEONE ELSE'S           ⇒ a diff confined to plan/ · docs/plan-* · docs/agents/
+                                    passes  ·  ⛔ anything touching code is REFUSED
+```
+⇒ **first-come-first-served, and the trace you owe under `§ 0.29 ו׳` still gets through.**
+🔬 Measured 09/09: `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ nothing read
+the field but the agents themselves, which is what `F-191` cost (CONTENT overwrote the
+whole of `plan/60-findings.md` under a foreign lock). ⛔ **And `SKIP_VERIFY` ⛔ does ⛔ not
+open it** — it skips `verify`, ⛔ not the lock.
+
+
 🔴 **⟦CHANGED 06/09 · הכרעה 101 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
 ⇒ **When you yield, the FIRST line of your report is, and it is ⛔ not optional:**
 «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס קומיטים. ‏`origin/dev..origin/work/current` = `<M>` קומיטים.»

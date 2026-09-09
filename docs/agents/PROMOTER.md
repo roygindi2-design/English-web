@@ -51,6 +51,20 @@ git clone https://github.com/roygindi2-design/English-web.git repo && cd repo &&
 
 ## STEP B — STATE AND THE LOCK
 
+🔒 **⟦NEW 09/09⟧ AND THE LOCK IS NOW A MECHANICAL GATE, ⛔ NOT A SENTENCE.**
+`scripts/hooks/pre-push` reads `LOCK_HELD_BY` from `plan/00-control.md` and compares it
+to `git config user.name`:
+```
+lock empty · lock is MINE        ⇒ push freely
+lock is SOMEONE ELSE'S           ⇒ a diff confined to plan/ · docs/plan-* · docs/agents/
+                                    passes  ·  ⛔ anything touching code is REFUSED
+```
+⇒ **first-come-first-served, and the trace you owe under `§ 0.29 ו׳` still gets through.**
+🔬 Measured 09/09: `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ nothing read
+the field but the agents themselves, which is what `F-191` cost (CONTENT overwrote the
+whole of `plan/60-findings.md` under a foreign lock). ⛔ **And `SKIP_VERIFY` ⛔ does ⛔ not
+open it** — it skips `verify`, ⛔ not the lock.
+
 ```
 date -u +%Y-%m-%dT%H:%M:%SZ          # ⛔ NEVER guess a timestamp
 cat plan/00-control.md               # and ⛔ NOTHING else yet

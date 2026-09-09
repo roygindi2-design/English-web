@@ -191,7 +191,22 @@ at all.** Measured: `b872b19` (a lock commit) carries ⛔ no attestation, while 
 hole through the very gate הכרעה 100 built. `scripts/install-hooks.mjs` imports only
 `node:fs` and `node:path`, so this costs nothing and is idempotent.
 
-Otherwise lock as QA and push immediately. ⚠️ **`LOCK_HELD_BY: QA`** — ⛔ not `CRITIC`; `RULES § 0.4` names the rows by `QA`.
+Otherwise lock as QA and push immediately.
+
+🔒 **⟦NEW 09/09⟧ AND THE LOCK IS NOW A MECHANICAL GATE, ⛔ NOT A SENTENCE.**
+`scripts/hooks/pre-push` reads `LOCK_HELD_BY` from `plan/00-control.md` and compares it
+to `git config user.name`:
+```
+lock empty · lock is MINE        ⇒ push freely
+lock is SOMEONE ELSE'S           ⇒ a diff confined to plan/ · docs/plan-* · docs/agents/
+                                    passes  ·  ⛔ anything touching code is REFUSED
+```
+⇒ **first-come-first-served, and the trace you owe under `§ 0.29 ו׳` still gets through.**
+🔬 Measured 09/09: `git grep LOCK_HELD_BY -- scripts/` returned **zero** — ⛔ nothing read
+the field but the agents themselves, which is what `F-191` cost (CONTENT overwrote the
+whole of `plan/60-findings.md` under a foreign lock). ⛔ **And `SKIP_VERIFY` ⛔ does ⛔ not
+open it** — it skips `verify`, ⛔ not the lock.
+ ⚠️ **`LOCK_HELD_BY: QA`** — ⛔ not `CRITIC`; `RULES § 0.4` names the rows by `QA`.
 🔴 **⟦CHANGED 06/09 · Roy's explicit instruction⟧ THE YIELD STAYS; THE SILENCE IS GONE — and the reason is a MEASUREMENT, ⛔ not a preference.**
 ⇒ **When you yield, the FIRST line of your report is:** «יציאה מוקדמת — נעילה של `<agent>` מ-`<LOCK_AT>`, בת `<N>` דקות. ⛔ אפס מיזוג. ‏`origin/dev..origin/work/current` = `<M>` קומיטים.»
 **What was measured on 06/09, on a live clone and on the live scheduler:** between **04/09 19:12Z** (the last QA tick that produced a commit, `C-0428`) and **06/09 11:00Z** — **seven consecutive QA windows produced ⛔ zero commits**, and ⛔ nothing anywhere said why. `origin/dev..origin/work/current` went from **41** to **66**. The 06/09 05:06Z gate tick ran **2 min 17 s** end to end; DEV had fired at **04:36Z** and was still committing at **05:13Z**. On the four full-lane windows since 03/09 where a DEV commit landed **after** the QA fire minute, QA produced **⛔ nothing, 4 times out of 4**; on the three where DEV had finished first, QA ran **3 out of 3**.

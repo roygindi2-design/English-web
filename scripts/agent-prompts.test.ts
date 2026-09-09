@@ -1580,3 +1580,22 @@ describe('הליכת מוצר בדפדפן — חובה בחמישה, ⛔ ולא
     ).toContain('## 📐 מדד המקצועיות');
   });
 });
+
+/**
+ * 🔒 **שער הנעילה — נכתב לחמישה, ⛔ כי הוא חל על חמישה.**
+ * ⛔ נמדד 09/09: `git grep LOCK_HELD_BY -- scripts/` ⇒ **אפס**. ⇒ המנעול היחיד של
+ * הלופ ⛔ לא נקרא בידי שום שער, ו-`F-191` הוא מה שזה עלה.
+ */
+describe('שער הנעילה מוצהר בחמשת הפרומפטים', () => {
+  it('כל חמישה אומרים מה עובר תחת נעילה זרה ומה ⛔ לא', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      expect(body, `${a}: השער עצמו`).toContain('scripts/hooks/pre-push');
+      expect(body, `${a}: השדה`).toContain('LOCK_HELD_BY');
+      expect(body, `${a}: הפטור לרגיסטר`).toMatch(/anything touching code is REFUSED/);
+      expect(body, `${a}: ⛔ ו-SKIP_VERIFY ⛔ אינו פותח אותו`).toMatch(
+        /`SKIP_VERIFY` ⛔ does ⛔ not\s*\n?open it/,
+      );
+    }
+  });
+});
