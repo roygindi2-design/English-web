@@ -1847,3 +1847,25 @@ describe('🧭 `DEV.md` — רצף אחד, ⛔ ובלי סתירה פנימית'
     expect(dev, 'ומה שנשאר — N משימות').toMatch(/N tasks, ⛔ not one/);
   });
 });
+
+/**
+ * 🗺️ **מפת קריאה לפי תפקיד ב-`docs/plan-open.md`.**  ⟦NEW 09/09 · סעיף F.1⟧
+ * 🔬 נמדד: הקובץ ~53KB, ו-DEV קורא אותו 12 פעמים ביום. «ממצאים פתוחים» ~18KB,
+ * «חסומות» ~9KB ⇒ **שני שלישים ⛔ אינם נוגעים לבחירה של DEV.**
+ */
+describe('🗺️ `docs/plan-open.md` ⛔ אינו נקרא במלואו', () => {
+  it('הקובץ הנגזר נושא מפת קריאה לפי תפקיד', () => {
+    const idx = readFileSync('docs/plan-open.md', 'utf8');
+    expect(idx, 'הכותרת').toContain('מה לקרוא, לפי תפקיד');
+    for (const a of ['DEV', 'QA', 'PM', 'CONTENT', 'PROMOTER']) {
+      expect(idx, `${a} מופיע במפה`).toMatch(new RegExp(`^${a}\\s`, 'm'));
+    }
+    // 🔴 הטענה שמונעת את הקריאה השגויה «מותר לדלג».
+    expect(idx, '⛔ ואינה רשות לדלג').toMatch(/⛔ זו ⛔ אינה רשות לדלג/);
+  });
+
+  it('ו-DEV מופנה לפרוסה שלו, ⛔ ולא לקובץ כולו', () => {
+    expect(text('DEV'), 'DEV: ההפניה למפה').toContain('מה לקרוא, לפי תפקיד');
+    expect(text('DEV'), 'DEV: ⛔ בספק קרא').toMatch(/⛔ בספק: קרא/);
+  });
+});

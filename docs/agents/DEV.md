@@ -205,6 +205,12 @@ push runs `verify` like every other push, and that is the point.
 
 ## STEP 2 — PICK — ⛔ THE INDEX, NOT THE REGISTERS (RULES § 0.6א · § 0.6ב)
 
+⚡ **⟦09/09 · F.1⟧ ו⛔ אינך קורא את כולו.** הקובץ הוא ~53KB ואתה קורא אותו **12 פעמים ביום**;
+הפרק «ממצאים פתוחים» לבדו הוא ~18KB ו«חסומות» עוד ~9KB — ⇒ **שני שלישים ממה שטענת ⛔ אינם
+נוגעים לבחירה שלך.** ⇒ ‏`## 🗺️ מה לקרוא, לפי תפקיד` בראש הקובץ אומר בדיוק מה שלך:
+**⬜ פנויות ל-Dev · ✅ נסגרו לאחרונה · 🌳 עץ העבודה · 🧭 מאזן** — ~16KB.
+⛔ «ממצאים פתוחים» ⛔ רק כשסעיף #2 בסדר הבחירה שלך פעיל. ⛔ בספק: קרא.
+
 **Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** Together they are **hundreds of KB** — most of a tick's context before a line of work, twelve times a day. The index is a **small fraction** of that: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the plans · flags.
 ⚠️ **⛔ The exact sizes ⛔ are ⛔ not written here, and that is `RULES § 0.15`:** a live number in a prompt ages into a lie. ⟦Measured 09/09: the two registers read **667KB** in this sentence and were **443KB** on disk, and «the 46 plans» were **74**.⟧ ⇒ **`wc -c` them if you need the number.**
 
