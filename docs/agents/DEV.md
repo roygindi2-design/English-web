@@ -204,7 +204,7 @@ push runs `verify` like every other push, and that is the point.
 
 **Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** They are **667KB** — ~200k tokens before a line of work, twelve times a day. The index is **78KB**: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the 46 plans · flags.
 
-⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — with **exactly two** exceptions, and ⛔ no third:
+⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — with **exactly three** exceptions, and ⛔ no fourth:
   ⓐ a 🔴 finding that stops a learner;
   ⓑ **the row named in `ACTIVE_TASK_ID`.** ⟦NEW 31/08 · `D-171` · Roy's explicit instruction⟧
   ⓒ 🆕 **THE NEXT WORKSTREAM IN `36 § 13`, when the active one is nearly dry.** ⟦NEW 08/09 · Roy's explicit instruction⟧
@@ -272,7 +272,7 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 
 | ציר | ערכים |
 |---|---|
-| **זרימה** | `story` · `nav` · **`cards`** · `arena` · `studies` · `msgs` · `loop` · `base` · **`general`** |
+| **זרימה** | `story` · `nav` · `cards` · `arena` · `studies` · `msgs` · `amirnet` (שבעת פריטי `36 § 13`, לפי סדר הבנייה) · `loop` · `base` · `general` (שלושת החוצי-גזרה) |
 | **סוג עבודה** | `מבנה` · `תוכן` · `נוחות` · `מעברים` · `תשתית` |
 
 - ⛔ **Editing a status cell must not touch the milestone cell.** A dropped tag removes that row from the balance table.

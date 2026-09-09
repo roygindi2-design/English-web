@@ -207,7 +207,7 @@ The `אבן דרך` cell is `M<n> · <זרימה> · <סוג>` — e.g. `M2 · s
 
 | ציר | ערכים |
 |---|---|
-| **זרימה** | `story` · `nav` · `arena` · `studies` · `msgs` (the five `36 § 13` items in build order) · `loop` · `base` |
+| **זרימה** | `story` · `nav` · `cards` · `arena` · `studies` · `msgs` · `amirnet` (שבעת פריטי `36 § 13`, לפי סדר הבנייה) · `loop` · `base` · `general` (שלושת החוצי-גזרה) |
 | **סוג עבודה** | `מבנה` · `תוכן` · `נוחות` · `מעברים` · `תשתית` |
 
 **A task continuing an earlier one declares it:** `**המשך של: T-185**` inside the task cell. ⛔ Declared, ⛔ never inferred.

@@ -2,6 +2,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { WORKSTREAMS } from '../lib/core/planTable';
+
 /**
  * ⛔ **למה הקובץ הזה קיים.** עד 24/08 ארבעת פרומפטי הסוכנים חיו **אך ורק** בתוך
  * המשימות המתוזמנות: ⛔ אף סוכן לא יכול היה לקרוא אותם, ⛔ אף בדיקה לא יכלה לבדוק
@@ -1306,4 +1308,50 @@ describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידו�
     expect(body, '⛔ לא כותב קוד מוצר').toMatch(/⛔ NOT A BUILDING AGENT/);
     expect(body, '⛔ לא נוגע בתורים').toContain('plan/50-tasks.md');
   });
+});
+
+/**
+ * ⛔ **אוצר המילים של הזרימה — מקור אחד, שלושה עותקים, ו⛔ אף שער.**
+ * נמדד 09/09 על שיבוט חי: `plan/RULES.md § 0.6ב` ו-`docs/agents/PM.md` נקבו **חמישה**
+ * ערכים בלי `cards`, `amirnet` ו-`general`; `docs/agents/DEV.md` נקב **תשעה** בלי
+ * `amirnet`; ו-`lib/core/planTable.ts` — המקור שהמכונה קוראת — נוקב **עשרה**.
+ * ⇒ PM שכתב שורה מתויגת `cards` ⛔ לא מצא את התג בחוקה שלו, ו-DEV שסינן לפי
+ * `ACTIVE_WORKSTREAM=amirnet` ⛔ לא מצא את הזרימה באף אחד משני הקבצים שהוא קורא.
+ * ⛔ **שלוש רשימות שאיש ⛔ אינו משווה ⛔ אינן אוצר מילים סגור — הן שלוש דעות.**
+ * ⇒ הטענה למטה היא השער: כל ערך ב-`WORKSTREAMS` חייב להופיע בשורת «זרימה» של שלושת
+ * הקבצים, ו⛔ אף טוקן שאינו בו ⛔ אינו רשאי להופיע שם.
+ */
+describe('אוצר המילים של הזרימה זהה בשלושת המקומות שקוראים אותו (§ 0.6ב)', () => {
+  const SOURCES: ReadonlyArray<readonly [string, string]> = [
+    ['plan/RULES.md', 'plan/RULES.md'],
+    ['docs/agents/PM.md', join(DIR, 'PM.md')],
+    ['docs/agents/DEV.md', join(DIR, 'DEV.md')],
+  ];
+
+  /** השורה היחידה בקובץ שהתא הראשון בה הוא `**זרימה**` — טבלת אוצר המילים. */
+  const flowRow = (file: string): string => {
+    const line = readFileSync(file, 'utf8')
+      .split('\n')
+      .find((l) => l.trimStart().startsWith('| **זרימה**'));
+    expect(line, `${file}: ⛔ אין שורת «זרימה» בטבלת אוצר המילים`).toBeTruthy();
+    return line as string;
+  };
+
+  /** הטוקנים בתוך גרשי-אחור בשורה — ⛔ הפרוזה שסביבם ⛔ אינה נספרת. */
+  const backticked = (line: string): string[] => [...line.matchAll(/`([a-z]+)`/g)].map((m) => m[1]);
+
+  for (const [label, file] of SOURCES) {
+    it(`${label} נוקב את כל עשרת הערכים של WORKSTREAMS, ו⛔ לא ערך מומצא`, () => {
+      const tokens = backticked(flowRow(file));
+      for (const w of WORKSTREAMS) {
+        expect(tokens, `${label}: הזרימה \`${w}\` ⛔ חסרה מאוצר המילים`).toContain(w);
+      }
+      for (const t of tokens) {
+        expect(
+          WORKSTREAMS as readonly string[],
+          `${label}: \`${t}\` ⛔ אינו ב-lib/core/planTable.ts`,
+        ).toContain(t);
+      }
+    });
+  }
 });
