@@ -211,6 +211,29 @@ tier 4 · C1 · רמת פטור            914 words
 **`he_one_to_many_group`** — one Hebrew word covering several English ones (`להזמין` = invite/reserve/order).
 **`he_interference_note`** — a mistake typical of a Hebrew speaker. Nothing real to say → `null`. ⛔ Never invent one.
 
+## STEP 5.5 — 🔴 עברית — `hebrew-content-writer`, ⛔ בכל ריצה, ⛔ בלי יוצא מן הכלל  ⟦NEW 09/09 · Roy's explicit requirement⟧
+
+⛔ **קרא `skills/hebrew-content-writer/SKILL.md` בכל טיק, ⛔ לפני שאתה כותב ולו `translation_he` אחד.**
+⛔ **⛔ ולא «כשרלוונטי».** ⛔ אתה הסוכן היחיד שכותב עברית שהלומד קורא ⇒ **תמיד רלוונטי.**
+
+```
+skills/hebrew-content-writer/SKILL.md                       ⇐ החובה
+skills/hebrew-content-writer/SKILL_HE.md                    ⇐ אותו תוכן בעברית
+skills/hebrew-content-writer/references/hebrew-grammar-quick-ref.md
+```
+⚠️ **הוא **בשכפול שלך**, ⛔ לא תוסף** — ⇒ ⛔ אין לו דרך להיעדר, ו«⛔ לא היה זמין»
+⛔ אינה תשובה. ⛔ אם הקובץ באמת חסר — זה ממצא 🔴, ⛔ לא סיבה לדלג.
+
+**מה לקחת ממנו, ⛔ ולא «לקרוא ולהמשיך»:**
+- **רגיסטר** — ‏`translation_he` ומשפטי דוגמה הם **ממשק/UX**: ציווי, קצר, ⛔ בלי ריכוך.
+  ⛔ ⛔ לא «גבוה», ⛔ לא שיווקי.
+- **כתיב מלא** (`ktiv maleh`) — ⛔ בלי ניקוד. זה **כבר** נאכף מכנית ב-`gateSense`
+  (`translation: contains nikud (R-007)`), ⇒ הסקיל הוא איך לכתוב נכון **לפני** השער.
+- **מגדר ומספרים** — הסעיפים שלו על לשון מגדרית ועל ספרות הם מה שמפריד «עברית שנכתבה
+  בידי דובר» מ«עברית שתורגמה».
+⇒ **ובדוח שלך, בשורת הסקילים: `hebrew-content-writer` נקוב בשמו.** ⛔ אם הוא חסר שם,
+הטיק ⛔ לא עמד בדרישה הזאת.
+
 ## STEP 5.9 — SKILLS — 🔴 YOU HAD ⛔ NO ROW IN THE TABLE UNTIL 30/08  ⟦RULES § 0.7⟧
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**

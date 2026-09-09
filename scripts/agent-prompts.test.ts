@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -1668,5 +1668,46 @@ describe('🛰️ סוכני משנה — ההיתר נכתב, ו⛔ הגבול 
     }
     // 📎 ו-`F-191` הוא התקדים: טיק אחד שכתב לרגיסטר הוריד אותו מ-237 שורות ל-26.
     expect(text('DEV'), 'התקדים נקוב בשמו').toContain('F-191');
+  });
+});
+
+/**
+ * 🔴 **`hebrew-content-writer` — חובה ל-CONTENT בכל ריצה.**  ⟦NEW 09/09 · דרישת רוי⟧
+ *
+ * ⛔ **למה טענה ולא רק שורה בפרומפט:** ההוראה הזאת היא בדיוק הסוג שנשחק בעריכה
+ * עתידית בלי שאיש ישים לב — משפט אחד בקובץ של 40KB. ⇒ הטענה היא מה שהופך אותה
+ * מ«נכתבה» ל«לא יכולה להיעלם בשקט».
+ * ⚠️ **והסקיל הוא קובץ בשכפול, ⛔ לא תוסף** — נמדד ש-`account_skills` ריק בשש
+ * המשימות המתוזמנות ⇒ סקיל מסונכרן ⛔ אינו ערובה, וקובץ בריפו כן.
+ */
+describe('🔴 CONTENT מחויב ב-`hebrew-content-writer` — ⛔ בכל ריצה', () => {
+  const SKILL = 'skills/hebrew-content-writer/SKILL.md';
+
+  it('הסקיל עצמו בריפו, ⛔ ולא רק בקטלוג של החשבון', () => {
+    expect(existsSync(SKILL), `⛔ ${SKILL} ⛔ אינו בעץ`).toBe(true);
+    expect(readFileSync(SKILL, 'utf8').length, '⛔ ואינו בדל ריק').toBeGreaterThan(5000);
+    // 📎 שני הנלווים שההוראה נוקבת בהם — שורה שמפנה לקובץ שאינו קיים היא F-189.
+    for (const extra of [
+      'skills/hebrew-content-writer/SKILL_HE.md',
+      'skills/hebrew-content-writer/references/hebrew-grammar-quick-ref.md',
+    ]) {
+      expect(existsSync(extra), `⛔ ${extra} ⛔ אינו בעץ`).toBe(true);
+    }
+  });
+
+  it('ההוראה ב-`CONTENT.md` מחייבת, ⛔ ואינה מותנית', () => {
+    const body = text('CONTENT');
+    expect(body, 'הנתיב נקוב במפורש').toContain(SKILL);
+    expect(body, '⛔ בכל ריצה').toMatch(/⛔ בכל ריצה, ⛔ בלי יוצא מן הכלל/);
+    // 🔴 **הטענה שמונעת את הריכוך** — «כשרלוונטי» היא בדיוק הנוסח שרוי פסל.
+    expect(body, '⛔ ⛔ ולא «כשרלוונטי»').toMatch(/⛔ ולא «כשרלוונטי»/);
+    expect(body, 'ומדווח בשורת הסקילים').toMatch(/בשורת הסקילים: `hebrew-content-writer`/);
+  });
+
+  it('והוא מופיע באינדקס שהסוכן קורא בפועל', () => {
+    const registry = readFileSync('docs/skills-registry.md', 'utf8');
+    expect(registry, 'שם הסקיל').toContain('hebrew-content-writer');
+    expect(registry, 'הנתיב, ⛔ ולא רק השם').toContain(SKILL);
+    expect(registry, 'ומסומן חובה').toMatch(/חובה ל-CONTENT בכל ריצה/);
   });
 });
