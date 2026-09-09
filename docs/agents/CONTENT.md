@@ -222,6 +222,36 @@ npm run build:ingest && npm run build:levels && npm run measure:gate
 These rewrite `supabase/seed/0001_content_batches.sql`, `0002_word_cefr_levels.sql`, `0003_scoring_material.sql` and `docs/gate-recheck.md`. **All four go into the same commit as your batch.**
 Wrote to `plan/50-tasks.md` or `plan/60-findings.md`? Then also `npm run measure:plan`, and both files it writes go in too.
 
+## STEP 7.5 — 🔴 LOOK AT WHAT YOU WROTE. ⛔ IN A BROWSER. ⛔ NOT A FALLBACK.  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+⛔ **This file carried ⛔ no browser instruction of any kind.** ⇒ you have written **1,200
+senses** and ⛔ never once seen one rendered. **The gate reads your JSON; the learner reads
+a card** — and the only failure that has ever cost this product a whole release was
+exactly that gap (a Hebrew answer among three English distractors, 2,403 green tests).
+
+```
+npm install && npm run build && (npx next start -p 3200 &) && sleep 12
+```
+⚠️ **Port 3200, ⛔ not 3000** — `scripts/verify-mobile.mjs` refuses a port it did not open,
+and `npm run verify` still has to run in STEP 9. **`pkill -f "next start"` BEFORE it does.**
+🔴 **`next start`, ⛔ NEVER `next dev`** (`F-204`: 403 on every chunk carrying an `Origin`
+header ⇒ the page paints and ⛔ nothing hydrates — **a screenshot of a dead page is ⛔ not
+a walk**).
+
+**Drive `http://127.0.0.1:3200/dev/...` at 375×780, and answer ⛔ one question per screen:**
+```
+/dev/card · /dev/card/choice · /dev/card/typed   ⇒ does a SENSE read like yours?
+/dev/story                                       ⇒ does a sentence sit at its level?
+/dev/deck                                        ⇒ does a stack of them look like a lesson?
+```
+**Record, in your report, ⛔ one line:** the screen, whether the Hebrew reads naturally at
+375px, and **anything a learner could answer correctly while knowing nothing.**
+🔴 **⛔ «Chromium is missing» is ⛔ NOT a reason to skip** (`RULES § 0.27`) — the scripts
+resolve it themselves, and if that fails you **install it**. ⛔ «Skipped» is ⛔ not a result.
+⚠️ **⛔ And this is ⛔ not a gate.** ⛔ Nothing here blocks your batch: what you see becomes a
+line in `plan/80-content-lessons.md` (STEP 8) or a finding — ⛔ never a reason to withhold
+rows the gate already passed.
+
 ## STEP 8 — THE LESSON
 Add a line to `plan/80-content-lessons.md` §A. **A lesson, not a statistic.**
 ❌ "there were 6 rejections" · ✅ "6 rejections for level drift in `neutral` — rule: write the neutral sentence first"
@@ -246,6 +276,48 @@ npm run hooks:install        ⇐ once per clone. `npm install` already does it (
 ⚠️ **The declared escape hatch, ⛔ and it is ⛔ never routine:** `SKIP_VERIFY=1 ./scripts/g push origin work/current` — it prints loudly, and you **⛔ MUST write that you used it, and why, in your report**. It exists so that a broken `verify` can ⛔ never make the repo unpushable.
 ⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
 ⛔ No `[skip ci]`. ⛔ Never push to `main`.
+
+
+## 🚪 THE ONE QUIET EXIT — ⛔ AND IT IS THE ⛔ ONLY ONE  ⟦NEW 09/09 · Roy's explicit instruction · identical in all five prompts⟧
+
+⛔ **«⛔ Nothing to do» is ⛔ not a tick. It is a REPORT ON THE QUEUE, and the queue is
+something you are allowed to fix.** Measured over 14 days: **489 agent commits, ⛔ only 123
+of them — 25% — touched product code.** ⇒ before you exit quiet, you owe **three** answers,
+⛔ in this order, ⛔ and the exit is legitimate ⛔ only when all three are «⛔ no»:
+
+```
+① is there work in `ACTIVE_WORKSTREAM` I can take right now?
+② is there work in the NEXT workstream in `36 § 13` I may read ahead into?
+③ is there an open finding, an open commission, or an unwritten row of a goal
+   the department ALREADY carries, that I am permitted to act on?
+```
+
+🔴 **⇒ THE ONLY LEGITIMATE QUIET EXIT: the department is FINISHED and its work is waiting
+for QA to merge to `dev`.** ⛔ That, and a lock held by another agent, and
+`PAUSED_BY_HUMAN: true`. ⛔ **⛔ Nothing else.**
+
+```
+✅ legitimate     department done, work sitting on `work/current` awaiting QA's merge
+✅ legitimate     another agent holds the lock (after the Smart Wait)
+✅ legitimate     `PAUSED_BY_HUMAN: true`
+⛔ ⛔ NOT          "the queue is empty"          ⇒ ② and ③ above
+⛔ ⛔ NOT          "I am waiting for <agent>"    ⇒ route it (`RULES § 0.20`) and take the next thing
+⛔ ⛔ NOT          "I am waiting for Roy"        ⇒ ⛔ never. One stamped line, and keep working
+⛔ ⛔ NOT          a register edit dressed up as work
+```
+
+⛔ **AND A QUIET EXIT IS ⛔ NEVER SILENT** (`RULES § 0.29 ו׳`): one line to
+`plan/archive/control-log.md`, in your own commit prefix, naming **which of the three
+legitimate reasons** applies — ⛔ not «blocked», ⛔ not «nothing to do»:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line, by its name or by the blocker's id>
+```
+🔬 **Why the reason and ⛔ not the word:** `loop:health` **check 17** reads `git log`, and it
+classifies **by the DIFF, ⛔ not by the wording** — a commit touching ⛔ only
+`plan/00-control.md` · `plan/archive/**` · `docs/plan-*.md` is a tick with ⛔ no work
+however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» instead of 🟠
+«alive, no work, ⛔ and ⛔ no declared marker», and ⛔ neither of them fails anything.
+**⛔ 🔴 total silence is the ⛔ only failing state, and it is the one this line prevents.**
 
 ## STEP 10 — REPORT TO ROY, IN HEBREW, 5 LINES MAX, WITH EVIDENCE
 

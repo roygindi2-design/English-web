@@ -1504,3 +1504,79 @@ describe('09/09 — DEV: בונה מול יעד, ⛔ אינו ממתין, ⛔ ו
     expect(dev, 'גדר 4 — בלתי הפיך').toContain('RULES § 0.22');
   });
 });
+
+/**
+ * 🔴 **היציאה השקטה — ⛔ הכלל היחיד שנכתב לחמישה קבצים מילה במילה (`§ 9.9`).**
+ * ⛔ נמדד: **489 קומיטי סוכנים ב-14 יום, ⛔ ורק 123 מהם — 25% — נגעו בקוד מוצר.**
+ * ⇒ «⛔ אין מה לעשות» היה תשובה לגיטימית לכל סוכן, בלי ולו שאלה אחת לפניה.
+ */
+describe('היציאה השקטה זהה בחמשת הפרומפטים, ⛔ ולא «דומה»', () => {
+  const bodies = ALL_PROMPTS.map((a) => [a, text(a)] as const);
+
+  it('שלוש השאלות והיציאה הלגיטימית היחידה — בכל החמישה', () => {
+    for (const [a, body] of bodies) {
+      expect(body, `${a}: הכותרת`).toMatch(/THE ONE QUIET EXIT/);
+      expect(body, `${a}: היציאה הלגיטימית`).toMatch(
+        /department is FINISHED and its work is waiting\s*\n?for QA to merge to `dev`/,
+      );
+      expect(body, `${a}: קריאה קדימה לזרימה הבאה`).toContain('36 § 13');
+      expect(body, `${a}: ⛔ אינו ממתין לרוי`).toMatch(/⛔ ⛔ NOT {10}"I am waiting for Roy"/);
+    }
+  });
+
+  it('ו⛔ אינה שקטה — שורת היומן, אותה שורה בדיוק', () => {
+    for (const [a, body] of bodies) {
+      expect(body, `${a}: היעד`).toContain('plan/archive/control-log.md');
+      expect(body, `${a}: הצורה`).toContain('idle — <the reason, one line');
+      expect(body, `${a}: הסיווג לפי הדיף`).toMatch(/by the DIFF, ⛔ not by the wording/);
+    }
+  });
+
+  it('🔬 והנוסח **זהה** — ⛔ לא «דומה», כי חמישה עותקים סוטים בשקט', () => {
+    const cut = (b: string): string =>
+      b.slice(b.indexOf('## 🚪 THE ONE QUIET EXIT'), b.indexOf('🔴 total silence is the'));
+    const cuts = bodies.map(([, b]) => cut(b));
+    const first = cuts[0] ?? '';
+    const rest = cuts.slice(1);
+    expect(first.length, 'הבלוק נמצא').toBeGreaterThan(500);
+    for (const other of rest) expect(other).toEqual(first);
+  });
+});
+
+/**
+ * 🔴 **ההליכה בדפדפן — חמשת הסוכנים, ⛔ ולא שלושה.**
+ * ⛔ נמדד 09/09: `CONTENT.md` ו-`PROMOTER.md` ⛔ לא נשאו הוראת דפדפן **כלשהי** —
+ * ⇒ CONTENT כתב **1,200 משמעויות** ו⛔ מעולם ⛔ לא ראה אחת מהן מרונדרת.
+ */
+describe('הליכת מוצר בדפדפן — חובה בחמישה, ⛔ ולא נפילה-לאחור', () => {
+  it('כל חמשת הפרומפטים נוקבים ב-`next start`, ⛔ ולעולם לא ב-`next dev`', () => {
+    for (const a of ALL_PROMPTS) {
+      const body = text(a);
+      expect(body, `${a}: מריץ בנייה אמיתית`).toContain('next start');
+      expect(body, `${a}: הרוחב`).toMatch(/375/);
+    }
+  });
+
+  it('⛔ «Chromium חסר» ⛔ אינה סיבה לדלג — בשני הקבצים שקיבלו את ההליכה היום', () => {
+    for (const a of ['CONTENT', 'PROMOTER'] as const) {
+      expect(text(a), `${a}: § 0.27`).toContain('RULES § 0.27');
+      expect(text(a), `${a}: ⛔ «דילגתי» אינה תוצאה`).toMatch(/⛔ NOT a reason to skip|⛔ NOT a reason to skip/);
+    }
+  });
+
+  it('⛔ ואף אחת מהשתיים ⛔ אינה חוסמת — היא מדידה, ⛔ לא שער', () => {
+    expect(text('CONTENT'), 'CONTENT: ⛔ אינה שער').toMatch(/⛔ And this is ⛔ not a gate/);
+    expect(text('PROMOTER'), 'PROMOTER: ⛔ אינה חוסמת').toMatch(/⛔ NOTHING HERE BLOCKS ANYTHING/);
+  });
+
+  it('📐 ומדד המקצועיות קיים — בפרומפט וביומן — ו⛔ אינו חוסם', () => {
+    const promoter = text('PROMOTER');
+    expect(promoter, 'הכותרת שהוא כותב אליה').toContain('## 📐 מדד המקצועיות');
+    expect(promoter, '⛔ ואינו שער').toMatch(/IT BLOCKS ⛔ NOTHING/);
+    expect(promoter, 'מספר שלא נמדד ⛔ אינו 0').toMatch(/⛔ לא נמדד`, ⛔ never `0`/);
+    expect(
+      readFileSync('plan/archive/control-log.md', 'utf8'),
+      'והטבלה קיימת ביומן עצמו',
+    ).toContain('## 📐 מדד המקצועיות');
+  });
+});

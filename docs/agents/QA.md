@@ -625,6 +625,48 @@ npm run hooks:install        ⇐ once per clone. `npm install` already does it (
 ⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
 ⚠️ **Your register writes go to `work/current` like everyone else's** — and then travel to `dev` through your own `--ff-only`. ⛔ The only thing you push straight to `dev` is that fast-forward. ⛔ You never write to `main`.
 
+
+## 🚪 THE ONE QUIET EXIT — ⛔ AND IT IS THE ⛔ ONLY ONE  ⟦NEW 09/09 · Roy's explicit instruction · identical in all five prompts⟧
+
+⛔ **«⛔ Nothing to do» is ⛔ not a tick. It is a REPORT ON THE QUEUE, and the queue is
+something you are allowed to fix.** Measured over 14 days: **489 agent commits, ⛔ only 123
+of them — 25% — touched product code.** ⇒ before you exit quiet, you owe **three** answers,
+⛔ in this order, ⛔ and the exit is legitimate ⛔ only when all three are «⛔ no»:
+
+```
+① is there work in `ACTIVE_WORKSTREAM` I can take right now?
+② is there work in the NEXT workstream in `36 § 13` I may read ahead into?
+③ is there an open finding, an open commission, or an unwritten row of a goal
+   the department ALREADY carries, that I am permitted to act on?
+```
+
+🔴 **⇒ THE ONLY LEGITIMATE QUIET EXIT: the department is FINISHED and its work is waiting
+for QA to merge to `dev`.** ⛔ That, and a lock held by another agent, and
+`PAUSED_BY_HUMAN: true`. ⛔ **⛔ Nothing else.**
+
+```
+✅ legitimate     department done, work sitting on `work/current` awaiting QA's merge
+✅ legitimate     another agent holds the lock (after the Smart Wait)
+✅ legitimate     `PAUSED_BY_HUMAN: true`
+⛔ ⛔ NOT          "the queue is empty"          ⇒ ② and ③ above
+⛔ ⛔ NOT          "I am waiting for <agent>"    ⇒ route it (`RULES § 0.20`) and take the next thing
+⛔ ⛔ NOT          "I am waiting for Roy"        ⇒ ⛔ never. One stamped line, and keep working
+⛔ ⛔ NOT          a register edit dressed up as work
+```
+
+⛔ **AND A QUIET EXIT IS ⛔ NEVER SILENT** (`RULES § 0.29 ו׳`): one line to
+`plan/archive/control-log.md`, in your own commit prefix, naming **which of the three
+legitimate reasons** applies — ⛔ not «blocked», ⛔ not «nothing to do»:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line, by its name or by the blocker's id>
+```
+🔬 **Why the reason and ⛔ not the word:** `loop:health` **check 17** reads `git log`, and it
+classifies **by the DIFF, ⛔ not by the wording** — a commit touching ⛔ only
+`plan/00-control.md` · `plan/archive/**` · `docs/plan-*.md` is a tick with ⛔ no work
+however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» instead of 🟠
+«alive, no work, ⛔ and ⛔ no declared marker», and ⛔ neither of them fails anything.
+**⛔ 🔴 total silence is the ⛔ only failing state, and it is the one this line prevents.**
+
 ## STEP 9 — REPORT TO ROY, IN HEBREW, 4 LINES MAX
 
 🔬 **AND ONE LINE THAT NEVER CHANGES, FIRST OR LAST — WHICH SKILLS YOU ACTUALLY SAW**  ⟦NEW 30/08 · RULES § 0.7⟧

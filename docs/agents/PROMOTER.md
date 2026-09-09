@@ -253,6 +253,38 @@ RELEASE_READY          ⇐ the shipped SHA + date + N commits + what the learner
 
 ⚠️ **THE DEPLOY BUDGET IS A BRAKE, ⛔ not a guideline (`RULES § 0.1 א׳`).** 15 credits per deploy, **up to 30 deploys a month, and ⛔ never more than one in 24 hours.** Read `PROMOTIONS_THIS_MONTH` and `LAST_PROMOTED_AT` **before** you push ⟦**FIXED 08/09 · `D-203`ⓔ** — this line used to name `DEPLOYS_THIS_MONTH`, a **second** counter that froze at 5 on 23/08 while the one the same sentence then tested kept counting; both stale counters are now retired⟧: `PROMOTIONS_THIS_MONTH ≥ 30`, or a promotion already made in the last 24 hours ⇒ ⛔ **no promotion tonight.** Report it in one line and go to STEP F. ⛔ The brake is ⛔ never reset and ⛔ never raised by you.
 
+## STEP E.5 — ⛔ WALK THE THING YOU JUST SHIPPED. ⛔ IN A BROWSER.  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+**`/api/health` says a function answered. It says ⛔ nothing about a screen.** ⇒ after a
+promotion — and ⛔ only after one — you **walk the product**, exactly the way DEV, PM and QA
+do, and you do it on the SHA that actually shipped.
+
+```
+./scripts/g checkout <the promoted SHA> -- .      # or just stay on main, which now IS it
+npm install && npm run build && (npx next start -p 3100 &) && sleep 12
+```
+⚠️ **Port 3100, ⛔ not 3000** — `scripts/verify-mobile.mjs` refuses a port it did not open,
+and `verify` may still run in this session. **`pkill -f "next start"` before you push.**
+🔴 **`next start`, ⛔ NEVER `next dev`** (`F-204`: 403 on every chunk carrying an `Origin`
+header ⇒ the page paints and ⛔ nothing hydrates).
+
+**Drive `http://127.0.0.1:3100/dev/...` at 375×780 and record, ⛔ per screen:**
+```
+/dev/world  ·  /dev/tabs/cards  ·  /dev/story  ·  /dev/arcade/home  ·  /dev/tabs/studies
+⇒ console errors · tappable count · anything under 44px · horizontal scroll · taps to reach
+```
+⛔ **Chromium missing is ⛔ NOT a reason to skip** (`RULES § 0.27`): the scripts already
+resolve it themselves, and if that fails you **install it** — you ⛔ do ⛔ not write «skipped».
+🔬 **⛔ And the live domain, when it is reachable:** the same walk against
+`https://<the live site>` is worth more than all five fixtures. Today it is ⛔ not — the
+environment's network policy returns `connect_rejected` (measured 15 times, `F-200`) ⇒
+write **«⛔ לא נמדד»** for the live half and walk the local build. ⛔ **⛔ Never «passed».**
+
+⚠️ **⛔ AND ⛔ NOTHING HERE BLOCKS ANYTHING.** ⛔ A finding from this walk is ⛔ not a
+`PROMOTION_BLOCKERS` entry and ⛔ not a rollback: the promotion already happened, and the
+gate that decides promotions is STEP D. **What you found goes into the journal (STEP F) and,
+if it stops a learner, into `plan/60-findings.md` as a 🔴 routed to DEV.**
+
 ## STEP F — THE LOG LINE. ⛔ EVERY RUN, INCLUDING THE QUIET ONES.
 
 ⛔ **You write ONE line to `plan/archive/control-log.md` on `work/current` every single run** — promoted or not, decided or not. **This is ⛔ not bookkeeping:** `loop:health` **check 17** measures agent silence from `git log origin/work/current` against `docs/agents/roster.json`, and a run that leaves no commit is ⛔ indistinguishable from an agent that is dead.
@@ -261,7 +293,69 @@ RELEASE_READY          ⇐ the shipped SHA + date + N commits + what the learner
 ```
 | <UTC timestamp> | קודם? ✅/⛔ | <main before> ⇢ <main after> | <N commits> | <decisions, or ⛔ 0> | <raw smoke result, or —> |
 ```
+**AND, ⛔ only on a run that actually promoted, ONE more row — under the SECOND heading,
+`## 📐 מדד המקצועיות`:**  ⟦NEW 09/09 · Roy's explicit instruction⟧
+```
+| <UTC> | <SHA> | check:mobile <N> | שגיאות קונסולה <N> | מתחת ל-44px <N> | גלילה אופקית <N> | רצפת טקסט <N> | מוטיון <N> | הקשות: join <n> · learn <n> · play <n> |
+```
+🔬 **⛔ Every one of those nine numbers is ALREADY produced by something you ran** — ⛔ none
+of them is a judgement, and ⛔ none is invented:
+```
+check:mobile <N>        the count `npm run check:mobile` prints  (1,519 on 09/09)
+console · 44px · scroll from YOUR walk in STEP E.5, per screen, summed
+רצפת טקסט <N>           `npm run check:text-floor` — «N known violation(s)»  (3 on 09/09)
+מוטיון <N>              `npm run check:motion`     — «N known violation(s)»  (0 on 09/09)
+הקשות join/learn/play   the three `journey …: taps=` lines `check:mobile` prints
+```
+🔴 ⛔ **AND IT BLOCKS ⛔ NOTHING — ⛔ EVER.** ⛔ It is ⛔ not a gate, ⛔ not a score, and
+⛔ not a reason to withhold a promotion. **It is a TREND**, and its whole value is that the
+row above it exists: a number that moved the wrong way over five promotions is a finding
+⛔ nobody could have seen from one run. ⚠️ **A number you could ⛔ not measure is written
+`⛔ לא נמדד`, ⛔ never `0`** — a zero you did not measure is the one lie this table can tell.
+
 Commit it with the prefix **`loop(PROMOTER)`** — check 17 matches on exactly that string — then release the lock and push to `work/current` through `./scripts/g`. The `pre-push` hook will run `verify` again; that is expected and it is the gate working.
+
+
+## 🚪 THE ONE QUIET EXIT — ⛔ AND IT IS THE ⛔ ONLY ONE  ⟦NEW 09/09 · Roy's explicit instruction · identical in all five prompts⟧
+
+⛔ **«⛔ Nothing to do» is ⛔ not a tick. It is a REPORT ON THE QUEUE, and the queue is
+something you are allowed to fix.** Measured over 14 days: **489 agent commits, ⛔ only 123
+of them — 25% — touched product code.** ⇒ before you exit quiet, you owe **three** answers,
+⛔ in this order, ⛔ and the exit is legitimate ⛔ only when all three are «⛔ no»:
+
+```
+① is there work in `ACTIVE_WORKSTREAM` I can take right now?
+② is there work in the NEXT workstream in `36 § 13` I may read ahead into?
+③ is there an open finding, an open commission, or an unwritten row of a goal
+   the department ALREADY carries, that I am permitted to act on?
+```
+
+🔴 **⇒ THE ONLY LEGITIMATE QUIET EXIT: the department is FINISHED and its work is waiting
+for QA to merge to `dev`.** ⛔ That, and a lock held by another agent, and
+`PAUSED_BY_HUMAN: true`. ⛔ **⛔ Nothing else.**
+
+```
+✅ legitimate     department done, work sitting on `work/current` awaiting QA's merge
+✅ legitimate     another agent holds the lock (after the Smart Wait)
+✅ legitimate     `PAUSED_BY_HUMAN: true`
+⛔ ⛔ NOT          "the queue is empty"          ⇒ ② and ③ above
+⛔ ⛔ NOT          "I am waiting for <agent>"    ⇒ route it (`RULES § 0.20`) and take the next thing
+⛔ ⛔ NOT          "I am waiting for Roy"        ⇒ ⛔ never. One stamped line, and keep working
+⛔ ⛔ NOT          a register edit dressed up as work
+```
+
+⛔ **AND A QUIET EXIT IS ⛔ NEVER SILENT** (`RULES § 0.29 ו׳`): one line to
+`plan/archive/control-log.md`, in your own commit prefix, naming **which of the three
+legitimate reasons** applies — ⛔ not «blocked», ⛔ not «nothing to do»:
+```
+loop(<AGENT>): <cycle> idle — <the reason, one line, by its name or by the blocker's id>
+```
+🔬 **Why the reason and ⛔ not the word:** `loop:health` **check 17** reads `git log`, and it
+classifies **by the DIFF, ⛔ not by the wording** — a commit touching ⛔ only
+`plan/00-control.md` · `plan/archive/**` · `docs/plan-*.md` is a tick with ⛔ no work
+however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» instead of 🟠
+«alive, no work, ⛔ and ⛔ no declared marker», and ⛔ neither of them fails anything.
+**⛔ 🔴 total silence is the ⛔ only failing state, and it is the one this line prevents.**
 
 ## STEP G — THE REPORT TO ROY (Hebrew)
 
