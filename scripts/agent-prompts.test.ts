@@ -1635,12 +1635,22 @@ describe('⛔ אף פרומפט ⛔ אינו מכריז מספר חי על גו�
   it('⛔ אין הכרזה בהווה על גודל הרגיסטרים או על מניין התוכניות', () => {
     for (const a of ALL_PROMPTS) {
       const body = text(a);
-      for (const line of body.split('\n')) {
-        // ⛔ שורה שמסויגת כהיסטוריה או כציטוט של הכלל — מותרת במפורש.
-        if (/Measured|נמדד|§ 0\.15|⟦/.test(line)) continue;
+      for (const raw of body.split('\n')) {
+        // 🔴 ⛔ **הסתייגות ב-⟦…⟧ פוטרת את הסוגריים, ⛔ לא את השורה.** עד 09/09 השורה
+        // כולה נפטרה, ו-`QA.md` הכריזה «The index is **78KB**» באותה שורה שבה ⟦⟧
+        // ציטטה את § 0.15 עצמה. ⇒ מסירים את הסוגריים ובודקים את מה שנשאר.
+        const line = raw.replace(/⟦[^⟧]*⟧/g, '');
+        // ⛔ מדידה מתוארכת ככזאת, או ציטוט הכלל — מותרות במפורש.
+        if (/Measured \d|נמדד|§ 0\.15/.test(line)) continue;
+        // ⛔ **תקרה ⛔ אינה מדידה** — «≤4KB» · «hard cap 12KB» · «under its 12KB ceiling»
+        // הם כללים שהקובץ חייב לקיים, ⛔ ולא טענות על מצבו היום.
+        if (/≤ ?\d+ ?KB|hard cap \*?\*?\d+ ?KB|under its \d+ ?KB|\d+ ?KB ceiling/.test(line)) continue;
+        // ⛔ **קירוב שמסמן את עצמו** — «~53KB» ⛔ אינו נקרא כעובדה, וסטייה של 20%
+        // בו ⛔ אינה מטעה. טענה **בלי** ~ נקראת כעובדה, ולכן היא זו שמתיישנת.
+        const claim = line.replace(/~\s?\d+([–\-]\d+)? ?KB/g, '');
         expect(
-          /\b\d{3}KB together|They are \*\*\d{3}KB\*\*|\b\d+ exist and \d+ are orphaned/.test(line),
-          `${a}: מספר חי בשורה — ${line.slice(0, 90)}`,
+          /\d+ ?KB/.test(claim) || /\b\d+ exist and \d+ are orphaned/.test(claim),
+          `${a}: מספר חי בשורה — ${raw.slice(0, 100)}`,
         ).toBe(false);
       }
     }

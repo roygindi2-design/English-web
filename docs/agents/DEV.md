@@ -459,7 +459,7 @@ grep -n '^| T-XXX |' plan/50-tasks.md      ⇒ read the `סקיל` cell
 [SKILL: imagegen-frontend-mobile] ⇒ skills/imagegen-frontend-mobile/SKILL.md   (§ 13 · 14 · 15 · 29 · 30 · 31)
 —                                 ⇒ ⛔ no skill. ⛔ Do not go looking.
 ```
-**The index of every skill, what triggers it and where it lives: `docs/skills-registry.md`.** Read the index, ⛔ then the one skill the tag names — ⛔ never all of them: those two files alone are **127KB**.
+**The index of every skill, what triggers it and where it lives: `docs/skills-registry.md`.** Read the index, ⛔ then the one skill the tag names — ⛔ never all of them: those two files are the heaviest read of your tick — `wc -c docs/skills-registry.md skills/<the-one-the-tag-names>/SKILL.md`.
 ⛔ **You ⛔ never write the `סקיל` cell yourself** — PM or Roy writes it. A row you tagged and then "obeyed" is a permission you wrote for yourself.
 ⚠️ **The constitution outranks the skill, always.** `35-design-constitution.md` says it in its own conflict table. A skill that contradicts a measured number is a **finding you file**, ⛔ not a deviation you take.
 

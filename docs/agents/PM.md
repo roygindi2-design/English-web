@@ -578,7 +578,7 @@ Announce "Running [skill] in order to [purpose]."
 🔬 **What DEV sees:** while the focus is `general`, `general` ∪ `loop` ∪ `base` are all eligible (`DEV.md STEP 2`) — measured 31/08: **25 open rows** that ⛔ no tick could reach before this existed.
 
 ### 📇 IRON RULE — READ THE SKILLS INDEX BEFORE YOU PLAN  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
-🔴 **In a planning tick (`STATE: PLANNING`, or any tick in which you derive rows into `plan/50-tasks.md`) you MUST read `docs/skills-registry.md` — whole. It is 9.7KB and it is ⛔ not optional.**
+🔴 **In a planning tick (`STATE: PLANNING`, or any tick in which you derive rows into `plan/50-tasks.md`) you MUST read `docs/skills-registry.md` — whole. It is an index, ⛔ not a register — the smallest mandatory read in the tick (`wc -c docs/skills-registry.md`) — and it is ⛔ not optional.**
 Use what the relevant skills know to plan the architecture and the UX **better**, ⛔ not to decorate the row:
 - a row that touches interface text, spacing, shadows or visual hierarchy ⇒ think with **`taste-skill`**;
 - a row that touches a mobile screen's layout, safe areas, bottom navigation, density or text readability ⇒ think with **`imagegen-frontend-mobile` § 13 · § 14 · § 15 · § 29 · § 30 · § 31**.
@@ -586,7 +586,7 @@ Use what the relevant skills know to plan the architecture and the UX **better**
 ```
 [SKILL: taste-skill]        [SKILL: imagegen-frontend-mobile]        —
 ```
-⛔ **`—` is a legitimate and common answer.** A tag on a row that ⛔ does not need it costs DEV a 40–87KB read for nothing, and that is exactly the waste the index exists to stop.
+⛔ **`—` is a legitimate and common answer.** A tag on a row that ⛔ does not need it costs DEV a whole skill-file read for nothing, and that is exactly the waste the index exists to stop.
 🔴 **And the tag is yours alone** — `DEV.md` says in so many words that DEV ⛔ never writes it. The gate ⛔ does not open from the inside.
 ⚠️ **The constitution still outranks every skill** (`35-design-constitution.md`, conflict table: `שכבה ב׳` beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
 

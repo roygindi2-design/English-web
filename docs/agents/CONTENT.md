@@ -89,7 +89,7 @@ git clone -b work/current https://github.com/roygindi2-design/English-web.git re
 ## STEP 1 — LESSONS, THEN COMMISSIONS
 `plan/80-content-lessons.md` — §A1 is your standing order list, derived from your own past mistakes. §B is what the Critic caught that you missed; more important, because the gate did not catch those.
 **Then `plan/25-content-commissions.md`.** Any row ⬜ or 🔵? **Check its brief and gate exist** (rule ⓐ above), then that is this tick's work.
-⚠️ **Need the task register? Read `docs/plan-open.md`** — 78KB, open rows only — ⛔ **not** `plan/50-tasks.md`, which is 412KB. One row in full: `grep -n '^| T-189 |' plan/50-tasks.md`.
+⚠️ **Need the task register? Read `docs/plan-open.md`** — open rows only, a fraction of the register — ⛔ **not** `plan/50-tasks.md` (`wc -c docs/plan-open.md plan/50-tasks.md` if you want the ratio). One row in full: `grep -n '^| T-189 |' plan/50-tasks.md`.
 
 ## STEP 2 — LOCK
 

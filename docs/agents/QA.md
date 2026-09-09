@@ -42,7 +42,7 @@ working at all.
 
 ### 🚦 IF `מסלול: שער` — THIS SECTION IS YOUR WHOLE TICK. ⛔ DO NOT READ PAST IT.
 
-⛔ **You are a cheap gate tick. Your window is small and this file is 25KB.** Reading
+⛔ **You are a cheap gate tick. Your window is small and this file is the single heaviest read in your tick — measure it, ⛔ do ⛔ not trust a number written here: `wc -c docs/agents/QA.md`.** Reading
 the rest of it would mean **doing** the rest of it — the product walk, the findings,
 the seals — on a budget that ⛔ cannot carry them, and half-doing the seals is worse
 than ⛔ not doing them.
@@ -258,7 +258,7 @@ push runs `verify` like every other push, and that is the point.
 
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR QUEUE AND YOUR DASHBOARD (RULES § 0.6א · § 0.6ב)
 
-**⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`.** They are **hundreds of KB** together ⟦⛔ the exact figure is ⛔ deliberately ⛔ not written — `RULES § 0.15`; it read 667KB here while the files were 443KB⟧ — ~230k tokens before you review anything. The index is **78KB** and holds: the open rows by state · 🧭 the balance table · 🌳 the work tree · 📐 the 46 plans · flags.
+**⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`.** They are **hundreds of KB** together ⟦⛔ the exact figure is ⛔ deliberately ⛔ not written — `RULES § 0.15`; it read 667KB here while the files were 443KB⟧ — ~230k tokens before you review anything. The index is a fraction of them (`wc -c docs/plan-open.md plan/50-tasks.md plan/60-findings.md`) and holds: the open rows by state · 🧭 the balance table · 🌳 the work tree · 📐 the 46 plans · flags.
 
 ⚠️ **Every cell is cut at 150 characters.** ⚠️ **And since 24/08 you ⛔ do NOT walk the 🟣 queue at all** (RULES § 0.23ו) — the gate closes tasks. You still read a full row before writing anything about it: ⛔ **never mark a row ✅ or 🚫 from the excerpt** — `grep -n '^| T-185 |' plan/50-tasks.md` for the full row, one per task as you get to it.
 ⚠️ **Wrote to a register? `npm run measure:plan`, and BOTH generated files go in the SAME commit** (`RULES § 0.1 ח׳`). ⛔ And marking a status must not disturb the row's `M<n> · <זרימה> · <סוג>` cell — a dropped tag removes that row from the balance table.
@@ -390,7 +390,7 @@ QA  →  <feature>    ⇐ still YOURS ALONE, and still the only way back into th
 [SKILL: imagegen-frontend-mobile] ⇒ skills/imagegen-frontend-mobile/SKILL.md   (§ 13 · 14 · 15 · 29 · 30 · 31)
 —                                 ⇒ ⛔ no skill. ⛔ Do not go looking.
 ```
-The index — every skill, its trigger, its path — is **`docs/skills-registry.md`**. ⛔ Read the index and **the one skill the tag names**; those two skill files alone are **127KB**.
+The index — every skill, its trigger, its path — is **`docs/skills-registry.md`**. ⛔ Read the index and **the one skill the tag names**; those two files are the heaviest read of your tick — `wc -c docs/skills-registry.md skills/<the-one-the-tag-names>/SKILL.md`.
 ⛔ **`animate` · `apple-design` · `emil-design-eng` stay BLOCKED for you in every layer** — they are build skills, and a reviewer who runs one stops measuring the diff and starts proposing a different one. ⛔ A `[SKILL: X]` tag ⛔ does not unblock them.
 ⛔ **And you ⛔ never write the `סקיל` cell** — it is PM's and Roy's. ⚠️ **The constitution outranks the skill, always.**
 
