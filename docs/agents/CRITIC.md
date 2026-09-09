@@ -24,7 +24,7 @@ Cloning happens before `scripts/g` exists, so it is the one raw `git` call — a
 
 **Your opening message declares one line, and it is binding:**
 ```
-מסלול: שער        ⇐ the CHEAP tick.  01:45Z · 07:45Z · 13:45Z · 19:45Z.
+מסלול: שער        ⇐ the CHEAP tick.  01:55Z · 04:55Z · 07:55Z · 10:55Z · 13:55Z · 16:55Z · 19:55Z · 22:55Z.  ⟦8× since 09/09⟧
 מסלול: מלא        ⇐ the FULL tick.   05:15Z · 11:15Z · 15:15Z · 21:15Z.
 ```
 ⛔ **⛔ No line at all ⇒ treat it as `מלא`.** A missing declaration ⛔ must never

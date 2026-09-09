@@ -133,8 +133,8 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('17');
-    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17']
+    expect(total?.[2]).toBe('18');
+    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
       .filter((n) => failed(r.out, n));
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
@@ -145,11 +145,14 @@ describe('scripts/loop-health.mjs', () => {
      * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
      * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
      */
-    const unmeasured = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17']
+    const unmeasured = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
       .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(17);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(18);
     expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
+    // ⛔ ⟦09/09 · F-207⟧ 18 מריצה `./scripts/g fetch` — ⛔ אין git בפיקסצ׳ר ⇒ n/m.
+    // ⛔ «⛔ לא נמדד» ⛔ אינו «נקי», והיא נאמרת בשמה כדי שלא תיעלם מהמשוואה.
+    expect(unmeasured, '⛔ 18 ⛔ אינה מודדת בלי git ⇒ n/m, ⛔ ולא «עברה»').toContain('18');
     for (const n of ['1', '2', '3', '4', '5', '6', '7', '9', '15']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
@@ -190,8 +193,9 @@ describe('scripts/loop-health.mjs', () => {
       // הוא 15 כי T-260 (שנחתה באותו טיק) הוסיפה check('15', …) אמיתי — לא כי
       // השורה הזו נספרת. ⚠️ תוקן מ-'14' ל-'15' עם נחיתת T-260, ומ-'15' ל-'17' עם
       // נחיתת בדיקות 16 (שער verify · הכרעה 100) ו-17 (סוכן שותק · הכרעה 101).
+      // ⚠️ ומ-'17' ל-'18' עם נחיתת בדיקה 18 — עבודה תקועה על `claude/*` (`F-207`, 09/09).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('17');
+      expect(total?.[1]).toBe('18');
     });
   });
 
@@ -263,7 +267,8 @@ describe('scripts/loop-health.mjs', () => {
     // was lit early — the file was measured 661 bytes OVER its own rule.
     // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06).
     // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
-    expect(total).toBe('17');
+    // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09).
+    expect(total).toBe('18');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -723,7 +728,8 @@ describe('scripts/loop-health.mjs', () => {
     const r = run('.');
     expect(r.out).toContain('תמהיל (דיווח רך');
     // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
-    expect(r.out).toMatch(/loop health: \d+\/17 checks pass/);
+    // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09). Also unrelated to this mix line.
+    expect(r.out).toMatch(/loop health: \d+\/18 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );

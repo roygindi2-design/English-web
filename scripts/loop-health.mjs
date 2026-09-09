@@ -1037,6 +1037,91 @@ check(
 );
 
 /**
+ * 🔴 ⛔ **18 — עבודה שנתקעה על ענף התוצאה של הפלטפורמה.**  ⟦NEW 09/09 · `F-207`⟧
+ *
+ * 🔬 **נמדד חי 09/09, ⛔ לא שוער.** ב-`ls-remote` ישבו זה לצד זה:
+ * ```
+ * f6d227e  refs/heads/work/current
+ * f6d227e  refs/heads/claude/english-web-architecture-ganiks
+ * ```
+ * ⇒ **שני רפרנסים, שני כותבים שונים, בשני זמנים שונים:**
+ *   ⓐ ל-`work/current` כותב **הסוכן**, במפורש — `./scripts/g push origin work/current`,
+ *     באמצע הטיק.
+ *   ⓑ ל-`claude/<slug>` כותבת **הפלטפורמה** (CCR), אוטומטית **בסוף הסשן**, מתוך
+ *     `session_request.config.outcomes[].git_info.branches`.
+ *
+ * 🔴 ⇒ **הכשל השקט:** אם הדחיפה של הסוכן נכשלה — non-ff, דחיית מסווג, או שפשוט
+ * ⛔ לא נקראה — **הסשן עדיין נסגר בהצלחה**, והפלטפורמה **עדיין** דוחפת ל-`claude/<slug>`.
+ * ⇒ העבודה קיימת ב-GitHub, על ענף ש⛔ אף אחד ⛔ לא קורא: ⛔ לא QA במיזוג, ⛔ לא בדיקה 10,
+ * ⛔ ולא PROMOTER. **הטיק נראה ירוק והעבודה נעלמת.**
+ *
+ * ⚠️ **ולכן ⛔ אי אפשר לקודד רשימת ענפים:** השם נוצר מחדש בכל ריצה — נמדד ש-DEV הכריז
+ * `claude/modest-galileo` ב-08/09 ו-`claude/sleepy-bell` ב-09/09. ⇒ הבדיקה מונה **תבנית**.
+ *
+ * ⇒ ה-fetch הוא refspec אחד לכל הענפים ⇒ **קריאת רשת אחת**, ⛔ לא אחת לענף.
+ */
+check(
+  '18',
+  '⛔ אין עבודה תקועה על ענף תוצאה של הפלטפורמה (`claude/*`)',
+  () => {
+    const git = (...args) => {
+      try {
+        return execFileSync('./scripts/g', args, {
+          cwd: ROOT,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        });
+      } catch {
+        return null;
+      }
+    };
+    // ⛔ קריאת רשת אחת שמביאה את כולם. נכשלה ⇒ ⛔ לא נמדד, ⛔ ולא «נקי».
+    if (
+      git('fetch', '-q', '--prune', 'origin', '+refs/heads/claude/*:refs/remotes/pf-outcome/*') ===
+      null
+    ) {
+      return {
+        ok: false,
+        notMeasured: true,
+        detail:
+          '⛔ לא נמדד — fetch של refs/heads/claude/* נכשל (רשת? הרשאה?). ⛔ «לא נמדד» ⛔ אינו «נקי».',
+      };
+    }
+    const refs = (git('for-each-ref', '--format=%(refname:short)', 'refs/remotes/pf-outcome') ?? '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (refs.length === 0) {
+      return { ok: true, detail: '⛔ אין ענפי `claude/*` ברמוט — ⛔ אין מה לבדוק' };
+    }
+    // ⛔ בסיס ההשוואה הוא `work/current` — הענף שהלופ באמת קורא, ⛔ ולא `dev`.
+    if (git('rev-parse', '--verify', '-q', 'origin/work/current') === null) {
+      return {
+        ok: false,
+        notMeasured: true,
+        detail: '⛔ לא נמדד — origin/work/current ⛔ אינו בקלון (`./scripts/g fetch origin work/current`)',
+      };
+    }
+    const stranded = [];
+    for (const ref of refs) {
+      const n = Number((git('rev-list', '--count', `origin/work/current..${ref}`) ?? '').trim());
+      if (Number.isFinite(n) && n > 0) {
+        const tip = (git('log', '-1', '--format=%h %cI %s', ref) ?? '').trim().slice(0, 120);
+        stranded.push(`${ref.replace('pf-outcome/', 'claude/')} — ${n} קומיטים ⛔ שאינם ב-work/current · ${tip}`);
+      }
+    }
+    return stranded.length === 0
+      ? { ok: true, detail: `${refs.length} ענפי \`claude/*\` — כולם מוכלים ב-work/current · 0 תקועים` }
+      : {
+          ok: false,
+          detail: `⛔ ${stranded.length} מתוך ${refs.length} ענפי \`claude/*\` נושאים עבודה ש-work/current ⛔ אינו מכיר`,
+          items: stranded,
+        };
+  },
+);
+
+
+/**
  * ⛔ **A REPORTED NUMBER, ⛔ NOT A CHECK.**  ⟦D-147 · the 4/1/1 mix⟧
  * The mix is a soft target and it ⛔ must not become a gate: cutting new slices in
  * half while DEV runs dry trades one problem for another. ⇒ this prints and ⛔ never
