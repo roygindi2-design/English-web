@@ -471,7 +471,12 @@ clone, install and verify for each.
 
 ### ⛔ THE TICK ENDS WHEN ONE OF THREE HAPPENS — ⛔ NOT WHEN YOU HAVE COUNTED TASKS
 1. **The gate went red and you cannot fix it in this tick.** ⇒ `revert`, file it, end.
-2. **The time box ran out.**
+2. **The time box ran out.** ⟦09/09⟧ **A row is written to be 30–60 minutes** (`PM.md`
+   STEP 2 ③). ⇒ **a row that has taken you past ~60 minutes is a MEASUREMENT, ⛔ not a
+   reason to push harder:** finish the smallest coherent piece, commit it, and say in
+   your report that the row was mis-sized and why. ⛔ **Do ⛔ not carry a half-built row
+   silently into the next tick** — the next agent inherits it with ⛔ no record of where
+   it stopped, and that is the failure this number exists against.
 3. **The plan's steps ran out.**
 
 ⇒ a one-line task and a day-long task are measured by the same rule, and there is

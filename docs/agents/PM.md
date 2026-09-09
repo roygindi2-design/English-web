@@ -335,11 +335,35 @@ scold it — **write the rest of that goal's rows this tick.**
 ① define the department   what does a learner get when `<workstream>` is DONE?
                           ⛔ One sentence, in `plan/00-control.md`'s handoff line.
 ② break it into GOALS     3–6 goals, each one a thing a learner can DO.
-③ break each goal into    small rows DEV can land in one tick each — ⛔ and keep going
+③ break each goal into    rows of **30–60 minutes of DEV work each** — ⛔ and keep going
    the rows it needs      until the goal is fully covered, ⛔ not until you hit a number
 ④ when the department is  hand it to QA (STEP 5.7) — ⛔ never move ACTIVE_WORKSTREAM yourself
    nearly done
 ```
+#### 📏 ③ IN MINUTES — ⛔ AND BOTH DIRECTIONS COST SOMETHING  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+**A row is 30–60 minutes of DEV work.** ⛔ Not «one tick» — measured 09/09, «one tick»
+was ⛔ never given a duration anywhere for DEV: `RULES:704` defines a time box for **QA**
+(15 minutes fast · 40 deep) and `DEV.md` ends a tick when «the time box ran out» with
+⛔ no number behind it. ⇒ «small enough for one tick» was ⛔ unmeasurable, and this is it
+measured.
+
+```
+⛔ under 30 min   the coordination costs more than the work — a row to read, a status
+                  cell to flip, a commit, a register write. ⛔ Three of those in a tick
+                  is a tick that produced three lines of bookkeeping.
+✅ 30–60 min      one commit, one clear failure scenario, lands whole inside a tick.
+⛔ over 60 min    ⛔ does ⛔ not finish. It carries to the next tick, and the next agent
+                  inherits a half-built thing with ⛔ no record of where it stopped.
+```
+🔴 **⛔ And the test is ⛔ not «does it feel small» — it is «⛔ can DEV finish it and push
+green».** A row that needs a migration AND a screen AND a test is **two rows**. A row
+that is «rename a constant» is ⛔ not a row — it belongs inside a neighbouring one.
+⚠️ **When a goal genuinely will ⛔ not split** — an irreducible refactor, a schema change
+with its call sites — **say so in the row** («⛔ אינה ניתנת לפיצול: <סיבה>»), ⛔ and ⛔ do
+⛔ not pretend it is 45 minutes. **A declared big row is workable; a big row disguised as
+a small one is what leaves DEV stuck at the end of a window.**
+
 🔬 **Why the reframe, measured over 14 days:** DEV fired **308** times against an eligible
 queue of **2 to 4 rows**, and **66%** of its ticks found ⛔ nothing to build. ⛔ **That is
 ⛔ not DEV being slow — it is the queue being empty**, and the queue is yours. **A tick
