@@ -36,7 +36,20 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
       .filter((f) => f.endsWith('.md'))
       .map((f) => f.replace(/\.md$/, ''))
       .sort();
-    expect(found).toEqual([...ALL_PROMPTS].sort());
+    /**
+     * 🌉 ⟦09/09⟧ **`CRITIC.md` הוא גשר, ⛔ ולא פרומפט שישי.** הודעת הפתיחה של שתי
+     * משימות ה-QA חיה **בשרת** ואומרת `Read docs/agents/CRITIC.md IN FULL`; ⛔ אין
+     * לסוכן דרך לשנות אותה. ⇒ בלי הקובץ, כל טיק QA נעצר על קובץ חסר — **נמדד לפני
+     * הפעלה, ⛔ ולא אחריה.** הטענה למטה מוודאת שהוא נשאר **מצביע ריק מהוראות**,
+     * שזה מה שמפריד «גשר» מ«עותק שני שסוטה».
+     */
+    expect(found).toEqual([...ALL_PROMPTS, 'CRITIC'].sort());
+    const bridge = readFileSync(join(DIR, 'CRITIC.md'), 'utf8');
+    expect(bridge, 'הגשר מפנה ל-QA.md').toContain('docs/agents/QA.md');
+    expect(bridge.length, '⛔ והוא ⛔ אינו מחזיק הוראות — גשר, ⛔ לא עותק').toBeLessThan(1600);
+    for (const step of ['STEP 0', 'STEP 1', 'STEP 5', 'merge --ff-only']) {
+      expect(bridge, `⛔ הגשר ⛔ אינו נושא «${step}»`).not.toContain(step);
+    }
   });
 
   /**
