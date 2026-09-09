@@ -340,6 +340,33 @@ scold it — **write the rest of that goal's rows this tick.**
 ④ when the department is  hand it to QA (STEP 5.7) — ⛔ never move ACTIVE_WORKSTREAM yourself
    nearly done
 ```
+#### 📇 AND THE GOALS LIVE IN A FILE — `plan/05-departments.md`  ⟦NEW 09/09 · Roy's requirement⟧
+
+**⛔ It is NET, ⛔ not a log.** It holds what is open **now**. ⇒ **a goal that was
+achieved is DELETED, ⛔ not marked ✅** — the evidence that it happened is `git log` and
+the closed `T` rows, ⛔ not a line that stays here forever.
+
+```
+plan/05-departments.md   ⇐ YOURS to write. DEV · QA · CONTENT · PROMOTER read it.
+                            ⛔ ceiling 4,096 bytes — `loop:health` check 19.
+```
+**Four things, ⛔ and nothing else:** ① which department is in work · ② one summary line
+per department · ③ the goals **still open** in each · ④ ⛔ nothing about `loop`/`base`/
+`general` (they have ⛔ no goals — `§ 0.17`, the loop-row freeze).
+
+⚠️ **⛔ Do ⛔ not rewrite the table every tick.** Touch **only** the department that
+changed. A file rewritten wholesale is a file whose diff says nothing.
+🔬 **⛔ And it is ⛔ not an Artifact, measured 09/09:** `Artifact` is ⛔ **not** in
+`allowed_tools` on any of the six scheduled tasks ⇒ **you ⛔ cannot publish or update
+one**, and an artifact only Roy refreshes goes stale in a day. A repo file is written by
+the same agent that reads it.
+
+**⇒ And what is ⛔ NOT here, because it is derived and would rot:**
+```
+15 המשימות האחרונות שנסגרו   ⇒ docs/plan-open.md § «✅ נסגרו לאחרונה» — נגזר, בכל `measure:plan`
+המחלקה הפעילה                 ⇒ ACTIVE_WORKSTREAM · המחלקה שמתקרבת ⇒ WORKSTREAM_ENDING
+```
+
 #### 📏 ③ IN MINUTES — ⛔ AND BOTH DIRECTIONS COST SOMETHING  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
 **A row is 30–60 minutes of DEV work.** ⛔ Not «one tick» — measured 09/09, «one tick»

@@ -79,6 +79,9 @@ for (const row of findingRows) {
   if (cell !== undefined) findingStates.set(row.id, classifyStatus(cell));
 }
 
+/** ⛔ סדר הרגיסטר, ⛔ לא סדר זמן — הרשם ⛔ אינו נושא חותמת סגירה לכל שורה.
+ *  ⇒ «האחרונות» = **התחתונות בקובץ**, וזה מה שנכתב בכותרת. */
+const closedTasks = taskRows.filter((r) => r.ok && classifyStatus(r.cells[TASK_STATUS_INDEX] ?? '') === 'done');
 const badTasks = taskRows.filter((r) => !r.ok);
 const badFindings = findingRows.filter((r) => !r.ok);
 const eligible = eligibleTaskIds(taskRows);
@@ -237,6 +240,29 @@ const index = [
   ...taskSection('⚠️ שורות משימה פגומות — ⛔ אינן נקראות לפי עמודה', 'malformed', 'תאים', (r) =>
     `| \`${r.id}\` | — | ${r.cells.length} מתוך ${r.expected} |`,
   ),
+  /**
+   * ✅ **15 האחרונות שנסגרו — ⛔ ולא לוג.**  ⟦NEW 09/09 · דרישת רוי⟧
+   * ⛔ **למה כאן ו⛔ לא בקובץ חדש:** `docs/plan-open.md` הוא המשטח ש-PM ו-DEV **כבר**
+   * קוראים בכל טיק ⇒ «מה כבר בוצע» מגיע ⛔ בלי קריאה נוספת. זו הנקודה של סעיף F.3.
+   * ⛔ **חמש-עשרה, ⛔ ולא «הכול»** — הרשם המלא הוא `plan/50-tasks.md`, וההיסטוריה
+   * המלאה היא `git log`. רשימה שגדלה ⛔ אינה רשימה, היא לוג.
+   */
+  `## ✅ נסגרו לאחרונה (${Math.min(15, closedTasks.length)} מתוך ${closedTasks.length})`,
+  '',
+  ...(closedTasks.length === 0
+    ? ['⛔ אין.']
+    : [
+        '| id | אבן דרך | המשימה (תקציר) |',
+        '|---|---|---|',
+        ...closedTasks
+          .slice(-15)
+          .reverse()
+          .map(
+            (r) =>
+              `| \`${r.id}\` | ${excerpt(r.cells[1] ?? '', 12)} | ${excerpt(r.cells[2] ?? '', TITLE_CHARS)} |`,
+          ),
+      ]),
+  '',
   `## ממצאים פתוחים (${openFindings.length})`,
   '',
   ...(openFindings.length === 0

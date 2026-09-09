@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import {
   chmodSync,
+  rmSync,
   copyFileSync,
   cpSync,
   mkdirSync,
@@ -66,6 +67,8 @@ const healthy = (): string => {
   const write = (p: string, body: string) => writeFileSync(join(root, p), body, 'utf8');
 
   write('lib/core/realGate.ts', 'export const gate = true;\n');
+  // 📇 קובץ המחלקות — בדיקה 19 מודדת את גודלו; בלעדיו היא n/m ו⛔ לא ניתנת לבדיקה.
+  write('plan/05-departments.md', '# 05 · המחלקות\n\n## ▶️ המחלקה בעבודה\n\n`msgs`\n');
   write('docs/real-brief.md', '# brief\n');
   write(
     'plan/25-content-commissions.md',
@@ -135,8 +138,8 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('19');
-    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+    expect(total?.[2]).toBe('20');
+    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
       .filter((n) => failed(r.out, n));
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
@@ -147,10 +150,10 @@ describe('scripts/loop-health.mjs', () => {
      * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
      * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
      */
-    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
       .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(19);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(20);
     expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
     // ⛔ ⟦09/09 · F-207⟧ 18 מריצה `./scripts/g fetch` — ⛔ אין git בפיקסצ׳ר ⇒ n/m.
     // ⛔ «⛔ לא נמדד» ⛔ אינו «נקי», והיא נאמרת בשמה כדי שלא תיעלם מהמשוואה.
@@ -198,7 +201,7 @@ describe('scripts/loop-health.mjs', () => {
       // ⚠️ ומ-'17' ל-'18' עם נחיתת בדיקה 18 — עבודה תקועה על `claude/*` (`F-207`, 09/09).
       // ⚠️ ומ-'18' ל-'19' עם נחיתת בדיקה 3.5 — שורה סגורה בטבלת «פתוח» של רוי (09/09).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('19');
+      expect(total?.[1]).toBe('20');
     });
   });
 
@@ -272,7 +275,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09).
     // ⚠️ 18 → 19 with check 3.5 (a CLOSED row still in Roy's open table, 2026-09-09).
-    expect(total).toBe('19');
+    expect(total).toBe('20');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -426,6 +429,28 @@ describe('scripts/loop-health.mjs', () => {
       `| 2 | PM (C-0002) | 2026-08-02 | נעשה · נבדק: 2026-08-02 | כי | ✅ נסגר |\n`,
     );
     expect(failed(run(root).out, '3.5'), 'מתחת לכותרת ההפרדה ⇒ ⛔ אינה נספרת').toBe(false);
+  });
+
+  /**
+   * 📇 **⟦NEW 09/09⟧ בדיקה 19 — `plan/05-departments.md` הוא נטו, ⛔ ולא לוג.**
+   * 🔴 הכשל שהתקרה מונעת נמדד **פעמיים** במאגר הזה: `03-for-roy.md` הגיע ל-206KB עם
+   * 53 שורות סגורות בטבלת «פתוח», ו-`00-control.md` נמדד 661 בתים מעל התקרה שלו
+   * ⛔ בלי ששום דבר שמר עליה. ⇒ «נטו» ⛔ אינו נשמר בכוונה טובה.
+   */
+  it('19 · 🔴 אדומה כשקובץ המחלקות עובר את 4KB', () => {
+    const root = healthy();
+    patch(root, 'plan/05-departments.md', (s2) => s2 + 'x'.repeat(4200));
+    const r = run(root);
+    expect(failed(r.out, '19'), 'מעל התקרה ⇒ אדומה').toBe(true);
+    expect(r.out, 'ואומרת מה לעשות במקום').toMatch(/יעד שהושג נמחק/);
+  });
+
+  it('19 · ⛔ «⛔ לא נמדד» כשהקובץ ⛔ אינו בקלון — ⛔ ולא «עברה»', () => {
+    const root = healthy();
+    rmSync(join(root, 'plan', '05-departments.md'), { force: true });
+    const r = run(root);
+    expect(notMeasured(r.out, '19'), '⛔ אין קובץ ⇒ n/m').toBe(true);
+    expect(failed(r.out, '19'), '⛔ ואינה מאשימה').toBe(false);
   });
 
   it('4 · goes red when a slice is marked ready and the three taps were not written', () => {
@@ -784,7 +809,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09). Also unrelated to this mix line.
     // ⚠️ 18 → 19 with check 3.5 (Roy's open table, 2026-09-09). Also unrelated.
-    expect(r.out).toMatch(/loop health: \d+\/19 checks pass/);
+    expect(r.out).toMatch(/loop health: \d+\/20 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );

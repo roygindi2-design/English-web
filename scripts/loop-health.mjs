@@ -396,6 +396,30 @@ check('3.5', '⛔ אף שורה סגורה ⛔ אינה יושבת בטבלת «
   };
 });
 
+/**
+ * 19 — 📇 **`plan/05-departments.md` הוא נטו, ⛔ ולא לוג.**  ⟦NEW 09/09 · דרישת רוי⟧
+ *
+ * ⛔ **מה הקובץ הזה, ו⛔ למה תקרה:** הוא הערוץ מ-PM אל DEV ואל רוי — אילו מחלקות
+ * קיימות, אילו יעדים פתוחים בכל אחת, ומי בעבודה. **PM ו-DEV קוראים אותו בכל טיק**
+ * ⇒ ~15 קריאות ביום, וגודלו הוא מס שמשולם בכל אחת.
+ * 🔴 **והכשל שהתקרה מונעת נמדד כבר פעמיים במאגר הזה:** `plan/03-for-roy.md` הגיע
+ * ל-206KB עם 53 שורות סגורות בטבלת «פתוח», ו-`plan/00-control.md` נמדד 661 בתים
+ * מעל התקרה שלו ⛔ בלי ששום דבר שמר עליה. ⇒ «נטו» ⛔ אינו נשמר בכוונה טובה.
+ */
+check('19', '`plan/05-departments.md` מתחת לתקרת 4KB — נטו, ⛔ לא לוג', () => {
+  const text = read(at('plan', '05-departments.md'));
+  if (text === '') {
+    return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — הקובץ ⛔ אינו בקלון' };
+  }
+  const bytes = Buffer.byteLength(text, 'utf8');
+  const CEILING = 4096;
+  return {
+    ok: bytes <= CEILING,
+    detail: `${bytes} בתים מתוך ${CEILING}`,
+    items: bytes > CEILING ? ['⇒ יעד שהושג נמחק, ⛔ ולא מסומן ✅. ההיסטוריה חיה ב-git log וברגיסטר.'] : [],
+  };
+});
+
 /* 4 — the ONLY path by which an answer from Roy re-enters the loop. */
 check('4', 'סומן RELEASE_READY ⇒ שלוש ההקשות נכתבו', () => {
   const control = read(at('plan', '00-control.md'));
