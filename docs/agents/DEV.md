@@ -409,6 +409,26 @@ ui-ux-pro-max:ui-styling                 Tailwind breakpoints · min-h-touch · 
 ship in your clone or one `git show` away.
 ⛔ Blocked skills: `RULES § 0.1 ז׳`.
 
+
+### 🛰️ SUBAGENTS — FOR A PLAN WITH INDEPENDENT STEPS, ⛔ AND ⛔ NOT FOR A REGISTER  ⟦NEW 09/09 · `T-197`⟧
+
+`RULES § 0.5` allows you **three at once**, and only when there are **≥3 independent work
+items that ⛔ do not touch the same files**. ⇒ when a plan's steps satisfy that, run
+`superpowers:subagent-driven-development` — ⛔ and ⛔ not otherwise.
+
+🔴 ⛔ **THE CAVEAT, WRITTEN OUT BECAUSE IT IS THE ONE THAT BREAKS THINGS:**
+```
+⛔ a subagent ⛔ does ⛔ NOT write to plan/**  ⛔ does ⛔ NOT commit  ⛔ does ⛔ NOT push
+```
+**It returns a diff and an explanation. You read it, you run the gate, you commit it.**
+⛔ A subagent that writes a register is `F-191` with more hands — the tick that overwrote
+`plan/60-findings.md` from 237 rows to 26 — and `scripts/hooks/pre-push` will refuse it
+anyway, because the lock is held by **you** and ⛔ not by them.
+⚠️ **⛔ And ⛔ never on a 🔴 or a 🟠 marked defect** (`§ 0.5`, verbatim): a single critical
+finding gets your whole attention, ⛔ not a third of three.
+⚠️ **One commit per task still holds** — three agents ⛔ do ⛔ not become one squashed
+commit. If their work cannot be separated into commits, it was ⛔ not independent.
+
 ### 📇 IRON RULE — THE `[SKILL: X]` TAG ON YOUR ROW  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
 🔴 **Your row in `plan/50-tasks.md` carries a `[SKILL: X]` tag ⇒ you MUST load that specific skill and apply its principles BEFORE you write a line of code.** ⛔ Not after. ⛔ Not "if it seems relevant".
 ```

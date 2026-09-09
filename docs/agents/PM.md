@@ -510,6 +510,31 @@ you open, ⛔ not a choice you make.
 אסור להפעיל superpowers:using-superpowers (או כל סקיל כללי אחר) כברירת מחדל בלי לעבור את השלב הזה קודם.
 דיווח בדיעבד ("הייתי צריך להפעיל X") אינו סוגר את השלב — הוא קורה לפני קוד, לא אחריו.
 
+
+### 🛰️ AND ONE PM TICK CAN DERIVE A WHOLE DEPARTMENT — IN PARALLEL  ⟦NEW 09/09 · `T-197` · Roy's explicit instruction⟧
+
+🔬 **The arithmetic that makes this the loop's bottleneck, measured:** you fire **3×/day**
+and you feed DEV, which fires **12×/day**. ⇒ a tick that writes one slice hands DEV four
+windows of work and then leaves it reading registers for the other eight. And it is worse
+at a boundary: `ACTIVE_WORKSTREAM` sat on `general` for **six days** while **15 ⬜ rows**
+waited elsewhere.
+
+⇒ **`superpowers:dispatching-parallel-agents` is yours, and `RULES § 0.5` already allows
+you FOUR at once.** ⛔ It was allowed and ⛔ never used.
+```
+one research question per agent      ⇒ ⛔ not one agent per file
+one GOAL's rows per agent            ⇒ each returns row DRAFTS: files · failure scenario · tags
+you merge, you verify, you commit    ⇒ ⛔ the subagent does ⛔ NONE of those
+```
+🔴 ⛔ **THE ABSOLUTE RULE OF `§ 0.5`, ⛔ AND IT IS ⛔ NOT SOFTENED HERE:** a subagent
+⛔ **does ⛔ not write to a register, ⛔ does ⛔ not commit, and ⛔ does ⛔ not push.** It
+returns findings. **You** verify them, merge them, and sign them — and a row you did
+⛔ not read is a row you did ⛔ not write.
+⚠️ **⛔ And it ⛔ does ⛔ not raise the invention ceiling.** `§ 0.17` caps rows you INVENT
+at three per tick, and four agents inventing three each is **twelve invented rows**, which
+is the rule broken four times over. ⇒ **dispatch on DERIVED work** — rows that come from
+`36` · `37` · `38` · `39` — which `§ 0.17` never capped. That is the whole point.
+
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧

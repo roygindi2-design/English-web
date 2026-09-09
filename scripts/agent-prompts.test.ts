@@ -1633,3 +1633,40 @@ describe('⛔ אף פרומפט ⛔ אינו מכריז מספר חי על גו�
     }
   });
 });
+
+/**
+ * 🛰️ **סוכני משנה — `RULES § 0.5` התיר אותם מזמן, ו⛔ אף פרומפט ⛔ לא אמר מתי.**
+ * ⟦NEW 09/09 · `T-197`⟧ ‏PM יורה 3×/יום ומזין את DEV שיורה 12×/יום ⇒ טיק PM שכותב
+ * פרוסה אחת מותיר את DEV קורא רגיסטרים בשמונה חלונות. הכלי היה מותר ו⛔ לא היה בשימוש.
+ * 🔴 **והטענה שחייבת להתקיים בשניהם היא הגבול, ⛔ לא ההיתר.**
+ */
+describe('🛰️ סוכני משנה — ההיתר נכתב, ו⛔ הגבול נכתב איתו', () => {
+  it('‏PM מקבל את הסקיל, ⛔ והוא מוגבל לעבודה נגזרת', () => {
+    const pm = text('PM');
+    expect(pm, 'הסקיל').toContain('superpowers:dispatching-parallel-agents');
+    expect(pm, 'התקרה מ-§ 0.5').toContain('RULES § 0.5');
+    // ⛔ **הטענה שמונעת את הקריאה השגויה**: ארבעה סוכנים שממציאים שלוש שורות כל אחד
+    // הם שתים-עשרה שורות מומצאות, כלומר `§ 0.17` שבור פי ארבעה.
+    expect(pm, '⛔ אינו מרים את תקרת ההמצאה').toMatch(/⛔ does ⛔ not raise the invention ceiling/);
+    expect(pm, 'ומכוון לעבודה נגזרת').toContain('§ 0.17');
+  });
+
+  it('‏DEV מקבל את הסקיל, ⛔ ורק על צעדים עצמאיים', () => {
+    const dev = text('DEV');
+    expect(dev, 'הסקיל').toContain('superpowers:subagent-driven-development');
+    expect(dev, '⛔ ולא על 🔴').toMatch(/⛔ never on a 🔴/);
+    expect(dev, 'קומיט אחד למשימה נשאר').toMatch(/One commit per task still holds/);
+  });
+
+  it('🔴 ובשניהם — תת-סוכן ⛔ אינו כותב לרגיסטר, ⛔ אינו מקמט, ⛔ אינו דוחף', () => {
+    for (const a of ['PM', 'DEV'] as const) {
+      const body = text(a);
+      expect(body, `${a}: שלושת האיסורים`).toMatch(
+        /does ⛔ (not write to a register|NOT write to plan\/\*\*)/,
+      );
+      expect(body, `${a}: ⛔ אינו דוחף`).toMatch(/⛔ does ⛔ NOT push|⛔ does ⛔ not push/);
+    }
+    // 📎 ו-`F-191` הוא התקדים: טיק אחד שכתב לרגיסטר הוריד אותו מ-237 שורות ל-26.
+    expect(text('DEV'), 'התקדים נקוב בשמו').toContain('F-191');
+  });
+});
