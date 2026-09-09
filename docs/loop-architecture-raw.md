@@ -109,15 +109,31 @@ Four branches matter.
 
 The pre-push hook enforces this mechanically, before the SKIP_VERIFY escape hatch:
   refs/heads/main is refused unless git config user.name is promoter-agent or ops-agent
-  refs/heads/dev is refused unless it is critic-agent, qa-agent or promoter-agent
-  any branch is refused for a code-touching diff while LOCK_HELD_BY names another agent
+  refs/heads/dev is refused unless it is critic-agent, qa-agent, promoter-agent or
+    ops-agent. ops-agent was added on 09/09: main had admitted it since the previous
+    round while dev had not, so an operations session could push to the production
+    branch but not to the one before it in the chain, and therefore could not promote
+    the chain in order at all.
+  any branch is refused for a code-touching diff while LOCK_HELD_BY names another
+    agent, UNLESS the lock is orphaned. Orphaned means two conditions together, never
+    the clock alone: LOCK_AT is older than the pushing agent's RULES 0.4 window (90
+    minutes for DEV, 30 for everyone else), AND the holder has pushed no work commit
+    since LOCK_AT. A commit touching only plan/00-control.md does not count as a work
+    commit, because the lock commit itself carries the same timestamp as LOCK_AT and
+    would otherwise make every orphaned lock report as alive the moment it aged past
+    the window. This exemption was added on 09/09 after a live QA tick died holding
+    the lock; before it, the hook never read LOCK_AT and so enforced every lock
+    forever, silently voiding the window RULES 0.4 had already granted.
 
-State at the time of writing:
-  main             87ca9fd
-  dev              e0f7f52
-  work/current     3bb812d
-  main is 80 commits behind dev. dev is 44 commits behind work/current.
-  The whole chain is fast-forward clean: main is an ancestor of dev, dev of work/current.
+State as of 2026-09-09 20:05Z, after the alignment:
+  main             dd9e100
+  dev              dd9e100
+  work/current     dd9e100
+  All three are identical. The desync described below is closed. main previously sat
+  130 commits behind dev; the promotion was fast-forward in both steps.
+  main now carries plan/RULES.md at 100,740 bytes (it was 75,145), docs/agents/QA.md
+  at 66,065 (it was absent), .claude/settings.json at 434 (it was absent), and
+  scripts/loop-health.mjs with 21 checks (it had 17).
 
 This gap is the most important structural fact in this file. PROMOTER clones with no -b,
 so it gets the repository default branch, which is main. On main, measured: plan/RULES.md
@@ -218,7 +234,7 @@ npm run verify:fast - seven of those nine, without build and without check:mobil
 scripts/hooks/pre-push - branch ownership, then the lock gate, then either the full
   verify or a diff-based fast lane for register-only diffs, then a git note recording
   which of the two ran.
-npm run loop:health - 20 numbered checks plus two reported measurements at the top
+npm run loop:health - 21 numbered checks plus two reported measurements at the top
   (infrastructure share of the open queue, and infrastructure rows opened this week).
 npm run measure:plan - regenerates the derived index and reports malformed rows and
   stale blockers.
@@ -226,20 +242,31 @@ npm run measure:plan - regenerates the derived index and reports malformed rows 
 
 SECTION 6 - CURRENT STATE, MEASURED
 
-  HEAD                      3bb812d on ops/loop-round-2, identical to work/current
-  main                      87ca9fd, 80 commits behind dev
-  dev                       e0f7f52, 44 commits behind work/current
+  HEAD                      dd9e100 on ops/loop-round-2, identical to work/current
+  main                      dd9e100, aligned
+  dev                       dd9e100, aligned
   tasks                     283 rows, 0 malformed, 39 open
   findings                  208 rows, 0 malformed, 47 open
   plans                     74 files, 5 orphaned
-  loop:health               18 of 20 pass. Check 10 is red because work/current is 44
-                            ahead of dev against a ceiling of 40 - the desync itself.
+  loop:health               20 of 21 pass, exit 0. Check 10 is green again now that dev
+                            has caught up. The one non-pass is check 17, a warning
+                            inside its soft window until 2026-09-13.
+  check 21                  New on 09/09: reads LOCK_HELD_BY and LOCK_AT and reports an
+                            orphaned lock. Before it, nothing in scripts/ read the lock
+                            at all, so a dead lock wedged the whole loop invisibly: DEV,
+                            PM and CONTENT could not push code, and QA could not merge
+                            to dev because of its own lock. Check 17 would have caught
+                            the silence eventually, but only after 24 hours and on the
+                            symptom rather than the cause.
                             Check 17 is a warning because the Routines are switched off.
   infrastructure share      23 percent of the open queue (9 infra, 30 product, 39 total)
   infra rows opened in 7d   22
-  tests in scripts/         759
-  RULES citations           610, 0 broken, 72 anchors
-  RULES.md                  98,792 bytes, 31 sections
+  tests in scripts/         743 it() blocks, counted as
+                            ls scripts/*.test.ts | xargs grep -c '^\s*it(' | awk -F: '{s+=$2} END {print s}'
+                            An earlier draft of this file said 759 using a different
+                            counting method. Re-measure rather than trust either number.
+  RULES citations           628, 0 broken, 72 anchors
+  RULES.md                  100,740 bytes, 31 sections
 
 
 SECTION 7 - ASSERTIONS THAT PIN EXACT STRINGS IN THE CONSTITUTION AND PROMPTS
@@ -248,7 +275,10 @@ This is the list Roy asked for: every place a test depends on an exact string in
 plan/RULES.md, docs/agents/*.md, docs/skills-registry*.md, docs/agents/roster.json,
 plan/00-control.md, docs/plan-open.md or package.json.
 
-TOTAL PINNED ASSERTIONS: 294
+TOTAL PINNED ASSERTIONS: 294, measured 2026-09-09 before this round's additions.
+This round added 15 assertions that are NOT in the tally below: 4 on loop:health check 21
+and 11 on the pre-push branch-ownership and stale-lock gates. None of them pins a prose
+string in a prompt; they all pin mechanical behaviour, so they belong to KEEP-GATE.
 
 HOW MANY OF EACH, AND WHAT THE MARKING MEANS
   NOT-REVIEWED    233   short literal; not individually judged in this round. NEEDS REVIEW
