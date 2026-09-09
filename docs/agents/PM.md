@@ -203,7 +203,7 @@ number you do ⛔ not write.
 
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR MAP (RULES § 0.6א · § 0.6ב)
 
-**⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`** — 667KB together, ~185k tokens before you plan anything. **The index is 78KB and holds five things:**
+**⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`** — **hundreds of KB** together, most of a tick's context before you plan anything ⟦⛔ the exact figure is ⛔ deliberately ⛔ not written — `RULES § 0.15`; it read 667KB here while the files were 443KB⟧. **The index is a small fraction of that, and holds five things:**
 
 ```
 1. השורות הפתוחות בלבד, לפי מצב   ⬜ ⛔ 🟣 ❔ ⚠️ + ממצאים פתוחים

@@ -137,3 +137,44 @@ describe('scripts/check-rules-citations.d.mts — ההצהרה ⛔ אינה נפ
     expect(declared).toEqual(actual);
   });
 });
+
+/**
+ * 🔢 **שני מספרים חיים נוספים, ⛔ ושניהם התיישנו בשקט בדיוק כמו «חמש פקודות».**
+ * ⟦NEW 09/09 · שלב 2 של סבב התשתית⟧
+ *
+ * ⓐ **ספירת בדיקות `loop:health`.** ‏`docs/agents/QA.md` הורה לדווח `loop health: N/14`
+ *    בכל טיק — בזמן ש-`scripts/loop-health.mjs` מחזיק **19**. ⇒ QA שדיווח «14/14»
+ *    דיווח ציון מלא על חמש בדיקות ש⛔ לא ידע שקיימות. אותה מחלקה בדיוק כמו הסוכן
+ *    שקורא «חמש פקודות», מריץ חמש, ומדלג על השישית.
+ * ⓑ **המודל המוצהר.** `docs/agents/roster.json` הוא **הקובץ שנכתב כדי למנוע ערוץ סמוי**
+ *    (`RULES § 0.23ח`) ⇒ מסמך כזה ⛔ אינו רשאי להיות בעצמו סחוף.
+ */
+describe('🔢 שני מספרים חיים שנגזרים, ⛔ ולא נכתבים ביד', () => {
+  it('ⓐ `QA.md` נוקב בספירת הבדיקות של `loop-health.mjs`, ⛔ ולא במספר ישן', () => {
+    const total = (read('scripts/loop-health.mjs').match(/^check\(/gm) ?? []).length;
+    expect(total, 'הבודק מכריז בדיקות בכלל').toBeGreaterThanOrEqual(15);
+    const qa = read('docs/agents/QA.md');
+    // ⛔ שלושה מקומות, ⛔ ולא אחד — נמדד 09/09: `N/14` הופיע פעמיים ו-`⇐ 14 checks` פעם.
+    expect(qa, `הדוח: loop health: N/${total}`).toContain(`loop health: N/${total}`);
+    expect(qa, `רשימת הפקודות: ⇐ ${total} checks`).toContain(`⇐ ${total} checks`);
+    // 🔴 ו⛔ אף מספר אחר ⛔ אינו נשאר מאחור — טענה חיובית לבדה ⛔ אינה תופסת עותק ישן.
+    const others = [...qa.matchAll(/loop health: N\/(\d+)/g)].map((m) => Number(m[1]));
+    expect(new Set(others), '⛔ אין שתי ספירות שונות באותו קובץ').toEqual(new Set([total]));
+  });
+
+  it('ⓑ המודל המוצהר ב-`roster.json` תקף, ו⛔ אין סוכן בלי הצהרה', () => {
+    const roster = JSON.parse(read('docs/agents/roster.json')) as {
+      agents: { name: string; model?: string }[];
+    };
+    expect(roster.agents.length, 'חמישה סוכנים').toBe(5);
+    for (const a of roster.agents) {
+      expect(a.model, `${a.name}: ⛔ אין הצהרת מודל`).toBeTruthy();
+      expect(a.model, `${a.name}: מזהה מודל, ⛔ לא כינוי`).toMatch(/claude-[a-z0-9.-]+/);
+    }
+    // ⛔ **הפער היחיד שנסגר ידנית 09/09, בהוראת רוי** — תצורת המשימה מריצה `claude-opus-5`
+    // מאז 2026-09-07T20:31:30Z, וההצהרה אמרה `claude-fable-5-1`. ⛔ הטענה נועלת את
+    // התוצאה, ⛔ לא את התהליך: ⛔ אין כאן דרך לקרוא את השרת מתוך הריפו.
+    const dev = roster.agents.find((a) => a.name === 'DEV');
+    expect(dev?.model, 'DEV — מיושר לתצורת המשימה שנמדדה').toBe('claude-opus-5');
+  });
+});

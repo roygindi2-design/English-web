@@ -202,7 +202,8 @@ push runs `verify` like every other push, and that is the point.
 
 ## STEP 2 — PICK — ⛔ THE INDEX, NOT THE REGISTERS (RULES § 0.6א · § 0.6ב)
 
-**Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** They are **667KB** — ~200k tokens before a line of work, twelve times a day. The index is **78KB**: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the 46 plans · flags.
+**Read `docs/plan-open.md`. ⛔ Do NOT read `plan/50-tasks.md`, ⛔ do NOT read `plan/60-findings.md`.** Together they are **hundreds of KB** — most of a tick's context before a line of work, twelve times a day. The index is a **small fraction** of that: the open rows by state · 🧭 balance · 🌳 the work tree · 📐 the plans · flags.
+⚠️ **⛔ The exact sizes ⛔ are ⛔ not written here, and that is `RULES § 0.15`:** a live number in a prompt ages into a lie. ⟦Measured 09/09: the two registers read **667KB** in this sentence and were **443KB** on disk, and «the 46 plans» were **74**.⟧ ⇒ **`wc -c` them if you need the number.**
 
 ⚠️ **FILTER TO `ACTIVE_WORKSTREAM` FIRST** (`plan/00-control.md`, set by QA). A row in another workstream is ⛔ not eligible — with **exactly three** exceptions, and ⛔ no fourth:
   ⓐ a 🔴 finding that stops a learner;
@@ -364,7 +365,7 @@ Every task row's `אבן דרך` cell is `M<n> · <זרימה> · <סוג>`, e.g
 
 ## STEP 3 — PLAN OR BUILD?
 Plan exists in `docs/superpowers/plans/`? **Yes** → 📐 BUILD TICK, run `superpowers:executing-plans`, go to STEP 5.
-⚠️ **Check the plans index first — 46 exist and 8 are orphaned.** ⛔ Do not write plan 47 for what plan 31 covers.
+⚠️ **Check the plans index first.** `npm run measure:plan` prints `plans: <N> files, <M> orphaned` — ⛔ read it, ⛔ do not trust a count written in this file. **⛔ Do not write a new plan for what an existing one covers.**
 **No, non-trivial** → 📝 **PLANNING TICK — ⛔ and it ⛔ no longer ends there.** ⟦CHANGED 08/09 · Roy's explicit instruction · `RULES § 0.12`⟧
 🔴 **Write the plan in full, push it, run `npm run check:plan <the plan file>` — and if it
 is green, LAND TASK 1 OF THE PLAN IN THE SAME TICK.**
