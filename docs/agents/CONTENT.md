@@ -147,10 +147,27 @@ push runs `verify` like every other push, and that is the point.
 **A blocked commission?** → rule ⓐ: report it, mark it ⛔, then fall through — **and say so**.
 **None?** → the routine batch. Precondition: is T-039 (`lib/core/contentSchema.ts`) ✅? Check with `grep -n '^| T-039 |' plan/50-tasks.md`. If not, write 10 sample senses to `data/generated/sample-<date>.jsonl`, report that you are waiting, stop.
 
-## STEP 4 — CHOOSE THE WORDS — LEVEL-TARGETED, NOT FREQUENCY ORDER
-⛔ **Do not generate in NGSL order.** Read the current per-level counts from the seed and aim at the **hungriest levels**. Report counts before and after.
-**Working target: at least 100 words in every level A1–B2.**
-Headwords come from **NGSL v1.2 (2,809 entries, CC BY-SA 4.0)**, from `newgeneralservicelist.com` only. Pick headwords with no row yet in `data/generated/`.
+## STEP 4 — CHOOSE THE WORDS — 🔴 THE AMIRAM TABLE IS YOUR QUEUE, BY LEVEL
+⟦REWRITTEN 09/09 · Roy's explicit instruction: «⛔ the most urgent thing is filling the bank from the Amiram table, by level»⟧
+
+**Your queue is `data/amirnet-vocab.csv` — 6,713 headwords, sorted into four tiers.** Read it with its header: `headword,pos,cefr,tier,tier_name,amirnet_level,is_connector,source`.
+
+```
+tier 1 · A2 · ליבה              1,243 words   ⇐ ⛔ FIRST, and until it is done
+tier 2 · B1 · ליבה מורחבת       2,139 words   ⇐ then this
+tier 3 · B2 · הרחבה אקדמית      2,417 words
+tier 4 · C1 · רמת פטור            914 words
+```
+
+🔬 **Measured 07/09, and it is the whole reason this step was rewritten:** `docs/amirnet-coverage-report.md` reports **640 of 3,382** Tier 1+2 headwords present in the bank — **19%** — with a delta of **−10** on the last run, and **161** of the polysemous ones carrying a single sense (shallow). ⇒ four fifths of the range the product claims to teach has ⛔ nothing behind it.
+
+**Before you choose, run `npm run measure:amirnet-coverage`** — it rewrites that report and tells you exactly which tier is starving. Report the number before and after your batch, ⛔ not an impression.
+
+**⛔ THERE IS ⛔ NO PER-BATCH CEILING, AND ⛔ NEVER WAS ONE IN A RULE.** ⟦NEW 09/09 · Roy⟧ You decide the batch size from what you can actually gate and verify inside your window. **A batch of 12 rows when 2,742 headwords are missing is ⛔ not caution — it is the bottleneck.** The only real bounds are the gate (STEP 6) and your own verification (STEP 5.9); both are cheap, and neither cares how many rows you hand it.
+
+⚖️ **The licence — checked, ⛔ not assumed.** `R-027` (`plan/20-alerts.md:51`) was lowered from BLOCKER on 28/08: both sources behind the table are cleared for commercial use in `D-009` (CEFR-J with citation · Octanove CC BY-SA), the attribution is already rendered at `/sources`, and the alert says in its own words that **internal use of the table to decide which words to work on is ⛔ not distribution and ⛔ not restricted.** ⛔ Do ⛔ not reopen this; if `data/amirnet-vocab-README.md` and `plan/20-alerts.md` ever disagree again, **the alert is the document that decides.**
+
+**When the tier queue is genuinely exhausted or the table is unreadable — and ⛔ only then** — fall back to **NGSL v1.2 (2,809 entries, CC BY-SA 4.0)** from `newgeneralservicelist.com` only, in hungriest-level order, ⛔ never in frequency order. **Say in your report which source you drew from and why.**
 ⛔ Never copy from מאל"ו (R-010), AnkiWeb (R-013), or any NC-licensed dictionary. ✅ You MAY consult lists to decide WHICH words are worth learning — word choice is not protected, the wording of a translation is.
 
 ## STEP 5 — ONE ROW PER SENSE (D-021)

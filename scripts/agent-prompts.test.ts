@@ -1356,3 +1356,40 @@ describe('אוצר המילים של הזרימה זהה בשלושת המקומ
     });
   }
 });
+
+/**
+ * 🔴 **התור של CONTENT — נמדד 09/09 ו⛔ לא שוער.**
+ * ‏`docs/amirnet-coverage-report.md` דיווח **640 מתוך 3,382** כותרות Tier 1+2 בבנק
+ * (‏19%), דלתא **−10**, ו-**161** רדודות. ⛔ ובאותו זמן `STEP 4` בפרומפט הפנה את
+ * הסוכן ל-NGSL בסדר תדירות, ⇒ ארבע חמישיות מהטווח שהמוצר מתיימר ללמד ⛔ לא היו
+ * בתור של אף אחד. הטענות כאן הן מה שמונע חזרה שקטה.
+ */
+describe('docs/agents/CONTENT.md — טבלת אמירם היא התור, ⛔ ולא NGSL', () => {
+  const body = text('CONTENT');
+
+  it('הקובץ עצמו נקוב בשם, עם ארבע הדרגות ובסדר', () => {
+    expect(body, 'הקובץ').toContain('data/amirnet-vocab.csv');
+    expect(body, 'הכותרות של ה-CSV').toContain('headword,pos,cefr,tier,tier_name');
+    for (const tier of ['tier 1', 'tier 2', 'tier 3', 'tier 4']) {
+      expect(body, `הדרגה ${tier}`).toContain(tier);
+    }
+    expect(body, 'הפקודה שמודדת כיסוי').toContain('npm run measure:amirnet-coverage');
+  });
+
+  it('‏NGSL הוא נפילה-לאחור מוצהרת, ⛔ ולא המקור', () => {
+    const amirnet = body.indexOf('data/amirnet-vocab.csv');
+    const ngsl = body.indexOf('NGSL v1.2');
+    expect(amirnet, 'טבלת אמירם נזכרת').toBeGreaterThan(-1);
+    expect(amirnet, 'והיא קודמת ל-NGSL בתוך STEP 4').toBeLessThan(ngsl);
+    expect(body, 'הנפילה-לאחור מוצהרת ככזאת').toMatch(/fall back to \*\*NGSL/);
+  });
+
+  it('⛔ אין תקרת גודל לאצווה — ההוראה כתובה, ⛔ ולא מונחת', () => {
+    expect(body, '⛔ אין תקרה').toMatch(/⛔ NO PER-BATCH CEILING/);
+  });
+
+  it('הרישוי מוכרע בפרומפט, ⇒ הסוכן ⛔ אינו נעצר לשאול', () => {
+    expect(body, 'האזהרה שמכריעה').toContain('R-027');
+    expect(body, 'המסמך שקובע').toContain('plan/20-alerts.md');
+  });
+});

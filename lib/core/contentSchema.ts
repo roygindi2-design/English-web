@@ -104,16 +104,126 @@ function normalise(token: string): string {
   return t;
 }
 
+/**
+ * 🔴 **THE IRREGULAR FORMS, KEYED BY LEMMA — CLOSED, HAND-WRITTEN, ⛔ NOT DERIVED.**
+ *
+ * ⛔ **Why this had to exist, and it is a MEASUREMENT.** `inflections()` below is purely
+ * suffix-driven, so `targetForms('go')` produced `go · gos · goly · goed · going · goer ·
+ * goest` — and ⛔ not `went`. ⇒ `containsHeadword` rejected **"She went home before dark."**
+ * for the headword `go` with «example supportive: headword missing». The same for
+ * `be` (⛔ no is/was/were/been), `good` (⛔ no better/best), `child` (⛔ no children),
+ * `take` · `see` · `buy` · `write` · `have` · `man` — measured 09/09 on a live clone by
+ * printing `targetForms` for each.
+ *
+ * ⚠️ **And these are exactly the words the bank needs most.** Tier 1 of
+ * `data/amirnet-vocab.csv` is the A2 core, 1,243 headwords, and the irregular verbs and
+ * nouns sit at the top of it. The file's own note said a rejection here costs «a
+ * regeneration, not bad content» — ⛔ that is ⛔ not what it costs. For `go` there is
+ * ⛔ no past-tense sentence that passes, at any number of regenerations, so the writer
+ * either abandons the headword or writes a worse sentence to satisfy the checker.
+ *
+ * ⛔ **AND THIS ⛔ DOES ⛔ NOT REOPEN `F-020`.** F-020 was a **false ACCEPT** born of
+ * *guessing*: an open prefix match let `car` claim `card` and `be` exempt every b-word.
+ * This table guesses ⛔ nothing — every pair is written out by hand, so it can ⛔ never
+ * manufacture an unrelated real word. The bias of the file is unchanged: ⛔ no word
+ * enters a learner's sentence unless it is the target or in the allow-list.
+ *
+ * 📎 **⛔ And it is ⛔ not a second source of truth.** `lib/core/storyGate.ts` carried the
+ * same knowledge as a form→lemma map since T-134ⓑ; it now derives that map from this
+ * one, so the two gates ⛔ cannot drift apart.
+ */
+export const IRREGULAR_FORMS: Readonly<Record<string, readonly string[]>> = {
+  be: ['am', 'is', 'are', 'was', 'were', 'been'],
+  have: ['has', 'had'],
+  do: ['does', 'did', 'done'],
+  go: ['went', 'gone'],
+  say: ['said'],
+  see: ['saw', 'seen'],
+  make: ['made'],
+  take: ['took', 'taken'],
+  get: ['got', 'gotten'],
+  come: ['came'],
+  know: ['knew', 'known'],
+  think: ['thought'],
+  give: ['gave', 'given'],
+  find: ['found'],
+  tell: ['told'],
+  become: ['became'],
+  leave: ['left'],
+  feel: ['felt'],
+  mean: ['meant'],
+  keep: ['kept'],
+  begin: ['began', 'begun'],
+  show: ['shown'],
+  hear: ['heard'],
+  run: ['ran'],
+  bring: ['brought'],
+  write: ['wrote', 'written'],
+  sit: ['sat'],
+  stand: ['stood'],
+  lose: ['lost'],
+  pay: ['paid'],
+  meet: ['met'],
+  hold: ['held'],
+  buy: ['bought'],
+  understand: ['understood'],
+  speak: ['spoke', 'spoken'],
+  eat: ['ate', 'eaten'],
+  drink: ['drank', 'drunk'],
+  sleep: ['slept'],
+  teach: ['taught'],
+  catch: ['caught'],
+  sell: ['sold'],
+  send: ['sent'],
+  spend: ['spent'],
+  build: ['built'],
+  win: ['won'],
+  drive: ['drove', 'driven'],
+  choose: ['chose', 'chosen'],
+  break: ['broke', 'broken'],
+  wear: ['wore', 'worn'],
+  fly: ['flew', 'flown'],
+  grow: ['grew', 'grown'],
+  throw: ['threw', 'thrown'],
+  draw: ['drew', 'drawn'],
+  feed: ['fed'],
+  rise: ['rose', 'risen'],
+  fall: ['fell', 'fallen'],
+  forget: ['forgot', 'forgotten'],
+  hide: ['hid', 'hidden'],
+  ride: ['rode', 'ridden'],
+  wake: ['woke', 'woken'],
+  steal: ['stole', 'stolen'],
+  fight: ['fought'],
+  seek: ['sought'],
+  lead: ['led'],
+  lay: ['laid'],
+  sing: ['sang', 'sung'],
+  swim: ['swam', 'swum'],
+  child: ['children'],
+  man: ['men'],
+  woman: ['women'],
+  person: ['people'],
+  foot: ['feet'],
+  tooth: ['teeth'],
+  good: ['better', 'best'],
+  bad: ['worse', 'worst'],
+  far: ['further', 'furthest', 'farther', 'farthest'],
+  many: ['more', 'most'],
+  much: ['more', 'most'],
+  little: ['less', 'least'],
+};
+
 /** English spells `-es` only after a sibilant: box→boxes, watch→watches, buzz→buzzes. */
 const SIBILANT_FINAL = /(?:s|x|z|ch|sh)$/;
 /** Shortest remainder after dropping a silent `e` that still behaves like a stem. */
 const MIN_INFLECTION_STEM = 3;
 
 /**
- * The regular inflections of one token. A CLOSED set on purpose: the previous open
- * prefix match ("startsWith(stem)") let `note` match "not" and let `be` exempt every
- * b-word from the level check. Irregular forms (gave, went) are not generated and will
- * be rejected — a regeneration, not bad content.
+ * The regular inflections of one token, plus the hand-declared irregulars above. A
+ * CLOSED set on purpose: the previous open prefix match ("startsWith(stem)") let `note`
+ * match "not" and let `be` exempt every b-word from the level check. ⟦09/09: the
+ * irregular forms are ⛔ no longer absent — see `IRREGULAR_FORMS` and why.⟧
  *
  * F-020: every suffix is now conditioned on the stem's shape. Bare `${w}d` `${w}r`
  * `${w}st` `${w}es` used to be added to EVERY token, so unrelated real words were
@@ -155,6 +265,7 @@ function inflections(token: string): Set<string> {
     const doubled = w + w.slice(-1);
     add(`${doubled}ed`, `${doubled}ing`, `${doubled}er`, `${doubled}est`);
   }
+  add(...(IRREGULAR_FORMS[w] ?? []));
   return out;
 }
 

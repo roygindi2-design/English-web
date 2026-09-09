@@ -19,6 +19,7 @@
  * אנושית, ⛔ ולא בטענה חלולה כאן.
  */
 import { BAND_ORDER, type CefrBand } from './cefrLevels';
+import { IRREGULAR_FORMS } from './contentSchema';
 
 export const STORY_LEVELS = ['A1', 'A2', 'B1', 'B2'] as const;
 export type StoryLevel = (typeof STORY_LEVELS)[number];
@@ -91,22 +92,15 @@ function normalizeToken(token: string): string {
 /**
  * צורות חריגות של למות בתדירות גבוהה. **סגורה ומוצהרת** — ⛔ אין כאן ניחוש
  * מורפולוגי, ו⛔ אין כאן למה חדשה: הערך נבדק מול הקבוצה כמו כל למה אחרת.
+ *
+ * 🔴 **⛔ ואינה נכתבת כאן פעם שנייה.** עד 09/09 אותו ידע חי **בשני עותקים** — המפה
+ * הזאת, ו⛔ שום דבר בצד של `contentSchema.ts`, שם `targetForms('go')` ⛔ לא ידע
+ * `went` כלל. ⇒ המקור היחיד הוא `IRREGULAR_FORMS` (למה ⇢ צורות), והמפה הזאת היא
+ * **ההיפוך שלו**, נגזר בזמן טעינה. ⛔ שני השערים ⛔ אינם יכולים להיפרד עוד.
  */
-const IRREGULAR_LEMMA: Readonly<Record<string, string>> = {
-  am: 'be', is: 'be', are: 'be', was: 'be', were: 'be', been: 'be', being: 'be',
-  has: 'have', had: 'have', having: 'have',
-  does: 'do', did: 'do', done: 'do', doing: 'do',
-  went: 'go', gone: 'go', said: 'say', saw: 'see', seen: 'see',
-  made: 'make', took: 'take', taken: 'take', got: 'get', came: 'come',
-  knew: 'know', known: 'know', thought: 'think', gave: 'give', given: 'give',
-  found: 'find', told: 'tell', became: 'become', left: 'leave', felt: 'feel',
-  meant: 'mean', kept: 'keep', began: 'begin', begun: 'begin', shown: 'show',
-  heard: 'hear', ran: 'run', brought: 'bring', wrote: 'write', written: 'write',
-  sat: 'sit', stood: 'stand', lost: 'lose', paid: 'pay', met: 'meet',
-  held: 'hold', bought: 'buy', understood: 'understand', spoke: 'speak',
-  spoken: 'speak', children: 'child', men: 'man', women: 'woman',
-  better: 'good', best: 'good', worse: 'bad', worst: 'bad',
-};
+const IRREGULAR_LEMMA: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(IRREGULAR_FORMS).flatMap(([lemma, forms]) => forms.map((f) => [f, lemma])),
+);
 
 /** סיומות רגולריות, מהארוכה לקצרה — «ies» חייב להיבדק לפני «s». */
 const SUFFIXES: readonly (readonly [string, string])[] = [

@@ -253,9 +253,12 @@ describe('exampleSegments (TD-11)', () => {
   });
 
   it('falls back to one unmarked segment when the word cannot be located', () => {
-    const irregular = { ...segSense, headword: 'go', examples: { supportive: 'He went home.', neutral: '' } };
+    // ⚠️ **הדוגמה כאן הייתה `go`/`went` עד 09/09.** מאז `IRREGULAR_FORMS` מכיר את
+    // הזוג הזה ⇒ `went` **כן** מסומן, וזו התוצאה הרצויה. הנפילה-לאחור עדיין חיה,
+    // ולכן היא נבדקת על צורה חריגה ש⛔ אינה במפה ו⛔ אין לה שום כלל סיומת.
+    const irregular = { ...segSense, headword: 'slay', examples: { supportive: 'He slew the dragon.', neutral: '' } };
     const card = buildCard(irregular, 'recognition', { isFirstEncounter: true });
-    expect(card.back.exampleSegments).toEqual([{ text: 'He went home.', isTarget: false }]);
+    expect(card.back.exampleSegments).toEqual([{ text: 'He slew the dragon.', isTarget: false }]);
   });
 
   it('is empty on a face with no example, and on the front', () => {

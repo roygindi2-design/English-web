@@ -2787,7 +2787,7 @@ with incoming (headword, pos, sense_index, item_index, stem, level, level_ration
     ('with', 'preposition', 2, 0, 'Please open the bottle ____ this tool.', null, null),
     ('with', 'preposition', 2, 1, 'You can clean the window ____ warm water.', null, null),
     ('with', 'preposition', 2, 2, 'He fixed the chair ____ his own hands.', null, null),
-    ('do', 'verb', 1, 0, 'What did you ____ last night?', null, null),
+    ('do', 'verb', 1, 0, 'We ____ the dishes after every meal.', null, null),
     ('do', 'verb', 1, 1, 'Please ____ not open that window.', null, null),
     ('do', 'verb', 1, 2, 'They will ____ the work tomorrow.', null, null),
     ('as', 'preposition', 1, 0, 'He started ____ a driver many years ago.', null, null),

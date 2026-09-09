@@ -449,11 +449,18 @@ describe('locateTarget (TD-11)', () => {
 
   it('does not match a word that merely starts the same — the T-039 prefix bug', () => {
     expect(at('That is not true.', 'note')).toBeNull();
-    expect(at('The behaviour was odd.', 'be')).toBeNull();
+    // ⛔ `behaviour` ⛔ אינו נגזרת של `be` — זה בדיוק הבאג ש-F-020 סגר, והוא נשאר סגור.
+    expect(at('Their behaviour puzzled everyone.', 'be')).toBeNull();
   });
 
-  it('returns null for an irregular form, which the gate rejects anyway', () => {
-    expect(at('He went home.', 'go')).toBeNull();
+  it('🆕 מוצא צורה חריגה — הצורות מוצהרות ביד ב-`IRREGULAR_FORMS` (09/09)', () => {
+    // ⛔ עד 09/09 זה החזיר `null`, והשער דחה **"She went home before dark."** על
+    // «headword missing» עבור `go`. ⇒ לכותב ⛔ לא הייתה שום שורה בזמן עבר שעוברת.
+    expect(at('He went home.', 'go')).toBe('went');
+    expect(at('The children left early.', 'child')).toBe('children');
+    expect(at('That was the best answer.', 'good')).toBe('best');
+    // ⛔ ומה שאינו במפה נשאר `null` — ⛔ אין כאן ניחוש מורפולוגי.
+    expect(at('He slew the dragon.', 'slay')).toBeNull();
   });
 
   it('returns null when the word is absent', () => {
