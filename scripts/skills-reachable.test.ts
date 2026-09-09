@@ -20,8 +20,14 @@ import { describe, expect, it } from 'vitest';
  * registry declares.** ⛔ It says ⛔ nothing about which skill is right for which row —
  * that is the registry's job and it stays prose.
  */
-const REGISTRY = 'docs/skills-registry.md';
-const registry = readFileSync(REGISTRY, 'utf8');
+/**
+ * 📎 ⟦09/09⟧ האינדקס פוצל לשניים כשהראשי עמד **465 תווים** מתחת לתקרת ה-14,000.
+ * ⇒ «האינדקס» כאן הוא **שני הקבצים יחד**: טענה שקוראת רק אחד מהם הופכת חלולה
+ * ברגע שמישהו מזיז שורה בין השניים, וזה בדיוק מה שקרה כאן.
+ */
+const REGISTRY_FILES = ['docs/skills-registry.md', 'docs/skills-registry-superpowers.md'];
+const REGISTRY = REGISTRY_FILES[0] as string;
+const registry = REGISTRY_FILES.map((f) => readFileSync(f, 'utf8')).join('\n');
 
 /** Every ``skills/…/SKILL.md`` path the registry names, in backticks. */
 const declaredPaths = [...registry.matchAll(/`(skills\/[A-Za-z0-9/_-]+\/SKILL\.md)`/g)].map(
@@ -87,4 +93,36 @@ describe('⛔ אף פרומפט ⛔ אינו מפנה לסקיל שאינו במ
       }
     });
   }
+});
+
+/**
+ * 🔴 ⛔ **«סקיל סשן» ⛔ אינו זמינות — הוא תקווה.**  ⟦NEW 09/09 · אומת בידי רוי בממשק⟧
+ *
+ * נמדד בשתי דרכים בלתי תלויות: ⓐ בתצורת שש המשימות המתוזמנות — `enabled_plugins` ·
+ * `account_plugins` · `account_skills` **ריקים בכולן**; ⓑ בממשק עצמו — ה-API **מקבל**
+ * `enabled_plugins` ו**משליך אותו בשקט**, והמדור ⛔ אינו קיים במסך.
+ * ⇒ **⛔ אין פעולה שרוי יכול לעשות** כדי להנגיש סקיל תוסף לטיק מתוזמן. ⇒ שורה כזאת
+ * חייבת לשאת **סימון** ו**נפילה-לאחור**, אחרת סוכן שורף טיק בחיפוש אחר משהו שאינו קיים.
+ */
+describe('כל שורת «סקיל תוסף» מסומנת ⛔ לא מובטח, ⛔ ואינה מבטלת את הטריגר', () => {
+  const main = readFileSync('docs/skills-registry.md', 'utf8');
+
+  it('⛔ אין שורה שמפנה לתוסף בלי הסימון', () => {
+    const rows = main.split('\n').filter((l) => l.startsWith('|') && l.includes('סקיל תוסף'));
+    expect(rows.length, '⛔ הטבלה ⛔ אינה נושאת שורות תוסף כלל ⇒ הטענה חלולה').toBeGreaterThanOrEqual(
+      8,
+    );
+    for (const row of rows) {
+      const name = /`([a-z-]+)`/.exec(row)?.[1] ?? row.slice(0, 40);
+      expect(row, `${name}: ⛔ בלי הסימון «⛔ לא מובטח»`).toContain('⛔ לא מובטח');
+    }
+  });
+
+  it('🔴 והכלל אומר במפורש שהטריגר נשאר, ⛔ ורק הכלי נעדר', () => {
+    expect(main, 'המדידה, ⛔ לא ההשערה').toMatch(/משליך אותו בשקט/);
+    expect(main, '⛔ אין פעולה שרוי יכול לעשות').toMatch(/⛔ אין פעולה שרוי יכול לעשות/);
+    // ⛔ **זו הטענה שמונעת את הקריאה השגויה** «הסקיל חסר ⇒ דלג על הדרישה».
+    expect(main, 'הטריגר ⛔ לא בוטל').toMatch(/הטריגר ⛔ לא בוטל, הכלי בוטל/);
+    expect(main, 'ודוגמה קונקרטית לנפילה-לאחור').toContain('npm run check:palette');
+  });
 });

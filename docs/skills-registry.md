@@ -35,6 +35,15 @@
    ⚠️ **ומה שכן נגיש ו⛔ לא נכתב עד היום:** `ui-ux-pro-max:ui-styling` **קיים בגיט** על
    הענף `skills/superpowers`, ונקרא בפקודה שבשורתו בטבלה. ⛔ הוא ⛔ אינו סקיל סשן.
 
+5. 🔴 **ו⛔ זה ⛔ אינו «עוד לא הודלק» — ⛔ אין דרך להדליק.** ⟦נמדד ואומת בידי רוי
+   בממשק, 09/09⟧ ‏ה-API **מקבל** `enabled_plugins` ו**משליך אותו בשקט**, והמדור
+   ⛔ אינו קיים במסך ה-Routines כלל. ⇒ **⛔ אין פעולה שרוי יכול לעשות** כדי להנגיש
+   סקיל תוסף לטיק מתוזמן. ⛔ **סקיל שאינו בריפו ⛔ אינו זמינות — הוא תקווה.**
+   ⇒ **לכל שורה כזאת בטבלה יש עמודת «נפילה-לאחור» כתובה**, והיא ⛔ לא «דלג»:
+   היא **הקריטריון שבעמודת הטריגר, מבוצע ביד**. `dataviz` ⛔ אינו נטען ⇒
+   `npm run check:palette` נשאר חובה. `review-animations` ⛔ אינו נטען ⇒ חמש
+   הבדיקות הבינאריות של `§ 0.1 ז׳` נשארות חובה. ⛔ **הטריגר ⛔ לא בוטל, הכלי בוטל.**
+
 ## 🏷️ תג הסקיל בשורת משימה — `[SKILL: x]`
 
 **PM** מצמיד לכל שורה שהוא גוזר ב-`plan/50-tasks.md` תג בעמודת `סקיל`, בצורה `[SKILL: <שם>]`
@@ -49,30 +58,19 @@
 
 | הסקיל | מתי להשתמש בו — הטריגר | מי | נתיב |
 |---|---|---|---|
-| `superpowers:using-superpowers` | ⛔ **בפתיחת כל סשן, לפני כל דבר אחר.** הוא מה שמגלה אילו סקילים הסשן באמת מחזיק | ארבעתם | **`skills/superpowers/using-superpowers/SKILL.md`** |
-| `superpowers:verification-before-completion` | לפני **כל** טענה של «עובד / עבר / הושלם / תוקן» | ארבעתם | **`skills/superpowers/verification-before-completion/SKILL.md`** |
-| `superpowers:test-driven-development` | לפני כתיבת קוד למשימה | DEV | **`skills/superpowers/test-driven-development/SKILL.md`** |
-| `superpowers:systematic-debugging` | באג, טסט נופל, התנהגות לא צפויה | DEV | **`skills/superpowers/systematic-debugging/SKILL.md`** |
-| `superpowers:writing-plans` | משימה שאינה טריוויאלית — לפני קוד | DEV | **`skills/superpowers/writing-plans/SKILL.md`** |
-| `superpowers:executing-plans` | ביצוע תוכנית קיימת מ-`docs/superpowers/plans/` | DEV · CONTENT | **`skills/superpowers/executing-plans/SKILL.md`** |
-| `superpowers:subagent-driven-development` | תוכנית עם צעדים עצמאיים — לפני ביצוע | DEV | **`skills/superpowers/subagent-driven-development/SKILL.md`** |
-| `superpowers:requesting-code-review` | סיום משימה, לפני העברה ל-QA | DEV | **`skills/superpowers/requesting-code-review/SKILL.md`** |
-| `superpowers:receiving-code-review` | קבלת ממצאי QA | DEV | **`skills/superpowers/receiving-code-review/SKILL.md`** |
-| `superpowers:brainstorming` | לפני עיצוב פיצ׳ר או שינוי התנהגות | PM | **`skills/superpowers/brainstorming/SKILL.md`** |
-| `superpowers:dispatching-parallel-agents` | 2+ משימות עצמאיות במקביל | PM · QA | **`skills/superpowers/dispatching-parallel-agents/SKILL.md`** |
-| `superpowers:finishing-a-development-branch` | הקוד מוכן — איך ממזגים | **QA בלבד** | **`skills/superpowers/finishing-a-development-branch/SKILL.md`** |
-| `codebase-investigator` | ⛔ לפני פתיחת פרוסה — לחקור מה כבר קיים | PM | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
+| **`superpowers:*`** — שנים-עשר סקילים | ⛔ **הועברו 09/09 לקובץ משלהם, כי האינדקס הזה עמד 465 תווים מתחת לתקרת ה-14,000.** כולם **קבצים בשכפול** ⇒ נגישותם ⛔ אינה שאלה. ⛔ הטריגר של כל אחד כתוב שם, ⛔ ולא כאן | ארבעתם | 📎 **`docs/skills-registry-superpowers.md`** |
+| `codebase-investigator` | ⛔ לפני פתיחת פרוסה — לחקור מה כבר קיים | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
 | **`taste-skill`** | 🆕 **מיקרו-קופי · הצללות · ריווחים · «האם זה נראה תבניתי».** שורת `נוחות` שנוגעת בטקסט ממשק, במרווחים, בצללים או בהיררכיה ויזואלית | PM (בתכנון) · DEV (לפי תג) | **`skills/taste-skill/SKILL.md`** |
 | **`imagegen-frontend-mobile`** | 🆕 **חוקי מובייל-פירסט: אזורים בטוחים · ניווט תחתון · צפיפות · קריאוּת טקסט · «⛔ קופסה בתוך קופסה».** ⚠️ **הסקיל עצמו מייצר תמונות ⛔ ולא קוד** — מה שנלקח ממנו הוא **§ 13 · § 14 · § 15 · § 29 · § 30 · § 31** כעקרונות | PM (בתכנון) · DEV (לפי תג) | **`skills/imagegen-frontend-mobile/SKILL.md`** |
-| `apple-design` | ⚠️ **נדיר, והטריגר הוא מונה ⛔ ולא מצב־רוח** — טיק הכרעה, ורק כשאין ולו שורה פתוחה אחת שנושאת `apple-design` בתא `סקיל` | PM (נדיר) · DEV (לפי תג) | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `animate` | שורה שנושאת **גם** `arena` **וגם** `שכבה ב׳` — שניהם, ⛔ לא אחד | DEV (לפי תג) | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `emil-design-eng` | **רק** אם `animate` שלח לשם. ⛔ אינו עצמאי | DEV (לפי תג) | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `review-animations` | הדיף נוגע ב-`app/arcade/**` · `components/Arena*`, או מכיל `animate\|transition\|motion\|glow(` | **QA בלבד** | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `pick-ui-library` | המשימה דורשת תלות UI ש-`package.json` ⛔ **אינו** נושא | DEV | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `ask-sonner` | `sonner` בתלויות · רכיב `*Toast*` · או השורה אומרת «טוסט» | DEV | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) |
-| `dataviz` | לפני **כל** גרף, טבלת מדדים, סרגל התקדמות או דשבורד — בקוד המוצר ובכל ארטיפקט. חובה `npm run check:palette` | DEV · PM | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) · `RULES § 0.9` |
-| `web-artifacts-builder` | ארטיפקט HTML **מורכב לרוי** בלבד | PM | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) · `RULES § 0.9` |
-| `canvas-design` | נכס סטטי: לוגו, אייקון, תמונת שיתוף (`.png` / `.pdf`) | PM | ⛔ **⛔ אינו נגיש בלופ** — סקיל תוסף (§ 4) · `RULES § 0.9` |
+| `apple-design` | ⚠️ **נדיר, והטריגר הוא מונה ⛔ ולא מצב־רוח** — טיק הכרעה, ורק כשאין ולו שורה פתוחה אחת שנושאת `apple-design` בתא `סקיל` | PM (נדיר) · DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `animate` | שורה שנושאת **גם** `arena` **וגם** `שכבה ב׳` — שניהם, ⛔ לא אחד | DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `emil-design-eng` | **רק** אם `animate` שלח לשם. ⛔ אינו עצמאי | DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `review-animations` | הדיף נוגע ב-`app/arcade/**` · `components/Arena*`, או מכיל `animate\|transition\|motion\|glow(` | **QA בלבד** | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `pick-ui-library` | המשימה דורשת תלות UI ש-`package.json` ⛔ **אינו** נושא | DEV | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `ask-sonner` | `sonner` בתלויות · רכיב `*Toast*` · או השורה אומרת «טוסט» | DEV | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `dataviz` | לפני **כל** גרף, טבלת מדדים, סרגל התקדמות או דשבורד — בקוד המוצר ובכל ארטיפקט. חובה `npm run check:palette` | DEV · PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
+| `web-artifacts-builder` | ארטיפקט HTML **מורכב לרוי** בלבד | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
+| `canvas-design` | נכס סטטי: לוגו, אייקון, תמונת שיתוף (`.png` / `.pdf`) | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
 | `ui-styling` (‏`ui-ux-pro-max`) | 🆕 **רספונסיביות ב-Tailwind** — נקודות שבירה, `min-h-touch`, אסימוני `tailwind.config.ts`. **זה הבית של «`tailwind-responsive`»** | DEV | ⛔ **⛔ אינו בענף הזה — הוא על הענף הקבוע `skills/superpowers`** (3.3MB, ⛔ נדיר מכדי לשאת בכל שכפול). קרא אותו כך, ⛔ בלי לשכפל: `./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md`. 🔬 **`FETCH_HEAD` ⛔ ולא `origin/skills/superpowers` — נמדד בשכפול אמיתי:** השכפול של הסוכן הוא `--single-branch`, ולכן `fetch` של ענף אחר ⛔ **אינו** יוצר ref עוקב, ו-`show origin/skills/superpowers:…` נכשל ב-`invalid object name`. ⛔ אל «תתקן» חזרה. |
 
 ### ⛔ הרשימה השלילית — סקילים שישברו את הלופ

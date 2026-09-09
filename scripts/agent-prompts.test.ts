@@ -602,13 +602,23 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
       // ⛔ ⛔ רק הטבלה החיובית. **הרשימה השלילית נושאת אף היא תגי `superpowers:`**
       // (`using-git-worktrees` חסום לארבעתם, ו-`finishing-a-development-branch` מוגבל
       // ל-QA) — ולאלה ⛔ אין נתיב בריפו **בכוונה**: סקיל חסום בהישג יד הוא מלכודת.
-      const positive = registry().split('### ⛔ הרשימה השלילית')[0] ?? '';
-      const rows = positive
-        .split('\n')
-        .filter((l) => l.startsWith('|') && l.includes('`superpowers:'));
+      // 📎 ⟦09/09⟧ שנים-עשר השורות עברו ל-`docs/skills-registry-superpowers.md` כשהאינדקס
+      // הראשי עמד **465 תווים** מתחת לתקרת ה-14,000. ⇒ הטענה קוראת את **שני** הקבצים,
+      // ⛔ ואינה מניחה באיזה מהם הן יושבות — פיצול עתידי נוסף ⛔ לא ישבור אותה בשקט.
+      const files = ['docs/skills-registry.md', 'docs/skills-registry-superpowers.md'];
+      const rows = files.flatMap((f) =>
+        (readFileSync(f, 'utf8').split('### ⛔ הרשימה השלילית')[0] ?? '')
+          .split('\n')
+          // ⛔ ו⛔ לא שורת המצביע עצמה (`superpowers:*`) — היא הפניה, ⛔ לא סקיל.
+          .filter((l) => l.startsWith('|') && l.includes('`superpowers:') && !l.includes('superpowers:*')),
+      );
 
       // ⛔ שער שפוי: אם השורות נעלמו, הבדיקה חלולה ⇒ היא נופלת, ⛔ לא עוברת.
       expect(rows.length, '⛔ האינדקס ⛔ אינו נושא שורות superpowers').toBe(12);
+      // 🔴 ⛔ והמצביע מהאינדקס הראשי חייב להתקיים, אחרת PM ⛔ לא ימצא את הקובץ השני.
+      expect(registry(), 'האינדקס הראשי מפנה לקובץ שהופרד').toContain(
+        'docs/skills-registry-superpowers.md',
+      );
 
       for (const row of rows) {
         const tag = /`(superpowers:[a-z-]+)`/.exec(row)?.[1] ?? row.slice(0, 40);
