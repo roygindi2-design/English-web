@@ -138,8 +138,8 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('20');
-    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
+    expect(total?.[2]).toBe('21');
+    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21']
       .filter((n) => failed(r.out, n));
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
@@ -150,10 +150,10 @@ describe('scripts/loop-health.mjs', () => {
      * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
      * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
      */
-    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
+    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21']
       .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(20);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(21);
     expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
     // ⛔ ⟦09/09 · F-207⟧ 18 מריצה `./scripts/g fetch` — ⛔ אין git בפיקסצ׳ר ⇒ n/m.
     // ⛔ «⛔ לא נמדד» ⛔ אינו «נקי», והיא נאמרת בשמה כדי שלא תיעלם מהמשוואה.
@@ -201,7 +201,7 @@ describe('scripts/loop-health.mjs', () => {
       // ⚠️ ומ-'17' ל-'18' עם נחיתת בדיקה 18 — עבודה תקועה על `claude/*` (`F-207`, 09/09).
       // ⚠️ ומ-'18' ל-'19' עם נחיתת בדיקה 3.5 — שורה סגורה בטבלת «פתוח» של רוי (09/09).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('20');
+      expect(total?.[1]).toBe('21');
     });
   });
 
@@ -275,7 +275,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09).
     // ⚠️ 18 → 19 with check 3.5 (a CLOSED row still in Roy's open table, 2026-09-09).
-    expect(total).toBe('20');
+    expect(total).toBe('21');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -809,7 +809,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09). Also unrelated to this mix line.
     // ⚠️ 18 → 19 with check 3.5 (Roy's open table, 2026-09-09). Also unrelated.
-    expect(r.out).toMatch(/loop health: \d+\/20 checks pass/);
+    expect(r.out).toMatch(/loop health: \d+\/21 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );
@@ -1253,5 +1253,91 @@ describe('scripts/loop-health.mjs', () => {
     const before = readFileSync(join(root, 'plan/50-tasks.md'), 'utf8');
     run(root);
     expect(readFileSync(join(root, 'plan/50-tasks.md'), 'utf8')).toBe(before);
+  });
+});
+
+/**
+ * 🔒 **בדיקה 21 — ונכתבה רק אחרי שהכשל קרה חי.**  ⟦NEW 09/09⟧
+ *
+ * 🔬 טיק QA אמיתי נורה 18:51:40Z, רץ 21.4 דק', שרף 237,150 טוקנים, ⛔ **לא דחף
+ * דבר** (ענף התוצאה `claude/nice-ride-bit6a7` ⛔ מעולם לא נוצר על origin), ויצא
+ * `IDLE` **מחזיק את הנעילה**. ⇒ ארבעה סוכנים נחסמו, ו-**QA חסמה את עצמה**
+ * (`QA.md` — «נעילה ⛔ לא ריקה ⇒ ⛔ אין מיזוג»). ⛔ **אף בדיקה ⛔ לא ראתה זאת.**
+ *
+ * 🔴 **ושלוש הטענות כאן ⛔ אינן שלוש גרסאות של אותו דבר** — האמצעית היא הסיבה
+ * שהבדיקה ⛔ אינה שעון בלבד, והאחרונה היא החור שהיה בגרסה הראשונה שלי: קומיט
+ * **הנעילה עצמו** נושא את חותמת `LOCK_AT` ⇒ בלי סינון הוא נספר כ«סימן חיים»,
+ * וכל נעילה יתומה הייתה מדווחת ירוקה ברגע שחצתה את התקרה.
+ */
+describe('🔒 בדיקה 21 — נעילה יתומה', () => {
+  // ⛔ ריפו git אמיתי — בדיקה 21 מריצה `git log`; בדל ⛔ לא היה בודק דבר.
+  const gitRepoForLock = (subjects: string[], paths: string[]): string => {
+    const root = healthy();
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
+    mkdirSync(join(root, 'scripts'), { recursive: true });
+    copyFileSync('scripts/g', join(root, 'scripts', 'g'));
+    chmodSync(join(root, 'scripts', 'g'), 0o755);
+    g('init', '-q', '-b', 'main');
+    g('config', 'user.email', 't@t');
+    g('config', 'user.name', 't');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'fixture: baseline');
+    subjects.forEach((subject, i) => {
+      const abs = join(root, paths[i] ?? 'seq.txt');
+      mkdirSync(dirname(abs), { recursive: true });
+      writeFileSync(abs, `${subject}\n`, 'utf8');
+      g('add', '-A');
+      g('commit', '-q', '-m', subject);
+    });
+    g('update-ref', 'refs/remotes/origin/work/current', 'HEAD');
+    return root;
+  };
+  const withLock = (holder: string, lockAt: string, subjects: string[], paths: string[]): string => {
+    const root = gitRepoForLock(subjects, paths);
+    const p = join(root, 'plan', '00-control.md');
+    // ⛔ הפיקסצ׳ר הבריא ⛔ אינו נושא שדות נעילה כלל ⇒ `replace` בלבד היה no-op שקט,
+    // והבדיקה האדומה הייתה עוברת מפני שהמחזיק ריק. ⇒ מוסיפים כשחסר, ⛔ לא מחליפים בעיוורון.
+    const prev = readFileSync(p, 'utf8');
+    const withHolder = /^LOCK_HELD_BY:/m.test(prev)
+      ? prev.replace(/^LOCK_HELD_BY:.*$/m, `LOCK_HELD_BY: "${holder}"`)
+      : `${prev}\nLOCK_HELD_BY: "${holder}"\n`;
+    const body = /^LOCK_AT:/m.test(withHolder)
+      ? withHolder.replace(/^LOCK_AT:.*$/m, `LOCK_AT: "${lockAt}"`)
+      : `${withHolder}LOCK_AT: "${lockAt}"\n`;
+    writeFileSync(p, body, 'utf8');
+    return root;
+  };
+  const OLD = '2020-01-01T00:00:00Z';
+
+  it('⛔ נעילה ריקה ⇒ ⛔ אין מה למדוד, עוברת', () => {
+    const r = run(withLock('', OLD, ['loop(DEV): x'], ['seq.txt']));
+    expect(failed(r.out, '21'), r.out).toBe(false);
+  });
+
+  it('🔴 נעילה ישנה שבעליה דחף ⛔ אך ורק את קומיט הנעילה ⇒ **מאדימה**', () => {
+    // ⛔ הקומיט היחיד של DEV נוגע ⛔ אך ורק ב-`plan/00-control.md` — כלומר הנעילה עצמה.
+    const r = run(withLock('DEV', OLD, ['loop(DEV): C-1 lock'], ['plan/00-control.md']));
+    expect(failed(r.out, '21'), r.out).toBe(true);
+  });
+
+  it('⛔ נעילה ישנה שבעליה דחף **עבודה** אחריה ⇒ סוכן איטי, ⛔ לא מת ⇒ עוברת', () => {
+    const r = run(
+      withLock('DEV', OLD, ['loop(DEV): C-1 lock', 'loop(DEV): C-1 T-9 real work'], [
+        'plan/00-control.md',
+        'lib/core/realGate.ts',
+      ]),
+    );
+    expect(failed(r.out, '21'), r.out).toBe(false);
+  });
+
+  it('⛔ `CRITIC` ו-`QA` הם אותו סוכן ⇒ קומיט `loop(CRITIC)` סופר עבור נעילת `QA`', () => {
+    const r = run(
+      withLock('QA', OLD, ['loop(QA): C-1 lock', 'loop(CRITIC): C-1 review'], [
+        'plan/00-control.md',
+        'lib/core/realGate.ts',
+      ]),
+    );
+    expect(failed(r.out, '21'), r.out).toBe(false);
   });
 });

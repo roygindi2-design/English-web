@@ -420,6 +420,84 @@ check('19', '`plan/05-departments.md` מתחת לתקרת 4KB — נטו, ⛔ ל
   };
 });
 
+/**
+ * 21 — 🔒 **נעילה יתומה — הלופ ⛔ לא ידע לראות אותה, ונמדד חי 09/09.**  ⟦NEW 09/09⟧
+ *
+ * 🔬 **מה נמדד, ⛔ לא הונח.** טיק QA מלא נורה חי ב-18:51:40Z, רץ 21.4 דקות, שרף
+ * 237,150 טוקנים, ⛔ **לא דחף דבר לשום מקום** — ענף התוצאה `claude/nice-ride-bit6a7`
+ * ⛔ **מעולם לא נוצר על origin** — ויצא `IDLE` **בעודו מחזיק את הנעילה**.
+ * ⇒ מאותו רגע: DEV · PM · CONTENT ⛔ אינם יכולים לדחוף קוד (שער ה-`pre-push`),
+ * ו-QA עצמה ⛔ אינה ממזגת ל-`dev` — `QA.md:406` מורה «נעילה ⛔ לא ריקה ⇒ ⛔ אין מיזוג
+ * בטיק הזה». **הנעילה המתה של QA חוסמת את QA.**
+ *
+ * 🔴 **ולמה זה ⛔ לא נראה:** `git grep LOCK_HELD_BY -- scripts/` החזיר את שער ה-`pre-push`
+ * בלבד. ⛔ **אף בדיקה ⛔ לא קראה את הנעילה.** בדיקה 17 הייתה מאדימה בסוף — אבל רק
+ * אחרי **24 שעות**, ועל התסמין (שתיקת סוכן), ⛔ לא על הסיבה.
+ *
+ * ⚠️ **הסף נגזר ממדידה, ⛔ לא מניחוש:** 212 מדגמי «נעילה ⇢ הקומיט הבא של אותו סוכן»
+ * ב-21 יום ⇒ חציון **15.7 דק'**, והטיק החי שנצפה מקצה לקצה ⇒ **21.4 דק'**. הזנב הארוך
+ * ⛔ אינו טיקים ארוכים — הוא בדיוק התקלה הזאת. ⇒ **90 דקות** הן ~4× הטיק האמיתי הארוך.
+ *
+ * 🔴 **ושתי הפסקאות ביחד, ⛔ לא הזמן לבדו:** נעילה בת 90 דק' שבעליה **כן** דחף מאז
+ * שלקח אותה היא סוכן שעובד לאט, ⛔ ולא סוכן מת. ⇒ הבדיקה מאדימה רק כששניהם מתקיימים.
+ */
+check('21', 'נעילה חיה, ⛔ או יתומה — ⛔ לא נעילה שאיש ⛔ אינו קורא', () => {
+  const control = read(at('plan', '00-control.md'));
+  const holder = (control.match(/^LOCK_HELD_BY:\s*"?([A-Za-z]*)/m) || [])[1] || '';
+  if (holder === '') return { ok: true, detail: 'הנעילה ריקה' };
+  const atRaw = (control.match(/^LOCK_AT:\s*"?([0-9T:\-]+Z)/m) || [])[1];
+  if (!atRaw) {
+    return { ok: false, detail: holder + ' מחזיק, ו-LOCK_AT ⛔ אינו קריא ⇒ ⛔ אי אפשר למדוד גיל' };
+  }
+  const ageMin = (Date.now() - new Date(atRaw).getTime()) / 60000;
+  const CEILING_MIN = 90;
+  if (ageMin <= CEILING_MIN) {
+    return { ok: true, detail: holder + ' מחזיק ' + ageMin.toFixed(0) + " דק' מתוך " + CEILING_MIN };
+  }
+  // ⛔ **הפסקה השנייה, ו⛔ לא הזמן לבדו:** האם בעל הנעילה דחף **עבודה** מאז שלקח אותה?
+  const git = (...args) => {
+    try {
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+    } catch {
+      return '';
+    }
+  };
+  // ⛔ `QA` ו-`CRITIC` הם אותו סוכן בשתי איותים שהרגיסטר עדיין נושא.
+  const grep = holder === 'QA' ? '^loop\\((QA|CRITIC)\\)' : '^loop\\(' + holder + '\\)';
+  // 🔴 **וקומיט הנעילה עצמו ⛔ אינו ראיה לחיים.** הוא נושא את אותה חותמת זמן כמו
+  // `LOCK_AT` ⇒ `--since` תמיד תופסת אותו, ובלי הסינון הזה כל נעילה יתומה הייתה
+  // מדווחת «⇒ חי» ברגע שהיא חוצה את התקרה. ⇒ נספרים רק קומיטים שנגעו במשהו
+  // **מלבד** `plan/00-control.md` — אותו מבחן שבדיקה 17 עושה, ומאותה סיבה.
+  const raw = git('log', '--since=' + atRaw, '--format=%x00%s', '--name-only', '-E', '--grep=' + grep, 'HEAD');
+  const moved = raw
+    .split('\x00')
+    .filter((c) => c.trim() !== '')
+    .filter((c) => {
+      const files = c.split('\n').slice(1).filter((f) => f.trim() !== '');
+      return files.some((f) => f !== 'plan/00-control.md');
+    }).length;
+  if (moved > 0) {
+    return {
+      ok: true,
+      detail: holder + ' מחזיק ' + ageMin.toFixed(0) + " דק', ⛔ אך דחף " + moved + ' קומיטים מאז ⇒ חי',
+    };
+  }
+  return {
+    ok: false,
+    detail:
+      holder + ' מחזיק ' + ageMin.toFixed(0) + " דק' (תקרה " + CEILING_MIN + ') ⛔ ואפס קומיטים מאז ' + atRaw,
+    items: [
+      '⇒ נעילה יתומה: הסוכן שלקח אותה מת בלי לשחרר.',
+      '⇒ הלופ תקוע — DEV/PM/CONTENT ⛔ אינם דוחפים קוד, ו-QA ⛔ אינה ממזגת ל-dev.',
+      '⇒ השחרור מתועד ב-RULES § 0.4 — הסוכן שמזהה מנקה, בקומיט משלו, עם שלושת המספרים.',
+    ],
+  };
+});
+
 /* 4 — the ONLY path by which an answer from Roy re-enters the loop. */
 check('4', 'סומן RELEASE_READY ⇒ שלוש ההקשות נכתבו', () => {
   const control = read(at('plan', '00-control.md'));

@@ -193,6 +193,101 @@ describe('scripts/hooks/pre-push — שער הנעילה (RULES § 0.4)', () => 
     expect(r.out, '⛔ ⛔ לא נחסם על הנעילה').not.toMatch(/הנעילה מוחזקת בידי/);
   });
 
+
+  /**
+   * 🔒 **גיל הנעילה — והטענות האלה נכתבו אחרי שהכשל קרה חי, ⛔ לא לפניו.**  ⟦NEW 09/09⟧
+   *
+   * 🔬 טיק QA אמיתי נורה 18:51:40Z, רץ 21.4 דק', ⛔ לא דחף דבר לשום מקום, ויצא `IDLE`
+   * **מחזיק את הנעילה** ⇒ DEV · PM · CONTENT ⛔ לא יכלו לדחוף קוד, ו-QA ⛔ לא יכלה
+   * למזג ל-`dev` בגלל הנעילה של עצמה.
+   * 🔴 ו-`RULES § 0.4` **כן** נתנה חלון כיבוד (DEV 90 דק' · השאר 30) — השער הזה פשוט
+   * ⛔ לא קרא את `LOCK_AT`, ולכן אכף נעילה **לנצח** וביטל את החלון שהחוקה נתנה.
+   *
+   * ⚠️ **וארבע הטענות ⛔ אינן ארבע גרסאות של אחת:** הראשונה היא שהפטור ⛔ **לא החליש**
+   * את השער המקורי; השנייה היא הפטור עצמו; השלישית היא הגדר שמונעת את `F-121`
+   * (סוכן איטי ⛔ אינו סוכן מת); הרביעית היא החור שהיה בגרסה הראשונה שכתבתי —
+   * **קומיט הנעילה עצמו נושא את חותמת `LOCK_AT`**, ובלי סינונו שום נעילה ⛔ לא הזדקנה.
+   */
+  const agedRepo = (
+    userName: string,
+    holder: string,
+    lockAt: string,
+    touched: string,
+    holderWork?: { subject: string; path: string },
+  ): string => {
+    const root = repo(userName);
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    mkdirSync(join(root, 'plan'), { recursive: true });
+    writeFileSync(
+      join(root, 'plan', '00-control.md'),
+      `LOCK_HELD_BY: ${holder}\nLOCK_AT: "${lockAt}"\n`,
+      'utf8',
+    );
+    g('add', '-A');
+    // ⛔ קומיט הנעילה נושא את תחילית בעל הנעילה ⛔ ונוגע ⛔ אך ורק ב-`00-control.md`.
+    g('commit', '-q', '-m', `loop(${holder}): C-1 lock`);
+    if (holderWork) {
+      mkdirSync(join(root, dirnameOf(holderWork.path)), { recursive: true });
+      // ⛔ קומיט בקרה של בעל הנעילה **מוסיף** שורה ⛔ ואינו דורס את הקובץ — דריסה
+      // הייתה מוחקת את `LOCK_HELD_BY` עצמו, והמבחן היה בודק ריפו ללא נעילה כלל.
+      const abs = join(root, holderWork.path);
+      const prev = holderWork.path === 'plan/00-control.md' ? readFileSync(abs, 'utf8') : '';
+      writeFileSync(abs, `${prev}# ${holderWork.subject}\n`, 'utf8');
+      g('add', '-A');
+      g('commit', '-q', '-m', holderWork.subject);
+    }
+    mkdirSync(join(root, dirnameOf(touched)), { recursive: true });
+    writeFileSync(join(root, touched), 'change\n', 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'work');
+    return root;
+  };
+  const FRESH = new Date(Date.now() - 5 * 60_000).toISOString().replace(/\.\d+Z$/, 'Z');
+  const STALE = '2020-01-01T00:00:00Z';
+
+  it('⛔ נעילה זרה **טרייה** ⇒ הדחיפה עדיין נחסמת — הפטור ⛔ לא החליש את השער', () => {
+    const r = runHook(
+      agedRepo('dev-agent', 'PM', FRESH, 'lib/core/thing.ts'),
+      'refs/heads/work/current',
+    );
+    expect(r.code, '⛔ חייבת להיחסם').not.toBe(0);
+    expect(r.out).toMatch(/הנעילה מוחזקת בידי 'PM'/);
+  });
+
+  it('✅ נעילה זרה שחלון § 0.4 שלה פג ו⛔ אין קומיט עבודה של בעליה ⇒ ⛔ אינה חוסמת', () => {
+    const r = runHook(
+      agedRepo('dev-agent', 'PM', STALE, 'lib/core/thing.ts'),
+      'refs/heads/work/current',
+    );
+    expect(r.out, 'השער מכריז יתומה').toMatch(/נעילה יתומה: 'PM'/);
+    expect(r.out, '⛔ ⛔ לא נחסם על הנעילה').not.toMatch(/הדחיפה נחסמה: הנעילה מוחזקת/);
+  });
+
+  it('⛔ ישנה ⛔ אך בעליה דחף **עבודה** מאז ⇒ סוכן איטי, ⛔ לא מת ⇒ עדיין חוסמת (F-121)', () => {
+    const r = runHook(
+      agedRepo('dev-agent', 'PM', STALE, 'lib/core/thing.ts', {
+        subject: 'loop(PM): C-1 T-9 real work',
+        path: 'plan/50-tasks.md',
+      }),
+      'refs/heads/work/current',
+    );
+    expect(r.code, '⛔ חייבת להיחסם').not.toBe(0);
+    expect(r.out).toMatch(/הנעילה מוחזקת בידי 'PM'/);
+  });
+
+  it('🔴 קומיט הנעילה עצמו ⛔ **אינו** סימן חיים — אחרת שום נעילה יתומה ⛔ לא הזדקנה', () => {
+    // ⛔ בעל הנעילה דחף קומיט `loop(PM)` — אבל הוא נוגע ⛔ אך ורק ב-`00-control.md`.
+    const r = runHook(
+      agedRepo('dev-agent', 'PM', STALE, 'lib/core/thing.ts', {
+        subject: 'loop(PM): C-1 lock again',
+        path: 'plan/00-control.md',
+      }),
+      'refs/heads/work/current',
+    );
+    expect(r.out, 'עדיין יתומה').toMatch(/נעילה יתומה: 'PM'/);
+  });
+
   it('✅ ⛔ אינו חוסם את מחזיק הנעילה עצמו', () => {
     const r = runHook(
       lockedRepo('dev-agent', 'DEV', 'lib/core/thing.ts'),
