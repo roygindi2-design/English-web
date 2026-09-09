@@ -1089,6 +1089,26 @@ check(
           `לבדוק את רשימת ה-Routines. ⚠️ ואם הלופ הושהה בכוונה, \`PAUSED_BY_HUMAN\` ב-\`plan/00-control.md\` ` +
           `אמור לומר זאת, והוא כרגע ⛔ אינו הערוץ שמשמש לכך.`,
       );
+      /**
+       * 🔴 ⛔ **AND IT REPORTS «⛔ לא נמדד», ⛔ NOT «FAIL» — ⟦09/09⟧ and the reason is
+       * that a FAIL here would be a claim this checker ⛔ cannot support.**
+       *
+       * Every enabled agent silent at once has exactly two causes, and the difference
+       * between them lives **on the scheduler**, ⛔ not in git (`RULES § 0.23ח`). One is
+       * a defect. The other — the Routines switched off — is a **decision**, and it was
+       * measured on 09/09: all six were disabled by their owner within four minutes.
+       * ⇒ a checker that ⛔ cannot tell them apart must ⛔ not pick the accusing one.
+       *
+       * 🔴 **And the cost of getting this wrong is ⛔ concrete, ⛔ not theoretical.** This
+       * check goes HARD on 2026-09-13. A paused loop would then redden `verify` in every
+       * clone — including the very tick that restarts it — so the switch-off would have
+       * armed a trap that fires days later and blocks its own undoing.
+       *
+       * ⚠️ **⛔ It is ⛔ not silence:** the systemic line above is printed either way, and
+       * «⛔ לא נמדד» is ⛔ never «passed» — it is counted separately in the summary and
+       * ⛔ never folded into the pass count.
+       */
+      return { ok: false, notMeasured: true, detail: parts.join(' · '), items };
     }
     return { ok: silent.length === 0, detail: parts.join(' · '), items };
   },

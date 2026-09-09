@@ -844,7 +844,7 @@ describe('scripts/loop-health.mjs', () => {
      * ⇒ הבדיקה בונה כאן ריפו git אמיתי בן שני קומיטים, כי ⛔ אין דרך לזייף `git log`.
      */
     describe('שלושת המצבים — חסום כדין ⛔ אינו נראה כמו מת (F-206 · T-280)', () => {
-      const gitRepo = (subjects: string[], paths?: string[]): string => {
+      const gitRepo = (subjects: string[], paths?: string[], roster?: string): string => {
         const root = healthy();
         const g = (...args: string[]) =>
           execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
@@ -853,7 +853,7 @@ describe('scripts/loop-health.mjs', () => {
         mkdirSync(join(root, 'docs', 'agents'), { recursive: true });
         copyFileSync('scripts/g', join(root, 'scripts', 'g'));
         chmodSync(join(root, 'scripts', 'g'), 0o755);
-        writeFileSync(join(root, 'docs', 'agents', 'roster.json'), ROSTER_ONE, 'utf8');
+        writeFileSync(join(root, 'docs', 'agents', 'roster.json'), roster ?? ROSTER_ONE, 'utf8');
         g('init', '-q', '-b', 'main');
         g('config', 'user.email', 't@t');
         g('config', 'user.name', 't');
@@ -879,6 +879,16 @@ describe('scripts/loop-health.mjs', () => {
 
       const ROSTER_ONE = JSON.stringify({
         agents: [{ name: 'DEV', commitPrefix: 'loop(DEV', enabled: true, maxSilentHours: 24 }],
+      });
+      /**
+       * ⛔ **שני סוכנים, ⛔ כי עם אחד «כולם שותקים» ו«הוא שותק» הם אותו מצב** — ⇒ ⛔ אי
+       * אפשר היה להבדיל בין תקלת סוכן לתקלת לופ, וזו בדיוק ההבחנה שנוספה 09/09.
+       */
+      const ROSTER_TWO = JSON.stringify({
+        agents: [
+          { name: 'DEV', commitPrefix: 'loop(DEV', enabled: true, maxSilentHours: 24 },
+          { name: 'PM', commitPrefix: 'loop(PM', enabled: true, maxSilentHours: 24 },
+        ],
       });
 
       const line17 = (out: string): string =>
@@ -946,8 +956,16 @@ describe('scripts/loop-health.mjs', () => {
         );
       });
 
-      it('🔴 ⛔ אף קומיט ⇒ שקט מוחלט, וזה המצב היחיד שמפיל', () => {
-        const r = run(gitRepo(['ops(runtime): somebody else entirely']));
+      it('🔴 ⛔ אף קומיט מסוכן אחד ⇒ שקט מוחלט, וזה המצב היחיד שמפיל', () => {
+        // ⛔ **PM חי, DEV שותק** — ⇒ תקלת **סוכן**, ⛔ ולא תקלת לופ. עם roster בן סוכן
+        // אחד שני המצבים היו זהים, וההבחנה שנוספה 09/09 ⛔ לא הייתה ניתנת לבדיקה.
+        const r = run(
+          gitRepo(
+            ['loop(PM): C-0001 real work'],
+            ['lib/core/thing.ts'],
+            ROSTER_TWO,
+          ),
+        );
         // ⛔ **⛔ לא `warned` ו⛔ לא `failed` — הבדיקה נעשית על ה**וורדיקט**, ⛔ לא על
         // החלון הרך. ‏17 עוברת מ-` warn ` ל-` FAIL ` ב-13/09 **בלי שום עריכה**, וטענה
         // על אחד מהשניים הייתה מתהפכת באותו יום. זו בדיוק התקלה ש-`F-206` פתח עליה.
@@ -956,7 +974,22 @@ describe('scripts/loop-health.mjs', () => {
         );
         expect(notMeasured(r.out, '17'), '⛔ נמדד — יש roster ויש git').toBe(false);
         expect(r.out, 'שקט מוחלט, ⛔ ולא «חי ללא עבודה»').toMatch(/שקט מוחלט/);
-        expect(r.out).not.toMatch(/חי ללא עבודה/);
+        expect(r.out, '⛔ ואינה מדווחת כתקלת לופ — PM חי').not.toMatch(/תקלה אחת ברמת הלופ/);
+      });
+
+      /**
+       * 🔴 ⛔ **וכשכולם שותקים — «⛔ לא נמדד», ⛔ ולא «FAIL».**  ⟦NEW 09/09⟧
+       *
+       * להבדל בין «כולם תקועים» ל«המתזמן כבוי» ⛔ אין ייצוג בגיט (`RULES § 0.23ח`) ⇒
+       * בודק שאינו יכול להבחין ⛔ אינו רשאי לבחור את האפשרות המאשימה.
+       * 🔴 **והמחיר של טעות כאן מדיד:** הבדיקה נעשית **קשה** ב-13/09 ⇒ לופ מושהה היה
+       * מאדים `verify` בכל שיבוט — כולל בטיק שמפעיל אותו מחדש.
+       */
+      it('🔴 כולם שותקים ⇒ «⛔ לא נמדד», ⛔ ואינה מפילה — אך השורה המערכתית נאמרת', () => {
+        const r = run(gitRepo(['ops(runtime): somebody else entirely'], undefined, ROSTER_TWO));
+        expect(notMeasured(r.out, '17'), '⛔ אי אפשר להכריע מכאן ⇒ n/m').toBe(true);
+        expect(failed(r.out, '17'), '⛔ ⛔ ואינה מאשימה').toBe(false);
+        expect(r.out, 'והאבחנה המערכתית עדיין נאמרת').toMatch(/תקלה אחת ברמת הלופ/);
       });
     });
 
