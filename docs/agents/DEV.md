@@ -739,6 +739,24 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 Which mode · what you did · **which workstream** · **the exact output of `npm run verify`** · on a UI tick, the walk numbers and which render you matched · **one line per reversible call under `RULES § 0.22`**. Quiet tick = one line.
 ⛔ **Never wait for Roy.** Need something → one stamped line in `03-for-roy.md` and move on.
 
+## ⚰️ הארכיון ⛔ אינו פתרון חי — תסמין שנמדד שוב הוא ממצא **חדש** (`RULES § 0.30`)  ⟦NEW 09/09 · הוראת רוי⟧
+
+🔬 **הכשל:** אתה מודד תסמין, מגלגל `grep`, ומוצא שורה **סגורה** שמתארת אותו — ובארכיון
+יושב הטקסט המלא, «תוקן ב-`X`». ⇒ אתה מסיק «כבר פתור», ⛔ לא פותח ממצא, ⛔ ולא מודד דבר.
+**התסמין חי, והרגיסטר מצהיר שהוא סגור.**
+
+```
+מדדת תסמין  ⇒  והוא מופיע בשורה סגורה או בארכיון
+             ⇒  ⛔ אל תסיק «פתור»  ·  ⛔ אל תחזיר את השורה הישנה ל-⬜
+             ⇒  ממצא **חדש**, מדידה **של היום**, והישנה מצוטטת כ**תקדים**
+```
+
+- ⛔ **שורה סגורה ⛔ אינה נפתחת מחדש.** ‏`loop:health` **בדיקה 22** מודדת את התנועה
+  `✅`/`🚫` ⇢ `⬜`/`⛔`/`🟣` מול הקומיט הקודם, ומאדימה עליה.
+- ⛔ **«כבר ידוע» ⛔ אינה מדידה.** ממצא חדש נושא קובץ ושורה שנמדדו **בטיק הזה**.
+- ⚠️ **וקריאת הארכיון ⛔ אינה אסורה** — היא חוסכת ניסיון שכבר נכשל. אסור להסיק ממנו
+  **מצב נוכחי**. ⇒ **הארכיון עונה «מה עשינו», ⛔ ולא «מה קורה עכשיו».**
+
 ## STANDING ORDERS
 - Every task has a **skill column**. Names a skill → use it. Says "—" → do not go looking.
 - A UI task with **no UX plan and no anchor-spec section** → ⛔ do not invent one; record it missing and take the next task.

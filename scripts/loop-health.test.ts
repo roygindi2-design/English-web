@@ -138,8 +138,8 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('21');
-    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21']
+    expect(total?.[2]).toBe('22');
+    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21','22']
       .filter((n) => failed(r.out, n));
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
@@ -150,10 +150,10 @@ describe('scripts/loop-health.mjs', () => {
      * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
      * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
      */
-    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21']
+    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','21','22']
       .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(21);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(22);
     expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
     // ⛔ ⟦09/09 · F-207⟧ 18 מריצה `./scripts/g fetch` — ⛔ אין git בפיקסצ׳ר ⇒ n/m.
     // ⛔ «⛔ לא נמדד» ⛔ אינו «נקי», והיא נאמרת בשמה כדי שלא תיעלם מהמשוואה.
@@ -201,7 +201,7 @@ describe('scripts/loop-health.mjs', () => {
       // ⚠️ ומ-'17' ל-'18' עם נחיתת בדיקה 18 — עבודה תקועה על `claude/*` (`F-207`, 09/09).
       // ⚠️ ומ-'18' ל-'19' עם נחיתת בדיקה 3.5 — שורה סגורה בטבלת «פתוח» של רוי (09/09).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('21');
+      expect(total?.[1]).toBe('22');
     });
   });
 
@@ -275,7 +275,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09).
     // ⚠️ 18 → 19 with check 3.5 (a CLOSED row still in Roy's open table, 2026-09-09).
-    expect(total).toBe('21');
+    expect(total).toBe('22');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -809,7 +809,7 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09). Also unrelated to this mix line.
     // ⚠️ 18 → 19 with check 3.5 (Roy's open table, 2026-09-09). Also unrelated.
-    expect(r.out).toMatch(/loop health: \d+\/21 checks pass/);
+    expect(r.out).toMatch(/loop health: \d+\/22 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );
@@ -1339,5 +1339,61 @@ describe('🔒 בדיקה 21 — נעילה יתומה', () => {
       ]),
     );
     expect(failed(r.out, '21'), r.out).toBe(false);
+  });
+});
+
+/**
+ * ⚰️ **בדיקה 22 — «חפירה מהארכיון».**  ⟦NEW 09/09 · הוראת רוי⟧
+ *
+ * ⛔ **למה «תחייה» ו⛔ לא «מצטט ארכיון».** נמדד 09/09: `npm run archive` משאיר בדל חי
+ * לכל שורה שאורכבה ⇒ מזהים שקיימים **אך ורק** בארכיון: **0 מתוך 383**. בדיקת
+ * «מזהה שרק בארכיון» הייתה עוברת לנצח **מעצם הבנייה**. ⇒ נמדדת התנועה `✅ ⇢ ⬜`.
+ */
+describe('⚰️ בדיקה 22 — שורה סגורה שקמה לתחייה', () => {
+  // ⛔ שני קומיטים אמיתיים: הרגיסטר ב-HEAD~1 מול הרגיסטר ב-HEAD.
+  const twoCommits = (before: string, after: string, file = 'plan/60-findings.md'): string => {
+    const root = healthy();
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
+    mkdirSync(join(root, 'scripts'), { recursive: true });
+    copyFileSync('scripts/g', join(root, 'scripts', 'g'));
+    chmodSync(join(root, 'scripts', 'g'), 0o755);
+    g('init', '-q', '-b', 'main');
+    g('config', 'user.email', 't@t');
+    g('config', 'user.name', 't');
+    writeFileSync(join(root, file), before, 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'before');
+    writeFileSync(join(root, file), after, 'utf8');
+    g('add', '-A');
+    // ⛔ `--allow-empty`: המקרים ש**⛔ אינם** משתנים הם חצי מהטענה כאן — בלי זה
+    // `git commit` נופל על «⛔ אין מה לקבע» ו⛔ אי אפשר לבדוק שהבדיקה **⛔ אינה** מאדימה.
+    g('commit', '-q', '--allow-empty', '-m', 'after');
+    return root;
+  };
+  // ⛔ תא הסטטוס של ממצא הוא **6** ⇒ שבעה תאים לפניו.
+  const finding = (id: string, glyph: string) =>
+    `| ${id} | a | b | c | d | e | ${glyph} נוסח | h |\n`;
+
+  it('🔴 ✅ ⇢ ⬜ על אותו מזהה ⇒ **מאדימה**', () => {
+    const r = run(twoCommits(finding('F-900', '✅'), finding('F-900', '⬜')));
+    expect(failed(r.out, '22'), r.out).toBe(true);
+  });
+
+  it('⛔ ✅ שנשארה ✅ ⇒ עוברת', () => {
+    const r = run(twoCommits(finding('F-900', '✅'), finding('F-900', '✅')));
+    expect(failed(r.out, '22'), r.out).toBe(false);
+  });
+
+  it('⛔ **ממצא חדש** לצד הסגורה ⇒ עוברת — זה בדיוק המסלול התקין', () => {
+    const r = run(
+      twoCommits(finding('F-900', '✅'), finding('F-900', '✅') + finding('F-901', '⬜')),
+    );
+    expect(failed(r.out, '22'), r.out).toBe(false);
+  });
+
+  it('⛔ ⬜ שהייתה ⬜ ⇒ עוברת — הבדיקה ⛔ אינה על «פתוח», היא על **תחייה**', () => {
+    const r = run(twoCommits(finding('F-900', '⬜'), finding('F-900', '⬜')));
+    expect(failed(r.out, '22'), r.out).toBe(false);
   });
 });

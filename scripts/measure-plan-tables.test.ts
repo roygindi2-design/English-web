@@ -320,11 +320,25 @@ describe('scripts/measure-plan-tables.mjs', () => {
     if (m?.[1] === undefined || m[2] === undefined) throw new Error(`no index line:\n${stdout}`);
     const [tasks, findings] = [Number(m[1]), Number(m[2])];
     expect(tasks).toBeGreaterThan(0);
-    const sectionCounts = [...fresh.matchAll(/^## (?!ממצאים).*\((\d+)\)$/gm)].map((x) =>
-      Number(x[1]),
-    );
+    /**
+     * 🔴 ⛔ **הסעיפים שנספרים כאן הם **חלוקה**, ⛔ ולא «כל סעיף עם מספר».** חמשת סעיפי
+     * המצב (⬜ · ⛔ · 🟣 · ❔ · ⚠️) מחלקים את השורות הפתוחות בדיוק פעם אחת כל אחת ⇒
+     * סכומם **חייב** להיות `tasks`. ⇒ סעיף שהוא **חתך** — אותן שורות מקובצות בציר
+     * אחר — ⛔ אינו בחלוקה, וספירתו בתוכה הייתה שוברת את האינווריאנט הזה בלי שדבר
+     * יישבר במוצר. ⟦09/09: «🎨 התור של PM» הוא החתך הראשון כזה.⟧
+     */
+    const CROSS_CUTS = /^## (ממצאים|🎨 התור של PM)/;
+    const sectionCounts = [...fresh.matchAll(/^## .*\((\d+)\)$/gm)]
+      .filter((x) => !CROSS_CUTS.test(x[0]))
+      .map((x) => Number(x[1]));
     expect(sectionCounts.length).toBe(5);
     expect(sectionCounts.reduce((a, b) => a + b, 0)).toBe(tasks);
+
+    // ⛔ **והחתך עצמו ⛔ אינו פטור ממדידה** — הוא חייב להיות **תת-קבוצה** של הפתוחות,
+    // אחרת הוא מציג ל-PM שורות שכבר נסגרו. ⛔ «⛔ לא נספר» ⛔ אינו «⛔ לא נבדק».
+    const pmLane = /^## 🎨 התור של PM — `נוחות` פתוחות \((\d+)\)$/m.exec(fresh);
+    expect(pmLane, 'החתך של PM חייב להתקיים').not.toBeNull();
+    expect(Number(pmLane?.[1] ?? -1)).toBeLessThanOrEqual(tasks);
     expect(fresh).toContain(`## ממצאים פתוחים (${findings})`);
 
     // ⛔ The count above and the `open index:` line are computed from the SAME array, so

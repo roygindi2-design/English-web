@@ -191,6 +191,11 @@ const blockerOf = (row) => {
   return excerpt(at === -1 ? cell : cell.slice(at + BLOCKER_MARKER.length), NOTE_CHARS);
 };
 
+// 🎨 ⛔ `classOf` מוגדר בהמשך הקובץ ⇒ הגדרה מקומית כאן, מאותו אינדקס תא בדיוק.
+// ⛔ ⛔ אינה «עוד מסווג» — היא אותה `classify` המיובאת, על אותו תא `אבן דרך`.
+const polishKind = (row) =>
+  classify(row.ok ? (row.cells[TASK_MILESTONE_INDEX] ?? '') : '').kind === 'נוחות';
+
 const taskSection = (title, state, columns, rowLine) => {
   const rows = openTasks.filter((r) => taskState(r) === state);
   return [
@@ -260,6 +265,37 @@ const index = [
   ...taskSection('⚠️ שורות משימה פגומות — ⛔ אינן נקראות לפי עמודה', 'malformed', 'תאים', (r) =>
     `| \`${r.id}\` | — | ${r.cells.length} מתוך ${r.expected} |`,
   ),
+  /**
+   * 🎨 **התור של PM עצמו — שורות `נוחות` פתוחות, בכל המחלקות.**  ⟦NEW 09/09 · דרישת רוי⟧
+   *
+   * 🔬 **למה זה **תצוגה** ו⛔ לא זרימה חדשה.** נשקלה זרימה `ux` משלה, ו-⛔ המאגר כבר
+   * הכריע נגדה עם נימוק — `lib/core/planTable.test.ts:483`: «Without it, `ux` and
+   * `נוחות` become two columns in the balance table that mean one thing». ⇒ `נוחות`
+   * הוא **סוג העבודה**, והזרימה היא **איפה במוצר** — שני צירים, ⛔ ולא אחד. שורת ליטוש
+   * על הכרטיסיות היא `cards · נוחות`, ⛔ ולא `ux`.
+   * 🔴 **אבל הצורך אמיתי:** מאז 09/09 PM **בונה** שורות `נוחות` בעצמו (STEP 5.5), ועד
+   * היום ⛔ לא היה לו שום מקום שבו הן מרוכזות — הן פזורות על פני עשר מחלקות, ו-DEV
+   * מסנן לפי `ACTIVE_WORKSTREAM` ⇒ שורת `נוחות` במחלקה שאינה פעילה ⛔ אינה נראית לאיש.
+   * ⇒ **חתך, ⛔ לא ציר:** אותן שורות בדיוק, מקובצות לפי סוג העבודה.
+   */
+  `## 🎨 התור של PM — \`נוחות\` פתוחות (${openTasks.filter((r) => taskState(r) === 'open' && polishKind(r)).length})`,
+  '',
+  ...(() => {
+    const mine = openTasks.filter((r) => taskState(r) === 'open' && polishKind(r));
+    if (mine.length === 0) return ['⛔ אין.', ''];
+    return [
+      '| id | אבן דרך | המשימה (תקציר) | סקיל |',
+      '|---|---|---|---|',
+      ...mine.map(
+        (r) =>
+          `| \`${r.id}\` | ${excerpt(r.cells[1] ?? '', 12)} | ${excerpt(r.cells[2] ?? '', TITLE_CHARS)} | ${excerpt(r.cells[7] ?? '', 40)} |`,
+      ),
+      '',
+      '⚠️ **⛔ אינן אוטומטית של PM לבנייה** — חמשת תנאי `STEP 5.5` חלים על כל אחת, ותנאי ⓑ',
+      '(נפתחה **בטיק קודם**) פוסל שורה שנפתחה היום.',
+      '',
+    ];
+  })(),
   /**
    * ✅ **15 האחרונות שנסגרו — ⛔ ולא לוג.**  ⟦NEW 09/09 · דרישת רוי⟧
    * ⛔ **למה כאן ו⛔ לא בקובץ חדש:** `docs/plan-open.md` הוא המשטח ש-PM ו-DEV **כבר**

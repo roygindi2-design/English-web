@@ -61,7 +61,7 @@ than ⛔ not doing them.
       ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
     verify RED ⇒ ⛔ NO merge. Report the failing command's output verbatim. ⛔ Nothing else.
 7.  REPORT, 4 lines, Hebrew:
-      מסלול: שער · verify ✅/❌ · loop health: N/21 · merged / ⛔ not merged and why ·
+      מסלול: שער · verify ✅/❌ · loop health: N/22 · merged / ⛔ not merged and why ·
       how many commits wait · סקילים: <…>
 ```
 
@@ -293,7 +293,7 @@ npm run loop:health
 
 ⛔ **ADVISORY, ⛔ NOT BLOCKING — this is Roy's decision, not a phase.** It exits 1 so a script can branch on it, **but it ⛔ never blocks a merge and ⛔ never stops DEV.** An orphan plan does not mean the code is broken, and a good merge blocked for a bad reason teaches every agent to ignore the gate.
 ⇒ **Every failure becomes a finding in `60-findings.md`, in this tick, by you.** ⛔ A failure you neither fix nor file is the ninth open end.
-⚠️ Report the score (`loop health: N/21`) in your Hebrew summary, every tick, **and how many are in the soft window**.
+⚠️ Report the score (`loop health: N/22`) in your Hebrew summary, every tick, **and how many are in the soft window**.
 
 ## STEP 3 — SMOKE TEST, ONLY WHEN ROY HAS MERGED
 `LAST_PROMOTED_AT` unchanged since your previous tick? **Skip.**
@@ -410,7 +410,7 @@ The index — every skill, its trigger, its path — is **`docs/skills-registry.
 ./scripts/g fetch origin
 ./scripts/g rev-list --count origin/dev..origin/work/current     ⇐ how much is waiting
 npm run verify                                                    ⇐ nine commands
-npm run loop:health                                               ⇐ 21 checks
+npm run loop:health                                               ⇐ 22 checks
 ```
 + **the browser walk at 375×780** (STEP 4) on the screens the branch touched. `./scripts/g diff --name-only origin/dev..origin/work/current` tells you which.
 
@@ -723,7 +723,7 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-🚦 **`מסלול: שער` or `מסלול: מלא` — the FIRST word of the report, every tick** (`STEP 0.1`) · `loop health: N/21` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
+🚦 **`מסלול: שער` or `מסלול: מלא` — the FIRST word of the report, every tick** (`STEP 0.1`) · `loop health: N/22` **and what you filed for each failure** · whether anything became `RELEASE_READY` and how many commits wait · the smoke test JSON if Roy merged · the walk numbers and which render you compared against · **merged or not, and if not — the named blockers** · `rev-list --count origin/dev..origin/work/current` · the active workstream.
 "Everything is fine" is only allowed after you ran something and showed output.
 
 ## AMIRNET — a new review axis  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
@@ -734,6 +734,24 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 * ⛔ **An item with no `level_rationale`, or no `distractor_reasons`, is a finding** (§ 6.5).
 * ⛔ **Adaptivity inside a chapter, or a global clock instead of a per-chapter clock,
   is a finding** (§ 2 · § 3).
+
+## ⚰️ הארכיון ⛔ אינו פתרון חי — תסמין שנמדד שוב הוא ממצא **חדש** (`RULES § 0.30`)  ⟦NEW 09/09 · הוראת רוי⟧
+
+🔬 **הכשל:** אתה מודד תסמין, מגלגל `grep`, ומוצא שורה **סגורה** שמתארת אותו — ובארכיון
+יושב הטקסט המלא, «תוקן ב-`X`». ⇒ אתה מסיק «כבר פתור», ⛔ לא פותח ממצא, ⛔ ולא מודד דבר.
+**התסמין חי, והרגיסטר מצהיר שהוא סגור.**
+
+```
+מדדת תסמין  ⇒  והוא מופיע בשורה סגורה או בארכיון
+             ⇒  ⛔ אל תסיק «פתור»  ·  ⛔ אל תחזיר את השורה הישנה ל-⬜
+             ⇒  ממצא **חדש**, מדידה **של היום**, והישנה מצוטטת כ**תקדים**
+```
+
+- ⛔ **שורה סגורה ⛔ אינה נפתחת מחדש.** ‏`loop:health` **בדיקה 22** מודדת את התנועה
+  `✅`/`🚫` ⇢ `⬜`/`⛔`/`🟣` מול הקומיט הקודם, ומאדימה עליה.
+- ⛔ **«כבר ידוע» ⛔ אינה מדידה.** ממצא חדש נושא קובץ ושורה שנמדדו **בטיק הזה**.
+- ⚠️ **וקריאת הארכיון ⛔ אינה אסורה** — היא חוסכת ניסיון שכבר נכשל. אסור להסיק ממנו
+  **מצב נוכחי**. ⇒ **הארכיון עונה «מה עשינו», ⛔ ולא «מה קורה עכשיו».**
 
 ## HARD INVARIANTS
 ⛔ Zero invented learning content · sources mandatory · never copy from מאל"ו (R-010) or AnkiWeb (R-013) · file ownership · **layer A** · blocked skills per `RULES § 0.1 ז׳`.

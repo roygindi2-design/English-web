@@ -483,23 +483,51 @@ Every screen × its tappable actions × where learners arrive from × where they
 ⚠️ **AND YOU ARE PLANNING AGAINST `work/current`, ⛔ NOT AGAINST YESTERDAY'S PRODUCT** — you cloned that branch, so STEP 2.5 walks the code DEV is actually building on. ⛔ A plan written against `dev` while the branch is ten commits ahead is a plan for a screen that no longer exists.
 ⚠️ **The `❔` and `⚠️` sections are work, not decoration.** Three real lies were caught that way in two days — `T-164`, `T-106`, `T-137` — and one was sitting in the Critic's review queue where it could have been approved by mistake.
 
-## STEP 2.5 — LOOK AT THE PRODUCT (D-103)
+## STEP 2.5 — 🔴 הליכת מסכים בדפדפן — **חובה, פעמיים**, ⛔ ולא «הסתכלות»  ⟦שוכתב 09/09 · הוראת רוי⟧
+
+🔴 ⛔ **`npm run check:mobile` ירוק ⛔ אינו מספיק, וזו מדידה ⛔ ולא דעה.** הוא מריץ **1,519**
+טענות — ו⛔ **אינו מצלם דבר** (מופע `screenshot` אחד בכל `verify-mobile.mjs`). ⇒ «ירוק» שם
+אומר **שהטענות שנכתבו עברו**, ⛔ ולא שמישהו ראה מסך. **טענה ⛔ אינה עין.**
+
+🔬 **ומה שהליכה אחת מצאה ב-09/09, כשכל 1,519 היו ירוקות:**
+- `components/ArenaHome.tsx:230` — חץ החזרה יושב ב-`absolute end-1`, ו-`end` ב-RTL הוא
+  **שמאל**. הגליף (`M11 0 0 7l11 7z`) מצביע **שמאלה**. ⇒ בעברית זה נקרא «קדימה», ⛔ לא
+  «חזרה». ⚠️ **וההערה בקוד עצמה אומרת «ה-chevron בקצה הימני»** — כלומר הכוונה והתוצאה
+  ⛔ אינן זהות. ⛔ אף טענה ⛔ לא תפסה את זה; **צילום מסך אחד תפס.**
+- ‏`/dev/tabs/cards` — ארבע שגיאות קונסול, כולן `503` מ-`/api/study/queue`.
+
+⇒ **הפקודה, ו⛔ היא ⛔ אינה אופציונלית:**
 ```
-npm install && npm run build && (npx next start -p 3000 &) && sleep 12
+npm run build && (npx next start -p 3000 &) && sleep 12
+npm run walk:screens -- http://127.0.0.1:3000 --out=walk-shots --width=375
+pkill -f "next start"          # ⛔ לפני npm run verify — שרת על 3000 מפיל את check:mobile בשמו
 ```
-🔴 ⛔ **`next start`, ⛔ NOT `next dev` — ⟦CHANGED 08/09 · `F-204`⟧ and it is a MEASUREMENT.**
-In this runtime `npx next dev` answers **403 on every script chunk whose request carries an
-`Origin` header** ⇒ the page paints, ⛔ nothing hydrates, and a walk that clicks anything
-measures a product that ⛔ does not exist. ⛔ **A screenshot of a dead page is ⛔ not a walk.**
-⇒ `next start` serves the **production build** — which is also what `npm run check:mobile`
-has always used (`scripts/verify-mobile.mjs`), so this is the walk finally matching the gate.
-⚠️ **`build` first, ⛔ or `next start` has nothing to serve.** ⚠️ **Port already busy? ⛔ Do
-⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
-kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
-`npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
-Drive `http://localhost:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
-**What one minute caught on 23/08:** `/dev/lesson` → `taps=1` on a 593-character screen. `/dev/tabs/studies` → 116 characters, unchanged from 21/08.
-⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
+🔴 ⛔ **`next start`, ⛔ לא `next dev`** ⟦`F-204`⟧ — ב-runtime הזה `next dev` מחזיר **403 על כל
+chunk שבקשתו נושאת כותרת `Origin`** ⇒ העמוד נצבע, ⛔ שום דבר ⛔ לא מתאתחל, והליכה שלוחצת
+משהו מודדת מוצר ש⛔ אינו קיים. ⛔ **צילום של עמוד מת ⛔ אינו הליכה.**
+⚠️ **`--width=375` ⛔ אינו שרירותי** — זהו אחד משלושת הרוחבים ש-`check:mobile` כבר מודד
+(‏320 · 375 · 414) ⇒ ההליכה והשער מסתכלים על **אותו** מסך. רוחב אחר ⇒ ⛔ אין השוואה.
+⚠️ **פורט תפוס? ⛔ אל תשתמש בו מחדש** — `verify-mobile.mjs` מסרב לפורט שהוא ⛔ לא פתח, וכך גם אתה.
+
+### ⏱️ **פעמיים בטיק, ו⛔ הן ⛔ אינן אותה הליכה**
+
+```
+① ⛔ לפני שאתה כותב תוכנית משימות   ⇒ אתה מתכנן על מה שהמוצר **הוא**, ⛔ לא על מה שהרגיסטר אומר שהוא
+② ⛔ אחרי שתוכנית בוצעה             ⇒ סגירת קצה-אל-קצה: הלומד באמת רואה את מה שנמסר
+```
+⛔ **① בלי ② הוא תכנון בלי אימות; ② בלי ① הוא אימות מול בסיס שלא נמדד.** ⇒ **שתיהן.**
+⚠️ **ומה שאתה כותב בדוח הוא מה ש⛔ אינו בפלט הכלי:** הכלי מדווח HTTP · גלילה אופקית ·
+שגיאות קונסול · אורך טקסט. **אתה מדווח מה ⛔ לא בסדר במסך שראית.** ⛔ «ההליכה עברה»
+⛔ אינה טענה על איכות עיצוב — היא אומרת ש⛔ אין פגם **נראה-מכנית**.
+
+### 🎨 ואתה בעל ה-UI/UX — ⇒ לתור שלך יש עכשיו חתך משלו  ⟦NEW 09/09 · הוראת רוי⟧
+‏`docs/plan-open.md` § **«🎨 התור של PM — `נוחות` פתוחות»** מרכז את שורות ה-`נוחות`
+הפתוחות **בכל המחלקות**. 🔬 **נמדד 09/09: שלוש שורות, פזורות על `base` ו-`story`** —
+ו-DEV מסנן לפי `ACTIVE_WORKSTREAM` ⇒ שורת `נוחות` במחלקה שאינה פעילה ⛔ לא הייתה נראית לאיש.
+⛔ **וזו תצוגה, ⛔ ולא זרימה חדשה.** נשקלה זרימה `ux` משלה ו⛔ נדחתה בנימוק שכבר כתוב
+במאגר (`lib/core/planTable.test.ts:483`): `ux` ו-`נוחות` היו הופכות **לשתי עמודות שמשמעותן
+אחת**. ‏`נוחות` הוא **סוג העבודה**, הזרימה היא **איפה במוצר** — שני צירים.
+⚠️ **והחתך ⛔ אינו היתר:** חמשת תנאי `STEP 5.5` חלים על כל שורה, ותנאי ⓑ פוסל שורה שנפתחה היום.
 
 ### 🎨 THE RENDERS ARE A FLOOR TO CLEAR, ⛔ NOT A PICTURE TO COPY  ⟦NEW 09/09 · Roy's explicit instruction⟧
 `docs/design/` holds the reference renders, and `DEV.md` calls them **BINDING**. ⛔ **That
@@ -835,6 +863,24 @@ The slice you opened and what the learner will be able to do · which render it 
 gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <after>KB
 מחלקה: <ACTIVE_WORKSTREAM> · <N> ⬜ נותרו · <בעבודה / מתקרבת לסיום / חסומה ב-<שם החסם>>
 ```
+
+## ⚰️ הארכיון ⛔ אינו פתרון חי — תסמין שנמדד שוב הוא ממצא **חדש** (`RULES § 0.30`)  ⟦NEW 09/09 · הוראת רוי⟧
+
+🔬 **הכשל:** אתה מודד תסמין, מגלגל `grep`, ומוצא שורה **סגורה** שמתארת אותו — ובארכיון
+יושב הטקסט המלא, «תוקן ב-`X`». ⇒ אתה מסיק «כבר פתור», ⛔ לא פותח ממצא, ⛔ ולא מודד דבר.
+**התסמין חי, והרגיסטר מצהיר שהוא סגור.**
+
+```
+מדדת תסמין  ⇒  והוא מופיע בשורה סגורה או בארכיון
+             ⇒  ⛔ אל תסיק «פתור»  ·  ⛔ אל תחזיר את השורה הישנה ל-⬜
+             ⇒  ממצא **חדש**, מדידה **של היום**, והישנה מצוטטת כ**תקדים**
+```
+
+- ⛔ **שורה סגורה ⛔ אינה נפתחת מחדש.** ‏`loop:health` **בדיקה 22** מודדת את התנועה
+  `✅`/`🚫` ⇢ `⬜`/`⛔`/`🟣` מול הקומיט הקודם, ומאדימה עליה.
+- ⛔ **«כבר ידוע» ⛔ אינה מדידה.** ממצא חדש נושא קובץ ושורה שנמדדו **בטיק הזה**.
+- ⚠️ **וקריאת הארכיון ⛔ אינה אסורה** — היא חוסכת ניסיון שכבר נכשל. אסור להסיק ממנו
+  **מצב נוכחי**. ⇒ **הארכיון עונה «מה עשינו», ⛔ ולא «מה קורה עכשיו».**
 
 ## STANDING ORDERS
 - Migration or seed file in a task → a stamped line in `03-for-roy.md` with the exact filename and what is broken until he runs it.

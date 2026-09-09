@@ -158,6 +158,9 @@ const sequenceAnchor = (table, active) => {
  * reader, and the indices are the ones `lib/core/planTable.ts` already declares.
  */
 const TASK_STATUS_INDEX = 4;
+// ⛔ בדיקה 22 קוראת גם שורות ממצא, ותא הסטטוס שלהן הוא **6**, ⛔ לא 4 — ההערה
+// שמעל כבר אומרת זאת, והמספר עצמו פשוט ⛔ לא היה בקובץ.
+const FINDING_STATUS_INDEX = 6;
 const TASK_MILESTONE_INDEX = 1;
 /**
  * ⛔ **THE SPLITTER IS A PORT OF `lib/core/planTable.ts::splitRow`, ⛔ NOT
@@ -494,6 +497,92 @@ check('21', 'נעילה חיה, ⛔ או יתומה — ⛔ לא נעילה שא
       '⇒ נעילה יתומה: הסוכן שלקח אותה מת בלי לשחרר.',
       '⇒ הלופ תקוע — DEV/PM/CONTENT ⛔ אינם דוחפים קוד, ו-QA ⛔ אינה ממזגת ל-dev.',
       '⇒ השחרור מתועד ב-RULES § 0.4 — הסוכן שמזהה מנקה, בקומיט משלו, עם שלושת המספרים.',
+    ],
+  };
+});
+
+/**
+ * ⚰️ 22 — **«חפירה מהארכיון»: שורה סגורה ⛔ אינה קמה לתחייה.**  ⟦NEW 09/09 · הוראת רוי⟧
+ *
+ * 🔬 **הכשל, בדיוק:** סוכן מודד תסמין, מגלגל `grep`, ומוצא שורה **סגורה** שמתארת את
+ * אותו תסמין — בארכיון יושב הטקסט המלא עם «תוקן ב-X». ⇒ הוא מסיק «זה כבר פתור»,
+ * ⛔ לא פותח ממצא, ⛔ ולא מודד כלום. **התסמין חוזר, והרגיסטר אומר שהוא סגור.**
+ * ⛔ **או הגרסה ההפוכה, ואותה מחלקה:** הוא **מחזיר את השורה הישנה ל-⬜** — וכך הראיה
+ * שנמדדה כשהיא נסגרה נמחקת, והשורה נושאת עכשיו שתי מדידות סותרות בלי תאריך.
+ *
+ * ⇒ **הכלל (`RULES § 0.30`): תסמין שנמדד שוב הוא ממצא חדש, עם מדידה טרייה.** השורה
+ * הישנה מצוטטת כ**תקדים**, ⛔ ולעולם לא כ**פתרון**.
+ *
+ * ⚠️ **ולמה הבדיקה היא «תחייה» ו⛔ לא «מצטט ארכיון».** ⛔ נמדד 09/09 לפני שנכתבה:
+ * ‏`npm run archive` משאיר **בדל חי לכל שורה שאורכבה** ⇒ מספר המזהים שקיימים
+ * **אך ורק** בארכיון הוא **0 מתוך 383**. ⇒ בדיקת «מזהה שקיים רק בארכיון» הייתה
+ * ירוקה לנצח **מעצם הבנייה** — בדיוק השער החלול שהסבב הזה מנקה. ⇒ נמדדת **התנועה**:
+ * `✅`/`🚫` ⇢ `⬜`/`⛔`/`🟣`, מול הקומיט הקודם.
+ */
+check('22', 'שורה סגורה ⛔ לא הוחזרה לפתוחה — תסמין חוזר הוא ממצא **חדש** (§ 0.30)', () => {
+  const git = (...args) => {
+    try {
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      return '';
+    }
+  };
+  const CLOSED = new Set(['✅', '🚫']);
+  const REOPENED = new Set(['⬜', '⛔', '🟣']);
+  const stateOf = (line, idx) => {
+    const cell = taskCell(line, idx);
+    let best = null;
+    let bestAt = Number.POSITIVE_INFINITY;
+    for (const g of ['✅', '🚫', '⬜', '⛔', '🟣', '🔵']) {
+      const a = cell.indexOf(g);
+      if (a !== -1 && a < bestAt) { bestAt = a; best = g; }
+    }
+    return best;
+  };
+  const table = (text, re, idx) => {
+    const m = new Map();
+    for (const line of text.split('\n')) {
+      const hit = re.exec(line);
+      if (hit) m.set(hit[1], stateOf(line, idx));
+      re.lastIndex = 0;
+    }
+    return m;
+  };
+  const REGISTERS = [
+    ['plan/50-tasks.md', /^\|\s*`?(T-\d+)`?\s*\|/, TASK_STATUS_INDEX],
+    ['plan/60-findings.md', /^\|\s*`?(F-\d+)`?\s*\|/, FINDING_STATUS_INDEX],
+  ];
+  const raised = [];
+  let measured = false;
+  for (const [file, re, idx] of REGISTERS) {
+    const nowText = read(at(...file.split('/')));
+    const prevText = git('show', `HEAD~1:${file}`);
+    if (nowText === '' || prevText === '') continue;
+    measured = true;
+    const now = table(nowText, re, idx);
+    const prev = table(prevText, re, idx);
+    for (const [id, wasState] of prev) {
+      if (!CLOSED.has(wasState)) continue;
+      const isState = now.get(id);
+      if (isState !== undefined && REOPENED.has(isState)) {
+        raised.push(`${id} — ${wasState} ⇢ ${isState} (${file})`);
+      }
+    }
+  }
+  if (!measured) {
+    return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — ⛔ אין HEAD~1 או ⛔ אין רגיסטר' };
+  }
+  return {
+    ok: raised.length === 0,
+    detail: raised.length === 0 ? '⛔ אף שורה סגורה ⛔ לא נפתחה מחדש' : `${raised.length} תחיות`,
+    items: raised.length === 0 ? [] : [
+      ...raised,
+      '⇒ ⛔ אל תחזיר שורה סגורה ל-⬜. פתח **ממצא חדש** עם מדידה טרייה של היום,',
+      '   וצטט את הישנה כ**תקדים** (§ 0.30). הראיה שנמדדה בסגירה ⛔ אינה נמחקת.',
     ],
   };
 });
