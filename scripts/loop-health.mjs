@@ -310,6 +310,38 @@ check('3', 'כל פריט פתוח לרוי נושא חותמת נבדק מהש�
   return { ok: stale.length === 0, detail: `${stale.length} ללא חותמת טרייה`, items: stale };
 });
 
+/* 3.5 — ⛔ THE OPEN TABLE HOLDS ⛔ ONLY WHAT IS OPEN.
+ *
+ * 🔬 Measured 09/09 and it is the reason Roy stopped reading the file: the `## פתוח`
+ * table carried **71 rows, of which 44 already bore ✅ / ⏸️ / ↪️**. ⇒ anyone opening it
+ * to see what was waiting for them read 71 rows to find 27, and most of the 71 asked
+ * for nothing. `RULES § 0.21` already obliges PM to sweep that table every tick — the
+ * obligation existed, the enforcement did not, and 44 rows is what that costs.
+ *
+ * ⛔ This check does ⛔ not care whether a row is stale in CONTENT — check 3 owns that.
+ * It asks one thing: is a row marked closed still sitting under `## פתוח`?
+ */
+check('3.5', '⛔ אף שורה סגורה ⛔ אינה יושבת בטבלת «פתוח» של רוי', () => {
+  const text = read(at('plan', '03-for-roy.md'));
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.startsWith('## פתוח'));
+  if (start < 0) return { ok: true, detail: '⛔ לא נמדד — ⛔ אין כותרת «פתוח»' };
+  /** The sweep's own holding area ends the live table; so does the closed table. */
+  const stop = lines.findIndex(
+    (l, i) => i > start && (l.startsWith('## נסגר') || l.startsWith('### ✅ שורות שכבר נסגרו')),
+  );
+  const misplaced = [];
+  for (const line of lines.slice(start, stop < 0 ? lines.length : stop)) {
+    if (!/^\| *\d+ *\|/.test(line)) continue;
+    if (isClosed(line)) misplaced.push(`פריט ${/^\| *(\d+)/.exec(line)?.[1]}`);
+  }
+  return {
+    ok: misplaced.length === 0,
+    detail: `${misplaced.length} סגורות בטבלת «פתוח»`,
+    items: misplaced,
+  };
+});
+
 /* 4 — the ONLY path by which an answer from Roy re-enters the loop. */
 check('4', 'סומן RELEASE_READY ⇒ שלוש ההקשות נכתבו', () => {
   const control = read(at('plan', '00-control.md'));

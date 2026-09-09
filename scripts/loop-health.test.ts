@@ -82,7 +82,9 @@ const healthy = (): string => {
   const today = new Date().toISOString().slice(0, 10);
   write(
     'plan/03-for-roy.md',
-    '| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n' +
+    // ⛔ הכותרת `## פתוח` ⛔ אינה קישוט: בדיקה 3.5 מודדת **את הטבלה שמתחתיה**, ובלעדיה
+    // היא מדווחת «⛔ לא נמדד» — ⇒ פיקסצ׳ר בלי הכותרת היה מסתיר את הבדיקה מהמשוואה.
+    '## פתוח\n\n| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n' +
       `| 1 | PM (C-0001) | 2026-08-01 | לעשות משהו · נבדק: ${today} | כי | לא |\n`,
   );
   write(
@@ -133,8 +135,8 @@ describe('scripts/loop-health.mjs', () => {
      */
     const total = /loop health: (\d+)\/(\d+) checks pass/.exec(r.out);
     expect(total, 'the checker must print its own total').not.toBeNull();
-    expect(total?.[2]).toBe('18');
-    const failing = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+    expect(total?.[2]).toBe('19');
+    const failing = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
       .filter((n) => failed(r.out, n));
     // ⚠️ בדיקה רכה ⛔ אינה נספרת במונה ו⛔ אינה נספרת ב-` FAIL ` — ⇒ המשלים הוא
     // עוברות + כישלונות קשים + אזהרות. (16 ו-17 נחתו 06/09 בחלון רך.)
@@ -145,15 +147,15 @@ describe('scripts/loop-health.mjs', () => {
      * ו⛔ אינה אזהרה. ⇒ הסכום המודפס חייב להשלים את **שלושתם**, אחרת בדיקה שנעלמה
      * מהמשוואה נספרת בשקט כעוברת — וזו בדיוק המחלקה שהבלוק הזה קיים נגדה.
      */
-    const unmeasured = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+    const unmeasured = ['1','2','3','3.5','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
       .filter((n) => notMeasured(r.out, n));
     // הסכום המודפס חייב להיות משלים למספר הכישלונות — ⛔ אחרת הבודק סופר לא נכון.
-    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(18);
+    expect(Number(total?.[1]) + failing.length + warning.length + unmeasured.length).toBe(19);
     expect(unmeasured, '⛔ 17 ⛔ אינה מודדת בלי roster ⇒ n/m, ⛔ ולא «עברה»').toContain('17');
     // ⛔ ⟦09/09 · F-207⟧ 18 מריצה `./scripts/g fetch` — ⛔ אין git בפיקסצ׳ר ⇒ n/m.
     // ⛔ «⛔ לא נמדד» ⛔ אינו «נקי», והיא נאמרת בשמה כדי שלא תיעלם מהמשוואה.
     expect(unmeasured, '⛔ 18 ⛔ אינה מודדת בלי git ⇒ n/m, ⛔ ולא «עברה»').toContain('18');
-    for (const n of ['1', '2', '3', '4', '5', '6', '7', '9', '15']) {
+    for (const n of ['1', '2', '3', '3.5', '4', '5', '6', '7', '9', '15']) {
       expect(failed(r.out, n), `check ${n} must be green on a healthy fixture`).toBe(false);
     }
     // ⛔ Check 10 shells out to git inside the fixture root, which is ⛔ not a repo.
@@ -194,8 +196,9 @@ describe('scripts/loop-health.mjs', () => {
       // השורה הזו נספרת. ⚠️ תוקן מ-'14' ל-'15' עם נחיתת T-260, ומ-'15' ל-'17' עם
       // נחיתת בדיקות 16 (שער verify · הכרעה 100) ו-17 (סוכן שותק · הכרעה 101).
       // ⚠️ ומ-'17' ל-'18' עם נחיתת בדיקה 18 — עבודה תקועה על `claude/*` (`F-207`, 09/09).
+      // ⚠️ ומ-'18' ל-'19' עם נחיתת בדיקה 3.5 — שורה סגורה בטבלת «פתוח» של רוי (09/09).
       const total = /loop health: \d+\/(\d+) checks pass/.exec(r.out);
-      expect(total?.[1]).toBe('18');
+      expect(total?.[1]).toBe('19');
     });
   });
 
@@ -268,7 +271,8 @@ describe('scripts/loop-health.mjs', () => {
     // ⚠️ 14 → 15 with T-260's check('15', …) landing (2026-09-06).
     // ⚠️ 15 → 17 with checks 16 (verify gate) and 17 (silent agent) landing (2026-09-06, הכרעות 100 · 101).
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09).
-    expect(total).toBe('18');
+    // ⚠️ 18 → 19 with check 3.5 (a CLOSED row still in Roy's open table, 2026-09-09).
+    expect(total).toBe('19');
     /**
      * ⛔ **THE EXIT CODE COUNTS HARD FAILURES ONLY — a soft check ⛔ never sets it.**
      * ⟦30/08, wave 2⟧ Checks 12·13·14 landed against a backlog that predates them, and
@@ -372,6 +376,27 @@ describe('scripts/loop-health.mjs', () => {
     const r = run(old);
     expect(failed(r.out, '3')).toBe(true);
     expect(r.out).toContain('2026-01-01');
+  });
+
+  it('3.5 · goes red on a CLOSED row still sitting in Roy\'s open table', () => {
+    // 🔬 נמדד 09/09 בקובץ החי: **53 מתוך 71** שורות בטבלת «פתוח» כבר נשאו ✅/🚫.
+    // ‏`RULES § 0.21` חייב את הסריקה מזמן; מה שחסר היה **המדידה**.
+    const root = healthy();
+    patch(root, 'plan/03-for-roy.md', (s2) =>
+      `${s2}| 2 | PM (C-0002) | 2026-08-02 | נעשה · נבדק: 2026-08-02 | כי | ✅ נסגר |\n`,
+    );
+    const r = run(root);
+    expect(failed(r.out, '3.5'), 'שורה סגורה בטבלת «פתוח» ⇒ אדום').toBe(true);
+    expect(r.out).toContain('פריט 2');
+  });
+
+  it('3.5 · ⛔ does ⛔ not count a closed row that already moved to the holding area', () => {
+    const root = healthy();
+    patch(root, 'plan/03-for-roy.md', (s2) =>
+      `${s2}\n### ✅ שורות שכבר נסגרו\n\n| # | מי | מתי | מה | למה | חוסם |\n|---|---|---|---|---|---|\n` +
+      `| 2 | PM (C-0002) | 2026-08-02 | נעשה · נבדק: 2026-08-02 | כי | ✅ נסגר |\n`,
+    );
+    expect(failed(run(root).out, '3.5'), 'מתחת לכותרת ההפרדה ⇒ ⛔ אינה נספרת').toBe(false);
   });
 
   it('4 · goes red when a slice is marked ready and the three taps were not written', () => {
@@ -729,7 +754,8 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.out).toContain('תמהיל (דיווח רך');
     // ⚠️ 14 → 15 with T-260's check('15', …), 15 → 17 with checks 16·17 (2026-09-06) — unrelated to this mix line.
     // ⚠️ 17 → 18 with check 18 (`claude/*` stranded work, F-207, 2026-09-09). Also unrelated to this mix line.
-    expect(r.out).toMatch(/loop health: \d+\/18 checks pass/);
+    // ⚠️ 18 → 19 with check 3.5 (Roy's open table, 2026-09-09). Also unrelated.
+    expect(r.out).toMatch(/loop health: \d+\/19 checks pass/);
     expect(r.out, 'the mix ⛔ must not appear as a numbered check').not.toMatch(
       /^(  ok  | FAIL | warn )\d+\. תמהיל/m,
     );
