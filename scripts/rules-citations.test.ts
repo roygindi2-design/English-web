@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-import { anchorsOf, citationsIn } from './check-rules-citations.mjs';
+import { anchorsOf, citationsIn, duplicateAnchors, resolves } from './check-rules-citations.mjs';
 
 /**
  * 🔢 **‏C-0376 — שני דברים ששוב ושוב התיישנו בשקט, וכאן הם מפסיקים.**
@@ -28,6 +28,41 @@ describe('scripts/check-rules-citations.mjs — «⛔ אף ציטוט לא נש�
     // ⛔ והמספרים הישנים ⛔ אינם עוגנים יותר — אחרת הבדיקה הייתה עוברת גם בלי המיפוי.
     expect(a.has('0.14ב'), '⛔ מספר לשעבר ⛔ אינו עוגן').toBe(false);
     expect(a.has('0.1.1'), '⛔ מספר לשעבר ⛔ אינו עוגן').toBe(false);
+  });
+
+  it('רואה גם תת-סעיף שנכתב כשורה מודגשת, ⛔ ולא רק ככותרת ####', () => {
+    const a = anchorsOf(read('plan/RULES.md'));
+    // ‏`§ 0.29` כותב את ששת סעיפיו כ-`**א׳ · …**`, ⛔ ולא ככותרות. עד 09/09 הפרסר
+    // ⛔ לא ראה אותם ⇒ 11 ציטוטים חיים ל-`§ 0.29ב`·`ג`·`ו` נשענו **אך ורק** על
+    // נפילה-להורה, וזו בדיוק הנפילה שהחביאה אות שגויה.
+    expect(a.has('0.29ו'), 'סעיף מודגש תחת הורה ממוספר').toBe(true);
+    expect(a.has('0.29ב'), 'סעיף מודגש תחת הורה ממוספר').toBe(true);
+  });
+
+  it('🔴 אות שאינה קיימת ⛔ אינה נפתרת דרך ההורה — הכשל שנמדד 09/09', () => {
+    const a = anchorsOf(read('plan/RULES.md'));
+    // ‏`§ 0.17` הוא «תקרת המשימות של ה-PM», ו⛔ אין לו ולו תת-סעיף אחד באות.
+    expect(a.has('0.17'), 'ההורה קיים').toBe(true);
+    expect(a.has('0.17ח'), '⛔ והאות ⛔ אינה').toBe(false);
+    // ⇒ שישה ציטוטים חיים ל-«ח׳» ההיא הצביעו על הסעיף הלא נכון, והשער דיווח 0 שבורים.
+    expect(resolves(a, { ref: '0.17ח', bare: '0.17', line: 1 }), '⛔ ההורה ⛔ אינו תחליף').toBe(
+      false,
+    );
+    expect(resolves(a, { ref: '0.23ח', bare: '0.23', line: 1 }), 'הסעיף האמיתי').toBe(true);
+  });
+
+  it('🔴 ⛔ אף מספר סעיף ⛔ אינו מוכרז פעמיים ב-`plan/RULES.md`', () => {
+    // ⛔ `anchorsOf` מחזיר **קבוצה**, ⇒ כותרת כפולה ⛔ אינה נראית לו בכלל והשער
+    // מדווח `0 שבורים` בזמן שכל קורא של המספר ההוא נוחת על אחד משני סעיפים.
+    // נמדד 09/09: `0.6ד` הוכרז פעמיים ו-`0.1ח` הוכרז פעמיים.
+    expect(duplicateAnchors(read('plan/RULES.md'))).toEqual([]);
+  });
+
+  it('הגלאי עצמו ⛔ אינו חלול — הוא מוצא כפילות שהוזרקה', () => {
+    const injected = ['### 0.6 · א', '#### 0.6ד · ראשון', '#### 0.6ד · שני', '### 0.7 · ב'].join(
+      '\n',
+    );
+    expect(duplicateAnchors(injected)).toEqual(['0.6ד']);
   });
 
   it('⛔ ⛔ אינו סופר את סמן ⟨לשעבר⟩ ו⛔ לא את § 0.1 של `00-control`', () => {

@@ -37,7 +37,18 @@ const SKIP_PREFIX = ['plan/archive/', 'docs/superpowers/plans/', 'skills/'];
  */
 const NOT_A_RULES_CITATION = /00-control|לשעבר/;
 
-/** `### 0.6 …` and `#### 0.6א …` are anchors; so are `#### א׳ …` under a numbered parent. */
+/**
+ * `### 0.6 …` and `#### 0.6א …` are anchors; so is a lettered clause under a numbered
+ * parent — written **either** as a heading (`#### א׳ · …`) **or** as a bold line
+ * (`**א׳ · …**`).
+ *
+ * 🔬 **⛔ Why the bold form counts, and it is a MEASUREMENT.** ‏`§ 0.29` writes its six
+ * clauses as `**א׳ · …**`, ⛔ not as `####` headings. Until 09/09 the parser ⛔ could not
+ * see them ⇒ eleven live citations to `§ 0.29ב` · `§ 0.29ג` · `§ 0.29ו` resolved ⛔ only
+ * through the bare-parent fallback below. ⇒ the fallback was ⛔ not a courtesy, it was
+ * **the only thing holding a third of the lettered citations up** — and it held the
+ * wrong ones up too.
+ */
 export function anchorsOf(text) {
   const out = new Set();
   let parent = null;
@@ -53,10 +64,36 @@ export function anchorsOf(text) {
       out.add(sub[1]);
       continue;
     }
-    const letter = /^#### ([א-ת])׳/.exec(line);
+    const letter = /^(?:#### |\*\*)([א-ת])׳ ·/.exec(line);
     if (letter !== null && parent !== null) out.add(parent + letter[1]);
   }
   return out;
+}
+
+/**
+ * 🔴 ⛔ **THE SAME NUMBER TWICE IS ⛔ NOT A TYPO — IT IS AN AMBIGUOUS CITATION.**
+ * ‏`anchorsOf` returns a **Set**, so a heading written twice is invisible to it and the
+ * gate reports `0 שבורים` while every reader of that number lands on whichever of the
+ * two sections they happen to scroll to first. Measured 09/09: `#### 0.6ד` existed
+ * twice — the surfaces inventory and, added the same day, the PM's narrow code licence —
+ * and the three live citations to it all meant the first.
+ */
+export function duplicateAnchors(text) {
+  const seen = new Map();
+  let parent = null;
+  for (const line of text.split('\n')) {
+    const top = /^### (0\.\d+(?:\.\d+)?[א-ת]?)/.exec(line);
+    const sub = /^#### (0\.\d+(?:\.\d+)?[א-ת]?)/.exec(line);
+    const letter = /^(?:#### |\*\*)([א-ת])׳ ·/.exec(line);
+    let ref = null;
+    if (top !== null) {
+      parent = top[1];
+      ref = parent;
+    } else if (sub !== null) ref = sub[1];
+    else if (letter !== null && parent !== null) ref = parent + letter[1];
+    if (ref !== null) seen.set(ref, (seen.get(ref) ?? 0) + 1);
+  }
+  return [...seen].filter(([, n]) => n > 1).map(([ref]) => ref);
 }
 
 /** Every `§ 0.x` / `§ 0.xא` in one file, with the line it sits on. */
@@ -75,12 +112,38 @@ export function citationsIn(text) {
 }
 
 /**
+ * 🔴 ⛔ **A LETTERED CITATION RESOLVES ⛔ ONLY AGAINST ITS OWN LETTER.** Until 09/09 this
+ * also accepted the bare parent, and the hole was ⛔ not theoretical: the old number
+ * `0.17ח` — written here ⛔ without its `§`, because this gate scans its own source —
+ * sat in `scripts/loop-health.mjs` (twice), `docs/agents/roster.json` and two registers,
+ * pointing at «the PM task ceiling» — while the rule it meant, «the prompts live in the
+ * repo», had been `§ 0.23ח` since C-0376. **Six live citations sending every reader to
+ * the wrong rule, and the gate built against exactly that reported `0 שבורים`.**
+ * ⇒ the parent is ⛔ no longer a stand-in.
+ */
+export function resolves(anchors, citation) {
+  return anchors.has(citation.ref);
+}
+
+/**
  * ⛔ **THE SCAN RUNS ONLY AS A COMMAND.** Same guard as `check-motion.mjs`: the test
  * imports `anchorsOf`/`citationsIn`, and a top-level `process.exit(1)` on import would
  * kill the test run before a single assertion — which is exactly what happened once.
  */
 export function main() {
-  const anchors = anchorsOf(readFileSync(RULES, 'utf8'));
+  const rules = readFileSync(RULES, 'utf8');
+  const anchors = anchorsOf(rules);
+
+  const duplicated = duplicateAnchors(rules);
+  if (duplicated.length > 0) {
+    console.error(
+      `⛔ ${duplicated.length} מספרי סעיף מוכרזים יותר מפעם אחת ב-${RULES}: ` +
+        `${duplicated.join(' · ')}\n⇒ ציטוט אליהם ⛔ אינו חד-משמעי.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
     .split('\n')
     .filter((f) => f !== '' && !SKIP_PREFIX.some((p) => f.startsWith(p)));
@@ -97,9 +160,7 @@ export function main() {
     if (!text.includes('§')) continue;
     for (const c of citationsIn(text)) {
       scanned += 1;
-      // ⛔ `§ 0.23ט` resolves if either the lettered child or its parent exists — a citation
-      // ⛔ may name a subsection this gate has ⛔ no heading for (the ⓐ/ⓑ inline markers).
-      if (!anchors.has(c.ref) && !anchors.has(c.bare)) broken.push(`${f}:${c.line} — § ${c.ref}`);
+      if (!resolves(anchors, c)) broken.push(`${f}:${c.line} — § ${c.ref}`);
     }
   }
 

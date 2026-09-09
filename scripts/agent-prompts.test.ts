@@ -1338,7 +1338,8 @@ describe('אוצר המילים של הזרימה זהה בשלושת המקומ
   };
 
   /** הטוקנים בתוך גרשי-אחור בשורה — ⛔ הפרוזה שסביבם ⛔ אינה נספרת. */
-  const backticked = (line: string): string[] => [...line.matchAll(/`([a-z]+)`/g)].map((m) => m[1]);
+  const backticked = (line: string): string[] =>
+    [...line.matchAll(/`([a-z]+)`/g)].map((m) => m[1] ?? '');
 
   for (const [label, file] of SOURCES) {
     it(`${label} נוקב את כל עשרת הערכים של WORKSTREAMS, ו⛔ לא ערך מומצא`, () => {

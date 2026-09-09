@@ -857,7 +857,7 @@ check(
  * ⇒ זה המונה שמודד **שתיקה**, ⛔ ולא נכונות. מקורו `git log` על `origin/work/current`,
  *   ⛔ ולא מונה פנימי — מונה בזיכרון הסקריפט סוטה ברגע שמישהו כותב היסטוריה מחדש.
  * ⚠️ הרשימה של מי דלוק חיה ב-`docs/agents/roster.json`, כי מצב המשימות המתוזמנות יושב
- *    בשרת ⛔ ולא בריפו (`RULES § 0.17ח`) — ⇒ הצהרה שאפשר לקרוא, לבדוק ולסקור.
+ *    בשרת ⛔ ולא בריפו (`RULES § 0.23ח`) — ⇒ הצהרה שאפשר לקרוא, לבדוק ולסקור.
  * ⚠️ **רכה עד `2026-09-13`**, מאותה סיבה שכתובה בראש הקובץ.
  */
 const SILENCE_LOOKBACK_COMMITS = 400;
@@ -1046,14 +1046,14 @@ check(
      * suggested five separate problems.
      *
      * ⇒ the check says the systemic thing when the systemic thing is true. ⛔ It ⛔ cannot
-     * read the scheduler — that state lives on the server, ⛔ not in git (`RULES § 0.17ח`)
+     * read the scheduler — that state lives on the server, ⛔ not in git (`RULES § 0.23ח`)
      * — so it names the two possibilities and ⛔ does not pick one it cannot measure.
      */
     if (silent.length > 0 && silent.length === active.length) {
       items.unshift(
         `🔴 **כל ${active.length} הסוכנים הדלוקים שותקים בבת אחת.** ⛔ זה ⛔ אינו ${active.length} תקלות נפרדות — ` +
           `זו תקלה אחת ברמת הלופ: או שהמשימות המתוזמנות כבויות/מושהות בשרת, או שכולן נכשלות באותה נקודה. ` +
-          `⛔ מצב המתזמן ⛔ אינו בגיט (\`RULES § 0.17ח\`) ⇒ ⛔ אי אפשר להכריע מכאן — ` +
+          `⛔ מצב המתזמן ⛔ אינו בגיט (\`RULES § 0.23ח\`) ⇒ ⛔ אי אפשר להכריע מכאן — ` +
           `לבדוק את רשימת ה-Routines. ⚠️ ואם הלופ הושהה בכוונה, \`PAUSED_BY_HUMAN\` ב-\`plan/00-control.md\` ` +
           `אמור לומר זאת, והוא כרגע ⛔ אינו הערוץ שמשמש לכך.`,
       );
