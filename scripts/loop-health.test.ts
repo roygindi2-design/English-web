@@ -791,6 +791,52 @@ describe('scripts/loop-health.mjs', () => {
   });
 
   /**
+   * 📊 **⟦NEW 09/09 · שלב 7⟧ תשתית מול מוצר — בראש הפלט, ⛔ ולא כ-`check()`.**
+   * ⛔ הרקע: שורות `loop`+`base`+`general` עלו מ-9% ל-64% בין שני טווחי מזהים, ו⛔ שום
+   * דגל ⛔ לא יכול היה להידלק — שלוש הזרימות מוגדרות «מחוץ לרצף» ולכן **מוחרגות מכל
+   * דגל** של בדיקות 11 · 13 · 14, ⛔ ובצדק. ⇒ נשאר למדוד ולהראות.
+   * 🔴 **והכרעת רוי היא «מדידה גלויה, ⛔ לא שער»** ⇒ הטענה השלילית כאן היא העיקר.
+   */
+  it('📊 יחס התשתית מודפס בראש, ⛔ ואינו בדיקה ממוספרת', () => {
+    const r = run('.');
+    const lines = r.out.split('\n');
+    const at = lines.findIndex((l) => l.includes('תשתית מול מוצר'));
+    expect(at, 'השורה מודפסת').toBeGreaterThan(-1);
+    // ⛔ «בראש» ⛔ אינו «איפשהו»: היא חייבת לקדום את הבדיקה הממוספרת הראשונה.
+    const firstCheck = lines.findIndex((l) => /^(  ok  | FAIL | warn | n\/m  )/.test(l));
+    expect(firstCheck, 'יש בדיקות בכלל').toBeGreaterThan(-1);
+    expect(at, 'היחס קודם לבדיקה הראשונה').toBeLessThan(firstCheck);
+    // 🔴 ⛔ ואינו שער — ⛔ לא ` ok `, ⛔ לא ` FAIL `, ⛔ ולא מספר בדיקה.
+    expect(r.out, '⛔ ⛔ אינו בדיקה ממוספרת').not.toMatch(/^(  ok  | FAIL | warn )[\d.]+\. .*תשתית מול מוצר/m);
+    expect(r.out, 'ונאמר במפורש שאינו שער').toMatch(/⛔ מדידה גלויה, ⛔ לא שער/);
+  });
+
+  /**
+   * 🧊 **⟦NEW 09/09 · שלב 8⟧ ספירת שורות התשתית שנפתחו בשבוע.**
+   * 🔴 **הניסיון הראשון היה שקר מדיד:** הוא ספר שורות `+| T-NNN |` בדיף ⇒ **53**, כי
+   * `npm run archive` מחליף כל שורה סגורה בגדם וכל rebase כותב שורות מחדש. ⇒ ההשוואה
+   * היא בין **קבוצות מזהים** — מה שקיים היום ו⛔ לא היה בקומיט האחרון שלפני שבוע.
+   * הטענה למטה היא מה שמונע חזרה לספירה של דיף.
+   */
+  it('🧊 ספירת שורות התשתית מודפסת, ⛔ ואינה סופרת גדמים או rebase', () => {
+    const r = run('.');
+    const m = /שורות תשתית שנפתחו בשבוע[^:]*: (\d+)/.exec(r.out);
+    expect(m, 'השורה מודפסת').not.toBeNull();
+    const n = Number(m?.[1]);
+    // ⛔ הרגיסטר מחזיק פחות מ-300 שורות סה"כ ⇒ ספירה תלת-ספרתית לשבוע היא באג הדיף.
+    expect(n, '⛔ ספירה שנראית כמו דיף, ⛔ ולא כמו שורות חדשות').toBeLessThan(50);
+    expect(r.out, '⛔ ואינה שער').toMatch(/הקפאת שורות הלופ · ⛔ לא שער/);
+  });
+
+  it('📊 והמספרים מסתכמים — תשתית + מוצר = סה״כ', () => {
+    const m = /(\d+) תשתית · (\d+) מוצר · (\d+) סה"כ/.exec(run('.').out);
+    expect(m, 'שלושת המספרים מודפסים').not.toBeNull();
+    const [infra, product, total] = [Number(m?.[1]), Number(m?.[2]), Number(m?.[3])];
+    // ⛔ «מוצר» מוגדר כ**⛔ לא-תשתית**, ⇒ שורה בלי תג זרימה ⛔ אינה נעלמת מהמכנה.
+    expect(infra + product, '⛔ אין שורה שנופלת בין השניים').toBe(total);
+  });
+
+  /**
    * 🔴 **‏D-148 · 30/08 — the mix reads TOKENS, ⛔ not a suffix, and this fixture is the
    * one that would have caught the bug.** The old line asked `endsWith('נוחות')`, so the
    * first row to carry a token AFTER its work-type tag re-counted as untagged — ⛔ silently,

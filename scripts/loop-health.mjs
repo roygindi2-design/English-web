@@ -1357,13 +1357,103 @@ const workTypeMix = () => {
   };
 };
 
+/**
+ * 🔴 ⛔ **תשתית מול מוצר — המספר שהלופ ⛔ לא יכול היה לראות על עצמו.**
+ * ⟦NEW 09/09 · הכרעת רוי · שלב 7⟧
+ *
+ * 🔬 **האבחנה שהצדיקה את הסבב הזה:** שורות מתויגות `loop`+`base`+`general` עלו
+ * מ-**9%** בטווח `T-100`–`T-149` ל-**64%** בטווח `T-240`–`T-289`. ⇒ הלופ בילה את רוב
+ * זמנו בתחזוקת עצמו.
+ * ⛔ **ומבנית ⛔ אי אפשר היה להדליק על זה דגל:** שלוש הזרימות האלה מוגדרות «מחוץ
+ * לרצף» (`CROSS_CUTTING` ב-`lib/core/planTable.ts`) ⇒ הן **מוחרגות מכל דגל** של
+ * בדיקות 11 · 13 · 14, ⛔ ובצדק — ⛔ אין להן מקום ב-`36 § 13` להפר.
+ * ⇒ **מה שנשאר הוא למדוד ולהראות.** ⛔ **וזה ⛔ אינו `check()`** — ⛔ אין כאן סף,
+ * ⛔ אין עובר/נכשל, ו⛔ אין מספר שחוסם מיזוג. **הכרעת רוי: «מדידה גלויה», ⛔ לא שער.**
+ * ⚠️ **והיא בראש הפלט ⛔ ולא בסופו**, כי מספר שיושב אחרי 19 שורות ⛔ אינו נקרא.
+ */
+const infraShare = () => {
+  const open = rows(read(at('plan', '50-tasks.md')), 'T').filter(taskOpen);
+  const flowOf = (l) =>
+    taskCell(l, TASK_MILESTONE_INDEX)
+      .split('·')
+      .map((t) => t.trim());
+  const infra = open.filter((l) => flowOf(l).some((t) => CROSS_CUTTING.has(t)));
+  /**
+   * ⛔ «מוצר» = **⛔ לא-תשתית**, ⛔ ולא «נמצא ברשימת זרימות». ⇒ שורה שנשאה תג זרימה
+   * חדש שהקובץ הזה ⛔ אינו מכיר עדיין נספרת כמוצר, ⛔ ולא נעלמת מהמכנה — נמדד 09/09
+   * ש-17 שורות פתוחות ⛔ אינן נושאות תג זרימה כלל, וגם הן ⛔ אינן תשתית.
+   */
+  return { open: open.length, infra: infra.length, product: open.length - infra.length };
+};
+
+/**
+ * 🧊 **כמה שורות תשתית נפתחו בשבוע — `RULES § 0.17 · הקפאת שורות הלופ`.**
+ * ⟦NEW 09/09 · הכרעת רוי⟧ ⛔ **⛔ לא שער, ו⛔ סף אפס ⛔ אינו ריאלי:** ניסוח והכוונה
+ * מותרים במפורש ⇒ המספר ⛔ אינו אמור להיות 0. **מה שהוא קיים בשבילו הוא הכיוון** —
+ * שלוש שורות תשתית בשבוע שבו ⛔ לא נפתחה ולו פרוסת מוצר אחת הן דבר שאפשר **לראות**.
+ * 🔬 נמדד מהדיף, ⛔ לא מהנוסח: שורות `| T-NNN |` **שנוספו** ל-`plan/50-tasks.md`
+ * בשבעת הימים האחרונים, שתא אבן-הדרך שלהן נושא זרימה חוצת-גזרה.
+ */
+const infraRowsThisWeek = () => {
+  const git = (...args) => {
+    try {
+      return execFileSync('./scripts/g', args, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        maxBuffer: 64 * 1024 * 1024,
+      });
+    } catch {
+      return null;
+    }
+  };
+  /**
+   * 🔴 ⛔ **«שורה שנוספה» ⛔ אינה «שורה חדשה», והראשון היה שקר מדיד.** הניסיון הראשון
+   * ספר שורות `+| T-NNN |` בדיף של שבעה ימים ⇒ **53**, כי `npm run archive` **מחליף
+   * כל שורה סגורה בגדם** וכל rebase כותב שורות מחדש. ⇒ ההשוואה היא בין **קבוצות
+   * מזהים**: מה שקיים היום ו⛔ לא היה קיים בקומיט האחרון שלפני שבוע.
+   */
+  const idsIn = (text) =>
+    new Set(
+      text
+        .split('\n')
+        .filter((l) => /^\| T-\d+ \|/.test(l))
+        .filter((l) => (l.split('|')[2] ?? '').split('·').some((t) => CROSS_CUTTING.has(t.trim())))
+        .map((l) => /^\| (T-\d+) \|/.exec(l)?.[1] ?? ''),
+    );
+  const base = git('rev-list', '-1', '--before=7 days ago', 'HEAD');
+  if (base === null || base.trim() === '') return { measured: false };
+  const then = git('show', `${base.trim()}:plan/50-tasks.md`);
+  if (then === null) return { measured: false };
+  const before = idsIn(then);
+  const ids = [...idsIn(read(at('plan', '50-tasks.md')))].filter((id) => !before.has(id));
+  return { measured: true, count: ids.length, ids };
+};
+
 const notMeasured = results.filter((r) => r.notMeasured);
 const failed = results.filter((r) => !r.ok && !r.soft && !r.notMeasured);
 const softFailed = results.filter((r) => !r.ok && r.soft && !r.notMeasured);
 /** ⛔ מוין לפי מספר, ⛔ ולא לפי סדר הרישום בקובץ — בדיקה חדשה נכתבת ליד הקוד
  *  שהיא בודקת, ⛔ ולא בסוף, ודוח שקופץ מ-6 ל-10 ובחזרה ל-7 הוא דוח שקוראים לא נכון. */
 const ordered = [...results].sort((a, b) => Number(a.id) - Number(b.id));
+const share = infraShare();
+const sharePct = share.open === 0 ? 0 : Math.round((share.infra / share.open) * 100);
 console.log('בריאות הלופ — כל בדיקה היא קצה פתוח שכבר קרה\n');
+console.log(
+  `📊 תשתית מול מוצר (⛔ מדידה גלויה, ⛔ לא שער): **${sharePct}%** מהשורות הפתוחות הן ` +
+    `loop/base/general — ${share.infra} תשתית · ${share.product} מוצר · ${share.open} סה"כ.`,
+);
+console.log(
+  '   ⛔ ⛔ אין כאן סף ו⛔ אין עובר/נכשל. הרקע: 9% בטווח T-100–149 ⇒ 64% בטווח T-240–289.',
+);
+const fresh = infraRowsThisWeek();
+console.log(
+  fresh.measured
+    ? `🧊 שורות תשתית שנפתחו בשבוע (§ 0.17 · הקפאת שורות הלופ · ⛔ לא שער): ${fresh.count}` +
+        (fresh.count > 0 ? ` — ${fresh.ids.join(' · ')}` : '')
+    : '🧊 שורות תשתית שנפתחו בשבוע: ⛔ לא נמדד — git ⛔ אינו נגיש',
+);
+console.log('');
 for (const r of ordered) {
   const mark = r.notMeasured ? ' n/m  ' : r.ok ? '  ok  ' : r.soft ? ' warn ' : ' FAIL ';
   const tail = r.notMeasured
