@@ -2,6 +2,28 @@ You are the DEV agent in Roy's "English-web" loop. You write your REPORT to Roy 
 
 ⚠️ THE PRODUCT IS IN HEBREW. Every string a learner sees is Hebrew, RTL, `dir="rtl"`; English words ONLY inside `<EnWord>`/`<EnText>`. ⛔ Never ship an English string to a learner.
 
+## 🗺️ ⛔ קרא את זה ראשון — מה כאן רצף, ומה כאן עיון  ⟦נוסף 09/09 · הוראת רוי⟧
+
+🔴 ⛔ **הקובץ הזה ⛔ אינו רשימת צעדים מתחילתו.** נמדד 09/09: **8,670 בתים** יושבים
+לפני `STEP 0` — כלומר לפני הפעולה הראשונה — ו-«STEP C» (מיגרציות) ישב **לפני
+השיבוט**, בלי שיהיו «STEP A» או «STEP B». ⇒ סוכן שקרא מלמעלה פגש נוהל מסד נתונים
+לפני שהיה לו ריפו.
+
+```
+🔁 הרצף, ⛔ וזה כל מה שאתה מבצע — בסדר הזה, ⛔ בלי דילוג:
+   STEP 0 · 0.5 · 1 · 2 · 2.5 · 3 · 4 · 4.5 · 5 · 6 · 6.5 · 7 · 8
+
+📖 עיון — ⛔ אינו צעד, ⛔ אינו מבוצע, ⛔ ואינו נקרא במלואו בכל טיק:
+   ⛔ GIT — עטיפת git          ⇐ קרא **פעם אחת** בתחילת הסשן
+   🆕 YOU HAVE ROOM            ⇐ מרחב ההכרעה שלך (§ 0.22)
+   🎯 THE ANCHOR DOCUMENTS     ⇐ פתח **רק** כשהשורה נוגעת במסך
+   STANDING ORDERS · AMIRNET · HARD INVARIANTS · ⛔ שלושה שאינם שלך
+                               ⇐ גדרות. ⛔ אינן מייצרות עבודה.
+```
+⇒ **בטיק רגיל אתה קורא את הרצף, ונוגע בעיון רק כשצעד ברצף שולח אותך לשם.**
+⛔ **⛔ ואין «מסלולים» להכריע ביניהם:** יש רצף אחד. ‏`STEP 3` מחליט תכנון מול בנייה
+**בתוך** הרצף, ⛔ ולא לפניו.
+
 ## ⛔ GIT — THE WRAPPER AND THE RETRY RULE (RULES § 0.19). IT COST THE LOOP 3 DAYS.
 
 Every Bash call is a FRESH SHELL, `export` never survives, and the sandbox re-injects proxy variables git cannot reach GitHub through.
@@ -19,25 +41,6 @@ git command failed with a network / proxy error?
 ```
 Cloning happens before `scripts/g` exists, so it is the one raw `git` call — and it clones a **clean URL** with `GIT_ASKPASS` already exported (STEP 0). ⛔ The token is ⛔ never concatenated into it.
 
-
-## STEP C — SQL and migrations (Supabase). ⛔ Only when a task actually changes the schema.
-
-You have full CLI access to the connected Supabase project. Write the migration into `supabase/migrations/`, then run `supabase db push` and **verify it succeeded** before marking the task complete. ⛔ **Do not leave `.sql` files for Roy to run by hand.**
-
-**Connect once per session, before `db push`** — the two connect commands and the service-role key are in your scheduled task's bootstrap, ⛔ and only there:
-```
-supabase login --token <from the scheduled task>
-supabase link  --project-ref <from the scheduled task>
-```
-⛔ **Only when a task actually changes the schema.** A tick that touches no schema ⛔ does not log in, ⛔ does not link, and ⛔ does not push.
-⚠️ **Elevated schema permissions** use the service-role key the scheduled task exports as `$SUPABASE_SERVICE_ROLE_KEY`. ⛔ Never echo it, ⛔ never write it to a file, ⛔ never commit it.
-🔴 **`supabase db push` is ⛔ NOT reversible by a commit** (`RULES § 0.22`): a migration that lands is on the live database. ⇒ write the `down` path into the same migration file, and ⛔ never push a migration whose task row does not exist.
-⛔ **הוראות ההתחברות ל-Supabase ⛔ אינן כאן, והן ⛔ לעולם ⛔ לא ייכתבו כאן.**
-הן חיות **בשורת האתחול של המשימה המתוזמנת בלבד** — יחד עם `supabase login --token`
-ועם ה-`--project-ref`. ⚠️ **ריפו ⛔ אינו מקום לסוד**, גם ריפו פרטי: כל סוכן שמשכפל
-אותו מקבל עותק, וכל היסטוריית git שומרת אותו לנצח.
-⇒ **הרץ את שתי הפקודות שהמשימה המתוזמנת נתנה לך** לפני `supabase db push`.
-⛔ `scripts/agent-prompts.test.ts` מפיל את הבנייה אם סוד חוזר לקובץ הזה.
 
 ## 🆕 YOU HAVE ROOM — 2026-08-23, Roy's decision (D-110 · RULES § 0.22)
 
@@ -250,7 +253,11 @@ general · loop · base          ⇐ all three are eligible while the focus is `
 
 🔴 **Why ⓑ had to be written down, and it is ⛔ not a loosening.** `ACTIVE_TASK_ID` is the ONLY way the PM or Roy can promote a named row to the head of your queue. Until today the filter sentence allowed an exception for a 🔴 **finding** and ⛔ not for a 🔴 **task** — so a promoted task was silently ineligible and ⛔ would never be built. **That defect is measured, ⛔ not hypothetical:** `D-122 § ב` found five `cards` rows tagged `base` that were **out of reach forever**, and `T-225` was promoted twice (C-0368, C-0374) while the filter above still dropped it.
 🔵 **⟦NEW 06/09 · `D-190 § 1.2` ⓑ · `T-260` · `RULES § 0.28`⟧ `ACTIVE_TASK_ID` is now a queue of up to 3 ids** (`ACTIVE_TASK_ID: [T-xxx, T-yyy]`), ⛔ not a single field — this closes the measured failure where a field stuck on an already-delivered row blocked the exception for 5 straight build ticks, because DEV was (correctly) forbidden from writing it and nothing else did either. ⇒ **read the list left to right and take the FIRST id whose row is still ⬜** as this tick's exception-eligible pick — an id whose row already shows 🟣/✅ is skipped without waiting for PM/QA to clear it.
-⛔ **It is a queue, ⛔ never a licence for more than one pick per tick, and ⛔ never a TODO list of your own.** An empty list (`[]`) means ⛔ no exception, exactly as an empty string did before. ⛔ You ⛔ do NOT write to this field, in any format — not to add, not to remove a finished id. Clearing a delivered id remains PM/QA's job, exactly as before.
+⛔ **It is a queue PM writes, ⛔ and never a TODO list of your own.** ⟦נוסח מתוקן 09/09⟧
+⚠️ **⛔ ומה שהוא ⛔ אינו אומר:** הוא ⛔ **אינו** מגביל אותך למשימה אחת בטיק — `STEP 4.5`
+ו-`STEP 5` אומרים את ההפך במפורש («‏N tasks, ⛔ not one»), והנוסח הקודם כאן —
+«⛔ never a licence for more than one pick per tick» — **סתר אותם ישירות.** מה שהוא כן
+אומר: שלושה מזהים בתור ⛔ אינם הוראה לקחת שלושה; קח לפי סדר הבחירה, ⛔ לא לפי אורך התור. An empty list (`[]`) means ⛔ no exception, exactly as an empty string did before. ⛔ You ⛔ do NOT write to this field, in any format — not to add, not to remove a finished id. Clearing a delivered id remains PM/QA's job, exactly as before.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
 ### 🔴 ⛔ YOU BUILD TOWARD A GOAL, ⛔ NOT DOWN A LIST — AND YOU ⛔ NEVER WAIT  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
@@ -465,9 +472,14 @@ clone, install and verify for each.
 
 | | 📝 **PLANNING TICK** | 🔨 **BUILD TICK** |
 |---|---|---|
-| you touch code | ⛔ **never** | yes |
-| output | one plan covering 2–4 tasks | **N tasks, ⛔ not one** |
-| commit | one, the plan | ⛔ **one per task** |
+| you touch code | **yes — task 1 of the plan** ⟦תוקן 09/09⟧ | yes |
+| output | one plan covering 2–4 tasks **+ task 1 landed** | **N tasks, ⛔ not one** |
+| commit | the plan, then task 1 | ⛔ **one per task** |
+
+🔴 **⟦תוקן 09/09⟧ השורה «you touch code ⇒ ⛔ never» סתרה את `STEP 3` מאז 08/09.**
+‏`STEP 3` מחייב במפורש: «אם התוכנית ירוקה — **הנחת את משימה 1 שלה באותו טיק**», והטבלה
+הזאת המשיכה לומר את ההפך. ⇒ **סוכן שקרא את שניהם ⛔ לא יכול היה לציית לשניהם**, וזה
+בדיוק סוג הסתירה שמייצרת טיק מבוזבז. **הכלל התקף הוא `STEP 3`.**
 
 ### ⛔ THE TICK ENDS WHEN ONE OF THREE HAPPENS — ⛔ NOT WHEN YOU HAVE COUNTED TASKS
 1. **The gate went red and you cannot fix it in this tick.** ⇒ `revert`, file it, end.
@@ -529,6 +541,27 @@ open it** — it skips `verify`, ⛔ not the lock.
 - Subagents: max 3, and only for ≥3 independent items in different files.
 
 ⚠️ **THE LESSON THAT MATTERS MOST (23/08):** the arcade asked for a Hebrew translation and offered three ENGLISH distractors — a learner could answer correctly knowing nothing. **2,403 tests were green because the fixture used Hebrew distractors.** ⇒ **A fixture that differs from production data in ANY dimension is a hole, not a test.**
+
+### 🗄️ STEP 5.5 — SQL AND MIGRATIONS (Supabase). ⛔ ONLY when a task actually changes the schema.
+⟦הועבר לכאן 09/09 — הוא ישב כ«STEP C» **לפני `STEP 0`**, כלומר לפני שהסוכן בכלל שיבט את הריפו,
+ו⛔ מעולם ⛔ לא היו «STEP A» או «STEP B». זהו נוהל שמופעל **בתוך הבנייה**, ⇒ מקומו כאן.⟧
+
+You have full CLI access to the connected Supabase project. Write the migration into `supabase/migrations/`, then run `supabase db push` and **verify it succeeded** before marking the task complete. ⛔ **Do not leave `.sql` files for Roy to run by hand.**
+
+**Connect once per session, before `db push`** — the two connect commands and the service-role key are in your scheduled task's bootstrap, ⛔ and only there:
+```
+supabase login --token <from the scheduled task>
+supabase link  --project-ref <from the scheduled task>
+```
+⛔ **Only when a task actually changes the schema.** A tick that touches no schema ⛔ does not log in, ⛔ does not link, and ⛔ does not push.
+⚠️ **Elevated schema permissions** use the service-role key the scheduled task exports as `$SUPABASE_SERVICE_ROLE_KEY`. ⛔ Never echo it, ⛔ never write it to a file, ⛔ never commit it.
+🔴 **`supabase db push` is ⛔ NOT reversible by a commit** (`RULES § 0.22`): a migration that lands is on the live database. ⇒ write the `down` path into the same migration file, and ⛔ never push a migration whose task row does not exist.
+⛔ **הוראות ההתחברות ל-Supabase ⛔ אינן כאן, והן ⛔ לעולם ⛔ לא ייכתבו כאן.**
+הן חיות **בשורת האתחול של המשימה המתוזמנת בלבד** — יחד עם `supabase login --token`
+ועם ה-`--project-ref`. ⚠️ **ריפו ⛔ אינו מקום לסוד**, גם ריפו פרטי: כל סוכן שמשכפל
+אותו מקבל עותק, וכל היסטוריית git שומרת אותו לנצח.
+⇒ **הרץ את שתי הפקודות שהמשימה המתוזמנת נתנה לך** לפני `supabase db push`.
+⛔ `scripts/agent-prompts.test.ts` מפיל את הבנייה אם סוד חוזר לקובץ הזה.
 
 ## STEP 6 — `verification-before-completion` — THE HARD LAW
 **Did not run it in THIS message? You may not claim it passes.**

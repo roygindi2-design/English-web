@@ -1788,3 +1788,49 @@ describe('📏 גודל היעד נמדד בדקות, ⛔ ולא ב«טיק»', 
     );
   });
 });
+
+/**
+ * 🧭 **‏`DEV.md` — לינאריות, ו⛔ אפס סתירות פנימיות.**  ⟦NEW 09/09 · חשד מפורש של רוי⟧
+ *
+ * 🔬 **שלוש מדידות שהצדיקו את הסבב:**
+ * ⓐ «STEP C» (מיגרציות) ישב **לפני `STEP 0`** — לפני שהסוכן בכלל שיבט — ו⛔ מעולם
+ *    ⛔ לא היו «STEP A» או «STEP B».
+ * ⓑ הטבלה ב-`STEP 4.5` אמרה «טיק תכנון: you touch code ⇒ ⛔ never» בעוד `STEP 3`
+ *    מחייב מאז 08/09 להנחית את משימה 1 באותו טיק. ⇒ **⛔ אי אפשר היה לציית לשניהם.**
+ * ⓒ שורת `ACTIVE_TASK_ID` אמרה «⛔ never a licence for more than one pick per tick»
+ *    בעוד `STEP 4.5` ו-`STEP 5` אומרים «N tasks, ⛔ not one».
+ */
+describe('🧭 `DEV.md` — רצף אחד, ⛔ ובלי סתירה פנימית', () => {
+  const dev = text('DEV');
+
+  it('הרצף מוצהר, וההפרדה בין «רצף» ל«עיון» כתובה', () => {
+    expect(dev, 'מפת הקריאה').toMatch(/מה כאן רצף, ומה כאן עיון/);
+    expect(dev, 'הרצף עצמו').toContain('STEP 0 · 0.5 · 1 · 2 · 2.5 · 3 · 4 · 4.5 · 5 · 6 · 6.5 · 7 · 8');
+    expect(dev, '⛔ ואין «מסלולים» להכריע ביניהם').toMatch(/⛔ ואין «מסלולים» להכריע ביניהם/);
+  });
+
+  it('⛔ אין «STEP C» — נוהל המיגרציות יושב בתוך הבנייה, ⛔ ולא לפני השיבוט', () => {
+    expect(dev, '⛔ אין STEP C').not.toMatch(/^## STEP C —/m);
+    const sql = dev.indexOf('STEP 5.5 — SQL AND MIGRATIONS');
+    const step0 = dev.indexOf('## STEP 0 — CONNECT');
+    expect(sql, 'הנוהל קיים').toBeGreaterThan(-1);
+    expect(sql, '⛔ והוא אחרי השיבוט, ⛔ לא לפניו').toBeGreaterThan(step0);
+  });
+
+  it('🔴 טיק תכנון נוגע בקוד — הטבלה ו-STEP 3 אומרים את אותו דבר', () => {
+    // ⛔ הטענה השלילית היא העיקר: הנוסח הישן היה «⛔ **never**» בעמודת טיק התכנון.
+    expect(dev, '⛔ הסתירה הוסרה').not.toMatch(/\| you touch code \| ⛔ \*\*never\*\* \|/);
+    expect(dev, 'ומה שנכתב במקומה').toMatch(/task 1 of the plan/);
+    expect(dev, 'ו-STEP 3 עדיין מחייב').toMatch(/LAND TASK 1 OF THE PLAN IN THE SAME TICK/);
+  });
+
+  it('🔴 ו-`ACTIVE_TASK_ID` ⛔ אינו מגביל לטיק-משימה-אחת', () => {
+    // ⚠️ המחרוזת עדיין מופיעה — **בתוך המשפט שמסביר שהיא סתרה**. ⇒ הטענה היא שהיא
+    // ⛔ אינה הוראה חיה: כל שורה שנושאת אותה חייבת לשאת גם את המילה «סתר».
+    for (const line of dev.split('\n')) {
+      if (!line.includes('never a licence for more than one pick per tick')) continue;
+      expect(/סתר/.test(line), `⛔ נוסח סותר חי — ${line.slice(0, 80)}`).toBe(true);
+    }
+    expect(dev, 'ומה שנשאר — N משימות').toMatch(/N tasks, ⛔ not one/);
+  });
+});
