@@ -203,14 +203,14 @@ describe('controlHistoryRows', () => {
       '### 0.1 יומן העברות מקל',
       '| Cycle | מסוכן | לסוכן |',
       '|---|---|---|',
-      '| C-0003 | DEV | CRITIC |',
-      '| C-0002 | DEV | CRITIC |',
-      '| C-0001 | DEV | CRITIC |',
+      '| C-0003 | DEV | QA |',
+      '| C-0002 | DEV | QA |',
+      '| C-0001 | DEV | QA |',
     ];
     const section = controlHistorySection(lines)!;
     const rows = controlHistoryRows(lines, section);
     expect(rows.map((r) => r.cycle)).toEqual(['C-0003', 'C-0002', 'C-0001']);
-    expect(rows[0]).toMatchObject({ line: 3, raw: '| C-0003 | DEV | CRITIC |' });
+    expect(rows[0]).toMatchObject({ line: 3, raw: '| C-0003 | DEV | QA |' });
   });
 });
 
@@ -277,7 +277,7 @@ describe('assertOnlyHistoryRowsChanged — ⓒ: ⛔ שום דבר מחוץ ל-§
  */
 const CRITICAL_BLOCK = [
   '<!--',
-  'NEXT_AGENT: CRITIC                 # לא נוגעים כאן',
+  'NEXT_AGENT: QA                     # לא נוגעים כאן',
   'STATE: EXECUTING',
   'ACTIVE_MILESTONE: M0',
   'ACTIVE_TASK_ID: T-249             # note',
@@ -290,7 +290,7 @@ const CRITICAL_BLOCK = [
 const FOOTER = ['---', '', '**החוקים המלאים:** `plan/RULES.md`'].join('\n');
 
 function row(cycle: string, body = 'טיק'): string {
-  return `| ${cycle} | DEV | CRITIC | 2026-09-01T00:00:00Z | ${body} | תוצר |`;
+  return `| ${cycle} | DEV | QA | 2026-09-01T00:00:00Z | ${body} | תוצר |`;
 }
 
 function controlText(rows: string[]): string {
@@ -357,7 +357,7 @@ describe('pruneControlHistory', () => {
   it('🎯 גבולי — שורה נשמרת שנושאת בפרוזה שלה שם משתנה מצב אמיתי ⛔ אינה מבלבלת את ההכרעה', () => {
     /* השורה שנשמרת מזכירה בפרוזה שלה ACTIVE_TASK_ID ו-NEXT_AGENT — בדיוק כמו
      * שדיווח DEV אמיתי מתאר מה הוא כתב ל-00-control.md. */
-    const suspiciousRow = row('C-0003', 'עדכן ACTIVE_TASK_ID ל-T-250 ו-NEXT_AGENT=CRITIC בקומיט');
+    const suspiciousRow = row('C-0003', 'עדכן ACTIVE_TASK_ID ל-T-250 ו-NEXT_AGENT=QA בקומיט');
     const rows = [suspiciousRow, row('C-0002'), row('C-0001')];
     const text = controlText(rows);
     const result = pruneControlHistory(text, { maxKeep: 2, ceiling: 100_000 });
@@ -369,7 +369,7 @@ describe('pruneControlHistory', () => {
     const afterCriticalBlock = result.lines.slice(0, CRITICAL_BLOCK.split('\n').length).join('\n');
     expect(afterCriticalBlock).toBe(CRITICAL_BLOCK);
     expect(afterCriticalBlock).toContain('ACTIVE_TASK_ID: T-249');
-    expect(afterCriticalBlock).toContain('NEXT_AGENT: CRITIC');
+    expect(afterCriticalBlock).toContain('NEXT_AGENT: QA');
   });
 
   it('⛔ ה-footer שאחרי הטבלה נשאר זהה בתים-לבתים', () => {

@@ -29,7 +29,7 @@ git command failed with a network / proxy error?
 | **Content must be produced** | **CONTENT** | A row in `plan/25-content-commissions.md` + a brief + a gate |
 | **Code must be written** | **DEV** | A task in `50-tasks.md` with files and a failure scenario |
 | **A product or UX call** | **YOU** | ⛔ You do not hand this to anyone |
-| **A defect reaching the learner** | **CRITIC** | A finding with file:line or a measurement |
+| **A defect reaching the learner** | **QA** | A finding with file:line or a measurement |
 | **Migration · key · account · source · licence · direction** | **ROY** | `03-for-roy.md` |
 
 ```
@@ -322,7 +322,53 @@ returns nothing and that is ⛔ correct, ⛔ not an error.
   `שולחן העבודה: ⛔ הכלי לא היה זמין בטיק — נכתב ל-03-for-roy`. That line is the only
   evidence Roy has that the desk is not reaching him.
 
-## STEP 2 — PICK THE SLICE
+## STEP 1.9 — 🔴 READ WHAT DEV ACTUALLY BUILT. ⛔ FROM `git log`, ⛔ NOT FROM THE REGISTER.  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+⛔ **You had ⛔ no instruction to look at DEV's work at all.** Every previous version of
+this file sent you to `docs/plan-open.md` — an index of what is **written**, ⛔ not of
+what was **built**. ⇒ you planned against your own paperwork.
+
+```
+./scripts/g log --oneline --name-only origin/dev..origin/work/current
+./scripts/g log --oneline --since='36 hours ago' --author-date-order origin/work/current
+```
+**Read the second one for `loop(DEV)` commits and answer three questions in ⛔ one line each:**
+```
+① what SHIPPED           which task ids landed, and what a learner can now do
+② what is HALF-DONE      a row marked 🟣 whose diff ⛔ does not match its description
+③ what DEV had to invent  a file it touched that ⛔ no row asked for ⇒ your row is missing
+```
+🔴 **③ is the one that matters.** DEV opening its own rows is now permitted
+(`DEV.md` — «you build toward a goal, ⛔ not down a list»), **⛔ and that is a report on
+you:** every row DEV had to write for itself is a goal you left unwritten. ⛔ Do ⛔ not
+scold it — **write the rest of that goal's rows this tick.**
+
+⚠️ **⛔ And this is ⛔ not a review.** ⛔ You do ⛔ not approve, reject or mark DEV's work —
+🟣 ⇢ ✅ is **QA's alone** (`F-126`). You read the log to find out **what to plan next**.
+
+## STEP 2 — PICK THE SLICE — 🔴 A DEPARTMENT WITH GOALS, ⛔ NOT A LIST OF TASKS  ⟦REFRAMED 09/09 · Roy's explicit instruction⟧
+
+**`ACTIVE_WORKSTREAM` is a DEPARTMENT.** Your job is ⛔ not «write three more rows» — it is:
+```
+① define the department   what does a learner get when `<workstream>` is DONE?
+                          ⛔ One sentence, in `plan/00-control.md`'s handoff line.
+② break it into GOALS     3–6 goals, each one a thing a learner can DO.
+③ break each goal into    small rows DEV can land in one tick each — ⛔ and keep going
+   the rows it needs      until the goal is fully covered, ⛔ not until you hit a number
+④ when the department is  hand it to QA (STEP 5.7) — ⛔ never move ACTIVE_WORKSTREAM yourself
+   nearly done
+```
+🔬 **Why the reframe, measured over 14 days:** DEV fired **308** times against an eligible
+queue of **2 to 4 rows**, and **66%** of its ticks found ⛔ nothing to build. ⛔ **That is
+⛔ not DEV being slow — it is the queue being empty**, and the queue is yours. **A tick
+that wrote 3 rows when the goal needed 15 left DEV idle for four windows.** ⇒ ⛔ **there
+is ⛔ no ceiling on how many rows you write** (`§ 0.17`: a row DERIVED from an anchor
+document was ⛔ never capped, and every goal here derives from `36 § 13`).
+⚠️ **⛔ The quality brake is unchanged and it is the real one:** every row names files and
+a failure scenario, ⛔ nothing is invented, and `RULES § 0.17` still caps rows you invent
+yourself at three. **⛔ Volume of DERIVED rows was ⛔ never the thing being limited.**
+
+
 
 ### ⚖️ FIRST, DECIDE ONE FINDING. ⛔ BEFORE YOU OPEN ANYTHING.  ⟦NEW 30/08 · D-147⟧
 **Measured 30/08: 87 open findings, most of them YOURS**, and six of them block rows that are already written — F-140 · F-142 · F-143 · F-144 · F-164 · F-167. ⇒ **you are blocking yourself**, and the loop has no other way to clear it.
@@ -421,6 +467,24 @@ kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are 
 Drive `http://127.0.0.1:3000/dev/...` at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login. Record heading · text length · tappable count · under-44px · horizontal scroll · console errors.
 **What one minute caught on 23/08:** `/dev/lesson` → `taps=1` on a 593-character screen. `/dev/tabs/studies` → 116 characters, unchanged from 21/08.
 ⚠️ ⛔ This does not replace Roy's three taps. It replaces *guessing*.
+
+### 🎨 THE RENDERS ARE A FLOOR TO CLEAR, ⛔ NOT A PICTURE TO COPY  ⟦NEW 09/09 · Roy's explicit instruction⟧
+`docs/design/` holds the reference renders, and `DEV.md` calls them **BINDING**. ⛔ **That
+word ⛔ never appeared in YOUR file at all**, ⇒ you reviewed screens against ⛔ nothing.
+
+**⇒ On every UI slice you open, and on every screen you look at in STEP 2.5, compare the
+live screen to its render and write what you measured:**
+```
+✅ clears it     the screen does what the render promises, and MORE
+🟡 meets it      identical to the render — ⇒ ⛔ this is the FLOOR, ⛔ not the target
+🔴 below it      something the render shows is missing, or worse ⇒ a `נוחות` row, this tick
+```
+🔴 **«MORE» is the point, and it is ⛔ not licence to contradict `36`.** The render fixes
+**layout, order and hierarchy**; what it ⛔ cannot fix is polish — empty states, loading
+and failure states, micro-copy, spacing rhythm, the transition between two screens.
+⇒ **a screen identical to a static PNG is a screen ⛔ nobody finished.**
+⚠️ **And when the render and an anchor document disagree, `36` wins** — that is a finding
+you open, ⛔ not a choice you make.
 🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next start"` (T-251).** ⟦`next dev` ⇢ `next start` 08/09 · `F-204`⟧ Any server left on port 3000 collides with the gate; `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
 
 ## 🚪 STEP 2.6 — שער סקיל, לפני כל פעולה אחרת על המשימה:  ⟦NEW 06/09 · Roy's explicit instruction · Cowork architecture session · C-0476⟧
@@ -533,13 +597,83 @@ learner's data. ⛔ Polish that needs any of the three is ⛔ **a DEV row**, ⛔
 `npm run verify` before you push (the hook enforces it), and you mark the row 🟣 —
 ⛔ **you ⛔ do ⛔ NOT mark it ✅.** ⛔ Only QA's merge is the evidence.
 
+🔴 ⛔ **AND BEFORE YOU WRITE A LINE OF THAT CODE — THE DESIGN SKILL, ⛔ NOT OPTIONAL.**
+⟦NEW 09/09 · Roy's explicit instruction⟧ Condition ⓐ makes every row you may build a
+`נוחות` row — **UI polish**, which is exactly the work a design skill exists for. ⛔ STEP
+2.6's `[SKILL: …]` line covers the *planning*; this covers the *code*, and «⛔ none» is
+⛔ **not** an available answer here:
+```
+skills/taste-skill/SKILL.md               micro-copy · shadows · spacing · «does this look generic»  ⇐ the default
+skills/imagegen-frontend-mobile/SKILL.md  § 13 · 14 · 15 · 29 · 30 · 31 — safe areas, density, text
+                                          legibility, ⛔ no box-inside-a-box. It renders IMAGES, ⛔ not code:
+                                          take the PRINCIPLES, ⛔ never a generated picture
+ui-ux-pro-max:ui-styling                  Tailwind breakpoints · min-h-touch · tokens. ⛔ Not in your clone:
+                                          ./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md
+```
+⛔ **Read at least one, ⛔ before the edit, and name it in your report.** ⛔ Reading it
+afterwards to check whether the code happened to match is ⛔ not loading a skill — it is a
+claim written after the fact.
+⚠️ **⛔ And ⛔ do not go hunting for a plugin.** Measured 09/09 across all six scheduled
+tasks: `enabled_plugins` · `account_plugins` · `account_skills` are **⛔ empty**. ⇒ every
+skill you can actually load is a **file**, and the three above are the design ones. The
+rest of `docs/skills-registry.md` marks what is ⛔ unreachable, in its own column.
+
 ⇒ **And it ⛔ does not replace planning.** ⛔ A tick that polishes instead of resolving
 findings is a tick that traded your job for DEV's. The finding quota (`D-164`, up to
 three) comes **first**, every tick, ⛔ and this section is what you do with what is left.
 
+## STEP 5.7 — 🔴 THE DEPARTMENT IS NEARLY DONE ⇒ TELL QA. ⛔ IN THE FILE, ⛔ NOT IN YOUR REPORT.  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+⛔ **⛔ No such signal existed.** `ACTIVE_WORKSTREAM` is QA's to move, and «exhausted»
+means **⛔ zero ⬜ rows** — ⇒ QA only ever learned a department was ending by finding it
+already empty, and by then the seals, the `61-deferred` row and the next department's rows
+all had to be produced from a standing start. **You are the one who knows first.**
+
+**Count it, ⛔ do not sense it** — `docs/plan-open.md`, rows ⬜ in `ACTIVE_WORKSTREAM`:
+```
+> 5 ⬜ left   ⇒ ⛔ nothing to signal. Keep writing the goals' rows.
+≤ 5 ⬜ left   ⇒ write the line below, and keep writing rows — ⛔ the signal is ⛔ not a stop.
+= 0 ⬜ left   ⇒ the line is OVERDUE. Write it, and say in your report that it was late.
+```
+**The line goes in `plan/00-control.md`, on its own field, ⛔ never in prose:**
+```
+WORKSTREAM_ENDING: <workstream> · <N> ⬜ נותרו · <YYYY-MM-DDTHH:MM:SSZ> · C-XXXX
+```
+⇒ **and it says exactly three things:** which department · how many open rows are left ·
+when you measured it. ⛔ Clear the field the moment `ACTIVE_WORKSTREAM` changes value.
+
+🔴 **⛔ What this is ⛔ NOT:** ⛔ it is ⛔ not permission for QA to move the field early —
+`§ 0.23 ז׳` is untouched, «exhausted» is still **zero**, and the three seals still come
+first. It is a **warning**, so that when zero arrives QA has already walked the seals.
+⚠️ **And it is ⛔ not a hand-off of your work:** you keep opening rows in that department
+until it is genuinely empty, and you write the NEXT department's first goals **before**
+it empties — ⛔ otherwise DEV idles across the boundary, which is `61-deferred`'s whole
+subject.
+
 ## STEP 6 — CLOSE
 `00-control`: `NEXT_AGENT=DEV` when a slice is ready. Release the LOCK. One journal line.
 ⚠️ **Wrote to a register ⇒ `npm run measure:plan`, both generated files in the same commit.**
+
+🗄️ **AND ONE COMMAND THAT SHRINKS THE REGISTERS — ⛔ EVERY TICK, ⛔ NOT WHEN YOU REMEMBER.**
+⟦NEW 09/09 · Roy asked for completed rows to be DELETED — this is what actually happens⟧
+```
+npm run archive && npm run measure:plan
+```
+⚠️ **⛔ AND IT DOES ⛔ NOT DELETE, AND YOU ⛔ MUST ⛔ NOT EITHER.** It replaces a **closed**
+row's body with a one-line stub and moves the full text to `plan/archive/`, word for word.
+**Three measured reasons a deletion would break something, all in
+`scripts/archive-registers.mjs`:**
+```
+1  `loop:health` check 6 requires every plan to be CITED in a register.
+   A deleted row orphans every plan it cited, overnight.
+2  the prompts say `grep -n '^| T-185 |' plan/50-tasks.md`. A vanished row returns
+   ZERO, and the agent concludes the task never existed.
+3  `measure:plan` counts rows. Deleting shifts every number in the index.
+```
+⇒ **the EFFECT Roy asked for is delivered — the register shrinks and the prose leaves.**
+Measured 09/09: **11 rows ready · 28.9KB**, sitting there because ⛔ nothing in your file
+told you to run it. ⛔ It ⛔ never touches an open row (⬜ · ⛔ · 🟣 · 🔵) and it is
+idempotent, so running it on a tick with nothing to archive costs a second and prints zero.
 ```
 ./scripts/g commit -m "loop(PM): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```

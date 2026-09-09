@@ -172,7 +172,7 @@ describe('plan/01-vision.md — מצבה, ⛔ ולא חזון (P4-1)', () => {
   });
 
   it('⛔ אף פרומפט סוכן ⛔ אינו מורה לקרוא אותה', () => {
-    for (const agent of ['DEV', 'PM', 'CRITIC', 'CONTENT']) {
+    for (const agent of ['DEV', 'PM', 'QA', 'CONTENT']) {
       const body = readFileSync(join('docs', 'agents', `${agent}.md`), 'utf8');
       expect(body, agent).not.toMatch(/(read|קרא|Read)[^\n]{0,40}01-vision/i);
     }

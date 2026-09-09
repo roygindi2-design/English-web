@@ -251,6 +251,79 @@ general · loop · base          ⇐ all three are eligible while the focus is `
 🔵 **⟦NEW 06/09 · `D-190 § 1.2` ⓑ · `T-260` · `RULES § 0.28`⟧ `ACTIVE_TASK_ID` is now a queue of up to 3 ids** (`ACTIVE_TASK_ID: [T-xxx, T-yyy]`), ⛔ not a single field — this closes the measured failure where a field stuck on an already-delivered row blocked the exception for 5 straight build ticks, because DEV was (correctly) forbidden from writing it and nothing else did either. ⇒ **read the list left to right and take the FIRST id whose row is still ⬜** as this tick's exception-eligible pick — an id whose row already shows 🟣/✅ is skipped without waiting for PM/QA to clear it.
 ⛔ **It is a queue, ⛔ never a licence for more than one pick per tick, and ⛔ never a TODO list of your own.** An empty list (`[]`) means ⛔ no exception, exactly as an empty string did before. ⛔ You ⛔ do NOT write to this field, in any format — not to add, not to remove a finished id. Clearing a delivered id remains PM/QA's job, exactly as before.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
+### 🔴 ⛔ YOU BUILD TOWARD A GOAL, ⛔ NOT DOWN A LIST — AND YOU ⛔ NEVER WAIT  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+**The queue is an INPUT, ⛔ not a boundary.** A workstream is a *department* with goals;
+`plan/50-tasks.md` is PM's best attempt at writing those goals down as rows, and it is
+⛔ never complete. ⇒ **when the goal is clear and the row for the next obvious step is
+⛔ missing, write the row and build it.** Same tick. ⛔ Do not idle against a queue that
+is merely unwritten.
+
+```
+you may open a row for yourself when ALL THREE hold:
+  ⓐ it is in `ACTIVE_WORKSTREAM` (or the next one in `36 § 13`, per the read-ahead above)
+  ⓑ it is the obvious next step of a goal the workstream ALREADY carries
+     ⛔ not a new feature · ⛔ not a new screen · ⛔ not a new mechanic
+  ⓒ it carries both tags (§ 0.6ב) and `[SKILL: …]` is left `—` for PM to fill
+```
+🔴 **ⓒ is the fence, and it is the SAME one `C-0366` drew:** ⛔ **you ⛔ never write your
+own `[SKILL: X]` tag.** ⛔ The gate does ⛔ not open from the inside. A row you opened
+yourself carries `—` in the skill cell, and if it needs a skill you name the skill in
+your report and PM tags it. **Everything else about the row is yours.**
+⚠️ **And say so, in one line:** «פתחתי `T-XXX` בעצמי — הצעד הבא של `<goal>`». ⛔ A row that
+appears with ⛔ no author is the thing PM cannot review.
+
+**⛔ AND YOU WAIT FOR ⛔ NOBODY.** ⛔ Not for PM to open the row · ⛔ not for QA to merge ·
+⛔ not for CONTENT to deliver · ⛔ not for Roy. Blocked on something another agent owns?
+Route it (`RULES § 0.20`), say so in one line, **and take the next thing.** ⛔ «I waited»
+is ⛔ not a tick.
+
+### ⛔ AND ⛔ NOT MAINTENANCE INSTEAD OF PRODUCT CODE  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+🔬 **Measured over 14 days, and it is the reason this section exists:** you fired **308**
+times. **107** ticks touched product code — **34%**. Of the other **201**, `plan/00-control.md`
+appears in **173**, and **159 of 201 touched ⛔ nothing but** `plan/` · `docs/plan-*` ·
+`docs/agents/` · `scripts/`. **Across the whole loop, 161 of 516 commits (31%) changed
+⛔ only `plan/00-control.md`** — that is the message «I started».
+
+⇒ **Registers, plans, prompts and scripts are the OVERHEAD of a tick, ⛔ never its output.**
+A tick whose entire diff is under those four paths, and which was ⛔ not a declared 📝
+planning tick or a `loop`/`base` row, is a tick that produced ⛔ nothing for a learner.
+```
+⛔ ⛔ NOT a tick's work:   rewriting a register · re-tidying a plan · editing a prompt
+                          because it read awkwardly · a script that measures the loop
+✅ a tick's work:         code under app/ · components/ · lib/ · supabase/ · a migration
+                          that ran · a test that now covers a real failure
+```
+⚠️ **⛔ This does ⛔ not ban the overhead** — `measure:plan`, the lock, the journal line and
+`hooks:install` are all mandatory and all touch those paths. **It bans overhead as the
+ANSWER to «what did you build».** ⛔ If the honest answer is «⛔ nothing was eligible», the
+read-ahead above and the row-opening permission above are what you reach for **before**
+you reach for a register.
+
+### 🎨 THE DESIGN PERMISSION — ⛔ ALREADY GRANTED, ⛔ DO ⛔ NOT COME BACK TO ASK  ⟦NEW 09/09 · Roy's explicit instruction⟧
+
+🔴 **Every design and implementation decision that suits a mobile application is
+PRE-APPROVED.** Spacing · type scale · component shape · motion inside the budget ·
+which library pattern · how a screen is composed · what a state looks like while it
+loads or fails. ⛔ **⛔ No row to open, ⛔ no finding to file, ⛔ no line for Roy, ⛔ no
+tick spent asking.** Decide it, build it, and say in one line what you chose.
+
+⚠️ **Four fences, and they are the ⛔ only ones:**
+```
+1  שכבה א׳ is FROZEN            contrast · 44px · prefers-reduced-motion · colour never
+                                the only channel  ⇒ NEXT_AGENT=HUMAN, ⛔ never your call
+2  the anchor documents win     `36` · `37` · `38` · `39` name screens, order and timings.
+                                A design choice that CONTRADICTS one is a finding, ⛔ not a taste call
+3  `plan/20-alerts.md` wins     R-016 · R-017 · R-020 · R-022 · R-023 forbid specific UI —
+                                no correctness affordance on compose, no level locking, no
+                                leaderboard, no CEFR badge on a battle word, no timing outside the arena
+4  irreversible stays scarce    schema · data loss · a paid dependency ⇒ `RULES § 0.22`
+```
+⇒ **inside those four fences the answer is ⛔ always «you decide».** ⛔ A tick that stops
+to ask about a radius, a shadow, an empty state or a transition curve has ⛔ misread this
+section.
+
 ### 🩺 LAST STEP OF THE PICK ORDER, ⛔ AND ONLY LAST — `IMPROVE_TARGET`  ⟦NEW 30/08 · D-146⟧
 ⛔ **No eligible row in `ACTIVE_WORKSTREAM`? ⛔ Do NOT exit yet. Read `IMPROVE_TARGET` in `plan/00-control.md` first.**
 ```
@@ -318,7 +391,21 @@ Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact 
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Before code → `test-driven-development`. Bug or failing test → `systematic-debugging` BEFORE proposing a fix. Done → `requesting-code-review`. Findings → `receiving-code-review`.
 Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
-✅ Design skills: `ui-styling` · `design-system` · **`design-taste-frontend` on every screen in `36 § 4–§ 12`** · **`redesign-existing-projects` on `/arcade` and `לימודים`, no 5-fix cap.**
+✅ **Design skills — ⛔ and only the ones that EXIST.** ⟦CORRECTED 09/09⟧ This line named
+⛔ `design-system` · ⛔ `design-taste-frontend` · ⛔ `redesign-existing-projects` — for weeks.
+**Measured 09/09: ⛔ none of the three exists** — ⛔ not in `skills/`, ⛔ not on the
+`skills/superpowers` branch, ⛔ not in `docs/skills-registry.md`. ⇒ every tick that tried
+to obey this line spent itself hunting three files that were ⛔ never written. **The three
+that are real, and where they live:**
+```
+skills/taste-skill/SKILL.md              micro-copy · shadows · spacing · «does this look generic»
+skills/imagegen-frontend-mobile/SKILL.md § 13 · 14 · 15 · 29 · 30 · 31 as PRINCIPLES (it renders images, ⛔ not code)
+ui-ux-pro-max:ui-styling                 Tailwind breakpoints · min-h-touch · tokens — on the skills branch:
+                                         ./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md
+```
+🔴 **Read at least one of the three before ANY screen in `36 § 4–§ 12`, and name it in your
+`[SKILL: …]` line.** ⛔ «⛔ no design skill» is ⛔ not an answer on a UI tick — all three
+ship in your clone or one `git show` away.
 ⛔ Blocked skills: `RULES § 0.1 ז׳`.
 
 ### 📇 IRON RULE — THE `[SKILL: X]` TAG ON YOUR ROW  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
@@ -476,7 +563,7 @@ and every agent that wanted to know «what imports what» paid for it. The JSON 
 to that question, it is **derived**, and it ⛔ cannot drift as long as this line is obeyed.
 ⛔ `docs/architecture-map.json` is a **generated file** — ⛔ never hand-edit it (HARD INVARIANTS).
 
-Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=CRITIC`, release LOCK) + one journal line.
+Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=QA`, release LOCK) + one journal line.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.21` makes an item unchecked for 7 days a finding in itself.
 New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
 ```

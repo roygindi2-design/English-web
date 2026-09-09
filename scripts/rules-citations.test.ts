@@ -111,9 +111,9 @@ describe('🔢 מספר הפקודות ב-`npm run verify` נגזר, ⛔ ולא 
     for (const c of commands) expect(rules, `RULES: הפקודה ${c}`).toContain(c);
   });
 
-  it('🔴 ‏`CRITIC.md` ו-`CONTENT.md` נוקבים באותו מספר — הם השער והכותב', () => {
+  it('🔴 ‏`QA.md` ו-`CONTENT.md` נוקבים באותו מספר — הם השער והכותב', () => {
     const word = WORDS[commands.length];
-    for (const a of ['CRITIC', 'CONTENT']) {
+    for (const a of ['QA', 'CONTENT']) {
       expect(read(`docs/agents/${a}.md`), `${a}: «${word} commands»`).toContain(
         `${word} commands`,
       );

@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: CRITIC                 # ▶️ C-0515 (DEV) — 📝 תכנון: `T-190`·`T-191`·`T-192` קיבלו תוכנית אחת (`2026-09-08-messages-inbox-slice.md`, `check:plan` 10/10, 62 צעדים). `msgs` ⬜=**4** ללא שינוי (T-193 של CONTENT); הטיק הבא של DEV הוא 🔨 בנייה מהתוכנית — Task 4 Step 9 (המיגרציה) דורש קונקטור `mcp__Supabase__*` בסשן.
+NEXT_AGENT: QA                     # ▶️ C-0515 (DEV) — 📝 תכנון: `T-190`·`T-191`·`T-192` קיבלו תוכנית אחת (`2026-09-08-messages-inbox-slice.md`, `check:plan` 10/10, 62 צעדים). `msgs` ⬜=**4** ללא שינוי (T-193 של CONTENT); הטיק הבא של DEV הוא 🔨 בנייה מהתוכנית — Task 4 Step 9 (המיגרציה) דורש קונקטור `mcp__Supabase__*` בסשן.
 STATE: PLANNING                    # ⛔ לא שונה — טיק ביקורת אינו קובע מצב בנייה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0514 (CRITIC) — ריק, כרגיל בטיק ביקורת.
@@ -26,6 +26,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: msgs            # ▶️ הוזז C-0514 (CRITIC, מלא) — `arena` מוצתה שנית (⬜=0, נמדד `docs/plan-open.md` § flag: «הבא ברצף עם עבודה פנויה הוא msgs (4 ⬜)»). `studies` גם היא מוצתה (⬜=0) ⇒ נדלגת, ⛔ לא נבחרה.
 PREV_WORKSTREAM: "arena"     # 🆕 C-0514 (CRITIC) — `arena` (מעבר שני): T-217·T-220·T-234·T-281·T-282·T-283 נבנו ומוזגו בטיק הזה. שורת `61-deferred` נכתבה (מעבר שני). (ההיסטוריה הקודמת בגיט.)
+WORKSTREAM_ENDING: ""            # 🆕 09/09 · PM כותב · **QA קורא**. «≤5 שורות ⬜ נותרו במחלקה» ⇒ `<זרימה> · <N> ⬜ · <ISO> · C-XXXX`. ⛔ אינו היתר להזיז את `ACTIVE_WORKSTREAM` — «מוצתה» עדיין **אפס** (`§ 0.23 ז׳`). ⛔ מתרוקן ברגע ש-`ACTIVE_WORKSTREAM` משתנה.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.

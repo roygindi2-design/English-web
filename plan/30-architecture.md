@@ -1716,7 +1716,7 @@ exactly what the task row's ⓐⓑⓒ conditions exist to close.
   `app/dev/**` (fixtures, not product), and passes a route when its own `page.tsx` or a
   sibling `layout.tsx` exports `metadata`/`generateMetadata`. Wired into `package.json`
   as `check:titles`, inside `npm run verify` (now **nine** commands — `plan/RULES.md`,
-  `docs/agents/CRITIC.md`, `docs/agents/CONTENT.md` and
+  `docs/agents/QA.md`, `docs/agents/CONTENT.md` and
   `scripts/rules-citations.test.ts`'s own word maps updated in the same commit, the
   exact staleness class that test exists to catch).
 

@@ -15,7 +15,7 @@ import { WORKSTREAMS } from '../lib/core/planTable';
  * ייעלם מפרומפט — הלופ ישבר בשקט.
  */
 const DIR = 'docs/agents';
-const AGENTS = ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const;
+const AGENTS = ['DEV', 'PM', 'QA', 'CONTENT'] as const;
 /**
  * ⛔ **`PROMOTER` ⛔ אינו סוכן בנייה, ולכן הוא ⛔ אינו ב-`AGENTS`.** ⟦NEW 06/09 · הוראת רוי⟧
  * ארבעת הסוכנים שב-`AGENTS` חולקים חוזה אחד — נעילה, ענף עבודה, תור, שער דחיפה — וכל
@@ -160,7 +160,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     // ⛔ ל-QA מותר בדיוק **מופע אחד**, ורק כשהוא יושב על אותה שורה עם ה-`--ff-only`.
     // ⛔ הבדיקה ⛔ אינה «מכיל ff-only איפשהו»: דחיפה ל-dev בשורה נפרדת היא בדיוק
     // עקיפת השער, והיא הייתה עוברת בדיקה רופפת.
-    const qa = text('CRITIC');
+    const qa = text('QA');
     const pushes = [...qa.matchAll(/^.*push +origin +dev\b.*$/gm)].map((m) => m[0]);
     // ⛔ **TWO occurrences since the lane split (30/08), ⛔ and the rule got STRICTER,
     // ⛔ not looser:** the gate lane and the full lane each carry the command once.
@@ -173,7 +173,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   it('QA לבדו ממזג, ורק ב-`--ff-only`', () => {
-    expect(text('CRITIC')).toContain('merge --ff-only work/current');
+    expect(text('QA')).toContain('merge --ff-only work/current');
     // ⛔ הפקודה עצמה, ⛔ ולא האזכור: ‏DEV **חייב** לדעת ש-QA ממזג ב-ff-only,
     // והוא כותב את זה בפרוזה. מה ש⛔ אסור לו הוא **להריץ** את זה.
     for (const a of ['DEV', 'PM', 'CONTENT'] as const) {
@@ -188,7 +188,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   it('שלושת הכותבים יודעים על `ACTIVE_WORKSTREAM`, ⛔ ולא רק QA שקובע אותה', () => {
-    for (const a of ['DEV', 'PM', 'CRITIC'] as const) {
+    for (const a of ['DEV', 'PM', 'QA'] as const) {
       expect(text(a), a).toContain('ACTIVE_WORKSTREAM');
     }
   });
@@ -217,7 +217,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    *    יציאה שקטה שאינה נוקבת בסיבה משאירה את QA בלי דרך לדעת שהלופ מדשדש.
    */
   it('QA יודע שהחותמות עברו לאחריותו אחרי שהסריקה בוטלה', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa).toContain('⟨נבדק: YYYY-MM-DD⟩');
     expect(qa).toMatch(/STAMPS ARE NOW YOURS/);
     expect(qa).toMatch(/03-for-roy/);
@@ -256,7 +256,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * ⛔ ואף אחד מהם ⛔ אינו רשאי לקרוא בזה ביטול של D-114: הרנדר עדיין מחייב.
    */
   it('סף ההפרש אצל QA, והשאלה במספר אצל PM — ⛔ ושניהם ⛔ אינם מבטלים את D-114', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa, 'QA: סף ההפרש').toMatch(/DELTA THRESHOLD/);
     expect(qa, 'QA: המבחן היחיד').toMatch(/does the learner get hurt/i);
     const pm = text('PM');
@@ -270,13 +270,13 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     const dev = text('DEV');
     expect(dev, 'DEV חייב לדעת שהוא מסמן 🟣 ⛔ ולא ✅').toContain('🟣');
     expect(dev).toMatch(/⛔ NOT ✅/);
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa, 'QA חייב לדעת שהוא הופך 🟣 ל-✅ אחרי מיזוג').toMatch(/FLIP 🟣 TO ✅/);
     expect(qa).toContain('origin/dev');
   });
 
   it('⛔ הנוסח שהוחלף ב-D-114 ⛔ אינו חוזר לאף פרומפט', () => {
-    for (const a of ['DEV', 'CRITIC'] as const) {
+    for (const a of ['DEV', 'QA'] as const) {
       const body = text(a);
       expect(body, `${a}: ⛔ «החוקה גוברת בגימור» חזר`).not.toMatch(
         /on finish, the constitution wins|בגימור.{0,20}החוקה גוברת/i,
@@ -289,7 +289,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   it('QA ⛔ אינו ממזג בזמן נעילה של **סוכן כלשהו**, ⛔ ולא רק DEV', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa).toContain('LOCK_HELD_BY');
     expect(qa).toMatch(/ANY agent's lock/);
     expect(qa, '⛔ הנוסח הישן חזר').not.toMatch(/`LOCK_HELD_BY: DEV` in/);
@@ -325,7 +325,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     for (const a of ['DEV', 'PM', 'CONTENT'] as const) {
       expect(text(a), `${a}: finishing שייך ל-QA`).toMatch(/finishing-a-development-branch` is QA/);
     }
-    expect(text('CRITIC'), 'QA: המיזוג שלו').toContain('superpowers:finishing-a-development-branch');
+    expect(text('QA'), 'QA: המיזוג שלו').toContain('superpowers:finishing-a-development-branch');
   });
 
   /**
@@ -378,7 +378,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
 
   /** ⛔ D-145 — QA כותב את החוב הנדחה **בזמן החתימה**, ⛔ ו-`36 § 13.1` ⛔ אינו משתנה. */
   it('QA נושא את הרגיסטר הנדחה, ⛔ ובלי לגעת בשלוש החותמות', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa, 'QA: הרגיסטר').toContain('plan/61-deferred.md');
     expect(qa, 'QA: לפני הזזת המוקד').toContain('ACTIVE_WORKSTREAM');
     // ⛔ החותמות נשארות שלוש — הטענה נכתבה כדי שהרגיסטר ⛔ לא יזחל לחוקה של רוי.
@@ -401,7 +401,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * ⛔ אינה שלו.** זה כל מה שמפריד בין «טיק זול» ל«טיק שחותם על מה שלא קרא».
    */
   it('🚦 QA נושא שער מסלול בראש הקובץ, והזול נעצר בו', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa, 'שער המסלול').toMatch(/STEP 0\.1 — WHICH LANE ARE YOU/);
     expect(qa, 'שני המסלולים בשמם').toContain('מסלול: שער');
     expect(qa, 'שני המסלולים בשמם').toContain('מסלול: מלא');
@@ -430,7 +430,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * מחותמת מדודה לחותמת גומי בטיק אחד.
    */
   it('🔴 טיק השער ⛔ אינו חותם, ⛔ אינו מזיז מוקד ו⛔ אינו כותב ממצא', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     for (const forbidden of [
       '⛔ seal a workstream',
       '⛔ move ACTIVE_WORKSTREAM',
@@ -474,7 +474,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   it('🎬 QA נושא את `review-animations`, ו⛔ אינו נושא אף סקיל בנייה (D-148)', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     expect(qa, 'QA: D-148').toContain('D-148');
     expect(qa, 'QA: סקיל הביקורת').toContain('`review-animations`');
     // התנאי הוא הדיף, ⛔ ולא המשימה — QA ⛔ אינו בוחר שורה
@@ -529,7 +529,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    */
   it('🔬 התוספת המותנית נשארה הפניה — ⛔ ולא העתקה של תוכן הסקיל', () => {
     const dev = text('DEV');
-    const qa = text('CRITIC');
+    const qa = text('QA');
     const devBlock = dev.slice(dev.indexOf('### 🎬 CONDITIONAL'));
     const qaStart = qa.indexOf('### 🎬 CONDITIONAL');
     const qaBlock = qa.slice(qaStart, qa.indexOf('\n## ', qaStart));
@@ -628,7 +628,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     });
 
     it('ⓓ ‏DEV ו-QA מחויבים לטעון את הסקיל שהתג נוקב בו — לפני קוד ולפני סקירה', () => {
-      for (const a of ['DEV', 'CRITIC'] as const) {
+      for (const a of ['DEV', 'QA'] as const) {
         const t = text(a);
         expect(t, `${a}: התג`).toContain('[SKILL:');
         expect(t, `${a}: האינדקס`).toContain('docs/skills-registry.md');
@@ -637,13 +637,13 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     });
 
     it('ⓔ 🔴 השער ⛔ אינו נפתח מבפנים — ⛔ DEV ו-QA ⛔ אינם כותבים את תא `סקיל`', () => {
-      for (const a of ['DEV', 'CRITIC'] as const) {
+      for (const a of ['DEV', 'QA'] as const) {
         expect(text(a), `${a}: ⛔ אינו כותב את התא`).toMatch(
           /⛔ \*\*(You|And you) ⛔ never write the `סקיל` cell/,
         );
       }
       // ⛔ וסקילי הבנייה נשארים חסומים ל-QA **גם** כשיש תג — אחרת התג הוא דלת אחורית.
-      expect(text('CRITIC'), 'QA: תג ⛔ אינו פותח סקיל בנייה').toMatch(
+      expect(text('QA'), 'QA: תג ⛔ אינו פותח סקיל בנייה').toMatch(
         /⛔ A `\[SKILL: X\]` tag ⛔ does not unblock them/,
       );
     });
@@ -742,7 +742,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     });
 
     it('ⓓ ‏QA יודע שהמוקד יכול לקרוא `general`, ושהחתימות שלו ⛔ לא זזו', () => {
-      const qa = text('CRITIC');
+      const qa = text('QA');
       expect(qa, 'QA: הערך').toContain('general');
       expect(qa, 'QA: החזרה לרצף היא שלו').toMatch(/still YOURS ALONE/);
       expect(qa, 'QA: מעבר ל-general ⛔ אינו חתימה').toMatch(/is ⛔ \*\*not\*\* a seal/);
@@ -878,22 +878,22 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
    * ⛔ **05/09 · T-167ⓔ · D-189 — the last open piece of the post-promotion check.**
    * ⓐⓑⓒ were already built (measured C-0439): the three-taps table exists, "please
    * review the site" is banned, and Roy's ❌ becomes a 🔴 finding quoting him
-   * verbatim. ⓔ was the one gap: nothing told CRITIC the block does NOT grow
+   * verbatim. ⓔ was the one gap: nothing told QA the block does NOT grow
    * without bound. `D-189` resolved it — one dedicated `## POST-PROMOTION CHECK`
-   * section that CRITIC REPLACES on every promotion, moving the outgoing section
+   * section that QA REPLACES on every promotion, moving the outgoing section
    * (Roy's answer included, if he gave one) into the `## נסגר` table first. The
    * numbered escalation table in `RULES § 0.21` is untouched by this — this is
    * about the ONE section, ⛔ not about the numbered items.
    * ⇒ two things are pinned here: the prompt actually instructs the replace, and
    * the register — right now, in this clone — holds exactly one live section.
    */
-  it('CRITIC: post-promotion check is one section CRITIC replaces, ⛔ not a list that grows (T-167ⓔ, D-189)', () => {
-    const qa = text('CRITIC');
-    expect(qa, 'CRITIC: the exact heading it must write').toContain('## POST-PROMOTION CHECK');
-    expect(qa, 'CRITIC: replaces on every promotion, never a second live one').toMatch(
+  it('QA: post-promotion check is one section QA replaces, ⛔ not a list that grows (T-167ⓔ, D-189)', () => {
+    const qa = text('QA');
+    expect(qa, 'QA: the exact heading it must write').toContain('## POST-PROMOTION CHECK');
+    expect(qa, 'QA: replaces on every promotion, never a second live one').toMatch(
       /REPLACE this section on every promotion, ⛔ never append a second one/,
     );
-    expect(qa, 'CRITIC: the outgoing section is closed BEFORE the new one is written').toMatch(
+    expect(qa, 'QA: the outgoing section is closed BEFORE the new one is written').toMatch(
       /into the `## נסגר` table at the bottom of `plan\/03-for-roy\.md`/,
     );
 
@@ -982,7 +982,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
  * בלי שאיש ידע — בדיוק הכשל של 04/09–06/09.
  */
 describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה, וזמני המסלולים', () => {
-  const ALL = ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const;
+  const ALL = ['DEV', 'PM', 'QA', 'CONTENT'] as const;
 
   it('⛔ אף פרומפט ⛔ אינו מורה עוד על יציאה שקטה (הכרעה 101)', () => {
     for (const a of ALL) {
@@ -991,7 +991,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
   });
 
   it('שלושת הסוכנים שנסוגים מדווחים שורת סיבה עם מחזיק, גיל נעילה ומספר קומיטים', () => {
-    for (const a of ['DEV', 'PM', 'CONTENT', 'CRITIC'] as const) {
+    for (const a of ['DEV', 'PM', 'CONTENT', 'QA'] as const) {
       const body = text(a);
       expect(body, `${a}: שורת הנסיגה`).toContain('יציאה מוקדמת — נעילה של');
       expect(body, `${a}: מי מחזיק`).toContain('LOCK_HELD_BY');
@@ -1029,7 +1029,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
    * נמדד ב-`list_triggers` ב-06/09 14:41Z.
    */
   it('זמני שני מסלולי QA בקובץ הם הזמנים שנמדדו בשרת (הכרעה 23)', () => {
-    const qa = text('CRITIC');
+    const qa = text('QA');
     // ⚠️ ⟦09/09⟧ ארבע ⇒ **שמונה**, באישור מפורש של רוי. QA-שער מיזג 4 פעמים ביום מול
     // 12 חלונות של DEV ⇒ `main..dev` הגיע ל-80. הטענה עוקבת אחרי המדידה, ⛔ לא להפך.
     expect(qa, 'שער — שמונה יריות').toContain('01:55Z · 04:55Z · 07:55Z · 10:55Z · 13:55Z · 16:55Z · 19:55Z · 22:55Z');
@@ -1054,7 +1054,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(dev, 'DEV: קורא את חסם המיזוג').toContain('MERGE_BLOCKERS');
     // ⛔ המופע היחיד המותר ב-DEV הוא האיסור עצמו — ⛔ לא הוראת קריאה.
     expect(dev, 'DEV: נאסר עליו במפורש').toMatch(/`PROMOTION_BLOCKERS` is ⛔ NOT yours/);
-    expect(text('CRITIC'), 'QA: כותב את חסם המיזוג').toContain('MERGE_BLOCKERS');
+    expect(text('QA'), 'QA: כותב את חסם המיזוג').toContain('MERGE_BLOCKERS');
     expect(text('PROMOTER'), 'PROMOTER: חסם הקידום').toContain('PROMOTION_BLOCKERS');
   });
 
@@ -1067,7 +1067,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     // ⛔ **שורה שאוסרת ⛔ אינה שורה שמורה.** הטענה נקראת שורה-שורה כי הטקסט שמכיל את
     // האיסור מכיל בהכרח גם את המחרוזת עצמה — רגקס על הקובץ כולו היה נופל על האיסור.
     const FORBIDS = /⛔ ?not |⛔ NOT |never |⛔ אינו|⛔ אין/i;
-    for (const a of ['CRITIC', 'PROMOTER'] as const) {
+    for (const a of ['QA', 'PROMOTER'] as const) {
       const body = text(a);
       const offenders = body
         .split('\n')
@@ -1153,17 +1153,17 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
    * בפלט הסשן, ו-`git log` הוא הדבר היחיד שבדיקה 17 יכולה לקרוא.
    */
   /**
-   * 🧭 **`CRITIC.md` ⛔ לא אמר למי ממצא מנותב — וזו הסיבה המבנית ל-31:1.**  ⟦NEW 08/09⟧
+   * 🧭 **`QA.md` ⛔ לא אמר למי ממצא מנותב — וזו הסיבה המבנית ל-31:1.**  ⟦NEW 08/09⟧
    *
-   * 🔬 נמדד 08/09: חיפוש `owner`·`route`·`פתוח →` ב-`CRITIC.md` ⇒ **0 תוצאות**, בעוד
+   * 🔬 נמדד 08/09: חיפוש `owner`·`route`·`פתוח →` ב-`QA.md` ⇒ **0 תוצאות**, בעוד
    * `plan/60-findings.md` נושא **58** מופעים של `פתוח →`. ⇒ הקונבנציה עברה **בחיקוי
    * שורה שכנה**, והתוצאה: **31 מתוך 40** הממצאים הפתוחים בבעלות PM מול **1** ל-DEV —
    * ו-**19 מהם** נוקבים נתיב תחת `app/` או `components/`, כלומר יושבים בתור של הסוכן
    * היחיד ש⛔ אינו רשאי לכתוב קוד (`PM.md:1`).
    * ⇒ ⛔ **⛔ לא כשל של PM — משפט חסר בקובץ של QA.**
    */
-  it('CRITIC.md מורה למי ממצא מנותב — שלושת היעדים, ⛔ לא חיקוי שורה שכנה', () => {
-    const qa = text('CRITIC');
+  it('QA.md מורה למי ממצא מנותב — שלושת היעדים, ⛔ לא חיקוי שורה שכנה', () => {
+    const qa = text('QA');
     expect(qa, 'ניתוב ל-DEV').toMatch(/⬜ פתוח → \*\*DEV\*\*/);
     expect(qa, 'ניתוב ל-PM').toMatch(/⬜ פתוח → \*\*PM\*\*/);
     expect(qa, 'ניתוב לרוי').toMatch(/⬜ פתוח → \*\*רוי\*\*/);
@@ -1190,7 +1190,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
         .filter((l) => !/⛔|403|F-204|pkill/.test(l));
       expect(runs, `${a}: ⛔ next dev חזר כפקודה`).toEqual([]);
     }
-    for (const a of ['DEV', 'PM', 'CRITIC'] as const) {
+    for (const a of ['DEV', 'PM', 'QA'] as const) {
       expect(text(a), `${a}: ההליכה מול next start`).toMatch(/npx next start -p 3000/);
       expect(text(a), `${a}: build קודם — אחרת ⛔ אין מה להגיש`).toMatch(/npm run build && \(npx next start/);
     }
@@ -1228,7 +1228,7 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(pr, '⛔ ⛔ ואין ניסוח מחדש').toMatch(/not\s+rephrase it/);
     expect(pr, 'וסירוב מותיר ראיה קריאה').toMatch(/PROMOTION_BLOCKERS/);
     // ⛔ ההרשאה ⛔ אינה מטפסת לסוכנים אחרים.
-    for (const a of ['DEV', 'PM', 'CRITIC', 'CONTENT'] as const) {
+    for (const a of ['DEV', 'PM', 'QA', 'CONTENT'] as const) {
       expect(text(a), `${a}: ⛔ ההרשאה ⛔ אינה שלו`).not.toMatch(/STANDING AUTHORISATION/);
     }
   });
@@ -1391,5 +1391,116 @@ describe('docs/agents/CONTENT.md — טבלת אמירם היא התור, ⛔ ו
   it('הרישוי מוכרע בפרומפט, ⇒ הסוכן ⛔ אינו נעצר לשאול', () => {
     expect(body, 'האזהרה שמכריעה').toContain('R-027');
     expect(body, 'המסמך שקובע').toContain('plan/20-alerts.md');
+  });
+});
+
+/**
+ * 🔴 **הסבב של 09/09 — חמשת התפקידים שוכתבו, וזה מה ששומר על השכתוב.**
+ * כל טענה כאן היא **חוזה בין שני קבצים**: מה שסוכן אחד כותב, סוכן אחר קורא. ⛔ טענת
+ * ניסוח אחת ⛔ אין כאן — נוסח שנשבר בלי שהצד השני ידע הוא בדיוק המחלקה שהקובץ הזה קיים נגדה.
+ */
+describe('09/09 — PM עובד מול מחלקה ויעדים, ⛔ ולא מול רשימה', () => {
+  const pm = text('PM');
+
+  it('קורא את מה ש-DEV באמת בנה — מ-`git log`, ⛔ לא מהרגיסטר', () => {
+    expect(pm, 'הצעד עצמו').toContain('STEP 1.9');
+    expect(pm, 'הפקודה, ולא «הסתכל על הקומיטים»').toContain(
+      'origin/dev..origin/work/current',
+    );
+    expect(pm, 'תחילית הקומיטים שהוא מחפש').toContain('loop(DEV)');
+    // ⛔ וזו ⛔ אינה ביקורת: 🟣 ⇢ ✅ נשאר של QA בלבד (`F-126`).
+    expect(pm, '⛔ אינו מאשר ואינו דוחה').toMatch(/⛔ not a review|⛔ do ⛔ not approve/);
+  });
+
+  it('הזרימה היא מחלקה עם יעדים, ו⛔ אין תקרה על שורות נגזרות', () => {
+    expect(pm, 'המסגור').toMatch(/A DEPARTMENT WITH GOALS/);
+    expect(pm, '⛔ אין תקרה על שורות נגזרות').toMatch(/⛔ no ceiling on how many rows you write/);
+    // ⛔ והבלם שכן נשאר — שורה שהומצאה עדיין מוגבלת ל-3 (`§ 0.17`).
+    expect(pm, 'הבלם על המצאה נשאר').toContain('§ 0.17');
+  });
+
+  it('הרנדרים הם רצפה לעבור, ⛔ לא תמונה להעתיק', () => {
+    expect(pm, 'המסגור').toMatch(/A FLOOR TO CLEAR, ⛔ NOT A PICTURE TO COPY/);
+    expect(pm, 'שלושת הוורדיקטים').toContain('🟡 meets it');
+    expect(pm, 'ובסתירה — `36` גובר').toMatch(/`36` wins/);
+  });
+
+  it('לפני קוד UI — סקיל עיצוב, ו«אף אחד» ⛔ אינה תשובה', () => {
+    const step = pm.slice(pm.lastIndexOf('## STEP 5.5'));
+    expect(step, 'הסקיל שבקלון').toContain('skills/taste-skill/SKILL.md');
+    expect(step, 'הסקיל השני שבקלון').toContain('skills/imagegen-frontend-mobile/SKILL.md');
+    expect(step, 'והשלישי, שמובא מהענף').toContain('ui-ux-pro-max:ui-styling');
+    expect(step, '⛔ «אף אחד» אינה תשובה כאן').toMatch(/«⛔ none» is\s*\n?⛔ \*\*not\*\* an available answer/);
+  });
+
+  it('מריץ `npm run archive` — ו⛔ אינו מוחק שורה', () => {
+    expect(pm, 'הפקודה').toContain('npm run archive && npm run measure:plan');
+    expect(pm, '⛔ ואינה מוחקת').toMatch(/⛔ AND IT DOES ⛔ NOT DELETE/);
+    expect(pm, 'שלוש הסיבות שנמדדו').toContain('scripts/archive-registers.mjs');
+  });
+});
+
+describe('09/09 — `WORKSTREAM_ENDING` הוא חוזה בין שלושה קבצים', () => {
+  it('PM כותב · QA קורא · והשדה קיים ב-`plan/00-control.md`', () => {
+    expect(text('PM'), 'PM כותב').toContain('WORKSTREAM_ENDING:');
+    expect(text('QA'), 'QA קורא').toContain('WORKSTREAM_ENDING');
+    expect(readFileSync('plan/00-control.md', 'utf8'), 'השדה קיים בקובץ עצמו').toMatch(
+      /^WORKSTREAM_ENDING:/m,
+    );
+  });
+
+  it('⛔ ואינו היתר להזיז את `ACTIVE_WORKSTREAM` מוקדם — בשני הקבצים', () => {
+    for (const a of ['PM', 'QA'] as const) {
+      expect(text(a), `${a}: «מוצתה» עדיין אפס`).toMatch(/§ 0\.23 ז׳/);
+    }
+    expect(text('QA'), 'QA: אזהרה, ⛔ לא היתר').toMatch(/⛔ NOT permission to move/);
+  });
+});
+
+describe('09/09 — QA: ארבע חובות, ותקרה על מה שמועבר ל-DEV', () => {
+  const qa = text('QA');
+
+  it('ארבע החובות כתובות ובסדר, ו⛔ אף אחת ⛔ אינה «בנה»', () => {
+    for (const duty of ['①  GATE', '②  WALK', '③  FILE', '④  HAND OVER']) {
+      expect(qa, duty).toContain(duty);
+    }
+    expect(qa, '⛔ אינו בונה').toMatch(/⛔ Nothing here says «build»/);
+  });
+
+  it('התקרה היא ארבעה ל-DEV, ⛔ ו-🔴 מחוץ לה', () => {
+    expect(qa, 'התקרה').toMatch(/At most FOUR findings routed to `→ DEV` per tick/);
+    expect(qa, '⛔ ואינה חלה על PM או על רוי').toMatch(/routed to PM or to Roy are ⛔ uncapped/);
+    expect(qa, '🔴 מחוץ לתקרה').toMatch(/CRITICAL is ⛔ outside the cap/);
+    // ⛔ והשמירה שהופכת «תקרה» ל⛔ לא «השמטה»: ממצא שמוחזק עדיין נכתב במלואו.
+    expect(qa, '⛔ שום דבר ⛔ אינו נזרק').toMatch(/⛔ Nothing is thrown away/);
+  });
+});
+
+describe('09/09 — DEV: בונה מול יעד, ⛔ אינו ממתין, ⛔ ואינו עושה תחזוקה במקום מוצר', () => {
+  const dev = text('DEV');
+
+  it('רשאי לפתוח שורה בעצמו — בשלושה תנאים, ו⛔ בלי לתייג לעצמו סקיל', () => {
+    expect(dev, 'ההיתר').toMatch(/YOU BUILD TOWARD A GOAL, ⛔ NOT DOWN A LIST/);
+    expect(dev, 'הגדר — אותה גדר של C-0366').toContain('C-0366');
+    expect(dev, '⛔ אינו כותב לעצמו תג סקיל').toMatch(/⛔ never write your\s*\n?own `\[SKILL: X\]` tag/);
+  });
+
+  it('⛔ אינו ממתין לאיש', () => {
+    expect(dev, '⛔ אינו ממתין').toMatch(/YOU WAIT FOR ⛔ NOBODY/);
+    expect(dev, 'ובמקום להמתין — מנתב').toContain('RULES § 0.20');
+  });
+
+  it('תחזוקה היא תקורה של טיק, ⛔ ולא תפוקתו', () => {
+    expect(dev, 'הכותרת').toMatch(/⛔ NOT MAINTENANCE INSTEAD OF PRODUCT CODE/);
+    expect(dev, 'המדידה שמצדיקה אותה').toContain('161 of 516');
+    expect(dev, '⛔ ואינו אוסר את התקורה עצמה').toMatch(/This does ⛔ not ban the overhead/);
+  });
+
+  it('היתר העיצוב ניתן מראש — וארבע הגדרות שלו כתובות', () => {
+    expect(dev, 'ההיתר').toMatch(/PRE-APPROVED/);
+    expect(dev, '⛔ אין לחזור לשאול').toMatch(/⛔ DO ⛔ NOT COME BACK TO ASK/);
+    expect(dev, 'גדר 1 — שכבה א׳ קפואה').toContain('שכבה א׳');
+    expect(dev, 'גדר 3 — ההתראות שאוסרות UI מסוים').toContain('R-016');
+    expect(dev, 'גדר 4 — בלתי הפיך').toContain('RULES § 0.22');
   });
 });

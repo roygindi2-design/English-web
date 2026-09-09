@@ -84,7 +84,7 @@ export const LIVE_CONTRACT = [
   'plan/61-deferred.md',
   'docs/agents/PM.md',
   'docs/agents/DEV.md',
-  'docs/agents/CRITIC.md',
+  'docs/agents/QA.md',
   'docs/agents/CONTENT.md',
 ];
 
