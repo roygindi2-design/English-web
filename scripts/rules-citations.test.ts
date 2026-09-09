@@ -111,6 +111,45 @@ describe('🔢 מספר הפקודות ב-`npm run verify` נגזר, ⛔ ולא 
     for (const c of commands) expect(rules, `RULES: הפקודה ${c}`).toContain(c);
   });
 
+  /**
+   * ⚡ **⟦NEW 09/09 · שלב 4⟧ שני שערים, ⛔ ושניהם נגזרים מ-`package.json`.**
+   * ‏`verify:fast` הוא **תת-קבוצה ממש** של `verify` — שבע פקודות מתוך תשע, בלי
+   * `build` ובלי Playwright — ⇒ הוא תופס טעות הקלדה, ציטוט שבור וטסט אדום ב-**40
+   * שניות** במקום בזמן הדחיפה. 🔴 **ו⛔ הוא ⛔ אינו תחליף:** הוא ⛔ אינו רואה בנייה
+   * שבורה ו⛔ אינו רואה מסך שבור, ⇒ הדחיפה ממשיכה להריץ את כל התשע. הכרעה 100
+   * ⛔ אינה זזה — ההוק הוא מה שהופך את השער המלא למכני, ו⛔ שום דבר כאן ⛔ אינו נוגע בו.
+   */
+  const fast = ((JSON.parse(read('package.json')) as { scripts: Record<string, string> }).scripts[
+    'verify:fast'
+  ] ?? '')
+    .split('&&')
+    .map((c) => c.trim().replace(/^npm (run )?/, ''))
+    .filter(Boolean);
+
+  it('⚡ `verify:fast` הוא תת-קבוצה ממש של `verify`, ⛔ ולא רשימה שנייה', () => {
+    expect(fast.length, 'הוא קיים ואינו ריק').toBeGreaterThan(0);
+    expect(fast.length, '⛔ והוא קצר מהמלא — אחרת ⛔ אין לו טעם').toBeLessThan(commands.length);
+    for (const c of fast) expect(commands, `${c} ⛔ אינו ב-verify המלא`).toContain(c);
+    // ⛔ **שתי הפקודות שהוא קיים כדי ⛔ לא להריץ** — ⛔ ולא «בערך»: אם אחת מהן תזחל
+    // פנימה, «מהיר» יהפוך ל-3–5 דקות ואיש ⛔ לא יבחין.
+    expect(fast, '⛔ ⛔ בלי build').not.toContain('build');
+    expect(fast, '⛔ ⛔ בלי Playwright').not.toContain('check:mobile');
+    // ⛔ **וההפרש הוא בדיוק השתיים** — ⇒ פקודה חדשה ב-verify ⛔ לא תיפול בשקט בין השניים.
+    expect(commands.filter((c) => !fast.includes(c)).sort()).toEqual(['build', 'check:mobile']);
+  });
+
+  it('⚡ וחמשת הפרומפטים נוקבים בשני השערים ובמספריהם', () => {
+    const words: Record<number, string> = { 6: 'SIX', 7: 'SEVEN', 8: 'EIGHT', 9: 'NINE' };
+    for (const a of ['DEV', 'PM', 'QA', 'CONTENT', 'PROMOTER']) {
+      const body = read(`docs/agents/${a}.md`);
+      expect(body, `${a}: השער המהיר`).toContain('npm run verify:fast');
+      expect(body, `${a}: מספר הפקודות המהיר`).toContain(`${words[fast.length]} commands`);
+      expect(body, `${a}: מספר הפקודות המלא`).toContain(`${words[commands.length]} commands`);
+      // 🔴 הטענה שמונעת את הקריאה השגויה «מהיר ⇒ אפשר לדווח ירוק».
+      expect(body, `${a}: ⛔ אינו תחליף`).toMatch(/⛔ NOT a substitute/);
+    }
+  });
+
   it('🔴 ‏`QA.md` ו-`CONTENT.md` נוקבים באותו מספר — הם השער והכותב', () => {
     const word = WORDS[commands.length];
     for (const a of ['QA', 'CONTENT']) {

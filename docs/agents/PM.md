@@ -694,6 +694,21 @@ idempotent, so running it on a tick with nothing to archive costs a second and p
 ```
 
 ### 🔒 THE PUSH IS GATED BY `verify` — ⛔ AND NOT BY YOUR MEMORY OF IT.  ⟦NEW 06/09 · הכרעה 100 · Roy's explicit instruction⟧
+
+⚡ **⟦NEW 09/09⟧ AND THERE ARE NOW **TWO** GATES, ⛔ WITH DIFFERENT JOBS.**
+```
+npm run verify:fast    SEVEN commands — inside the tick, as often as you like.
+                       ⛔ no `build`, ⛔ no Playwright.  ~40 seconds, measured.
+npm run verify         NINE commands — the FULL gate. What `pre-push` runs, and
+                       the only one that may be called "green".  3–5 minutes.
+```
+🔴 ⛔ **`verify:fast` ⛔ is ⛔ NOT a substitute, and ⛔ never the thing you report.**
+It is a **strict subset** — the seven checks that a source edit can break without
+rendering a page — so it catches a typo, a broken citation and a red test in 40
+seconds instead of finding them at push time. ⛔ **It ⛔ cannot see a broken build
+and ⛔ cannot see a broken screen**, which is exactly why the push still runs all nine.
+⇒ **run it while you work; ⛔ never claim green from it.** הכרעה 100 is untouched:
+the hook is what makes the full gate mechanical, and ⛔ nothing here reaches the hook.
 ```
 npm run hooks:install        ⇐ once per clone. `npm install` already does it (npm `prepare`).
 ```
