@@ -273,3 +273,33 @@ describe('scripts/hooks/pre-push — שלמות הרגיסטרים ⛔ אינה 
     expect(r.code, 'ו⛔ אינו חוסם').toBe(0);
   });
 });
+
+/**
+ * 🧑‍⚖️ **`ops-agent` — מסלול חוקי לסשן תפעול, ⛔ ולא ריכוך של השער.**  ⟦NEW 09/09⟧
+ * ⛔ נמדד: `main` פיגר **106 קומיטים**, ⇒ שיבוט PROMOTER קרא חוקה בת 75KB במקום 98KB,
+ * ⛔ בלי `docs/agents/QA.md` ו⛔ בלי `.claude/settings.json` — הקובץ שנועד לשחרר את
+ * הדחיפה שלו עצמו (`F-203`). ⇒ הקובץ מגיע ל-`main` ⛔ רק בדחיפה ל-`main`.
+ * 🔴 **הטענות כאן הן על מה שנשאר אסור** — ⛔ ארבעת סוכני הלופ.
+ */
+describe('scripts/hooks/pre-push — מי רשאי לדחוף ל-main אחרי 09/09', () => {
+  for (const who of ['dev-agent', 'pm-agent', 'content-agent', 'critic-agent']) {
+    it(`⛔ ${who} ⛔ עדיין נדחה מ-main`, () => {
+      const r = runHook(repo(who), 'refs/heads/main');
+      expect(r.code, `⛔ ${who} חייב להידחות`).not.toBe(0);
+      expect(r.out).toMatch(/הדחיפה ל-main נחסמה/);
+    });
+  }
+
+  for (const who of ['promoter-agent', 'ops-agent']) {
+    it(`✅ ${who} ⛔ אינו נחסם על בעלות הענף`, () => {
+      const r = runHook(repo(who), 'refs/heads/main', { SKIP_VERIFY: '1' });
+      expect(r.out, `${who}: ⛔ לא נחסם על main`).not.toMatch(/הדחיפה ל-main נחסמה/);
+    });
+  }
+
+  it('⛔ ו-SKIP_VERIFY ⛔ עדיין אינו פותח את main לסוכן לופ', () => {
+    const r = runHook(repo('dev-agent'), 'refs/heads/main', { SKIP_VERIFY: '1' });
+    expect(r.code).not.toBe(0);
+    expect(r.out).toMatch(/הדחיפה ל-main נחסמה/);
+  });
+});

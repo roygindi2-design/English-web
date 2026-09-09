@@ -64,12 +64,25 @@ WHOAMI="$(git config user.name 2>/dev/null || echo '')"
 for ref in "${REFS[@]}"; do
   case "$ref" in
     refs/heads/main)
-      if [ "$WHOAMI" != "promoter-agent" ]; then
-        echo "⛔ הדחיפה ל-main נחסמה: הזהות היא '$WHOAMI', ⛔ ולא 'promoter-agent'."
-        echo "⛔ RULES § 0.1 ב׳ — ⛔ אף סוכן ⛔ אינו דוחף ל-main מלבד PROMOTER."
-        echo "⇒ QA ממזג ל-dev; PROMOTER לוקח משם. ⛔ אין מסלול אחר, ו-SKIP_VERIFY ⛔ אינו פותח אותו."
-        exit 1
-      fi
+      # 🧑‍⚖️ ⟦09/09⟧ **`ops-agent` נוסף, ⛔ ולא כדי לרכך את השער — כדי שיהיה לו מסלול
+      # חוקי במקום עקיפה.** ⛔ נמדד: `main` פיגר ב-**106 קומיטים** אחרי `work/current`,
+      # ⇒ שיבוט של PROMOTER (‏`git clone` בלי `-b` ⇒ ענף ברירת המחדל) קרא חוקה בת 75KB
+      # במקום 98KB, ⛔ בלי `docs/agents/QA.md` ו⛔ בלי `.claude/settings.json` — **הקובץ
+      # שנועד לשחרר את הדחיפה שלו עצמו ל-main** (`F-203`). ⇒ ביצה ותרנגולת: הקובץ מגיע
+      # ל-`main` ⛔ רק בדחיפה ל-`main`.
+      # 🔴 **ומה שהשער ⛔ עדיין אוסר ⛔ אינו זז:** `dev-agent` · `pm-agent` ·
+      # `content-agent` · `critic-agent` — ⛔ ארבעת סוכני הלופ ⛔ עדיין נדחים. סשן
+      # תפעול רץ **בהוראה מפורשת של רוי לכל ריצה**, ⛔ ולא בתזמון.
+      case "$WHOAMI" in
+        promoter-agent|ops-agent) ;;
+        *)
+          echo "⛔ הדחיפה ל-main נחסמה: הזהות היא '$WHOAMI'."
+          echo "⛔ RULES § 0.1 ב׳ — ⛔ אף סוכן ⛔ אינו דוחף ל-main מלבד PROMOTER."
+          echo "⇒ QA ממזג ל-dev; PROMOTER לוקח משם. ⛔ אין מסלול אחר, ו-SKIP_VERIFY ⛔ אינו פותח אותו."
+          echo "⇒ סשן תפעול בהוראת רוי: './scripts/g config user.name ops-agent'."
+          exit 1
+          ;;
+      esac
       ;;
     refs/heads/dev)
       case "$WHOAMI" in
