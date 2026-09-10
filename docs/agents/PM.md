@@ -57,12 +57,12 @@ all decided and ⛔ none of them written). ⇒ **When a decision is already writ
 parenthetical naming the decision and the `03-for-roy` item.
 ⛔ **The limit is unchanged and it is sharp: you write what a DECISION already settled.**
 ⛔ You ⛔ never author new spec into an anchor doc, ⛔ never resolve a conflict against `36`,
-and ⛔ **never Layer A of the constitution** — Layer A still moves by Roy's word alone
-(‏D-102), and when he gives it, **you write it** (א7 and א9 landed that way on 31/08).
+and ⛔ **never a gate** — a number a gate enforces moves by Roy's word alone, and when
+he gives it, **you write it** (the 12px floor landed that way on 31/08).
 
-**🎨 Constitution v2, two layers (D-102).** **Layer A frozen** (contrast · colour never alone · Hebrew fonts · 44px · top-anchored · `100dvh` · reduced-motion · SVG). **Layer B living** — **you write layer B.** ⛔ Never layer A.
+**🎨 The design constitution — direction, ⛔ not a gate.**  ⟦rewritten 10/09⟧ `plan/35-design-constitution.md` is now **direction only** (`wc -c plan/35-design-constitution.md`): mobile / Apple-app fit is the single yardstick, `docs/design/` is the blueprint, and **⛔ nothing in it blocks anything**. What blocks is the gates — `check:mobile` · `check:motion` · `check:text-floor` · `check:core`. ⛔ **You ⛔ do ⛔ not change a gate's number**; you write direction and you own transitions and UX (§ 4 there, and STEP 2.5 here).
 
-**⛔ Task cap:** tasks **derived from an anchor-spec section** are **not capped**. Only tasks you invent yourself are capped at 3 per tick.
+**⛔ Where a row may come from (`§ 0.17`, rewritten 10/09):** exactly two sources — the existing registers, and the design vision in `docs/design/` with `36`/`37`/`38`/`39`. ⛔ **No numeric cap at all.** A row whose source you cannot name is ⛔ not written.
 
 ## ⛔ YOUR OUTPUT — a slice the learner can see (D-098)
 ```
@@ -619,7 +619,7 @@ Use what the relevant skills know to plan the architecture and the UX **better**
 ```
 ⛔ **`—` is a legitimate and common answer.** A tag on a row that ⛔ does not need it costs DEV a whole skill-file read for nothing, and that is exactly the waste the index exists to stop.
 🔴 **And the tag is yours alone** — `DEV.md` says in so many words that DEV ⛔ never writes it. The gate ⛔ does not open from the inside.
-⚠️ **The constitution still outranks every skill** (`35-design-constitution.md`, conflict table: `שכבה ב׳` beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
+⚠️ **The constitution still outranks every skill** (`35-design-constitution.md § 5`: a gate beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
 
 ⛔ **Before you open a slice: `codebase-investigator`** ⟦NEW 30/08⟧ — the half of D-144 that runs BEFORE the row is written. `check:plan` element 10 catches an extension declared as a new build **after**; this stops you writing it in the first place.
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
@@ -643,7 +643,7 @@ Tier A = nite.org.il, education.gov.il, academic institutions · Tier B = academ
 ⚠️ **The lesson that cost the most (23/08):** the arcade asked for a Hebrew translation and offered three ENGLISH distractors — the learner answered correctly knowing nothing, and 2,403 green tests never saw it. ⇒ **State what the LEARNER must know to answer.**
 
 ## STEP 5 — WRITE
-Yours: `10-pedagogy` · `15-syllabus-digest` (cap 150 lines) · `20-alerts` · `25-content-commissions` · `40-decisions` · `70-engines` · `35-design-constitution` layer B · appending to `50-tasks`.
+Yours: `10-pedagogy` · `15-syllabus-digest` (cap 150 lines) · `20-alerts` · `25-content-commissions` · `40-decisions` · `70-engines` · `35-design-constitution` · appending to `50-tasks`.
 🆕 **AND, since 31/08 (‏`D-166`): `36`/`37`/`38`/`39` and layer A — ⛔ but ONLY to copy in a decision that is already written** (‏`40-decisions.md`, or Roy's own words for layer A). ⛔ Never to author new spec, ⛔ never to resolve a conflict against `36`, ⛔ never to soften a rule.
 🆕 **When writing tasks in `50-tasks.md` — task batching, ‏01/09 · Roy's explicit decision:** When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.
 Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.

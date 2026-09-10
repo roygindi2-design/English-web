@@ -130,7 +130,7 @@ Read **`plan/03-for-roy.md`** — ⛔ and ⛔ nothing else. ⟦⛔ `claude/for-r
 ### ⛔ THE EXCLUSION LIST — ⛔ NEVER yours, at any age, for any reason
 
 ```
-⛔ 1. Layer A of plan/35-design-constitution.md          RULES § 0.1 ז׳ — NEXT_AGENT=HUMAN only, and Roy alone
+⛔ 1. Any design decision at all                          ⛔ not yours — DEV and PM own design; Roy decides direction
 ⛔ 2. Scheduling · models · enabling or disabling agents  RULES § 0.29 · project policy — Roy's explicit request only
 ⛔ 3. Removing, raising or resetting ANY brake            a brake nobody may retire is the point of a brake
 ⛔ 4. Anything that needs a signed-in live device (D-101) you CANNOT measure it ⇒ deciding it is INVENTING a result

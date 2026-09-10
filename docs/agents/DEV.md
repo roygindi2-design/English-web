@@ -334,8 +334,11 @@ tick spent asking.** Decide it, build it, and say in one line what you chose.
 
 ⚠️ **Four fences, and they are the ⛔ only ones:**
 ```
-1  שכבה א׳ is FROZEN            contrast · 44px · prefers-reduced-motion · colour never
-                                the only channel  ⇒ NEXT_AGENT=HUMAN, ⛔ never your call
+1  THE GATES ARE FROZEN         contrast · 44px · prefers-reduced-motion · colour never
+                                the only channel. ⛔ These are ⛔ not opinions — they are
+                                `check:mobile` · `check:motion` · `check:text-floor` ·
+                                `validate_palette`. Changing one ⇒ NEXT_AGENT=HUMAN,
+                                ⛔ never your call
 2  the anchor documents win     `36` · `37` · `38` · `39` name screens, order and timings.
                                 A design choice that CONTRADICTS one is a finding, ⛔ not a taste call
 3  `plan/20-alerts.md` wins     R-016 · R-017 · R-020 · R-022 · R-023 forbid specific UI —
@@ -461,7 +464,7 @@ grep -n '^| T-XXX |' plan/50-tasks.md      ⇒ read the `סקיל` cell
 ```
 **The index of every skill, what triggers it and where it lives: `docs/skills-registry.md`.** Read the index, ⛔ then the one skill the tag names — ⛔ never all of them: those two files are the heaviest read of your tick — `wc -c docs/skills-registry.md skills/<the-one-the-tag-names>/SKILL.md`.
 ⛔ **You ⛔ never write the `סקיל` cell yourself** — PM or Roy writes it. A row you tagged and then "obeyed" is a permission you wrote for yourself.
-⚠️ **The constitution outranks the skill, always.** `35-design-constitution.md` says it in its own conflict table. A skill that contradicts a measured number is a **finding you file**, ⛔ not a deviation you take.
+⚠️ **The constitution outranks the skill, always.** `35-design-constitution.md § 5` says it in those words. A skill that contradicts a **measured number in a gate** is a **finding you file**, ⛔ not a deviation you take.
 
 ### 🎬 CONDITIONAL — THE MOTION SKILLS. ⛔ THE ARENA'S LIVING LAYER, ⛔ AND NOWHERE ELSE.  ⟦NEW 30/08 · D-148⟧
 The row you picked carries **`arena`** ⛔ **AND** **`שכבה ב׳`** in its `אבן דרך` cell ⇒ run **`animate`** before you write the motion, and `apple-design` / `emil-design-eng` **only if `animate` itself sends you for more context** — they are secondary, ⛔ never a starting point.
@@ -471,7 +474,7 @@ it came from, and re-deriving it costs a tick. ⛔ **The trigger is the CELL, �
 ⛔ no such cell ⇒ ⛔ no skill, and ⛔ **you never write that cell yourself** (as with `שכבה ב׳`).
 ⛔ **Any other row these three are BLOCKED** — including an `arena` row that carries ⛔ no layer tag, and every `study` / `onboarding` / `account` screen. ⛔ «The screen looked static» is ⛔ not a reason; a screen that should move and does not is a **task row**, ⛔ not a skill you reach for mid-tick.
 🔴 **⛔ You NEVER write `שכבה ב׳` onto a row.** PM or Roy writes it (`plan/50-tasks.md` legend · D-148). A row you tagged yourself is a permission you wrote yourself, and a gate you can open from the inside ⛔ is not a gate.
-🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md` already says so in its own conflict table: `שכבה ב׳` beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
+🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md § 5` already says so: **a gate beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
 ⛔ **`prefers-reduced-motion` is Layer A — ⛔ no exception, ⛔ including in the arena.**
 ⛔ **BLOCKED with ⛔ no condition: `find-animation-opportunities`** — it searches the codebase for places to ADD motion, and you take work from `50-tasks.md` alone (`RULES § 0.6א`). It is Roy's, by hand. ⛔ **`write-swift` is ⛔ not this stack.**
 

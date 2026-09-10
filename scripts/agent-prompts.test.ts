@@ -1291,7 +1291,7 @@ describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידו�
 
   it('רשימת ההחרגה קיימת במלואה — שבעה סעיפים, ⛔ ולא שישה', () => {
     for (const rule of [
-      'Layer A',
+      'Any design decision at all',
       'Scheduling',
       'brake',
       'D-101',
@@ -1524,7 +1524,7 @@ describe('09/09 — DEV: בונה מול יעד, ⛔ אינו ממתין, ⛔ ו
   it('היתר העיצוב ניתן מראש — וארבע הגדרות שלו כתובות', () => {
     expect(dev, 'ההיתר').toMatch(/PRE-APPROVED/);
     expect(dev, '⛔ אין לחזור לשאול').toMatch(/⛔ DO ⛔ NOT COME BACK TO ASK/);
-    expect(dev, 'גדר 1 — שכבה א׳ קפואה').toContain('שכבה א׳');
+    expect(dev, 'גדר 1 — השערים קפואים').toContain('THE GATES ARE FROZEN');
     expect(dev, 'גדר 3 — ההתראות שאוסרות UI מסוים').toContain('R-016');
     expect(dev, 'גדר 4 — בלתי הפיך').toContain('RULES § 0.22');
   });
