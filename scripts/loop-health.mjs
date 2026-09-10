@@ -587,6 +587,48 @@ check('22', 'שורה סגורה ⛔ לא הוחזרה לפתוחה — תסמי
   };
 });
 
+/**
+ * 🧑‍⚖️ 23 — **הפרק «פתוח» של רוי נושא ⛔ רק מה שפתוח.**  ⟦NEW 10/09 · דרישת רוי⟧
+ *
+ * 🔬 **מה נמדד 10/09, ⛔ ולא שוער:** ‏`plan/03-for-roy.md` היה **207KB** עם **164
+ * קומיטים ב-30 יום**, והפרק שכותרתו «פתוח» נשא **71 שורות — 59 מהן סגורות (83%)**.
+ * ⇒ רוי פתח קובץ שכותרתו «פתוח», מצא בו כמעט רק עבודה גמורה, **והפסיק לקרוא אותו.**
+ * ⛔ **וזה ⛔ לא היה מקרה:** ⛔ אף שער ⛔ לא קרא את הקובץ הזה — `measure:plan` קורא
+ * `50-tasks` ו-`60-findings` בלבד.
+ *
+ * 🔴 **ומה שהבדיקה הזאת באמת מונעת:** הקובץ הוא **הערוץ היחיד מהלופ אל רוי**. פרק
+ * שרובו ⛔ אינו מה שכותרתו אומרת ⛔ אינו נקרא — וברגע שהוא ⛔ אינו נקרא, **כתיבה אליו
+ * הופכת לפעולת ברירת מחדל של «⛔ אין לי מה לעשות»**, שזו בדיוק ההתנהגות שרוי תיאר.
+ *
+ * ⚠️ **הסף הוא יחס, ⛔ ולא מספר שורות.** פרק פתוח גדול ⛔ אינו בעיה אם הוא באמת פתוח.
+ * ⇒ שורה סגורה בתוך «פתוח» היא **הפגם**, והתקרה עליה היא **אפס**.
+ */
+check('23', 'הפרק «פתוח» ב-`03-for-roy.md` ⛔ אינו נושא שורות סגורות', () => {
+  const text = read(at('plan', '03-for-roy.md'));
+  if (text === '') {
+    return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — הקובץ ⛔ אינו בקלון' };
+  }
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.startsWith('## פתוח'));
+  const end = lines.findIndex((l, i) => i > start && l.startsWith('## נסגר'));
+  if (start === -1 || end === -1) {
+    return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — ⛔ אין פרק «פתוח»/«נסגר»' };
+  }
+  const rows = lines.slice(start, end).filter((l) => /^\| ?\d+ ?\|/.test(l));
+  const closed = rows.filter((l) => l.includes('✅') || l.includes('🔒') || l.includes('נסגר'));
+  return {
+    ok: closed.length === 0,
+    detail: `${rows.length} שורות בפרק «פתוח», ${closed.length} מהן סגורות (תקרה 0)`,
+    items:
+      closed.length === 0
+        ? []
+        : [
+            '⇒ שורה שנסגרה עוברת ל-`## נסגר` או ל-`plan/archive/for-roy-archive.md`.',
+            '⇒ ⛔ אפס מחיקה — היא **עוברת**, ⛔ ואינה נמחקת.',
+          ],
+  };
+});
+
 /* 4 — the ONLY path by which an answer from Roy re-enters the loop. */
 check('4', 'סומן RELEASE_READY ⇒ שלוש ההקשות נכתבו', () => {
   const control = read(at('plan', '00-control.md'));

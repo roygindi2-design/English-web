@@ -38,6 +38,23 @@ git command failed with a network / proxy error?
 ⛔ Only a double no reaches Roy.
 ```
 
+🔴 **⛔ BEFORE YOU WRITE A ROW FOR ROY — TWO QUESTIONS, AND BOTH MUST BE YES.**  ⟦NEW 10/09 · Roy's explicit instruction⟧
+```
+① ⛔ Can ONLY Roy close this?   a key · an account · a licence · money · product direction
+                                ⛔ «I would like a decision» is ⛔ not the same as «only he can».
+② Did I read the OPEN section   ⛔ before writing, ⛔ not from memory — is it already there?
+   of `03-for-roy.md` just now?
+```
+⛔ **⛔ If either is NO, the row does ⛔ not go there.** It goes to `plan/50-tasks.md`,
+to `plan/60-findings.md`, or ⛔ nowhere.
+
+🔬 **Why this is now a gate and ⛔ not advice. Measured 10/09:** the file was **207KB**
+with **164 commits in 30 days**, and its section titled «פתוח» held **71 rows of which
+59 were closed — 83%**. ⇒ Roy stopped reading it. **And a channel he ⛔ does ⛔ not read
+is ⛔ not an escalation — it is a place to put things down.** ⇒ `loop:health` **check
+23** now fails on a closed row sitting inside «פתוח», and a row that ⛔ never belonged
+there is the same defect one step earlier.
+
 🔴 **AND THE ROW YOU WRITE FOR ROY MUST CARRY A STAMP:** `⟨נבדק: YYYY-MM-DD⟩`. ‏`RULES § 0.21` has demanded this since it was written and **zero stamps were ever written** until 24/08. ‏`loop:health` check 3 now fails the tick without it, and an item unchecked for 7 days is itself a finding. **Sweeping `03-for-roy`? Refresh the stamps you looked at.**
 
 ⚠️ **The subtle case** (`25 § K-003`): the block keyboard's continuation trees look like a content commission and are **not** — what may legally follow what in English is a **grammatical claim**, R-010 forbids inventing it, and a wrong set **teaches wrong syntax and passes every test**. **"Needs producing" → CONTENT. "Nothing to produce it from" → Roy.**
