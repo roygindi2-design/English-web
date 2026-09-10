@@ -585,7 +585,12 @@ supabase link  --project-ref <from the scheduled task>
 **Did not run it in THIS message? You may not claim it passes.**
 ```
 npm run verify
+
 ```
+
+🔴 **וכשאתה מריץ את שתי הפקודות האלה — `npm install && npm run verify` — תן להן חלון מפורש של `timeout: 600000` (עשר דקות, המקסימום של הכלי). ⛔ זה ⛔ אינו ליטוש, וזה ⛔ אינו זהירות יתר.**
+🔬 **נמדד 10/09, ⛔ ולא שוער:** `npm run verify` על הקלון הזה לוקח **183 שניות**, ו-**ברירת המחדל של כלי ה-Bash היא 120 שניות**. ⇒ בלי חלון מפורש הפקודה נהרגת באמצע — ⛔ **ואתה ⛔ לא רואה «נכשל», אתה רואה «פג הזמן»**, כלומר שער שלא הסתיים. ואם תקרא את זה כ-`verify` אדום, ⛔ לא תמזג, ⛔ לא תדחוף, ותצא בלי ולו קומיט אחד — **בדיוק כמו שקרה בשלוש הרצות שער חיות ב-10/09: 1:49 · 2:14 · 2:18, כולן צמודות לתקרת ה-120 שניות, כולן אפס מיזוג, ו-`dev..work` חיכה עם עבודה ירוקה.**
+⚠️ **ו⛔ אל תפצל את `verify` לחלקים כדי לעמוד בזמן** — זה היה הופך אותו מ**שער** ל**דגימה**. החלון הוא מה שמשתנה, ⛔ לא השער.
 ⚠️ **Five** commands including `check:mobile`.
 ⚠️ **Any generated file whose input you touched is regenerated BEFORE this**, in the same commit: `npm run measure:plan` for the registers · `npm run build:ingest && npm run build:levels && npm run measure:gate` for `data/generated/`. A content tick went red on `dev` on 24/08 for exactly this.
 Banned: "should work" · "looks fine" · "passed earlier" · "the subagent reported success".

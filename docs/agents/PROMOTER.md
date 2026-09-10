@@ -165,10 +165,15 @@ An item is yours only when **all four** hold:
 ```
 npm install                          # installs .git/hooks/pre-push (npm prepare)
 npm run verify                       # NINE commands. ⛔ Not eight, ⛔ not seven.
+
 npm run loop:health
 ./scripts/g rev-list --count origin/main..origin/dev
 ./scripts/g merge-base --is-ancestor origin/main origin/dev   # a real ff, ⛔ or no merge
 ```
+
+🔴 **וכשאתה מריץ את שתי הפקודות האלה — `npm install && npm run verify` — תן להן חלון מפורש של `timeout: 600000` (עשר דקות, המקסימום של הכלי). ⛔ זה ⛔ אינו ליטוש, וזה ⛔ אינו זהירות יתר.**
+🔬 **נמדד 10/09, ⛔ ולא שוער:** `npm run verify` על הקלון הזה לוקח **183 שניות**, ו-**ברירת המחדל של כלי ה-Bash היא 120 שניות**. ⇒ בלי חלון מפורש הפקודה נהרגת באמצע — ⛔ **ואתה ⛔ לא רואה «נכשל», אתה רואה «פג הזמן»**, כלומר שער שלא הסתיים. ואם תקרא את זה כ-`verify` אדום, ⛔ לא תמזג, ⛔ לא תדחוף, ותצא בלי ולו קומיט אחד — **בדיוק כמו שקרה בשלוש הרצות שער חיות ב-10/09: 1:49 · 2:14 · 2:18, כולן צמודות לתקרת ה-120 שניות, כולן אפס מיזוג, ו-`dev..work` חיכה עם עבודה ירוקה.**
+⚠️ **ו⛔ אל תפצל את `verify` לחלקים כדי לעמוד בזמן** — זה היה הופך אותו מ**שער** ל**דגימה**. החלון הוא מה שמשתנה, ⛔ לא השער.
 
 ⛔ **`verify` red ⇒ ⛔ NO PROMOTION. Full stop.** Write the failing command and the first failing file into **both** `PROMOTION_BLOCKERS` **and** `MERGE_BLOCKERS` in `plan/00-control.md` — a red `verify` is the ⛔ only thing the two fields share, because it blocks the merge as well as the promotion, report it, and stop. ⛔ **You ⛔ do not fix `verify`** — that is DEV's row.
 ⛔ **`SKIP_VERIFY=1` is ⛔ NEVER yours.** It exists so a broken `verify` cannot make the repo unpushable; it ⛔ does not exist to ship past a red gate.

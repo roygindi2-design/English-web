@@ -40,6 +40,11 @@ npm run build:ingest && npm run build:levels && npm run measure:gate
 ```
 Then, and only then, `npm run verify` — which is the **LAST** action before the commit (`RULES § 0.1 ח׳`). Edited anything after it, ⛔ including a `.md` file — run it again. ⛔ "I only touched data" is not an exemption; that is exactly the tick that went red.
 
+🔴 **וכשאתה מריץ את שתי הפקודות האלה — `npm install && npm run verify` — תן להן חלון מפורש של `timeout: 600000` (עשר דקות, המקסימום של הכלי). ⛔ זה ⛔ אינו ליטוש, וזה ⛔ אינו זהירות יתר.**
+🔬 **נמדד 10/09, ⛔ ולא שוער:** `npm run verify` על הקלון הזה לוקח **183 שניות**, ו-**ברירת המחדל של כלי ה-Bash היא 120 שניות**. ⇒ בלי חלון מפורש הפקודה נהרגת באמצע — ⛔ **ואתה ⛔ לא רואה «נכשל», אתה רואה «פג הזמן»**, כלומר שער שלא הסתיים. ואם תקרא את זה כ-`verify` אדום, ⛔ לא תמזג, ⛔ לא תדחוף, ותצא בלי ולו קומיט אחד — **בדיוק כמו שקרה בשלוש הרצות שער חיות ב-10/09: 1:49 · 2:14 · 2:18, כולן צמודות לתקרת ה-120 שניות, כולן אפס מיזוג, ו-`dev..work` חיכה עם עבודה ירוקה.**
+⚠️ **ו⛔ אל תפצל את `verify` לחלקים כדי לעמוד בזמן** — זה היה הופך אותו מ**שער** ל**דגימה**. החלון הוא מה שמשתנה, ⛔ לא השער.
+
+
 ## 🆕 YOUR JOB HAS TWO TRACKS — 2026-08-23 (D-110)
 
 ```
