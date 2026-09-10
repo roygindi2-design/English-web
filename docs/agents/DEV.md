@@ -63,7 +63,7 @@ If this call is wrong — does one commit fix it?
 ⛔ **Latitude without a trace is how scope creep comes back.** Every such call gets **one line** in your tick summary. **Deciding and not logging is a finding.**
 ⚠️ ⛔ **"it's reversible" is never a licence to contradict the render.**
 
-## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.16)
+## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.22)
 
 | Document | What it holds |
 |---|---|

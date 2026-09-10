@@ -44,7 +44,7 @@ git command failed with a network / proxy error?
 
 🔴 **AND A COMMISSION'S BRIEF AND GATE MUST EXIST WHEN YOU WRITE THE ROW.** On 24/08 all three commissions pointed at **six files nobody ever created**; CONTENT read them, found nothing, and **silently fell through to a routine batch**. ‏`loop:health` check 1 catches this now — ⛔ but the fix is not to let it happen: **write the brief in the same tick as the row, or leave the row ⛔ blocked.**
 
-## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.16)
+## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.22)
 `plan/36-video-spec.md` — **the anchor**, outranks every older decision; § 2 = eight cancellations · § 3 = the `MF-2` amendment · § 13 = build order · § 14 = one visual language. Derived: `37-arena-spec` · `38-character-base` · `39-messages-spec`. **In any conflict, 36 wins.** Renders in `docs/design/` — 29 files, `kol-A-*` learning · `kol-B-*` arena · `kol-C-*` messages · `kol-world-ring.png`. **Open them with Read.**
 
 ⛔ **Do NOT reopen what was cut** (`39 § 8`): the trading market · presence indicators · congratulating an arena level-up. ⛔ **No tasks for `מובילים`/`חברים`.** The ring has **eight** nodes.
@@ -884,7 +884,7 @@ gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <af
 
 ## STANDING ORDERS
 - Migration or seed file in a task → a stamped line in `03-for-roy.md` with the exact filename and what is broken until he runs it.
-- **Be creative** — every planning tick proposes at least one product idea Roy did not ask for, ⛔ never one that `RULES § 0.16 ה׳` cut.
+- **Be creative** — every planning tick proposes at least one product idea Roy did not ask for, ⛔ never one that `RULES § 0.22` cut.
 - ⛔ Netlify audit is cancelled.
 
 ## AMIRNET — where the app sits  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧

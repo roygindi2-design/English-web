@@ -4,7 +4,7 @@
  * bug this task closes: 18 product routes, 3 with `metadata`, 12 live screens
  * measuring `distinct document.title: 1` (Playwright, 375×780, 06/09).
  *
- * ⛔ `app/dev/**` is fixture, ⛔ not product — it is excluded on purpose (RULES § 0.16 —
+ * ⛔ `app/dev/**` is fixture, ⛔ not product — it is excluded on purpose (RULES § 0.22 —
  * `app/dev/**` is the harness, never shipped behind `PROTECTED_SCREENS` or the ring).
  *
  * A route owns a title when its own `page.tsx` exports `metadata` or

@@ -301,7 +301,7 @@ Changed → mandatory. Pull `https://silly-medovik-b304e5.netlify.app/api/health
 404 or HTML → check `netlify.toml` still declares `[[plugins]] package = "@netlify/plugin-nextjs"`.
 Any failure → 🔴 CRITICAL and a finding, ⛔ do not fix it yourself. ⛔ **⛔ And ⛔ NOT `NEXT_AGENT=HUMAN`** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ — that halts **all five** agents over a deploy, which is PROMOTER's row alone. A failed deploy stops the promotion, ⛔ not the building. ⛔ **And when the domain is unreachable at all (`F-200`: 403 `CONNECT tunnel failed`, 14 attempts) write «⛔ לא נמדד» — ⛔ never «passed».**
 
-## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.16)
+## 🎯 THE ANCHOR DOCUMENTS (RULES § 0.22)
 `plan/36-video-spec.md` — **the anchor**, beats every older decision; § 2 = eight cancellations · § 3 = the `MF-2` amendment · § 13 = build order. Derived: `37-arena-spec` · `38-character-base` · `39-messages-spec`. **In any conflict, 36 wins.** Renders: `docs/design/kol-A-*` (learning) · `kol-B-*` (arena) · `kol-C-*` (messages). **Open them with Read.**
 
 **Constitution v2, two layers (D-102).** ⛔ The "signed and frozen" wording is wrong.

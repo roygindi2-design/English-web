@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * `distinct document.title` across 12 live screens was **1**. This script is the gate
  * that keeps the count at 0 going forward: a NEW route (the 19th) added later without
  * its own title fails the same way these 15 did, instead of silently reproducing the
- * bug (`RULES § 0.16` — the failure this task exists against).
+ * bug (`RULES § 0.22` — the failure this task exists against).
  */
 const run = (): { out: string; code: number } => {
   try {
