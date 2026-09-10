@@ -327,7 +327,7 @@ export default function SimulationMessage(props: { readonly id: string }): React
 - Consumes: the `0018_stories.sql` template (named constraints inside `do $$`, `revoke all` then `grant select`), the `0014_arcade.sql` per-learner policy pattern (`auth.uid() = user_id`).
 - Produces: two tables the route in Task 3 reads (`message_simulations`) and Task 8 writes (`message_simulation_state`).
 
-- [ ] **Step 1: Write the failing guard test**
+- [x] **Step 1: Write the failing guard test**
 
 ```ts
 // lib/supabase/messageSimulations.test.ts
@@ -403,12 +403,12 @@ describe('0022 — הודעות: the simulations and the learner state', () => {
 });
 ```
 
-- [ ] **Step 2: Run it — red**
+- [x] **Step 2: Run it — red**
 
 Run: `npx vitest run lib/supabase/messageSimulations.test.ts`
 Expected: FAIL — `ENOENT … 0022_message_simulations.sql`.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 ```sql
 -- 0022_message_simulations.sql — הודעות · תיבת הסימולציות (T-190 · 39 § 7 · D-109).
@@ -537,12 +537,12 @@ grant select, insert, update on public.message_simulation_state to authenticated
 commit;
 ```
 
-- [ ] **Step 4: Run the guard and the migration hygiene suite — green**
+- [x] **Step 4: Run the guard and the migration hygiene suite — green**
 
 Run: `npx vitest run lib/supabase/messageSimulations.test.ts scripts/migration-hygiene.test.ts`
 Expected: PASS (hygiene: token `0022` unique, no gap after `0021`, every `drop policy` matches a `create policy`).
 
-- [ ] **Step 5: Stage (⛔ no commit yet — T-190 is one commit, Task 4 Step 10)**
+- [x] **Step 5: Stage (⛔ no commit yet — T-190 is one commit, Task 4 Step 10)**
 
 Run: `./scripts/g add supabase/migrations/0022_message_simulations.sql lib/supabase/messageSimulations.test.ts`
 
@@ -556,7 +556,7 @@ Run: `./scripts/g add supabase/migrations/0022_message_simulations.sql lib/supab
 
 **Interfaces:** see the `Interfaces` block, Task 2 section. Consumes nothing. Produces `Simulation` · `InboxItem` · `toSimulations` · `mergeInbox` · `unanswered` · `inboxCounts` · `inboxCountsHe` for Tasks 3, 4, 5, 8.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/messages.test.ts
@@ -641,12 +641,12 @@ describe('mergeInbox · unanswered · inboxCounts', () => {
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run lib/core/messages.test.ts`
 Expected: FAIL — cannot resolve `./messages`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // lib/core/messages.ts
@@ -775,12 +775,12 @@ export function inboxCountsHe(c: InboxCounts): string {
 }
 ```
 
-- [ ] **Step 4: Run — green, and the purity gate**
+- [x] **Step 4: Run — green, and the purity gate**
 
 Run: `npx vitest run lib/core/messages.test.ts && npm run check:core`
 Expected: PASS · `check:core` exit 0 (no react/window/document/localStorage/process.env/fetch).
 
-- [ ] **Step 5: Stage**
+- [x] **Step 5: Stage**
 
 Run: `./scripts/g add lib/core/messages.ts lib/core/messages.test.ts`
 
@@ -797,7 +797,7 @@ Run: `./scripts/g add lib/core/messages.ts lib/core/messages.test.ts`
 - Consumes: `readSupabaseEnv` · `createRouteClient` (`lib/supabase/auth.ts:39,56`), `parseLevel` (`lib/core/levelSummary.ts:36`), `toSimulations` · `mergeInbox` · `inboxCounts` (Task 2).
 - Produces: `MessagesBody` (see Interfaces) for Tasks 6 and 8.
 
-- [ ] **Step 1: Write the failing source-scan test**
+- [x] **Step 1: Write the failing source-scan test**
 
 ```ts
 // app/api/world/messages/route.test.ts
@@ -832,12 +832,12 @@ describe('T-190ⓓ — GET /api/world/messages is a soft read', () => {
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run app/api/world/messages/route.test.ts`
 Expected: FAIL — `ENOENT … route.ts`.
 
-- [ ] **Step 3: Write the route**
+- [x] **Step 3: Write the route**
 
 ```ts
 // app/api/world/messages/route.ts
@@ -916,12 +916,12 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 4: Run — green**
+- [x] **Step 4: Run — green**
 
 Run: `npx vitest run app/api/world/messages/route.test.ts && npm run typecheck`
 Expected: PASS · `tsc` exit 0.
 
-- [ ] **Step 5: Write the contract section** — insert before `## POST /api/review/context` in `docs/api-contract.md`
+- [x] **Step 5: Write the contract section** — insert before `## POST /api/review/context` in `docs/api-contract.md`
 
 ```markdown
 ## GET /api/world/messages
@@ -962,7 +962,7 @@ Expected: PASS · `tsc` exit 0.
 | `session_expired` | 401 | ⛔ אין סשן. |
 ```
 
-- [ ] **Step 6: Stage**
+- [x] **Step 6: Stage**
 
 Run: `./scripts/g add app/api/world/messages/route.ts app/api/world/messages/route.test.ts docs/api-contract.md`
 
@@ -981,7 +981,7 @@ Run: `./scripts/g add app/api/world/messages/route.ts app/api/world/messages/rou
 - Consumes: `Simulation` · `RawStateRow` · `mergeInbox` · `inboxCounts` · `inboxCountsHe` · `CONTEXT_HE` (Task 2), `EnWord` (`components/EnWord.tsx`).
 - Produces: `FIXTURE_SIMULATIONS: readonly Simulation[]` · `FIXTURE_STATES: readonly RawStateRow[]` · `FIXTURE_NOW = '2026-09-08T09:30:00+03:00'` for Tasks 6 and 8.
 
-- [ ] **Step 1: Write the failing fixture test — pinned to the render**
+- [x] **Step 1: Write the failing fixture test — pinned to the render**
 
 ```ts
 // app/dev/messages/messages-fixture.test.ts
@@ -1059,12 +1059,12 @@ describe('the messages fixture is the render’s data, ⛔ not a second authorin
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run app/dev/messages/messages-fixture.test.ts`
 Expected: FAIL — cannot resolve `./messages-fixture`.
 
-- [ ] **Step 3: Write the fixture module**
+- [x] **Step 3: Write the fixture module**
 
 ```ts
 // app/dev/messages/messages-fixture.ts
@@ -1122,12 +1122,12 @@ export const FIXTURE_STATES: readonly RawStateRow[] = [
 ];
 ```
 
-- [ ] **Step 4: Run — green**
+- [x] **Step 4: Run — green**
 
 Run: `npx vitest run app/dev/messages/messages-fixture.test.ts`
 Expected: PASS (4 tests).
 
-- [ ] **Step 5: Write the dev data sheet — ⛔ not a screen**
+- [x] **Step 5: Write the dev data sheet — ⛔ not a screen**
 
 ```tsx
 // app/dev/messages/page.tsx
@@ -1170,7 +1170,7 @@ export default function DevMessagesPage() {
 
 ⚠️ If `React.ReactNode` is not in scope, `import type { ReactNode } from 'react'` and use it. `app/dev/**` is excluded from `check:titles` (`scripts/check-page-titles.mjs:7`) ⇒ ⛔ no `metadata` here.
 
-- [ ] **Step 6: Register the route for `check:mobile`** — in `scripts/verify-mobile.mjs`, right after the `'/dev/story/done',` line (`:143`):
+- [x] **Step 6: Register the route for `check:mobile`** — in `scripts/verify-mobile.mjs`, right after the `'/dev/story/done',` line (`:143`):
 
 ```js
   // C-XXXX (T-190ⓔ) — the messages fixture data sheet. Without Supabase env
@@ -1181,7 +1181,7 @@ export default function DevMessagesPage() {
   '/dev/messages',
 ```
 
-- [ ] **Step 7: The D-054 coupling row (row ⓑ 🔗 — «⛔ צומת בלי שורה שם ⛔ אינו נכנס לטבעת», D-074)** — in `plan/archive/decisions-archive.md`, replace line 1856 exactly:
+- [x] **Step 7: The D-054 coupling row (row ⓑ 🔗 — «⛔ צומת בלי שורה שם ⛔ אינו נכנס לטבעת», D-074)** — in `plan/archive/decisions-archive.md`, replace line 1856 exactly:
 
 ```
 | **הודעות** (תיבת הסימולציות · `39 § 7`) | ⛔ **מנותקת לחלוטין** | `message_simulations` + `message_simulation_state` (`0022`) — ⛔ אפס מפתח זר ל-`word_progress`, ⛔ אפס לטבלאות הזירה; `39 § 3`: המקלדת ⛔ אינה נוגעת ב-`word_progress` | 🔵 T-190 (C-XXXX, DEV) — השורה נכתבה באותו קומיט של המיגרציה |
@@ -1189,12 +1189,12 @@ export default function DevMessagesPage() {
 
 Run: `grep -n 'הודעות · מייל · סימולטורים' plan/archive/decisions-archive.md` — Expected: 0 lines after the edit; `grep -n 'מנותקת לחלוטין\*\* | \`message_simulations\`' plan/archive/decisions-archive.md` ⇒ 1 line.
 
-- [ ] **Step 8: Run the fast gates**
+- [x] **Step 8: Run the fast gates**
 
 Run: `npm run typecheck && npm run check:core && npx vitest run lib/core/messages.test.ts lib/supabase/messageSimulations.test.ts app/api/world/messages/route.test.ts app/dev/messages/messages-fixture.test.ts scripts/migration-hygiene.test.ts`
 Expected: all PASS.
 
-- [ ] **Step 9: STEP C — apply the migration through the connector, and verify it** — the file is `supabase/migrations/0022_message_simulations.sql`
+- [x] **Step 9: STEP C — apply the migration through the connector, and verify it** — the file is `supabase/migrations/0022_message_simulations.sql`
 
 ⛔ Only if the session has `mcp__Supabase__*` tools (check with `ToolSearch("select:mcp__Supabase__apply_migration,mcp__Supabase__execute_sql,mcp__Supabase__list_projects")`). ⛔ No connector ⇒ ⛔ do not improvise a credential, ⛔ do not `supabase login`; skip this step, keep T-190 **⬜** with the note «המיגרציה נכתבה, ⛔ לא הוחלה — הקונקטור חסר בסשן», and say so in the report.
 
@@ -1204,7 +1204,7 @@ Expected: all PASS.
 4. `mcp__Supabase__execute_sql`: `select conname from pg_constraint where conname like 'message_simulations_%' order by 1;` ⇒ Expected: the four names.
 5. Paste those outputs into the tick report. ⛔ Never paste a key, a URL with a token, or a JWT.
 
-- [ ] **Step 10: Commit T-190**
+- [x] **Step 10: Commit T-190**
 
 ```bash
 ./scripts/g add app/dev/messages scripts/verify-mobile.mjs plan/archive/decisions-archive.md

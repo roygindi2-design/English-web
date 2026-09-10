@@ -850,6 +850,43 @@ T-124 · D-065). הצרכן הוא `<LevelMapScreen>`, ולשלושת הקודי
 | `unavailable` | 503 | ⛔ אין ENV, או כישלון קריאה אחר. המחרוזת הגולמית של PostgREST יורדת ללוג ⛔ ולעולם לא לגוף — היא נוקבת בטבלאות ובעמודות. |
 
 
+## GET /api/world/messages
+
+תיבת הסימולציות של הלומד (T-190 · `39 § 7` · D-109). דורש סשן חי, ובאותו סדר שומרים
+קבוע — `readSupabaseEnv()` → `getUser()` → שאילתה (דפוס C-0032).
+
+**פרמטרים: אין.**
+
+**גוף מוצלח:**
+
+```json
+{ "ok": true, "level": "A1",
+  "items": [ { "id": "…", "senderEn": "Tom", "context": "tourist", "subjectEn": "Trip to Israel",
+               "bodyEn": "…", "requiredWords": ["summer", "visit", "recommend"], "level": "A1",
+               "createdAt": "2026-09-08T06:20:00.000Z", "readAt": null, "answeredAt": null } ],
+  "counts": { "total": 3, "unanswered": 2 } }
+```
+
+⚠️ **`items` ממוין מהחדש לישן** (`created_at desc`). `context` הוא סט סגור
+(`tourist · restaurant · teacher · hotel`), והתווית העברית היא `CONTEXT_HE` ב-
+`lib/core/messages.ts`. `requiredWords` הוא **בדיוק שלוש** מילים. `readAt`/`answeredAt` הם
+שורת המצב של הלומד עצמו — `null` כשאין שורה. ⚠️ **בפרוסה הזאת `answeredAt` תמיד `null`** —
+המקלדת שכותבת אותו היא R-026.
+
+🔴 **קריאה רכה — ⛔ לעולם לא 503 (T-190ⓓ).** התיבה היא צומת אחד מתשעה בטבעת, ו-503
+כאן היה מסך כשל ללומד שבא לזירה. ⇒ כל כישלון קריאה הוא **200** עם `ok:false` וקוד.
+המחרוזת הגולמית של PostgREST יורדת ללוג ⛔ ולעולם לא לגוף.
+
+**כישלונות:**
+
+| `code` | HTTP | מתי |
+|---|---|---|
+| `no_level` | **200** | הלומד טרם בחר רמה (D-037). ⛔ אין נפילה שקטה ל-A1. |
+| `no_simulations` | **200** | ⛔ אין ולו סימולציה אחת ברמת הלומד — הזרע של T-193 טרם נחת. |
+| `schema_missing` | **200** | `42P01` / `PGRST205` — `0023` טרם הוחלה. |
+| `unavailable` | **200** | ⛔ אין ENV, או כישלון קריאה אחר. |
+| `session_expired` | 401 | ⛔ אין סשן. |
+
 ## POST /api/review/context
 
 הקשה על מילה בתוך סיפור (T-187ⓕ · D-084 · סוגרת את T-149ⓐ). דורש סשן חי, ובאותו סדר

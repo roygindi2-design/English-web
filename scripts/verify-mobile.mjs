@@ -141,6 +141,12 @@ const ROUTES = [
   // ב-EXPECTED_CONSOLE. ⚠️ שורות התשובה הן שורות **רשימה**, ולכן החרגת `36 § 3`
   // ⛔ אינה חלה עליהן והן נמדדות מול 44px מלאים ככל כפתור אחר.
   '/dev/story/done',
+  // C-0518 (T-190ⓔ) — the messages fixture data sheet. Without Supabase env
+  // `GET /api/world/messages` answers `unavailable` (200) in its own contract, so the
+  // product route would measure a failure state. The sheet renders the fixture through the
+  // same pure functions the route uses and asks the server for nothing ⇒ ⛔ no entry in
+  // EXPECTED_CONSOLE. Task 6 (T-191) turns this route into the inbox list itself.
+  '/dev/messages',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
