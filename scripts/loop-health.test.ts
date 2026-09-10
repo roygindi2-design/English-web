@@ -289,7 +289,21 @@ describe('scripts/loop-health.mjs', () => {
      */
     // ⚠️ 16 ו-17 נוספו 06/09 עם חלון רך עד 2026-09-13 (הכרעות 100 · 101).
     const soft = ['12', '13', '14', '16', '17'].filter((n) => warned(r.out, n));
-    const hard = Number(total) - Number(passes) - soft.length;
+    /**
+     * 🆕 ⟦10/09⟧ **`n/m` הוא מצב שלישי, ו⛔ לא סוג של כישלון.** `notMeasured` ⛔ אינו נספר
+     * במונה העוברים ו⛔ אינו נספר בקוד היציאה — כך הסקריפט בנוי, וכך בדיקה `:1088`
+     * טוענת במפורש («⛔ אי אפשר להכריע מכאן ⇒ n/m, ⛔ ואינה מפילה»). הטענה כאן הפחיתה
+     * ⛔ **רק** את הרכות, ולכן ברגע שבדיקה 17 יצאה `n/m` היא דרשה `exit 1` מסקריפט
+     * שיוצא ⛔ 0 בצדק.
+     * 🔴 **ו⛔ זו ⛔ אינה תקלה תיאורטית — היא התממשה 10/09:** הלופ היה כבוי 46 שעות ⇒
+     * חמשת הסוכנים שתקו ⇒ בדיקה 17 `n/m` ⇒ **`verify` אדום על `work/current`** ⇒
+     * ה-hook סירב לכל דחיפה ⇒ **הלופ ⛔ לא יכול היה להפעיל את עצמו מחדש.** בדיוק
+     * האזהרה הכתובה ב-`:1085`. ⇒ שני המצבים מופחתים, ⛔ ולא אחד.
+     */
+    const unmeasured = Array.from({ length: 24 }, (_, i) => String(i))
+      .concat(['3.5'])
+      .filter((n) => notMeasured(r.out, n));
+    const hard = Number(total) - Number(passes) - soft.length - unmeasured.length;
     expect(r.code).toBe(hard === 0 ? 0 : 1);
   });
 
@@ -1095,7 +1109,9 @@ describe('scripts/loop-health.mjs', () => {
 
     it('מודדת את ארבעת הסוכנים בריפו החי, ומדפיסה שעות לכל אחד', () => {
       const r = run('.');
-      const line = /^(?:  ok  | FAIL | warn )17\. .*$/m.exec(r.out)?.[0] ?? '';
+      // ⛔ ⟦10/09⟧ ` n/m  ` הוא מצב רביעי שהתחילית פספסה ⇒ בלופ שכולו שותק השורה
+      // **כן** נדפסה, והטענה «השורה נדפסת» נפלה על הפורמט, ⛔ לא על התוכן.
+      const line = /^(?:  ok  | FAIL | warn | n\/m  )17\. .*$/m.exec(r.out)?.[0] ?? '';
       expect(line, 'שורת הבדיקה נדפסת').not.toBe('');
       for (const name of ['DEV', 'PM', 'QA', 'CONTENT']) {
         expect(line, `${name} נמדד בשם`).toContain(name);
