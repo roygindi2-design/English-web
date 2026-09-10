@@ -86,15 +86,28 @@ SECTION 2 - THE FULL ANCHOR DEPENDENCY TABLE
 27 are cited by code under scripts/, lib/, app/ or components/.
 26 are cited by nothing anywhere in the repository.
 
-The 26 uncited anchors are all lettered sub-clauses:
-0.1א 0.1ב 0.1ג 0.1ד 0.1ה 0.1ו 0.1ז 0.1ח 0.1ט
-0.2א 0.2ב 0.2ג 0.2ד 0.2ה 0.2ו 0.2ז
-0.16א 0.16ב 0.16ג 0.16ד 0.16ה 0.16ו
-0.23ב 0.29א 0.29ד 0.29ה
-Note on how to read that: it means no file cites them BY LETTER. Their parent
-sections are heavily cited. It was verified that the repo uses only the tight
-citation form (§ 0.1ז) and zero instances of a spaced form (§ 0.1 ז׳), so this is
-not a measurement artifact.
+CORRECTION, 2026-09-10. The paragraph that stood here was WRONG, and the error is
+worth recording because it was the same class of defect the file reports elsewhere.
+It said 26 anchors were uncited and that this had been verified against a spaced
+citation form. That verification used a grep character class [א-ת] which silently
+matched nothing in this environment, and returned zero because it could not match,
+not because there was nothing to find.
+
+Re-measured with python: the repo carries 150 lettered citations in the SPACED form
+(§ 0.1 ז׳) against 98 in the tight form (§ 0.1ז). The spaced form is the majority.
+
+The genuinely uncited anchors are TEN, not 26:
+0.1ט 0.2א 0.2ה 0.2ו 0.2ז 0.16א 0.16ג 0.16ד 0.16ו 0.23ב
+These sixteen were cited all along, in the spaced form:
+0.1א 0.1ב 0.1ג 0.1ד 0.1ה 0.1ו 0.1ז 0.1ח 0.2ב 0.2ג 0.2ד 0.16ב 0.16ה 0.29א 0.29ד 0.29ה
+
+The consequence was larger than the miscount. scripts/check-rules-citations.mjs
+matched only the tight form, so all 150 spaced citations resolved against their
+PARENT section and their letter was never validated - which is exactly the hole the
+resolves() function was hardened against on 09/09. It was closed for one of the two
+forms only. Fixed 10/09: the letter is now read in both forms, with the geresh as
+the disambiguator so that a sentence beginning with a Hebrew word (§ 0.4 נסיגה) is
+not read as a sub-clause reference. Citations resolved went from 631 to 645.
 
 Format below: ANCHOR | TOTAL CITATIONS | AGENT FILES | TEST FILES:LINE | CODE FILES | TITLE
 0.0 | 7 | - | - | scripts/check-rules-citations.mjs | מפת המספור —
