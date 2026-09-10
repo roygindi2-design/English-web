@@ -225,9 +225,12 @@ describe('build-ingest-sql', () => {
       sql,
       '⛔ ⛔ אין תוכנית אחת על הבנק כולו — היא מה שהתפוצץ ב-1,200',
     ).not.toContain(`-- lot ${RECORDS.length} ·`);
+    // ⟦שוכתב 10/09⟧ `R-014` הוחלפה ⇒ ⛔ אין «שורות שנבחרו לבדיקה אנושית». מה שנשאר
+    // נמדד הוא **מניין המנות**, שהוא הדבר ש-`F-194` התפוצץ עליו — מספר אחד לבנק.
     expect(out, 'הדוח מונה מנות, ⛔ לא מספר אחד לבנק').toMatch(
-      new RegExp(`spot-check per batch \\(R-014\\): ${perFile.length} lots`),
+      new RegExp(`lots \\(R-014, replaced 10/09\\): ${perFile.length} `),
     );
+    expect(out, '⛔ ⛔ אין עוד תור אנושי').toContain('⛔ no human queue');
   });
 
   it('is deterministic — a second run produces a byte-identical file', () => {

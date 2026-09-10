@@ -12,10 +12,20 @@
  * same index across a batch — and «the answer is always the second one» is a shortcut a
  * learner finds long before we do. This is the fix, and it costs ⛔ zero columns.
  */
+/**
+ * ⛔ **ביטחון דקדוקי — מה שהכותב באמת יודע על הפריט.**  ⟦10/09 · `R-014`⟧
+ * מדגם, ⛔ ולא כל פריט: ברירת המחדל `medium`, יורד ל-`low` כשיש חשש ועולה ל-`high`
+ * אחרי אימות. ⛔ **ברירת מחדל ⛔ אינה טענה שמשהו אומת.**
+ */
+export const GRAMMAR_CONFIDENCE_VALUES = ['low', 'medium', 'high'] as const;
+export type GrammarConfidence = (typeof GRAMMAR_CONFIDENCE_VALUES)[number];
+
 export interface StoryQuestion {
   readonly questionEn: string;
   readonly answersHe: readonly string[];
   readonly correctIndex: number;
+  /** ⛔ `R-014` — מחליף את דגימת הבקרה האנושית. ⛔ אופציונלי: שורה ישנה ⛔ אינה שקרנית, היא ⛔ לא הצהירה. */
+  readonly grammarConfidence?: GrammarConfidence;
 }
 
 /**
