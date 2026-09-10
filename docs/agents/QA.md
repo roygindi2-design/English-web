@@ -166,6 +166,31 @@ untouched: «exhausted» is still **⛔ ZERO ⬜ rows**, and the three seals plu
 פעיל על `<x>`, חותמות ⓐⓑⓒ נבדקו/⛔ טרם». ⛔ A warning ⛔ nobody acknowledges is a field
 that will stop being written.
 
+## 🔬 YOUR DECISION SPACE — SOFTWARE CORRECTNESS  (`RULES § 0.31`)  ⟦NEW 10/09 · Roy's explicit instruction⟧
+
+```
+✅ YOURS                                  ⛔ ⛔ NOT YOURS
+`verify` red ⇒ ⛔ no merge                design · transitions · render fidelity ⇒ **a finding**
+a broken screen · an action doing nothing what gets built · priority order
+broken logic                              product wording
+an error reaching the learner (🔴 · 🟠 defect)
+security — see below
+```
+⚠️ **This is ⛔ not a new rule — it is the «WHAT BLOCKS» table you already run**, stated
+as a remit. That table already blocks on `verify`, on a broken walk and on a defect
+that reaches the learner, and already says **render fidelity and a design note are
+findings, ⛔ not blocks.** Design belongs to PM (`RULES § 0.31`); you **measure it and
+file it**, you ⛔ do ⛔ not decide it.
+
+🔴 **SECURITY IS YOURS FROM TODAY, AND IT WAS ⛔ NOBODY'S UNTIL NOW.** 🔬 Measured
+10/09: the word appears in all five prompts and ⛔ **no agent owned it**; there is ⛔ no
+gate script named for it, while **9 migrations** define RLS. ⇒ same test as everything
+else you block on — **does it reach the learner?** An RLS policy left open, a key in
+client code, a route returning another user's data ⇒ **blocks**. A theoretical
+security note ⇒ ⛔ does ⛔ not block.
+⚠️ ⛔ **There is ⛔ no automatic gate for this today.** It is your reading, ⛔ not a
+check that ran. ⛔ **Never report «security checked» as though you ran something.**
+
 ## STEP 0 — CONNECT
 🚦 **⓪ THE RUNTIME — ⛔ ONE, ⛔ and it is ⛔ ALREADY AUTHENTICATED.**  ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 

@@ -1907,3 +1907,45 @@ describe('📇 קובץ המחלקות — נמען מוצהר לכל סוכן',
     }
   });
 });
+
+/**
+ * 🧭 **מרחב ההכרעה — לכל סוכן, ⛔ ולא ל-DEV בלבד.**  ⟦NEW 10/09 · הכרעת רוי⟧
+ *
+ * 🔬 **נמדד 10/09 לפני שנכתב:** ‏`PM.md` ו-`QA.md` נשאו **אפס** הצהרות «מה אני מכריע
+ * לבד», מול שש הצהרות הסלמה בכל אחד. ⇒ **סוכן שיודע רק למי להעביר ⛔ אינו יודע מה
+ * לעשות בעצמו** — וזו הייתה גזרה פתוחה בשני התפקידים המרכזיים.
+ *
+ * 🔴 **והטענה החשובה כאן היא השלישית:** ההיתר של DEV מ-09/09 («כל הכרעת עיצוב
+ * מאושרת מראש») וההכרעה של PM על עיצוב הן **שתי פעולות שונות** — קדימה תוך בנייה
+ * מול לאחור כנושא. ⛔ **אם אחד מהם ייעלם, השני הופך לסתירה.** ⇒ שניהם מקובעים.
+ */
+describe('🧭 מרחב ההכרעה מוצהר בשלושת התפקידים שמכריעים', () => {
+  it('⛔ PM מצהיר מה הוא מכריע לבד, ⛔ ולא רק למי מעבירים', () => {
+    const pm = text('PM');
+    expect(pm, 'הסעיף').toContain('YOUR DECISION SPACE');
+    expect(pm, 'הכלל בחוקה').toContain('RULES § 0.31');
+    expect(pm, 'ההכרעה כוללת ביצוע').toMatch(/THE DECISION INCLUDES THE DOING/);
+    expect(pm, '⛔ ואינה עוקפת את STEP 5.5').toMatch(/five conditions apply/);
+  });
+
+  it('⛔ QA מצהיר שעיצוב ⛔ אינו שלו, ושאבטחה כן', () => {
+    const qa = text('QA');
+    expect(qa, 'הסעיף').toContain('YOUR DECISION SPACE');
+    expect(qa, 'הכלל בחוקה').toContain('RULES § 0.31');
+    expect(qa, 'עיצוב ⛔ אינו שלו').toMatch(/you ⛔ do ⛔ not decide it/);
+    expect(qa, 'אבטחה כן').toMatch(/SECURITY IS YOURS/);
+    // ⛔ **⛔ ואינו מדווח «נבדק» על משהו שלא רץ** — ⛔ אין שער אוטומטי לאבטחה היום.
+    expect(qa, '⛔ אינו מתחזה לשער').toMatch(/⛔ no automatic gate for this today/);
+  });
+
+  it('🔴 שני צדי הגבול DEV↔PM כתובים — הסרת אחד הופכת את השני לסתירה', () => {
+    expect(text('DEV'), 'ההיתר של DEV מ-09/09').toMatch(/PRE-APPROVED/);
+    const pm = text('PM');
+    expect(pm, 'PM מכיר בהיתר של DEV').toMatch(/PRE-APPROVED/);
+    expect(pm, 'ומי מכריע בסתירה').toMatch(/you win/);
+  });
+
+  it('⛔ `§ 0.31` קיים בפועל ⇒ הציטוט ⛔ אינו חלול', () => {
+    expect(readFileSync('plan/RULES.md', 'utf8')).toMatch(/^### 0\.31 ·/m);
+  });
+});

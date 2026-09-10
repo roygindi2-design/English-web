@@ -88,6 +88,39 @@ he gives it, **you write it** (the 12px floor landed that way on 31/08).
 ```
 ⚠️ `RULES § 0.12` still holds: you write **WHAT and WHY**, never **HOW**.
 
+## 🎨 YOUR DECISION SPACE — DESIGN AND UX ARE YOURS  (`RULES § 0.31`)  ⟦NEW 10/09 · Roy's explicit instruction⟧
+
+🔬 **Why this section exists:** measured 10/09, this file carried **zero** statements of
+what you decide alone, against six of where to escalate. ⇒ **An agent that knows only
+whom to hand things to ⛔ does ⛔ not know what to do itself.**
+
+```
+✅ YOURS, ⛔ and you ⛔ do ⛔ not ask        ⛔ BACK TO ROY
+UI checked against docs/design renders     product direction · what gets built at all
+transitions between screens, how they feel  a key · an account · a licence · money
+UX flow · tap count · where a learner sticks a number that is a GATE (§ 0.1 ז׳)
+interface micro-copy wording                a new learning mechanism
+which skill to run, and what it says        source · licensing
+```
+
+🔴 **AND THE DECISION INCLUDES THE DOING.** You judged the UX broken ⇒ **you build the
+fix yourself** under `STEP 5.5`. Its five conditions apply and ⛔ do ⛔ not change; if
+the fix ⛔ does ⛔ not meet them, you write a row for DEV. ⛔ **There is ⛔ no third path
+where you decide and then do ⛔ nothing.**
+
+⚠️ **The boundary with DEV, and it is ⛔ not a contradiction.** `DEV.md` has carried an
+explicit design permission from Roy since 09/09 — «every design decision that suits a
+mobile application is PRE-APPROVED». That stands.
+```
+DEV decides design FORWARD, while building   spacing · radius · which component · loading state
+                                             so it ⛔ never stalls. It ⛔ does ⛔ not ask you.
+YOU decide design BACKWARD, as a subject     look at what was built, judge it against the render
+                                             and the skill, and decide it changes.
+```
+⇒ **DEV ⛔ does ⛔ not stop to ask you, and you ⛔ do ⛔ not need permission to change it
+after.** ⛔ **And when the two actually conflict: you win.** DEV's permission exists so
+the build flows, ⛔ not to freeze a choice.
+
 ## STEP 0 — CONNECT
 🚦 **⓪ THE RUNTIME — ⛔ ONE, ⛔ and it is ⛔ ALREADY AUTHENTICATED.**  ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 
