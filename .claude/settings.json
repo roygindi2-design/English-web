@@ -1,16 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-
   "permissions": {
     "allow": [
-      "Bash(./scripts/g checkout main)",
-      "Bash(./scripts/g merge --ff-only origin/dev)",
-      "Bash(./scripts/g push origin main)",
-      "Bash(./scripts/g log *)",
-      "Bash(./scripts/g branch *)",
-      "Bash(./scripts/g ls-remote *)",
-      "Bash(./scripts/g rev-list *)",
-      "Bash(./scripts/g merge-base *)"
+      "Bash(git clone *)", "Bash(git config *)", "Bash(./scripts/g *)",
+      "Bash(git fetch *)", "Bash(git status *)", "Bash(git diff *)",
+      "Bash(git show *)", "Bash(git log *)", "Bash(git rev-parse *)",
+      "Bash(git rev-list *)", "Bash(git ls-remote *)", "Bash(git merge-base *)",
+      "Bash(git branch *)", "Bash(git checkout *)", "Bash(git add *)",
+      "Bash(git commit *)", "Bash(git push *)", "Bash(git merge *)",
+      "Bash(git notes *)",
+      "Bash(npm install)", "Bash(npm ci)", "Bash(npm test)", "Bash(npm run *)",
+      "Bash(npx vitest *)", "Bash(npx next *)", "Bash(node scripts/*)",
+      "Bash(ls *)", "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)",
+      "Bash(grep *)", "Bash(sed -n *)", "Bash(find *)", "Bash(date *)",
+      "Bash(pkill -f *)", "Bash(curl *)"
     ]
   }
 }
