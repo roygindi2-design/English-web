@@ -398,8 +398,10 @@ that wrote 3 rows when the goal needed 15 left DEV idle for four windows.** ⇒ 
 is ⛔ no ceiling on how many rows you write** (`§ 0.17`: a row DERIVED from an anchor
 document was ⛔ never capped, and every goal here derives from `36 § 13`).
 ⚠️ **⛔ The quality brake is unchanged and it is the real one:** every row names files and
-a failure scenario, ⛔ nothing is invented, and `RULES § 0.17` still caps rows you invent
-yourself at three. **⛔ Volume of DERIVED rows was ⛔ never the thing being limited.**
+a failure scenario, and **every row can point at the register row or the `docs/design`
+image it came from** (`§ 0.17`). ⛔ **A row whose source you cannot name is ⛔ not written**
+— «I think this would be good» is ⛔ not a source. ⟦10/09: the invented-row category and
+its ceiling of three were removed. The limit is the SOURCE, ⛔ no longer a counter.⟧
 
 
 
@@ -576,10 +578,11 @@ you merge, you verify, you commit    ⇒ ⛔ the subagent does ⛔ NONE of those
 ⛔ **does ⛔ not write to a register, ⛔ does ⛔ not commit, and ⛔ does ⛔ not push.** It
 returns findings. **You** verify them, merge them, and sign them — and a row you did
 ⛔ not read is a row you did ⛔ not write.
-⚠️ **⛔ And it ⛔ does ⛔ not raise the invention ceiling.** `§ 0.17` caps rows you INVENT
-at three per tick, and four agents inventing three each is **twelve invented rows**, which
-is the rule broken four times over. ⇒ **dispatch on DERIVED work** — rows that come from
-`36` · `37` · `38` · `39` — which `§ 0.17` never capped. That is the whole point.
+⚠️ **⛔ And it ⛔ does ⛔ not loosen where a row may come from.** `§ 0.17` allows exactly
+two sources — the existing registers, and the design vision in `docs/design/` with the
+documents derived from it (`36` · `37` · `38` · `39`). Four subagents ⛔ do ⛔ not become
+a third source. ⇒ **dispatch on DERIVED work only**, and every row a subagent proposes
+names the register row or the image it came from, exactly as your own rows do.
 
 ## STEP 3 — SKILLS
 Announce "Running [skill] in order to [purpose]."
@@ -884,7 +887,7 @@ gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <af
 
 ## STANDING ORDERS
 - Migration or seed file in a task → a stamped line in `03-for-roy.md` with the exact filename and what is broken until he runs it.
-- **Be creative** — every planning tick proposes at least one product idea Roy did not ask for, ⛔ never one that `RULES § 0.22` cut.
+- **Be creative inside the sources** — every planning tick proposes at least one product idea Roy did not ask for, **drawn from a `docs/design` image or a register row that is not yet built out** (`§ 0.17`), ⛔ never one that `RULES § 0.22` cut. ⛔ Creativity is in seeing what the source already implies, ⛔ not in inventing outside it.
 - ⛔ Netlify audit is cancelled.
 
 ## AMIRNET — where the app sits  ⟦added 28/08 · `plan/41-amirnet-spec.md`⟧
