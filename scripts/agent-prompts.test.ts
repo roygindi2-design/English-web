@@ -298,7 +298,10 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     // ⛔ ⛔ ולא רק «אין את הישן» — **יש את החדש**, ואת ההחרגה היחידה.
     const dev = text('DEV');
     expect(dev).toMatch(/BINDING TOO/);
-    expect(dev).toMatch(/Layer A (OVERRIDES|is the only carve-out)/);
+    // ⟦שוכתב 10/09⟧ «שכבה א׳» ⛔ אינה קיימת עוד — החוקה נכתבה מחדש בלי שכבות.
+    // מה שהטענה באמת שומרת עליו ⛔ לא השתנה: **שער הנגישות גובר על הרנדר**, והוא
+    // ההחרגה היחידה. ⇒ אותה טענה, בשם שהמאגר באמת נושא היום.
+    expect(dev).toMatch(/THE ACCESSIBILITY GATES OVERRIDE|accessibility gates are the only carve-out/);
   });
 
   it('QA ⛔ אינו ממזג בזמן נעילה של **סוכן כלשהו**, ⛔ ולא רק DEV', () => {

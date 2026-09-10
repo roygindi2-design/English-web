@@ -305,7 +305,7 @@ Any failure → 🔴 CRITICAL and a finding, ⛔ do not fix it yourself. ⛔ **�
 `plan/36-video-spec.md` — **the anchor**, beats every older decision; § 2 = eight cancellations · § 3 = the `MF-2` amendment · § 13 = build order. Derived: `37-arena-spec` · `38-character-base` · `39-messages-spec`. **In any conflict, 36 wins.** Renders: `docs/design/kol-A-*` (learning) · `kol-B-*` (arena) · `kol-C-*` (messages). **Open them with Read.**
 
 **Constitution v2, two layers (D-102).** ⛔ The "signed and frozen" wording is wrong.
-- **Layer A — frozen, you enforce it:** contrast · colour never the only channel · Hebrew fonts · 44px · top-anchored · `100dvh` · no horizontal scroll · reduced-motion · SVG icons.
+- **The accessibility gates — frozen, you enforce them:** contrast · colour never the only channel · Hebrew fonts · 44px · top-anchored · `100dvh` · no horizontal scroll · reduced-motion · SVG icons.
 - **Layer B — living, derived from 36:** dark-first · five-value radius scale including `rounded-full` · glow under a five-point budget · the arena fenced.
 ⛔ **A layer-B item is NOT a finding.**
 
@@ -355,7 +355,7 @@ on 24/08 was born the same way: **the intent was written, the action was not def
 6. ⛔ **A difference in ⓓ is a real difference now.** `36 § 14.4` **was reversed on
    24/08**: the render binds finish too. ⛔ "The finish comes from the constitution" is
    ⛔ NO LONGER an answer to a gap — it was the door every visual gap walked out of.
-7. **Layer A (accessibility) is the only carve-out, and it overrides the render.**
+7. **The accessibility gates are the only carve-out, and they override the render.**
    Contrast, a 44px target, state encoded by colour alone — the render ⛔ is not copied
    there, and the gap is written down with the measured number.
 
@@ -398,7 +398,7 @@ The index — every skill, its trigger, its path — is **`docs/skills-registry.
 `./scripts/g diff --name-only origin/dev..origin/work/current` touches `app/arcade/**` or `components/Arena*`, ⛔ **OR** the diff body matches `animate|transition|motion|glow(` ⇒ run **`review-animations`** on that diff, and write what it returns as ordinary findings in STEP 6.
 🔬 **Measured 30/08, and it is the reason this line exists.** This file carried **two** occurrences of motion at all — both of them a one-line summary of the constitution — and ⛔ **not one review action**: the seven numbered items in STEP 4.5 ask what is on the screen, in what order, at what size and in what colour, and ⛔ never ask what happens when it **moves**. ⇒ ⛔ this is ⛔ not a second opinion on something you already check; it is a **gap**.
 ⚠️ **F-085 is the shape of the failure it is meant to catch:** a live approval for a breathing loop on the arena stage whose three fences — arena stage only · **≤2px** · `prefers-reduced-motion` — lived in a register row that ⛔ no check ever enforced.
-⛔ **It ⛔ does not block the merge.** Motion fidelity is a finding, exactly like render fidelity (`RULES § 0.23ד`) — ⛔ a good merge blocked for a bad reason teaches every agent to ignore the gate. 🔴 **`prefers-reduced-motion` is the exception, and ⛔ not a small one: it is Layer A, and Layer A blocks.**
+⛔ **It ⛔ does not block the merge.** Motion fidelity is a finding, exactly like render fidelity (`RULES § 0.23ד`) — ⛔ a good merge blocked for a bad reason teaches every agent to ignore the gate. 🔴 **`prefers-reduced-motion` is the exception, and ⛔ not a small one: it is a GATE (`check:motion`), and a gate blocks.**
 ⛔ **`animate` · `apple-design` · `emil-design-eng` are ⛔ NOT yours, at ⛔ any layer.** They are build skills; a reviewer that runs them stops measuring the diff and starts proposing a different one. ⛔ **`find-animation-opportunities` is Roy's, by hand** — «this could move» is ⛔ not a finding.
 
 ## ⭐ STEP 5 — THE GATE. MERGE, OR FILE. ⛔ THERE IS NO THIRD OUTCOME. (RULES § 0.23)

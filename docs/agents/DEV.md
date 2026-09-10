@@ -91,12 +91,12 @@ If this call is wrong — does one commit fix it?
 |---|---|
 | **Layout · strings · structure · order · what sits where** | ✅ **BINDING** |
 | **Visual finish — shadows, gradients, elevation, typography** | ✅ **BINDING TOO** |
-| **Accessibility — contrast · 44px target · ⛔ no state in colour alone** | **Layer A OVERRIDES the render** |
+| **Accessibility — contrast · 44px target · ⛔ no state in colour alone** | **THE ACCESSIBILITY GATES OVERRIDE the render** |
 
 ⇒ **The render binds — layout and finish alike.** ⛔ «The finish comes from the
 constitution» is ⛔ **NOT** an answer to a gap any more.
 
-### ⛔ Layer A is the only carve-out, and there is ⛔ no second one
+### ⛔ The accessibility gates are the only carve-out, and there is ⛔ no second one
 A render showing low contrast, a target under 44px, or state encoded by colour alone is
 ⛔ **not built as drawn** — and the gap goes in the task row **with the number you
 measured**. ⛔ «I think it looks better», «the tool is limited», «it is only a shadow»
@@ -118,7 +118,7 @@ Every screen shares one language: `palette.ts` tokens · the constitution · ful
 **A condition that fails is a BLOCKER.** Fallback: back to tapping the line. ⛔ No third path.
 
 ### 🎨 CONSTITUTION v2, TWO LAYERS (D-102)
-- **Layer A — frozen:** contrast floors · colour never the only channel · Hebrew font coverage · **44px** · top-anchored · `min-h-[100dvh]`, ⛔ never `h-screen` · zero horizontal scroll at 320/375/414 · `prefers-reduced-motion` **including in the arena** · SVG icons, ⛔ no emoji.
+- **The accessibility gates — frozen:** contrast floors · colour never the only channel · Hebrew font coverage · **44px** · top-anchored · `min-h-[100dvh]`, ⛔ never `h-screen` · zero horizontal scroll at 320/375/414 · `prefers-reduced-motion` **including in the arena** · SVG icons, ⛔ no emoji.
 - **Layer B — living:** **dark-first** (`--surface #0f172a`) · radius scale is **five** values — `md` 6 · `lg` 8 · `xl` 12 · `2xl` 16 · **`rounded-full`** · **glow ALLOWED** under a five-point budget (only `--brand`/`--brand-surface`, max **two** per screen, ⛔ never on body text) · ⛔ Claymorphism banned.
 
 **Measured:** all 10 hex values in `render_video_A.py` are already `palette.ts` dark tokens.
@@ -475,7 +475,7 @@ it came from, and re-deriving it costs a tick. ⛔ **The trigger is the CELL, �
 ⛔ **Any other row these three are BLOCKED** — including an `arena` row that carries ⛔ no layer tag, and every `study` / `onboarding` / `account` screen. ⛔ «The screen looked static» is ⛔ not a reason; a screen that should move and does not is a **task row**, ⛔ not a skill you reach for mid-tick.
 🔴 **⛔ You NEVER write `שכבה ב׳` onto a row.** PM or Roy writes it (`plan/50-tasks.md` legend · D-148). A row you tagged yourself is a permission you wrote yourself, and a gate you can open from the inside ⛔ is not a gate.
 🔴 **The skill ⛔ never outranks the constitution, and `35-design-constitution.md § 5` already says so: **a gate beats a design skill.** The glow budget (`ב3` — `--brand`/`--brand-surface` only · **max two per screen** · ⛔ never on body text), the arena waiting loop (**≤2px**, the arena stage alone), the **150–300ms** interface ceiling and the measured arena timings in `37 § 6` are **numbers**, ⛔ not taste. A skill that suggests otherwise is a **finding you file**, ⛔ not a deviation you take.
-⛔ **`prefers-reduced-motion` is Layer A — ⛔ no exception, ⛔ including in the arena.**
+⛔ **`prefers-reduced-motion` is a GATE (`check:motion`) — ⛔ no exception, ⛔ including in the arena.**
 ⛔ **BLOCKED with ⛔ no condition: `find-animation-opportunities`** — it searches the codebase for places to ADD motion, and you take work from `50-tasks.md` alone (`RULES § 0.6א`). It is Roy's, by hand. ⛔ **`write-swift` is ⛔ not this stack.**
 
 ### 🧰 CONDITIONAL — CHOOSING AN IMPLEMENTATION  ⟦NEW 30/08 · D-148⟧
@@ -686,7 +686,7 @@ npm run hooks:install        ⇐ once per clone. `npm install` already does it (
 ⚠️ **`node_modules` missing ⇒ the push is REFUSED**, because `verify` ⛔ did not run and therefore ⛔ did not fail. Run `npm install` first.
 ⚠️ **The declared escape hatch, ⛔ and it is ⛔ never routine:** `SKIP_VERIFY=1 ./scripts/g push origin work/current` — it prints loudly, and you **⛔ MUST write that you used it, and why, in your report**. It exists so that a broken `verify` can ⛔ never make the repo unpushable.
 ⛔ **Check 16 also measures that the hook is INSTALLED IN THIS CLONE** — every tick is a fresh clone, and a hook that was ⛔ not copied in is a hook that ⛔ does not exist.
-⛔ No `[skip ci]`. ⛔ **Never push to `dev`** — that is QA's `merge --ff-only`, and it is the only way code leaves your branch. ⛔ **Never touch `main`** — that is PROMOTER's row, once a day at `5 0 * * *` UTC (`RULES § 0.29`). ⛔ **And you ⛔ never wait for it:** promotion has ⛔ no bearing on your queue, and ⛔ no rule may make it one (`RULES § 0.1 ב׳`, the hard fence).
+⛔ No `[skip ci]`. ⛔ **Never push to `dev`** — that is QA's `merge --ff-only`, and it is the only way code leaves your branch. ⛔ **Never touch `main`** — that is PROMOTER's row, twice a day at `5 0,12 * * *` UTC (`RULES § 0.29`). ⛔ **And you ⛔ never wait for it:** promotion has ⛔ no bearing on your queue, and ⛔ no rule may make it one (`RULES § 0.1 ב׳`, the hard fence).
 ⚠️ **`MERGE_BLOCKERS` in `plan/00-control.md` is not empty? Take it FIRST, before anything else in STEP 2.** It is the minimum needed to unblock a merge, ⛔ not a wish list.
 🔴 ⛔ **`PROMOTION_BLOCKERS` is ⛔ NOT yours, and you ⛔ never read it.** ⟦**SPLIT 08/09 · `D-203`ⓒ**⟧ Until 08/09 both meanings shared **one** field: QA wrote «what blocks THIS merge» into it, PROMOTER wrote «what blocks the promotion» into the same line, and you were told to take it **FIRST, before anything else** ⇒ an environment block on `dev`⇢`main` — which ⛔ no building agent can close — landed at the head of your queue. Two fields now, two owners, ⛔ and no overlap. The old name and the full history are in `D-203`ⓒ.
 
