@@ -85,11 +85,44 @@ describe('⛔ אף פרומפט ⛔ אינו מפנה לסקיל שאינו במ
   const onBranch = ['ui-styling', 'ui-ux-pro-max'];
   const reachable = new Set([...inTree, ...onBranch]);
 
-  /** The three that sent DEV hunting. Named so the assertion cannot quietly pass again. */
-  const NEVER_EXISTED = ['design-system', 'design-taste-frontend', 'redesign-existing-projects'];
+  /**
+   * 🔴 **שניים, ⛔ ולא שלושה — תוקן 11/09, והתיקון הוא על טענה שהקובץ הזה עצמו קבע.**
+   * הרשימה מנתה גם `design-taste-frontend` כשם ש«מעולם ⛔ לא היה קיים». ⛔ **שגוי:**
+   * הוא שם ה-`name:` המוצהר בתוך `skills/taste-skill/SKILL.md` שורה 2 ⇒ **הסקיל קיים.**
+   * ⇒ הטענה כאן מדדה **שמות ספריות** (`f.split('/').at(-2)`) והציגה את התוצאה כאילו
+   * מדדה **שמות סקילים**. ⇒ זו בדיוק מחלקת `F-064`: שער שמודד את הצורה ⛔ ולא את הטענה.
+   * 🔬 **והמחיר היה אמיתי:** חמשת הפרומפטים נדרשו להתייחס אל שם של סקיל **שקיים**
+   * כאילו אינו קיים, ושורת `T-192` תויגה בו ⇒ האינדקס הנגזר הציג תג «מת» שהיה חי.
+   */
+  const NEVER_EXISTED = ['design-system', 'redesign-existing-projects'];
 
-  it('שלושת השמות שמעולם לא היו קיימים ⛔ אינם במרחב — הפיקסטורה מול המדידה', () => {
+  it('שני השמות שמעולם לא היו קיימים ⛔ אינם במרחב — הפיקסטורה מול המדידה', () => {
     for (const name of NEVER_EXISTED) expect(reachable.has(name), name).toBe(false);
+  });
+
+  /**
+   * 🆕 ⟦11/09⟧ **שם הספרייה מול השם המוצהר — והחריגה היחידה מוצהרת בשמה.**
+   * ⛔ בלי הטענה הזאת, מיזוג-שמות **שני** היה נוצר בשקט, ואף אחד ⛔ לא היה יודע עד
+   * שסוכן יתויג בשם שאינו ניתן לפתרון כנתיב — בדיוק מה שקרה ל-`taste-skill`.
+   * 🔬 נמדד 11/09: **17** קובצי `SKILL.md`, **16 מתאימים**, אחד ⛔ לא.
+   */
+  it('🆕 שם הספרייה = השם המוצהר, ⛔ למעט `taste-skill` שמוצהר כאן בשמו', () => {
+    const KNOWN = new Map([['taste-skill', 'design-taste-frontend']]);
+    const files = execFileSync('git', ['ls-files', 'skills/'], { encoding: 'utf8' })
+      .split('\n')
+      .filter((f) => f.endsWith('SKILL.md'));
+    expect(files.length, '⛔ אין קובצי סקיל ⇒ הטענה חלולה').toBeGreaterThanOrEqual(17);
+    const drift: string[] = [];
+    for (const f of files) {
+      const dir = f.split('/').at(-2) as string;
+      const declared = /^name:\s*(.+)$/m.exec(readFileSync(f, 'utf8'))?.[1]?.trim() ?? '';
+      if (declared === dir) continue;
+      if (KNOWN.get(dir) === declared) continue;
+      drift.push(`${dir} ⇒ «${declared}»`);
+    }
+    expect(drift, `⛔ מיזוג-שם חדש ⇒ תג שאינו ניתן לפתרון כנתיב: ${drift.join(' · ')}`).toEqual(
+      [],
+    );
   });
 
   for (const agent of ['DEV', 'PM', 'QA', 'CONTENT', 'PROMOTER']) {

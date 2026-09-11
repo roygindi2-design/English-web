@@ -417,10 +417,18 @@ Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact 
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Before code → `test-driven-development`. Bug or failing test → `systematic-debugging` BEFORE proposing a fix. Done → `requesting-code-review`. Findings → `receiving-code-review`.
 Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
-✅ **Design skills — ⛔ and only the ones that EXIST.** ⟦CORRECTED 09/09⟧ This line named
-⛔ `design-system` · ⛔ `design-taste-frontend` · ⛔ `redesign-existing-projects` — for weeks.
-**Measured 09/09: ⛔ none of the three exists** — ⛔ not in `skills/`, ⛔ not on the
-`skills/superpowers` branch, ⛔ not in `docs/skills-registry.md`. ⇒ every tick that tried
+✅ **Design skills — ⛔ and only the ones that EXIST.** ⟦CORRECTED 09/09 · RE-CORRECTED 11/09⟧
+This line named ⛔ `design-system` · `design-taste-frontend` · ⛔ `redesign-existing-projects`
+— for weeks. **Measured 09/09: ⛔ `design-system` and ⛔ `redesign-existing-projects` do not
+exist** — ⛔ not in `skills/`, ⛔ not on the `skills/superpowers` branch, ⛔ not in
+`docs/skills-registry.md`.
+🔴 **⛔ But the third one was a wrong call, and 11/09 corrected it: `design-taste-frontend`
+DOES exist** — it is the declared `name:` inside `skills/taste-skill/SKILL.md` line 2.
+⇒ the skill is real; only its declared name differs from its directory name. Measured 11/09:
+of 17 `SKILL.md` files, **16 match** directory-to-declared-name and `taste-skill` is the lone
+exception. ⇒ **use `taste-skill`** — that is the name the registry carries and the name task
+rows are tagged with. ⛔ A row still tagged `design-taste-frontend` is ⛔ not broken; it is
+the same skill under its other name. ⇒ every tick that tried
 to obey this line spent itself hunting three files that were ⛔ never written. **The three
 that are real, and where they live:**
 ```
