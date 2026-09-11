@@ -1457,8 +1457,35 @@ describe('09/09 — PM עובד מול מחלקה ויעדים, ⛔ ולא מו�
     const step = pm.slice(pm.lastIndexOf('## STEP 5.5'));
     expect(step, 'הסקיל שבקלון').toContain('skills/taste-skill/SKILL.md');
     expect(step, 'הסקיל השני שבקלון').toContain('skills/imagegen-frontend-mobile/SKILL.md');
-    expect(step, 'והשלישי, שמובא מהענף').toContain('ui-ux-pro-max:ui-styling');
+    // ⟦עודכן 11/09⟧ ⛔ **הטענה הזאת אכפה מציאות שחדלה להתקיים.** עד 11/09 הספרייה
+    // ⛔ לא הייתה בקלון ו-`PM.md` נשא מתכון `FETCH_HEAD`; בסבב הזה היא נחתה על
+    // `work/current` (59 קבצים) ⇒ מתכון שליפה בקובץ של PM היה שולח אותו להביא מה
+    // שכבר יש לו. ⇒ הנתיב האמיתי, ⛔ והמתכון המיושן ⛔ אינו חוזר.
+    expect(step, 'והשלישי — גם הוא בקלון').toContain('skills/ui-ux-pro-max/ui-styling/SKILL.md');
+    expect(step, '⛔ ומתכון השליפה ⛔ לא חזר').not.toMatch(/FETCH_HEAD/);
     expect(step, '⛔ «אף אחד» אינה תשובה כאן').toMatch(/«⛔ none» is\s*\n?⛔ \*\*not\*\* an available answer/);
+  });
+
+  // 🔬 ⟦NEW 11/09 · הוראת רוי⟧ **«תוודא של-PM.md יש הוראה מפורשת להשתמש בכלים של
+  // ui-ux-pro-max … ולפי זה לתכנן משימות עריכת-קוד — לא רק להסתכל.»** נמדד 11/09:
+  // המופע **היחיד** של `ui-ux-pro-max` ב-`PM.md` היה שורת הטבלה של `STEP 5.5`, ו⛔ **אף
+  // הוראה ⛔ לא קשרה את הכלים להליכת המסכים ו⛔ לא גזרה מהם שורה.** ⇒ הליכה יכלה לעבור
+  // «ירוקה» בלי שאיש הריץ ולו בדיקה אחת מהצ׳קליסט. הטענה הזאת היא מה שהופך את ההוראה
+  // ממשפט לשער.
+  it('הליכת המסכים נגזרת מהצ׳קליסט של ui-ux-pro-max, ⛔ ואינה «הסתכלות»', () => {
+    const walk = pm.slice(pm.indexOf('## STEP 2.5'), pm.indexOf('## STEP 3'));
+    expect(walk, '⛔ אינו ריק').not.toHaveLength(0);
+    expect(walk, 'הצ׳קליסט הקנוני').toContain(
+      'skills/ui-ux-pro-max/ui-ux-pro-max/references/pro-rules.md',
+    );
+    expect(walk, 'כלי החיפוש, בנתיב שרץ בפועל').toContain(
+      'skills/ui-ux-pro-max/ui-ux-pro-max/scripts/search.py',
+    );
+    // ⛔ והחצי שבלעדיו זו קריאה ⛔ ולא ביקורת: פגם ⇒ שורה בתור.
+    expect(walk, 'פגם ⇒ שורה, ⛔ לא הערה').toMatch(/שורה בתור/);
+    expect(walk, '⛔ «הסתכלות» בשם אחר').toMatch(/«הסתכלות» בשם אחר/);
+    // ⛔ ו⛔ לא הנתיב של התקנת plugin — הוא ⛔ אינו קיים בקלון הזה.
+    expect(walk, 'הגדר מפני נתיב ה-plugin').toContain('CLAUDE_PLUGIN_ROOT');
   });
 
   it('מריץ `npm run archive` — ו⛔ אינו מוחק שורה', () => {

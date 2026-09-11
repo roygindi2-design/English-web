@@ -577,6 +577,23 @@ chunk שבקשתו נושאת כותרת `Origin`** ⇒ העמוד נצבע, ⛔
 שגיאות קונסול · אורך טקסט. **אתה מדווח מה ⛔ לא בסדר במסך שראית.** ⛔ «ההליכה עברה»
 ⛔ אינה טענה על איכות עיצוב — היא אומרת ש⛔ אין פגם **נראה-מכנית**.
 
+### 🔎 ההליכה ⛔ אינה «להסתכל» — היא ביקורת מול הצ׳קליסט, ומימנה נגזרות שורות קוד  ⟦NEW 11/09 · הוראת רוי⟧
+
+`skills/ui-ux-pro-max/` נמצא **בקלון שלך** מ-11/09. שני כלים, ושניהם נמדדו עובדים בקלון הזה:
+```
+skills/ui-ux-pro-max/ui-ux-pro-max/references/pro-rules.md:64
+    «Pre-Delivery Checklist (canonical — the only one)»  ⇒ מול כל מסך שהלכת בו
+python3 skills/ui-ux-pro-max/ui-ux-pro-max/scripts/search.py "<שאילתה>" --domain ux
+    119 הנחיות UX · תחומים: ux · style · product · typography · color · gsap · chart
+```
+⚠️ ⛔ **לא הנתיב שכתוב ב-`SKILL.md` עצמו** (`${CLAUDE_PLUGIN_ROOT}/.claude/skills/…`) — הוא של התקנת
+plugin, ו⛔ אינו קיים כאן. ⇒ הנתיבים למעלה, משורש הקלון.
+
+⇒ **ומה שחובה לעשות עם זה, ⛔ ולא «לקרוא ולהמשיך»:** כל פגם שהצ׳קליסט או השאילתה
+מעלים על מסך שהלכת בו ⇒ **שורה בתור**, עם `file:line`, תרחיש הכישלון, והכלל שהופר
+נקוב בשמו מתוך הצ׳קליסט. ⛔ **ביקורת ש⛔ לא נגזרה ממנה שורה היא «הסתכלות» בשם אחר.**
+⚠️ ושורה שנפתחה כך ⛔ **אינה** נבנית באותו טיק — תנאי ⓑ של `STEP 5.5` פוסל אותה.
+
 ### 🎨 ואתה בעל ה-UI/UX — ⇒ לתור שלך יש עכשיו חתך משלו  ⟦NEW 09/09 · הוראת רוי⟧
 ‏`docs/plan-open.md` § **«🎨 התור של PM — `נוחות` פתוחות»** מרכז את שורות ה-`נוחות`
 הפתוחות **בכל המחלקות**. 🔬 **נמדד 09/09: שלוש שורות, פזורות על `base` ו-`story`** —
@@ -778,8 +795,9 @@ skills/taste-skill/SKILL.md               micro-copy · shadows · spacing · «
 skills/imagegen-frontend-mobile/SKILL.md  § 13 · 14 · 15 · 29 · 30 · 31 — safe areas, density, text
                                           legibility, ⛔ no box-inside-a-box. It renders IMAGES, ⛔ not code:
                                           take the PRINCIPLES, ⛔ never a generated picture
-ui-ux-pro-max:ui-styling                  Tailwind breakpoints · min-h-touch · tokens. ⛔ Not in your clone:
-                                          ./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md
+skills/ui-ux-pro-max/ui-styling/SKILL.md  Tailwind breakpoints · min-h-touch · tokens. ⟦11/09⟧ **בקלון שלך** ⇒
+                                          קובץ שנקרא, ⛔ ואין מה להביא מענף.
+skills/ui-ux-pro-max/ui-ux-pro-max/       הצ׳קליסט ו-`search.py` ⇒ ראה `STEP 2.5`, «ההליכה ⛔ אינה להסתכל».
 ```
 ⛔ **Read at least one, ⛔ before the edit, and name it in your report.** ⛔ Reading it
 afterwards to check whether the code happened to match is ⛔ not loading a skill — it is a
