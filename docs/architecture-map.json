@@ -134,6 +134,7 @@
   ],
   "app/globals.css": [],
   "app/globals.test.ts": [],
+  "app/layout.test.ts": [],
   "app/layout.tsx": [
     "app/globals.css"
   ],
