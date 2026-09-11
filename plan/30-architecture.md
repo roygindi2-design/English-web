@@ -1843,3 +1843,23 @@ The render draws each deck as `rr(24, y, LW-48, 62, 16)` (radius corrected 18→
 **The ending is a value, ⛔ not a boolean — `lib/core/arenaSummary.ts` ⟦T-283 · `37 § 9` ח4 · D-202 § ה׳⟧.** `wordsFromBoss(state) = ceil(enemyHp / max(1, hitDamage))` in `battle.ts` — `hitDamage`, ⛔ not `criticalDamage`, so «היית N מילים מהבוס» is true without a condition on speed (`RULES § 0.22`, logged). `endingOf(state, elapsedMs)` wraps `outcomeAt`: `null` while `running`, else `{ kind: 'victory' \| 'survived' \| 'outlasted', wordsFromBoss }`. `<ArenaSummary>` takes `ending` instead of `enemyDefeated`: victory keeps `היריב נוצח`; otherwise the `h1` names the number and a 12.5px `[data-arena-ending]` line states one fact — `outlasted` ⇒ «החזקת מעמד עד סוף השעון», `survived` ⇒ «היריב החזיק מעמד» (each true in every state of its kind, R-016). `ArenaBattle.tsx` computes `ending` at the one place it computed the outcome and keeps `if (finished)` as the guard — `finished` is a `const` alias of `ending !== null`, which TypeScript narrows through, and the T-253 scan anchors on that literal. The D-126 guard in `app/arcade/page.test.ts` now lists `endingOf` where it listed `outcomeAt` — the screen still imports the law, through the wrapper (`RULES § 0.22`). `<ArenaResult enemyDefeated>` is untouched (its duplicate heading is D-202 § ו׳, CRITIC's). Source scans now ban «הפסדת» and «הקרב נגמר» in the component.
 
 ⚠️ **Measured live this tick (375×780, `next dev`, `/dev/arcade/summary`):** 253 chars (was 203) · 2 tappable (unchanged) · 0 < 44px · 0 h-scroll · blue board with 4 `<EnWord>` · red board 3 · `[data-arena-ending]` absent (fixture is `victory`, as the render). The 403s on `_next` chunks are F-204 (CCR `next dev`), the page still rendered and was measured.
+
+### C-0518 · `הודעות` — the simulation inbox (T-190 · T-191)
+
+`supabase/migrations/0023_message_simulations.sql` adds `message_simulations` and
+`message_simulation_state`. **⛔ Zero foreign key to the arena and zero to `word_progress`**
+— the D-054 row for `הודעות` reads «⛔ מנותקת לחלוטין», and the boundary is enforced by
+absence, ⛔ not by a comment.
+
+The three layers are the repo's usual ones: `lib/core/messages.ts` is pure (mapping,
+merge, counts, the list formatting — `now` arrives as a parameter, ⛔ never read here),
+`app/api/world/messages/route.ts` is the only reader of the two tables, and
+`components/InboxList.tsx` draws rows that arrive already formatted (`toInboxRows`).
+⚠️ **The route is a SOFT read — every read failure is `200 ok:false`, ⛔ never 503** —
+because the inbox is one node of nine on the ring and a 503 there is a failure screen for
+a learner who came for something else.
+
+`lib/core/worldRing.ts`: `msgs` is now `open` onto `/world/messages`. ⚠️ The empty-ring
+branch is scoped to `LIVE_IDS` — a permanently-open node would otherwise have made
+`D-064`'s empty screen unreachable. See `F-210`: whether that scoping is the right
+semantics is PM/QA's call, ⛔ not DEV's.
