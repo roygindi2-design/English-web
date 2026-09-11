@@ -39,6 +39,11 @@ def grad_rr(c, x, y, w, h, r, top, bot, outline=None, width=1.2, sh=True):
     c.d = ImageDraw.Draw(c.img, "RGBA")
     if outline: c.rr(x, y, w, h, r, outline=outline, width=width)
 
+# 🔆 ⟦11/09, הכרעת רוי⟧ הרקע הכהה כאן הוא **קולנועי** — הקבצים האלה מייצרים פריימים
+# לסרטון (`render_video_*.py`), ⛔ ולא את תמת האפליקציה. נמדד 11/09: **29 מתוך 29**
+# הרנדרים ב-`docs/design/` כהים, בזמן שכל מסכי המוצר בהירים.
+# ⇒ ‏`36 § 14.4` קובעת במפורש שהרקע ⛔ **אינו מחייב** ושהשפה האחת של `§ 14.2` גוברת.
+# ⛔ **אין לבנות מסך מוצר כהה על סמך רנדר כהה, ו⛔ אין לדווח פער רקע כממצא.**
 def bg(c):
     g = Image.new("RGB", (1, H)); gd = ImageDraw.Draw(g)
     for i in range(H):

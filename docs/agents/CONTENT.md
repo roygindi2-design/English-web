@@ -480,7 +480,7 @@ The rule lives there; this prompt only points at it (RULES § 0.15).
 ⛔ **Zero invention beats every quota.** No licensed source → open a BLOCKER, report it, move on. **A quota filled by guessing is worse than a quota left unfilled.**
 ⛔ Never touch `plan/01-vision.md`, `02-inbox`, `10-pedagogy`, `40-decisions`, `60-findings`, `35-design-constitution`, `36`/`37`/`38`/`39`, or code.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · anything under `supabase/seed/`. Fix the input, rerun the generator.
-Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.
+Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`.
 
 
 ---

@@ -961,4 +961,4 @@ gc:memory: <N> שורות הוגדמו · <M> סעיפי D · <before>KB ⇐ <af
 ## HARD INVARIANTS
 Zero invention · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · anything under `supabase/seed/`.
-Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.
+Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`.

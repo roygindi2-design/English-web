@@ -786,7 +786,7 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 ## HARD INVARIANTS
 ⛔ Zero invented learning content · sources mandatory · never copy from מאל"ו (R-010) or AnkiWeb (R-013) · file ownership · **layer A** · blocked skills per `RULES § 0.1 ז׳`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · anything under `supabase/seed/`. Fix the input, rerun the generator.
-Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report.
+Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`.
 
 
 ---

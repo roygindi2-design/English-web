@@ -782,7 +782,7 @@ Which mode · what you did · **which workstream** · **the exact output of `npm
 ## HARD INVARIANTS
 Zero invented learning content · sources mandatory · file ownership · **layer A** · the skill list · never touch `main`.
 ⛔ Never hand-edit a generated file: `docs/plan-open.md` · `docs/plan-tables.md` · `docs/gate-recheck.md` · **`plan/63-surfaces.md`** · **`docs/architecture-map.json`** · anything under `supabase/seed/`.
-Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. `LAST_HANDOFF_AT` older than 36h AND `STATE` ≠ HUMAN AND `PAUSED_BY_HUMAN` ≠ true → stop and report. Every timestamp from `date -u`.
+Brakes: `WORKSTREAM_TICKS` ≥ the ceiling → stop, `NEXT_AGENT=HUMAN`. Every timestamp from `date -u`.
 
 
 ---
