@@ -733,6 +733,28 @@ permission is narrow, and why condition ⓑ is ⛔ not negotiable.
 want it built and it is fresh, ⛔ leave it ⬜ for DEV or wait a tick. ⛔ **The gate does
 ⛔ not open from the inside — ⛔ not for DEV, and ⛔ not for you.**
 
+🆕 **ⓕ ⟦11/09 · Roy's explicit instruction⟧ — AND THIS ONE GOVERNS WHEN YOU **OPEN** THE
+ROW, ⛔ not when you build it.** ⛔ **A `נוחות` row is opened ⛔ only on code that already
+exists** — you read what DEV actually built (`STEP 1.9`, from `git log`), you look at it
+(`STEP 2.5`, in the browser), and ⛔ only then do you write a polish goal on it.
+⛔ **⛔ No `נוחות` row on a screen that is ⛔ not built yet.** You cannot polish what does
+⛔ not exist, and a row that says you can is a row DEV ⛔ cannot act on either.
+
+⚠️ **And this does ⛔ NOT contradict `STANDING ORDERS` — read both, they cover different
+things.** That order says «every planning tick proposes at least one product idea Roy did
+⛔ not ask for, drawn from a `docs/design` image **or a register row that is ⛔ not yet built
+out**». ⇒ that is a **feature** idea, and its `סוג עבודה` is `מבנה` — ⛔ exactly the kind of
+row you SHOULD write for something unbuilt. ⓕ constrains ⛔ only `נוחות`.
+```
+מבנה   ⇒ ✅ write it for what does ⛔ NOT exist yet. That is what it is FOR.
+נוחות  ⇒ ⛔ only for what EXISTS and is merged.  ⓒ already gates building it;
+          ⓕ now gates WRITING it, which is where the speculation actually happens.
+```
+⚠️ **ומכסת-יעדים-פתוחים — נמדד 11/09 ש⛔ אינה קיימת, ו⛔ אין מה להסיר.** ‏`grep` על
+`PM.md` אחר מינימום יעדים פתוחים ⇒ **0 תוצאות**. ⇒ ⛔ אינך מחויב להחזיק מספר מינימלי
+של שורות פתוחות; אתה מוודא שהשורות הקיימות במחלקה **באמת מקדמות אותה**, וכשהמחלקה
+נגמרת — `STEP 5.7` הוא האות, והוא כבר קיים.
+
 ⚠️ **ⓓ is a blast-radius line, ⛔ not a hierarchy.** `lib/core/**` is the pure core the
 whole product is tested against; schema and API are where a wrong edit reaches the
 learner's data. ⛔ Polish that needs any of the three is ⛔ **a DEV row**, ⛔ not yours.
@@ -762,9 +784,33 @@ tasks: `enabled_plugins` · `account_plugins` · `account_skills` are **⛔ empt
 skill you can actually load is a **file**, and the three above are the design ones. The
 rest of `docs/skills-registry.md` marks what is ⛔ unreachable, in its own column.
 
-⇒ **And it ⛔ does not replace planning.** ⛔ A tick that polishes instead of resolving
-findings is a tick that traded your job for DEV's. The finding quota (`D-164`, up to
-three) comes **first**, every tick, ⛔ and this section is what you do with what is left.
+🔴 **⟦REORDERED 11/09 · Roy's explicit instruction⟧ WHEN A QUALIFYING ROW EXISTS, THIS
+SECTION RUNS ⛔ BEFORE THE FINDINGS WORK — ⛔ AND EXACTLY ONE ROW.**
+
+⛔ **Why the old order could ⛔ never work, and it is MEASURED ⛔ not argued.** Until today
+this paragraph said «the finding quota comes **first**, every tick, and this section is what
+you do with **what is left**». ⇒ two facts make «what is left» reliably **zero**:
+```
+① the findings set has ⛔ NO CEILING  — removed 08/09, three lines above: «every
+   PM-owned open finding, OLDEST FIRST ⇒ ⛔ no ceiling»
+② an unbounded first task + a «whatever remains» second task ⇒ the second ⛔ never runs
+```
+🔬 **And that is what happened, measured:** this permission landed **09/09**. Since then
+**two** PM ticks ran (`C-0510` · `C-0517`) and **⛔ zero** used this section — while `T-201`
+passed all five conditions the whole time. ‏`C-0517` filled itself with planning: three
+decisions, four new rows, `05-departments`, the screen walk, an item for Roy. ⇒ **the
+capacity existed, the eligible row existed, and the order consumed the tick.**
+
+**⇒ The order, and it is ⛔ not «polish instead of planning»:**
+```
+1. a row passes ALL FIVE conditions below?  ⇒ build it. ⛔ ONE row, ⛔ never two.
+2. then the findings work (§ «FIRST, DECIDE ONE FINDING»), ⛔ in full, ⛔ uncapped.
+3. ⛔ no row passes?  ⇒ say so in one line and go straight to the findings work.
+```
+⛔ **⛔ And «one row» is the brake that replaces the old ordering.** ⛔ A tick that polishes
+**two** rows is a tick that traded your job for DEV's — which is what the old paragraph was
+protecting, and that protection ⛔ does ⛔ not move. ⛔ The findings work is ⛔ never skipped,
+⛔ never capped, and ⛔ never deferred to the next tick; it is ⛔ only **second**.
 
 ## STEP 5.7 — 🔴 THE DEPARTMENT IS NEARLY DONE ⇒ TELL QA. ⛔ IN THE FILE, ⛔ NOT IN YOUR REPORT.  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
