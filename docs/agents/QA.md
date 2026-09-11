@@ -55,9 +55,8 @@ than ⛔ not doing them.
       LOCK_HELD_BY is not empty      ⇒ say so, ⛔ no merge, exit.
 3.  ./scripts/g fetch origin
     ./scripts/g rev-list --count origin/dev..origin/work/current
-3.5 git fetch origin '+refs/heads/notes-verify:refs/notes/verify'
-    git notes --ref=verify show origin/work/current        ⟵ READ IT. See below.
-4.  npm install && npm run verify        ⟵ ⛔ ONLY if 3.5 did not already attest it
+4.  node scripts/verify-attested.mjs origin/work/current || (npm install && npm run verify)
+      ⟵ ⛔ ONE line. exit 0 = this tip already ran a FULL green verify ⇒ ⛔ nothing re-runs.
 5.  npm run loop:health
 6.  verify GREEN and rev-list > 0 and the lock empty ⇒
       ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
@@ -72,14 +71,10 @@ than ⛔ not doing them.
 ⚠️ **ו⛔ אל תפצל את `verify` לחלקים כדי לעמוד בזמן** — זה היה הופך אותו מ**שער** ל**דגימה**. החלון הוא מה שמשתנה, ⛔ לא השער.
 
 
-🆕 **3.5 — the tip may already be attested.** ⟦11/09⟧ Measured: **130 of 138** notes say
-`verify` (full run), **7** say `verify(fast)`.
-```
-`verify: exit 0` on THIS tip        ⇒ ⛔ NO re-run. Say «הראש אומת ב-<stamp>», go to 5.
-`verify(fast)` · no note · any doubt ⇒ 🔴 RUN IT. ⛔ Doubt always resolves to RUN.
-```
-⛔ The hook writes it **after** the run on the pushed tip ⇒ evidence, ⛔ not a claim; check 16
-reads it. ‏`SKIP_VERIFY` writes ⛔ none. ‏`--ff-only` ⇒ byte-identical tip.
+🆕 ⟦FIXED 11/09 · `F-213`⟧ **The skip is an EXIT CODE now, ⛔ not a rule to read.** It was
+prose here on 11/09 and the tick re-ran `verify` anyway, 183s, against a tip already stamped
+`verify: exit 0`. ‏`verify:attested` returns **1** on `verify(fast)`, on no note, on a stamp
+for another SHA — ⛔ doubt still resolves to RUN, and now ⛔ nobody has to remember that.
 ⚠️ `loop:health` (5) is ⛔ NEVER skipped. ⚠️ `npm install` still runs.
 
 ⛔ **WHAT A GATE TICK ⛔ MUST NOT DO — and each of these is ⛔ not a matter of budget:**
@@ -372,7 +367,7 @@ measures a product that ⛔ does not exist. ⛔ **A screenshot of a dead page is
 has always used (`scripts/verify-mobile.mjs`), so this is the walk finally matching the gate.
 ⚠️ **`build` first, ⛔ or `next start` has nothing to serve.** ⚠️ **Port already busy? ⛔ Do
 ⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
-kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
+kill it, or use another port. ⚠️ **And `npm run preview:stop` when you are done, BEFORE
 `npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
 Drive `http://localhost:3000/dev/...` with Playwright at **375x780** — nine fixture-fed families under `app/dev/`, ⛔ no Supabase, no login.
 Per screen: heading · text length · **tappable count** · how many under 44px · horizontal scroll · console errors. **Then compare to its render.**
@@ -390,7 +385,7 @@ on 24/08 was born the same way: **the intent was written, the action was not def
 
 1. `./scripts/g checkout work/current`
 2. `npm run build && (npx next start -p 3000 &) && sleep 12` ⟦`next start`, ⛔ not `next dev` — `F-204`⟧
-   ⚠️ **And `pkill -f "next start"` when you are done, BEFORE `npm run verify`.** Measured
+   ⚠️ **And `npm run preview:stop` when you are done, BEFORE `npm run verify`.** Measured
    24/08: a dev server left alive on 3000 made `check:mobile` test against it instead of
    `next start` — **two failures that looked real and ⛔ were not** (⛔ no service worker in
    dev, `/api/*` answers 503).

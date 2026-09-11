@@ -155,6 +155,75 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
  * ⇒ שלוש הטענות למטה הן **כל** ההתנהגות: נעילה זרה חוסמת קוד · מרשה עקבה · ו-נעילה
  * שלי ⛔ אינה חוסמת דבר.
  */
+/**
+ * ⟦NEW 11/09 · `F-216` · `F-214`⟧ **נעילה שלא נלקחה, ושם שנקטע במקף.**
+ *
+ * 🔬 שתי תקלות שנמדדו **חי** באותו יום, ושתיהן על אותה שורה שקוראת את השדה:
+ *   `F-216` — ‏`C-0525` (CONTENT) דחף טיק תוכן שלם עם `LOCK_HELD_BY: ""`, ואז כתב
+ *             הערת **שחרור**. ‏`loop:health` החזיר 23/23 — ⛔ אף בדיקה ⛔ אינה מאמתת
+ *             שסוכן שדחף עבודה החזיק את הנעילה.
+ *   `F-214` — ‏`"dev-agent"` נקטע ל-`dev`, ש⛔ אינו תואם ⛔ אף `MINE` ⇒ הסוכן נחסם
+ *             מהנעילה של עצמו, ו-`HOLDER_RE` ⛔ לא התאים ⛔ לאף קומיט.
+ */
+describe('11/09 — נעילה חסרה ⛔ ושם בעל נעילה עם מקף', () => {
+  const REF = 'refs/heads/work/current';
+  const lockRepo = (userName: string, holder: string, touched: string): string => {
+    const root = repo(userName);
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    mkdirSync(join(root, 'plan'), { recursive: true });
+    writeFileSync(join(root, 'plan', '00-control.md'), `LOCK_HELD_BY: ${holder}\n`, 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'lock');
+    mkdirSync(join(root, touched.includes('/') ? touched.slice(0, touched.lastIndexOf('/')) : '.'), {
+      recursive: true,
+    });
+    writeFileSync(join(root, touched), 'change\n', 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'work');
+    return root;
+  };
+
+  // 🔴 `F-216` — הכיוון שנמדד: קוד + נעילה ריקה + זהות סוכן ⇒ ⛔ נדחה.
+  it('⛔ דוחה דחיפת קוד כשהנעילה ריקה', () => {
+    const out = runHook(lockRepo('content-agent', '""', 'lib/core/x.ts'), REF);
+    expect(out.code, '⛔ הדחיפה עברה בלי נעילה').not.toBe(0);
+    expect(out.out).toMatch(/LOCK_HELD_BY ריק/);
+  });
+
+  /**
+   * ⚠️ **שלוש הטענות הבאות בודקות ש**השער הזה** ⛔ לא ירה — ⛔ ולא שהדחיפה עברה.**
+   * ‏הריפו הזמני ⛔ אין בו `node_modules`, ולכן שער ה-`verify` עוצר אותה ממילא;
+   * טענה על `code === 0` הייתה מודדת את השער ההוא ⛔ ולא את זה שנוספה כאן.
+   */
+  const missingLockFired = (out: string) => /LOCK_HELD_BY ריק/.test(out);
+
+  // ⛔ הגדר שבלעדיה השער חוסם את עצמו: קומיט הנעילה **הוא** רגיסטר-בלבד.
+  it('⛔ ומרשה את קומיט הנעילה עצמו — אחרת שום טיק ⛔ לא היה מתחיל', () => {
+    const out = runHook(lockRepo('content-agent', '""', 'plan/00-control.md'), REF);
+    expect(missingLockFired(out.out), 'קומיט נעילה נחסם ⇒ הלופ מת').toBe(false);
+  });
+
+  // ⛔ `ops-agent` · בן-אדם · כלי — ⛔ אינם סוכני לופ ו⛔ אינם בתחולת השער.
+  it('⛔ אינו חל על זהות שאינה סוכן לופ', () => {
+    const out = runHook(lockRepo('ops-agent', '""', 'lib/core/x.ts'), REF);
+    expect(missingLockFired(out.out)).toBe(false);
+  });
+
+  // 🔴 `F-214` — הנעילה שלי בצורת הזהות, ⛔ ולא בשם התפקיד.
+  it('⛔ הנעילה של הסוכן עצמו ⛔ אינה חוסמת אותו, גם כשנכתבה `dev-agent`', () => {
+    const out = runHook(lockRepo('dev-agent', '"dev-agent"', 'lib/core/x.ts'), REF);
+    expect(out.out, '⛔ הסוכן נחסם מהנעילה של עצמו').not.toMatch(/הנעילה מוחזקת בידי/);
+    expect(missingLockFired(out.out)).toBe(false);
+  });
+
+  it('⛔ ונעילה זרה בצורת הזהות עדיין חוסמת', () => {
+    const out = runHook(lockRepo('dev-agent', '"pm-agent"', 'lib/core/x.ts'), REF);
+    expect(out.code).not.toBe(0);
+    expect(out.out).toMatch(/PM/);
+  });
+});
+
 describe('scripts/hooks/pre-push — שער הנעילה (RULES § 0.4)', () => {
   /** ריפו עם `plan/00-control.md` שנושא נעילה, ועם קומיט שני שמכתיב את הדיף. */
   const lockedRepo = (userName: string, holder: string, touched: string): string => {

@@ -621,7 +621,7 @@ measures a product that ⛔ does not exist. ⛔ **A screenshot of a dead page is
 has always used (`scripts/verify-mobile.mjs`), so this is the walk finally matching the gate.
 ⚠️ **`build` first, ⛔ or `next start` has nothing to serve.** ⚠️ **Port already busy? ⛔ Do
 ⛔ not reuse it** — `verify-mobile.mjs` refuses a port it did not open itself, and so do you:
-kill it, or use another port. ⚠️ **And `pkill -f "next start"` when you are done, BEFORE
+kill it, or use another port. ⚠️ **And `npm run preview:stop` when you are done, BEFORE
 `npm run verify`** — a server left on 3000 makes `check:mobile` fail by name.
 Drive `http://localhost:3000/dev/...` at **375x780**. Record: heading · text length · tappable count · under-44px · horizontal scroll · console errors. **Then compare LAYOUT to the render.**
 **What one minute caught on 23/08:** `/dev/lesson` → **`taps=1`** on a 593-character screen. `/dev/tabs/studies` → **116 characters**, unchanged from 21/08.

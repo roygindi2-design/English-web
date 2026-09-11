@@ -288,7 +288,7 @@ do, and you do it on the SHA that actually shipped.
 npm install && npm run build && (npx next start -p 3100 &) && sleep 12
 ```
 ⚠️ **Port 3100, ⛔ not 3000** — `scripts/verify-mobile.mjs` refuses a port it did not open,
-and `verify` may still run in this session. **`pkill -f "next start"` before you push.**
+and `verify` may still run in this session. **`npm run preview:stop` before you push.**
 🔴 **`next start`, ⛔ NEVER `next dev`** (`F-204`: 403 on every chunk carrying an `Origin`
 header ⇒ the page paints and ⛔ nothing hydrates).
 

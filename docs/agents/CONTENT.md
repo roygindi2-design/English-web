@@ -285,7 +285,7 @@ exactly that gap (a Hebrew answer among three English distractors, 2,403 green t
 npm install && npm run build && (npx next start -p 3200 &) && sleep 12
 ```
 ⚠️ **Port 3200, ⛔ not 3000** — `scripts/verify-mobile.mjs` refuses a port it did not open,
-and `npm run verify` still has to run in STEP 9. **`pkill -f "next start"` BEFORE it does.**
+and `npm run verify` still has to run in STEP 9. **`npm run preview:stop` BEFORE it does.**
 🔴 **`next start`, ⛔ NEVER `next dev`** (`F-204`: 403 on every chunk carrying an `Origin`
 header ⇒ the page paints and ⛔ nothing hydrates — **a screenshot of a dead page is ⛔ not
 a walk**).

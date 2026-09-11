@@ -552,7 +552,7 @@ Every screen × its tappable actions × where learners arrive from × where they
 ```
 npm run build && (npx next start -p 3000 &) && sleep 12
 npm run walk:screens -- http://127.0.0.1:3000 --out=walk-shots --width=375
-pkill -f "next start"          # ⛔ לפני npm run verify — שרת על 3000 מפיל את check:mobile בשמו
+npm run preview:stop           # ⛔ לפני npm run verify. ⛔ ולא pkill — TD-26: Next נקרא next-server
 
 ```
 
@@ -620,7 +620,7 @@ and failure states, micro-copy, spacing rhythm, the transition between two scree
 ⇒ **a screen identical to a static PNG is a screen ⛔ nobody finished.**
 ⚠️ **And when the render and an anchor document disagree, `36` wins** — that is a finding
 you open, ⛔ not a choice you make.
-🔴 **Kill this server before `npm run verify` runs in the same session — `pkill -f "next start"` (T-251).** ⟦`next dev` ⇢ `next start` 08/09 · `F-204`⟧ Any server left on port 3000 collides with the gate; `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
+🔴 **Kill this server before `npm run verify` runs in the same session — `npm run preview:stop` (T-251).** ⟦`next dev` ⇢ `next start` 08/09 · `F-204`⟧ Any server left on port 3000 collides with the gate; `scripts/verify-mobile.mjs` now refuses a port it did not open itself, so a live `next dev` makes `verify` fail loudly by name (`port … already busy`) instead of the old silent false PWA failure — but a red `verify` for a reason that has nothing to do with your tick is still a wasted one.
 
 ## 🚪 STEP 2.6 — שער סקיל, לפני כל פעולה אחרת על המשימה:  ⟦NEW 06/09 · Roy's explicit instruction · Cowork architecture session · C-0476⟧
 קרא את docs/skills-registry.md מול המשימה שנבחרה.
