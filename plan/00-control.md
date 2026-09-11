@@ -4,7 +4,7 @@ STATE: BUILDING                    # ▶️ C-0518 (DEV) — בנייה מתוכ
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0514 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-11T00:11:28Z"   # 🔄 C-0518 (DEV).
+LAST_HANDOFF_AT: "2026-09-11T00:11:28Z"   # 🔄 אופס 10/09 — הנימוק ⇒ `plan/archive/control-log.md` · `F-208`
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-11T00:11:28Z — C-0518 (DEV) סיים.
@@ -17,7 +17,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   studies: 3 / 120           # § 13-5 · לימודים כמכולת מסלולים. ⬜=0 (`T-144` נסגרה ⛔ · `T-246` 🟣 · `T-247` חסומה עד `dev`). פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   msgs:    2 / 120           # 39-messages-spec § 9 · הודעות — **המוקד.** ▶️ C-0518 (DEV) נספר — `T-190`·`T-191` 🟣 נבנו ונדחפו. ⬜=2: `T-192` (Tasks 7–9 של אותה תוכנית) · `T-193` של CONTENT. ⛔ פריטים 2–5 חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "9576af9 · 2026-09-08T21:54Z · **C-0514 (CRITIC, מלא).** `dev`=`9576af9`=`work/current`. `verify` ירוק, ריצה טרייה (224 · 3721/3721 · build · mobile 1519/1519), `loop:health` 15/17 (2 — F-196/F-182(check 9) פתוחים, לא חדשים; check 16 ✅ ראש מאושר). מוזג `--ff-only` פעמיים (`6595d7d..d05c4a3` ואז `d05c4a3..9576af9`): **T-282/T-283 (DEV, C-0513) — הלומד מקבל את הלוח הכחול «פגשת N מילים חדשות» ואת שלושת סיומי הקרב («היית N מילים מהבוס» / «החזקת מעמד עד סוף השעון» / «היריב החזיק מעמד»/«היריב נוצח») במסך תוצאות הזירה.** בנוסף: `arena` נחתמה שנית (⬜=0, הוזזה→`msgs`) עם שורת `61-deferred`, שורת `studies` (שנדלגה) נכתבה גם היא (בדיקה 13), וחמש משימות `arena` שהיו 🟣 תקועות מטיקים קודמים (T-220·T-234·T-281·T-282·T-283) הפכו ✅. שלוש הקשות טריות ב-`03-for-roy` על T-282/T-283. `origin/main..origin/dev`: `main` הוא אב קדמון של `dev` (נמדד `merge-base --is-ancestor`) — קידום נקי, ⛔ לא בוצע (PROMOTER/רוי בסמכות)."
+RELEASE_READY: "9576af9 · 2026-09-08T21:54Z · **C-0514 (CRITIC, מלא).** `verify` ירוק · `loop:health` 15/17. הפירוט ⇒ `plan/archive/control-log.md`."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
 LAST_REVIEWED_COMMIT: "807ae72"  # main אחרי הקידום של 06/09. `verify` exit 0 נרץ על אותו SHA לפני הקידום.
