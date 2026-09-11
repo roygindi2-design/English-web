@@ -1,8 +1,8 @@
 /**
  * GENERATED FILE — do not edit by hand.
  *
- * Written by scripts/build-preview-cards.mjs from 26 batch files
- * (1210 senses). Regenerate with `npm run build:preview`;
+ * Written by scripts/build-preview-cards.mjs from 27 batch files
+ * (1222 senses). Regenerate with `npm run build:preview`;
  * scripts/build-preview-cards.test.ts fails if this file drifts from the script.
  */
 import type { PreviewCard } from './landing';
