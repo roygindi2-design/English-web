@@ -55,7 +55,9 @@ than ⛔ not doing them.
       LOCK_HELD_BY is not empty      ⇒ say so, ⛔ no merge, exit.
 3.  ./scripts/g fetch origin
     ./scripts/g rev-list --count origin/dev..origin/work/current
-4.  npm install && npm run verify
+3.5 git fetch origin '+refs/heads/notes-verify:refs/notes/verify'
+    git notes --ref=verify show origin/work/current        ⟵ READ IT. See below.
+4.  npm install && npm run verify        ⟵ ⛔ ONLY if 3.5 did not already attest it
 5.  npm run loop:health
 6.  verify GREEN and rev-list > 0 and the lock empty ⇒
       ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
@@ -69,6 +71,16 @@ than ⛔ not doing them.
 🔬 **נמדד 10/09, ⛔ ולא שוער:** `npm run verify` על הקלון הזה לוקח **183 שניות**, ו-**ברירת המחדל של כלי ה-Bash היא 120 שניות**. ⇒ בלי חלון מפורש הפקודה נהרגת באמצע — ⛔ **ואתה ⛔ לא רואה «נכשל», אתה רואה «פג הזמן»**, כלומר שער שלא הסתיים. ואם תקרא את זה כ-`verify` אדום, ⛔ לא תמזג, ⛔ לא תדחוף, ותצא בלי ולו קומיט אחד — **בדיוק כמו שקרה בשלוש הרצות שער חיות ב-10/09: 1:49 · 2:14 · 2:18, כולן צמודות לתקרת ה-120 שניות, כולן אפס מיזוג, ו-`dev..work` חיכה עם עבודה ירוקה.**
 ⚠️ **ו⛔ אל תפצל את `verify` לחלקים כדי לעמוד בזמן** — זה היה הופך אותו מ**שער** ל**דגימה**. החלון הוא מה שמשתנה, ⛔ לא השער.
 
+
+🆕 **3.5 — the tip may already be attested.** ⟦11/09⟧ Measured: **130 of 138** notes say
+`verify` (full run), **7** say `verify(fast)`.
+```
+`verify: exit 0` on THIS tip        ⇒ ⛔ NO re-run. Say «הראש אומת ב-<stamp>», go to 5.
+`verify(fast)` · no note · any doubt ⇒ 🔴 RUN IT. ⛔ Doubt always resolves to RUN.
+```
+⛔ The hook writes it **after** the run on the pushed tip ⇒ evidence, ⛔ not a claim; check 16
+reads it. ‏`SKIP_VERIFY` writes ⛔ none. ‏`--ff-only` ⇒ byte-identical tip.
+⚠️ `loop:health` (5) is ⛔ NEVER skipped. ⚠️ `npm install` still runs.
 
 ⛔ **WHAT A GATE TICK ⛔ MUST NOT DO — and each of these is ⛔ not a matter of budget:**
 ```
@@ -127,6 +139,14 @@ stood here before, grouped — ⛔ nothing was dropped; ① absorbed the smoke t
 ①  GATE      run the gate on `work/current` ⇒ merge, or file and say what blocks.
              evidence: `npm run verify` · `npm run loop:health` (yours alone) ·
              the smoke test, ⛔ only when Roy merged since your last tick.
+             🆕 ⟦11/09⟧ read the tip's attestation FIRST — the same rule the gate
+             lane carries: a note saying `verify: exit 0` on THIS tip means the
+             full nine-command run already passed on this exact tree (measured:
+             130 of 138 notes in history), ⇒ report «הראש אומת ב-<stamp>» and
+             ⛔ do ⛔ not re-run. `verify(fast)` · ⛔ no note · ⛔ any doubt ⇒ RUN IT.
+             ⚠️ `loop:health` is ⛔ never skipped — ⛔ nothing attests it.
+             ⚠️ And the walk (②) ⛔ does ⛔ not change the tree, so it ⛔ does ⛔ not
+             invalidate an attestation taken before it.
 ②  WALK      the product at 375×780, against its render. ⛔ The ONLY duty that catches
              a semantic error — 2,403 green tests ⛔ never saw a Hebrew answer among
              three English distractors.
