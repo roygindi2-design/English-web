@@ -137,6 +137,28 @@ describe('scripts/build-surfaces.mjs', () => {
     expect(md).not.toMatch(/`\/offline` — ⛔ אף מסך ⛔ אינו מקשר אליו/);
   });
 
+  it('C-0522: counts an entrance into a `[param]` route built as a TEMPLATE, ⛔ not as a literal', () => {
+    // ⛔ THE THIRD BUG: ⛔ nothing in the product writes `'/world/messages/[id]'` — a
+    // dynamic href can only be built as `` `/world/messages/${id}` ``, so the quoted-literal
+    // scan called a screen with three live rows linking to it «⛔ אינו נגיש בהקשות».
+    const md = run(
+      fixture({
+        ...BASE,
+        'app/mail/[id]/page.tsx': `export default function Mail() { return <p>שלום</p>; }\n`,
+        'lib/core/mailRows.ts': `export const rowOf = (id: string) => ({ href: \`/mail/\${id}\` });\n`,
+      }),
+    );
+    expect(md).not.toMatch(/`\/mail\/\[id\]` — ⛔ אף מסך ⛔ אינו מקשר אליו/);
+  });
+  it('C-0522: a `[param]` route ⛔ nobody names is STILL flagged — the widening is narrow', () => {
+    const md = run(
+      fixture({
+        ...BASE,
+        'app/ghost/[id]/page.tsx': `export default function Ghost() { return <p>שלום</p>; }\n`,
+      }),
+    );
+    expect(md).toMatch(/`\/ghost\/\[id\]` — ⛔ אף מסך ⛔ אינו מקשר אליו/);
+  });
   it('keeps `/dev/*` fixtures in their own table and out of the flags', () => {
     const md = run(
       fixture({

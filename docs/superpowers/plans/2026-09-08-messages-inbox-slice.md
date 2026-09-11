@@ -5,7 +5,7 @@
 > after a fresh run whose output goes into the tick report.
 
 **Written:** C-0515 (DEV, 📝 planning tick) · 2026-09-08T22:41Z (`date -u`)
-**Built:** — (⬜ not yet)
+**Built:** C-0522 (DEV, 🔨 build tick) · T-190·T-191 in C-0518, T-192 in C-0522
 
 **Covers:** **T-190** — the `הודעות` infrastructure: the `message_simulations` table, the
 per-learner state table, the soft read `GET /api/world/messages`, the pure layer and the
@@ -1727,7 +1727,7 @@ Run: `(npx next dev -p 3000 &) && sleep 25` then drive `http://127.0.0.1:3000/de
 
 **Interfaces:** see Interfaces, Task 7. Consumes nothing. Produces `requiredWordsProgress` · `requiredWordsHe` · `<RequiredWordChips>` for Task 8.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 // lib/core/requiredWords.test.ts
@@ -1782,12 +1782,12 @@ describe('RequiredWordChips — T-192ⓒ', () => {
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run lib/core/requiredWords.test.ts components/RequiredWordChips.test.ts`
 Expected: FAIL — modules not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // lib/core/requiredWords.ts
@@ -1860,12 +1860,12 @@ export default function RequiredWordChips({ progress, labelHe }: { readonly prog
 }
 ```
 
-- [ ] **Step 4: Run — green**
+- [x] **Step 4: Run — green**
 
 Run: `npx vitest run lib/core/requiredWords.test.ts components/RequiredWordChips.test.ts && npm run check:core && npm run typecheck`
 Expected: PASS · exit 0.
 
-- [ ] **Step 5: Stage**
+- [x] **Step 5: Stage**
 
 Run: `./scripts/g add lib/core/requiredWords.ts lib/core/requiredWords.test.ts components/RequiredWordChips.tsx components/RequiredWordChips.test.ts`
 
@@ -1885,7 +1885,7 @@ Run: `./scripts/g add lib/core/requiredWords.ts lib/core/requiredWords.test.ts c
 - Consumes: `InboxItem` · `whenOf` · `whenHeaderHe` · `CONTEXT_HE` (Tasks 2, 5), `requiredWordsProgress` · `requiredWordsHe` · `<RequiredWordChips>` (Task 7), `apiGet` · `apiPatch` (`lib/api/client.ts`), `EnWord` · `EnText` (`components/EnWord.tsx:20,66`).
 - Produces: `StateBody` (see Interfaces) · `SimulationMessageView` · `SimulationMessage`.
 
-- [ ] **Step 1: Write the failing route test**
+- [x] **Step 1: Write the failing route test**
 
 ```ts
 // app/api/world/messages/state/route.test.ts
@@ -1914,12 +1914,12 @@ describe('T-192ⓔ — PATCH /api/world/messages/state writes the learner’s ow
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run app/api/world/messages/state/route.test.ts`
 Expected: FAIL — `ENOENT`.
 
-- [ ] **Step 3: Write the route**
+- [x] **Step 3: Write the route**
 
 ```ts
 // app/api/world/messages/state/route.ts
@@ -1982,7 +1982,7 @@ function failure(where: string, error: { message: string; code?: string }) {
 }
 ```
 
-- [ ] **Step 4: Contract section** — append to `docs/api-contract.md` right after the GET section from Task 3
+- [x] **Step 4: Contract section** — append to `docs/api-contract.md` right after the GET section from Task 3
 
 ```markdown
 ## PATCH /api/world/messages/state
@@ -2003,7 +2003,7 @@ function failure(where: string, error: { message: string; code?: string }) {
 | `unavailable` | 503 | ⛔ אין ENV, או כישלון כתיבה. כתיבה היא קריאה קשיחה — ⛔ בניגוד ל-`GET`. |
 ```
 
-- [ ] **Step 5: Write the failing component test**
+- [x] **Step 5: Write the failing component test**
 
 ```ts
 // components/SimulationMessage.test.ts
@@ -2043,12 +2043,12 @@ describe('SimulationMessage — T-192, render kol-C-14-mail-open.png', () => {
 });
 ```
 
-- [ ] **Step 6: Run — red**
+- [x] **Step 6: Run — red**
 
 Run: `npx vitest run components/SimulationMessage.test.ts`
 Expected: FAIL — `ENOENT`.
 
-- [ ] **Step 7: Write the component**
+- [x] **Step 7: Write the component**
 
 ```tsx
 // components/SimulationMessage.tsx
@@ -2161,7 +2161,7 @@ export default function SimulationMessage({ id }: { readonly id: string }): Reac
 
 ⚠️ `EnText`’s real prop names: read `components/EnWord.tsx:28-80` first (`EnTextSegment` suggests `segments`); adapt the one call. ⚠️ `.find(` is allowed by the scan (only `filter/reduce/sort` are banned) — it is a lookup, ⛔ not a computation. ⚠️ The meta line composes Hebrew + English: sender inside `<EnWord>`, then `תייר · היום 09:20`.
 
-- [ ] **Step 8: The flow route and the fixture**
+- [x] **Step 8: The flow route and the fixture**
 
 ```tsx
 // app/world/messages/[id]/page.tsx
@@ -2195,7 +2195,7 @@ export default function DevMessageOpenPage() {
 }
 ```
 
-- [ ] **Step 9: Register in `scripts/verify-mobile.mjs`** — after `'/dev/messages',`:
+- [x] **Step 9: Register in `scripts/verify-mobile.mjs`** — after `'/dev/messages',`:
 
 ```js
   // C-XXXX (T-191) — the product list. Without env `GET /api/world/messages` answers
@@ -2206,16 +2206,16 @@ export default function DevMessageOpenPage() {
   '/dev/messages/open',
 ```
 
-- [ ] **Step 10: Run — green**
+- [x] **Step 10: Run — green**
 
 Run: `npx vitest run app/api/world/messages components/SimulationMessage.test.ts components/RequiredWordChips.test.ts lib/core/requiredWords.test.ts && npm run typecheck && npm run check:core && npm run check:titles && npm run check:text-floor`
 Expected: all PASS / exit 0.
 
-- [ ] **Step 11: STEP 6.5 — look at the screen**
+- [x] **Step 11: STEP 6.5 — look at the screen**
 
 Drive `http://127.0.0.1:3000/dev/messages/open` at 375×780. Record: heading (`Trip to Israel`) · text length · tappable count (**1** back link; the strip is `aria-disabled`) · under-44px (**0**) · horizontal scroll (**0**) · console errors (**0**) · `1 מתוך 3 מילות חובה` visible · no tab bar. Compare LAYOUT to `docs/design/kol-C-14-mail-open.png`.
 
-- [ ] **Step 12: Commit T-192**
+- [x] **Step 12: Commit T-192**
 
 ```bash
 ./scripts/g add app/api/world/messages/state docs/api-contract.md components/SimulationMessage.tsx components/SimulationMessage.test.ts "app/world/messages/[id]/page.tsx" app/dev/messages/open scripts/verify-mobile.mjs lib/core/requiredWords.ts lib/core/requiredWords.test.ts components/RequiredWordChips.tsx components/RequiredWordChips.test.ts
@@ -2230,16 +2230,16 @@ Drive `http://127.0.0.1:3000/dev/messages/open` at 375×780. Record: heading (`T
 - Regenerate: `docs/architecture-map.json`
 - Modify: `plan/30-architecture.md` (one `הודעות` section: file ownership · the three layers · D-054 «מנותקת») · `plan/50-tasks.md` (T-190 · T-191 · T-192 → 🟣 with the cycle id; ⛔ the milestone cell untouched) · `plan/60-findings.md` (one 🟡 finding: «unread vs unanswered — T-191ⓓ · T-192ⓔ · the render use one word for two states; the slice derives both channels from `unanswered`», owner PM) · `plan/26-plan-feedback.md` (the `design-taste-frontend` cell names a skill absent from the registry; any measured gap from execution) · `plan/00-control.md` (`NEXT_AGENT=CRITIC`, `CYCLE`, `LAST_HANDOFF_AT`, release the lock, the `msgs` tick counter) · `docs/plan-open.md` + `docs/plan-tables.md` (regenerated)
 
-- [ ] **Step 1: The map** — `grep -q '"generate-map"' package.json && npm run generate-map` (exists since T-235).
+- [x] **Step 1: The map** — `grep -q '"generate-map"' package.json && npm run generate-map` (exists since T-235).
 
-- [ ] **Step 2: The full gate — ⛔ the only line that may claim green**
+- [x] **Step 2: The full gate — ⛔ the only line that may claim green**
 
 Run: `npm run verify`
 Expected: `typecheck` · `check:core` · `check:motion` · `check:text-floor` · `check:rules` · `check:titles` · `test` · `build` · `check:mobile` — all exit 0. Paste the summary numbers (test files · tests · mobile checks) into the report.
 
-- [ ] **Step 3: Registers** — edit the three rows’ status cells to `🟣 C-XXXX` (T-190 only if Task 4 Step 9 verified the migration live), tick every `- [x]` above, then `npm run measure:plan`.
+- [x] **Step 3: Registers** — edit the three rows’ status cells to `🟣 C-XXXX` (T-190 only if Task 4 Step 9 verified the migration live), tick every `- [x]` above, then `npm run measure:plan`.
 
-- [ ] **Step 4: Close commit and push** — `plan/00-control.md` releases the lock in this commit; the push runs `npm run verify` again inside the hook
+- [x] **Step 4: Close commit and push** — `plan/00-control.md` releases the lock in this commit; the push runs `npm run verify` again inside the hook
 
 ```bash
 ./scripts/g add -A

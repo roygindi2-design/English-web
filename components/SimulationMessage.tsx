@@ -129,7 +129,7 @@ export function SimulationMessageView({
             </p>
             {/*
               ⚠️ The body is an INLINE `<EnText>` inside an RTL `<p>`, ⛔ never a `block`
-              one: `.ltr-inline` is `unicode-bidi: isolate`, so an isolated inline run
+              one: `<EnText>`'s own isolation is `unicode-bidi: isolate`, so an isolated inline run
               inside an RTL paragraph right-anchors its lines — which is exactly what the
               render draws (`render_msgs_screens.py:96`, `anchor="rm"` per line) and
               exactly what `components/StoryScreen.tsx:349` already does with the story

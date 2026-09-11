@@ -37,6 +37,6 @@ describe('scripts/check-page-titles.mjs — every product route owns a title', (
 
   it('reports how many routes it checked, so a silent empty walk cannot pass', () => {
     const r = run();
-    expect(r.out).toMatch(/19 route/); // +1: /world/messages (T-191)
+    expect(r.out).toMatch(/20 route/); // +1: /world/messages (T-191) · +1: /world/messages/[id] (T-192)
   });
 });

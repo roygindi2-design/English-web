@@ -52,6 +52,8 @@
   "app/api/world/lexicalClassOnly.test.ts": [],
   "app/api/world/messages/route.test.ts": [],
   "app/api/world/messages/route.ts": [],
+  "app/api/world/messages/state/route.test.ts": [],
+  "app/api/world/messages/state/route.ts": [],
   "app/api/world/posts/route.test.ts": [],
   "app/api/world/posts/route.ts": [],
   "app/api/world/recall/route.test.ts": [],
@@ -95,6 +97,9 @@
     "app/dev/messages/messages-fixture.ts"
   ],
   "app/dev/messages/messages-fixture.ts": [],
+  "app/dev/messages/open/page.tsx": [
+    "app/dev/messages/messages-fixture.ts"
+  ],
   "app/dev/messages/page.tsx": [
     "app/dev/messages/messages-fixture.ts"
   ],
@@ -150,6 +155,7 @@
   "app/study/page.tsx": [],
   "app/study/scan/page.tsx": [],
   "app/world/compose/page.tsx": [],
+  "app/world/messages/[id]/page.tsx": [],
   "components/ActionBar.test.ts": [],
   "components/ActionBar.tsx": [],
   "components/AppGrid.test.ts": [],
@@ -216,7 +222,11 @@
   "components/RecallCard.test.ts": [],
   "components/RecallCard.tsx": [],
   "components/RegisteredAddress.tsx": [],
+  "components/RequiredWordChips.test.ts": [],
+  "components/RequiredWordChips.tsx": [],
   "components/ServiceWorkerRegistrar.tsx": [],
+  "components/SimulationMessage.test.ts": [],
+  "components/SimulationMessage.tsx": [],
   "components/SpellCard.test.ts": [],
   "components/SpellCard.tsx": [],
   "components/StoryEndScreen.tsx": [],
@@ -542,6 +552,10 @@
     "lib/core/rateLimit.ts"
   ],
   "lib/core/rateLimit.ts": [],
+  "lib/core/requiredWords.test.ts": [
+    "lib/core/requiredWords.ts"
+  ],
+  "lib/core/requiredWords.ts": [],
   "lib/core/reviewRequest.test.ts": [],
   "lib/core/reviewRequest.ts": [],
   "lib/core/roundSummary.test.ts": [],

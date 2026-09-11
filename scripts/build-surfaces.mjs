@@ -452,7 +452,23 @@ for (const file of linkSources) {
     // to the home screen. Its own `href="/"` links are already counted below.
     if (r.route === '/' && !/href=\{?['"`]\/['"`]/.test(body)) continue;
     const quoted = new RegExp(`['"\`]${r.route.replace(/\//g, '\\/')}['"\`]`);
-    if (!quoted.test(body)) continue;
+    /**
+     * ⛔ **A DYNAMIC ROUTE IS ⛔ NEVER WRITTEN AS ITS OWN LITERAL, and that is the
+     * third correction to this scan — measured C-0522, ⛔ not supposed.** Nothing in
+     * the product writes `'/world/messages/[id]'`: the inbox builds the href in the
+     * pure layer as `` `/world/messages/${it.id}` `` (`lib/core/messages.ts`), which
+     * is the ONLY shape a dynamic entrance can have. ⇒ the literal scan above reported
+     * a screen with three live rows linking to it as «⛔ אינו נגיש בהקשות», and the
+     * phantom-flag gate (D-191 · T-272) went red on a flag that was ⛔ never real.
+     * ⇒ for a route that carries a `[param]` segment, the static prefix followed by a
+     * template substitution counts as an entrance too. ⚠️ **Narrow on purpose:** it
+     * fires ⛔ only for routes with a bracketed segment, and it still demands the
+     * prefix be written out — a route nobody names stays flagged.
+     */
+    const dynamicEntrance =
+      /\[[^/\]]+\]/.test(r.route) &&
+      new RegExp(`\`[^\`]*${r.route.replace(/\[[^/\]]+\]/g, '').replace(/\//g, '\\/')}\\$\\{`).test(body);
+    if (!quoted.test(body) && !dynamicEntrance) continue;
     const set = entrances.get(r.route) ?? new Set();
     set.add(from);
     entrances.set(r.route, set);

@@ -1863,3 +1863,39 @@ a learner who came for something else.
 branch is scoped to `LIVE_IDS` — a permanently-open node would otherwise have made
 `D-064`'s empty screen unreachable. See `F-210`: whether that scoping is the right
 semantics is PM/QA's call, ⛔ not DEV's.
+
+### C-0522 · `הודעות` — the open message (T-192)
+
+`lib/core/requiredWords.ts` is the second pure module of the department: `requiredWordsProgress`
+matches a required word against the learner's tokens **exactly**, after `trim` + `toLowerCase`.
+⛔ **No lemmatiser, and that is DECLARED rather than missing** — the block keyboard (`39 § 3`,
+blocked by `R-026`) emits whole blocks, so the only tokens this rule will ever see are words
+picked from a closed set. `visited` ≠ `visit`; when the keyboard lands, PM decides whether that
+stays true, because it is a pedagogical call.
+
+`app/api/world/messages/state/route.ts` (PATCH) is the department's **only writer**, and it
+writes exactly one column — the learner's own `read_at`. ⛔ The «answered» column is ⛔ never
+written anywhere: the keyboard that would earn it is `R-026`, and a state the learner cannot
+reach is a state ⛔ nothing may set. The row is keyed on the **session** user, ⛔ never on a
+body field. ⚠️ **It is a HARD call (503), unlike the soft GET beside it** — a failed read still
+leaves the ring usable, while a write that silently reports success would leave the blue dot
+lit on the next visit with ⛔ nothing saying why.
+
+**Route ownership:** the list lives at `app/(tabs)/world/messages` (the tab bar is the group
+layout's) and the open message at `app/world/messages/[id]` — **outside** `(tabs)`, the
+`/world/compose` precedent. That is structural: render `kol-C-14-mail-open.png` draws ⛔ no tab
+bar, `D-028` allows one bar per screen, and here that one bar is the **disabled compose strip**
+— present with its condition named (`D-046` · `D-096`), ⛔ never removed.
+`components/SimulationMessage.tsx` draws and ⛔ does not compute; its one write is the PATCH
+above, fire-and-forget, so a failed dot ⛔ can never turn a readable message into a failure
+screen.
+
+⚠️ **One reversible call logged under `RULES § 0.22`, and it is a SCANNER fix, ⛔ not a product
+one:** `scripts/build-surfaces.mjs` counted an entrance only from a **quoted literal** of the
+route. ⛔ Nothing writes `'/world/messages/[id]'` — a dynamic href can only be built as a
+template (`` `/world/messages/${it.id}` ``, `lib/core/messages.ts`) ⇒ the scanner reported a
+screen with three live rows linking to it as «⛔ אינו נגיש בהקשות», and the phantom-flag gate
+(`D-191` · `T-272`, ceiling 6) went red on a flag that was ⛔ never real. ⇒ for a route carrying
+a `[param]` segment, its static prefix followed by a template substitution now counts too.
+⛔ **Narrow on purpose, and pinned by two tests:** a `[param]` route ⛔ nobody names is still
+flagged. Measured: `7 → 6`, the same six «⛔ אין מצב ריק כתוב» rows as before.
