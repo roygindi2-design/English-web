@@ -147,6 +147,10 @@ const ROUTES = [
   // same pure functions the route uses and asks the server for nothing ⇒ ⛔ no entry in
   // EXPECTED_CONSOLE. Task 6 (T-191) turns this route into the inbox list itself.
   '/dev/messages',
+  // C-0522 (T-192) — the open message fixture: the body bubble, the three required-word
+  // chips, the disabled compose strip and ⛔ no tab bar. It is handed its item as a prop
+  // and asks the server for nothing ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/messages/open',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no

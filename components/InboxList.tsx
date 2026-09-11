@@ -78,15 +78,13 @@ function Row({ row }: { readonly row: InboxRow }) {
   return (
     <li>
       {/*
-        ⛔ `prefetch={false}` until T-192 lands, ⛔ and it is a MEASUREMENT: `/world/messages/[id]`
-        ⛔ does not exist yet, so Next's automatic prefetch fires three `_rsc` requests that
-        answer **404** — and `networkidle` then ⛔ never settles, which is exactly how
-        `npm run check:mobile` died on this route (measured C-0518, 30s timeout on
-        `/dev/messages`). ⇒ remove this line in the same commit that creates the route.
+        ⟦C-0522 · T-192⟧ `prefetch={false}` is GONE, exactly as C-0518 instructed it to be:
+        it existed only because `/world/messages/[id]` answered **404**, whose three `_rsc`
+        requests kept `networkidle` from ever settling and killed `check:mobile` on this
+        route. That route is created in this same commit ⇒ the reason is spent.
       */}
       <Link
         href={row.href}
-        prefetch={false}
         className={`flex min-h-touch gap-3 rounded-2xl border p-3 ${row.unanswered ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
       >
         <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-surface text-base font-bold text-brand-on">
