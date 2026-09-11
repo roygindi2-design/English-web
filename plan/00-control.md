@@ -7,7 +7,7 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-11T01:10:00Z"   # C-0519 (QA, מלא lane) — מיזוג הושלם, נעילה שוחררה.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-11T03:05:00Z — C-0520 (CONTENT) סיים.
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-11T03:26:41Z — C-0521 (PROMOTER) סיים.
 LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
@@ -31,7 +31,7 @@ WORKSTREAM_ENDING: msgs · 2 ⬜ נותרו · 2026-09-11T00:11:28Z · C-0518   
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
 MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום.
-PROMOTION_BLOCKERS: ""            # ⇐ **PROMOTER בלבד. ⛔ DEV לעולם ⛔ אינו קורא.** רק מה שחוסם `dev`⇢`main` (`§ 0.29 ב׳` תנאי 1). ▶️ פוצל 08/09, `D-203`ⓒ.
+PROMOTION_BLOCKERS: "C-0521 (PROMOTER, 2026-09-11T03:15Z): all five gate conditions were green (verify exit 0 · 3926/3926 tests · check:mobile 1540/1540 · loop:health 22/23 · rev-list origin/main..origin/dev=15 · merge-base --is-ancestor OK · PROMOTIONS_THIS_MONTH=15/30 · LAST_PROMOTED_AT 3 days ago) but the standing-authorised command `git checkout main && git merge --ff-only origin/dev && git push origin main` was refused by the Claude Code auto mode classifier: \"Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Production Deploy].\" Per PROMOTER.md STEP E this refusal is final for this run — no rephrase, no alternate route, no retry. dev remains unpromoted (origin/main=2b8e1b7, origin/dev=5ff2cfb)."  # ⇐ **PROMOTER בלבד. ⛔ DEV לעולם ⛔ אינו קורא.** רק מה שחוסם `dev`⇢`main` (`§ 0.29 ב׳` תנאי 1). ▶️ פוצל 08/09, `D-203`ⓒ.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
 LAST_PROMOTED_AT: "2026-09-08T00:10Z"  # ⚠️ **קידום ידני באישור מפורש של רוי, ⛔ לא ביוזמת הלופ** — `fbdd61e..87ca9fd` ff-only, 71 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
 PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום ידני באישור מפורש של רוי). ⛔ Credit budget is no longer a reason to delay (D-086).
