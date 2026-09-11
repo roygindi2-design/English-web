@@ -4,6 +4,8 @@
  * ⛔ Knows nothing about React, DOM, HTTP, env or the clock — `now` is a parameter.
  * ⛔ Zero coupling to word_progress or the arena (D-054: מנותקת לחלוטין).
  */
+import { toIsoDateInZone } from './onboarding';
+
 export const MESSAGE_CONTEXTS = ['tourist', 'restaurant', 'teacher', 'hotel'] as const;
 export type MessageContext = (typeof MESSAGE_CONTEXTS)[number];
 export const CONTEXT_HE: Readonly<Record<MessageContext, string>> = {
@@ -120,4 +122,94 @@ export function inboxCounts(items: readonly InboxItem[]): InboxCounts {
 export function inboxCountsHe(c: InboxCounts): string {
   const total = c.total === 1 ? 'הודעה אחת' : `${c.total} הודעות`;
   return `${total} · ${c.unanswered} שלא נענו`;
+}
+
+export type WhenLabel =
+  | { readonly kind: 'today'; readonly timeHe: string }
+  | { readonly kind: 'yesterday' }
+  | { readonly kind: 'weekday'; readonly dayHe: string }
+  | { readonly kind: 'date'; readonly dateHe: string };
+
+const WEEKDAY_HE = ['יום א׳', 'יום ב׳', 'יום ג׳', 'יום ד׳', 'יום ה׳', 'יום ו׳', 'שבת'] as const;
+const DAY_MS = 86_400_000;
+
+function dayNumber(isoDate: string): number {
+  return Math.floor(Date.parse(`${isoDate}T00:00:00Z`) / DAY_MS);
+}
+
+/** The render’s three labels (render_video_C.py:238-245): `09:20` · `אתמול` · `יום ג׳`. */
+export function whenOf(createdAtIso: string, nowIso: string, timeZone: string): WhenLabel {
+  const created = new Date(createdAtIso);
+  const createdDay = toIsoDateInZone(created, timeZone);
+  const nowDay = toIsoDateInZone(new Date(nowIso), timeZone);
+  const diff = dayNumber(nowDay) - dayNumber(createdDay);
+  if (diff <= 0) {
+    const timeHe = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone }).format(created);
+    return { kind: 'today', timeHe };
+  }
+  if (diff === 1) return { kind: 'yesterday' };
+  if (diff < 7) {
+    const weekday = new Date(`${createdDay}T00:00:00Z`).getUTCDay();
+    return { kind: 'weekday', dayHe: WEEKDAY_HE[weekday] ?? '' };
+  }
+  const [, m, d] = createdDay.split('-');
+  return { kind: 'date', dateHe: `${Number(d)}.${Number(m)}` };
+}
+
+export function whenListHe(w: WhenLabel): string {
+  switch (w.kind) {
+    case 'today': return w.timeHe;
+    case 'yesterday': return 'אתמול';
+    case 'weekday': return w.dayHe;
+    case 'date': return w.dateHe;
+  }
+}
+
+/** The open message’s meta line says `היום 09:20` (render_msgs_screens.py:87). */
+export function whenHeaderHe(w: WhenLabel): string {
+  return w.kind === 'today' ? `היום ${w.timeHe}` : whenListHe(w);
+}
+
+export const PREVIEW_MAX = 40;
+
+/** ≤ max characters, cut at a word boundary, `…` appended only when something was cut. */
+export function previewEn(bodyEn: string, max: number = PREVIEW_MAX): string {
+  const clean = bodyEn.replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max + 1);
+  const boundary = cut.lastIndexOf(' ');
+  return `${(boundary > 0 ? cut.slice(0, boundary) : cut.slice(0, max)).replace(/[\s.,;:!?]+$/, '')}…`;
+}
+
+/** The avatar disc letter (render_video_C.py:238-245: `T` · `S` · `L` for `Mr. Levi`). */
+export function initialOf(senderEn: string): string {
+  const words = senderEn.trim().split(/\s+/).filter((w) => !/^(mr|mrs|ms|dr)\.?$/i.test(w));
+  const pick = words.at(-1) ?? senderEn.trim();
+  return (pick[0] ?? '?').toUpperCase();
+}
+
+export interface InboxRow {
+  readonly id: string;
+  readonly href: string;
+  readonly initial: string;
+  readonly senderEn: string;
+  readonly contextHe: string;
+  readonly subjectEn: string;
+  readonly previewEn: string;
+  readonly whenHe: string;
+  readonly unanswered: boolean;
+}
+
+export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZone: string): readonly InboxRow[] {
+  return items.map((it) => ({
+    id: it.id,
+    href: `/world/messages/${it.id}`,
+    initial: initialOf(it.senderEn),
+    senderEn: it.senderEn,
+    contextHe: CONTEXT_HE[it.context],
+    subjectEn: it.subjectEn,
+    previewEn: previewEn(it.bodyEn),
+    whenHe: whenListHe(whenOf(it.createdAt, nowIso, timeZone)),
+    unanswered: unanswered(it),
+  }));
 }

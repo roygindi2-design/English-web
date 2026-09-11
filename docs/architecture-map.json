@@ -9,6 +9,7 @@
   "app/(tabs)/studies/page.tsx": [],
   "app/(tabs)/world/chain/page.tsx": [],
   "app/(tabs)/world/collected/page.tsx": [],
+  "app/(tabs)/world/messages/page.tsx": [],
   "app/(tabs)/world/page.tsx": [],
   "app/(tabs)/world/story/page.tsx": [],
   "app/api/arcade/character/route.test.ts": [],
@@ -49,6 +50,8 @@
   "app/api/world/bank/route.test.ts": [],
   "app/api/world/bank/route.ts": [],
   "app/api/world/lexicalClassOnly.test.ts": [],
+  "app/api/world/messages/route.test.ts": [],
+  "app/api/world/messages/route.ts": [],
   "app/api/world/posts/route.test.ts": [],
   "app/api/world/posts/route.ts": [],
   "app/api/world/recall/route.test.ts": [],
@@ -88,6 +91,13 @@
   "app/dev/identity/page.tsx": [],
   "app/dev/lesson/done/page.tsx": [],
   "app/dev/lesson/page.tsx": [],
+  "app/dev/messages/messages-fixture.test.ts": [
+    "app/dev/messages/messages-fixture.ts"
+  ],
+  "app/dev/messages/messages-fixture.ts": [],
+  "app/dev/messages/page.tsx": [
+    "app/dev/messages/messages-fixture.ts"
+  ],
   "app/dev/onboarding/layout.tsx": [],
   "app/dev/onboarding/page.tsx": [],
   "app/dev/scan/page.tsx": [],
@@ -183,6 +193,8 @@
   "components/Flashcard.test.ts": [],
   "components/Flashcard.tsx": [],
   "components/GlobeIcon.tsx": [],
+  "components/InboxList.test.ts": [],
+  "components/InboxList.tsx": [],
   "components/InstallPrompt.tsx": [],
   "components/LatinField.test.ts": [],
   "components/LatinField.tsx": [],
@@ -477,6 +489,12 @@
   "lib/core/messageGate.ts": [
     "lib/core/storyGate.ts"
   ],
+  "lib/core/messages.test.ts": [
+    "lib/core/messages.ts"
+  ],
+  "lib/core/messages.ts": [
+    "lib/core/onboarding.ts"
+  ],
   "lib/core/mixReport.test.ts": [
     "lib/core/contentSchema.ts",
     "lib/core/mixReport.ts"
@@ -606,7 +624,8 @@
   "lib/core/spring.ts": [],
   "lib/core/storyGate.test.ts": [],
   "lib/core/storyGate.ts": [
-    "lib/core/cefrLevels.ts"
+    "lib/core/cefrLevels.ts",
+    "lib/core/contentSchema.ts"
   ],
   "lib/core/storyIntro.test.ts": [],
   "lib/core/storyIntro.ts": [],
@@ -709,6 +728,7 @@
   "lib/supabase/layer2.test.ts": [],
   "lib/supabase/learnerLevel.test.ts": [],
   "lib/supabase/lexicalClassBackfill.test.ts": [],
+  "lib/supabase/messageSimulations.test.ts": [],
   "lib/supabase/onboarding.test.ts": [
     "lib/core/onboarding.ts"
   ],

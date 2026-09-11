@@ -8,10 +8,13 @@ import type { RawStateRow, Simulation } from '@/lib/core/messages';
  * Constraints). The production bank is T-193’s. `messages-fixture.test.ts` pins this file
  * to the render (F-133).
  *
- * `FIXTURE_NOW` is Monday 2026-09-08 09:30 Asia/Jerusalem ⇒ Tom = today `09:20`,
- * Sarah = `אתמול`, Mr. Levi (Tue 2026-09-02) = `יום ג׳` — the render’s three labels.
+ * `FIXTURE_NOW` is Monday 2026-09-07 09:30 Asia/Jerusalem ⇒ Tom = today `09:20`,
+ * Sarah = `אתמול`, Mr. Levi (Tue 2026-09-01, six days back) = `יום ג׳` — the render’s
+ * three labels. ⚠️ ⛔ Not the plan’s 2026-09-08: that date is a **Tuesday** (measured,
+ * `date -u -d 2026-09-08 +%A`), and from a Tuesday ⛔ no day inside the 2–6 day weekday
+ * window is a Tuesday ⇒ `יום ג׳` could never be produced.
  */
-export const FIXTURE_NOW = '2026-09-08T09:30:00+03:00';
+export const FIXTURE_NOW = '2026-09-07T09:30:00+03:00';
 
 export const FIXTURE_SIMULATIONS: readonly Simulation[] = [
   {
@@ -22,7 +25,7 @@ export const FIXTURE_SIMULATIONS: readonly Simulation[] = [
     bodyEn: 'Hi! I am coming to Israel this summer with my family. Where should we go? Any tips?',
     requiredWords: ['summer', 'visit', 'recommend'],
     level: 'A1',
-    createdAt: '2026-09-08T09:20:00+03:00',
+    createdAt: '2026-09-07T09:20:00+03:00',
   },
   {
     id: '22222222-2222-4222-8222-222222222222',
@@ -32,7 +35,7 @@ export const FIXTURE_SIMULATIONS: readonly Simulation[] = [
     bodyEn: 'We would like to book a table...',
     requiredWords: ['book', 'table', 'four'],
     level: 'A1',
-    createdAt: '2026-09-07T18:05:00+03:00',
+    createdAt: '2026-09-06T18:05:00+03:00',
   },
   {
     id: '33333333-3333-4333-8333-333333333333',
@@ -42,11 +45,11 @@ export const FIXTURE_SIMULATIONS: readonly Simulation[] = [
     bodyEn: 'Please send me the essay...',
     requiredWords: ['send', 'essay', 'homework'],
     level: 'A1',
-    createdAt: '2026-09-02T08:00:00+03:00',
+    createdAt: '2026-09-01T08:00:00+03:00',
   },
 ];
 
 /** Mr. Levi’s row is read (the render draws it without the dot); the other two are pending. */
 export const FIXTURE_STATES: readonly RawStateRow[] = [
-  { simulation_id: '33333333-3333-4333-8333-333333333333', read_at: '2026-09-02T12:00:00+03:00', answered_at: null },
+  { simulation_id: '33333333-3333-4333-8333-333333333333', read_at: '2026-09-01T12:00:00+03:00', answered_at: null },
 ];

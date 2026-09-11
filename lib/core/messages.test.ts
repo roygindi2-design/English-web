@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   CONTEXT_HE, MESSAGE_CONTEXTS, REQUIRED_WORDS_PER_MESSAGE,
-  inboxCounts, inboxCountsHe, mergeInbox, toSimulation, toSimulations, unanswered,
+  inboxCounts, inboxCountsHe, initialOf, mergeInbox, previewEn, toInboxRows, toSimulation,
+  toSimulations, unanswered, whenHeaderHe, whenListHe, whenOf,
   type RawSimulationRow, type Simulation,
 } from './messages';
 
@@ -75,5 +76,55 @@ describe('mergeInbox · unanswered · inboxCounts', () => {
   it('the counter string is the render’s, and 1 is הודעה אחת', () => {
     expect(inboxCountsHe({ total: 3, unanswered: 2 })).toBe('3 הודעות · 2 שלא נענו');
     expect(inboxCountsHe({ total: 1, unanswered: 0 })).toBe('הודעה אחת · 0 שלא נענו');
+  });
+});
+
+const TZ = 'Asia/Jerusalem';
+// ⚠️ 2026-09-08 is a TUESDAY (`date -u -d 2026-09-08 +%A`), ⛔ not the Monday the plan
+// assumed — and from a Tuesday ⛔ no day in the 2–6 window is itself a Tuesday, so the
+// render's `יום ג׳` was unreachable. The real Monday one day earlier makes it reachable.
+const NOW = '2026-09-07T09:30:00+03:00'; // Monday
+
+describe('whenOf — the render’s three labels, from created_at and now', () => {
+  it('same calendar day in the learner’s zone ⇒ today + HH:MM', () => {
+    const w = whenOf('2026-09-07T09:20:00+03:00', NOW, TZ);
+    expect(w).toEqual({ kind: 'today', timeHe: '09:20' });
+    expect(whenListHe(w)).toBe('09:20');
+    expect(whenHeaderHe(w)).toBe('היום 09:20');
+  });
+  it('the previous calendar day ⇒ אתמול, even across midnight in UTC', () => {
+    // 02:00 in Asia/Jerusalem is 23:00Z the day BEFORE ⇒ the UTC date is 09-05 while
+    // the learner's date is 09-06. A UTC-only diff would say «2 days», ⛔ not «אתמול».
+    const w = whenOf('2026-09-06T02:00:00+03:00', NOW, TZ);
+    expect(whenListHe(w)).toBe('אתמול');
+    expect(whenHeaderHe(w)).toBe('אתמול');
+  });
+  it('2–6 days ago ⇒ the weekday, יום ג׳ for a Tuesday', () => {
+    const w = whenOf('2026-09-01T08:00:00+03:00', NOW, TZ);
+    expect(whenListHe(w)).toBe('יום ג׳');
+  });
+  it('7+ days ago ⇒ d.m', () => {
+    expect(whenListHe(whenOf('2026-08-12T08:00:00+03:00', NOW, TZ))).toBe('12.8');
+  });
+});
+
+describe('previewEn · initialOf', () => {
+  it('cuts to a word boundary under the max and appends …', () => {
+    expect(previewEn('Hi! I am coming to Israel this summer with my family. Where should we go?', 40)).toBe('Hi! I am coming to Israel this summer…');
+    expect(previewEn('Short.', 40)).toBe('Short.');
+  });
+  it('the disc letter is the surname initial for a titled name, else the first letter', () => {
+    expect(initialOf('Tom')).toBe('T');
+    expect(initialOf('Mr. Levi')).toBe('L');
+    expect(initialOf('Sarah')).toBe('S');
+  });
+});
+
+describe('toInboxRows — everything the component draws, precomputed', () => {
+  it('formats the fixture-shaped items with href, contextHe, whenHe, unanswered', () => {
+    const items = mergeInbox([sim('a', '2026-09-07T09:20:00+03:00')], []);
+    const rows = toInboxRows(items, NOW, TZ);
+    expect(rows[0]).toMatchObject({ id: 'a', href: '/world/messages/a', initial: 'T', contextHe: 'תייר', whenHe: '09:20', unanswered: true });
+    expect(rows[0]!.previewEn.endsWith('…')).toBe(true);
   });
 });

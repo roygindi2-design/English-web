@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { mergeInbox, inboxCounts, toSimulation } from '@/lib/core/messages';
+import { mergeInbox, inboxCounts, toInboxRows, toSimulation } from '@/lib/core/messages';
 import { FIXTURE_NOW, FIXTURE_SIMULATIONS, FIXTURE_STATES } from './messages-fixture';
 
 /**
@@ -67,6 +67,12 @@ describe('the messages fixture is the render’s data, ⛔ not a second authorin
         required_words: s.requiredWords, cefr_level: s.level, created_at: s.createdAt,
       })).not.toBeNull();
     }
-    expect(FIXTURE_NOW).toBe('2026-09-08T09:30:00+03:00');
+    expect(FIXTURE_NOW).toBe('2026-09-07T09:30:00+03:00');
+  });
+
+  it('the time labels computed from created_at at FIXTURE_NOW are the render’s labels', () => {
+    const items = mergeInbox(FIXTURE_SIMULATIONS, FIXTURE_STATES);
+    const rows = toInboxRows(items, FIXTURE_NOW, 'Asia/Jerusalem');
+    rows.forEach((r, i) => expect(r.whenHe).toBe(mails[i]!.when));
   });
 });

@@ -66,6 +66,9 @@ export interface RingNode {
  * `msgs` — `36 § 6` שונה מ-«שמונה» ל-«תשעה» ב-28/08 (`41-amirnet-spec`), וזה
  * המקום הראשון שהיישור נסגר: הקוד יושר למפרט, ⛔ ולא להפך.
  */
+/** T-191 — the inbox the `הודעות` node opens onto. */
+export const MESSAGES_HREF = '/world/messages';
+
 export const RING_ORDER: readonly RingNodeId[] = [
   'arena',
   'msgs',
@@ -144,7 +147,9 @@ export interface RingInputs {
 }
 
 /**
- * ⛔ חמשת צמתי `locked_infra`, **וזו הרשימה כולה** (D-118 · T-204ⓔ).
+ * ⛔ ארבעת צמתי `locked_infra`, **וזו הרשימה כולה** (D-118 · T-204ⓔ).
+ * ⟦עודכן C-0518 · `T-191`⟧ `msgs` ⇢ `open` (`/world/messages`) — תיבת הסימולציות
+ * נבנתה, ושלושת תנאי `D-074` נענו: שורת `T-190`, שורת `D-054`, והמסך עצמו.
  * ⟦עודכן 03/09 · `D-182` · `T-252`⟧ `amirnet` נוסף — `locked_infra` ⛔ ולא
  * `locked_count` (`D-118` מחלקה 3): `41 § 8` שלב 1 (סכמת פריטים · תפריט ·
  * מנוע תרגול · `T-222`/`T-223`/`T-224`) ⛔ טרם נבנה, ⇒ ⛔ אין ספרה בנוסח.
@@ -152,9 +157,8 @@ export interface RingInputs {
  * ⛔ מעבר של צומת מכאן ל-`open` הוא **משימה**, ⛔ ולא דגל.
  */
 const INFRA_NOTE_HE: Readonly<
-  Record<'msgs' | 'amirnet' | 'sentences' | 'leaders' | 'friends', string>
+  Record<'amirnet' | 'sentences' | 'leaders' | 'friends', string>
 > = {
-  msgs: 'ההודעות ייפתחו כשתיבת הדואר תיבנה.',
   amirnet: 'אמירנט ייפתח כשמנוע התרגול שלו ייבנה.',
   sentences: 'המשפטים ייפתחו כשמאגר המשפטים ייבנה.',
   leaders: 'המובילים ייפתחו כשחשבונות המשתמשים יחוברו.',
@@ -214,8 +218,16 @@ function emptyScreen(code: FailureCode, retryHref: string): RingScreen {
  *    ביום שנולד** — מחלקת הפגם של F-074. ⇒ הכלל כאן הוא הכלל שהמשימות כותבות:
  *    ⛔ **`unknown` הוא מצב של מסך**, ולכן ⛔ אינו רשאי לצאת מכאן על צומת.
  *
- * ⓒ ⛔ **אף צומת ⛔ אינו `open`** — D-064 כלשונה: אריח מושבת ⛔ אינו חוקי כשכל
- *    האריחים מושבתים.
+ * ⓒ ⛔ **אף צומת מונע-חוט (`LIVE_IDS`) ⛔ אינו `open`** — D-064 כלשונה: אריח מושבת
+ *    ⛔ אינו חוקי כשכל האריחים מושבתים.
+ *    ⚠️ ⟦הוצמד ל-`LIVE_IDS` ב-C-0518 · `T-191`⟧ — ⛔ **וזו ⛔ אינה הרחבה של D-064, היא
+ *    שימורה.** ‏`msgs` הפך ל-`open` **קבוע** בטיק הזה, ובניסוח הקודם («⛔ אף צומת»)
+ *    הענף הזה ⛔ היה מת ביום שנולד — בדיוק מחלקת `F-074` שהערה ⓑ למעלה נכתבה נגדה,
+ *    ונמדד: שתי בדיקות חיות (‏«כל צומת נעול ⇒ ריק» ו«`session_expired` ⇒ `/login`»)
+ *    האדימו על השינוי. ⇒ הצמתים שמצבם **מגיע מהחוט** הם מה ש-D-064 מדדה מלכתחילה:
+ *    לומד שהתקדמותו ⛔ לא פתחה דבר מקבל מסך ריק **עם מוצא**, ⛔ ולא קיר של מנעולים.
+ *    🔴 **וזו הכרעת ניווט שאינה שלי** — ⛔ נפתח ממצא כדי ש-PM/QA יכריעו אם צומת
+ *    `open` קבוע ראוי לבטל את המסך הריק. עד אז ההתנהגות הנמדדת ⛔ לא השתנתה.
  *
  * ⇒ אחרי שלושת הענפים, **טיפוס `unknown` ⛔ אינו נגיש** על אף צומת של טבעת
  * מצוירת, והבדיקה מודדת זאת ⛔ ולא מניחה.
@@ -236,7 +248,7 @@ export function ringScreen(
     stories: inputs.stories,
     compose: inputs.compose,
     vocab: inputs.vocab,
-    msgs: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.msgs },
+    msgs: { kind: 'open', href: MESSAGES_HREF },
     amirnet: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.amirnet },
     sentences: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.sentences },
     leaders: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.leaders },
@@ -247,7 +259,7 @@ export function ringScreen(
     labelHe: RING_LABEL_HE[id],
     state: live[id],
   }));
-  if (!nodes.some((n) => n.state.kind === 'open')) {
+  if (!LIVE_IDS.some((id) => live[id].kind === 'open')) {
     return emptyScreen(code, retryHref);
   }
   return { kind: 'ring', nodes };

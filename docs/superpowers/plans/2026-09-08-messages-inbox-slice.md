@@ -1223,7 +1223,7 @@ Expected: all PASS.
 
 ⚠️ **Load before Step 1:** `skills/taste-skill/SKILL.md` (§ 4.9 copy self-audit · § 9.B hierarchy by weight, not scale) and `ui-styling` via `./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md`. Write the `[SKILL]` line in the report **before** this task’s first edit.
 
-- [ ] **Step 1: Write the failing tests** (append to `lib/core/messages.test.ts`)
+- [x] **Step 1: Write the failing tests** (append to `lib/core/messages.test.ts`)
 
 ```ts
 import { initialOf, previewEn, toInboxRows, whenHeaderHe, whenListHe, whenOf } from './messages';
@@ -1274,12 +1274,12 @@ describe('toInboxRows — everything the component draws, precomputed', () => {
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run lib/core/messages.test.ts`
 Expected: FAIL — `whenOf is not a function` (and friends).
 
-- [ ] **Step 3: Implement** (append to `lib/core/messages.ts`)
+- [x] **Step 3: Implement** (append to `lib/core/messages.ts`)
 
 ```ts
 import { toIsoDateInZone } from './onboarding';
@@ -1377,7 +1377,7 @@ export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZon
 
 ⚠️ The `import` line goes to the top of the file with the others (there are no others yet — it becomes the first line). `lib/core/onboarding.ts` is already pure; `check:core` stays green.
 
-- [ ] **Step 4: Extend the fixture test with the render’s `when` labels** (append to `app/dev/messages/messages-fixture.test.ts`, inside the `describe`)
+- [x] **Step 4: Extend the fixture test with the render’s `when` labels** (append to `app/dev/messages/messages-fixture.test.ts`, inside the `describe`)
 
 ```ts
   it('the time labels computed from created_at at FIXTURE_NOW are the render’s labels', () => {
@@ -1388,12 +1388,12 @@ export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZon
 ```
 (add `toInboxRows` to the import from `@/lib/core/messages`).
 
-- [ ] **Step 5: Run — green**
+- [x] **Step 5: Run — green**
 
 Run: `npx vitest run lib/core/messages.test.ts app/dev/messages/messages-fixture.test.ts && npm run check:core`
 Expected: PASS · exit 0.
 
-- [ ] **Step 6: Stage**
+- [x] **Step 6: Stage**
 
 Run: `./scripts/g add lib/core/messages.ts lib/core/messages.test.ts app/dev/messages/messages-fixture.test.ts`
 
@@ -1413,7 +1413,7 @@ Run: `./scripts/g add lib/core/messages.ts lib/core/messages.test.ts app/dev/mes
 - Consumes: `InboxRow` · `toInboxRows` · `inboxCountsHe` · `mergeInbox` · `inboxCounts` (Tasks 2, 5), `apiGet` (`lib/api/client.ts`), `LEARNER_TIME_ZONE`, `failureExit` · `SIGN_IN_AGAIN_HE` (`lib/core/failureExit.ts`), `EnWord`.
 - Produces: `InboxScreenState` · `InboxListView` · `InboxList` (see Interfaces).
 
-- [ ] **Step 1: Write the failing source-scan test**
+- [x] **Step 1: Write the failing source-scan test**
 
 ```ts
 // components/InboxList.test.ts
@@ -1460,12 +1460,12 @@ describe('InboxList — T-191, render kol-C-13-inbox.png', () => {
 });
 ```
 
-- [ ] **Step 2: Run — red**
+- [x] **Step 2: Run — red**
 
 Run: `npx vitest run components/InboxList.test.ts`
 Expected: FAIL — `ENOENT … InboxList.tsx`.
 
-- [ ] **Step 3: Write the component**
+- [x] **Step 3: Write the component**
 
 ```tsx
 // components/InboxList.tsx
@@ -1646,7 +1646,7 @@ export default function InboxList(): React.JSX.Element {
 ⚠️ `Exit` on `schema_missing`: `failureExit('schema_missing')` yields the «navigate to a tab that works» exit (`lib/core/failureExit.ts:32`) — D-065.
 ⚠️ The kicker `p` is 12px (`text-xs`) — the render’s 12.5 rounds down to the floor, ⛔ not a gap.
 
-- [ ] **Step 4: Replace the dev page body** — `app/dev/messages/page.tsx` becomes:
+- [x] **Step 4: Replace the dev page body** — `app/dev/messages/page.tsx` becomes:
 
 ```tsx
 import { InboxListView } from '@/components/InboxList';
@@ -1664,7 +1664,7 @@ export default function DevMessagesPage() {
 }
 ```
 
-- [ ] **Step 5: The product route**
+- [x] **Step 5: The product route**
 
 ```tsx
 // app/(tabs)/world/messages/page.tsx
@@ -1686,7 +1686,7 @@ export default function WorldMessagesPage() {
 }
 ```
 
-- [ ] **Step 6: The ring node opens (D-109 «Arrival» · D-074 three conditions now met: T-190 row · D-054 row · the screen exists)** — in `lib/core/worldRing.ts`:
+- [x] **Step 6: The ring node opens (D-109 «Arrival» · D-074 three conditions now met: T-190 row · D-054 row · the screen exists)** — in `lib/core/worldRing.ts`:
   - `INFRA_NOTE_HE`’s record type and object: remove `msgs` (`:154-160`); update the doc comment «חמשת צמתי `locked_infra`» → «ארבעת» and add a line: `⟦עודכן C-XXXX · T-191⟧ msgs → open (/world/messages)`.
   - `:239`: `msgs: { kind: 'open', href: MESSAGES_HREF },` with `export const MESSAGES_HREF = '/world/messages';` above `RING_ORDER`.
   - `lib/core/worldRing.test.ts`: where the test enumerates the `locked_infra` ids (`:157-172`), drop `'msgs'`; add:
@@ -1701,16 +1701,16 @@ export default function WorldMessagesPage() {
 ```
   (`ALL_OPEN_INPUTS` — reuse the fixture the file already builds for its ring tests; `grep -n 'open' lib/core/worldRing.test.ts | head` to find its name.)
 
-- [ ] **Step 7: Run — green**
+- [x] **Step 7: Run — green**
 
 Run: `npx vitest run components/InboxList.test.ts lib/core/worldRing.test.ts components/WorldRing.test.tsx app/dev/messages && npm run typecheck && npm run check:core && npm run check:titles && npm run check:text-floor`
 Expected: all PASS / exit 0. If `components/WorldRing.test.tsx` pins «five locked_infra», change it to four in the same commit (measure first: `grep -n 'locked_infra\|5\b' components/WorldRing.test.tsx`).
 
-- [ ] **Step 8: STEP 6.5 — look at the screen**
+- [x] **Step 8: STEP 6.5 — look at the screen**
 
 Run: `(npx next dev -p 3000 &) && sleep 25` then drive `http://127.0.0.1:3000/dev/messages` at 375×780 with Playwright (`/opt/pw-browsers/chromium`). Record in the report: heading · text length · tappable count (expected **3** rows + 1 `לבחירת רמה`-free) · under-44px (**0**) · horizontal scroll (**0**) · console errors (**0**). Compare LAYOUT to `docs/design/kol-C-13-inbox.png`: header → bar → counter → 3 rows → card.
 
-- [ ] **Step 9: Commit T-191**
+- [x] **Step 9: Commit T-191**
 
 ```bash
 ./scripts/g add components/InboxList.tsx components/InboxList.test.ts "app/(tabs)/world/messages/page.tsx" app/dev/messages/page.tsx lib/core/worldRing.ts lib/core/worldRing.test.ts components/WorldRing.test.tsx lib/core/messages.ts lib/core/messages.test.ts app/dev/messages/messages-fixture.test.ts

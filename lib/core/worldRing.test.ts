@@ -162,13 +162,19 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
       'amirnet',
       'friends',
       'leaders',
-      'msgs',
       'sentences',
     ]);
     for (const node of infra) {
       if (node.state.kind !== 'locked_infra') throw new Error('unreachable');
       expect(/\d/.test(node.state.noteHe)).toBe(false);
     }
+  });
+
+  it('הודעות is open onto /world/messages once the inbox exists (T-191 · D-109 arrival)', () => {
+    const screen = ringScreen(inputs(), '/world', 'unavailable');
+    if (screen.kind !== 'ring') throw new Error('unreachable');
+    const msgs = screen.nodes.find((n) => n.id === 'msgs')!;
+    expect(msgs.state).toEqual({ kind: 'open', href: '/world/messages' });
   });
 
   it('⛔ ⛔ no `locked_infra` note says «בקרוב» (F-011 · F-016 · D-046)', () => {
