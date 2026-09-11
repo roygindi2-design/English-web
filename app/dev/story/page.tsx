@@ -25,7 +25,7 @@ import {
  */
 export default function DevStoryPage() {
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-6">
+    <main className="mx-auto w-full max-w-md py-6">
       <StoryScreenView
         state={{
           kind: 'ready',

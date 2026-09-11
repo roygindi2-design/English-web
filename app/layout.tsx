@@ -49,18 +49,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl">
       <body className="bg-surface text-ink antialiased">
         <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-          <header className="flex items-center px-5 py-4">
+          <header className="flex items-center px-6 py-4">
             <span className="text-sm font-semibold text-ink-muted">
               אנגלית · מסלול אמיר״ם
             </span>
           </header>
-          <main className="flex flex-1 flex-col gap-6 px-5 pb-8">{children}</main>
+          <main className="flex flex-1 flex-col gap-6 px-6 pb-8">{children}</main>
           {/*
             T-011: the attribution link has to be reachable from every screen,
             because the obligation attaches to the product and not to one page.
             min-h-touch keeps it at the 44px floor check:mobile enforces.
           */}
-          <footer className="px-5 pb-6 pt-2">
+          <footer className="px-6 pb-6 pt-2">
             <Link
               href="/sources"
               className="inline-flex min-h-touch items-center text-sm text-ink-muted underline"

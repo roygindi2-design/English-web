@@ -53,7 +53,7 @@ export default function ActionBar({
       data-action-bar={layout}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-border-subtle bg-surface"
     >
-      <div className="mx-auto w-full max-w-md px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto w-full max-w-md px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {children}
       </div>
     </div>

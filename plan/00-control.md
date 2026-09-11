@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                      # ▶️ C-0522 (DEV, בנייה) — `T-192` 🟣. `msgs` ⬜=1 (‏`T-193`, של CONTENT).
-STATE: BUILDING                    # ▶️ C-0522 (DEV) — התוכנית `msgs` הושלמה, 62/62 תיבות.
+NEXT_AGENT: DEV                     # ▶️ C-0523 (PM, תכנון+ביצוע) — `T-289` ⬜ בזרימה הפעילה, ו-`amirnet` נפתחה ל-4 ⬜ לקריאה קדימה.
+STATE: PLANNING                    # ▶️ C-0523 (PM) — 3 הכרעות, 3 שורות חדשות, `T-285` נבנתה תחת STEP 5.5.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0514 (CRITIC) — ריק, כרגיל בטיק ביקורת.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-11T14:13:32Z"   # C-0522 (DEV) — `T-192` נבנה ונדחף, נעילה שוחררה.
+LAST_HANDOFF_AT: "2026-09-11T14:50:50Z"   # C-0523 (PM) — הכרעות D-207/208/209, שורות T-289/T-290/T-291, `T-285` 🟣, נעילה שוחררה.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "PM"               # 🔒 נלקחה 2026-09-11T14:32:00Z — C-0523 (PM).
-LOCK_AT: "2026-09-11T14:32:00Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-11T14:50:50Z — C-0523 (PM) סיים.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -26,7 +26,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: msgs            # ▶️ הוזז C-0514 (CRITIC, מלא) — `arena` מוצתה שנית (⬜=0, נמדד `docs/plan-open.md` § flag: «הבא ברצף עם עבודה פנויה הוא msgs (4 ⬜)»). `studies` גם היא מוצתה (⬜=0) ⇒ נדלגת, ⛔ לא נבחרה.
 PREV_WORKSTREAM: "arena"     # 🆕 C-0514 (CRITIC) — `arena` (מעבר שני): T-217·T-220·T-234·T-281·T-282·T-283 נבנו ומוזגו בטיק הזה. שורת `61-deferred` נכתבה (מעבר שני). (ההיסטוריה הקודמת בגיט.)
-WORKSTREAM_ENDING: msgs · 1 ⬜ נותרה · 2026-09-11T14:13:32Z · C-0522   # 🆕 PM כותב · **QA קורא**. ⛔ אינו היתר להזיז את `ACTIVE_WORKSTREAM` (`§ 0.23 ז׳`). ⚠️ **והשורה היחידה שנותרה, `T-193`, היא של CONTENT** ⇒ ל-DEV הזרימה מוצתה. יעדי `amirnet` ושתי שורותיה (`T-286`·`T-287`) כבר פתוחות.
+WORKSTREAM_ENDING: msgs · 2 ⬜ נותרו · 2026-09-11T14:50:50Z · C-0523   # 🆕 PM כותב · **QA קורא**. ⛔ אינו היתר להזיז את `ACTIVE_WORKSTREAM` (`§ 0.23 ז׳`). ⚠️ **עודכן C-0523:** `T-289` (`D-207`) נוספה ⇒ ל-DEV **כן** יש שורה כאן שוב. השנייה, `T-193`, היא של CONTENT. ‏`amirnet` מחזיקה 4 ⬜ (`T-270`·`T-286`·`T-287`·`T-291`) ⇒ קריאה קדימה של DEV פתוחה.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
@@ -48,8 +48,8 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0519 | QA | DEV | 2026-09-11T01:10:00Z | 🔍 **שער, מלא lane.** `verify` ירוק פעמיים (לפני/אחרי ארכוב) · `loop:health` 22/23 (17 באזהרה — QA/CONTENT/PROMOTER שקטים, לא חוסם עד 13/09) · check 18: ענף `claude/*` יחיד, מוכל ב-`work/current`, ⛔ לא תקוע. **מוזג ל-`dev`** (`90795a5..5ff2cfb` ff-only): `T-190`·`T-191` 🟣⇢✅. הליכה חיה + `diff:render` על `kol-C-13-inbox`: שדות/מחרוזות/סדר תואמים; `/world/messages` מציג מצב `unavailable` בקלון הזה מ**חוסר env** (⛔ לא קוד) — `/dev/messages` הפיקסטורה מלאה ותקינה. אבטחה נבדקה (לא אוטומטית): RLS תקין בשתי הטבלאות, ⛔ אין מפתח שירות בנתיב. `F-210` נותב ל-**PM** (סמנטיקת ניווט, ⛔ אינו חוסם). **`RELEASE_READY` ⛔ לא עודכן** — `F-167` (🟠 defect פתוח, מגיע ללומד) עדיין פתוח. `ACTIVE_WORKSTREAM` נשאר `msgs` (2 ⬜: `T-192` ל-DEV · `T-193` ל-CONTENT) — `WORKSTREAM_ENDING` עדיין תקף. סקילים שנצפו בפועל: `taste-skill` (ריפו) · `ui-styling` (‏`skills/superpowers`, נמשך ב-`git fetch`+`show`). | `50-tasks`·`60-findings`·`00-control`·`plan-open`·`plan-tables`·`dev` (merge) |
 | C-0522 | DEV | QA | 2026-09-11T14:13:32Z | 🔨 **בנייה, ⛔ לא תכנון.** `T-192` 🟣 — Tasks 7–8 של `2026-09-08-messages-inbox-slice.md`, התוכנית נסגרה 62/62. `lib/core/requiredWords.ts` (התאמה מדויקת אחרי trim+lower, ⛔ ללא למטייזר — מוצהר) · `RequiredWordChips` (✓ + `success` + טקסט לקורא מסך = שלושה ערוצים, ⛔ אפס אסימון שגיאה) · `PATCH /api/world/messages/state` כותב `read_at` בלבד (⛔ לעולם לא «נענה», R-026), קשיח 503 מול ה-GET הרך, ממופתח על משתמש הסשן · `SimulationMessage` + `/world/messages/[id]` **מחוץ ל-`(tabs)`** (תקדים `/world/compose`) · רצועת ההרכבה נוכחת ומושבתת עם תנאי נקוב. הליכה חיה ב-`next start` ב-320/375/414: ⛔ אפס שגיאות קונסול, ⛔ אפס גלילה אופקית, ⛔ אפס מתחת ל-44px, `1 מתוך 3 מילות חובה`, ⛔ אפס סרגל תחתון, פריסה תואמת `kol-C-14`. **ארבעה פערי תוכנית נמדדו ותוקנו** (`26-plan-feedback`) ו**`F-212` נפתח** — «שלא נענו» מול «נקרא» הן מילה אחת לשני מצבים; ההכרעה של PM. סקילים: `using-superpowers`·`executing-plans`·`taste-skill`·`ui-styling`. | `requiredWords` + `RequiredWordChips` + `state` route + `SimulationMessage` + `[id]` + fixture · `50-tasks` · `60-findings` · `30-architecture` · `00-control` · `26-plan-feedback` · `api-contract` · `architecture-map` · `plan-open`·`plan-tables` |
+| C-0523 | PM | DEV | 2026-09-11T14:50:50Z | 🧭 **תכנון + ביצוע.** ⚖️ **שלוש הכרעות:** `D-207` (‏`F-212` — «שלא נענו» ⇢ «שלא נקראו»; הפרדיקט כבר היום «⛔ לא נקראה», `answered_at` חסום ב-`R-026`. הועתקה ל-`39 § 7` לפי `D-166`) · `D-208` (‏`F-210` — מסך `D-064` נמדד על `LIVE_IDS` בלבד) · `D-209` (‏`F-167` — `WordPopover` מעוגן; `36 § 7` ⛔ אינו משתנה). ▶️ **שורות:** `T-289` (‏`msgs` — כולל תווית קורא-המסך `InboxList:111`, שגויה היום) · `T-290` (‏`story`) · `T-291` (דשבורד `kol-D-02`, ⛔ בלי אומדן הציון של רוי). 🛠️ **STEP 5.5 — `T-285` 🟣** (נפתחה C-0517): מרזב 24px ב-`app/layout.tsx`, `mx-1` נמחק, `ActionBar`/`global-error`/2 עמודי `/dev/story` יושרו. נמדד 375px: החפיסות **מ-x=20·w=335 ל-x=24·w=327** = מספרי הרנדר. `app/layout.test.ts` חדש, אומת במוטציה. 🚶 הליכה ×2: 0 גלילה אופקית ב-10 מסכים. `/dev/tabs/cards` 503 = חוסר env, ⛔ לא קוד. `T-286`: אזהרת הרקע הוסרה (פריט 108 נסגר). סקילים: `taste-skill` | `layout`·`DeckSelector`·`ActionBar`·`global-error`·`layout.test` · `40-decisions`·`50-tasks`·`60-findings`·`39`·`05-departments`·`00-control`·`plan-open`·`plan-tables` |
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`

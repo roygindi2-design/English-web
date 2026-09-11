@@ -24,7 +24,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
   return (
     <html lang="he" dir="rtl">
       <body className="bg-surface text-ink antialiased">
-        <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-5 py-8">
+        <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-6 py-8">
           <h1 className="text-2xl font-bold leading-tight">{FAILURE_TITLE_HE.app}</h1>
           <p className="text-lg leading-relaxed text-ink-muted">{FAILURE_HE.load}</p>
           <button

@@ -291,14 +291,16 @@ export default function DeckSelector({
           DOM at their final size, so nothing shifts when the numbers land. */}
       {/* T-228 · D-155: the tile box carries the RENDER's three values, ⛔ not the screen's.
           `render_video_A.py` draws each deck as `rr(24, y, LW-48, 62, 16)` ⇒ x=24 · w=327 ·
-          h=62. `<main>` pads the column to x=20 · w=335 (`app/layout.tsx`), so `mx-1` is
-          the 4px delta on this list alone — ⛔ the global padding is not this row's to move.
+          h=62. ⚠️ T-285 · D-206 moved the global gutter to 24px, so `<main>` now pads the
+          column to exactly x=24 · w=327 (`app/layout.tsx`) — the render's own numbers. ⇒ the
+          `mx-1` that used to fake 24 out of 20 was DELETED: there is nothing left to
+          compensate for, and keeping it would push this list to x=28.
           h=62 = 1+6 (border+`py-1.5`) + 28 (`text-lg` name) + 20 (`text-sm` note) + 6+1,
           with ⛔ no inner gap: name centre at 21 and note centre at 45 against the render's
           22/45 (`c.txt(…, 508/531, …)` on a box at 486). `min-h-touch` (44) still holds
           under it, so a wrapping note grows the box instead of clipping. Measured live
           before: x=20 · w=335 · h=78 (C-0321, unchanged at C-0499). */}
-      <ul aria-busy={loading} data-deck-selector className="mx-1 flex list-none flex-col gap-3 p-0">
+      <ul aria-busy={loading} data-deck-selector className="flex list-none flex-col gap-3 p-0">
         {entries.map((entry) => {
           // ONE body, shared by both branches. If each branch carried its own copy, the
           // disabled one could quietly lose its number — and «disabled WITH the number» is
