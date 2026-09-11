@@ -1,0 +1,15 @@
+{
+  "batch_file": "batch-2026-09-11.jsonl",
+  "batch_date": "2026-09-11",
+  "batch_number": 0,
+  "model": "claude-sonnet-5",
+  "prompt_version": "CONTENT.md, executing K-005 commission Priority ⌒b (Tier 1 alphabetical)",
+  "provenance": "All content written for this project; not consulted R-010 (מאל\"ו) nor R-013 (AnkiWeb).",
+  "source": "Amirnet Tier 1 (A2, CEFR-J v1.5) headwords, data/amirnet-vocab.csv, alphabetical order starting at the 'adjective' marker recorded in plan/25-content-commissions.md K-005 and plan/03-for-roy.md item 102",
+  "requested": 10,
+  "accepted": 10,
+  "rejected": 0,
+  "selection_rule": "Priority ⌒b of K-005: Tier 1 (A2) alphabetical order. The prior local batch covering these same 10 headwords (adjective, advanced, advertising, aged, aisle, ambition, amused, ancestor, angel, ankle) was never pushed (plan/03-for-roy.md item 102 — npm run build:ingest crashed above 1,200 total approved rows under the pre-10/09 spotCheck.ts total-bank lot). Per that item's instruction, this batch was written anew rather than assumed to exist. Verified against levelOf(buildLevelMap([cefrj, octanove]), lemma, pos) via direct grep of data/amirnet-vocab.csv (all 10 rows: A2, Tier 1, source CEFR-J v1.5). All 10 headwords passed the title-eligibility test (lesson 15/28: every targetForms(w) form present in allowed-words-2026-08-07.txt).",
+  "quota_rule": "BATCH_MIN_WORDS=50 (lib/core/levelGate.ts) taken as precedent, not a citation; batch size=10 because that is the exact set of headwords the 'adjective' marker names (K-005 §3⌒b next-word pointer). Larger batches from this same marker onward are the natural next step.",
+  "note": "R-014 replaced 10/09: no human sample-review queue. spotCheckPlan is now applied per-batch (lot=10, basis='full', 10/10 inspected) rather than to the total bank size — confirmed live in this clone: npm run build:ingest completed cleanly on a bank of 1,210 rows (up from the exact 1,200-row crash boundary recorded in plan/03-for-roy.md item 102 and lib/core/spotCheck.ts's DOCUMENTED_MAX). Every row carries translation_confidence (9 'high', 1 'medium' for 'aisle' — a generic passage/aisle sense that is context-dependent). gateSense (lib/core/contentSchema.ts) ran directly against all 10 rows before writing, plus a 7-item negative control (leaked headword, level drift, nikud, <4 distractors, distractor-is-inflection, no-blank item, Latin letters in translation): 0/7 of the intentionally-broken items passed, confirming the gate is live. npm run measure:gate re-ran afterward over all 1,210 rows in the full bank: 0 rejected."
+}
