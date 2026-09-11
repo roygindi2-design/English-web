@@ -657,11 +657,11 @@ Review clean, no open 🔴 and no 🟠 marked **defect**, and the last Dev tick 
 ```
 RELEASE_READY: <sha> · <date> · <N commits> · <what the learner gets, one line>
 ```
-🔴 **AND — THIS HAS NEVER ONCE BEEN DONE, AND `loop:health` CHECK 4 NOW FAILS THE TICK IF YOU SKIP IT.** In the same commit, one block in `plan/03-for-roy.md`:
-```
-git checkout main && git merge --ff-only origin/dev && git push origin main
-```
-Verify the fast-forward first (`./scripts/g merge-base --is-ancestor origin/main origin/dev`) and say so. If it is not possible — Roy merged through the GitHub UI — merge `main` back into `dev`, push, then the ff is clean.
+🔴 **AND — `loop:health` CHECK 4 FAILS THE TICK IF YOU SKIP THE THREE TAPS.** In the same commit, write them into `plan/03-for-roy.md` (the section below).
+
+⛔ **⟦CORRECTED 11/09⟧ And you ⛔ do ⛔ NOT hand Roy a promotion command any more.** Until today this step told you to write `git checkout main && git merge --ff-only origin/dev && git push origin main` into `plan/03-for-roy.md` for Roy to run by hand. **That became wrong on 06/09, when `PROMOTER` took the job** (`RULES § 0.29` · `§ 0.23` branch table: `main` ⇒ PROMOTER, **twice a day**) — so the step was asking Roy to do, manually, work an agent already does on a schedule, and it implied promotion is a human action when it is ⛔ not.
+🔬 **And check 4 ⛔ never enforced that block anyway — measured in `scripts/loop-health.mjs`:** it tests ⛔ only `/שלוש הקשות|שלוש ההקשות/` against `03-for-roy.md`. ⇒ the old sentence bundled an **unenforced, automated** step into a claim that the check fails without it. **The taps are the enforced half, ⛔ and the only half.**
+⚠️ **The fast-forward check is PROMOTER's too** (`PROMOTER.md` STEP D runs `merge-base --is-ancestor`). ⛔ You ⛔ do not measure `origin/main..origin/dev` — that is stated four paragraphs down and is unchanged.
 **And the three taps (T-167):** they live in exactly ONE section in `plan/03-for-roy.md`, headed `## POST-PROMOTION CHECK` — three named taps on the slice that just became ready — **screen · action · what he should see**. ⛔ Not "please review the site".
 ⚠️ **You REPLACE this section on every promotion, ⛔ never append a second one (T-167ⓔ · D-189).** Before writing the new section: move the outgoing one's full content — including Roy's ✅/❌ answer, if he gave one — into the `## נסגר` table at the bottom of `plan/03-for-roy.md` as one closed row (next `#` · requester `QA` · today's date · what the check found and how Roy answered). Only then write the new `## POST-PROMOTION CHECK` section with the three fresh taps. ⛔ `plan/03-for-roy.md` must never hold more than one live `## POST-PROMOTION CHECK` section above `## נסגר`. This is about that ONE section only — the numbered escalation table under `RULES § 0.21` is untouched, and every open numbered item keeps its own `⟨נבדק⟩` stamp exactly as before.
 Next tick you **read his answer**: ✅ → mark it done · ❌ → a 🔴 finding with his words quoted verbatim.

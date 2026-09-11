@@ -70,6 +70,11 @@ describe('D-061 — סולם 12 רמות המשחק', () => {
   it('פרוסות התדירות בתוך כל רמה רצות מ-0 ועד slicesInBand-1', () => {
     for (const band of ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const) {
       const rows = GAME_LEVELS.filter((g) => g.band === band);
+      // ⛔ ⟦11/09⟧ רמה שנעלמה מ-`GAME_LEVELS` לגמרי משאירה `rows` **ריק**, ושתי הטענות
+      // למטה עוברות על מערך ריק ⇒ הרמה נעלמת **בשקט**. ‏🔬 נמדד במקור: A1 4 · A2 2 ·
+      // B1 2 · B2 2 · C1 **1** · C2 **1** ⇒ ל-C1 ול-C2 מחיקה **אחת** מספיקה.
+      // ⇒ הגדר הוא «לפחות אחת», ⛔ ולא המספר המדויק, שהוא נתון מוצר ⛔ ולא אינווריאנט.
+      expect(rows.length, `${band}: ⛔ אין ולו פרוסה אחת ⇒ שתי הטענות חלולות`).toBeGreaterThan(0);
       expect(rows.map((r) => r.sliceIndex)).toEqual(rows.map((_, i) => i));
       for (const r of rows) expect(r.slicesInBand).toBe(rows.length);
     }
