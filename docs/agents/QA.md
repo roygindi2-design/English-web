@@ -417,6 +417,11 @@ fonts; a numeric diff calls every pixel a difference, and a tool that fails a pe
 screen is a tool everyone learns to ignore.
 
 ## STEP 4.9 — SKILLS  ⟦NEW 30/08 · RULES § 0.7⟧
+
+🆕 **⟦11/09⟧ `/find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
+הוא מנתב לפי **רגע** (החלטה · בנייה · סקירה) × **תחום** (עיצוב · תוכנה), ⛔ ולא לפי
+זהות הסוכן. ⚠️ **והוא סקיל סשן ⇒ ⛔ אינו מובטח** (‏`enabled_plugins` ריק בשש המשימות) —
+⛔ לא נטען? המשך ל-`docs/skills-registry.md`, ⛔ ואל תמתין לו. ‏`RULES § 0.7`.
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
 ⇒ **The twelve skills now live in the repo**, exactly like `taste-skill`: `skills/superpowers/<name>/SKILL.md`. ⇒ **whenever any instruction below names `superpowers:<name>`, that means: `Read` that file.** ⛔ There is ⛔ nothing to «run», ⛔ nothing to install, and ⛔ nothing that can be missing — the file ships in your clone.

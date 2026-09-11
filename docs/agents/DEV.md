@@ -408,6 +408,11 @@ Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact 
 ⚠️ **Before you execute a plan: `npm run check:plan <the plan file>`.** Something missing? Paste the row it prints into `plan/26-plan-feedback.md` — **and ⛔ keep going.** The feedback ⛔ never blocks execution (`RULES § 0.6ג`).
 
 ## STEP 4 — SKILLS
+
+🆕 **⟦11/09⟧ `/find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
+הוא מנתב לפי **רגע** (החלטה · בנייה · סקירה) × **תחום** (עיצוב · תוכנה), ⛔ ולא לפי
+זהות הסוכן. ⚠️ **והוא סקיל סשן ⇒ ⛔ אינו מובטח** (‏`enabled_plugins` ריק בשש המשימות) —
+⛔ לא נטען? המשך ל-`docs/skills-registry.md`, ⛔ ואל תמתין לו. ‏`RULES § 0.7`.
 🔴 **HARD RULE, no discretion ⟦NEW 01/09 · Roy's explicit instruction · loop-overload emergency response⟧:** You MUST load and read all specified SKILL files *before* writing any code. Verifying compliance retroactively is strictly forbidden. ⛔ Writing the code first and then checking whether it happened to match the skill is not loading — it is a claim written after the fact, exactly the class of unmeasured claim `RULES § 0.18`/`loop:health` exist against.
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
