@@ -32,8 +32,8 @@
    ⛔ **וזו ⛔ אינה סיבה לדלג על מה שהן דרשו.** הטריגר נשאר בתוקף, והתשובה היא **הקריטריון
    שבעמודת הטריגר** — למשל `npm run check:palette` נשאר חובה לפני כל גרף, בין אם `dataviz`
    נטען ובין אם ⛔ לא. ⇒ **דווח `סקילים: ⛔ אף אחד — התוסף אינו בסביבה`, ⛔ ואל תבזבז טיק בחיפוש.**
-   ⚠️ **ומה שכן נגיש ו⛔ לא נכתב עד היום:** `ui-ux-pro-max:ui-styling` **קיים בגיט** על
-   הענף `skills/superpowers`, ונקרא בפקודה שבשורתו בטבלה. ⛔ הוא ⛔ אינו סקיל סשן.
+   ⚠️ **ומה שכן נגיש, ו⟦11/09⟧ עבר לכאן:** `ui-ux-pro-max` — **שני תתי-סקילים**, בשכפול
+   עצמו תחת `skills/ui-ux-pro-max/`. ⛔ **⛔ אינם סקילי סשן ו⛔ אינם דורשים `fetch`.**
 
 5. 🔴 **ו⛔ זה ⛔ אינו «עוד לא הודלק» — ⛔ אין דרך להדליק.** ⟦נמדד ואומת בידי רוי
    בממשק, 09/09⟧ ‏ה-API **מקבל** `enabled_plugins` ו**משליך אותו בשקט**, והמדור
@@ -72,7 +72,8 @@
 | `dataviz` | לפני **כל** גרף, טבלת מדדים, סרגל התקדמות או דשבורד — בקוד המוצר ובכל ארטיפקט. חובה `npm run check:palette` | DEV · PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
 | `web-artifacts-builder` | ארטיפקט HTML **מורכב לרוי** בלבד | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
 | `canvas-design` | נכס סטטי: לוגו, אייקון, תמונת שיתוף (`.png` / `.pdf`) | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
-| `ui-styling` (‏`ui-ux-pro-max`) | 🆕 **רספונסיביות ב-Tailwind** — נקודות שבירה, `min-h-touch`, אסימוני `tailwind.config.ts`. **זה הבית של «`tailwind-responsive`»** | DEV | ⛔ **⛔ אינו בענף הזה — הוא על הענף הקבוע `skills/superpowers`** (3.3MB, ⛔ נדיר מכדי לשאת בכל שכפול). קרא אותו כך, ⛔ בלי לשכפל: `./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md`. 🔬 **`FETCH_HEAD` ⛔ ולא `origin/skills/superpowers` — נמדד בשכפול אמיתי:** השכפול של הסוכן הוא `--single-branch`, ולכן `fetch` של ענף אחר ⛔ **אינו** יוצר ref עוקב, ו-`show origin/skills/superpowers:…` נכשל ב-`invalid object name`. ⛔ אל «תתקן» חזרה. |
+| `ui-styling` (‏`ui-ux-pro-max`) | **רספונסיביות ב-Tailwind** — נקודות שבירה, `min-h-touch`, אסימוני `tailwind.config.ts`. **זה הבית של «`tailwind-responsive`»** | DEV | ✅ **בשכפול** ⟦11/09⟧ — `skills/ui-ux-pro-max/ui-styling/SKILL.md`. ⛔ **גדר: המוצר ⛔ אינו על shadcn** (‏Tailwind + רכיבים משלו + `lib/core/palette.ts`) ⇒ שמישים ממנו שלושת `references/tailwind-*.md` ו-`shadcn-accessibility.md`; להביא shadcn פנימה הוא **שינוי ארכיטקטורה**, ⛔ לא בחירת סקיל. |
+| `ui-ux-pro-max` ⟨הכלי⟩ | **שאילתה, ⛔ לא מסמך לקריאה.** לפני הכרעת עיצוב או בנייה של מסך: `python3 skills/ui-ux-pro-max/ui-ux-pro-max/scripts/search.py "<שאילתה>" --domain <ux\|style\|product\|color\|typography\|gsap\|chart>` | PM · DEV | ✅ **בשכפול** ⟦11/09⟧ — `skills/ui-ux-pro-max/ui-ux-pro-max/SKILL.md`. 🔬 **הורץ ואומת:** 119 הנחיות UX עם `Do`/`Don't`/`Severity` · 192 פלטות · 74 זיווגי גופנים · ⛔ אפס תלויות חיצוניות. ⛔ **אל תקרא את `SKILL.md` כדי לענות — תריץ את השאילתה.** |
 
 ### ⛔ הרשימה השלילית — סקילים שישברו את הלופ
 

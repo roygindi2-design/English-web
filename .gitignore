@@ -29,3 +29,10 @@ docs/coverage-report.md
 # Cleaner fix if Dev ever wants it: `agentRules: false` in next.config.mjs.
 AGENTS.md
 CLAUDE.md
+
+# ⟦11/09⟧ ‏`skills/ui-ux-pro-max/` נושא סקריפטים של פייתון שסוכן **מריץ מתוך הריפו**
+# (‏`scripts/search.py`), וכל הרצה יוצרת `__pycache__`. ⇒ אותה מחלקה בדיוק כמו
+# `AGENTS.md`/`CLAUDE.md` למעלה: תוצר שנוצר מחדש בכל טיק, שהיה משאיר את העץ מלוכלך
+# ומזמין קומיט זבל. ⛔ נתפס בשכפול הזה — ההרצה הראשונה של הכלי יצרה 167KB של `.pyc`.
+__pycache__/
+*.pyc

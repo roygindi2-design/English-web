@@ -46,14 +46,29 @@ describe('docs/skills-registry.md — כל נתיב שהוא מצהיר עליו
     );
   });
 
-  it('🌿 `ui-ux-pro-max:ui-styling` ⛔ אינו בקלון — ⇒ האינדקס נוקב בפקודה שמביאה אותו', () => {
-    // ⛔ הסקיל הזה חי על ענף `skills/superpowers` בלבד, ⇒ נתיב יחסי היה מכזיב.
-    // מה שנבדק כאן הוא שהאינדקס מוסר **איך** להגיע אליו, ⛔ ולא רק את שמו.
-    expect(registry, 'שם הסקיל').toContain('ui-ux-pro-max');
-    expect(registry, 'הענף').toContain('skills/superpowers');
-    expect(registry, 'הפקודה, בדיוק כפי שנמדדה').toContain(
-      'FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md',
-    );
+  /**
+   * 🌿 **התהפך 11/09 בהוראת רוי — והטענה הקודמת כאן נעשתה שגויה, ⛔ ולא חלשה.**
+   * עד 11/09 הסקיל חי על ענף `skills/superpowers` **בלבד**, והטענה הזאת בדקה שהאינדקס
+   * מוסר את פקודת ה-`FETCH_HEAD` שמביאה אותו. ⇒ הסוכנים מריצים `clone -b work/current`,
+   * ולכן 59 הקבצים ⛔ **לא הגיעו לאף שכפול** — סקיל שאיש ⛔ אינו יכול לטעון.
+   * ⇒ הוא הועבר לעץ, והטענה **התהפכה**: עכשיו נבדק שהוא **כן** כאן, ו⛔ שאין יותר
+   * הוראת `fetch` שתשלח סוכן לענף שהוא ⛔ אינו מחזיק.
+   * 🔬 **נמדד 11/09:** 59 קבצים · **3.4MB** · `skills/` גדל מ-0.4MB ⇒ פי **9**.
+   * ⚠️ **והמחיר הזה אמיתי וכל שכפול משלם אותו** — 12 טיקי DEV ביום. זו הייתה הכרעת רוי.
+   */
+  it('🌿 `ui-ux-pro-max` — שני תתי-הסקילים בעץ, ו⛔ אין יותר הוראת fetch', () => {
+    for (const sub of ['ui-styling', 'ui-ux-pro-max'] as const) {
+      const path = `skills/ui-ux-pro-max/${sub}/SKILL.md`;
+      expect(existsSync(path), `${sub}: ⛔ אינו בעץ`).toBe(true);
+      expect(registry, `${sub}: האינדקס ⛔ אינו נוקב בנתיב`).toContain(path);
+    }
+    // ⛔ הכלי, ⛔ ולא רק ההצהרה: בלעדיו השורה באינדקס שולחת להריץ קובץ שאינו קיים.
+    expect(
+      existsSync('skills/ui-ux-pro-max/ui-ux-pro-max/scripts/search.py'),
+      '⛔ כלי החיפוש חסר ⇒ שורת האינדקס שולחת לפקודה שתיכשל',
+    ).toBe(true);
+    // 🔴 וההוראה הישנה ⛔ אינה נשארת מאחור: סוכן שיקרא אותה יבזבז טיק על ענף שאין לו.
+    expect(registry, '⛔ הוראת fetch לענף ⛔ אינה נשארת באינדקס').not.toContain('FETCH_HEAD:');
   });
 });
 
