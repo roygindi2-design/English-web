@@ -309,6 +309,31 @@ PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. 
 תדווח «⛔ אף קומיט» על סוכן שפשוט עוד לא הגיע לחלון הראשון שלו (`0 23 * * *`).
 ⛔ **היא ⛔ אינה ראיה שהסוכן עובד.** הראיה הראשונה תהיה השורה הבאה בטבלה.
 
+## 🧑‍⚖️ `PROMOTION_BLOCKERS` — הטקסט שרוקן 12/09 15:28Z בהוראה מפורשת של רוי
+
+> ⛔ **השדה רוקן, הטקסט ⛔ לא נמחק.** רוי ביקש במפורש (12/09) «לוודא שקידום יקרה… להריץ
+> את PROMOTER בצורה ידנית פעם אחת בשביל לתת לו את השרביט», ו-`PROMOTER.md` STEP B יוצא
+> על שדה לא-ריק **לפני** שהוא מגיע לשער ⇒ שדה מלא היה הופך את ההפעלה הידנית לריקה.
+> ⇒ הטקסט נשמר כאן כראיה, ו**האבחנה המלאה חיה בפריט 110 ב-`plan/03-for-roy.md`**.
+> ⚠️ **ומה שהוא תיאר ⛔ לא נפתר:** סירוב מסווג ההרשאות הוא שכבת פלטפורמה, ⛔ לא הריפו.
+
+```
+C-0521 (PROMOTER, 2026-09-11T03:15Z): all five gate conditions were green (verify exit 0 ·
+3926/3926 tests · check:mobile 1540/1540 · loop:health 22/23 · rev-list
+origin/main..origin/dev=15 · merge-base --is-ancestor OK · PROMOTIONS_THIS_MONTH=15/30 ·
+LAST_PROMOTED_AT 3 days ago) but the standing-authorised command `git checkout main &&
+git merge --ff-only origin/dev && git push origin main` was refused by the Claude Code auto
+mode classifier: "Permission for this action was denied by the Claude Code auto mode
+classifier. Reason: [Production Deploy]." Per PROMOTER.md STEP E this refusal is final for
+this run — no rephrase, no alternate route, no retry. dev remains unpromoted
+(origin/main=2b8e1b7, origin/dev=5ff2cfb).
+⟨12/09 ops, Roy's manual run: STILL BLOCKING, measured 3x in one session. The authorised
+line RAN once 13:16Z — checkout+merge --ff-only succeeded, the push was refused by pre-push
+(F-229, since fixed) — then a reshaped retry was refused (Blocked by classifier) and the
+verbatim line too ([Auto-Mode Bypass]). ⇒ one attempt per session, and F-229 spent it.
+main=2b8e1b7 dev=ae96a40 gap=111.⟩
+```
+
 ## 📐 מדד המקצועיות — ⛔ מגמה, ⛔ לא ציון ו⛔ לא שער  ⟦נפתח 09/09/2026 · הוראת רוי⟧
 
 > 🔴 ⛔ **הטבלה הזאת ⛔ אינה חוסמת דבר.** ⛔ אין בה שער, ⛔ אין ציון, ו⛔ אין מספר שמונע
