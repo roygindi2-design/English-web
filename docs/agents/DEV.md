@@ -673,7 +673,24 @@ and every agent that wanted to know «what imports what» paid for it. The JSON 
 to that question, it is **derived**, and it ⛔ cannot drift as long as this line is obeyed.
 ⛔ `docs/architecture-map.json` is a **generated file** — ⛔ never hand-edit it (HARD INVARIANTS).
 
-Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=QA`, release LOCK) + one journal line.
+Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=QA`) + one journal line.
+
+🔴 ⛔ **AND THE LOCK IS RELEASED IN A COMMIT OF ITS OWN, ⛔ AFTER THAT PUSH — ⛔ NEVER INSIDE IT.**
+⟦NEW 12/09 · `D-210` · closes `F-218`⟧ Until today this line listed «release LOCK» **among**
+the register updates above, with `commit && push` written after it. ⛔ **That order ⛔ cannot
+push.** `scripts/hooks/pre-push:163` reads `LOCK_HELD_BY` from the **working tree at push
+time**, ⛔ not from the commit being pushed ⇒ by the time you push, the field is already `""`,
+the diff touches code, and the gate refuses:
+«⛔ הדחיפה נחסמה: הדיף נוגע בקוד … ⛔ אבל `LOCK_HELD_BY` ריק».
+🔬 **Measured live, ⛔ not argued:** `C-0527` obeyed the written order and was blocked; the push
+went through ⛔ only after the field was restored to `"DEV"` and the commit amended.
+⇒ **the shape, and it is the one `C-0529` already used (`6cff9d1`):**
+```
+1. commit the WORK + the registers, with the lock still YOURS   ⇒ push   ⇐ the gate sees your name
+2. clear LOCK_HELD_BY / LOCK_AT                                 ⇒ a SECOND commit ⇒ push
+```
+⛔ **And the gate ⛔ does ⛔ not move** (`D-210`ⓑ): it measures the state at push time on
+purpose — that is what `F-191` cost. The defect was the instruction, ⛔ never the gate.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.21` makes an item unchecked for 7 days a finding in itself.
 New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
 ```

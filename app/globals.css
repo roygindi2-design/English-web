@@ -267,6 +267,27 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   opacity: 1;
 }
 
+/* T-293ⓒ · `apple-design` § 8 — the grade buttons LEAN while the finger is still down:
+   the one the card is travelling toward holds full weight, the other recedes. ⇒ the learner
+   sees **where this is going** before releasing, which is what replaced the sentence that
+   used to explain the gesture (`data-swipe-hint`, T-293ⓑ).
+   ⛔ Compositor-only, like the badges above: `opacity` and `transform` — `check:motion`
+   rule ⓐ. 200ms sits inside 35 § ב6's 150–300ms, and the `prefers-reduced-motion` block
+   at the top of this file zeroes it. */
+[data-flashcard] [data-grade] {
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
+}
+[data-flashcard][data-swipe-preview='good'] [data-grade='again'],
+[data-flashcard][data-swipe-preview='again'] [data-grade='good'] {
+  opacity: 0.45;
+}
+[data-flashcard][data-swipe-preview='good'] [data-grade='good'],
+[data-flashcard][data-swipe-preview='again'] [data-grade='again'] {
+  transform: scale(1.04);
+}
+
 /* ⚠️ **המיקום כאן הוא חוק, ⛔ ולא סדר.** `components/ArenaStage.test.ts` לוקח את
    בלוק הבמה כ-`CSS.slice(indexOf('/* arena-stage'))` — כלומר **עד סוף הקובץ**.
    ⇒ כלל שנוסף בסוף `globals.css` נמדד כאילו הוא חלק מכללי הבמה, והלולאה הפועמת

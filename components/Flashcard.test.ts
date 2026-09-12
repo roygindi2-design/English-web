@@ -167,6 +167,8 @@ describe('the unverified marker lives on the back of the card (T-045 · D-024)',
  */
 const T085_HINT = 'הקש להצגת התשובה';
 const T085_CARD_SRC = stripComments(readFileSync(FLASHCARD, 'utf8'));
+/** T-293ⓒ — the lean lives in CSS, ⛔ not in the component ⇒ the guard has to read the CSS. */
+const GLOBALS_CSS = readFileSync(join('app', 'globals.css'), 'utf8');
 
 /** תא של `<button ...>` (הרישום ההיפותטי אחד או יותר) עד `</button>` המתאים,
  *  עומק-נספר בדיוק כמו `divBlockContaining` — ⛔ ⛔ regex עצל. */
@@ -273,25 +275,31 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
   });
 
   /**
-   * T-259ⓕ (Roy, 06/09) · שכבה א׳ (ⓘⓘ) — the swipe is the PRIMARY channel; the two buttons
-   * are ⛔ not deleted, they become the accessible equivalent: in the DOM, focusable,
-   * labelled, and visible the moment a keyboard user reaches them (`focus:not-sr-only`).
+   * T-293ⓐⓓ (PM, 12/09 — Roy's observation 11/09, `F-217`) — REPLACES the `sr-only` half of
+   * T-259ⓕ, and keeps the other half word for word. Measured in Chromium 375×780 on
+   * `/dev/card`: `sr-only focus:not-sr-only` renders these two at **1×1 px, transparent** ⇒
+   * for a sighted learner the swipe was the ⛔ ONLY grade channel, which `D-042` forbids in
+   * so many words. ⇒ they are visible, ≥44px, and ⛔ still exactly two buttons with exactly
+   * the same names and the same handler — the accessible channel ⛔ did ⛔ not shrink.
    * ⛔ `display: none` / `hidden` would remove them from the accessibility tree too.
    */
-  it('T-259ⓕ — שני הכפתורים נשארים ב-DOM כערוץ הנגיש: sr-only עד פוקוס, ⛔ לא נמחקו', () => {
+  it('T-293ⓐ — שני כפתורי הדירוג נראים ללומד רואה, ≥44px, ⛔ ולא sr-only', () => {
     for (const grade of ['good', 'again'] as const) {
       const at = T085_CARD_SRC.indexOf(`data-grade="${grade}"`);
       expect(at, `data-grade="${grade}" חייב להתקיים`).toBeGreaterThan(-1);
       const open = T085_CARD_SRC.lastIndexOf('<button', at);
       const close = T085_CARD_SRC.indexOf('</button>', at);
       const block = T085_CARD_SRC.slice(open, close);
-      expect(block).toContain('sr-only');
-      expect(block).toContain('focus:not-sr-only');
-      expect(block).toContain('focus:min-h-touch');
+      // 🔴 תרחיש הכשל של `F-217`: הכפתור חוזר להיות `sr-only` ⇒ 1×1 פיקסל, והמחווה שבה
+      // להיות הערוץ היחיד — בדיוק מה ש-`D-042` אוסרת, ו-`check:mobile` ⛔ אינו רואה.
+      expect(block, 'כפתור דירוג ⛔ אינו חוזר ל-sr-only').not.toMatch(/(?<![\w-])sr-only\b/);
+      expect(block, 'יעד המגע ≥44px ⛔ ולא רק בפוקוס').toMatch(/(?<![\w-])min-h-touch\b/);
       // ⛔ the Tailwind class `hidden` (display:none) — ⛔ not the `aria-hidden` on the glyph,
       // which is exactly what keeps the glyph out of the accessible name.
       expect(block).not.toMatch(/(?<![\w-])hidden\b/);
     }
+    // ⓓ — ⛔ עדיין בדיוק שני כפתורי דירוג, ⛔ ולא מסלול שני שנפתח עם הנראות.
+    expect(T085_CARD_SRC.match(/data-grade="/g)?.length).toBe(2);
     expect(T085_CARD_SRC).toContain('לא ידעתי');
     expect(T085_CARD_SRC).toContain('ידעתי');
   });
@@ -414,16 +422,46 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(capture).toBeLessThan(move);
   });
 
-  it('T-259ⓕ — the visible instruction is Hebrew, names BOTH directions, and glyphs are aria-hidden', () => {
+  /**
+   * T-293ⓑ — REPLACES the direction-teaching sentence. Once the two buttons are visible and
+   * labelled (test above), a sentence that spells the gesture out is the interface
+   * explaining what it could simply show. What is left is a hint that the shortcut EXISTS.
+   * ⛔ And it names ⛔ no physical direction on purpose: `F-102` measured «ימינה» ambiguous
+   * under RTL, and `T-293ⓒ` answers it by pointing — the destination button leans while the
+   * finger is down (`data-swipe-preview`, globals.css).
+   */
+  it('T-293ⓑ — הרמז קצר, מפנה אל הכפתורים, ו⛔ אינו מלמד כיוון פיזי', () => {
     const at = T085_CARD_SRC.indexOf('data-swipe-hint');
     expect(at).toBeGreaterThan(-1);
     const block = T085_CARD_SRC.slice(at, T085_CARD_SRC.indexOf('</p>', at));
-    expect(block).toContain('החלק ימינה');
-    expect(block).toContain('שמאלה');
-    expect(block).toContain('ידעתי');
-    expect(block).toContain('לא ידעתי');
-    expect(block).toMatch(/aria-hidden="true">✓/);
-    expect(block).toMatch(/aria-hidden="true">✕/);
+    expect(block).toContain('להחליק');
+    // 🔴 תרחיש הכשל: ההוראה הישנה חוזרת ⇒ הממשק גם מראה וגם מסביר, והמשפט האפור
+    // חוזר להיות הערוץ שנקרא לפני הכפתורים.
+    expect(block, 'הרמז ⛔ אינו נוקב בכיוון פיזי').not.toMatch(/ימינה|שמאלה/);
+    // ⛔ `block` פותח בתוך תגית ⇒ חותכים מהסוגר הראשון, אחרת המחלקות נספרות כטקסט.
+    const text = block
+      .slice(block.indexOf('>') + 1)
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(text.length, 'רמז, ⛔ ולא הוראה').toBeLessThanOrEqual(60);
+  });
+
+  /**
+   * T-293ⓒ · `apple-design` § 8 — the destination leans DURING the drag, so the learner sees
+   * where the card is going before letting go. Compositor-only (`check:motion` rule ⓐ).
+   */
+  it('T-293ⓒ — כפתור היעד נשען בזמן הגרירה, ו⛔ בשתי תכונות שהקומפוזיטור מריץ', () => {
+    const at = GLOBALS_CSS.indexOf('[data-flashcard] [data-grade]');
+    expect(at, 'חייב להתקיים כלל נשען על כפתורי הדירוג').toBeGreaterThan(-1);
+    const block = GLOBALS_CSS.slice(at, at + 900);
+    expect(block).toMatch(/transition:[^;]*opacity/);
+    // 🔴 תרחיש הכשל: מישהו מוסיף `background-color` או `border-color` למעבר ⇒ צביעה
+    // בכל פריים, בדיוק מה ש-`check:motion` ⓐ נועד לתפוס.
+    expect(block).not.toMatch(/transition:[^;]*(background|border|color\s|box-shadow)/);
+    for (const grade of ['good', 'again'] as const) {
+      expect(GLOBALS_CSS).toContain(`[data-flashcard][data-swipe-preview='${grade}'] [data-grade='${grade}']`);
+    }
   });
 
   it('T-259ⓑ — two badges on the card face, text + glyph + colour, ⛔ never colour alone (שכבה א׳)', () => {
