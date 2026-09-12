@@ -204,10 +204,18 @@ describe('11/09 — נעילה חסרה ⛔ ושם בעל נעילה עם מקף
     expect(missingLockFired(out.out), 'קומיט נעילה נחסם ⇒ הלופ מת').toBe(false);
   });
 
-  // ⛔ `ops-agent` · בן-אדם · כלי — ⛔ אינם סוכני לופ ו⛔ אינם בתחולת השער.
+  // ⛔ בן-אדם · כלי · CI — ⛔ אינם סוכני לופ ו⛔ אינם בתחולת השער.
+  // ⚠️ ⟦תוקן 12/09⟧ הדוגמה כאן הייתה `ops-agent`, וזה חדל להיות נכון באותו יום:
+  // מרגע שהתפעול מחזיק נעילה כמו סוכן, הוא גם **בתחולת** השער הזה — וזה עקבי,
+  // ⛔ לא החמרה. ⇒ הדוגמה הוחלפה בזהות שבאמת ⛔ אינה של הלופ.
   it('⛔ אינו חל על זהות שאינה סוכן לופ', () => {
-    const out = runHook(lockRepo('ops-agent', '""', 'lib/core/x.ts'), REF);
+    const out = runHook(lockRepo('roy', '""', 'lib/core/x.ts'), REF);
     expect(missingLockFired(out.out)).toBe(false);
+  });
+
+  it('✅ ⛔ וכן חל על התפעול — הוא נוטל נעילה כמו כולם', () => {
+    const out = runHook(lockRepo('ops-agent', '""', 'lib/core/x.ts'), REF);
+    expect(missingLockFired(out.out)).toBe(true);
   });
 
   /**
@@ -240,6 +248,18 @@ describe('11/09 — נעילה חסרה ⛔ ושם בעל נעילה עם מקף
     const out = runHook(lockRepo('dev-agent', '"dev-agent"', 'lib/core/x.ts'), REF);
     expect(out.out, '⛔ הסוכן נחסם מהנעילה של עצמו').not.toMatch(/הנעילה מוחזקת בידי/);
     expect(missingLockFired(out.out)).toBe(false);
+  });
+
+  // ⟦NEW 12/09⟧ ⛔ סשן התפעול ⛔ לא יכול היה להחזיק נעילה: `MINE` ריק ⇒ נעילה **משלו**
+  // נקראה כזרה וחסמה את הדחיפה שלו עצמו. ⇒ הוא כותב ל-`work/current` כמו סוכן.
+  it('⛔ הנעילה של סשן התפעול ⛔ אינה חוסמת אותו', () => {
+    const out = runHook(lockRepo('ops-agent', '"OPS"', 'lib/core/x.ts'), REF);
+    expect(out.out, '⛔ ops נחסם מהנעילה של עצמו').not.toMatch(/הנעילה מוחזקת בידי/);
+  });
+
+  it('⛔ ונעילה של סוכן אחר עדיין חוסמת את התפעול', () => {
+    const out = runHook(lockRepo('ops-agent', '"DEV"', 'lib/core/x.ts'), REF);
+    expect(out.out).toMatch(/הנעילה מוחזקת בידי 'DEV'/);
   });
 
   it('⛔ ונעילה זרה בצורת הזהות עדיין חוסמת', () => {

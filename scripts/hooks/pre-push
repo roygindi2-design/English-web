@@ -171,6 +171,12 @@ case "$WHOAMI" in
   critic-agent)   MINE=QA ;;
   content-agent)  MINE=CONTENT ;;
   promoter-agent) MINE=PROMOTER ;;
+  # ⟦NEW 12/09⟧ ⛔ **סשן התפעול ⛔ לא יכול היה להחזיק נעילה כלל.** ‏`MINE` היה ריק
+  # עבורו ⇒ נעילה **משלו** נקראה כ**זרה** ו⛔ חסמה את הדחיפה שלו עצמו. ⇒ הוא כותב
+  # ל-`work/current` בדיוק כמו סוכן, ולכן הוא צריך את אותו מנגנון תיאום.
+  # ⛔ **וזה ⛔ אינו מרחיב הרשאה:** שער בעלות-הענף ⛔ לא זז, ושער `F-216` ממשיך
+  # ⛔ לא לחול עליו (הוא רץ בהוראה מפורשת, ⛔ ולא בתזמון).
+  ops-agent)      MINE=OPS ;;
   *)              MINE="" ;;
 esac
 # ⛔ `CRITIC` and `QA` are the same agent under two spellings the register still
