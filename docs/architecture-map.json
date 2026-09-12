@@ -87,6 +87,13 @@
     "app/dev/amirnet/question/question-fixture.ts"
   ],
   "app/dev/amirnet/question/question-fixture.ts": [],
+  "app/dev/amirnet/result/page.tsx": [
+    "app/dev/amirnet/result/result-fixture.ts"
+  ],
+  "app/dev/amirnet/result/result-fixture.ts": [],
+  "app/dev/amirnet/result/short/page.tsx": [
+    "app/dev/amirnet/result/result-fixture.ts"
+  ],
   "app/dev/amirnet/simulation/page.tsx": [
     "app/dev/amirnet/simulation/simulation-fixture.ts"
   ],
@@ -195,6 +202,10 @@
     "components/AmirnetQuestion.tsx"
   ],
   "components/AmirnetQuestion.tsx": [],
+  "components/AmirnetResult.test.ts": [
+    "components/AmirnetResult.tsx"
+  ],
+  "components/AmirnetResult.tsx": [],
   "components/AmirnetSimulation.test.ts": [
     "components/AmirnetSimulation.tsx"
   ],
@@ -263,6 +274,9 @@
   "components/LockIcon.tsx": [],
   "components/MeScreen.test.ts": [],
   "components/MeScreen.tsx": [],
+  "components/MeWordsLearned.test.ts": [],
+  "components/MeWordsLearned.tsx": [],
+  "components/MeWordsLearnedSkeleton.tsx": [],
   "components/OnboardingForm.test.ts": [],
   "components/OnboardingForm.tsx": [],
   "components/RecallCard.test.ts": [],
@@ -325,6 +339,14 @@
   ],
   "lib/core/amirnetQuestion.ts": [
     "lib/core/amirnetPractice.ts"
+  ],
+  "lib/core/amirnetResult.test.ts": [
+    "lib/core/amirnetResult.ts",
+    "lib/core/amirnetSimulation.ts"
+  ],
+  "lib/core/amirnetResult.ts": [
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetSimulation.ts"
   ],
   "lib/core/amirnetSimulation.test.ts": [
     "lib/core/amirnetSimulation.ts"

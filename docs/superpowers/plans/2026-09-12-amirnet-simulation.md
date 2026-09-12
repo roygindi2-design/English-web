@@ -121,7 +121,7 @@ export function chapterDotLabelHe(state: 'done' | 'current' | 'upcoming', i: num
 export function advance(state: AmirnetSimulationState, nowMs: number): AmirnetSimulationState;
 ```
 
-## Task 1: `T-296` — one chapter, end to end, under its own clock  ⟵ THIS TICK
+## Task 1: `T-296` — one chapter, end to end, under its own clock  ⟵ ✅ landed C-0538, merged C-0541
 
 **Interfaces:** as declared above. Reuses `questionCounterHe` from `lib/core/amirnetQuestion.ts`
 and `AmirnetPracticeType` / `AMIRNET_TYPES` from `lib/core/amirnetPractice.ts` unchanged.
@@ -168,33 +168,33 @@ describe('41 § 2 — אי אפשר להעביר זמן שנותר לפרק הב
 
 **Steps:**
 
-- [ ] **Step 1:** write `lib/core/amirnetSimulation.test.ts` exactly as above and run
+- [x] **Step 1:** write `lib/core/amirnetSimulation.test.ts` exactly as above and run
       `npx vitest run lib/core/amirnetSimulation.test.ts` — it MUST fail (⛔ no module yet).
-- [ ] **Step 2:** `lib/core/amirnetSimulation.ts` — `AMIRNET_CHAPTERS` from the `41 § 2` table
+- [x] **Step 2:** `lib/core/amirnetSimulation.ts` — `AMIRNET_CHAPTERS` from the `41 § 2` table
       (4·4 / 4·4 / 5·15 / 3·6 / 3·6 / 4·4), `remainingSeconds` clamped at 0, `chapterClock`,
       `isChapterExpired`, `advance` re-stamping `chapterStartedAtMs` from `nowMs`, the Hebrew
       strings and the dot-state helpers. Re-run the test until green.
-- [ ] **Step 3:** `components/AmirnetSimulation.tsx` — `screen_sim`'s layout in product tokens:
+- [x] **Step 3:** `components/AmirnetSimulation.tsx` — `screen_sim`'s layout in product tokens:
       header (`פרק n מתוך 6` · type · clock card · six dots · `שאלה q מתוך N`), the question card
       in `<EnWord>`, four option rows, `לשאלה הבאה`, and `CARRY_OVER_NOTICE_HE` as standing text.
       The expired chapter disables the options and says so in Hebrew.
-- [ ] **Step 4:** `components/AmirnetSimulation.test.ts` — the source-shape guard: the three
+- [x] **Step 4:** `components/AmirnetSimulation.test.ts` — the source-shape guard: the three
       Hebrew strings present, `min-h-touch` on every tappable, ⛔ no hex literal, ⛔ no `h-screen`,
       the dots carry `aria-label`, and ⛔ no score/XP/leaderboard identifier appears.
-- [ ] **Step 5:** `app/dev/amirnet/simulation/simulation-fixture.ts` (the render's `SQ`, transcribed,
+- [x] **Step 5:** `app/dev/amirnet/simulation/simulation-fixture.ts` (the render's `SQ`, transcribed,
       with its provenance in the header) + `app/dev/amirnet/simulation/page.tsx`.
-- [ ] **Step 6:** `npm run generate-map` if `package.json` carries it, then
+- [x] **Step 6:** `npm run generate-map` if `package.json` carries it, then
       `npm run build && npx next start -p 3000` and walk `http://localhost:3000/dev/amirnet/simulation`
       at 375×780 — record heading, taps, under-44px, horizontal scroll, console errors, and compare
       the layout to `docs/design/kol-D-06-simulation.png`. Then `npm run preview:stop`.
-- [ ] **Step 7:** `plan/50-tasks.md` `T-296` ⇒ 🟣 C-0538, one `plan/30-architecture.md` entry, then
+- [x] **Step 7:** `plan/50-tasks.md` `T-296` ⇒ 🟣 C-0538, one `plan/30-architecture.md` entry, then
       **`npm run verify`** (nine commands, explicit ten-minute window) and push to `work/current`.
 
 **Self-check:** ⛔ no score · ⛔ no score estimate · ⛔ no adaptivity · ⛔ no `setInterval` computing
 state · the countdown is declared as the render's, ⛔ not as a deviation · `simulation` stays «טרם»
 until `T-297` lands the bank · every שכבה A gap above carries the render's measured number.
 
-## Task 2: `T-298` — the six-chapter result  ⟵ ⛔ NOT this tick (`T-296` must land first)
+## Task 2: `T-298` — the six-chapter result  ⟵ ✅ landed C-0544 (the blocker cleared: `T-296` is on `dev`)
 
 **Interfaces:** consumes a `readonly AmirnetChapterOutcome[]` the engine accumulates —
 `{ chapterIndex, correct, answered, elapsedSeconds }` — and ⛔ adds no field derived from them.
@@ -210,9 +210,14 @@ it('a run of five chapters renders six rows and ⛔ never a «—» row', () => 
 
 **Steps:**
 
-- [ ] **Step 1:** `components/AmirnetResult.test.ts` — the five-chapter run above, failing first.
-- [ ] **Step 2:** `components/AmirnetResult.tsx` — per-chapter `נכונות מתוך סה״כ` + real time
+- [x] **Step 1:** `components/AmirnetResult.test.ts` — the five-chapter run above, failing first.
+      ⟨C-0544: the pure half went to `lib/core/amirnetResult.ts` + its own test — `/lib/core` is where
+      a decision belongs, and `components/AmirnetResult.test.ts` keeps the five-chapter scenario and
+      the source-shape guard. ⛔ Same two files as written, plus the core module they lean on.⟩
+- [x] **Step 2:** `components/AmirnetResult.tsx` — per-chapter `נכונות מתוך סה״כ` + real time
       (`41 § 7`), the weakest type linking to `/world/amirnet/practice?type=<sc|rs|rc>` through the
       existing `components/amirnetTypeBar.ts`, and the written short-run empty state (`T-298`ⓓ).
       ⛔ No score estimate and ⛔ no 50–150 meter — `41 § 9.2` is Roy's.
-- [ ] **Step 3:** `app/dev/amirnet/result/page.tsx`, walk it, then **`npm run verify`** and push.
+- [x] **Step 3:** `app/dev/amirnet/result/page.tsx`, walk it, then **`npm run verify`** and push.
+      ⟨C-0544: two fixtures, ⛔ not one — `/dev/amirnet/result` (the render's six-chapter run) and
+      `/dev/amirnet/result/short` (ⓓ), because the interrupted branch is unreachable from a full run.⟩

@@ -5,6 +5,7 @@ import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
 import EnWord from '@/components/EnWord';
 import { AMIRNET_TYPES } from '@/lib/core/amirnetPractice';
 import { questionCounterHe, type AmirnetServedItem } from '@/lib/core/amirnetQuestion';
+import { BACK_TO_DASHBOARD_HE } from '@/lib/core/amirnetResult';
 import {
   AMIRNET_CHAPTERS,
   CARRY_OVER_NOTICE_HE,
@@ -75,7 +76,13 @@ import {
 export const KICKER_HE = 'העולם · אמירנט';
 export const HEADING_HE = 'סימולציה';
 export const NO_ITEMS_HE = 'אין פריטים לפרק הזה';
-export const BACK_TO_DASHBOARD_HE = 'חזרה לדשבורד';
+/**
+ * ⛔ ONE literal, ⛔ not two. `T-298`'s result screen offers the same way out, and the same
+ * words written in two files can only drift apart — the reason `amirnetPractice.ts` gives for
+ * owning every string two amirnet screens share. It moved to `lib/core/amirnetResult.ts` and
+ * is re-exported here, so ⛔ nothing that imported it from this module had to change.
+ */
+export { BACK_TO_DASHBOARD_HE };
 
 function typeNameHe(type: string): string {
   return AMIRNET_TYPES.find((t) => t.type === type)?.nameHe ?? '';

@@ -2071,3 +2071,53 @@ source of items, and a tab navigating to «אין פריטים» is `RULES § 0.
 `components/AmirnetTabs.tsx`, and it belongs to the tick that lands `T-297`. ⚠️ For the same reason
 the walk fixture holds **one** item (the render's own `SQ`, :249-251): `41 § 6.3` forbids borrowing a
 second from the spec, so questions 2–4 of chapter 1 show the written «אין פריטים לפרק הזה» state.
+
+## C-0544 (DEV) — `T-298` — the result screen reads the run, and ⛔ invents the one number it is not allowed to
+
+**⛔ The rows are the run's, ⛔ never the chapter table's.** `resultRows()` maps the outcomes the
+run produced — one row per chapter it **finished** — and a run stopped after five chapters therefore
+draws **five** rows. `T-298`'s own failure scenario is the other shape: six rows with a `—` in one of
+them, i.e. a measurement that never happened, printed as if it had. ⇒ the short run says so in a
+**sentence** (`shortRunNoticeHe`), the same way `amirnetPractice.ts` answers «0 answers» with words
+instead of `0%`. 🔬 Measured in the walk (`next start`, 375×780): `/dev/amirnet/result` ⇒ 6 rows,
+`/dev/amirnet/result/short` ⇒ 5 rows, and ⛔ no `—` on either.
+
+**🔴 The render draws a score, and `41 § 9.2` says it is ⛔ not ours to draw.** `scene_result` gives
+the screen a 50–150 dial (:315) and «מתקדמים ב׳ · עלית 6 נקודות» (:317) as its hero. That formula is
+declared **unpublished and Roy's**, and `41 § 8` puts score estimation in **item 4** — this row is
+item 3. ⇒ the 200px card keeps its position and holds **what was measured**: correctness, real time,
+chapters completed. ⚠️ **And the hero had to move, ⛔ not disappear:** the render's title is small and
+muted *because the dial dominated it* (13px, `:313`), so with the dial gone the title carries the
+screen at 20px bold. ⛔ «ההפרש מהסימולציה הקודמת» (`41 § 7`) goes with the dial — a difference between
+two numbers that ⛔ do not exist is the same feature, ⛔ not a smaller one. Same fence `T-291` stood at.
+
+**⛔ ONE place decides who is weak.** `weakestType()` already answered that question for the practice
+menu (`T-286`) and the dashboard (`T-291`); `runWeakness()` folds the run onto the three type stats
+and hands it over, then words the answer in the **result** render's two lines (:343-344) — which are
+⛔ not the dashboard's two lines, exactly as `answeredHe`/`answeredShortHe` are two strings for one
+fact. ⇒ two screens ⛔ cannot disagree about a learner's weak spot. And `runTypeStats()` returns all
+three types **including the ones at zero**, because that is precisely what makes the chooser refuse to
+name a weakness on a partial run: dropping them would let it compare two types and crown one.
+
+**The colour is a summary, ⛔ never the channel.** The render separates «perfect · one short · worse»
+by hue alone (`:333`), so every row prints its fraction (`3/5`, `dir="ltr"`) and carries the standing
+in words for a screen reader (`4 נכונות מתוך 4, כל התשובות נכונות`). ⚠️ `near` is deliberately ⛔ not
+amber: `#f2b544` has ⛔ no token in `palette.ts`, and `components/amirnetTypeBar.ts` measured it at
+**1.75:1** on `--surface` — under the body-text floor, and the render draws the number ITSELF in it.
+
+**One literal moved rather than being copied.** `BACK_TO_DASHBOARD_HE` lived in
+`components/AmirnetSimulation.tsx`; the result screen offers the same way out ⇒ it now lives in
+`lib/core/amirnetResult.ts` and the simulation re-exports it, so ⛔ nothing that imported it from the
+component had to change and the words ⛔ cannot drift apart.
+
+**Worth knowing before the next screen, and it cost a red gate here:** `app/layout.test.ts` forbids a
+**second** gutter — the column is padded once, in the root layout — so `px-4` on a new `app/dev/**`
+page reddens `verify` by name. And a source-shape guard that bans `xp` as a substring matches
+«e**xp**ort» in its own file: the ban has to carry word boundaries.
+
+**Debt, declared, and inherited ⛔ unchanged from `T-296`:** the product route stays shut and
+`simulation` stays «טרם» in `AMIRNET_BUILT_TABS`. `F-222` blocks the item schema and `T-297` is still
+⬜ ⇒ ⛔ no honest run can produce these outcomes yet, and the screen's only home is the two fixtures.
+⛔ **Nothing accumulates the outcomes yet either** — the engine returns state, ⛔ not a graded history;
+the producer belongs to the tick that lands the bank, and `AmirnetChapterOutcome` is the shape it has
+to fill. A tab navigating to «אין פריטים» is `RULES § 0.31`, ⛔ not delivery.
