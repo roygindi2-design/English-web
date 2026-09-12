@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
+import AmirnetTabs, { AMIRNET_BUILT_TABS, AMIRNET_TAB_HREF } from '@/components/AmirnetTabs';
 import EnWord from '@/components/EnWord';
 import { TYPE_BAR_CLASS } from '@/components/amirnetTypeBar';
 import type { AmirnetTypeCard, AmirnetWeakness } from '@/lib/core/amirnetPractice';
@@ -50,8 +50,12 @@ export const EMPTY_BODY_HE =
   'אחרי השאלות הראשונות יופיעו כאן אחוזי ההצלחה שלך בכל סוג שאלה, וגם באיזה סוג כדאי להתחיל.';
 export const TO_PRACTICE_HE = 'לתפריט התרגול';
 
-/** ⛔ Where the strip sends a learner — with the weak type ALREADY chosen (T-291ⓒ). */
-export const PRACTICE_HREF = '/world/amirnet/practice';
+/**
+ * ⛔ Where the strip sends a learner — with the weak type ALREADY chosen (T-291ⓒ).
+ * ⟦C-0536 · F-224⟧ It is the TAB's href now, ⛔ not a second copy of the same string: the strip and
+ * the `תרגול` tab are the same destination, and two literals are two things to keep in sync.
+ */
+export const PRACTICE_HREF = AMIRNET_TAB_HREF.practice;
 
 /**
  * The render's `icon_x` (:84), as inline SVG and ⛔ never a character or an emoji (constitution § 6).

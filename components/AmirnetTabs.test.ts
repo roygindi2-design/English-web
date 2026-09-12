@@ -16,9 +16,17 @@ describe('AmirnetTabs — T-286ⓐ, render kol-D-03-practice-menu.png', () => {
     expect(AMIRNET_TABS.map((t) => t.he)).toEqual(['דשבורד', 'תרגול', 'סימולציה']);
   });
 
-  it('an unbuilt tab is present and disabled, ⛔ never hidden (D-152 § ב׳)', () => {
+  /**
+   * ⟦C-0536 · F-224⟧ The DISABLED half of this rule moved to `AmirnetTabs.dom.test.tsx`, and the
+   * move is the lesson: this assertion used to read `aria-disabled={!live}` — the literal shape of
+   * one expression — and it stayed green for the whole of F-224, because a `<span>` that ⛔ never
+   * navigates spells `aria-disabled` exactly as correctly as a link that does. ⇒ what a learner is
+   * SHOWN is measured on the rendered element now; what is left here is the half a render cannot
+   * see, which is that the tab is ⛔ never removed from the bar.
+   */
+  it('an unbuilt tab is present, ⛔ never hidden (D-152 § ב׳)', () => {
     expect(NOT_YET_HE).toBe('טרם');
-    expect(CODE).toMatch(/aria-disabled=\{!live\}/);
+    expect(CODE).toMatch(/\{!live && <span className="text-xs">\{NOT_YET_HE\}<\/span>\}/);
     expect(CODE).not.toMatch(/hidden|display:\s*none/);
   });
 

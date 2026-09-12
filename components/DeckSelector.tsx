@@ -48,20 +48,44 @@ import {
  * 3. **The sentences deck OPENS — `T-199ⓐ` · `D-169`.** It goes through `toEntry` like the
  *    other three: an empty band is DISABLED WITH ITS NUMBER (§ 4.2ו), ⛔ never locked.
  *
- * 4. **A failed read leaves all three disabled reading «—», ⛔ and shows no error screen.**
- *    That is the state the task names, and it is also the state the harness measures: the
- *    fixture has no session, so without Supabase env the queue answers 503 for both decks.
- *    ⛔ «—» is not `0`: a read that failed and a deck that is empty look identical on screen
- *    and only one of them is true (the same rule `<MeScreen>` follows for `wordsLearned`).
+ * 4. **A failed read SAYS SO, in words — ⛔ and «—» no longer carries two meanings.**
+ *    ⟦REPLACED by `T-295` · `D-214`, 12/09. The rule it replaces said «a failed read leaves
+ *    all three disabled reading «—», ⛔ and shows no error screen», and it was measured
+ *    wrong in a live walk (C-0530 · C-0535): on `/dev/tabs/cards` the `סינון מילים` tile
+ *    read `314 מילים שעוד לא סוננו` while `חזרה` · `מנת היום` · `משפטים` all read «—».
+ *    ⇒ a screen that looks intact with three dead tiles, and ⛔ no learner can tell that
+ *    anything broke.⟧ Three states are now separate **in text** (layer A — ⛔ never colour):
+ *      `ok`       the number was read. **`0` stays `0`** — an empty deck is not a failure.
+ *      `failed`   the read came back `{ok:false}` or threw ⇒ the tile says so, in Hebrew.
+ *      `unknown`  ⛔ no read was made at all here (`unseen` was not handed down) ⇒ «—».
+ *    ⛔ «—» is still not `0`, and it is now also not «נכשל».
  *
  * ⛔ No `<ActionBar>` — D-028 forbids two bottom-anchored bars on one screen and this screen
- * carries the tab bar. ⛔ No retry control either: the task fixes this failure state as
- * three disabled cards, and a fourth target would be Dev minting a control the UX decision
- * does not name. Recorded in `plan/30-architecture.md` rather than added here.
+ * carries the tab bar. ⚠️ **But there IS a way out of the failure now** (`T-295`ⓑ ·
+ * `ui-ux-pro-max` § Feedback, «Error Recovery — ⛔ error without recovery path»): one
+ * `טעינה מחדש` control, ≥44px, that re-runs the three reads in place. It is ⛔ not a fourth
+ * deck and ⛔ not an error screen — the tiles stay, with their numbers, exactly as § 4.2ו
+ * requires. ⛔ A page refresh is ⛔ not a way out: it is not a control, and a learner who
+ * does not know something failed has no reason to perform it.
  */
 
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
+/**
+ * `T-295`ⓐ — **the word «—» stopped meaning two things.** A tile whose read FAILED says it
+ * in a sentence; «—» is left to mean only «⛔ no read was made», which is what it says on
+ * `/dev/tabs/probe` where `<DeckSelector />` gets no `unseen` at all.
+ * ⛔ Text, ⛔ never colour — layer A, and `ui-ux-pro-max` § Accessibility, «Color is not the
+ * only indicator».
+ */
+const READ_FAILED_NOTE_HE = 'הנתונים לא נטענו';
+/**
+ * `T-295`ⓑ — the way out. ⚠️ **Noun form, ⛔ not an imperative:** the product's own actions
+ * are `פתיחת הכרטיסיות` · `שינוי רמה`, and an imperative in Hebrew carries a gender the
+ * product does not know.
+ */
+const RETRY_ACTION_HE = 'טעינה מחדש';
+const READ_FAILED_BODY_HE = 'חלק מהנתונים לא הגיעו מהשרת.';
 /**
  * ⚠️ **C-0321 — «נעול» עברה משורת ההערה ל-`sr-only` ליד שם האריח, ⛔ והיא ⛔ לא נמחקה.**
  *
@@ -162,6 +186,26 @@ function noteFor(count: number | null): string {
   return count === null ? UNKNOWN_COUNT_HE : String(count);
 }
 
+/**
+ * `T-295`ⓐⓒ — the three states of a tile's number, and they are ⛔ not two.
+ * ⛔ `'failed'` is ⛔ never inferred from `count === null` alone: while the reads are still
+ * in flight every count is `null` and nothing has failed yet (the D-064 rule — «אין מה
+ * לתרגל» half a second early is a short lie, and so is «לא נטען»).
+ */
+type ReadState = 'ok' | 'failed' | 'unknown';
+
+/**
+ * `T-295`ⓒ — **a real zero stays `0`.** `state === 'ok'` with `count === 0` renders the
+ * sentence with `0` in it, exactly as before; only `'failed'` swaps the sentence out.
+ */
+function tileNote(
+  state: ReadState,
+  count: number | null,
+  sentence: (n: string) => string,
+): string {
+  return state === 'failed' ? READ_FAILED_NOTE_HE : sentence(noteFor(count));
+}
+
 function toEntry(input: {
   readonly key: string;
   readonly label: string;
@@ -189,6 +233,12 @@ export default function DeckSelector({
 } = {}): React.JSX.Element {
   const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null, sentences: null });
   const [loading, setLoading] = useState(true);
+  /**
+   * `T-295`ⓑ — the retry is a **re-read in place**, ⛔ not a navigation and ⛔ not a page
+   * refresh: bumping `attempt` re-runs the effect below with the tiles already on screen,
+   * so nothing unmounts and nothing shifts.
+   */
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,7 +259,19 @@ export default function DeckSelector({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
+
+  /**
+   * `T-295`ⓐ — `null` AFTER the reads settled is a failure; `null` DURING them is not.
+   * ⛔ `level` ⛔ never reaches this function: its number is `unseen`, which this component
+   * ⛔ does not read, so its only two states are `'ok'` and `'unknown'`.
+   */
+  const deckState = (count: number | null): ReadState =>
+    loading ? 'unknown' : count === null ? 'failed' : 'ok';
+
+  /** ⛔ One failed deck out of three is already a screen that lies — ⛔ not «all three». */
+  const readFailed =
+    !loading && (counts.due === null || counts.unknown === null || counts.sentences === null);
 
   // ⛔ **The order is `36 § 5`'s order**, ⛔ not a preference: «סינון מילים» first, `חזרה`
   // second. `מנת היום` follows as the DECLARED deviation recorded in the UX plan (§ 4.2כ ד׳)
@@ -227,21 +289,23 @@ export default function DeckSelector({
       label: LEVEL_LABEL_HE,
       href: '/study?deck=level',
       count: unseen ?? null,
-      note: LEVEL_NOTE_HE(noteFor(unseen)),
+      // ⛔ `'unknown'` and ⛔ never `'failed'`: this component ⛔ did not read this number,
+      // so it ⛔ cannot claim the read broke. «—» is exactly what that means.
+      note: tileNote(unseen === null ? 'unknown' : 'ok', unseen, LEVEL_NOTE_HE),
     }),
     toEntry({
       key: 'unknown',
       label: PRACTICE_LABEL_HE,
       href: '/study?deck=unknown',
       count: counts.unknown,
-      note: PRACTICE_NOTE_HE(noteFor(counts.unknown)),
+      note: tileNote(deckState(counts.unknown), counts.unknown, PRACTICE_NOTE_HE),
     }),
     toEntry({
       key: 'due',
       label: DUE_LABEL_HE,
       href: '/study',
       count: counts.due,
-      note: DUE_NOTE_HE(noteFor(counts.due)),
+      note: tileNote(deckState(counts.due), counts.due, DUE_NOTE_HE),
     }),
     // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
     // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
@@ -251,7 +315,7 @@ export default function DeckSelector({
       label: SENTENCES_LABEL_HE,
       href: '/study?deck=sentences',
       count: counts.sentences,
-      note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
+      note: tileNote(deckState(counts.sentences), counts.sentences, SENTENCES_NOTE_HE),
     }),
   ];
 
@@ -270,7 +334,11 @@ export default function DeckSelector({
 
   return (
     <section className="flex flex-col gap-4">
-      {dead && (
+      {/* `T-295`ⓐ — ⛔ **`&& !readFailed` is the whole point of the row.** «אין מה לתרגל»
+          is a claim about the BANK, and a read that never arrived measured nothing about
+          the bank. Until today a total outage rendered exactly this block, and a learner
+          was told their decks were empty on the strength of three 503s. */}
+      {dead && !readFailed && (
         // ⛔ אינו מחליף את שלושת האריחים: «מושבת עם המספר» הוא מידע (§ 4.2ו),
         // ומחיקתו הופכת מסך שנראה זהה בשני מצבים שונים. זו פעולה נוספת,
         // ⛔ לא החלפה.
@@ -357,6 +425,29 @@ export default function DeckSelector({
           );
         })}
       </ul>
+
+      {/* `T-295`ⓑ — ⛔ **after the list, ⛔ and that is structural, not taste.** The tiles
+          keep their numbers (§ 4.2ו) and the way out sits under the thing that failed.
+          ⛔ It is ⛔ not the primary action while any tile is live — `check:mobile` fails a
+          screen carrying other than exactly one `[data-primary-action]` (F-027), and when
+          every tile is dead this control is the ONLY thing on screen a learner can press,
+          so it is the primary one by measurement rather than by preference. */}
+      {readFailed && (
+        <div data-deck-failed className="flex flex-col items-start gap-2">
+          <p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setAttempt((previous) => previous + 1);
+            }}
+            data-primary-action={primaryKey === null ? 'true' : undefined}
+            className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
+          >
+            {RETRY_ACTION_HE}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
