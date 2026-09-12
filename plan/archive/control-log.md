@@ -1,5 +1,7 @@
 # ארכיון יומן המחזורים של 00-control.md
 
+loop(DEV): C-0529 — `T-286` 🟣 תפריט התרגול של אמירנט, ועימו תוכנית `2026-09-12-amirnet-practice.md` (`check:plan` 10/10) שמשימות 2–3 שלה הן `T-287` ו-`T-291`. **קריאה קדימה ל-`amirnet`** (`msgs` ⬜=1 ונותרה של CONTENT) — ⛔ `ACTIVE_WORKSTREAM` לא הוזז. `verify` exit 0. ⚠️ `git rebase origin/dev` התנגש על `LOCK_HELD_BY` ⇒ `--abort`, ⛔ אפס יישוב ידני: זהו `F-219` שכבר פתוח, ו-`00-control` מצהיר שעבודה על `work/current` ⛔ אינה חסומה.
+
 > נשלף מ-`plan/00-control.md` כדי לשמור עליו מתחת לתקרת 12KB (`RULES § 0.1.2 ב׳`). קריאה בלבד.
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה | תוצר |
