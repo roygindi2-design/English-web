@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { AMIRNET_TABS, NOT_YET_HE } from './AmirnetTabs';
+import { AMIRNET_BUILT_TABS, AMIRNET_TABS, NOT_YET_HE } from './AmirnetTabs';
 
 /**
  * ⚠️ Comments are stripped first, and that is ⛔ not a loophole: these rules are about what a
@@ -33,5 +33,25 @@ describe('AmirnetTabs — T-286ⓐ, render kol-D-03-practice-menu.png', () => {
 
   it('⛔ draws only — no fetch and no database anywhere', () => {
     expect(CODE).not.toMatch(/fetch\(|apiGet|apiPost|supabase/);
+  });
+});
+
+describe('AMIRNET_BUILT_TABS — ⛔ one list, ⛔ never a literal per screen (T-291 · walk C-0533)', () => {
+  it('holds exactly the screens that exist, and `סימולציה` is ⛔ not one of them yet', () => {
+    expect([...AMIRNET_BUILT_TABS]).toEqual(['dashboard', 'practice']);
+    expect(AMIRNET_BUILT_TABS).not.toContain('simulation');
+  });
+
+  it('⛔ no screen writes its own list — a stale «טרם» is a promise of absence that is false', () => {
+    // The measured failure: the dashboard shipped and three other call sites kept saying `טרם`.
+    for (const f of [
+      'components/AmirnetDashboard.tsx',
+      'components/AmirnetPracticeMenu.tsx',
+      'components/AmirnetQuestion.tsx',
+    ]) {
+      const code = readFileSync(f, 'utf8');
+      expect(code, f).toMatch(/built=\{AMIRNET_BUILT_TABS\}/);
+      expect(code, f).not.toMatch(/built=\{\[/);
+    }
   });
 });

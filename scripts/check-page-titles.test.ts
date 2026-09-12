@@ -37,6 +37,11 @@ describe('scripts/check-page-titles.mjs — every product route owns a title', (
 
   it('reports how many routes it checked, so a silent empty walk cannot pass', () => {
     const r = run();
-    expect(r.out).toMatch(/20 route/); // +1: /world/messages (T-191) · +1: /world/messages/[id] (T-192)
+    // The point is that the walk is ⛔ not empty, ⛔ not that the number never moves: a route
+    // added with a title is a PASS, and pinning the exact count turns every such route into a
+    // red gate on an unrelated tick. ⇒ a floor, and the two assertions above still carry «every
+    // route owns a title». ⟦C-0533 · T-291 — 20 ⇒ 22 with /world/amirnet and its practice menu⟧
+    const counted = Number(/checked (\d+) route/.exec(r.out)?.[1]);
+    expect(counted, r.out).toBeGreaterThanOrEqual(22);
   });
 });

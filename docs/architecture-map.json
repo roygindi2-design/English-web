@@ -7,6 +7,8 @@
   "app/(tabs)/settings/page.test.ts": [],
   "app/(tabs)/settings/page.tsx": [],
   "app/(tabs)/studies/page.tsx": [],
+  "app/(tabs)/world/amirnet/page.tsx": [],
+  "app/(tabs)/world/amirnet/practice/page.tsx": [],
   "app/(tabs)/world/chain/page.tsx": [],
   "app/(tabs)/world/collected/page.tsx": [],
   "app/(tabs)/world/messages/page.tsx": [],
@@ -66,6 +68,11 @@
   "app/arcade/page.test.ts": [],
   "app/arcade/page.tsx": [
     "app/arcade/arcade-tokens.css"
+  ],
+  "app/dev/amirnet/dashboard/dashboard-fixture.ts": [],
+  "app/dev/amirnet/dashboard/empty/page.tsx": [],
+  "app/dev/amirnet/dashboard/page.tsx": [
+    "app/dev/amirnet/dashboard/dashboard-fixture.ts"
   ],
   "app/dev/amirnet/practice/page.tsx": [
     "app/dev/amirnet/practice/practice-fixture.ts"
@@ -167,6 +174,10 @@
   "app/world/messages/[id]/page.tsx": [],
   "components/ActionBar.test.ts": [],
   "components/ActionBar.tsx": [],
+  "components/AmirnetDashboard.test.ts": [
+    "components/AmirnetDashboard.tsx"
+  ],
+  "components/AmirnetDashboard.tsx": [],
   "components/AmirnetPracticeMenu.test.ts": [
     "components/AmirnetPracticeMenu.tsx"
   ],
@@ -272,6 +283,7 @@
   "components/WorldRing.tsx": [],
   "components/WritingChain.test.ts": [],
   "components/WritingChain.tsx": [],
+  "components/amirnetTypeBar.ts": [],
   "lib/api/client.test.ts": [],
   "lib/api/client.ts": [],
   "lib/core/amirnetChapterGate.test.ts": [

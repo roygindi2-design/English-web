@@ -1951,3 +1951,38 @@ screen with three live rows linking to it as «⛔ אינו נגיש בהקשו�
 a `[param]` segment, its static prefix followed by a template substitution now counts too.
 ⛔ **Narrow on purpose, and pinned by two tests:** a `[param]` route ⛔ nobody names is still
 flagged. Measured: `7 → 6`, the same six «⛔ אין מצב ריק כתוב» rows as before.
+
+## C-0533 (DEV) — `T-291` — the dashboard reads what the practice engine writes, and the tab list stops being a literal
+
+**The screen decides nothing.** `components/AmirnetDashboard.tsx` receives `cards`, `weakness`
+and `hasAnswers` already computed and renders them; `lib/core/amirnetPractice.ts` gained
+`weakestCard()` · `hasAnyAnswers()` · `zeroStats()` and a second Hebrew line on the card
+(`answeredShortHe`). The reason is the one the module's own header already gave: the practice
+menu (`T-286`), the question header (`T-287`) and now the dashboard need the SAME three facts,
+and a statistic computed in three components can only drift. `weakestCard` delegates the
+decision itself to `weakestType`, so the three refusals to guess — nothing answered · some type
+never tried · a tie at the bottom — stay in exactly one function.
+
+**Two `(tabs)` routes, and both ship the written empty state on purpose.**
+`/world/amirnet` and `/world/amirnet/practice` exist and touch ⛔ no database:
+`public.sense_items` carries ⛔ no question type, options, `correct_index` or explanation
+(`F-222`, measured C-0531), so ⛔ nothing writes a practice result yet and `T-297` is blocked on
+that schema decision. `zeroStats()` says exactly that, and the screen prints a sentence instead
+of `—` or `0%` (`T-291ⓓ`). ⚠️ The ring node `אמירנט` stays `locked_infra`
+(`lib/core/worldRing.ts:252`) — flipping it is a NAVIGATION decision and PM's alone.
+
+**`AMIRNET_BUILT_TABS` — the walk's own finding, fixed in the same tick.** «which tabs exist»
+was a literal at **four** call sites across three files, and the moment the dashboard shipped,
+the practice menu and both question states kept telling a learner `דשבורד · טרם` — about a
+screen that was already there. `D-152 § ב׳` permits «טרם» because it is a STATEMENT OF FACT; a
+stale one stops being one. The list now lives in `components/AmirnetTabs.tsx`, and `T-296`
+(simulation) flips ⛔ one line.
+
+**The bar tints moved to `components/amirnetTypeBar.ts`, which now owns the measurement.** The
+render colours the three type bars by RANK — `BRAND_SURFACE · DANGER · AMBER`
+(`docs/design/render_video_D.py:41-43`) — and ⛔ neither half is buildable: `--danger` is this
+product's INCORRECT-state token, and `AMBER #f2b544` measures **1.75:1** on `--surface` and
+**1.83:1** on `--surface-raised` against a 4.5:1 body-text floor, since the render draws the
+percentage ITSELF in that colour (`:75`). That is the accessibility-gate carve-out `36 § 14.4`
+names. The weakness strip keeps `--danger` because there the colour marks a genuine STATUS, and
+it ships the way `lib/core/palette.ts` says status always ships: icon **and** label.

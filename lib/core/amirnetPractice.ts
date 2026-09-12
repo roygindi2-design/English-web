@@ -47,6 +47,12 @@ export interface AmirnetTypeCard {
   readonly successPct: number | null;
   /** Hebrew, always present and always a sentence a learner can read. */
   readonly answeredHe: string;
+  /**
+   * The SAME fact in the dashboard's own wording — `N שאלות` (render_video_D.py:76) against the
+   * menu's `N שאלות שנענו` (:121). Two renders, two strings, ⛔ and one place that derives both:
+   * a second component computing its own would be the drift this module exists to prevent.
+   */
+  readonly answeredShortHe: string;
 }
 
 export const NEVER_PRACTISED_HE = 'עדיין לא תרגלת את הסוג הזה';
@@ -69,8 +75,14 @@ export function toTypeCards(stats: readonly AmirnetTypeStat[]): readonly Amirnet
       nameEn,
       successPct: seen ? Math.round((s.correct / s.answered) * 100) : null,
       answeredHe: seen ? `${s.answered} שאלות שנענו` : NEVER_PRACTISED_HE,
+      answeredShortHe: seen ? `${s.answered} שאלות` : NEVER_PRACTISED_HE,
     };
   });
+}
+
+/** ⓓ's gate, and it is ⛔ not «are there cards» — a learner can hold three cards and zero answers. */
+export function hasAnyAnswers(stats: readonly AmirnetTypeStat[]): boolean {
+  return stats.some((s) => s.answered > 0);
 }
 
 /**
@@ -106,4 +118,52 @@ export function practiceReady(
   level: AmirnetLevel | null,
 ): boolean {
   return type !== null && level !== null;
+}
+
+export interface AmirnetWeakness {
+  readonly type: AmirnetPracticeType;
+  readonly nameHe: string;
+  /** ⛔ Never null here: a weakness with ⛔ no percentage is exactly the guess `weakestType` refuses. */
+  readonly successPct: number;
+  /** The strip's two lines, already written — the component does ⛔ no arithmetic (T-291ⓑ). */
+  readonly titleHe: string;
+  readonly adviceHe: string;
+}
+
+export const WEAKNESS_PREFIX_HE = 'החולשה שלך: ';
+export const WEAKNESS_ADVICE_HE = 'מומלץ להתחיל שם';
+
+/**
+ * The whole weakness strip, or null — and null is the state the render ⛔ never draws, which is
+ * precisely why it is written here and ⛔ not left to the component (T-291ⓒ · render_video_D.py:82-88).
+ *
+ * It delegates the decision itself to `weakestType`, so the three refusals to guess — nothing
+ * answered · some type never tried · a tie at the bottom — live in exactly ONE place. This
+ * function only dresses the answer in the render's own two lines.
+ */
+export function weakestCard(stats: readonly AmirnetTypeStat[]): AmirnetWeakness | null {
+  const type = weakestType(stats);
+  if (type === null) return null;
+  const card = toTypeCards(stats).find((c) => c.type === type);
+  if (card === undefined || card.successPct === null) return null;
+  return {
+    type,
+    nameHe: card.nameHe,
+    successPct: card.successPct,
+    titleHe: `${WEAKNESS_PREFIX_HE}${card.nameHe}`,
+    adviceHe: `${card.successPct}% הצלחה · ${WEAKNESS_ADVICE_HE}`,
+  };
+}
+
+/**
+ * The three types at zero — a learner who has ⛔ never practised, which is ⛔ every learner today.
+ *
+ * ⚠️ It exists because the honest alternative is worse. `public.sense_items` carries ⛔ no question
+ * type, options, `correct_index` or explanation (`F-222`, measured C-0531), so ⛔ nothing writes a
+ * practice result yet and `T-297` is blocked on the schema decision. ⇒ the two `(tabs)` routes feed
+ * the screens THIS, and both screens then say in words that practice has not started — which is
+ * true. ⛔ They do ⛔ not invent a statistic, and ⛔ they do not render `—` or `0%` (T-291ⓓ).
+ */
+export function zeroStats(): readonly AmirnetTypeStat[] {
+  return AMIRNET_TYPES.map((t) => ({ type: t.type, answered: 0, correct: 0 }));
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import AmirnetTabs from '@/components/AmirnetTabs';
+import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
+import { TYPE_BAR_CLASS } from '@/components/amirnetTypeBar';
 import EnWord from '@/components/EnWord';
 import {
   AMIRNET_LEVELS,
@@ -33,15 +34,12 @@ import {
  *      · card radius     render r=17 (:112)  ⇒ built 16 — the five-value scale (D-102) has
  *                        ⛔ no 17, and adding a sixth value is a finding, ⛔ not a fix here
  * ── Declared deviation, and the ONE that is not a size. The render colours the three type bars
- *    BRAND_SURFACE · DANGER · AMBER (render_video_D.py:41-43). `--danger` is this product's
- *    INCORRECT-state token (lib/core/palette.ts), and spending it on a permanent CATEGORY would
- *    teach a learner that «ניסוח מחדש» is an error state — on a screen whose whole job is that
- *    correctness is ⛔ never colour alone. The three bars therefore take product tokens, and the
- *    type name is written beside every bar, so ⛔ nothing here is encoded by colour at all.
- *    ⚠️ And ⛔ not the bare `--brand` background class either: `--brand` is the MARK colour at
- *    4.42:1, and F-036 forbids it
- *    as a fill (lib/core/palette.test.ts measures exactly this file). The three bars are
- *    `--brand-surface` · `--ink` · `--ink-muted`.
+ *    BRAND_SURFACE · DANGER · AMBER (render_video_D.py:41-43) and ⛔ neither half is buildable as
+ *    drawn. ⟦MOVED C-0533 · T-291⟧ The bar tints, and the whole measured argument for them, now
+ *    live in `components/amirnetTypeBar.ts` — the dashboard draws the SAME three bars, and the
+ *    table had to stop being a copy in each component before it became two.
+ *    ⇒ the bars are `--brand-surface` · `--ink` · `--ink-muted`, and the type name is written
+ *    beside every one of them.
  * ── ⛔ ONE CTA INTENT, and the render already had it right. A first build put a second
  *    `תרגל` button under the level chips — the SAME word for a different intent, which
  *    `skills/taste-skill/SKILL.md § 4.5` («NO DUPLICATE CTA INTENT») calls a Pre-Flight Fail
@@ -60,13 +58,6 @@ export const PRACTISE_HE = 'תרגל';
 /** ⛔ Not a colour and ⛔ not a disabled tooltip — the reason is written, where a learner reads it. */
 export const PICK_LEVEL_FIRST_HE = 'בחר רמת קושי כדי להתחיל';
 
-/** The bar tint per type. Product tokens only — see the declared deviation above. */
-const BAR: Readonly<Record<AmirnetPracticeType, string>> = {
-  sc: 'bg-brand-surface',
-  rs: 'bg-ink',
-  rc: 'bg-ink-muted',
-};
-
 export interface AmirnetPracticeMenuProps {
   readonly cards: readonly AmirnetTypeCard[];
   /** Pre-selected type — the dashboard's weakness strip links in with one already chosen (T-291ⓒ). */
@@ -84,7 +75,7 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
       <header className="pt-2">
         <p className="text-xs text-ink-muted">{KICKER_HE}</p>
         <h1 className="mt-1 text-2xl font-bold text-ink">{HEADING_HE}</h1>
-        <AmirnetTabs active="practice" built={['practice']} />
+        <AmirnetTabs active="practice" built={AMIRNET_BUILT_TABS} />
       </header>
 
       <h2 className="mt-6 text-base font-semibold text-ink">{CHOOSE_TYPE_HE}</h2>
@@ -121,7 +112,7 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
               {card.successPct === null ? null : (
                 <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-border-subtle">
                   <div
-                    className={`h-full rounded-full ${BAR[card.type]}`}
+                    className={`h-full rounded-full ${TYPE_BAR_CLASS[card.type]}`}
                     style={{ width: `${card.successPct}%` }}
                   />
                 </div>

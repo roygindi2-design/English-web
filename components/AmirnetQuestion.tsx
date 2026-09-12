@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import AmirnetTabs from '@/components/AmirnetTabs';
+import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
 import EnWord from '@/components/EnWord';
 import { AMIRNET_TYPES, type AmirnetLevel } from '@/lib/core/amirnetPractice';
 import {
@@ -159,7 +159,7 @@ export default function AmirnetQuestion({ items, level, now, onBackToMenu }: Ami
         <header className="pt-2">
           <p className="text-xs text-ink-muted">{KICKER_HE}</p>
           <h1 className="mt-1 text-2xl font-bold text-ink">{HEADING_HE}</h1>
-          <AmirnetTabs active="practice" built={['practice']} />
+          <AmirnetTabs active="practice" built={AMIRNET_BUILT_TABS} />
         </header>
         <p className="mt-10 text-base text-ink">{NO_MORE_ITEMS_HE}</p>
         <button
@@ -194,7 +194,7 @@ export default function AmirnetQuestion({ items, level, now, onBackToMenu }: Ami
       <header className="pt-2">
         <p className="text-xs text-ink-muted">{KICKER_HE}</p>
         <h1 className="mt-1 text-2xl font-bold text-ink">{HEADING_HE}</h1>
-        <AmirnetTabs active="practice" built={['practice']} />
+        <AmirnetTabs active="practice" built={AMIRNET_BUILT_TABS} />
       </header>
 
       <div className="mt-6 flex min-h-touch items-center justify-between gap-3 rounded-xl border border-border-subtle bg-surface-raised px-4">

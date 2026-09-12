@@ -32,6 +32,18 @@ export const AMIRNET_TABS: readonly Tab[] = [
 
 export const NOT_YET_HE = 'טרם';
 
+/**
+ * WHICH TABS EXIST TODAY — ⛔ one list, and ⛔ never a literal at each call site.
+ *
+ * ⟦NEW C-0533 · T-291⟧ It was a literal in four places across three files, and the walk measured
+ * what that costs: the moment the dashboard was built, the practice menu and the question screen
+ * ⛔ kept telling a learner `דשבורד · טרם` — about a screen that ⛔ was already there. A promise
+ * of absence is worse than no promise; `D-152 § ב׳` allows «טרם» precisely because it is a
+ * STATEMENT OF FACT, and a stale one stops being that.
+ * ⇒ `T-296` (simulation) flips ⛔ one line here, and every screen agrees on the same tick.
+ */
+export const AMIRNET_BUILT_TABS: readonly AmirnetTabKey[] = ['dashboard', 'practice'];
+
 export default function AmirnetTabs({
   active,
   built,

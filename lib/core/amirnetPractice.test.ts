@@ -4,9 +4,13 @@ import {
   AMIRNET_TYPES,
   LEVEL_CHIP_HE,
   NEVER_PRACTISED_HE,
+  hasAnyAnswers,
   practiceReady,
   toTypeCards,
+  weakestCard,
   weakestType,
+  zeroStats,
+  type AmirnetTypeStat,
 } from './amirnetPractice';
 
 describe('amirnetPractice — T-286, 41 § 7', () => {
@@ -86,5 +90,76 @@ describe('amirnetPractice — T-286, 41 § 7', () => {
     expect(AMIRNET_TYPES.map((t) => t.nameHe)).toEqual(['השלמת משפטים', 'ניסוח מחדש', 'הבנת הנקרא']);
     expect(AMIRNET_LEVELS).toEqual([1, 2, 3, 4]);
     expect(LEVEL_CHIP_HE(3)).toBe('רמה 3');
+  });
+});
+
+describe('T-291 — the dashboard is the first READER of these numbers', () => {
+  const full: readonly AmirnetTypeStat[] = [
+    { type: 'sc', answered: 124, correct: 97 },
+    { type: 'rs', answered: 61, correct: 33 },
+    { type: 'rc', answered: 45, correct: 30 },
+  ];
+
+  it('`answeredShortHe` is the dashboard wording, ⛔ and a DIFFERENT string from the menu\'s', () => {
+    const sc = toTypeCards(full)[0]!;
+    expect(sc.answeredShortHe).toBe('124 שאלות'); // render_video_D.py:76
+    expect(sc.answeredHe).toBe('124 שאלות שנענו'); // :121 — the menu
+    expect(sc.answeredShortHe).not.toBe(sc.answeredHe);
+  });
+
+  it('a never-practised type says so in BOTH wordings — ⛔ never «0 שאלות», which reads as data', () => {
+    const card = toTypeCards([{ type: 'rc', answered: 0, correct: 0 }])[0]!;
+    expect(card.answeredShortHe).toBe(NEVER_PRACTISED_HE);
+    expect(card.answeredShortHe).not.toContain('0');
+  });
+
+  it('`hasAnyAnswers` counts ANSWERS and ⛔ not cards — three cards at zero is the day-one learner', () => {
+    expect(hasAnyAnswers(zeroStats())).toBe(false);
+    expect(zeroStats()).toHaveLength(3);
+    expect(hasAnyAnswers([{ type: 'sc', answered: 1, correct: 0 }])).toBe(true);
+  });
+
+  it('`zeroStats` carries all three types, each at zero — ⛔ and invents ⛔ no statistic', () => {
+    expect(zeroStats().map((s) => s.type)).toEqual(['sc', 'rs', 'rc']);
+    for (const s of zeroStats()) expect([s.answered, s.correct]).toEqual([0, 0]);
+  });
+
+  it('the strip is the render\'s two lines, already written (render_video_D.py:85-88)', () => {
+    const w = weakestCard(full);
+    expect(w?.type).toBe('rs');
+    expect(w?.successPct).toBe(54);
+    expect(w?.titleHe).toBe('החולשה שלך: ניסוח מחדש');
+    expect(w?.adviceHe).toBe('54% הצלחה · מומלץ להתחיל שם');
+  });
+
+  it('⛔ no strip on the three refusals to guess — and each for its OWN reason (ⓒ)', () => {
+    // ⓐ nothing answered at all
+    expect(weakestCard(zeroStats())).toBeNull();
+    // ⓑ a type never tried — «weakest» is a COMPARISON, and an absent score is ⛔ not a low one.
+    //   This is T-291's own failure scenario: 3 answers ⇒ `100% · 0% · 0%` ⇒ sent to a type
+    //   the learner ⛔ never opened.
+    expect(
+      weakestCard([
+        { type: 'sc', answered: 3, correct: 3 },
+        { type: 'rs', answered: 0, correct: 0 },
+        { type: 'rc', answered: 0, correct: 0 },
+      ]),
+    ).toBeNull();
+    // ⓒ two types tied at the bottom
+    expect(
+      weakestCard([
+        { type: 'sc', answered: 10, correct: 9 },
+        { type: 'rs', answered: 10, correct: 5 },
+        { type: 'rc', answered: 20, correct: 10 },
+      ]),
+    ).toBeNull();
+  });
+
+  it('the strip and the cards can ⛔ never disagree — both are derived from one `toTypeCards`', () => {
+    const w = weakestCard(full);
+    const card = toTypeCards(full).find((c) => c.type === w?.type);
+    expect(w?.successPct).toBe(card?.successPct);
+    expect(w?.nameHe).toBe(card?.nameHe);
+    expect(w?.adviceHe).toContain(`${card?.successPct}%`);
   });
 });
