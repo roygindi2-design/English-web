@@ -21,6 +21,36 @@ is a COMPARISON, and a type with zero answers is ⛔ not a low score — it is a
 `components/AmirnetTabs.tsx` is ⛔ one tabs bar for both the menu and the dashboard (`T-291`ⓐ);
 a tab that is not built is present and `aria-disabled` with «טרם», ⛔ never hidden (`D-152` § ב׳).
 
+## `lib/core/amirnetQuestion.ts` — the serving gate and the feedback, ⛔ and ⛔ no clock ⟦C-0531 · T-287⟧
+
+PURE, and **the clock is the point**: `feedbackFor()` takes `elapsedMs` as an argument and the
+module reads `Date.now()` ⛔ nowhere. A module that read the clock itself could ⛔ not be tested
+for the one thing that matters here — that the number it reports is the learner's own response
+time and ⛔ not a deadline.
+
+⛔ **`isServable()` REJECTS; it ⛔ never repairs**, and each of its four refusals is a refusal to
+guess: `level` outside 1–4 (the `null` on 1,602 pre-`D-141` rows is a **declared legal state** in
+`0021_sense_items_level.sql`, ⛔ not a gap to fill) · ⛔ no Hebrew explanation (`R-010` — and ⛔ not
+grounds to write one; a `?? 'אין הסבר'` fallback would BE the invention) · a `correctIndex`
+outside the item's own options (a silent fall-back to `0` would mark a learner wrong on a correct
+answer) · the wrong number of options.
+
+🔴 **THE CLOCK COUNTS UP, and that is a GATE decision, ⛔ not taste** (`F-223`). The render draws a
+**countdown** with a `DANGER` threshold — `render_video_D.py:143-144`, `secs` falling — while
+`plan/20-alerts.md` **R-020** forbids time pressure outside the arena and **`D-049`** narrows a
+clock to material the learner already knows (Nation 2007: *"If the activity involves unknown
+vocabulary, it is not a fluency activity"*). An amirnet practice item is by construction material
+the learner is tested on. ⇒ elapsed stopwatch: ⛔ no deadline, ⛔ no danger tint, ⛔ no failure
+state. `41 § 7` says «שעון» **and** «זמן התגובה» in one sentence, and an elapsed clock satisfies
+both. ⚠️ ⛔ **Says nothing about `T-296`**, where a per-chapter countdown IS the product simulated.
+
+⚠️ **TD-27 — `app/api/amirnet/practice/route.ts` does ⛔ not exist, and ⛔ cannot yet** (`F-222`,
+measured C-0531). `public.sense_items` carries **nine** columns and ⛔ not one of them is the
+amirnet question type, the four options, `correct_index`, the Hebrew explanation or the `rc`
+passage — `grep -rln 'explanation\|options' supabase/migrations/` returns **zero files**. Meanwhile
+`lib/core/amirnetItemGate.ts` (`T-223`) already declares the record that schema was never written
+for. ⇒ `AmirnetQuestion` takes its queue as a **prop**, and `T-297` owns the storage decision.
+
 
 ## 3. עמידה בארכיטקטורת App-Ready · PWA · Mobile-First  ⟦OWNER: Dev מעדכן · Critic מאמת⟧
 

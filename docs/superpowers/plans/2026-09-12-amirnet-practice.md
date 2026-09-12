@@ -170,11 +170,12 @@ describe('amirnetPractice', () => {
 **Interfaces:**
 - Consumes `AmirnetPracticeType`/`AmirnetLevel` from Task 1 and `amirnetItemGate()` from `lib/core/amirnetItemGate.ts`.
 
-**Step 1:** Route test first — an item whose `level` is `null` (the 1,602 legacy rows) is ⛔ not served; an item with no Hebrew explanation is ⛔ not served; a gated item round-trips.
-**Step 2:** `app/api/amirnet/practice/route.ts`. ⛔ The component ⛔ never touches the database — everything through `lib/api/client.ts`.
-**Step 3:** `components/AmirnetQuestion.tsx` — header (type · level · clock · counter), four options, feedback with icon **and** Hebrew label, the correct answer, the Hebrew explanation from the item, and the response time in seconds.
-**Step 4:** `הבא` serves another item of the same type and level; the queue running out shows «אין עוד פריטים ברמה הזאת» with a route back to the menu.
-**Step 5:** `npm run verify`, then the walk at 375×780.
+- [x] **Step 1:** The serving gate, tested first — `lib/core/amirnetQuestion.ts` + `amirnetQuestion.test.ts`. An item whose `level` is outside 1–4 (the 1,602 legacy `null` rows included) is ⛔ not served; an item with no Hebrew explanation is ⛔ not served and ⛔ none is written for it; a `correctIndex` outside the item's own options is ⛔ not served.
+- [ ] **Step 2:** `app/api/amirnet/practice/route.ts`. 🔴 **⛔ BLOCKED — measured C-0531, ⛔ not deferred.** `public.sense_items` carries **nine** columns and ⛔ not one of them is the amirnet question type, the four options, `correct_index`, the Hebrew explanation or the `rc` passage; `grep -rln 'explanation\|options' supabase/migrations/` returns **zero files**. ⇒ the route has ⛔ nothing to read. Schema is `RULES § 0.22` (⛔ irreversible) ⇒ **PM/Roy decide**, and the row that builds it is **`T-297`**, opened in the same tick under **`F-222`**.
+- [x] **Step 3:** `components/AmirnetQuestion.tsx` + `AmirnetQuestion.test.ts` — header (type · level · clock · counter), four options, feedback with an SVG mark **and** the Hebrew word, the correct answer, the item's own Hebrew explanation, and the response time in seconds. 🔴 **The clock is built counting UP** — the render draws a countdown with a `DANGER` threshold (`render_video_D.py:143`) and `R-020`/`D-049` forbid time pressure outside the arena on unknown material. Declared in both headers; recorded as **`F-223`**. ⚠️ ⛔ Says nothing about `T-296`, where a per-chapter countdown IS the product being simulated.
+- [x] **Step 4:** `הבא` advances inside the served queue; the queue running out shows «אין עוד פריטים ברמה הזאת» with the way back to the menu. ⛔ It ⛔ does not wrap round to the first item.
+- [x] **Step 5:** `app/dev/amirnet/question/` — the walk route and a fixture transcribed verbatim from `render_video_D.py` (`PQ` :95-97 + the explanation at :170-174). ⛔ ⛔ Not one of `41 § 6.3`'s calibration examples — that section forbids putting them in the product.
+- [x] **Step 6:** `npm run verify` (full, nine commands, 600000ms window), then the walk at 320/375/414×780.
 
 **Self-check:** ⛔ no invented explanation · correct/incorrect is ⛔ never colour alone · ⛔ no score or XP · a `null`-level item is ⛔ never served.
 

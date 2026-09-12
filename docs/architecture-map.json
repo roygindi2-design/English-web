@@ -71,6 +71,10 @@
     "app/dev/amirnet/practice/practice-fixture.ts"
   ],
   "app/dev/amirnet/practice/practice-fixture.ts": [],
+  "app/dev/amirnet/question/page.tsx": [
+    "app/dev/amirnet/question/question-fixture.ts"
+  ],
+  "app/dev/amirnet/question/question-fixture.ts": [],
   "app/dev/arcade/character/page.tsx": [
     "app/arcade/arcade-tokens.css"
   ],
@@ -167,6 +171,10 @@
     "components/AmirnetPracticeMenu.tsx"
   ],
   "components/AmirnetPracticeMenu.tsx": [],
+  "components/AmirnetQuestion.test.ts": [
+    "components/AmirnetQuestion.tsx"
+  ],
+  "components/AmirnetQuestion.tsx": [],
   "components/AmirnetTabs.test.ts": [
     "components/AmirnetTabs.tsx"
   ],
@@ -285,6 +293,12 @@
     "lib/core/amirnetPractice.ts"
   ],
   "lib/core/amirnetPractice.ts": [],
+  "lib/core/amirnetQuestion.test.ts": [
+    "lib/core/amirnetQuestion.ts"
+  ],
+  "lib/core/amirnetQuestion.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
   "lib/core/apkg.test.ts": [
     "lib/core/apkg.ts"
   ],
