@@ -122,7 +122,7 @@ export interface AmirnetLevelsProps {
 }
 ```
 
-## Task 1: `T-307` — the four levels, and which one is still locked
+## Task 1: `T-307` — the four levels, and which one is still locked  ⟵ ✅ landed C-0550
 
 **Interfaces:** as declared above. Reuses `AmirnetLevel` (type) from `lib/core/amirnetPractice.ts`
 and `AmirnetTabs` / `AMIRNET_BUILT_TABS` unchanged.
@@ -185,20 +185,20 @@ describe('AmirnetLevels — T-307, render_video_D.py screen_levels (:195-235)', 
 
 **Steps:**
 
-- [ ] **Step 1:** write `components/AmirnetLevels.test.ts` exactly as above and run
+- [x] **Step 1:** write `components/AmirnetLevels.test.ts` exactly as above and run
       `npx vitest run components/AmirnetLevels.test.ts` — it MUST fail (⛔ no component yet).
-- [ ] **Step 2:** `components/AmirnetLevels.tsx` — the header (kicker · `סימולציה מלאה` · `AmirnetTabs`
+- [x] **Step 2:** `components/AmirnetLevels.tsx` — the header (kicker · `סימולציה מלאה` · `AmirnetTabs`
       with `active="simulation"`), the summary card (`SUMMARY_HE` bold, `ADAPTIVE_NOTICE_HE` muted),
       and the four level cards in `41 § 4`'s order: name, band chip (`dir="ltr"`), characteristic,
       and for a locked one the lock icon (SVG, ⛔ no emoji) + `lockedReasonHe(level)`. Re-run green.
-- [ ] **Step 3:** `app/dev/amirnet/levels/page.tsx` — `unlockedThrough={3}` so the walk and
+- [x] **Step 3:** `app/dev/amirnet/levels/page.tsx` — `unlockedThrough={3}` so the walk and
       `check:mobile` see **both** states on one screen (`T-307`ⓓ).
-- [ ] **Step 4:** `npm run generate-map` if `package.json` carries it, then `npm run build` and
+- [x] **Step 4:** `npm run generate-map` if `package.json` carries it, then `npm run build` and
       `npx next start -p 3000` (explicit ten-minute window on both), walk
       `http://localhost:3000/dev/amirnet/levels` at 375×780 — record heading, text length, tappable
       count, under-44px, horizontal scroll, console errors — and compare the LAYOUT to
       `docs/design/render_video_D.py` `screen_levels`. Then `npm run preview:stop` (⛔ not `pkill`, TD-26).
-- [ ] **Step 5:** `plan/50-tasks.md` `T-307` ⇒ 🟣 C-0550, one `plan/30-architecture.md` entry,
+- [x] **Step 5:** `plan/50-tasks.md` `T-307` ⇒ 🟣 C-0550, one `plan/30-architecture.md` entry,
       `npm run measure:plan` + both generated indexes in the same commit, then **`npm run verify`**
       (nine commands, explicit ten-minute window) and push to `work/current`.
 

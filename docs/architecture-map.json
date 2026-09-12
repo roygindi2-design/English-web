@@ -81,6 +81,7 @@
   "app/dev/amirnet/dashboard/page.tsx": [
     "app/dev/amirnet/dashboard/dashboard-fixture.ts"
   ],
+  "app/dev/amirnet/levels/page.tsx": [],
   "app/dev/amirnet/practice/page.tsx": [
     "app/dev/amirnet/practice/practice-fixture.ts"
   ],
@@ -196,6 +197,10 @@
     "components/AmirnetDashboard.tsx"
   ],
   "components/AmirnetDashboard.tsx": [],
+  "components/AmirnetLevels.test.ts": [
+    "components/AmirnetLevels.tsx"
+  ],
+  "components/AmirnetLevels.tsx": [],
   "components/AmirnetPracticeMenu.test.ts": [
     "components/AmirnetPracticeMenu.tsx"
   ],

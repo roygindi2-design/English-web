@@ -2160,3 +2160,35 @@ page reddens `verify` by name. And a source-shape guard that bans `xp` as a subs
 ⛔ **Nothing accumulates the outcomes yet either** — the engine returns state, ⛔ not a graded history;
 the producer belongs to the tick that lands the bank, and `AmirnetChapterOutcome` is the shape it has
 to fill. A tab navigating to «אין פריטים» is `RULES § 0.31`, ⛔ not delivery.
+
+## C-0550 (DEV) — `T-307` — the four levels arrive as a PROP, which is what makes the unlock replaceable
+
+**The component is ⛔ not allowed to know how a level gets unlocked.** `AmirnetLevels` takes
+`unlockedThrough` and compares `row.level <= unlockedThrough`; it has ⛔ no query, ⛔ no storage and
+⛔ no rule. That is the whole reason `T-309` is a rewire and ⛔ not a rewrite: when the completion
+records land, the pure function derives the number and the screen ⛔ does not change a line. A first
+draft that read the state inside the component would have made the migration a component rewrite —
+and the second place for that rule to be wrong.
+
+**A locked level is ⛔ not a disabled button — it is ⛔ not a button.** `ui-ux-pro-max` ux ›
+Interaction › Disabled States («Don't: Confuse disabled with normal state») asks for opacity and a
+cursor; the product's own floor asks for more, because state is ⛔ never colour alone. ⇒ the locked
+card renders as a `div` with `aria-disabled`, reduced opacity, the **word** `נעול`, and the way out
+in words — `עבור רמה 3 כדי לפתוח`. A disabled `<button>` would have been a target a finger can find
+and a screen reader can reach, promising something that ⛔ cannot happen.
+
+**The render draws three numbers this screen ⛔ may not print.** `screen_levels` puts `הושלם · 71`,
+`הושלם · 104` and `הכי גבוה · 112` on the open cards, plus a progress bar under each — all of them
+derived from the score estimate, and `41 § 9.2` puts that formula with **Roy**. ⇒ they are ⛔ not
+built and ⛔ nothing replaces them: a bar whose fill comes from a number we ⛔ do not compute is an
+invented statistic, which is worse than an absent one. **Declared deviation, ⛔ not an omission.**
+
+**Measured, and worth knowing before the next `docs/design/` screen:** `screen_levels` has ⛔ **no
+exported still**. `docs/design/kol-D-*` is seven files (`01-world` … `07-result`) and this screen is
+drawn only inside the video. ⇒ the binding source was the **function**, line by line — which is what
+`36 § 14.4` asks for anyway («grep them, ⛔ do not eyeball the PNG»), but an agent that goes looking
+for `kol-D-08-levels.png` will ⛔ not find it.
+
+**Debt, declared:** `simulation` still reads «טרם» in `AMIRNET_BUILT_TABS`, so this screen's only
+home is `/dev/amirnet/levels`. `AmirnetTabs.dom.test.tsx` measures that every BUILT key resolves to a
+`page.tsx` on disk ⇒ the flip and the product route ⛔ cannot separate, and both belong to `T-308`.
