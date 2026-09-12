@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   AMIRNET_OPTIONS_PER_ITEM,
   amirnetItemGate,
+  toServedItems,
   type AmirnetItemRecord,
+  type AmirnetItemRow,
 } from './amirnetItemGate';
+import { servableItems } from './amirnetQuestion';
 
 /**
  * Tier map fixture. Deliberately invented words, ⛔ not drawn from
@@ -199,5 +202,66 @@ describe('amirnetItemGate', () => {
 
   it(`AMIRNET_OPTIONS_PER_ITEM is ${4}`, () => {
     expect(AMIRNET_OPTIONS_PER_ITEM).toBe(4);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// T-297ⓓ — the DB row ⇢ served item mapping. ⛔ It maps; it ⛔ never repairs.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ROW: AmirnetItemRow = {
+  id: '7c2f0f4e-0000-4000-8000-000000000001',
+  type: 'sc',
+  level: 3,
+  stem_en: 'The meeting was ___ until next week.',
+  passage_en: '',
+  options_en: ['postponed', 'postponing', 'postpone', 'postpones'],
+  correct_index: 0,
+  distractor_reasons: ['correct — passive past', 'active gerund', 'bare infinitive', 'present simple'],
+  explanation_he: 'המשפט בפסיב, ולכן נדרשת צורת ה-participle.',
+  level_rationale: 'one blank, NGSL 2000 band',
+  vocab_band: 2000,
+  source: 'original',
+};
+
+describe('T-297ⓓ — toServedItems', () => {
+  it('maps a row to the shape the screen already consumes', () => {
+    expect(toServedItems([ROW])).toEqual([
+      {
+        id: ROW.id,
+        type: 'sc',
+        level: 3,
+        stemEn: ROW.stem_en,
+        passageEn: '',
+        optionsEn: ROW.options_en,
+        correctIndex: 0,
+        explanationHe: ROW.explanation_he,
+      },
+    ]);
+  });
+
+  it('a null passage is an empty passage — ⛔ never the string "null"', () => {
+    expect(toServedItems([{ ...ROW, type: 'rc', passage_en: null }])[0]!.passageEn).toBe('');
+  });
+
+  it('⛔ never invents an explanation: a null explanation stays empty, so the gate drops it', () => {
+    const mapped = toServedItems([{ ...ROW, explanation_he: null }]);
+    expect(mapped[0]!.explanationHe).toBe('');
+    expect(servableItems(mapped)).toEqual([]);
+  });
+
+  it('⛔ never invents a level: a null level stays out of 1–4, so the gate drops it', () => {
+    const mapped = toServedItems([{ ...ROW, level: null }]);
+    expect(servableItems(mapped)).toEqual([]);
+  });
+
+  it('a null options array becomes an empty array, ⛔ not four blanks', () => {
+    const mapped = toServedItems([{ ...ROW, options_en: null }]);
+    expect(mapped[0]!.optionsEn).toEqual([]);
+    expect(servableItems(mapped)).toEqual([]);
+  });
+
+  it('passes a whole row through the existing serving gate untouched', () => {
+    expect(servableItems(toServedItems([ROW]))).toHaveLength(1);
   });
 });

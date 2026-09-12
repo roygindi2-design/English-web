@@ -44,12 +44,51 @@ the learner is tested on. ⇒ elapsed stopwatch: ⛔ no deadline, ⛔ no danger 
 state. `41 § 7` says «שעון» **and** «זמן התגובה» in one sentence, and an elapsed clock satisfies
 both. ⚠️ ⛔ **Says nothing about `T-296`**, where a per-chapter countdown IS the product simulated.
 
-⚠️ **TD-27 — `app/api/amirnet/practice/route.ts` does ⛔ not exist, and ⛔ cannot yet** (`F-222`,
-measured C-0531). `public.sense_items` carries **nine** columns and ⛔ not one of them is the
-amirnet question type, the four options, `correct_index`, the Hebrew explanation or the `rc`
-passage — `grep -rln 'explanation\|options' supabase/migrations/` returns **zero files**. Meanwhile
-`lib/core/amirnetItemGate.ts` (`T-223`) already declares the record that schema was never written
-for. ⇒ `AmirnetQuestion` takes its queue as a **prop**, and `T-297` owns the storage decision.
+✅ **TD-27 — CLOSED C-0547 (`T-297`).** It read: `app/api/amirnet/practice/route.ts` does ⛔ not
+exist and ⛔ cannot yet (`F-222`, measured C-0531) — `public.sense_items` carries **nine** columns
+and ⛔ not one of them is the amirnet question type, the four options, `correct_index`, the Hebrew
+explanation or the `rc` passage. `D-212` settled it: a **new table**, ⛔ not a tenth extension.
+
+
+## `public.amirnet_items` + `app/api/amirnet/practice/route.ts` — the bank and its one reader ⟦C-0547 · T-297⟧
+
+**`supabase/migrations/0024_amirnet_items.sql` was APPLIED LIVE** through the Supabase MCP
+connector (`apply_migration` ⇒ `success: true`) and verified in the same tick with `list_tables`:
+`public.amirnet_items` exists, `rls_enabled: true`, **0 rows**. The `down` path is written into the
+file itself (`RULES § 0.22` — `db push` is ⛔ not reversible by a commit).
+
+**Columns are `41 § 6.5` word for word, plus exactly two, and both are declared:**
+`passage_en` — the `rc` passage `AmirnetItemRecord.passageEn` already carried, with the § 6.2 word
+range; and `explanation_he` — ⛔ without it `T-297`ⓓ is unimplementable, because `41 § 7` requires
+«משוב מיידי עם הסבר בעברית» with ⛔ no condition and the serving gate refuses an item that lacks one.
+⇒ the column is the thing the gate refuses ON; a schema without it would have forced the fallback
+(`?? 'אין הסבר'`) that `T-287` already banned.
+
+**Nine named constraints, each added separately inside `do $$`** (the C-0032 reasoning: `create
+table … check` is skipped wholesale when the table exists) — closed `type` set, `level` 1-4
+`not null` (⛔ unlike `sense_items.level`, which is nullable only because 1,602 rows predate
+`D-141`; this table has ⛔ no such history), four options, four reasons, `correct_index` 0-3,
+`vocab_band` ∈ {1000,2000,3000}, `source = 'original'`, the `rc`⇔passage pairing, and a
+non-blank Hebrew explanation. RLS: `select` to `authenticated` and ⛔ nothing else — the bank is
+written by the content commission `K-006`, ⛔ never by a client.
+
+**`toServedItems()` lives in `lib/core/amirnetItemGate.ts` and it MAPS; it ⛔ never repairs.** Every
+column is `not null`, so in a healthy bank no null can arrive — but PostgREST returns what the table
+holds, and the honest answer to a missing field is an EMPTY one that `isServable()`
+(`amirnetQuestion.ts`) then refuses. ⇒ a null explanation becomes `''` and the item is **dropped**;
+a null `correct_index` becomes **`-1`** and ⛔ not `0`, because a fall-back to 0 marks a learner
+wrong on a correct answer.
+
+**The route is the slice's one impure edge.** `?type=&level=`, ⛔ **no default on either half** —
+`41 § 7` says «הרמה נבחרת ידנית», and a route that filled in the missing half would be adaptivity
+wearing a default's clothes. Guard order C-0032 (env → session → query), `.limit(40)`, and a
+**soft** read in the `T-190`ⓓ pattern: ⛔ never 503, because אמירנט is one node of nine on the ring.
+`no_items` is a declared legal state («אין עוד פריטים ברמה הזאת»), ⛔ not a fault — the bank is
+empty until `K-006` delivers. ⛔ Zero reference to the learner's progress table or the arena
+(`R-020` · `37 § 13.1`), measured by name in `route.test.ts`.
+
+⇒ `AmirnetQuestion` still takes its queue as a **prop** and validates nothing — what changed is that
+the queue can now come from a real bank instead of a fixture.
 
 
 ## 3. עמידה בארכיטקטורת App-Ready · PWA · Mobile-First  ⟦OWNER: Dev מעדכן · Critic מאמת⟧

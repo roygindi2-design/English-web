@@ -15,6 +15,8 @@
  * דורש עדכון של שורה אחת ותיעוד ב-`50-tasks.md`/`60-findings.md`, ⛔ לא הכרעת רוי מחדש.
  */
 
+import type { AmirnetServedItem } from './amirnetQuestion';
+
 export type AmirnetItemType = 'sc' | 'rs' | 'rc';
 
 export interface AmirnetOption {
@@ -150,4 +152,59 @@ export function amirnetItemGate(
     reasons,
     aboveTierWords: [...aboveTierWords].sort(),
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// T-297ⓓ — `public.amirnet_items` ⇢ the shape the screen already consumes.
+//
+// ⛔ THIS FUNCTION MAPS. IT ⛔ NEVER REPAIRS, and that is the whole point of putting
+// it here rather than inside the route. Every column of `0024_amirnet_items.sql` is
+// `not null`, so in a healthy bank none of the nulls below can occur — but PostgREST
+// returns whatever the table holds, and a row written before a constraint, or through
+// a future nullable column, would arrive half-formed. The honest answer to a missing
+// field is an EMPTY one that `isServable()` then refuses (`amirnetQuestion.ts`), ⛔ not
+// a default that turns «we do not have this item» into «here is an item».
+// ⇒ `explanation_he: null` becomes `''` and the item is dropped; it ⛔ does not become
+//   «אין הסבר», which is exactly the `?? 'אין הסבר'` fallback `T-287` already banned.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+/**
+ * One row of `public.amirnet_items` as PostgREST hands it over. Columns are `41 § 6.5`
+ * word for word (`D-212`), plus the two the product cannot serve an item without:
+ * `passage_en` (the `rc` passage `AmirnetItemRecord` already carries) and
+ * `explanation_he` (`41 § 7` — «משוב מיידי עם הסבר בעברית»; `T-297`ⓓ refuses to serve
+ * an item without one).
+ */
+export interface AmirnetItemRow {
+  readonly id: string;
+  readonly type: string | null;
+  readonly level: number | null;
+  readonly stem_en: string | null;
+  readonly passage_en: string | null;
+  readonly options_en: readonly string[] | null;
+  readonly correct_index: number | null;
+  readonly distractor_reasons: readonly string[] | null;
+  readonly explanation_he: string | null;
+  readonly level_rationale: string | null;
+  readonly vocab_band: number | null;
+  readonly source: string | null;
+}
+
+export function toServedItems(rows: readonly AmirnetItemRow[]): readonly AmirnetServedItem[] {
+  return rows.map((row) => ({
+    id: row.id,
+    // ⛔ The cast is the schema's promise (`amirnet_items_type_check`), ⛔ not a guess:
+    // a type outside the closed set cannot be written, and a row that somehow carried one
+    // would fail `isServable` on its other fields rather than be silently re-typed here.
+    type: row.type as AmirnetServedItem['type'],
+    level: row.level as AmirnetServedItem['level'],
+    stemEn: row.stem_en ?? '',
+    passageEn: row.passage_en ?? '',
+    optionsEn: row.options_en ?? [],
+    // ⛔ `-1` and ⛔ not `0`: a fall-back to 0 marks a learner wrong on a correct answer
+    // (`isServable` ⓒ). `-1` is out of range for every options array, so the item is dropped.
+    correctIndex: row.correct_index ?? -1,
+    explanationHe: row.explanation_he ?? '',
+  }));
 }

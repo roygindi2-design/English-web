@@ -19,6 +19,8 @@
   "app/(tabs)/world/messages/page.tsx": [],
   "app/(tabs)/world/page.tsx": [],
   "app/(tabs)/world/story/page.tsx": [],
+  "app/api/amirnet/practice/route.test.ts": [],
+  "app/api/amirnet/practice/route.ts": [],
   "app/api/arcade/character/route.test.ts": [],
   "app/api/arcade/character/route.ts": [],
   "app/api/arcade/collected/route.test.ts": [],
@@ -327,9 +329,12 @@
   ],
   "lib/core/amirnetCoverage.ts": [],
   "lib/core/amirnetItemGate.test.ts": [
-    "lib/core/amirnetItemGate.ts"
+    "lib/core/amirnetItemGate.ts",
+    "lib/core/amirnetQuestion.ts"
   ],
-  "lib/core/amirnetItemGate.ts": [],
+  "lib/core/amirnetItemGate.ts": [
+    "lib/core/amirnetQuestion.ts"
+  ],
   "lib/core/amirnetPractice.test.ts": [
     "lib/core/amirnetPractice.ts"
   ],
