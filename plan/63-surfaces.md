@@ -7,7 +7,7 @@
 > ⇒ **מסך בלי שורה כאן = מסך שאינו קיים ב-`app/`**, ⛔ ולא מסך שמישהו שכח לתאר.
 > ⚠️ **מודד חיווט, ⛔ לא איכות.** מסך יכול לעבור כאן במלואו ולא ללמד דבר.
 
-**20 מסכי מוצר · 30 מסכי פיקסצ׳ר (`/dev/*`)**
+**22 מסכי מוצר · 34 מסכי פיקסצ׳ר (`/dev/*`)**
 > ⛔ **⛔ אין חותמת תאריך בקובץ הזה, ובכוונה:** תאריך ריצה היה משנה את הפלט בכל יום
 > ⇒ דיף בכל טיק ⇒ «הקובץ הזה תמיד משתנה» ⇒ איש ⛔ אינו קורא אותו. הפלט הוא **פונקציה
 > של הקוד בלבד**, ולכן דיף כאן פירושו **המשטחים זזו**, ⛔ ולא שהשעון התקדם.
@@ -20,6 +20,8 @@
 | `/me` | `נסה שוב` · `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` … +1 | `/settings` · `app/api/profile/route.ts` · `/dev/tabs/me` … +3 | `/studies` · `/sources` | ✅ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
 | `/studies` | `הבנת הנקרא` | `app/(tabs)/layout.tsx` · `app/api/profile/route.ts` · `components/ArenaHome.tsx` … +6 | ⛔ — | ✅ | `components/StudiesScreen` |
+| `/world/amirnet` | `לתפריט התרגול` | `/world/amirnet/practice` | ⛔ — | ✅ | `components/AmirnetDashboard` |
+| `/world/amirnet/practice` | `תרגל` | `components/AmirnetDashboard.tsx` | ⛔ — | ✅ | `components/AmirnetPracticeMenu` |
 | `/world/chain` | `כתוב את המשפט הראשון שלך` · `נסה שוב` | `/world/collected` · `components/RecallCard.tsx` | `/login` | ✅ | `components/WritingChain` |
 | `/world/collected` | `הסתר` · `לזירה` · `נסה שוב` | `/world/story` · `/dev/world/ring` · `components/WorldRing.tsx` … +1 | `/login` | ✅ | `components/CollectedWords` |
 | `/world/messages` | `נסה שוב` · `לבחירת רמה` | `components/SimulationMessage.tsx` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/InboxList` |
@@ -41,6 +43,10 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
+| `/dev/amirnet/dashboard/empty` | `לתפריט התרגול` | ⛔ — | ⛔ — | ✅ | `components/AmirnetDashboard` |
+| `/dev/amirnet/dashboard` | `לתפריט התרגול` | ⛔ — | ⛔ — | ✅ | `components/AmirnetDashboard` |
+| `/dev/amirnet/practice` | `תרגל` | ⛔ — | ⛔ — | ✅ | `components/AmirnetPracticeMenu` |
+| `/dev/amirnet/question` | `חזרה לתפריט התרגול` · `הבא` | ⛔ — | ⛔ — | ✅ | `components/AmirnetQuestion` |
 | `/dev/arcade/character` | `התחברות מחדש` · `חזרה למסך הבית` | ⛔ — | `/login` | ✅ | `components/ArenaCharacterChoice` |
 | `/dev/arcade/home` | `התחברות מחדש` · `נסה שוב` · `התחל קרב` … +2 | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
 | `/dev/arcade` | `סגור` · `בחירת רמה` · `חזרה לעולם` | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +3 | `/cards` · `/login` · `/world` | ✅ | `—` |
