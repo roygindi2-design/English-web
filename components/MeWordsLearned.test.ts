@@ -32,9 +32,45 @@ describe('<MeWordsLearned> — the counted figure (T-051 · § 4.2ב · T-301)',
    * channel that says what it counts (constitution § 1).
    */
   it('renders the number with its Hebrew label, ⛔ never the number alone', () => {
-    expect(CODE).toContain("const WORDS_LEARNED_HE = 'מילים שנלמדו'");
+    expect(CODE).toContain("const WORDS_LEARNED_HE = 'מילים שלמדת בכל הרמות'");
     expect(CODE).toContain('{wordsLearned}');
     expect(CODE).toContain('{WORDS_LEARNED_HE}');
+  });
+
+  /**
+   * T-303. The two numbers on this tab count different populations: THIS one is
+   * `mastered_at is not null` across every level, and the «ידוע» tile under
+   * «התקדמות ברמה הנוכחית» is the active level alone. The failure they produced
+   * together is ⛔ not arithmetic (189 ⊇ 128 is correct) — it is that the bigger
+   * number carried the narrower label, so a learner reading both concludes the
+   * product forgot 61 words.
+   *
+   * ⇒ the guard is on the SCOPE being named, ⛔ not on the exact sentence: a label
+   * that drops «בכל הרמות» puts the ambiguity straight back.
+   */
+  it('names the scope of what it counts, ⛔ not just «מילים» (T-303)', () => {
+    expect(CODE).toContain('בכל הרמות');
+    // The old label counted the same thing and ⛔ said so nowhere.
+    expect(CODE).not.toContain("'מילים שנלמדו'");
+  });
+
+  /**
+   * T-303ⓒ. `taste-skill § 4.5` on duplicate intent, applied to text: a sentence
+   * that explains a label is an admission the label does not work. The scope
+   * belongs INSIDE the label, and the tile heading «התקדמות ברמה הנוכחית» already
+   * carries the other scope — ⛔ so this screen gets one new word group, ⛔ not two
+   * new labels and ⛔ not a helper line.
+   *
+   * ⛔ And no em-dash: `taste-skill` bans it in labels outright, with no allowance.
+   */
+  it('carries the scope in the label itself, ⛔ no helper line and ⛔ no em-dash (T-303)', () => {
+    const label = CODE.match(/const WORDS_LEARNED_HE = '([^']*)'/)?.[1];
+    expect(label, 'the label constant was not found').toBeDefined();
+    expect(label).not.toContain('—');
+    expect(label).not.toContain('(');
+    for (const forbidden of ['title=', 'aria-describedby', 'tooltip']) {
+      expect(CODE, `"${forbidden}" turns the label into a footnote`).not.toContain(forbidden);
+    }
   });
 
   it('shows a count and ⛔ never a readiness estimate or a predicted score (4.4.3)', () => {

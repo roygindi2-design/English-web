@@ -37,7 +37,7 @@ import { producedWordCount } from '@/lib/core/world';
  * what `<EnText>` adds is the mark this screen has no input for. When the feed read grows a
  * target column, this becomes `<EnText>` with no other change.
  *
- * ⚠️ **The counter is «מילים שהפקת» and it is a DIFFERENT number from «מילים שנלמדו» on
+ * ⚠️ **The counter is «מילים שהפקת» and it is a DIFFERENT number from «מילים שלמדת בכל הרמות» on
  * `/studies`.** Learned is mastery, written once by gate 7.7 (D-010); produced is what the
  * learner has published with their own hands. They are allowed to disagree, and the two
  * labels are the whole reason the screen may show both without lying. `«—»` and ⛔ never

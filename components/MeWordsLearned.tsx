@@ -23,7 +23,23 @@
  */
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 
-const WORDS_LEARNED_HE = 'מילים שנלמדו';
+/**
+ * T-303. The label names its SCOPE, because the same tab prints a second,
+ * larger number two rows below it: the «ידוע» tile under «התקדמות ברמה
+ * הנוכחית», which `lib/core/levelSummary.ts` counts for the ACTIVE LEVEL only.
+ * This one counts `mastered_at is not null` across EVERY level, so 189 ⊇ 128 is
+ * arithmetically right and reads like a contradiction while neither label says
+ * which is which.
+ *
+ * ⛔ The fix is the label and ⛔ nothing else: ⛔ no tooltip, ⛔ no parenthetical,
+ * ⛔ no explanatory sentence above the number (`taste-skill § 4.5` — a sentence
+ * explaining a label is an admission the label does not work), and ⛔ no change
+ * to any number, query or classification.
+ *
+ * ⛔ And ⛔ no em-dash inside the label (`taste-skill`, em-dash section: banned in
+ * labels outright). The scope is a plain Hebrew clause, ⛔ not a separator.
+ */
+const WORDS_LEARNED_HE = 'מילים שלמדת בכל הרמות';
 
 export default function MeWordsLearned({
   wordsLearned,
