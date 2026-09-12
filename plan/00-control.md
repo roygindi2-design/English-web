@@ -18,10 +18,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   amirnet: 9 / 120           # 41 § 8-1..3 · ▶️ C-0545 (CONTENT, **קריאה קדימה**, ⛔ לא הזזת מוקד — `msgs` נשאר ACTIVE_WORKSTREAM): K-005/K-007 — 30 שורות Tier 1 (blackboard·boiled·bonus·bookcase·bookshelf·bookshop·bored·bra·brainstorm·brake·brave·breeze·bride·bug·bulb·bush·businessman·businesswoman·cab·cafeteria·calendar·camping·campus·captain·carrot·cassette·cereal·champagne·cheer·chef), 684→714/3,382. ⬜ פנויות ל-DEV (ללא שינוי): `T-297` · `T-270`. ⟨C-0544 (DEV): `T-298` 🟣 — מסך תוצאת הסימולציה (`41 § 7`). ⟨C-0538 (DEV): `T-296` 🟣 — מנוע הסימולציה (`41 § 8` פריט 3).⟩⟩
 #   msgs:    4 / 120           # 39-messages-spec § 9 · הודעות — **המוקד.** ▶️ C-0527 (DEV) — `T-289` 🟣: המונה והתווית לקורא-מסך אומרים «נקרא», ⛔ ולא «נענה» (`D-207` · `F-212`). ⬜=1 ונותרה **של CONTENT בלבד**: `T-193`. ⇒ ⛔ אין ל-DEV שורה כשירה כאן. ⛔ פריטים אחרים חסומים ב-R-026
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "59e512d · 2026-09-12T13:19Z · **C-0541 (QA).** `verify` ✅ (248/248 · 4169 בדיקות · check:mobile 1561/1561) · `loop:health` 22/23 (F-225/F-228). הלומד מקבל: מעבר לשוניות שומר סרגל+שלד ייעודי (`T-300`), לשוניות אמירנט מנווטות באמת (`F-224`)."
+RELEASE_READY: "75bc311 · 2026-09-12T16:29Z · **C-0546 (PROMOTER).** `verify` ✅ (251/251 · 4216 בדיקות · check:mobile 1561/1561) · `loop:health` 21/23. הלומד מקבל 124 קומיטים מ-`dev`: מסך תוצאת אמירנט (`T-298`), הודעות מדמות עם מילות חובה, מיזוגי arena/msgs, `F-229`/`F-230`."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "807ae72"  # main אחרי הקידום של 06/09. `verify` exit 0 נרץ על אותו SHA לפני הקידום.
+LAST_REVIEWED_COMMIT: "75bc311"  # main אחרי הקידום של 12/09 (C-0546, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -32,10 +32,10 @@ WORKSTREAM_ENDING: msgs · 1 ⬜ נותרה · 2026-09-12T13:57:53Z · C-0543   
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
 MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. ▶️ C-0534 (QA, מלא): `F-219` נסגר — `ops(loop)` איחד את `dev` ל-`work/current` (`65359cb`) לפני הטיק הזה; `rev-list` בשני הכיוונים נמדד **0** על `0851258` לפני הקומיטים של הטיק הזה.
-PROMOTION_BLOCKERS: ""            # ▶️ **רוקן 12/09 15:30Z בהוראה מפורשת של רוי** («לוודא שקידום יקרה… לתת ל-PROMOTER את השרביט»). ‏STEP B יוצא על שדה לא-ריק **לפני** השער. **הטקסט של C-0521 ⛔ לא נמחק** — `plan/archive/control-log.md` § «הטקסט שרוקן», והאבחנה בפריט 110 ב-`03-for-roy.md`. ⚠️ סירוב המסווג ⛔ **לא נפתר** — פלטפורמה. # ⇐ **PROMOTER בלבד. ⛔ DEV לעולם ⛔ אינו קורא.** רק מה שחוסם `dev`⇢`main` (`§ 0.29 ב׳` תנאי 1). ▶️ פוצל 08/09, `D-203`ⓒ.
+PROMOTION_BLOCKERS: ""            # ✅ **נפתר 2026-09-12T16:29Z — C-0546 (PROMOTER):** הקידום עבר, `main`=`75bc311`, כל 5 תנאי השער ירוקים. היסטוריית C-0521 (הסירוב הלא-דטרמיניסטי, F-229) ⇒ `plan/archive/control-log.md` · פריט 110 ב-`03-for-roy.md`. # ⇐ PROMOTER בלבד.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
-LAST_PROMOTED_AT: "2026-09-08T00:10Z"  # ⚠️ **קידום ידני באישור מפורש של רוי, ⛔ לא ביוזמת הלופ** — `fbdd61e..87ca9fd` ff-only, 71 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
-PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום ידני באישור מפורש של רוי). ⛔ Credit budget is no longer a reason to delay (D-086).
+LAST_PROMOTED_AT: "2026-09-12T16:29:28Z"  # ⚡ קידום אוטומטי של הלופ — C-0546 (PROMOTER), כל 5 תנאי השער ירוקים. `2b8e1b7..75bc311` ff-only, 124 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
+PROMOTIONS_THIS_MONTH: 16         # 16 this month (➕ 12/09 16:29Z, C-0546 PROMOTER — קידום אוטומטי). ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
