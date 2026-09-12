@@ -9,6 +9,15 @@
  * ⚠️ A tab that is not built yet is PRESENT and `aria-disabled`, with the word «טרם» —
  * ⛔ never hidden (D-152 § ב׳: «טרם» is a statement of fact, ⛔ not a promise like «בקרוב»).
  *
+ * ⟦C-0536 · F-224⟧ ⛔ A BUILT TAB IS A LINK, and until today ⛔ none of them was. Every tab was a
+ * `<span role="tab">` with ⛔ no `onClick`, ⛔ no `href` and ⛔ no router call — so a tab the product
+ * itself declared built (`aria-disabled="false"`) did ⛔ nothing when a learner pressed it, and the
+ * only way between the dashboard and the practice menu was out through `world/ring` and back in.
+ * ⛔ That is «פעולה שלא עושה כלום», `RULES § 0.31`. ⚠️ And the four source-scanning tests could
+ * ⛔ never have caught it: the source read perfectly — right strings, right order, right 44px
+ * floor — because what was missing was an attribute ⛔ nobody asserted. ⇒ the guard is now a
+ * RENDER (`AmirnetTabs.dom.test.tsx`), ⛔ not a regex.
+ *
  * Declared layer-A gap (the accessibility gates override the render, 36 § 14.4): the render
  * draws the bar 36px high (:25) and the product floor is 44px — built at 44.
  * Declared radius gap: the render's r=12 maps to `rounded-xl` exactly; the inner pill's
@@ -16,6 +25,8 @@
  * ⚠️ The render is dark; the product is light (36 § 14.2, Roy 11/09) — the background is
  * ⛔ NOT a gap, and every colour below is a product token.
  */
+import Link from 'next/link';
+
 export type AmirnetTabKey = 'dashboard' | 'practice' | 'simulation';
 
 interface Tab {
@@ -44,6 +55,24 @@ export const NOT_YET_HE = 'טרם';
  */
 export const AMIRNET_BUILT_TABS: readonly AmirnetTabKey[] = ['dashboard', 'practice'];
 
+/**
+ * WHERE EACH TAB GOES — ⛔ one map, next to the list that says which of them exist.
+ *
+ * ⚠️ The two belong together on purpose: `AMIRNET_BUILT_TABS` is what turns a tab into a link, so a
+ * key flipped there without a route here is a learner sent to a 404. `AmirnetTabs.dom.test.tsx`
+ * measures exactly that — every BUILT key must resolve to a `page.tsx` that exists on disk — which
+ * is why `T-296` flipping `simulation` cannot land before `/world/amirnet/simulation` does.
+ *
+ * ⛔ These are the PRODUCT routes, ⛔ never the `/dev/amirnet/*` fixtures: those are walk harnesses
+ * (`STEP 6.5`), ⛔ not a surface a learner reaches, and a tab bar that navigated inside them would
+ * be measuring a product that does not exist.
+ */
+export const AMIRNET_TAB_HREF: Readonly<Record<AmirnetTabKey, string>> = {
+  dashboard: '/world/amirnet',
+  practice: '/world/amirnet/practice',
+  simulation: '/world/amirnet/simulation',
+};
+
 export default function AmirnetTabs({
   active,
   built,
@@ -61,21 +90,39 @@ export default function AmirnetTabs({
       {AMIRNET_TABS.map((t) => {
         const live = built.includes(t.key);
         const selected = live && t.key === active;
-        return (
-          <span
-            key={t.key}
-            role="tab"
-            aria-selected={selected}
-            aria-disabled={!live}
-            className={
-              selected
-                ? 'flex min-h-touch items-center justify-center rounded-lg border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface'
-                : 'flex min-h-touch flex-col items-center justify-center rounded-lg text-sm text-ink-muted'
-            }
-          >
+        const className = selected
+          ? 'flex min-h-touch items-center justify-center rounded-lg border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface'
+          : 'flex min-h-touch flex-col items-center justify-center rounded-lg text-sm text-ink-muted';
+        const label = (
+          <>
             <span>{t.he}</span>
             {!live && <span className="text-xs">{NOT_YET_HE}</span>}
-          </span>
+          </>
+        );
+
+        // ⛔ An unbuilt tab is ⛔ never a link: it is present and disabled, ⛔ not tappable.
+        if (!live) {
+          return (
+            <span key={t.key} role="tab" aria-selected={false} aria-disabled className={className}>
+              {label}
+            </span>
+          );
+        }
+
+        return (
+          <Link
+            key={t.key}
+            href={AMIRNET_TAB_HREF[t.key]}
+            role="tab"
+            aria-selected={selected}
+            aria-disabled={false}
+            // ⚠️ `aria-selected` says which tab is active; `aria-current` says the learner is
+            // already THERE. A link needs the second one — ⛔ and state is never colour alone.
+            aria-current={selected ? 'page' : undefined}
+            className={className}
+          >
+            {label}
+          </Link>
         );
       })}
     </div>

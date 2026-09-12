@@ -1986,3 +1986,40 @@ product's INCORRECT-state token, and `AMBER #f2b544` measures **1.75:1** on `--s
 percentage ITSELF in that colour (`:75`). That is the accessibility-gate carve-out `36 § 14.4`
 names. The weakness strip keeps `--danger` because there the colour marks a genuine STATUS, and
 it ships the way `lib/core/palette.ts` says status always ships: icon **and** label.
+
+## C-0536 (DEV) — `F-224` — a tab that a learner is told is BUILT now goes somewhere
+
+**The defect was an absent attribute, and that is why nothing caught it.** Every tab was a
+`<span role="tab">` with ⛔ no `onClick`, ⛔ no `href` and ⛔ no router call — in the component
+itself, and at all four call sites. A learner on the dashboard who pressed `תרגול` — a tab the
+product itself declared built, `aria-disabled="false"`, ⛔ no «טרם» — got ⛔ nothing: no
+navigation, no error, no feedback. The only route between the two built screens was out through
+`world/ring` and back in. `RULES § 0.31`, «פעולה שלא עושה כלום».
+
+**`AMIRNET_TAB_HREF` sits next to `AMIRNET_BUILT_TABS`, and the adjacency is the design.** The
+built list is what turns a tab into a link, so a key flipped there without a route here is a
+learner sent to a 404. `AmirnetTabs.dom.test.tsx` measures exactly that coupling — every BUILT
+key must resolve to a `page.tsx` **that exists on disk** — which is why `T-296` cannot flip
+`simulation` before `/world/amirnet/simulation` lands. ⛔ The map holds the PRODUCT routes and
+⛔ never the `/dev/amirnet/*` fixtures: those are `STEP 6.5` walk harnesses, ⛔ not a surface a
+learner reaches, and a bar that navigated inside them would be measuring a product that does not
+exist. `PRACTICE_HREF` in `AmirnetDashboard.tsx` is now that map's entry rather than a second
+copy of the same string — the weakness strip and the `תרגול` tab are one destination.
+
+**An unbuilt tab stays a `<span aria-disabled>` and is ⛔ never a link** — present, disabled,
+«טרם», exactly as `D-152 § ב׳` requires. A built tab also carries `aria-current="page"` when it
+is the one the learner is on: `aria-selected` says which tab is active, `aria-current` says they
+are already there, and a link needs the second.
+
+🔬 **THE LESSON, and it is the reusable half.** `AmirnetTabs.test.ts` held four assertions and
+all four were green for the whole life of `F-224` — right strings, right RTL order, right 44px
+floor, ⛔ no fetch. They read the SOURCE, and the source read perfectly; what was missing was an
+attribute ⛔ nobody thought to assert. ⇒ the guard is a RENDER now. One assertion in it
+(`aria-disabled={!live}`, the literal text of one expression) was pinning an implementation shape
+rather than a behaviour, and it is the one that went red on the fix — a source scan failing
+*because the code improved* is the signature of a test measuring the wrong thing.
+
+⚠️ **What was ⛔ NOT widened.** `role="tab"` on an anchor is kept: with real page navigation the
+ARIA tabs pattern is arguably the wrong one, but the bar's structure comes from `41 § 7` and the
+render `kol-D-03`, and changing it is a screen-structure decision, ⛔ not this finding's.
+Recorded here rather than acted on.

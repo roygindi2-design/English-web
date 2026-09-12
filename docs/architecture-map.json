@@ -186,6 +186,7 @@
     "components/AmirnetQuestion.tsx"
   ],
   "components/AmirnetQuestion.tsx": [],
+  "components/AmirnetTabs.dom.test.tsx": [],
   "components/AmirnetTabs.test.ts": [
     "components/AmirnetTabs.tsx"
   ],

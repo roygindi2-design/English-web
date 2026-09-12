@@ -181,7 +181,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-211` | 🟠 HIGH · **תקר… | `scripts/loop-health.mjs` (בדיקה 9) · `scripts…` | **נמדד על תשעה קומיטים רצופים, ⛔ ולא שוער:** `2b8e1b7` = **11,892** B (‏396 פנויים) ⇒ `69a9b19` = **12,254** (‏34 פנויים) ⇒ `4778720` (PM) = 12,226 ⇒ … | ⬜ פתוח → **רוי** |
 | `F-217` | 🟠 HIGH · **`D-…` | `components/Flashcard.tsx:266` (‏`swipeActive`… | נמדד ב-Chromium 375×780 על `/dev/card`: אחרי חשיפה, שני כפתורי הדירוג מודדים **`1×1` פיקסל** עם רקע שקוף, כי הם `sr-only` ונפתחים ⛔ רק ב-`focus` מקלדת… | ⬜ פתוח → **DEV** ⟨קוד · `file:line` · כי… |
 | `F-221` | 🟡 MEDIUM · **`…` | `docs/design/kol-C-13-inbox.png` · `docs/desig…` | `npm run diff:render /dev/messages docs/design/kol-C-13-inbox.png` (375×780, screenshot read) shows the render's unread-count line as `שלא נענו` (not-… | ⬜ פתוח → **DEV** ⟨generated asset regen … |
-| `F-224` | 🔴 CRITICAL · d… | `components/AmirnetTabs.tsx:56-83` (הרכיב עצמו… | **נמדד חי ב-`next start`, 375×780, ⛔ ולא שוער:** `page.getByRole('tab', { name: /תרגול/ })` ב-`/dev/amirnet/dashboard` ⇒ `tagName === 'SPAN'`, `aria-d…` | ⬜ פתוח → **DEV** ⟨🔴 מחוץ למכסה — עוצר לו… |
+| `F-224` | 🔴 CRITICAL · d… | `components/AmirnetTabs.tsx:56-83` (הרכיב עצמו… | **נמדד חי ב-`next start`, 375×780, ⛔ ולא שוער:** `page.getByRole('tab', { name: /תרגול/ })` ב-`/dev/amirnet/dashboard` ⇒ `tagName === 'SPAN'`, `aria-d…` | 🟣 **נסגר בקוד C-0536 (DEV)** — כל לשונית… |
 | `F-225` | 🟡 MEDIUM · **`…` | `plan/60-findings.md` שורת `F-222` · `scripts/…` | **נמדד חי בקלון הזה, ⛔ ולא שוער:** `npm run loop:health` ⇒ `FAIL 2 … F-222 → app/api/amirnet/practice/route.ts`; `ls app/api/amirnet/` ⇒ `No such file…` | ⬜ פתוח → **PM** |
 | `F-227` | 🔴 CRITICAL · *… | `docs/agents/QA.md` — בלוק השער (מסלול זול) · … | **הטריגר יורה — ⛔ זו ⛔ אינה השערה:** ‏`last_fired_at` = **07:12:22Z ב-12/09**, כלומר החלון האחרון ירה בזמן. ⇒ ארבעת החלונות `01:12`·`03:12`·`05:12`·`0…` | ⬜ פתוח → **רוי** ⟨הכרעה: ⓐ · ⓑ · או ⓒ — … |
 
@@ -197,7 +197,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | 4. `arena` | 24 | 0 | 3 | 0 | 44 | 51 |
 | 5. `studies` | 3 | 0 | 2 | 0 | 4 | 6 |
 | 6. `msgs` | 4 | 1 | 0 | 0 | 4 | 5 |
-| 7. `amirnet` | 4 | 3 | 1 | 0 | 3 | 7 |
+| 7. `amirnet` | 5 | 3 | 1 | 0 | 3 | 7 |
 | · `loop` (מחוץ לרצף) | — | 3 | 3 | 0 | 40 | 46 |
 | · `base` (מחוץ לרצף) | — | 2 | 4 | 0 | 93 | 101 |
 | · `general` (מחוץ לרצף) | — | 0 | 0 | 0 | 10 | 10 |
