@@ -38,7 +38,7 @@
 | `components/AmirnetTabs.test.ts` | Create. Measures that all three render, that exactly one is `aria-selected`, and that a disabled tab carries «טרם». |
 | `components/AmirnetPracticeMenu.tsx` | Create. Draws the type cards and the level chips. ⛔ Decides nothing — rows arrive from `toTypeCards()`. |
 | `components/AmirnetPracticeMenu.test.ts` | Create. The gate the render binds: three cards, four chips, single-select, and the question ⛔ does not open until both are chosen. |
-| `app/(tabs)/world/amirnet/practice/page.tsx` | Create. The learner route. |
+| `app/(tabs)/world/amirnet/practice/page.tsx` | **Task 2, ⛔ not Task 1 — measured, ⛔ not preference.** `scripts/build-surfaces.mjs` flags a product route ⛔ nothing links to, and the ratchet in `scripts/build-surfaces.test.ts` (D-191 · T-263) lets that count go **down only**. The one thing that could link to it is the `amirnet` ring node, which `lib/core/worldRing.ts:252` holds `locked_infra` behind a written condition — «אמירנט ייפתח כשמנוע התרגול שלו ייבנה» — and **the engine is Task 2**. ⇒ creating the route in Task 1 would either break a frozen gate or unlock a ring node early, and **navigation is PM's, ⛔ never DEV's** (`RULES § 0.22`). The screen itself ships in Task 1 and is walkable at `/dev/amirnet/practice`. |
 | `app/dev/amirnet/practice/page.tsx` | Create. The fixture route the STEP 6.5 walk drives at 375×780. |
 | `app/dev/amirnet/practice/practice-fixture.ts` | Create. A fixture that differs from production data in ⛔ no dimension (the 23/08 lesson). |
 | `components/AmirnetQuestion.tsx` | Task 2. One item, four options, immediate feedback with the Hebrew explanation and the response time. |
@@ -51,7 +51,8 @@
 ### Task 1: `T-286` — the practice menu, end to end
 
 **Files:**
-- Create: `lib/core/amirnetPractice.ts`, `components/AmirnetTabs.tsx`, `components/AmirnetPracticeMenu.tsx`, `app/(tabs)/world/amirnet/practice/page.tsx`, `app/dev/amirnet/practice/page.tsx`, `app/dev/amirnet/practice/practice-fixture.ts`
+- Create: `lib/core/amirnetPractice.ts`, `components/AmirnetTabs.tsx`, `components/AmirnetPracticeMenu.tsx`, `app/dev/amirnet/practice/page.tsx`, `app/dev/amirnet/practice/practice-fixture.ts`
+- ⛔ NOT here: `app/(tabs)/world/amirnet/practice/page.tsx` — see the File Structure note. It lands in Task 2, in the same commit as the ring-node decision.
 - Test: `lib/core/amirnetPractice.test.ts`, `components/AmirnetTabs.test.ts`, `components/AmirnetPracticeMenu.test.ts`
 
 **Interfaces:**
@@ -138,22 +139,22 @@ describe('amirnetPractice', () => {
 ```
 
 **Step 1: The pure module and its negative control**
-- [ ] Write `lib/core/amirnetPractice.test.ts` first (`test-driven-development`): zero answers ⇒ `successPct === null` and the never-practised sentence; a two-way tie at the bottom ⇒ `weakestType() === null`; all three at zero ⇒ `null`; `practiceReady(null, 2) === false` and `practiceReady('sc', null) === false`.
-- [ ] Write `lib/core/amirnetPractice.ts` until those pass. ⛔ No `Date`, no `fetch`, no `process.env`.
-- [ ] `npm run verify:fast`
+- [x] Write `lib/core/amirnetPractice.test.ts` first (`test-driven-development`): zero answers ⇒ `successPct === null` and the never-practised sentence; a two-way tie at the bottom ⇒ `weakestType() === null`; all three at zero ⇒ `null`; `practiceReady(null, 2) === false` and `practiceReady('sc', null) === false`.
+- [x] Write `lib/core/amirnetPractice.ts` until those pass. ⛔ No `Date`, no `fetch`, no `process.env`.
+- [x] `npm run verify:fast`
 
 **Step 2: The shared tabs component**
-- [ ] `components/AmirnetTabs.tsx` + test. `role="tablist"`, one `aria-selected`, the other two `aria-disabled` carrying «טרם». ⛔ Not hidden.
+- [x] `components/AmirnetTabs.tsx` + test. `role="tablist"`, one `aria-selected`, the other two `aria-disabled` carrying «טרם». ⛔ Not hidden.
 
 **Step 3: The menu**
-- [ ] `components/AmirnetPracticeMenu.tsx` + test, against the table above. Single-select on both axes; `תרגל` is disabled until a level is chosen and says so in words, ⛔ not by colour.
+- [x] `components/AmirnetPracticeMenu.tsx` + test, against the table above. Single-select on both axes; `תרגל` is disabled until a level is chosen and says so in words, ⛔ not by colour.
 
-**Step 4: The two routes and the fixture**
-- [ ] `app/(tabs)/world/amirnet/practice/page.tsx` and `app/dev/amirnet/practice/page.tsx` + `practice-fixture.ts`.
+**Step 4: The walk route and the fixture**
+- [x] `app/dev/amirnet/practice/page.tsx` + `practice-fixture.ts`. ⛔ The learner route is Task 2's.
 
 **Step 5: The gate and the walk**
-- [ ] `npm run verify` (full, nine commands — give it a 600000ms window; it measures ~183s).
-- [ ] STEP 6.5: `npm run build && npx next start -p 3000`, drive `/dev/amirnet/practice` at 375×780, record heading · text length · tappable count · under-44px · horizontal scroll · console errors, then `npm run preview:stop`.
+- [x] `npm run verify` (full, nine commands — give it a 600000ms window; it measures ~183s).
+- [x] STEP 6.5: `npm run build && npx next start -p 3000`, drive `/dev/amirnet/practice` at 375×780, record heading · text length · tappable count · under-44px · horizontal scroll · console errors, then `npm run preview:stop`.
 
 **Self-check:** three cards and four chips present · a learner with zero answers sees a sentence and ⛔ no `0%` · nothing opens a question before both choices · zero targets under 44px · zero horizontal scroll at 320/375/414 · ⛔ no score dial, ⛔ no XP, ⛔ no adaptivity.
 
@@ -162,7 +163,8 @@ describe('amirnetPractice', () => {
 ### Task 2: `T-287` — one question with immediate feedback
 
 **Files:**
-- Create: `components/AmirnetQuestion.tsx`, `app/api/amirnet/practice/route.ts`, `app/dev/amirnet/question/page.tsx`
+- Create: `components/AmirnetQuestion.tsx`, `app/api/amirnet/practice/route.ts`, `app/dev/amirnet/question/page.tsx`, `app/(tabs)/world/amirnet/practice/page.tsx` (carried over from Task 1 — it becomes reachable only once the engine exists)
+- **⛔ And one thing this task may ⛔ NOT do alone:** unlocking the `amirnet` ring node (`lib/core/worldRing.ts:252`) is **navigation ⇒ PM's** (`RULES § 0.22`). Build the route and the engine, then ROUTE the unlock; ⛔ do not flip `locked_infra` from inside a DEV tick.
 - Test: `components/AmirnetQuestion.test.ts`, `app/api/amirnet/practice/route.test.ts`
 
 **Interfaces:**

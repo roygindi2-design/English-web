@@ -1,5 +1,27 @@
 <!-- חלק מ-plan/. הבעלות והחוקים מוגדרים ב-plan/00-control.md. אל תערוך קובץ שאינו שלך. -->
 
+## `lib/core/amirnetPractice.ts` — the one place the amirnet practice screens decide anything ⟦C-0529 · T-286⟧
+
+PURE (`scripts/check-core-purity.mjs`). Holds the three question types with their Hebrew and
+English names, the four **manually chosen** levels (`41 § 7` — ⛔ there is no adaptivity in
+practice), `toTypeCards()`, `weakestType()` and `practiceReady()`.
+
+**Why a module and ⛔ not three components.** The same three facts are needed by the practice
+menu (`T-286`), the question header (`T-287`) and the dashboard (`T-291`). Written once, the
+three screens can only agree; written in each, they can only drift.
+
+⛔ **And the rule that is easiest to get wrong, so it lives here and ⛔ nowhere else:**
+`weakestType()` returns `null` in three separate cases — nothing answered · **some type never
+tried** · a tie at the bottom. The middle one is the failure `T-291` writes out: a learner with
+three answers seeing `100% · 0% · 0%` and being sent to a type they ⛔ never opened. «Weakest»
+is a COMPARISON, and a type with zero answers is ⛔ not a low score — it is an ABSENT one.
+⇒ `0%` over zero questions is a **lie**, ⛔ not a datum, and `—` is ⛔ not an answer either:
+`successPct` is `null` and `answeredHe` carries a written sentence instead.
+
+`components/AmirnetTabs.tsx` is ⛔ one tabs bar for both the menu and the dashboard (`T-291`ⓐ);
+a tab that is not built is present and `aria-disabled` with «טרם», ⛔ never hidden (`D-152` § ב׳).
+
+
 ## 3. עמידה בארכיטקטורת App-Ready · PWA · Mobile-First  ⟦OWNER: Dev מעדכן · Critic מאמת⟧
 
 > Critic מריץ את הרשימה הזו **בכל טיק**. סטייה = ממצא בחומרה `HIGH` לכל הפחות.

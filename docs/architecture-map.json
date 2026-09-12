@@ -67,6 +67,10 @@
   "app/arcade/page.tsx": [
     "app/arcade/arcade-tokens.css"
   ],
+  "app/dev/amirnet/practice/page.tsx": [
+    "app/dev/amirnet/practice/practice-fixture.ts"
+  ],
+  "app/dev/amirnet/practice/practice-fixture.ts": [],
   "app/dev/arcade/character/page.tsx": [
     "app/arcade/arcade-tokens.css"
   ],
@@ -159,6 +163,14 @@
   "app/world/messages/[id]/page.tsx": [],
   "components/ActionBar.test.ts": [],
   "components/ActionBar.tsx": [],
+  "components/AmirnetPracticeMenu.test.ts": [
+    "components/AmirnetPracticeMenu.tsx"
+  ],
+  "components/AmirnetPracticeMenu.tsx": [],
+  "components/AmirnetTabs.test.ts": [
+    "components/AmirnetTabs.tsx"
+  ],
+  "components/AmirnetTabs.tsx": [],
   "components/AppGrid.test.ts": [],
   "components/AppGrid.tsx": [],
   "components/ArcadeEntry.test.ts": [],
@@ -269,6 +281,10 @@
     "lib/core/amirnetItemGate.ts"
   ],
   "lib/core/amirnetItemGate.ts": [],
+  "lib/core/amirnetPractice.test.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
+  "lib/core/amirnetPractice.ts": [],
   "lib/core/apkg.test.ts": [
     "lib/core/apkg.ts"
   ],
