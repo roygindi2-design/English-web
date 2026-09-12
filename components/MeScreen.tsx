@@ -55,12 +55,10 @@ import { useEffect, useState } from 'react';
 
 import { apiGet } from '@/lib/api/client';
 import type { CefrBand } from '@/lib/core/cefrLevels';
-import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 import { primaryStudyTrack, trackLabelHe } from '@/lib/core/studyTracks';
 
 const HEADING_HE = 'אני';
-const WORDS_LEARNED_HE = 'מילים שנלמדו';
 const SOURCES_HE = 'מקורות הנתונים והרישיונות';
 const SIGN_OUT_HE = 'יציאה מהחשבון';
 const GOAL_HEADING_HE = 'המטרה שלך';
@@ -91,12 +89,26 @@ type LevelsResponse =
   | { readonly ok: false; readonly code: string };
 
 export default function MeScreen({
-  wordsLearned,
+  wordsLearnedSlot,
   goal,
   fixtureLevels,
   fixtureLevel,
 }: {
-  wordsLearned: number | null;
+  // T-301. The counted figure, already rendered — `<MeWordsLearned>` on its own,
+  // or a `<Suspense>` wrapping it. ⛔ A node and ⛔ not a number: the count is the
+  // one value on this tab that waits on the network, and a value cannot stream
+  // into a client component through a prop. `app/(tabs)/me/page.tsx` owns the read
+  // and the boundary; `/dev/tabs/me` passes the component with a fixed sample, so
+  // the two still render the SAME markup (F-027 cause 2).
+  // ⚠️ `//` and ⛔ not a `/** */` block, and the reason is measured ⛔ not stylistic:
+  // every source guard in this repo strips comments with
+  // `/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, and a JSDoc block as the FIRST token inside
+  // `}: {` lets that pattern anchor on the brace and swallow the props to the next
+  // `*/ }` — measured here: 12,943 chars ⇒ 4,374, taking `goal: LearnerGoal`,
+  // `apiGet<` and `primaryStudyTrack(` out of the string the guards assert on.
+  // The stripper is the defect (row opened this tick); this comment style is what
+  // keeps THIS file's guards honest until it is fixed.
+  readonly wordsLearnedSlot: React.ReactNode;
   goal: LearnerGoal;
   /**
    * Harness-only override, exactly `<StudiesScreen>`'s `fixtureLevels` (T-210):
@@ -147,31 +159,14 @@ export default function MeScreen({
     <section className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
 
-      {wordsLearned === null ? (
-        // § 4.2ב, the error edge case: a Hebrew sentence and a retry.
-        // A plain <a> and ⛔ not <Link>: the retry has to reach the server
-        // again, and the client router would be free to answer from its cache.
-        //
-        // T-075: the bordered shape is `WorldFeed`'s, for the same constant in
-        // the same state. One action, one form — and an underline is not a 44px
-        // target (constitution § 4 · § 6).
-        <div className="flex flex-col gap-2">
-          <p className="text-lg leading-relaxed text-ink">{FAILURE_HE.load}</p>
-          <a
-            href="/me"
-            className="inline-flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
-          >
-            {RETRY_HE}
-          </a>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-1">
-          {/* The number carries its own label in Hebrew — colour and size are
-              never the only channel (constitution § 1). */}
-          <p className="text-4xl font-bold leading-none">{wordsLearned}</p>
-          <p className="text-lg text-ink-muted">{WORDS_LEARNED_HE}</p>
-        </div>
-      )}
+      {/* T-301. The counted figure, handed in as a slot so its Supabase round
+          trip can resolve inside its own `<Suspense>` instead of holding this
+          whole column back. The markup of both its states is
+          `<MeWordsLearned>`; the reserved box it resolves into is
+          `<MeWordsLearnedSkeleton>`. ⛔ This component decides ⛔ nothing about
+          the number any more — including the `null` failure branch, which moved
+          out WITH its guards. */}
+      {wordsLearnedSlot}
 
       {/* T-145ⓑ. The learner's one way forward from their own tab — see the
           file header for why the track name is derived and why this block

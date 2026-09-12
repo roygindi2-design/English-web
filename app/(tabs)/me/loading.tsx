@@ -7,17 +7,20 @@
  * on one door is a single point of failure — and then counts `word_progress`. ⛔ Neither
  * is removed and ⛔ neither should be; this boundary is what makes the wait legible
  * instead of blank.
+ *
+ * ⚠️ **T-301ⓒ:** the counted figure's box is now `<MeWordsLearnedSkeleton>`, because
+ * the route streams that figure on its own and needs the identical shape as its
+ * `<Suspense>` fallback. One definition, two call sites.
  */
+import MeWordsLearnedSkeleton from '@/components/MeWordsLearnedSkeleton';
 export default function Loading() {
   return (
     <div aria-busy="true" aria-live="polite" className="flex flex-1 flex-col gap-6">
       <span className="sr-only">טוען</span>
       <div className="h-8 w-1/4 rounded-lg bg-border-subtle" />
-      {/* the counted figure and its label — the part that waits on the query */}
-      <div className="flex flex-col gap-2">
-        <div className="h-12 w-1/3 rounded-lg bg-border-subtle" />
-        <div className="h-5 w-2/3 rounded-md bg-border-subtle" />
-      </div>
+      {/* T-301ⓒ — the counted figure's reserved box, the SAME file the route's
+          own `<Suspense>` fallback renders. ⛔ Not a hand-copied second shape. */}
+      <MeWordsLearnedSkeleton />
       <div className="space-y-3">
         <div className="min-h-touch rounded-2xl bg-border-subtle py-5" />
         <div className="min-h-touch rounded-2xl bg-border-subtle py-5" />

@@ -57,6 +57,37 @@ describe('the אני tab (T-051 · § 4.2ב)', () => {
     expect(CODE).toContain('count ?? 0');
   });
 
+  /**
+   * 🔴 **T-301ⓑ — the boundary opens AFTER the session check, ⛔ never before it.**
+   * The session is verified in this file and ⛔ not only in `proxy.ts` (the F-003
+   * lesson, that one lock on one door is a single point of failure). Streaming the
+   * count is a performance change and must ⛔ not become an authorisation change:
+   * if `<Suspense>` were hoisted above `getUser()`, the shell would paint for a
+   * signed-out visitor and the redirect would arrive afterwards.
+   *
+   * Measured as an ORDER in the source, because that is what the risk is: the
+   * index of the `redirect` that follows the user check has to come BEFORE the
+   * index of the boundary.
+   */
+  it('opens the Suspense boundary only after the session redirect (T-301ⓑ · F-003)', () => {
+    const guard = CODE.lastIndexOf("if (!user) redirect('/login?expired=1')");
+    const boundary = CODE.indexOf('<Suspense');
+    expect(guard, 'the session guard was not found').toBeGreaterThan(-1);
+    expect(boundary, 'the Suspense boundary was not found').toBeGreaterThan(-1);
+    expect(boundary).toBeGreaterThan(guard);
+  });
+
+  /**
+   * T-301ⓒ. The fallback is the shared skeleton file, ⛔ not a second hand-written
+   * shape — and it is the same file `app/(tabs)/me/loading.tsx` renders. Two copies
+   * would be two shapes the day one of them is edited, and the whole point of the
+   * reserved box is that the number's arrival moves nothing.
+   */
+  it('reserves the number\'s space with the SAME skeleton the route\'s loading.tsx uses (T-301ⓒ)', () => {
+    expect(CODE).toContain('fallback={<MeWordsLearnedSkeleton />}');
+    expect(readFileSync('app/(tabs)/me/loading.tsx', 'utf8')).toContain('MeWordsLearnedSkeleton');
+  });
+
   it('carries ⛔ no ActionBar — D-028 forbids two bottom bars on one screen', () => {
     expect(CODE).not.toContain('ActionBar');
   });

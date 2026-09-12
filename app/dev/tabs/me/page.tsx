@@ -1,4 +1,5 @@
 import MeScreen from '@/components/MeScreen';
+import MeWordsLearned from '@/components/MeWordsLearned';
 import TabBar from '@/components/TabBar';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 
@@ -53,7 +54,7 @@ export default function DevTabsMePage() {
   return (
     <>
       <MeScreen
-        wordsLearned={SAMPLE_WORDS_LEARNED}
+        wordsLearnedSlot={<MeWordsLearned wordsLearned={SAMPLE_WORDS_LEARNED} />}
         goal={SAMPLE_GOAL}
         fixtureLevels={FIXTURE_LEVELS}
         fixtureLevel="A1"

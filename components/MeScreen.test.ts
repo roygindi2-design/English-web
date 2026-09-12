@@ -63,53 +63,23 @@ describe('<MeScreen> — the learner tab body (T-051 · § 4.2ב)', () => {
   });
 
   /**
-   * The failure branch is the reason this component takes `number | null` and
-   * not `number`. A learner staring at `0` after a failed read is being told
-   * something false about their own work, in the one place the product claims
-   * to report it.
+   * T-301. The counted figure and its failure branch moved to
+   * `<MeWordsLearned>` so the route can stream it inside its own `<Suspense>`.
+   * ⛔ The guards moved WITH it — `components/MeWordsLearned.test.ts` — exactly as
+   * they moved out of `page.tsx` in C-0075. What this file still owns is the fact
+   * that the slot is RENDERED here, and that this component decides ⛔ nothing
+   * about the number: a slot quietly dropped would leave the tab with no count at
+   * all and every other guard here would still pass.
    */
-  it('shows a Hebrew sentence and a retry when the read failed, ⛔ not a silent zero', () => {
-    expect(CODE).toMatch(/wordsLearned === null/);
-    // T-056: the sentence and the button label are imported, ⛔ not restated here.
-    // Asserting on the literal is what let this screen carry the third of four
-    // rival wordings for one event; `lib/core/failure.test.ts` owns the wording
-    // itself, and this file owns the fact that the failure branch renders it.
-    expect(CODE).toMatch(/import \{[^}]*FAILURE_HE[^}]*\} from '@\/lib\/core\/failure'/);
-    expect(CODE).toContain('{FAILURE_HE.load}');
-    expect(CODE).toContain('{RETRY_HE}');
-    // A plain <a>, so the retry reaches the server instead of the router cache.
-    // ⚠️ Whitespace-tolerant since C-0163: T-075 gave this anchor a className long
-    // enough to push `href` onto its own line, and the old `/<a href="\/me"/`
-    // failed on the line break — a formatting fact, ⛔ not the rule. The rule is
-    // «a bare <a>, aimed at /me», and both halves are still asserted: the `<a`
-    // tag itself, and ⛔ the absence of a <Link> to the same route.
-    expect(CODE).toMatch(/<a\s[^>]*href="\/me"/);
-    expect(CODE).not.toMatch(/<Link[^>]*href="\/me"/);
+  it('renders the counted figure as a slot and ⛔ decides nothing about it (T-301)', () => {
+    expect(CODE).toContain('{wordsLearnedSlot}');
+    expect(CODE).toMatch(/readonly wordsLearnedSlot:\s*React\.ReactNode/);
+    // ⛔ No second definition of either state left behind here.
+    expect(CODE).not.toContain('wordsLearned === null');
+    expect(CODE).not.toContain('FAILURE_HE');
+    expect(CODE).not.toContain('מילים שנלמדו');
   });
 
-  /**
-   * T-075. `RETRY_HE` is one constant standing for one action in one state, and
-   * it shipped in two shapes: a bordered 44px button in `WorldFeed:182`, and
-   * here an underlined run of text. A learner who meets both cannot tell that
-   * they are the same thing, and the underline is the one that is hard to hit.
-   * Constitution § 4 (44px target) · § 6 (one component per role).
-   *
-   * ⚠️ ⛔ The element stays an `<a href="/me">` — asserted above, and again by
-   * omission here. The screen is a Server Component and the retry has to be a
-   * full request; turning it into a `<button>` to match `WorldFeed`'s tag would
-   * trade a real behaviour for a cosmetic match.
-   */
-  it('gives the retry the bordered shape the rest of the product uses (T-075)', () => {
-    const retry = CODE.match(/<a\s[^>]*href="\/me"[^>]*className="([^"]*)"/)?.[1];
-    expect(retry, 'the retry className was not found').toBeDefined();
-    expect(retry).toContain('min-h-touch');
-    expect(retry).toContain('rounded-lg');
-    expect(retry).toContain('border-border-strong');
-    expect(retry).toContain('px-5');
-    expect(retry).toContain('py-3');
-    // ⛔ Not both: a bordered button that is also underlined is a third shape.
-    expect(retry).not.toContain('underline');
-  });
 });
 
 describe('the "המטרה שלך" block (T-003 · § 4.2ד)', () => {

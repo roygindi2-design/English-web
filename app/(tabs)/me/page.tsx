@@ -1,7 +1,17 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import MeScreen from '@/components/MeScreen';
+import MeWordsLearned from '@/components/MeWordsLearned';
+import MeWordsLearnedSkeleton from '@/components/MeWordsLearnedSkeleton';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
+
+/**
+ * The client this file already builds, named so the streamed child can take it.
+ * ⛔ Derived and ⛔ not re-declared: a second hand-written shape would be free to
+ * drift from what `createRouteClient` actually returns.
+ */
+type RouteClient = ReturnType<typeof createRouteClient>;
 
 /**
  * אני — the learner tab (D-027 · `40-decisions.md` § 4.2ב: "כל מה שהוא **על
@@ -31,6 +41,36 @@ export const dynamic = 'force-dynamic';
 // `title.template`.
 export const metadata = { title: 'אני' };
 
+/**
+ * T-301ⓐ. The counted figure's own read, in its own async component so the
+ * `<Suspense>` boundary below can resolve it while the rest of the tab is
+ * already on screen.
+ *
+ * "Learned" is mastery, not exposure: `mastered_at` is written once, at the
+ * moment gate 7.7 is satisfied (lib/core/progress.ts · D-010). Counting every
+ * word_progress row instead would report a word seen once as a word learned,
+ * which is the same lie as a predicted score with extra steps.
+ * `head: true` — the count is the whole answer, so no rows cross the wire.
+ *
+ * ⛔ `null` on failure and never `0`: a failed read and a learner who has learned
+ * nothing look identical on screen, and only one of them is true.
+ */
+async function WordsLearned({
+  supabase,
+  userId,
+}: {
+  readonly supabase: RouteClient;
+  readonly userId: string;
+}): Promise<React.JSX.Element> {
+  const { count, error } = await supabase
+    .from('word_progress')
+    .select('word_id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .not('mastered_at', 'is', null);
+
+  return <MeWordsLearned wordsLearned={error ? null : (count ?? 0)} />;
+}
+
 export default async function MePage() {
   const env = readSupabaseEnv();
   if (!env) redirect('/login?expired=1');
@@ -41,16 +81,10 @@ export default async function MePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login?expired=1');
 
-  // "Learned" is mastery, not exposure: `mastered_at` is written once, at the
-  // moment gate 7.7 is satisfied (lib/core/progress.ts · D-010). Counting every
-  // word_progress row instead would report a word seen once as a word learned,
-  // which is the same lie as a predicted score with extra steps.
-  // `head: true` — the count is the whole answer, so no rows cross the wire.
-  const { count, error } = await supabase
-    .from('word_progress')
-    .select('word_id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .not('mastered_at', 'is', null);
+  // 🔴 **T-301ⓑ — the boundary opens HERE and ⛔ never earlier.** Everything below
+  // this line runs only once `getUser()` has come back: the session is checked in
+  // this file and ⛔ not only in `proxy.ts` (the F-003 lesson), and streaming the
+  // count must ⛔ not turn that check into something a learner races.
 
   // § 4.2ד. ⛔ `maybeSingle` and not `single`: 0001's trigger creates the row,
   // but a screen that throws because a row is missing tells the learner nothing
@@ -63,11 +97,13 @@ export default async function MePage() {
     .eq('id', user.id)
     .maybeSingle();
 
-  // ⛔ `null` on failure and never `0`: a failed read and a learner who has
-  // learned nothing look identical on screen, and only one of them is true.
   return (
     <MeScreen
-      wordsLearned={error ? null : (count ?? 0)}
+      wordsLearnedSlot={
+        <Suspense fallback={<MeWordsLearnedSkeleton />}>
+          <WordsLearned supabase={supabase} userId={user.id} />
+        </Suspense>
+      }
       goal={{
         institution: profile?.institution ?? null,
         targetScore: profile?.target_score ?? null,
