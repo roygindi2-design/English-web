@@ -265,3 +265,23 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 > ⛔ **התוכן ⛔ לא נמחק:** 7 השורות חזרו ל-`headwords_todo`, והנוסח המלא שמור בגיט ב-`81e2649`.
 - K-005 ✅ Priority ⓐ סיום — batch-2026-09-07-connectors.jsonl (10 connector words A2/B1) · סך הכל: 10 accepted, 0 rejected · gate: 0 rejections across 1200 rows · seeds regenerated (0001,0002,0003) · lock released ⟨נבדק: 2026-09-07T07:49:30Z⟩
 - K-007 ⛔ blocked — T-244 (coverage measurement tool) not yet in repo ⟨נבדק: 2026-09-07⟩
+
+## דוח C-0532 — סוכן ה-CONTENT · ⟨נבדק: 2026-09-12⟩
+
+**סקילים:** hebrew-content-writer · ⛔ אף סקיל superpowers לא נקרא בטיק הזה (STEP 5.9 לא בוצע — לא הצהרה, זו העובדה).
+
+**מסלול:** הזמנה K-005 ⌒b (Amirnet Tier 1, אלפביתי) | בקשה: 12 · קבול: 12 · דחיה: 0 (סבב שני; 3 תיקוני סחיפת רמה בסבב ראשון: `oven`·`blew`/`tied`·`apples`) | `low`: 0 — כל 12 `translation_confidence=high`.
+
+**תיקון ממצא לא-מבוקש:** הסמן שנרשם ב-K-005 («הבא: `audition`») היה שגוי — `audition` הוא Tier 3, לא Tier 1, ולא אומת מול `data/amirnet-vocab.csv` לפני שנרשם. חישבתי את הפער האמיתי: 701/1,243 כותרות Tier 1 היו חסרות (לא המספר שהיה בטבלה). כן בדקתי וסגרתי: item 102 (`03-for-roy`, כבר ✅ סגור 11/09) — אימות טרי בקוד מראה `F-194` סוגר את תקרת ה-1,200 **מבנית**, לא רק "מוחזקת" (`spotCheckPlan` רץ per-batch, לא על הבנק כולו).
+
+**כיסוי:** `measure:amirnet-coverage` Tier 1+2: 660→**672**/3,382. ארבעת הגנרטורים (`build:ingest`·`build:levels`·`measure:gate`·`build:preview`) רצו נקי על 1,234 שורות/28 קבצים, 0 rejected. `npm run verify` המלא רץ ירוק (exit 0) פעמיים בטיק הזה (הנעילה, ואז האצווה+שחרור).
+
+**לקח (#39 ב-`80-content-lessons.md`):** סמן/מספר שנרשם בטיק קודם הוא טענה, לא עובדה — נבדק מול המקור (CSV/קוד חי) בכל ריצה, לא מועתק.
+
+**דוגמות:**
+- **automatic** (אוטומטי): "The door opened by itself because it was automatic." ← 3 רמות: בסיסית, «so», «although».
+- **bargain** (מציאה): "She bought the shoes for half price, which was a real bargain." ← מסיחים: deal/discount (סמנטי) · curtain (אורתוגרפי) · table (לא קשור) — כולם אומתו מול `allowed-words` בנפרד (לקח 38).
+
+**STEP 7.5 (בדיקה בדפדפן, 375×780):** `/dev/story` — עברית קריאה, RTL תקין, מיזוג LTR נכון למילים אנגליות בתוך משפט עברי. **ממצא:** `/dev/card` · `/dev/card/choice` · `/dev/deck` הם **פריסת-בדיקה מוצהרת** ("בדיקת פריסה — אינו תוכן לימודי") עם Lorem/Ipsum/Dolor קבועים — ⛔ אינם מציגים תוכן אמיתי מ-`data/generated/`, כך שלא יכולתי לראות חזותית את 12 השורות שכתבתי הטיק הזה על גבי כרטיס אמיתי.
+
+⟨נבדק: 2026-09-12⟩
