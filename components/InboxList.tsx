@@ -85,14 +85,14 @@ function Row({ row }: { readonly row: InboxRow }) {
       */}
       <Link
         href={row.href}
-        className={`flex min-h-touch gap-3 rounded-2xl border p-3 ${row.unanswered ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
+        className={`flex min-h-touch gap-3 rounded-2xl border p-3 ${row.unread ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
       >
         <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-surface text-base font-bold text-brand-on">
           {row.initial}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className={`text-sm ${row.unanswered ? 'font-bold' : 'font-semibold'} text-ink`}><EnWord>{row.senderEn}</EnWord></span>
+            <span className={`text-sm ${row.unread ? 'font-bold' : 'font-semibold'} text-ink`}><EnWord>{row.senderEn}</EnWord></span>
             {/*
               ⚠️ A BORDER and ⛔ not a fill, measured in the walk: the render fills the chip
               with the sender's own colour at α55 (`render_msgs_screens.py:67`), and a
@@ -102,13 +102,13 @@ function Row({ row }: { readonly row: InboxRow }) {
             */}
             <span className="rounded-lg border border-ink-muted/40 px-2 text-xs font-medium text-ink-muted">{row.contextHe}</span>
           </span>
-          <span className={`mt-1 block text-sm ${row.unanswered ? 'font-bold text-ink' : 'text-ink-muted'}`}><EnWord>{row.subjectEn}</EnWord></span>
+          <span className={`mt-1 block text-sm ${row.unread ? 'font-bold text-ink' : 'text-ink-muted'}`}><EnWord>{row.subjectEn}</EnWord></span>
           <span className="mt-1 block text-xs text-ink-muted"><EnWord>{row.previewEn}</EnWord></span>
         </span>
         <span className="flex shrink-0 flex-col items-center gap-2">
           <span className="text-xs font-medium text-ink-muted">{row.whenHe}</span>
-          {row.unanswered ? <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-brand-surface" /> : null}
-          <span className="sr-only">{row.unanswered ? 'טרם נענתה' : 'נענתה'}</span>
+          {row.unread ? <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-brand-surface" /> : null}
+          <span className="sr-only">{row.unread ? 'טרם נקראה' : 'נקראה'}</span>
         </span>
       </Link>
     </li>
@@ -145,7 +145,7 @@ export function InboxListView({ state, onRetry = () => {} }: { readonly state: I
       {state.kind === 'loading' ? <p className="mt-4 text-xs text-ink-muted">טוען…</p> : null}
       {state.kind === 'ready' ? (
         <>
-          <p data-inbox-unanswered className="mt-3 text-xs text-ink-muted">{state.countsHe}</p>
+          <p data-inbox-unread className="mt-3 text-xs text-ink-muted">{state.countsHe}</p>
           <ul className="mt-2 space-y-3">{state.rows.map((r) => <Row key={r.id} row={r} />)}</ul>
         </>
       ) : null}

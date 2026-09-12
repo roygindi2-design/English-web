@@ -101,27 +101,34 @@ export function mergeInbox(sims: readonly Simulation[], states: readonly RawStat
 /**
  * One predicate for both channels — the dot and the counter (T-191 ⓓ). ⚠️ Until the
  * keyboard exists (R-026) nothing can be *answered*, so «opened» ends the pending state
- * (T-192 ⓔ). The finding about the two words lives in 60-findings, ⛔ not here.
+ * (T-192 ⓔ) — which is why this is named for READING and ⛔ not for answering (D-207,
+ * closing F-212): `answered_at` has ⛔ no writer anywhere in the product, so the state
+ * this measures is «⛔ טרם נקראה» and nothing else.
+ *
+ * ⚠️ **The body is deliberately unchanged (T-289 ⓒ — the name moves WITH the behaviour).**
+ * `answeredAt` stays in the conjunction because ⛔ nothing may write it yet; when the
+ * keyboard lands, «נענה» arrives as a SECOND indicator (R-026) and ⛔ not as a recycling
+ * of this one ⇒ that is the tick which splits this predicate, ⛔ not this one.
  */
-export function unanswered(item: InboxItem): boolean {
+export function unread(item: InboxItem): boolean {
   return item.readAt === null && item.answeredAt === null;
 }
 
 export interface InboxCounts {
   readonly total: number;
-  readonly unanswered: number;
+  readonly unread: number;
 }
 
 export function inboxCounts(items: readonly InboxItem[]): InboxCounts {
   let n = 0;
-  for (const i of items) if (unanswered(i)) n += 1;
-  return { total: items.length, unanswered: n };
+  for (const i of items) if (unread(i)) n += 1;
+  return { total: items.length, unread: n };
 }
 
-/** `3 הודעות · 2 שלא נענו` — the render’s line (render_msgs_screens.py:53). */
+/** `3 הודעות · 2 שלא נקראו` — the render’s line (render_msgs_screens.py:53, D-207). */
 export function inboxCountsHe(c: InboxCounts): string {
   const total = c.total === 1 ? 'הודעה אחת' : `${c.total} הודעות`;
-  return `${total} · ${c.unanswered} שלא נענו`;
+  return `${total} · ${c.unread} שלא נקראו`;
 }
 
 export type WhenLabel =
@@ -197,7 +204,7 @@ export interface InboxRow {
   readonly subjectEn: string;
   readonly previewEn: string;
   readonly whenHe: string;
-  readonly unanswered: boolean;
+  readonly unread: boolean;
 }
 
 export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZone: string): readonly InboxRow[] {
@@ -210,6 +217,6 @@ export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZon
     subjectEn: it.subjectEn,
     previewEn: previewEn(it.bodyEn),
     whenHe: whenListHe(whenOf(it.createdAt, nowIso, timeZone)),
-    unanswered: unanswered(it),
+    unread: unread(it),
   }));
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CONTEXT_HE, MESSAGE_CONTEXTS, REQUIRED_WORDS_PER_MESSAGE,
   inboxCounts, inboxCountsHe, initialOf, mergeInbox, previewEn, toInboxRows, toSimulation,
-  toSimulations, unanswered, whenHeaderHe, whenListHe, whenOf,
+  toSimulations, unread, whenHeaderHe, whenListHe, whenOf,
   type RawSimulationRow, type Simulation,
 } from './messages';
 
@@ -49,16 +49,16 @@ function sim(id: string, createdAt: string): Simulation {
   return { ...toSimulation({ ...ROW, id, created_at: createdAt })! };
 }
 
-describe('mergeInbox · unanswered · inboxCounts', () => {
+describe('mergeInbox · unread · inboxCounts', () => {
   const a = sim('a', '2026-09-08T06:20:00.000Z');
   const b = sim('b', '2026-09-07T15:40:00.000Z');
   const c = sim('c', '2026-09-02T09:00:00.000Z');
 
-  it('a simulation without a state row is unread and unanswered; newest first', () => {
+  it('a simulation without a state row is unread; newest first', () => {
     const items = mergeInbox([c, a, b], []);
     expect(items.map((i) => i.id)).toEqual(['a', 'b', 'c']);
     expect(items.every((i) => i.readAt === null && i.answeredAt === null)).toBe(true);
-    expect(items.every(unanswered)).toBe(true);
+    expect(items.every(unread)).toBe(true);
   });
   it('a state row attaches by simulation_id, and a foreign state row is ignored', () => {
     const items = mergeInbox([a, b], [
@@ -66,16 +66,30 @@ describe('mergeInbox · unanswered · inboxCounts', () => {
       { simulation_id: 'zzz', read_at: '2026-09-07T16:00:00.000Z', answered_at: null },
     ]);
     expect(items[1]!.readAt).toBe('2026-09-07T16:00:00.000Z');
-    expect(unanswered(items[1]!)).toBe(false);
-    expect(unanswered(items[0]!)).toBe(true);
+    expect(unread(items[1]!)).toBe(false);
+    expect(unread(items[0]!)).toBe(true);
   });
-  it('counts total and unanswered from the items, ⛔ not from a constant', () => {
+  it('counts total and unread from the items, ⛔ not from a constant', () => {
     const items = mergeInbox([a, b, c], [{ simulation_id: 'c', read_at: '2026-09-02T10:00:00.000Z', answered_at: null }]);
-    expect(inboxCounts(items)).toEqual({ total: 3, unanswered: 2 });
+    expect(inboxCounts(items)).toEqual({ total: 3, unread: 2 });
   });
   it('the counter string is the render’s, and 1 is הודעה אחת', () => {
-    expect(inboxCountsHe({ total: 3, unanswered: 2 })).toBe('3 הודעות · 2 שלא נענו');
-    expect(inboxCountsHe({ total: 1, unanswered: 0 })).toBe('הודעה אחת · 0 שלא נענו');
+    expect(inboxCountsHe({ total: 3, unread: 2 })).toBe('3 הודעות · 2 שלא נקראו');
+    expect(inboxCountsHe({ total: 1, unread: 0 })).toBe('הודעה אחת · 0 שלא נקראו');
+  });
+  /**
+   * F-212's failure scenario, verbatim from the T-289 row: a learner OPENS a message,
+   * reads it, and ⛔ answers nothing — `answered_at` is unwritable at all (R-026), so
+   * the only thing that moved is `read_at`. The counter must therefore describe
+   * READING. Saying «שלא נענו» here is a claim about an act the product cannot record.
+   */
+  it('F-212 · opened-but-not-answered is counted and WORDED as read, ⛔ never as answered', () => {
+    const items = mergeInbox([a, b], [{ simulation_id: 'a', read_at: '2026-09-08T07:00:00.000Z', answered_at: null }]);
+    expect(items.every((i) => i.answeredAt === null)).toBe(true);
+    const counts = inboxCounts(items);
+    expect(counts).toEqual({ total: 2, unread: 1 });
+    expect(inboxCountsHe(counts)).toBe('2 הודעות · 1 שלא נקראו');
+    expect(inboxCountsHe(counts)).not.toContain('נענו');
   });
 });
 
@@ -121,10 +135,10 @@ describe('previewEn · initialOf', () => {
 });
 
 describe('toInboxRows — everything the component draws, precomputed', () => {
-  it('formats the fixture-shaped items with href, contextHe, whenHe, unanswered', () => {
+  it('formats the fixture-shaped items with href, contextHe, whenHe, unread', () => {
     const items = mergeInbox([sim('a', '2026-09-07T09:20:00+03:00')], []);
     const rows = toInboxRows(items, NOW, TZ);
-    expect(rows[0]).toMatchObject({ id: 'a', href: '/world/messages/a', initial: 'T', contextHe: 'תייר', whenHe: '09:20', unanswered: true });
+    expect(rows[0]).toMatchObject({ id: 'a', href: '/world/messages/a', initial: 'T', contextHe: 'תייר', whenHe: '09:20', unread: true });
     expect(rows[0]!.previewEn.endsWith('…')).toBe(true);
   });
 });

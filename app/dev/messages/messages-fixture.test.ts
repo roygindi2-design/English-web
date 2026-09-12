@@ -51,7 +51,7 @@ describe('the messages fixture is the render’s data, ⛔ not a second authorin
     const items = mergeInbox(FIXTURE_SIMULATIONS, FIXTURE_STATES);
     // mergeInbox sorts newest first; the render lists newest first too.
     items.forEach((it, i) => expect(it.readAt === null && it.answeredAt === null).toBe(mails[i]!.unread));
-    expect(inboxCounts(items)).toEqual({ total: 3, unanswered: 2 });
+    expect(inboxCounts(items)).toEqual({ total: 3, unread: 2 });
   });
 
   it('Tom’s body and required words are screen_mail’s, verbatim', () => {

@@ -20,7 +20,18 @@ describe('InboxList — T-191, render kol-C-13-inbox.png', () => {
   });
   it('the dot is not the only channel: the counter string is rendered from the state', () => {
     expect(CODE).toMatch(/countsHe/);
-    expect(CODE).toMatch(/data-inbox-unanswered/);
+    expect(CODE).toMatch(/data-inbox-unread/);
+  });
+  /**
+   * ⓑ of T-289, and the reason the row calls it the most important cell: `sr-only` is the
+   * ⛔ ONLY channel a screen-reader user has for the dot, and until now it announced
+   * «טרם נענתה» over a state the product measures as «⛔ טרם נקראה» (F-212 · D-207).
+   * ⛔ There is no «answered» state to announce yet — it is born with the keyboard (R-026).
+   */
+  it('the screen-reader label says read/unread, ⛔ never answered (T-289ⓑ · F-212)', () => {
+    expect(CODE).toContain('טרם נקראה');
+    expect(CODE).toContain('נקראה');
+    expect(CODE).not.toContain('נענתה');
   });
   it('English only inside <EnWord>; sender and subject go through it', () => {
     expect((CODE.match(/<EnWord>/g) ?? []).length).toBeGreaterThanOrEqual(2);

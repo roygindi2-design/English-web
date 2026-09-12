@@ -263,7 +263,7 @@ def scene_roleplay(t):
     if t < open_t:
         app_header(c, "הודעות · סימולציות", "תיבת הסימולציות")
         cxs = msg_tabs(c, pos, press=2 if abs(t - sw) < .18 else None)
-        c.txt(LW - 24, 196, "3 הודעות · 2 שלא נענו", 12, "Regular",
+        c.txt(LW - 24, 196, "3 הודעות · 2 שלא נקראו", 12, "Regular",
               INK_MUTED + (180,), anchor="rm")
         y = 216
         for name, ltr, col, subj, prev, when, unread, tag in MAILS:
