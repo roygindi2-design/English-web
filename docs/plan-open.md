@@ -26,7 +26,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (297 שורות, 48 פתוחות) ו-`plan/60-findings.md` (224 שורות, 52 פתוחים).
+נוצר מ-`plan/50-tasks.md` (297 שורות, 48 פתוחות) ו-`plan/60-findings.md` (227 שורות, 54 פתוחים).
 
 ## ⬜ פנויות ל-Dev (15)
 
@@ -133,7 +133,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `T-272` | M0 · general… | 🧭 **שער המשטחים מדווח כמסך יתום, ⛔ בזמן ש- מוכיח באותה ריצה שהלומד מגיע אליו.… |
 | `T-271` | M0 · loop · … | 🏷️ **התג שבדיקה 14 סופרת ⛔ אינו קיים באוצר המילים ש- מכיר ⇒ מצב 🩺 IMPROVE ⛔… |
 
-## ממצאים פתוחים (52)
+## ממצאים פתוחים (54)
 
 | id | חומרה | קובץ | הממצא (תקציר) | סטטוס |
 |---|---|---|---|---|
@@ -183,11 +183,13 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-205` | 🟡 MEDIUM · **ס… | `plan/50-tasks.md` (שורת `T-281`, ⓑ) · `compon…` | **נמדד בקלון הזה, ⛔ ולא שוער:** השורה כותבת «`grep -rn 'arcade/character' components app` ⇒ `ArenaCharacterChoice` מגיע מהכניסה הראשונה בלבד, ו-`Arena…` | ⬜ פתוח → **PM** |
 | `F-211` | 🟠 HIGH · **תקר… | `scripts/loop-health.mjs` (בדיקה 9) · `scripts…` | **נמדד על תשעה קומיטים רצופים, ⛔ ולא שוער:** `2b8e1b7` = **11,892** B (‏396 פנויים) ⇒ `69a9b19` = **12,254** (‏34 פנויים) ⇒ `4778720` (PM) = 12,226 ⇒ … | ⬜ פתוח → **רוי** |
 | `F-217` | 🟠 HIGH · **`D-…` | `components/Flashcard.tsx:266` (‏`swipeActive`… | נמדד ב-Chromium 375×780 על `/dev/card`: אחרי חשיפה, שני כפתורי הדירוג מודדים **`1×1` פיקסל** עם רקע שקוף, כי הם `sr-only` ונפתחים ⛔ רק ב-`focus` מקלדת… | ⬜ פתוח → **DEV** ⟨קוד · `file:line` · כי… |
-| `F-219` | 🔴 CRITICAL · *… | `plan/00-control.md` (`LOCK_HELD_BY`/`LOCK_AT`… | **Measured, not guessed.** `git log --oneline origin/dev` shows tip `5e37cdc "loop(QA): take lock for merge"` (author `critic-agent`, `Co-Authored-By:…` | ⬜ פתוח → **רוי** ⟨branch-history decisio… |
 | `F-220` | ⚪ LOW · **`pla…` | `plan/00-control.md` · `scripts/loop-health.mj…` | `npm run loop:health` measured `FAIL 9` at **12,619** bytes (331 over) before this tick's own writes; documenting `F-219` in the same file (the handof… | ⬜ פתוח → **PM** |
 | `F-221` | 🟡 MEDIUM · **`…` | `docs/design/kol-C-13-inbox.png` · `docs/desig…` | `npm run diff:render /dev/messages docs/design/kol-C-13-inbox.png` (375×780, screenshot read) shows the render's unread-count line as `שלא נענו` (not-… | ⬜ פתוח → **DEV** ⟨generated asset regen … |
 | `F-222` | 🟠 HIGH · **אין… | `supabase/migrations/0002_content_bank.sql:121…` | **נמדד C-0531 בקלון הזה, ⛔ ולא שוער.** `T-287`ⓑ כותבת «הפריט נשלף מ-`public.sense_items` לפי `type` + `level`». ‏`grep -rn 'sense_items' supabase/migr…` | ⬜ פתוח → **PM** ⟨הכרעת סכמה · חוסם את `T…` |
 | `F-223` | 🟡 MEDIUM · **ה… | `docs/design/render_video_D.py:138-145` (`scre…` | **נמדד C-0531 בקוד הרנדר עצמו, ⛔ ולא מהצילום.** `screen_practice(:143-144)` מדפיס `f"0:{secs:02d}"` כש-`secs` **יורד** (‏`scene_practice:182` — `max(0…` | ⬜ פתוח → **PM** ⟨סתירת עוגן · המסך נמסר … |
+| `F-224` | 🔴 CRITICAL · d… | `components/AmirnetTabs.tsx:56-83` (הרכיב עצמו… | **נמדד חי ב-`next start`, 375×780, ⛔ ולא שוער:** `page.getByRole('tab', { name: /תרגול/ })` ב-`/dev/amirnet/dashboard` ⇒ `tagName === 'SPAN'`, `aria-d…` | ⬜ פתוח → **DEV** ⟨🔴 מחוץ למכסה — עוצר לו… |
+| `F-225` | 🟡 MEDIUM · **`…` | `plan/60-findings.md` שורת `F-222` · `scripts/…` | **נמדד חי בקלון הזה, ⛔ ולא שוער:** `npm run loop:health` ⇒ `FAIL 2 … F-222 → app/api/amirnet/practice/route.ts`; `ls app/api/amirnet/` ⇒ `No such file…` | ⬜ פתוח → **PM** |
+| `F-226` | ⚪ LOW · **`pla…` | `plan/00-control.md` · `scripts/gc-memory.mjs` | **נמדד חי בקלון הזה, ⛔ ולא שוער:** `npm run loop:health` ⇒ `FAIL 9 … 12371 בתים מתוך 12288` (83 מעל). `F-220` נסגר ב-C-0530 אחרי ש-`gc:memory` כיווץ א… | ⬜ פתוח → **PM** |
 | `F-218` | 🟡 MEDIUM · **`…` | `docs/agents/DEV.md:~690` («update ‏`30-archit…` | ‏`pre-push` קורא `LOCK_HELD_BY` מ-**עץ העבודה בזמן הדחיפה**, ⛔ ולא מהקומיט שנדחף. ‏`DEV.md` STEP 7 מורה לשחרר את הנעילה כחלק מאותה קבוצת עדכוני רגיסטר… | ⬜ פתוח → **PM** ⟨פרומפט · `DEV.md` STEP … |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה

@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                      # ▶️ C-0533 (DEV) — `T-291` 🟣 (דשבורד אמירנט). קריאה קדימה ל-`amirnet`: `msgs` ⬜=1 והיא של CONTENT.
-STATE: BUILD                       # ▶️ C-0533 (DEV) — טיק בנייה. דשבורד + שני מסלולי `(tabs)` אמיתיים; הליכה חיה ב-320/375/414.
+NEXT_AGENT: DEV                      # ▶️ C-0534 (QA, מלא) — `F-224` 🔴 CRITICAL נפתח וחוסם: לשוניות אמירנט (`AmirnetTabs`) אינן מנווטות, גם כשמסומנות בנויות.
+STATE: GATE                       # ▶️ C-0534 (QA, מלא) — טיק שער + הליכה. `dev`=`work/current` הושוו (`F-219` נסגר); ⛔ אין קוד ממתין למיזוג. `F-224` פתוח מונע `RELEASE_READY`.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-12T06:55:47Z"   # C-0533 (DEV) — בנייה.
+LAST_HANDOFF_AT: "2026-09-12T07:54:16Z"   # C-0534 (QA, מלא) — שער.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"                 # 🔒 C-0534 (QA, מלא) — שער + הליכה + ממצאים.
-LOCK_AT: "2026-09-12T07:36:28Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-12T07:54Z — C-0534 (QA, מלא) סיים: שער · הליכה · `F-224` קריטי נפתח → DEV · `F-219` נסגר.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -31,7 +31,7 @@ WORKSTREAM_ENDING: msgs · 1 ⬜ נותרה · 2026-09-12T04:05:00Z · C-0530   
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
-MERGE_BLOCKERS: "F-219"                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. C-0528: `origin/dev` (`5e37cdc`) ו-`origin/work/current` (`ec84c6f`) נפרדו מ-`109c86e` המשותף; `merge --ff-only` מסרב (exit 128). ⛔ לא לתקן פה — החלטת רוי, `F-219`.
+MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. ▶️ C-0534 (QA, מלא): `F-219` נסגר — `ops(loop)` איחד את `dev` ל-`work/current` (`65359cb`) לפני הטיק הזה; `rev-list` בשני הכיוונים נמדד **0** על `0851258` לפני הקומיטים של הטיק הזה.
 PROMOTION_BLOCKERS: "C-0521 (PROMOTER, 2026-09-11T03:15Z): all five gate conditions were green (verify exit 0 · 3926/3926 tests · check:mobile 1540/1540 · loop:health 22/23 · rev-list origin/main..origin/dev=15 · merge-base --is-ancestor OK · PROMOTIONS_THIS_MONTH=15/30 · LAST_PROMOTED_AT 3 days ago) but the standing-authorised command `git checkout main && git merge --ff-only origin/dev && git push origin main` was refused by the Claude Code auto mode classifier: \"Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Production Deploy].\" Per PROMOTER.md STEP E this refusal is final for this run — no rephrase, no alternate route, no retry. dev remains unpromoted (origin/main=2b8e1b7, origin/dev=5ff2cfb)."  # ⇐ **PROMOTER בלבד. ⛔ DEV לעולם ⛔ אינו קורא.** רק מה שחוסם `dev`⇢`main` (`§ 0.29 ב׳` תנאי 1). ▶️ פוצל 08/09, `D-203`ⓒ.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
 LAST_PROMOTED_AT: "2026-09-08T00:10Z"  # ⚠️ **קידום ידני באישור מפורש של רוי, ⛔ לא ביוזמת הלופ** — `fbdd61e..87ca9fd` ff-only, 71 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
@@ -49,8 +49,8 @@ PROMOTIONS_THIS_MONTH: 15         # 15 this month (➕ 08/09 00:10Z, קידום 
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0531 | DEV | QA | 2026-09-12T04:47:25Z | 🔨 **טיק בנייה — `T-287` 🟣 (‏`amirnet`, קריאה קדימה: `msgs` ⬜=1 והיא של CONTENT).** ⓐ **מה שנחת:** `lib/core/amirnetQuestion.ts` טהור (שער הגשה + משוב + שעון עולה; ⛔ אפס `Date.now()` בפנים) · `components/AmirnetQuestion.tsx` · `app/dev/amirnet/question/` · **22 בדיקות חדשות**. 🚶 **הליכה חיה ב-`next start` ב-320/375/414×780:** 0 מתחת ל-44px · 0 גלילה אופקית · 0 שגיאות קונסול; מסלול תשובה שגויה ⇒ «לא נכון · שנייה אחת» + התשובה הנכונה + ההסבר מהפריט; `הבא` ⇒ «אין עוד פריטים ברמה הזאת». ⓑ 🔴 **`F-222` נפתח (🟠, ⇒ PM):** `public.sense_items` מחזיקה תשע עמודות ו⛔ אף אחת אינה סוג שאלה/אפשרויות/`correct_index`/הסבר ⇒ ⓑ של `T-287` ⛔ אינה ניתנת לבנייה, פוצלה ל-**`T-297`** (⛔ חסומה). ⓒ **`F-223` נפתח (🟡):** הרנדר מצייר ספירה לאחור ו-`R-020`/`D-049` אוסרים לחץ זמן מחוץ לזירה ⇒ נבנה שעון **עולה**, מוצהר. סקילים: `superpowers:using-superpowers` · `superpowers:executing-plans` · `superpowers:test-driven-development` · `imagegen-frontend-mobile`. | `amirnetQuestion.ts`·`AmirnetQuestion.tsx`·`app/dev/amirnet/question/` · `50-tasks`·`60-findings`·`00-control`·`plan-open`·`plan-tables` |
 | C-0533 | DEV | QA |  2026-09-12T06:55:47Z | 🔨 **בנייה — `T-291` 🟣** (‏`amirnet`, קריאה קדימה: `msgs` ⬜=1 ושל CONTENT). דשבורד לפי סוג שאלה · רצועת חולשה ⇒ `?type=` · מצב ריק כתוב · **21 בדיקות**. 🚶 9 טעינות ב-320/375/414: 0 מתחת ל-44px · 0 גלילה · 0 שגיאות; `?type=rs` ⇒ `ניסוח מחדש` נבחר מראש. 📐 `AMBER #f2b544` = **1.83:1** מול 4.5:1 ⇒ אסימוני מוצר (`36 § 14.4`). ⛔ מד 50–150 ⛔ לא נבנה (`41 § 9.2`). 🩹 `AMIRNET_BUILT_TABS` — 3 מסכים אמרו `דשבורד · טרם`. § 0.22: `/world/amirnet/practice` · `zeroStats()` (‏`F-222`). הפירוט בשורת `T-291`. | `AmirnetDashboard`·`amirnetTypeBar`·`amirnetPractice`·`AmirnetTabs`·4 מסלולים · `50-tasks`·`00-control`·`30-architecture` |
+| C-0534 | QA | DEV | 2026-09-12T07:54:16Z | 🚦 **מסלול: מלא — שער.** `dev`=`work/current` (`F-219` נסגר, `ops(loop)` איחד לפני הטיק) ⇒ ⛔ אין קוד ממתין למיזוג; רק רגיסטרים מוזגים. `verify` הותקף ואומת ב-`0851258` (`exit 0`, ⛔ לא נדרש להריץ שוב, `verify-attested`); `loop:health` **20/23** — שלושה ממצאים חדשים (`F-225`·`F-226` ⇒ PM · ראו גם `F-219` שנסגר). 🚶 **הליכה חיה `next start` 375×780 על כל 33 הראוטים** — 0 מתחת ל-44px, 0 גלילה אופקית, 0 שגיאות קונסול חדשות (503 על `tabs/cards`/`tabs/probe` ⇒ קדם-קיים, `F-064`). `diff:render` על `kol-D-02`/`kol-D-03`: סדר/מחרוזות/היררכיה תואמים; פערי הרקע/הגוון אינם ממצא (36§14.4). 🔴 **`F-224` נפתח — קריטי, מחוץ למכסה:** שלוש לשוניות אמירנט הן `<span>` בלי שום ניווט, גם כשמסומנות בנויות (`aria-disabled=false`) — נמדד חי בקליק שה-URL לא זז. ⇒ **`RELEASE_READY` ⛔ לא רוענן** (🔴 פתוח). `msgs` ⬜=1 (`T-193`, CONTENT) ⇒ ⛔ לא מוצתה, ⛔ אין הזזת מוקד. סקילים: `superpowers:using-superpowers` · `superpowers:verification-before-completion` · `imagegen-frontend-mobile` (§13·14·15·29·30·31, IRON RULE על `T-286`/`T-287`/`T-291`). | `60-findings`·`00-control`·`plan-open`·`plan-tables`·`architecture-map` |
 
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
