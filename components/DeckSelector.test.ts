@@ -21,8 +21,10 @@ import { describe, expect, it } from 'vitest';
  *     whether the product changed or they did
  *   ✔ the sentences deck OPENS through `toEntry` (T-199ⓐ · D-169) — disabled WITH its number
  *     when the band is empty, ⛔ never locked, ⛔ never hand-built with `enabled: true`
- *   ✔ a failed fetch leaves all three disabled reading «—», ⛔ not an error screen and
- *     ⛔ not an empty one
+ *   ✔ **a failed fetch SAYS it failed** (`T-295` · `D-214`) — the tile's sentence names the
+ *     failure, «—» is left to mean «⛔ no read was made», `0` still means `0`, the way out
+ *     is one `טעינה מחדש` control that re-reads in place, and «אין מה לתרגל» is ⛔ never
+ *     rendered off a read that never arrived. ⛔ Still ⛔ not an error screen: the tiles stay
  *   ✔ ⛔ no `<ActionBar>` — D-028 forbids two bottom-anchored bars, and this screen carries
  *     the tab bar
  *   ✔ ⛔ the F-011 · F-016 dead band is absent
@@ -180,15 +182,68 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * ⛔ «—» ⛔ אינו `0`, וזו הבדיקה שמונעת בדיוק את הבלבול הזה: קריאה שנכשלה וחפיסה ריקה
-   * נראות זהות על המסך, ורק אחת מהן נכונה. `noteFor` הוא המקום היחיד שמכריע, והאריח
-   * החדש עובר דרכו בדיוק כמו שלושת הקודמים.
+   * ⛔ «—» ⛔ אינו `0` — ⛔ ומאז `T-295` הוא גם ⛔ אינו «נכשל». שלושת המצבים נפרדים
+   * **בטקסט**, ⛔ ולא בצבע, וכולם עוברים דרך `tileNote` — נקודת הכרעה אחת, בדיוק כמו
+   * ש-`noteFor` היה הנקודה היחידה קודם.
    */
-  it('קריאה שנכשלה ⇒ «—» בתוך המשפט, ⛔ ולא 0', () => {
+  it('T-295ⓐ — קריאה שנכשלה נוקבת בכך במשפט, ⛔ ולא «—» ו⛔ לא 0', () => {
     const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
-    expect(region).toContain('SENTENCES_NOTE_HE(noteFor(counts.sentences))');
+    expect(region).toContain(
+      'tileNote(deckState(counts.sentences), counts.sentences, SENTENCES_NOTE_HE)',
+    );
+    // ⛔ `noteFor` ⛔ לא רוכך: «—» עדיין נוסע כשאין מספר, והוא עדיין ⛔ אינו `0`.
     expect(CODE).toMatch(/count === null \? UNKNOWN_COUNT_HE : String\(count\)/);
     expect(CODE).toContain("const UNKNOWN_COUNT_HE = '—'");
+    // ⛔ והמשפט של הכשל ⛔ אינו «—» ו⛔ אינו מספר.
+    expect(CODE).toContain("const READ_FAILED_NOTE_HE = 'הנתונים לא נטענו'");
+    expect(CODE).toMatch(/state === 'failed' \? READ_FAILED_NOTE_HE : sentence\(noteFor\(count\)\)/);
+  });
+
+  /**
+   * ⛔ **הבדיקה שמונעת את השקר הקצר** (D-064, אותו כלל): בזמן שהקריאות בדרך כל מונה הוא
+   * `null` ו⛔ שום דבר ⛔ לא נכשל. `'failed'` נגזר ⛔ אך ורק אחרי ש-`loading` נפל.
+   */
+  it('T-295ⓐ — «נכשל» ⛔ אינו נגזר מ-`null` לבדו, אלא רק אחרי שהטעינה הסתיימה', () => {
+    expect(CODE).toMatch(/loading \? 'unknown' : count === null \? 'failed' : 'ok'/);
+    expect(CODE).toMatch(/readFailed =\s*\n?\s*!loading &&/);
+  });
+
+  /**
+   * ⓒ — אריח `סינון מילים` ⛔ אינו יכול לדווח «נכשל»: הרכיב הזה ⛔ אינו קורא את המספר
+   * שלו כלל (`unseen` מגיע מהמסך, § 4.2ז), ולכן היעדרו הוא «⛔ לא ידוע» ⛔ ולא כשל.
+   */
+  it('T-295ⓐ — אריח שלא נקרא כאן מדווח «—», ⛔ ולא «נכשל»', () => {
+    const region = braceRegion(CODE, `{\n      key: 'level'`);
+    expect(region).toContain("tileNote(unseen === null ? 'unknown' : 'ok', unseen, LEVEL_NOTE_HE)");
+    expect(region).not.toContain('deckState');
+  });
+
+  /**
+   * ⓑ — ‏`ui-ux-pro-max` § Feedback, «Error Recovery»: `Don't: Error without recovery
+   * path`. ⛔ ריענון עמוד ⛔ אינו מסלול יציאה — הוא ⛔ אינו פקד, ולומד שלא יודע שמשהו
+   * נשבר ⛔ אין לו סיבה לבצע אותו.
+   */
+  it('T-295ⓑ — לכשל יש דרך החוצה: פקד ≥44px שקורא מחדש **במקום**', () => {
+    expect(CODE).toContain('data-deck-failed');
+    expect(CODE).toContain("const RETRY_ACTION_HE = 'טעינה מחדש'");
+    const retry = braceRegion(CODE, '{readFailed && (');
+    expect(retry).toContain('min-h-touch');
+    expect(retry).toContain('setAttempt((previous) => previous + 1)');
+    expect(retry).toContain('setLoading(true)');
+    // ⛔ ⛔ לא ניווט ו⛔ לא ריענון — קריאה חוזרת של אותו אפקט.
+    expect(retry).not.toContain('window.location');
+    expect(retry).not.toContain('<Link');
+    expect(CODE).toMatch(/\}, \[attempt\]\)/);
+  });
+
+  /**
+   * 🔴 **תרחיש הכישלון שהשורה נפתחה עליו, ונמדד חי ב-C-0535:** `/api/study/queue` החזיר
+   * `503 {"ok":false}` שלוש פעמים, `סינון מילים` הציג `314`, ושלושת האחרים הציגו «—».
+   * ⇒ מסך שנראה שלם עם שלושה אריחים מתים. ⛔ ובמצב שכולם מתים, «אין מה לתרגל» הוא
+   * טענה על המאגר שנאמרה מתוך קריאה ש⛔ לא הגיעה.
+   */
+  it('T-295ⓐ — «אין מה לתרגל» ⛔ אינו מוצג כשהקריאה נכשלה', () => {
+    expect(CODE).toMatch(/\{dead && !readFailed && \(/);
   });
 
   /**
@@ -217,14 +272,25 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * The failure state named by the plan: three disabled cards reading «—». An error screen
-   * here would replace the tab's own content with a sentence, and an empty state would tell
-   * the learner they have nothing to study when in fact we do not know.
+   * ⚠️ **מה ש-`T-295` ⛔ לא שינה, ולכן הוא נמדד בנפרד.** הכשל נוקב בשמו — ⛔ אבל ⛔ לא
+   * במסך שגיאה שמחליף את תוכן הלשונית במשפט. ארבעת האריחים נשארים, עם המספרים שלהם
+   * (§ 4.2ו), והמשפט של הכשל יושב **בתוך** האריח שנכשל.
    */
-  it('shows «—» when a count is unknown, and ⛔ no error screen', () => {
+  it('shows «—» when a count is unknown, and ⛔ still no error SCREEN', () => {
     expect(CODE).toContain("'—'");
-    expect(CODE).not.toContain('FAILURE_HE');
     expect(CODE).not.toContain('StudyEmptyState');
+    // ⛔ האריחים ⛔ אינם מוחלפים — הרשימה מרונדרת בלי תנאי.
+    expect(CODE).toMatch(/<ul aria-busy=\{loading\} data-deck-selector/);
+  });
+
+  /**
+   * ⛔ **פעולה ראשית אחת בדיוק, גם במצב הכשל** — `check:mobile` מפיל מסך שנושא אחרת
+   * (F-027). הפקד נעשה ראשי **רק** כשאין ולו אריח פעיל אחד, כלומר כשהוא הדבר היחיד
+   * שאפשר ללחוץ עליו.
+   */
+  it('T-295ⓑ — פקד הטעינה מחדש ראשי ⛔ רק כשאין אריח פעיל', () => {
+    const retry = braceRegion(CODE, '{readFailed && (');
+    expect(retry).toContain("data-primary-action={primaryKey === null ? 'true' : undefined}");
   });
 
   /** D-028: this screen carries the tab bar, so it never carries an action bar. */
