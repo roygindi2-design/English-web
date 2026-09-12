@@ -724,21 +724,28 @@ export default function Flashcard({
 
         {swipeActive ? (
           <>
-            {/* T-259ⓕ (Roy, 06/09) — the swipe IS the grade channel. The instruction is
-                text: direction ⇢ verdict, both directions, glyph + word (שכבה א׳ — never
-                colour alone, and F-102 measured that «right» is ambiguous under RTL
-                unless it is written). D-042 · D-150: physical right = «ידעתי». */}
+            {/* T-293ⓑ (PM, 12/09 — Roy's observation 11/09) — the two buttons below are now
+                VISIBLE and carry the verdict themselves ⇒ the sentence stops teaching the
+                gesture and shrinks to a hint that the shortcut exists. ⛔ And it names ⛔ no
+                physical direction: F-102 measured «ימינה» ambiguous under RTL, and the answer
+                is ⛔ not to spell it out but to point at the control the learner can see —
+                the button the card is travelling toward lights up while the finger is still
+                down (globals.css, `data-swipe-preview`). D-042 unchanged: the swipe is a
+                shortcut, ⛔ never the only channel. */}
             <p data-swipe-hint className="text-center text-sm text-ink-muted">
-              {'החלק ימינה — '}
-              <span aria-hidden="true">✓</span>
-              {' ידעתי · שמאלה — '}
-              <span aria-hidden="true">✕</span>
-              {' לא ידעתי'}
+              אפשר גם להחליק את הכרטיס לכיוון התשובה
             </p>
-            {/* ⓘⓘ · שכבה א׳ — a gesture is not reachable by keyboard or screen reader, so the
-                two buttons SURVIVE as the accessible equivalent: in the DOM and focusable,
-                `sr-only` until a keyboard user reaches them, then visible at ≥44px. Same
-                handler as the swipe — ⛔ never a second grading path (D-042).
+            {/* T-293ⓐⓓ · D-042 · `ui-ux-pro-max` Pre-Delivery Checklist § Interaction
+                («Touch targets meet minimum size») — measured in Chromium 375×780 on
+                `/dev/card`: these two carried `sr-only focus:not-sr-only`, i.e. **1×1 px,
+                transparent**, so the ⛔ only channel a sighted learner had for the grade was
+                a 14px grey sentence. ⛔ That contradicts `D-042` itself («the swipe is a
+                SHORTCUT, ⛔ never the only channel»), and `check:mobile` could ⛔ never see it:
+                a `sr-only` button is ⛔ not counted as a touch target, so «zero under 44px»
+                was true and irrelevant.
+                ⇒ they are visible at ≥44px, with a pressed state and a focus ring, and
+                ⓓ ACCESSIBILITY ⛔ DOES ⛔ NOT REGRESS — the same two buttons, the same names,
+                the same handler; ⛔ never a second grading path.
                 ⛔ D-150 · render_video_A.py:373 — «ידעתי» is still the first grid item ⇒
                 on the right under RTL. Order unchanged; only visibility changed. */}
             <div className="grid grid-cols-2 gap-3">
@@ -746,7 +753,7 @@ export default function Flashcard({
                 type="button"
                 onClick={() => onGrade('good')}
                 data-grade="good"
-                className="sr-only focus:not-sr-only focus:min-h-touch focus:px-4 focus:py-3 focus:border-2 rounded-lg border-success text-base font-semibold text-success active:opacity-90"
+                className="flex min-h-touch items-center justify-center gap-2 rounded-lg border-2 border-success bg-surface-raised px-4 py-3 text-base font-semibold text-success active:opacity-90"
               >
                 <span aria-hidden="true">✓ </span>ידעתי
               </button>
@@ -754,7 +761,7 @@ export default function Flashcard({
                 type="button"
                 onClick={() => onGrade('again')}
                 data-grade="again"
-                className="sr-only focus:not-sr-only focus:min-h-touch focus:px-4 focus:py-3 focus:border-2 rounded-lg border-danger text-base font-semibold text-danger active:opacity-90"
+                className="flex min-h-touch items-center justify-center gap-2 rounded-lg border-2 border-danger bg-surface-raised px-4 py-3 text-base font-semibold text-danger active:opacity-90"
               >
                 <span aria-hidden="true">✕ </span>לא ידעתי
               </button>

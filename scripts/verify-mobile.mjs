@@ -1645,7 +1645,7 @@ try {
           // rendered revealed with no reveal button.
           await page.locator('[data-reveal]').click();
           const aFront = await page.locator('[data-card-front]').innerText();
-          // T-259ⓕ · שכבה א׳ — the button is sr-only; grade it the way a keyboard user does.
+          // T-293ⓐ — the button is VISIBLE now; grading it by keyboard still proves the same path.
           await page.focus('[data-grade="good"]');
           await page.keyboard.press('Enter');
 
@@ -1708,29 +1708,39 @@ try {
               `label was "${label}"`,
             );
           }
-          // T-259ⓕ · שכבה א׳ — the two buttons are the ACCESSIBLE channel: in the DOM,
-          // invisible at rest (sr-only), and ≥44px the moment a keyboard user focuses one.
+          // T-293ⓐ (PM, 12/09 · `F-217`) — REPLACES the `sr-only`-at-rest half of T-259ⓕ, and
+          // ⛔ does ⛔ not weaken it: the claim goes from «invisible until focused» to «visible
+          // AND ≥44px at rest», which is strictly stronger. The old assertion is exactly what
+          // let a 1×1 transparent button pass as «the accessible channel» while a sighted
+          // learner had ⛔ no grade control at all — the swipe was the only one, which `D-042`
+          // forbids. ⛔ The count stays 2: ⛔ never a second grading path.
           const rest = await page.evaluate(() =>
-            [...document.querySelectorAll('[data-grade]')].map((el) => el.getBoundingClientRect().height),
+            [...document.querySelectorAll('[data-grade]')].map((el) => {
+              const r = el.getBoundingClientRect();
+              return { h: Math.round(r.height), w: Math.round(r.width) };
+            }),
           );
           check(
-            rest.length === 2 && rest.every((h) => h <= 1),
-            `${at} T-259ⓕ: both grade buttons are sr-only at rest`,
-            `heights ${JSON.stringify(rest)}`,
+            rest.length === 2 && rest.every((b) => b.h >= MIN_TAP && b.w >= MIN_TAP),
+            `${at} T-293ⓐ: both grade buttons are visible ≥${MIN_TAP}px targets at rest`,
+            `boxes ${JSON.stringify(rest)}`,
           );
           for (const grade of ['good', 'again']) {
             await page.focus(`[data-grade="${grade}"]`);
             const box = await page.locator(`[data-grade="${grade}"]`).boundingBox();
             check(
               box !== null && box.height >= MIN_TAP && box.width >= MIN_TAP,
-              `${at} T-259ⓕ: focused "${grade}" is a ≥${MIN_TAP}px target`,
+              `${at} T-293ⓐ: focused "${grade}" is a ≥${MIN_TAP}px target`,
               `box ${JSON.stringify(box)}`,
             );
           }
+          // T-293ⓑ — the hint shrank to a pointer at the shortcut, and it names ⛔ no physical
+          // direction: `F-102` measured «ימינה» ambiguous under RTL, and the answer is the
+          // button that leans during the drag, ⛔ not a longer sentence.
           const hint = (await page.locator('[data-swipe-hint]').allInnerTexts()).join('');
           check(
-            hint.includes('ידעתי') && hint.includes('לא ידעתי') && hint.includes('ימינה'),
-            `${at} T-259ⓕ: the swipe instruction names both directions in Hebrew`,
+            hint.includes('להחליק') && !/ימינה|שמאלה/.test(hint),
+            `${at} T-293ⓑ: the hint points at the shortcut without naming a physical direction`,
             `hint was "${hint}"`,
           );
           const badges = await page.evaluate(() =>
@@ -1986,7 +1996,7 @@ try {
         // the card would have printed green on a screen with no controls at all.
         await page.locator('[data-reveal]').first().click();
         // T-259ⓕ · שכבה א׳ — the same claim as `/dev/card`, on the REAL deck: the two buttons
-        // are the ACCESSIBLE channel — in the DOM, sr-only at rest, ≥44px the moment a keyboard
+        // are the VISIBLE grade channel — in the DOM, ≥44px at rest (T-293ⓐ), and still reachable
         // user focuses one. (Until 07/09 this block measured them as the visible pair with a
         // ≥8px gap; the swipe is the visible channel now — T-259ⓕ.)
         const gradeRest = await page.evaluate(() =>
@@ -1998,9 +2008,11 @@ try {
           `found ${gradeRest.length} [data-grade] controls`,
         );
         if (gradeRest.length === 2) {
+          // T-293ⓐ — the same claim as `/dev/card`, on the REAL deck: visible at rest, ⛔ not
+          // `sr-only`. ⇒ the swipe is a shortcut (`D-042`), ⛔ never the only channel.
           check(
-            gradeRest.every((h) => h <= 1),
-            `${at} T-259ⓕ: both grade buttons are sr-only at rest`,
+            gradeRest.every((h) => h >= MIN_TAP),
+            `${at} T-293ⓐ: both grade buttons are visible ≥${MIN_TAP}px at rest`,
             `heights ${JSON.stringify(gradeRest)}`,
           );
           for (const grade of ['good', 'again']) {
@@ -2008,7 +2020,7 @@ try {
             const box = await page.locator(`[data-grade="${grade}"]`).first().boundingBox();
             check(
               box !== null && box.height >= MIN_TAP && box.width >= MIN_TAP,
-              `${at} T-259ⓕ: focused "${grade}" is a ≥${MIN_TAP}px target`,
+              `${at} T-293ⓐ: focused "${grade}" is a ≥${MIN_TAP}px target`,
               `box ${JSON.stringify(box)}`,
             );
           }

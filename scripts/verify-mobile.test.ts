@@ -611,14 +611,20 @@ describe('the harness measures the scrolling deck (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * T-259ⓕ (07/09) — the two buttons are the ACCESSIBLE channel now: measured sr-only at rest
-   * (≤1px) and ≥44px the moment one is focused. The pre-07/09 gap measurement described a
-   * visible pair that no longer exists and is deliberately ⛔ not quoted.
+   * T-293ⓐ (12/09 · `F-217`) — REPLACES the `sr-only`-at-rest claim of T-259ⓕ, and the
+   * replacement is strictly STRONGER: the harness now measures the two buttons **visible and
+   * ≥44px at rest**, ⛔ not «≤1px until focused». 🔬 Measured in Chromium 375×780: `sr-only`
+   * renders them 1×1 and transparent ⇒ a sighted learner had ⛔ no grade control and the
+   * swipe was the ⛔ only channel — which `D-042` forbids in so many words, and which this
+   * very assertion used to certify as correct. The focus claim stays: keyboard reach ⛔ did
+   * ⛔ not regress.
    */
-  it('measures the two grade buttons as the accessible channel: sr-only at rest, ≥44px focused', () => {
+  it('T-293ⓐ — measures the two grade buttons as VISIBLE ≥44px targets at rest, ⛔ not sr-only', () => {
     const start = code.indexOf("route === '/dev/deck'");
     const block = code.slice(start, code.indexOf('clean console', start));
-    expect(block).toContain('both grade buttons are sr-only at rest');
+    expect(block).toContain('visible ≥${MIN_TAP}px at rest');
+    // 🔴 תרחיש הכשל: מישהו מחזיר את הטענה הישנה ⇒ כפתור 1×1 חוזר לעבור כ«ערוץ נגיש».
+    expect(block).not.toContain('sr-only at rest');
     expect(block).toContain('page.focus(`[data-grade="${grade}"]`)');
     expect(block).toContain('is a ≥${MIN_TAP}px target');
   });
