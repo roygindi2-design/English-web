@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AmirnetEstimateNotice from '@/components/AmirnetEstimateNotice';
 import AmirnetTabs, { AMIRNET_BUILT_TABS, AMIRNET_TAB_HREF } from '@/components/AmirnetTabs';
 import EnWord from '@/components/EnWord';
 import { TYPE_BAR_CLASS } from '@/components/amirnetTypeBar';
@@ -108,6 +109,11 @@ export default function AmirnetDashboard({ cards, weakness, hasAnswers }: Amirne
         </div>
       ) : (
         <>
+          {/* T-304 · D-218 item 4 — this is the screen that prints percentages under the real
+              exam's own category names, so item 5 (⛔ no affiliation) applies to it in full.
+              ⛔ Not in the empty branch: there is no number there to qualify. */}
+          <AmirnetEstimateNotice />
+
           <h2 className="mt-6 text-base font-semibold text-ink">{PERFORMANCE_HEADING_HE}</h2>
 
           <ul className="mt-4 space-y-3">

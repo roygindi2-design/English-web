@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AmirnetEstimateNotice from '@/components/AmirnetEstimateNotice';
 import { AMIRNET_TAB_HREF } from '@/components/AmirnetTabs';
 import {
   BACK_TO_DASHBOARD_HE,
@@ -98,6 +99,10 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
   return (
     <section>
       <h1 className="pt-2 text-center text-xl font-bold text-ink">{RESULT_TITLE_HE}</h1>
+
+      {/* T-304 · D-218 — ABOVE the numbers, ⛔ never below them: a disclaimer a learner reads
+          after «18 מתוך 23» arrives after the inference it exists to prevent (41 § 6.1 items 4-5). */}
+      <AmirnetEstimateNotice />
 
       {/* ⛔ ONE card, ⛔ not a grid of tiles inside it (skill § 15) — three measured facts. */}
       <dl className="mt-5 space-y-3 rounded-2xl border border-border-subtle bg-surface-raised p-4">
