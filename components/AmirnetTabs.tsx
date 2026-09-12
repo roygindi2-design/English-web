@@ -52,8 +52,13 @@ export const NOT_YET_HE = 'טרם';
  * of absence is worse than no promise; `D-152 § ב׳` allows «טרם» precisely because it is a
  * STATEMENT OF FACT, and a stale one stops being that.
  * ⇒ `T-296` (simulation) flips ⛔ one line here, and every screen agrees on the same tick.
+ *
+ * ⟦C-0553 · T-308⟧ `'simulation'` is IN, and it went in **in the same commit** as
+ * `app/(tabs)/world/amirnet/simulation/page.tsx`. ⛔ Neither half is shippable alone: a route with
+ * no tab is a screen with no way to it, and a tab with no route is a 404 with a nice label —
+ * which is why `AmirnetTabs.dom.test.tsx` measures the page on disk rather than trusting this list.
  */
-export const AMIRNET_BUILT_TABS: readonly AmirnetTabKey[] = ['dashboard', 'practice'];
+export const AMIRNET_BUILT_TABS: readonly AmirnetTabKey[] = ['dashboard', 'practice', 'simulation'];
 
 /**
  * WHERE EACH TAB GOES — ⛔ one map, next to the list that says which of them exist.
@@ -61,7 +66,8 @@ export const AMIRNET_BUILT_TABS: readonly AmirnetTabKey[] = ['dashboard', 'pract
  * ⚠️ The two belong together on purpose: `AMIRNET_BUILT_TABS` is what turns a tab into a link, so a
  * key flipped there without a route here is a learner sent to a 404. `AmirnetTabs.dom.test.tsx`
  * measures exactly that — every BUILT key must resolve to a `page.tsx` that exists on disk — which
- * is why `T-296` flipping `simulation` cannot land before `/world/amirnet/simulation` does.
+ * is why `T-296` flipping `simulation` could not land before `/world/amirnet/simulation` did —
+ * and it did, in `T-308`'s own commit.
  *
  * ⛔ These are the PRODUCT routes, ⛔ never the `/dev/amirnet/*` fixtures: those are walk harnesses
  * (`STEP 6.5`), ⛔ not a surface a learner reaches, and a tab bar that navigated inside them would

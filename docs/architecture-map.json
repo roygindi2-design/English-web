@@ -13,6 +13,7 @@
   "app/(tabs)/studies/page.tsx": [],
   "app/(tabs)/world/amirnet/page.tsx": [],
   "app/(tabs)/world/amirnet/practice/page.tsx": [],
+  "app/(tabs)/world/amirnet/simulation/page.tsx": [],
   "app/(tabs)/world/chain/page.tsx": [],
   "app/(tabs)/world/collected/page.tsx": [],
   "app/(tabs)/world/loading.tsx": [],
@@ -21,6 +22,8 @@
   "app/(tabs)/world/story/page.tsx": [],
   "app/api/amirnet/practice/route.test.ts": [],
   "app/api/amirnet/practice/route.ts": [],
+  "app/api/amirnet/simulation/route.test.ts": [],
+  "app/api/amirnet/simulation/route.ts": [],
   "app/api/arcade/character/route.test.ts": [],
   "app/api/arcade/character/route.ts": [],
   "app/api/arcade/collected/route.test.ts": [],
@@ -217,6 +220,10 @@
     "components/AmirnetSimulation.tsx"
   ],
   "components/AmirnetSimulation.tsx": [],
+  "components/AmirnetSimulationEntry.test.ts": [
+    "components/AmirnetSimulationEntry.tsx"
+  ],
+  "components/AmirnetSimulationEntry.tsx": [],
   "components/AmirnetTabs.dom.test.tsx": [],
   "components/AmirnetTabs.test.ts": [
     "components/AmirnetTabs.tsx"
@@ -359,10 +366,13 @@
     "lib/core/amirnetSimulation.ts"
   ],
   "lib/core/amirnetSimulation.test.ts": [
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts",
     "lib/core/amirnetSimulation.ts"
   ],
   "lib/core/amirnetSimulation.ts": [
-    "lib/core/amirnetPractice.ts"
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts"
   ],
   "lib/core/apkg.test.ts": [
     "lib/core/apkg.ts"

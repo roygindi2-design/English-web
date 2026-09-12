@@ -12,8 +12,12 @@ import {
   isLastQuestionOfChapter,
   isLastQuestionOfRun,
   remainingSeconds,
+  SIMULATION_QUESTION_COUNT,
+  simulationQueue,
   startSimulation,
 } from './amirnetSimulation';
+import type { AmirnetServedItem } from './amirnetQuestion';
+import type { AmirnetPracticeType } from './amirnetPractice';
 
 
 /**
@@ -188,5 +192,84 @@ describe('which press ends what — the button label depends on these two, ⛔ n
     expect(
       isLastQuestionOfRun({ chapterIndex: 5, questionIndex: 2, chapterStartedAtMs: 0, finished: false }),
     ).toBe(false);
+  });
+});
+
+
+/**
+ * `T-308`ⓒ — the queue the run is served, and the one case that matters: a bank that ⛔ cannot
+ * fill every chapter is a bank that serves ⛔ no run at all.
+ */
+function servedItem(id: string, type: AmirnetPracticeType): AmirnetServedItem {
+  return {
+    id,
+    type,
+    level: 1,
+    stemEn: 'The rain __ heavily.',
+    passageEn: type === 'rc' ? 'A short passage.' : '',
+    optionsEn: ['fell', 'fall', 'falling', 'fallen'],
+    correctIndex: 0,
+    explanationHe: 'עבר פשוט אחרי תיאור זמן.',
+  };
+}
+
+/** A bank that holds exactly what the six chapters ask for: 12 `sc` · 5 `rc` · 6 `rs`. */
+function fullBank(): readonly AmirnetServedItem[] {
+  const out: AmirnetServedItem[] = [];
+  for (let i = 0; i < 12; i += 1) out.push(servedItem(`sc-${i}`, 'sc'));
+  for (let i = 0; i < 5; i += 1) out.push(servedItem(`rc-${i}`, 'rc'));
+  for (let i = 0; i < 6; i += 1) out.push(servedItem(`rs-${i}`, 'rs'));
+  return out;
+}
+
+describe('simulationQueue — T-308ⓒ · 41 § 2', () => {
+  it('lays the six chapters end to end, in the table\u2019s own order', () => {
+    const queue = simulationQueue(fullBank());
+    expect(queue).not.toBeNull();
+    expect(queue).toHaveLength(SIMULATION_QUESTION_COUNT);
+    expect(SIMULATION_QUESTION_COUNT).toBe(23);
+    // 4 sc \u00b7 4 sc \u00b7 5 rc \u00b7 3 rs \u00b7 3 rs \u00b7 4 sc
+    expect((queue ?? []).map((i) => i.type).join(',')).toBe(
+      ['sc', 'sc', 'sc', 'sc', 'sc', 'sc', 'sc', 'sc', 'rc', 'rc', 'rc', 'rc', 'rc',
+        'rs', 'rs', 'rs', 'rs', 'rs', 'rs', 'sc', 'sc', 'sc', 'sc'].join(','),
+    );
+  });
+
+  it('every chapter of the queue matches the chapter AMIRNET_CHAPTERS declares at that offset', () => {
+    const queue = simulationQueue(fullBank()) ?? [];
+    let at = 0;
+    for (const chapter of AMIRNET_CHAPTERS) {
+      for (let i = 0; i < chapter.questionCount; i += 1, at += 1) {
+        expect(queue[at]?.type).toBe(chapter.type);
+      }
+    }
+    expect(at).toBe(queue.length);
+  });
+
+  it('\u26d4 serves an item once \u2014 the same `sc` item \u26d4 cannot fill chapters 1, 2 and 6', () => {
+    const ids = (simulationQueue(fullBank()) ?? []).map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('\u26d4 NEVER shortens the run: one item short of a chapter \u21d2 null, \u26d4 not a partial queue', () => {
+    const short = fullBank().filter((i) => i.id !== 'sc-11');
+    expect(simulationQueue(short)).toBeNull();
+    expect(simulationQueue([])).toBeNull();
+    // \u26d4 And a bank rich in one type is still short: 40 `sc` and nothing else is \u26d4 no run.
+    const scOnly = Array.from({ length: 40 }, (_, i) => servedItem(`sc-${i}`, 'sc'));
+    expect(simulationQueue(scOnly)).toBeNull();
+  });
+
+  it('is deterministic \u2014 the same bank produces the same run, twice', () => {
+    const a = (simulationQueue(fullBank()) ?? []).map((i) => i.id);
+    const b = (simulationQueue(fullBank()) ?? []).map((i) => i.id);
+    expect(a).toEqual(b);
+  });
+
+  it('\u26d4 does not mutate the bank it was handed', () => {
+    const bank = fullBank();
+    simulationQueue(bank);
+    expect(bank).toHaveLength(23);
+    expect(bank[0]?.id).toBe('sc-0');
   });
 });

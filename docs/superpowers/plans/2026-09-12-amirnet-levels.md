@@ -207,7 +207,16 @@ estimate · locked ⛔ never signalled by colour alone · the four levels match 
 every שכבה A gap above carries the render's measured number · `simulation` still reads «טרם» in
 `AMIRNET_BUILT_TABS`, because the route it would point at does ⛔ not exist yet.
 
-## Task 2: `T-308` — the tab stops saying «טרם», and the learner walks in
+## Task 2: `T-308` — the tab stops saying «טרם», and the learner walks in  ⟵ ✅ landed C-0553
+
+🔬 **⟦C-0553⟧ ONE thing this task needed that the plan did ⛔ not name, and it is a MEASUREMENT.**
+Step 3 says «an open level card starts the existing engine» — and measured this tick, there was
+⛔ **no source of items for a run**: `AmirnetSimulation` takes `items` as a prop, the only caller
+was the `/dev` fixture, and `GET /api/amirnet/practice` serves **one type at a time** by design
+(`41 § 7`, «הרמה נבחרת ידנית»), which is ⛔ not a 23-item six-chapter run. ⇒ starting the engine
+required `GET /api/amirnet/simulation` and a pure `simulationQueue()`, both added here.
+⛔ **The alternative was rejected, ⛔ not overlooked:** a page whose only button does nothing is
+`RULES § 0.31` — precisely the defect `F-224` measured on this same tab bar three weeks ago.
 
 **Interfaces:** consumes `AmirnetLevels` unchanged. Adds ⛔ no prop and ⛔ no export beyond the page.
 
@@ -221,13 +230,13 @@ it('every BUILT tab has an href, and ⛔ no href points at a route that does not
 
 **Steps:**
 
-- [ ] **Step 1:** `app/(tabs)/world/amirnet/simulation/page.tsx` rendering `<AmirnetLevels>` —
+- [x] **Step 1:** `app/(tabs)/world/amirnet/simulation/page.tsx` rendering `<AmirnetLevels>` —
       `unlockedThrough={1}` until `T-309` lands the real state, and that constant carries a comment
       naming `T-309` so it ⛔ cannot be mistaken for a decision.
-- [ ] **Step 2:** flip `'simulation'` into `AMIRNET_BUILT_TABS` **in the same commit** and extend
+- [x] **Step 2:** flip `'simulation'` into `AMIRNET_BUILT_TABS` **in the same commit** and extend
       `components/AmirnetTabs.test.ts` with the consistency check above; `AmirnetTabs.dom.test.tsx`
       already asserts the route exists on disk, so a flip without the page turns it red.
-- [ ] **Step 3:** an open level card starts the existing engine; a locked card is ⛔ not a link at all
+- [x] **Step 3:** an open level card starts the existing engine; a locked card is ⛔ not a link at all
       (⛔ not a disabled one). Walk `/world/amirnet/simulation`, then `npm run verify` and push.
 
 ## Task 3: `T-309` — the unlock is a fact about the learner, ⛔ not a fixture

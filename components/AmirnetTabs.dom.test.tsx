@@ -55,8 +55,22 @@ describe('AmirnetTabs — a built tab NAVIGATES (F-224)', () => {
     expect(el.getAttribute('aria-current')).toBeNull();
   });
 
-  it('an unbuilt tab is ⛔ NOT a link — it stays present, disabled and «טרם» (D-152 § ב׳)', () => {
+  it('the THIRD built tab is reachable too — ⟦C-0553 · T-308⟧ `סימולציה` stopped saying «טרם»', () => {
     render(<AmirnetTabs active="dashboard" built={BUILT} />);
+    const el = tabEl('סימולציה');
+    expect(el.tagName).toBe('A');
+    expect(el.getAttribute('href')).toBe('/world/amirnet/simulation');
+    expect(el.textContent).not.toContain(NOT_YET_HE);
+  });
+
+  /**
+   * ⚠️ ⛔ The unbuilt BEHAVIOUR is ⛔ not deleted with the last unbuilt tab — it is measured
+   * against an explicit list instead. `AMIRNET_BUILT_TABS` now holds all three, and a test that
+   * read «whatever is currently missing» would have quietly stopped measuring anything the day
+   * it became empty. The next tab this product adds arrives disabled, and this is what says so.
+   */
+  it('an unbuilt tab is ⛔ NOT a link — it stays present, disabled and «טרם» (D-152 § ב׳)', () => {
+    render(<AmirnetTabs active="dashboard" built={['dashboard', 'practice']} />);
     const el = tabEl('סימולציה');
     expect(el.tagName).not.toBe('A');
     expect(el.getAttribute('href')).toBeNull();

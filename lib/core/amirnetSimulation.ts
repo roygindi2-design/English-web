@@ -33,6 +33,7 @@
  */
 
 import type { AmirnetPracticeType } from './amirnetPractice';
+import type { AmirnetServedItem } from './amirnetQuestion';
 
 /** One core chapter. The `seconds` are the chapter's OWN budget and ⛔ never a share of a total. */
 export interface AmirnetChapter {
@@ -215,3 +216,51 @@ export function isLastQuestionOfChapter(state: AmirnetSimulationState): boolean 
   if (chapter === undefined) return true;
   return state.questionIndex >= chapter.questionCount - 1;
 }
+
+/**
+ * THE RUN'S QUEUE — `T-308`ⓒ. Pure, and it is the reason the screen can «start the existing
+ * engine» without knowing what a chapter is.
+ *
+ * `AmirnetSimulation` walks `AMIRNET_CHAPTERS` and reads `items[questionIndex]` straight through,
+ * so the queue it is handed must be the six chapters laid END TO END in order — 4 `sc` · 4 `sc` ·
+ * 5 `rc` · 3 `rs` · 3 `rs` · 4 `sc`, 23 items. ⛔ A flat bank read in `created_at` order is ⛔ not
+ * that, and handing one over would put an `rs` item under an `sc` chapter heading.
+ *
+ * 🔴 ⛔ AND IT ⛔ NEVER SHORTENS A RUN TO WHAT THE BANK HAPPENS TO HOLD. A bank that cannot fill
+ * every chapter returns **`null`**, and the screen says so in words. ⛔ A four-chapter «full
+ * simulation» is the `41 § 2` failure this module was written against: the exam's shape is the
+ * product, ⛔ not a target to approximate. ⚠️ Measured C-0553: the DB bank is EMPTY (there is
+ * ⛔ no `build:amirnet-items` ingest yet — `03-for-roy`), so `null` is what a learner meets today,
+ * and that is a **statement of fact**, ⛔ not a dead end (`D-152 § ב׳`).
+ *
+ * ⛔ No shuffle, ⛔ no sampling, ⛔ no `Math.random()`: the caller hands the order it read, and the
+ * same bank produces the same run. A random pick here would make every walk unrepeatable.
+ * ⛔ No adaptivity (`41 § 3`): the chapter table is fixed and ⛔ nothing here reads an answer.
+ */
+export function simulationQueue(
+  items: readonly AmirnetServedItem[],
+): readonly AmirnetServedItem[] | null {
+  const pools = new Map<AmirnetPracticeType, AmirnetServedItem[]>();
+  for (const item of items) {
+    const pool = pools.get(item.type);
+    if (pool === undefined) pools.set(item.type, [item]);
+    else pool.push(item);
+  }
+
+  const queue: AmirnetServedItem[] = [];
+  for (const chapter of AMIRNET_CHAPTERS) {
+    const pool = pools.get(chapter.type) ?? [];
+    // ⛔ `splice` and ⛔ not a re-scan: an item serves ⛔ once in a run, so the same `sc` item
+    // ⛔ cannot appear in chapters 1, 2 and 6.
+    const taken = pool.splice(0, chapter.questionCount);
+    if (taken.length < chapter.questionCount) return null;
+    queue.push(...taken);
+  }
+  return queue;
+}
+
+/** 23 — `AMIRNET_CHAPTERS` summed, ⛔ never a literal a second file has to keep in step. */
+export const SIMULATION_QUESTION_COUNT = AMIRNET_CHAPTERS.reduce(
+  (sum, chapter) => sum + chapter.questionCount,
+  0,
+);

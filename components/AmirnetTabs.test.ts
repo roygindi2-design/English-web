@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { AMIRNET_BUILT_TABS, AMIRNET_TABS, NOT_YET_HE } from './AmirnetTabs';
+import { AMIRNET_BUILT_TABS, AMIRNET_TAB_HREF, AMIRNET_TABS, NOT_YET_HE } from './AmirnetTabs';
 
 /**
  * ⚠️ Comments are stripped first, and that is ⛔ not a loophole: these rules are about what a
@@ -45,9 +45,17 @@ describe('AmirnetTabs — T-286ⓐ, render kol-D-03-practice-menu.png', () => {
 });
 
 describe('AMIRNET_BUILT_TABS — ⛔ one list, ⛔ never a literal per screen (T-291 · walk C-0533)', () => {
-  it('holds exactly the screens that exist, and `סימולציה` is ⛔ not one of them yet', () => {
-    expect([...AMIRNET_BUILT_TABS]).toEqual(['dashboard', 'practice']);
-    expect(AMIRNET_BUILT_TABS).not.toContain('simulation');
+  it('holds exactly the screens that exist — ⟦C-0553 · T-308⟧ `סימולציה` is now one of them', () => {
+    expect([...AMIRNET_BUILT_TABS]).toEqual(['dashboard', 'practice', 'simulation']);
+    expect(AMIRNET_BUILT_TABS).toContain('simulation');
+  });
+
+  it('T-308ⓓ — every BUILT tab has an href, and every href is a PRODUCT route', () => {
+    // A key in the list with no address is a 404 in waiting; an address pointing at a `/dev`
+    // fixture is a walk harness a learner was handed by mistake. Both are one `expect` apart.
+    for (const key of AMIRNET_BUILT_TABS) {
+      expect(AMIRNET_TAB_HREF[key], key).toMatch(/^\/world\/amirnet/);
+    }
   });
 
   it('⛔ no screen writes its own list — a stale «טרם» is a promise of absence that is false', () => {

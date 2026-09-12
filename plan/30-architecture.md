@@ -2192,3 +2192,42 @@ for `kol-D-08-levels.png` will ⛔ not find it.
 **Debt, declared:** `simulation` still reads «טרם» in `AMIRNET_BUILT_TABS`, so this screen's only
 home is `/dev/amirnet/levels`. `AmirnetTabs.dom.test.tsx` measures that every BUILT key resolves to a
 `page.tsx` on disk ⇒ the flip and the product route ⛔ cannot separate, and both belong to `T-308`.
+
+## C-0553 (DEV) — `T-308` — the run is assembled by a PURE function, so the screen cannot get the chapters wrong
+
+**המשך של: T-307 · T-296.** The tab `סימולציה` stopped saying «טרם» and the learner walks in.
+Three files carry the change, and the shape of them is the point.
+
+**ⓐ The queue is `41 § 2`'s table, laid end to end, in `lib/core/` — ⛔ not in the screen and
+⛔ not in the route.** `AmirnetSimulation` reads `items[questionIndex]` straight through against
+`AMIRNET_CHAPTERS`, so a bank read in `created_at` order would have served an `rs` item under an
+`sc` chapter heading. `simulationQueue()` takes the gated items and returns the 23 in chapter
+order — 4 `sc` · 4 `sc` · 5 `rc` · 3 `rs` · 3 `rs` · 4 `sc` — or **`null`**.
+
+**ⓑ `null`, ⛔ and never a short run.** A bank that cannot fill every chapter serves ⛔ no run at
+all. A four-chapter «סימולציה מלאה» is the `41 § 2` failure the engine exists against: the exam's
+shape is the product, ⛔ not a target to approximate. The route turns that `null` into `no_items`
+and the screen turns it into a sentence.
+
+**ⓒ Why `no_items` ⛔ is not folded in with `unavailable`.** «The bank cannot fill a run yet» and
+«something is broken» are different facts. `failureHe()` keeps them apart, and a test asserts the
+two strings differ — a learner told the second about the first has been told something false.
+
+**ⓓ `GET /api/amirnet/simulation` ⛔ does not filter by `type`, and the practice route does.**
+That is the whole difference between them, and it follows from ⓐ: practice is one type at a time
+by the learner's own tap (`41 § 7`), a run is all three by the chapter table. ⛔ Not a duplicate
+route — the same bank read for a different shape.
+
+**ⓔ The flip and the route are ⛔ one commit.** `AmirnetTabs.dom.test.tsx` measures that every
+BUILT key resolves to a `page.tsx` on disk, so `'simulation'` entering `AMIRNET_BUILT_TABS`
+⛔ cannot separate from `app/(tabs)/world/amirnet/simulation/page.tsx` existing. **And the unbuilt
+behaviour outlived the last unbuilt tab:** that test now renders an explicit
+`built={['dashboard','practice']}` instead of «whatever is currently missing», which would have
+quietly stopped measuring anything the day the list filled up.
+
+**ⓕ Measured, ⛔ and it is the honest state of the screen today:** the DB bank is EMPTY. `K-006`'s
+26 items sit in `data/generated/*.jsonl` and there is ⛔ no `build:amirnet-items` ingest —
+opened as `T-310` this tick. ⇒ pressing רמה 1 in production reaches a sentence, ⛔ not a run. That
+is `D-152 § ב׳` (a statement of fact) and ⛔ not `RULES § 0.31` (an action that does nothing): the
+press does something, and what it does is tell the truth. ⚠️ 26 items are ⛔ not enough for one
+run in any case — 23 are needed at a **single** level — which is a content commission, ⛔ not code.
