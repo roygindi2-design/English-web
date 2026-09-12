@@ -1,0 +1,15 @@
+{
+  "batch_file": "batch-2026-09-12.jsonl",
+  "batch_date": "2026-09-12",
+  "batch_number": 0,
+  "model": "claude-sonnet-5",
+  "prompt_version": "CONTENT.md, executing K-005 commission Priority ⓑ (Tier 1 alphabetical), continued from the routine NGSL/Amirnet tier queue (STEP 4)",
+  "provenance": "All content written for this project; not consulted R-010 (מאל\"ו) nor R-013 (AnkiWeb).",
+  "source": "Amirnet Tier 1 (A2, CEFR-J v1.5) headwords, data/amirnet-vocab.csv. The 'audition' marker recorded in plan/25-content-commissions.md K-005 does NOT exist in Tier 1 (verified: 'audition' is Tier 3, amirnet_level 3) — that marker was wrong, so this batch instead recomputed the true gap: every Tier 1 headword diffed against every existing data/generated/batch-*.jsonl headword (701 of 1,243 Tier 1 headwords had no sense at all before this batch). The 12 headwords below are the next alphabetical, single-word, unambiguous entries from that real gap list, picking up right after 'audio' (already in the bank): amusement, angrily, automatic, badminton, bake, balcony, balloon, banking, barbecue, barber, bargain, basket.",
+  "requested": 12,
+  "accepted": 12,
+  "rejected": 0,
+  "selection_rule": "Priority ⓑ of K-005: Tier 1 (A2), skipping multi-word entries (e.g. 'alarm clock', 'board game') and ambiguous grammatical-form rows (e.g. 'been', 'being') for this batch, and skipping headwords already present in the bank. The next marker, alphabetical from Tier 1 among simple single-word entries: 'batch' (present in the missing list; not yet written).",
+  "quota_rule": "No per-batch ceiling (plan/25-content-commissions.md K-005, Roy 09/09). Batch size = 12, sized to what could be individually written, gated, and verified against allowed-words within this tick.",
+  "note": "R-014 (replaced 10/09): no human sample-review queue; every row carries translation_confidence = 'high' (12/12) — all 12 are concrete, unambiguous A2 words with a single common sense. gateSense (lib/core/contentSchema.ts) ran directly against all 12 rows before writing, via a scratch validator script (scripts/_check-draft.mjs, not committed) that imports the real gateSense and the real data/generated/allowed-words-2026-08-07.txt: 3 rows failed on first pass (bake: 'oven' out of NGSL allowed-words; balloon: 'blew'/'tied' out of allowed-words; basket: 'apples' out of allowed-words) and were rewritten to use only allowed-words vocabulary; second pass was 12/12 pass. npm run build:ingest ran cleanly afterward over the full bank (now 1,270 rows across 28 files, F-194 per-batch spot-check confirmed still holding — no repeat of the item-102 1,200-row ceiling, which is fully resolved: spotCheckPlan now runs per-batch, not over the whole bank, so a bank size above 1,200 is no longer a crash risk at all). npm run measure:gate re-ran over the full bank: 0 rejected. No number written as a word above 'one' and no proper name appears in any example or item stem."
+}
