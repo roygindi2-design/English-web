@@ -61,7 +61,9 @@ than ⛔ not doing them.
 6.  verify GREEN and rev-list > 0 and the lock empty ⇒
       ./scripts/g checkout dev && ./scripts/g merge --ff-only work/current && ./scripts/g push origin dev && ./scripts/g checkout work/current
     verify RED ⇒ ⛔ NO merge. Report the failing command's output verbatim. ⛔ Nothing else.
-7.  REPORT, 4 lines, Hebrew:
+7.  REPORT, 4 lines, Hebrew — ⛔ + a 5th, ⛔ never optional, ⛔ even if you pushed nothing:
+      אחרון: <exact last command> ⇒ exit <code>
+    ⟦12/09⟧ four windows left ⛔ zero commits ⇒ ⛔ no trace. `F-227`.
       מסלול: שער · verify ✅/❌ · loop health: N/23 · merged / ⛔ not merged and why ·
       how many commits wait · סקילים: <…>
 ```
