@@ -1,0 +1,41 @@
+{
+  "commission": "K-006",
+  "gate_task": "T-223 (closed C-0471)",
+  "date": "2026-09-12",
+  "cycle": "C-0551",
+  "agent": "CONTENT",
+  "model": "claude-sonnet-5",
+  "prompt_version": "content-2026-08-23-D110",
+  "brief": "docs/content-amirnet-items-brief.md (marked blocked as of 28/08 — stale: the gate it names, lib/core/amirnetItemGate.ts, exists and is exercised below)",
+  "spec": "plan/41-amirnet-spec.md § 6",
+  "gate": "lib/core/amirnetItemGate.ts (sc/rs) + lib/core/amirnetChapterGate.ts (rc, 5-question chapters)",
+  "output_files": [
+    "amirnet-items-2026-09-12-sc.jsonl",
+    "amirnet-items-2026-09-12-rs.jsonl",
+    "amirnet-items-2026-09-12-rc.jsonl"
+  ],
+  "quota_rule": "K-006 had zero items in the repo before this tick — measure-amirnet-gate.mjs's own header says 0 files is the expected state until CONTENT starts writing. No quota is set anywhere (41 § 9.4 is open, Roy's to decide). This tick wrote 2 sc + 2 rs per level (1-4) and 2 rc chapters (level 1 and level 3, 5 questions each) as a declared precedent for a first delivery, not a citation of any rule: 16 sc/rs items + 10 rc questions = 26 items. Levels 2 and 4 of rc (reading comprehension) are not yet covered and are the natural next slice.",
+  "requested": 26,
+  "accepted": 26,
+  "rejected": 0,
+  "rejected_reasons": [],
+  "self_rejected_before_gate": 5,
+  "self_rejected_reason": "5 items initially drafted with words above their level's vocabulary tier or with a correct-answer/distractor length ratio over 1.4 (puppy·ashamed·cheerful at level 1; cancel at level 1; baker at level 1) were rewritten before the final gate run below, not hand-patched after rejection. See lesson entry.",
+  "gate_run": "npm run measure:amirnet-gate over the three output files above, using the real amirnetItemGate/amirnetChapterGate imported from lib/core/ (not a reimplementation) and the tier map built from data/generated/amirnet-vocab.csv exactly as scripts/measure-amirnet-gate.mjs builds it.",
+  "gate_result": "26/26 ok (0 rejected) — docs/amirnet-gate-report.md",
+  "negative_control": "9 deliberately broken sc items (wrong option count · bad correct_index · duplicate options · missing distractor reason · bad level · missing level_rationale · bad source · 'all of the above' · vocabulary above the item's tier) were gated in the same session and 0/9 passed — evidence the gate discriminates and did not pass everything.",
+  "correct_index_distribution": {
+    "sc_and_rs": { "0": 16 },
+    "rc_chapter_level1": { "0": 2, "1": 1, "2": 1, "3": 1 },
+    "rc_chapter_level3": { "0": 2, "1": 1, "2": 1, "3": 1 }
+  },
+  "human_eye_axes": [
+    "⛔ originality — no item, passage, or distractor is copied, rewritten, or 'varied' from plan/41-amirnet-spec.md § 6.3 (calibration-only) or from any Amirnet/AMIR'AM/psychometric/commercial-prep source. Every stem, passage, and option was written fresh for this tick. This is a declaration, not something the gate checks — § 6 of the brief says so explicitly.",
+    "⛔ sensitive subject in the rc passages — the level-1 passage is a baker's daily routine, the level-3 passage is about coral bleaching; neither touches a sensitive subject, read by the agent, no gate exists for this axis",
+    "each rc correct answer was checked by hand against the exact sentence in its passage; each rc question was checked to require reading the passage (none answerable from general knowledge alone)",
+    "the sc-l4 and rs-l4 items were checked by hand for the level-4 structural requirements in § 6.2 (two mutually dependent blanks for sc; a long qualifier/double-negation sentence for rs) since these are not machine-checked"
+  ],
+  "vocab_ceiling_note": "vocab_band assigned per item level (1000/2000/3000/3000) as a declared precedent — § 5 of the brief only defines bands for tiers 1-3; level-4 items are unconstrained by the gate (no tier exceeds 4) and were mapped to 3000 for lack of a defined higher band.",
+  "ingest_note": "⛔ No npm run build:amirnet-items script exists yet — there is no SQL builder consuming amirnet-items-*.jsonl (unlike batch-*.jsonl -> build:ingest). Ingest into public.amirnet_items is a DEV task; this tick writes files only, per K-006 rule 3 and RULES § 0.1 (CONTENT does not touch code or the database).",
+  "provenance": "כל התוכן נכתב לפרויקט; ⛔ לא נועץ באמירנט, אמיר\"ם, אמי\"ר, הפסיכומטרי או מאגר הכנה מסחרי כלשהו. המפרט (41 § 6) נקרא במלואו לפני הכתיבה."
+}
