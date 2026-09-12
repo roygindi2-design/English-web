@@ -2023,3 +2023,51 @@ rather than a behaviour, and it is the one that went red on the fix — a source
 ARIA tabs pattern is arguably the wrong one, but the bar's structure comes from `41 § 7` and the
 render `kol-D-03`, and changing it is a screen-structure decision, ⛔ not this finding's.
 Recorded here rather than acted on.
+
+## C-0538 (DEV) — `T-296` — the chapter owns the clock, so leftover time has nowhere to go
+
+**Where the rule lives.** `41 § 2` carries two binding time rules — «שעון נפרד לכל פרק» and
+«אי אפשר להעביר זמן שנותר לפרק הבא» — and the naive shape (a total budget, minus what has been
+spent) satisfies the first and ⛔ silently breaks the second. ⇒ the state carries
+`chapterStartedAtMs`, **the stamp the CURRENT chapter began at**, and the clock is always
+`chapter.seconds - (now - chapterStartedAtMs)`. A chapter that ends with 90 seconds left therefore
+⛔ has no leftover to hand anywhere: the next chapter is re-stamped from `nowMs` and reads its own
+budget. The rule is **structural**, ⛔ not a subtraction anyone has to remember.
+🔬 Measured live in the walk (`next start`, 375×780): chapter 1 read `3:59`, and pressing through to
+chapter 2 read `4:00` — its own full budget, ⛔ not `4:00 + 3:59`.
+
+**TWO transitions, and `advance()` alone could ⛔ not express the second.** A chapter that expires on
+question 2 of 4 must move to the NEXT CHAPTER (`T-296`ⓑ: «בסיום הפרק הוא מעביר לפרק הבא»), ⛔ not to
+question 3 of a chapter the learner can no longer answer in — which is exactly what `advance()`
+would have done. ⇒ `advanceChapter()` abandons the question index; the component picks the path by
+asking `isChapterExpired()` at press time, so the choice is ⛔ not a second copy of the rule.
+
+**⛔ The interval computes ⛔ nothing** (`T-296`ⓒ). `setInterval` moves one display timestamp
+(`tickMs`); every question about that timestamp — how much is left, whether the chapter is over — is
+asked of `lib/core/`. ⇒ a throttled or backgrounded tab ⛔ cannot under-count its way into a chapter
+that never expires, and `AmirnetSimulation.test.ts` asserts the interval touches ⛔ neither
+`setState` nor `advance`.
+
+**⛔ `advance()` takes ⛔ no answer, and that is the adaptivity fence.** `41 § 8` item 4 owns chapter
+selection and `41 § 9.2` puts the score formula with **Roy** ⇒ the signature is `(state, nowMs)` and
+a test asserts its arity, so a later tick ⛔ cannot quietly thread correctness through it. `41 § 3` is
+explicit that adapting after each question is structurally wrong, ⛔ not a tuning choice.
+
+**🔴 The countdown is the PRODUCT here, and it ⛔ does not contradict the practice screen.**
+`lib/core/amirnetQuestion.ts` counts UP, because `R-020` forbids time pressure outside the arena and
+`D-049` narrows a clock to known material — and both that file and `components/AmirnetQuestion.tsx`
+already said, before this tick existed, that the reasoning ⛔ does not reach the simulation. `41 § 2`
+makes a per-chapter countdown a rule **of the exam being simulated**. ⇒ `F-222`'s declared gap on the
+practice clock is ⛔ untouched, and this is ⛔ not a second deviation.
+
+**One `bg-brand` in a COMMENT reddened the palette gate.** `lib/core/palette.test.ts` (`F-036`) reads
+the raw source, ⛔ not a comment-stripped copy — so the sentence explaining why the token is
+unavailable was itself the violation. ⚠️ Worth knowing before the next component: `AmirnetDashboard.test.ts`
+strips comments and `palette.test.ts` ⛔ does not, and the two disagree on purpose.
+
+**Debt, declared:** the product route is ⛔ not open and `simulation` stays «טרם» in
+`AMIRNET_BUILT_TABS`. `F-222` blocks the item schema and `T-297` is still ⬜ ⇒ there is ⛔ no honest
+source of items, and a tab navigating to «אין פריטים» is `RULES § 0.31`. The flip is one line in
+`components/AmirnetTabs.tsx`, and it belongs to the tick that lands `T-297`. ⚠️ For the same reason
+the walk fixture holds **one** item (the render's own `SQ`, :249-251): `41 § 6.3` forbids borrowing a
+second from the spec, so questions 2–4 of chapter 1 show the written «אין פריטים לפרק הזה» state.
