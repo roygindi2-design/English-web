@@ -210,6 +210,31 @@ describe('11/09 — נעילה חסרה ⛔ ושם בעל נעילה עם מקף
     expect(missingLockFired(out.out)).toBe(false);
   });
 
+  /**
+   * 🔴 ⟦NEW 12/09 · `F-219`⟧ **התקלה שהשער הזה עצמו גרם, בהרצה החיה הראשונה שלו.**
+   *
+   * 🔬 נמדד 12/09 01:17Z: QA-שער עומד על `dev` כדי למזג ⇒ `git diff origin/dev...HEAD`
+   * מחזיר את **כל קבצי הקוד** שהמיזוג מביא ⇒ `REGISTER_ONLY=0`; הנעילה ריקה כדין;
+   * הזהות `critic-agent` ⇒ **השער חסם את המיזוג.** הסוכן נטל נעילה בעודו על `dev`,
+   * הקומיט נחת שם, `dev` הסתעף ו-`merge --ff-only` סירב.
+   * ⇒ הנעילה מסדרת **כותבים ל-`work/current`**, ⛔ ולא קידום היסטוריה שכבר עברה שער.
+   */
+  it('⛔ אינו חוסם דחיפת מיזוג ל-dev, גם כשהדיף נושא קוד והנעילה ריקה', () => {
+    const out = runHook(lockRepo('critic-agent', '""', 'lib/core/x.ts'), 'refs/heads/dev');
+    expect(missingLockFired(out.out), '🔴 השער חסם את המיזוג ⇒ הלופ נעצר').toBe(false);
+  });
+
+  it('⛔ ו⛔ לא ל-main', () => {
+    const out = runHook(lockRepo('promoter-agent', '""', 'lib/core/x.ts'), 'refs/heads/main');
+    expect(missingLockFired(out.out)).toBe(false);
+  });
+
+  // ⛔ ועדיין חוסם את מה שהוא נבנה בשבילו: כתיבה ל-`work/current` בלי נעילה.
+  it('✅ ועדיין חוסם דחיפת קוד ל-work/current בלי נעילה', () => {
+    const out = runHook(lockRepo('content-agent', '""', 'lib/core/x.ts'), REF);
+    expect(missingLockFired(out.out)).toBe(true);
+  });
+
   // 🔴 `F-214` — הנעילה שלי בצורת הזהות, ⛔ ולא בשם התפקיד.
   it('⛔ הנעילה של הסוכן עצמו ⛔ אינה חוסמת אותו, גם כשנכתבה `dev-agent`', () => {
     const out = runHook(lockRepo('dev-agent', '"dev-agent"', 'lib/core/x.ts'), REF);
