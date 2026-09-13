@@ -126,10 +126,13 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
                     if (ready) onStart?.(card.type, level as AmirnetLevel);
                     else setType(card.type);
                   }}
+                  /* ⟦T-311⟧ Both branches press — the `!ready` one selects the type instead of
+                     starting — so both carry the feedback. ⛔ `aria-disabled` here is «cannot start
+                     yet», ⛔ not «does nothing». */
                   className={
                     ready
-                      ? 'min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on'
-                      : 'min-h-touch min-w-touch rounded-xl border border-border-strong px-5 text-sm font-bold text-ink-muted'
+                      ? 'min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90'
+                      : 'min-h-touch min-w-touch rounded-xl border border-border-strong px-5 text-sm font-bold text-ink-muted active:opacity-90'
                   }
                 >
                   {PRACTISE_HE}
@@ -152,8 +155,8 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
               onClick={() => setLevel(l)}
               className={
                 on
-                  ? 'min-h-touch min-w-touch rounded-full border-2 border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface'
-                  : 'min-h-touch min-w-touch rounded-full border border-border-strong text-sm text-ink-muted'
+                  ? 'min-h-touch min-w-touch rounded-full border-2 border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface active:opacity-90'
+                  : 'min-h-touch min-w-touch rounded-full border border-border-strong text-sm text-ink-muted active:opacity-90'
               }
             >
               {LEVEL_CHIP_HE(l)}

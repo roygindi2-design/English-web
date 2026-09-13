@@ -41,6 +41,17 @@ import type { AmirnetLevel } from '@/lib/core/amirnetPractice';
  *    is a drawing order, ⛔ not a layout value (`RULES § 0.22`, one reversible call, logged).
  * ── `ui-ux-pro-max` ux › Interaction › Disabled States («Don't: Confuse disabled with normal
  *    state») is why a locked card is ⛔ not a button at all — ⛔ not a greyed-out one.
+ * ── ⟦T-311 · C-0558⟧ THE PRESS ANSWERS, AND IT ⛔ CANNOT RUN TWICE. Measured live in C-0554's
+ *    walk (`next start`, 375×844): three taps on `רמה 1` produced **three** `GET
+ *    /api/amirnet/simulation` calls, and ⛔ nothing on the card changed at the moment of the tap.
+ *    ⇒ `active:opacity-90` (the product's own pressed feedback — `ui-ux-pro-max` ux › Interaction
+ *    › Active States, and 86 occurrences across `components/`+`app/`) and, while the run is being
+ *    fetched, `disabled` + `disabled:opacity-60` — `ui-ux-pro-max` ux › Feedback › Loading
+ *    Indicators, «preserve accessible busy status». ⛔ **And the state is ⛔ never the opacity
+ *    alone:** the card carries `aria-busy`, and `AmirnetSimulationEntry` says `טוען את
+ *    הסימולציה…` in a `role="status"` beside it.
+ * ── ⛔ `busy` is a PROP, ⛔ not state this component owns: who is fetching, and whether anything
+ *    is, is `AmirnetSimulationEntry`'s question — exactly as `unlockedThrough` is `T-309`'s.
  * ── The render is dark; the product is light (36 § 14.2, Roy 11/09). The background is ⛔ not a gap.
  */
 
@@ -77,6 +88,12 @@ export interface AmirnetLevelsProps {
   readonly unlockedThrough: AmirnetLevel;
   /** Called ⛔ only for an unlocked level. `T-308` wires it to the engine. */
   readonly onStart?: (level: AmirnetLevel) => void;
+  /**
+   * A run is already being fetched (`T-311`). Every open card is then blocked, because they all
+   * press the same route — and a second press would start a **different** 39-minute run under the
+   * one the learner meant. ⛔ Absent ⇒ `false`, so a caller that never fetches is unchanged.
+   */
+  readonly busy?: boolean;
 }
 
 /** SVG, ⛔ never an emoji (the constitution's frozen layer). */
@@ -123,7 +140,7 @@ function LevelCardBody({ row, unlocked }: { readonly row: AmirnetLevelRow; reado
   );
 }
 
-export default function AmirnetLevels({ unlockedThrough, onStart }: AmirnetLevelsProps) {
+export default function AmirnetLevels({ unlockedThrough, onStart, busy = false }: AmirnetLevelsProps) {
   return (
     <section>
       <header className="pt-2">
@@ -146,7 +163,9 @@ export default function AmirnetLevels({ unlockedThrough, onStart }: AmirnetLevel
                 <button
                   type="button"
                   onClick={() => onStart?.(row.level)}
-                  className="min-h-touch w-full rounded-2xl border-2 border-brand bg-surface-raised p-4 text-right"
+                  disabled={busy}
+                  aria-busy={busy}
+                  className="min-h-touch w-full rounded-2xl border-2 border-brand bg-surface-raised p-4 text-right active:opacity-90 disabled:opacity-60"
                 >
                   <LevelCardBody row={row} unlocked />
                 </button>

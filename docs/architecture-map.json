@@ -200,6 +200,11 @@
     "components/AmirnetDashboard.tsx"
   ],
   "components/AmirnetDashboard.tsx": [],
+  "components/AmirnetEstimateNotice.test.ts": [
+    "components/AmirnetEstimateNotice.tsx"
+  ],
+  "components/AmirnetEstimateNotice.tsx": [],
+  "components/AmirnetLevels.dom.test.tsx": [],
   "components/AmirnetLevels.test.ts": [
     "components/AmirnetLevels.tsx"
   ],

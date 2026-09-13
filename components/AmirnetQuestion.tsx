@@ -111,8 +111,17 @@ function typeNameHe(item: AmirnetServedItem): string {
  * The option's ring state. ⛔ Every branch that carries a colour also carries a MARK or the
  * ring's own weight, so ⛔ nothing here is signalled by hue alone.
  */
+/**
+ * ⟦T-311 · C-0558⟧ `active:opacity-90` is the product's pressed feedback (86 occurrences across
+ * `components/`+`app/`; `ui-ux-pro-max` ux › Interaction › Active States, «Don't: No feedback
+ * during interaction»). It is added ⛔ only while the option is still answerable: once `revealed`
+ * the row is `aria-disabled` and presses nothing, and giving it a pressed look would be exactly
+ * the «Confuse disabled with normal state» the same skill's Disabled States row forbids.
+ */
 function optionClasses(revealed: boolean, isCorrect: boolean, isChosen: boolean): string {
-  const base = 'flex min-h-touch w-full items-center gap-3 rounded-xl border px-4 py-3 text-right';
+  const base = revealed
+    ? 'flex min-h-touch w-full items-center gap-3 rounded-xl border px-4 py-3 text-right'
+    : 'flex min-h-touch w-full items-center gap-3 rounded-xl border px-4 py-3 text-right active:opacity-90';
   if (revealed && isCorrect) return `${base} border-2 border-success bg-success/10 text-ink`;
   if (revealed && isChosen) return `${base} border-2 border-danger bg-danger/10 text-ink`;
   if (isChosen) return `${base} border-2 border-brand bg-brand-surface/10 text-ink`;
@@ -165,7 +174,7 @@ export default function AmirnetQuestion({ items, level, now, onBackToMenu }: Ami
         <button
           type="button"
           onClick={onBackToMenu}
-          className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on"
+          className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
         >
           {BACK_TO_MENU_HE}
         </button>
@@ -287,7 +296,7 @@ export default function AmirnetQuestion({ items, level, now, onBackToMenu }: Ami
           <button
             type="button"
             onClick={advance}
-            className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on"
+            className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
           >
             {NEXT_HE}
           </button>

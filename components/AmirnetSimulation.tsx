@@ -148,7 +148,7 @@ export default function AmirnetSimulation({ items, now, onExit }: AmirnetSimulat
         <button
           type="button"
           onClick={onExit}
-          className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on"
+          className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
         >
           {BACK_TO_DASHBOARD_HE}
         </button>
@@ -245,10 +245,12 @@ export default function AmirnetSimulation({ items, now, onExit }: AmirnetSimulat
                     onClick={() => {
                       if (!expired) setChosen(i);
                     }}
+                    /* ⟦T-311⟧ pressed feedback ⛔ only while the chapter clock still runs — an
+                       expired chapter's option is `aria-disabled` and sets nothing. */
                     className={
                       isChosen
-                        ? 'flex min-h-touch w-full items-center gap-3 rounded-xl border-2 border-brand bg-brand-surface/10 px-4 py-3 text-right text-ink'
-                        : 'flex min-h-touch w-full items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised px-4 py-3 text-right text-ink'
+                        ? `flex min-h-touch w-full items-center gap-3 rounded-xl border-2 border-brand bg-brand-surface/10 px-4 py-3 text-right text-ink${expired ? '' : ' active:opacity-90'}`
+                        : `flex min-h-touch w-full items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised px-4 py-3 text-right text-ink${expired ? '' : ' active:opacity-90'}`
                     }
                   >
                     <span
@@ -276,7 +278,7 @@ export default function AmirnetSimulation({ items, now, onExit }: AmirnetSimulat
       <button
         type="button"
         onClick={step}
-        className="mt-4 min-h-touch w-full rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on"
+        className="mt-4 min-h-touch w-full rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
       >
         {endsRun || (expired && state.chapterIndex === AMIRNET_CHAPTERS.length - 1)
           ? FINISH_RUN_HE

@@ -32,6 +32,11 @@ import type { AmirnetServedItem } from '@/lib/core/amirnetQuestion';
  * ── State is ⛔ never colour alone: every state below is a SENTENCE, and `role="status"` puts it
  *    in the screen-reader's mouth the moment it appears.
  * ── ⛔ No motion (`check:motion`), ⛔ no hex literal, ⛔ no `h-screen`.
+ * ── ⟦T-311 · C-0558⟧ `loading` is now handed DOWN to the levels, ⛔ not only printed under them:
+ *    the sentence below told the learner a fetch was running while the cards stayed pressable, and
+ *    C-0554 measured 3 taps ⇒ 3 requests — the **last** answer wins `setPhase({kind:'run'})`, so a
+ *    39-minute run could start from a tap the learner ⛔ did not mean. The sentence stays; what
+ *    changed is that the cards now say it too.
  */
 
 export const LOADING_HE = 'טוען את הסימולציה…';
@@ -78,6 +83,9 @@ export default function AmirnetSimulationEntry({
   const [phase, setPhase] = useState<Phase>({ kind: 'levels' });
 
   async function start(level: AmirnetLevel) {
+    // ⛔ Belt as well as braces (`T-311`): the cards are `disabled` while this runs, and this
+    // guard is what makes «one run at a time» true even before React has re-rendered them.
+    if (phase.kind === 'loading') return;
     setPhase({ kind: 'loading' });
     try {
       const body = await apiGet<QueueResponse>(`/api/amirnet/simulation?level=${level}`);
@@ -98,7 +106,7 @@ export default function AmirnetSimulationEntry({
 
   return (
     <>
-      <AmirnetLevels unlockedThrough={unlockedThrough} onStart={start} />
+      <AmirnetLevels unlockedThrough={unlockedThrough} onStart={start} busy={phase.kind === 'loading'} />
 
       {phase.kind === 'loading' && (
         <p role="status" className="mt-4 text-sm text-ink-muted">
@@ -112,7 +120,7 @@ export default function AmirnetSimulationEntry({
           <button
             type="button"
             onClick={() => setPhase({ kind: 'levels' })}
-            className="mt-3 min-h-touch w-full rounded-xl border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface"
+            className="mt-3 min-h-touch w-full rounded-xl border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface active:opacity-90"
           >
             {BACK_TO_LEVELS_HE}
           </button>

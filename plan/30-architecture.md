@@ -2231,3 +2231,40 @@ opened as `T-310` this tick. ⇒ pressing רמה 1 in production reaches a sente
 is `D-152 § ב׳` (a statement of fact) and ⛔ not `RULES § 0.31` (an action that does nothing): the
 press does something, and what it does is tell the truth. ⚠️ 26 items are ⛔ not enough for one
 run in any case — 23 are needed at a **single** level — which is a content commission, ⛔ not code.
+
+## C-0558 (DEV) — `T-311` — the press answers, and it ⛔ cannot start a second run under the first
+
+**⛔ Not a polish row.** Measured live in C-0554's walk (`next start`, 375×844,
+`/world/amirnet/simulation`, the answer delayed 1200ms): `isDisabled()` on `רמה 1` returned
+`false` for the whole loading window and three taps produced **three** `GET
+/api/amirnet/simulation` calls. The answer that lands **last** is the one that enters
+`setPhase({kind:'run'})` ⇒ a **39-minute** run could start from a tap the learner ⛔ did not mean.
+Re-measured in this tick, same instrument: **three taps ⇒ 1 call**, `isDisabled()` ⇒ `true`,
+`aria-busy` ⇒ `"true"`.
+
+**The shape, and it is deliberately ⛔ not state the card owns.** `AmirnetLevels` takes an
+optional `busy` prop; `AmirnetSimulationEntry` — the only thing that knows whether a fetch is in
+flight — passes `phase.kind === 'loading'` down. A component that answered «is something being
+fetched» itself would be a **second place** for that answer to live, exactly as `unlockedThrough`
+is `T-309`'s question and ⛔ not this component's. `start()` also returns early while `loading`:
+the `disabled` attribute is the learner-visible half, the guard is what makes «one run at a time»
+true even before React has re-rendered.
+
+**State is ⛔ never the opacity alone:** the blocked card carries `disabled` **and** `aria-busy`,
+and `טוען את הסימולציה…` sits beside it in a `role="status"`. The card still reads `פתוח` —
+`busy` means «a run is being fetched», ⛔ not «this level is shut», and saying the second would be
+saying something false.
+
+**And the convention was missing across the whole feature, ⛔ not on one card.** `active:opacity-90`
+appears **86** times in `components/`+`app/` and appeared **0** times in the nine `Amirnet*`
+components against 10 tap cells (`ui-ux-pro-max` ux › Interaction › Active States — «Don't: No
+feedback during interaction»). All ten now carry it — ⛔ with one exclusion that is the same
+skill's Disabled States row: an option that is already `revealed` (`AmirnetQuestion`) or whose
+chapter clock has `expired` (`AmirnetSimulation`) presses nothing, and a pressed look on it would
+«confuse disabled with normal state».
+
+**The guard is a RENDER, ⛔ not a source scan** (`components/AmirnetLevels.dom.test.tsx`, the
+`F-224` lesson): the source of a card that presses twice reads exactly like one that presses once,
+so the test clicks.
+
+**⛔ Zero touch:** `app/api/**` · `lib/core/**` · every learner-facing string. `41 § 9.2` untouched.
