@@ -2424,3 +2424,61 @@ and `AmirnetSimulation.test.ts:103` asserted `toContain('flex-row-reverse')` **w
 ⇒ plain `flex` on both screens, the assertion inverted, and the measured `x` values written into
 both tests so the next reader ⛔ does not have to trust a sentence. ⚠️ Five other components carry
 the same class and were ⛔ **not** measured this tick — that is a row for PM, ⛔ not a claim of mine.
+
+## C-0577 (DEV) — `T-299` · `T-305` · `T-317` — three loop tools stop measuring the wrong thing
+
+⛔ **One shape, three places: each of these tools went red on a signal that was never
+the defect it exists to catch** — and every one of them had already taught an agent
+that its red is the normal colour.
+
+### `T-299` · `loop:health` check 2 reads the `קובץ:שורה` cell, ⛔ not the whole row
+`claimedPaths()` scanned every backtick in the markdown row, so an open finding whose
+free body names a path that has ⛔ **not been built yet** reddened the check. Measured
+in `C-0535`: two dead entries, both `app/api/amirnet/practice/route.ts`, both on
+**correct** rows (`F-222` · `F-225`) — and a finding whose whole content is «this path
+does not exist» could never be written without failing the gate.
+
+⇒ `cellsOf(line)` in `scripts/loop-health.mjs` splits a row on unescaped pipes **outside
+backtick code spans**, mirroring `splitRow` in `lib/core/planTable.ts` on both escape
+rules so the two parsers ⛔ cannot disagree about an index. It is ⛔ not imported from
+there: this file is plain `.mjs`, run by `node` and by the hook, with ⛔ no TS loader.
+Check 2 then reads cell index 2 — the fixed third column of `plan/60-findings.md`.
+
+⛔ **And the check is ⛔ not softened:** a dead path sitting **in the file column** still
+goes red, proved by a red-first test in that direction. Closes `F-225` and `F-228` —
+the same defect, measured twice.
+
+### `T-305` · the screen walk separates a cancellation from a failure
+`scripts/walk-screens.mjs` counted every `requestfailed` as a console error, so Chromium
+cancelling Next's own speculative RSC prefetch printed «⛔ 5 פגמים נראים» while the same
+paths answered **200** to `curl` in the same run.
+
+⇒ `scripts/lib/walk-errors.mjs` — a small pure module (`requestFailureLine` ·
+`isAbortedRequestLine` · `splitAborted`) filtering on **`errorText` only, ⛔ never on the
+URL**. That is the same rule `scripts/verify-mobile.mjs` has applied since `C-0220`/`T-131`,
+for the reason it already documents there: a URL filter silences a real failure on the
+same path. ⇒ this is two sibling tools aligned to one rule, ⛔ not a new gate (`RULES § 0.17`).
+⚠️ The cancellations ⛔ do not disappear — an `aborted` count per screen, a separate
+`↩️ בוטלו: N` line, and ⛔ excluded from the defect count. **Measured live** on
+`next start`, the three amirnet screens at 375px: `0` visible defects · `8` cancellations
+· exit `0`.
+
+### `T-317` · the cycle-id counter reads `origin/main` too
+`T-254` made the counter read two branches. PROMOTER pushes to ⛔ **neither of them** — it
+promotes to `main` — so its id was invisible, and three pairs of ticks carried the same
+number: `C-0284` · `C-0426` · `C-0546`. ⇒ `git log --grep C-0546` returns two ticks by two
+agents, in the one channel `loop:health` check 17 reads the loop through.
+
+⇒ `CYCLE_ID_BRANCHES` declares all three in one place, and `nextCycleId(git)` takes its
+git runner **as an argument**. That injection is ⛔ not decoration: it is the only way a
+test can plant `C-0600` on `main` alone and measure the old counter returning `C-0427`
+against the new one returning `C-0601`. An unreachable branch names itself and the count
+continues; all three unreachable **throws**, ⛔ it never returns `C-0001` quietly.
+⛔ **The id's shape is untouched** — `C-\d+` stays, and `C-0546-DEV` was rejected by name
+in `D-227`. Closes `F-231`.
+
+⚠️ **Two hand-written declaration files** (`scripts/lib/walk-errors.d.mts`,
+`scripts/next-cycle-id.d.mts`) — the modules are run by plain `node` while their tests go
+through `tsc`, and `tsconfig.json` keeps `allowJs: false` on purpose. Both are pinned by a
+shape test comparing declared names against the module's exports, the same pairing
+`next-cycle-id.test.ts` already used.
