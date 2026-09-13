@@ -1,36 +1,43 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import StudiesScreen from '@/components/StudiesScreen';
-import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
-
-/**
- * לימודים — הטאב שהלומד נוחת עליו אחרי onboarding ובכל כניסה חוזרת (D-027).
- * T-246 · `36 § 9`: המסך הוא בורר ארבעת המסלולים, ⛔ ולא ספירת ימים לבחינה
- * (D-077/D-083 נסוגו מפני D-176 — ראה `plan/40-decisions.md`).
- *
- * הסשן נבדק כאן ולא רק ב-`proxy.ts` — לקח F-003, ששער אחד על דלת אחת הוא נקודת
- * כשל יחידה. TD-13 נגזרת מכך: המסלול הזה דורש env של Supabase ועונה 307 בלעדיו,
- * ולכן הגאומטריה נמדדת דרך `/dev/tabs/studies`.
- *
- * ⛔ **הקריאה לנתוני ההתקדמות אינה כאן** — `<StudiesScreen>` קורא אותה בעצמו
- * דרך `GET /api/levels/summary` (Task 3), בדיוק הדפוס של `<LevelMapScreen>`.
- */
-export const dynamic = 'force-dynamic';
 
 // T-264 — the exact string `<StudiesScreen>`'s own `<h1>` already renders
 // (`components/StudiesScreen.tsx` `TITLE_HE`); the suffix is `app/layout.tsx`'s
 // `title.template`.
 export const metadata = { title: 'לימודים' };
 
-export default async function StudiesPage() {
-  const env = readSupabaseEnv();
-  if (!env) redirect('/login?expired=1');
-
-  const supabase = createRouteClient(env, await cookies());
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect('/login?expired=1');
-
+/**
+ * לימודים — הטאב שהלומד נוחת עליו אחרי onboarding ובכל כניסה חוזרת (D-027).
+ * T-246 · `36 § 9`: המסך הוא בורר ארבעת המסלולים, ⛔ ולא ספירת ימים לבחינה
+ * (D-077/D-083 נסוגו מפני D-176 — ראה `plan/40-decisions.md`).
+ *
+ * 🔴 **T-328 — המסלול הזה סטטי, ו⛔ זה ⛔ אינו ויתור על השער.**
+ * 🔬 **נמדד מפלט הבנייה על `dev` (`fd3d190`), ⛔ ולא מהקוד:** `○ /cards` ·
+ * `○ /world` · `○ /settings` מול **`ƒ /studies`** ו-**`ƒ /me`**. ⇒ מעבר ללשונית
+ * הזאת היה הלוך-ושוב לשרת **ול-Supabase** לפני שצויר ולו פיקסל אחד של תוכן,
+ * בעוד שלוש הלשוניות האחרות הוגשו מהקצה. **זה** ההבדל המבני שהלומד חווה
+ * כ«חלק מהמעברים נטענים וחלק לא» — ⛔ ולא תחושה.
+ *
+ * ⛔ **ומה שהוסר כאן הוא הקריאה, ⛔ ולא ההגנה.** ‏`getUser()` שישב בקובץ הזה
+ * ⛔ לא היה הגנה **נוספת**: הוא היה **הקריאה לשרת עצמה**, והוא רץ לפני כל ציור.
+ * השער נשאר בדיוק היכן שהוא נמצא גם עבור `/cards` ו-`/settings` — שתיהן קוראות
+ * את שורות הלומד עצמו והן `○` כבר היום:
+ *   ① `proxy.ts` — `/studies` נמצא ב-`PROTECTED_SCREENS`, ומפנה ל-`/login`
+ *     לפני שהמסמך נשלח בכלל. ⚠️ **ו-F-003 נשמר לפי לשונו:** `proxy.ts` נכשל
+ *     **סגור** כשאין env, ⛔ ולא פתוח;
+ *   ② `GET /api/levels/summary` — הנתיב שבו `<StudiesScreen>` שולף — בודק סשן
+ *     בעצמו ומחזיר `session_expired`, והמסך נושא יציאה לכל ענף כשל.
+ * ⇒ שני מנעולים על שתי דלתות שונות, בדיוק כפי שלקח F-003 דורש. הקובץ הזה
+ * ⛔ מעולם ⛔ לא היה השני מביניהם — הוא היה **שלישי על אותה דלת**, ומחירו מלוא
+ * ההמתנה של הלומד.
+ *
+ * ⛔ **הקריאה לנתוני ההתקדמות אינה כאן** — `<StudiesScreen>` קורא אותה בעצמו
+ * דרך `GET /api/levels/summary`, בדיוק הדפוס של `<LevelMapScreen>` (`/cards`).
+ * ⇒ ‏`loading.tsx` ומצב הטעינה של הרכיב שומרים על המקום (‏`taste-skill § 6.D` —
+ * `CLS < 0.1`), ולכן השלד מצויר מייד ו⛔ אינו קופץ כשהתשובה חוזרת.
+ *
+ * ⚠️ **‏TD-13 ⛔ אינה משתנה:** המסלול עדיין חסום-סשן ב-`proxy.ts`, עדיין עונה 307
+ * בלי env, והגאומטריה עדיין נמדדת דרך `/dev/tabs/studies`.
+ */
+export default function StudiesPage() {
   return <StudiesScreen />;
 }

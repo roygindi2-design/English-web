@@ -5,8 +5,13 @@
  * `36 § 9` makes this screen the chooser of the four tracks, so the skeleton is four
  * rows of one height — ⛔ not the generic two text lines.
  *
- * ⚠️ Like אני, this page waits on `supabase.auth.getUser()` before rendering (F-003).
- * The wait stays; what this file changes is that the shell stays painted through it.
+ * 🔴 **T-328 — the server wait this comment used to describe is GONE.** Until that
+ * row the page awaited `supabase.auth.getUser()` before rendering, and the line here
+ * said «the wait stays». It does not: `/studies` is now static (`○`), the session gate
+ * lives in `proxy.ts` and in `GET /api/levels/summary`, and this boundary now covers
+ * only the client navigation — the chunk, and `<StudiesScreen>`'s own fetch.
+ * ⛔ The comment is corrected rather than deleted: a skeleton that claims to cover a
+ * wait that no longer exists is how the next agent measures the wrong thing.
  */
 export default function Loading() {
   return (

@@ -265,6 +265,17 @@ describe('the tab fixtures render what the real tab screens render (F-027 cause 
       real: 'app/(tabs)/studies/page.tsx',
       fixture: 'app/dev/tabs/studies/page.tsx',
       component: 'StudiesScreen',
+      // 🔴 **T-328 — `/studies` moved to the SECOND gate, and this line is that
+      // move recorded.** It used to hold both: `proxy.ts`'s list AND its own
+      // `createRouteClient` read. The second one was ⛔ not defence in depth on a
+      // static page — it was the server round-trip itself, and it ran before a
+      // single pixel of content was drawn (`ƒ /studies` in `npm run build`).
+      // ⇒ the page is now shaped exactly like `/cards` directly below, which has
+      // carried `proxy.ts` alone since C-0073 and was MEASURED redirecting 307.
+      // ⚠️ And the assertion did ⛔ not weaken: `sessionGated` turns the loose
+      // `/createRouteClient/` match into `PROTECTED_SCREENS` **plus** a literal
+      // check that `'/studies'` is in that list — i.e. it now names the gate.
+      sessionGated: 'proxy.ts',
     },
     {
       name: 'cards',
