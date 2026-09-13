@@ -61,3 +61,49 @@ describe('<StudiesScreen> — בורר ארבעת המסלולים (T-246 · 36 
     expect(CODE).not.toMatch(/@\/lib\/supabase/);
   });
 });
+
+describe('<StudiesScreen> — הבורר הגולש אומר שהוא גולש (T-330)', () => {
+  it('ⓐ שינוי המסלול הפעיל מגלגל את השבב הנבחר לתצוגה', () => {
+    expect(CODE).toContain('scrollIntoView');
+    // ⛔ 'nearest' בשני הצירים: מסלול שנראה במלואו ⛔ אינו זז, והעמוד ⛔ אינו
+    // נגלל אנכית על הקשה בבורר.
+    expect(CODE).toMatch(/inline:\s*'nearest'/);
+    expect(CODE).toMatch(/block:\s*'nearest'/);
+    // הגלילה תלויה ב-`active` — ⛔ לא אפקט חד-פעמי על טעינה.
+    expect(CODE).toMatch(/\[active,[^\]]*\]/);
+  });
+
+  it('ⓐ הגלילה מכבדת prefers-reduced-motion — ⛔ ולא scroll-smooth במחלקות', () => {
+    expect(CODE).toContain("'(prefers-reduced-motion: reduce)'");
+    expect(CODE).toMatch(/behavior:\s*reduced\s*\?\s*'auto'\s*:\s*'smooth'/);
+    // ⛔ מחלקת `scroll-smooth` הייתה עוקפת את ההעדפה — ההכרעה נקראת ב-JS בלבד.
+    expect(CODE).not.toContain('scroll-smooth');
+  });
+
+  it('ⓑ סימן הגלישה מותנה במדידה מה-DOM, ⛔ ואינו קבוע', () => {
+    expect(CODE).toContain('hiddenStart');
+    expect(CODE).toContain('hiddenEnd');
+    expect(CODE).toContain('scrollWidth');
+    expect(CODE).toContain('clientWidth');
+    // ⛔ `Math.abs`: ב-RTL `scrollLeft` שלילי, ומדידה ישירה מסמנת «אין עוד» כשיש.
+    expect(CODE).toMatch(/Math\.abs\(\s*el\.scrollLeft\s*\)/);
+    // שני הסימנים מרונדרים מאחורי תנאי, ⛔ לא תמיד.
+    expect(CODE).toMatch(/\{hiddenStart\s*&&/);
+    expect(CODE).toMatch(/\{hiddenEnd\s*&&/);
+  });
+
+  it('ⓑ הסימן הוא קישוט — ⛔ לא יעד הקשה ו⛔ לא טקסט', () => {
+    const hints = CODE.match(/<span[\s\S]{0,400}?data-track-scroll-hint[\s\S]{0,400}?\/>/g) ?? [];
+    expect(hints).toHaveLength(2);
+    for (const hint of hints) {
+      expect(hint).toContain('aria-hidden="true"');
+      expect(hint).toContain('pointer-events-none');
+    }
+  });
+
+  it('⛔ הבורר נשאר שורה אחת — ⛔ בלי עטיפה ו⛔ בלי כיווץ (36 § 14)', () => {
+    expect(CODE).not.toContain('flex-wrap');
+    expect(CODE).toContain('shrink-0');
+    expect(CODE).toContain('overflow-x-auto');
+  });
+});

@@ -25,7 +25,7 @@
  * `fixtureLevels` עוקף את הקריאה — הפיקסטורה ב-`/dev/tabs/studies` מזינה אותו כדי
  * שהגאומטריה תימדד בלי env של Supabase.
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiGet } from '@/lib/api/client';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 import {
@@ -100,6 +100,55 @@ export default function StudiesScreen({
 
   const metric = metricFor(active, loading ? null : levels);
 
+  /**
+   * T-330 — הבורר גולש אופקית ב-375px (`הבנת הנקרא` נחתך ל«הג»), ו⛔ שני הדברים
+   * שחסרו לו ⛔ אינם קוסמטיקה: ⓐ בחירת מסלול חתוך השאירה את השבב **הנבחר** חצי
+   * מחוץ למסך, ⓑ ⛔ שום דבר ⛔ לא אמר ללומד שיש עוד מסלולים מעבר לקצה.
+   * ⛔ **⛔ לא כיווץ ו⛔ לא עטיפה לשתי שורות** — `36 § 14` קושר סדר והיררכיה,
+   * והרנדר (`docs/design/kol-A-04-learning.png`) מצייר שורה אחת.
+   */
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const chipRefs = useRef(new Map<StudyTrackId, HTMLButtonElement>());
+  const [hiddenStart, setHiddenStart] = useState(false);
+  const [hiddenEnd, setHiddenEnd] = useState(false);
+
+  /**
+   * ⛔ `Math.abs` ⛔ ולא `scrollLeft` גולמי: ב-RTL הדפדפן מחזיר כאן ערך **שלילי**
+   * ומדידה ישירה הייתה מסמנת «אין עוד» בדיוק כשיש.
+   */
+  const measureEdges = useCallback(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const offset = Math.abs(el.scrollLeft);
+    const max = el.scrollWidth - el.clientWidth;
+    setHiddenStart(offset > 1);
+    setHiddenEnd(max - offset > 1);
+  }, []);
+
+  useEffect(() => {
+    measureEdges();
+    window.addEventListener('resize', measureEdges);
+    return () => window.removeEventListener('resize', measureEdges);
+  }, [measureEdges, levels, loading]);
+
+  /**
+   * ⓐ השבב הנבחר מגולגל לתצוגה. `inline: 'nearest'` ⛔ ולא `'center'` — מסלול
+   * שכבר נראה במלואו ⛔ אינו זז, ו⛔ אין קפיצה על כל הקשה. `block: 'nearest'`
+   * מונע גלילה **אנכית** של העמוד. ⛔ ו⛔ אין `scroll-smooth` במחלקות: ההעדפה
+   * נקראת כאן, ⇒ `prefers-reduced-motion` ⛔ אינו נעקף (35 § layer B).
+   */
+  useEffect(() => {
+    const chip = chipRefs.current.get(active);
+    if (!chip) return;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    chip.scrollIntoView({
+      behavior: reduced ? 'auto' : 'smooth',
+      inline: 'nearest',
+      block: 'nearest',
+    });
+    measureEdges();
+  }, [active, measureEdges]);
+
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -107,12 +156,23 @@ export default function StudiesScreen({
         <p className="text-sm text-ink-muted">{SUBTITLE_HE}</p>
       </header>
 
-      <div role="tablist" aria-label={TITLE_HE} className="flex gap-2 overflow-x-auto">
+      <div className="relative">
+        <div
+          ref={listRef}
+          onScroll={measureEdges}
+          role="tablist"
+          aria-label={TITLE_HE}
+          className="flex gap-2 overflow-x-auto"
+        >
         {STUDY_TRACKS.map((track) => {
           const isActive = track.id === active;
           return (
             <button
               key={track.id}
+              ref={(el) => {
+                if (el) chipRefs.current.set(track.id, el);
+                else chipRefs.current.delete(track.id);
+              }}
               type="button"
               role="tab"
               aria-current={isActive ? 'true' : undefined}
@@ -132,6 +192,28 @@ export default function StudiesScreen({
             </button>
           );
         })}
+        </div>
+        {/*
+          ⓑ סימן הגלישה, ו⛔ **רק כשיש גלישה** — `hiddenStart`/`hiddenEnd` נמדדים
+          מה-DOM, ⇒ ארבעה מסלולים שנכנסים במלואם ⛔ אינם מקבלים דהייה על כלום.
+          ‏`start`/`end` לוגיים, והכיוון הפיזי של המדרג מתהפך ב-`ltr:` — הדהייה
+          אטומה **בקצה** ומתבהרת פנימה, בשני כיווני הכתיבה.
+          ‏`aria-hidden` + `pointer-events-none`: קישוט, ⛔ לא יעד הקשה ו⛔ לא טקסט.
+        */}
+        {hiddenStart && (
+          <span
+            aria-hidden="true"
+            data-track-scroll-hint="start"
+            className="pointer-events-none absolute inset-y-0 start-0 w-8 bg-gradient-to-l from-surface to-transparent ltr:bg-gradient-to-r"
+          />
+        )}
+        {hiddenEnd && (
+          <span
+            aria-hidden="true"
+            data-track-scroll-hint="end"
+            className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-r from-surface to-transparent ltr:bg-gradient-to-l"
+          />
+        )}
       </div>
 
       <div
