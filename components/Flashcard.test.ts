@@ -398,28 +398,44 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
    *
    * ⚠️ **Measured in Chromium (C-0488), ⛔ not assumed:** capture set on the parent
    * `<section>` retargets the following `click` to the section — a tap on a child
-   * `<button>` never reaches the button's handler. The section holds the reveal button
-   * and both grade buttons (D-042's canonical channel), so an unconditional capture on
-   * `pointerdown` would have killed all three. ⇒ capture only when the gesture is live
-   * AND it did not start on a control. `/dev/card/swap` in `verify-mobile.mjs` clicks
-   * `[data-grade="good"]` after a reveal and is the live guard for that.
+   * `<button>` never reaches the button's handler.
+   *
+   * 🔴 **⟦REWRITTEN 13/09 · `T-292`⟧ הטענה שלמעלה נכונה; **המנגנון** שהיא נעלה היה שגוי.**
+   * היא דרשה שני דברים: ⓐ `closest('…button…')` ב-`pointerdown`, ⓑ שה-`setPointerCapture`
+   * יֵשב **בתוך** `onPointerDown`. 🔬 **ונמדד חי 13/09 ב-`/dev/deck` ב-390×844:** כפתור
+   * החשיפה הוא **342×475** — *כל פני הכרטיס* — ולכן ⓐ החריג **כל נקודת מגע אפשרית**
+   * וההחלקה לפני חשיפה ⛔ מעולם לא התחילה. זה מה שרוי דיווח עליו.
+   * ⇒ **הטענה ⛔ לא נזנחה — המנגנון הוחלף במנגנון חזק יותר לאותה מטרה:** הלכידה
+   * נדחית עד ש-`|dx|` חוצה סף (⛔ ולא ב-`down`) ⇒ **הקשה ⛔ אינה נלכדת כלל**, ולכן
+   * ה-`click` מגיע לכפתור **בלי** שום רשימת החרגה; והחריגה שנשארה מכסה את פקדי
+   * הדירוג בלבד, שהם יעד שהלומד מכוון אליו.
+   * 📎 המדידה החיה: `/dev/card/swap` מקליק `[data-grade="good"]` אחרי חשיפה,
+   * ו-`/dev/deck` מודד עכשיו גם הקשה שחושפת וגם רעד מתחת לסף (`T-292`).
    */
-  it('T-233ⓑ — `setPointerCapture` ב-`pointerdown`, ⛔ ולא על הקשה בכפתור', () => {
+  it('T-292 — הלכידה אחרי הסף, ⛔ ולא ב-`pointerdown`, כדי שהקשה תגיע לכפתור', () => {
     expect(T085_CARD_SRC, 'התקדים: SpellCard.tsx:79').toContain('setPointerCapture(');
     expect(T085_CARD_SRC, 'שחרור מפורש ב-up/cancel').toContain('releasePointerCapture(');
-    // The guard: the capture is skipped when the pointer went down on a control.
-    expect(
-      T085_CARD_SRC,
-      'לכידה ללא סייג גונבת את ה-click משלושת הכפתורים — נמדד בכרומיום',
-    ).toMatch(/closest\(\s*['"][^'"]*\bbutton\b[^'"]*['"]\s*\)/);
-    // …and the capture sits inside the pointerdown handler, ⛔ not on first move: a tap
-    // that never moves must never capture, and a swipe must be captured from its start.
+    // ⓐ הסף קיים, והוא מספר ⛔ ולא תחושה.
+    expect(T085_CARD_SRC, 'סף היסטרזיס מוצהר (apple-design § 10)').toMatch(
+      /CAPTURE_THRESHOLD_PX\s*=\s*\d+/,
+    );
+    // ⓑ ⛔ והלכידה ⛔ אינה ב-`pointerdown` — זו בדיוק ההיפוך.
     const down = T085_CARD_SRC.indexOf('onPointerDown');
     const move = T085_CARD_SRC.indexOf('onPointerMove');
     const capture = T085_CARD_SRC.indexOf('setPointerCapture(');
     expect(down).toBeGreaterThan(-1);
-    expect(capture, '`setPointerCapture` חייב לשבת בתוך `onPointerDown`').toBeGreaterThan(down);
-    expect(capture).toBeLessThan(move);
+    expect(move).toBeGreaterThan(down);
+    expect(capture, '`setPointerCapture` חייב לשבת אחרי הסף, ב-`onPointerMove`').toBeGreaterThan(
+      move,
+    );
+    // ⓒ ופקדי הדירוג ⛔ עדיין מוחרגים — הם יעד, ⛔ ולא משטח.
+    expect(T085_CARD_SRC, 'פקדי הדירוג נשארים ערוץ משל עצמם').toMatch(
+      /closest\(\s*['"][^'"]*data-grade[^'"]*['"]\s*\)/,
+    );
+    // ⓓ ⛔ ו«button» ⛔ אינו חוזר לרשימה: הוא מה שחסם את המחווה.
+    expect(T085_CARD_SRC, '⛔ `button` ברשימת ההחרגה מחזיר את הפגם').not.toMatch(
+      /closest\(\s*['"][^'"]*\bbutton\b[^'"]*['"]\s*\)/,
+    );
   });
 
   /**
@@ -643,8 +659,24 @@ describe('T-066 — the choice card (D-156 · D-169)', () => {
     expect(CODE).toMatch(/data-stem-blank[\s\S]{0,200}ZERO_WIDTH_SPACE/);
   });
 
+  /**
+   * ⚠️ **⟦13/09 · `T-292`⟧ הטענה ⛔ לא נחלשה — החצי שנפל הוא ⛔ לא זה שהיא מודדת.**
+   * הביטוי היה `revealed && card.input === 'self'`, והטענה הזאת קראה אותו **כמחרוזת
+   * שלמה**. ‏`T-292` הסיר את `revealed` (ההחלקה חיה מהפיקסל הראשון, הכרעת רוי) ⇒
+   * המחרוזת השתנתה, ⛔ **והכלל ⛔ לא**: כרטיס `choice` ⛔ עדיין ⛔ אינו מחליק, מפני
+   * ש-`card.input === 'self'` הוא בדיוק מה שמוציא אותו.
+   * ⇒ ⛔ **ולכן היא ⛔ אינה מעודכנת למחרוזת החדשה** — מחרוזת מדויקת נשברת בכל עריכה
+   * שכנה ומלמדת לעדכן במקום למדוד. היא מודדת עכשיו **את הכלל**: `self` נדרש, ו-
+   * `revealed` ⛔ אינו רשאי לחזור לשער הזה בלי שמישהו יקרא את השורה הזאת.
+   */
   it('⛔ the choice card never activates the swipe', () => {
-    expect(CODE).toContain("const swipeActive = revealed && card.input === 'self';");
+    const line = /const swipeActive = ([^;]+);/.exec(CODE);
+    expect(line, 'swipeActive must stay one declared expression').not.toBeNull();
+    const expression = line![1];
+    expect(expression, "only an input === 'self' card may swipe").toContain(
+      "card.input === 'self'",
+    );
+    expect(expression, '⛔ `revealed` ⛔ אינו שער ההחלקה יותר (T-292)').not.toContain('revealed');
   });
 
   it('the choice front lives in the shared `data-card-front` node, and the back carries the Hebrew', () => {

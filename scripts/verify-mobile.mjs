@@ -60,7 +60,7 @@ const ROUTES = [
   // T-065 task 8, and the same reason as the three above one level up: `/study` IS in this
   // list, but `next start` has no Supabase env, so the queue answers 503 by its own
   // contract and every `ok /study` line here has described the FAILURE state. The scrolling
-  // deck — snap container, one card per viewport, the two grade buttons — has never been
+  // deck — the card viewport, one card in the DOM, the two grade buttons — has never been
   // rendered at 320/375/414 until this fixture.
   '/dev/deck',
   // T-055 · § 4.2ו — «המילה האחרונה — מסך סיום ולא מסך לבן». `/dev/deck` holds two
@@ -1905,11 +1905,11 @@ try {
       // כרטיס 3 ל-`min-content`. המשימה נסגרת בדוח מדידה, ⛔ ⛔ ב"נראה טוב".
       if (route === '/dev/deck') {
         const deck = await page.evaluate(() => {
-          const scroller = document.querySelector('[data-deck-scroll]');
+          const scroller = document.querySelector('[data-deck-viewport]');
           const cards = [...document.querySelectorAll('[data-flashcard]')];
-          if (!scroller || cards.length < 2) return { count: cards.length, scroller: Boolean(scroller) };
+          if (!scroller) return { count: cards.length, scroller: false };
           const box = scroller.getBoundingClientRect();
-          // The snap UNIT is the scroller's own child, ⛔ not `[data-flashcard]` inside it:
+          // The measured UNIT is the viewport's own child, ⛔ not `[data-flashcard]` inside it:
           // the card sits under the article's `pt-4`, so measuring the inner section reported
           // 567px inside a 583px viewport and convicted the deck of a 16px gutter that is the
           // spacing the design asks for. What must fill the viewport is the thing that snaps.
@@ -1927,27 +1927,51 @@ try {
             height: Math.round(box.height),
             items,
             viewportHeight: window.innerHeight,
+            // 🔴 T-294 — the measurement Roy's decision turns on. `overflow-hidden` is a
+            // class; THIS is whether the thing can actually be scrolled.
+            scrollHeight: Math.round(scroller.scrollHeight),
+            clientHeight: Math.round(scroller.clientHeight),
+            pageScrollable: document.body.scrollHeight > window.innerHeight + 1,
           };
         });
+        // 🔴 **⟦REWRITTEN 13/09 · `T-294` · הכרעת רוי על פריט 111⟧** עד היום נמדד כאן
+        // «הדק מחזיק את כל כרטיסי הפיקסטורה» — חמישה, כדי להוכיח שכרטיס 3/4/5 ממתין
+        // מחוץ למסך. ⛔ **הטענה התהפכה:** הדק מרנדר **כרטיס אחד**, והכרטיס הבא מגיע
+        // מפני שהקודם עף — ⛔ ולא מפני שגללו אליו. ⇒ חמישה כרטיסים ב-DOM הם עכשיו
+        // בדיוק הכשל.
         check(
-          deck.count >= 2 && deck.scroller,
-          `${at} the deck holds all fixture cards`,
-          `found ${deck.count} cards and ${deck.scroller ? 'a' : 'no'} [data-deck-scroll]`,
+          deck.count === 1 && deck.scroller,
+          `${at} T-294: exactly one card is in the DOM`,
+          `found ${deck.count} cards and ${deck.scroller ? 'a' : 'no'} [data-deck-viewport]`,
         );
-        if (deck.count >= 2 && deck.scroller) {
+        if (deck.count === 1 && deck.scroller) {
+          // 🔴 ⓪ **ההכרעה עצמה, ⛔ ולא הצורה שלה:** ⛔ אפס גלילה אנכית. `overflow-hidden`
+          //    הוא מחלקה שאפשר לדרוס; `scrollHeight > clientHeight` הוא האם המשטח
+          //    **באמת** נגלל. ⇒ נמדד 12/09 לפני התיקון: 2,995px בתוך 599px.
+          check(
+            deck.scrollHeight <= deck.clientHeight + 1,
+            `${at} T-294: the card viewport ⛔ cannot scroll vertically`,
+            `scrollHeight ${deck.scrollHeight} vs clientHeight ${deck.clientHeight}`,
+          );
+          //    ⓪ⓑ ו⛔ גם הדף עצמו ⛔ אינו נגלל — אחרת הגלילה פשוט עברה שכבה אחת החוצה.
+          check(
+            !deck.pageScrollable,
+            `${at} T-294: the page behind the deck ⛔ does not scroll either`,
+            'document.body scrolls past the viewport',
+          );
           // Measured against the SNAP VIEWPORT and ⛔ not against the window: the container
           // clips, so a card whose rectangle runs past `innerHeight` may be perfectly
           // invisible while a card 40px short of it is half on screen. Three properties,
           // and «one card per screen» is only true when all three hold.
           //
-          // ⓐ The snap viewport itself is entirely on screen — otherwise its bottom edge,
+          // ⓐ The card viewport itself is entirely on screen — otherwise its bottom edge,
           //    where the two grade buttons live, is below the fold (F-027 by another route).
           check(
             deck.top >= 0 && deck.bottom <= deck.viewportHeight,
             `${at} the deck fits on screen`,
-            `the snap viewport occupies ${deck.top}..${deck.bottom} of a ${deck.viewportHeight}px viewport`,
+            `the card viewport occupies ${deck.top}..${deck.bottom} of a ${deck.viewportHeight}px viewport`,
           );
-          // ⓑ EVERY card fills the snap viewport. 1px of tolerance for sub-pixel layout, and
+          // ⓑ The card fills its viewport. 1px of tolerance for sub-pixel layout, and
           //    no more: a card shorter than its viewport is the `min-h-dvh`/`flex-1` collapse
           //    measured in C-0104, where card 2 sat visible under card 1 and snapping meant
           //    nothing. T-086: the check runs over ALL fixture cards, so pinning
@@ -1957,26 +1981,20 @@ try {
             .filter((it) => it.height < deck.height - 1);
           check(
             short.length === 0,
-            `${at} one card per screen (${deck.items.length} cards checked)`,
+            `${at} the card fills its viewport`,
             short.length === 0
               ? ''
-              : `cards ${short.map((it) => `${it.i}=${it.height}px`).join(' · ')} inside a ${deck.height}px snap viewport`,
+              : `cards ${short.map((it) => `${it.i}=${it.height}px`).join(' · ')} inside a ${deck.height}px card viewport`,
           );
-          // ⓒ Every subsequent card begins at or after that bottom edge — the other half of
-          //    the same claim, applied to every card past the first.
-          const overlapping = deck.items
-            .map((it, i) => ({ i, ...it }))
-            .filter((it) => it.i >= 1 && it.top < deck.bottom - 1);
-          check(
-            overlapping.length === 0,
-            `${at} every subsequent card waits off screen`,
-            overlapping.length === 0
-              ? ''
-              : `cards ${overlapping.map((it) => `${it.i}@y=${it.top}`).join(' · ')} start above the snap viewport's bottom edge at ${deck.bottom}`,
-          );
+          // ⛔ **⟦REMOVED 13/09 · `T-294`⟧ «every subsequent card waits off screen».**
+          //    היא מדדה ש-`items[1..]` מתחילים מתחת לקצה התחתון — ו⛔ **אין `items[1..]`**.
+          //    ⇒ מסננת על רשימה בת פריט אחד חוזרת ריקה **תמיד**, כלומר הבדיקה הייתה
+          //    נעשית ירוקה-לנצח בלי למדוד דבר. ⛔ בדיקה ריקה שמכריזה על טענה גרועה
+          //    מהיעדרה. מה שהיא באמת שמרה — «⛔ אין כרטיס שני על המסך» — נמדד עכשיו
+          //    חזק יותר ב-`deck.count === 1` למעלה.
           // ⓓ דו״ח T-086 — הגיאומטריה בפועל, כדי שהמשימה תיסגר על מספרים ולא על תחושה.
           report(
-            `${at} T-086: snap viewport ${deck.top}..${deck.bottom} (height ${deck.height}px) · cards ${deck.items.map((it) => it.height).join('/')}px inside`,
+            `${at} T-086: card viewport ${deck.top}..${deck.bottom} (height ${deck.height}px) · cards ${deck.items.map((it) => it.height).join('/')}px inside`,
           );
         }
 
@@ -1986,7 +2004,7 @@ try {
         // y=60..80). This fixture never rendered that exit, so no run ever saw it. Now the
         // fixture passes the same `exit` slot production does, and four things are measured:
         // it exists and reads «חזרה לכרטיסיות», it is a 44px target, it overlaps neither
-        // header text, and it ends above the snap viewport (⛔ over the first card).
+        // header text, and it ends above the card viewport (⛔ over the card).
         const exit = await page.evaluate(() => {
           const el = document.querySelector('[data-deck-exit]');
           if (!el) return null;
@@ -1999,7 +2017,7 @@ try {
             .map((sel) => document.querySelector(sel))
             .filter(Boolean)
             .map(box);
-          const scroller = document.querySelector('[data-deck-scroll]');
+          const scroller = document.querySelector('[data-deck-viewport]');
           const intersects = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
           return {
             text: (el.textContent ?? '').trim(),
@@ -2014,9 +2032,9 @@ try {
           check(exit.text === 'חזרה לכרטיסיות', `${at} T-268: the exit is written, ⛔ not an icon`, `reads "${exit.text}"`);
           check(exit.height >= MIN_TAP && exit.width >= MIN_TAP, `${at} T-268: the exit is a ${MIN_TAP}px target`, `${exit.width}×${exit.height}px`);
           check(exit.collides === 0, `${at} T-268: the exit overlaps no header text`, `${exit.collides} header element(s) under the exit box`);
-          check(exit.bottom <= exit.scrollerTop, `${at} T-268: the exit ends above the snap viewport`, `exit bottom ${exit.bottom} vs viewport top ${exit.scrollerTop}`);
+          check(exit.bottom <= exit.scrollerTop, `${at} T-268: the exit ends above the card viewport`, `exit bottom ${exit.bottom} vs viewport top ${exit.scrollerTop}`);
           check(!exit.primary, `${at} T-268: the exit carries no data-primary-action`, 'it does — /study is a FLOW_ROUTE with exactly one');
-          report(`${at} T-268: exit ${exit.left}..${exit.right}×${exit.top}..${exit.bottom} (${exit.width}×${exit.height}px) · snap viewport from y=${exit.scrollerTop}`);
+          report(`${at} T-268: exit ${exit.left}..${exit.right}×${exit.top}..${exit.bottom} (${exit.width}×${exit.height}px) · card viewport from y=${exit.scrollerTop}`);
         }
 
         // The grade buttons only exist after the answer is revealed — measuring the front of
@@ -2340,8 +2358,16 @@ try {
         check(decay.level === 'stale', `${at} overdue card decays`, `data-decay=${decay.level}`);
         check(decay.label, `${at} decay carries its Hebrew label`, 'label missing');
 
-        // ⓐ המחווה ⛔ אינה חיה לפני החשיפה — שני הכפתורים אינם על המסך, ולכן
-        // גם הקיצור אליהם אינו. זה D-033: סימון בטעות הוא הנזק.
+        // 🔴 **ⓐ ⟦REVERSED 13/09 · `T-292` · הכרעת רוי⟧ המחווה חיה מהפיקסל הראשון.**
+        // הטענה כאן הייתה «swipe before reveal ⛔ does not grade», ונימוקה היה
+        // `D-033`: «סימון בטעות הוא הנזק». ⇒ רוי הכריע אחרת, פעמיים ובמפורש —
+        // «ההחלקה ימינה ושמאלה לא מעיפה את הכרטיסיה בשביל לעבור לכרטיס הבא».
+        // ⇒ ⛔ **והטענה ⛔ לא נמחקה — היא התהפכה:** אותה מחווה בדיוק, על אותו כרטיס
+        // בלתי-חשוף, חייבת עכשיו **להוריד את המונה**. מי שיחזיר את שער ה-`revealed`
+        // יאדים כאן, וזה בדיוק תפקידה.
+        // ⚠️ **ומה ש-`D-033` באמת שמר ⛔ לא אבד:** הערוץ הנגיש — שני הכפתורים —
+        // ⛔ עדיין מאחורי החשיפה, ולכן הוא עדיין מציג תשובה לפני שהוא מבקש שיפוט.
+        // ההחלקה היא **הערכה עצמית**, התנהגות התקן בכל חפיסת SRS.
         const before = await remainingNow();
         const box = await page.locator('[data-flashcard]').first().boundingBox();
         const midY = Math.round(box.y + box.height / 2);
@@ -2349,14 +2375,25 @@ try {
         await page.mouse.down();
         await page.mouse.move(Math.round(width / 2) + 40, midY, { steps: 8 });
         await page.mouse.up();
+        const afterBlind = await remainingNow();
         check(
-          (await remainingNow()) === before,
-          `${at} swipe before reveal ⛔ does not grade`,
-          `remaining moved ${before} → ${await remainingNow()}`,
+          afterBlind === before - 1,
+          `${at} T-292: swipe grades before the reveal too`,
+          `remaining ${before} → ${afterBlind} (expected ${before - 1})`,
         );
 
-        // ⓑ אחרי חשיפה — החלקה ימינה מסמנת «ידעתי» והכרטיס עוזב.
-        await page.locator('[data-reveal]').first().click();
+        // ⓑ ואחרי חשיפה — אותו ערוץ בדיוק, על הכרטיס הבא שתפס את המקום.
+        // ⚠️ **⟦13/09⟧ נמדד בבדיקת המוטציה של `T-292`:** כשההחלקה העיוורת ⛔ אינה מדרגת,
+        // הכרטיס ⛔ אינו עוזב — הוא **נחשף** — ואז `.click()` על `[data-reveal]` נתקע
+        // 30 שניות ו**זורק**. ⛔ זריקה מאבדת את כל פלט הבדיקות שנצבר, כלומר המוטציה
+        // נתפסה ⛔ בלי לומר במה. ⇒ נוכחות הכפתור נבדקת **כבדיקה בשם** לפני ההקשה.
+        const revealAfterBlind = await page.locator('[data-reveal]').count();
+        check(
+          revealAfterBlind >= 1,
+          `${at} T-292: the next card arrives unrevealed`,
+          `[data-reveal] count is ${revealAfterBlind} ⇒ the blind swipe revealed instead of grading`,
+        );
+        if (revealAfterBlind >= 1) await page.locator('[data-reveal]').first().click();
         const revealed = await remainingNow();
         await page.mouse.move(Math.round(width / 2) - 40, midY);
         await page.mouse.down();

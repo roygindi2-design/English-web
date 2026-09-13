@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
 import { deckCardKey, isSentenceCard, type DeckCard, type DeckName } from '@/lib/core/deck';
 import { buildCard, type CardGrade } from '@/lib/core/flashcard';
@@ -9,23 +9,31 @@ import { buildSentenceCard } from '@/lib/core/sentenceCard';
 import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
 
 /**
- * The scrolling deck — T-065 part א׳ (§ 4.2ו), plan `2026-08-13-study-queue.md` task 5.
+ * The card deck — T-065 part א׳ (§ 4.2ו), plan `2026-08-13-study-queue.md` task 5.
+ *
+ * 🔴 **⟦REWRITTEN 13/09 · `T-294` · הכרעת רוי על פריט 111⟧ הדק ⛔ אינו נגלל.**
+ * עד היום הוא היה «הדק הנגלל»: כל הכרטיסים הנותרים זה מתחת לזה בתוך
+ * `snap-y snap-mandatory overflow-y-auto`, והמעבר לכרטיס הבא היה **גלילה**.
+ * ⇒ רוי הכריע במפורש: «צריך להיות החלקה ימינה ושמאלה בשביל להעיף את הכרטיס ולקבל
+ * את הכרטיס הבא… הגלילה האנכית הזאת לא צריכה להיות קיימת בכלל».
+ * ⇒ **כרטיס אחד על המסך. ההחלקה מעיפה אותו. הבא תופס את מקומו.**
  *
  * Four decisions here are measurements, not taste:
  *
- * 1. **A graded card is REMOVED, and that is the whole of «no scrolling back».** The spec
- *    forbids returning to a card the learner already marked. The obvious reading — trap the
- *    scroll — costs a scroll handler that fights the browser's own snapping and breaks the
- *    one gesture this screen is built on. Removing the node makes the rule true by
- *    construction: there is nothing above to scroll back to, and no state to drift out of
- *    sync with the queue. Hence ⛔ no `preventDefault`, ⛔ no `overflow-hidden`.
+ * 1. **A graded card is REMOVED, and that is the whole of «no going back».** The spec
+ *    forbids returning to a card the learner already marked. Removing the node makes the
+ *    rule true by construction: there is nothing to return to, and no state to drift out of
+ *    sync with the queue. ⛔ Hence still no `preventDefault` — ⛔ there is no scroll to
+ *    fight. ⚠️ **What DID change 13/09:** the sentence here used to end «⛔ no
+ *    `overflow-hidden`», because trapping the scroll was the alternative it rejected.
+ *    ⛔ `overflow-hidden` is now the carrier of Roy's decision on BOTH axes, ⛔ and it is
+ *    ⛔ not a scroll trap: there is no overflowing content for it to trap.
  *
- * 2. **Vertical snap here; the horizontal shortcut lives in `Flashcard` (D-042 · T-099).**
- *    The original ban quoted the vision's reason for forbidding drag — «a gesture on the
- *    scroll axis competes with the scroll» — and D-042 measured that reason against this
- *    file and found it does not apply: this container scrolls **vertically**
- *    (`snap-y snap-mandatory`), and the gesture is **horizontal**. The two axes are not the
- *    same axis, so the blanket ban was wider than the evidence that justified it.
+ * 2. **The gesture is horizontal, and now ⛔ nothing else is.** (D-042 · T-099 · `T-294`.)
+ *    The vision forbade drag because «a gesture on the scroll axis competes with the
+ *    scroll»; D-042 answered that the axes differed. ⇒ **That defence is now redundant
+ *    rather than wrong** — ⛔ there is no scroll axis left to compete with, which is the
+ *    strongest form the original rule could take.
  *    ⚠️ **REVISED 07/09 (T-259ⓕ · Roy's explicit instruction, 06/09).** The swipe is the
  *    PRIMARY grade channel; the two ≥44px buttons stay in the DOM as the accessible
  *    equivalent (שכבה א׳ — `sr-only` until focused) and the swipe calls **exactly the
@@ -39,17 +47,16 @@ import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
  *    ⛔ NOT quoted here** — a dead instruction sitting in a live file is one some agent
  *    will still obey (the `36 § 14.4` precedent). What it forbade was the finger; what was
  *    measured is that its 8-pixel allowance is feedback a learner ⛔ does not feel.
- *    The card now tracks the finger **1:1** during the
- *    drag and settles in one easing on release — ⛔ and that is ⛔ not a relaxation of
- *    constitution § 5, which governs the RELEASE: dragging is **direct manipulation**,
- *    ⛔ not an animation the product plays. ⛔ Zero horizontal SCROLL still survives:
- *    the container below keeps its own overflow, and `translateX` ⛔ does not scroll it.
+ *    The card tracks the finger **1:1** during the drag and settles in one easing on
+ *    release — ⛔ and that is ⛔ not a relaxation of constitution § 5, which governs the
+ *    RELEASE: dragging is **direct manipulation**, ⛔ not an animation the product plays.
  *    ⛔ None of that lives here: `<Flashcard>` owns both grade buttons, so it owns the
  *    shortcut to them, and this component still adds no control of its own.
  *
- * 3. **`behavior: 'auto'`, ⛔ never `'smooth'`.** Smooth scrolling is motion the OS-level
- *    prefers-reduced-motion setting cannot switch off from CSS, because it is requested
- *    imperatively. `auto` respects the user's own scroll behaviour setting.
+ * 3. **⛔ ⟦RETIRED 13/09 · `T-294`⟧ «`behavior: 'auto'`, ⛔ never `'smooth'`».** It governed
+ *    the `scrollIntoView` that advanced the deck, and **that call ⛔ no longer exists**.
+ *    ⇒ the heading is kept, ⛔ and empty on purpose: a numbered decision that vanishes
+ *    silently is one a later reader re-derives from scratch.
  *
  * 4. **The `unknown` deck wears a permanent label (D-033).** «תרגול — לא משנה את מועד
  *    החזרה» is a promise about what the buttons do NOT do: `POST /api/practice` moves two
@@ -106,20 +113,16 @@ export default function CardDeck({
   // WHAT the learner marked on them, and it is the only source the finish state counts.
   const [grades, setGrades] = useState<readonly CardGrade[]>(initialGrades);
   const [pending, setPending] = useState<string | null>(null);
-  const [scrollTo, setScrollTo] = useState<string | null>(null);
-  const nodes = useRef(new Map<string, HTMLElement>());
 
   const remaining = cards.filter((card) => !graded.includes(deckCardKey(card)));
 
-  // Scrolling in an effect and not inside the click handler is load-bearing: at click time
-  // the graded card is still in the DOM, so the next card has not yet moved to where it
-  // will be. Scrolling then lands on the position it USED to occupy — measured as a deck
-  // that appeared to skip a card on every second grade.
-  useEffect(() => {
-    if (scrollTo === null) return;
-    nodes.current.get(scrollTo)?.scrollIntoView({ block: 'start', behavior: 'auto' });
-    setScrollTo(null);
-  }, [scrollTo]);
+  // ⛔ ⟦REMOVED 13/09 · `T-294`⟧ **`scrollTo`, ה-`useEffect` שגלל, ומפת הצמתים שהחזיקה
+  // אותו — ⛔ אינם כאן יותר, ו⛔ זו ⛔ אינה השמטה.** הם קיימו מנגנון אחד: «אחרי דירוג,
+  // גלול אל הכרטיס הבא». הדק מרנדר **כרטיס אחד**, ולכן הכרטיס הבא ⛔ אינו במקום אחר
+  // שצריך לגלול אליו — הוא במקום היחיד שיש. ⇒ ⛔ אין מה לתזמן ו⛔ אין מה לסנכרן.
+  // 📎 והנימוק שהיה שם — «בזמן הלחיצה הכרטיס המדורג עדיין ב-DOM, ולכן הגלילה נוחתת
+  // במקום שהוא עוד תופס» — ⛔ אינו אבוד: הוא בדיוק הסיבה שהמבנה הזה ⛔ אינו יכול
+  // לשחזר את התקלה ההיא.
 
   const grade = useCallback(
     async (key: string, wordId: string, value: CardGrade) => {
@@ -138,15 +141,14 @@ export default function CardDeck({
       } finally {
         setPending(null);
       }
-      // The next card is the one after this one that is still un-graded — ⛔ not "the first
-      // remaining", which would yank a learner who scrolled ahead back up the deck.
-      const index = cards.findIndex((card) => deckCardKey(card) === key);
-      const next = cards.slice(index + 1).find((card) => !graded.includes(deckCardKey(card)));
+      // ⟦13/09 · `T-294`⟧ **הדירוג מסיר את הכרטיס, וזה כל מה שצריך כדי להגיע לבא.**
+      // ⛔ הבחירה «מי הבא» ⛔ אינה נעשית כאן יותר: `remaining` נגזר מ-`cards` לפי הסדר,
+      // ולכן הראשון שנשאר **הוא** הבא. הנימוק הישן — «⛔ לא הראשון שנשאר, שהיה מושך
+      // לומד שגלל קדימה בחזרה למעלה» — הניח שאפשר לגלול קדימה. ⛔ כבר אי אפשר.
       setGraded((previous) => [...previous, key]);
       setGrades((previous) => [...previous, value]);
-      setScrollTo(next === undefined ? null : deckCardKey(next));
     },
-    [cards, graded, onGraded, pending],
+    [onGraded, pending],
   );
 
   if (remaining.length === 0) {
@@ -254,25 +256,24 @@ export default function CardDeck({
         </div>
       </header>
 
-      {/* The scroll container. `h-dvh` lives on the section above, so one card fills exactly
-          what is left under the label — a card taller than the viewport would put the grade
-          buttons below the fold on the very screen they exist for. */}
-      {/* ⛔ `overflow-x-hidden` מפורש (T-157ⓕ): הכרטיס נגרר עכשיו 1:1, ולכן `translateX`
-          של 200 פיקסלים מגיע אל מחוץ למכולה. ⛔ גלילה אופקית היא בדיוק מה ש-`check:mobile`
-          מפיל ב-320/375/414, ו-`overflow-y-auto` לבדו ⛔ אינו חוסם את הציר השני. */}
-      <div
-        className="snap-y snap-mandatory min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
-        data-deck-scroll
-      >
-        {remaining.map((card) => (
-          <article
-            key={deckCardKey(card)}
-            ref={(node) => {
-              if (node) nodes.current.set(deckCardKey(card), node);
-              else nodes.current.delete(deckCardKey(card));
-            }}
-            className="flex h-full snap-start flex-col pt-4"
-          >
+      {/* 🔴 **החלון של הכרטיס — ⛔ ולא מכולת גלילה.** ⟦REWRITTEN 13/09 · `T-294` ·
+          הכרעת רוי על פריט 111⟧
+          ⛔ **הגלילה האנכית ⛔ אינה קיימת יותר, ו⛔ זו ⛔ אינה החמרה של הישן אלא החלפתו.**
+          עד היום כל הכרטיסים הנותרים רונדרו זה מתחת לזה ב-`snap-y snap-mandatory
+          overflow-y-auto`, והמעבר לכרטיס הבא היה **גלילה** (‏`scrollIntoView`). 🔬 נמדד
+          12/09 ב-`/dev/deck`: 2,995px תוכן בחלון 599px.
+          ⇒ רוי הכריע במפורש (13/09): «צריך להיות החלקה ימינה ושמאלה בשביל להעיף את
+          הכרטיס ולקבל את הכרטיס הבא… הגלילה האנכית הזאת לא צריכה להיות קיימת בכלל».
+          ⇒ **הדק מרנדר כרטיס אחד.** הכרטיס הבא מגיע מפני שהקודם **יצא מהרשימה**,
+          ⛔ ולא מפני שמשהו נגלל — וזה גם מה שמייתר את `scrollIntoView` ואת מפת הצמתים
+          שהחזיקה אותו.
+          ⚠️ **`overflow-hidden` כאן חוסם את שני הצירים בכוונה:** האופקי מפני ש-`translateX`
+          של יציאה מגיע אל מחוץ למכולה (‏`T-157`ⓕ, ⛔ לא השתנה), והאנכי מפני שזו
+          ההכרעה עצמה. ⛔ **ו⛔ אין כאן `preventDefault`** — אין מה למנוע כשאין תוכן
+          לגלול אליו. */}
+      <div className="relative min-h-0 flex-1 overflow-hidden" data-deck-viewport>
+        {remaining.slice(0, 1).map((card) => (
+          <article key={deckCardKey(card)} className="flex h-full flex-col pt-4">
             <Flashcard
               // The key above is on the article, but `Flashcard` holds `revealed` in its own
               // state and resets it when the `card` prop changes identity. `buildCard` runs

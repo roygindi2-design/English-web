@@ -113,10 +113,24 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(CODE).toContain("'use client'");
   });
 
-  it('snaps one card to one screen', () => {
-    expect(CODE).toContain('snap-y');
-    expect(CODE).toContain('snap-mandatory');
-    expect(CODE).toContain('snap-start');
+  /**
+   * 🔴 **⟦INVERTED 13/09 · `T-294` · הכרעת רוי על פריט 111⟧** עד היום הטענה כאן דרשה
+   * `snap-y` · `snap-mandatory` · `snap-start` — כלומר היא **נעלה את הגלילה האנכית
+   * במקום**. רוי הכריע שהיא ⛔ לא תהיה, ולכן הטענה ⛔ אינה נמחקת אלא **מתהפכת**:
+   * אותה שורה שהגנה על המנגנון מגנה עכשיו על היעדרו.
+   * 🔬 הסיבה שזו טענת-מקור ו⛔ לא טענת-DOM: `snap-y` על מכולה ריקה ⛔ אינו נראה
+   * ברינדור סטטי, ו-`/dev/deck` מודד את **התוצאה** — ⛔ אין כאן כפילות.
+   */
+  it('⛔ carries no vertical scrolling of any kind — one card, ⛔ not a scroller', () => {
+    for (const dead of ['snap-y', 'snap-mandatory', 'snap-start', 'overflow-y-auto']) {
+      expect(CODE, `⛔ ${dead} הוא הגלילה האנכית שרוי ביטל`).not.toContain(dead);
+    }
+    expect(CODE, 'ו⛔ אין קריאה שגוללת').not.toContain('scrollIntoView');
+  });
+
+  /** ⛔ ורק כרטיס אחד מרונדר — אחרת «אין גלילה» היה נשען על CSS בלבד. */
+  it('renders exactly one card, so there is nothing to scroll to', () => {
+    expect(CODE).toContain('remaining.slice(0, 1)');
   });
 
   /**
@@ -146,19 +160,31 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
     expect(CODE).toContain('min-h-0');
   });
 
-  /** The snap viewport is marked, because `/dev/deck` measures the deck against it and ⛔ not against the window. */
-  it('marks the snap viewport for the harness', () => {
-    expect(CODE).toContain('data-deck-scroll');
+  /**
+   * החלון של הכרטיס מסומן, מפני ש-`/dev/deck` מודד את הדק **מולו** ו⛔ לא מול החלון.
+   * ⚠️ **⟦RENAMED 13/09 · `T-294`⟧** העוגן נקרא `data-deck-scroll` עד היום, והשם ⛔ כבר
+   * ⛔ לא היה נכון: ⛔ אין שם גלילה. שם שמשקר הוא שם שסוכן מאוחר יסיק ממנו מנגנון
+   * שאינו קיים ⇒ `data-deck-viewport`.
+   */
+  it('marks the card viewport for the harness', () => {
+    expect(CODE).toContain('data-deck-viewport');
+    expect(CODE, '⛔ והשם הישן ⛔ אינו נשאר מאחור').not.toContain('data-deck-scroll');
   });
 
   it('⛔ never centres a flex column — the F-011 · F-016 dead band', () => {
     expect(CODE).not.toMatch(/flex-1[^"'`]*justify-center/);
   });
 
+  /**
+   * ⚠️ **⟦NARROWED 13/09 · `T-294`⟧** הטענה דרשה גם `behavior: 'auto'` **וגם** ⛔ אפס
+   * `'smooth'`. החצי הראשון הגן על הקריאה `scrollIntoView`, ו**הקריאה ⛔ אינה קיימת**
+   * ⇒ הוא היה נכשל על היעדר מנגנון, ⛔ לא על ליקוי. החצי השני **נשאר ומתחזק**: גלילה
+   * חלקה היא תנועה ש-`prefers-reduced-motion` ⛔ אינו יכול לכבות מ-CSS, וכניסתה חזרה
+   * לקובץ הזה — בכל צורה — היא בדיוק מה שצריך להאדים.
+   */
   it("⛔ carries no behavior: 'smooth' — it overrides prefers-reduced-motion", () => {
     expect(CODE).not.toMatch(/behavior:\s*'smooth'/);
     expect(CODE).not.toMatch(/behavior:\s*"smooth"/);
-    expect(CODE).toMatch(/behavior:\s*'auto'/);
   });
 
   it('⛔ fetches nothing itself — the screen above it owns the network (task 6)', () => {
@@ -197,12 +223,16 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
   });
 
   it('renders the remaining cards only — a graded card leaves the DOM', () => {
-    // «no scrolling back to a card you graded» is implemented by removal, so there is
-    // nothing here that blocks scrolling and nothing to get out of sync with the queue.
+    // «no going back to a card you graded» is implemented by removal, so there is nothing
+    // here that fights the browser and nothing to get out of sync with the queue.
     expect(CODE).toMatch(/\.filter\(/);
     expect(CODE).toContain('graded');
     expect(CODE).not.toContain('preventDefault');
-    expect(CODE).not.toContain('overflow-hidden');
+    // ⚠️ **⟦13/09 · `T-294`⟧ ⛔ `overflow-hidden` ⛔ אינו אסור יותר — הוא נדרש.**
+    // האיסור הישן כאן היה על **מלכודת גלילה**: לחסום גלילה שיש לה תוכן לגלול אליו.
+    // אחרי `T-294` ⛔ אין תוכן כזה — כרטיס אחד מרונדר — ולכן `overflow-hidden` ⛔ אינו
+    // לוכד דבר; הוא **נושא ההכרעה** של רוי על שני הצירים. ⇒ הטענה מתהפכת, ו⛔ לא נמחקת.
+    expect(CODE, 'ההכרעה של רוי נישאת כאן, ⛔ ולא ב-CSS חיצוני').toContain('overflow-hidden');
   });
 
   it('keys each Flashcard by deckCardKey — reveal state is per card, and two stems of one word are two cards (T-066)', () => {
@@ -330,13 +360,13 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
       expect(CODE).toMatch(/exit\?: \{\s*readonly href: string;\s*readonly labelHe: string;?\s*\}/);
     });
 
-    it('renders the exit in the scrolling header, above the snap viewport', () => {
+    it('renders the exit in the deck header, above the card viewport', () => {
       const headerAt = CODE.indexOf('<header');
       const exitAt = CODE.indexOf('data-deck-exit');
-      const scrollAt = CODE.indexOf('data-deck-scroll');
+      const scrollAt = CODE.indexOf('data-deck-viewport');
       expect(exitAt, 'no `data-deck-exit` in the scrolling deck').toBeGreaterThan(-1);
       expect(exitAt, 'the exit sits inside the `<header>` row').toBeGreaterThan(headerAt);
-      expect(exitAt, 'the exit must come BEFORE the snap viewport in the DOM').toBeLessThan(scrollAt);
+      expect(exitAt, 'the exit must come BEFORE the card viewport in the DOM').toBeLessThan(scrollAt);
     });
 
     it('the exit is a written link — 44px, `<Link>`, ⛔ no `data-primary-action`', () => {
@@ -424,9 +454,15 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
     expect(SRC).toContain('D-090ⓑ');
   });
 
-  it('⛔ changes no code at all — the comment is the whole task', () => {
-    // הטענה החזקה: כל השומרים האחרים בקובץ מודדים את `CODE`, והוא ⛔ לא זז.
-    expect(CODE).toContain('snap-y');
+  it('⛔ adds no control of its own — the deck delegates the gesture to Flashcard', () => {
+    // ⚠️ **⟦REFRAMED 13/09 · `T-294`⟧** השם הישן היה «⛔ changes no code at all», והוא
+    // תיאר את `T-127` — משימה שכל תוכנה היה הערה. הקנרית שלה הייתה `snap-y`: «אם הוא
+    // עדיין כאן, הקוד ⛔ לא זז». ⛔ **הקוד כן זז, ובכוונה** — `T-294` הסיר את הגלילה
+    // בהכרעת רוי ⇒ הקנרית מודדת עכשיו את **היעדר המנגנון שהוסר**, ⛔ ולא את יציבות
+    // הקובץ. ⇒ היא יורדת, ו⛔ הטענות שמתחתיה ⛔ אינן — הן ⛔ מעולם לא היו על `T-127`:
+    // הן על הגבול שהקובץ הזה שומר עד היום, שהמחווה שייכת ל-`Flashcard` ו⛔ לא לדק.
+    // 📎 ו«הקוד ⛔ לא זז» עדיין נמדד — בשורה `⛔ carries no vertical scrolling` למעלה,
+    // שהיא הפוכה לקנרית הזאת ולכן שומרת בדיוק על הכיוון החדש.
     expect(CODE).not.toContain('preventDefault');
     expect(CODE).not.toContain('onPointerDown');
   });

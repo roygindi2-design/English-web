@@ -97,6 +97,27 @@ export default function Flashcard({
   const samples = useRef<readonly PointerSample[]>([]);
   /** T-243 · § 3 — where the card WAS when the finger grabbed it mid-flight. */
   const baseX = useRef(0);
+  /**
+   * 🔴 **⟦NEW 13/09 · `T-292`⟧ הלכידה נדחית עד שהאצבע באמת זזה — ⛔ ואינה ב-`pointerdown`.**
+   *
+   * 🔬 **נמדד חי 13/09 ב-`/dev/deck` ב-390×844, ⛔ ולא הוסק:** כפתור החשיפה הוא
+   * **342×475** — *כל פני הכרטיס*; `elementFromPoint` במרכז הכרטיס מחזיר `<button>`.
+   * ⇒ השומר שלמטה («מחווה שמתחילה על פקד ⛔ אינה מחווה», C-0488) חל על **כל נקודה
+   * שאפשר לגעת בה**, ולכן ההחלקה לפני חשיפה ⛔ **מעולם לא התחילה**. זה, ⛔ ולא שער
+   * ה-`revealed`, הוא מה שרוי דיווח עליו.
+   *
+   * ⇒ **ושני הכללים ⛔ אינם סותרים — הם רק היו על אותו אירוע.** הנימוק של C-0488 הוא
+   * שלכידה על ה-`<section>` **ממקדת מחדש את ה-`click`** ולכן כפתור פנימי ⛔ אינו מקבל
+   * אותו. ⇒ הפתרון הוא **להזיז את הלכידה, ⛔ ולא לוותר עליה**: ⛔ אין לכידה ב-`down`,
+   * ויש לכידה ברגע שהתנועה חוצה סף. ⇒ **הקשה** (⛔ אפס תנועה) ⛔ אינה נלכדת, ה-`click`
+   * מגיע לכפתור, והחשיפה עובדת כמו תמיד; **גרירה** נלכדת, וממקדת מחדש את ה-`click`
+   * אל ה-`section` — כלומר גם מונעת חשיפה בטעות בסוף החלקה.
+   * 📎 `apple-design` § 10: «require a small movement threshold (hysteresis, ~10px) before
+   * committing to a direction, then track 1:1».
+   */
+  const captured = useRef(false);
+  /** § 10 — היסטרזיס. ⛔ מתחת לזה ההקשה עדיין הקשה. */
+  const CAPTURE_THRESHOLD_PX = 10;
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -262,8 +283,22 @@ export default function Flashcard({
         ? 'מה הפירוש?'
         : 'איך אומרים באנגלית?';
 
-  /** ⛔ תנאי אחד לשני הערוצים: הכפתורים למטה נבדקים באותו ביטוי בדיוק. */
-  const swipeActive = revealed && card.input === 'self';
+  /**
+   * 🔴 **⟦13/09 · `T-292` · `T-294` · הכרעת רוי⟧ ההחלקה חיה מהפיקסל הראשון — ⛔ ולא רק
+   * אחרי הגילוי.**
+   * עד היום התנאי היה `revealed && card.input === 'self'`, ולכן לומד שהחליק על כרטיס
+   * שטרם גילה ⇒ ⛔ **שום דבר ⛔ לא קרה**. זה בדיוק הדיווח של רוי: «ההחלקה ימינה
+   * ושמאלה לא מעיפה את הכרטיסיה בשביל לעבור לכרטיס הבא».
+   * ⇒ **והתשובה ⛔ אינה «להוסיף ערוץ» אלא «להסיר שער»:** כל המנגנון — לכידה, מעקב 1:1,
+   * דגימות מהירות, הטלת תנע ויציאה — כבר היה בנוי ועבד. ⛔ רק `revealed` חסם אותו.
+   *
+   * ⚠️ **ומה שזה משנה בלמידה, במפורש כדי שלא יתגלה בדיעבד:** אפשר עכשיו לסמן «ידעתי»
+   * ⛔ בלי לראות את התרגום. ⇒ זו **הערכה עצמית**, התנהגות התקן בכל חפיסת SRS: מי
+   * ששולף את המילה מהזיכרון ⛔ אינו חייב לחשוף אותה כדי להצהיר על כך. ⛔ **והכפתורים
+   * ⛔ לא זזו** — הם נשארים מאחורי `revealed`, כך שהערוץ הנגיש עדיין מציג את התשובה
+   * לפני שהוא מבקש שיפוט.
+   */
+  const swipeActive = card.input === 'self';
 
   const decay =
     nowMs === null || review === undefined
@@ -301,10 +336,14 @@ export default function Flashcard({
         // on when the finger leaves the card, and `pointerup` reaches here from anywhere.
         // 🔴 **Measured in Chromium (C-0488), ⛔ not assumed:** capture on the `<section>`
         // retargets the next `click` to the section and a child button never receives it.
-        // The reveal button and both grade buttons live inside ⇒ a gesture that starts on a
-        // control is ⛔ not captured and ⛔ not a gesture: the control is its own channel.
+        // ⇒ ⟦NARROWED 13/09 · `T-292`⟧ **הכלל נשמר, תחולתו נמדדה מחדש.** הוא נכתב כדי
+        // שהקשה על פקד תגיע לפקד — וזה נשאר נכון **לפקדי הדירוג**, שהם יעד שהלומד
+        // מכוון אליו. ⛔ אבל כפתור החשיפה ⛔ אינו יעד בתוך הכרטיס: **הוא הכרטיס**
+        // (נמדד 342×475 מתוך 342×583) ⇒ החרגתו החריגה את המחווה כולה.
+        // ⇒ **והלכידה כבר ⛔ אינה כאן** (ראה `captured` למעלה): היא קורית רק כשהאצבע
+        // חוצה סף, ולכן הקשה על החשיפה מגיעה לכפתור בין כה וכה.
         const target = e.target instanceof Element ? e.target : null;
-        if (target !== null && target.closest('button, input, a') !== null) {
+        if (target !== null && target.closest('[data-grade], input, a') !== null) {
           swipeFrom.current = null;
           return;
         }
@@ -322,11 +361,18 @@ export default function Flashcard({
         writeDrag(baseX.current, null);
         swipeFrom.current = { x: e.clientX, y: e.clientY };
         samples.current = [{ x: e.clientX, tMs: e.timeStamp }];
-        node.setPointerCapture(e.pointerId);
+        captured.current = false; // ⇒ הלכידה ב-`move`, אחרי הסף. ראה `captured`.
       }}
       onPointerMove={(e) => {
         const from = swipeFrom.current;
         if (from === null) return;
+        // ⟦13/09 · `T-292`⟧ הסף. מתחתיו זו עדיין הקשה, ולכן ⛔ אין לכידה ו⛔ אין הזזה —
+        // אחרת כל רעד אצבע על כפתור החשיפה היה גונב את ה-`click` שלו.
+        if (!captured.current) {
+          if (Math.abs(e.clientX - from.x) < CAPTURE_THRESHOLD_PX) return;
+          captured.current = true;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }
         samples.current = pushSample(samples.current, { x: e.clientX, tMs: e.timeStamp });
         // T-259ⓑ — the look-ahead is the SAME rule that will grade on release (D-042):
         // the badge lights exactly when lifting now would count. ⛔ It never grades.
@@ -348,6 +394,7 @@ export default function Flashcard({
         // A gesture the system took (incoming call, system gesture) — the card SPRINGS BACK
         // to its place, ⛔ and does not hang mid-screen with nobody grading it.
         swipeFrom.current = null;
+        captured.current = false;
         releaseCapture(e.currentTarget, e.pointerId);
         const node = e.currentTarget;
         if (frame.current !== null) {
@@ -362,8 +409,11 @@ export default function Flashcard({
       onPointerUp={(e) => {
         const from = swipeFrom.current;
         swipeFrom.current = null;
+        const wasCaptured = captured.current;
+        captured.current = false;
         releaseCapture(e.currentTarget, e.pointerId);
-        if (from === null) return;
+        // ⛔ מתחת לסף ⇒ ⛔ מעולם לא הייתה גרירה ⇒ זו הקשה, וה-`click` שלה שייך לכפתור.
+        if (from === null || !wasCaptured) return;
         const node = e.currentTarget;
         if (frame.current !== null) {
           cancelAnimationFrame(frame.current);
