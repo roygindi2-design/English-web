@@ -2305,3 +2305,44 @@ measured (`R-010`).
 level** until those ten questions are re-delivered with their band — ⛔ and no further `sc`/`rs`
 content changes that. Practice (`GET /api/amirnet/practice`), which serves one type at one
 level, works today for `sc` and `rs` at all four levels.
+
+## C-0560 (DEV) — `T-309` — the unlock is DERIVED from rows, so the rule can change without a migration
+
+`41 § 7` says «רמה נפתחת בהשלמת הקודמת». The obvious shape is a column — `profiles.amirnet_level`
+— and it was rejected, ⛔ not overlooked. **Two facts, ⛔ and only one of them belongs in a table:**
+«the learner finished a run at level 3» is a **fact**, «level 4 is open» is a **derivation** from it.
+⇒ `public.amirnet_simulation_runs` stores one row per completed run and ⛔ nothing else, and
+`highestUnlocked()` (`lib/core/amirnetLevels.ts`, pure, 6 tests) turns the rows into a level.
+
+**What that buys, and it is ⛔ not tidiness:**
+- The unlock rule is testable **without a database, a browser or a session** — the six cases in
+  `amirnetLevels.test.ts` include the two that a stored column ⛔ cannot express: rows arriving in
+  any order (it is a MAX, ⛔ not a cursor), and a **later** level-1 run ⛔ not re-locking level 4.
+- «How many runs did I finish here» (`T-312`, blocked on this row) reads **the same rows**, with
+  ⛔ no second query and ⛔ no second migration.
+- Changing the rule later — two runs to unlock, say — is ⛔ a pure-function edit, ⛔ not a schema
+  change on live data.
+- The number lives in two places on purpose: the route refuses a level outside `41 § 4` before the
+  write, and `amirnet_simulation_runs_level_check` refuses a row that bypassed the route (the
+  0019/0023/0024 reasoning). **Both measured live, rolled back:** level 3 accepted · level 5
+  refused by the constraint · an unknown `user_id` refused by the foreign key · table left at 0.
+
+**The boundary that did ⛔ not move.** `AmirnetLevels` (`T-307`) is ⛔ untouched — it still receives
+`unlockedThrough` as a prop and knows ⛔ nothing about how it was reached. What changed is that the
+value stopped being the constant `1` the page fed it. ⇒ this was a **rewire, ⛔ not a rewrite**,
+which is exactly what `T-307`ⓕ's «⛔ zero `lib/core`, ⛔ zero `supabase`, ⛔ zero `app/api`» bought.
+
+**`onFinished`, fired ONCE.** `AmirnetSimulation` had ⛔ no way to say a run had ended. The guard is
+`announcedRef`: `state.finished` stays true for every later render, and an effect without it writes
+one evening as several rows — in a table `T-312` is going to count.
+
+**⛔ A failed read is ⛔ never «you unlocked nothing».** Measured in the walk: with ⛔ no session the
+runs read answers `session_expired`, and the naive shape shows three locked levels as if that were
+measured. ⇒ the screen falls back to level 1 — `41 § 7`'s own starting state — **and says in words
+that it could not check** (`UNLOCK_UNKNOWN_HE`), shown ⛔ only on `'unknown'`, ⛔ never while asking.
+⛔ One action per state (`taste-skill § 4.5`): it is a **sentence**, ⛔ not a second button beside
+`חזרה לרמות`.
+
+**Debt, declared:** the POST was ⛔ not exercised from a live learner session — ⛔ no such session
+exists in this runtime. What **was** measured is the schema (above, live) and the route's shape
+(9 tests). The first authenticated run in QA's walk is what closes it.

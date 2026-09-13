@@ -239,7 +239,17 @@ it('every BUILT tab has an href, and ⛔ no href points at a route that does not
 - [x] **Step 3:** an open level card starts the existing engine; a locked card is ⛔ not a link at all
       (⛔ not a disabled one). Walk `/world/amirnet/simulation`, then `npm run verify` and push.
 
-## Task 3: `T-309` — the unlock is a fact about the learner, ⛔ not a fixture
+## Task 3: `T-309` — the unlock is a fact about the learner, ⛔ not a fixture  ⟵ ✅ landed C-0560
+
+🔬 **⟦C-0560⟧ TWO things this task needed that the plan did ⛔ not name, and both are MEASUREMENTS.**
+ⓐ **⛔ Nothing told the entry that a run had ENDED.** `AmirnetSimulation` owns `state.finished` and
+exposed ⛔ no way to hear about it, so «the completion is recorded» had ⛔ no moment to happen in.
+⇒ `onFinished`, fired **once** behind `announcedRef` — `finished` stays true for every later render,
+and an effect without the ref would have written one evening as many rows (`T-312` reads them).
+ⓑ **A read that FAILED had to be told apart from «you unlocked nothing».** Measured in the walk:
+with ⛔ no session the runs read answers `session_expired`, and the naive shape would have shown
+the learner three locked levels as if that were a fact about them. ⇒ `UNLOCK_UNKNOWN_HE`, shown
+⛔ only on `'unknown'` and ⛔ never while still asking.
 
 **Interfaces:** a pure `lib/core/amirnetLevels.ts` — `highestUnlocked(runs): AmirnetLevel` over the
 completion records, ⛔ never a query inside the screen. `T-307`'s component is ⛔ unchanged: it keeps
@@ -256,9 +266,9 @@ it('a learner who finished level 3 keeps level 4 open after a reload — ⛔ and
 
 **Steps:**
 
-- [ ] **Step 1:** `supabase/migrations/00xx_amirnet_simulation_runs.sql` — `RLS` in the shape of
+- [x] **Step 1:** `supabase/migrations/00xx_amirnet_simulation_runs.sql` — `RLS` in the shape of
       `supabase/migrations/0024_amirnet_items.sql`, a minimal `grant`, and its **`down` path in the
       same file** (`RULES § 0.22` — `supabase db push` is ⛔ not reversible by a commit).
-- [ ] **Step 2:** `lib/core/amirnetLevels.ts` + its test, written first and failing first.
-- [ ] **Step 3:** the product page reads the records through `app/api/**` and passes
+- [x] **Step 2:** `lib/core/amirnetLevels.ts` + its test, written first and failing first.
+- [x] **Step 3:** the product page reads the records through `app/api/**` and passes
       `unlockedThrough`; `supabase db push`, **verify it succeeded**, walk, `npm run verify`, push.

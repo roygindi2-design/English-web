@@ -109,9 +109,19 @@ export interface AmirnetSimulationProps {
   /** ⛔ Injectable so the walk and the tests are deterministic; defaults to the real clock. */
   readonly now?: () => number;
   readonly onExit?: () => void;
+  /**
+   * Fired **once**, the moment the run reaches its end (`T-309`). ⛔ Not on exit, and ⛔ not on
+   * every render in which `finished` happens to be true: a run that finished is one fact, and a
+   * caller that recorded it twice would be counting one evening as two (`T-312` reads those rows).
+   *
+   * ⛔ **The component still decides ⛔ nothing** — it ⛔ does not know a completion is recorded,
+   * ⛔ does not know which level it ran, and ⛔ never touches the database. It says «this ended»;
+   * `AmirnetSimulationEntry` is what that sentence means something to.
+   */
+  readonly onFinished?: () => void;
 }
 
-export default function AmirnetSimulation({ items, now, onExit }: AmirnetSimulationProps) {
+export default function AmirnetSimulation({ items, now, onExit, onFinished }: AmirnetSimulationProps) {
   const clock = now ?? (() => Date.now());
   const clockRef = useRef(clock);
   clockRef.current = clock;
@@ -130,6 +140,20 @@ export default function AmirnetSimulation({ items, now, onExit }: AmirnetSimulat
     const id = setInterval(() => setTickMs(clockRef.current()), 1000);
     return () => clearInterval(id);
   }, [state.finished, state.chapterIndex]);
+
+  /**
+   * `T-309` — the run ended, and that is the ⛔ only thing announced here. The ref is what makes it
+   * **once**: `finished` stays true for every later render, and an effect without it would re-fire
+   * on each one, writing a second completion row for a run the learner did once.
+   */
+  const announcedRef = useRef(false);
+  const onFinishedRef = useRef(onFinished);
+  onFinishedRef.current = onFinished;
+  useEffect(() => {
+    if (!state.finished || announcedRef.current) return;
+    announcedRef.current = true;
+    onFinishedRef.current?.();
+  }, [state.finished]);
 
   const header = (
     <header className="pt-2">

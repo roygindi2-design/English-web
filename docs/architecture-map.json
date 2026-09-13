@@ -24,6 +24,8 @@
   "app/api/amirnet/practice/route.ts": [],
   "app/api/amirnet/simulation/route.test.ts": [],
   "app/api/amirnet/simulation/route.ts": [],
+  "app/api/amirnet/simulation/runs/route.test.ts": [],
+  "app/api/amirnet/simulation/runs/route.ts": [],
   "app/api/arcade/character/route.test.ts": [],
   "app/api/arcade/character/route.ts": [],
   "app/api/arcade/collected/route.test.ts": [],
@@ -351,6 +353,12 @@
   ],
   "lib/core/amirnetItemGate.ts": [
     "lib/core/amirnetQuestion.ts"
+  ],
+  "lib/core/amirnetLevels.test.ts": [
+    "lib/core/amirnetLevels.ts"
+  ],
+  "lib/core/amirnetLevels.ts": [
+    "lib/core/amirnetPractice.ts"
   ],
   "lib/core/amirnetPractice.test.ts": [
     "lib/core/amirnetPractice.ts"

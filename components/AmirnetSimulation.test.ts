@@ -145,4 +145,19 @@ describe('AmirnetSimulation — T-296, render kol-D-06-simulation.png', () => {
   it('⛔ no animation to reduce (ⓔ · check:motion) — the clock is text that updates', () => {
     expect(CODE).not.toMatch(/transition-|animate-|duration-\d|motion-safe/);
   });
+
+  it('the end of the run is announced ONCE — ⛔ never once per render (T-309)', () => {
+    // 🔴 The failure this guards: `finished` stays true for every render after the last chapter.
+    // An effect without the ref would fire on each of them, and `AmirnetSimulationEntry` writes a
+    // completion row on that call ⇒ one evening counted as many (`T-312` reads those rows).
+    expect(CODE).toMatch(/announcedRef/);
+    expect(CODE).toMatch(/if \(!state\.finished \|\| announcedRef\.current\) return;/);
+    expect(CODE).toMatch(/announcedRef\.current = true;/);
+  });
+
+  it('⛔ the engine still touches ⛔ no database and derives ⛔ no unlock (T-309ⓑ)', () => {
+    for (const banned of [/supabase/i, /\bfetch\(/, /apiPost|apiGet/, /highestUnlocked/]) {
+      expect(CODE).not.toMatch(banned);
+    }
+  });
 });
