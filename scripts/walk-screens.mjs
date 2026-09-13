@@ -18,6 +18,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { resolveChromiumPath } from './lib/chromium-path.mjs';
+import { requestFailureLine, splitAborted } from './lib/walk-errors.mjs';
 
 const ARGV = process.argv.slice(2);
 const flag = (name, dflt) => {
@@ -77,7 +78,7 @@ page.on('pageerror', (e) => allErrors.push(`PAGEERROR: ${String(e).slice(0, 200)
 // 🔴 **והכתובת שנכשלה, ⛔ לא רק «נכשל».** «Failed to load resource: 503» ⛔ אינו אומר
 // **מה** נכשל ⇒ ⛔ אי אפשר להבחין בין פגם במוצר ובין משתנה סביבה חסר בשיבוט הזה.
 page.on('requestfailed', (r) =>
-  allErrors.push(`REQFAIL ${r.failure()?.errorText ?? '?'} ⇐ ${r.url().slice(0, 140)}`),
+  allErrors.push(requestFailureLine(r.failure()?.errorText ?? '?', r.url())),
 );
 page.on('response', (r) => {
   if (r.status() >= 400) allErrors.push(`HTTP ${r.status()} ⇐ ${r.url().slice(0, 140)}`);
@@ -104,11 +105,14 @@ for (const route of ROUTES) {
   const overflowPx = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
+  // 🧹 ⟦`T-305`⟧ ⛔ ביטול פריפץ׳ של Next ⛔ אינו פגם — נספר לחוד, ⛔ ואינו נמחק.
+  const { errors, aborted } = splitAborted(allErrors.slice(before));
   rows.push({
     route, status, dir, lang, overflowPx,
     chars: text.length,
     head: text.slice(0, 100),
-    newErrors: allErrors.length - before,
+    newErrors: errors.length,
+    aborted: aborted.length,
     shot,
   });
 }
@@ -129,14 +133,16 @@ for (const r of rows) {
 
 const pad = (s, n) => String(s).padEnd(n);
 console.log(`🚶 הליכת מסכים — ${BASE} · רוחב ${WIDTH}px · ${rows.length} מסכים`);
-console.log(`${pad('מסך', 24)} ${pad('HTTP', 9)} ${pad('ovf', 5)} ${pad('dir', 5)} ${pad('שגיאות', 7)} טקסט`);
+console.log(`${pad('מסך', 24)} ${pad('HTTP', 9)} ${pad('ovf', 5)} ${pad('dir', 5)} ${pad('שגיאות', 7)} ${pad('בוטלו', 7)} טקסט`);
 for (const r of rows) {
   console.log(
-    `${pad(r.route, 24)} ${pad(r.status, 9)} ${pad(r.overflowPx ?? '-', 5)} ${pad(r.dir ?? '-', 5)} ${pad(r.newErrors ?? '-', 7)} ${r.chars ?? '-'}`,
+    `${pad(r.route, 24)} ${pad(r.status, 9)} ${pad(r.overflowPx ?? '-', 5)} ${pad(r.dir ?? '-', 5)} ${pad(r.newErrors ?? '-', 7)} ${pad(r.aborted ?? '-', 7)} ${r.chars ?? '-'}`,
   );
 }
 writeFileSync(join(OUT, 'walk.json'), JSON.stringify({ base: BASE, width: WIDTH, rows, allErrors }, null, 1), 'utf8');
 console.log(`\n📸 ${rows.filter((r) => r.shot).length} צילומים ⇒ ${OUT}/`);
+// ⚠️ מידע, ⛔ ולא פגם — והשורה נכתבת גם כשהיא אפס, כדי שהיעדר יימדד ו⛔ לא יוסק.
+console.log(`↩️ בוטלו: ${splitAborted(allErrors).aborted.length} — ביטולי פריפץ׳ RSC של Next. ⛔ אינם נספרים כפגם (\`T-305\`).`);
 if (hard.length > 0) {
   console.log(`\n⛔ ${hard.length} פגמים נראים:`);
   for (const h of hard) console.log(`  ⛔ ${h}`);
