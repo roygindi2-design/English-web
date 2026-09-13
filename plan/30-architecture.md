@@ -2593,3 +2593,60 @@ file, and the row's live victims — `AmirnetSimulation` 5,063 chars · `ArenaHo
 `ArenaCharacterChoice` 3,052 · `ArenaSummary` 1,946 · `LevelScan` 1,630 ·
 `AmirnetResult` 661 · `AmirnetSectionBreak` 563 — are `T-284`'s to inherit when it folds
 the 28 copies into this module. ⛔ Nothing here touched those copies.
+
+## C-0588 (DEV) — `T-328` — `לימודים` leaves the server, and the gate stays where it was
+
+🔬 **The measurement that opened the row, ⛔ not a feeling.** `npm run build` on `dev`
+(`fd3d190`) printed `○ /cards` · `○ /world` · `○ /settings` against **`ƒ /studies`** and
+**`ƒ /me`**. ⇒ two tabs of five paid a server round-trip **and** a Supabase call before a
+pixel of content was drawn, while the other three were served from the edge. That is the
+structural difference a learner experiences as «some transitions load and some do not»,
+and `T-300`'s skeleton **covers** that gap without **shortening** it.
+
+**What moved, and it is one thing:** `app/(tabs)/studies/page.tsx` no longer awaits
+`supabase.auth.getUser()`. It is now the shape `app/(tabs)/cards/page.tsx` has had since
+`T-081` — a synchronous component render, ⛔ no `force-dynamic`, ⛔ no `next/headers`,
+⛔ no `createRouteClient`. `<StudiesScreen>` already fetched its own data through
+`GET /api/levels/summary` (`'use client'`, `apiGet`), so ⛔ no new API surface, ⛔ no new
+fetch, and ⛔ no change to layout, order, strings or finish.
+
+🔴 **The part that is worth writing down, because it looks like a removed guard and is
+⛔ not one.** The `getUser()` call in that file was ⛔ **never** the second lock of the
+F-003 lesson — it was **a third lock on the same door**, and its price was the learner's
+whole wait. The two locks the lesson demands are both untouched:
+```
+① proxy.ts   PROTECTED_SCREENS holds '/studies', and ⛔ fails CLOSED with no env
+② GET /api/levels/summary   checks the session itself and answers `session_expired`
+```
+⚠️ **And it is measured, ⛔ not argued.** Live on `next start`, no session:
+```
+/studies  ⇒ 307  →  /login?expired=1
+/cards    ⇒ 307  →  /login?expired=1        ⇐ the precedent, byte for byte
+```
+`/cards` and `/settings` both read the learner's **own rows** and have been `○` for weeks
+under exactly this arrangement (`C-0073` · `C-0318` · `T-211ⓔ`), and `proxy.ts`'s own
+header says it: «Screens stay static; nothing here reads or writes learning data».
+
+**Measured after:** `npm run build` prints **`○ /studies`**. Walk at 375×780 on
+`/dev/tabs/studies` — heading «לימודים» · 155 chars · 10 tappable · **0 under 44px** ·
+**0 horizontal scroll** (`scrollWidth` 375) · `dir=rtl` · **0 console errors** · the four
+track chips of `render_video_A.py:1149-1264`. ⇒ `36 § 9`'s layout is **unchanged**, which
+is the point: this row moved a fetch, ⛔ not a screen.
+
+⚠️ **`scripts/verify-mobile.test.ts` moved with it, and the assertion TIGHTENED.** The
+`studies` case now carries `sessionGated: 'proxy.ts'`, the same field `/cards` has held
+since `C-0073`. That swaps a loose `/createRouteClient/` match for `PROTECTED_SCREENS`
+**plus** a literal check that `'/studies'` is in that list — i.e. the test now names the
+gate instead of matching whichever file happens to mention a Supabase client. `TD-13` is
+untouched: the route is still session-gated, still answers 307 without env, and its
+geometry is still measured only through the fixture.
+
+🔴 **⛔ And the `/me` half is ⛔ NOT here — it is `T-334`, split in this tick.** `/me`
+reads **two** things on the server (`profiles`, and the `word_progress.mastered_at`
+count), and the count is **streamed** into `wordsLearnedSlot`, a `ReactNode` deliberately
+(`T-301`: «a value cannot stream into a client component through a prop»). Making it
+static therefore needs a `GET /api/profile` that ⛔ does not exist — that route holds
+`POST` alone — plus a `<MeScreen>` prop change, `docs/api-contract.md` in the same commit,
+and the fixture. ⇒ a second conversion that **adds API surface**, ⛔ not the tail of this
+one. The row was written as one 30–60 minute task and is two; that is recorded on the
+`T-328` row rather than absorbed silently.
