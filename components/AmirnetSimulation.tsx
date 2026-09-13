@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import AmirnetSectionBreak from '@/components/AmirnetSectionBreak';
 import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
 import EnWord from '@/components/EnWord';
 import { AMIRNET_TYPES } from '@/lib/core/amirnetPractice';
@@ -26,6 +27,7 @@ import {
   isLastQuestionOfChapter,
   isLastQuestionOfRun,
   remainingSeconds,
+  startChapter,
   startSimulation,
   type AmirnetSimulationState,
 } from '@/lib/core/amirnetSimulation';
@@ -71,6 +73,10 @@ import {
  *    draws none, and an exam that grades each answer as it lands is ⛔ not the exam being simulated.
  * ── `prefers-reduced-motion`: the clock is text that updates once a second and every transition is
  *    a re-render. There is ⛔ no animation in this component to reduce (`T-296`ⓔ · `check:motion`).
+ * ── ⟦`T-316`⟧ Between two chapters the learner is shown `AmirnetSectionBreak` instead of this
+ *    screen, and the next chapter's clock starts on THAT slide's tap. ⇒ a chapter ⛔ never begins
+ *    mid-sentence with a budget the learner ⛔ did not know about, and the slide itself ⛔ cannot
+ *    eat from it. The rule is in `amirnetSimulation.ts`, ⛔ not in either component.
  */
 
 export const KICKER_HE = 'העולם · אמירנט';
@@ -136,10 +142,12 @@ export default function AmirnetSimulation({ items, now, onExit, onFinished }: Am
    * throttled or backgrounded tab ⛔ cannot under-count it into never expiring.
    */
   useEffect(() => {
-    if (state.finished) return undefined;
+    // ⛔ And ⛔ not while the break slide is up (`T-316`): there is ⛔ no clock on that screen to
+    // move, and a timer left running there is a wake-up every second for ⛔ nothing.
+    if (state.finished || state.atChapterBreak) return undefined;
     const id = setInterval(() => setTickMs(clockRef.current()), 1000);
     return () => clearInterval(id);
-  }, [state.finished, state.chapterIndex]);
+  }, [state.finished, state.atChapterBreak, state.chapterIndex]);
 
   /**
    * `T-309` — the run ended, and that is the ⛔ only thing announced here. The ref is what makes it
@@ -180,6 +188,24 @@ export default function AmirnetSimulation({ items, now, onExit, onFinished }: Am
     );
   }
 
+  /**
+   * `T-316` — the learner LEFT a chapter and has ⛔ not started the next one. ⛔ The clock is ⛔ not
+   * running behind this (`remainingSeconds` returns the full budget while `atChapterBreak`), so
+   * the slide costs the learner ⛔ nothing however long they read it.
+   * ⛔ The component still decides ⛔ nothing: `startChapter()` is what stamps the new chapter.
+   */
+  if (state.atChapterBreak) {
+    return (
+      <section>
+        {header}
+        <AmirnetSectionBreak
+          chapterIndex={state.chapterIndex}
+          onStart={() => setState((prev) => startChapter(prev, clockRef.current()))}
+        />
+      </section>
+    );
+  }
+
   const chapter = chapterAt(state.chapterIndex);
   const item = items[state.questionIndex];
   const remaining = remainingSeconds(state, tickMs);
@@ -196,6 +222,7 @@ export default function AmirnetSimulation({ items, now, onExit, onFinished }: Am
   const step = () => {
     setChosen(null);
     const stamp = clockRef.current();
+    setTickMs(stamp);
     setState((prev) => (isChapterExpired(prev, stamp) ? advanceChapter(prev, stamp) : advance(prev, stamp)));
   };
 
@@ -226,8 +253,13 @@ export default function AmirnetSimulation({ items, now, onExit, onFinished }: Am
           <p className="text-sm text-ink-muted">
             {questionCounterHe(state.questionIndex, chapter?.questionCount ?? 0)}
           </p>
-          {/* RTL: chapter 1 sits rightmost, exactly as the render draws it (:265-269). */}
-          <ul className="flex flex-row-reverse items-center gap-2">
+          {/* RTL: chapter 1 sits rightmost, exactly as the render draws it (:265-269).
+              ⟦`F-236`, measured live 13/09 at 375px⟧ It ⛔ did NOT, and the comment above was the
+              only thing saying it did: with `flex-row-reverse` the dots measured chapter 1 at
+              `x=24` and chapter 6 at `x=114` — progress running LEFT to RIGHT on an RTL screen.
+              ⇒ the document is already `dir="rtl"`, so the flex row already runs right-to-left and
+              `flex-row-reverse` reversed it a second time. Plain `flex` is the fix. */}
+          <ul className="flex items-center gap-2">
             {AMIRNET_CHAPTERS.map((c) => {
               const dot = chapterDotState(c.index, state.chapterIndex);
               return (

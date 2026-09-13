@@ -66,6 +66,18 @@ export const NEXT_QUESTION_HE = 'לשאלה הבאה';
 export const CHAPTER_TIME_UP_HE = 'הזמן לפרק הזה נגמר';
 export const NEXT_CHAPTER_HE = 'לפרק הבא';
 export const SIMULATION_OVER_HE = 'הסימולציה הסתיימה';
+/**
+ * `T-316` — the break slide's one action. ⛔ Deliberately ⛔ NOT «התחל סימולציה»: that intent
+ * belongs to the entry screen, and `taste-skill § 4.5` («NO DUPLICATE CTA INTENT») makes two
+ * labels for one intent a pre-flight failure. This one starts A CHAPTER, and says so.
+ */
+export const START_CHAPTER_HE = 'להתחיל את הפרק';
+/**
+ * `T-316`ⓑ, said out loud. The rule is structural below — `remainingSeconds` returns the full
+ * budget while the slide is up — but a learner who ⛔ cannot see that has no way to know the
+ * slide is free, and would rush through it. ⛔ A fact about the clock, ⛔ not encouragement.
+ */
+export const CLOCK_STARTS_ON_TAP_HE = 'השעון מתחיל כשמקישים, ולא כרגע';
 export const FINISH_RUN_HE = 'לסיום הסימולציה';
 /** The clock's own label, so «what is this number» is ⛔ never inferred from its position. */
 export const REMAINING_LABEL_HE = 'זמן שנותר לפרק';
@@ -81,10 +93,24 @@ export interface AmirnetSimulationState {
    */
   readonly chapterStartedAtMs: number;
   readonly finished: boolean;
+  /**
+   * `T-316` — the learner has LEFT a chapter and ⛔ has not yet started the next one. The break
+   * slide is up, and until `startChapter()` is called the clock below reports the next chapter's
+   * FULL budget. ⇒ ⛔ the slide itself cannot charge the learner for reading it, which is the
+   * whole of `T-316`ⓑ and is ⛔ not left to whoever draws the screen.
+   * ⚠️ `false` on the first chapter: the entry screen already announced the run.
+   */
+  readonly atChapterBreak: boolean;
 }
 
 export function startSimulation(nowMs: number): AmirnetSimulationState {
-  return { chapterIndex: 0, questionIndex: 0, chapterStartedAtMs: nowMs, finished: false };
+  return {
+    chapterIndex: 0,
+    questionIndex: 0,
+    chapterStartedAtMs: nowMs,
+    finished: false,
+    atChapterBreak: false,
+  };
 }
 
 export function chapterAt(chapterIndex: number): AmirnetChapter | undefined {
@@ -95,6 +121,9 @@ export function chapterAt(chapterIndex: number): AmirnetChapter | undefined {
 export function remainingSeconds(state: AmirnetSimulationState, nowMs: number): number {
   const chapter = chapterAt(state.chapterIndex);
   if (chapter === undefined) return 0;
+  // `T-316`ⓑ — the chapter ⛔ has not begun, so ⛔ nothing has been spent. ⛔ Not a display trick:
+  // `startChapter()` re-stamps from the tap, so this is the same number the learner will get.
+  if (state.atChapterBreak) return chapter.seconds;
   const spent = Math.floor(Math.max(0, nowMs - state.chapterStartedAtMs) / 1000);
   return Math.max(0, chapter.seconds - spent);
 }
@@ -114,11 +143,25 @@ export function chapterClock(remaining: number): string {
  */
 export function isChapterExpired(state: AmirnetSimulationState, nowMs: number): boolean {
   if (state.finished) return true;
+  // ⛔ A chapter that has not started ⛔ cannot have run out (`T-316`ⓑ).
+  if (state.atChapterBreak) return false;
   return remainingSeconds(state, nowMs) <= 0;
 }
 
 export function chapterHeadingHe(chapterIndex: number): string {
   return `פרק ${chapterIndex + 1} מתוך ${CHAPTER_COUNT}`;
+}
+
+/**
+ * «כמה זמן יש לי בפרק הזה» — `T-316`ⓐ. Derived from `AMIRNET_CHAPTERS`, which is `41 § 2`'s own
+ * table, so a budget that changes there changes here. ⛔ Never a literal on a screen: a minute
+ * count written twice is a minute count that drifts.
+ * ⛔ An index outside the table returns `''` and ⛔ not `NaN דקות`.
+ */
+export function chapterBudgetHe(chapterIndex: number): string {
+  const chapter = chapterAt(chapterIndex);
+  if (chapter === undefined) return '';
+  return `${Math.round(chapter.seconds / 60)} דקות`;
 }
 
 export type AmirnetDotState = 'done' | 'current' | 'upcoming';
@@ -169,11 +212,15 @@ export function advance(
     return { ...state, finished: true };
   }
 
+  // `T-316` — the learner stops at the break slide. `chapterStartedAtMs` is stamped here only so
+  // the field is ⛔ never stale; while `atChapterBreak` is true ⛔ nothing reads it, and
+  // `startChapter()` re-stamps it from the tap.
   return {
     chapterIndex: nextChapter,
     questionIndex: 0,
     chapterStartedAtMs: nowMs,
     finished: false,
+    atChapterBreak: true,
   };
 }
 
@@ -198,7 +245,25 @@ export function advanceChapter(
     questionIndex: 0,
     chapterStartedAtMs: nowMs,
     finished: false,
+    atChapterBreak: true,
   };
+}
+
+/**
+ * THE THIRD TRANSITION — `T-316`ⓑ. The learner read the break slide and tapped `להתחיל את הפרק`.
+ *
+ * 🔴 **This is the only place a chapter's clock starts after the first**, and it starts from the
+ * TAP. ⇒ a learner who leaves the slide open for ten minutes still gets the chapter's full budget,
+ * and the transition screen the product itself put in front of them costs them ⛔ nothing.
+ * ⛔ A no-op on a run that is finished or already inside a running chapter — ⛔ a second tap
+ * ⛔ cannot re-stamp a chapter that is already counting down and hand back time.
+ */
+export function startChapter(
+  state: AmirnetSimulationState,
+  nowMs: number,
+): AmirnetSimulationState {
+  if (state.finished || !state.atChapterBreak) return state;
+  return { ...state, chapterStartedAtMs: nowMs, atChapterBreak: false };
 }
 
 /** The learner is on the last question of the last chapter ⇒ the next press ENDS the run. */

@@ -223,6 +223,8 @@
     "components/AmirnetResult.tsx"
   ],
   "components/AmirnetResult.tsx": [],
+  "components/AmirnetSectionBreak.test.ts": [],
+  "components/AmirnetSectionBreak.tsx": [],
   "components/AmirnetSimulation.test.ts": [
     "components/AmirnetSimulation.tsx"
   ],
@@ -326,6 +328,9 @@
   "components/UnknownList.tsx": [],
   "components/WordBank.test.ts": [],
   "components/WordBank.tsx": [],
+  "components/WordPopover.test.ts": [
+    "components/WordPopover.tsx"
+  ],
   "components/WordPopover.tsx": [],
   "components/WorldFeed.test.ts": [],
   "components/WorldFeed.tsx": [],

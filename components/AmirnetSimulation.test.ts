@@ -99,8 +99,17 @@ describe('AmirnetSimulation — T-296, render kol-D-06-simulation.png', () => {
   it('the six chapter dots each say what they are IN WORDS — state is ⛔ never colour alone', () => {
     expect(CODE).toContain('aria-label={chapterDotLabelHe(dot, c.index)}');
     expect(CODE).toContain('AMIRNET_CHAPTERS.map');
-    // RTL: chapter 1 rightmost, as the render draws it (:265-269).
-    expect(CODE).toContain('flex-row-reverse');
+    /**
+     * ⟦`F-236`, 13/09⟧ This line asserted `flex-row-reverse` and CALLED it «chapter 1 rightmost»,
+     * which is the shape the render draws — but the class produced the ⛔ opposite, and the test
+     * held the defect in place. **Measured live at 375px, ⛔ not argued:** with the old class the
+     * dots read chapter 1 at `x=24` and chapter 6 at `x=114` ⇒ progress ran LEFT to RIGHT on an
+     * RTL screen; with plain `flex` they read chapter 1 at `x=114` and chapter 6 at `x=24`.
+     * ⇒ the document is already `dir="rtl"`, so the row already runs right-to-left and
+     * `flex-row-reverse` reverses it a second time. ⛔ The class is now forbidden here.
+     */
+    expect(CODE).not.toContain('flex-row-reverse');
+    expect(CODE).toContain('<ul className="flex items-center gap-2">');
   });
 
   it('an expired chapter says so in Hebrew as well as in the clock colour', () => {

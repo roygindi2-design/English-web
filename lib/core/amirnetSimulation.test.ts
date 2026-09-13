@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   AMIRNET_CHAPTERS,
   CARRY_OVER_NOTICE_HE,
+  CHAPTER_COUNT,
   advance,
   advanceChapter,
+  chapterAt,
+  chapterBudgetHe,
   chapterClock,
   chapterDotLabelHe,
   chapterDotState,
@@ -14,6 +18,7 @@ import {
   remainingSeconds,
   SIMULATION_QUESTION_COUNT,
   simulationQueue,
+  startChapter,
   startSimulation,
 } from './amirnetSimulation';
 import type { AmirnetServedItem } from './amirnetQuestion';
@@ -172,7 +177,7 @@ describe('advanceChapter — the clock ran out mid-chapter (T-296ⓑ)', () => {
   });
 
   it('on the last chapter it ends the run instead of inventing a seventh', () => {
-    const last = { chapterIndex: 5, questionIndex: 0, chapterStartedAtMs: 0, finished: false };
+    const last = { chapterIndex: 5, questionIndex: 0, chapterStartedAtMs: 0, finished: false, atChapterBreak: false };
     expect(advanceChapter(last, 1_000).finished).toBe(true);
     expect(advanceChapter(last, 1_000).chapterIndex).toBe(5);
   });
@@ -187,10 +192,10 @@ describe('which press ends what — the button label depends on these two, ⛔ n
   it('knows the last question of the whole run, and ⛔ only on the sixth chapter', () => {
     expect(isLastQuestionOfRun({ ...startSimulation(0), questionIndex: 3 })).toBe(false);
     expect(
-      isLastQuestionOfRun({ chapterIndex: 5, questionIndex: 3, chapterStartedAtMs: 0, finished: false }),
+      isLastQuestionOfRun({ chapterIndex: 5, questionIndex: 3, chapterStartedAtMs: 0, finished: false, atChapterBreak: false }),
     ).toBe(true);
     expect(
-      isLastQuestionOfRun({ chapterIndex: 5, questionIndex: 2, chapterStartedAtMs: 0, finished: false }),
+      isLastQuestionOfRun({ chapterIndex: 5, questionIndex: 2, chapterStartedAtMs: 0, finished: false, atChapterBreak: false }),
     ).toBe(false);
   });
 });
@@ -271,5 +276,98 @@ describe('simulationQueue — T-308ⓒ · 41 § 2', () => {
     simulationQueue(bank);
     expect(bank).toHaveLength(23);
     expect(bank[0]?.id).toBe('sc-0');
+  });
+});
+
+/**
+ * `T-316` — the chapter break. The learner leaves a chapter, is told what the next one is and how
+ * long it lasts, and the next chapter's clock starts on the TAP, ⛔ not on the slide appearing.
+ * ⚠️ These are the two failure scenarios the row names, ⛔ not a restatement of `advance()`.
+ */
+describe('amirnetSimulation — the chapter break (T-316)', () => {
+  it('the run OPENS inside chapter 1 — ⛔ no break slide before the first chapter', () => {
+    // The entry screen already states `6 פרקים · 23 שאלות · 39 דקות`; a second slide saying the
+    // same thing is the duplicate-intent screen `taste-skill § 4.5` refuses.
+    const state = startSimulation(1_000);
+    expect(state.atChapterBreak).toBe(false);
+    expect(state.chapterIndex).toBe(0);
+  });
+
+  it('leaving a chapter STOPS at the break — on both paths, ⛔ not only the timed-out one', () => {
+    // ⓐ the chapter was answered to its end
+    let state = startSimulation(0);
+    for (let i = 0; i < 3; i += 1) state = advance(state, 0);
+    expect(state.atChapterBreak).toBe(false); // still inside chapter 1
+    state = advance(state, 10_000);
+    expect(state.chapterIndex).toBe(1);
+    expect(state.atChapterBreak).toBe(true);
+
+    // ⓑ the chapter's clock ran out mid-way
+    const expired = advanceChapter(startSimulation(0), 10_000);
+    expect(expired.chapterIndex).toBe(1);
+    expect(expired.atChapterBreak).toBe(true);
+  });
+
+  it('⛔ THE SLIDE ITSELF EATS NOTHING: ten minutes on the break, and the chapter still starts FULL', () => {
+    // `T-316`ⓑ. This is the failure the row names: a slide that is drawn while the clock runs
+    // would charge the learner for reading it.
+    const atBreak = advanceChapter(startSimulation(0), 10_000);
+    const chapter = chapterAt(atBreak.chapterIndex);
+    expect(chapter).toBeDefined();
+
+    // The learner reads the slide for ten minutes — far past chapter 2's four-minute budget.
+    const tenMinutesLater = 10_000 + 10 * 60 * 1000;
+    expect(remainingSeconds(atBreak, tenMinutesLater)).toBe(chapter?.seconds);
+    expect(isChapterExpired(atBreak, tenMinutesLater)).toBe(false);
+
+    // ⇒ and the tap is what starts it, from ITS OWN full budget.
+    const started = startChapter(atBreak, tenMinutesLater);
+    expect(started.atChapterBreak).toBe(false);
+    expect(remainingSeconds(started, tenMinutesLater)).toBe(chapter?.seconds);
+    expect(remainingSeconds(started, tenMinutesLater + 60_000)).toBe((chapter?.seconds ?? 0) - 60);
+  });
+
+  it('⛔ still no carry-over: a chapter left with time to spare hands the next one nothing', () => {
+    // `41 § 2` rule two, now measured ACROSS the break — the path `T-314`ⓒ names.
+    let state = startSimulation(0);
+    for (let i = 0; i < 4; i += 1) state = advance(state, 30_000); // chapter 1 done after 30s of 4:00
+    expect(state.chapterIndex).toBe(1);
+    const started = startChapter(state, 31_000);
+    expect(remainingSeconds(started, 31_000)).toBe(chapterAt(1)?.seconds);
+    // ⛔ and ⛔ not `limit + 210` — the 3:30 that was left in chapter 1 reaches ⛔ nowhere.
+    expect(remainingSeconds(started, 31_000)).toBeLessThan((chapterAt(1)?.seconds ?? 0) + 1);
+  });
+
+  it('the last chapter ends the RUN — ⛔ there is no break slide after chapter 6', () => {
+    const last = { chapterIndex: 5, questionIndex: 3, chapterStartedAtMs: 0, finished: false, atChapterBreak: false };
+    const ended = advance(last, 1_000);
+    expect(ended.finished).toBe(true);
+    expect(ended.atChapterBreak).toBe(false);
+    expect(advanceChapter(last, 1_000).finished).toBe(true);
+  });
+
+  it('`startChapter` is a no-op on a run that is finished or already running', () => {
+    const running = startSimulation(0);
+    expect(startChapter(running, 5_000)).toBe(running);
+    const done = { ...running, finished: true, atChapterBreak: true };
+    expect(startChapter(done, 5_000)).toBe(done);
+  });
+
+  it('the slide says what the chapter IS and how long it lasts — from `41 § 2`, ⛔ not a literal', () => {
+    expect(chapterBudgetHe(0)).toBe('4 דקות');
+    expect(chapterBudgetHe(2)).toBe('15 דקות');
+    expect(chapterBudgetHe(3)).toBe('6 דקות');
+    // Every chapter in the table has a sentence, and ⛔ none of them reads `NaN` or `undefined`.
+    for (let i = 0; i < CHAPTER_COUNT; i += 1) {
+      expect(chapterBudgetHe(i)).toMatch(/^\d+ דקות$/);
+    }
+    expect(chapterBudgetHe(99)).toBe('');
+  });
+
+  it('⛔ no reward, ⛔ no score and ⛔ no comparison to the chapter just left (D-050)', () => {
+    const source = readFileSync('lib/core/amirnetSimulation.ts', 'utf8');
+    for (const banned of ['כל הכבוד', 'מצוין', 'נקודות', 'רצף', 'ציון']) {
+      expect(source).not.toContain(banned);
+    }
   });
 });
