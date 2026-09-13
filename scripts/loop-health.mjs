@@ -55,6 +55,50 @@ const REAL_PATH = /`((?:[a-z][\w.\-]*\/)+[\w.\-]*\.(?:ts|tsx|mjs|md|sql|json|js|
 const claimedPaths = (line) =>
   [...line.matchAll(REAL_PATH)].map((m) => m[1]).filter((p) => !/[{*]|00XX/.test(p));
 
+/**
+ * ⛔ **ONE CELL OF A MARKDOWN ROW, ⛔ not the whole line.**  ⟦NEW 13/09 · `T-299`⟧
+ *
+ * Mirrors `splitRow` in `lib/core/planTable.ts` on the two things that decide where a
+ * cell ends, so the two parsers ⛔ cannot disagree about an index:
+ *   ⓐ `\|` and `\\` are the only escapes — any other backslash is content, so a regex
+ *      or a Windows path inside a cell survives;
+ *   ⓑ a `|` inside a backtick code span is CONTENT — `grep x | wc -l` is one cell, and
+ *      an unescaped pipe there is exactly what `T-315` measures on the task register.
+ * ⚠️ It is ⛔ not imported from `planTable.ts`: this file is plain `.mjs` and runs with
+ * ⛔ no TypeScript loader (it is executed by `node` directly, and by the hook).
+ */
+const cellsOf = (line) => {
+  const cells = [];
+  let current = '';
+  let inCode = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\' && (line[i + 1] === '|' || line[i + 1] === '\\')) {
+      current += line[i + 1];
+      i += 1;
+      continue;
+    }
+    if (ch === '`') {
+      inCode = !inCode;
+      current += ch;
+      continue;
+    }
+    if (ch === '|' && !inCode) {
+      cells.push(current);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  cells.push(current);
+  // A well-formed row opens and closes with `|` ⇒ the first and last fragments sit
+  // outside the table. Dropped by POSITION, ⛔ never by emptiness.
+  return cells.slice(1, -1);
+};
+
+/** `plan/60-findings.md`: `#` · `חומרה` · **`קובץ:שורה`** — a fixed third column. */
+const FINDING_FILE_CELL = 2;
+
 const results = [];
 /**
  * ⚠️ **A NEW CHECK IS BORN AS A WARNING.**  ⟦added 30/08, wave 2⟧
@@ -285,12 +329,30 @@ check('1', 'תדריך ושער של כל הזמנה פתוחה — קיימים
   return { ok: missing.length === 0, detail: `${missing.length} חסרים`, items: missing };
 });
 
-/* 2 — a finding names where the defect IS. That file must exist. */
+/**
+ * 2 — a finding names where the defect IS. That file must exist.
+ *
+ * 🔴 ⛔ **AND IT READS THE `קובץ` CELL, ⛔ NOT THE WHOLE ROW.**  ⟦FIXED 13/09 · `T-299`
+ * · closes `F-225` and `F-228`, the same defect opened twice⟧
+ *
+ * 🔬 **Measured live in `C-0535`, ⛔ not argued:** `npm run loop:health` ⇒ `FAIL 2. … 2
+ * מתים`, and both dead paths were the SAME one —
+ * `app/api/amirnet/practice/route.ts` — named in the FREE BODY of `F-222` and `F-225`
+ * as the route that has ⛔ not been built yet. ⇒ the check was red on two **correct**
+ * rows, and a finding whose whole content is «⛔ this path does not exist» could
+ * ⛔ never be written without reddening it. That is the same class as `F-199`.
+ *
+ * ⚠️ **⛔ And the check is ⛔ NOT softened** — the `קובץ` cell is a fixed third column,
+ * and a dead path sitting THERE still goes red. `F-166` is the precedent the task row
+ * names: a number nobody enforces becomes «the normal red», and a check that is red
+ * every tick is ⛔ not a gate — it is noise.
+ */
 check('2', 'קובץ:שורה של כל ממצא פתוח — קיים', () => {
   const missing = [];
   for (const line of rows(read(at('plan', '60-findings.md')), 'F')) {
     if (isClosed(line)) continue;
-    for (const p of claimedPaths(line)) if (!existsSync(at(p))) missing.push(`${idOf(line)} → ${p}`);
+    const fileCell = cellsOf(line)[FINDING_FILE_CELL] ?? '';
+    for (const p of claimedPaths(fileCell)) if (!existsSync(at(p))) missing.push(`${idOf(line)} → ${p}`);
   }
   return { ok: missing.length === 0, detail: `${missing.length} מתים`, items: missing };
 });
