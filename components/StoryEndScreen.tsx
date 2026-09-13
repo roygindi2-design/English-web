@@ -105,7 +105,14 @@ export default function StoryEndScreen({
     <>
       {/* 🎯 רדיוס 22 ברנדר → `rounded-2xl`, על `RAISED` עם מסגרת `BORDER_SUB` — בדיוק
           אותו כרטיס שפסקת הקריאה יושבת בו, כי ברנדר זה **אותו כרטיס**. */}
-      <div className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-6">
+      {/* ⚠️ `data-story-question` — `T-318`ⓐ. הוא ⛔ אינו סלקטור של בדיקה: הוא הדרך
+          היחידה שבה **המכולה** (‏`StoryScreenView`, שאינה יודעת על הפאזה) מזהה שהמסך
+          עבר למצב השאלה ומהדקת את הקצב האנכי. ⛔ אין כאן הרמת state ו⛔ אין prop חדש —
+          `has-[[data-story-question]]` הוא CSS, ולכן הוא ⛔ אינו יכול להתפצל מהמציאות. */}
+      <div
+        data-story-question
+        className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-6"
+      >
         <p className="text-center text-sm font-semibold text-brand-surface">{QUESTION_LABEL_HE}</p>
 
         {/* השאלה באנגלית — זה ההפך המדויק מפגם הארקייד (D-087): שם השאלה הייתה עברית

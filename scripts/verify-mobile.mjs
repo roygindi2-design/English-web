@@ -1156,6 +1156,33 @@ try {
         check(y >= 780 / 2, `${at} primary action in thumb zone`, `sits at y=${Math.round(y)}`);
       }
 
+      // T-318 · D-228ⓐ · closes F-131 — THE EXIT OF THE STORY IS ON THE SCREEN.
+      //
+      // ⛔ Not a class assertion and not a snapshot: the number that made F-131 real
+      // was `getBoundingClientRect().top = 784` on a 780px viewport at 320 and 375,
+      // i.e. not one pixel of `חזרה לעולם` painted, on a screen whose render
+      // (`docs/design/kol-A-06-question.png`) draws it visible. D-228ⓐ fixed the
+      // target as `780 − 44 = 736` — the 44px tap floor must paint — so that is what
+      // is measured here, at every width, on the fixture that renders the whole
+      // question screen (`/dev/story/done`).
+      //
+      // ⚠️ The selector is the destination, not a test hook: the exit is the only
+      // link to `/world` on this screen, and a marker would have been one more thing
+      // the layout could lose without the measurement noticing.
+      if (route === '/dev/story/done') {
+        const exitTop = await page.evaluate(() => {
+          window.scrollTo(0, 0);
+          const el = [...document.querySelectorAll('main a[href="/world"]')].pop();
+          return el ? Math.round(el.getBoundingClientRect().top) : -1;
+        });
+        check(
+          exitTop >= 0 && exitTop <= 736,
+          `${at} story exit paints inside the first viewport`,
+          `חזרה לעולם starts at top=${exitTop} (D-228ⓐ: ≤736 on a 780px viewport)`,
+        );
+        report(`story exit top=${exitTop} at ${width}px (D-228ⓐ ceiling 736)`);
+      }
+
       // F-027 — the connectivity guarantee roy asked for after signing up on the
       // live site and finding the onboarding screen had no way forward and no
       // way out: "verify-mobile at 375 must require that every screen in the

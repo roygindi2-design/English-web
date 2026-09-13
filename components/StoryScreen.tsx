@@ -186,7 +186,17 @@ export function StoryScreenView({
   initialPhase,
 }: StoryScreenViewProps): React.JSX.Element {
   return (
-    <section dir="rtl" className="flex min-h-[100dvh] flex-col gap-5 pb-8">
+    /* 🎯 `T-318` · `D-228`ⓐ · סוגר את `F-131`. **הקצב האנכי מתהדק ⛔ רק במצב השאלה**,
+       וזה נמדד ⛔ ולא הועדף: ב-`/dev/story/done` ב-780 גובה חלון הפעולה הראשית התחילה
+       ב-`top = 784` ב-320 וב-375 ⇒ ⛔ אף פיקסל ממנה על המסך, והרנדר
+       (`docs/design/kol-A-06-question.png`) מבטיח שהיא **גלויה**. שישה מרווחים × 8px
+       = בדיוק 48 הפיקסלים ש-`780 − 44 = 736` דורש. ⛔ 12px הוא **רצפת שכבה A**, ⛔ ולא
+       מתחת לה. ⛔ מצב הקריאה נשאר `gap-5` — שם ⛔ אין בעיה, והרנדר של מסך הקריאה
+       (`kol-A-05-story.png`) מצייר את הקצב הרחב. */
+    <section
+      dir="rtl"
+      className="flex min-h-[100dvh] flex-col gap-5 pb-8 has-[[data-story-question]]:gap-3"
+    >
       <header className="flex flex-col gap-1 text-right">
         <p className="text-sm text-ink-muted">{KICKER_HE}</p>
         <h1 className="text-2xl font-bold leading-tight">
