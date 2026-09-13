@@ -2515,3 +2515,45 @@ rows need a deterministic, tested emitter — `supabase/seed/**` is a generated 
 ⛔ never hand-written. ⇒ `T-323` (the emitter) and `T-324` (the load + the measurement) were
 opened in this tick as the declared continuation, and the plan covering all three is
 `docs/superpowers/plans/2026-09-13-amirnet-vocab-into-the-database.md`.
+
+## C-0584 (DEV) — `T-326` — the licence footer asks the ROUTE whether it is inside a task
+
+`T-011` put the attribution link in `app/layout.tsx`'s `<footer>`, and a root layout has
+⛔ no route: the link was therefore drawn on **every** screen. Measured on `/dev/deck` at
+375×780 before this task, «מקורות הנתונים והרישיונות» sat under the card the learner is
+supposed to be answering — an administrative destination offered in the middle of a
+question, which is the category `T-326` opened («⛔ אינו שובר פונקציה, אבל הוא שובר את
+המיקוד»).
+
+⇒ **`lib/core/licenceFooter.ts`** — pure, a string in and a boolean out — holds the one
+rule: **a screen that carries a task hides the administrative chrome, and every other
+screen keeps it.** `components/SourcesFooter.tsx` is the client component that asks it
+(`usePathname`) and owns the whole `<footer>`, so a task screen ends at its last real
+element instead of at 32px of empty padding.
+
+⛔ **Hiding is the declared list; showing is the DEFAULT — and that direction is the
+licence.** An allowlist would have dropped the attribution the first time a screen was
+added, and `T-011`'s obligation attaches to the product. So `/` · `/login` · `/signup` ·
+`/onboarding` · `/offline` · `/sources` and the five tabs keep the link with ⛔ no entry
+at all, and a learner who has not signed in can still reach it.
+
+⛔ **And it is ⛔ not «the three fixtures the row measured».** A learner never reaches
+`/dev/*`; the walk measures fixtures only because the real task routes answer 503/307 with
+no Supabase env (TD-13). ⇒ the list names the **product** screens — `/study` ·
+`/arcade` · `/world/compose` · `/world/story` · `/world/amirnet/practice|simulation` ·
+`/world/messages/<id>` — and the fixture for each sits beside it, so a fixture ⛔ cannot be
+classified differently from the screen it stands for. The `/*` suffix is what separates an
+inbox (a destination) from the message opened out of it (a task); a plain prefix took the
+link off both.
+
+**Measured live, `next start`, 375×780, twelve screens:** `/dev/deck` · `/dev/card` ·
+`/dev/lesson` · `/dev/messages/open` · `/world/story` · `/world/compose` · `/study/scan`
+⇒ **⛔ no link**. `הגדרות` `top=712` · `/` `794` · `/sources` `2584` · `/dev/tabs/me` `744`
+· `/dev/messages` (the inbox) `730` ⇒ **present**. ⛔ Zero horizontal scroll and ⛔ zero
+control under 44px on all twelve.
+
+⚠️ **Two gates moved with the element, ⛔ neither was dropped.** `scripts/verify-mobile.mjs`
+now measures **both directions** per route against the same module — a silent loss of the
+attribution reddens `check:mobile`, which is the only way the licence side of this can fail
+loudly. And `app/layout.test.ts` (D-206 · the one gutter) follows the `<footer>` into its
+new file through `COLUMN_AREAS`, so `px-6` is still asserted on all three areas.

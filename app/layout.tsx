@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import SourcesFooter from '@/components/SourcesFooter';
 
 /**
  * T-264 / D-193 — `title.template` is the ONE product-name suffix for the whole
@@ -56,18 +56,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </header>
           <main className="flex flex-1 flex-col gap-6 px-6 pb-8">{children}</main>
           {/*
-            T-011: the attribution link has to be reachable from every screen,
+            T-011: the attribution link has to be reachable from the product,
             because the obligation attaches to the product and not to one page.
-            min-h-touch keeps it at the 44px floor check:mobile enforces.
+            🧹 T-326 — «reachable» is ⛔ not «drawn inside a task»: measured on
+            `/dev/deck`, it sat under the card the learner is answering. The
+            footer now asks `lib/core/licenceFooter.ts` which screens carry a
+            task, and draws itself on every other one — the entry screens and the
+            five tabs included, so it stays reachable before sign-in too.
           */}
-          <footer className="px-6 pb-6 pt-2">
-            <Link
-              href="/sources"
-              className="inline-flex min-h-touch items-center text-sm text-ink-muted underline"
-            >
-              מקורות הנתונים והרישיונות
-            </Link>
-          </footer>
+          <SourcesFooter />
         </div>
         <ServiceWorkerRegistrar />
       </body>

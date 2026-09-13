@@ -310,6 +310,7 @@
   "components/ServiceWorkerRegistrar.tsx": [],
   "components/SimulationMessage.test.ts": [],
   "components/SimulationMessage.tsx": [],
+  "components/SourcesFooter.tsx": [],
   "components/SpellCard.test.ts": [],
   "components/SpellCard.tsx": [],
   "components/StoryEndScreen.tsx": [],
@@ -613,6 +614,10 @@
     "lib/core/lexicon.ts"
   ],
   "lib/core/lexicon.ts": [],
+  "lib/core/licenceFooter.test.ts": [
+    "lib/core/licenceFooter.ts"
+  ],
+  "lib/core/licenceFooter.ts": [],
   "lib/core/linkLabelScan.test.ts": [
     "lib/core/linkLabelScan.ts"
   ],

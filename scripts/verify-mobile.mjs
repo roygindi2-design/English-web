@@ -26,6 +26,10 @@ import { auditStoryBody } from './story-tap-audit.mjs';
 // unit-testable without a browser (check:core owns it) — see lib/core/journeyDrift.ts.
 const { driftingNames } = await import('../lib/core/journeyDrift.ts');
 
+// 🧹 T-326 — WHICH screens draw the licence footer. Imported, ⛔ not re-listed: a copy
+// here would let the walk agree with itself while the product does something else.
+const { showsLicenceFooter } = await import('../lib/core/licenceFooter.ts');
+
 // T-227 — `--journeys-only` runs ONLY the three journey walks below (`npm run
 // walk:journey`) and skips every per-route/per-width check in this file. A flag,
 // not a positional arg, so it must be filtered out before BASE_ARG is read —
@@ -980,6 +984,21 @@ try {
         const text = await page.locator('main').innerText();
         check(!text.includes('—'), `${at} ⛔ no "—" as a metric (D-046/D-082)`, 'found "—" in main text');
       }
+
+      // 🧹 T-326 — the licence link is drawn on a destination and ⛔ not inside a task.
+      //
+      // ⛔ BOTH directions, and that is the point: T-011 attaches the attribution to the
+      // product, so a screen that quietly loses it is a licence defect, ⛔ not tidiness.
+      // Measured before this task on `/dev/deck` at 375px: «מקורות הנתונים והרישיונות»
+      // was drawn under the card the learner is answering. The expectation comes from
+      // `lib/core/licenceFooter.ts`, so this check cannot drift away from the component.
+      const licenceLinks = await page.locator('footer a[href="/sources"]').count();
+      const wantsLicence = showsLicenceFooter(route);
+      check(
+        wantsLicence ? licenceLinks === 1 : licenceLinks === 0,
+        `${at} licence link ${wantsLicence ? 'present (destination)' : '⛔ absent (task screen)'}`,
+        `found ${licenceLinks} footer link(s) to /sources`,
+      );
 
       // Touch targets (MF-2) — real interactive elements only.
       const small = await page.evaluate(([min, exempt]) => {

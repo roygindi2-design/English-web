@@ -20,9 +20,23 @@ import { join } from 'node:path';
  * else. Any OTHER file that both constrains the column (`max-w-md`) and pads it
  * horizontally (`px-*`) is a second gutter — with exactly two declared exceptions, both
  * of which escape `<main>` and therefore have to carry their own copy of the same number.
+ *
+ * 🧹 **T-326 moved ONE of the three elements, and this gate follows it rather than
+ * dropping it.** The `<footer>` is now `components/SourcesFooter.tsx`, because it has to
+ * disappear on a task screen and a server layout cannot read the route. ⇒ `COLUMN_AREAS`
+ * below names the file each area is written in, so the gutter is still asserted on all
+ * three — and moving an area to a new file without teaching this test about it still
+ * fails here, on the `⛔ <footer> not found` line.
  */
 
 const GUTTER = 'px-6';
+
+/** The three areas of the column, and the file each one is written in (T-326). */
+const COLUMN_AREAS: ReadonlyArray<readonly [area: string, file: string]> = [
+  ['header', 'app/layout.tsx'],
+  ['main', 'app/layout.tsx'],
+  ['footer', 'components/SourcesFooter.tsx'],
+];
 
 /** ⛔ Files that are legitimately OUTSIDE `RootLayout`'s `<main>` and must repeat the number. */
 const ESCAPES_MAIN: ReadonlyArray<{ file: string; why: string }> = [
@@ -48,19 +62,19 @@ function walk(dir: string): string[] {
 }
 
 describe('📐 T-285 · D-206 — the product has ONE gutter', () => {
-  it('`app/layout.tsx` pads header · main · footer with the SAME value, and it is 24px', () => {
-    const src = readFileSync('app/layout.tsx', 'utf8');
-    for (const area of ['header', 'main', 'footer']) {
+  it('header · main · footer are padded with the SAME value, and it is 24px', () => {
+    for (const [area, file] of COLUMN_AREAS) {
+      const src = readFileSync(file, 'utf8');
       const tag = new RegExp(`<${area} className="([^"]*)"`).exec(src);
-      expect(tag, `⛔ <${area}> not found in app/layout.tsx`).not.toBeNull();
+      expect(tag, `⛔ <${area}> not found in ${file}`).not.toBeNull();
       const classes = (tag as RegExpExecArray)[1] as string;
       expect(
         classes.split(/\s+/),
         `⛔ <${area}> must carry the single gutter ${GUTTER} (D-206), not ${classes}`,
       ).toContain(GUTTER);
+      // ⛔ and ⛔ no OTHER horizontal padding may sit in that file, or there are two numbers again.
+      expect(/\bpx-(?!6\b)\d/.test(src), `⛔ ${file} carries a second px-* value`).toBe(false);
     }
-    // ⛔ and ⛔ no OTHER horizontal padding may sit on those three, or there are two numbers again.
-    expect(/\bpx-(?!6\b)\d/.test(src), '⛔ app/layout.tsx carries a second px-* value').toBe(false);
   });
 
   it('⛔ no second gutter: no other file both constrains `max-w-md` AND pads it horizontally', () => {
