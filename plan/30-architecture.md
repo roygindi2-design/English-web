@@ -2482,3 +2482,36 @@ in `D-227`. Closes `F-231`.
 through `tsc`, and `tsconfig.json` keeps `allowJs: false` on purpose. Both are pinned by a
 shape test comparing declared names against the module's exports, the same pairing
 `next-cycle-id.test.ts` already used.
+
+### `T-270`ⓑ · `public.amirnet_vocab` — the exam's vocabulary range stops being a file
+`41 § 5` fixes the exam's range at **1,500–3,000 words** and `41 § 6` derives it: union the
+two licensed profiles, keep the LOWEST band per headword, drop `A1` and `C2`, map the
+survivors `A2⇒1 · B1⇒2 · B2⇒3 · C1⇒4`. `scripts/build-amirnet-vocab.mjs` (`T-222`) has done
+that since 06/09 — **into a CSV**. Measured this tick: `data/generated/amirnet-vocab.csv` is
+376,409 bytes and its only consumer in the repo is `scripts/measure-amirnet-coverage.mjs`.
+⇒ ⛔ no client could reach the range at all, which is exactly what `T-270` says it must stop
+being («⛔ ולא נשארות קבצים שסקריפט קורא»).
+
+`supabase/migrations/0026_amirnet_vocab.sql` creates `public.amirnet_vocab` in the shape
+`0024_amirnet_items.sql` already established — `create table if not exists`, every constraint
+named and added inside `do $$` (C-0032), `comment on` per column, RLS with a single `select`
+policy, `grant select` and ⛔ nothing else.
+
+🔴 **`D-232` is enforced by the SCHEMA, ⛔ not by a reviewer.** The decision (four tiers, ⛔ not
+six; `cefr_level` kept as a source reference) becomes `amirnet_vocab_cefr_check`, which makes
+`A1` and `C2` **unwritable by any path**, and `amirnet_vocab_tier_name_pairing`, which refuses
+a tier carrying another tier's Hebrew name. **Measured live against the project, ⛔ not
+asserted:** `A1` · `C2` · a mismatched pair were all refused with `check_violation`, a valid
+row was accepted, and the table was returned to `0` rows. Read back: 9 columns · 6 checks ·
+RLS on · 1 policy · 2 indexes.
+
+⛔ **Zero foreign key out of this table** — `41 § 5` calls it the exam's *range*, ⛔ not the
+learner's vocabulary state, so the `R-020` · `37 § 13.1` boundary is enforced by absence, the
+same way `0024` enforces it for `amirnet_items`.
+
+⚠️ **The table is created EMPTY on purpose, and that is ⛔ not a half-finished task.** The row's
+ⓒ («coverage measured, ⛔ not declared») ⛔ cannot be measured before rows exist, and the 6,715
+rows need a deterministic, tested emitter — `supabase/seed/**` is a generated tree that is
+⛔ never hand-written. ⇒ `T-323` (the emitter) and `T-324` (the load + the measurement) were
+opened in this tick as the declared continuation, and the plan covering all three is
+`docs/superpowers/plans/2026-09-13-amirnet-vocab-into-the-database.md`.
