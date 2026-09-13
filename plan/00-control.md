@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-13T21:44:03Z"   # C-0588 (DEV, מלא) — `T-328` (חצי `לימודים`) 🟣 · `T-334` ⬜ נפתחה בפיצול.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "promoter-agent"    # 🔒 C-0582 (PROMOTER) — נלקחה 2026-09-13T23:12:46Z.
-LOCK_AT: "2026-09-13T23:12:46Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה C-0590 (PROMOTER) 2026-09-13T23:40Z — הקידום הושלם.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -18,10 +18,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   amirnet: 19 / 120          # 41 § 8-1..3 · ▶️ C-0579 (DEV): `T-270`ⓑ 🟣 — `public.amirnet_vocab` נוצרה במסד החי (9 עמודות · 6 `check` · RLS · 0 שורות), ו-`D-232` אכוף בסכמה: `A1`/`C2` ⛔ בלתי-ניתנות לכתיבה, נמדד. ⓒ פוצל ל-`T-323` (פולט SQL) ו-`T-324` (טעינה + מדידה), שתיהן ⬜/⛔ חדשות. ‏`F-235`ⓑ עדיין של CONTENT.
 #   msgs:    4 / 120           # 39-messages-spec § 9 · **המוקד.** ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "fbed22d · 2026-09-13T17:54Z · **C-0581 (QA, מלא).** `verify`✅(ריצה מלאה, טרייה, תשעת הפקודות, exit 0) · `loop:health` 23/23 · build✅ · הליכה חיה 10 מסכים, פגם יחיד — `/dev/tabs/cards` 503 על `study/queue` — נמדד כבר-ידוע ומאושר ב-`EXPECTED_CONSOLE` של `check:mobile` (הפיקסטורה ⛔ נטולת session/env בכוונה, ראה מקור), ⛔ אינו ממצא חדש. smoke: לא נדרש (`LAST_PROMOTED_AT` ללא שינוי מאז C-0572). `generate-map`: ⛔ אין סחף. מיזוג: 4 קומיטים מ-`work/current` (2 שלי — נעילה+ארכוב) בלבד; K-005/T-270ⓑ כבר נחתו על `dev` דרך שער מסלול זול לפני הטיק הזה. הלומד מקבל מעבר ל-C-0572: 30 מילות אוצר מילים חדשות (K-005, drill…frank), כיסוי 774→803."
+RELEASE_READY: "4a40251 · 2026-09-13T23:27Z · **C-0590 (PROMOTER).** `verify`✅(ריצה מלאה, טרייה, תשעת הפקודות, exit 0, 2798 בדיקות) · `loop:health` 23/23 · build✅ · smoke ①`state:ready`·`context:production`·`branch:main`·`commit_ref=4a402514` תואם ②`GET /api/health` ⇒ 200 `{ok:true}` 4/4 בדיקות (word_progress reachable). מיזוג ff-only: `75bc311..4a402514`, 110 קומיטים מ-`dev`. הלומד מקבל מעבר ל-C-0546: אצוות K-005 נוספות (Tier 1 headwords, כמה עשרות מילים) · `public.amirnet_vocab` חי במסד (RLS+CHECK) · מסכי סימולציית אמירנט (רמות/דשבורד/תרגול/תוצאה) · 26 פריטי תרגול אמירנט מקוריים (K-006) · שער `vocab_band`."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "75bc311"  # main אחרי הקידום של 12/09 (C-0546, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
+LAST_REVIEWED_COMMIT: "4a40251"  # main אחרי הקידום של 13/09 (C-0590, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -34,8 +34,8 @@ IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** 
 MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. ▶️ C-0534 (QA, מלא): `F-219` נסגר — `ops(loop)` איחד את `dev` ל-`work/current` (`65359cb`) לפני הטיק הזה; `rev-list` בשני הכיוונים נמדד **0** על `0851258` לפני הקומיטים של הטיק הזה.
 PROMOTION_BLOCKERS: ""            # ✅ **נפתר 2026-09-12T16:29Z — C-0546 (PROMOTER):** הקידום עבר, `main`=`75bc311`, כל 5 תנאי השער ירוקים. היסטוריית C-0521 (הסירוב הלא-דטרמיניסטי, F-229) ⇒ `plan/archive/control-log.md` · פריט 110 ב-`03-for-roy.md`. # ⇐ PROMOTER בלבד.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
-LAST_PROMOTED_AT: "2026-09-12T16:29:28Z"  # ⚡ קידום אוטומטי של הלופ — C-0546 (PROMOTER), כל 5 תנאי השער ירוקים. `2b8e1b7..75bc311` ff-only, 124 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
-PROMOTIONS_THIS_MONTH: 16         # 16 this month (➕ 12/09 16:29Z, C-0546 PROMOTER — קידום אוטומטי). ⛔ Credit budget is no longer a reason to delay (D-086).
+LAST_PROMOTED_AT: "2026-09-13T23:27:35Z"  # ⚡ קידום אוטומטי של הלופ — C-0590 (PROMOTER), כל 5 תנאי השער ירוקים. `75bc311..4a402514` ff-only, 110 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
+PROMOTIONS_THIS_MONTH: 17         # 17 this month (➕ 13/09 23:27Z, C-0590 PROMOTER — קידום אוטומטי). ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
