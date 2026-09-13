@@ -2268,3 +2268,40 @@ chapter clock has `expired` (`AmirnetSimulation`) presses nothing, and a pressed
 so the test clicks.
 
 **⛔ Zero touch:** `app/api/**` · `lib/core/**` · every learner-facing string. `41 § 9.2` untouched.
+
+## C-0558 (DEV) — `T-310` — the amirnet bank stops being a file nobody reads, and the ingest refuses what the table cannot take
+
+**The measurement that opened it, re-measured here before a line was written:**
+`select count(*) from public.amirnet_items` ⇒ **0**, while `data/generated/amirnet-items-*.jsonl`
+carried 26 gate-passing items from `K-006`. ⇒ `GET /api/amirnet/practice` and
+`GET /api/amirnet/simulation` were reading an empty table, and the learner C-0553's walk
+measured met «עוד אין מספיק פריטים» with a valid bank sitting in the repo.
+
+`scripts/build-amirnet-items.mjs` → `supabase/seed/0006_amirnet_items.sql`, registered as
+`npm run build:amirnet-items`. It is the `build-ingest-sql.mjs` shape, for the same reasons:
+the impure layer reads files and writes one, the gate is the **real** one
+(`amirnetItemGate` · `amirnetChapterGate` — an `rc` chapter is gated as a chapter, because
+five questions sharing one passage is a property no per-item check can see), and a refused
+item is **excluded and reported**, ⛔ never repaired. `SEED_OUT_DIR` retargets the output so
+`npm test` cannot dirty the git-managed seed (`F-048ⓑ`), and the committed file is asserted
+byte-identical to a fresh build ⇒ **staleness is a red test**.
+
+**Re-runnable, ⛔ and proved on the live database, ⛔ not argued:** the insert ends
+`on conflict (type, level, stem_en) do nothing` against the unique key `0024` declares. Applied
+through the Supabase MCP connector in this tick: **0 rows → 16 rows** (sc 2/2/2/2 · rs 2/2/2/2
+across levels 1-4), and a second apply of the same rows returned **reinserted 0, total 16**.
+
+🔴 **AND THE INGEST MEASURED SOMETHING THE GATE ⛔ CANNOT — `F-235`.** `AmirnetItemRecord`
+carries ⛔ no `vocab_band` field at all, so `amirnetItemGate()` cannot see one, while
+`0024_amirnet_items.sql` declares `vocab_band smallint not null` inside a closed set. ⇒ an item
+can pass 26/26 and still be **unwritable**. Measured: the 10 `rc` questions carry no
+`vocab_band`; the 16 `sc`/`rs` items do. This script therefore checks every column the TABLE
+requires on top of the gate, refuses by name, and exits non-zero — ⛔ it does ⛔ not invent the
+band, because a band chosen by DEV is a statistic about a learner's vocabulary that ⛔ nobody
+measured (`R-010`).
+
+**Debt, declared, and it is `F-235`ⓑ's:** `rc` is **0** rows in the database. `41 § 2` puts 5
+`rc` questions inside the 23 of a full simulation ⇒ **a full run is ⛔ not assemblable at any
+level** until those ten questions are re-delivered with their band — ⛔ and no further `sc`/`rs`
+content changes that. Practice (`GET /api/amirnet/practice`), which serves one type at one
+level, works today for `sc` and `rs` at all four levels.
