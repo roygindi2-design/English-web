@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                           # ▶️ C-0579 (DEV): `T-270`ⓑ נבנה — `public.amirnet_vocab` קיימת במסד החי, השער נבדק חי. `T-323`/`T-324` נפתחו להמשך.
-STATE: READY                      # ▶️ C-0579 (DEV, מלא): תוכנית ירוקה 8/8 ב-`check:plan` + משימה 1 נחתה באותו טיק (`RULES § 0.12`). `verify` — ראה שורת ההעברה.
+NEXT_AGENT: DEV                           # ▶️ C-0581 (QA, מלא): שער נבדק וירוק, מוזג ל-dev. `general` (חוצה-מערכת) נושא 10 ⬜ פנויות.
+STATE: READY                      # ▶️ C-0581 (QA, מלא): מיזוג ff-only הושלם, dev=work/current, `loop:health` 23/23.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-13T16:40:32Z"   # C-0579 (DEV, מלא) — `T-270`ⓑ: מיגרציה 0026 הוחלה ואומתה במסד החי.
+LAST_HANDOFF_AT: "2026-09-13T17:55:00Z"   # C-0581 (QA, מלא) — שער מלא ירוק, מיזוג ff-only ל-dev, ארכוב, RELEASE_READY + שלוש הקשות רעננות.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"                 # 🔒 ננעל 2026-09-13T17:38Z — מסלול מלא, C-0581.
-LOCK_AT: "2026-09-13T17:38:00Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-13T17:55Z — C-0581 (QA, מלא) סיים.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -18,7 +18,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   amirnet: 19 / 120          # 41 § 8-1..3 · ▶️ C-0579 (DEV): `T-270`ⓑ 🟣 — `public.amirnet_vocab` נוצרה במסד החי (9 עמודות · 6 `check` · RLS · 0 שורות), ו-`D-232` אכוף בסכמה: `A1`/`C2` ⛔ בלתי-ניתנות לכתיבה, נמדד. ⓒ פוצל ל-`T-323` (פולט SQL) ו-`T-324` (טעינה + מדידה), שתיהן ⬜/⛔ חדשות. ‏`F-235`ⓑ עדיין של CONTENT.
 #   msgs:    4 / 120           # 39-messages-spec § 9 · **המוקד.** ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "957ce3b · 2026-09-13T12:48Z · **C-0572 (QA, מלא).** `verify`✅(hook, ריצה טרייה) · `loop:health` 22/23 (9=`F-239` — `00-control.md` מעל 12KB, תסמין חוזר, טופל בטיק הזה) · build✅ · הליכה חיה 10 מסכים נקייה (msgs·amirnet·story·lesson·studies·world·me), 0<44px·0 גלילה·0 שגיאות. smoke: לא נדרש (`LAST_PROMOTED_AT` ללא שינוי). הלומד מקבל מעבר ל-C-0566: פופאובר מילה בסיפור נסגר ב-`Escape`/הקשה-בחוץ ומחזיר מיקוד, ואינו משאיר מילה 'גנובה' מתחתיו (T-319, WCAG 2.2 AA) · שער `vocab_band` מזהה פריטי אמירנט פסולים (T-320) · 40 מילות Tier 1 חדשות (K-005). תיקון רגיסטר: T-319 🟣→✅ (F-126, כבר על dev דרך שער זול)."
+RELEASE_READY: "fbed22d · 2026-09-13T17:54Z · **C-0581 (QA, מלא).** `verify`✅(ריצה מלאה, טרייה, תשעת הפקודות, exit 0) · `loop:health` 23/23 · build✅ · הליכה חיה 10 מסכים, פגם יחיד — `/dev/tabs/cards` 503 על `study/queue` — נמדד כבר-ידוע ומאושר ב-`EXPECTED_CONSOLE` של `check:mobile` (הפיקסטורה ⛔ נטולת session/env בכוונה, ראה מקור), ⛔ אינו ממצא חדש. smoke: לא נדרש (`LAST_PROMOTED_AT` ללא שינוי מאז C-0572). `generate-map`: ⛔ אין סחף. מיזוג: 4 קומיטים מ-`work/current` (2 שלי — נעילה+ארכוב) בלבד; K-005/T-270ⓑ כבר נחתו על `dev` דרך שער מסלול זול לפני הטיק הזה. הלומד מקבל מעבר ל-C-0572: 30 מילות אוצר מילים חדשות (K-005, drill…frank), כיסוי 774→803."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
 LAST_REVIEWED_COMMIT: "75bc311"  # main אחרי הקידום של 12/09 (C-0546, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
@@ -57,5 +57,5 @@ PROMOTIONS_THIS_MONTH: 16         # 16 this month (➕ 12/09 16:29Z, C-0546 PROM
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
 
-| C-0578 | CONTENT | QA | 2026-09-13T15:53:33Z | 📚 **K-005 (30 מילים, drill…frank) — נחת. `F-235`ⓑ — נמדד, ⛔ לא נחת.** `vocab_band` ל-10 שאלות `rc` נמדד (Tier מקסימלי בטקסט, ⛔ לא נבחר — ערכים מלאים ב-`25-commissions.md`), ⛔ לא נכתב: 2 מקרי-בדיקה ב-`build-amirnet-items.test.ts` דורשים פריט חלקי בקובץ החי, וכתיבת התיקון מפילה אותם — קוד, ⛔ אינו שלי. K-005: `gateSense` אמיתי 10/30⇢30/30 (לקח 11/13/43/1). בקרת שלילה 0/7. 4 גנרטורים נקי, בנק 1,366/33. `coverage`: 774→803. הליכה חיה 5 מסכים נקייה. `verify` ירוק. | `batch-2026-09-13-3`·`manifest`·`seed×3`·`previewCards`·`coverage-report`·`gate-recheck`·`25-commissions`·`80-lessons`·`00-control` |
 | C-0579 | DEV | QA | 2026-09-13T16:40:32Z | 📝🔨 **טיק תכנון שנחת — תוכנית ירוקה 8/8 ומשימה 1 שלה באותו טיק.** `T-270`ⓑ: `supabase/migrations/0026_amirnet_vocab.sql` הוחלה דרך מחבר MCP של Supabase ⛔ ולא הושארה לרוי (D-163), ונקראה חזרה מהמסד: **9 עמודות · 6 אילוצי `check` · RLS דלוק · מדיניות `select` אחת · 2 אינדקסים · 0 שורות**. נתיב `down` בכותרת הקובץ לפני ההחלה (`RULES § 0.22`). **השער נמדד חי:** `A1` · `C2` · זוג `tier`/`tier_name` סותר — שלושתם `check_violation`; שורה תקינה התקבלה; הטבלה הוחזרה ל-0. ⇒ `D-232` (ארבע דרגות) אכוף בסכמה. ⓒ של השורה ⛔ אינו מדיד לפני טעינה ⇒ נפתחו `T-323` (פולט SQL) ו-`T-324` (טעינה + `measure:amirnet-coverage`). קריאה קדימה מ-`general` (⬜=0) ל-`amirnet`, הבאה ברצף `36 § 13` אחרי `msgs`. | `supabase/migrations/0026_amirnet_vocab.sql` ⟨חדש⟩ · `docs/superpowers/plans/2026-09-13-amirnet-vocab-into-the-database.md` ⟨חדש⟩ · `50-tasks` · `30-architecture` · `00-control` · `plan-tables` · `plan-open` |
+| C-0581 | QA | DEV | 2026-09-13T17:55:00Z | 🚦 **מסלול: מלא — שער מלא.** `verify`✅(ריצה מלאה, טרייה, exit 0) · `loop:health` 23/23 · build✅ · הליכה חיה 10 מסכים — פגם יחיד ב-`/dev/tabs/cards` (8 שגיאות/503 על `study/queue`) נמדד כבר-מאושר ב-`EXPECTED_CONSOLE` של `check:mobile`, ⛔ לא ממצא. מיזוג `--ff-only` בשני צעדים: נעילה קודם (`7749e2f`), ואז ארכוב+`measure:plan` (`fbed22d`) — 3 שורות `60-findings` הוגדמו. `dev`==`work/current` (0/0). `RELEASE_READY` עודכן, שלוש הקשות חדשות על K-005 ב-`03-for-roy`. `general` נשאר ACTIVE_WORKSTREAM — 10 ⬜ פנויות, אין תנאי לחזרה למחלקת פיצ׳ר. | `plan/00-control.md` · `plan/60-findings.md` · `plan/archive/findings-archive.md` · `plan/03-for-roy.md` · `plan/archive/handoff-log.md` |
