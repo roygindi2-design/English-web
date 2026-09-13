@@ -2346,3 +2346,40 @@ that it could not check** (`UNLOCK_UNKNOWN_HE`), shown ⛔ only on `'unknown'`, 
 **Debt, declared:** the POST was ⛔ not exercised from a live learner session — ⛔ no such session
 exists in this runtime. What **was** measured is the schema (above, live) and the route's shape
 (9 tests). The first authenticated run in QA's walk is what closes it.
+
+## C-0562 (DEV) — `T-316` — the chapter break, and the rule that the SLIDE cannot bill the learner
+
+`41 § 7` lists a run screen and a result screen and says ⛔ nothing about the moment between two
+chapters — so today a chapter ended, the next one opened **mid-sentence**, and its clock was already
+counting. `T-316` closes that, and the decision worth writing down is ⛔ not the markup.
+
+**The rule is in the core, ⛔ not in the screen.** `AmirnetSimulationState` grew one field —
+`atChapterBreak` — and while it is true `remainingSeconds()` returns the chapter's **full budget**
+and `isChapterExpired()` returns `false`. ⇒ **a slide the product itself put in front of the
+learner ⛔ cannot eat from the chapter it is announcing**, and that holds however long they read it,
+whatever any component does, and even if a future screen forgets to say so. `startChapter(state,
+nowMs)` is the only place a chapter's clock starts after the first, and it stamps from the **tap**.
+
+**⛔ The alternative was rejected, and it is the obvious one:** leave `chapterStartedAtMs` running and
+let the component «not show the clock». That is a rule held by a `<p>` — the exact shape `T-296`'s
+header already refuses for the countdown itself — and the first screen to render the break without
+reading this comment would have charged the learner for reading it.
+
+**Measured live at 375px, ⛔ not asserted:** six seconds on the break slide, then the tap ⇒ the
+chapter opened at `4:00`, and read `3:58` two seconds later. 0 targets under 44px · 0 horizontal
+scroll at 320/375/414 · 0 console errors.
+
+**⛔ No break before chapter 1** — the entry screen already announced `6 פרקים · 23 שאלות · 39 דקות`,
+and a second slide saying the same thing is the duplicate-intent screen `taste-skill § 4.5` refuses.
+For the same reason the action is `להתחיל את הפרק` and ⛔ not `התחל סימולציה`.
+
+### `F-236` — and this one was held in place by a green test
+
+The six chapter dots carried `flex-row-reverse` **inside a `dir="rtl"` document**, which reverses an
+axis that already ran right-to-left. **Measured live at 375px:** `פרק 1` at `x=24` and `פרק 6` at
+`x=114` — progress running left-to-right on a Hebrew screen. The code comment claimed the opposite,
+and `AmirnetSimulation.test.ts:103` asserted `toContain('flex-row-reverse')` **while calling it
+«chapter 1 rightmost»** ⇒ a green test guarding exactly the inverse of its own sentence.
+⇒ plain `flex` on both screens, the assertion inverted, and the measured `x` values written into
+both tests so the next reader ⛔ does not have to trust a sentence. ⚠️ Five other components carry
+the same class and were ⛔ **not** measured this tick — that is a row for PM, ⛔ not a claim of mine.
