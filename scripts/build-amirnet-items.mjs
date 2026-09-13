@@ -20,13 +20,20 @@
  * ⛔ never a reconstruction of it. An `rc` chapter is gated as a chapter, because five
  * questions sharing one passage is a property ⛔ no per-item check can see.
  *
- * 🔴 **AND THE GATE IS ⛔ NOT ENOUGH, which this script is the first thing to measure.**
- * `AmirnetItemRecord` carries ⛔ no `vocab_band` field at all, so `amirnetItemGate()`
- * ⛔ cannot see one — while `0024_amirnet_items.sql` declares `vocab_band smallint not null`
- * inside a closed set. ⇒ an item may pass the gate 26/26 and still be **unwritable**. This
- * script therefore checks every column the TABLE requires, on top of the gate, and reports a
- * shortfall by name. Measured on `K-006` in C-0558: 16 of 26 items are complete; the 10 `rc`
- * questions carry no `vocab_band` ⇒ refused, and filed as a finding rather than filled in.
+ * 🔵 **`vocab_band` MOVED INTO THE GATE — C-0564, closing `F-235`ⓐ.** This block used to
+ * say «the gate is ⛔ not enough», because `AmirnetItemRecord` carried ⛔ no `vocab_band`
+ * field at all and this script was the only place the column could be measured. ⇒ an item
+ * passed the gate 26/26 and was still **unwritable**, and `npm run measure:amirnet-gate`
+ * — the command CONTENT and the registers read — reported the bank clean. The field is now
+ * part of `AmirnetItemRecord` and `amirnetItemGate()` refuses `bad_vocab_band` against the
+ * same closed set `0024`'s check constraint holds, so **both places refuse on the same
+ * thing**. Measured on `K-006`: 16 of 26 items complete; the 10 `rc` questions carry no
+ * `vocab_band` ⇒ refused, and filed as a finding rather than filled in.
+ *
+ * ⚠️ **What is still measured HERE and ⛔ not in the gate:** `explanation_he` and
+ * `passage_en` — two columns the table requires that `AmirnetItemRecord` does ⛔ not model,
+ * because ⛔ neither is a property of a well-formed *question* (`41 § 7` makes the Hebrew
+ * explanation a property of a served *row*). ⇒ `shortfall()` shrank; it ⛔ did not go away.
  *
  * ⛔ **A REFUSAL IS LOUD, ⛔ never a silent skip** (T-310ⓑ): every refused item is printed
  * with its id and its reason, and the process exits non-zero — exactly the shape
@@ -72,9 +79,6 @@ const DATA = process.env.AMIRNET_ITEMS_DIR || join('data', 'generated');
 const VOCAB_PATH = process.env.AMIRNET_VOCAB_CSV || join(DATA, 'amirnet-vocab.csv');
 const OUT_DIR = process.env.SEED_OUT_DIR || join('supabase', 'seed');
 const OUT = join(OUT_DIR, '0006_amirnet_items.sql');
-
-/** `41 § 6.5` — a closed set, and `0024_amirnet_items.sql` enforces the same three. */
-const VOCAB_BANDS = new Set([1000, 2000, 3000]);
 
 /** A SQL string literal. Doubling the quote is the whole of the escaping. */
 const q = (value) => `'${String(value).replaceAll("'", "''")}'`;
@@ -122,24 +126,31 @@ const refused = [];
 const rows = [];
 
 /**
- * The columns of `public.amirnet_items`, ⛔ and the gate cannot see all of them. `41 § 6.5`
- * lists `vocab_band` as part of the item; `AmirnetItemRecord` does ⛔ not carry it, so the
- * only place it can be measured is here.
+ * The two columns of `public.amirnet_items` that `AmirnetItemRecord` does ⛔ not model.
+ * ⛔ `vocab_band` is ⛔ no longer one of them — it moved into the gate itself in C-0564
+ * (`F-235`ⓐ), so a band that is absent or off-set is refused by `amirnetItemGate()` and
+ * reaches this script as the reason `bad_vocab_band`.
  */
 function shortfall(record) {
   const missing = [];
-  if (!VOCAB_BANDS.has(record.vocab_band)) {
-    missing.push(
-      record.vocab_band === undefined
-        ? 'vocab_band absent (41 § 6.5 · 0024 declares it not null) — ⛔ NOT inferred here'
-        : `vocab_band ${JSON.stringify(record.vocab_band)} outside 1000 | 2000 | 3000`,
-    );
-  }
   if (typeof record.explanationHe !== 'string' || record.explanationHe.trim() === '') {
     missing.push('explanation_he empty (41 § 7 — the Hebrew explanation is ⛔ never generated at read time)');
   }
   if (typeof record.passageEn !== 'string') missing.push('passageEn absent');
   return missing;
+}
+
+/**
+ * A gate reason, as a line a human can act on. ⛔ Only `bad_vocab_band` needs it: the gate
+ * is pure and reports the reason, ⛔ never the offending value, and «which band did it
+ * carry» is the first question anyone asks. ⛔ The wording is ⛔ not a second opinion — the
+ * refusal already happened, in the gate.
+ */
+function annotate(reason, record) {
+  if (reason !== 'bad_vocab_band') return reason;
+  return record.vocab_band === undefined
+    ? 'bad_vocab_band — vocab_band absent (41 § 6.5 · 0024 declares it not null) — ⛔ NOT inferred here'
+    : `bad_vocab_band — vocab_band ${JSON.stringify(record.vocab_band)} outside 1000 | 2000 | 3000`;
 }
 
 for (const file of files) {
@@ -165,7 +176,14 @@ for (const file of files) {
     if (isChapter) {
       const chapter = amirnetChapterGate(candidates, { vocabTierByWord });
       if (!chapter.ok) {
-        for (const c of candidates) refused.push({ where, id: c.id, why: `chapter — ${chapter.reasons.join(' · ')}` });
+        // ⛔ `item_<n>_failed` names WHICH question and ⛔ not WHAT is wrong with it, and a
+        // refusal nobody can act on is the silent skip T-310ⓑ exists against. The chapter's
+        // own reasons apply to all five; each question also carries its own.
+        const chapterWide = chapter.reasons.filter((r) => !/^item_\d+_failed$/.test(r));
+        candidates.forEach((c, qi) => {
+          const own = (chapter.perQuestion[qi]?.reasons ?? []).map((r) => annotate(r, c));
+          refused.push({ where, id: c.id, why: ['chapter', ...chapterWide, ...own].join(' · ') });
+        });
         return;
       }
     }
@@ -174,7 +192,8 @@ for (const file of files) {
       const gate = isChapter ? { ok: true, reasons: [] } : amirnetItemGate(candidate, { vocabTierByWord });
       const missing = shortfall(candidate);
       if (!gate.ok || missing.length > 0) {
-        refused.push({ where, id: candidate.id, why: [...gate.reasons, ...missing].join(' · ') });
+        const why = [...gate.reasons.map((r) => annotate(r, candidate)), ...missing];
+        refused.push({ where, id: candidate.id, why: why.join(' · ') });
         continue;
       }
       rows.push({

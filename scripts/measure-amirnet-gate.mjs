@@ -80,7 +80,19 @@ for (const file of files) {
       itemsGated += questions.length;
       if (!result.ok) {
         itemsRejected += result.perQuestion.filter((r) => !r.ok).length;
-        rejectionLines.push(`${file}:${i + 1} chapter — ${result.reasons.join(', ')}`);
+        // ⛔ `item_<n>_failed` names WHICH question and ⛔ never WHAT is wrong with it, and
+        // this report is what CONTENT regenerates a batch from (`R-014`) — a line nobody can
+        // act on is a rejection that will be delivered again unchanged. ⇒ every failing
+        // question is listed with its own reasons; the chapter's own reasons stay on top.
+        const chapterWide = result.reasons.filter((r) => !/^item_\d+_failed$/.test(r));
+        if (chapterWide.length > 0) {
+          rejectionLines.push(`${file}:${i + 1} chapter — ${chapterWide.join(', ')}`);
+        }
+        result.perQuestion.forEach((r, qi) => {
+          if (r.ok) return;
+          const id = questions[qi]?.id ?? `question ${qi + 1}`;
+          rejectionLines.push(`${file}:${i + 1} ${id} — ${r.reasons.join(', ')}`);
+        });
       }
     } else {
       const result = amirnetItemGate(record, { vocabTierByWord });

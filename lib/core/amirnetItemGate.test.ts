@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   AMIRNET_OPTIONS_PER_ITEM,
+  AMIRNET_VOCAB_BANDS,
   amirnetItemGate,
   toServedItems,
   type AmirnetItemRecord,
   type AmirnetItemRow,
+  type AmirnetVocabBand,
 } from './amirnetItemGate';
 import { servableItems } from './amirnetQuestion';
 
@@ -36,6 +38,7 @@ const scItem = (over: Partial<AmirnetItemRecord> = {}): AmirnetItemRecord => ({
   correctIndex: 0,
   levelRationale: 'one blank, common vocabulary, no contrast connector',
   source: 'original',
+  vocab_band: 1000,
   ...over,
 });
 
@@ -73,6 +76,7 @@ const rcQuestion = (over: Partial<AmirnetItemRecord> = {}): AmirnetItemRecord =>
   correctIndex: 0,
   levelRationale: 'academic topic, 180-230 words, main-idea inference question',
   source: 'original',
+  vocab_band: 3000,
   ...over,
 });
 
@@ -202,6 +206,45 @@ describe('amirnetItemGate', () => {
 
   it(`AMIRNET_OPTIONS_PER_ITEM is ${4}`, () => {
     expect(AMIRNET_OPTIONS_PER_ITEM).toBe(4);
+  });
+
+  // ─── F-235ⓐ — `vocab_band` is a field of every item (`41 § 6.5`), and the
+  // table already refuses what is missing or off-set
+  // (`0024_amirnet_items.sql`: `vocab_band smallint not null` +
+  // `amirnet_items_vocab_band_check (1000, 2000, 3000)`). Until now the gate
+  // ⛔ could not see the field at all, so it reported 26/26 passing on a bank
+  // whose 10 `rc` questions ⛔ cannot be inserted. Two places, one refusal.
+  it('passes each of the three declared bands, and ⛔ nothing else', () => {
+    for (const band of [1000, 2000, 3000] as const) {
+      expect(run(scItem({ vocab_band: band })).reasons, String(band)).not.toContain('bad_vocab_band');
+    }
+  });
+
+  it('rejects an item that carries ⛔ no vocab_band at all — the case F-235 measured', () => {
+    const item = scItem();
+    const { vocab_band: _dropped, ...withoutBand } = item;
+    const result = amirnetItemGate(withoutBand as AmirnetItemRecord, { vocabTierByWord: TIERS });
+    expect(result.ok).toBe(false);
+    expect(result.reasons).toContain('bad_vocab_band');
+  });
+
+  // ⛔ The casts are the point of the test, ⛔ not a way around the type: these records
+  // arrive as JSONL that TypeScript ⛔ never saw, so the gate is the only thing standing
+  // between an off-set band and an `insert` that dies on the check constraint.
+  const band = (value: unknown) => value as AmirnetVocabBand;
+
+  it('rejects a band outside the closed set the table declares', () => {
+    expect(run(scItem({ vocab_band: band(1500) })).reasons).toContain('bad_vocab_band');
+    expect(run(scItem({ vocab_band: band(4000) })).reasons).toContain('bad_vocab_band');
+    expect(run(scItem({ vocab_band: band(0) })).reasons).toContain('bad_vocab_band');
+  });
+
+  it('rejects a band that is not a number — a string "1000" is ⛔ not a smallint', () => {
+    expect(run(scItem({ vocab_band: band('1000') })).reasons).toContain('bad_vocab_band');
+  });
+
+  it('AMIRNET_VOCAB_BANDS is the set `0024` declares, ⛔ and is not widened here', () => {
+    expect([...AMIRNET_VOCAB_BANDS].sort((a, b) => a - b)).toEqual([1000, 2000, 3000]);
   });
 });
 

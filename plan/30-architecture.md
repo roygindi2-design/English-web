@@ -2291,20 +2291,61 @@ byte-identical to a fresh build ⇒ **staleness is a red test**.
 through the Supabase MCP connector in this tick: **0 rows → 16 rows** (sc 2/2/2/2 · rs 2/2/2/2
 across levels 1-4), and a second apply of the same rows returned **reinserted 0, total 16**.
 
-🔴 **AND THE INGEST MEASURED SOMETHING THE GATE ⛔ CANNOT — `F-235`.** `AmirnetItemRecord`
-carries ⛔ no `vocab_band` field at all, so `amirnetItemGate()` cannot see one, while
-`0024_amirnet_items.sql` declares `vocab_band smallint not null` inside a closed set. ⇒ an item
-can pass 26/26 and still be **unwritable**. Measured: the 10 `rc` questions carry no
-`vocab_band`; the 16 `sc`/`rs` items do. This script therefore checks every column the TABLE
-requires on top of the gate, refuses by name, and exits non-zero — ⛔ it does ⛔ not invent the
-band, because a band chosen by DEV is a statistic about a learner's vocabulary that ⛔ nobody
-measured (`R-010`).
+🔵 **AND THE INGEST MEASURED SOMETHING THE GATE COULD NOT — `F-235`, ⓐ CLOSED IN C-0564.**
+`AmirnetItemRecord` carried ⛔ no `vocab_band` field at all, so `amirnetItemGate()` could not
+see one, while `0024_amirnet_items.sql` declares `vocab_band smallint not null` inside a closed
+set. ⇒ an item passed 26/26 and was still **unwritable**, and the ingest was the only thing that
+noticed. It is now a field of `AmirnetItemRecord` and a reason of the gate (`bad_vocab_band`)
+against the same three values the check constraint holds — see the C-0564 section below.
 
 **Debt, declared, and it is `F-235`ⓑ's:** `rc` is **0** rows in the database. `41 § 2` puts 5
 `rc` questions inside the 23 of a full simulation ⇒ **a full run is ⛔ not assemblable at any
 level** until those ten questions are re-delivered with their band — ⛔ and no further `sc`/`rs`
 content changes that. Practice (`GET /api/amirnet/practice`), which serves one type at one
 level, works today for `sc` and `rs` at all four levels.
+
+## C-0564 (DEV) — `T-320` — the gate refuses what the TABLE refuses, ⛔ and not one thing less
+
+**The defect, and it was measured (`F-235`ⓐ, C-0558):** `41 § 6.5` makes `vocab_band` a field
+of every amirnet item and `0024_amirnet_items.sql` writes it as `vocab_band smallint not null`
++ `check (vocab_band in (1000, 2000, 3000))`. `AmirnetItemRecord` — the shape
+`amirnetItemGate()` receives — carried **nine** fields and `vocab_band` was ⛔ not one of them.
+⇒ the gate could ⛔ not measure it, and `npm run measure:amirnet-gate` reported **26/26 passing ·
+0 rejected** on a bank whose ten `rc` questions ⛔ cannot be inserted at all.
+
+⛔ **Why a second checker was ⛔ not the fix.** `scripts/build-amirnet-items.mjs` already caught
+this in a local `shortfall()` — that is how `F-235` was found — so the bank was never actually
+ingested wrong. What was wrong is that **the two places disagreed**, and the one CONTENT reads
+(`measure:amirnet-gate`, `docs/amirnet-gate-report.md`) was the one that said «clean». A
+rejection that only the ingest can see is a rejection CONTENT learns about after the row is
+closed 🟣.
+
+```
+lib/core/amirnetItemGate.ts   AmirnetVocabBand = 1000 | 2000 | 3000
+                              AMIRNET_VOCAB_BANDS  ⇐ the set, exported, one definition
+                              reason `bad_vocab_band`, next to `bad_level`/`bad_source`
+scripts/build-amirnet-items.mjs   shortfall() no longer measures the band —
+                                  only `explanation_he` and `passage_en` remain, the two
+                                  columns `AmirnetItemRecord` deliberately does ⛔ not model
+```
+
+**Measured before and after, on the same three committed files, ⛔ not asserted:**
+`npm run measure:amirnet-gate` ⇒ **26 gated · 0 rejected** before, **26 gated · 10 rejected**
+after. `npm run build:amirnet-items` ⇒ **16 emitted · 10 refused** before *and* after, and the
+generated `supabase/seed/0006_amirnet_items.sql` is **byte-identical** — the ingest was already
+right; only the report had been lying.
+
+⚠️ **And a chapter rejection now names the QUESTION, in both scripts.** `amirnetChapterGate`
+reports `item_3_failed`, which says *which* question and ⛔ never *what* — a line nobody can act
+on, in the report a batch is regenerated from. Both scripts now expand it: `rc-q4 —
+bad_vocab_band`, with the chapter-wide reasons kept on top. The ingest additionally annotates
+the band's actual value, because «which band did it carry» is the first question asked; the
+refusal itself still happens in the gate, ⛔ not in the annotation.
+
+⛔ **`F-235`ⓑ is untouched and still CONTENT's:** ⛔ no band was filled in here (`R-010` — a band
+DEV chose would be a statistic about a learner's vocabulary ⛔ nobody measured). `rc` remains
+**0** rows in the database, so a full simulation (`41 § 2`: 5 `rc` of 23) is still ⛔ not
+assemblable at any level.
 
 ## C-0560 (DEV) — `T-309` — the unlock is DERIVED from rows, so the rule can change without a migration
 

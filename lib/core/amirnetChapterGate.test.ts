@@ -50,6 +50,9 @@ const question = (
   correctIndex,
   levelRationale: 'academic topic, 180-230 words',
   source: 'original',
+  // `F-235`ⓐ — every question the chapter gate sees is an `amirnet_items` row, and the
+  // column is `not null`. A chapter whose questions carry ⛔ no band now fails here too.
+  vocab_band: 3000,
 });
 
 /** Five questions, correctIndex spread across 0..3 so no single index dominates. */
@@ -104,5 +107,22 @@ describe('amirnetChapterGate', () => {
     expect(result.ok).toBe(false);
     expect(result.reasons).toContain('item_2_failed');
     expect(result.perQuestion[2]!.ok).toBe(false);
+  });
+
+  // ⛔ `F-235` word for word: the two delivered `rc` chapters carry ⛔ no `vocab_band` on any
+  // of their ten questions, and this gate reported them CLEAN — while every one of those
+  // questions is a row `0024_amirnet_items.sql` refuses on `not null`. ⇒ a chapter is only
+  // ok when all five questions are insertable.
+  it('⛔ refuses a chapter whose questions carry ⛔ no vocab_band — every one of the five', () => {
+    const qs = validChapter().map((q) => {
+      const { vocab_band: _absent, ...withoutBand } = q;
+      return withoutBand as typeof q;
+    });
+    const result = run(qs);
+    expect(result.ok).toBe(false);
+    for (let i = 0; i < 5; i += 1) {
+      expect(result.reasons, `question ${i}`).toContain(`item_${i}_failed`);
+      expect(result.perQuestion[i]!.reasons).toContain('bad_vocab_band');
+    }
   });
 });

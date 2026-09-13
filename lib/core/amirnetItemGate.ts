@@ -19,6 +19,11 @@ import type { AmirnetServedItem } from './amirnetQuestion';
 
 export type AmirnetItemType = 'sc' | 'rs' | 'rc';
 
+export type AmirnetVocabBand = 1000 | 2000 | 3000;
+
+/** `41 § 6.5` · `0024_amirnet_items.sql:88-90`. ⛔ Widening it here widens ⛔ nothing in the table. */
+export const AMIRNET_VOCAB_BANDS: ReadonlySet<number> = new Set<number>([1000, 2000, 3000]);
+
 export interface AmirnetOption {
   /** Distractor's error-reason; at correctIndex, why THIS option is correct. Never empty. */
   readonly textEn: string;
@@ -36,6 +41,16 @@ export interface AmirnetItemRecord {
   readonly correctIndex: number;
   readonly levelRationale: string;
   readonly source: string;
+  /**
+   * `41 § 6.5` — a closed set, ⛔ and the same one `0024_amirnet_items.sql` writes as
+   * `vocab_band smallint not null` + `amirnet_items_vocab_band_check`. ⛔ It is ⛔ never
+   * inferred: the band is derived from the Tier of the hardest word in the item
+   * (`docs/content-amirnet-items-brief.md § 6`), which is a statement about the item's
+   * author, ⛔ not a number this code may pick (`R-010`). Snake-case deliberately — it is
+   * the name the delivery files and the column already carry, and renaming it here would
+   * have made the gate's field a third spelling of the same thing.
+   */
+  readonly vocab_band: AmirnetVocabBand;
 }
 
 export type AmirnetGateReason =
@@ -46,6 +61,7 @@ export type AmirnetGateReason =
   | 'bad_level'
   | 'missing_level_rationale'
   | 'bad_source'
+  | 'bad_vocab_band'
   | 'all_or_none_option'
   | 'correct_length_outlier'
   | 'vocab_above_tier'
@@ -112,6 +128,13 @@ export function amirnetItemGate(
   if (record.levelRationale.trim() === '') reasons.push('missing_level_rationale');
 
   if (record.source !== 'original') reasons.push('bad_source');
+
+  // ⛔ `F-235` — the gate must refuse exactly what `0024`'s check constraint refuses.
+  // Until this line the field was ⛔ absent from `AmirnetItemRecord` entirely, so
+  // `measure:amirnet-gate` reported 26/26 passing on a bank whose 10 `rc` questions
+  // ⛔ cannot be inserted at all. ⛔ A gate that cannot see a `not null` column is
+  // ⛔ not measuring the thing the table will.
+  if (!AMIRNET_VOCAB_BANDS.has(record.vocab_band)) reasons.push('bad_vocab_band');
 
   if (trimmedTexts.some((t) => BANNED_OPTION_PHRASES.has(t.toLowerCase()))) {
     reasons.push('all_or_none_option');

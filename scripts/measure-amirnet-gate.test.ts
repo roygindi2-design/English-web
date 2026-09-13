@@ -58,6 +58,7 @@ describe('scripts/measure-amirnet-gate.mjs', () => {
       correctIndex: 0,
       levelRationale: 'one blank, common vocabulary',
       source: 'original',
+      vocab_band: 1000,
     };
     writeFileSync(join(ITEMS_DIR, 'amirnet-items-sc-2026-09-05.jsonl'), `${JSON.stringify(item)}\n`, 'utf8');
     const stdout = run();
@@ -115,6 +116,7 @@ describe('scripts/measure-amirnet-gate.mjs', () => {
       correctIndex,
       levelRationale: 'academic topic, 180-230 words',
       source: 'original',
+      vocab_band: 3000,
     });
     const chapter = {
       type: 'rc',
@@ -127,5 +129,62 @@ describe('scripts/measure-amirnet-gate.mjs', () => {
     expect(stdout).toContain('1 amirnet item files found');
     expect(stdout).toContain('5 items gated');
     expect(stdout).toContain('0 items rejected');
+  });
+
+  // ─── F-235ⓐ · C-0564 ───────────────────────────────────────────────────────
+  // Until C-0564 this command reported `K-006` as **26/26 passing** while 10 of those
+  // items ⛔ could not be inserted at all: `vocab_band` is `not null` in
+  // `0024_amirnet_items.sql` and the gate ⛔ could not see the field. A report that says
+  // «clean» about a bank that cannot be written is worse than no report — it is what
+  // closed the row.
+  it('⛔ REJECTS an item carrying no vocab_band — the column `0024` declares not null', () => {
+    const item = {
+      type: 'sc',
+      level: 1,
+      stemEn: 'The store was ______ so we came back later.',
+      passageEn: '',
+      options: [
+        { textEn: 'closed', reason: 'correct — matches "came back later"' },
+        { textEn: 'open', reason: 'contradicts the reason given' },
+        { textEn: 'noisy', reason: 'unrelated' },
+        { textEn: 'painted', reason: 'unrelated' },
+      ],
+      correctIndex: 0,
+      levelRationale: 'one blank, common vocabulary',
+      source: 'original',
+    };
+    writeFileSync(join(ITEMS_DIR, 'amirnet-items-sc-noband.jsonl'), `${JSON.stringify(item)}\n`, 'utf8');
+    const stdout = run();
+    expect(stdout).toContain('1 items rejected');
+    expect(stdout).toContain('bad_vocab_band');
+  });
+
+  it('names the failing QUESTION of a chapter and its reason — ⛔ not `item_0_failed` alone', () => {
+    const passageEn = Array(200).fill('word').join(' ');
+    const q = (n: number, correctIndex: number, over: Record<string, unknown> = {}) => ({
+      id: `rc-q${n}`,
+      stemEn: `Question ${n} about the passage?`,
+      options: [
+        { textEn: 'correct answer text', reason: 'correct — matches the passage' },
+        { textEn: 'distractor one', reason: 'plausible but unstated' },
+        { textEn: 'distractor two', reason: 'confuses a later detail' },
+        { textEn: 'distractor three', reason: 'contradicts the passage' },
+      ].map((o, i) => (i === correctIndex ? o : { textEn: `${o.textEn} ${n}`, reason: o.reason })),
+      correctIndex,
+      levelRationale: 'academic topic, 180-230 words',
+      source: 'original',
+      vocab_band: 3000,
+      ...over,
+    });
+    const chapter = {
+      type: 'rc',
+      level: 3,
+      passageEn,
+      questions: [q(1, 0), q(2, 1), q(3, 2), q(4, 3, { vocab_band: 9000 }), q(5, 1)],
+    };
+    writeFileSync(join(ITEMS_DIR, 'amirnet-items-rc-oneband.jsonl'), `${JSON.stringify(chapter)}\n`, 'utf8');
+    const stdout = run();
+    expect(stdout).toContain('1 items rejected');
+    expect(stdout).toContain('rc-q4 — bad_vocab_band');
   });
 });
