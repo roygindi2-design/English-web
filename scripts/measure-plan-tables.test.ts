@@ -562,19 +562,26 @@ describe('🔴 T-271: שיפור אינו תג לא-מוכר (בדיקה 14 · D
 
 /**
  * T-248 — הדגל «הזרימה הפעילה מוצתה» חייב לקרוא את `ACTIVE_WORKSTREAM` בפועל, ⛔ ולא
- * להסיק אותו משדה `spent > 0`. `nav` ו-`studies` שתיהן זרימות שהתרוקנו בעבר (spent > 0,
+ * להסיק אותו משדה `spent > 0`. `nav` ו-`arena` שתיהן זרימות שהתרוקנו בעבר (spent > 0,
  * open === 0) ו⛔ אף אחת מהן אינה `ACTIVE_WORKSTREAM` כרגע — ⇒ אף אחת לא אמורה לקבל את
  * הטלת ה-🔴 המחייבת (שהיא הודעה ל-QA, ⛔ לא תיאור מצב). כדי לבודד את `ACTIVE_WORKSTREAM`
  * בלי לגעת ברגיסטר האמיתי, `PLAN_CONTROL_FILE` מפנה את הסקריפט לקובץ בקרה זמני שמכריז
- * `studies` כפעילה — ⛔ תוך שימוש ב-`plan/50-tasks.md` האמיתי, כדי שהמספרים (0 פתוחות
- * ב-`nav` וב-`studies`) יהיו נמדדים, ⛔ לא מבוימים.
+ * `arena` כפעילה — ⛔ תוך שימוש ב-`plan/50-tasks.md` האמיתי, כדי שהמספרים (0 פתוחות
+ * ב-`nav` וב-`arena`) יהיו נמדדים, ⛔ לא מבוימים.
+ *
+ * ⚠️ **C-0583 — ולמה הזרימה הנקובה כאן זזה מ-`studies` ל-`arena`, ⛔ ולא כי הבדיקה
+ * הייתה שגויה:** הפיקסטורה נשענת במתכוון על הרגיסטר **החי**, ⇒ הזרימה הנקובה חייבת
+ * להיות זרימה ש-⬜=0 **בפועל**. ‏`T-330`/`T-331` נפתחו ב-`studies` (הליכת מסכים,
+ * C-0583) ⇒ `studies` חדלה להיות מוצתה, והטענה «הדגל נופל עליה» נעשתה **שקרית
+ * לפי המדידה**. ‏`arena` היא זרימה מוצתה אמיתית (24 טיקים · ⬜=0). 🔴 **והצימוד עצמו
+ * הוא ממצא, ⛔ ולא דבר שתוקן כאן:** כל שורה שתיפתח בזרימה הנקובה תפיל את הבדיקה שוב.
  */
 describe('🔴 הזרימה הפעילה מוצתה — חייב לקרוא ACTIVE_WORKSTREAM (T-248)', () => {
   const CONTROL_DIR = mkdtempSync(join(tmpdir(), 'plan-control-'));
   const FAKE_CONTROL = join(CONTROL_DIR, '00-control.md');
   writeFileSync(
     FAKE_CONTROL,
-    ['ACTIVE_WORKSTREAM: studies', '#   nav:     3 / 120', '#   studies: 3 / 120', ''].join('\n'),
+    ['ACTIVE_WORKSTREAM: arena', '#   nav:     3 / 120', '#   arena:  24 / 120', ''].join('\n'),
     'utf8',
   );
   const ACTIVE_OUT = join(CONTROL_DIR, 'plan-tables.md');
@@ -594,8 +601,8 @@ describe('🔴 הזרימה הפעילה מוצתה — חייב לקרוא ACTI
     expect(activeOpen).not.toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `nav`/);
   });
 
-  it('כן מטילה את הדגל המחייב על `studies` — היא `ACTIVE_WORKSTREAM` בקובץ הבקרה הזה', () => {
-    expect(activeOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `studies`/);
+  it('כן מטילה את הדגל המחייב על `arena` — היא `ACTIVE_WORKSTREAM` בקובץ הבקרה הזה', () => {
+    expect(activeOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `arena`/);
   });
 
   it('⛔ לא שותקת על `nav` — מקבלת ניסוח נפרד, נכון, ⛔ ולא הטלה על QA', () => {

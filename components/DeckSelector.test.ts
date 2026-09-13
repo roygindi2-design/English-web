@@ -65,6 +65,22 @@ function braceRegion(source: string, open: string): string {
   throw new Error(`unbalanced braces after ${open} in DeckSelector.tsx`);
 }
 
+/**
+ * `T-321` — הבלוק של דרך היציאה הוא מאז **קבוע JSX** (`const recoveryBlock = (…)`),
+ * ⛔ ולא ביטוי `{readFailed && (…)}` בתוך ה-`return`. ⇒ ‏`braceRegion` ⛔ אינו מתאים לו:
+ * הוא סופר סוגריים מסולסלים, והראשון שהוא פוגש כאן הוא `{READ_FAILED_BODY_HE}` —
+ * שנסגר מיד ומחזיר פרוסה בת שורה. הפרוסה כאן חתוכה על **הסוגר של הקבוע**.
+ */
+function recoveryRegion(source: string): string {
+  const start = source.indexOf('const recoveryBlock = (');
+  expect(start, 'expected to find const recoveryBlock = ( in DeckSelector.tsx').toBeGreaterThan(
+    -1,
+  );
+  const end = source.indexOf('\n  );', start);
+  expect(end, 'expected the recoveryBlock constant to be closed').toBeGreaterThan(start);
+  return source.slice(start, end);
+}
+
 /** The three entries, by the key each one is built under. */
 const SENTENCES_ENTRY = "key: 'sentences'";
 
@@ -226,7 +242,9 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   it('T-295ⓑ — לכשל יש דרך החוצה: פקד ≥44px שקורא מחדש **במקום**', () => {
     expect(CODE).toContain('data-deck-failed');
     expect(CODE).toContain("const RETRY_ACTION_HE = 'טעינה מחדש'");
-    const retry = braceRegion(CODE, '{readFailed && (');
+    // ⚠️ `T-321` הוציא את הבלוק לקבוע `recoveryBlock` כדי שיתרנדר בשני מקומות.
+    // **העוגן זז; מה שנבדק כאן ⛔ לא.**
+    const retry = recoveryRegion(CODE);
     expect(retry).toContain('min-h-touch');
     expect(retry).toContain('setAttempt((previous) => previous + 1)');
     expect(retry).toContain('setLoading(true)');
@@ -289,8 +307,39 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * שאפשר ללחוץ עליו.
    */
   it('T-295ⓑ — פקד הטעינה מחדש ראשי ⛔ רק כשאין אריח פעיל', () => {
-    const retry = braceRegion(CODE, '{readFailed && (');
+    const retry = recoveryRegion(CODE);
     expect(retry).toContain("data-primary-action={primaryKey === null ? 'true' : undefined}");
+  });
+
+  /**
+   * 🔴 **תרחיש הכישלון של `T-321`, נמדד חי ב-C-0576 ב-375×780:** שלוש הקריאות חזרו
+   * `503`, שלושת האריחים הציגו «הנתונים לא נטענו», ו-`טעינה מחדש` — **הפקד היחיד
+   * שאפשר ללחוץ עליו על המסך כולו** — מדד `top=816 · bottom=870` בעוד סרגל הלשוניות
+   * מתחיל ב-`top=707`. ⇒ **109px מתחת לקיפול ב-780, ו-222px ב-667.** הלומד קורא
+   * שנכשל, ⛔ אינו רואה פעולה, ומרענן את הדף — הדרך ש-`T-295` כתבה במפורש ש⛔ אינה
+   * דרך החוצה.
+   *
+   * ⛔ **והבדיקה היא על הסדר, ⛔ ולא על מחלקות CSS.** כשל מלא (`primaryKey === null`)
+   * ⇒ הבלוק לפני ה-`<ul>`; כשל חלקי ⇒ אחריו, כפי ש-`T-295`ⓑ קבעה מנימוק מבני
+   * שעדיין עומד **כל עוד יש אריח חי ללחוץ עליו**.
+   */
+  it('T-321ⓐ — בכשל מלא דרך היציאה מרונדרת ⛔ לפני רשימת האריחים', () => {
+    const beforeList = CODE.indexOf('{readFailed && primaryKey === null && recoveryBlock}');
+    const afterList = CODE.indexOf('{readFailed && primaryKey !== null && recoveryBlock}');
+    const listOpen = CODE.indexOf('<ul aria-busy={loading}');
+    const listClose = CODE.indexOf('</ul>');
+
+    // שני המקומות קיימים, ו⛔ אין שלישי.
+    expect(beforeList).toBeGreaterThan(-1);
+    expect(afterList).toBeGreaterThan(-1);
+    expect(listOpen).toBeGreaterThan(-1);
+
+    // כשל מלא — לפני הרשימה. כשל חלקי — אחריה. ⛔ זהו כל התיקון.
+    expect(beforeList).toBeLessThan(listOpen);
+    expect(afterList).toBeGreaterThan(listClose);
+
+    // ⛔ ⛔ ולא מסך שגיאה ו⛔ לא אריח רביעי — אותו בלוק, מקום אחר.
+    expect(CODE.match(/data-deck-failed/g)).toHaveLength(1);
   });
 
   /** D-028: this screen carries the tab bar, so it never carries an action bar. */

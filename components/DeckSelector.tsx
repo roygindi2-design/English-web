@@ -332,8 +332,39 @@ export default function DeckSelector({
   // נכון; «אין מה לתרגל» חצי שנייה לפני שהמספרים נוחתים הוא שקר קצר.
   const dead = !loading && allTilesDead(entries);
 
+  /* `T-321` — ⛔ **one block, two places, ⛔ and the condition is the measurement.**
+     `T-295`ⓑ put the way out AFTER the list on a stated structural argument: the control
+     sits under the thing that failed, and the tiles keep their numbers (`§ 4.2ו`). That
+     argument holds ⛔ only while some tile is still live and pressable. When EVERY read
+     failed (`primaryKey === null`) the list above it carries ⛔ no action at all — three
+     copies of «הנתונים לא נטענו» — and the only control on the screen measured
+     `top=816` at 375×780 (‏`bottom=870`, tab bar at `top=707`) ⇒ **109px under the fold
+     at 780 and 222px at 667.** The learner is told it failed and shown nothing to press,
+     so they refresh the page — the one way out `T-295` wrote down as ⛔ not a way out.
+     ⇒ total failure renders it BEFORE the list; partial failure keeps `T-295`ⓑ's order. */
+  const recoveryBlock = (
+    <div data-deck-failed className="flex flex-col items-start gap-2">
+      <p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>
+      <button
+        type="button"
+        onClick={() => {
+          setLoading(true);
+          setAttempt((previous) => previous + 1);
+        }}
+        data-primary-action={primaryKey === null ? 'true' : undefined}
+        className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
+      >
+        {RETRY_ACTION_HE}
+      </button>
+    </div>
+  );
+
   return (
     <section className="flex flex-col gap-4">
+      {/* `T-321`ⓐ — ⛔ every read failed ⇒ the ONLY control on the screen goes above the
+          fold, ⛔ before the three dead tiles. ⛔ It is ⛔ not a new error screen
+          (‏`T-295` forbade one) and ⛔ not a fourth tile — it is the same block, moved. */}
+      {readFailed && primaryKey === null && recoveryBlock}
       {/* `T-295`ⓐ — ⛔ **`&& !readFailed` is the whole point of the row.** «אין מה לתרגל»
           is a claim about the BANK, and a read that never arrived measured nothing about
           the bank. Until today a total outage rendered exactly this block, and a learner
@@ -432,22 +463,7 @@ export default function DeckSelector({
           screen carrying other than exactly one `[data-primary-action]` (F-027), and when
           every tile is dead this control is the ONLY thing on screen a learner can press,
           so it is the primary one by measurement rather than by preference. */}
-      {readFailed && (
-        <div data-deck-failed className="flex flex-col items-start gap-2">
-          <p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>
-          <button
-            type="button"
-            onClick={() => {
-              setLoading(true);
-              setAttempt((previous) => previous + 1);
-            }}
-            data-primary-action={primaryKey === null ? 'true' : undefined}
-            className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
-          >
-            {RETRY_ACTION_HE}
-          </button>
-        </div>
-      )}
+      {readFailed && primaryKey !== null && recoveryBlock}
     </section>
   );
 }
