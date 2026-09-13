@@ -692,7 +692,7 @@ went through ⛔ only after the field was restored to `"DEV"` and the commit ame
 ⛔ **And the gate ⛔ does ⛔ not move** (`D-210`ⓑ): it measures the state at push time on
 purpose — that is what `F-191` cost. The defect was the instruction, ⛔ never the gate.
 ⚠️ **Need something from Roy? The item carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise, and `RULES § 0.21` makes an item unchecked for 7 days a finding in itself.
-New id: `node scripts/next-cycle-id.mjs` — fetches **both** `origin/dev` **and** `origin/work/current` and takes the max across both, ⛔ never one branch alone. Two agents collided on `C-0284` (24/08) and again on `C-0426` (04/09, `bf4c785`/`e94a4ae`) running max+1 against only one branch each — `T-254`.
+New id: `node scripts/next-cycle-id.mjs` — fetches **all three** of `origin/dev`, `origin/work/current` **and** `origin/main`, and takes the max across all of them, ⛔ never one branch alone. Three pairs of ticks collided on the same id — `C-0284` (24/08), `C-0426` (04/09, `bf4c785`/`e94a4ae`) and `C-0546` (12/09) — the first two running max+1 against one branch each (`T-254`), the third because PROMOTER pushes to ⛔ neither of the two the counter read: it promotes to `main` (`T-317` · `D-227` · `F-231`). 🔴 **ודחיפת הנעילה נדחתה ⇒ `rebase` ⇒ חשב את המזהה מחדש, ⛔ אל תשמור אותו** — הדחייה אומרת שסוכן אחר כבר נחת על הענף, ⇒ המספר שחישבת לפניה הוא כעת שלו.
 ```
 ./scripts/g commit -m "loop(DEV): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```

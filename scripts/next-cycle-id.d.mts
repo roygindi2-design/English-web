@@ -13,5 +13,7 @@
  * SHAPE fails there).
  */
 
+export declare const CYCLE_ID_BRANCHES: string[];
 export declare function maxCycleNumber(texts: string[]): number;
+export declare function nextCycleId(git: (...args: string[]) => string): string;
 export declare function formatCycleId(n: number): string;

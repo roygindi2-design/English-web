@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -56,5 +57,22 @@ describe('🧹 T-305 — REQFAIL net::ERR_ABORTED הוא מידע, ⛔ ולא פ
     const { errors, aborted } = splitAborted([requestFailureLine('net::ERR_FAILED', RSC)]);
     expect(errors).toHaveLength(1);
     expect(aborted).toHaveLength(0);
+  });
+});
+
+/**
+ * ⛔ ההצהרה `walk-errors.d.mts` נכתבת ביד ⇒ היא יכולה לסטות מהמודול. הבלוק למעלה
+ * תופס **התנהגות** שהשתנתה; זה תופס **צורה** שהשתנתה — אותו זיווג ש-`next-cycle-id.test.ts`
+ * משתמש בו.
+ */
+describe('the hand-written declaration file', () => {
+  it('declares exactly the names the module exports', async () => {
+    const mod = await import('./lib/walk-errors.mjs');
+    const declared = [
+      ...readFileSync('scripts/lib/walk-errors.d.mts', 'utf8').matchAll(
+        /export declare (?:const|function)\s+([A-Za-z_$][\w$]*)/g,
+      ),
+    ].map((m) => m[1]);
+    expect([...declared].sort()).toEqual(Object.keys(mod).sort());
   });
 });

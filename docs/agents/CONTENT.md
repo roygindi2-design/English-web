@@ -313,7 +313,7 @@ Repeated twice → move the rule to §A1. No lesson? "No new lesson." ⛔ Never 
 `npm run verify` — **nine commands, and the LAST thing you run.** ⟦06/09 · T-264 added `check:titles`: it said «five» while it was already six (31/08), then seven, then eight (02/09), and now it is nine. `scripts/rules-citations.test.ts` measures this line against `package.json` so it ⛔ cannot go stale again.⟧
 Update `plan/00-control.md`: release LOCK, one journal line, max 2 lines. Raise the right `WORKSTREAM_TICKS` counter **only if this tick ended in a commit**.
 ⚠️ **Wrote an item for Roy? It carries `⟨נבדק: YYYY-MM-DD⟩`** — `loop:health` check 3 fails otherwise.
-New id: `./scripts/g pull` then max+1 **over what is on `dev` right now** — on 24/08 two agents both used `C-0284`.
+New id: `node scripts/next-cycle-id.mjs` — fetches **all three** of `origin/dev`, `origin/work/current` **and** `origin/main`, and takes the max across all of them, ⛔ never one branch alone. Three pairs of ticks collided on the same id — `C-0284` (24/08), `C-0426` (04/09, `bf4c785`/`e94a4ae`) and `C-0546` (12/09) — the first two running max+1 against one branch each (`T-254`), the third because PROMOTER pushes to ⛔ neither of the two the counter read: it promotes to `main` (`T-317` · `D-227` · `F-231`). 🔴 **ודחיפת הנעילה נדחתה ⇒ `rebase` ⇒ חשב את המזהה מחדש, ⛔ אל תשמור אותו** — הדחייה אומרת שסוכן אחר כבר נחת על הענף, ⇒ המספר שחישבת לפניה הוא כעת שלו.
 ```
 ./scripts/g commit -m "loop(CONTENT): C-XXXX <summary>" && ./scripts/g push origin work/current
 ```
