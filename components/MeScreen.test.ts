@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * The markup of the אני tab (§ 4.2ב). These guards were written for
@@ -12,13 +13,19 @@ import { describe, expect, it } from 'vitest';
  */
 const SRC = readFileSync('components/MeScreen.tsx', 'utf8');
 
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
+/**
+ * C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing.
+ *
+ * 🧪 **T-302 — imported now, ⛔ not written here.** The copy that used to sit on this line
+ * carried `/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, whose `\s*` let its `{` match a declaration
+ * brace and run to the next `*\/}` — measured in `C-0543` as **12,943 chars ⇒ 4,374** on
+ * this very component, `goal: LearnerGoal` · `apiGet<` · `primaryStudyTrack(` inside the
+ * hole. ⇒ every `not.toContain` below was a negative assertion on a truncated string,
+ * which is green whether the forbidden thing is there or not.
+ *
+ * ⚠️ `lib/testSource.ts` is the fixed expression and `lib/testSource.test.ts` is what
+ * fails if the `\s*` comes back. ⛔ The other 27 local copies are `T-284`, ⛔ not this row.
+ */
 
 const CODE = withoutComments(SRC);
 

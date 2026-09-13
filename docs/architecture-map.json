@@ -888,5 +888,9 @@
   ],
   "lib/supabase/worldAuthorKind.test.ts": [],
   "lib/supabase/worldSchema.test.ts": [],
+  "lib/testSource.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "lib/testSource.ts": [],
   "scripts/story-tap-audit.d.mts": []
 }

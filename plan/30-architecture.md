@@ -2557,3 +2557,39 @@ now measures **both directions** per route against the same module — a silent 
 attribution reddens `check:mobile`, which is the only way the licence side of this can fail
 loudly. And `app/layout.test.ts` (D-206 · the one gutter) follows the `<footer>` into its
 new file through `COLUMN_AREAS`, so `px-6` is still asserted on all three areas.
+
+## C-0584 (DEV) — `T-302` — the source-guard stripper stops deleting the code it asserts on
+
+A source guard reads a component as text and asserts what is ⛔ not in it. Stripping
+comments first is what gives it meaning (`C-0032`/`C-0071`/`C-0072`: «a guard a comment
+can satisfy guards nothing») — but the expression every copy carried,
+`/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, was written for a JSX comment and its `\s*` let the `{`
+match a **declaration** brace whose first token is a JSDoc block. The lazy quantifier then
+ran to the next `*/` followed by `}`, which the next JSX comment supplies.
+
+⇒ **`lib/testSource.ts`** — ⛔ not `lib/core/**`, which is product code — exports
+`withoutComments`, with the JSX pass anchored to ⛔ **one line**: `[ \t]*` between `{` and
+`/*`, and between `*/` and `}`. `lib/testSource.test.ts` holds the red-first direction:
+the old expression eats `ActionBar` out of the fixture, the new one keeps it, and the
+length may drop by the comment lengths and ⛔ nothing else.
+
+🔬 **The number that chose the anchor, swept over all 148 `.tsx` files in `app/` +
+`components/`:**
+```
+{\s*/*…*/\s*}    179 JSX comments · 44,601 chars ·  8 MISFIRES   ⇐ what the copies carry
+{/*…*/}          184 JSX comments · 45,496 chars ·  0 misfires   ⇐ strict adjacency
+{[ \t]*/*…*/…}   185 JSX comments · 45,531 chars ·  0 misfires   ⇐ this module
+```
+⚠️ **`T-302` wrote «`{` צמוד ל-`/*`», and this is one step off it, declared** (`RULES
+§ 0.22`): strict adjacency leaves `{ /* ⛔ אחסון חסום ⛔ אינו שגיאה */ }`
+(`components/ArenaBattle.tsx`) inside `CODE`, which is the «a comment satisfies the guard»
+defect arriving from the other side. **The newline is the defect** — all eight misfires
+open `{\n  /** …` — so the newline is what the expression bans.
+
+⚠️ **And the symptom is ⛔ NOT reproducible on the file the row named, measured today:**
+`components/MeScreen.tsx` yields **6 identical matches** under both expressions (the file
+changed since `C-0543`). ⇒ the regression test is built on the **shape**, ⛔ not on that
+file, and the row's live victims — `AmirnetSimulation` 5,063 chars · `ArenaHome` 6,129 ·
+`ArenaCharacterChoice` 3,052 · `ArenaSummary` 1,946 · `LevelScan` 1,630 ·
+`AmirnetResult` 661 · `AmirnetSectionBreak` 563 — are `T-284`'s to inherit when it folds
+the 28 copies into this module. ⛔ Nothing here touched those copies.
