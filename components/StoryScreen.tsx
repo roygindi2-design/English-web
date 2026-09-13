@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import StoryEndScreen from '@/components/StoryEndScreen';
-import WordPopover, { type WordPopoverStatus } from '@/components/WordPopover';
+import WordPopover, {
+  type WordAnchor,
+  type WordPopoverStatus,
+} from '@/components/WordPopover';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
@@ -249,6 +252,17 @@ function StoryReady({
 
   const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading');
   const [openLemma, setOpenLemma] = useState<string | null>(null);
+  /**
+   * T-290 — **העיגון נמדד ברגע ההקשה, ⛔ ולא נגזר משם הרכיב.** הוא נשמר **יחסית
+   * לכרטיס הגוף**, כי שם יושב הפופאובר (`absolute` בתוך `relative`) ⇒ הטקסט
+   * ⛔ אינו זז, והמילה שהוקשה ⛔ אינה יוצאת מהתצוגה.
+   */
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [anchor, setAnchor] = useState<WordAnchor | null>(null);
+  const [bodyBox, setBodyBox] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
   const [wordStatus, setWordStatus] = useState<Readonly<Record<string, WordPopoverStatus>>>({});
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
 
@@ -274,10 +288,21 @@ function StoryReady({
           });
     if (hits.length > 1) {
       setOpenLemma(null);
+      setAnchor(null);
       setAmbiguous(hits.map((el) => (el.textContent ?? '').trim()));
       return;
     }
     setAmbiguous(null);
+    if (paragraph !== null) {
+      const box = paragraph.getBoundingClientRect();
+      const word = event.currentTarget.getBoundingClientRect();
+      setBodyBox({ width: box.width, height: box.height });
+      setAnchor({
+        top: word.top - box.top,
+        bottom: word.bottom - box.top,
+        centerX: word.left - box.left + word.width / 2,
+      });
+    }
     setOpenLemma(lemma);
   }, []);
 
@@ -339,9 +364,10 @@ function StoryReady({
           ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר.
           ⚠️ `data-story-ambiguity="chip"` מצהיר על תנאי 4, והמימוש הוא `onWordClick`. */}
           <div
+            ref={bodyRef}
             data-story-body
             data-story-ambiguity="chip"
-            className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
+            className="relative rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
           >
             {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
             (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד
@@ -382,6 +408,25 @@ function StoryReady({
                 })}
               </EnWord>
             </p>
+
+            {/* ⛔ **T-290 — הפופאובר יושב בתוך הכרטיס, ⛔ ולא אחריו.** `absolute` בתוך
+                `relative` ⇒ הוא יוצא מהזרימה, ולכן פתיחתו ⛔ אינה דוחפת ולו פסקה אחת. */}
+            {openLemma === null || openGloss === undefined ? null : (
+              <WordPopover
+                word={openLemma}
+                translationHe={openGloss.translationHe}
+                posHe={openGloss.posHe}
+                status={wordStatus[openLemma] ?? 'idle'}
+                onAdd={() => add(openLemma)}
+                onClose={() => {
+                  setOpenLemma(null);
+                  setAnchor(null);
+                }}
+                anchor={anchor}
+                containerWidth={bodyBox.width}
+                containerHeight={bodyBox.height}
+              />
+            )}
           </div>
 
           {ambiguous === null ? null : (
@@ -394,16 +439,6 @@ function StoryReady({
             </p>
           )}
 
-          {openLemma === null || openGloss === undefined ? null : (
-            <WordPopover
-              word={openLemma}
-              translationHe={openGloss.translationHe}
-              posHe={openGloss.posHe}
-              status={wordStatus[openLemma] ?? 'idle'}
-              onAdd={() => add(openLemma)}
-              onClose={() => setOpenLemma(null)}
-            />
-          )}
         </>
       )}
 
