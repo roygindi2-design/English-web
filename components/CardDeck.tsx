@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
 import { deckCardKey, isSentenceCard, type DeckCard, type DeckName } from '@/lib/core/deck';
 import { buildCard, type CardGrade } from '@/lib/core/flashcard';
 import { buildSentenceCard } from '@/lib/core/sentenceCard';
 import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
+import { SPRING_MAX_SETTLE_MS } from '@/lib/core/spring';
 
 /**
  * The card deck — T-065 part א׳ (§ 4.2ו), plan `2026-08-13-study-queue.md` task 5.
@@ -113,8 +114,96 @@ export default function CardDeck({
   // WHAT the learner marked on them, and it is the only source the finish state counts.
   const [grades, setGrades] = useState<readonly CardGrade[]>(initialGrades);
   const [pending, setPending] = useState<string | null>(null);
+  /**
+   * 🔴 **⟦NEW 13/09 · `T-333` · `F-242` · המפרט שרוי כתב⟧ הכרטיסים שכבר דורגו ועדיין עפים.**
+   *
+   * 🔬 **נמדד פריים-אחר-פריים לפני השינוי, ⛔ ולא הוסק:** ההיסט המרבי שכרטיס מדורג הגיע
+   * אליו היה **77px** — בדיוק המרחק שהאצבע גררה — על מסך **390px**, ואז 0. ⇒ `release()`
+   * ב-`Flashcard` **כן** כותב את יעד היציאה, את משך הקפיץ ואת עקומתו; מה שלא היה לו הוא
+   * **זמן**: `await onGraded` נפתר מיד, `setGraded` הסיר את הצומת **באותו טיק**, והמעבר
+   * ⛔ לא קיבל ולו פריים אחד. ⇒ **⛔ לא הייתה יציאה, הייתה החלפה.**
+   *
+   * ⇒ **והפתרון ⛔ אינו «להשהות את ההסרה»** — זו בדיוק ההשהיה שהמפרט אוסר («ללא שום
+   * השהיה… ומיד תחתיו מתגלה כרטיס המילה הבא»). הכרטיס המדורג יוצא מ-`remaining` **מיד**,
+   * ולכן הבא כבר חי ואינטראקטיבי; מה שנשאר כאן הוא **עותק שממשיך לנוע מעליו**, חסין
+   * למגע. ⇒ שני חצאי המשפט של רוי מתקיימים **בו-זמנית**, ⛔ ולא אחד על חשבון השני.
+   *
+   * ⚠️ **והם אחים באותו הורה בכוונה.** ההיסט של היציאה נכתב **ישירות לצומת** ב-`ref`
+   * (‏`T-157`), ולכן צומת שנהרס מאבד אותו. ילדים עם `key` שזזים **בתוך אותו הורה** —
+   * React מזיז, ⛔ ואינו מרכיב מחדש ⇒ ההיסט שורד את המעבר מ«נוכחי» ל«יוצא».
+   */
+  const [exiting, setExiting] = useState<readonly DeckCard[]>([]);
+  /** ⛔ תנועה מופחתת ⇒ ⛔ אין יציאה **בכלל**, והכרטיס מוסר מיד — כמו עד היום.
+   *  `release()` כבר מכבד את ההעדפה ומשאיר את הכרטיס במקומו; עותק שיושב למעלה שנייה
+   *  שלמה בלי לנוע הוא בדיוק הדבר שההעדפה קיימת נגדו. */
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  /**
+   * 🔴 **⟦NEW 13/09 · `T-333`⟧ פני הכרטיס נבנים **פעם אחת לכל כרטיס**, ⛔ ולא בכל רינדור.**
+   *
+   * 🔬 **נמדד, וזו הייתה הסיבה השלישית ש-`F-242` לא נפתר:** `buildCard(...)` ישב **בתוך
+   * ה-JSX**, ולכן החזיר **אובייקט חדש בכל רינדור של הדק** — גם כשהכרטיס לא זז. ל-
+   * `Flashcard` יש שני מנגנונים שמשווים את ה-prop הזה **בזהות**: `if (shown !== card)`
+   * ברינדור ו-`useEffect(…, [card])` שקורא `resetDrag()`. ⇒ שניהם ירו על **כל** רינדור.
+   * ⇒ הכרטיס היוצא איבד את ה-`transform` שלו פריים אחרי שקיבל אותו (נמדד: `inline`
+   * ריק, `data-release` נעלם, הצומת עצמו **שרד** — כלומר ⛔ לא הרכבה מחדש אלא ניקוי).
+   *
+   * ⚠️ **וזו ⛔ אינה אופטימיזציה — זו נכונות, והיא רחבה מ-`T-333`:** אותה זהות מתחלפת
+   * גם מאפסת את `revealed` בכל רינדור של הדק. עד היום זה היה בלתי-נראה כי הרינדור
+   * היחיד אחרי חשיפה היה זה שמסיר את הכרטיס. ⇒ **המפה הזאת מייצבת את שניהם בבת אחת.**
+   */
+  const buildFace = useCallback(
+    (card: DeckCard) =>
+      isSentenceCard(card)
+        ? buildSentenceCard(card)
+        : buildCard(
+            {
+              headword: card.sense.headword,
+              translationHe: card.sense.translation_he,
+              examples: card.sense.examples,
+              needsHumanReview: card.sense.needs_human_review,
+            },
+            card.direction,
+            { isFirstEncounter: card.is_first_encounter },
+          ),
+    [],
+  );
+  const built = useMemo(
+    () => new Map(cards.map((card) => [deckCardKey(card), buildFace(card)])),
+    [cards, buildFace],
+  );
 
   const remaining = cards.filter((card) => !graded.includes(deckCardKey(card)));
+  const exitingKeys = exiting.map((card) => deckCardKey(card));
+
+  /** ⛔ הסרה סופית. נקראת גם מ-`transitionend` וגם מהתקרה — `transitionend` ⛔ אינו מובטח
+   *  (הכרטיס עלול להיות מוסתר, או המעבר להיקטע), ותקרה לבדה הייתה משאירה אותו שנייה. */
+  const dropExiting = useCallback((key: string) => {
+    setExiting((previous) => previous.filter((card) => deckCardKey(card) !== key));
+  }, []);
+
+  /**
+   * ⏱️ **התקרה, ⛔ ולא המסלול הרגיל.** ‏`transitionend` הוא זה שמסיר כרטיס שסיים לעוף;
+   * הטיימר כאן קיים כי הוא ⛔ **אינו מובטח** — לשונית ברקע ⛔ אינה מריצה מעברים, מעבר
+   * שנקטע ⛔ אינו יורה, וכרטיס שנשאר תקוע מעל הבא **חוסם את המסך** (הוא `pointer-events:
+   * none`, אבל הוא מסתיר). ⇒ `SPRING_MAX_SETTLE_MS` הוא **אותו** מספר שהקפיץ ⛔ לעולם
+   * אינו חורג ממנו (`lib/core/spring.ts`), ולכן התקרה ⛔ אינה יכולה לקטוע יציאה אמיתית.
+   */
+  useEffect(() => {
+    if (exiting.length === 0) return;
+    const timers = exiting.map((card) => {
+      const key = deckCardKey(card);
+      return window.setTimeout(() => dropExiting(key), SPRING_MAX_SETTLE_MS + 100);
+    });
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [exiting, dropExiting]);
 
   // ⛔ ⟦REMOVED 13/09 · `T-294`⟧ **`scrollTo`, ה-`useEffect` שגלל, ומפת הצמתים שהחזיקה
   // אותו — ⛔ אינם כאן יותר, ו⛔ זו ⛔ אינה השמטה.** הם קיימו מנגנון אחד: «אחרי דירוג,
@@ -147,8 +236,14 @@ export default function CardDeck({
       // לומד שגלל קדימה בחזרה למעלה» — הניח שאפשר לגלול קדימה. ⛔ כבר אי אפשר.
       setGraded((previous) => [...previous, key]);
       setGrades((previous) => [...previous, value]);
+      // `T-333` — ומיד אחרי ההסרה מהתור, הכרטיס נכנס לרשימת היוצאים כדי שימשיך לנוע
+      // מעל הבא. ⛔ תנועה מופחתת ⇒ ⛔ אין יוצא כלל.
+      if (!reducedMotion) {
+        const leaving = cards.find((card) => deckCardKey(card) === key);
+        if (leaving !== undefined) setExiting((previous) => [...previous, leaving]);
+      }
     },
-    [onGraded, pending],
+    [cards, onGraded, pending, reducedMotion],
   );
 
   if (remaining.length === 0) {
@@ -272,8 +367,41 @@ export default function CardDeck({
           ההכרעה עצמה. ⛔ **ו⛔ אין כאן `preventDefault`** — אין מה למנוע כשאין תוכן
           לגלול אליו. */}
       <div className="relative min-h-0 flex-1 overflow-hidden" data-deck-viewport>
-        {remaining.slice(0, 1).map((card) => (
-          <article key={deckCardKey(card)} className="flex h-full flex-col pt-4">
+        {/* ⟦`T-333`⟧ **הנוכחי קודם, היוצאים אחריו** — שניהם `absolute inset-0`, ולכן
+            היוצא נצבע **מעל** הבא בלי `z-index` ובלי לשנות פריסה באמצע התנועה.
+            ⚠️ ושניהם ילדים של **אותו** `<div>`: כרטיס שעובר מ«נוכחי» ל«יוצא» זז בתוך
+            אותו הורה ⇒ React מזיז את הצומת ו⛔ אינו מרכיב אותו מחדש, כך שההיסט
+            שנכתב לו ב-`ref` שורד. הורה אחר היה הורס אותו, והיציאה הייתה נמחקת. */}
+        {[...remaining.slice(0, 1), ...exiting].map((card) => {
+          const key = deckCardKey(card);
+          const isExiting = exitingKeys.includes(key);
+          return (
+          <article
+            key={key}
+            className={`absolute inset-0 flex h-full flex-col pt-4${
+              isExiting ? ' pointer-events-none' : ''
+            }`}
+            {...(isExiting
+              ? {
+                  'aria-hidden': true as const,
+                  'data-card-leaving': '',
+                  // 🔴 **שני מסננים, ושניהם נמדדו — ⛔ לא הונחו.**
+                  // ⓐ `transform` בלבד: `opacity` רץ באותו מעבר, ושחרורו היה מסיר את
+                  //    הכרטיס באמצע הדרך.
+                  // ⓑ 🔬 **ומהכרטיס עצמו, ⛔ ולא ממה שבתוכו.** `transitionend` **מבעבע**,
+                  //    ונמדד חי: `{"t":261,"type":"end","prop":"transform","on":"BUTTON"}`
+                  //    — **כפתור החשיפה** סיים מעבר משלו ב-261ms, האירוע עלה לכאן,
+                  //    והכרטיס הוסר באמצע הטיסה (נמדד `left=261` מתוך יעד `510`).
+                  //    ⇒ המסנן הוא `[data-flashcard]` על ה-`target`: המעבר שמסיים את
+                  //    היציאה הוא של **הכרטיס**, ו⛔ אין שני למנוע.
+                  onTransitionEnd: (event: React.TransitionEvent) => {
+                    if (event.propertyName !== 'transform') return;
+                    if (!(event.target as Element).hasAttribute?.('data-flashcard')) return;
+                    dropExiting(key);
+                  },
+                }
+              : {})}
+          >
             <Flashcard
               // The key above is on the article, but `Flashcard` holds `revealed` in its own
               // state and resets it when the `card` prop changes identity. `buildCard` runs
@@ -282,20 +410,7 @@ export default function CardDeck({
               // over already revealed.
               // T-066 · D-169 — a sentence item is the third `Card` variant, built by its own
               // pure builder; a word card is `buildCard` exactly as before.
-              card={
-                isSentenceCard(card)
-                  ? buildSentenceCard(card)
-                  : buildCard(
-                      {
-                        headword: card.sense.headword,
-                        translationHe: card.sense.translation_he,
-                        examples: card.sense.examples,
-                        needsHumanReview: card.sense.needs_human_review,
-                      },
-                      card.direction,
-                      { isFirstEncounter: card.is_first_encounter },
-                    )
-              }
+              card={built.get(key) ?? buildFace(card)}
               // T-100 — מצב התזמון עובר כמו שהוא. ⛔ הדק ⛔ אינו גוזר ממנו דבר:
               // ההכרעה טהורה ויושבת ב-lib/core/decay.ts. A sentence item has none.
               review={isSentenceCard(card) ? undefined : card.review}
@@ -305,9 +420,13 @@ export default function CardDeck({
               onGrade={(value) =>
                 grade(deckCardKey(card), isSentenceCard(card) ? card.wordId : card.word_id, value)
               }
+              // `T-333` — הדק הוא היחיד שיודע שהכרטיס עף, ולכן הוא זה שמכבה את
+              // החזרה של `T-259`. ⛔ בלי זה היציאה מתבטלת פריים אחרי שהתחילה.
+              leaving={isExiting}
             />
           </article>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

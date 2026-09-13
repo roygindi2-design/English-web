@@ -2401,6 +2401,58 @@ try {
           `remaining ${before} → ${afterBlind} (expected ${before - 1})`,
         );
 
+        // 🔴 **ⓐⓑ ⟦NEW 13/09 · `T-333` · `F-242`⟧ הכרטיס **עף**, והבא חי מתחתיו — בו-זמנית.**
+        // 🔬 **נמדד לפני התיקון:** ההיסט המרבי היה **77px** מתוך מסך **390px**, כלומר
+        // בדיוק המרחק שהאצבע גררה ⇒ ⛔ לא הייתה יציאה, הייתה החלפה. המפרט שרוי כתב
+        // דורש **גם** «הכרטיס עף אל מחוץ למסך באנימציה חלקה» **וגם** «ללא שום השהיה…
+        // ומיד תחתיו מתגלה כרטיס המילה הבא» ⇒ שתי הטענות למטה נמדדות **יחד**, כי
+        // כל אחת לבדה ניתנת לסיפוק על חשבון השנייה.
+        {
+          await page.reload({ waitUntil: 'networkidle' });
+          const cardBox = await page.locator('[data-flashcard]').first().boundingBox();
+          const cardMidY = Math.round(cardBox.y + cardBox.height / 2);
+          await page.evaluate(() => {
+            window.__exitTrack = { maxLeft: 0, minLeft: 0, liveReadyAtMs: null };
+            const t0 = performance.now();
+            const tick = () => {
+              const leaving = document.querySelector('[data-card-leaving] [data-flashcard]');
+              if (leaving) {
+                const left = leaving.getBoundingClientRect().left;
+                window.__exitTrack.maxLeft = Math.max(window.__exitTrack.maxLeft, left);
+                window.__exitTrack.minLeft = Math.min(window.__exitTrack.minLeft, left);
+              }
+              if (
+                window.__exitTrack.liveReadyAtMs === null &&
+                document.querySelector('article:not([data-card-leaving]) [data-reveal]')
+              ) {
+                window.__exitTrack.liveReadyAtMs = Math.round(performance.now() - t0);
+              }
+              if (performance.now() - t0 < 1600) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          });
+          await page.mouse.move(Math.round(width / 2) - 50, cardMidY);
+          await page.mouse.down();
+          await page.mouse.move(Math.round(width / 2) + 50, cardMidY, { steps: 10 });
+          await page.mouse.up();
+          await page.waitForTimeout(1700);
+          const track = await page.evaluate(() => window.__exitTrack);
+          check(
+            track.maxLeft >= width,
+            `${at} T-333: the graded card flies clear of the screen`,
+            `it reached left=${Math.round(track.maxLeft)} on a ${width}px screen`,
+          );
+          check(
+            track.liveReadyAtMs !== null && track.liveReadyAtMs <= 50,
+            `${at} T-333: the next card is live while the old one is still flying`,
+            `the next card became tappable after ${track.liveReadyAtMs}ms`,
+          );
+          report(
+            `${at} T-333: exit reached left=${Math.round(track.maxLeft)} (screen ${width}px) · next card ready in ${track.liveReadyAtMs}ms`,
+          );
+          await page.reload({ waitUntil: 'networkidle' });
+        }
+
         // ⓑ ואחרי חשיפה — אותו ערוץ בדיוק, על הכרטיס הבא שתפס את המקום.
         // ⚠️ **⟦13/09⟧ נמדד בבדיקת המוטציה של `T-292`:** כשההחלקה העיוורת ⛔ אינה מדרגת,
         // הכרטיס ⛔ אינו עוזב — הוא **נחשף** — ואז `.click()` על `[data-reveal]` נתקע

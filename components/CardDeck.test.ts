@@ -236,7 +236,12 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
   });
 
   it('keys each Flashcard by deckCardKey — reveal state is per card, and two stems of one word are two cards (T-066)', () => {
-    expect(CODE).toMatch(/key=\{deckCardKey\(card\)\}/);
+    // ⚠️ **⟦13/09 · `T-333`⟧ המפתח נגזר לקבוע מקומי לפני ה-JSX** (‏`const key =
+    // deckCardKey(card)`), כי אותו ערך נדרש שלוש פעמים בשורה — `key`, המסנן, והמטפל.
+    // ⇒ הטענה מודדת את **הקשר** ‏(המפתח הוא `deckCardKey`, והוא זה שנמסר ל-`key=`),
+    // ⛔ ולא את האיות של הביטוי — איות מדויק נשבר בכל חילוץ קבוע ומלמד לעדכן.
+    expect(CODE, 'המפתח נגזר מ-deckCardKey').toMatch(/const key = deckCardKey\(card\);/);
+    expect(CODE, 'והוא זה שנמסר ל-key=').toMatch(/key=\{key\}/);
     expect(CODE).not.toMatch(/key=\{[^}]*word_id[^}]*\}/);
     // Both builders by name: a word card is `buildCard`, a sentence item `buildSentenceCard`
     // (D-169 — the SAME `<Flashcard>`, ⛔ no second deck component).

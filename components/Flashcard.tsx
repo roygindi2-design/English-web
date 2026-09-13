@@ -57,6 +57,7 @@ export default function Flashcard({
   card,
   review,
   onGrade,
+  leaving = false,
 }: {
   readonly card: Card;
   /** ⛔ אופציונלי: פיקסטורות `/dev/card*` בונות `Card` ישירות ⛔ ואין להן תזמון
@@ -65,6 +66,13 @@ export default function Flashcard({
   /** T-259 — a consumer that returns the grade's promise lets the card learn the grade was
    *  NOT taken (resolved while this card is still mounted) and spring back. `void` is fine. */
   readonly onGrade: (grade: CardGrade) => void | Promise<void>;
+  /**
+   * `T-333` — **הדק אומר לכרטיס שהוא בדרך החוצה.** ⛔ ברירת המחדל `false`, ולכן כל
+   * צרכן קיים (‏`/dev/card*`, מסכי המוצר) מתנהג **בדיוק** כמו קודם.
+   * ⇒ ⛔ **מה שהדגל מכבה הוא החזרה של `T-259` בלבד** (ראה למטה), ⛔ ולא המחווה ו⛔ לא
+   * הדירוג: כרטיס עוזב ⛔ אינו נתפס בין כה וכה — `pointer-events: none` עליו בדק.
+   */
+  readonly leaving?: boolean;
 }) {
   const [revealed, setRevealed] = useState(false);
   const [typed, setTyped] = useState('');
@@ -127,6 +135,15 @@ export default function Flashcard({
   }, []);
   const shownRef = useRef(card);
   shownRef.current = card;
+  /**
+   * ⚠️ **⟦13/09 · `T-333`⟧ `leaving` נקרא מ-`ref`, ⛔ ולא מהסגור.**
+   * 🔬 **נמדד:** הבדיקה שמכבה את החזרה של `T-259` רצה **בתוך `.then()` ו-`rAF`** — סגור
+   * שנוצר ב-`pointerup`, כשהדק **עדיין לא ידע** שהכרטיס יוצא (‏`setExiting` קורה רק
+   * אחרי ש-`onGraded` נפתר). ⇒ הסגור לכד `leaving === false`, החזרה ירתה, והכרטיס
+   * נמדד חוזר: `109 ⇢ 96 ⇢ 75`. ⇒ `ref` נקרא **בזמן הריצה**, ⛔ ולא בזמן היצירה.
+   */
+  const leavingRef = useRef(leaving);
+  leavingRef.current = leaving;
   /** `linear()` easing — Chromium 113+, Safari 17.2+, Firefox 112+. Elsewhere the CSS
    *  defaults (200ms ease-out) stay in force and the two properties are never written. */
   const supportsSpringEasing = () =>
@@ -257,11 +274,22 @@ export default function Flashcard({
   }
   // T-233 — the drag lives on the DOM node now, so a card that swaps mid-gesture is
   // reset in an effect, ⛔ not during render: render may not touch the node.
+  //
+  // 🔴 **⟦NARROWED 13/09 · `T-333`⟧ ⛔ ולא על כרטיס שכבר עף.**
+  // 🔬 **נמדד, וזו הייתה הסיבה השנייה ש-`F-242` לא נפתר בניסיון הראשון:** `card` נבנה
+  // ב-`buildCard(...)` **בתוך ה-JSX של הדק**, ולכן הוא אובייקט חדש בכל רינדור של
+  // ההורה — ⛔ לא רק כשהכרטיס באמת התחלף. ⇒ האפקט הזה יורה על **כל** רינדור, ו-
+  // `resetDrag()` מנקה את ה-`transform` מהצומת. עד `T-333` זה היה בלתי-נראה: הכרטיס
+  // המדורג התפרק באותו טיק. משהתחיל להישאר כדי לעוף, הרינדור הבא **מחק לו את היציאה**
+  // — נמדד חי: הכרטיס היוצא נעצר על `left=24`, מקומו במנוחה, במקום לצאת מהמסך.
+  // ⇒ **והכלל ⛔ לא נחלש:** «כרטיס שהתחלף באמצע מחווה מתאפס» ⛔ אינו חל על כרטיס
+  // שה**דק** שולח החוצה — הוא ⛔ לא התחלף, הוא **עוזב**, וההיסט שלו הוא התנועה עצמה.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (leaving) return;
     swipeFrom.current = null;
     resetDrag();
-  }, [card]);
+  }, [card, leaving]);
 
   const primary = (text: string, lang: 'en' | 'he') =>
     lang === 'en' ? <EnWord>{text}</EnWord> : <span>{text}</span>;
@@ -448,7 +476,18 @@ export default function Flashcard({
           // this card is STILL here with the SAME `card`, the grade was not taken (CardDeck
           // swallows the network error on purpose) and the card comes back. Measured in
           // `verify-mobile.mjs` on `/dev/card`, whose onGrade is a no-op.
+          //
+          // 🔴 **⟦NARROWED 13/09 · `T-333`⟧ «עדיין כאן» הפסיק להיות שם-נרדף ל«⛔ לא דורג».**
+          // 🔬 **נמדד:** משהדק החזיק את הכרטיס המדורג כדי שיעוף (‏`T-333`), הוא נשאר מורכב
+          // **בדיוק כשהדירוג כן התקבל** ⇒ החזרה הזאת ירתה וביטלה את היציאה. נמדד חי:
+          // הכרטיס היוצא נתקע על `left=24` — מקומו במנוחה — במקום לעוף.
+          // ⇒ **והמכניקה ⛔ אינה שגויה, היא רק ⛔ אינה יכולה לדעת לבד:** ⛔ אין לכרטיס
+          // דרך להבחין בין «הדק שמר עליי כי נכשלתי» ל«הדק שמר עליי כי אני עף». **הדק
+          // יודע**, ולכן הוא זה שאומר — `leaving`. ⛔ ולא ניחוש מתוך `swipe`: הוא נכון
+          // בשני המקרים.
+          if (leavingRef.current) return;
           requestAnimationFrame(() => {
+            if (leavingRef.current) return;
             if (!mounted.current || shownRef.current !== card || sectionRef.current === null) return;
             const current = sectionRef.current;
             release(current, presentationX(current), 0, 0);
