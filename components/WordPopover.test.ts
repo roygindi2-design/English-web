@@ -6,6 +6,7 @@ import {
   POPOVER_MAX_WIDTH,
   popoverPlacement,
   popoverWidthFor,
+  stolenWordCount,
 } from './WordPopover';
 
 /**
@@ -101,5 +102,113 @@ describe('the markup is out of flow — the guard the name defeated', () => {
 
   it('renders nothing at all without an anchor — ⛔ no unanchored fallback block', () => {
     expect(source).toContain('if (anchor === null) return null;');
+  });
+});
+
+/**
+ * T-319 · WCAG 2.2 AA «Focus Not Obscured (Minimum)» · המשך של T-290.
+ *
+ * ⛔ **הנסיגה שהבדיקות של T-290 ⛔ לא יכלו לראות:** הן הוכיחו ש-`position: absolute`
+ * ⛔ אינו דוחף טקסט — וזה נכון. מה שהן ⛔ לא מדדו הוא שאותו `absolute` **מכסה**:
+ * מדידה חיה ב-C-0561 (Chromium 375×780, `/dev/story`) החזירה `stolen = 3` מתוך 7.
+ *
+ * ✔ מוכיח: החשבון שמגדיר «נגנבה» — מרכז המילה בתוך מלבן החלונית — ושכיבוי
+ *   האינטראקטיביות (`inert`) מאפס אותו **בהגדרה**, ⛔ ולא במקרה.
+ * ✔ מוכיח: הפסקה אכן מקבלת `inert` בדיוק כשהחלונית פתוחה, ש`Escape` והקשה בחוץ
+ *   סוגרים, ושהסגירה מחזירה מיקוד למילה שהוקשה — ⛔ ולא לראש הדף.
+ * ✘ ⛔ אינו מוכיח: הפיקסלים בדפדפן חי. `vitest` כאן הוא `node` ו⛔ אינו פורס דבר;
+ *   המדידה הזאת היא ההליכה החיה, והיא רשומה בשורת המסירה של השורה.
+ */
+describe('T-319 · stolenWordCount — «נגנבה» הוא חשבון, ⛔ ולא עין', () => {
+  const POPOVER = { top: 400, bottom: 616, left: 24, right: 312 } as const;
+  const wordAt = (top: number, left: number) => ({
+    top,
+    bottom: top + 24,
+    left,
+    right: left + 40,
+  });
+
+  it('סופרת מילה שמרכזה יושב בתוך מלבן החלונית', () => {
+    expect(stolenWordCount(POPOVER, [wordAt(480, 100)], true)).toBe(1);
+  });
+
+  it('⛔ אינה סופרת מילה מעל החלונית ו⛔ לא מילה מתחתיה', () => {
+    expect(stolenWordCount(POPOVER, [wordAt(300, 100), wordAt(700, 100)], true)).toBe(0);
+  });
+
+  it('⛔ אינה סופרת מילה שנמצאת בטווח האנכי אך **לצד** החלונית', () => {
+    expect(stolenWordCount(POPOVER, [wordAt(480, 330)], true)).toBe(0);
+  });
+
+  it('משחזרת את המדידה החיה: 3 מתוך 7 נגנבו כשהפסקה עדיין אינטראקטיבית', () => {
+    const words = [
+      wordAt(300, 100),
+      wordAt(340, 60),
+      wordAt(430, 100),
+      wordAt(470, 140),
+      wordAt(510, 80),
+      wordAt(660, 100),
+      wordAt(700, 140),
+    ];
+    expect(stolenWordCount(POPOVER, words, true)).toBe(3);
+  });
+
+  it('🔴 ⛔ ומאפסת אותה כשהפסקה `inert` — זה מה שסוגר את הקריטריון', () => {
+    const words = [wordAt(430, 100), wordAt(470, 140), wordAt(510, 80)];
+    expect(stolenWordCount(POPOVER, words, true)).toBe(3);
+    expect(stolenWordCount(POPOVER, words, false)).toBe(0);
+  });
+});
+
+describe('T-319 · ההתנהגות, ⛔ ולא הכוונה — נמדדת על המקור', () => {
+  const popover = readFileSync(new URL('./WordPopover.tsx', import.meta.url), 'utf8');
+  const screen = readFileSync(new URL('./StoryScreen.tsx', import.meta.url), 'utf8');
+
+  it('ⓒ פסקת הקריאה `inert` בדיוק כשהחלונית פתוחה', () => {
+    expect(screen).toContain('inert={openLemma !== null}');
+  });
+
+  it('ⓐ `Escape` סוגר', () => {
+    expect(screen).toContain("if (e.key === 'Escape') closePopover();");
+  });
+
+  it('ⓐ והסגירה מחזירה את המיקוד למילה שהוקשה — ⛔ ולא לראש הדף', () => {
+    expect(screen).toContain('if (el !== null && el.isConnected) el.focus();');
+    expect(screen).toContain('tappedWordRef.current = event.currentTarget;');
+    // 🔴 ⛔ ו⛔ לא בתוך `closePopover`: שם הפסקה עדיין `inert`, ו-`focus()` נבלע.
+    //    נמדד חי — `focusIsTappedWord: false` — ⛔ ולא הוסק.
+    expect(screen).toContain('useLayoutEffect(() => {\n    if (openLemma !== null) return;');
+  });
+
+  it('ⓑ הקשה מחוץ לחלונית סוגרת אותה', () => {
+    expect(screen).toContain("target.closest('[data-word-popover]')");
+  });
+
+  it('ⓑ ו⛔ אינה נבלעת — ⛔ אין `preventDefault` ו⛔ אין מאזין `capture`', () => {
+    expect(screen).not.toContain("addEventListener('pointerdown', onPointerDown, true)");
+    const handler = screen.slice(
+      screen.indexOf('const onPointerDown'),
+      screen.indexOf("document.addEventListener('keydown'"),
+    );
+    expect(handler).not.toContain('preventDefault');
+    expect(handler).not.toContain('stopPropagation');
+  });
+
+  it('⛔ ⛔ אין מלכודת מיקוד — זו חלונית, ⛔ לא מודאל', () => {
+    expect(popover).not.toContain('aria-modal');
+    expect(screen).not.toContain('focus-trap');
+  });
+
+  it('ⓓ ⛔ אף פקד בחלונית ⛔ אינו מכבה את טבעת המיקוד הגלובלית', () => {
+    expect(popover).not.toContain('outline-none');
+    expect(popover).not.toContain('focus:outline-0');
+  });
+
+  it('קורא-מסך מקבל מה להכריז כשהחלונית נפתחת', () => {
+    expect(popover).toContain('role="dialog"');
+  });
+
+  it('⛔ והעיגון ⛔ לא נסוג — `D-209`/`F-167` עומדים', () => {
+    expect(popover).toContain("position: 'absolute'");
   });
 });

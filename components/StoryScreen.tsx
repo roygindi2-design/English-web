@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import StoryEndScreen from '@/components/StoryEndScreen';
 import WordPopover, {
@@ -258,6 +258,12 @@ function StoryReady({
    * ⛔ אינו זז, והמילה שהוקשה ⛔ אינה יוצאת מהתצוגה.
    */
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * T-319 — **המילה שהוקשה, כאלמנט ⛔ ולא כשם.** `Escape` מחזיר את המיקוד **אליה**,
+   * ⛔ ולא לראש הדף: לומד מקלדת שסגר חלונית חייב להמשיך מ-`Tab` הבא אחרי אותה מילה.
+   * ⛔ `openLemma` ⛔ אינו מספיק — אותה למה יכולה להופיע פעמיים בפסקה.
+   */
+  const tappedWordRef = useRef<HTMLButtonElement | null>(null);
   const [anchor, setAnchor] = useState<WordAnchor | null>(null);
   const [bodyBox, setBodyBox] = useState<{ width: number; height: number }>({
     width: 0,
@@ -303,8 +309,60 @@ function StoryReady({
         centerX: word.left - box.left + word.width / 2,
       });
     }
+    tappedWordRef.current = event.currentTarget;
     setOpenLemma(lemma);
   }, []);
+
+  /**
+   * T-319 ⓐ — **מסלול סגירה אחד, ⛔ ולא ארבעה.** `Escape`, הקשה בחוץ, כפתור «סגור»
+   * והוספה מוצלחת — כולם עוברים כאן, ולכן כולם מחזירים את המיקוד לאותו מקום.
+   * ⛔ שכפול המסלול הוא בדיוק איך שאחד מהם נשאר בלי החזרת מיקוד.
+   */
+  const closePopover = useCallback(() => {
+    setOpenLemma(null);
+    setAnchor(null);
+  }, []);
+
+  /**
+   * 🔴 T-319 ⓐ — **החזרת המיקוד היא אפקט, ⛔ ולא שורה בתוך `closePopover`. נמדד חי,
+   * ⛔ ולא שוער:** הגרסה הראשונה קראה `el.focus()` בתוך הסוגר עצמו, וההרצה ב-Chromium
+   * החזירה `focusIsTappedWord: false`. הסיבה היא ⓒ עצמו — ברגע הקריאה הפסקה **עדיין**
+   * `inert`, כי React ⛔ טרם צייר מחדש, ו⛔ **אלמנט `inert` ⛔ אינו יכול לקבל מיקוד**
+   * ⇒ ה-`focus()` נבלע בשקט. ⇒ המיקוד מוחזר כאן, **אחרי** שה-DOM כבר עודכן
+   * ו-`inert` ירד. ‏`useLayoutEffect` ⛔ ולא `useEffect`: לפני הצביעה, ולכן ⛔ אין ולו
+   * פריים אחד שבו המיקוד יושב על `document.body`.
+   */
+  useLayoutEffect(() => {
+    if (openLemma !== null) return;
+    const el = tappedWordRef.current;
+    tappedWordRef.current = null;
+    if (el !== null && el.isConnected) el.focus();
+  }, [openLemma]);
+
+  /**
+   * T-319 ⓐⓑ — **`Escape` ברמת המסמך, ⛔ ולא על הרכיב.** הפסקה `inert` כל עוד
+   * החלונית פתוחה ⇒ המיקוד יכול לשבת **בתוך** החלונית או על `document.body` אחרי
+   * הקשת מגע; מאזין על הרכיב היה תופס רק את הראשון.
+   * ⛔ **וההקשה בחוץ ⛔ אינה נבלעת:** ⛔ אין `preventDefault` ו⛔ אין `capture` שעוצר
+   * את המסע — היא סוגרת, וממשיכה אל היעד שלה כרגיל.
+   */
+  useEffect(() => {
+    if (openLemma === null) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePopover();
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target;
+      if (target instanceof Element && target.closest('[data-word-popover]') !== null) return;
+      closePopover();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [openLemma, closePopover]);
 
   /**
    * T-238ⓑ · `D-183` — **הכתיבה היא `attempts + 1` בלבד (D-084), אבל «נוספה לחזרה»
@@ -372,7 +430,12 @@ function StoryReady({
             {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
             (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד
             מהם נעלם. `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו. */}
-            <p className="text-ink-muted">
+            {/* ⛔ **T-319 ⓒ — `inert` הוא מה שסוגר את WCAG 2.2 AA, ⛔ ולא טבעת יפה יותר.**
+            כל עוד החלונית פתוחה הפסקה ⛔ אינה ניתנת למיקוד ו⛔ אינה יעד הקשה ⇒ מילה
+            שיושבת **מתחת** לחלונית ⛔ אינה מציגה את עצמה כיעד, ולכן ⛔ אין מה לגנוב
+            ממנה (`stolenWordCount(..., interactive=false) === 0`). ⛔ **ו⛔ אין כאן
+            מלכודת מיקוד** — `Tab` יוצא מהחלונית אל שאר המסך, בדיוק כמו בכל חלונית. */}
+            <p className="text-ink-muted" inert={openLemma !== null}>
               <EnWord>
                 {segments.map((segment, i) => {
                   if (!segment.isTarget || segment.lemma === null) {
@@ -418,10 +481,7 @@ function StoryReady({
                 posHe={openGloss.posHe}
                 status={wordStatus[openLemma] ?? 'idle'}
                 onAdd={() => add(openLemma)}
-                onClose={() => {
-                  setOpenLemma(null);
-                  setAnchor(null);
-                }}
+                onClose={closePopover}
                 anchor={anchor}
                 containerWidth={bodyBox.width}
                 containerHeight={bodyBox.height}

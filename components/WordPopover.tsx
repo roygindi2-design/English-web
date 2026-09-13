@@ -33,6 +33,20 @@ import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
  * ממורכז על המילה שהוקשה, נצמד לשוליים כששתי הפינות ⛔ אינן נכנסות, ומתהפך
  * מעליה כשאין מקום מתחתיה. ⛔ **הטקסט ⛔ אינו זז ולו פיקסל** — זו כל נקודת הממצא.
  * ⛔ **`36 § 7` ⛔ לא השתנה:** הקוד מתיישר למפרט, ⛔ ולא להפך.
+ *
+ * 🆕 **T-319 · WCAG 2.2 AA «Focus Not Obscured (Minimum)» · המשך של T-290.** העיגון
+ * שסגר את `F-167` פתח פגם שני: `absolute` **מכסה**, ובעוד הבלוק הזורם הקודם דחף
+ * ו⛔ לא הסתיר, החלונית יושבת מעל מילים שנשארו יעדי הקשה ומיקוד. ⇒ מדידה חיה
+ * ב-C-0561: מתוך 7 מילות יעד, **3** הוחזרו מ-`elementFromPoint` כ⛔ לא-עצמן.
+ * ⛔ **והתיקון ⛔ אינו כאן אלא ב-`StoryScreen`**, כי הוא בעלים של הפסקה: כל עוד
+ * החלונית פתוחה הפסקה `inert` ⇒ ⛔ אף מילה מתחתיה ⛔ אינה יעד, `Escape` והקשה בחוץ
+ * סוגרים, והמיקוד חוזר **למילה שהוקשה**. כאן יושבת רק המדידה (`stolenWordCount`)
+ * ו-`role="dialog"`, שבלעדיו ⛔ אין לקורא-מסך מה להכריז כשהחלונית נפתחת.
+ * ⛔ **⛔ ואין מלכודת מיקוד** — זו חלונית, ⛔ לא מודאל.
+ *
+ * ⚠️ **טבעת המיקוד (ⓓ) ⛔ אינה נכתבת כאן בשנית:** `app/globals.css:72` מגדיר
+ * `:focus-visible { outline: 3px solid var(--brand) }` **גלובלית**, ושלושת הפקדים
+ * כאן ⛔ אינם מכבים אותה. ⇒ מחלקה מקומית הייתה כפילות שמתפצלת ביום שהאסימון זז.
  */
 
 /** ⛔ מספרים, ⛔ ולא «בערך» — הבדיקה מודדת מולם. */
@@ -77,6 +91,37 @@ export function popoverPlacement(anchor: WordAnchor, box: AnchorBox): AnchorPlac
   const fitsBelow = below + box.popoverHeight <= box.containerHeight;
   if (!fitsBelow && above >= 0) return { left, top: Math.round(above), placement: 'above' };
   return { left, top: Math.round(below), placement: 'below' };
+}
+
+/** מלבן, בקואורדינטות של אותו מרחב שבו נמדדו המילים. */
+export interface PopoverRect {
+  readonly top: number;
+  readonly bottom: number;
+  readonly left: number;
+  readonly right: number;
+}
+
+/**
+ * T-319 · WCAG 2.2 AA «Focus Not Obscured (Minimum)» — **אריתמטיקה, ⛔ ולא עין.**
+ *
+ * מילה **נגנבת** כששני הדברים מתקיימים יחד: ⓐ היא עדיין מציגה את עצמה כיעד הקשה
+ * ומיקוד, ⓑ **מרכזה** נופל בתוך מלבן החלונית ⇒ ההקשה הולכת לחלונית, והטבעת מצוירת
+ * על אלמנט שאיש ⛔ אינו רואה.
+ *
+ * ⛔ **ולכן `interactive === false` מאפס את הספירה בהגדרה:** כשפסקת הקריאה `inert`,
+ * ⛔ אין שם יעד ⇒ ⛔ אין מה לגנוב. זה מה שסוגר את הקריטריון — ⛔ ולא טבעת יפה יותר.
+ */
+export function stolenWordCount(
+  popover: PopoverRect,
+  words: readonly PopoverRect[],
+  interactive: boolean,
+): number {
+  if (!interactive) return 0;
+  return words.filter((w) => {
+    const cx = (w.left + w.right) / 2;
+    const cy = (w.top + w.bottom) / 2;
+    return cx >= popover.left && cx <= popover.right && cy >= popover.top && cy <= popover.bottom;
+  }).length;
 }
 
 const ADD_HE = 'הוסף לכרטיסיות';
@@ -154,6 +199,8 @@ export default function WordPopover({
       data-word-popover
       data-word-popover-placement={placement}
       dir="rtl"
+      role="dialog"
+      aria-label={word}
       style={{ position: 'absolute', top, left, width }}
       className="z-20 rounded-2xl border border-brand/75 bg-surface-raised px-4 py-4 text-center shadow-lg"
     >
