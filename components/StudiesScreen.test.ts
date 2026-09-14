@@ -150,6 +150,39 @@ describe('<StudiesScreen> — הבורר מכריז tablist ו⛔ מתנהג כ�
     expect(CODE).toMatch(/id=\{`\$\{TAB_ID_PREFIX\}\$\{track\.id\}`\}/);
   });
 
+  it('T-351 · לפאנל יש דרך קדימה — ⛔ ולא `<h2>` ו-`<p>` בלבד', () => {
+    // 🔬 **זו המדידה שהשורה נפתחה עליה:** גוף הפאנל החזיר **0** `<Link`/`<button`,
+    // ⇒ הלומד בחר מסלול ו⛔ לא יכול היה להיכנס אליו. שני ענפים, ⛔ ואין שלישי.
+    expect(CODE).toContain('trackDestination');
+    expect(CODE).toMatch(/from ['"]next\/link['"]/);
+    expect(CODE).toMatch(/destination !== null \? \(/);
+    expect(CODE).toMatch(/href=\{destination\.href\}/);
+    // ⛔ היעד ⛔ אינו מחרוזת מוטבעת ברכיב — `lib/core/studyTracks.ts` הוא המפה.
+    expect(CODE).not.toContain("href=\"/cards\"");
+  });
+
+  it('T-351 · מסלול בלי יעד בנוי אומר זאת בעברית, ⛔ ולא נשאר ריק', () => {
+    expect(CODE).toContain('NO_DESTINATION_HE');
+    expect(SRC).toContain("const NO_DESTINATION_HE = 'המסלול הזה עדיין בבנייה, ואין בו לאן להיכנס.'");
+    // ⛔ ⛔ ולא אותו משפט של `unreachable`: קריאה שנכשלה ומסלול שאינו בנוי
+    // הם שני מצבים שונים (D-046/D-082), וטקסט משותף היה מוחק את ההבדל.
+    expect(SRC).not.toContain("const NO_DESTINATION_HE = UNREACHABLE_HE");
+  });
+
+  it('T-351 · ⛔ קריאת התקדמות שנכשלה ⛔ אינה מוחקת את הדרך קדימה (T-349)', () => {
+    // ⛔ `destination` ⛔ אינו נגזר מ-`metric` — אם היה, `unreachable` היה
+    // משאיר את הלומד בלי שום פעולה, וזה בדיוק הכשל ש-`T-349` סגר.
+    const decl = CODE.match(/const destination = [^;]*;/)?.[0] ?? '';
+    expect(decl).toContain('trackDestination(active)');
+    expect(decl).not.toContain('metric');
+  });
+
+  it('T-351 · הקישור הוא יעד מגע אמיתי — `min-h-touch`, ⛔ לא טקסט לחיץ', () => {
+    const link = CODE.match(/<Link[\s\S]{0,600}?data-track-destination[\s\S]{0,600}?>/)?.[0] ?? '';
+    expect(link).toContain('min-h-touch');
+    expect(link).toContain('href={destination.href}');
+  });
+
   it('ⓑ הפאנל הוא עצירת מקלדת — ⛔ אחרת החיצים בלעו את הגישה אליו', () => {
     const panel = CODE.match(/<div[\s\S]{0,500}?data-track-status[\s\S]{0,500}?>/)?.[0] ?? '';
     expect(panel).toContain('tabIndex={0}');

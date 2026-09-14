@@ -26,11 +26,13 @@
  * שהגאומטריה תימדד בלי env של Supabase.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { apiGet } from '@/lib/api/client';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 import {
   STUDY_TRACKS,
   emptyTrackMetric,
+  trackDestination,
   trackLabelHe,
   vocabularyMetric,
   type StudyTrackId,
@@ -41,6 +43,11 @@ const TITLE_HE = 'לימודים';
 const SUBTITLE_HE = 'בחר מסלול · לכל מסלול מדד התקדמות משלו';
 /** ⛔ «—», ⛔ לא ריק: קריאה שנכשלה חייבת להיראות אחרת ממסלול ריק באמת (D-046/D-082). */
 const UNREACHABLE_HE = '— לא הצלחנו לטעון את ההתקדמות כרגע';
+/**
+ * T-351 · המסלול שאין לו יעד בנוי אומר זאת, ⛔ ולא נשאר כרטיס בלי דרך החוצה.
+ * ⛔ ⛔ ולא קישור שמוביל למסך שאינו קיים: מבוי סתום גרוע מהיעדר כפתור.
+ */
+const NO_DESTINATION_HE = 'המסלול הזה עדיין בבנייה, ואין בו לאן להיכנס.';
 
 /** ‏T-331ⓑ — מזהים יציבים, ⛔ ולא מחרוזות מוטבעות: `aria-controls` ו-`aria-labelledby` מצביעים זה על זה. */
 const TRACK_PANEL_ID = 'studies-track-panel';
@@ -103,6 +110,12 @@ export default function StudiesScreen({
   }, [fixtureLevels]);
 
   const metric = metricFor(active, loading ? null : levels);
+  /**
+   * T-351 · ⛔ **⛔ לא נגזר מ-`metric`, ובכוונה.** הדרך קדימה היא תכונה של
+   * המסלול, ⛔ לא של קריאת ההתקדמות ⇒ `metric.kind === 'unreachable'`
+   * ⛔ אינו מוחק אותה (`T-349` · «דרך אחת החוצה מכל כשל»).
+   */
+  const destination = trackDestination(active);
 
   /**
    * T-330 — הבורר גולש אופקית ב-375px (`הבנת הנקרא` נחתך ל«הג»), ו⛔ שני הדברים
@@ -280,6 +293,27 @@ export default function StudiesScreen({
           <p className="text-sm text-ink-muted">{UNREACHABLE_HE}</p>
         ) : (
           <p className="text-sm text-ink-muted">{metric.summaryHe}</p>
+        )}
+        {/*
+          T-351 — הדרך קדימה מהמסך. עד היום הפאנל כולו היה `<h2>` ו-`<p>`
+          יחיד: הלומד בחר מסלול ו⛔ לא יכול היה להיכנס אליו. ⛔ שתי אפשרויות
+          בלבד, ⛔ ואין שלישית: יעד בנוי ⇒ קישור אחד; ⛔ אין יעד ⇒ משפט עברי
+          שאומר זאת. ⛔ אפס קישור אל מסך שאינו קיים.
+          ⚠️ הקישור נשאר גם כש-`metric.kind === 'unreachable'` — ראה
+          `destination` למעלה.
+        */}
+        {destination !== null ? (
+          <Link
+            href={destination.href}
+            data-track-destination={active}
+            className="mt-1 inline-flex min-h-touch w-full items-center justify-center rounded-full bg-brand-surface px-5 text-base font-semibold text-brand-on active:opacity-90"
+          >
+            {destination.labelHe}
+          </Link>
+        ) : (
+          <p data-track-destination="none" className="mt-1 text-sm text-ink-muted">
+            {NO_DESTINATION_HE}
+          </p>
         )}
       </div>
     </section>

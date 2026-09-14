@@ -3,6 +3,7 @@ import {
   STUDY_TRACKS,
   emptyTrackMetric,
   primaryStudyTrack,
+  trackDestination,
   trackLabelHe,
   vocabularyMetric,
 } from './studyTracks';
@@ -87,6 +88,43 @@ describe('emptyTrackMetric — מבנה ריק מוצהר, D-176 §ד', () => {
   it('אף מחרוזת לא מכילה «—» — ⛔ הבדיקה של D-046/D-082', () => {
     for (const id of ['grammar', 'writing', 'reading'] as const) {
       expect(emptyTrackMetric(id).summaryHe).not.toContain('—');
+    }
+  });
+});
+
+describe('trackDestination — הדרך קדימה מכל מסלול (T-351)', () => {
+  it('אוצר מילים מוביל אל `/cards`, המסך שבו מילים נלמדות בפועל', () => {
+    const dest = trackDestination('vocabulary');
+    expect(dest).not.toBeNull();
+    expect(dest?.href).toBe('/cards');
+    // ⛔ תווית ריקה היא כפתור בלי שם — כאן היא נבדקת, ⛔ לא מונחת.
+    expect(dest?.labelHe.trim().length).toBeGreaterThan(0);
+  });
+
+  it('⛔ שלושת המסלולים בלי תוכן מחזירים `null`, ⛔ ולא נתיב שאינו קיים', () => {
+    // D-176 §ד · `36 § 9`: לדקדוק, לכתיבה ולהבנת הנקרא ⛔ אין מסך בנוי.
+    // ⛔ קישור אליהם היה מבוי סתום, וזו בדיוק התקלה ש-T-351 נפתחה עליה.
+    expect(trackDestination('grammar')).toBeNull();
+    expect(trackDestination('writing')).toBeNull();
+    expect(trackDestination('reading')).toBeNull();
+  });
+
+  it('לכל מסלול ברישום יש הכרעה — ⛔ אף אחד ⛔ אינו מחזיר `undefined`', () => {
+    // ⛔ `switch` בלי ענף למסלול חדש היה מחזיר `undefined`, שנראה על המסך
+    // בדיוק כמו `null` אבל ⛔ אינו מצב מוצהר. הבדיקה נועלת את ההבדל.
+    for (const track of STUDY_TRACKS) {
+      const dest = trackDestination(track.id);
+      expect(dest === null || typeof dest.href === 'string').toBe(true);
+      expect(dest).not.toBeUndefined();
+    }
+  });
+
+  it('⛔ כל נתיב מוחזר הוא פנימי ומוחלט, ⛔ ולא כתובת חיצונית', () => {
+    for (const track of STUDY_TRACKS) {
+      const dest = trackDestination(track.id);
+      if (dest === null) continue;
+      expect(dest.href.startsWith('/')).toBe(true);
+      expect(dest.href).not.toMatch(/^https?:/);
     }
   });
 });

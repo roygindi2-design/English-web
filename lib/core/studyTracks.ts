@@ -105,3 +105,35 @@ export function primaryStudyTrack(levels: readonly LevelSummary[]): StudyTrackId
   // a `!` assertion.
   return STUDY_TRACKS[0].id;
 }
+
+/**
+ * T-351 · «דרך אחת קדימה מכל מסך». היעד שאליו המסלול **נלמד בפועל**, ⛔ ולא
+ * המסך שמתאר אותו. `null` הוא מצב אמיתי ו⛔ לא כשל: לדקדוק, לכתיבה ולהבנת
+ * הנקרא ⛔ אין עדיין מסך בנוי (D-176 §ד · `36 § 9`), ולכן `<StudiesScreen>`
+ * אומר זאת בעברית במקום להציג קישור שמוביל לשום מקום.
+ *
+ * 🔬 **למה זה כאן ו⛔ לא ברכיב:** זו מפה בין שני דברים שכבר קיימים במוצר
+ * (מזהה מסלול ⇢ נתיב), ⇒ היא ניתנת לבדיקה בלי DOM, בדיוק כמו `trackLabelHe`.
+ *
+ * ⚠️ **היעד ⛔ אינו תלוי במדד.** קריאת ההתקדמות שנכשלה (`'unreachable'`)
+ * ⛔ אינה מוחקת את הדרך קדימה — זה בדיוק מה ש-`T-349` קבע, והתלות היחידה כאן
+ * היא בזהות המסלול.
+ */
+export interface TrackDestination {
+  readonly href: string;
+  readonly labelHe: string;
+}
+
+export function trackDestination(id: StudyTrackId): TrackDestination | null {
+  // ⛔ `switch` ו⛔ לא שדה ב-`STUDY_TRACKS`: הרשימה ההיא היא סדר התצוגה של
+  // `36 § 9`, והוספת נתיב אליה הייתה מערבבת מפרט-מסך עם ניתוב.
+  switch (id) {
+    case 'vocabulary':
+      // `app/(tabs)/cards` — המסך שבו מילים נלמדות בפועל (`36 § 5`).
+      return { href: '/cards', labelHe: 'כניסה לאוצר המילים' };
+    case 'grammar':
+    case 'reading':
+    case 'writing':
+      return null;
+  }
+}
