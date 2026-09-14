@@ -54,9 +54,15 @@ const SLOW_HE = 'מילים היו איטיות';
 const BACK_HE = 'חזרה לזירה';
 const FOOTER_HE = 'הזירה לא שינתה דבר בהתקדמות הלמידה';
 
-/* ‏y=318 · 370 · 422 ⇒ פסיעה 52 על גובה 44 ⇒ מרווח 8px = `gap-2`. */
+/* ‏y=318 · 370 · 422 ⇒ פסיעה 52 על גובה 44 ⇒ מרווח 8px = `gap-2`.
+   ⚠️ **`flex` רגיל, ⛔ ולא `flex-row-reverse`** (`T-338`, המשך של `F-236`): הרכיב גזר
+   את הגובה והפסיעה מ-`render_video_B.py:620-621` ואז הפך את הציר שאותן שורות קובעות —
+   `c.txt(LW - 40, …, k, …, anchor="rm")` שם את ה**תווית** בימין ו-`c.txt(40, …, v, …,
+   anchor="lm")` את ה**ערך** בשמאל. נמדד חי לפני התיקון ב-375px: `נכונות` ב-`x=65`
+   ו-`14 / 16` ב-`x=252` ⇒ הלומד קרא את המספר לפני מה שהוא מודד. במיכל RTL `flex`
+   **כבר** מניח את הילד הראשון בימין. */
 const ROW_CLASS =
-  'flex min-h-[44px] flex-row-reverse items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4';
+  'flex min-h-[44px] items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4';
 /* ‏x=24 ⇒ `px-6`; ‏LW-48=327 ⇒ הרוחב נגזר, ⛔ ולא נכתב. */
 const PANEL_CLASS = 'flex min-h-[66px] flex-col justify-center gap-1 rounded-2xl px-4 py-3';
 
@@ -85,19 +91,19 @@ export default function ArenaSummary({
       {/* שלוש שורות הסיכום. כל שורה נושאת **תווית עברית כתובה** — הצבע הוא הערוץ
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
       <ul data-arena-summary className="flex flex-col gap-2">
-        <li className={ROW_CLASS}>
+        <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-ink">{CORRECT_HE}</span>
           <span dir="ltr" className="text-[15px] font-bold text-success">
             {summary.correct} / {summary.total}
           </span>
         </li>
-        <li className={ROW_CLASS}>
+        <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-ink">{MEAN_HE}</span>
           <span dir="ltr" className="text-[15px] font-bold text-brand-surface">
             {meanSecondsHe(summary.meanResponseMs)}
           </span>
         </li>
-        <li className={ROW_CLASS}>
+        <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-ink">{STREAK_HE}</span>
           <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-gold-light)]">
             {summary.bestStreak}

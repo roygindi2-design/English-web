@@ -62,3 +62,23 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
     expect(CODE).toContain('היריב החזיק מעמד');
   });
 });
+
+/**
+ * 🔴 **T-338 — שלוש שורות הסטטיסטיקה.** `render_video_B.py:620-621` שם את התווית
+ * בימין (`anchor="rm"`) ואת הערך בשמאל (`anchor="lm"`); הרכיב גזר מאותן שורות את
+ * הגובה והפסיעה ואז הפך את הציר. המדידה בפיקסלים יושבת ב-`verify-mobile.mjs`.
+ */
+describe('ArenaSummary — ציר ה-RTL (T-338)', () => {
+  const SRC_RTL = readFileSync('components/ArenaSummary.tsx', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  it('⛔ ⛔ אין `flex-row-reverse` בשורת הסטטיסטיקה', () => {
+    expect(SRC_RTL).not.toContain('flex-row-reverse');
+  });
+
+  it('שלוש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת בדפדפן', () => {
+    expect(SRC_RTL.match(/data-rtl-row="summary-stat"/g)).toHaveLength(3);
+  });
+});

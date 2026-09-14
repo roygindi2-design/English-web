@@ -1021,6 +1021,39 @@ try {
         }
       }
 
+      // 🔴 T-338 — כל שורה שמסומנת `data-rtl-row` נמדדת **בנפרד**, ⛔ ולא באופן גורף.
+      //
+      // 🔬 **מה נמדד לפני התיקון** (C-0595, Chromium 375×780): ב-`/dev/arcade/summary`
+      // `נכונות` ישבה `x=65` ו-`14 / 16` ב-`x=252` ⇒ הלומד קרא את המספר **לפני** מה
+      // שהוא מודד; ב-`/dev/arcade/home` צומת 1 של מסלול הבוס ישבה `x=52` והאחרונה
+      // `x=291` ⇒ ההתקדמות נקראה לאחור. ⛔ **והרנדר קובע את ההפך פשוטו כמשמעו:**
+      // `docs/design/render_video_B.py:620-621` — `anchor="rm"` לתווית בימין,
+      // `anchor="lm"` לערך בשמאל.
+      //
+      // ⚠️ **הכלל נמדד ב-`right` של הילד הראשון מול האחרון, ⛔ ולא בשם מחלקה** — במיכל
+      // RTL הילד הראשון הוא הימני, ולכן ההיפוך מתגלה כאן בכל דרך שבה הוא נעשה. ⛔ ושורה
+      // בעלת ילד יחיד ⛔ אינה נמדדת: ⛔ אין לה ציר.
+      const rtlRows = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('[data-rtl-row]')).map((el) => {
+          const kids = Array.from(el.children).filter((k) => k.getBoundingClientRect().width > 0);
+          if (kids.length < 2) return null;
+          const first = kids[0].getBoundingClientRect();
+          const last = kids[kids.length - 1].getBoundingClientRect();
+          return {
+            name: el.getAttribute('data-rtl-row') ?? '?',
+            firstRight: first.right,
+            lastRight: last.right,
+          };
+        }).filter((r) => r !== null),
+      );
+      for (const row of rtlRows) {
+        check(
+          row.firstRight > row.lastRight,
+          `${at} RTL axis: [data-rtl-row="${row.name}"] first child sits RIGHT of last (T-338)`,
+          `first right=${row.firstRight.toFixed(1)} ⛔ is not right of last right=${row.lastRight.toFixed(1)}`,
+        );
+      }
+
       // 🧹 T-326 — the licence link is drawn on a destination and ⛔ not inside a task.
       //
       // ⛔ BOTH directions, and that is the point: T-011 attaches the attribution to the

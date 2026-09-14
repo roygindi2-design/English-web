@@ -141,3 +141,25 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
     expect(SRC).not.toMatch(/aria-label=\{?['"]חזרה['"]\}?/);
   });
 });
+
+/**
+ * 🔴 **T-338 — ציר ה-RTL של שלוש השורות במסך הבית.** המשך של `F-236`.
+ * ⚠️ המדידה האמיתית היא בפיקסלים ב-`scripts/verify-mobile.mjs` (`[data-rtl-row]`,
+ * הילד הראשון מימין לאחרון, ב-320/375/414). זו הרצפה המהירה שלה.
+ */
+describe('ArenaHome — ציר ה-RTL (T-338)', () => {
+  const SRC_RTL = readFileSync('components/ArenaHome.tsx', 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  it('⛔ ⛔ אין `flex-row-reverse` — במיכל RTL הוא הופך את הציר פעם שנייה', () => {
+    expect(SRC_RTL).not.toContain('flex-row-reverse');
+  });
+
+  it('חמש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת **בנפרד**', () => {
+    const handles = SRC_RTL.match(/data-rtl-row="([a-z-]+)"/g) ?? [];
+    expect(handles).toHaveLength(5);
+    expect(new Set(handles).size).toBe(5);
+  });
+});

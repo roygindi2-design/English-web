@@ -309,7 +309,10 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
           {bossCaption}
         </p>
-        <ol className="flex flex-row-reverse items-center justify-between px-1">
+        {/* ⚠️ `flex` רגיל (`T-338`): במיכל RTL הילד הראשון **כבר** בימין, ו-`flex-row-reverse`
+            היה מציב את צומת 1 בשמאל ⇒ מסלול הבוס נקרא לאחור. נמדד לפני התיקון: הראשונה
+            ב-`x=52`, האחרונה ב-`x=291`. */}
+        <ol className="flex items-center justify-between px-1" data-rtl-row="boss-track">
           {track.map((node, i) => (
             <li key={i} className="flex items-center">
               <span
@@ -340,7 +343,9 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         <p className="text-[13.5px] font-semibold leading-none text-[color:var(--arena-ink)]">
           {GEAR_HEADING_HE}
         </p>
-        <ul className="flex flex-row-reverse justify-between gap-2">
+        {/* ⚠️ `flex` רגיל (`T-338`) — `רגליים` נמדדה `x=48` ו-`גוף` `x=270`, כלומר סדר
+            התאים היה הפוך לשפה. */}
+        <ul className="flex justify-between gap-2" data-rtl-row="gear-slots">
           {slots.map((slot) => (
             <li
               key={slot.slot}
@@ -368,7 +373,8 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         <button type="button" className={START_CLASS} onClick={() => onStart(state)}>
           {START_HE}
         </button>
-        <div className="flex flex-row-reverse gap-[10px]">
+        {/* ⚠️ `flex` רגיל (`T-338`) — `ארון ציוד` נמדד `x=48` לפני `עיצוב דמות` ב-`x=193`. */}
+        <div className="flex gap-[10px]" data-rtl-row="home-actions">
           <button
             type="button"
             className={SECONDARY_CLASS}
@@ -389,13 +395,15 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           מציג את מה שללומד **באמת** יש, דרך `ITEM_LABELS_HE`. */}
       {drawerOpen && (
         <div className={`flex flex-col gap-3 p-4 ${CARD_CLASS}`}>
-          <div className="flex flex-row-reverse items-baseline justify-between">
+          {/* ⚠️ `flex` רגיל (`T-338`) — הכותרת היא הילד הראשון, ובמיכל RTL מקומה בימין. */}
+          <div className="flex items-baseline justify-between" data-rtl-row="drawer-heading">
             <h2 className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
               {DRAWER_HE}
             </h2>
             <p className="text-xs leading-none text-[color:var(--arena-gold-light)]">{DRAWER_NOTE_HE}</p>
           </div>
-          <ul className="flex flex-row-reverse justify-between gap-2">
+          {/* ⚠️ `flex` רגיל (`T-338`) — אותם ארבעה תאים כמו למעלה, אותו ציר. */}
+          <ul className="flex justify-between gap-2" data-rtl-row="drawer-slots">
             {slots.map((slot) => (
               <li
                 key={slot.slot}
