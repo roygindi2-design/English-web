@@ -579,6 +579,40 @@ describe('scripts/loop-health.mjs', () => {
     expect(r.out).toContain('חוצה-מערכת');
   });
 
+  /**
+   * 🟠 **⟦NEW 14/09 · `F-252`⟧ — והקבוצה ⛔ אינה התשובה לשאלה השנייה.**
+   *
+   * ‏`§ 0.23 ז׳` מזיז את המוקד כשהזרימה **מוצתה**, ו-`QA.md` מגדיר מיצוי כ-**⬜=0
+   * של הזרימה עצמה**. ⇒ המדידה על הקבוצה (הטענה שמעל) נכונה ל«⛔ האם DEV רעב?»
+   * ו**שגויה** ל«⛔ האם המוקד צריך לזוז?».
+   *
+   * 🔬 **נמדד 14/09:** `general` עמדה על ⬜=0 **שלוש פעמים ב-19 שעות** בעוד הקבוצה
+   * מחזיקה 7–12 ⇒ הבדיקה נשארה ירוקה בכל פעם, ו⛔ שום דבר בטיק של QA ⛔ לא העלה את
+   * השאלה. המוקד ⛔ לא זז מאז 13/09 14:04Z.
+   *
+   * ⇒ **🟠 ו⛔ לא 🔴** — DEV ⛔ אינו רעב, ולכן זה ⛔ אסור שייקרא כחירום.
+   */
+  it('11 · 🟠 כשהמוקד החוצה-מערכת עצמו ⬜=0 — גם כשהקבוצה מלאה (F-252)', () => {
+    const root = healthy();
+    patch(root, 'plan/00-control.md', (s) =>
+      s.replace('ACTIVE_WORKSTREAM: story', 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "story"'),
+    );
+    // 🔴 ⛔ **The fixture copies the LIVE `docs/plan-open.md`** ⇒ `general`'s own count
+    // drifts with the repo. ⛔ The condition is FORCED here, ⛔ never assumed — the test
+    // above it carries a comment claiming «general holds 0» that the live file can
+    // falsify at any time, and that is exactly how a green test stops measuring.
+    patch(root, 'docs/plan-open.md', (s) =>
+      s.replace(/^\| · `general` \(מחוץ לרצף\) \|([^|]*)\|([^|]*)\|/m, '| · `general` (מחוץ לרצף) |$1| 0 |'),
+    );
+    const r = run(root);
+    expect(failed(r.out, '11'), '⛔ ⛔ לא אדום — הקבוצה מחזיקה עבודה').toBe(false);
+    // ⛔ הסימן ⛔ אינו ` warn ` — הוא פריט. ‏`check()` נושא בוליאן אחד, ו-` warn `
+    // מגיע ⛔ רק מ-`softUntil`, שהוא מנגנון תאריך ⇒ היה פג. הממצא הזה ⛔ אינו פג.
+    expect(r.out, '🟠 ⇒ המוקד עצמו יבש').toContain('**עצמה** ⬜=0');
+    expect(r.out, 'ומנותב ל-QA, ⛔ לא ל-DEV').toContain('STEP 5.8');
+    expect(r.out, 'הממצא נקוב בשמו').toContain('F-252');
+  });
+
   it('11 · ⛔ ו⛔ אינו ירוק מזכות עצמו — קבוצה חוצה-מערכת ריקה עדיין אדומה', () => {
     const root = healthy();
     patch(root, 'plan/00-control.md', (s) =>

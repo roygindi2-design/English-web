@@ -218,6 +218,49 @@ describe('scripts/measure-plan-tables.mjs', () => {
     expect(report).toContain('2/2');
   });
 
+  /**
+   * 🔴 **`F-252` — הדגל המחייב היה ⛔ בלתי-ניתן לפליטה כשהמוקד חוצה-מערכת.**
+   *
+   * הלולאה שפולטת אותו רצה על `ORDERED`, ש⛔ **אינו מכיל** את `general` (`OUTSIDE_SEQUENCE`)
+   * ⇒ התנאי `here === ACTIVE_WORKSTREAM` ⛔ לעולם ⛔ אינו מתקיים כשהמוקד `general`.
+   * ‏`QA.md` מבטיח «`docs/plan-open.md` מדפיס את הדגל» — ו⛔ הוא ⛔ לא יכול היה.
+   *
+   * 🔬 **נמדד 14/09:** שלוש שורות ℹ️, **אפס 🔴**, בעוד `general` עמדה על ⬜=0 שלוש פעמים.
+   *
+   * ⛔ **התנאי נכפה כאן דרך `PLAN_CONTROL_FILE`** — הרגיסטרים החיים ⛔ אינם משתנים,
+   * ו⛔ אין הישענות על מה ש-`general` במקרה מחזיקה היום.
+   */
+  it('emits the imperative flag when the CROSS-CUTTING focus itself is dry (F-252)', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-crosscut-'));
+    // ⛔ `general` ⬜=0 נכפה ע"י ריקון התג משורות המשימה, ⛔ ולא ע"י עריכת הטבלה הנגזרת —
+    // הטבלה נבנית מהשורות, ⇒ עריכתה הייתה נמחקת ברגע שהגנרטור רץ.
+    const tasksSrc = readFileSync(join('plan', '50-tasks.md'), 'utf8');
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    writeFileSync(fixtureTasks, tasksSrc.replace(/· general ·/g, '· loop ·'), 'utf8');
+
+    const fixtureControl = join(tmp, '00-control.md');
+    writeFileSync(fixtureControl, 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "story"\n', 'utf8');
+
+    const fixtureOpenOut = join(tmp, 'plan-open.md');
+    execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: fixtureOpenOut,
+        PLAN_TASKS_FILE: fixtureTasks,
+        PLAN_CONTROL_FILE: fixtureControl,
+      },
+    });
+
+    const open = readFileSync(fixtureOpenOut, 'utf8');
+    expect(open, 'הדגל המחייב נפלט').toContain('המוקד החוצה-מערכת מוצה');
+    expect(open, 'ומנותב ל-QA בשלב הנכון').toContain('STEP 5.8');
+    expect(open, 'הממצא נקוב בשמו').toContain('F-252');
+    // ⛔ ו⛔ אינו מדווח חירום — הבריכה עדיין מחזיקה עבודה, ו-DEV ⛔ אינו רעב.
+    expect(open, '⛔ ⛔ לא «DEV רעב»').toContain('⛔ אין חירום');
+  });
+
   it('holds every cancelled-in-prose task cell to a status cell that was actually flipped (T-229 · F-125)', () => {
     // The live registers, today: the six rows C-0370 fixed (T-136 · T-151 · T-160 ·
     // T-161 · T-162 · T-163) already carry 🚫 in their status cell, so this must read

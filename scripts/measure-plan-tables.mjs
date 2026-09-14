@@ -370,6 +370,10 @@ const TICKS = new Map(
  * every run. Read the field once here so the loop below can gate on it.
  */
 const ACTIVE_WORKSTREAM = CONTROL_TEXT.match(/^ACTIVE_WORKSTREAM:\s*(\S+)/m)?.[1] ?? null;
+/** ⟦NEW 14/09 · `F-252`⟧ Where the sequence is re-entered when the focus is cross-cutting.
+ * `general` has ⛔ no place in `36 § 13`, so the next workstream is ⛔ never guessed from
+ * the order — it is read from the field that exists for exactly this, as checks 13/14 do. */
+const PREV_WORKSTREAM = (CONTROL_TEXT.match(/^PREV_WORKSTREAM:\s*"?([^"\s#]*)"?/m)?.[1] ?? '').trim();
 
 const classOf = (row) => classify(row.ok ? (row.cells[TASK_MILESTONE_INDEX] ?? '') : '');
 const streamOf = (row) => classOf(row).workstream;
@@ -448,6 +452,44 @@ for (let i = 0; i < ORDERED.length; i += 1) {
     }
   }
 }
+/**
+ * 🔴 **⟦NEW 14/09 · `F-252`⟧ AND THE CROSS-CUTTING FOCUS GETS THE SAME FLAG.**
+ *
+ * ⛔ **Why this needed its own block and ⛔ could not join the loop above.** That loop
+ * iterates `ORDERED`, which excludes `general` by construction (`OUTSIDE_SEQUENCE`) —
+ * so `here === ACTIVE_WORKSTREAM` is **⛔ structurally unreachable** whenever the focus
+ * is cross-cutting, and the 🔴 imperative ⛔ could never be emitted. ⛔ That is ⛔ not a
+ * missing condition; it is the shape of the loop.
+ *
+ * 🔬 **Measured 14/09:** the focus read `general` from 13/09 14:04Z, `general` itself hit
+ * ⬜=0 three times, and this file printed **three ℹ️ lines and zero 🔴** every run. QA's
+ * prompt promises «`docs/plan-open.md` prints the flag» — ⛔ it could not.
+ *
+ * ⛔ **And the next workstream is ⛔ not guessed:** `general` has ⛔ no position in
+ * `36 § 13`, so the sequence is re-entered at `PREV_WORKSTREAM` — the field that exists
+ * for exactly this, and which checks 13/14 already read the same way.
+ */
+if (ACTIVE_WORKSTREAM !== null && OUTSIDE_SEQUENCE.has(ACTIVE_WORKSTREAM)) {
+  const selfOpen = tally(byStream.get(ACTIVE_WORKSTREAM) ?? []).open;
+  if (selfOpen === 0) {
+    const pool = [...OUTSIDE_SEQUENCE].reduce((n, w) => n + tally(byStream.get(w) ?? []).open, 0);
+    const from = PREV_WORKSTREAM === '' ? undefined : PREV_WORKSTREAM;
+    const start = from === undefined ? 0 : Math.max(0, ORDERED.indexOf(from));
+    const next = ORDERED.slice(start).find((w) => tally(byStream.get(w) ?? []).open > 0);
+    const where = next === undefined
+      ? '⛔ ו⛔ **אין ברצף זרימה עם עבודה פנויה** — ⇒ זו הכרעה לרוי, ⛔ לא לסוכן.'
+      : `⇒ **החזרה לרצף היא ל-\`${next}\`** (${tally(byStream.get(next) ?? []).open} משימות ⬜), לפי \`PREV_WORKSTREAM\` = \`${from ?? '—'}\`.`;
+    flags.push(
+      `🔴 **המוקד החוצה-מערכת מוצה — \`${ACTIVE_WORKSTREAM}\` עצמה ⬜=0.** ${where}
+` +
+        `  **QA מכריע ב-\`STEP 5.8\` — בטיק הזה, ⛔ ולא בבא.** ` +
+        `⚠️ **ו⛔ זה ⛔ אינו «DEV רעב»:** הבריכה (\`general\` ∪ \`loop\` ∪ \`base\`) מחזיקה **${pool}** ⬜ ⇒ ⛔ אין חירום. ` +
+        `מה שכן: תנאי המיצוי של \`§ 0.23 ז׳\` **מתקיים**, ו-\`general\` ⛔ אינה פריט ב-\`36 § 13\` ⇒ היא ⛔ אינה נחתמת ו⛔ אינה «נגמרת» — היציאה ממנה היא **החזרת המוקד**. ` +
+        `⛔ **שתיקה ⛔ אינה אפשרות** (\`F-252\`): או להזיז, או לכתוב שורה למה ⛔ לא.`,
+    );
+  }
+}
+
 for (const b of badTags) {
   flags.push(`⚠️ \`${b.id}\` נושאת תג שאינו באוצר המילים: ${b.unknown.map((u) => `\`${u}\``).join(' · ')}. ⛔ תקן או הסר — תג לא מוכר אינו נספר בשום מקום.`);
 }

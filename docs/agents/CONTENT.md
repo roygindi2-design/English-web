@@ -157,6 +157,29 @@ produces text in the session output, and ⛔ nothing reads that.
 
 ⚠️ **You are racing the lock holder for `work/current`** ⇒ `./scripts/g fetch origin`,
 `rebase`, push, and on a second rejection **exit** — ⛔ do ⛔ not loop.
+
+🔴 🆕 **⟦14/09 · `F-251`⟧ ⇒ PUSH THE LOCK COMMIT BY ITSELF, BEFORE YOU DO ANY WORK.**
+🔬 **Measured, ⛔ not argued — it happened to the ops session and cost it a whole tick:**
+```
+08:39:20Z  ops commits  LOCK_HELD_BY: "OPS"  as C-0599
+08:39:39Z  the gate starts (2,810 tests, 85.95s)
+08:40:00Z  pm-agent commits LOCK_HELD_BY: "pm-agent"  as the SAME C-0599
+08:41:05Z  the attestation lands ⇒ push REFUSED: «is at 42b843cc but expected 85b0f9d2»
+```
+⇒ **the lock is decided by who PUSHES first, ⛔ not by who committed it first, and the gate
+runs for 60–105 seconds in between.** ⛔ That whole window is the race.
+```
+1. npm run hooks:install                                ⇐ FIRST, always (`F-195`) — an
+                                                          ungated first commit is worse
+                                                          than a lost race
+2. commit ⛔ ONLY plan/00-control.md with the lock       ⇒ push it, and ⛔ nothing with it
+3. ⛔ only now do the work
+```
+⛔ **⛔ And the lock commit ⛔ cannot be batched with anything else** — one other path in the
+diff and it leaves the fast lane, the gate runs the full ~3 minutes, and the window reopens.
+⚠️ **Lost the race anyway?** ⇒ **recompute the cycle id and start again in this same tick**
+(`STEP 8`). ⛔ A lost race is ⛔ not a reason to end the run — and ⛔ never push your work to
+a `claude/*` branch instead (`F-248`: 30 verified words sat there, invisible to the loop).
 ⛔ **⛔ And ⛔ never `SKIP_VERIFY=1` for it.** A journal line is ⛔ not an emergency; the
 push runs `verify` like every other push, and that is the point.
 

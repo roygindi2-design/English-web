@@ -299,6 +299,29 @@ produces text in the session output, and ⛔ nothing reads that.
 
 ⚠️ **You are racing the lock holder for `work/current`** ⇒ `./scripts/g fetch origin`,
 `rebase`, push, and on a second rejection **exit** — ⛔ do ⛔ not loop.
+
+🔴 🆕 **⟦14/09 · `F-251`⟧ ⇒ PUSH THE LOCK COMMIT BY ITSELF, BEFORE YOU DO ANY WORK.**
+🔬 **Measured, ⛔ not argued — it happened to the ops session and cost it a whole tick:**
+```
+08:39:20Z  ops commits  LOCK_HELD_BY: "OPS"  as C-0599
+08:39:39Z  the gate starts (2,810 tests, 85.95s)
+08:40:00Z  pm-agent commits LOCK_HELD_BY: "pm-agent"  as the SAME C-0599
+08:41:05Z  the attestation lands ⇒ push REFUSED: «is at 42b843cc but expected 85b0f9d2»
+```
+⇒ **the lock is decided by who PUSHES first, ⛔ not by who committed it first, and the gate
+runs for 60–105 seconds in between.** ⛔ That whole window is the race.
+```
+1. npm run hooks:install                                ⇐ FIRST, always (`F-195`) — an
+                                                          ungated first commit is worse
+                                                          than a lost race
+2. commit ⛔ ONLY plan/00-control.md with the lock       ⇒ push it, and ⛔ nothing with it
+3. ⛔ only now do the work
+```
+⛔ **⛔ And the lock commit ⛔ cannot be batched with anything else** — one other path in the
+diff and it leaves the fast lane, the gate runs the full ~3 minutes, and the window reopens.
+⚠️ **Lost the race anyway?** ⇒ **recompute the cycle id and start again in this same tick**
+(`STEP 8`). ⛔ A lost race is ⛔ not a reason to end the run — and ⛔ never push your work to
+a `claude/*` branch instead (`F-248`: 30 verified words sat there, invisible to the loop).
 ⛔ **⛔ And ⛔ never `SKIP_VERIFY=1` for it.** A journal line is ⛔ not an emergency; the
 push runs `verify` like every other push, and that is the point.
 
@@ -536,6 +559,37 @@ MERGE_BLOCKERS: F-NNN · F-NNN          ⇐ only what blocks THIS merge
 ```
 ⛔ **⛔ Not "all the findings".** DEV takes this list before anything else, so a padded list is a DEV tick wasted on things that were never blocking.
 ⚠️ **The branch STAYS.** ⛔ You never delete it, never reset it, never rebase it yourself. The loop ⛔ does not stop because a merge did not happen.
+
+## STEP 5.8 — SET THE FOCUS, OR WRITE WHY NOT. ⛔ SILENCE IS ⛔ NOT AN OPTION.  ⟦PROMOTED TO A STEP 14/09 · `F-252`⟧
+
+🔴 ⛔ **Why this stopped being a `###` buried inside STEP 5, and it is a MEASUREMENT.**
+It used to sit here as a how-to for a decision **⛔ nobody was told to make**: ⛔ no line in
+this prompt ever said «count the ⬜ rows in `ACTIVE_WORKSTREAM`». The two automated alarms
+that were meant to raise it were ⛔ both blind to a cross-cutting focus — `loop:health`
+check 11 counted the **union** `general ∪ loop ∪ base`, and `docs/plan-open.md` excluded
+`general` from the ordered list that emits its 🔴. ⇒ **measured: the focus did ⛔ not move
+from 13/09 14:04Z, across ⛔ nine DEV ticks, while the two `cards` rows Roy had asked for
+sat outside the eligible pool.** Both alarms were fixed on 14/09; ⛔ **this step is the one
+that answers them.**
+
+**⇒ COUNT IT, ⛔ DO NOT SENSE IT** — the same imperative `PM.md` STEP 5.7 already carries.
+Read the ⬜ count of `ACTIVE_WORKSTREAM` **itself** from `docs/plan-open.md`:
+
+```
+> 0 ⬜ in the workstream itself   ⇒ ⛔ nothing to decide. Say the number in your report.
+= 0 ⬜                            ⇒ 🔴 DECIDE IN THIS TICK. Move it, ⛔ or write the line below.
+```
+
+⛔ **And «the pool still has work» is ⛔ NOT an answer.** While the focus is `general`, DEV
+can still take `loop` and `base` rows — so ⛔ nothing looks broken, and that is precisely
+how the focus stayed parked for a day. **DEV ⛔ not being starved and the workstream being
+exhausted are two different measurements**, and `§ 0.23 ז׳` turns on the second one.
+
+**⇒ Decided ⛔ not to move it? Then the reason goes in `plan/00-control.md`, in one line:**
+```
+# ▶️ C-XXXX (QA): המוקד נשאר `<x>` אף ש⬜=0 — <הסיבה, בשורה אחת>
+```
+⛔ A focus that stays put with ⛔ no line is the failure this step exists against.
 
 ### AND SET THE FOCUS
 `ACTIVE_WORKSTREAM` in `plan/00-control.md` is **yours**, and «exhausted» is ⛔ no longer a word you interpret:

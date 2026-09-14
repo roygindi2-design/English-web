@@ -926,8 +926,45 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
   const open = Math.max(0, countedOpen - textBlocked.length);
   const how = CROSS_CUTTING.has(active) ? `${active} (חוצה-מערכת: ${names.join(' · ')})` : active;
   const caveat = textBlocked.length > 0 ? ` (F-169: ${textBlocked.length} מסומנות ⬜ אך חסומות בתא — ${textBlocked.join(' · ')})` : '';
+
+  /**
+   * 🟠 **⟦NEW 14/09 · `F-252`⟧ AND THE ACTIVE WORKSTREAM IS ⛔ ALSO MEASURED ON ITS OWN.**
+   *
+   * ⛔ **Why this is a second number and ⛔ not a rewrite of the first.** The union above is
+   * correct for «⛔ is DEV starved?» — while the focus is `general`, DEV may genuinely take
+   * `loop` and `base` rows. ⛔ But it is the ⛔ WRONG number for «⛔ should the focus move?»:
+   * `§ 0.23 ז׳` says QA moves the focus when the workstream is **exhausted**, and `QA.md`
+   * defines exhausted as **⛔ ZERO ⬜ rows** — of the workstream itself.
+   *
+   * 🔬 **Measured 14/09 (`F-252`), and this is the whole bug:** `general` sat at ⬜=0 three
+   * separate times in 19 hours while the union held 7–12 rows ⇒ this check stayed green
+   * every time, `docs/plan-open.md` could ⛔ not emit its 🔴 flag for a cross-cutting focus,
+   * and so **⛔ nothing in QA's tick ever raised the question.** The focus has ⛔ not moved
+   * since 13/09 14:04Z, and the two `cards` rows Roy asked for sat outside the pool.
+   *
+   * ⇒ 🟠, ⛔ never 🔴: DEV is ⛔ not starved, so this ⛔ must not read as an emergency. It is
+   * addressed to QA, and `QA.md STEP 5.8` is where it is answered.
+   */
+  const selfRow = table.find((w) => w.name === active);
+  const selfOpen = selfRow && Number.isFinite(selfRow.open) ? selfRow.open : null;
+  const focusDry = CROSS_CUTTING.has(active) && selfOpen === 0 && open > 0;
+
+  /**
+   * ⛔ **⛔ NOT a second `ok`, and ⛔ not a `soft` window — an ITEM.** `check()` carries
+   * exactly one boolean, and ` warn ` in the report comes ⛔ only from `softUntil`, which
+   * is a DATE mechanism and would expire. This finding ⛔ never expires. ⇒ it rides in
+   * `items`, the same channel check 17 uses for «alive, ⛔ but ⛔ without the marker».
+   */
+  const items = focusDry
+    ? [
+        `🟠 \`${active}\` **עצמה** ⬜=0 — הבריכה מחזיקה ${open} ⇒ DEV ⛔ אינו רעב, ⛔ אבל תנאי המיצוי של \`§ 0.23 ז׳\` **מתקיים**.`,
+        `⇒ **QA מכריע ב-STEP 5.8** — מזיז את המוקד, או כותב שורה למה ⛔ לא. ⛔ שתיקה ⛔ אינה אפשרות (\`F-252\`).`,
+      ]
+    : [];
+
   return {
     ok: open > 0,
+    items,
     detail:
       open > 0
         ? `${how} — ${open} משימות ⬜${caveat}`
