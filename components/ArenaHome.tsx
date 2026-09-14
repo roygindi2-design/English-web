@@ -254,7 +254,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
 
   if (screen !== 'ready' || state === null) {
     return (
-      <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-6 px-6 pb-16">
+      <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-6 pb-16">
         {header}
         {screen === 'loading' ? (
           <div className="flex flex-col gap-4" aria-busy="true">
@@ -291,7 +291,17 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
     remaining === 1 ? `נותר ניצחון אחד עד ${BOSS_HE}` : `נותרו ${remaining} ניצחונות עד ${BOSS_HE}`;
 
   return (
-    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 px-6 pb-16">
+    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 pb-16">
+      {/* 📐 **T-342 — ⛔ אין כאן `px-6`, וזו מדידה מול הרנדר ⛔ ולא ניקיון.**
+          `app/layout.tsx` נותן ל-`<main>` ‏`px-6` ⇒ 24px לכל צד, וה-`section` הזה הוסיף
+          עליהם עוד `px-6` ⇒ **48px לכל צד**, וזה מה שנמדד חי (`ul` ב-`x=48`, כרטיס
+          הרמה ב-`x=48`). ⛔ **והרנדר מצייר 24:** `render_video_B.py:136` הוא
+          `rr(24, 404, LW-48, 66, 18)` ו-`:183` הוא `rr(24, 664, LW-48, 58, 18)` —
+          כלומר `x=24` ורוחב 327 ב-`LW=375`.
+          🔴 **וזה ⛔ אינו רק דיוק:** ב-48 כפול נותרו **279px** ל-375, והרצועה צריכה
+          **288** ⇒ ארבעת התאים ⛔ לא יכלו להיכנס לשורה אחת ⛔ בשום רוחב מצוי, ועטיפה
+          לבדה הייתה מייצרת 3+1 גם ב-375. ב-24 נותרים 327 ⇒ 288 נכנסים. ⇒ הגדר הכפולה
+          הייתה **הסיבה**, ⛔ ולא תופעת לוואי. */}
       {header}
 
       {/* `:126-134` — הכן ושתי האליפסות תחתיו, והדמות ב-idle מעליהן.
@@ -360,8 +370,22 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           {GEAR_HEADING_HE}
         </p>
         {/* ⚠️ `flex` רגיל (`T-338`) — `רגליים` נמדדה `x=48` ו-`גוף` `x=270`, כלומר סדר
-            התאים היה הפוך לשפה. */}
-        <ul className="flex justify-between gap-2" data-rtl-row="gear-slots">
+            התאים היה הפוך לשפה.
+
+            📐 **T-342 · `D-244`ⓐ · סוגר את `F-246`ⓐ — הרצועה עוטפת, ⛔ ואינה נחתכת.**
+            ⛔ **המדידה, C-0596 חי ב-Chromium 320×780:** ה-`ul` היה `x=48` ברוחב **224**
+            ותוכנו **288** (`4×66 + 3×8`) ⇒ עודף **64px**, והתא הרביעי (`גוף`) ישב
+            `x=-16`. ⇒ הלומד ראה **שלושה תאים ורבע** ו⛔ אף רמז שיש רביעי.
+            ⛔ **ושתי החלופות פסולות במספר** (`D-244`): תא 52px משאיר 4px בין שני יעדי
+            מגע, ומרווח 0 מאחד ארבעה יעדים לרצועה אחת. ⇒ נשאר לעטוף.
+            ⛔ **`max-w-[140px]` = `2×66 + 8`, ⛔ ולא מספר עגול שנבחר:** בדיוק שני תאים
+            ומרווח ⇒ 2×2 מתחת ל-375, ומ-375 ומעלה `min-[375px]:max-w-none` משחרר את
+            התקרה ל-327 הפנויים ⇒ שורה אחת של ארבעה, כמו הרנדר.
+            ⛔ **ו-`justify-between` יצא:** ב-327 הוא היה פורש את שלושת המרווחים ל-21px,
+            בעוד `render_video_B.py:168` מצייר `x = LW-24-sw - i*(sw+8)` — מרווח **8**
+            קבוע, והרצועה צמודה לימין (`63..351`). ברירת המחדל של `flex` ב-RTL היא
+            בדיוק זה. */}
+        <ul className="flex flex-wrap gap-2 max-w-[140px] min-[375px]:max-w-none" data-rtl-row="gear-slots">
           {slots.map((slot) => (
             <li
               key={slot.slot}
@@ -428,8 +452,11 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
             </h2>
             <p className="text-xs leading-none text-[color:var(--arena-gold-light)]">{DRAWER_NOTE_HE}</p>
           </div>
-          {/* ⚠️ `flex` רגיל (`T-338`) — אותם ארבעה תאים כמו למעלה, אותו ציר. */}
-          <ul className="flex justify-between gap-2" data-rtl-row="drawer-slots">
+          {/* ⚠️ `flex` רגיל (`T-338`) — אותם ארבעה תאים כמו למעלה, אותו ציר.
+              📐 **T-342 — ו⛔ אותה נוסחת עטיפה בדיוק.** `D-244`ⓐ נוקבת בשתי הרצועות
+              בשמן: אותם ארבעה תאים ב-66px, ולכן אותה תקרה. ⛔ רצועה אחת שתוקנה והשנייה
+              לא הייתה משאירה את אותו פגם במסך אחד למטה. */}
+          <ul className="flex flex-wrap gap-2 max-w-[140px] min-[375px]:max-w-none" data-rtl-row="drawer-slots">
             {slots.map((slot) => (
               <li
                 key={slot.slot}

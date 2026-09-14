@@ -162,6 +162,7 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     expect(handles).toHaveLength(5);
     expect(new Set(handles).size).toBe(5);
   });
+
   /**
    * ↩️ **T-345 · `F-250` — החץ יושב ב-`start` ומצביע ימינה.**
    * ⛔ שתי טענות ו⛔ לא אחת, כי שתי הטעויות היו בלתי-תלויות: **הצד** (`end-1`, שהוא
@@ -199,4 +200,23 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     expect(row.indexOf('{DESIGN_HE}')).toBeLessThan(row.indexOf('{DRAWER_HE}'));
   });
 
+  /**
+   * 📐 **T-342 · `D-244`ⓐ · `F-246`ⓐ — ארבעת התאים עוטפים, ⛔ ולא נחתכים.**
+   * `D-244` פסלה **במספר** את שתי החלופות: תא 52px משאיר 4px בין שני יעדי מגע,
+   * ומרווח 0 מאחד ארבעה יעדים לרצועה אחת. ⇒ נשאר לעטוף.
+   * ⛔ **ו-`max-w-[140px]` ⛔ אינו מספר שרירותי:** `2×66 + 8` — בדיוק שני תאים ומרווח,
+   * כלומר 2×2 מתחת ל-375 ⇒ שורה אחת של ארבעה מ-375 ומעלה, שם `min-[375px]:max-w-none`
+   * משחרר את התקרה.
+   */
+  it('T-342 — שתי רצועות התאים עוטפות, ושתיהן באותה נוסחה', () => {
+    const rows = SRC_RTL.match(/className="[^"]*" data-rtl-row="(?:gear|drawer)-slots"/g) ?? [];
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row).toContain('flex-wrap');
+      expect(row).toContain('max-w-[140px]');
+      expect(row).toContain('min-[375px]:max-w-none');
+      // ⛔ `justify-between` פרש את המרווחים ל-21px ב-375; הרנדר מצייר 8 קבוע.
+      expect(row).not.toContain('justify-between');
+    }
+  });
 });
