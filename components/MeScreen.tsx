@@ -3,13 +3,22 @@
 /**
  * The body of the אני tab — progress, the primary continue action, the
  * attribution link, and the way out. T-145 (D-079): ⛔ no session read and no
- * data access of its own beyond the ONE call this file owns — `GET
- * /api/levels/summary` through `apiGet` (lib/api/client.ts), the same route
- * and the same pattern `<StudiesScreen>` and `<LevelMapScreen>` already use.
+ * data access of its own beyond the TWO calls this file owns — `GET
+ * /api/levels/summary` and `GET /api/profile` through `apiGet`
+ * (lib/api/client.ts), the same routes and the same pattern `<StudiesScreen>`
+ * and `<LevelMapScreen>` already use.
+ *
+ * 🔴 **T-334 — the second of those two calls arrived this tick, and with it the
+ * goal and the counted figure.** Both used to be handed in as props by
+ * `app/(tabs)/me/page.tsx`, which read them on the server; that made `/me` the
+ * last of the five tabs still rendered per-navigation (`ƒ /me` in `npm run
+ * build`, against `○` for the other four). ⛔ The page is a three-line static
+ * component now, and the read is this file's.
  *
  * `wordsLearned` is `null` when the read failed — ⛔ never `0`. A failed read
  * and a learner who has learned nothing look identical on screen, and only one
- * of them is true.
+ * of them is true. ⇒ and since the read is CLIENT-side now there is a third
+ * state, "in flight", which is ⛔ neither of those two: see `ProfileState`.
  *
  * ⛔ No readiness estimate and ⛔ no predicted score (§ 4.2ב question 4 · 4.4.3)
  * — neither has a measurement behind it. ⛔ No `<ActionBar>`: D-028 forbids two
@@ -53,6 +62,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import MeWordsLearned from '@/components/MeWordsLearned';
+import MeWordsLearnedSkeleton from '@/components/MeWordsLearnedSkeleton';
 import { apiGet } from '@/lib/api/client';
 import type { CefrBand } from '@/lib/core/cefrLevels';
 import type { LevelSummary } from '@/lib/core/levelSummary';
@@ -88,43 +99,78 @@ type LevelsResponse =
   | { readonly ok: true; readonly level: CefrBand | null; readonly levels?: readonly LevelSummary[] }
   | { readonly ok: false; readonly code: string };
 
+/** The body of `GET /api/profile` — see `docs/api-contract.md`. */
+type ProfileResponse =
+  | { readonly ok: true; readonly goal: LearnerGoal; readonly wordsLearned: number | null }
+  | { readonly ok: false; readonly code: string };
+
+/**
+ * 🔴 **T-334 — THREE states, and folding any two of them is a lie on the screen.**
+ * ⓐ `'loading'` — in flight. The counted figure renders as its reserved box, so its
+ *   arrival moves ⛔ nothing (`ui-ux-pro-max` `ux-guidelines` Layout › **Content
+ *   Jumping**, Severity **High**);
+ * ⓑ `'ready'` with a number — including `0`, a learner who has ⛔ not learned
+ *   anything yet;
+ * ⓒ `'ready'` with `wordsLearned: null` — the read FAILED, which
+ *   `<MeWordsLearned>` answers with a Hebrew sentence and a retry.
+ *
+ * ⛔ **Why a union and ⛔ not just `number | null`:** ⓐ and ⓒ would then be the same
+ * value. A skeleton that resolved to `null` tells a learner their data is broken
+ * while it is still in flight; a `0` painted while loading is a number nobody
+ * measured. T-301 established that ⓑ and ⓒ are two different facts — ⓐ is a third.
+ */
+type ProfileState =
+  | { readonly status: 'loading' }
+  | { readonly status: 'ready'; readonly goal: LearnerGoal; readonly wordsLearned: number | null };
+
+/**
+ * § 4.2ד, the failed-read shape: three `null`s, which renders as **no goal block at
+ * all** — the same honest silence the count's own `null` branch uses. ⛔ Nothing is
+ * invented to fill it (4.4.3).
+ */
+const EMPTY_GOAL: LearnerGoal = { institution: null, targetScore: null, examDate: null };
+
 export default function MeScreen({
-  wordsLearnedSlot,
-  goal,
+  fixtureGoal,
+  fixtureWordsLearned,
   fixtureLevels,
   fixtureLevel,
 }: {
-  // T-301. The counted figure, already rendered — `<MeWordsLearned>` on its own,
-  // or a `<Suspense>` wrapping it. ⛔ A node and ⛔ not a number: the count is the
-  // one value on this tab that waits on the network, and a value cannot stream
-  // into a client component through a prop. `app/(tabs)/me/page.tsx` owns the read
-  // and the boundary; `/dev/tabs/me` passes the component with a fixed sample, so
-  // the two still render the SAME markup (F-027 cause 2).
-  // ⚠️ `//` and ⛔ not a `/** */` block, and the reason is measured ⛔ not stylistic:
-  // every source guard in this repo strips comments with
-  // `/\{\s*\/\*[\s\S]*?\*\/\s*\}/`, and a JSDoc block as the FIRST token inside
-  // `}: {` lets that pattern anchor on the brace and swallow the props to the next
-  // `*/ }` — measured here: 12,943 chars ⇒ 4,374, taking `goal: LearnerGoal`,
-  // `apiGet<` and `primaryStudyTrack(` out of the string the guards assert on.
-  // The stripper is the defect (row opened this tick); this comment style is what
-  // keeps THIS file's guards honest until it is fixed.
-  readonly wordsLearnedSlot: React.ReactNode;
-  goal: LearnerGoal;
   /**
-   * Harness-only override, exactly `<StudiesScreen>`'s `fixtureLevels` (T-210):
+   * Harness-only override, exactly `fixtureLevels`' contract below (T-210):
    * ⛔ no product screen passes these — `app/(tabs)/me/page.tsx` renders
-   * `<MeScreen>` bare, and only `/dev/tabs/me` supplies fixed values so
-   * geometry is measured without Supabase env or a live network read.
+   * `<MeScreen />` bare and this component reads `GET /api/profile` itself, and
+   * only `/dev/tabs/me` supplies fixed values so geometry is measured without
+   * Supabase env or a live network read (TD-13 · F-027 cause 1).
+   *
+   * ⚠️ **T-334 — this used to be `goal: LearnerGoal`, a REQUIRED prop, and one
+   * `wordsLearnedSlot: React.ReactNode`.** The slot existed for exactly one reason
+   * (T-301: a value cannot stream into a client component through a prop, so the
+   * server handed over a rendered node instead), and that reason is gone with the
+   * server read. ⛔ The type did ⛔ not loosen: what the block renders is still a
+   * `LearnerGoal` — three nullable fields, ⛔ nothing computed from them.
+   */
+  readonly fixtureGoal?: LearnerGoal;
+  /** Harness-only, as above. `null` is a legitimate fixture: it is the failed-read state. */
+  readonly fixtureWordsLearned?: number | null;
+  /**
+   * Harness-only override, exactly `<StudiesScreen>`'s `fixtureLevels` (T-210).
    */
   readonly fixtureLevels?: readonly LevelSummary[];
   readonly fixtureLevel?: CefrBand | null;
-}): React.JSX.Element {
-  const fixtureGiven = fixtureLevels !== undefined;
+} = {}): React.JSX.Element {
+  const fixtureLevelsGiven = fixtureLevels !== undefined;
+  const fixtureProfileGiven = fixtureGoal !== undefined;
   const [levels, setLevels] = useState<readonly LevelSummary[] | null>(fixtureLevels ?? null);
   const [activeLevel, setActiveLevel] = useState<CefrBand | null>(fixtureLevel ?? null);
+  const [profile, setProfile] = useState<ProfileState>(
+    fixtureGoal === undefined
+      ? { status: 'loading' }
+      : { status: 'ready', goal: fixtureGoal, wordsLearned: fixtureWordsLearned ?? null },
+  );
 
   useEffect(() => {
-    if (fixtureGiven) return;
+    if (fixtureLevelsGiven) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -147,9 +193,46 @@ export default function MeScreen({
     return () => {
       cancelled = true;
     };
-    // `fixtureGiven` only — a fixture cannot start `true` and become `false` mid-life.
+    // `fixtureLevelsGiven` only — a fixture cannot start `true` and become `false` mid-life.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fixtureGiven]);
+  }, [fixtureLevelsGiven]);
+
+  /**
+   * 🔴 **T-334 — the read that used to sit in `app/(tabs)/me/page.tsx`.** A SECOND
+   * effect and ⛔ not a line added to the first: the two endpoints are independent,
+   * so they fly in parallel and neither one's failure blanks the other's block.
+   *
+   * ⛔ Every failure branch lands on `'ready'` with `wordsLearned: null` and an
+   * empty goal — ⛔ never back on `'loading'`. A screen parked on a skeleton is a
+   * screen that never tells the learner anything went wrong.
+   */
+  useEffect(() => {
+    if (fixtureProfileGiven) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const body = await apiGet<ProfileResponse>('/api/profile');
+        if (cancelled) return;
+        setProfile(
+          body.ok
+            ? { status: 'ready', goal: body.goal, wordsLearned: body.wordsLearned }
+            : { status: 'ready', goal: EMPTY_GOAL, wordsLearned: null },
+        );
+      } catch {
+        if (!cancelled) setProfile({ status: 'ready', goal: EMPTY_GOAL, wordsLearned: null });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // `fixtureProfileGiven` only — a fixture cannot start `true` and become `false` mid-life.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixtureProfileGiven]);
+
+  // ⛔ The block below reads `goal` exactly as it did when it was a prop — § 4.2ד's
+  // rule ("מוסד ריק וגם ציון ריק → הבלוק אינו מוצג") is unchanged, and while the
+  // read is in flight the three fields are `null`, which is that same rule.
+  const goal = profile.status === 'ready' ? profile.goal : EMPTY_GOAL;
 
   const primaryTrack = levels === null ? null : primaryStudyTrack(levels);
   const activeSummary =
@@ -159,14 +242,17 @@ export default function MeScreen({
     <section className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold leading-tight">{HEADING_HE}</h1>
 
-      {/* T-301. The counted figure, handed in as a slot so its Supabase round
-          trip can resolve inside its own `<Suspense>` instead of holding this
-          whole column back. The markup of both its states is
-          `<MeWordsLearned>`; the reserved box it resolves into is
-          `<MeWordsLearnedSkeleton>`. ⛔ This component decides ⛔ nothing about
-          the number any more — including the `null` failure branch, which moved
-          out WITH its guards. */}
-      {wordsLearnedSlot}
+      {/* 🔴 **T-334.** The counted figure, read by this component and rendered in one
+          of its THREE states — see `ProfileState`. ⛔ The markup of the two resolved
+          ones is still `<MeWordsLearned>`'s (the number, and the Hebrew failure
+          sentence with a retry), and the reserved box is still
+          `<MeWordsLearnedSkeleton>` — the SAME file `app/(tabs)/me/loading.tsx`
+          renders. ⛔ This component redefines ⛔ neither of them. */}
+      {profile.status === 'loading' ? (
+        <MeWordsLearnedSkeleton />
+      ) : (
+        <MeWordsLearned wordsLearned={profile.wordsLearned} />
+      )}
 
       {/* T-145ⓑ. The learner's one way forward from their own tab — see the
           file header for why the track name is derived and why this block

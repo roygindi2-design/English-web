@@ -2,11 +2,15 @@
  * T-300 — the skeleton for אני, shaped like `<MeScreen>`.
  * The reasoning for the per-tab boundary lives in `app/(tabs)/cards/loading.tsx`.
  *
- * ⚠️ This tab is the one that actually waits: `page.tsx` is `force-dynamic` and runs
- * `supabase.auth.getUser()` before it renders anything — the F-003 lesson, that one lock
- * on one door is a single point of failure — and then counts `word_progress`. ⛔ Neither
- * is removed and ⛔ neither should be; this boundary is what makes the wait legible
- * instead of blank.
+ * 🔴 **T-334 — and what this tab waits for CHANGED, so this note had to.** It used to
+ * say `page.tsx` is `force-dynamic` and awaits `supabase.auth.getUser()` before
+ * rendering anything. ⛔ That is no longer true: the page is static (`○ /me`) and both
+ * reads moved to `GET /api/profile` and `GET /api/levels/summary`, which `<MeScreen>`
+ * fetches itself. ⇒ this boundary now covers the route segment's own load, and the
+ * WAIT FOR DATA is covered inside the component — by this very skeleton, as its
+ * in-flight state. ⛔ Neither gate was removed with the read: `proxy.ts` holds
+ * `/me` in `PROTECTED_SCREENS` and the endpoint checks the session itself (F-003,
+ * two locks on two different doors).
  *
  * ⚠️ **T-301ⓒ:** the counted figure's box is now `<MeWordsLearnedSkeleton>`, because
  * the route streams that figure on its own and needs the identical shape as its

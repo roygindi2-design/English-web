@@ -112,3 +112,111 @@ describe('the institution column is no longer written (D-056 · T-111)', () => {
     expect(section).toContain('institution');
   });
 });
+
+/**
+ * 🧪 **T-334 — `GET /api/profile`, the read that moved OFF the page.**
+ *
+ * 🔬 **The measurement that opened the row, ⛔ not a guess:** `npm run build` after
+ * T-328 printed `○ /cards` · `○ /world` · `○ /settings` · `○ /studies` against
+ * **`ƒ /me`** — four tabs of five served from the edge and one ⛔ not. `/me` was the
+ * last tab still doing a Supabase round trip in the server before a pixel of
+ * content was drawn, and the reason was this exact read: the three goal columns
+ * plus the count of mastered words.
+ *
+ * ⇒ the read is an endpoint now, and `<MeScreen>` fetches it itself — the pattern
+ * `<StudiesScreen>` and `<LevelMapScreen>` already use.
+ *
+ * ⛔ **AND THE GUARDS BELOW ARE ⛔ NOT NEW — THEY MOVED HERE WITH THE READ.** They
+ * were written in C-0073/C-0075 against `app/(tabs)/me/page.tsx` and lived in
+ * `app/(tabs)/me/page.test.ts` until this tick. ⛔ Not one was dropped: the file
+ * that performs the read is the file that has to answer for it (the same move
+ * C-0075 made when the markup went to `components/MeScreen.tsx`).
+ */
+describe('GET /api/profile — the goal and the count (T-334)', () => {
+  it('exists as a GET, ⛔ and ⛔ not as a second POST branch', () => {
+    expect(CODE).toMatch(/export async function GET\(/);
+  });
+
+  /**
+   * ⛔ Moved from `app/(tabs)/me/page.test.ts` — "checks the session itself and
+   * does not rely on proxy.ts alone (F-003)". The page's `createRouteClient` read
+   * WAS the server round trip, so it could not stay; the second lock on the
+   * second door did ⛔ not evaporate with it — it is this route, exactly as
+   * `GET /api/levels/summary` is the second lock for `/studies` and `/cards`.
+   */
+  it('checks the session itself and answers session_expired (F-003, the second door)', () => {
+    expect(CODE).toContain('createRouteClient');
+    expect(CODE).toMatch(/code:\s*'session_expired'/);
+  });
+
+  /** ⛔ Moved from `me/page.test.ts` — "selects the three goal columns from profiles". */
+  it('selects the three goal columns from profiles', () => {
+    expect(CODE).toContain("from('profiles')");
+    const selectArg = CODE.match(/from\('profiles'\)[\s\S]{0,200}?\.select\(([^)]*)\)/)?.[1] ?? '';
+    for (const column of ['institution', 'target_score', 'exam_date']) {
+      expect(selectArg, `${column} is not in the select() the route sends`).toContain(column);
+    }
+  });
+
+  /**
+   * ⛔ Moved from `me/page.test.ts` — "reads the progress number from
+   * word_progress and does not compute one". Mastery is the definition of
+   * "learned" (D-010 · `lib/core/progress.ts`); counting every `word_progress`
+   * row would report a word seen once as a word learned.
+   */
+  it('counts mastery in word_progress and ⛔ computes nothing', () => {
+    expect(CODE).toContain('word_progress');
+    expect(CODE).toContain('mastered_at');
+    // `head: true` — the count is the whole answer, so ⛔ no rows cross the wire.
+    expect(CODE).toMatch(/count:\s*'exact',\s*head:\s*true/);
+  });
+
+  /**
+   * 🔴 ⛔ Moved from `me/page.test.ts` — "hands the component null on a failed
+   * read, ⛔ never a zero", and it is the one guard on this row that ⛔ cannot be
+   * allowed to soften. `wordsLearned === null` (the read failed) and `0` (a
+   * learner who has not learned anything yet) are **two different facts**, and
+   * folding them into one is a lie on the learner's own screen. `count ?? 0`
+   * applies ⛔ ONLY on the success branch.
+   */
+  it('answers null on a failed count, ⛔ never a zero (T-301 · T-334)', () => {
+    expect(CODE).toMatch(/\?\s*null\s*:\s*\(?count\s*\?\?\s*0/);
+  });
+
+  /**
+   * The row's own wording: "עם `session_expired` ו-`schema_missing` כמו שאר
+   * הנתיבים". `42703` (undefined column) is the EXPECTED state until a migration
+   * runs in production — a generic 503 "try again" would describe it as
+   * temporary, which it is not (`GET /api/levels/summary` carries the same list).
+   */
+  it('separates a missing schema from a transient failure, like the other routes', () => {
+    expect(CODE).toContain('schema_missing');
+    for (const code of ['42P01', 'PGRST205', '42703', 'PGRST204']) {
+      expect(CODE, `${code} is not in the missing-schema list`).toContain(code);
+    }
+  });
+
+  /**
+   * ⚠️ The two reads are independent — both need only `user.id` — and this row
+   * exists because of latency. Sequential awaits would replace one server round
+   * trip with two, i.e. hand back most of what moving the read off the page won.
+   */
+  it('runs the two reads in parallel, ⛔ not one after the other', () => {
+    expect(CODE).toContain('Promise.all');
+  });
+
+  /** RULES, Dev § 5: the contract moves in the SAME commit as the endpoint. */
+  it('is documented in the contract, in the same commit', () => {
+    const start = CONTRACT.indexOf('## GET /api/profile');
+    expect(start, 'the GET section is missing from docs/api-contract.md').toBeGreaterThan(-1);
+    const rest = CONTRACT.slice(start + 1);
+    const end = rest.indexOf('\n## ');
+    const section = end === -1 ? rest : rest.slice(0, end);
+    expect(section).toContain('wordsLearned');
+    expect(section).toContain('session_expired');
+    expect(section).toContain('schema_missing');
+    // The null/zero distinction is the one thing a reader of this contract must
+    // ⛔ not have to infer from the code.
+    expect(section).toContain('null');
+  });
+});

@@ -293,6 +293,19 @@ describe('the tab fixtures render what the real tab screens render (F-027 cause 
       real: 'app/(tabs)/me/page.tsx',
       fixture: 'app/dev/tabs/me/page.tsx',
       component: 'MeScreen',
+      // 🔴 **T-334 — `/me` moved to the SECOND gate, and this line is that move
+      // recorded.** It was the LAST tab of the five still holding its own
+      // `createRouteClient` read, and that read was ⛔ not defence in depth on a
+      // static page — it was the server round-trip itself, running before a
+      // single pixel of content was drawn (`ƒ /me` in `npm run build`, against
+      // `○` for the other four). ⇒ the page is now shaped exactly like
+      // `/studies` and `/cards` above, both MEASURED redirecting 307.
+      // ⚠️ And the assertion did ⛔ not weaken: `sessionGated` turns the loose
+      // `/createRouteClient/` match into `PROTECTED_SCREENS` **plus** a literal
+      // check that `'/me'` is in that list — i.e. it now names the gate. The
+      // second lock on the second door is `GET /api/profile`, which checks the
+      // session itself (`app/api/profile/route.test.ts`).
+      sessionGated: 'proxy.ts',
     },
   ];
 

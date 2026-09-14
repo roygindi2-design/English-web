@@ -1,5 +1,4 @@
 import MeScreen from '@/components/MeScreen';
-import MeWordsLearned from '@/components/MeWordsLearned';
 import TabBar from '@/components/TabBar';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 
@@ -7,11 +6,22 @@ import type { LevelSummary } from '@/lib/core/levelSummary';
  * Layout harness for check:mobile. NOT a product screen and NOT linked from
  * anywhere.
  *
- * TD-13 · F-027 cause 1: `/me` reads the session and the learner's own rows, so
- * without Supabase env it answers 307 and the harness would silently measure the
- * login screen instead. This fixture is `app/(tabs)/me/page.tsx` minus the
- * session gate, rendering the same `<MeScreen>` component so the two cannot
- * drift (F-027 cause 2).
+ * TD-13 · F-027 cause 1: `/me` is session-gated in `proxy.ts`, so without Supabase
+ * env it answers 307 and the harness would silently measure the login screen
+ * instead. This fixture renders the same `<MeScreen>` component the real route
+ * renders, so the two cannot drift (F-027 cause 2) — with every network read
+ * replaced by a fixed value.
+ *
+ * ⚠️ **T-334 — and "minus the session gate" is no longer what makes it a fixture.**
+ * The page carried a Supabase route client of its own until this tick; it is static
+ * now, and what makes the REAL route unmeasurable is `proxy.ts`'s `PROTECTED_SCREENS`
+ * plus `GET /api/profile`'s own session check. ⇒ the fixture's job is to stand in for
+ * the FETCHES, ⛔ not for a gate the page no longer holds.
+ *
+ * ⛔ **And the name of that client is deliberately ⛔ not written in this file** —
+ * `scripts/verify-mobile.test.ts` and `components/MeScreen.test.ts` both assert this
+ * fixture ⛔ does not contain it, as a literal string over the whole source. A guard
+ * that a comment can break is a guard that gets deleted; measured here this tick.
  *
  * ⚠️ `<TabBar />` is named here because the fixture lives OUTSIDE `app/(tabs)`
  * and therefore does not inherit the route group's layout.
@@ -53,9 +63,16 @@ const SAMPLE_GOAL = {
 export default function DevTabsMePage() {
   return (
     <>
+      {/* 🔴 **T-334 — FOUR overrides, ⛔ not two.** `<MeScreen>` now makes two fetches
+          of its own (`/api/levels/summary` and `/api/profile`), and a fixture that
+          fixed only the first would have `check:mobile` measuring this screen with a
+          live, failing profile read — i.e. measuring the FAILURE state and calling it
+          the screen. ⛔ `wordsLearnedSlot` and `goal` are gone with the server read
+          (T-301's reason for the slot went with it); these are the same fixed values
+          under the harness-only names. */}
       <MeScreen
-        wordsLearnedSlot={<MeWordsLearned wordsLearned={SAMPLE_WORDS_LEARNED} />}
-        goal={SAMPLE_GOAL}
+        fixtureGoal={SAMPLE_GOAL}
+        fixtureWordsLearned={SAMPLE_WORDS_LEARNED}
         fixtureLevels={FIXTURE_LEVELS}
         fixtureLevel="A1"
       />

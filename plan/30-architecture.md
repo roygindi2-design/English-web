@@ -2650,3 +2650,83 @@ static therefore needs a `GET /api/profile` that ⛔ does not exist — that rou
 and the fixture. ⇒ a second conversion that **adds API surface**, ⛔ not the tail of this
 one. The row was written as one 30–60 minute task and is two; that is recorded on the
 `T-328` row rather than absorbed silently.
+
+## C-0592 (DEV) — `T-334` — `אני` leaves the server, and the count gains a THIRD state
+
+🔬 **The measurement that opened the row, ⛔ not a feeling.** `npm run build` after
+`T-328` printed `○ /cards` · `○ /world` · `○ /settings` · `○ /studies` against
+**`ƒ /me`** ⇒ **four tabs of five from the edge, and one ⛔ not.** `/me` awaited **two**
+Supabase reads before a pixel of content was drawn: three goal columns from `profiles`,
+and the count of `word_progress.mastered_at`.
+
+**What moved:** both reads, into a new **`GET /api/profile`** — the route held `POST`
+alone until this tick. `app/(tabs)/me/page.tsx` is now the shape `/studies` and `/cards`
+have: a **synchronous** component render, ⛔ no `force-dynamic`, ⛔ no `next/headers`,
+⛔ no `createRouteClient`, ⛔ no `<Suspense>`. `<MeScreen>` fetches both endpoints itself
+through `apiGet`, the pattern `<StudiesScreen>` and `<LevelMapScreen>` already use.
+
+⚠️ **`Promise.all` in the route, ⛔ and not two sequential awaits.** Both reads need only
+`user.id`. This row exists **because of latency**; replacing one server round-trip with
+two would have handed most of the win straight back.
+
+🔴 **The part worth writing down ①: it looks like a removed guard and is ⛔ not one.**
+The `getUser()` in that page was ⛔ **never** the second lock of the F-003 lesson — it was
+**a third lock on the same door**, and its price was the learner's whole wait. Both locks
+the lesson demands are untouched:
+```
+① proxy.ts          PROTECTED_SCREENS holds '/me', and ⛔ fails CLOSED with no env
+② GET /api/profile  checks the session itself and answers `session_expired` (401)
+```
+⚠️ **Measured live on `next start`, ⛔ not argued:** `/me` ⇒ **307 → `/login?expired=1`**,
+and `GET /api/profile` with no env ⇒ **503 `{"ok":false,"code":"unavailable"}`**.
+
+🔴 **The part worth writing down ②: `T-301`'s distinction did ⛔ not survive unchanged —
+it GREW, and that was forced by the move.** On the server the count had two states, and
+`<Suspense>` carried the third implicitly. A client fetch has no boundary to hide behind,
+so the third became explicit:
+```
+'loading'                      ⇒ <MeWordsLearnedSkeleton />   ⇐ the reserved box
+'ready', wordsLearned = 0      ⇒ a learner who has ⛔ not learned anything yet
+'ready', wordsLearned = null   ⇒ the read FAILED — Hebrew sentence + «נסה שוב»
+```
+⛔ **Folding ANY two of them is a lie on the learner's own screen**, and `number | null`
+alone would have folded «in flight» into «failed». ⇒ `ProfileState` is a discriminated
+union and ⛔ not a nullable number. ⛔ The markup of both resolved states still belongs to
+`<MeWordsLearned>`, and the reserved box is still the one file `loading.tsx` renders.
+
+⚠️ **And the failure path was WALKED, ⛔ not reasoned about.** A temporary harness
+rendering `<MeScreen />` un-fixtured (deleted in the same tick) measured: `aria-busy` **0**
+⇒ the screen **leaves** the skeleton rather than parking on it forever, 10 tappable (the
+retry added), «לא הצלחנו לטעון את הנתונים כרגע.» + «נסה שוב», and the goal block
+**hidden** — § 4.2ד's honest silence, ⛔ not three invented nulls on screen.
+
+**Measured after:** `npm run build` prints **`○ /me`** ⇒ **all five tabs are `○`**, which
+also closes `T-328`'s success measure ⓐ. Walk at 375×780 on `/dev/tabs/me` — «אני» ·
+314 chars · 9 tappable · **0 under 44px** · **0 horizontal scroll** (`scrollWidth`
+=`clientWidth`=375) · `dir=rtl` · **0 console errors** · one primary action. Layout,
+order, strings and finish ⛔ untouched: this row moved a fetch, ⛔ not a screen.
+
+⚠️ **The props changed, and the harness had to grow with them.** `wordsLearnedSlot`
+(a required `ReactNode`) and `goal` (a required `LearnerGoal`) are gone — `T-301`'s reason
+for the slot went with the server read. `fixtureGoal` / `fixtureWordsLearned` replace
+them, harness-only, exactly `fixtureLevels`' contract. 🔴 **A fixture that fixed only the
+levels fetch would have left `check:mobile` measuring the screen's FAILURE state and
+calling it the screen** — so `/dev/tabs/me` now overrides **both** fetches, and
+`MeScreen.test.ts` asserts every fetch effect bails out on its fixture.
+
+⚠️ **`scripts/verify-mobile.test.ts` moved with it, and the assertion TIGHTENED**, exactly
+as `T-328` did for `/studies`: the `me` case carries `sessionGated: 'proxy.ts'`, swapping a
+loose `/createRouteClient/` match for `PROTECTED_SCREENS` **plus** a literal check that
+`'/me'` is in that list. `TD-13` is untouched.
+
+⛔ **And ⛔ no guard was dropped.** The read's guards moved to the file that now performs
+the read (`app/api/profile/route.test.ts`: the three columns · `word_progress` ·
+`mastered_at` · `head: true` · `null` ⛔ and never `0`), and the reserved-box guard moved
+to `components/MeScreen.test.ts`, which now owns the boundary. That is the same move
+`C-0075` made when the markup left the page.
+
+🔬 **One small thing measured on the way, ⛔ and recorded because it will recur.** The
+fixture guard is a **literal string** assertion over the whole file, comments included ⇒
+a comment in `app/dev/tabs/me/page.tsx` that merely *named* the Supabase route client
+turned the guard red. The guard is right and the comment was reworded; the file now says
+so in place, so the next agent does not "fix" the test.

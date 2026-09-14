@@ -70,29 +70,70 @@ describe('<MeScreen> — the learner tab body (T-051 · § 4.2ב)', () => {
   });
 
   /**
-   * T-301. The counted figure and its failure branch moved to
-   * `<MeWordsLearned>` so the route can stream it inside its own `<Suspense>`.
-   * ⛔ The guards moved WITH it — `components/MeWordsLearned.test.ts` — exactly as
-   * they moved out of `page.tsx` in C-0075. What this file still owns is the fact
-   * that the slot is RENDERED here, and that this component decides ⛔ nothing
-   * about the number: a slot quietly dropped would leave the tab with no count at
-   * all and every other guard here would still pass.
+   * 🔴 **T-334 — the slot is gone, and what replaced it is a THIRD state.**
+   * T-301 handed the counted figure in as a `ReactNode` for one reason: the value
+   * came from the server, and a value cannot stream into a client component
+   * through a prop. The read is `GET /api/profile` now, so this component fetches
+   * it itself — and the `<Suspense>` boundary that used to reserve its space is
+   * this component's own in-flight state.
+   *
+   * ⛔ **The markup of both resolved states still belongs to `<MeWordsLearned>`**
+   * (its guards stay in `components/MeWordsLearned.test.ts`) and the reserved box
+   * is still `<MeWordsLearnedSkeleton>` — the SAME file `app/(tabs)/me/loading.tsx`
+   * renders. ⛔ Two hand-copied skeletons would be two shapes the day one is edited.
    */
-  it('renders the counted figure as a slot and ⛔ decides nothing about it (T-301)', () => {
-    expect(CODE).toContain('{wordsLearnedSlot}');
-    expect(CODE).toMatch(/readonly wordsLearnedSlot:\s*React\.ReactNode/);
-    // ⛔ No second definition of either state left behind here.
-    expect(CODE).not.toContain('wordsLearned === null');
+  it('renders the counted figure itself and ⛔ redefines neither of its states (T-334)', () => {
+    expect(CODE).toContain('<MeWordsLearned');
+    // ⛔ No second definition of either resolved state left behind here.
     expect(CODE).not.toContain('FAILURE_HE');
     expect(CODE).not.toContain('מילים שנלמדו');
+  });
+
+  /**
+   * 🔴 **THE THREE STATES, and folding any two of them is a lie on the screen.**
+   * ⓐ in flight ⇒ the reserved box, so the number's arrival moves ⛔ nothing
+   *   (`ui-ux-pro-max` `ux-guidelines` Layout › Content Jumping, Severity High);
+   * ⓑ `wordsLearned === 0` ⇒ a learner who has ⛔ not learned anything yet;
+   * ⓒ `wordsLearned === null` ⇒ the read FAILED.
+   * ⛔ ⓑ and ⓒ are two different facts (T-301), and ⓐ is a third — a skeleton that
+   * resolved to `null` would tell a learner their data is broken while it is still
+   * in flight, and a `0` painted while loading is a number nobody measured.
+   */
+  it('keeps loading · zero · failed as THREE states, ⛔ never two (T-301 · T-334)', () => {
+    expect(CODE).toContain('MeWordsLearnedSkeleton');
+    // The tri-state is carried explicitly, ⛔ not smuggled through `null`.
+    expect(CODE).toMatch(/status:\s*'loading'/);
+    expect(CODE).toMatch(/status:\s*'ready'/);
+    // ⛔ And `null` is ⛔ never rewritten to `0` on the way to the figure.
+    expect(CODE).not.toMatch(/wordsLearned\s*\?\?\s*0/);
+  });
+
+  /**
+   * T-334ⓒ — the same skeleton file `app/(tabs)/me/loading.tsx` renders. This guard
+   * moved here from `app/(tabs)/me/page.test.ts` (T-301ⓒ) with the boundary it
+   * describes: the route no longer owns a `<Suspense>` fallback, this component does.
+   */
+  it("reserves the number's space with the SAME skeleton loading.tsx uses (T-301ⓒ)", () => {
+    expect(CODE).toContain('<MeWordsLearnedSkeleton />');
+    expect(readFileSync('app/(tabs)/me/loading.tsx', 'utf8')).toContain('MeWordsLearnedSkeleton');
   });
 
 });
 
 describe('the "המטרה שלך" block (T-003 · § 4.2ד)', () => {
-  it('takes the goal as a required prop, so a caller cannot forget it', () => {
-    expect(CODE).toMatch(/goal:\s*LearnerGoal/);
-    expect(CODE).not.toMatch(/goal\?:/);
+  /**
+   * 🔴 **T-334 — the goal is FETCHED now, ⛔ not handed in, and the type did ⛔ not
+   * loosen with it.** It was a required prop because a caller could forget it;
+   * there is no such caller any more — `app/(tabs)/me/page.tsx` renders
+   * `<MeScreen />` bare and this component reads `GET /api/profile`. What has to
+   * stay true is that whatever the block renders is still a `LearnerGoal`, i.e.
+   * three nullable fields and ⛔ nothing computed from them (4.4.3).
+   */
+  it('renders a LearnerGoal, ⛔ not a shape of its own invention', () => {
+    expect(CODE).toMatch(/LearnerGoal/);
+    // The harness override keeps the exact `fixtureLevels` shape (T-210): a
+    // fixture, ⛔ never a product path.
+    expect(CODE).toMatch(/fixtureGoal\?:\s*LearnerGoal/);
   });
 
   /**
@@ -125,33 +166,34 @@ describe('the "המטרה שלך" block (T-003 · § 4.2ד)', () => {
   });
 });
 
-describe('the /me route reads the goal it renders (F-027 cause 2)', () => {
+describe('T-334 — the goal is read through the API, ⛔ never by the page', () => {
   const page = readFileSync('app/(tabs)/me/page.tsx', 'utf8');
   const fixture = readFileSync('app/dev/tabs/me/page.tsx', 'utf8');
 
   /**
-   * ⚠️ The plan asserts `page.toContain(column)` for each of the three names.
-   * Measured: with the whole `.from('profiles')` read deleted and only the goal
-   * object left behind, `profile?.institution ?? null` still contains the word
-   * `institution`, so all three assertions pass over a screen that reads
-   * nothing. The columns are asserted inside the `select()` argument, which a
-   * deleted read cannot supply.
+   * ⛔ **The three-column read did ⛔ not disappear — it moved**, to
+   * `GET /api/profile`, and its guards moved with it to
+   * `app/api/profile/route.test.ts` ("selects the three goal columns from
+   * profiles" · "⛔ never turns a failed profile read into an invented goal").
+   * What this file asserts is the half that is visible from here: the page hands
+   * over ⛔ nothing, and the component asks for it itself.
    */
-  it('selects the three goal columns from profiles', () => {
-    expect(page).toContain("from('profiles')");
-    const selectArg = page.match(/from\('profiles'\)[\s\S]{0,200}?\.select\(([^)]*)\)/)?.[1] ?? '';
-    for (const column of ['institution', 'target_score', 'exam_date']) {
-      expect(selectArg, `${column} is not in the select() the screen sends`).toContain(column);
-    }
+  it('the page passes ⛔ no goal — the component fetches it (F-027 cause 2)', () => {
+    expect(page).not.toMatch(/goal=\{/);
+    expect(page).not.toContain("from('profiles')");
+    expect(CODE).toContain("apiGet<");
+    expect(CODE).toContain("'/api/profile'");
   });
 
-  it('passes a goal to the component, and so does the fixture', () => {
-    expect(page).toMatch(/goal=\{/);
-    expect(fixture).toMatch(/goal=\{/);
-  });
-
-  it('⛔ never turns a failed profile read into an invented goal', () => {
-    expect(page).toMatch(/institution:\s*(profile|null)/);
+  /**
+   * ⚠️ The fixture is the one caller that still supplies values, and that is the
+   * whole point of it: `/dev/tabs/me` measures geometry with ⛔ no Supabase env
+   * and ⛔ no live network read (TD-13 · F-027 cause 1).
+   */
+  it('the fixture supplies a fixed goal and a fixed count, ⛔ not a network read', () => {
+    expect(fixture).toMatch(/fixtureGoal=\{/);
+    expect(fixture).toMatch(/fixtureWordsLearned=\{/);
+    expect(fixture).not.toContain('createRouteClient');
   });
 });
 
@@ -199,5 +241,22 @@ describe('T-145 — «אני» מקבלת פעולה אמיתית (D-079 · § 4
     const fixture = readFileSync('app/dev/tabs/me/page.tsx', 'utf8');
     expect(fixture).toMatch(/fixtureLevels=/);
     expect(fixture).toMatch(/fixtureLevel=/);
+  });
+
+  /**
+   * 🔴 **T-334 — the fixture must override BOTH fetches, ⛔ not one.** The component
+   * makes two calls now (`/api/levels/summary` and `/api/profile`), and a fixture
+   * that fixes only the first would have `check:mobile` measuring this screen with
+   * a live, failing profile read — i.e. measuring the failure state and calling it
+   * the screen. `fixtureGiven` has to gate both.
+   */
+  it('⛔ neither fetch runs when the fixture is given (TD-13 · F-027 cause 1)', () => {
+    const effects = CODE.match(/useEffect\(\(\) => \{[\s\S]*?\n  \}, \[[^\]]*\]\);/g) ?? [];
+    expect(effects.length, 'expected one useEffect per fetch').toBeGreaterThanOrEqual(2);
+    for (const effect of effects) {
+      expect(effect, 'a fetch effect does not bail out on a fixture').toMatch(
+        /if \(fixture[A-Za-z]*Given\) return;/,
+      );
+    }
   });
 });

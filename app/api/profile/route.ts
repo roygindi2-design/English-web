@@ -5,6 +5,100 @@ import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * ⚠️ `42703` (undefined column) is the EXPECTED state until a migration has run in
+ * production, exactly as `GET /api/levels/summary` documents: the tables exist and
+ * the columns do not. A generic 503 "try again" would describe that as temporary,
+ * which it is not and no retry will fix.
+ *
+ * ⛔ A local copy, like every other route's — `git grep isSchemaMissing` shows nine
+ * of them. Sharing them is `T-284`'s class of work (one definition for a helper
+ * copied per file), ⛔ not this row's, and inventing a tenth shape here would make
+ * that row harder rather than easier.
+ */
+function isSchemaMissing(code: string | undefined): boolean {
+  return code === '42P01' || code === 'PGRST205' || code === '42703' || code === 'PGRST204';
+}
+
+/**
+ * GET /api/profile — see docs/api-contract.md
+ *
+ * 🔴 **T-334 — this endpoint is `app/(tabs)/me/page.tsx`'s former body.** The אני tab
+ * was the last of the five still rendered on the server on every navigation
+ * (`ƒ /me` in `npm run build`, against `○` for the other four), and this read is
+ * why: three goal columns and a count of mastered words, both awaited before a
+ * pixel of content was drawn. Moving it here makes the tab static and puts the read
+ * exactly where `<StudiesScreen>` and `<LevelMapScreen>` already get theirs.
+ *
+ * ⛔ **And the session gate did ⛔ not move with it.** The page's `getUser()` was
+ * never the second lock of F-003 — it was a THIRD lock on the same door `proxy.ts`
+ * already holds (measured in T-328 for `/studies`: 307 ⇒ `/login?expired=1` with the
+ * page read removed). The second lock, on a genuinely different door, is the session
+ * check below — the one a client fetch cannot skip.
+ */
+export async function GET() {
+  const env = readSupabaseEnv();
+  if (!env) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+
+  const supabase = createRouteClient(env, await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
+
+  // ⚠️ **In parallel, ⛔ not one after the other.** Both reads need only `user.id`,
+  // and this row exists because of latency: two sequential awaits would hand back
+  // most of what moving the read off the page just won.
+  //
+  // § 4.2ד. ⛔ `maybeSingle` and not `single`: `0001`'s trigger creates the row, but
+  // a screen that throws because a row is missing tells the learner nothing and
+  // costs them the whole tab.
+  //
+  // "Learned" is mastery, not exposure: `mastered_at` is written once, at the moment
+  // gate 7.7 is satisfied (`lib/core/progress.ts` · D-010). Counting every
+  // `word_progress` row instead would report a word seen once as a word learned.
+  // `head: true` — the count is the whole answer, so ⛔ no rows cross the wire.
+  const [{ data: profile, error: profileError }, { count, error: countError }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('institution, target_score, exam_date')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('word_progress')
+      .select('word_id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .not('mastered_at', 'is', null),
+  ]);
+
+  // ⛔ The missing-schema branch is the profile read's alone, and that asymmetry is
+  // deliberate: a failed COUNT already has an honest, learner-visible answer
+  // (`wordsLearned: null` ⇒ `<MeWordsLearned>`'s Hebrew failure sentence and a
+  // retry), while a failed profile read renders as **no goal block at all** — which
+  // is honest silence for a transient failure and a LIE when the column does not
+  // exist. ⇒ only the second one is promoted to a code the screen can act on.
+  if (profileError && isSchemaMissing((profileError as { code?: string }).code)) {
+    console.error('[api/profile] profile read failed:', profileError.message);
+    return NextResponse.json(
+      { ok: false, code: 'schema_missing', message: 'המאגר עדיין לא הוקם' },
+      { status: 503 },
+    );
+  }
+
+  // 🔴 `null` on a failed count and ⛔ never `0`: a read that failed and a learner who
+  // has learned nothing look identical once the failure is flattened, and only one of
+  // them is true (T-301). `count ?? 0` applies ⛔ ONLY on the success branch.
+  return NextResponse.json({
+    ok: true,
+    goal: {
+      institution: profile?.institution ?? null,
+      targetScore: profile?.target_score ?? null,
+      examDate: profile?.exam_date ?? null,
+    },
+    wordsLearned: countError ? null : (count ?? 0),
+  });
+}
+
 /** POST /api/profile — see docs/api-contract.md */
 export async function POST(request: Request) {
   let payload: unknown;

@@ -1,91 +1,78 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
- * אני — the learner tab (D-027 · § 4.2ב: "כל מה שהוא **על הלומד**").
+ * 🧪 **T-334 — `אני` מוגשת מהקצה, ⛔ ולא מהשרת. המשך של: T-328.**
  *
- * A source guard and not a render test: the screen reads the session and the
- * learner's own rows, so it cannot run in this suite's node environment
- * (vitest.config.ts explains why jsdom is not installed). Geometry is measured
- * by `check:mobile` through the `/dev/tabs/me` fixture.
+ * 🔬 **המדידה שפתחה את השורה, ⛔ ולא השערה:** `npm run build` בקלון הזה אחרי T-328
+ * סימן `○ /cards` · `○ /world` · `○ /settings` · `○ /studies` מול **`ƒ /me`** ⇒
+ * **ארבע לשוניות מתוך חמש מהקצה, ואחת ⛔ לא.** הלשונית הזאת עשתה הלוך-ושוב לשרת
+ * **ול-Supabase** — שתי קריאות: שלוש עמודות המטרה מ-`profiles`, ומניין
+ * `word_progress.mastered_at` — לפני שצויר ולו פיקסל אחד של תוכן.
  *
- * ⚠️ C-0075: the markup moved to `components/MeScreen.tsx` so the fixture and
- * the real screen render the SAME component instead of two copies (F-027 cause
- * 2). The guards that describe markup moved with it, to `MeScreen.test.ts` —
- * ⛔ none were dropped. What stays here is what this file still owns: the
- * session gate, the read, and the shape of the value handed to the component.
+ * ⛔ **ומדוע שומר מקור ו⛔ לא רק פלט בנייה:** מדד ההצלחה ⓐ הוא הסימן `○` ב-`npm run
+ * build`, והוא נמדד **בשער** (‏`verify` מריץ `build`). אבל `build` אומר «סטטי
+ * **היום**» — ⛔ אינו אומר **למה**, ו-`export const dynamic` יחיד שיחזור לקובץ הזה
+ * מחזיר את `ƒ` בלי שאיש ישאל. ⇒ הבדיקה הזאת נועלת את **הסיבה**.
+ *
+ * ⛔ **ומה שעבר מכאן ו⛔ לא נמחק** — הקריאה עצמה הפכה ל-`GET /api/profile`, ושומריה
+ * (‏`profiles` · `word_progress` · `mastered_at` · `null` ⛔ ולא `0`) עברו איתה אל
+ * `app/api/profile/route.test.ts`, בדיוק כפי שהמארקאפ ושומריו עברו ל-
+ * `components/MeScreen.test.ts` ב-C-0075. ⛔ אף שומר ⛔ לא נפל.
+ *
+ * סביבת vitest היא `node` ו-jsdom נעדר בכוונה. גיאומטריה — 44px, אפס גלילה — היא
+ * `check:mobile`, דרך הפיקסטורה `/dev/tabs/me`.
  */
 const SRC = readFileSync('app/(tabs)/me/page.tsx', 'utf8');
+const CODE = withoutComments(SRC);
+const PROXY = readFileSync('proxy.ts', 'utf8');
+const STUDIES = withoutComments(readFileSync('app/(tabs)/studies/page.tsx', 'utf8'));
 const ONBOARDING = readFileSync('app/onboarding/page.tsx', 'utf8');
 
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
-
-const CODE = withoutComments(SRC);
-
-describe('the אני tab (T-051 · § 4.2ב)', () => {
-  it('checks the session itself and does not rely on proxy.ts alone (F-003)', () => {
-    expect(CODE).toContain('createRouteClient');
-    expect(CODE).toMatch(/redirect\('\/login\?expired=1'\)/);
+describe('T-334 — `אני` מוגשת סטטית, כמו ארבע הלשוניות האחרות', () => {
+  it('⛔ אין `force-dynamic` ו⛔ אין קריאת סשן בקובץ הדף', () => {
+    expect(CODE).not.toContain('force-dynamic');
+    expect(CODE).not.toContain('getUser');
+    expect(CODE).not.toContain('createRouteClient');
+    expect(CODE).not.toContain('readSupabaseEnv');
+    // ⛔ `next/headers` הוא מה שהופך מסלול לדינמי גם בלי `force-dynamic`.
+    expect(CODE).not.toContain('next/headers');
+    expect(CODE).not.toContain('cookies(');
   });
 
-  it('reads the progress number from word_progress and does not compute one', () => {
-    expect(CODE).toContain('word_progress');
-    // Mastery is the definition of "learned" (D-010 · lib/core/progress.ts);
-    // counting every row would report a word seen once as a word learned.
-    expect(CODE).toContain('mastered_at');
+  it('⛔ הדף ⛔ אינו ניגש למסד — הרכיב שולף דרך ה-API בעצמו', () => {
+    expect(CODE).toContain('<MeScreen />');
+    // ⛔ אין `.from(` ו⛔ אין `supabase` בקובץ דף. זה החוק הכללי
+    // («A UI component NEVER touches the database»), וכאן הוא נמדד.
+    expect(CODE).not.toContain('supabase');
+    expect(CODE).not.toMatch(/\.from\(/);
+    // ⛔ ו⛔ אין גם `<Suspense>`: הגבול היה קיים כדי להזרים ערך שרת לתוך רכיב
+    // לקוח (T-301), וקריאה בצד הלקוח ⛔ אינה זקוקה לו — מצב הטעינה הוא של
+    // `<MeScreen>` עצמו עכשיו.
+    expect(CODE).not.toContain('Suspense');
+  });
+
+  it('הדף הוא בדיוק אותה צורה של `/studies`, שהיא `○` כבר היום', () => {
+    // ⛔ דפוס חדש הוא דפוס שיסטה. חמש הלשוניות חולקות צורה אחת: ייבוא הרכיב,
+    // `metadata`, ופונקציה **סינכרונית** שמחזירה אותו.
+    expect(CODE).toMatch(/export default function MePage\(\) \{/);
+    expect(CODE).not.toMatch(/export default async function/);
+    expect(STUDIES).toMatch(/export default function StudiesPage\(\) \{/);
+  });
+
+  it('🔴 מוטציה — השער ⛔ לא ירד יחד עם הקריאה: `/me` נשאר ב-PROTECTED_SCREENS', () => {
+    // ⛔ זו הבדיקה שהופכת את השינוי הזה לבטוח. הסרת `getUser()` מהדף מותרת אך ורק
+    // כל עוד `proxy.ts` חוסם את המסלול לפני שהמסמך נשלח — בדיוק כפי ש-`/cards`,
+    // `/settings` ו-`/studies` חיות היום (F-003: מנעול אחד על דלת אחת הוא נקודת
+    // כשל יחידה). המנעול השני הוא `GET /api/profile`, שבודק סשן בעצמו.
+    expect(PROXY).toContain("'/me'");
+    expect(PROXY).toMatch(/PROTECTED_SCREENS = \[[^\]]*'\/me'/);
   });
 
   it('renders the same component the harness fixture renders (F-027 cause 2)', () => {
     expect(CODE).toContain('MeScreen');
     expect(readFileSync('app/dev/tabs/me/page.tsx', 'utf8')).toContain('MeScreen');
-  });
-
-  /**
-   * The one thing this file decides about the screen, and the reason the prop is
-   * `number | null` rather than `number`: a failed read and a learner who has
-   * learned nothing look identical once the failure is flattened to `0`, and
-   * only one of them is true. `count ?? 0` applies ONLY on the success branch.
-   */
-  it('hands the component null on a failed read, ⛔ never a zero', () => {
-    expect(CODE).toMatch(/error\s*\?\s*null/);
-    expect(CODE).toContain('count ?? 0');
-  });
-
-  /**
-   * 🔴 **T-301ⓑ — the boundary opens AFTER the session check, ⛔ never before it.**
-   * The session is verified in this file and ⛔ not only in `proxy.ts` (the F-003
-   * lesson, that one lock on one door is a single point of failure). Streaming the
-   * count is a performance change and must ⛔ not become an authorisation change:
-   * if `<Suspense>` were hoisted above `getUser()`, the shell would paint for a
-   * signed-out visitor and the redirect would arrive afterwards.
-   *
-   * Measured as an ORDER in the source, because that is what the risk is: the
-   * index of the `redirect` that follows the user check has to come BEFORE the
-   * index of the boundary.
-   */
-  it('opens the Suspense boundary only after the session redirect (T-301ⓑ · F-003)', () => {
-    const guard = CODE.lastIndexOf("if (!user) redirect('/login?expired=1')");
-    const boundary = CODE.indexOf('<Suspense');
-    expect(guard, 'the session guard was not found').toBeGreaterThan(-1);
-    expect(boundary, 'the Suspense boundary was not found').toBeGreaterThan(-1);
-    expect(boundary).toBeGreaterThan(guard);
-  });
-
-  /**
-   * T-301ⓒ. The fallback is the shared skeleton file, ⛔ not a second hand-written
-   * shape — and it is the same file `app/(tabs)/me/loading.tsx` renders. Two copies
-   * would be two shapes the day one of them is edited, and the whole point of the
-   * reserved box is that the number's arrival moves nothing.
-   */
-  it('reserves the number\'s space with the SAME skeleton the route\'s loading.tsx uses (T-301ⓒ)', () => {
-    expect(CODE).toContain('fallback={<MeWordsLearnedSkeleton />}');
-    expect(readFileSync('app/(tabs)/me/loading.tsx', 'utf8')).toContain('MeWordsLearnedSkeleton');
   });
 
   it('carries ⛔ no ActionBar — D-028 forbids two bottom bars on one screen', () => {
