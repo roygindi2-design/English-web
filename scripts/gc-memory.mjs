@@ -385,6 +385,119 @@ export function pruneControlHistory(text, { maxKeep = CONTROL_HISTORY_MAX_KEEP, 
   return { changed: true, lines: after, archived: toArchive.map((r) => r.raw), keepN };
 }
 
+/* ── ⓐ `T-340` — תקרת תווים על תא «סיבת ההעברה» ────────────────────────────
+ *
+ * 🔬 **הכשל, נמדד C-0595 ו⛔ לא שוער:** הגיזום שמעל פועל על ה**מספר** של שורות
+ * היומן ו⛔ לא על ה**גודל** שלהן ⇒ שתי שורות בלבד, בדיוק כמו ש-`safeHistoryKeepN`
+ * מחשב, יכולות לבדן לאכול ~36% מתקרת ה-12KB: `C-0594` נמדדה **2,307 בתים**
+ * ו-`C-0593` **2,143**. ⇒ `gc:memory` הדפיס «🔴 עדיין מעל התקרה גם אחרי הגיזום»
+ * ⛔ בלי שיהיה לו מה לעשות בכך. ההישנות החמישית של אותו תסמין: `F-182` · `F-211`
+ * · `F-245`.
+ * ⛔ **וכותרת העמודה עצמה כבר קובעת את הגבול:** «סיבת ההעברה (**עד 2 שורות**)».
+ * ⇒ מה שחסר ⛔ אינו כלל — אלא **אכיפה** שלו.
+ *
+ * ⛔ **אותו דפוס בדיוק כמו מצבת `D-xxx` (שלב ב׳): ⛔ אפס מחיקה.** תא שנגזם משאיר
+ * מצבה עם קישור, והנוסח המלא נוחת מילה במילה ב-`plan/archive/handoff-log.md`.
+ */
+
+/** מצבה — ⛔ אותה מוסכמה כמו `TOMBSTONE_MARK`, ⛔ ולא ניסוח שני לאותו דבר. */
+export const REASON_TRIM_MARK = 'הנוסח המלא הועבר לארכיון';
+
+/**
+ * ⛔ **תקרה מוצהרת, ⛔ ונגזרת ממדידה חיה.** נמדד בקלון הזה 14/09/2026:
+ * `plan/00-control.md` = 11,768 בתים · שתי שורות §0.1 = 849 בתים · כל השאר =
+ * 10,919 ⇒ התקציב לטבלה כולה הוא 12,288−10,919 = **1,369 בתים לשתי שורות**,
+ * כלומר ~684 לשורה. התאים שאינם הסיבה נמדדו 159 בתים + מפרידים ≈ 180 ⇒ לתא
+ * הסיבה נשארים ~500 בתים. ובעברית נמדד כאן **1.40 בתים/תו** (`C-0609`: 231 תווים
+ * = 324 בתים) ⇒ 500/1.40 ≈ **357 תווים**. ⇒ **320** — מתחת לתקציב הנמדד, ומעל
+ * שתי השורות החיות בקובץ היום (‏231 ו-133 תווים) ⇒ ⛔ אינה גוזמת דיווח תקין.
+ * ⚠️ ⛔ **ואין להעלות אותה כדי «להכניס» שורה** — זה מקטין את הצריכה, ⛔ לא את הדרישה.
+ */
+export const HISTORY_REASON_MAX_CHARS = 320;
+
+/** מספר התאים בשורת יומן תקינה (`§ 0.1`), ותא הסיבה בתוכם. */
+const HISTORY_CELLS = 6;
+const REASON_CELL = 4;
+
+/** התאים של שורת טבלה, ⛔ בלי ה-`|` החיצוניים. ⛔ `null` אם ⛔ אינה שורת יומן. */
+function historyCells(raw) {
+  if (!raw.startsWith('|') || !raw.trimEnd().endsWith('|')) return null;
+  const cells = raw.trimEnd().split('|').slice(1, -1);
+  return cells.length === HISTORY_CELLS ? cells : null;
+}
+
+export const historyCellsOf = historyCells;
+
+/** תא «סיבת ההעברה» של שורת יומן, מגוזם מרווחים. ⛔ מחרוזת ריקה אם ⛔ אינה שורה כזאת. */
+export function reasonCellOf(raw) {
+  const cells = historyCells(raw);
+  return cells === null ? '' : cells[REASON_CELL].trim();
+}
+
+/**
+ * ⛔ **טהורה — בלי fs.** גוזמת את תא הסיבה של שורת יומן אחת לכל היותר
+ * `maxChars` תווים, **כולל המצבה** — כלומר הערובה היא על התא שיצא, ⛔ ולא על
+ * הפרוזה שנכנסה.
+ * ⛔ **אידמפוטנטית** — תא שכבר נושא מצבה ⛔ אינו נגזם שוב.
+ * ⛔ **ו⛔ אינה נוגעת בחמשת התאים האחרים** — הם נחתכים ומוחזרים בתים-לבתים.
+ */
+export function trimHistoryReason(raw, { maxChars = HISTORY_REASON_MAX_CHARS, archive = CONTROL_HISTORY_ARCHIVE } = {}) {
+  const cells = historyCells(raw);
+  if (cells === null) return { changed: false, row: raw, full: null };
+
+  const cycle = cells[0].trim();
+  const reason = cells[REASON_CELL].trim();
+  if (reason.includes(REASON_TRIM_MARK)) return { changed: false, row: raw, full: null };
+  if (reason.length <= maxChars) return { changed: false, row: raw, full: null };
+
+  const stone = ` … ⟨${REASON_TRIM_MARK} · ${archive} · ${cycle}⟩`;
+  const budget = maxChars - stone.length;
+  if (budget < 1) {
+    throw new Error(`gc: 🔴 תקרת תא הסיבה (${maxChars}) קטנה מהמצבה עצמה (${stone.length}) — ⛔ אין גיזום שקט`);
+  }
+
+  /* גזירה על גבול מילה כשיש כזה בטווח סביר, אחרת חיתוך קשיח. */
+  const head = reason.slice(0, budget);
+  const space = head.lastIndexOf(' ');
+  const prose = (space > budget * 0.6 ? head.slice(0, space) : head).trimEnd();
+
+  const after = [...cells];
+  after[REASON_CELL] = ` ${prose}${stone} `;
+  return { changed: true, row: `|${after.join('|')}|`, full: raw };
+}
+
+/**
+ * ⛔ **טהורה.** מריצה את `trimHistoryReason` על שורות `§ 0.1` **בלבד** — שורת
+ * טבלה מחוץ לסעיף ⛔ אינה נגעת, בדיוק כמו ב-`pruneControlHistory`.
+ */
+export function trimControlHistoryReasons(text, { maxChars = HISTORY_REASON_MAX_CHARS } = {}) {
+  const lines = text.split('\n');
+  const section = controlHistorySection(lines);
+  if (section === null) return { changed: false, lines, archived: [] };
+
+  const after = [...lines];
+  const archived = [];
+  for (const r of controlHistoryRows(lines, section)) {
+    const t = trimHistoryReason(r.raw, { maxChars });
+    if (!t.changed) continue;
+    after[r.line] = t.row;
+    archived.push(t.full);
+  }
+  if (archived.length === 0) return { changed: false, lines, archived: [] };
+
+  assertOnlyHistoryRowsChanged(lines, after, section);
+  return { changed: true, lines: after, archived };
+}
+
+/**
+ * ⛔ **שומר כפילות.** שורה נגזמת פעם אחת ונוחתת בארכיון; טיקים אחר כך היא גם
+ * **נושרת** מהקובץ החי ב-`pruneControlHistory` ⇒ ⛔ בלי השומר הזה אותו `Cycle`
+ * נכתב פעמיים, בשתי גרסאות שונות. ⛔ מזהה **תא ראשון**, ⛔ ולא אזכור בפרוזה.
+ */
+export function archiveHasCycle(archiveText, cycle) {
+  return new RegExp(`^\\|\\s*${cycle}\\s*\\|`, 'm').test(archiveText);
+}
+
 const CONTROL_ARCHIVE_HEADER = [
   '# ארכיון יומן העברות המקל',
   '',
@@ -399,29 +512,36 @@ export function runControlHistory({ dry = DRY } = {}) {
   const path = at(CONTROL);
   if (!existsSync(path)) throw new Error(`gc: ⛔ אין ${path}`);
   const before = readFileSync(path, 'utf8');
-  const result = pruneControlHistory(before);
 
-  if (!result.changed) {
-    return {
-      archived: 0,
-      keepN: result.keepN,
-      beforeBytes: Buffer.byteLength(before, 'utf8'),
-      afterBytes: Buffer.byteLength(before, 'utf8'),
-    };
-  }
+  /* ⓐ קודם **הגודל** של השורות שנשארות, ⛔ ורק אחר כך המספר שלהן: הגיזום משחרר
+   * בתים ⇒ `safeHistoryKeepN` מודד תקציב אמיתי ו⛔ לא תקציב מנופח. */
+  const trimmed = trimControlHistoryReasons(before);
+  const afterTrim = trimmed.changed ? trimmed.lines.join('\n') : before;
 
-  const after = result.lines.join('\n');
-  if (!dry) {
+  const result = pruneControlHistory(afterTrim);
+  const after = result.changed ? result.lines.join('\n') : afterTrim;
+
+  /* ⛔ אפס מחיקה, ⛔ ואפס כפילות — שורה שנגזמה היום ותישור מחר ⛔ אינה נכתבת
+   * לארכיון פעמיים, בשתי גרסאות שונות. השומר הוא התא הראשון, ⛔ לא הפרוזה. */
+  const candidates = [...trimmed.archived, ...result.archived];
+  if (!dry && candidates.length > 0) {
     const head = existsSync(at(CONTROL_HISTORY_ARCHIVE))
       ? readFileSync(at(CONTROL_HISTORY_ARCHIVE), 'utf8')
       : CONTROL_ARCHIVE_HEADER;
-    const stampedHead = head.endsWith('\n') ? head : `${head}\n`;
-    writeFileSync(at(CONTROL_HISTORY_ARCHIVE), `${stampedHead}${result.archived.join('\n')}\n`, 'utf8');
-    writeFileSync(path, after, 'utf8');
+    let text = head.endsWith('\n') ? head : `${head}\n`;
+    for (const raw of candidates) {
+      const cycle = (historyCellsOf(raw) ?? [''])[0].trim();
+      if (cycle !== '' && archiveHasCycle(text, cycle)) continue;
+      text += `${raw}\n`;
+    }
+    writeFileSync(at(CONTROL_HISTORY_ARCHIVE), text, 'utf8');
   }
+
+  if (!dry && after !== before) writeFileSync(path, after, 'utf8');
 
   return {
     archived: result.archived.length,
+    trimmed: trimmed.archived.length,
     keepN: result.keepN,
     beforeBytes: Buffer.byteLength(before, 'utf8'),
     afterBytes: Buffer.byteLength(after, 'utf8'),
@@ -461,6 +581,7 @@ function main() {
   console.log('\nשלב ג׳ — יומן העברות מקל (`00-control.md § 0.1`)');
   const c = runControlHistory();
   console.log(`  ${c.archived} שורות הועברו לארכיון · נשמרות ${c.keepN ?? '—'} האחרונות בקובץ החי`);
+  console.log(`  ${c.trimmed} תאי «סיבת ההעברה» נגזמו לתקרת ${HISTORY_REASON_MAX_CHARS} תווים · הנוסח המלא ב-${CONTROL_HISTORY_ARCHIVE}`);
   console.log(`  ${CONTROL}: ${kb(c.beforeBytes)} ⇐ ${kb(c.afterBytes)} (תקרה ${kb(CONTROL_CEILING)})`);
   if (c.afterBytes > CONTROL_CEILING) {
     console.error('  🔴 עדיין מעל התקרה גם אחרי הגיזום — החלק שאינו §0.1 גדול מדי. דווח, ⛔ אל תמציא ניקוי כאן.');

@@ -24,6 +24,12 @@ import {
   CONTROL_HISTORY_MAX_KEEP,
   assertOnlyHistoryRowsChanged,
   pruneControlHistory,
+  trimHistoryReason,
+  trimControlHistoryReasons,
+  reasonCellOf,
+  archiveHasCycle,
+  REASON_TRIM_MARK,
+  HISTORY_REASON_MAX_CHARS,
 } from './gc-memory.mjs';
 
 const base = {
@@ -386,5 +392,126 @@ describe('pruneControlHistory', () => {
     expect(result.changed).toBe(true);
     expect(result.keepN).toBeLessThanOrEqual(CONTROL_HISTORY_MAX_KEEP);
     expect(Buffer.byteLength(result.lines.join('\n'), 'utf8')).toBeLessThanOrEqual(CONTROL_CEILING);
+  });
+});
+
+/**
+ * ⓐ **`T-340` — תא «סיבת ההעברה» הוא פרוזה בלי תקרה בתוך קובץ עם תקרת בתים קשיחה.**
+ * 🔬 נמדד C-0595: שורת היומן של `C-0594` היא **2,307 בתים** מתוך תקרה של **12,288**,
+ * ושורת `C-0593` שלפניה **2,143** ⇒ שתי השורות שהקובץ שומר לפי `§ 0.1` הן לבדן
+ * **~36% מהתקרה**. ⛔ **וכותרת העמודה כבר קובעת גבול ש⛔ אינו נאכף:** «עד 2 שורות».
+ * ⇒ הגיזום הקיים פועל על ה**מספר** של השורות ו⛔ לא על ה**גודל** שלהן; זה על הגודל.
+ * ⛔ **ואותו דפוס כמו מצבת `D-xxx`: אפס מחיקה** — הנוסח המלא נוחת בארכיון.
+ */
+describe('trimHistoryReason — ⓐ: תקרת תווים על תא הסיבה', () => {
+  const long = (n: number) => Array.from({ length: n }, (_, i) => `מ${i}`).join(' ');
+  const journalRow = (cycle: string, reason: string) =>
+    `| ${cycle} | DEV | QA | 2026-09-14T00:00:00Z | ${reason} | \`a.ts\` · \`b.ts\` |`;
+
+  it('⛔ אינה נוגעת בשורה שתא הסיבה שלה מתחת לתקרה', () => {
+    const raw = journalRow('C-0609', 'טיק בנייה קצר');
+    const result = trimHistoryReason(raw, { maxChars: 320 });
+    expect(result.changed).toBe(false);
+    expect(result.row).toBe(raw);
+    expect(result.full).toBe(null);
+  });
+
+  it('גוזמת תא סיבה שחצה — והשורה כולה יורדת מתחת לתקרה', () => {
+    const raw = journalRow('C-0594', long(600));
+    const result = trimHistoryReason(raw, { maxChars: 320 });
+    expect(result.changed).toBe(true);
+    expect(reasonCellOf(result.row).length).toBeLessThanOrEqual(320);
+  });
+
+  it('⛔ אפס מחיקה — הנוסח המלא חוזר מילה במילה ב-`full`, והמצבה נושאת קישור לארכיון', () => {
+    const raw = journalRow('C-0594', long(600));
+    const result = trimHistoryReason(raw, { maxChars: 320 });
+    expect(result.full).toBe(raw);
+    expect(result.row).toContain(REASON_TRIM_MARK);
+    expect(result.row).toContain('plan/archive/handoff-log.md');
+    expect(result.row).toContain('C-0594');
+  });
+
+  it('⛔ חמשת התאים האחרים נשארים זהים בתים-לבתים — ⛔ רק תא הסיבה זז', () => {
+    const raw = journalRow('C-0594', long(600));
+    const after = trimHistoryReason(raw, { maxChars: 320 }).row;
+    const cells = (s: string) => s.split('|').slice(1, -1);
+    const before = cells(raw);
+    const now = cells(after);
+    expect(now).toHaveLength(before.length);
+    for (const i of [0, 1, 2, 3, 5]) expect(now[i]).toBe(before[i]);
+  });
+
+  it('🔴 אידמפוטנטי — שורה שכבר נושאת מצבה ⛔ אינה נגזמת שוב', () => {
+    const raw = journalRow('C-0594', long(600));
+    const once = trimHistoryReason(raw, { maxChars: 320 });
+    const twice = trimHistoryReason(once.row, { maxChars: 320 });
+    expect(twice.changed).toBe(false);
+    expect(twice.row).toBe(once.row);
+  });
+
+  it('⛔ שורה שאינה שורת יומן תקינה (מספר תאים שגוי) מוחזרת כמות שהיא', () => {
+    const raw = `| C-0594 | ${long(600)} |`;
+    const result = trimHistoryReason(raw, { maxChars: 320 });
+    expect(result.changed).toBe(false);
+    expect(result.row).toBe(raw);
+  });
+
+  it('⛔ התקרה חייבת להשאיר מקום למצבה עצמה — תקרה קטנה מדי היא שגיאה, ⛔ ולא גיזום שקט', () => {
+    expect(() => trimHistoryReason(journalRow('C-0594', long(600)), { maxChars: 10 })).toThrow();
+  });
+});
+
+describe('trimControlHistoryReasons — ⓐ על הקובץ כולו', () => {
+  const long = (n: number) => Array.from({ length: n }, (_, i) => `מ${i}`).join(' ');
+
+  it('גוזמת ⛔ רק את השורות שחצו, ומחזירה את המקור המלא ב-`archived`', () => {
+    const text = controlText([row('C-0003', long(600)), row('C-0002', 'קצרה')]);
+    const result = trimControlHistoryReasons(text, { maxChars: 320 });
+    expect(result.changed).toBe(true);
+    expect(result.archived).toHaveLength(1);
+    expect(result.archived[0]).toContain('C-0003');
+    expect(result.lines.join('\n')).toContain('| C-0002 | DEV | QA | 2026-09-01T00:00:00Z | קצרה |');
+  });
+
+  it('⛔ בלוק המשתנים הקריטיים נשאר זהה בתים-לבתים', () => {
+    const text = controlText([row('C-0003', long(600))]);
+    const result = trimControlHistoryReasons(text, { maxChars: 320 });
+    const head = result.lines.slice(0, CRITICAL_BLOCK.split('\n').length).join('\n');
+    expect(head).toBe(CRITICAL_BLOCK);
+  });
+
+  it('🔴 אידמפוטנטי — הרצה שנייה על התוצאה של הראשונה היא no-op', () => {
+    const text = controlText([row('C-0003', long(600)), row('C-0002', long(600))]);
+    const first = trimControlHistoryReasons(text, { maxChars: 320 });
+    expect(first.changed).toBe(true);
+    const second = trimControlHistoryReasons(first.lines.join('\n'), { maxChars: 320 });
+    expect(second.changed).toBe(false);
+    expect(second.archived).toEqual([]);
+  });
+
+  it('⛔ ⛔ אינה נוגעת בשורת טבלה שמחוץ ל-§0.1', () => {
+    const outside = '| C-0009 | DEV | QA | 2026-09-01T00:00:00Z | ' + long(600) + ' | תוצר |';
+    const text = controlText([row('C-0003', 'קצרה')]) + '\n\n## סעיף אחר\n\n' + outside;
+    const result = trimControlHistoryReasons(text, { maxChars: 320 });
+    expect(result.changed).toBe(false);
+    expect(result.lines.join('\n')).toContain(outside);
+  });
+});
+
+/**
+ * ⛔ **הארכיון ⛔ אינו צובר כפילויות.** שורה שנגזמה נוחתת בארכיון, ואחר כך —
+ * טיקים אחר כך — היא גם **נושרת** מהקובץ החי ב-`pruneControlHistory`. ⛔ בלי
+ * השומר הזה אותו `Cycle` היה נכתב פעמיים, בשתי גרסאות שונות.
+ */
+describe('archiveHasCycle', () => {
+  it('מזהה Cycle שכבר בארכיון', () => {
+    const archive = '| C-0594 | DEV | QA | t | סיבה | תוצר |';
+    expect(archiveHasCycle(archive, 'C-0594')).toBe(true);
+  });
+
+  it('⛔ אינה מתבלבלת מאזכור של ה-Cycle בתוך פרוזה של שורה אחרת', () => {
+    const archive = '| C-0600 | DEV | QA | t | המשך של C-0594 | תוצר |';
+    expect(archiveHasCycle(archive, 'C-0594')).toBe(false);
   });
 });

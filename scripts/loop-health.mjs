@@ -751,14 +751,36 @@ check('5', 'אפס סטטוס לא-מוכר · אפס שורה פגומה', () =
  * code is broken, and it ⛔ must not block a merge.
  */
 const CONTROL_CEILING = 12 * 1024;
+
+/**
+ * ⛔ **ⓑ `T-340` — ההודעה נוקבת ב**שורה הארוכה ביותר**, ⛔ ולא רק בגודל הקובץ.**
+ * 🔬 נמדד C-0595: שורת היומן של `C-0594` הייתה **2,307 בתים** מתוך 12,288 ושורת
+ * `C-0593` **2,143** ⇒ **שתי שורות לבדן החזיקו ~36% מהתקרה**. ⛔ «עברת את התקרה»
+ * לבדו שלח את הטיק הבא לחפש ידנית מה תפח — חמש פעמים (`F-182` · `F-211` ·
+ * `F-245`). ⇒ מספר השורה ואורכה הם ההפרש בין «יש בעיה» ל«זו השורה».
+ */
+export function longestLineOf(text) {
+  const lines = text.split('\n');
+  let at1 = 0;
+  let bytes = 0;
+  for (let i = 0; i < lines.length; i += 1) {
+    const n = Buffer.byteLength(lines[i], 'utf8');
+    if (n > bytes) { bytes = n; at1 = i + 1; }
+  }
+  return { line: at1, bytes };
+}
+
 check('9', 'רגיסטר הבקרה מתחת לתקרת ה-12KB', () => {
-  const bytes = Buffer.byteLength(read(at('plan', '00-control.md')), 'utf8');
+  const text = read(at('plan', '00-control.md'));
+  const bytes = Buffer.byteLength(text, 'utf8');
+  if (bytes === 0) return { ok: false, detail: '⛔ לא נמדד — הקובץ ריק או חסר' };
+  if (bytes <= CONTROL_CEILING) return { ok: true, detail: `${bytes} בתים מתוך ${CONTROL_CEILING}` };
+  const worst = longestLineOf(text);
   return {
-    ok: bytes > 0 && bytes <= CONTROL_CEILING,
+    ok: false,
     detail:
-      bytes === 0
-        ? '⛔ לא נמדד — הקובץ ריק או חסר'
-        : `${bytes} בתים מתוך ${CONTROL_CEILING}`,
+      `${bytes} בתים מתוך ${CONTROL_CEILING} · הארוכה ביותר: שורה ${worst.line} · ${worst.bytes} בתים` +
+      ' ⇐ `npm run gc:memory` גוזם תא «סיבת ההעברה» שחצה',
   };
 });
 

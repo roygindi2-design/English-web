@@ -124,9 +124,43 @@ export declare function pruneControlHistory(
   keepN: number | null;
 };
 
+/* ─────────────── ⓐ `T-340` — תקרת תווים על תא «סיבת ההעברה» ─────────────── */
+
+/** המצבה שמסמנת תא סיבה שנגזם. ⛔ אותה מוסכמה כמו `TOMBSTONE_MARK`. */
+export declare const REASON_TRIM_MARK: string;
+
+/** ⛔ תקרה מוצהרת, נגזרת ממדידה חיה — ר׳ ההערה במימוש למספרים שמאחוריה. */
+export declare const HISTORY_REASON_MAX_CHARS: number;
+
+/** תאי שורת יומן (‏6), ⛔ בלי ה-`|` החיצוניים. `null` ⇐ ⛔ אינה שורת יומן תקינה. */
+export declare function historyCellsOf(raw: string): string[] | null;
+
+/** תא «סיבת ההעברה» של שורת יומן, מגוזם מרווחים. `''` ⇐ ⛔ אינה שורה כזאת. */
+export declare function reasonCellOf(raw: string): string;
+
+/**
+ * ⛔ טהורה — גוזמת את תא הסיבה של שורה אחת לכל היותר `maxChars` תווים **כולל
+ * המצבה**. ⛔ אידמפוטנטית, ו⛔ אינה נוגעת בחמשת התאים האחרים.
+ * ⛔ זורקת כאשר `maxChars` קטנה מהמצבה עצמה — ⛔ אין גיזום שקט.
+ */
+export declare function trimHistoryReason(
+  raw: string,
+  opts?: { maxChars?: number; archive?: string },
+): { changed: boolean; row: string; full: string | null };
+
+/** ⛔ טהורה — אותו גיזום על שורות `§ 0.1` **בלבד**; `archived` נושא את המקור המלא. */
+export declare function trimControlHistoryReasons(
+  text: string,
+  opts?: { maxChars?: number },
+): { changed: boolean; lines: string[]; archived: string[] };
+
+/** ⛔ שומר כפילות בארכיון — מזהה **תא ראשון**, ⛔ ולא אזכור בפרוזה. */
+export declare function archiveHasCycle(archiveText: string, cycle: string): boolean;
+
 /** שלב ג׳ בלבד — יומן העברות המקל. מחזיר את המדידה, ⛔ ואינו מדפיס. */
 export declare function runControlHistory(opts?: { dry?: boolean }): {
   archived: number;
+  trimmed: number;
   keepN: number | null;
   beforeBytes: number;
   afterBytes: number;
