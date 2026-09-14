@@ -847,6 +847,7 @@
     "lib/api/client.ts",
     "lib/core/cefrLevels.ts",
     "lib/core/levelSummary.ts",
+    "lib/core/onboarding.ts",
     "lib/core/studyTracks.ts"
   ],
   "components/MeWordsLearned.test.ts": [

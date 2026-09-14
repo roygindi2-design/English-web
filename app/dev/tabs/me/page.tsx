@@ -53,6 +53,16 @@ const FIXTURE_LEVELS: readonly LevelSummary[] = [
  * TALLEST and WIDEST realistic composition at once: a long Hebrew institution
  * name (which is what the one-line overflow rule exists for), a score and a
  * date all present together.
+ *
+ * 🔴 **T-350 — `examDate` stays a date in the PAST, and that is DELIBERATE.**
+ * The screen now renders a countdown derived from it, so the fixture decides
+ * which branch `check:mobile` measures. A future date would go past on its own
+ * and flip the measured screen with ⛔ no commit behind the change — a fixture
+ * that silently stops describing what it was written to describe. A past date
+ * is stable forever, and it is also the exact state the row was opened on
+ * (measured C-0613: «תאריך המבחן: 2026-09-10», four days behind, with ⛔ no
+ * word saying so). ⛔ The other branch is covered in `MeScreen.test.ts` and in
+ * `lib/core/onboarding.test.ts`, ⛔ not by moving this date forward.
  */
 const SAMPLE_GOAL = {
   institution: 'המכללה האקדמית להנדסה אורט בראודה',

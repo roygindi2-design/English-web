@@ -67,6 +67,7 @@ import MeWordsLearnedSkeleton from '@/components/MeWordsLearnedSkeleton';
 import { apiGet } from '@/lib/api/client';
 import type { CefrBand } from '@/lib/core/cefrLevels';
 import type { LevelSummary } from '@/lib/core/levelSummary';
+import { LEARNER_TIME_ZONE, daysUntilExam, daysUntilExamHe, toIsoDateInZone } from '@/lib/core/onboarding';
 import { primaryStudyTrack, trackLabelHe } from '@/lib/core/studyTracks';
 
 const HEADING_HE = 'אני';
@@ -75,6 +76,12 @@ const SIGN_OUT_HE = 'יציאה מהחשבון';
 const GOAL_HEADING_HE = 'המטרה שלך';
 const GOAL_SCORE_LABEL_HE = 'ציון יעד';
 const GOAL_DATE_LABEL_HE = 'תאריך המבחן';
+/**
+ * T-350 · המצב שהמוצר עצמו ⛔ מסרב לקלוט (`examDatePast` ב-`checkOnboarding`)
+ * ואז הדפיס לנצח. ⛔ משפט שאומר מה קרה, ⛔ ולא תאריך גולמי שהלומד צריך לחשב
+ * ממנו לבד.
+ */
+const EXAM_PASSED_HE = 'תאריך המבחן שרשום כאן כבר עבר.';
 /** T-145ⓑ · D-079 · D-180. */
 const CONTINUE_LEARNING_HE = 'המשך למידה';
 /** T-145ⓓ · D-034 · § 4.2ז — see the file header for why this is not `<FilterBar>`'s wording. */
@@ -234,6 +241,30 @@ export default function MeScreen({
   // read is in flight the three fields are `null`, which is that same rule.
   const goal = profile.status === 'ready' ? profile.goal : EMPTY_GOAL;
 
+  /**
+   * 🔴 **T-350 — «כמה נשאר», ⛔ ולא תאריך גולמי.**
+   *
+   * 🔬 **מה שנמדד ב-C-0613 (הליכה חיה, 375px):** המסך הדפיס «תאריך המבחן:
+   * 2026-09-10» — ארבעה ימים אחורה — ⛔ בלי מילה שאומרת שהתאריך עבר. ובמקביל
+   * `daysUntilExamHe` ישבה ב-`lib/core/onboarding.ts` **בדוקה ובלי ולו קורא
+   * אחד** מחוץ לבדיקה שלה. ⇒ זהו לקח 12 של `27-pm-lessons § A1` מילה במילה:
+   * שכבה טהורה נמסרה בלי מסך, והחוט ⛔ מעולם ⛔ לא נכתב. השורה הזאת כותבת אותו.
+   *
+   * ⚠️ **השעון נקרא כאן, ⛔ ולא ב-`lib/core`** — בדיוק כמו ב-`POST /api/profile`:
+   * שתי הפונקציות שמתחת נשארות פונקציות טהורות של הארגומנטים שלהן, וזה מה
+   * שמאפשר לבדוק אותן בלי לזייף זמן (`check:core`).
+   *
+   * ⚠️ **והיום הוא יומו של הלומד** (`LEARNER_TIME_ZONE`), ⛔ ולא של השרת: «נשארו
+   * 3 ימים» שמשתנה לפי איפה הקוד רץ הוא מספר שאיש ⛔ לא מדד.
+   *
+   * ⛔ **`examDate === null` ⇒ `null`, ⛔ ולא `0`** — «⛔ לא נענה» ⛔ אינו «המבחן
+   * היום», וזו אותה הבחנה ש-`wordsLearned` כבר שומר עליה למעלה.
+   */
+  const examDays =
+    goal.examDate === null
+      ? null
+      : daysUntilExam(goal.examDate, toIsoDateInZone(new Date(), LEARNER_TIME_ZONE));
+
   const primaryTrack = levels === null ? null : primaryStudyTrack(levels);
   const activeSummary =
     levels !== null && activeLevel !== null ? (levels.find((l) => l.level === activeLevel) ?? null) : null;
@@ -318,10 +349,28 @@ export default function MeScreen({
               {GOAL_SCORE_LABEL_HE}: {goal.targetScore}
             </p>
           )}
+          {/*
+            T-350 — הספירה **מעל** התאריך, ⛔ ולא במקומו: התאריך עצמו הוא מה
+            שהלומד הזין ו⛔ אין סיבה למחוק אותו, אבל הדבר שהוא בא לדעת הוא
+            «כמה נשאר». ⇒ המשפט הוא הטקסט הראשי והתאריך יורד לשורת המשנה.
+            ⛔ שני מצבים מוצהרים, ⛔ ואין שלישי — `examDays` ⛔ אינו `null` כאן
+            כי `goal.examDate` ⛔ אינו `null` באותו תנאי עצמו.
+          */}
           {goal.examDate !== null && (
-            <p className="text-lg text-ink-muted">
-              {GOAL_DATE_LABEL_HE}: {goal.examDate}
-            </p>
+            <div data-exam-countdown className="flex flex-col gap-0.5">
+              {examDays !== null && examDays < 0 ? (
+                <p data-exam-state="past" className="text-lg font-semibold text-ink">
+                  {EXAM_PASSED_HE}
+                </p>
+              ) : (
+                <p data-exam-state="ahead" className="text-lg font-semibold text-ink">
+                  {daysUntilExamHe(examDays ?? 0)}
+                </p>
+              )}
+              <p className="text-sm text-ink-muted">
+                {GOAL_DATE_LABEL_HE}: {goal.examDate}
+              </p>
+            </div>
           )}
         </section>
       )}

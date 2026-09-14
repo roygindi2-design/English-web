@@ -250,6 +250,45 @@ describe('T-145 — «אני» מקבלת פעולה אמיתית (D-079 · § 4
    * a live, failing profile read — i.e. measuring the failure state and calling it
    * the screen. `fixtureGiven` has to gate both.
    */
+  it('T-350 · הספירה מחוברת למסך — `daysUntilExamHe` ⛔ אינה עוד פונקציה בלי קורא', () => {
+    // 🔬 **זו המדידה שהשורה נפתחה עליה:** `grep -rn daysUntilExamHe` החזיר
+    // **אפס** קוראים מחוץ לבדיקה של המודול עצמו, בעוד המסך הדפיס תאריך גולמי.
+    expect(CODE).toContain('daysUntilExamHe');
+    expect(CODE).toContain('daysUntilExam(');
+    expect(CODE).toMatch(/from ['"]@\/lib\/core\/onboarding['"]/);
+  });
+
+  it('T-350 · היום נקרא בשעון הלומד, ⛔ ולא בשעון השרת', () => {
+    // «נשארו 3 ימים» שמשתנה לפי איפה הקוד רץ הוא מספר שאיש ⛔ לא מדד.
+    expect(CODE).toContain('toIsoDateInZone(new Date(), LEARNER_TIME_ZONE)');
+    // ⛔ והחישוב עצמו נשאר טהור: השעון נקרא ברכיב ו⛔ לא ב-`lib/core`.
+    expect(CODE).toMatch(/daysUntilExam\(goal\.examDate, toIsoDateInZone\(/);
+  });
+
+  it('T-350 · שלושת הענפים מוצהרים — עתיד · עבר · ⛔ אין תאריך', () => {
+    // ⓐ עתיד ⇒ פלט `daysUntilExamHe`; ⓑ עבר ⇒ משפט עברי משלו;
+    // ⓒ `null` ⇒ ⛔ אפס שינוי, הבלוק פשוט ⛔ אינו מרונדר.
+    expect(CODE).toContain('data-exam-state="ahead"');
+    expect(CODE).toContain('data-exam-state="past"');
+    expect(CODE).toMatch(/examDays !== null && examDays < 0/);
+    // ⛔ «⛔ לא נענה» ⛔ אינו «המבחן היום»: `examDate === null` ⇒ `null`, ⛔ ולא `0`.
+    expect(CODE).toMatch(/goal\.examDate === null\s*\?\s*null/);
+  });
+
+  it('T-350 · התאריך הגולמי נשאר, ⛔ מתחת לספירה ו⛔ לא במקומה', () => {
+    // ⛔ מחיקת התאריך הייתה מוחקת את מה שהלומד עצמו הזין; הספירה היא הטקסט
+    // הראשי, והתאריך יורד לשורת משנה.
+    const block = CODE.match(/data-exam-countdown[\s\S]{0,1200}?<\/div>/)?.[0] ?? '';
+    expect(block).toContain('GOAL_DATE_LABEL_HE');
+    expect(block).toContain('{goal.examDate}');
+    // סדר: הספירה קודם, התאריך אחריה.
+    expect(block.indexOf('data-exam-state')).toBeLessThan(block.indexOf('GOAL_DATE_LABEL_HE'));
+  });
+
+  it('T-350 · משפט התאריך שעבר הוא מחרוזת עברית משלו, ⛔ ולא תאריך גולמי', () => {
+    expect(SRC).toContain("const EXAM_PASSED_HE = 'תאריך המבחן שרשום כאן כבר עבר.'");
+  });
+
   it('⛔ neither fetch runs when the fixture is given (TD-13 · F-027 cause 1)', () => {
     const effects = CODE.match(/useEffect\(\(\) => \{[\s\S]*?\n  \}, \[[^\]]*\]\);/g) ?? [];
     expect(effects.length, 'expected one useEffect per fetch').toBeGreaterThanOrEqual(2);
