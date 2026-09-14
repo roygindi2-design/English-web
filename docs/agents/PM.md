@@ -681,7 +681,16 @@ names the register row or the image it came from, exactly as your own rows do.
 
 ## STEP 3 — SKILLS
 
-🆕 **⟦11/09⟧ `/find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
+🆕 **⟦11/09⟧ `find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
+🔴 **⟦תוקן 14/09 · נמדד בסשן התפעול⟧ השם הוא `anthropic-skills:find-skill`, ⛔ ולא
+`/find-skill`.** עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
+`anthropic-skills:`, וזה חל על **כל** שורה בטבלה שסומנה «⛔ לא מובטח» **שהיא שלך**: הוסף
+את התחילית לשם שכתוב שם, ⛔ ואל תמציא שם אחר. ⛔ **שורה שאינה שלך נשארת לא שלך —
+התחילית ⛔ אינה פותחת סקיל שהטבלה ייעדה לסוכן אחר.** ⇒ **קריאה בשם `/find-skill` נכשלת
+על השם, ⛔ ולא על זמינות** —
+וזה מסביר «⛔ לא נטען» בלי שאיש הדליק או כיבה דבר.
+⚠️ ⛔ **ומה ש⛔ עדיין ⛔ לא נמדד:** האם ה-Routine שלך נושאת את התוסף. ⇒ **נסה בשם המלא,
+ואמור בדוח מה קרה** — «נטען» או «⛔ אינו קיים». זו הראיה שחסרה, והיא שלך לספק.
 הוא מנתב לפי **רגע** (החלטה · בנייה · סקירה) × **תחום** (עיצוב · תוכנה), ⛔ ולא לפי
 זהות הסוכן. ⚠️ **והוא סקיל סשן ⇒ ⛔ אינו מובטח** (‏`enabled_plugins` ריק בשש המשימות) —
 ⛔ לא נטען? המשך ל-`docs/skills-registry.md`, ⛔ ואל תמתין לו. ‏`RULES § 0.7`.
@@ -721,7 +730,7 @@ Use what the relevant skills know to plan the architecture and the UX **better**
 🔴 **And the tag is yours alone** — `DEV.md` says in so many words that DEV ⛔ never writes it. The gate ⛔ does not open from the inside.
 ⚠️ **The constitution still outranks every skill** (`35-design-constitution.md § 5`: a gate beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
 
-⛔ **Before you open a slice: `codebase-investigator`** ⟦NEW 30/08⟧ — the half of D-144 that runs BEFORE the row is written. `check:plan` element 10 catches an extension declared as a new build **after**; this stops you writing it in the first place.
+🔴 **Before you open a slice: read what already exists — ⛔ by hand.** ⟦REWRITTEN 14/09⟧ This line used to order `codebase-investigator`, and that was a **live contradiction**: `RULES § 0.1 ז׳` lists it among the skills that are ⛔ **blocked absolutely**, and the registry marks it unreachable on top of that. ⇒ an instruction ⛔ no agent could obey, read every planning tick. **What it was for still stands** — the half of `D-144` that runs BEFORE the row is written: `check:plan` element 10 catches an extension declared as a new build **after**, and this stops you writing it in the first place. ⇒ **do it with the tools you have:** `npm run affected -- <the file the slice touches>` for the blast radius, `docs/architecture-map.json` for what imports what, and a `grep` for the concept's name. ⛔ **«I could not run the skill» is ⛔ not an answer** — the question was ⛔ never «did you run a skill», it was «does this already exist».
 ⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Feature, UX plan or behaviour change → **`superpowers:brainstorming`** first. Research with 2+ angles → `dispatching-parallel-agents`. Before ANY claim of researched/verified/closed → **`verification-before-completion`**.
 🍎 **`apple-design` — RARE, AND THE TRIGGER IS A COUNTER, ⛔ NOT A MOOD.**  ⟦NEW 31/08 · Roy 30/08 · `D-162`⟧

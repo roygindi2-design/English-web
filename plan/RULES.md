@@ -200,8 +200,11 @@ git checkout main && git merge --ff-only origin/dev && git push origin main
 ובנוסף **נאמנות לרנדר** (בלם 10ⓑ). ⛔ **אסור ממצא טעם.** «לא אהבתי» ⛔ אינו ממצא;
 «הכפתור ב-y=243 והרנדר מציב אותו ב-y=610» הוא ממצא.
 **מותר ל-DEV ⟦תוקן 09/09 — שלושה מהשמות ⛔ לא היו קיימים⟧:** `taste-skill` ·
-`imagegen-frontend-mobile` (שניהם בקלון) · `ui-ux-pro-max:ui-styling` (על ענף
-`skills/superpowers`, ב-`git show`) — על **כל מסך שנקוב ב-`36 § 4–§ 12`**, ועל `/arcade`
+`imagegen-frontend-mobile` · `ui-ux-pro-max:ui-styling` — **שלושתם בקלון**
+⟦תוקן 14/09: השורה שלחה ל-`git show` על ענף `skills/superpowers`, והוא **הועבר לעץ
+ב-11/09**. ‏`scripts/skills-reachable.test.ts` כבר הפך את הטענה — ⇒ ⛔ אין `fetch`,
+⛔ אין ענף, יש נתיב: `skills/ui-ux-pro-max/ui-styling/SKILL.md`⟧ — על **כל מסך שנקוב
+ב-`36 § 4–§ 12`**, ועל `/arcade`
 ועל `לימודים` במהלך השכתוב **בלי תקרת 5 התיקונים**. מחוץ להם — תקרת 5 בתוקף.
 🔬 **נמדד 09/09, ⛔ ולא שוער:** ‏`design-system` ו-`redesign-existing-projects`
 ⛔ **אינם קיימים באף מקום** — ⛔ לא ב-`skills/`, ⛔ לא על ענף הסקילים, ⛔ ולא באינדקס.
