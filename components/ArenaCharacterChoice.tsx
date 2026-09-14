@@ -117,8 +117,23 @@ export default function ArenaCharacterChoice({
     }
   };
 
+  /**
+   * 📐 **T-346 — ⛔ אין כאן `px-6`, ואותה מדידה בדיוק כמו ב-`ArenaHome` (T-342).**
+   *     `app/layout.tsx` נותן ל-`<main>` ‏`px-6`, וה-`section` הוסיף עליהם עוד `px-6`
+   *     ⇒ **48px לכל צד**. ⛔ **המדידה, בטיק הזה חי ב-Chromium 320×780:** הכרטיס היה
+   *     `x=48` ברוחב **224**, ואחרי `p-4` נשארו 192 פנימיים; הדמות תופסת **127**
+   *     ועוד `gap-4` ⇒ לעמודת הטקסט נשארו **47px**. שורת השם (`character-label`)
+   *     צריכה **52** כשהכרטיס נבחר (השם + שבב `נבחרה`) ⇒ עודף **5.1px**, והשבב נחתך.
+   *     ⇒ ב-24px לכל צד הכרטיס הוא 272, הפנימיים 240, ועמודת הטקסט **97** — 52 נכנסים.
+   *     🔬 **ואיך זה נמצא בכלל:** השער החדש של `T-343` האדים עליו באותה הרצה שבה
+   *     האדים על `gear-slots`, בעוד `document.documentElement.scrollWidth` המשיך
+   *     להחזיר **0** בשלושת הרוחבים. ⇒ זו הראיה שהשער החדש מודד משהו שאיש ⛔ לא מדד,
+   *     ⛔ ולא רק את הפגם שהוא נכתב בשבילו.
+   *     ⛔ **ואין כאן רנדר נפרד להתיישר אליו** (`D-133 § ג׳`): המסך נגרף מ-`screen_home`,
+   *     ולכן הגדר שלו היא אותה גדר — `x=24`, רוחב `LW-48`.
+   */
   return (
-    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 px-6 pb-16">
+    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 pb-16">
       {/* `:113-114` — הכותרת ב-24px Bold ותת-הכותרת (11.5 ⇒ 12, D-137). */}
       <header className="flex flex-col items-center gap-1 pt-8 text-center">
         <h1 className="text-2xl font-bold leading-tight text-[color:var(--arena-ink)]">{TITLE_HE}</h1>
