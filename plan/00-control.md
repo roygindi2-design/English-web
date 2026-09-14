@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                               # ▶️ C-0610 (DEV): `T-340`·`T-315` 🟣. ‏`general` ⬜=0 — ⛔ אך `loop`/`base` ⛔ אינן ריקות (נותרו 5 ⬜).
-STATE: READY                      # ▶️ C-0610 (DEV): `verify` exit 0. ⛔ אין חוסם. ⛔ טיק ⛔ לא-UI ⇒ ⛔ אין הליכה ו⛔ אין `generate-map` (הדיף ⛔ אינו נוגע ב-app/components/lib).
+NEXT_AGENT: DEV                              # ▶️ C-0611 (QA, מלא): שער ירוק, 5 🟣→✅. `general`∪`loop`∪`base` נושאות 5 ⬜ פנויות.
+STATE: READY                      # ▶️ C-0611 (QA): `dev`==`work/current` (ff-only שקט כבר קרה בשער זול לפני הטיק). ⛔ אין חוסם.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-14T16:47:40Z"   # C-0610 (DEV, בנייה) — שתי שורות `loop`, קומיט לכל אחת.
+LAST_HANDOFF_AT: "2026-09-14T17:44:00Z"   # C-0611 (QA, מלא) — שער ירוק, 5 🟣→✅, F-248 נסגר · F-254 נפתח.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "QA"               # 🔒 ננעלה 2026-09-14T17:44:30Z — C-0611 (QA, מלא).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ▶️ C-0610 (DEV): `T-340` 🟣 — תא «סיבת ההעברה» מקבל תקרת 320 תווים ומצבה לארכיון (נמדד על `C-0588`: 1,539⇐581 בתים), ובדיקה 9 נוקבת בשורה הארוכה ביותר ⇒ ההישנות החמישית (`F-182`·`F-211`·`F-245`) מקבלת אכיפה, ⛔ לא תקרה חדשה. `T-315` 🟣 — ⓐ/ⓑ נמדדו **כבר-חיים** (‏`T-299`/`F-225`), ⓒ נבנתה ואומתה במוטציה.
 #   msgs:    4 / 120           # 39-messages-spec § 9 · **המוקד.** ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "42fe1774 · 2026-09-14T13:30:01Z · **C-0607 (PROMOTER).** קודם ל-`main`, `4a402514..42fe1774` ff-only, 96 קומיטים. `verify` ירוק בדחיפה (4477/4477 מלא בקלון + 2819/2819 חוזר ב-hook), `check:mobile` 1927. `loop:health` 22/23 (18=`F-248`, כבר פתוח → CONTENT — ⛔ לא נסגר ע"י הטיק הזה). Netlify: `state:ready · context:production · branch:main · commit_ref:42fe1774` תואם. 🔴 בדיקת עשן `/api/health` **קופצנית — 2/6 `ok:true`, 4/6 `ok:false` — ⛔ ראו `PROMOTION_BLOCKERS`.**"
+RELEASE_READY: "c4b318d4 · 2026-09-14T17:44Z · **C-0611 (QA, מלא).** `dev`==`work/current` (שער זול קדם). `verify` מיוחס ירוק ל-c4b318d4 (17:26:51Z) · `loop:health` 22/23 (18=שני ענפי `claude/*` תקועים — `F-248` נסגר, `F-254` חדש → CONTENT) · הליכה חיה 375×780 על `ArenaSummary`/`DeckSelector` — 0 פגם חדש, תואם `F-151`/פריט 105. 5 🟣→✅. בדיקת עשן `/api/health` 4/4 `ok:true`. `PROMOTION_BLOCKERS`/קידום ל-main ⇐ PROMOTER בלבד."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "42fe177"  # main אחרי הקידום של 14/09 (C-0607, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
+LAST_REVIEWED_COMMIT: "c4b318d"  # dev אחרי C-0611 (QA, מלא). `verify` מיוחס ירוק על אותו SHA.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -59,5 +59,5 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
 
-| C-0609 | DEV | QA | 2026-09-14T14:46:30Z | 🔨 **בנייה — שתי שורות `general`, כל אחת בקומיט משלה.** `T-348` הגדר הכפולה ⇐ `left=24 · w=327`; `T-349` דרך יציאה אחת ⇐ `top=515.5`. `verify` exit 0, `check:mobile` 1963 ⇐ 1957. `F-253` 🟣. ⛔ עצירה על קופסת הזמן, ⛔ ולא על תור ריק. | `components/ArenaSummary.tsx` · `components/DeckSelector.tsx`(+בדיקה) · `scripts/verify-mobile.mjs` · הרגיסטרים |
 | C-0610 | DEV | QA | 2026-09-14T16:47:40Z | 🔨 **בנייה — שתי שורות `loop`, קומיט לכל אחת.** `T-340`: תא הסיבה מקבל תקרת **320 תווים** ומצבה לארכיון — נמדד על `C-0588`, 1,539⇐581 בתים; ובדיקה 9 נוקבת בשורה הארוכה ביותר. `T-315`: ⓐ/ⓑ נמדדו **כבר-חיים**, ⓒ נבנתה ואומתה **במוטציה** (3 מ-4 מאדימות). `verify` exit 0. | `scripts/gc-memory.mjs`(+`.d.mts`+בדיקה) · `scripts/loop-health.mjs`(+בדיקה) · `scripts/measure-plan-tables.test.ts` · הרגיסטרים |
+| C-0611 | QA | DEV | 2026-09-14T17:44:00Z | 🚦 **מסלול: מלא — שער ירוק, `dev`==`work/current` כבר (שער זול קדם). 5 🟣→✅** (`T-315`·`T-329`·`T-340`·`T-348`·`T-349`). הליכה חיה על שני המסכים שהברנץ' נגע (`ArenaSummary`·`DeckSelector`) — 0 פגם חדש. `F-248` נסגר (תוכנו כבר ב-`dev`, ענף אחר). `F-254` נפתח — ענף `claude/elegant-allen-46tz0v` נושא 30 חושי Amirnet שאיש לא ראה. בדיקת עשן 4/4 `ok:true`. | `plan/50-tasks.md`·`plan/60-findings.md`·`docs/plan-open.md`·`plan-tables.md`·`docs/architecture-map.json`·`plan/00-control.md`·`plan/03-for-roy.md` |
