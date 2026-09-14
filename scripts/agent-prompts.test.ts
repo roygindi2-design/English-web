@@ -901,6 +901,32 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   });
 
   /**
+   * 🗺️ ⟦T-306 · 14/09 · `D-220` · closes `F-215`⟧ **הצעד יושב ב**רצף הסגירה** עצמו,**
+   * **⛔ ולא רק בסעיף הסבר שמעליו.**
+   *
+   * 🔬 **מדידת `F-215`, על טיפ חי:** על `origin/work/current` ב-`189c930`,
+   * `npm run generate-map && git status --porcelain docs/architecture-map.json`
+   * הדפיס קובץ **משתנה** אף ש-DEV זה עתה דחף `T-192`/`T-285` על שבעה קבצים.
+   * ⇒ המפה סטתה מהמקור **בין** הדחיפה של DEV לשער של QA.
+   *
+   * 🔴 **תרחיש הכישלון:** `D-165` בנה את המפה כדי שסוכן ⛔ לא יקרא את
+   * `plan/30-architecture.md` (169,551 בתים) בשאלה «מה מייבא את מה». ⇒ סוכן שקורא
+   * JSON שסטה מקבל תשובה **שגויה**, וקורא אותה כנכונה, ⛔ בלי סימן.
+   *
+   * ⚠️ **וההתניה היא חצי מהטענה:** «נגעת בקוד», ⛔ ולא «בכל טיק» — טיק רגיסטרים
+   * ⛔ אינו מזיז את המפה, ודרישת ריצה ממנו הייתה הופכת את הצעד לרעש.
+   */
+  it('DEV: רצף הסגירה נוקב ב-generate-map, ומתנה אותו בנגיעה בקוד (T-306 · F-215)', () => {
+    const line = /^Any tick that wrote code:.*$/m.exec(text('DEV'))?.[0] ?? '';
+    expect(line, '⛔ שורת רצף הסגירה ⛔ אינה ב-DEV.md').not.toBe('');
+    expect(line, '⛔ הצעד עצמו חסר מהרצף').toContain('generate-map');
+    expect(line, '⛔ ו⛔ לא נאמר שהמפה נוסעת עם הקוד').toContain('SAME commit');
+    expect(line, '⛔ ההתניה נמחקה ⇒ הצעד חל גם על טיק רגיסטרים').toMatch(
+      /app\/.*components\/.*lib\//,
+    );
+  });
+
+  /**
    * ⛔ **05/09 · T-167ⓔ · D-189 — the last open piece of the post-promotion check.**
    * ⓐⓑⓒ were already built (measured C-0439): the three-taps table exists, "please
    * review the site" is banned, and Roy's ❌ becomes a 🔴 finding quoting him

@@ -673,7 +673,7 @@ and every agent that wanted to know «what imports what» paid for it. The JSON 
 to that question, it is **derived**, and it ⛔ cannot drift as long as this line is obeyed.
 ⛔ `docs/architecture-map.json` is a **generated file** — ⛔ never hand-edit it (HARD INVARIANTS).
 
-Any tick that wrote code: update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=QA`) + one journal line.
+Any tick that wrote code: **`npm run generate-map`, and the map goes in the SAME commit as the code that moved it** ⟦`T-306` · `D-220` · closes `F-215`⟧ — ⛔ **conditional, ⛔ not «every tick»:** only when the diff touched `app/` · `components/` · `lib/`; a register-only tick ⛔ does not move the map, and running it there is noise. ⚠️ Measured on a live tip (`189c930`): DEV had just pushed seven files and `generate-map` still printed a **changed** file ⇒ the map drifted **between** DEV's push and QA's gate, and `D-165` built it precisely so an agent would ⛔ not read `plan/30-architecture.md` (169,551 bytes) to ask «what imports what». · update `30-architecture.md` · `50-tasks` · `60-findings` · `00-control` (CYCLE_ID, ACTIVE_TASK_ID, `NEXT_AGENT=QA`) + one journal line.
 
 🔴 ⛔ **AND THE LOCK IS RELEASED IN A COMMIT OF ITS OWN, ⛔ AFTER THAT PUSH — ⛔ NEVER INSIDE IT.**
 ⟦NEW 12/09 · `D-210` · closes `F-218`⟧ Until today this line listed «release LOCK» **among**
