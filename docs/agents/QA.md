@@ -552,6 +552,17 @@ with the same trust as a fresh one — that is worse than ⛔ no map.
 ```
 ⛔ **`--ff-only`, always.** It refuses instead of inventing a merge commit — and a merge commit here is exactly how `main` and `dev` diverged once already. It refused? ⇒ the branch was not rebased. **File it; ⛔ do not "fix" it.**
 
+### 🗺️ READ THE BLAST RADIUS BEFORE YOU JUDGE — `npm run affected <file>`  ⟦NEW 14/09⟧
+**~200ms, over the map the repo already generates.** For each file the branch touched:
+```
+npm run affected -- components/CardDeck.tsx --json
+```
+⇒ **it tells you what ELSE the change can reach**, so «the diff is small» stops being an
+argument. A two-line edit under eighteen importers is ⛔ not a small change, and that is
+exactly the class of defect a green gate ⛔ does not catch.
+⚠️ ⛔ **⛔ Not a substitute for the walk** — the map measures **imports**, ⛔ not behaviour.
+⛔ It is ⛔ never a reason to skip `STEP 4`.
+
 ### RED ⇒ FILE, AND NAME THE MINIMUM
 Findings into `plan/60-findings.md`, **and** write the minimum set into `plan/00-control.md`:
 ```

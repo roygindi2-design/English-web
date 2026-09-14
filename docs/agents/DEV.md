@@ -548,6 +548,23 @@ clone, install and verify for each.
 ⇒ a one-line task and a day-long task are measured by the same rule, and there is
 ⛔ no number for anyone to argue about.
 
+### 🗺️ BEFORE YOU PUSH — `npm run affected <file>`  ⟦NEW 14/09 · Roy's throughput review⟧
+**One command, ~200ms, ⛔ no new dependency:** it walks `docs/architecture-map.json`
+**backwards** and prints what imports the file you changed, and at what depth.
+```
+npm run affected -- components/CardDeck.tsx           # depth 2 (default)
+npm run affected -- lib/core/swipeGrade.ts --depth 3
+```
+⇒ **run it on every file your diff touches, before the gate runs.** A row that looked
+local and returns eighteen importers is a row to split, ⛔ not to push and find out.
+🔬 **Why this is ⛔ not a graph tool:** `graphify` was installed and measured on 14/09 —
+it gave **the same five files** for `CardDeck` in 384ms that this gives in 23ms, and
+would have cost a 9.06MB artefact and 10.4s per rebuild. The map was already here.
+⚠️ ⛔ **And «⛔ nothing imports it» is ⛔ NOT «safe to change»** — the map measures
+**imports**, ⛔ not behaviour. A route, a fixture and a CSS token are all invisible to it.
+⛔ **Stale map ⇒ stale answer.** `npm run generate-map` is already in your closing
+sequence (`T-306`) — that is what keeps this honest.
+
 ### ⛔ ONE COMMIT PER TASK. ⛔ NOT ONE PER TICK.
 This is what lets QA review 40 tasks without reading 40 diffs: it reads the **branch**
 diff, and when something falls over, **the history says which task did it**. ⛔ A tick

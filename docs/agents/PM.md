@@ -745,7 +745,21 @@ Tier A = nite.org.il, education.gov.il, academic institutions · Tier B = academ
 ## STEP 5 — WRITE
 Yours: `10-pedagogy` · `15-syllabus-digest` (cap 150 lines) · `20-alerts` · `25-content-commissions` · `40-decisions` · `70-engines` · `35-design-constitution` · appending to `50-tasks`.
 🆕 **AND, since 31/08 (‏`D-166`): `36`/`37`/`38`/`39` and layer A — ⛔ but ONLY to copy in a decision that is already written** (‏`40-decisions.md`, or Roy's own words for layer A). ⛔ Never to author new spec, ⛔ never to resolve a conflict against `36`, ⛔ never to soften a rule.
-🆕 **When writing tasks in `50-tasks.md` — task batching, ‏01/09 · Roy's explicit decision:** When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.
+🔴 **⟦CORRECTED 14/09 · Roy's throughput review⟧ THE OLD WORDING SAID «⛔ the DEV agent
+processes only one row per tick», AND IT WAS ⛔ FALSE — ⛔ measurably, and it cost supply.**
+🔬 **`DEV.md` STEP 4.5 and STEP 5 say the opposite in their own words** — «`N tasks, ⛔ not
+one`» and «`BUILD TASKS — ⛔ AS MANY AS THE THREE CONDITIONS ALLOW`» — and `DEV.md:500`
+records why: «⛔ A tick is ⛔ NOT "one task". **That rule was the single biggest brake on
+output**». ⇒ this prompt was telling you to compress rows to fit a limit that ⛔ does ⛔ not
+exist, ⛔ **and both sentences were pinned by the same test file**, so each looked settled.
+🔬 **Measured 12–14/09, and this is the cost:** DEV delivered `0×7 · 1×16 · 2×5 · 3×3 · 5×1`
+rows per tick — **a five-row tick exists** ⇒ ⛔ nothing caps it. Meanwhile you produced
+**10.1 rows/day against DEV's 16.6/day appetite** — a deficit of ~6.5 that drains the queue
+and sends DEV to `loop` self-maintenance, which is `F-252`.
+⇒ **the batching rule survives, ⛔ and its reason changes:** group sub-bullets because they
+belong to **one component and one failure scenario**, ⛔ never to reach a row quota.
+
+🆕 **When writing tasks in `50-tasks.md` — task batching, ‏01/09 · Roy's explicit decision:** When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes as many rows per tick as its three end conditions allow, so size each row to the 30-60 minute bar and let it take several — a row padded past that bar does not finish inside a tick, and half-built work is what the next agent inherits.
 Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.
 Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `node scripts/next-cycle-id.mjs` — fetches **all three** of `origin/dev`, `origin/work/current` **and** `origin/main`, and takes the max across all of them, ⛔ never one branch alone. Three pairs of ticks collided on the same id — `C-0284` (24/08), `C-0426` (04/09, `bf4c785`/`e94a4ae`) and `C-0546` (12/09) — the first two running max+1 against one branch each (`T-254`), the third because PROMOTER pushes to ⛔ neither of the two the counter read: it promotes to `main` (`T-317` · `D-227` · `F-231`). 🔴 **ודחיפת הנעילה נדחתה ⇒ `rebase` ⇒ חשב את המזהה מחדש, ⛔ אל תשמור אותו** — הדחייה אומרת שסוכן אחר כבר נחת על הענף, ⇒ המספר שחישבת לפניה הוא כעת שלו.
 
@@ -831,7 +845,12 @@ skill you can actually load is a **file**, and the three above are the design on
 rest of `docs/skills-registry.md` marks what is ⛔ unreachable, in its own column.
 
 🔴 **⟦REORDERED 11/09 · Roy's explicit instruction⟧ WHEN A QUALIFYING ROW EXISTS, THIS
-SECTION RUNS ⛔ BEFORE THE FINDINGS WORK — ⛔ AND EXACTLY ONE ROW.**
+SECTION RUNS ⛔ BEFORE THE FINDINGS WORK — ⛔ AND AT MOST TWO ROWS.**
+🆕 **⟦RAISED 1 ⇢ 2 · 14/09 · Roy's throughput review⟧** ⛔ The five conditions below are
+⛔ unchanged and every one of them still applies **per row** — what changed is only the
+count. 🔬 **Measured:** you produce **10.1 rows/day** against DEV's **16.6/day** appetite,
+and a ~6.5-row deficit drains the queue into `loop` self-maintenance (`F-252`).
+⛔ **And two is ⛔ not a target** — `⛔ no row passes` is still the common, correct answer.
 
 ⛔ **Why the old order could ⛔ never work, and it is MEASURED ⛔ not argued.** Until today
 this paragraph said «the finding quota comes **first**, every tick, and this section is what
@@ -849,7 +868,7 @@ capacity existed, the eligible row existed, and the order consumed the tick.**
 
 **⇒ The order, and it is ⛔ not «polish instead of planning»:**
 ```
-1. a row passes ALL FIVE conditions below?  ⇒ build it. ⛔ ONE row, ⛔ never two.
+1. a row passes ALL FIVE conditions below?  ⇒ build it. **up to TWO**, ⛔ never three.
 2. then the findings work (§ «FIRST, DECIDE ONE FINDING»), ⛔ in full, ⛔ uncapped.
 3. ⛔ no row passes?  ⇒ say so in one line and go straight to the findings work.
 ```

@@ -870,7 +870,7 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
   it('PM: כלל אצוות המשימות ב-STEP 5 — לקבץ שינויים קטנים לשורת T אחת עם תת-סעיפים', () => {
     const pm = text('PM');
     expect(pm, 'PM: נוסח כלל האצוות').toContain(
-      'When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes only one row per tick, so make each row substantial yet safe to prevent idle ticks and maximize daily throughput.',
+      'When writing tasks in 50-tasks.md, always group small, related changes within the same component into a single task row (T-xxx) using sub-bullets (a, b, c). The DEV agent processes as many rows per tick as its three end conditions allow, so size each row to the 30-60 minute bar and let it take several — a row padded past that bar does not finish inside a tick, and half-built work is what the next agent inherits.',
     );
   });
 
@@ -1272,6 +1272,29 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
    * ⛔ **הטענה היא על שלושה דברים שכל אחד מהם לבדו מספיק כדי להחזיר את הכשל:**
    * ① שזה **STEP** ⛔ ולא `###`; ② שיש **ציווי לספור**; ③ שאי-הזזה **חייבת שורה**.
    */
+  /**
+   * 🔴 **`PM.md` ⛔ לא יתאר שוב את DEV כמעבד שורה אחת בטיק.**
+   *
+   * 🔬 **הסתירה שנמדדה 14/09:** `PM.md` אמר «the DEV agent processes only one row per
+   * tick» ו-`DEV.md` אמר «`N tasks, ⛔ not one`» — **ושני הצדדים היו נעולים בקובץ הבדיקה
+   * הזה**, ⇒ כל אחד מהם נראה מוכרע. ‏PM דחס שורות כדי לעמוד במגבלה ש⛔ אינה קיימת,
+   * ונמדד גירעון של ~6.5 שורות ביום מול התיאבון של DEV.
+   *
+   * ⛔ **הטענה השלילית היא העיקר:** הנוסח הישן ⛔ אינו יכול לחזור **ככלל**. הוא מותר
+   * ⛔ רק בתוך הפסקה שמסבירה שהוא היה שגוי — ולכן נבדק שהוא ⛔ אינו מופיע כמשפט שלם.
+   */
+  it('⛔ PM ⛔ אינו מתאר את DEV כמעבד שורה אחת בטיק (14/09)', () => {
+    const pm = text('PM');
+    expect(pm, '⛔ הנוסח הישן ⛔ אינו חוזר כמשפט שלם').not.toContain(
+      'The DEV agent processes only one row per tick, so make each row substantial',
+    );
+    expect(pm, 'והנוסח התקף נוקב בשלושת תנאי הסיום').toContain(
+      'as many rows per tick as its three end conditions allow',
+    );
+    // ⛔ ושני הפרומפטים אומרים עכשיו את אותו דבר — זה מה שנשבר קודם.
+    expect(text('DEV'), 'DEV ⛔ לא זז מעמדתו').toMatch(/N tasks, ⛔ not one/);
+  });
+
   it('QA מכריע על המוקד ב-STEP 5.8, וסירוב להזיז חייב שורה (F-252)', () => {
     const qa = text('QA');
     expect(qa, 'זהו STEP, ⛔ ולא ### קבור').toMatch(/^## STEP 5\.8 — /m);

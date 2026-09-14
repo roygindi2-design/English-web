@@ -50,7 +50,8 @@
     "loop:health": "node scripts/loop-health.mjs",
     "hooks:install": "node scripts/install-hooks.mjs",
     "generate-map": "node scripts/generate-map.mjs",
-    "prepare": "node scripts/install-hooks.mjs"
+    "prepare": "node scripts/install-hooks.mjs",
+    "affected": "node scripts/affected.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
