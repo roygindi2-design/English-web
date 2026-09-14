@@ -1335,3 +1335,51 @@ describe('the harness measures the choice card (T-066)', () => {
     expect(block).toContain('[data-card-secondary]');
   });
 });
+
+/**
+ * T-347 — THE UNCAUGHT-EXCEPTION GATE.
+ *
+ * 🔬 Measured on `a3172dbc`, ⛔ not assumed: this harness opens **9** pages and drives
+ * **44** routes at three widths, and `page.on('pageerror')` appeared **zero** times in
+ * the file. ⇒ an exception thrown in the browser was invisible to every check here.
+ *
+ * ⛔ And the existing `clean console` check ⛔ does not cover it, which is the whole
+ * point: Playwright's `console` event fires for calls to the console API. An uncaught
+ * exception is ⛔ not a console API call — it reaches `pageerror` and nowhere else. So a
+ * screen could throw on mount, paint nothing below the fold, and `check:mobile` would
+ * still print `ok … clean console` for it at all three widths.
+ *
+ * ⚠️ **And the console side is left exactly as it was, deliberately.** `EXPECTED_CONSOLE`
+ * is a per-route, per-URL, per-status allowlist — it is STRICTER than «ignore any 5xx from
+ * `/api/**`», and replacing it with the blanket rule would have widened the hole this row
+ * was opened to close. What T-347 adds is the channel that was ⛔ not listened to at all.
+ */
+describe('the harness fails on an uncaught browser exception (T-347)', () => {
+  const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('listens for pageerror — the channel an uncaught exception actually uses', () => {
+    expect(code).toContain("page.on('pageerror'");
+  });
+
+  it('watches EVERY page it opens, so a new page cannot be added unguarded', () => {
+    const opened = (code.match(/\.newPage\(\)/g) ?? []).length;
+    const watched = (code.match(/watchUncaught\(/g) ?? []).length;
+    expect(opened).toBeGreaterThan(1);
+    // ⛔ one call site per page, plus the single declaration of the helper itself.
+    expect(watched).toBe(opened + 1);
+  });
+
+  it('gives the uncaught gate ⛔ no allowlist — zero tolerance, unlike the console check', () => {
+    const block = code.slice(code.indexOf('function watchUncaught'), code.indexOf('function watchUncaught') + 1400);
+    expect(block).not.toContain('EXPECTED_CONSOLE');
+    expect(block).not.toContain('allowed');
+  });
+
+  it('names the route and the width when a route throws, ⛔ not just a count', () => {
+    expect(code).toMatch(/\$\{at\} ⛔ no uncaught exception/);
+  });
+
+  it('reports the exception message, so the failure line is actionable', () => {
+    expect(code).toMatch(/err\?\.message/);
+  });
+});

@@ -839,6 +839,35 @@ function report(line) {
   notes.push(`  ..   ${line}`);
 }
 
+/**
+ * ⛔ T-347 — THE UNCAUGHT-EXCEPTION GATE. ⛔ ZERO TOLERANCE, ⛔ AND ⛔ NO ALLOWLIST.
+ *
+ * 🔬 **Measured on `a3172dbc`, ⛔ not assumed.** This harness opens **9** pages and drives
+ * **44** routes at three widths — and `page.on('pageerror')` appeared **zero** times in the
+ * whole file. ⇒ an exception thrown inside the browser was visible to ⛔ no check here.
+ *
+ * ⛔ **And the console check further down ⛔ does not cover it.** Playwright's
+ * `console` event fires for calls to the console API; an uncaught exception is ⛔ not a call
+ * to the console API — it reaches `pageerror`, and nowhere else. ⇒ a screen could throw on
+ * mount and still be reported silent by that check at all three widths — exactly the class
+ * of defect a browser-driving gate exists to catch.
+ *
+ * ⚠️ **Why it carries ⛔ no allowlist, unlike `EXPECTED_CONSOLE`.** That allowlist exists
+ * because this harness runs `next start` with ⛔ no Supabase env, so specific endpoints answer
+ * 503 **by their own contract** — the environment, ⛔ not the screen. ⛔ Nothing in the
+ * environment makes a page throw. The baseline was measured before a line was written:
+ * **`pageerror` on all 44 routes ⇒ 0.** ⇒ the gate is green the day it is born, and any
+ * future non-zero is a real defect. ⛔ An exemption here would only ever hide one.
+ *
+ * @param page  the page to watch
+ * @returns the live array of messages; empty it between routes, read it after each.
+ */
+function watchUncaught(page) {
+  const uncaught = [];
+  page.on('pageerror', (err) => uncaught.push(err?.message ?? String(err)));
+  return uncaught;
+}
+
 const executablePath = resolveChromiumPath();
 if (!executablePath) {
   console.error(
@@ -885,6 +914,7 @@ try {
   // ---- 1. manifest is valid and complete (PW-1) -----------------------------
   {
     const page = await browser.newPage();
+    const uncaught = watchUncaught(page);
     const res = await page.goto(`${BASE}/manifest.webmanifest`);
     const manifest = JSON.parse(await res.text());
     check(manifest.display === 'standalone', 'manifest display=standalone', `got "${manifest.display}"`);
@@ -906,6 +936,7 @@ try {
       const iconRes = await page.request.get(`${BASE}${icon.src}`);
       check(iconRes.ok(), `manifest icon ${icon.src} reachable`, `HTTP ${iconRes.status()}`);
     }
+    check(uncaught.length === 0, 'manifest ⛔ no uncaught exception', `threw: ${uncaught.join(' · ')}`);
     await page.close();
   }
 
@@ -919,6 +950,7 @@ try {
     });
     const page = await context.newPage();
 
+    const uncaught = watchUncaught(page);
     let consoleErrors = [];
     // The URL travels with the text: Chromium's "Failed to load resource" message names the
     // status but NOT the resource, and the allowance below has to be able to say WHICH
@@ -943,6 +975,7 @@ try {
 
     for (const route of ROUTES) {
       consoleErrors = [];
+      uncaught.length = 0;
       await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
 
       const at = `${route} @${width}px`;
@@ -2701,6 +2734,14 @@ try {
         );
         check(unexpected.length === 0, `${at} clean console`, `errors: ${unexpected.join(' · ')}`);
       }
+
+      // ⛔ T-347 — and this one runs on EVERY route, `/does-not-exist` included: a 404 is a
+      // response, ⛔ not an exception, and the error page is a screen like any other.
+      check(
+        uncaught.length === 0,
+        `${at} ⛔ no uncaught exception`,
+        `threw: ${uncaught.join(' · ')}`,
+      );
     }
 
     await context.close();
@@ -2715,11 +2756,13 @@ try {
       colorScheme: 'dark',
     });
     const darkPage = await darkCtx.newPage();
+    const darkUncaught = watchUncaught(darkPage);
     await darkPage.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     const dark = await darkPage.evaluate(() => {
       const s = getComputedStyle(document.body);
       return { bg: s.backgroundColor, fg: s.color };
     });
+    check(darkUncaught.length === 0, 'dark / ⛔ no uncaught exception', `threw: ${darkUncaught.join(' · ')}`);
     await darkCtx.close();
 
     const lightCtx = await browser.newContext({
@@ -2727,11 +2770,13 @@ try {
       colorScheme: 'light',
     });
     const lightPage = await lightCtx.newPage();
+    const lightUncaught = watchUncaught(lightPage);
     await lightPage.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     const light = await lightPage.evaluate(() => {
       const s = getComputedStyle(document.body);
       return { bg: s.backgroundColor, fg: s.color };
     });
+    check(lightUncaught.length === 0, 'light / ⛔ no uncaught exception', `threw: ${lightUncaught.join(' · ')}`);
     await lightCtx.close();
 
     check(dark.bg !== light.bg, 'dark mode changes the page background', `both are ${dark.bg}`);
@@ -2750,6 +2795,7 @@ try {
       reducedMotion: 'reduce',
     });
     const rmPage = await rmCtx.newPage();
+    const rmUncaught = watchUncaught(rmPage);
     await rmPage.goto(`${BASE}/dev/card`, { waitUntil: 'networkidle' });
     await rmPage.locator('[data-reveal]').click();
     const rmBox = await rmPage.locator('[data-flashcard]').boundingBox();
@@ -2793,6 +2839,7 @@ try {
       'reduced motion: the release has no duration and moves nothing',
       JSON.stringify(rmAfter),
     );
+    check(rmUncaught.length === 0, 'reduced-motion /dev/card ⛔ no uncaught exception', `threw: ${rmUncaught.join(' · ')}`);
     await rmCtx.close();
   }
 
@@ -2820,6 +2867,7 @@ try {
         colorScheme: scheme,
       });
       const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
       await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
       await page.waitForSelector('[data-arena-scope]');
 
@@ -2941,6 +2989,7 @@ try {
       await ctx.close();
 
       const at = `${scheme} ${route}`;
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
       check(measured.count > 0, `${at} the arena paints text at all`, 'zero text nodes under [data-arena-scope]');
       // ⛔ The scope with no background of its own is the whole defect (F-155): the arena
       // then inherits the PAGE surface, which flips with prefers-color-scheme.
@@ -2990,9 +3039,11 @@ try {
       hasTouch: true,
     });
     const page = await context.newPage();
+    const uncaught = watchUncaught(page);
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     const onLoad = await page.locator('aside[aria-label="הוספה למסך הבית"]').count();
     check(onLoad === 0, 'install offer hidden on page load', 'it rendered before any interaction');
+    check(uncaught.length === 0, 'install offer / ⛔ no uncaught exception', `threw: ${uncaught.join(' · ')}`);
     await context.close();
   }
 
@@ -3004,6 +3055,7 @@ try {
       hasTouch: true,
     });
     const page = await context.newPage();
+    const uncaught = watchUncaught(page);
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
 
     const registered = await page.evaluate(async () => {
@@ -3033,6 +3085,7 @@ try {
       );
       await context.setOffline(false);
     }
+    check(uncaught.length === 0, 'service worker / ⛔ no uncaught exception', `threw: ${uncaught.join(' · ')}`);
     await context.close();
   }
   } // if (!JOURNEYS_ONLY)
@@ -3045,7 +3098,9 @@ try {
       hasTouch: true,
     });
     const page = await context.newPage();
+    const uncaught = watchUncaught(page);
     for (const [name, journey] of Object.entries(JOURNEYS)) {
+      uncaught.length = 0;
       const result = await walkJourney(page, name, journey);
       // 🔴 The baseline is born as a WARNING, not a failure (plan step 6): `check()`
       // is never called on it. A number that fails the build the day it is first
@@ -3055,6 +3110,13 @@ try {
           `deadEnd=${result.deadEnd.length ? result.deadEnd.join(' · ') : '—'} · ` +
           `nameDrift=${result.nameDrift.length ? result.nameDrift.join(' · ') : '—'} · ` +
           `wayBack=${result.wayBack.length ? result.wayBack.join(' · ') : '—'}`,
+      );
+      // ⛔ T-347 — the walk crosses screens, so this is the one place an exception thrown by
+      // a NAVIGATION (⛔ not by a first paint) can surface at all.
+      check(
+        uncaught.length === 0,
+        `journey ${result.name} ⛔ no uncaught exception`,
+        `threw: ${uncaught.join(' · ')}`,
       );
     }
     await context.close();
