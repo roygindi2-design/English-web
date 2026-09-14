@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
-const withoutComments = (src: string): string =>
-  src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
 const SRC = readFileSync('components/SpellCard.tsx', 'utf8');
 const CODE = withoutComments(SRC);
 

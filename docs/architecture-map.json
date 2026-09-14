@@ -17,7 +17,9 @@
   ],
   "app/(tabs)/settings/layout.tsx": [],
   "app/(tabs)/settings/loading.tsx": [],
-  "app/(tabs)/settings/page.test.ts": [],
+  "app/(tabs)/settings/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/(tabs)/settings/page.tsx": [
     "components/LevelPath.tsx",
     "lib/api/client.ts",
@@ -83,7 +85,9 @@
     "lib/core/arenaCharacter.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/arcade/collected/route.test.ts": [],
+  "app/api/arcade/collected/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/arcade/collected/route.ts": [
     "lib/core/arcadeCollection.ts",
     "lib/supabase/auth.ts"
@@ -93,12 +97,16 @@
     "lib/core/arenaCharacter.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/arcade/result/route.test.ts": [],
+  "app/api/arcade/result/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/arcade/result/route.ts": [
     "lib/core/arcadeResult.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/arcade/round/route.test.ts": [],
+  "app/api/arcade/round/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/arcade/round/route.ts": [
     "lib/core/arcadeDistractors.ts",
     "lib/core/arcadeLadder.ts",
@@ -124,34 +132,46 @@
     "lib/supabase/auth.ts",
     "lib/supabase/devUser.ts"
   ],
-  "app/api/health/route.test.ts": [],
+  "app/api/health/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/health/route.ts": [
     "lib/core/health.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/levels/current/route.test.ts": [],
+  "app/api/levels/current/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/levels/current/route.ts": [
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/levels/scan/route.test.ts": [],
+  "app/api/levels/scan/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/levels/scan/route.ts": [
     "lib/core/levelScan.ts",
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/levels/summary/route.test.ts": [],
+  "app/api/levels/summary/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/levels/summary/route.ts": [
     "lib/core/cefrLevels.ts",
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/practice/route.test.ts": [],
+  "app/api/practice/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/practice/route.ts": [
     "lib/core/deck.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/profile/route.test.ts": [],
+  "app/api/profile/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/profile/route.ts": [
     "lib/core/onboarding.ts",
     "lib/supabase/auth.ts"
@@ -170,7 +190,9 @@
     "lib/core/scheduler.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/study/queue/route.test.ts": [],
+  "app/api/study/queue/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/study/queue/route.ts": [
     "lib/core/deck.ts",
     "lib/core/queue.ts",
@@ -183,7 +205,9 @@
     "lib/supabase/auth.ts",
     "lib/supabase/postgrest.ts"
   ],
-  "app/api/world/lexicalClassOnly.test.ts": [],
+  "app/api/world/lexicalClassOnly.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/world/messages/route.test.ts": [],
   "app/api/world/messages/route.ts": [
     "lib/core/levelSummary.ts",
@@ -199,7 +223,9 @@
     "lib/core/world.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/world/recall/route.test.ts": [],
+  "app/api/world/recall/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/world/recall/route.ts": [
     "lib/core/worldRecall.ts",
     "lib/supabase/auth.ts"
@@ -223,7 +249,9 @@
     "lib/supabase/stories.ts"
   ],
   "app/arcade/arcade-tokens.css": [],
-  "app/arcade/page.test.ts": [],
+  "app/arcade/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/arcade/page.tsx": [
     "app/arcade/arcade-tokens.css",
     "components/ArenaShell.tsx"
@@ -436,7 +464,9 @@
     "components/ServiceWorkerRegistrar.tsx",
     "components/SourcesFooter.tsx"
   ],
-  "app/loading.test.ts": [],
+  "app/loading.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/loading.tsx": [],
   "app/login/page.tsx": [
     "components/AuthForm.tsx"
@@ -447,7 +477,9 @@
   ],
   "app/not-found.test.ts": [],
   "app/not-found.tsx": [],
-  "app/offline/page.test.ts": [],
+  "app/offline/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/offline/page.tsx": [
     "lib/core/failure.ts"
   ],
@@ -459,7 +491,9 @@
     "lib/core/onboarding.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/page.test.ts": [],
+  "app/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/page.tsx": [
     "components/ActionBar.tsx",
     "components/EnWord.tsx",
@@ -473,7 +507,9 @@
     "components/EnWord.tsx",
     "lib/core/dataSources.ts"
   ],
-  "app/study/page.test.ts": [],
+  "app/study/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/study/page.tsx": [
     "components/StudyDeckScreen.tsx",
     "lib/core/deck.ts"
@@ -602,7 +638,8 @@
     "lib/core/failure.ts"
   ],
   "components/ArenaBattle.test.ts": [
-    "lib/core/characterBase.ts"
+    "lib/core/characterBase.ts",
+    "lib/testSource.ts"
   ],
   "components/ArenaBattle.tsx": [
     "components/ActionBar.tsx",
@@ -677,7 +714,9 @@
     "lib/core/auth.ts",
     "lib/core/failure.ts"
   ],
-  "components/CardDeck.test.ts": [],
+  "components/CardDeck.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/CardDeck.tsx": [
     "components/Flashcard.tsx",
     "lib/core/deck.ts",
@@ -686,11 +725,15 @@
     "lib/core/sentenceCard.ts",
     "lib/core/spring.ts"
   ],
-  "components/CardSkeleton.test.ts": [],
+  "components/CardSkeleton.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/CardSkeleton.tsx": [],
   "components/CloseIcon.test.ts": [],
   "components/CloseIcon.tsx": [],
-  "components/CollectedWords.test.ts": [],
+  "components/CollectedWords.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/CollectedWords.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -708,7 +751,9 @@
     "lib/core/failureExit.ts",
     "lib/core/world.ts"
   ],
-  "components/DeckSelector.test.ts": [],
+  "components/DeckSelector.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/DeckSelector.tsx": [
     "components/LockIcon.tsx",
     "lib/api/client.ts",
@@ -745,7 +790,9 @@
   ],
   "components/LatinField.test.ts": [],
   "components/LatinField.tsx": [],
-  "components/LessonScreen.test.ts": [],
+  "components/LessonScreen.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/LessonScreen.tsx": [
     "components/EnWord.tsx",
     "lib/core/lesson.ts"
@@ -754,7 +801,9 @@
     "components/EnWord.tsx",
     "lib/core/cefrLevels.ts"
   ],
-  "components/LevelMapScreen.test.ts": [],
+  "components/LevelMapScreen.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/LevelMapScreen.tsx": [
     "components/DeckSelector.tsx",
     "components/EnWord.tsx",
@@ -767,14 +816,18 @@
     "lib/core/failureExit.ts",
     "lib/core/levelSummary.ts"
   ],
-  "components/LevelPath.test.ts": [],
+  "components/LevelPath.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/LevelPath.tsx": [
     "components/EnWord.tsx",
     "lib/core/cefrLevels.ts",
     "lib/core/levelPath.ts",
     "lib/core/levelSummary.ts"
   ],
-  "components/LevelScan.test.ts": [],
+  "components/LevelScan.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/LevelScan.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -796,7 +849,9 @@
     "lib/core/levelSummary.ts",
     "lib/core/studyTracks.ts"
   ],
-  "components/MeWordsLearned.test.ts": [],
+  "components/MeWordsLearned.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/MeWordsLearned.tsx": [
     "lib/core/failure.ts"
   ],
@@ -841,7 +896,9 @@
   "components/SourcesFooter.tsx": [
     "lib/core/licenceFooter.ts"
   ],
-  "components/SpellCard.test.ts": [],
+  "components/SpellCard.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/SpellCard.tsx": [
     "lib/core/arenaGesture.ts",
     "lib/core/spring.ts"
@@ -868,13 +925,17 @@
     "lib/core/storyTapTargets.ts",
     "lib/core/worldApps.ts"
   ],
-  "components/StudiesScreen.test.ts": [],
+  "components/StudiesScreen.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/StudiesScreen.tsx": [
     "lib/api/client.ts",
     "lib/core/levelSummary.ts",
     "lib/core/studyTracks.ts"
   ],
-  "components/StudyDeckScreen.test.ts": [],
+  "components/StudyDeckScreen.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/StudyDeckScreen.tsx": [
     "components/ActionBar.tsx",
     "components/CardDeck.tsx",
@@ -894,7 +955,9 @@
     "components/GlobeIcon.tsx"
   ],
   "components/TabLoading.test.ts": [],
-  "components/UnknownList.test.ts": [],
+  "components/UnknownList.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/UnknownList.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -1543,6 +1606,7 @@
   ],
   "lib/supabase/worldAuthorKind.test.ts": [],
   "lib/supabase/worldSchema.test.ts": [],
+  "lib/testSource.scan.test.ts": [],
   "lib/testSource.test.ts": [
     "lib/testSource.ts"
   ],

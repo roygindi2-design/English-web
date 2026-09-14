@@ -1,14 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /** תבנית `components/WritingChain.test.ts` — סריקת מקור אחרי הלבנת הערות. */
 const SRC = readFileSync('components/CollectedWords.tsx', 'utf8');
-function withoutComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
-}
 const CODE = withoutComments(SRC);
 
 describe('§ 4.2יב · T-110 — רשימה, ⛔ ולא מנוע', () => {

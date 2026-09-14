@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-076 — the offline screen was the only terminal state in the product with
@@ -12,14 +13,6 @@ import { describe, expect, it } from 'vitest';
  * A source guard and ⛔ not a render test: environment is `node`, jsdom absent.
  */
 const SRC = readFileSync('app/offline/page.tsx', 'utf8');
-
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

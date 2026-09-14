@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<DeckSelector>` — the כרטיסיות selector, T-065 part ג׳, plan
@@ -34,14 +35,6 @@ import { describe, expect, it } from 'vitest';
  * that the numbers on screen match the database.
  */
 const SRC = readFileSync('components/DeckSelector.tsx', 'utf8');
-
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

@@ -1,14 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
-/**
- * F-039 · F-065 — הלבנת הערות לפני כל טענה, בדיוק כמו ב-
- * `app/api/arcade/result/route.test.ts`: `grep` גולמי פוגע גם בהערה שמתעדת את האיסור
- * וגם באסרציה שאוכפת אותו. ⛔ הפתרון הוא הלבנה, ⛔ לא מחיקת ההערות.
- */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 const CODE = withoutComments(readFileSync('app/api/arcade/collected/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 

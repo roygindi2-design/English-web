@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `הגדרות` — הבית של שינוי הרמה (T-211 · D-123ד׳ · `36 § 4`).
@@ -8,18 +9,6 @@ import { describe, expect, it } from 'vitest';
  * `node` ו-jsdom נעדר בכוונה. גיאומטריה — 44px, אפס גלילה אופקית — היא `check:mobile`.
  */
 const SRC = readFileSync('app/(tabs)/settings/page.tsx', 'utf8');
-
-/**
- * ⛔ הערות-בלוק **תחילה**, ורק אז סוגריים מסולסלים ריקים — F-141: הסדר ההפוך נותן ל-`{`
- * אחד להזדווג עם סוגר-הערה הרבה אחריו ולבלוע את הקוד שביניהם, וכל `not.toContain`
- * בקובץ נעשה ריק בשקט.
- */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
-    .replace(/\{\s*\}/g, '');
-}
 
 const CODE = withoutComments(SRC);
 const PROXY = readFileSync('proxy.ts', 'utf8');

@@ -1,14 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `GET/POST /api/levels/scan` — T-082 · D-041. בדיקות מקור, כמו שאר נתיבי ה-API:
  * סביבת vitest היא `node`, אין כאן Supabase חי, והדבר שנשמר כאן הוא **סדר השומרים
  * ואילו עמודות נכתבות** — בדיוק מה שמוטציה יכולה לשבור בשקט.
  */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(readFileSync('app/api/levels/scan/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');

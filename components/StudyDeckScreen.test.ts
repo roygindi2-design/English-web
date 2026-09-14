@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<StudyDeckScreen>` — T-065 part ב׳, plan `2026-08-13-study-queue.md` task 6.
@@ -30,14 +31,6 @@ import { describe, expect, it } from 'vitest';
  * reachable in a real engine.
  */
 const SRC = readFileSync('components/StudyDeckScreen.tsx', 'utf8');
-
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

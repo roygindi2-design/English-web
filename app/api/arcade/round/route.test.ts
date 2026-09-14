@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 const CODE = withoutComments(readFileSync('app/api/arcade/round/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 

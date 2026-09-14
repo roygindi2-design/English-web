@@ -1,11 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-
-/** F-039 · F-065 — הלבנת הערות לפני כל טענה. אותה פונקציה בדיוק כמו
- *  app/api/arcade/result/route.test.ts:9. */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
+import { withoutComments } from '@/lib/testSource';
 
 const ROUTES = [
   'app/api/world/bank/route.ts',

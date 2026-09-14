@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * The counted figure on the אני tab, and the failure that read can produce.
@@ -15,14 +16,6 @@ import { describe, expect, it } from 'vitest';
  * job, through the `/dev/tabs/me` fixture that renders this same component.
  */
 const SRC = readFileSync('components/MeWordsLearned.tsx', 'utf8');
-
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

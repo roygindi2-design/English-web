@@ -1,10 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /** POST /api/levels/current — T-081 · D-037. בדיקות מקור, כמו שאר נתיבי ה-API. */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(readFileSync('app/api/levels/current/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');

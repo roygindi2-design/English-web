@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `/study` — T-065 part ב׳, plan `2026-08-13-study-queue.md` task 6.
@@ -17,13 +18,6 @@ import { describe, expect, it } from 'vitest';
  * ⛔ It cannot prove the page renders — that is `/dev/deck` and `check:mobile` (task 8).
  */
 const SRC = readFileSync('app/study/page.tsx', 'utf8');
-
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

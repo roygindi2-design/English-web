@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<LevelMapScreen>` — לשונית «כרטיסיות», **מסך הבית של `36 § 5`** (T-210 · D-123).
@@ -11,21 +12,6 @@ import { describe, expect, it } from 'vitest';
  * דרך הפיקסטורה `/dev/tabs/cards`, שמאז C-0318 מוזנת בסיכום לא-ריק.
  */
 const SRC = readFileSync('components/LevelMapScreen.tsx', 'utf8');
-
-/**
- * ⚠️ **סדר הפעולות שונה C-0318, ו⛔ זו ⛔ אינה קוסמטיקה — ראה F-141.** הניסוח הקודם התחיל
- * בתבנית «סוגר מסולסל, הערת-בלוק, סוגר מסולסל» כדי להסיר הערת-JSX; הכמת עצל, אך הוא **מתארך אחורה** עד
- * שהתבנית **כולה** מתאימה, ולכן `{` אחד יכול להזדווג עם סוגר-הערה **הרבה אחריו** ולבלוע את
- * הקוד שביניהם. נמדד בטיק הזה על הקובץ הזה: **11,032 בתים ⇒ 4,397**, ו-`/api/levels/current`
- * נעלם מ-`CODE`. ⇒ כל `not.toContain` בקובץ הזה היה נעשה **ריק** בשקט.
- * ⇒ מסירים הערות-בלוק **תחילה**, ורק אז את הסוגריים המסולסלים הריקים שנשארו.
- */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
-    .replace(/\{\s*\}/g, '');
-}
 
 const CODE = withoutComments(SRC);
 

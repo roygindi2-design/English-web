@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * ‏T-089 · § 4.2ט — אנטומיית מסך השיעור. **מבנה בלבד, אפס תוכן.**
@@ -11,12 +12,6 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/LessonScreen.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0072: שומר שהערה יכולה לספק ⛔ אינו שומר. */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-053 — the guards that keep `/api/health` honest.
@@ -15,11 +16,6 @@ import { describe, expect, it } from 'vitest';
  */
 const ROUTE = readFileSync('app/api/health/route.ts', 'utf8');
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
-
-/** C-0032/C-0071/C-0072: a guard a comment can satisfy guards nothing. */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(ROUTE);
 

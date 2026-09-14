@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<LevelScan>` — סריקת רמה (T-082 · D-041 · § 4.2ז).
@@ -11,22 +12,6 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/LevelScan.tsx', 'utf8');
 const PAGE = readFileSync('app/study/scan/page.tsx', 'utf8');
 const HARNESS = readFileSync('scripts/verify-mobile.mjs', 'utf8');
-
-/**
- * ⚠️ **סטייה מהתוכנית, ⛔ ולא בחירה — ונמדדה.** התוכנית העתיקה את שלוש ההחלפות
- * מ-`components/LevelMapScreen.test.ts:14`, ובהן `{/* … *​/}` נחתך **לפני** בלוקי
- * ההערות הרגילים. הצירוף `{` ⇐ JSDoc ⇐ ‏`*​/}` מאוחר יותר בקובץ גורם לכמת העצל
- * לבלוע את **כל** מה שביניהם: ב-`LevelScan.tsx` הפרופ `initialWords` נושא JSDoc
- * בתוך טיפוס-אובייקט (`}: {`), וההערה הבאה שנסגרת ב-`*​/}` היא הערת ה-JSX בשורה 212
- * ⇒ 128 שורות נמחקו מ-`CODE`, ושלוש בדיקות נפלו על קוד תקין.
- * ⛔ **וזו מחלקת F-064 — בדיקה חלולה:** כל `not.toContain` על קוד שנבלע **עובר לשווא**.
- * נמדד על שלושת הרכיבים הקיימים (`LevelMapScreen` · `ArenaBoard` · `ArcadeEntry`):
- * ⛔ אף אחד מהם ⛔ אינו מפעיל את המלכודת היום. נפתח **F-091 ⚪** על התבנית עצמה.
- * כאן: בלוקי ההערות נחתכים תחילה, ולכן `{/* … *​/}` נותר `{}` — ⛔ בלי בליעה.
- */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

@@ -1,16 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /** `<UnknownList>` — שורה 5 של § 4.2ז (T-083). שומר מקור, כמו שאר רכיבי המסך. */
 const SRC = readFileSync('components/UnknownList.tsx', 'utf8');
 const SCREEN = readFileSync('components/LevelMapScreen.tsx', 'utf8');
-
-function withoutComments(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(SRC);
 

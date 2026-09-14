@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * GET /api/levels/summary — T-080, לפי `docs/superpowers/plans/2026-08-17-level-map.md`.
@@ -9,9 +10,6 @@ import { describe, expect, it } from 'vitest';
  * מה שנשאר לאכוף כאן הוא מה שאי-אפשר לבדוק בשכבה הטהורה — סדר ההגנות, מיפוי השגיאות,
  * ומה אסור שייצא החוצה.
  */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 
 const CODE = withoutComments(readFileSync('app/api/levels/summary/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');

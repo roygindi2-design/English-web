@@ -1,11 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
-/** F-065: גרפ שאינו מלבין הערות נכשל על קוד תקין — הערה שמזכירה `.update(` כדי
- *  להסביר שהוא אסור הייתה מפילה את הבדיקה שאוסרת אותו. */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 const CODE = withoutComments(readFileSync('app/api/world/recall/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 

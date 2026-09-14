@@ -1,22 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-
-/**
- * GET /api/study/queue — T-064 חלק ב׳, לפי `docs/superpowers/plans/2026-08-13-study-queue.md`.
- *
- * הבדיקות רצות על ה**מקור** ולא על קריאה חיה, בדיוק כמו `app/api/profile/route.test.ts`:
- * המסלול דורש ENV של Supabase ו-session אמיתי, ו-`docs/api-contract.md` הוא מסמך. ההיגיון
- * עצמו — מיון, סינון וצורת החוט — כבר נבדק ב-`lib/core/deck.test.ts` על 23 בדיקות התנהגות;
- * מה שנשאר לאכוף כאן הוא בדיוק מה שאי אפשר לבדוק בשכבה הטהורה: **סדר** ההגנות, ומה
- * **אסור** שייצא מהמסלול החוצה.
- *
- * ⚠️ הבדיקות רצות על מקור מנוקה-הערות (C-0032/C-0071/C-0072): הגנה שהערה יכולה לספק
- * אינה מגינה על דבר, ובלי הניקוי מחרוזת כמו `senses.cefr_level` בתוך הסבר הייתה מפילה
- * בדיקה שלילית על קוד תקין — או, גרוע יותר, מספקת בדיקה חיובית על קוד חסר.
- */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
+import { withoutComments } from '@/lib/testSource';
 
 const CODE = withoutComments(readFileSync('app/api/study/queue/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');

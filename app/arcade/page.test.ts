@@ -1,19 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-
-/**
- * T-177 · `37-arena-spec § 12` · `36 § 8` — שומרי מסך הזירה.
- * 🎯 הרנדר: `docs/design/kol-B-03-battle.png`.
- *
- * שומר מקור, כמו `ArenaStage.test.ts` ו-`LevelScan.test.ts`: סביבת vitest היא `node`
- * ו-jsdom נעדר בכוונה. גיאומטריה — 44px ואפס גלילה אופקית — היא עבודתו של
- * `check:mobile` דרך הפיקסטורה `/dev/arcade`.
- *
- * ⚠️ **הלבנה, ⛔ ולא מקור גולמי** (F-039 · F-064 · F-065): הקבצים כאן **מתעדים בהערה**
- * מה אסור בהם, ומדידה גולמית הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת.
- */
-const withoutComments = (src: string): string =>
-  src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+import { withoutComments } from '@/lib/testSource';
 
 const PAGE = readFileSync('app/arcade/page.tsx', 'utf8');
 const DEV_PAGE = readFileSync('app/dev/arcade/page.tsx', 'utf8');

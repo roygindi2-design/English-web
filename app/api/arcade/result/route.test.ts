@@ -1,14 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
-/**
- * F-039 · F-065 — הלבנת הערות לפני כל טענה. `grep` גולמי על הקובץ כולו פוגע גם
- * בהערה שמתעדת את האיסור וגם באסרציה שאוכפת אותו: זה false-accept בכיוון אחד
- * (F-039) ו-false-reject בכיוון השני (F-065). ⛔ הפתרון הוא הלבנה, ⛔ לא מחיקת ההערות.
- */
-function withoutComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-}
 const CODE = withoutComments(readFileSync('app/api/arcade/result/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
 

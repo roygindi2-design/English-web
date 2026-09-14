@@ -1,21 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LAYER_ORDER } from '@/lib/core/characterBase';
-
-/**
- * T-182 · `37-arena-spec § 11` — **שפת האנימציה, א1 + א2** (D-133 § א׳).
- * 🎯 הרנדר: `docs/design/kol-B-03-battle.png` · `docs/design/render_video_B.py`.
- *
- * שומר **מקור**, בדיוק כמו `components/ArenaStage.test.ts` ו-`app/arcade/page.test.ts`:
- * סביבת vitest היא `node` ו-jsdom נעדר בכוונה. ⛔ מה שנמדד כאן הוא **הקוד וה-CSS**,
- * ⛔ ולא הפיקסלים — הגיאומטריה היא עבודתו של `check:mobile` דרך `/dev/arcade`.
- *
- * ⚠️ **הלבנה, ⛔ ולא מקור גולמי** (F-039 · F-064 · F-065): הקבצים כאן **מתעדים בהערה**
- * מה אסור בהם — «⛔ אין `setTimeout`» כתוב באותיות מלאות בשני הקבצים — ומדידה גולמית
- * הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת.
- */
-const withoutComments = (src: string): string =>
-  src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync('components/ArenaBattle.tsx', 'utf8');
 const CODE = withoutComments(SRC);

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /** F-039 · F-065 · F-087 — הלבנת הערות לפני כל טענה על המקור. אותו עיקרון בדיוק
- *  כמו `withoutComments` ב-`app/api/arcade/result/route.test.ts:9`, בגרסת SQL:
+ *  כמו `withoutComments` ב-`lib/testSource.ts`, בגרסת SQL:
  *  הערת הכותרת של 0016 מסבירה למה המילוי ⛔ אינו `case when … else 'content'`,
  *  ולכן היא מכילה את המחרוזת `'content'` בעצמה. בלי ההלבנה `SQL.split(';')`
  *  מחזיר את בלוק ההערה כ"פקודה" הראשונה שמכילה `'content'`, והבדיקה מודדת

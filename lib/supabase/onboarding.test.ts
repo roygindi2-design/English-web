@@ -27,11 +27,11 @@ const SOURCE = readFileSync('supabase/migrations/0004_onboarding_answers.sql', '
  * a migration that only MENTIONS the column in a comment and never adds it.
  * A migration guard that a comment can satisfy guards nothing (F-007's shape).
  */
-function withoutComments(sql: string): string {
+function withoutSqlComments(sql: string): string {
   return sql.replace(/--[^\n]*/g, '');
 }
 
-const MIGRATION = withoutComments(SOURCE);
+const MIGRATION = withoutSqlComments(SOURCE);
 const SQL = MIGRATION.toLowerCase();
 
 describe('the onboarding columns', () => {
