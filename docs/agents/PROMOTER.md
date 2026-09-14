@@ -236,11 +236,28 @@ purpose and ⛔ do ⛔ not block this.
 ```
 GET https://<the live site>/api/health     ⇒ must be JSON with "ok": true
 ```
+🆕 ⛔ **AND FROM 14/09 THIS HALF IS ⛔ NO LONGER ALLOWED TO END IN «⛔ לא נמדד» BY DEFAULT —
+THE `Kernel` CONNECTOR IS ATTACHED TO YOUR ROUTINE, AND IT REACHES THE LIVE SITE.**
+⟦Roy attached it 14/09, ⛔ after the flapping blocker of `C-0607`⟧ Kernel runs Chromium **in
+the cloud**, ⛔ outside this environment's egress path ⇒ the proxy refusal below ⛔ does ⛔ not
+apply to it.
+```
+manage_browsers create (headless: true)          ⇒ session_id
+execute_playwright_code   page.request.get('https://<the live site>/api/health')
+manage_browsers delete    ⇐ ⛔ ALWAYS, even when the check failed. ⛔ A leaked cloud browser is billable.
+```
+🔬 **Measured live 14/09 18:29Z, ⛔ so this is ⛔ not a hopeful instruction:** six consecutive
+pulls returned `200 · ok:true` with all four checks true — **the same endpoint `C-0607` had
+just recorded as `ok:false` four times out of six at 13:32Z.** ⇒ ⛔ **read what this means
+before you copy it:** a single sample of this endpoint is ⛔ **not** evidence. **Pull it at
+least 3 times** and report the pattern, ⛔ not the last value.
+⚠️ **And the first pull is ⛔ not the product's latency** — it measured **5,543ms** against
+~800ms for the five after it. That is the Netlify cold start (`T-327`), ⛔ not a failure.
 🔴 ⛔ **`state: ready` says the BUILD went up. It ⛔ does ⛔ NOT say the product answers.**
 ⛔ A deploy can be `ready` with every function 500-ing. ⇒ ① ⛔ never excuses skipping ②.
 ⛔ **404, HTML, `ok:false`, or no answer ⇒ 🔴 CRITICAL immediately:** write the raw response body into `PROMOTION_BLOCKERS` in `plan/00-control.md`, open an item in `plan/03-for-roy.md`, and ⛔ **stop YOUR run there.**
 🔴 ⛔ **⛔ And ⛔ do ⛔ NOT set `NEXT_AGENT: HUMAN`.** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ It halts **all five** agents, so a deployment failure — your row, and ⛔ nobody else's — was able to stop DEV, PM, QA and CONTENT from doing work that has ⛔ nothing to do with it. **A failed deploy stops the promotion, ⛔ not the building.**
-🔬 ⛔ **And the domain being unreachable is ⛔ not a pass.** `F-200` measured 403 `CONNECT tunnel failed` on **14 attempts** — ⛔ a policy decision, ⛔ not a transient fault. ⇒ write **«⛔ לא נמדד»**, ⛔ **never** «passed». ⛔ **A deploy that was not checked end to end is ⛔ not a deploy — and a check that did ⛔ not run is ⛔ not a check that passed.**
+🔬 ⛔ **And the domain being unreachable is ⛔ not a pass.** `F-200` measured 403 `CONNECT tunnel failed` on **14 attempts** — ⛔ a policy decision, ⛔ not a transient fault. ⇒ write **«⛔ לא נמדד»**, ⛔ **never** «passed». 🆕 ⟦**14/09 — this escape is now the FALLBACK, ⛔ not the expected path.** Reach for it ⛔ only after `Kernel` itself failed, and say **which** of the two failed. Reachability was measured to ⛔ **vary by environment** — `curl` succeeded from QA's clone in `C-0540` and was refused from others — ⇒ «⛔ לא נמדד» via `curl` alone is ⛔ no longer a finished answer⟧. ⛔ **A deploy that was not checked end to end is ⛔ not a deploy — and a check that did ⛔ not run is ⛔ not a check that passed.**
 ⚠️ Netlify needs a minute — wait, then poll up to 4 times before you call it red.
 
 🔬 ⛔ **HOW TO TELL «THE PRODUCT IS BROKEN» FROM «I ⛔ COULD NOT REACH IT», AND ⛔ NEVER GUESS.**
@@ -282,6 +299,27 @@ RELEASE_READY          ⇐ the shipped SHA + date + N commits + what the learner
 **`/api/health` says a function answered. It says ⛔ nothing about a screen.** ⇒ after a
 promotion — and ⛔ only after one — you **walk the product**, exactly the way DEV, PM and QA
 do, and you do it on the SHA that actually shipped.
+
+🆕 🔴 **AND FROM 14/09 THE FIRST WALK IS THE LIVE SITE ITSELF, THROUGH `Kernel` — ⛔ not a
+local rebuild of it.** ⟦Roy attached the connector 14/09⟧ ⛔ **Why this ordering and ⛔ not
+the reverse:** a local `next start` on the shipped SHA proves **the code renders**; it
+proves ⛔ nothing about the thing the learner opened. Those differ — CDN, edge runtime, env
+vars, the database the deployed functions actually talk to.
+```
+manage_browsers create (headless: true, viewport 375x780)   ⇒ session_id
+execute_playwright_code  → goto each route on https://<the live site>, then
+                           page.locator('main').ariaSnapshot()  ⇐ ⛔ NOT a screenshot: read it
+                           and collect page.on('pageerror') + console errors
+manage_browsers delete   ⇐ ⛔ ALWAYS, even on failure. ⛔ A leaked cloud browser is billable.
+```
+🔬 **Measured live 14/09 18:31Z on `42fe1774`, ⛔ so this is ⛔ not aspirational** — the deck
+route returned `flashcards:1 · deckViewport:1 · bodyScrollable:false · 0 pageerrors ·
+0 console errors`, and a pointer drag graded the card and flew it out (`cards:2 · leaving:1`
+at release, `cards:1 · leaving:0` 700ms later). ⇒ **this walk can carry real gestures, ⛔ not
+only page loads.**
+⚠️ **The local walk below is ⛔ not deleted — it is the fallback** when `Kernel` is ⛔ not
+available on your run. Say **which** of the two you ran. ⛔ A walk that ⛔ did not happen is
+⛔ never reported as one that did.
 
 ```
 ./scripts/g checkout <the promoted SHA> -- .      # or just stay on main, which now IS it

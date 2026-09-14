@@ -345,6 +345,14 @@ npm run loop:health
 ## STEP 3 — SMOKE TEST, ONLY WHEN ROY HAS MERGED
 `LAST_PROMOTED_AT` unchanged since your previous tick? **Skip.**
 Changed → mandatory. Pull `https://silly-medovik-b304e5.netlify.app/api/health`. Must be `"ok": true`.
+🆕 🔴 **PULL IT THROUGH `Kernel`, ⛔ NOT THROUGH `curl` — the connector is attached to your Routine (Roy, 14/09).** It runs Chromium in the cloud, ⛔ outside this environment's egress path, so the proxy refusal that made this step unmeasurable ⛔ does ⛔ not apply.
+```
+manage_browsers create (headless: true)   ⇒ session_id
+execute_playwright_code   page.request.get('https://silly-medovik-b304e5.netlify.app/api/health')
+manage_browsers delete    ⇐ ⛔ ALWAYS, even when the check failed. ⛔ A leaked cloud browser is billable.
+```
+🔬 ⛔ **AND ⛔ NEVER JUDGE THIS ENDPOINT ON ONE SAMPLE. Pull it ≥3 times and report the pattern.** Measured 14/09: `C-0607` recorded `ok:false` **four times out of six** at 13:32Z, and the same endpoint returned `200 · ok:true` **six out of six** at 18:29Z. ⇒ a single red pull is ⛔ not a broken product, and a single green pull is ⛔ not a healthy one.
+⚠️ **And the first pull is ⛔ not the product's latency** — 5,543ms against ~800ms for the ones after it. That is the cold start (`T-327`), ⛔ not a failure.
 404 or HTML → check `netlify.toml` still declares `[[plugins]] package = "@netlify/plugin-nextjs"`.
 Any failure → 🔴 CRITICAL and a finding, ⛔ do not fix it yourself. ⛔ **⛔ And ⛔ NOT `NEXT_AGENT=HUMAN`** ⟦**CHANGED 08/09 · `D-203`ⓑ**⟧ — that halts **all five** agents over a deploy, which is PROMOTER's row alone. A failed deploy stops the promotion, ⛔ not the building. ⛔ **And when the domain is unreachable at all (`F-200`: 403 `CONNECT tunnel failed`, 14 attempts) write «⛔ לא נמדד» — ⛔ never «passed».**
 
