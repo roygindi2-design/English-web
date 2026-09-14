@@ -65,11 +65,17 @@ export default function FilterBar({
         <span className="text-sm text-ink-muted">{bar === null ? NO_NUMBER_HE : bar.labelHe}</span>
       </div>
 
-      {/* המסילה. ⛔ `flex-row-reverse` ⛔ ולא `direction` מקומי: המסמך כולו RTL, והפס
-          חייב להתמלא מימין לשמאל **גם** כשהוא מצויר משלושה אלמנטים. הרוחב הוא
-          `flex-basis` באחוזים, ולכן שלושת המקטעים תמיד מסתכמים למסילה אחת מלאה. */}
+      {/* המסילה. ⚠️ **`flex` רגיל, ⛔ ולא `flex-row-reverse`**, וזו מדידה (`T-337`,
+          המשך של `F-236`): במיכל RTL `flex-direction: row` **כבר** מניח את הילד
+          הראשון בימין ⇒ `flex-row-reverse` הופך זאת **פעם שנייה** ומחזיר ל-LTR.
+          נמדד חי ב-375px לפני התיקון: מקטע `--success` ישב `x=24→74`, כלומר צמוד
+          לקצה ה**שמאלי**, בעוד `docs/design/render_video_A.py:287`
+          (`c.rr(bx + bw_ - kw, …)`, ההערה `# RTL: fills right→left`) נועץ אותו
+          בקצה ה**ימני**. ⛔ ואין `dir` מקומי — המסמך כולו RTL, וכיוון מקומי היה
+          הגדרה שנייה. הרוחב הוא `flex-basis` באחוזים, ולכן שלושת המקטעים תמיד
+          מסתכמים למסילה אחת מלאה. */}
       <div
-        className="flex h-3.5 flex-row-reverse overflow-hidden rounded-full bg-border-subtle"
+        className="flex h-3.5 overflow-hidden rounded-full bg-border-subtle"
         data-filter-track
       >
         {bar !== null && (

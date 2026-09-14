@@ -985,6 +985,42 @@ try {
         check(!text.includes('—'), `${at} ⛔ no "—" as a metric (D-046/D-082)`, 'found "—" in main text');
       }
 
+      // 🔴 T-337 — ציר ה-RTL של פס הסינון, נמדד ב**פיקסלים** ⛔ ולא במחרוזת מחלקה.
+      //
+      // 🔬 **מה נמדד לפני התיקון** (C-0595, Chromium 375×780, `/dev/tabs/cards`): המסילה
+      // `x=24→351`, ומקטע `--success` (`ידעתי`, 61) `x=24→74` — **צמוד לקצה השמאלי**,
+      // בעוד היתרה הריקה יושבת בימין. ⇒ לומד עברי רואה פס שמתמלא מהקצה שהעין קוראת
+      // אחרון, וההתקדמות נקראת כנסיגה.
+      // ⛔ **והרנדר המחייב אומר את ההפך במפורש:** `docs/design/render_video_A.py:287` הוא
+      // `c.rr(bx + bw_ - kw, 308, kw, bh_, 7, fill=SUCCESS)` ונושא את ההערה
+      // `# RTL: fills right→left` — האריתמטיקה `bx + bw_ - kw` נועצת את המקטע בקצה הימני.
+      //
+      // ⚠️ **הבדיקה היא על ה-`right`, ⛔ ולא על שם המחלקה**, וזו הנקודה: `flex-row-reverse`
+      // הוא רק **אחד** מהאופנים שבהם הציר יכול להתהפך (‏`direction` מקומי · `order` ·
+      // `justify-content`), וכולם מתגלים כאן באותה מדידה. הסבילות ±1px היא עיגול
+      // תת-פיקסלי של `flex-basis` באחוזים, ⛔ ולא מרווח לסטייה.
+      if (route === '/dev/tabs/cards') {
+        const edges = await page.evaluate(() => {
+          const track = document.querySelector('[data-filter-track]');
+          const known = track?.querySelector('span');
+          if (!track || !known) return null;
+          const t = track.getBoundingClientRect();
+          const k = known.getBoundingClientRect();
+          return { trackRight: t.right, knownRight: k.right, knownWidth: k.width };
+        });
+        check(edges !== null, `${at} filter track + known segment in the DOM`, 'not found');
+        if (edges !== null) {
+          // ⛔ מקטע ברוחב 0 היה עובר על כל `right` — הוא חייב להיות מצויר כדי להימדד.
+          check(edges.knownWidth > 0, `${at} known segment has width`, `width=${edges.knownWidth}`);
+          const gap = Math.abs(edges.knownRight - edges.trackRight);
+          check(
+            gap <= 1,
+            `${at} RTL: known segment touches the track's RIGHT edge (T-337)`,
+            `right edge off by ${gap.toFixed(1)}px (track ${edges.trackRight.toFixed(1)}, segment ${edges.knownRight.toFixed(1)})`,
+          );
+        }
+      }
+
       // 🧹 T-326 — the licence link is drawn on a destination and ⛔ not inside a task.
       //
       // ⛔ BOTH directions, and that is the point: T-011 attaches the attribution to the
