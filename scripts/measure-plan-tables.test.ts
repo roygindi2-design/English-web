@@ -597,20 +597,112 @@ describe('🔴 הזרימה הפעילה מוצתה — חייב לקרוא ACTI
   });
   const activeOpen = readFileSync(ACTIVE_OPEN_OUT, 'utf8');
 
+  /**
+   * T-332ⓑ — ⛔ **הכיסוי מול הרגיסטר החי נשאר, ⛔ אבל מדלג במקום להאדים.**
+   * שתי הטענות למטה דורשות שהזרימה הנקובה תהיה מוצתה **בפועל**, ⇒ שורה חדשה
+   * ולגיטימית בה הופכת אותן לשקריות-לפי-מדידה. ⛔ מחיקתן הייתה מוותרת על כיסוי
+   * אמיתי (הן רצות מול הרגיסטר שהמוצר באמת נושא); השארתן קשיחות הייתה ממשיכה
+   * להפיל `verify` על עבודה תקינה — חמש פעמים עד כה. ⇒ **הן מדלגות בקול.**
+   * ⚠️ הטענה עצמה ⛔ אינה מוותרת על דבר: הגרסה המבוימת שמעל מודדת אותה **תמיד**.
+   */
+  const liveTasks = readFileSync(join('plan', '50-tasks.md'), 'utf8').split('\n');
+  const openIn = (ws: string) =>
+    liveTasks.filter((l) => l.includes(`· ${ws} ·`) && /\|\s*⬜\s*\|/.test(l)).length;
+  const arenaExhausted = openIn('arena') === 0;
+  const navExhausted = openIn('nav') === 0;
+
   it('⛔ אינה מטילה את הדגל המחייב על `nav` — spent > 0 אך ⛔ אינה הפעילה', () => {
     expect(activeOpen).not.toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `nav`/);
   });
 
-  it('כן מטילה את הדגל המחייב על `arena` — היא `ACTIVE_WORKSTREAM` בקובץ הבקרה הזה', () => {
-    expect(activeOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `arena`/);
-  });
+  it.skipIf(!arenaExhausted)(
+    'כן מטילה את הדגל המחייב על `arena` — היא `ACTIVE_WORKSTREAM` בקובץ הבקרה הזה',
+    () => {
+      expect(activeOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `arena`/);
+    },
+  );
 
-  it('⛔ לא שותקת על `nav` — מקבלת ניסוח נפרד, נכון, ⛔ ולא הטלה על QA', () => {
+  it.skipIf(!navExhausted)('⛔ לא שותקת על `nav` — מקבלת ניסוח נפרד, נכון, ⛔ ולא הטלה על QA', () => {
     expect(activeOpen).toMatch(/`nav`.*⛔ אינה הזרימה הפעילה.*⛔ אין פעולה/);
   });
 
   it('`balance:` ב-stdout סופר את שני הדגלים גם יחד', () => {
     expect(activeStdout).toMatch(/balance: \d+ rows without a workstream, \d+ bad tags, \d+ flags/);
+  });
+});
+
+/**
+ * T-332 — ⛔ **הטענה נמדדת על קלט שהבדיקה שולטת בו, ⛔ ולא על הרגיסטר החי.**
+ *
+ * 🔬 **הכשל, ⛔ ולא היפותטי — הוא קרה:** הפיקסטורה שמעל מריצה קובץ בקרה מבוים מול
+ * `plan/50-tasks.md` ה**אמיתי**, ⇒ «הדגל נופל על הזרימה הנקובה» מתקיים ⛔ רק כל עוד
+ * אותה זרימה מודדת ⬜=0 ברגיסטר החי. ‏`T-330`/`T-331` נפתחו ב-`studies` ⇒ `studies`
+ * חדלה להיות מוצתה, ו-`npm run verify` נכשל על שורה **תקינה לגמרי**, בטיק שלא נגע
+ * בסקריפט הזה כלל. התיקון אז היה **הזזת** הזרימה הנקובה (`studies` ⇢ `arena`) —
+ * ⇒ כל שורה שתיפתח ב-`arena` תפיל אותה שוב.
+ *
+ * ⇒ **הרגיסטר עצמו מבוים עכשיו**, דרך `PLAN_TASKS_FILE` שהסקריפט כבר נושא (שורה 58),
+ * בדיוק כמו `PLAN_CONTROL_FILE`. ⚠️ **והזרימה הנקובה כאן היא `story` בכוונה** — היא
+ * מודדת ⬜>0 ברגיסטר החי, ⇒ הבדיקה הזאת יכולה לעבור **אך ורק** אם הקלט באמת מבוים.
+ * ⛔ זהו ה-RED שנמדד לפני שנכתבה: בלי `PLAN_TASKS_FILE` היא נכשלת.
+ *
+ * ⛔ **והכיסוי מול הרגיסטר החי ⛔ לא בוטל** — הוא ממשיך למטה כטענה נפרדת שמדלגת
+ * כשאין זרימה מוצתה, ⛔ ולא כטענה קשיחה שמאדימה על מצב תקין.
+ */
+describe('🧪 הדגל נמדד על רגיסטר מבוים, ⛔ ולא על החי (T-332)', () => {
+  const STAGE_DIR = mkdtempSync(join(tmpdir(), 'plan-staged-'));
+  const STAGED_CONTROL = join(STAGE_DIR, '00-control.md');
+  const STAGED_TASKS = join(STAGE_DIR, '50-tasks.md');
+  writeFileSync(
+    STAGED_CONTROL,
+    ['ACTIVE_WORKSTREAM: story', '#   story:   7 / 120', '#   nav:     3 / 120', ''].join('\n'),
+    'utf8',
+  );
+  // ⛔ שמונה עמודות, בדיוק ככותרת `plan/50-tasks.md` — `rowShape` קורא לפי עמודה.
+  writeFileSync(
+    STAGED_TASKS,
+    [
+      '| id | אבן דרך | המשימה | מקור פדגוגי | סטטוס | סבבי ביקורת | קבצים | סקיל |',
+      '|---|---|---|---|---|---|---|---|',
+      '| T-901 | M0 · story · תשתית | שורה מבוימת — נסגרה | — | ✅ C-0000 | 0 | — | — |',
+      '| T-902 | M0 · nav · תשתית | שורה מבוימת — נסגרה | — | ✅ C-0000 | 0 | — | — |',
+      '| T-903 | M0 · arena · תשתית | שורה מבוימת — פתוחה | — | ⬜ | 0 | — | — |',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  const STAGED_OPEN = join(STAGE_DIR, 'plan-open.md');
+  execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PLAN_TABLES_OUT: join(STAGE_DIR, 'plan-tables.md'),
+      PLAN_OPEN_OUT: STAGED_OPEN,
+      PLAN_CONTROL_FILE: STAGED_CONTROL,
+      PLAN_TASKS_FILE: STAGED_TASKS,
+    },
+  });
+  const stagedOpen = readFileSync(STAGED_OPEN, 'utf8');
+
+  it('מטילה את הדגל על `story` — מוצתה ברגיסטר המבוים, ⛔ אף שהיא ⬜>0 בחי', () => {
+    expect(stagedOpen).toMatch(/🔴 \*\*הזרימה הפעילה מוצתה — `story`/);
+  });
+
+  it('`nav` מוצתה גם היא ⛔ אך ⛔ אינה הפעילה ⇒ ניסוח נפרד, ⛔ ולא הטלה על QA', () => {
+    expect(stagedOpen).toMatch(/`nav`.*⛔ אינה הזרימה הפעילה.*⛔ אין פעולה/);
+  });
+
+  it('`arena` נושאת ⬜ ⇒ ⛔ אינה מקבלת דגל מוצה כלל', () => {
+    expect(stagedOpen).not.toMatch(/מוצתה — `arena`/);
+    expect(stagedOpen).not.toMatch(/`arena` מוצתה/);
+  });
+
+  it('⛔ ואין לה תלות ברגיסטר החי — הזרימה הנקובה ⬜>0 שם', () => {
+    const live = readFileSync(join('plan', '50-tasks.md'), 'utf8');
+    const openStory = live
+      .split('\n')
+      .filter((l) => l.includes('· story ·') && /\|\s*⬜\s*\|/.test(l));
+    expect(openStory.length).toBeGreaterThan(0);
   });
 });
 
