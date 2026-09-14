@@ -2867,3 +2867,49 @@ same 64px overflowed off the other edge. It matters beyond that screen, because
 `document.documentElement.scrollWidth - clientWidth` reads **0** for it — «zero
 horizontal scroll» does not measure overflow **inside** a container, so any row
 narrower than its content passes the gate in silence.
+
+## C-0610 (DEV) — `T-340` · `T-315` — the journal cell gets a ceiling, and a malformed row stops being publishable
+
+**The contract other agents now rely on, in three lines.**
+
+`plan/00-control.md § 0.1` is prose inside a file with a hard byte ceiling
+(12,288 — `RULES § 0.2 ב׳`, `loop:health` check 9). The prune that already
+existed (`pruneControlHistory`, `T-249`) worked on the **number** of journal
+rows and never their **size**, so two well-written handoffs could hold ~36% of
+the ceiling on their own: measured C-0595, `C-0594` at 2,307 bytes and `C-0593`
+at 2,143. `gc:memory` printed «still over the ceiling after pruning» with
+nothing it could act on. Fifth recurrence — `F-182`, `F-211`, `F-245`.
+
+```
+trimControlHistoryReasons(text)   ⇒ every reason cell ≤ HISTORY_REASON_MAX_CHARS
+  · 320 characters INCLUDING the tombstone — the guarantee is on the cell that
+    comes out, ⛔ not on the prose that went in
+  · zero deletion: the full row lands verbatim in plan/archive/handoff-log.md,
+    deduped on the FIRST cell's cycle id, ⛔ never on prose
+  · idempotent · the other five cells return byte-for-byte
+  · runs BEFORE pruneControlHistory, so the byte budget it frees is real
+```
+
+⚠️ **The 320 is derived, ⛔ not chosen.** Measured in a live clone 14/09:
+control = 11,768 bytes · the two `§ 0.1` rows = 849 · everything else = 10,919
+⇒ 1,369 bytes for the table ⇒ ~684/row; non-reason cells ~180 ⇒ ~500 bytes for
+the reason; Hebrew measured here at **1.40 bytes/char** ⇒ ~357 characters. 320
+sits under that and above the live rows (231 and 133), so it ⛔ does not trim a
+well-formed report. ⛔ **Raising it to fit a row is the wrong move** — this
+reduces consumption, ⛔ not the requirement.
+
+**And check 9 now names the longest line and its byte count.** «You are over
+the ceiling» never said *what* to trim, which is why five separate ticks went
+looking by hand. `longestLineOf()` is the whole fix.
+
+**`T-315` — what was already true, and what was true only by accident.**
+Measured in this tick against live code: `rowShape` already flags a row whose
+unescaped `|` yields 9 columns of 8, and the `T-245`/`F-059`ⓑ test already
+proves it is counted and named ⇒ ⓐ and ⓑ were closed in practice by the
+`T-299`/`F-225` escape work. ⛔ What nothing proved is the behaviour that did
+the **harm** in C-0561: that such a row stays **out** of `⬜ פנויות ל-Dev`.
+That was correct with no test behind it. Four guards now hold it, on a fixture
+whose index-4 cell carries the open glyph literally, and mutation-checked —
+classifying malformed rows by status turns 3 of the 4 red.
+⛔ **The detector still ⛔ does not repair a row.** It reports. Auto-repairing a
+register is how prose gets deleted in silence (`T-302`).
