@@ -111,6 +111,22 @@ const ROUTES = [
   '/dev/tabs/studies',
   '/dev/tabs/cards',
   '/dev/tabs/me',
+  // T-329ⓐ · המשך של T-321 — ⛔ **הכשל המלא של בורר החפיסות, ⛔ ולא הכשל החלקי.**
+  //
+  // ⛔ **ולא נוצרה פיקסטורה חדשה, וזו מדידה ⛔ ולא חיסכון.** השורה ביקשה «פיקסטורה
+  // תחת `/dev` שבה שלוש קריאות החפיסה מחזירות 503» — והמסלול הזה כבר עושה בדיוק
+  // את זה מאז C-0176: הוא מרנדר `<DeckSelector />` **בלי `unseen`**, ולכן אריח
+  // «סינון מילים» מגיע ל-`toEntry` עם `count: null` ⇒ `enabled: false`. שלוש
+  // הקריאות הנותרות עונות 503 בלי env ⇒ `primaryKey === null`, שהוא **התנאי
+  // היחיד** שמרנדר את `recoveryBlock` לפני הרשימה (`DeckSelector.tsx:391`).
+  // ⇒ `/dev/tabs/cards` ⛔ אינו יכול למדוד את זה: הוא מאכיל `fixtureSummary` עם
+  // `unseen: 314`, ולכן אריח הרמה **פעיל** שם ו-`primaryKey !== null` תמיד.
+  //
+  // 🔬 **נמדד חי בטיק הזה ב-320 · 375 · 414 לפני שהשורה הזאת נכתבה:**
+  // `[data-deck-failed]` ב-`top=52`, `טעינה מחדש` ב-`top=84 · bottom=138`,
+  // ובדיוק `[data-primary-action]` אחד. ⇒ הבלוק למטה מודד מספר קיים, ⛔ ואינו
+  // מצהיר על אחד שנקווה לו.
+  '/dev/tabs/probe',
   // T-063 task 9. The two real world routes are NOT in PROTECTED_SCREENS (proxy.ts), so
   // unlike the tabs above they DO render here — but with no Supabase env
   // `/api/world/posts` and `/api/world/bank` answer 503 by their own contract, so what
@@ -598,6 +614,16 @@ const EXPECTED_CONSOLE = {
   // by its own contract and the browser logs it. Keyed to the two exact URLs the screen
   // requests and to that one status: a 401, a 500, or any other request on this route
   // still fails the check.
+  // T-329ⓐ — ⛔ שלוש הקריאות **הן** הפיקסטורה כאן, ⛔ ולא רעש שסובלים אותו. המסלול
+  // קיים כדי שכולן ייכשלו: זה מה שמביא את `DeckSelector` ל-`primaryKey === null`.
+  // ⛔ מקודד לשלוש הכתובות המדויקות ולסטטוס האחד — 401 או 500 כאן עדיין מפילים,
+  // בדיוק כמו ב-`/dev/tabs/cards` מתחת.
+  '/dev/tabs/probe': [
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=sentences&limit=1/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
   '/dev/tabs/cards': [
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=due&limit=1/,
     /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=unknown&limit=1/,
@@ -1347,6 +1373,36 @@ try {
           `חזרה לעולם starts at top=${exitTop} (D-228ⓐ: ≤736 on a 780px viewport)`,
         );
         report(`story exit top=${exitTop} at ${width}px (D-228ⓐ ceiling 736)`);
+      }
+
+      // ── T-329ⓑ · המשך של T-321 — הדרך החוצה מהכשל המלא נמדדת **בפיקסלים** ──────
+      //
+      // ⛔ **סדר DOM ⛔ אינו מוכיח פיקסלים, וזו כל השורה.** `T-321`ⓐ העביר את
+      // `recoveryBlock` לפני הרשימה בכשל מלא — ו-`T-321`ⓐ נבדק על **הסדר**. המספר
+      // שהפך את `T-321` לאמיתי היה `top=816 · bottom=870` על מסך 780 (‏C-0576 חי,
+      // 375×780), כלומר **⛔ אפס פיקסלים** של הפקד היחיד במסך נצבעים, וסרגל
+      // הלשוניות ב-`top=707` מכסה גם את מה שמתחת. ⇒ לומד שנאמר לו «חלק מהנתונים
+      // לא הגיעו מהשרת» ⛔ אינו רואה דבר ללחוץ עליו, ומרענן את העמוד — הדרך
+      // שבדיוק `T-295` כתב שהיא ⛔ אינה דרך.
+      //
+      // ⛔ **הסף ⛔ אינו מספר חדש:** `780 − 44 = 736`, בדיוק `D-228`ⓐ מעל — רצפת
+      // המגע חייבת להיצבע, ⛔ לא רק הפינה העליונה של הפקד.
+      //
+      // ⚠️ **הבורר הוא היעד, ⛔ ולא וו-בדיקה:** `[data-deck-failed] button` הוא
+      // הפקד היחיד בבלוק ההתאוששות, והוא כבר נושא `data-primary-action` כש-
+      // `primaryKey === null` ⇒ ⛔ אין כאן סימן שנוסף כדי להימדד.
+      if (route === '/dev/tabs/probe') {
+        const retry = await page.evaluate(() => {
+          window.scrollTo(0, 0);
+          const el = document.querySelector('main [data-deck-failed] button');
+          return el ? Math.round(el.getBoundingClientRect().top) : -1;
+        });
+        check(
+          retry >= 0 && retry <= 736,
+          `${at} T-329ⓑ: the way out of a total deck failure paints inside the first viewport`,
+          `טעינה מחדש starts at top=${retry} (D-228ⓐ: ≤736 on a 780px viewport)`,
+        );
+        report(`deck recovery top=${retry} at ${width}px (D-228ⓐ ceiling 736)`);
       }
 
       // F-027 — the connectivity guarantee roy asked for after signing up on the
