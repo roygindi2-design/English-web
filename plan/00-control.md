@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                            # ▶️ C-0594 (DEV, בנייה): 4 שורות 🟣 (T-336 · T-335 · F-243 · T-306), `verify` מלא ירוק, ⛔ אין שינוי מוצר.
-STATE: READY                      # ▶️ C-0594 (DEV): 4 קומיטי עבודה על `work/current`, ⛔ אף אחד מהם ⛔ אינו נוגע ב-app/components/lib ⇒ ⛔ אין הליכת מסכים.
+NEXT_AGENT: QA                             # ▶️ C-0596 (DEV, בנייה): 3 שורות 🟣 (T-337 · T-338 · T-339), ציר ה-RTL סגור — 9 מופעים ⇒ 0, `verify` מלא ירוק.
+STATE: READY                      # ▶️ C-0596 (DEV): 4 קומיטי עבודה על `work/current`. הליכת מסכים ×4 מסלולים × 3 רוחבים, 18 מדידות ציר, כולן ירוקות.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-14T02:49:00Z"   # C-0594 (DEV, בנייה) — ארבעה מפיקים של תוצרים נגזרים שסטו מהחוזה שלהם בזמן שכל השערים ירוקים.
+LAST_HANDOFF_AT: "2026-09-14T05:02:00Z"   # C-0596 (DEV, בנייה) — ציר ה-RTL: פס הסינון, שש שורות הזירה, והסורק שיתפוס את הבא.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                # 🔒 C-0596 (DEV, בנייה) — ציר ה-RTL: T-337 · T-338 · T-339.
@@ -58,3 +58,4 @@ PROMOTIONS_THIS_MONTH: 17         # 17 this month (➕ 13/09 23:27Z, C-0590 PROM
 **מטריצת הקריאה:** `project_plan.md`
 
 | C-0595 | PM | DEV | 2026-09-14T04:22:00Z | 🎨 **טיק PM — `STEP 5.5` ואז עבודת הממצאים.** `T-331` 🟣 (נפתחה C-0583, ⛔ טיק אחר): ה-`tablist` ב-`StudiesScreen` מתנהג — Tab 4⇐1, חיצים ב-RTL, `role="tabpanel"` קיים; נמדד חי ב-375px. הליכת מסכים ×2 נקייה. **`general` הייתה ⬜=0 ⇒ 3 שורות:** `flex-row-reverse` במיכל RTL הופך פעם שנייה ל-LTR — `F-236` תוקן בקובץ אחד ו-**9 מופעים ב-4 רכיבים** שרדו; נמדד בפיקסלים (`T-337` פס הכרטיסיות · `T-338` 6 מופעים בזירה · `T-339` בדיקה). `D-240` סוגרת את `F-244` ו-`F-186`ⓕ: רנדר שמצייר רצף/מטבע/XP ⛔ אינו מחייב — `D-050` ביטלה אותם; הועתק ל-`36 § 14.4` (`D-166`). `F-245`: `00-control` 12,938⇐11,596 בתים, והשורש ⇒ `T-340`. | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/60-findings.md` · `plan/36-video-spec.md` · `plan/05-departments.md` · `plan/00-control.md` · `components/StudiesScreen.tsx`(+test) |
+| C-0596 | DEV | QA | 2026-09-14T05:02:00Z | 🧭 **ציר ה-RTL נסגר.** `flex-row-reverse` במיכל RTL הופך את הציר פעם שנייה: `T-337` (פס הסינון — `--success` נוגע עכשיו בקצה הימני בשלושת הרוחבים) · `T-338` (שש שורות זירה, כל אחת נמדדה בנפרד) · `T-339` (סורק + `⟨RTL-REVERSE:⟩`, מומת חי; החוקה § 3 ⓻א). 9 מופעים ⇒ 0. `F-246` ⬜ — 4 תאי ציוד = 288px בשורה של 224px, והשער עיוור לגלישה **בתוך** מיכל. | `components/FilterBar.tsx`(+test) · `ArenaSummary` · `ArenaHome` · `ArenaCharacterChoice` · `rtl-axis.test.ts` · `scripts/verify-mobile.mjs` · `plan/35` · `plan/30` · הרגיסטרים |

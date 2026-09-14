@@ -2778,3 +2778,49 @@ artefacts — a map, an archive, a department list, a closing step — and in ea
 **producer had drifted from its own declared contract while every gate stayed green**.
 ⛔ None of them fails loudly; each returns a plausible answer. That is the class, ⛔ not
 the individual bugs.
+
+## C-0596 (DEV) — `T-337` · `T-338` · `T-339` — the RTL axis stops being a matter of habit
+
+**The defect, and it is arithmetic rather than taste.** The document is `dir="rtl"`
+end to end, so `flex-direction: row` *already* places the first child on the right.
+`flex-row-reverse` reverses that a **second** time and lands back at LTR. `F-236`
+measured this once in `AmirnetSimulation`, fixed that one file, and even wrote the
+rule into a comment in `AmirnetSectionBreak.tsx:81-83` — and then nothing enforced
+it. Nine live occurrences in four components survived three weeks.
+
+**What each of the three gates could and could not see.** `check:mobile` asserts
+`dir=rtl` on the root element on every route at 320/375/414, and asserted nothing
+about where a row's children land inside it; `check:motion` and `check:text-floor`
+never look at geometry at all. ⇒ a reversed axis was green by construction. The two
+new measurements close exactly that hole, and both are **pixels**:
+
+```
+[data-filter-track]   the `--success` segment's RIGHT edge touches the track's
+                      RIGHT edge (±1px for percentage flex-basis rounding)
+[data-rtl-row]        the first child's `right` sits right of the last child's
+```
+
+**Why a handle attribute and ⛔ not a class-name scan in the gate.** `flex-row-reverse`
+is one of at least four ways to reverse an axis — `order`, a local `dir`, and
+`justify-content` do it just as well — and a gate that greps for the class measures
+the habit instead of the result. The attribute says «this row has a reading axis»,
+and the gate then measures the axis itself. Rows with a single child are skipped:
+they have no axis.
+
+**Where the class-name scan lives instead, and why it is ⛔ not in `verify`.**
+`components/rtl-axis.test.ts` runs under `npm test`, masks comments line-for-line
+first (so the prose explaining the rule is not counted as breaking it), and reddens
+on any occurrence that does not carry `⟨RTL-REVERSE: <reason>⟩` on the line above.
+The class stays available; ⛔ silence does not. It was mutation-checked live — the
+class injected into `TabBar.tsx` turned it red naming `components/TabBar.tsx:138` —
+because a scan that has never failed is a scan nobody has measured. `§ 0.31` keeps
+gate numbers out of this tick, so the rule went into `35-design-constitution.md § 3`
+as a **direction**, not as a tenth `verify` command.
+
+**Debt this tick measured and did ⛔ not fix — `F-246`.** The four gear cells on the
+arena home screen are 288px of content inside a 224px row at 320px wide, so the
+fourth is cut off. It is a width defect, ⛔ not a direction one: before `T-338` the
+same 64px overflowed off the other edge. It matters beyond that screen, because
+`document.documentElement.scrollWidth - clientWidth` reads **0** for it — «zero
+horizontal scroll» does not measure overflow **inside** a container, so any row
+narrower than its content passes the gate in silence.

@@ -63,11 +63,12 @@ function scan(): readonly Occurrence[] {
       const original = raw.split('\n');
       const masked = maskComments(raw).split('\n');
       for (let i = 0; i < masked.length; i += 1) {
-        if (!masked[i].includes('flex-row-reverse')) continue;
+        const code = masked[i] ?? '';
+        if (!code.includes('flex-row-reverse')) continue;
         // ההיתר יושב בשורה שמעליו — או בשורה עצמה, כשהמחלקה בתוך מערך מחרוזות.
         const above = original.slice(Math.max(0, i - 1), i + 1).join('\n');
         if (ALLOW.test(above)) continue;
-        found.push({ file, line: i + 1, text: original[i].trim() });
+        found.push({ file, line: i + 1, text: (original[i] ?? '').trim() });
       }
     }
   }
