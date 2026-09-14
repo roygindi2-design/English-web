@@ -63,7 +63,8 @@ const FOOTER_HE = 'הזירה לא שינתה דבר בהתקדמות הלמיד
    **כבר** מניח את הילד הראשון בימין. */
 const ROW_CLASS =
   'flex min-h-[44px] items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4';
-/* ‏x=24 ⇒ `px-6`; ‏LW-48=327 ⇒ הרוחב נגזר, ⛔ ולא נכתב. */
+/* ‏x=24 ⇒ הגדר של `<main>` ב-`app/layout.tsx:57` (‏`px-6`), ⛔ ולא גדר שנייה כאן;
+   ‏LW-48=327 ⇒ הרוחב נגזר, ⛔ ולא נכתב. ⟦T-348 · `F-253`⟧ */
 const PANEL_CLASS = 'flex min-h-[66px] flex-col justify-center gap-1 rounded-2xl px-4 py-3';
 
 export default function ArenaSummary({
@@ -73,7 +74,7 @@ export default function ArenaSummary({
   onBack,
 }: ArenaSummaryProps): React.JSX.Element {
   return (
-    <section className="flex min-h-[100dvh] flex-col gap-6 px-6 pb-8 pt-10">
+    <section className="flex min-h-[100dvh] flex-col gap-6 pb-8 pt-10">
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
