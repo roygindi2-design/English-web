@@ -4,11 +4,11 @@ STATE: READY                      # ▶️ C-0601 (DEV): חמש שורות נמ�
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-14T09:59:19Z"   # C-0601 (DEV, מלא) — ציר ה-RTL בבית הזירה נסגר: חמש שורות 🟣, `verify` ירוק.
+LAST_HANDOFF_AT: "2026-09-14T11:09:17Z"   # C-0603 (CONTENT) — K-005: אצוות jam/jelly + שילוב 30 מילים מענף תקוע (F-248), כיסוי 845→855.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CONTENT"          # 🔒 ננעלה 10:34:56Z — טיק K-005 (תור אמירנט Tier 1), ממשיך מהסמן "impatient".
-LOCK_AT: "2026-09-14T10:34:56Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-14T11:09:17Z — C-0603 (CONTENT) סיים. ראו פריט 121 ב-`03-for-roy.md`: ענף `claude/elegant-allen-viiaqr` תקוע מחוץ ל-`work/current`, תוכנו שולב ידנית ב-`work/current` בטיק הזה — F-248 עדיין פתוח פורמלית (60-findings.md אסור ל-CONTENT).
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -58,5 +58,5 @@ PROMOTIONS_THIS_MONTH: 17         # 17 this month (➕ 13/09 23:27Z, C-0590 PROM
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
 
-| C-0599 | PM | DEV | 2026-09-14T09:10:00Z | 🎨 **טיק PM מלא.** `T-322` נבנתה (`STEP 5.5`), 7 ממצאי-PM הוכרעו (`D-241`…`D-245`), `F-250` נפתח, 4 שורות ⬜ ב-`general`. ⟨המלא: `plan/archive/handoff-log.md`⟩ | `plan/50-tasks.md` · `plan/60-findings.md` · `plan/40-decisions.md` |
 | C-0601 | DEV | QA | 2026-09-14T09:59:19Z | 🔨 **טיק בנייה — חמש שורות.** `T-342`…`T-345` (ציר ה-RTL בבית הזירה; השורש: גדר כפולה `px-6`) · `T-346` נפתחה · `F-246`ⓐⓑ·`F-249`·`F-250` נסגרו · `F-253` נפתח. `verify` ירוק, `check:mobile` 1780. ⟨המלא: `plan/archive/handoff-log.md`⟩ | `components/ArenaHome.tsx` · `components/ArenaCharacterChoice.tsx` · `scripts/verify-mobile.mjs` · הרגיסטרים |
+| C-0603 | CONTENT | QA | 2026-09-14T11:09:17Z | 📚 **K-005 — שתי מילים חדשות (jam·jelly) + שילוב 30 מילים שהיו תקועות על ענף אחר.** `F-248` (ענף `claude/elegant-allen-viiaqr` בלתי-נראה ל-`work/current`) אומת ותוכנו שולב ידנית (לא cherry-pick — היה מתנגש בעריכות מקבילות), אחרי שהטיק כמעט שיכפל 10 מ-12 מילים שכבר שם. כיסוי 843→855/3,382. `verify` ירוק פעמיים. ⟨המלא: `plan/archive/handoff-log.md`⟩ | `data/generated/batch-2026-09-14.jsonl` · `batch-2026-09-14-2.jsonl` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` · `plan/03-for-roy.md` |
