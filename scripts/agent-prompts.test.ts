@@ -1304,6 +1304,24 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     }
   });
 
+  /**
+   * ⚡ **`STEP 5.6` — תפיסת מהירות היא יעד UX, והיא של PM.** ⟦NEW 14/09 · הוראת רוי⟧
+   *
+   * 🔬 **ומה שהטענה באמת שומרת עליו הוא ה«⛔ לא»:** נמדד על הפרודקשן ש-3,745ms ו-305ms
+   * הם **אותו מסלול בדיוק**, ו⛔ ההפרש הוא התנעה קרה ⛔ ולא נפח דאטה. ⇒ הפרומפט חייב
+   * לאסור במפורש את הסיבה המומצאת «לצמצם את הדאטה», אחרת PM יכתוב בדיוק אותה.
+   */
+  it('PM נושא יעד תפיסת-מהירות, עם מספר ו⛔ בלי סיבה מומצאת (F-255)', () => {
+    const pm = text('PM');
+    expect(pm, 'זהו STEP').toMatch(/^## STEP 5\.6 — /m);
+    expect(pm, 'הממצא נקוב בשמו').toMatch(/`F-255`/);
+    expect(pm, '⛔ «מרגיש איטי» ⛔ אינה שורה').toMatch(/«the app feels slow»/);
+    expect(pm, '⛔ ואוסר את הסיבה המומצאת').toMatch(
+      /⛔ Do ⛔ not write «reduce the data» before someone has\s+measured/,
+    );
+    expect(pm, 'ושלד ⛔ אינו ספינר').toMatch(/a spinner says «wait», a skeleton says/);
+  });
+
   it('⛔ PM ⛔ אינו מתאר את DEV כמעבד שורה אחת בטיק (14/09)', () => {
     const pm = text('PM');
     expect(pm, '⛔ הנוסח הישן ⛔ אינו חוזר כמשפט שלם').not.toContain(

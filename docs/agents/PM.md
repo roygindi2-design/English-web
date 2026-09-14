@@ -886,6 +886,48 @@ capacity existed, the eligible row existed, and the order consumed the tick.**
 protecting, and that protection ⛔ does ⛔ not move. ⛔ The findings work is ⛔ never skipped,
 ⛔ never capped, and ⛔ never deferred to the next tick; it is ⛔ only **second**.
 
+## STEP 5.6 — 🔴 PERCEIVED SPEED IS A UX GOAL, AND IT OUTRANKS POLISH  ⟦NEW 14/09 · Roy's explicit instruction⟧
+
+🔬 **What Roy said, and it is the whole reason this step exists:** «כל האתר מרגיש תקוע,
+הוא טוען הרבה זמן בכל מעבר וטוען את הדאטה וזה נראה מלא זמן.»
+
+⛔ **And the measurement says it is ⛔ NOT the data, which changes what you write rows
+about.** Measured on the live site 14/09 22:36Z through `Kernel`, 375×780 (`F-255`):
+```
+/            cold   TTFB 2,338ms
+/cards       cold   TTFB 3,745ms      ⇐ first hit on the authenticated path
+/studies     warm   TTFB   305ms      ⇐ the SAME path, second hit
+/me          warm   TTFB    55ms
+/world · /arcade (no auth)  184–210ms
+```
+⇒ **3,745ms and 305ms are the same code, the same route, the same answer.** The only
+difference is that the function was already alive. ⛔ **A learner opens the app once a day,
+so a learner hits cold almost every time.**
+
+**⇒ IN EVERY TICK, ONE ROW MAY BE A PERCEIVED-SPEED ROW, AND IT COUNTS AS UX.** It carries
+`סוג עבודה = נוחות` like any other, ⛔ but it ⛔ never competes with the polish row for the
+same slot — **it is allowed IN ADDITION**, and it is the one row you may open every tick
+without asking whether the department is active (`RULES § 0.31` — UX is yours).
+
+⛔ **What a perceived-speed row must carry, or it is ⛔ not one:**
+```
+⛔ NOT  «the app feels slow»           ⇒ ⛔ not a row. ⛔ No number, ⛔ no file.
+✅      «<route>: TTFB <n>ms cold vs <m>ms warm, measured <when>, <where>»
+        + the ONE thing that changes it, and what the learner sees instead while it happens
+```
+🎯 **And the three shapes that actually move it, in order of what the learner feels:**
+1. **A route that ⛔ does not need the server ⛔ should not touch it** — `T-328`/`T-334`
+   moved three tabs to `○`; the same move applies to `/` · `/login` · `/signup`.
+2. **What fills the screen WHILE it waits** — a skeleton at the real shape beats a blank
+   page, and it is ⛔ never «a spinner»: a spinner says «wait», a skeleton says «this is
+   what is coming».
+3. **⛔ Never the invented cause.** ⛔ Do ⛔ not write «reduce the data» before someone has
+   measured that the data is the cost. On this product, it was ⛔ not.
+
+⚠️ ⛔ **And the authenticated path is ⛔ still unmeasured** (`F-255`) — the ops session has ⛔
+no account, and all three inner tabs redirected to `/login?expired=1`. ⇒ **a row that claims
+a number for a logged-in screen must say who measured it and how.**
+
 ## STEP 5.7 — 🔴 THE DEPARTMENT IS NEARLY DONE ⇒ TELL QA. ⛔ IN THE FILE, ⛔ NOT IN YOUR REPORT.  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
 ⛔ **⛔ No such signal existed.** `ACTIVE_WORKSTREAM` is QA's to move, and «exhausted»
