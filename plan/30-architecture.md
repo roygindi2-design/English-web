@@ -2594,6 +2594,49 @@ file, and the row's live victims — `AmirnetSimulation` 5,063 chars · `ArenaHo
 `AmirnetResult` 661 · `AmirnetSectionBreak` 563 — are `T-284`'s to inherit when it folds
 the 28 copies into this module. ⛔ Nothing here touched those copies.
 
+## C-0597 (DEV) — `T-284` — one stripper, and a scanner that catches the 34th copy
+
+`T-302` wrote the correct expression into `lib/testSource.ts` and said in its own header
+that folding the local copies into it is `T-284`. This is that fold, and it landed **⛔ not**
+as the `lib/test/sourceText.ts` the row named: the module already existed, already carried
+the measurement that chose its expression, and a second module would have been a second
+definition of the thing being de-duplicated (`RULES § 0.22` — file layout, one commit to
+undo, logged here).
+
+🔬 **What was in the tree, measured, ⛔ not inherited from the row:** **33** test files
+declared `withoutComments` themselves, in **five** different expressions. **32** now import
+it. The 33rd — `lib/supabase/onboarding.test.ts` — strips SQL `--` comments and is renamed
+`withoutSqlComments`: one name for two different functions is exactly how the copy spread.
+
+⇒ **`lib/testSource.scan.test.ts`** is the fence, and it is an ordinary `npm test` file,
+⛔ not a gate (`§ 0.31` — the gate numbers ⛔ do ⛔ not move here). Two rules: a test file
+⛔ may ⛔ not declare its own stripper, and a file that **calls** the name must import it.
+A second test measures **the detector itself** against the five shapes that were in the tree
+and four it must ⛔ not match — a scanner nobody has watched match is a scanner nobody can
+trust.
+
+⚠️ **⛔ And it deliberately ⛔ does ⛔ not match a value-binding of the same name.**
+`app/globals.test.ts:17` and `scripts/verify-mobile.test.ts:696` bind
+`const withoutComments = CSS.replace(…)` — a **string**, ⛔ not a function, and ⛔ not a
+second definition of anything. Matching those would make the scanner demand an import that
+a value-binding cannot use, which is how a guard starts getting «fixed» by weakening it.
+
+🔬 **The honest number, and it is ⛔ smaller than the row promised.** On the **15** sources
+the **13** copies of the dangerous expression read, old and fixed return **identical** text
+⇒ **⛔ zero hollow guards among the 32 converted**, which is why 269 files / 4,461 tests
+stayed green through the conversion. The trap is live **elsewhere in the same tree** —
+`ArenaHome` **4,812** chars swallowed · `AmirnetSimulation` 2,776 · `MeScreen` 2,413 ·
+`ArenaCharacterChoice` 2,390 · `LevelScan` 1,395 · `ArenaSummary` 958 — so the copies were
+⛔ not harmless, they were **aimed at files that happen not to trigger it**. The 34th is the
+one that lands on a file that does, and that is what the scanner is for.
+
+⚠️ **What this ⛔ did ⛔ not close, measured in the same tick:** **54** test files inline the
+same expression **⛔ without naming it**, and **14** of those carry the dangerous shape.
+⛔ Zero of them are hollow today (both expressions run against every source they read ⇒
+identical output). ⇒ `F-247` · `T-341`, which also has to add `withoutCssComments` to the
+same module — `*.css` has ⛔ no `//` and ⛔ no JSX, so it is a **third need**, ⛔ not an
+exemption.
+
 ## C-0588 (DEV) — `T-328` — `לימודים` leaves the server, and the gate stays where it was
 
 🔬 **The measurement that opened the row, ⛔ not a feeling.** `npm run build` on `dev`
