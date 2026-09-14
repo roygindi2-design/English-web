@@ -953,6 +953,51 @@ try {
       );
       check(overflow <= 0, `${at} no horizontal scroll`, `overflows by ${overflow}px`);
 
+      // 🚨 T-343 · `D-244`ⓑ — closes `F-246`ⓑ. **The check above measures the DOCUMENT,
+      // and that is ⛔ not the same claim as «nothing is cut off».**
+      // 🔬 Measured live C-0596, and it is the whole argument: while an equipment slot sat
+      // clipped on `/dev/arcade/home` at 320px, the line above printed **0** at all three
+      // widths — the row overflowed its own container and the document never learned about
+      // it. ⇒ every narrow-than-its-content row in the product passed this gate in silence.
+      //
+      // ⛔ **Two measures, ⛔ not one, and that is deliberate.** `scrollWidth` is what
+      // `D-244`ⓑ names, but in an RTL container the overflow runs to the LEFT — the same
+      // direction the document's own `scrollWidth` was measured blind to. ⇒ the children's
+      // bounding boxes are measured against the row's own box as well, which is the defect
+      // stated directly: «a child sticking out of the row it lives in». A row fails if
+      // EITHER measure overflows, and the failure names the row and both numbers (ⓑ).
+      //
+      // ⚠️ ⛔ No existing threshold moved — this is an ADDED claim (`T-343` ⚠️).
+      // ⚠️ **A deliberate horizontal scroller would need an exemption, and ⛔ none exists:**
+      // measured in this tick, the one `overflow-x-auto` in the product
+      // (`components/StudiesScreen.tsx:203`) carries ⛔ no `data-rtl-row` ⇒ the marker means
+      // «this row must fit», always.
+      const rtlRowFit = await page.evaluate(() => {
+        const TOL = 0.5;
+        return Array.from(document.querySelectorAll('[data-rtl-row]')).map((el) => {
+          const box = el.getBoundingClientRect();
+          let out = 0;
+          for (const child of Array.from(el.children)) {
+            const c = child.getBoundingClientRect();
+            if (c.width === 0 && c.height === 0) continue;
+            out = Math.max(out, box.left - c.left, c.right - box.right);
+          }
+          return {
+            name: el.getAttribute('data-rtl-row'),
+            scroll: el.scrollWidth,
+            client: el.clientWidth,
+            child: out > TOL ? Math.round(out * 10) / 10 : 0,
+          };
+        });
+      });
+      for (const row of rtlRowFit) {
+        check(
+          row.scroll <= row.client + 1 && row.child === 0,
+          `${at} [data-rtl-row="${row.name}"] fits its container`,
+          `scrollWidth ${row.scroll} vs clientWidth ${row.client}, child sticks out by ${row.child}px`,
+        );
+      }
+
       // RTL direction survives on every route (MF-3)
       const dir = await page.evaluate(() => document.documentElement.dir);
       check(dir === 'rtl', `${at} dir=rtl`, `got "${dir}"`);
