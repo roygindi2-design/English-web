@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-14T12:52:00Z"   # C-0606 (QA, מלא) — שער + הליכה + מיזוג, אין עבודת קוד.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "PROMOTER"         # 🔒 ננעלה 2026-09-14T13:17:17Z — C-0607 (PROMOTER): טיק קידום.
-LOCK_AT: "2026-09-14T13:17:17Z"
+LOCK_HELD_BY: ""                 # 🔒 שוחררה 2026-09-14T13:35:57Z — C-0607 (PROMOTER): קודם ל-main, בדיקת עשן קופצנית → PROMOTION_BLOCKERS.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ▶️ C-0605 (DEV): `T-332` 🟣 — הפיקסטורה מקבלת רגיסטר מבוים דרך `PLAN_TASKS_FILE` ⇒ ⛔ אין עוד שורה שפתיחתה מפילה `verify`; הכיסוי החי נשאר `skipIf`.
 #   msgs:    4 / 120           # 39-messages-spec § 9 · **המוקד.** ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "0c36c94e · 2026-09-14T12:38Z · **C-0606 (QA, מלא).** `verify` ירוק טרי — 2819/2819, `check:mobile` 1927, `12:38:21Z` · `loop:health` 22/23 (18=`F-248`, ⛔ אינו נוגע ללומד, כבר פתוח → CONTENT) · build✅ · הליכה חיה 375×780 על 35 מסכי `/dev/*`: 0 גלילה אופקית · 0 חריגה לא-נתפסת · 0<44px אמיתי · `dir=rtl` בכולם. 503 על `/api/**` ב-2 מסכי `/dev/tabs/*` — סביבה בלי Supabase, ⛔ לא פגם. `diff:render` על שלושת מסכי הזירה מול `kol-B-*` — ⛔ אין פער חדש. מיזוג `ff-only` טריוויאלי (`a85caa0d..0c36c94e`, שערי מסלול זול כבר קידמו את עבודת ה-DEV/CONTENT). 8 🟣→✅ (T-322·T-332·T-342·T-343·T-344·T-345·T-346·T-347). מפת ארכיטקטורה טרייה. סריקת אבטחה ידנית — 0 ממצאים. אין ממצא חדש. `WORKSTREAM_ENDING` על `general` התיישן — הבריכה מלאה מחדש ל-7 ⬜ ⇒ ⛔ לא הוזז מוקד."
+RELEASE_READY: "42fe1774 · 2026-09-14T13:30:01Z · **C-0607 (PROMOTER).** קודם ל-`main`, `4a402514..42fe1774` ff-only, 96 קומיטים. `verify` ירוק בדחיפה (4477/4477 מלא בקלון + 2819/2819 חוזר ב-hook), `check:mobile` 1927. `loop:health` 22/23 (18=`F-248`, כבר פתוח → CONTENT — ⛔ לא נסגר ע"י הטיק הזה). Netlify: `state:ready · context:production · branch:main · commit_ref:42fe1774` תואם. 🔴 בדיקת עשן `/api/health` **קופצנית — 2/6 `ok:true`, 4/6 `ok:false` — ⛔ ראו `PROMOTION_BLOCKERS`.**"
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "4a40251"  # main אחרי הקידום של 13/09 (C-0590, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
+LAST_REVIEWED_COMMIT: "42fe177"  # main אחרי הקידום של 14/09 (C-0607, PROMOTER). `verify` exit 0 נרץ על אותו SHA לפני הקידום.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -34,10 +34,10 @@ WORKSTREAM_ENDING: general · 0 ⬜ נותרו · 2026-09-14T09:59:19Z · C-0601
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
 MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. ▶️ C-0534 (QA, מלא): `F-219` נסגר — `ops(loop)` איחד את `dev` ל-`work/current` (`65359cb`) לפני הטיק הזה; `rev-list` בשני הכיוונים נמדד **0** על `0851258` לפני הקומיטים של הטיק הזה.
-PROMOTION_BLOCKERS: ""            # ✅ **נפתר 2026-09-12T16:29Z — C-0546 (PROMOTER):** הקידום עבר, `main`=`75bc311`, כל 5 תנאי השער ירוקים. היסטוריית C-0521 (הסירוב הלא-דטרמיניסטי, F-229) ⇒ `plan/archive/control-log.md` · פריט 110 ב-`03-for-roy.md`. # ⇐ PROMOTER בלבד.
+PROMOTION_BLOCKERS: "🔴 C-0607 (PROMOTER) 2026-09-14T13:32Z — בדיקת עשן /api/health קופצנית אחרי הקידום שכבר בוצע (main=42fe1774, Netlify ready על אותו SHA). 6 קריאות רצופות: ok:false·ok:true·ok:false·ok:false·ok:false·ok:true — כולן HTTP תואם (503/200), אף כשל proxy/connect_rejected. גוף הכשל: {\"ok\":false,\"checks\":[{\"name\":\"supabase_url\",\"ok\":true},{\"name\":\"supabase_anon_key\",\"ok\":true},{\"name\":\"placeholder_content_blocked\",\"ok\":true},{\"name\":\"database_schema\",\"ok\":false,\"detail\":\"database unreachable\"}]}. גוף ההצלחה: אותם 3 checks + database_schema ok:true \"word_progress reachable\". ⇒ לא נמדד network policy (F-200) — התגובה חיה ותקינה, רק database_schema קופצני. פריט 123 ב-03-for-roy.md. ⛔ לא נסגר עד שנמדד יציב." # ⇐ PROMOTER בלבד.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
-LAST_PROMOTED_AT: "2026-09-13T23:27:35Z"  # ⚡ קידום אוטומטי של הלופ — C-0590 (PROMOTER), כל 5 תנאי השער ירוקים. `75bc311..4a402514` ff-only, 110 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
-PROMOTIONS_THIS_MONTH: 17         # 17 this month (➕ 13/09 23:27Z, C-0590 PROMOTER — קידום אוטומטי). ⛔ Credit budget is no longer a reason to delay (D-086).
+LAST_PROMOTED_AT: "2026-09-14T13:30:01Z"  # ⚡ קידום אוטומטי של הלופ — C-0607 (PROMOTER), כל 5 תנאי השער ירוקים. `4a402514..42fe1774` ff-only, 96 קומיטים. פירוט ⇒ `plan/archive/control-log.md`.
+PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROMOTER — קידום אוטומטי). ⛔ Credit budget is no longer a reason to delay (D-086).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
@@ -59,5 +59,4 @@ PROMOTIONS_THIS_MONTH: 17         # 17 this month (➕ 13/09 23:27Z, C-0590 PROM
 **החוקים המלאים:** `plan/RULES.md` — פריסה (0.2) · מקביליות (0.3) · סוכני משנה (0.4) · שער טריאז' (0.5)
 **מטריצת הקריאה:** `project_plan.md`
 
-| C-0605 | DEV | QA | 2026-09-14T12:10:00Z | 🔨 **בנייה — `T-347` + `T-332`.** `pageerror` היה **0** מופעים מול **9** עמודים ו-**44** נתיבים; חובר לכולם, ⛔ בלי רשימת היתר, והוכח חי: נתיב זורק ⇒ `check:mobile` exit **1**, בעוד הבדיקה הקיימת הדפיסה עליו `clean console`. `T-332`: הפיקסטורה נגמלה מהרגיסטר החי. ⟨המלא: `plan/archive/handoff-log.md`⟩ | `scripts/verify-mobile.mjs` · `scripts/measure-plan-tables.test.ts` · הרגיסטרים |
 | C-0606 | QA | DEV | 2026-09-14T12:52:00Z | 🚦 **מסלול: מלא — שער מלא, מיזוג טריוויאלי.** `verify` ירוק טרי (2819/2819), `loop:health` 22/23 (18=`F-248`, כבר פתוח → CONTENT), הליכה חיה על 35 מסכי `/dev/*` — אפס פגם שמגיע ללומד. `dev`==`work/current` (מיזוג רק את קומיט הנעילה — כל עבודת ה-DEV/CONTENT כבר עברה דרך שערי מסלול זול). 8 🟣→✅ (T-322·T-332·T-342·T-343·T-344·T-345·T-346·T-347). מדור `03-for-roy` הוחלף בשלוש הקשות טריות על בית הזירה. ⛔ אין ממצא חדש. | `plan/50-tasks.md` · `plan/03-for-roy.md` · `docs/plan-open.md`·`plan-tables.md` · `plan/00-control.md` |
