@@ -107,3 +107,59 @@ describe('<StudiesScreen> — הבורר הגולש אומר שהוא גולש (
     expect(CODE).toContain('overflow-x-auto');
   });
 });
+
+describe('<StudiesScreen> — הבורר מכריז tablist ו⛔ מתנהג ככזה (T-331)', () => {
+  it('ⓐ `tabIndex` מתגלגל — ארבע עצירות Tab הופכות לאחת', () => {
+    // ⛔ הבדיקה היא על ה**התניה**, ⛔ ולא על נוכחות המחרוזת: `tabIndex={0}` קבוע
+    // על כל שבב היה משאיר ארבע עצירות Tab, כלומר בדיוק הפגם שהשורה תיארה.
+    expect(CODE).toMatch(/tabIndex=\{isActive \? 0 : -1\}/);
+  });
+
+  it('ⓐ החיצים מזיזים בתוך הבורר — ומטפל אחד, ⛔ לא ארבעה', () => {
+    expect(CODE).toContain('onKeyDown={onTrackKeyDown}');
+    expect(CODE).toContain("event.key === 'ArrowLeft'");
+    expect(CODE).toContain("event.key === 'ArrowRight'");
+    expect(CODE).toContain("event.key === 'Home'");
+    expect(CODE).toContain("event.key === 'End'");
+    // ⛔ בלי `preventDefault` החץ גם מזיז את הבורר וגם גולל את העמוד.
+    expect(CODE).toContain('event.preventDefault()');
+  });
+
+  it('🔴 ⛔ הכיוון הוא RTL — `ArrowLeft` מתקדם ו-`ArrowRight` חוזר (תקדים F-236)', () => {
+    // ⛔ **זו הטענה שהשורה נפתחה עליה.** ב-`F-236` ההצהרה בקוד הייתה הפוכה
+    // מהתוצאה הנמדדת, ו⛔ שום בדיקה לא תפסה זאת. כאן שני הכיוונים ננעצים
+    // באריתמטיקה עצמה: שמאל ⇒ `index + 1` (הבא), ימין ⇒ `index - 1` (הקודם).
+    const left = CODE.match(/event\.key === 'ArrowLeft'\)[^;]*;/)?.[0] ?? '';
+    const right = CODE.match(/event\.key === 'ArrowRight'\)[^;]*;/)?.[0] ?? '';
+    expect(left).toContain('index + 1');
+    expect(left).not.toContain('index - 1');
+    expect(right).toContain('index - 1');
+    expect(right).not.toContain('index + 1');
+    // גלישה מעגלית בשני הקצוות, ⛔ ולא מבוי סתום בשבב האחרון.
+    expect(left).toContain('index === last ? 0');
+    expect(right).toContain('index === 0 ? last');
+  });
+
+  it('ⓐ החץ מעביר גם את המיקוד, ⛔ ולא רק את ה-state', () => {
+    // ⛔ בלי `.focus()` קורא-המסך נשאר על השבב הישן בעוד הפאנל התחלף — כלומר
+    // «סדר המיקוד תואם לסדר החזותי» מהצ׳קליסט הקנוני נשבר בדיוק כאן.
+    expect(CODE).toMatch(/chipRefs\.current\.get\(target\.id\)\?\.focus\(\)/);
+    expect(CODE).toMatch(/setActive\(target\.id\)/);
+  });
+
+  it('ⓑ `aria-selected` מצביע על פאנל שקיים — ⛔ ולא על כלום', () => {
+    expect(CODE).toContain('role="tabpanel"');
+    expect(CODE).toContain('aria-controls={TRACK_PANEL_ID}');
+    expect(CODE).toContain('id={TRACK_PANEL_ID}');
+    // הפאנל מצביע בחזרה אל השבב **הפעיל**, ⇒ הקישור דו-כיווני ו⛔ לא חצי.
+    expect(CODE).toMatch(/aria-labelledby=\{`\$\{TAB_ID_PREFIX\}\$\{active\}`\}/);
+    expect(CODE).toMatch(/id=\{`\$\{TAB_ID_PREFIX\}\$\{track\.id\}`\}/);
+  });
+
+  it('ⓑ הפאנל הוא עצירת מקלדת — ⛔ אחרת החיצים בלעו את הגישה אליו', () => {
+    const panel = CODE.match(/<div[\s\S]{0,500}?data-track-status[\s\S]{0,500}?>/)?.[0] ?? '';
+    expect(panel).toContain('tabIndex={0}');
+    expect(panel).toContain('role="tabpanel"');
+    expect(panel).toContain('aria-live="polite"');
+  });
+});

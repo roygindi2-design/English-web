@@ -42,6 +42,10 @@ const SUBTITLE_HE = 'בחר מסלול · לכל מסלול מדד התקדמו�
 /** ⛔ «—», ⛔ לא ריק: קריאה שנכשלה חייבת להיראות אחרת ממסלול ריק באמת (D-046/D-082). */
 const UNREACHABLE_HE = '— לא הצלחנו לטעון את ההתקדמות כרגע';
 
+/** ‏T-331ⓑ — מזהים יציבים, ⛔ ולא מחרוזות מוטבעות: `aria-controls` ו-`aria-labelledby` מצביעים זה על זה. */
+const TRACK_PANEL_ID = 'studies-track-panel';
+const TAB_ID_PREFIX = 'studies-track-tab-';
+
 type SummaryResponse =
   | { readonly ok: true; readonly level: string | null; readonly levels?: readonly LevelSummary[] }
   | { readonly ok: false; readonly code: string };
@@ -149,6 +153,40 @@ export default function StudiesScreen({
     measureEdges();
   }, [active, measureEdges]);
 
+  /**
+   * T-331ⓐ — ניווט מקלדת, שהכרזת `role="tablist"` כבר הבטיחה ו⛔ לא סיפקה.
+   * ⛔ **ארבע עצירות Tab הופכות לאחת:** `tabIndex` מתגלגל — הנבחר `0`, השאר
+   * `-1` — ⇒ ה-Tab נכנס לבורר פעם אחת ויוצא ממנו פעם אחת, והחיצים מזיזים
+   * בתוכו. זה מה ש-ARIA מחייב ב-`tablist`, וזה מה שקורא-מסך מכריז.
+   *
+   * 🔴 **והכיוון הוא RTL, ⛔ ולא ברירת המחדל של הדפדפן** — `ArrowLeft` **מתקדם**
+   * ו-`ArrowRight` **חוזר**, כי בעברית «הבא» יושב משמאל. ⛔ התקדים נמדד ו⛔ לא
+   * שוער: `F-236` — שם `flex-row-reverse` הפך התקדמות לשמאל⇠ימין, וההצהרה
+   * בקוד הייתה הפוכה מהתוצאה. ⇒ הכיוון כאן נכתב **מפורשות**, ⛔ ולא נגזר.
+   *
+   * ⛔ `Home`/`End` הם הראשון/האחרון **בסדר הקריאה העברי** — כלומר הימני ביותר
+   * והשמאלי ביותר, ⛔ ולא להפך.
+   */
+  const onTrackKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      const index = STUDY_TRACKS.findIndex((track) => track.id === active);
+      if (index < 0) return;
+      const last = STUDY_TRACKS.length - 1;
+      let next: number;
+      if (event.key === 'ArrowLeft') next = index === last ? 0 : index + 1;
+      else if (event.key === 'ArrowRight') next = index === 0 ? last : index - 1;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = last;
+      else return;
+      event.preventDefault();
+      const target = STUDY_TRACKS[next];
+      if (!target) return;
+      setActive(target.id);
+      chipRefs.current.get(target.id)?.focus();
+    },
+    [active],
+  );
+
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -175,8 +213,12 @@ export default function StudiesScreen({
               }}
               type="button"
               role="tab"
+              id={`${TAB_ID_PREFIX}${track.id}`}
               aria-current={isActive ? 'true' : undefined}
               aria-selected={isActive}
+              aria-controls={TRACK_PANEL_ID}
+              tabIndex={isActive ? 0 : -1}
+              onKeyDown={onTrackKeyDown}
               onClick={() => setActive(track.id)}
               className={
                 isActive
@@ -216,8 +258,20 @@ export default function StudiesScreen({
         )}
       </div>
 
+      {/*
+        T-331ⓑ — `aria-selected="true"` הצהיר על פאנל ש⛔ לא היה קיים: `grep`
+        על הקובץ החזיר **אפס** `role="tabpanel"` ו**אפס** `aria-controls`.
+        ⇒ ההכרזה הצביעה על ⛔ כלום. כרטיס המצב **הוא** הפאנל — הוא כבר מציג את
+        המסלול הנבחר ו⛔ רק אותו — ⇒ הוא מקבל את התפקיד, מזהה, ו-`aria-labelledby`
+        אל השבב שבחר בו. ⛔ `tabIndex={0}` ⛔ אינו קישוט: פאנל בלי עצירת Tab
+        ⛔ אינו נגיש במקלדת אחרי שהחיצים תפסו את השבבים.
+      */}
       <div
         data-track-status
+        id={TRACK_PANEL_ID}
+        role="tabpanel"
+        tabIndex={0}
+        aria-labelledby={`${TAB_ID_PREFIX}${active}`}
         className="flex flex-col gap-2 rounded-2xl border border-border-subtle bg-surface-raised p-4"
         aria-live="polite"
       >
