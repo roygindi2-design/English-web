@@ -754,3 +754,88 @@ describe('📐 אינדקס התוכניות — כיסוי הצעדים', () =>
     expect(rows.filter((r) => r.includes('ולו תיבה אחת לא סומנה')).length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * ⓒ **`T-315` — הנזק ⛔ אינו «השורה לא נספרה». הנזק הוא «השורה פורסמה ל-DEV».**
+ *
+ * 🔬 **נמדד C-0561 (PM), ⛔ ולא שוער:** `splitRow()` על שורת `T-309` החזירה **9**
+ * עמודות במקום 8, כי `grep … | wc -l` בתא המשימה נשא `|` ⛔ בלתי-מוברח ⇒ עמודת
+ * הסטטוס **נקראה במקום אחד אחורה** והראתה `⬜` בעוד הסטטוס האמיתי `🟣 C-0560`.
+ * ⇒ `docs/plan-open.md` פרסם ל-DEV שורה **שכבר נבנתה ומוזגה**, ותור הביקורת של
+ * QA הראה **0**. 🔴 שני הצדדים עבדו לפי אינדקס ששיקר, ו⛔ שום שער ⛔ לא האדים.
+ *
+ * ⛔ **ומה שכבר היה מגודר ⛔ אינו זה.** המדידה בטיק הזה (C-0610) על הקוד החי:
+ * `rowShape` **כן** מסמן את השורה (`ok=false · 9 מתוך 8`), והבדיקה שמעל
+ * (`T-245 · F-059`ⓑ) **כן** מוכיחה שהיא נספרת ונקובה בשם — ⇒ ⓐ ו-ⓑ של `T-315`
+ * נסגרו בפועל בעבודת ההברחה של `T-299`/`F-225`, ⛔ ולא נשארו פתוחים.
+ * 🔴 **מה ש⛔ לא היה מגודר, ⛔ ואיש ⛔ לא הוכיח: שהשורה ⛔ אינה מופיעה ברשימת
+ * «⬜ פנויות ל-Dev».** זו בדיוק ההתנהגות שהזיקה, והיא הייתה נכונה **במקרה** —
+ * ⛔ בלי ולו בדיקה אחת שתאדים אם תיסוג.
+ *
+ * ⚠️ **והפיקסטורה מחמירה בכוונה מעבר למה שנמדד:** התא שקורא-נאיבי יפגוש באינדקס 4
+ * נושא `⬜` **מילולית**, ⛔ ולא מקרה גבול שנפל כך. ⇒ הבדיקה מוכיחה את הכלל
+ * («שורה פגומה ⛔ אינה מתפרסמת כפנויה») ⛔ ולא צירוף מקרים של תאים.
+ */
+describe('T-315 · שורה פגומה ⛔ אינה מתפרסמת ל-DEV כפנויה', () => {
+  /** הסעיף הנקוב מתוך `plan-open.md` שנוצר — מהכותרת ועד הכותרת הבאה. */
+  const sectionOf = (open: string, title: string): string => {
+    const lines = open.split('\n');
+    const start = lines.findIndex((l) => l.startsWith(`## ${title}`));
+    expect(start).toBeGreaterThanOrEqual(0);
+    let end = lines.length;
+    for (let i = start + 1; i < lines.length; i += 1) {
+      if (lines[i]?.startsWith('## ')) { end = i; break; }
+    }
+    return lines.slice(start, end).join('\n');
+  };
+
+  /* ⛔ 9 תאים, ⛔ ולא 8 — ה-`|` שב-`wc -l` הוא בדיוק הצורה שנמדדה ב-C-0561.
+   * אינדקס 4 (מה שקורא-נאיבי מחשיב «סטטוס») = `⬜`; הסטטוס האמיתי = `🟣 C-0560`. */
+  const SHIFTED =
+    '| T-998 | M0 · loop · תשתית | ריצה: grep -rn "x" supabase/ | wc -l | ⬜ | 🟣 C-0560 | 0 | `scripts/x.mjs` | — |';
+
+  const generate = (): string => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-t315-'));
+    const tasks = join(tmp, '50-tasks.md');
+    writeFileSync(
+      tasks,
+      `${readFileSync(join('plan', '50-tasks.md'), 'utf8').replace(/\n+$/, '')}\n${SHIFTED}\n`,
+      'utf8',
+    );
+    const open = join(tmp, 'plan-open.md');
+    const out = execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TASKS_FILE: tasks,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: open,
+      },
+    });
+    expect(out).toContain('tasks malformed ids: T-998');
+    return readFileSync(open, 'utf8');
+  };
+
+  it('🔴 ⛔ אינה ברשימת «⬜ פנויות ל-Dev» — זה הנזק שנמדד, ⛔ ולא הספירה', () => {
+    expect(sectionOf(generate(), '⬜ פנויות ל-Dev')).not.toContain('T-998');
+  });
+
+  it('⛔ ו⛔ אינה בתור הביקורת של QA — שורה פגומה ⛔ אינה נקראת לפי עמודה, לאף כיוון', () => {
+    const open = generate();
+    expect(sectionOf(open, '🟣 בתור הביקורת')).not.toContain('T-998');
+    expect(sectionOf(open, '⛔ חסומות')).not.toContain('T-998');
+  });
+
+  it('היא מופיעה — ובסעיף הפגומות בלבד, עם מספר התאים שנמדד', () => {
+    const malformed = sectionOf(generate(), '⚠️ שורות משימה פגומות');
+    expect(malformed).toContain('T-998');
+    expect(malformed).toContain('9 מתוך 8');
+  });
+
+  it('וכותרת הסעיף סופרת אותה ⇒ `loop:health` בדיקה 5 מאדימה עליה', () => {
+    /* בדיקה 5 קוראת את המספר בסוגריים מהכותרת. ⇒ המספר הוא הערוץ, ⛔ לא הטבלה. */
+    const header = /^## ⚠️ שורות משימה פגומות[^(]*\((\d+)\)/m.exec(generate());
+    expect(header).not.toBeNull();
+    expect(Number(header?.[1])).toBeGreaterThanOrEqual(1);
+  });
+});
