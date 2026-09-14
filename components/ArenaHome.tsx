@@ -389,8 +389,23 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         <button type="button" className={START_CLASS} onClick={() => onStart(state)}>
           {START_HE}
         </button>
-        {/* ⚠️ `flex` רגיל (`T-338`) — `ארון ציוד` נמדד `x=48` לפני `עיצוב דמות` ב-`x=193`. */}
+        {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון **כבר** בימין.
+
+            🔃 **T-344 · `D-245` · סוגר את `F-249` — `עיצוב דמות` הוא הילד הראשון.**
+            ⛔ **המדידה, גרופה מהרנדר ⛔ ולא מהעין:** `render_video_B.py:194-197` רץ על
+            `("ארון ציוד", "עיצוב דמות")` ומציב `x = 24 + i*(bw+10)` עם `bw=158.5`
+            ⇒ `ארון ציוד` ב-`x=24` (**שמאל**) ו-`עיצוב דמות` ב-`x=192.5` (**ימין**).
+            במסך החי נמדד ההפך (‏375px: `ארון ציוד`=193 · `עיצוב דמות`=48) ⇒ לומד שראה
+            את הרנדר הושיט אצבע לפעולה אחת וקיבל את השנייה.
+            🔴 ⛔ **והתיקון הוא סדר ה-DOM, ⛔ ולא `flex-row-reverse`:** `T-338` תיקן את
+            הציר עצמו, והחזרת ההיפוך הייתה מחליפה באג בשני באגים שמבטלים זה את זה.
+            ⚠️ `36 § 14.4` — **הסדר** הוא מה שנשאר מחייב מהרנדר; הרקע ⛔ אינו. */}
         <div className="flex gap-[10px]" data-rtl-row="home-actions">
+          {/* T-217 · `37 § 7` — «ניתן לשינוי בכל רגע ממסך הבית»: פותח את מסך הבחירה
+              עם יציאה. ⛔ המעטפת מחליטה, ⛔ לא המסך. */}
+          <button type="button" className={SECONDARY_CLASS} onClick={() => onDesign(state)}>
+            {DESIGN_HE}
+          </button>
           <button
             type="button"
             className={SECONDARY_CLASS}
@@ -398,11 +413,6 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
             onClick={() => setDrawerOpen((open) => !open)}
           >
             {DRAWER_HE}
-          </button>
-          {/* T-217 · `37 § 7` — «ניתן לשינוי בכל רגע ממסך הבית»: פותח את מסך הבחירה
-              עם יציאה. ⛔ המעטפת מחליטה, ⛔ לא המסך. */}
-          <button type="button" className={SECONDARY_CLASS} onClick={() => onDesign(state)}>
-            {DESIGN_HE}
           </button>
         </div>
       </div>

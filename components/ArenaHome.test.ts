@@ -183,4 +183,20 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     expect(glyph).not.toContain('M11 0 0 7l11 7z');
   });
 
+  /**
+   * 🔃 **T-344 · `D-245` · `F-249` — הרנדר קובע את הסדר.**
+   * `render_video_B.py:194` מצייר `("ארון ציוד", "עיצוב דמות")` ב-`x = 24 + i*(bw+10)`
+   * ⇒ `ארון ציוד` ב-`x=24` (**שמאל**) ו-`עיצוב דמות` ב-`x=192.5` (**ימין**). במיכל RTL
+   * הילד הראשון הוא הימני ⇒ `עיצוב דמות` חייב להיות הראשון בסדר ה-DOM.
+   * ⛔ **ו⛔ לא `flex-row-reverse`:** `T-338` תיקן את הציר, וההחזרה שלו הייתה מבטלת
+   * את התיקון הזה בבאג שני (הבדיקה למעלה מודדת בדיוק את זה).
+   */
+  it('T-344 — `עיצוב דמות` הוא כפתור המשנה הראשון בסדר ה-DOM', () => {
+    const row = SRC_RTL.match(/data-rtl-row="home-actions"[\s\S]*?\n {6}<\/div>/)?.[0] ?? '';
+    expect(row).not.toBe('');
+    expect(row.indexOf('{DESIGN_HE}')).toBeGreaterThan(-1);
+    expect(row.indexOf('{DRAWER_HE}')).toBeGreaterThan(-1);
+    expect(row.indexOf('{DESIGN_HE}')).toBeLessThan(row.indexOf('{DRAWER_HE}'));
+  });
+
 });
