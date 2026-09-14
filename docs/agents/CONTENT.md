@@ -36,8 +36,9 @@ Commission row is ⬜ but its brief/gate file is missing?
 **ⓑ You added 31 senses and left four snapshot tests red on `dev`.** `data/generated/` is an INPUT to four committed files. Writing the input and not regenerating the outputs leaves the repo lying about its own content, and someone else had to find it.
 ⇒ **Wrote anything under `data/generated/`? These run BEFORE the commit, and everything they touch goes in the SAME commit:**
 ```
-npm run build:ingest && npm run build:levels && npm run measure:gate
+npm run build:ingest && npm run build:levels && npm run measure:gate && npm run build:preview
 ```
+🧑‍⚖️ **הכרעת PROMOTER · 2026-09-14 (C-0607, item 109 ב-`03-for-roy.md`):** `npm run build:preview` (`scripts/build-preview-cards.mjs` → `lib/core/previewCards.generated.ts`, נבדק ב-`build-preview-cards.test.ts`) נוסף לרשימה — הוא גנרטור רביעי שנשען על אותו `data/generated/*.jsonl`, ונעדר מכאן עד היום (`item 109`, C-0520 · נמדד שוב C-0532: כבר רץ בפועל בכל טיק CONTENT, רק לא היה כתוב כאן). ⛔ **שורת ההיפוך:** מחיקת שורה זו וה-`&& npm run build:preview` משני מקומות בקובץ מחזירה את המצב הקודם במלואו.
 Then, and only then, `npm run verify` — which is the **LAST** action before the commit (`RULES § 0.1 ח׳`). Edited anything after it, ⛔ including a `.md` file — run it again. ⛔ "I only touched data" is not an exemption; that is exactly the tick that went red.
 
 🔴 **וכשאתה מריץ את שתי הפקודות האלה — `npm install && npm run verify` — תן להן חלון מפורש של `timeout: 600000` (עשר דקות, המקסימום של הכלי). ⛔ זה ⛔ אינו ליטוש, וזה ⛔ אינו זהירות יתר.**
@@ -269,9 +270,9 @@ Commission: the output path its row names, and set the row to **🟣 לביקו�
 
 🔴 **THEN, ALWAYS, BEFORE THE COMMIT** — rule ⓑ:
 ```
-npm run build:ingest && npm run build:levels && npm run measure:gate
+npm run build:ingest && npm run build:levels && npm run measure:gate && npm run build:preview
 ```
-These rewrite `supabase/seed/0001_content_batches.sql`, `0002_word_cefr_levels.sql`, `0003_scoring_material.sql` and `docs/gate-recheck.md`. **All four go into the same commit as your batch.**
+These rewrite `supabase/seed/0001_content_batches.sql`, `0002_word_cefr_levels.sql`, `0003_scoring_material.sql`, `docs/gate-recheck.md` and `lib/core/previewCards.generated.ts`. **All five go into the same commit as your batch.**
 Wrote to `plan/50-tasks.md` or `plan/60-findings.md`? Then also `npm run measure:plan`, and both files it writes go in too.
 
 ## STEP 7.5 — 🔴 LOOK AT WHAT YOU WROTE. ⛔ IN A BROWSER. ⛔ NOT A FALLBACK.  ⟦NEW 09/09 · Roy's explicit instruction⟧
@@ -393,7 +394,7 @@ however its subject reads. ⇒ the marker keeps you at 🟡 «alive, no work» i
 סקילים: <names separated by · >        or        סקילים: ⛔ אף אחד
 ```
 ⛔ **Report what the session actually loaded, ⛔ never what the rules say should load.** ⛔ Do not guess, ⛔ do not list a skill you did not see offered. **«⛔ אף אחד» is a legitimate and ⛔ extremely valuable answer** — it would mean the whole skill chapter is paper, and that is a bigger finding than anything else you could file this tick.
-Which track — **commission, blocked commission, or batch** · requested · accepted · rejected **and the main reason** · **how many `low`** · per-level counts before and after · the lesson you wrote · **confirmation that the three generators ran and `npm run verify` was green** · and **two complete examples with their Hebrew translations**.
+Which track — **commission, blocked commission, or batch** · requested · accepted · rejected **and the main reason** · **how many `low`** · per-level counts before and after · the lesson you wrote · **confirmation that the four generators ran and `npm run verify` was green** · and **two complete examples with their Hebrew translations**.
 Did not run the gate? Say so explicitly. ⛔ Never claim "all fine" without output.
 ⛔ Never wait for Roy — one stamped line in `plan/03-for-roy.md` and keep going.
 
