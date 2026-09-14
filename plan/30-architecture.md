@@ -2730,3 +2730,51 @@ fixture guard is a **literal string** assertion over the whole file, comments in
 a comment in `app/dev/tabs/me/page.tsx` that merely *named* the Supabase route client
 turned the guard red. The guard is right and the comment was reworded; the file now says
 so in place, so the next agent does not "fix" the test.
+
+## C-0594 (DEV) — the loop's two derived artefacts stop lying, and two silent skips stop being silent
+
+**`T-336` · `scripts/archive-departments.mjs`.** `isSealedRow` was `if (!/חתומה/.test(cell))
+return false` — a RegExp with no negative boundary, so **`אינה חתומה`** ("is NOT sealed")
+passed the "is it closed" gate. A department that explicitly declares it did not close
+archived itself. The only protection until now was a wording coincidence: the three
+unsealed departments happened to also carry `חסומ`/`T-NNN`, which `OPEN_MARKS` catches.
+`C-0589` removed the word `חסומות` from `arena` to fit check 19's ceiling and the
+department was deleted; `verify` caught the **symptom** (`arena` missing), ⛔ not the rule.
+⇒ a `NOT_SEALED` test runs **before** `OPEN_MARKS`, so the rule now reads the negation
+itself instead of hoping another open mark is present.
+
+**`T-335` · `scripts/generate-map.mjs`.** `madge` resolves a TypeScript path alias only
+when handed the tsconfig that declares it. Measured: 509 entries, **345 of them `[]`
+(68%)**, `components/Flashcard.tsx` empty while it imports seven modules through `@/`.
+⛔ **And `--ts-config` alone was not enough**, which is the part worth keeping: `paths:
+{ "@/*": ["./*"] }` carries no `baseUrl`, so `./*` resolves against the **resolver's
+working directory** — correct by accident for the real repo (cwd == ROOT) and wrong for
+any other tree. The fixture measured exactly that: the alias edge stayed missing with the
+flag. ⇒ cwd is pinned to `ROOT` and the three roots go in relative. After: 509 entries,
+**173** empty, `Flashcard.tsx` ⇒ 7 edges, `lib/core/studyTracks.ts` ⇒ 3 consumers where
+it had 0.
+
+**`F-243` · `scripts/archive-registers.mjs`.** The script keeps a deliberate private copy
+of `splitRow` so it does not depend on the pure layer. That was a **dependency** decision;
+once `codeSpans()` landed in `lib/core/planTable.ts` it silently became a **correctness**
+one. ⇒ the two parsers disagreed about which cell a status sits in — the one thing the
+comment in `planTable.ts` says can never happen. Measured here, and larger than the
+finding described: **16 task rows and 12 finding rows** split wrongly (up to **20** cells
+on `F-129`), each rejected by `cells.length !== reg.cells` with ⛔ no warning and ⛔ no
+count. `--dry` went **0 ⇢ 23** rows (79.2KB) and no malformed row remains in either
+register. ⛔ The import the finding preferred is not available — the script is `.mjs`,
+`planTable` is `.ts`, and node will not load it without a build step — so `codeSpans()`
+was ported in full and `splitRow`'s contract (untrimmed cells, no trailing empty
+fragment) was left exactly where the stub builder needs it. A rejected row now prints its
+id and both numbers.
+
+**`T-306` · `docs/agents/DEV.md`.** `D-220` put the map in the same commit as its code;
+the closing-sequence line an agent actually walks never named `generate-map`. It does
+now, conditioned on the diff touching `app/` · `components/` · `lib/`, with an assertion
+that reads **that line** so the condition cannot be edited away quietly.
+
+🔬 **The through-line, and it is why these four sit in one tick.** All four are derived
+artefacts — a map, an archive, a department list, a closing step — and in each case the
+**producer had drifted from its own declared contract while every gate stayed green**.
+⛔ None of them fails loudly; each returns a plausible answer. That is the class, ⛔ not
+the individual bugs.
