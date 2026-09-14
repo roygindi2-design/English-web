@@ -308,30 +308,36 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * 🔴 **תרחיש הכישלון של `T-321`, נמדד חי ב-C-0576 ב-375×780:** שלוש הקריאות חזרו
    * `503`, שלושת האריחים הציגו «הנתונים לא נטענו», ו-`טעינה מחדש` — **הפקד היחיד
    * שאפשר ללחוץ עליו על המסך כולו** — מדד `top=816 · bottom=870` בעוד סרגל הלשוניות
-   * מתחיל ב-`top=707`. ⇒ **109px מתחת לקיפול ב-780, ו-222px ב-667.** הלומד קורא
-   * שנכשל, ⛔ אינו רואה פעולה, ומרענן את הדף — הדרך ש-`T-295` כתבה במפורש ש⛔ אינה
-   * דרך החוצה.
+   * מתחיל ב-`top=707`. ⇒ **109px מתחת לקיפול ב-780, ו-222px ב-667.**
    *
-   * ⛔ **והבדיקה היא על הסדר, ⛔ ולא על מחלקות CSS.** כשל מלא (`primaryKey === null`)
-   * ⇒ הבלוק לפני ה-`<ul>`; כשל חלקי ⇒ אחריו, כפי ש-`T-295`ⓑ קבעה מנימוק מבני
-   * שעדיין עומד **כל עוד יש אריח חי ללחוץ עליו**.
+   * 🔴 **ו-`T-349` מדד את אותו כשל בדיוק בכשל ה<שלם>חלקי</שלם>, C-0608, אותו מסך:**
+   * `top=783.5 · bottom=869.5` על מסך 780, סרגל הלשוניות ב-`top=707`. הפעם אריח
+   * «סינון מילים» כן היה חי (‏`unseen = 314`) ⇒ `primaryKey !== null` ⇒ הבלוק ירד אל
+   * מתחת לרשימה. ⛔ **והנימוק של `T-295`ⓑ ⛔ לא נסתר — הוא נמדד:** הוא החזיק «כל עוד
+   * יש אריח חי ללחוץ עליו», ואריח חי הוא **חפיסה אחרת**, ⛔ ולא ניסיון חוזר. לומד
+   * שקריאותיו נכשלו ⛔ אינו רוצה חפיסה אחרת; הוא רוצה את המידע שלא הגיע.
+   * ⇒ **אתר רינדור אחד, לפני הרשימה, בכל `readFailed`** — מלא כחלקי.
+   *
+   * ⛔ **והבדיקה היא על הסדר, ⛔ ולא על מחלקות CSS.**
    */
-  it('T-321ⓐ — בכשל מלא דרך היציאה מרונדרת ⛔ לפני רשימת האריחים', () => {
-    const beforeList = CODE.indexOf('{readFailed && primaryKey === null && recoveryBlock}');
-    const afterList = CODE.indexOf('{readFailed && primaryKey !== null && recoveryBlock}');
+  it('T-349 — דרך היציאה מרונדרת ⛔ לפני הרשימה בכל כשל, מלא כחלקי', () => {
+    const site = '{readFailed && recoveryBlock}';
     const listOpen = CODE.indexOf('<ul aria-busy={loading}');
     const listClose = CODE.indexOf('</ul>');
 
-    // שני המקומות קיימים, ו⛔ אין שלישי.
-    expect(beforeList).toBeGreaterThan(-1);
-    expect(afterList).toBeGreaterThan(-1);
+    // ⛔ אתר אחד, ⛔ ולא שניים — ⛔ אין עוד «לפני» ו«אחרי».
+    expect(CODE.match(/\{readFailed && recoveryBlock\}/g)).toHaveLength(1);
+    expect(CODE).not.toContain('primaryKey === null && recoveryBlock');
+    expect(CODE).not.toContain('primaryKey !== null && recoveryBlock');
+
+    // והוא לפני הרשימה, ⛔ ולא אחריה.
+    const before = CODE.indexOf(site);
+    expect(before).toBeGreaterThan(-1);
     expect(listOpen).toBeGreaterThan(-1);
+    expect(before).toBeLessThan(listOpen);
+    expect(before).toBeLessThan(listClose);
 
-    // כשל מלא — לפני הרשימה. כשל חלקי — אחריה. ⛔ זהו כל התיקון.
-    expect(beforeList).toBeLessThan(listOpen);
-    expect(afterList).toBeGreaterThan(listClose);
-
-    // ⛔ ⛔ ולא מסך שגיאה ו⛔ לא אריח רביעי — אותו בלוק, מקום אחר.
+    // ⛔ ⛔ ולא מסך שגיאה ו⛔ לא אריח רביעי — אותו בלוק, מקום אחד.
     expect(CODE.match(/data-deck-failed/g)).toHaveLength(1);
   });
 

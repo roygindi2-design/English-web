@@ -332,16 +332,22 @@ export default function DeckSelector({
   // נכון; «אין מה לתרגל» חצי שנייה לפני שהמספרים נוחתים הוא שקר קצר.
   const dead = !loading && allTilesDead(entries);
 
-  /* `T-321` — ⛔ **one block, two places, ⛔ and the condition is the measurement.**
-     `T-295`ⓑ put the way out AFTER the list on a stated structural argument: the control
-     sits under the thing that failed, and the tiles keep their numbers (`§ 4.2ו`). That
-     argument holds ⛔ only while some tile is still live and pressable. When EVERY read
-     failed (`primaryKey === null`) the list above it carries ⛔ no action at all — three
-     copies of «הנתונים לא נטענו» — and the only control on the screen measured
-     `top=816` at 375×780 (‏`bottom=870`, tab bar at `top=707`) ⇒ **109px under the fold
-     at 780 and 222px at 667.** The learner is told it failed and shown nothing to press,
-     so they refresh the page — the one way out `T-295` wrote down as ⛔ not a way out.
-     ⇒ total failure renders it BEFORE the list; partial failure keeps `T-295`ⓑ's order. */
+  /* `T-349` — ⛔ **one block, ONE place, and the place is ⛔ above the list.**
+     `T-295`ⓑ put the way out AFTER the list on a structural argument — the control sits
+     under the thing that failed, and the tiles keep their numbers (`§ 4.2ו`) — held
+     «⛔ only while some tile is still live and pressable». `T-321` then measured a TOTAL
+     failure at `top=816 · bottom=870` on 375×780 (tab bar at `top=707`) and split the
+     block in two: before the list when `primaryKey === null`, after it otherwise.
+     🔬 **C-0608 measured the other half of the same failure, ⛔ and it did not survive:**
+     a PARTIAL failure — «סינון מילים» live at `unseen = 314` ⇒ `primaryKey !== null` —
+     put the only retry control at `top=783.5 · bottom=869.5` on the same 780 screen.
+     ⇒ **`T-295`ⓑ's premise is false, ⛔ not its reasoning:** a live tile is a DIFFERENT
+     deck, ⛔ not a retry. It cannot re-fetch what failed, so it is ⛔ not «an action the
+     list carries» for this failure at all — and the learner refreshes the page, the one
+     way out `T-295` itself wrote down as ⛔ not a way out.
+     ⇒ **`readFailed` alone renders it, before the list.** `primaryKey` still decides
+     whether it is the PRIMARY action (`F-027` — exactly one per screen), ⛔ and that is
+     now the only thing `primaryKey` decides here. */
   const recoveryBlock = (
     <div data-deck-failed className="flex flex-col items-start gap-2">
       <p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>
@@ -385,10 +391,12 @@ export default function DeckSelector({
       <div role="status" aria-atomic="true" className="sr-only" data-deck-status>
         {readFailed ? READ_FAILED_BODY_HE : ''}
       </div>
-      {/* `T-321`ⓐ — ⛔ every read failed ⇒ the ONLY control on the screen goes above the
-          fold, ⛔ before the three dead tiles. ⛔ It is ⛔ not a new error screen
-          (‏`T-295` forbade one) and ⛔ not a fourth tile — it is the same block, moved. */}
-      {readFailed && primaryKey === null && recoveryBlock}
+      {/* `T-349` — ⛔ **any failed read** ⇒ the way out goes above the fold, ⛔ before the
+          tiles. ⛔ It is ⛔ not a new error screen (‏`T-295` forbade one) and ⛔ not a
+          fourth tile — it is the same block, in the one place that is reachable without
+          scrolling at 320 · 375 · 414. ⛔ And the tiles keep their numbers below it: the
+          block is an ADDITION, ⛔ never a replacement (`§ 4.2ו`). */}
+      {readFailed && recoveryBlock}
       {/* `T-295`ⓐ — ⛔ **`&& !readFailed` is the whole point of the row.** «אין מה לתרגל»
           is a claim about the BANK, and a read that never arrived measured nothing about
           the bank. Until today a total outage rendered exactly this block, and a learner
@@ -481,13 +489,6 @@ export default function DeckSelector({
         })}
       </ul>
 
-      {/* `T-295`ⓑ — ⛔ **after the list, ⛔ and that is structural, not taste.** The tiles
-          keep their numbers (§ 4.2ו) and the way out sits under the thing that failed.
-          ⛔ It is ⛔ not the primary action while any tile is live — `check:mobile` fails a
-          screen carrying other than exactly one `[data-primary-action]` (F-027), and when
-          every tile is dead this control is the ONLY thing on screen a learner can press,
-          so it is the primary one by measurement rather than by preference. */}
-      {readFailed && primaryKey !== null && recoveryBlock}
     </section>
   );
 }

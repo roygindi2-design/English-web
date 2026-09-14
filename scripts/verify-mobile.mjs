@@ -1405,6 +1405,36 @@ try {
         report(`deck recovery top=${retry} at ${width}px (D-228ⓐ ceiling 736)`);
       }
 
+      // ── T-349ⓑ · המשך של T-329 — אותו `≤736`, על הכשל ה**חלקי** ────────────────
+      //
+      // ⛔ **בלוק שני, ⛔ ולא הרחבה של הראשון, כי הן שתי פיקסטורות שונות.**
+      // `/dev/tabs/probe` מרנדר בלי `unseen` ⇒ `primaryKey === null` ⇒ כשל **מלא**.
+      // `/dev/tabs/cards` מאכיל `fixtureSummary` עם `unseen: 314` ⇒ אריח «סינון
+      // מילים» **פעיל** ⇒ `primaryKey !== null` ⇒ כשל **חלקי**, בעוד שלוש קריאות
+      // התור עונות 503 (הרגולריות מעל, באותו קובץ). ⇒ ⛔ אין מסלול שמודד את שניהם.
+      //
+      // 🔬 **המספר שהפך את `T-349` לאמיתי, נמדד חי ב-C-0608 על `/dev/tabs/cards`
+      // תחת `next start` ב-375×780:** `טעינה מחדש` ב-`top=783.5 · bottom=869.5`,
+      // וסרגל הלשוניות ב-`top=707` ⇒ **⛔ אפס פיקסלים נצבעים** של הדרך היחידה
+      // החוצה. ⛔ **ואריח «סינון מילים» החי ⛔ אינו סותר את זה:** הוא חפיסה אחרת,
+      // ⛔ ולא ניסיון חוזר, ולכן הרשימה מעל הפקד ⛔ אינה נושאת פעולה **לכשל הזה**.
+      //
+      // ⛔ **הסף ⛔ אינו מספר חדש:** `780 − 44 = 736`, אותו `D-228`ⓐ — רצפת המגע
+      // חייבת להיצבע, ⛔ לא רק הפינה העליונה.
+      if (route === '/dev/tabs/cards') {
+        const retry = await page.evaluate(() => {
+          window.scrollTo(0, 0);
+          const el = document.querySelector('main [data-deck-failed] button');
+          return el ? Math.round(el.getBoundingClientRect().top) : -1;
+        });
+        check(
+          retry >= 0 && retry <= 736,
+          `${at} T-349ⓑ: the way out of a PARTIAL deck failure paints inside the first viewport`,
+          `טעינה מחדש starts at top=${retry} (D-228ⓐ: ≤736 on a 780px viewport)`,
+        );
+        report(`deck partial-failure recovery top=${retry} at ${width}px (D-228ⓐ ceiling 736)`);
+      }
+
       // F-027 — the connectivity guarantee roy asked for after signing up on the
       // live site and finding the onboarding screen had no way forward and no
       // way out: "verify-mobile at 375 must require that every screen in the
