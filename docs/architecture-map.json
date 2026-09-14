@@ -716,6 +716,7 @@
   ],
   "components/EnWord.test.ts": [],
   "components/EnWord.tsx": [],
+  "components/FilterBar.test.ts": [],
   "components/FilterBar.tsx": [
     "lib/core/filterProgress.ts"
   ],
@@ -938,6 +939,7 @@
   "components/amirnetTypeBar.ts": [
     "lib/core/amirnetPractice.ts"
   ],
+  "components/rtl-axis.test.ts": [],
   "lib/api/client.test.ts": [
     "lib/api/client.ts"
   ],

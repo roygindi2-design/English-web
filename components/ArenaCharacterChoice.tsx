@@ -135,8 +135,9 @@ export default function ArenaCharacterChoice({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setChosen(character)}
+                data-rtl-row="character-card"
                 className={[
-                  'flex w-full flex-row-reverse items-center gap-4 p-4 text-right',
+                  'flex w-full items-center gap-4 p-4 text-right',
                   CARD_CLASS,
                   selected ? 'border-2 border-[color:var(--arena-gold)]' : '',
                 ].join(' ')}
@@ -154,7 +155,7 @@ export default function ArenaCharacterChoice({
                   </svg>
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="flex flex-row-reverse items-center justify-between gap-2">
+                  <span className="flex items-center justify-between gap-2" data-rtl-row="character-label">
                     {/* `:138` — 15px Bold. */}
                     <span className="text-[15px] font-bold leading-none text-[color:var(--arena-ink)]">
                       {CHARACTER_LABELS_HE[character]}
