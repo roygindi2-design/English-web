@@ -190,6 +190,21 @@ push runs `verify` like every other push, and that is the point.
 והקריאה בו היא טוקנים שנשרפו. ⇒ **התור שלך כתוב במקום אחר, וזה נאמר במפורש כדי
 שלא תחפש.**
 
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ ONE WAIT IS ⛔ NOT ENOUGH — WAIT UP TO THREE.**
+```
+round 1  sleep 180 → re-read plan/00-control.md
+round 2  sleep 180 → re-read            ⇐ ⛔ only if still held
+round 3  sleep 180 → re-read            ⇐ ⛔ only if still held
+still held after ~9 minutes ⇒ NOW yield, and write the retreat line
+```
+🔬 **Why three, and the number is measured ⛔ not chosen:** tick durations over 12–14/09 —
+**DEV 23.6 min · PM 22.5 · QA 18.0 · CONTENT 36.8 · ops 8.0** (medians, lock→release). ⇒ a
+lock you meet is typically **minutes** from release, and yielding after one wait throws away
+a whole window to save nine minutes. ⛔ **And an agent that advances the loop MUST run** —
+a yielded DEV tick is an hour of the product standing still.
+⛔ **What ⛔ does ⛔ not change:** the retreat itself, the thresholds (DEV 90 min, everyone
+else 30), and the fact that a foreign lock is ⛔ never overwritten. This lengthens the wait,
+⛔ it does ⛔ not shorten the age at which a lock counts as abandoned.
 ## STEP 3 — WHICH TRACK
 **An unblocked commission?** → do it. Follow its brief exactly, run its gate, write to the output path the row names, mark the row **🟣 לביקורת**. ⛔ Skip STEP 4–5.
 **A blocked commission?** → rule ⓐ: report it, mark it ⛔, then fall through — **and say so**.
@@ -238,6 +253,35 @@ tier 4 · C1 · רמת פטור            914 words
 ```
 **`translation_he` is the most important field.** Required on every row, never `null`, never empty. ONE meaning, exact to the sense. ⛔ No Latin letters, ⛔ no comma-separated list.
 ⚠️ **Unsure? Write your best translation and mark `translation_confidence:"low"`.** ⛔ Never omit a word for uncertainty — a `low` row is still shown, marked "not yet verified", and excluded from scored items only.
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ VOLUME IS THE GOAL. THE SENTENCES ARE ⛔ NOT.**
+
+**Roy, verbatim:** «הוא לא חייב לכתוב מלא משפטים על כל מילה — הוא מעלה את כמות המילים
+ומוריד את כל המשפטים. נעשה בעתיד על מילים ספציפיות תרגילים.»
+
+⇒ **What a batch is measured in changed: WORDS, ⛔ not rows-with-everything.**
+```
+✅ ALWAYS, on every word     the headword · `translation_he` · level · part of speech
+                             ⇐ this is the word. ⛔ Without it there is no row.
+🟡 WHEN IT COSTS YOU NOTHING the one-to-many group · the interference note
+⛔ ⛔ NO LONGER PER WORD      two sentences · three stems · four distractors
+                             ⇒ those are EXERCISES, and exercises get built later,
+                               on the words that turn out to need them.
+```
+🔬 **Why this is the right trade and ⛔ not a lowering of the bar:** a word with a correct
+`translation_he` and ⛔ no sentence **teaches**; a word that ⛔ never got written teaches
+⛔ nothing. Measured 12–14/09: **CONTENT's median tick is 36.8 minutes — the longest of the
+five agents** — and it spent that producing the full apparatus for a handful of words.
+⇒ **the same window now buys many times the vocabulary.**
+⛔ **And what does ⛔ NOT move:** `translation_he` is still the most important field, still
+required, still ONE exact meaning; `R-010` still forbids inventing a grammatical claim; and
+a word you are unsure of still gets `translation_confidence:"low"` rather than omission.
+⚠️ **Sentences you DO write still obey the rule below** — this changes **how many** words
+carry them, ⛔ never their quality.
+⚠️ ⛔ **AND THE PIPELINE ⛔ DOES ⛔ NOT ACCEPT THIS YET** — `T-353` is the row that makes the
+schema, `build:ingest` and the spot-check accept a word with ⛔ no sentences. **Until it is
+✅, keep writing them** and say in your report that you were blocked on `T-353`. ⛔ Do ⛔ not
+ship rows the gate will reject.
+
 **Two sentences (D-022):** `supportive` reveals the meaning; `neutral` does **not**. Both max 14 words, at or below level.
 **Three stems**, `____` marks the blank. ⛔ The stem must not contain the target word or a derivative.
 **Four tagged distractors (D-023):** 2 `semantic` · 1 `orthographic` · 1 `unrelated`.

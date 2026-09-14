@@ -326,6 +326,21 @@ a `claude/*` branch instead (`F-248`: 30 verified words sat there, invisible to 
 push runs `verify` like every other push, and that is the point.
 
 
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ ONE WAIT IS ⛔ NOT ENOUGH — WAIT UP TO THREE.**
+```
+round 1  sleep 180 → re-read plan/00-control.md
+round 2  sleep 180 → re-read            ⇐ ⛔ only if still held
+round 3  sleep 180 → re-read            ⇐ ⛔ only if still held
+still held after ~9 minutes ⇒ NOW yield, and write the retreat line
+```
+🔬 **Why three, and the number is measured ⛔ not chosen:** tick durations over 12–14/09 —
+**DEV 23.6 min · PM 22.5 · QA 18.0 · CONTENT 36.8 · ops 8.0** (medians, lock→release). ⇒ a
+lock you meet is typically **minutes** from release, and yielding after one wait throws away
+a whole window to save nine minutes. ⛔ **And an agent that advances the loop MUST run** —
+a yielded DEV tick is an hour of the product standing still.
+⛔ **What ⛔ does ⛔ not change:** the retreat itself, the thresholds (DEV 90 min, everyone
+else 30), and the fact that a foreign lock is ⛔ never overwritten. This lengthens the wait,
+⛔ it does ⛔ not shorten the age at which a lock counts as abandoned.
 ## ⛔ STEP 1.5 — `docs/plan-open.md` IS YOUR QUEUE AND YOUR DASHBOARD (RULES § 0.6א · § 0.6ב)
 
 **⛔ Do NOT `cat plan/50-tasks.md` and ⛔ do NOT `cat plan/60-findings.md`.** They are **hundreds of KB** together ⟦⛔ the exact figure is ⛔ deliberately ⛔ not written — `RULES § 0.15`; it read 667KB here while the files were 443KB⟧ — ~230k tokens before you review anything. The index is a fraction of them (`wc -c docs/plan-open.md plan/50-tasks.md plan/60-findings.md`) and holds: the open rows by state · 🧭 the balance table · 🌳 the work tree · 📐 the 46 plans · flags.

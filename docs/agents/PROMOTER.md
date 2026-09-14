@@ -74,6 +74,8 @@ cat plan/00-control.md               # and ⛔ NOTHING else yet
 |---|---|
 | `PAUSED_BY_HUMAN: true` | ⛔ one line, exit. ⛔ No merge, ⛔ no decision. |
 | `LOCK_HELD_BY` not empty | **Smart Wait:** `sleep 180`, re-read. Released ⇒ continue. Still held ⇒ exit — and ⛔ **NEVER silently.** |
+
+🆕 🔴 **⟦14/09⟧ AND THE WAIT IS UP TO THREE ROUNDS OF `sleep 180`, ⛔ not one** — re-reading `plan/00-control.md` between each, yielding ⛔ only after ~9 minutes. Measured tick medians 12–14/09: DEV 23.6 min · PM 22.5 · QA 18.0 · CONTENT 36.8 ⇒ a lock you meet is usually minutes from release. ⛔ **Your window is twice a day** — yielding it to save nine minutes is the expensive choice.
 | `PROMOTION_BLOCKERS` not empty | ⛔ **No promotion this run.** Report the blocker verbatim and go to STEP F. |
 | `MERGE_BLOCKERS` not empty | ⛔ **⛔ Not yours. ⛔ Do ⛔ not read it, ⛔ not act on it, ⛔ not clear it.** That field is QA→DEV (`RULES § 0.23 ז׳`). |
 

@@ -226,6 +226,21 @@ push runs `verify` like every other push, and that is the point.
 
 
 
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ ONE WAIT IS ⛔ NOT ENOUGH — WAIT UP TO THREE.**
+```
+round 1  sleep 180 → re-read plan/00-control.md
+round 2  sleep 180 → re-read            ⇐ ⛔ only if still held
+round 3  sleep 180 → re-read            ⇐ ⛔ only if still held
+still held after ~9 minutes ⇒ NOW yield, and write the retreat line
+```
+🔬 **Why three, and the number is measured ⛔ not chosen:** tick durations over 12–14/09 —
+**DEV 23.6 min · PM 22.5 · QA 18.0 · CONTENT 36.8 · ops 8.0** (medians, lock→release). ⇒ a
+lock you meet is typically **minutes** from release, and yielding after one wait throws away
+a whole window to save nine minutes. ⛔ **And an agent that advances the loop MUST run** —
+a yielded DEV tick is an hour of the product standing still.
+⛔ **What ⛔ does ⛔ not change:** the retreat itself, the thresholds (DEV 90 min, everyone
+else 30), and the fact that a foreign lock is ⛔ never overwritten. This lengthens the wait,
+⛔ it does ⛔ not shorten the age at which a lock counts as abandoned.
 ## STEP 2 — PICK — ⛔ THE INDEX, NOT THE REGISTERS (RULES § 0.6א · § 0.6ב)
 
 ⚡ **⟦09/09 · F.1⟧ ו⛔ אינך קורא את כולו.** הקובץ הוא ~53KB ואתה קורא אותו **12 פעמים ביום**;
@@ -554,6 +569,29 @@ clone, install and verify for each.
 
 ⇒ a one-line task and a day-long task are measured by the same rule, and there is
 ⛔ no number for anyone to argue about.
+
+### 🎨 THE ARENA IS YOURS TO MAKE GOOD — ⛔ WITHOUT A ROW, ⛔ WITHOUT ASKING  ⟦NEW 14/09 · Roy's explicit instruction⟧
+
+🔴 **Inside the battle arena — `app/arcade/**` · `components/Arena*` — you have a FREE HAND
+on visual craft.** ⛔ You ⛔ do ⛔ not need a `נוחות` row, ⛔ you do ⛔ not need PM to open one,
+and ⛔ you do ⛔ not need the `[SKILL: …]` cell: **the arena's polish is delegated to you.**
+```
+✅ yours, no row      spacing · elevation · colour within the tokens · motion · timing
+                      · the feel of a hit · what a tap does at 44px · empty and loss states
+⛔ still ⛔ NOT yours  the RULES of the battle · scoring · what a card teaches · copy that
+                      makes a pedagogical claim · anything under lib/core/**
+```
+⇒ **use the motion skills here without waiting to be told** — `anthropic-skills:animate`,
+and `anthropic-skills:emil-design-eng` when `animate` sends you there. They are ⛔ still
+DEV's alone (`RULES § 0.1 ז׳`), and the arena is exactly what they were allowed for.
+⚠️ **Two fences, and they are the whole of it:** ⛔ **the accessibility gates are frozen**
+(contrast · 44px · colour never the only channel · reduced-motion · ⛔ no horizontal scroll
+at 375px) — a free hand ⛔ never reaches those. And **say what you changed in your report**:
+«זירה — עיצוב חופשי: <מה>». ⛔ Silent visual churn is ⛔ not a free hand, it is a diff nobody
+can review.
+🔬 **Why the arena and ⛔ not the rest:** `36 § 13` fences it as its own department and
+`RULES` already blocks its layer-B items from being findings — ⇒ it is the one place where
+«what looks right» has ⛔ no pedagogical claim underneath it to get wrong.
 
 ### 🗺️ BEFORE YOU PUSH — `npm run affected <file>`  ⟦NEW 14/09 · Roy's throughput review⟧
 **One command, ~200ms, ⛔ no new dependency:** it walks `docs/architecture-map.json`

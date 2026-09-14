@@ -833,9 +833,11 @@ describe('docs/agents/*.md — הפרומפטים הם קובץ בריפו, ⛔ 
     expect(pm, 'הפרק עצמו').toContain('STEP 5.5');
     // ⓐ סוג העבודה — ⛔ נוחות בלבד
     expect(pm, 'ⓐ נוחות בלבד').toMatch(/`סוג עבודה` is `נוחות`/);
-    // ⓑ ⛔ לא שורה שנפתחה בטיק הזה — זה הסעיף שמונע «השער נפתח מבפנים»
-    expect(pm, 'ⓑ טיק קודם').toMatch(/EARLIER tick, ⛔ never this one/);
-    expect(pm, 'ⓑ במשפט אחד').toContain('⛔ you may not build a row you opened in the same tick');
+    // 🆕 ⟦NARROWED 14/09 · אישור מפורש של רוי⟧ ⓑ היה «⛔ לעולם לא שורה שפתחת היום»,
+    // ⛔ והוא עלה טיק בכל פעם. הגדר האמיתי של `C-0366` הוא **מי אישר את השורה**,
+    // ⛔ ולא השעון ⇒ מקור חיצוני נבנה מיד; שורה שה-PM המציא עדיין ממתינה טיק.
+    expect(pm, 'ⓑ מקור חיצוני').toMatch(/the row came from OUTSIDE you/);
+    expect(pm, 'ⓑ והגדר שנשאר עומד').toContain('A row you INVENTED still waits a tick');
     expect(pm, 'ⓑ הכלל שמאחוריו').toContain('C-0366');
     // ⓓ שלושת הנתיבים שנשארים של DEV
     for (const dir of ['lib/core/**', 'supabase/**', 'app/api/**']) {

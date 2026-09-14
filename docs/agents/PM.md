@@ -237,6 +237,21 @@ push runs `verify` like every other push, and that is the point.
 
 
 
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ ONE WAIT IS ⛔ NOT ENOUGH — WAIT UP TO THREE.**
+```
+round 1  sleep 180 → re-read plan/00-control.md
+round 2  sleep 180 → re-read            ⇐ ⛔ only if still held
+round 3  sleep 180 → re-read            ⇐ ⛔ only if still held
+still held after ~9 minutes ⇒ NOW yield, and write the retreat line
+```
+🔬 **Why three, and the number is measured ⛔ not chosen:** tick durations over 12–14/09 —
+**DEV 23.6 min · PM 22.5 · QA 18.0 · CONTENT 36.8 · ops 8.0** (medians, lock→release). ⇒ a
+lock you meet is typically **minutes** from release, and yielding after one wait throws away
+a whole window to save nine minutes. ⛔ **And an agent that advances the loop MUST run** —
+a yielded DEV tick is an hour of the product standing still.
+⛔ **What ⛔ does ⛔ not change:** the retreat itself, the thresholds (DEV 90 min, everyone
+else 30), and the fact that a foreign lock is ⛔ never overwritten. This lengthens the wait,
+⛔ it does ⛔ not shorten the age at which a lock counts as abandoned.
 ## 🧹 STEP 1.4 — `npm run gc:memory`, AND IT IS THE FIRST THING YOU RUN  ⟦NEW 01/09 · Roy's explicit instruction⟧
 
 **Immediately after the lock is yours, before you open the index, before you plan anything:**
@@ -443,6 +458,24 @@ the same agent that reads it.
 #### 📏 ③ IN MINUTES — ⛔ AND BOTH DIRECTIONS COST SOMETHING  ⟦NEW 09/09 · Roy's explicit instruction⟧
 
 **A row is 30–60 minutes of DEV work.** ⛔ Not «one tick» — measured 09/09, «one tick»
+🆕 🔴 **⟦14/09 · Roy's explicit instruction⟧ AND THE FLOOR IS ⛔ NOT ADVISORY — A ROW TOO
+SMALL IS A ROW THAT PRODUCES BOOKKEEPING.**
+🔬 **Measured 12–14/09:** DEV delivered **1.43 rows per tick** while its own end conditions
+allow **as many as fit** — and a five-row tick exists. ⇒ the constraint was ⛔ never DEV's
+appetite; it was **what was in the queue**.
+```
+⛔ under 30 min   ⇒ ⛔ NOT A ROW. Fold it into the row it belongs to, as a sub-bullet.
+✅ 30–60 min      ⇒ one commit · one failure scenario · lands whole inside a tick
+⛔ over 60 min    ⇒ ⛔ NOT A ROW EITHER. Split it — ⛔ but into 30–60 minute rows,
+                    ⛔ never into three ten-minute ones.
+```
+🔴 **And the test for «is this row worth a tick» is ⛔ not its size — it is the LEARNER:**
+**⇒ say, in one sentence, what the learner can do, see or feel after this row that they
+could ⛔ not before.** ⛔ A row whose honest answer is «⛔ nothing, but the code is tidier»
+is ⛔ **not a product row** — it is `loop` or `base`, and it belongs in that tag.
+🔬 **Why that sentence and ⛔ not a counter:** measured over two days, **26 rows were opened
+and 39 delivered** ⇒ the queue **drains**. The failure mode is ⛔ not «too few rows» — it is
+**too few rows worth DEV's tick**.
 was ⛔ never given a duration anywhere for DEV: `RULES:704` defines a time box for **QA**
 (15 minutes fast · 40 deep) and `DEV.md` ends a tick when «the time box ran out» with
 ⛔ no number behind it. ⇒ «small enough for one tick» was ⛔ unmeasurable, and this is it
@@ -772,6 +805,25 @@ belong to **one component and one failure scenario**, ⛔ never to reach a row q
 Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.
 Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `node scripts/next-cycle-id.mjs` — fetches **all three** of `origin/dev`, `origin/work/current` **and** `origin/main`, and takes the max across all of them, ⛔ never one branch alone. Three pairs of ticks collided on the same id — `C-0284` (24/08), `C-0426` (04/09, `bf4c785`/`e94a4ae`) and `C-0546` (12/09) — the first two running max+1 against one branch each (`T-254`), the third because PROMOTER pushes to ⛔ neither of the two the counter read: it promotes to `main` (`T-317` · `D-227` · `F-231`). 🔴 **ודחיפת הנעילה נדחתה ⇒ `rebase` ⇒ חשב את המזהה מחדש, ⛔ אל תשמור אותו** — הדחייה אומרת שסוכן אחר כבר נחת על הענף, ⇒ המספר שחישבת לפניה הוא כעת שלו.
 
+## STEP 5.4 — 🔁 A SLICE THAT IS ⛔ NOT MOVING MAY BE SWAPPED  ⟦NEW 14/09 · Roy's explicit instruction⟧
+
+⛔ **Until today a slice you opened was a slice you were stuck with.** `§ 0.23 ז׳` moves the
+**workstream** and that is QA's — ⛔ but nothing let you drop a **slice inside it** that turned
+out to be the wrong bet. ⇒ the queue held rows ⛔ nobody would take and ⛔ nobody could retire.
+
+**Retire a slice and open another in its place when ANY of these is MEASURED:**
+```
+⛔ blocked from outside      a dependency · a missing decision · an `R-0xx` — name it by id
+⛔ no eligible row for DEV   3 consecutive DEV ticks passed it over ⇒ read `git log`, ⛔ do not sense it
+⛔ overtaken                 a finding or Roy's instruction made it the wrong thing to build
+```
+⛔ **And retiring is ⛔ NOT deleting.** The rows go to `plan/61-deferred.md` with **one line
+naming which of the three applied**, and the replacement slice opens in the **same tick** —
+otherwise this is a way to empty the queue rather than to redirect it.
+⚠️ ⛔ **What it ⛔ does ⛔ not let you do:** ⛔ move `ACTIVE_WORKSTREAM` (QA's, `§ 0.23 ז׳`) ·
+⛔ retire a slice because it is hard · ⛔ retire one you opened this tick. **Two swaps in one
+tick is ⛔ not redirecting, it is thrashing** — one per tick.
+
 ## STEP 5.5 — ⛔ THE ONE PLACE YOU MAY WRITE CODE  ⟦NEW 09/09 · Roy's explicit personal approval⟧
 
 **⛔ Why this exists, and it is measured ⛔ not felt.** Over 24 hours to 09/09: DEV wrote
@@ -791,15 +843,23 @@ permission is narrow, and why condition ⓑ is ⛔ not negotiable.
 
 ```
 ⓐ  the row's `סוג עבודה` is `נוחות`            ⛔ never מבנה · תוכן · מעברים · תשתית
-ⓑ  the row was opened AND tagged in an EARLIER tick, ⛔ never this one
+ⓑ  the row came from OUTSIDE you — a QA finding · a `diff:render` gap · a measured
+    number · Roy.  ⛔ A row you INVENTED still waits a tick.
 ⓒ  the feature underneath it is already BUILT and merged — you polish, ⛔ not define
 ⓓ  ⛔ NOT lib/core/** · ⛔ NOT supabase/** · ⛔ NOT app/api/**   ⇐ those stay DEV's
 ⓔ  it goes through QA's gate exactly like DEV's code — ⛔ no exemption, ⛔ no shortcut
 ```
 
-⚠️ **ⓑ in one sentence: ⛔ you may not build a row you opened in the same tick.** If you
-want it built and it is fresh, ⛔ leave it ⬜ for DEV or wait a tick. ⛔ **The gate does
-⛔ not open from the inside — ⛔ not for DEV, and ⛔ not for you.**
+🆕 🔴 **⟦NARROWED 14/09 · Roy's explicit approval⟧ ⓑ USED TO READ «⛔ never a row you opened
+this tick», FULL STOP — AND IT COST A TICK EVERY TIME.**
+⛔ **What the fence was actually for (`C-0366`):** you are the agent who writes the `סקיל`
+cell, so opening + tagging + building in one motion is **the gate opened from the inside**.
+⇒ that is about **who authorised the row**, ⛔ never about the clock.
+⇒ **a row whose source is OUTSIDE you carries its own authorisation** — a QA finding, a
+`diff:render` gap, a number someone measured, or Roy asking. **Build it in the same tick.**
+⛔ **A row you thought of yourself still waits a tick** — that is the fence, and it stands.
+⚠️ **And say which it was, in your report:** «נבנתה באותו טיק, מקור: `F-NNN`» ⛔ or «נפתחה
+היום ⇒ ⬜ ל-DEV». ⛔ An unsourced same-tick build is exactly the pattern `C-0366` exists against.
 
 🆕 **ⓕ ⟦11/09 · Roy's explicit instruction⟧ — AND THIS ONE GOVERNS WHEN YOU **OPEN** THE
 ROW, ⛔ not when you build it.** ⛔ **A `נוחות` row is opened ⛔ only on code that already
@@ -885,6 +945,7 @@ capacity existed, the eligible row existed, and the order consumed the tick.**
 **two** rows is a tick that traded your job for DEV's — which is what the old paragraph was
 protecting, and that protection ⛔ does ⛔ not move. ⛔ The findings work is ⛔ never skipped,
 ⛔ never capped, and ⛔ never deferred to the next tick; it is ⛔ only **second**.
+
 
 ## STEP 5.6 — 🔴 PERCEIVED SPEED IS A UX GOAL, AND IT OUTRANKS POLISH  ⟦NEW 14/09 · Roy's explicit instruction⟧
 
