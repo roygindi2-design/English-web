@@ -1345,7 +1345,11 @@ describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידו�
 
   it('הבלמים שהוא ⛔ אינו רשאי לעקוף מוזכרים במפורש', () => {
     expect(body, 'תקרת הפריסות החודשית').toContain('PROMOTIONS_THIS_MONTH');
-    expect(body, '⛔ לא יותר מאחת ליממה').toMatch(/one in 24 hours|24 hours/);
+    // ⟦14/09 · הכרעת רוי על `F-234`ⓑ⟧ הבלם קוצר מ-24 ל-11 שעות. הטענה נועלת את
+    // המספר **החדש** ו⛔ מסרבת לישן — אחרת שינוי הבלם ⛔ לא היה מאדים דבר, ושני
+    // הנוסחים היו יכולים לחיות זה לצד זה בפרומפט.
+    expect(body, '⛔ לא יותר מאחת ב-11 שעות').toMatch(/one in 11 hours/);
+    expect(body, '⛔ הבלם הישן ⛔ אינו נשאר בנוסח').not.toMatch(/one in 24 hours/);
     expect(body, 'תקרת 00-control').toContain('12,288');
     expect(body, 'תקרת ההכרעות').toMatch(/THREE decisions per run/);
   });
