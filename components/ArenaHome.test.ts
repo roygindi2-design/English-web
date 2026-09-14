@@ -162,4 +162,25 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     expect(handles).toHaveLength(5);
     expect(new Set(handles).size).toBe(5);
   });
+  /**
+   * ↩️ **T-345 · `F-250` — החץ יושב ב-`start` ומצביע ימינה.**
+   * ⛔ שתי טענות ו⛔ לא אחת, כי שתי הטעויות היו בלתי-תלויות: **הצד** (`end-1`, שהוא
+   * שמאל ב-RTL) ו**הקודקוד** (`M11 0 …`, שמצביע שמאלה). תיקון אחד בלבד היה משאיר
+   * חץ נכון במקום הפוך, או הפוך במקום נכון.
+   */
+  it('T-345 — חץ החזרה יושב ב-`start` (ימין בעברית), ⛔ ולא ב-`end`', () => {
+    const link = SRC_RTL.match(/<Link[\s\S]*?<\/Link>/)?.[0] ?? '';
+    expect(link).toContain('aria-label={BACK_TO_WORLD_HE}');
+    expect(link).toContain('absolute start-1');
+    expect(link).not.toContain('end-1');
+    // ⛔ ולא קיבוע פיזי: `start` נשאר תלוי-כתיב, `right-1` ⛔ אינו.
+    expect(link).not.toContain('right-1');
+  });
+
+  it('T-345 — קודקוד הגליף מצביע ימינה, כמו המשולש של הרנדר', () => {
+    const glyph = SRC_RTL.match(/function ChevronGlyph[\s\S]*?\n}/)?.[0] ?? '';
+    expect(glyph).toContain('d="M0 0 11 7 0 14z"');
+    expect(glyph).not.toContain('M11 0 0 7l11 7z');
+  });
+
 });

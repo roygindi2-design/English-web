@@ -152,11 +152,20 @@ function SkullGlyph() {
   );
 }
 
-/** `:122` — הגליף נשאר 11×14 של הרנדר; אזור הפגיעה שסביבו הוא 44×44 (שכבה א׳ ⓑ). */
+/**
+ * `:122` — הגליף נשאר 11×14 של הרנדר; אזור הפגיעה שסביבו הוא 44×44 (שכבה א׳ ⓑ).
+ *
+ * ↩️ **T-345 · סוגר את `F-250` — הקודקוד מצביע ימינה, ⛔ ולא שמאלה.**
+ * ⛔ **המדידה, ⛔ ולא הערכה:** הרנדר מצייר את החץ ב-`render_video_B.py:122` כמשולש
+ * `[(LW-22, 119), (LW-33, 112), (LW-33, 126)]` — כלומר הקודקוד הבודד הוא ב-`LW-22`,
+ * ה**ימני** מבין שלושת ה-`x`. הגליף כאן צייר `M11 0 0 7l11 7z`, שקודקודו ב-`x=0`
+ * ⇒ **שמאלה**, בדיוק ההפך. בעברית חץ שמאלה הוא «קדימה» ⇒ הלומד הקיש על מה שנראה
+ * כהתקדמות וחזר אחורה.
+ */
 function ChevronGlyph() {
   return (
     <svg aria-hidden viewBox="0 0 11 14" className="h-[14px] w-[11px]" fill="currentColor">
-      <path d="M11 0 0 7l11 7z" />
+      <path d="M0 0 11 7 0 14z" />
     </svg>
   );
 }
@@ -223,11 +232,18 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
       {/* `:122` — ה-chevron בקצה הימני. אזור פגיעה 44×44, הגליף בגודל הרנדר.
           T-253ⓐ · D-186 — `/world` ישירות: הכניסה לזירה עוברת בטבעת
           (`lib/core/worldApps.ts`), ⛔ ולא ל-`/`, שנופל ל-`signedInRedirect`
-          ⇒ `/studies` — לשונית שהלומד לא ביקש. */}
+          ⇒ `/studies` — לשונית שהלומד לא ביקש.
+
+          ↩️ **T-345 — `start-1`, ⛔ ולא `end-1`, ו⛔ לא `right-1`.** ההערה הזאת אמרה
+          «בקצה הימני» מאז שנכתבה, והקוד כתב `end-1` — ו-`end` במיכל RTL הוא **שמאל**.
+          ⇒ הכוונה והתוצאה ⛔ לא היו זהות, וזו הראיה ש⛔ לא הייתה כאן בחירה.
+          ⛔ **והטוקן הלוגי נשאר לוגי:** `start` הוא הצד שממנו הכתיבה מתחילה — ימין
+          בעברית — ולכן הוא נכון גם אם המוצר ייקרא פעם בשפה משמאל לימין. `right-1`
+          היה מקבע פיזית את מה שצריך להישאר תלוי-כתיב. */}
       <Link
         href="/world"
         aria-label={BACK_TO_WORLD_HE}
-        className="absolute end-1 top-6 flex min-h-touch min-w-touch items-center justify-center text-[color:var(--arena-ink-dim)]"
+        className="absolute start-1 top-6 flex min-h-touch min-w-touch items-center justify-center text-[color:var(--arena-ink-dim)]"
       >
         <ChevronGlyph />
       </Link>
