@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -9,6 +9,13 @@ const run = (root: string, dry = false): string =>
     encoding: 'utf8',
     env: { ...process.env, ARCHIVE_ROOT: root },
   });
+
+/** ⛔ `console.warn` יוצא ל-stderr ⇒ `execFileSync` ⛔ אינו רואה אותו. ⟦F-243⟧ */
+const runStderr = (root: string, dry = false): string =>
+  spawnSync('node', ['scripts/archive-registers.mjs', ...(dry ? ['--dry'] : [])], {
+    encoding: 'utf8',
+    env: { ...process.env, ARCHIVE_ROOT: root },
+  }).stderr;
 
 const TASK_HEAD =
   '| id | אבן דרך | המשימה | מקור | סטטוס | סבבי ביקורת | קבצים | סקיל |\n|---|---|---|---|---|---|---|---|\n';
@@ -34,14 +41,35 @@ const OPEN_FINDING =
  * והדרך היחידה לדחות את השורה היא **ספירת התאים**.
  */
 const MALFORMED =
-  '| T-103 | M0 · loop · תשתית | משימה סגורה | — | ✅ **C-0099 נסגרה** | 0 | ריצה: `grep "a|b"` | — |';
+  '| T-103 | M0 · loop · תשתית | משימה סגורה | — | ✅ **C-0099 נסגרה** | 0 | ריצה: grep "a|b" | — |';
+
+/**
+ * 🔴 ⟦F-243 · 14/09⟧ **צינור בתוך code-span ⛔ אינו שורה פגומה — והפיקסטורה למעלה**
+ * **קראה לו כך עד היום.**
+ *
+ * 🔬 **נמדד חי C-0593 (QA), ⛔ ולא שוער:** שורת `T-326` ב-`plan/50-tasks.md` נושאת
+ * `` `/world/amirnet/practice|simulation` `` — צינור **בתוך גרש בודד**, ותקין לפי
+ * `lib/core/planTable.ts`: ‏`codeSpans()` מזהה את התחום ו-`splitRow` ⛔ אינו מפצל
+ * שם ⇒ `measure-plan-tables` מדווח **0 שורות פגומות** על 336 שורות המשימות.
+ * ⛔ **אבל `archive-registers.mjs` מחזיק עותק ⛔ נפרד של `splitRow`, ⛔ בלי**
+ * **`codeSpans()`** ⇒ אותה שורה נמדדה שם **9** תאים במקום 8, נדחתה בשורה 135,
+ * ו-`npm run archive` הדפיס «8 שורות הוגדמו» ⛔ בלי `T-326` ביניהן — ⛔ בלי אזהרה,
+ * ⛔ בלי ספירה, ⛔ בלי שום איתות. **תת-ספירה שקטה.**
+ *
+ * ⇒ הפיקסטורה `MALFORMED` איבדה כאן את הגרשיים: שורה פגומה היא צינור **גולמי**,
+ * ⛔ ולא צינור מצוטט. השורה המצוטטת עברה לפיקסטורה משלה מתחת.
+ */
+const CLOSED_TASK_WITH_PIPE_IN_CODE =
+  '| T-104 | M0 · loop · תשתית | משימה סגורה שנושאת צינור מצוטט | — | ✅ **C-0098 נסגרה** | 0 | `/world/amirnet/practice|simulation` | — |';
 
 const fixture = (): string => {
   const root = mkdtempSync(join(tmpdir(), 'arch-'));
   mkdirSync(join(root, 'plan', 'archive'), { recursive: true });
   writeFileSync(
     join(root, 'plan', '50-tasks.md'),
-    TASK_HEAD + [CLOSED_TASK, OPEN_TASK, BLOCKED_TASK, MALFORMED].join('\n') + '\n',
+    TASK_HEAD +
+      [CLOSED_TASK, OPEN_TASK, BLOCKED_TASK, MALFORMED, CLOSED_TASK_WITH_PIPE_IN_CODE].join('\n') +
+      '\n',
     'utf8',
   );
   writeFileSync(
@@ -119,6 +147,29 @@ describe('scripts/archive-registers.mjs — ⛔ מגדים, ⛔ ואינו מו�
     run(root);
     expect(tasks(root)).toContain(MALFORMED);
     expect(archived(root, 'tasks-archive.md')).not.toContain('T-103');
+  });
+
+  // 🔴 ⟦F-243⟧ שני הצדדים של אותו כלל, ⛔ ולא אחד: השורה המצוטטת **כן** מוגדמת…
+  it('🔴 צינור בתוך code-span ⛔ אינו פוסל — שורה סגורה כזאת מוגדמת', () => {
+    const root = fixture();
+    const out = run(root);
+    expect(
+      archived(root, 'tasks-archive.md'),
+      '⛔ `T-104` ⛔ לא הגיעה לארכיון ⇒ שני הפרסרים עדיין חלוקים על אינדקס התא',
+    ).toContain('T-104');
+    expect(tasks(root), 'והשורה החיה הוחלפה בגדם').not.toContain(
+      CLOSED_TASK_WITH_PIPE_IN_CODE,
+    );
+    expect(out, 'והספירה שהודפסה סופרת אותה').toMatch(/\d+ שורות/);
+  });
+
+  // …⛔ ודילוג ⛔ אינו שקט. זו הגדר השנייה של `F-243`: «⛔ אין שום איתות שמשהו דולג».
+  it('🔴 שורה סגורה שנפסלה על ספירת תאים ⇒ אזהרה, ⛔ ולא שקט', () => {
+    const root = fixture();
+    const err = runStderr(root, true);
+    expect(err, '⛔ הדילוג על `T-103` ⛔ אינו מדווח').toContain('T-103');
+    expect(err).toMatch(/⛔ archive: דילוג/);
+    expect(err, 'והמספרים שנמדדו בפועל').toMatch(/9 תאים במקום 8/);
   });
 
   /**

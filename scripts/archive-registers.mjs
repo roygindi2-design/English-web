@@ -45,8 +45,56 @@ const firstGlyph = (cell) => STATUS_GLYPH.exec(cell)?.[0] ?? null;
 const CLOSED = /[✅🚫]/u;
 const STUB_MARK = '⟨מואַרך⟩';
 
-/** ⛔ מועתק במכוון מ-`lib/core/planTable.ts`: הסקריפט ⛔ אינו תלוי בשכבה הטהורה. */
+/**
+ * ⛔ מועתק במכוון מ-`lib/core/planTable.ts`: הסקריפט ⛔ אינו תלוי בשכבה הטהורה.
+ *
+ * 🔴 ⟦F-243 · 14/09⟧ **וההעתק ⛔ נשאר מאחור, ⇒ שני הפרסרים חלקו דעה על אינדקס התא —**
+ * **בדיוק מה שההערה ב-`planTable.ts` מצהירה ש⛔ לעולם לא יקרה.**
+ *
+ * 🔬 **נמדד חי C-0593 (QA), ⛔ ולא שוער:** שורת `T-326` נושאת
+ * `` `/world/amirnet/practice|simulation` `` — צינור **בתוך גרש בודד**, ותקין:
+ * ‏`lib/core/planTable.ts` מדד **8** תאים, העותק כאן מדד **9**, השורה נדחתה למטה
+ * ⛔ בשקט, ו-`npm run archive` הדפיס «8 שורות הוגדמו» ⛔ בלי `T-326` ביניהן —
+ * למרות שהיא סומנה ✅ באותו קומיט. ⇒ **כל שורה שנסגרת ונושאת גרש עם צינור פנימי**
+ * **בלתי-מוברח נשארת בגודלה המלא לנצח**, וה«N שורות הוגדמו» הוא תת-ספירה שקטה.
+ *
+ * ⇒ `codeSpans` הובא לכאן במלואו, ⛔ ולא «תוקן» ניסוח ההערה. החוזה של הפונקציה
+ * הזאת ⛔ אינו זז: היא מחזירה תאים **⛔ לא-גזומים** ו⛔ בלי התא הריק שאחרי ה-`|`
+ * האחרון — עליו נשענת בניית הגדם למטה.
+ */
+function codeSpans(line) {
+  const runs = [];
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '\\') {
+      const next = line[i + 1];
+      if (next === '|' || next === '\\' || next === '`') i += 1;
+      continue;
+    }
+    if (ch !== '`') continue;
+    const start = i;
+    while (line[i + 1] === '`') i += 1;
+    runs.push({ start, length: i + 1 - start });
+  }
+
+  const spans = [];
+  for (let a = 0; a < runs.length; a += 1) {
+    const open = runs[a];
+    for (let b = a + 1; b < runs.length; b += 1) {
+      const close = runs[b];
+      if (close.length !== open.length) continue;
+      spans.push([open.start, close.start + close.length]);
+      a = b;
+      break;
+    }
+  }
+  return spans;
+}
+
+const insideSpan = (spans, at) => spans.some(([start, end]) => at >= start && at < end);
+
 function splitRow(line) {
+  const spans = codeSpans(line);
   const out = [];
   let cur = '';
   for (let i = 1; i < line.length; i += 1) {
@@ -54,6 +102,10 @@ function splitRow(line) {
     if (ch === '\\' && line[i + 1] === '|') {
       cur += '\\|';
       i += 1;
+      continue;
+    }
+    if (ch === '|' && insideSpan(spans, i)) {
+      cur += ch;
       continue;
     }
     if (ch === '|') {
@@ -132,7 +184,15 @@ for (const reg of REGISTERS) {
     if (m === null) continue;
     if (line.includes(STUB_MARK)) continue;
     const cells = splitRow(line);
-    if (cells.length !== reg.cells) continue; // ⛔ שורה פגומה ⛔ אינה נוגעים בה
+    if (cells.length !== reg.cells) {
+      // 🔴 ⟦F-243⟧ ⛔ **הדילוג נשאר, וה⛔שקט ⛔ אינו.** «⛔ שורה פגומה ⛔ אינה נוגעים
+      // בה» היא הכרעה נכונה (`F-078`) — ⛔ אבל היא הודפסה בשום מקום, ⇒ שורה סגורה
+      // שנפלה כאן נראתה בדיוק כמו שורה שאין מה לעשות בה. ⇒ דילוג **מדווח**.
+      console.warn(
+        `⛔ archive: דילוג על ${m[1]} ב-${reg.file} — ${cells.length} תאים במקום ${reg.cells}.`,
+      );
+      continue;
+    }
     const status = cells[reg.statusIndex] ?? '';
     const glyph = firstGlyph(status);
     if (glyph === null || !CLOSED.test(glyph)) continue;
