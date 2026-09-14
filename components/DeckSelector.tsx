@@ -361,6 +361,30 @@ export default function DeckSelector({
 
   return (
     <section className="flex flex-col gap-4">
+      {/* `T-322` — ⛔ **one status region, mounted ALWAYS, ⛔ and that is the whole row.**
+          Until now the failure reached exactly one channel: the eye. `READ_FAILED_NOTE_HE`
+          replaces each tile's sentence and `READ_FAILED_BODY_HE` sits inside
+          `recoveryBlock` — both plain static text swapped into a subtree that re-renders
+          AFTER the first paint, so ⛔ nothing is announced. A learner on VoiceOver taps
+          «כרטיסיות», hears the tiles and their numbers, three reads fail inside a second,
+          and the screen they were read ⛔ no longer exists.
+          ⛔ **`role="status"` and ⛔ not `role="alert"`:** the learner ⛔ did not cause this,
+          and `alert` is assertive — it interrupts whatever is being spoken.
+          ⛔ **And the region is ⛔ never conditionally mounted.** A live region injected in
+          the same commit as its text is ⛔ not reliably announced; it must already be in
+          the accessibility tree when the text arrives. ⇒ it is always here, and ⛔ only its
+          CONTENT changes.
+          ⛔ **ⓑ — ⛔ three failed tiles are ⛔ not three announcements.** `readFailed` is
+          already «one failed read out of three», the region is ONE node, and
+          `aria-atomic` makes it speak as a single sentence
+          (‏`ui-ux-pro-max` § Accessibility, «Contextual Live Badge Updates» — ⛔ Don't:
+          «make every badge a competing live region», severity High).
+          ⚠️ **Layer A:** `sr-only` ⇒ ⛔ the visible text ⛔ does not move and ⛔ no second
+          copy of the sentence is painted. The sighted learner keeps exactly the screen
+          `T-295` and `T-321` built. */}
+      <div role="status" aria-atomic="true" className="sr-only" data-deck-status>
+        {readFailed ? READ_FAILED_BODY_HE : ''}
+      </div>
       {/* `T-321`ⓐ — ⛔ every read failed ⇒ the ONLY control on the screen goes above the
           fold, ⛔ before the three dead tiles. ⛔ It is ⛔ not a new error screen
           (‏`T-295` forbade one) and ⛔ not a fourth tile — it is the same block, moved. */}

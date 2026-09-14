@@ -398,6 +398,49 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 });
 
+/**
+ * `T-322` — **הכישלון מגיע לערוץ שני, ⛔ ולא רק לעין.**
+ *
+ * ⛔ מה שנמדד לפני השורה הזאת, בגְרֶפּ על הקוד עצמו: `role=` ו-`aria-live` ⇒ **אפס**.
+ * שלושת האריחים מחליפים משפט, `recoveryBlock` מצייר הסבר — ו⛔ שום קורא-מסך ⛔ אינו
+ * שומע דבר, כי שני אלה הם טקסט סטטי בתוך תת-עץ שמתעדכן **אחרי** הצביעה הראשונה.
+ *
+ * ⛔ **והבדיקה מודדת שלושה דברים, ⛔ ולא «שהתכונה קיימת»:**
+ *   ✔ האזור קיים, הוא `status` (⛔ ולא `alert` — הלומד ⛔ לא גרם לכישלון), והוא אטומי
+ *   ✔ הוא **אחד בדיוק** — שלושה אריחים כושלים ⛔ אינם שלוש הכרזות (ⓑ)
+ *   ✔ הוא ⛔ **אינו** מותנה ברינדור, והמשפט נכנס אליו ⛔ רק ב-`readFailed`
+ *
+ * ⛔ מה שהיא ⛔ אינה מוכיחה, ונאמר כאן כדי שאיש ⛔ לא יטעה: שקורא-מסך אמיתי הקריא
+ * את זה. הסביבה היא `node` ו-jsdom ⛔ נעדר בכוונה — זו גדר מקור, כמו כל הקובץ.
+ */
+describe('T-322 — הכישלון מוכרז פעם אחת, בערוץ שאינו העין', () => {
+  it('אזור `status` אחד בדיוק, אטומי, ⛔ ולא `alert`', () => {
+    expect(CODE).toContain('data-deck-status');
+    expect(CODE).toMatch(/role="status" aria-atomic="true"/);
+    // ⛔ `alert` הוא assertive — הוא קוטע. הלומד ⛔ לא גרם לכישלון הזה.
+    expect(CODE).not.toContain('role="alert"');
+    // ⛔ ⓑ — אזור חי אחד, ⛔ ולא אחד לכל אריח.
+    expect(CODE.match(/role="status"/g)?.length).toBe(1);
+    expect(CODE.match(/data-deck-status/g)?.length).toBe(1);
+  });
+
+  it('האזור מותקן תמיד — ⛔ רק התוכן שלו מתחלף', () => {
+    // ⛔ **המוטציה שנופלת בשם:** `{readFailed && <div role="status" …>}` מרכיב את האזור
+    // באותו רגע שבו נכנס אליו הטקסט, ו⛔ אז הוא ⛔ אינו מוכרז. הצורה המחייבת היא
+    // אזור קבוע שהתוכן שלו מותנה.
+    expect(CODE).toMatch(
+      /<div role="status" aria-atomic="true" className="sr-only" data-deck-status>\s*\{readFailed \? READ_FAILED_BODY_HE : ''\}/,
+    );
+    expect(CODE).not.toMatch(/readFailed && <div role="status"/);
+  });
+
+  it('שכבה A — האזור ⛔ אינו נראה, והטקסט הנראה ⛔ לא זז', () => {
+    expect(CODE).toMatch(/className="sr-only" data-deck-status/);
+    // ⛔ הטקסט הנראה של `recoveryBlock` נשאר במקומו — ⛔ אין עותק שני מצויר.
+    expect(CODE).toContain('<p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>');
+  });
+});
+
 describe('T-123 · D-064 — מסך שכל האריחים בו מושבתים ⛔ אינו חוקי', () => {
   it('הכלל מואצל ל-lib/core ⛔ ואינו משוכפל כאן', () => {
     expect(CODE).toContain('allTilesDead');
