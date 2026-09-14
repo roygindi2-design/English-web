@@ -1,347 +1,946 @@
 {
   "app/(tabs)/cards/loading.tsx": [],
-  "app/(tabs)/cards/page.tsx": [],
-  "app/(tabs)/layout.tsx": [],
-  "app/(tabs)/me/loading.tsx": [],
-  "app/(tabs)/me/page.test.ts": [],
-  "app/(tabs)/me/page.tsx": [],
+  "app/(tabs)/cards/page.tsx": [
+    "components/LevelMapScreen.tsx"
+  ],
+  "app/(tabs)/layout.tsx": [
+    "components/TabBar.tsx"
+  ],
+  "app/(tabs)/me/loading.tsx": [
+    "components/MeWordsLearnedSkeleton.tsx"
+  ],
+  "app/(tabs)/me/page.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/(tabs)/me/page.tsx": [
+    "components/MeScreen.tsx"
+  ],
   "app/(tabs)/settings/layout.tsx": [],
   "app/(tabs)/settings/loading.tsx": [],
   "app/(tabs)/settings/page.test.ts": [],
-  "app/(tabs)/settings/page.tsx": [],
+  "app/(tabs)/settings/page.tsx": [
+    "components/LevelPath.tsx",
+    "lib/api/client.ts",
+    "lib/core/cefrLevels.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/levelSummary.ts",
+    "lib/core/worldApps.ts"
+  ],
   "app/(tabs)/studies/loading.tsx": [],
-  "app/(tabs)/studies/page.test.ts": [],
-  "app/(tabs)/studies/page.tsx": [],
-  "app/(tabs)/world/amirnet/page.tsx": [],
-  "app/(tabs)/world/amirnet/practice/page.tsx": [],
-  "app/(tabs)/world/amirnet/simulation/page.tsx": [],
-  "app/(tabs)/world/chain/page.tsx": [],
-  "app/(tabs)/world/collected/page.tsx": [],
+  "app/(tabs)/studies/page.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/(tabs)/studies/page.tsx": [
+    "components/StudiesScreen.tsx"
+  ],
+  "app/(tabs)/world/amirnet/page.tsx": [
+    "components/AmirnetDashboard.tsx",
+    "lib/core/amirnetPractice.ts"
+  ],
+  "app/(tabs)/world/amirnet/practice/page.tsx": [
+    "components/AmirnetPracticeMenu.tsx",
+    "lib/core/amirnetPractice.ts"
+  ],
+  "app/(tabs)/world/amirnet/simulation/page.tsx": [
+    "components/AmirnetSimulationEntry.tsx"
+  ],
+  "app/(tabs)/world/chain/page.tsx": [
+    "components/WritingChain.tsx"
+  ],
+  "app/(tabs)/world/collected/page.tsx": [
+    "components/CollectedWords.tsx"
+  ],
   "app/(tabs)/world/loading.tsx": [],
-  "app/(tabs)/world/messages/page.tsx": [],
-  "app/(tabs)/world/page.tsx": [],
-  "app/(tabs)/world/story/page.tsx": [],
+  "app/(tabs)/world/messages/page.tsx": [
+    "components/InboxList.tsx"
+  ],
+  "app/(tabs)/world/page.tsx": [
+    "components/WorldRing.tsx"
+  ],
+  "app/(tabs)/world/story/page.tsx": [
+    "components/StoryScreen.tsx"
+  ],
   "app/api/amirnet/practice/route.test.ts": [],
-  "app/api/amirnet/practice/route.ts": [],
+  "app/api/amirnet/practice/route.ts": [
+    "lib/core/amirnetItemGate.ts",
+    "lib/core/amirnetQuestion.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/amirnet/simulation/route.test.ts": [],
-  "app/api/amirnet/simulation/route.ts": [],
+  "app/api/amirnet/simulation/route.ts": [
+    "lib/core/amirnetItemGate.ts",
+    "lib/core/amirnetQuestion.ts",
+    "lib/core/amirnetSimulation.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/amirnet/simulation/runs/route.test.ts": [],
-  "app/api/amirnet/simulation/runs/route.ts": [],
+  "app/api/amirnet/simulation/runs/route.ts": [
+    "lib/supabase/auth.ts"
+  ],
   "app/api/arcade/character/route.test.ts": [],
-  "app/api/arcade/character/route.ts": [],
+  "app/api/arcade/character/route.ts": [
+    "lib/core/arenaCharacter.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/arcade/collected/route.test.ts": [],
-  "app/api/arcade/collected/route.ts": [],
+  "app/api/arcade/collected/route.ts": [
+    "lib/core/arcadeCollection.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/arcade/home/route.test.ts": [],
-  "app/api/arcade/home/route.ts": [],
+  "app/api/arcade/home/route.ts": [
+    "lib/core/arenaCharacter.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/arcade/result/route.test.ts": [],
-  "app/api/arcade/result/route.ts": [],
+  "app/api/arcade/result/route.ts": [
+    "lib/core/arcadeResult.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/arcade/round/route.test.ts": [],
-  "app/api/arcade/round/route.ts": [],
+  "app/api/arcade/round/route.ts": [
+    "lib/core/arcadeDistractors.ts",
+    "lib/core/arcadeLadder.ts",
+    "lib/core/arcadeRound.ts",
+    "lib/core/levelSummary.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/auth/login/route.test.ts": [],
-  "app/api/auth/login/route.ts": [],
+  "app/api/auth/login/route.ts": [
+    "lib/core/auth.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/authRateLimit.ts"
+  ],
   "app/api/auth/signup/route.test.ts": [],
-  "app/api/auth/signup/route.ts": [],
+  "app/api/auth/signup/route.ts": [
+    "lib/core/auth.ts",
+    "lib/core/profile.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/authRateLimit.ts"
+  ],
   "app/api/dev/session/route.test.ts": [],
-  "app/api/dev/session/route.ts": [],
+  "app/api/dev/session/route.ts": [
+    "lib/supabase/auth.ts",
+    "lib/supabase/devUser.ts"
+  ],
   "app/api/health/route.test.ts": [],
-  "app/api/health/route.ts": [],
+  "app/api/health/route.ts": [
+    "lib/core/health.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/levels/current/route.test.ts": [],
-  "app/api/levels/current/route.ts": [],
+  "app/api/levels/current/route.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/levels/scan/route.test.ts": [],
-  "app/api/levels/scan/route.ts": [],
+  "app/api/levels/scan/route.ts": [
+    "lib/core/levelScan.ts",
+    "lib/core/levelSummary.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/levels/summary/route.test.ts": [],
-  "app/api/levels/summary/route.ts": [],
+  "app/api/levels/summary/route.ts": [
+    "lib/core/cefrLevels.ts",
+    "lib/core/levelSummary.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/practice/route.test.ts": [],
-  "app/api/practice/route.ts": [],
+  "app/api/practice/route.ts": [
+    "lib/core/deck.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/profile/route.test.ts": [],
-  "app/api/profile/route.ts": [],
+  "app/api/profile/route.ts": [
+    "lib/core/onboarding.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/review/context/route.test.ts": [
     "app/api/review/context/route.ts"
   ],
-  "app/api/review/context/route.ts": [],
-  "app/api/review/route.ts": [],
+  "app/api/review/context/route.ts": [
+    "lib/core/contextTapRequest.ts",
+    "lib/supabase/auth.ts"
+  ],
+  "app/api/review/route.ts": [
+    "lib/core/onboarding.ts",
+    "lib/core/progress.ts",
+    "lib/core/reviewRequest.ts",
+    "lib/core/scheduler.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/study/queue/route.test.ts": [],
-  "app/api/study/queue/route.ts": [],
+  "app/api/study/queue/route.ts": [
+    "lib/core/deck.ts",
+    "lib/core/queue.ts",
+    "lib/core/sentenceItem.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/bank/route.test.ts": [],
-  "app/api/world/bank/route.ts": [],
+  "app/api/world/bank/route.ts": [
+    "lib/core/world.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/postgrest.ts"
+  ],
   "app/api/world/lexicalClassOnly.test.ts": [],
   "app/api/world/messages/route.test.ts": [],
-  "app/api/world/messages/route.ts": [],
+  "app/api/world/messages/route.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/core/messages.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/messages/state/route.test.ts": [],
-  "app/api/world/messages/state/route.ts": [],
+  "app/api/world/messages/state/route.ts": [
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/posts/route.test.ts": [],
-  "app/api/world/posts/route.ts": [],
+  "app/api/world/posts/route.ts": [
+    "lib/core/world.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/recall/route.test.ts": [],
-  "app/api/world/recall/route.ts": [],
+  "app/api/world/recall/route.ts": [
+    "lib/core/worldRecall.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/status/route.test.ts": [],
-  "app/api/world/status/route.ts": [],
+  "app/api/world/status/route.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/core/storyGate.ts",
+    "lib/core/world.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/postgrest.ts"
+  ],
   "app/api/world/story/route.test.ts": [],
-  "app/api/world/story/route.ts": [],
+  "app/api/world/story/route.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/core/onboarding.ts",
+    "lib/core/storyGate.ts",
+    "lib/core/storyPick.ts",
+    "lib/core/storyQuestionGate.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/stories.ts"
+  ],
   "app/arcade/arcade-tokens.css": [],
   "app/arcade/page.test.ts": [],
   "app/arcade/page.tsx": [
-    "app/arcade/arcade-tokens.css"
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaShell.tsx"
   ],
-  "app/dev/amirnet/dashboard/dashboard-fixture.ts": [],
-  "app/dev/amirnet/dashboard/empty/page.tsx": [],
+  "app/dev/amirnet/dashboard/dashboard-fixture.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
+  "app/dev/amirnet/dashboard/empty/page.tsx": [
+    "components/AmirnetDashboard.tsx",
+    "lib/core/amirnetPractice.ts"
+  ],
   "app/dev/amirnet/dashboard/page.tsx": [
-    "app/dev/amirnet/dashboard/dashboard-fixture.ts"
+    "app/dev/amirnet/dashboard/dashboard-fixture.ts",
+    "components/AmirnetDashboard.tsx",
+    "lib/core/amirnetPractice.ts"
   ],
-  "app/dev/amirnet/levels/page.tsx": [],
+  "app/dev/amirnet/levels/page.tsx": [
+    "components/AmirnetLevels.tsx"
+  ],
   "app/dev/amirnet/practice/page.tsx": [
-    "app/dev/amirnet/practice/practice-fixture.ts"
+    "app/dev/amirnet/practice/practice-fixture.ts",
+    "components/AmirnetPracticeMenu.tsx",
+    "lib/core/amirnetPractice.ts"
   ],
-  "app/dev/amirnet/practice/practice-fixture.ts": [],
+  "app/dev/amirnet/practice/practice-fixture.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
   "app/dev/amirnet/question/page.tsx": [
-    "app/dev/amirnet/question/question-fixture.ts"
+    "app/dev/amirnet/question/question-fixture.ts",
+    "components/AmirnetQuestion.tsx",
+    "lib/core/amirnetQuestion.ts"
   ],
-  "app/dev/amirnet/question/question-fixture.ts": [],
+  "app/dev/amirnet/question/question-fixture.ts": [
+    "lib/core/amirnetQuestion.ts"
+  ],
   "app/dev/amirnet/result/page.tsx": [
-    "app/dev/amirnet/result/result-fixture.ts"
+    "app/dev/amirnet/result/result-fixture.ts",
+    "components/AmirnetResult.tsx"
   ],
-  "app/dev/amirnet/result/result-fixture.ts": [],
+  "app/dev/amirnet/result/result-fixture.ts": [
+    "lib/core/amirnetResult.ts"
+  ],
   "app/dev/amirnet/result/short/page.tsx": [
-    "app/dev/amirnet/result/result-fixture.ts"
+    "app/dev/amirnet/result/result-fixture.ts",
+    "components/AmirnetResult.tsx"
   ],
   "app/dev/amirnet/simulation/page.tsx": [
-    "app/dev/amirnet/simulation/simulation-fixture.ts"
+    "app/dev/amirnet/simulation/simulation-fixture.ts",
+    "components/AmirnetSimulation.tsx",
+    "lib/core/amirnetQuestion.ts"
   ],
-  "app/dev/amirnet/simulation/simulation-fixture.ts": [],
+  "app/dev/amirnet/simulation/simulation-fixture.ts": [
+    "lib/core/amirnetQuestion.ts"
+  ],
   "app/dev/arcade/character/page.tsx": [
-    "app/arcade/arcade-tokens.css"
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaCharacterChoice.tsx"
   ],
   "app/dev/arcade/home/page.tsx": [
-    "app/arcade/arcade-tokens.css"
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaHome.tsx"
   ],
   "app/dev/arcade/layout.tsx": [],
   "app/dev/arcade/page.tsx": [
-    "app/arcade/arcade-tokens.css"
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaBattle.tsx",
+    "lib/core/arcadeRound.ts"
   ],
-  "app/dev/arcade/result/page.tsx": [],
-  "app/dev/arcade/summary/page.tsx": [],
-  "app/dev/card/choice/page.tsx": [],
+  "app/dev/arcade/result/page.tsx": [
+    "components/ArenaResult.tsx"
+  ],
+  "app/dev/arcade/summary/page.tsx": [
+    "components/ArenaSummary.tsx",
+    "lib/core/arenaSummary.ts",
+    "lib/core/arenaWords.ts",
+    "lib/core/battle.ts"
+  ],
+  "app/dev/card/choice/page.tsx": [
+    "components/Flashcard.tsx",
+    "lib/core/sentenceCard.ts"
+  ],
   "app/dev/card/layout.tsx": [],
-  "app/dev/card/page.tsx": [],
-  "app/dev/card/swap/page.tsx": [],
-  "app/dev/card/typed/page.tsx": [],
-  "app/dev/deck/done/due/page.tsx": [],
-  "app/dev/deck/done/page.tsx": [],
-  "app/dev/deck/layout.tsx": [],
-  "app/dev/deck/page.tsx": [],
-  "app/dev/deck/skeleton/page.tsx": [],
-  "app/dev/identity/layout.tsx": [],
-  "app/dev/identity/page.tsx": [],
-  "app/dev/lesson/done/page.tsx": [],
-  "app/dev/lesson/page.tsx": [],
-  "app/dev/messages/messages-fixture.test.ts": [
-    "app/dev/messages/messages-fixture.ts"
+  "app/dev/card/page.tsx": [
+    "components/Flashcard.tsx",
+    "lib/core/flashcard.ts"
   ],
-  "app/dev/messages/messages-fixture.ts": [],
+  "app/dev/card/swap/page.tsx": [
+    "components/Flashcard.tsx",
+    "lib/core/flashcard.ts"
+  ],
+  "app/dev/card/typed/page.tsx": [
+    "components/Flashcard.tsx",
+    "lib/core/flashcard.ts"
+  ],
+  "app/dev/deck/done/due/page.tsx": [
+    "components/CardDeck.tsx"
+  ],
+  "app/dev/deck/done/page.tsx": [
+    "components/CardDeck.tsx"
+  ],
+  "app/dev/deck/layout.tsx": [],
+  "app/dev/deck/page.tsx": [
+    "components/CardDeck.tsx",
+    "lib/core/deck.ts"
+  ],
+  "app/dev/deck/skeleton/page.tsx": [
+    "components/CardSkeleton.tsx"
+  ],
+  "app/dev/identity/layout.tsx": [],
+  "app/dev/identity/page.tsx": [
+    "components/RegisteredAddress.tsx"
+  ],
+  "app/dev/lesson/done/page.tsx": [
+    "components/LessonScreen.tsx"
+  ],
+  "app/dev/lesson/page.tsx": [
+    "components/LessonScreen.tsx"
+  ],
+  "app/dev/messages/messages-fixture.test.ts": [
+    "app/dev/messages/messages-fixture.ts",
+    "lib/core/messages.ts"
+  ],
+  "app/dev/messages/messages-fixture.ts": [
+    "lib/core/messages.ts"
+  ],
   "app/dev/messages/open/page.tsx": [
-    "app/dev/messages/messages-fixture.ts"
+    "app/dev/messages/messages-fixture.ts",
+    "components/SimulationMessage.tsx",
+    "lib/core/messages.ts"
   ],
   "app/dev/messages/page.tsx": [
-    "app/dev/messages/messages-fixture.ts"
+    "app/dev/messages/messages-fixture.ts",
+    "components/InboxList.tsx",
+    "lib/core/messages.ts"
   ],
   "app/dev/onboarding/layout.tsx": [],
-  "app/dev/onboarding/page.tsx": [],
-  "app/dev/scan/page.tsx": [],
+  "app/dev/onboarding/page.tsx": [
+    "components/OnboardingForm.tsx",
+    "components/RegisteredAddress.tsx",
+    "lib/core/onboarding.ts"
+  ],
+  "app/dev/scan/page.tsx": [
+    "components/LevelScan.tsx",
+    "lib/core/levelScan.ts"
+  ],
   "app/dev/story/done/page.tsx": [
-    "app/dev/story/story-fixture.ts"
+    "app/dev/story/story-fixture.ts",
+    "components/StoryScreen.tsx"
   ],
   "app/dev/story/page.tsx": [
-    "app/dev/story/story-fixture.ts"
+    "app/dev/story/story-fixture.ts",
+    "components/StoryScreen.tsx"
   ],
   "app/dev/story/story-fixture.test.ts": [
-    "app/dev/story/story-fixture.ts"
+    "app/dev/story/story-fixture.ts",
+    "lib/core/storyGate.ts",
+    "lib/core/storyQuestionGate.ts"
   ],
   "app/dev/story/story-fixture.ts": [],
-  "app/dev/tabs/cards/page.tsx": [],
+  "app/dev/tabs/cards/page.tsx": [
+    "components/LevelMapScreen.tsx",
+    "components/TabBar.tsx"
+  ],
   "app/dev/tabs/layout.tsx": [],
-  "app/dev/tabs/me/page.tsx": [],
-  "app/dev/tabs/probe/page.tsx": [],
-  "app/dev/tabs/studies/page.tsx": [],
+  "app/dev/tabs/me/page.tsx": [
+    "components/MeScreen.tsx",
+    "components/TabBar.tsx",
+    "lib/core/levelSummary.ts"
+  ],
+  "app/dev/tabs/probe/page.tsx": [
+    "components/DeckSelector.tsx",
+    "components/TabBar.tsx"
+  ],
+  "app/dev/tabs/studies/page.tsx": [
+    "components/StudiesScreen.tsx",
+    "components/TabBar.tsx",
+    "lib/core/levelSummary.ts"
+  ],
   "app/dev/world/layout.tsx": [],
-  "app/dev/world/page.tsx": [],
-  "app/dev/world/recall/page.tsx": [],
-  "app/dev/world/ring/expired/page.tsx": [],
-  "app/dev/world/ring/page.tsx": [],
+  "app/dev/world/page.tsx": [
+    "components/ComposeDraft.tsx"
+  ],
+  "app/dev/world/recall/page.tsx": [
+    "components/RecallCard.tsx",
+    "lib/core/worldRecall.ts"
+  ],
+  "app/dev/world/ring/expired/page.tsx": [
+    "components/WorldRing.tsx",
+    "lib/core/worldRing.ts"
+  ],
+  "app/dev/world/ring/page.tsx": [
+    "components/WorldRing.tsx",
+    "lib/core/worldRing.ts"
+  ],
   "app/error.test.ts": [],
-  "app/error.tsx": [],
+  "app/error.tsx": [
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "app/global-error.test.ts": [],
   "app/global-error.tsx": [
-    "app/globals.css"
+    "app/globals.css",
+    "lib/core/failure.ts"
   ],
   "app/globals.css": [],
   "app/globals.test.ts": [],
   "app/layout.test.ts": [],
   "app/layout.tsx": [
-    "app/globals.css"
+    "app/globals.css",
+    "components/ServiceWorkerRegistrar.tsx",
+    "components/SourcesFooter.tsx"
   ],
   "app/loading.test.ts": [],
   "app/loading.tsx": [],
-  "app/login/page.tsx": [],
-  "app/logout/route.ts": [],
+  "app/login/page.tsx": [
+    "components/AuthForm.tsx"
+  ],
+  "app/logout/route.ts": [
+    "lib/core/auth.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/not-found.test.ts": [],
   "app/not-found.tsx": [],
   "app/offline/page.test.ts": [],
-  "app/offline/page.tsx": [],
+  "app/offline/page.tsx": [
+    "lib/core/failure.ts"
+  ],
   "app/onboarding/page.test.ts": [],
-  "app/onboarding/page.tsx": [],
+  "app/onboarding/page.tsx": [
+    "components/OnboardingForm.tsx",
+    "components/RegisteredAddress.tsx",
+    "lib/core/entryRoute.ts",
+    "lib/core/onboarding.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/page.test.ts": [],
-  "app/page.tsx": [],
-  "app/signup/page.tsx": [],
-  "app/sources/page.tsx": [],
+  "app/page.tsx": [
+    "components/ActionBar.tsx",
+    "components/EnWord.tsx",
+    "components/InstallPrompt.tsx",
+    "lib/core/landing.ts"
+  ],
+  "app/signup/page.tsx": [
+    "components/AuthForm.tsx"
+  ],
+  "app/sources/page.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/dataSources.ts"
+  ],
   "app/study/page.test.ts": [],
-  "app/study/page.tsx": [],
-  "app/study/scan/page.tsx": [],
-  "app/world/compose/page.tsx": [],
-  "app/world/messages/[id]/page.tsx": [],
+  "app/study/page.tsx": [
+    "components/StudyDeckScreen.tsx",
+    "lib/core/deck.ts"
+  ],
+  "app/study/scan/page.tsx": [
+    "components/LevelScan.tsx"
+  ],
+  "app/world/compose/page.tsx": [
+    "components/ComposeDraft.tsx"
+  ],
+  "app/world/messages/[id]/page.tsx": [
+    "components/SimulationMessage.tsx"
+  ],
   "components/ActionBar.test.ts": [],
   "components/ActionBar.tsx": [],
   "components/AmirnetDashboard.test.ts": [
     "components/AmirnetDashboard.tsx"
   ],
-  "components/AmirnetDashboard.tsx": [],
+  "components/AmirnetDashboard.tsx": [
+    "components/AmirnetEstimateNotice.tsx",
+    "components/AmirnetTabs.tsx",
+    "components/EnWord.tsx",
+    "components/amirnetTypeBar.ts",
+    "lib/core/amirnetPractice.ts"
+  ],
   "components/AmirnetEstimateNotice.test.ts": [
     "components/AmirnetEstimateNotice.tsx"
   ],
   "components/AmirnetEstimateNotice.tsx": [],
-  "components/AmirnetLevels.dom.test.tsx": [],
+  "components/AmirnetLevels.dom.test.tsx": [
+    "components/AmirnetLevels.tsx"
+  ],
   "components/AmirnetLevels.test.ts": [
     "components/AmirnetLevels.tsx"
   ],
-  "components/AmirnetLevels.tsx": [],
+  "components/AmirnetLevels.tsx": [
+    "components/AmirnetTabs.tsx",
+    "lib/core/amirnetPractice.ts"
+  ],
   "components/AmirnetPracticeMenu.test.ts": [
     "components/AmirnetPracticeMenu.tsx"
   ],
-  "components/AmirnetPracticeMenu.tsx": [],
+  "components/AmirnetPracticeMenu.tsx": [
+    "components/AmirnetTabs.tsx",
+    "components/EnWord.tsx",
+    "components/amirnetTypeBar.ts",
+    "lib/core/amirnetPractice.ts"
+  ],
   "components/AmirnetQuestion.test.ts": [
-    "components/AmirnetQuestion.tsx"
+    "components/AmirnetQuestion.tsx",
+    "lib/core/amirnetQuestion.ts"
   ],
-  "components/AmirnetQuestion.tsx": [],
+  "components/AmirnetQuestion.tsx": [
+    "components/AmirnetTabs.tsx",
+    "components/EnWord.tsx",
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts"
+  ],
   "components/AmirnetResult.test.ts": [
-    "components/AmirnetResult.tsx"
+    "components/AmirnetResult.tsx",
+    "lib/core/amirnetResult.ts"
   ],
-  "components/AmirnetResult.tsx": [],
-  "components/AmirnetSectionBreak.test.ts": [],
-  "components/AmirnetSectionBreak.tsx": [],
+  "components/AmirnetResult.tsx": [
+    "components/AmirnetEstimateNotice.tsx",
+    "components/AmirnetTabs.tsx",
+    "lib/core/amirnetResult.ts",
+    "lib/core/amirnetSimulation.ts"
+  ],
+  "components/AmirnetSectionBreak.test.ts": [
+    "lib/core/amirnetSimulation.ts"
+  ],
+  "components/AmirnetSectionBreak.tsx": [
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetSimulation.ts"
+  ],
   "components/AmirnetSimulation.test.ts": [
-    "components/AmirnetSimulation.tsx"
+    "components/AmirnetSimulation.tsx",
+    "lib/core/amirnetSimulation.ts"
   ],
-  "components/AmirnetSimulation.tsx": [],
+  "components/AmirnetSimulation.tsx": [
+    "components/AmirnetSectionBreak.tsx",
+    "components/AmirnetTabs.tsx",
+    "components/EnWord.tsx",
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts",
+    "lib/core/amirnetResult.ts",
+    "lib/core/amirnetSimulation.ts"
+  ],
   "components/AmirnetSimulationEntry.test.ts": [
     "components/AmirnetSimulationEntry.tsx"
   ],
-  "components/AmirnetSimulationEntry.tsx": [],
-  "components/AmirnetTabs.dom.test.tsx": [],
+  "components/AmirnetSimulationEntry.tsx": [
+    "components/AmirnetLevels.tsx",
+    "components/AmirnetSimulation.tsx",
+    "lib/api/client.ts",
+    "lib/core/amirnetLevels.ts",
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts"
+  ],
+  "components/AmirnetTabs.dom.test.tsx": [
+    "components/AmirnetTabs.tsx"
+  ],
   "components/AmirnetTabs.test.ts": [
     "components/AmirnetTabs.tsx"
   ],
   "components/AmirnetTabs.tsx": [],
   "components/AppGrid.test.ts": [],
-  "components/AppGrid.tsx": [],
+  "components/AppGrid.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/arcadeCollection.ts",
+    "lib/core/worldApps.ts"
+  ],
   "components/ArcadeEntry.test.ts": [],
-  "components/ArcadeEntry.tsx": [],
+  "components/ArcadeEntry.tsx": [
+    "lib/api/client.ts"
+  ],
   "components/ArenaAvatar.test.ts": [],
-  "components/ArenaAvatar.tsx": [],
-  "components/ArenaBattle.dom.test.tsx": [],
-  "components/ArenaBattle.test.ts": [],
-  "components/ArenaBattle.tsx": [],
+  "components/ArenaAvatar.tsx": [
+    "lib/core/arcadeResult.ts",
+    "lib/core/arenaCharacter.ts",
+    "lib/core/characterBase.ts"
+  ],
+  "components/ArenaBattle.dom.test.tsx": [
+    "components/ArenaBattle.tsx",
+    "lib/core/failure.ts"
+  ],
+  "components/ArenaBattle.test.ts": [
+    "lib/core/characterBase.ts"
+  ],
+  "components/ArenaBattle.tsx": [
+    "components/ActionBar.tsx",
+    "components/ArenaResult.tsx",
+    "components/ArenaStage.tsx",
+    "components/ArenaSummary.tsx",
+    "components/CloseIcon.tsx",
+    "components/EnWord.tsx",
+    "components/SpellCard.tsx",
+    "lib/api/client.ts",
+    "lib/core/arcadeResult.ts",
+    "lib/core/arcadeRound.ts",
+    "lib/core/arenaCharacter.ts",
+    "lib/core/arenaGesture.ts",
+    "lib/core/arenaSummary.ts",
+    "lib/core/arenaWords.ts",
+    "lib/core/battle.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "components/ArenaCharacterChoice.test.ts": [],
-  "components/ArenaCharacterChoice.tsx": [],
+  "components/ArenaCharacterChoice.tsx": [
+    "components/ArenaAvatar.tsx",
+    "lib/api/client.ts",
+    "lib/core/arenaCharacter.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "components/ArenaHome.test.ts": [],
-  "components/ArenaHome.tsx": [],
+  "components/ArenaHome.tsx": [
+    "components/ArenaAvatar.tsx",
+    "components/LockIcon.tsx",
+    "lib/api/client.ts",
+    "lib/core/arenaCharacter.ts",
+    "lib/core/arenaHome.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "components/ArenaResult.test.ts": [],
-  "components/ArenaResult.tsx": [],
+  "components/ArenaResult.tsx": [
+    "components/ActionBar.tsx",
+    "components/ArenaAvatar.tsx",
+    "components/EnWord.tsx",
+    "lib/core/arcadeResult.ts"
+  ],
   "components/ArenaShell.test.ts": [],
-  "components/ArenaShell.tsx": [],
+  "components/ArenaShell.tsx": [
+    "components/ArenaBattle.tsx",
+    "components/ArenaCharacterChoice.tsx",
+    "components/ArenaHome.tsx",
+    "lib/core/arenaCharacter.ts"
+  ],
   "components/ArenaStage.test.ts": [],
-  "components/ArenaStage.tsx": [],
+  "components/ArenaStage.tsx": [
+    "components/ArenaAvatar.tsx",
+    "lib/core/arcadeLadder.ts",
+    "lib/core/arenaCharacter.ts",
+    "lib/core/battle.ts"
+  ],
   "components/ArenaSummary.test.ts": [],
-  "components/ArenaSummary.tsx": [],
-  "components/AuthForm.test.ts": [],
-  "components/AuthForm.tsx": [],
+  "components/ArenaSummary.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/arenaSummary.ts"
+  ],
+  "components/AuthForm.test.ts": [
+    "lib/core/failure.ts"
+  ],
+  "components/AuthForm.tsx": [
+    "components/ActionBar.tsx",
+    "components/LatinField.tsx",
+    "lib/api/client.ts",
+    "lib/core/auth.ts",
+    "lib/core/failure.ts"
+  ],
   "components/CardDeck.test.ts": [],
-  "components/CardDeck.tsx": [],
+  "components/CardDeck.tsx": [
+    "components/Flashcard.tsx",
+    "lib/core/deck.ts",
+    "lib/core/flashcard.ts",
+    "lib/core/roundSummary.ts",
+    "lib/core/sentenceCard.ts",
+    "lib/core/spring.ts"
+  ],
   "components/CardSkeleton.test.ts": [],
   "components/CardSkeleton.tsx": [],
   "components/CloseIcon.test.ts": [],
   "components/CloseIcon.tsx": [],
   "components/CollectedWords.test.ts": [],
-  "components/CollectedWords.tsx": [],
+  "components/CollectedWords.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/arcadeCollection.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "components/ComposeDraft.test.ts": [],
-  "components/ComposeDraft.tsx": [],
+  "components/ComposeDraft.tsx": [
+    "components/ActionBar.tsx",
+    "components/EnWord.tsx",
+    "components/WordBank.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/world.ts"
+  ],
   "components/DeckSelector.test.ts": [],
-  "components/DeckSelector.tsx": [],
+  "components/DeckSelector.tsx": [
+    "components/LockIcon.tsx",
+    "lib/api/client.ts",
+    "lib/core/deckTiles.ts"
+  ],
   "components/EnWord.test.ts": [],
   "components/EnWord.tsx": [],
-  "components/FilterBar.tsx": [],
+  "components/FilterBar.tsx": [
+    "lib/core/filterProgress.ts"
+  ],
   "components/Flashcard.test.ts": [],
-  "components/Flashcard.tsx": [],
+  "components/Flashcard.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/decay.ts",
+    "lib/core/deck.ts",
+    "lib/core/flashcard.ts",
+    "lib/core/sentenceCard.ts",
+    "lib/core/spring.ts",
+    "lib/core/swipeGrade.ts"
+  ],
   "components/GlobeIcon.tsx": [],
   "components/InboxList.test.ts": [],
-  "components/InboxList.tsx": [],
-  "components/InstallPrompt.tsx": [],
+  "components/InboxList.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/messages.ts",
+    "lib/core/onboarding.ts"
+  ],
+  "components/InstallPrompt.tsx": [
+    "lib/core/installPrompt.ts"
+  ],
   "components/LatinField.test.ts": [],
   "components/LatinField.tsx": [],
   "components/LessonScreen.test.ts": [],
-  "components/LessonScreen.tsx": [],
-  "components/LevelCard.tsx": [],
+  "components/LessonScreen.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/lesson.ts"
+  ],
+  "components/LevelCard.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/cefrLevels.ts"
+  ],
   "components/LevelMapScreen.test.ts": [],
-  "components/LevelMapScreen.tsx": [],
+  "components/LevelMapScreen.tsx": [
+    "components/DeckSelector.tsx",
+    "components/EnWord.tsx",
+    "components/FilterBar.tsx",
+    "components/LevelCard.tsx",
+    "components/UnknownList.tsx",
+    "lib/api/client.ts",
+    "lib/core/cefrLevels.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/levelSummary.ts"
+  ],
   "components/LevelPath.test.ts": [],
-  "components/LevelPath.tsx": [],
+  "components/LevelPath.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/cefrLevels.ts",
+    "lib/core/levelPath.ts",
+    "lib/core/levelSummary.ts"
+  ],
   "components/LevelScan.test.ts": [],
-  "components/LevelScan.tsx": [],
+  "components/LevelScan.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/levelScan.ts",
+    "lib/core/levelSummary.ts"
+  ],
   "components/LockIcon.test.ts": [],
   "components/LockIcon.tsx": [],
-  "components/MeScreen.test.ts": [],
-  "components/MeScreen.tsx": [],
+  "components/MeScreen.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "components/MeScreen.tsx": [
+    "components/MeWordsLearned.tsx",
+    "components/MeWordsLearnedSkeleton.tsx",
+    "lib/api/client.ts",
+    "lib/core/cefrLevels.ts",
+    "lib/core/levelSummary.ts",
+    "lib/core/studyTracks.ts"
+  ],
   "components/MeWordsLearned.test.ts": [],
-  "components/MeWordsLearned.tsx": [],
+  "components/MeWordsLearned.tsx": [
+    "lib/core/failure.ts"
+  ],
   "components/MeWordsLearnedSkeleton.tsx": [],
   "components/OnboardingForm.test.ts": [],
-  "components/OnboardingForm.tsx": [],
+  "components/OnboardingForm.tsx": [
+    "components/ActionBar.tsx",
+    "components/LatinField.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/onboarding.ts"
+  ],
   "components/RecallCard.test.ts": [],
-  "components/RecallCard.tsx": [],
-  "components/RegisteredAddress.tsx": [],
+  "components/RecallCard.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/worldRecall.ts"
+  ],
+  "components/RegisteredAddress.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/auth.ts"
+  ],
   "components/RequiredWordChips.test.ts": [],
-  "components/RequiredWordChips.tsx": [],
+  "components/RequiredWordChips.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/requiredWords.ts"
+  ],
   "components/ServiceWorkerRegistrar.tsx": [],
   "components/SimulationMessage.test.ts": [],
-  "components/SimulationMessage.tsx": [],
-  "components/SourcesFooter.tsx": [],
+  "components/SimulationMessage.tsx": [
+    "components/EnWord.tsx",
+    "components/RequiredWordChips.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/messages.ts",
+    "lib/core/onboarding.ts",
+    "lib/core/requiredWords.ts"
+  ],
+  "components/SourcesFooter.tsx": [
+    "lib/core/licenceFooter.ts"
+  ],
   "components/SpellCard.test.ts": [],
-  "components/SpellCard.tsx": [],
-  "components/StoryEndScreen.tsx": [],
-  "components/StoryScreen.dom.test.tsx": [],
+  "components/SpellCard.tsx": [
+    "lib/core/arenaGesture.ts",
+    "lib/core/spring.ts"
+  ],
+  "components/StoryEndScreen.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/storyQuestion.ts"
+  ],
+  "components/StoryScreen.dom.test.tsx": [
+    "app/dev/story/story-fixture.ts",
+    "components/StoryScreen.tsx",
+    "lib/core/failure.ts"
+  ],
   "components/StoryScreen.test.ts": [],
-  "components/StoryScreen.tsx": [],
+  "components/StoryScreen.tsx": [
+    "components/EnWord.tsx",
+    "components/StoryEndScreen.tsx",
+    "components/WordPopover.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/storyIntro.ts",
+    "lib/core/storyQuestion.ts",
+    "lib/core/storyTapTargets.ts",
+    "lib/core/worldApps.ts"
+  ],
   "components/StudiesScreen.test.ts": [],
-  "components/StudiesScreen.tsx": [],
+  "components/StudiesScreen.tsx": [
+    "lib/api/client.ts",
+    "lib/core/levelSummary.ts",
+    "lib/core/studyTracks.ts"
+  ],
   "components/StudyDeckScreen.test.ts": [],
-  "components/StudyDeckScreen.tsx": [],
+  "components/StudyDeckScreen.tsx": [
+    "components/ActionBar.tsx",
+    "components/CardDeck.tsx",
+    "components/CardSkeleton.tsx",
+    "components/StudyEmptyState.tsx",
+    "lib/api/client.ts",
+    "lib/core/deck.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/flashcard.ts",
+    "lib/core/reviewRequest.ts",
+    "lib/core/sentenceItem.ts"
+  ],
   "components/StudyEmptyState.tsx": [],
   "components/TabBar.test.ts": [],
-  "components/TabBar.tsx": [],
+  "components/TabBar.tsx": [
+    "components/GlobeIcon.tsx"
+  ],
   "components/TabLoading.test.ts": [],
   "components/UnknownList.test.ts": [],
-  "components/UnknownList.tsx": [],
+  "components/UnknownList.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/deck.ts",
+    "lib/core/failure.ts"
+  ],
   "components/WordBank.test.ts": [],
-  "components/WordBank.tsx": [],
+  "components/WordBank.tsx": [
+    "components/EnWord.tsx"
+  ],
   "components/WordPopover.test.ts": [
     "components/WordPopover.tsx"
   ],
-  "components/WordPopover.tsx": [],
+  "components/WordPopover.tsx": [
+    "components/EnWord.tsx",
+    "lib/core/failure.ts"
+  ],
   "components/WorldFeed.test.ts": [],
-  "components/WorldFeed.tsx": [],
+  "components/WorldFeed.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/world.ts"
+  ],
   "components/WorldRing.test.ts": [],
-  "components/WorldRing.tsx": [],
+  "components/WorldRing.tsx": [
+    "components/LockIcon.tsx",
+    "lib/api/client.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/lastNode.ts",
+    "lib/core/worldApps.ts",
+    "lib/core/worldRing.ts"
+  ],
   "components/WritingChain.test.ts": [],
-  "components/WritingChain.tsx": [],
-  "components/amirnetTypeBar.ts": [],
-  "lib/api/client.test.ts": [],
+  "components/WritingChain.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
+  "components/amirnetTypeBar.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
+  "lib/api/client.test.ts": [
+    "lib/api/client.ts"
+  ],
   "lib/api/client.ts": [],
   "lib/core/amirnetChapterGate.test.ts": [
     "lib/core/amirnetChapterGate.ts",
@@ -451,8 +1050,15 @@
     "lib/core/arcadeResult.ts",
     "lib/core/arenaHome.ts"
   ],
-  "lib/core/arenaHome.ts": [],
-  "lib/core/arenaSummary.test.ts": [],
+  "lib/core/arenaHome.ts": [
+    "lib/core/arcadeResult.ts",
+    "lib/core/characterBase.ts"
+  ],
+  "lib/core/arenaSummary.test.ts": [
+    "lib/core/arenaSummary.ts",
+    "lib/core/arenaWords.ts",
+    "lib/core/battle.ts"
+  ],
   "lib/core/arenaSummary.ts": [
     "lib/core/battle.ts"
   ],
@@ -486,9 +1092,13 @@
     "lib/core/contentSchema.ts",
     "lib/core/lexicon.ts"
   ],
-  "lib/core/characterBase.test.ts": [],
+  "lib/core/characterBase.test.ts": [
+    "lib/core/characterBase.ts"
+  ],
   "lib/core/characterBase.ts": [],
-  "lib/core/colorVision.test.ts": [],
+  "lib/core/colorVision.test.ts": [
+    "lib/core/colorVision.ts"
+  ],
   "lib/core/colorVision.ts": [],
   "lib/core/confidence.test.ts": [
     "lib/core/confidence.ts",
@@ -515,7 +1125,9 @@
     "lib/core/palette.ts"
   ],
   "lib/core/decay.ts": [],
-  "lib/core/deck.test.ts": [],
+  "lib/core/deck.test.ts": [
+    "lib/core/deck.ts"
+  ],
   "lib/core/deck.ts": [
     "lib/core/flashcard.ts",
     "lib/core/sentenceItem.ts"
@@ -532,14 +1144,18 @@
     "lib/core/entryRoute.ts"
   ],
   "lib/core/entryRoute.ts": [],
-  "lib/core/failure.test.ts": [],
+  "lib/core/failure.test.ts": [
+    "lib/core/failure.ts"
+  ],
   "lib/core/failure.ts": [],
   "lib/core/failureExit.test.ts": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
   "lib/core/failureExit.ts": [],
-  "lib/core/filterProgress.test.ts": [],
+  "lib/core/filterProgress.test.ts": [
+    "lib/core/filterProgress.ts"
+  ],
   "lib/core/filterProgress.ts": [],
   "lib/core/flashcard.test.ts": [
     "lib/core/contentSchema.ts",
@@ -581,7 +1197,9 @@
     "lib/core/lesson.ts"
   ],
   "lib/core/lesson.ts": [],
-  "lib/core/levelGate.test.ts": [],
+  "lib/core/levelGate.test.ts": [
+    "lib/core/levelGate.ts"
+  ],
   "lib/core/levelGate.ts": [],
   "lib/core/levelHeadroom.test.ts": [
     "lib/core/cefrLevels.ts",
@@ -666,8 +1284,12 @@
     "lib/core/landing.ts"
   ],
   "lib/core/profile.ts": [],
-  "lib/core/progress.test.ts": [],
-  "lib/core/progress.ts": [],
+  "lib/core/progress.test.ts": [
+    "lib/core/progress.ts"
+  ],
+  "lib/core/progress.ts": [
+    "lib/core/flashcard.ts"
+  ],
   "lib/core/provenance.test.ts": [
     "lib/core/provenance.ts"
   ],
@@ -686,12 +1308,26 @@
     "lib/core/requiredWords.ts"
   ],
   "lib/core/requiredWords.ts": [],
-  "lib/core/reviewRequest.test.ts": [],
-  "lib/core/reviewRequest.ts": [],
-  "lib/core/roundSummary.test.ts": [],
-  "lib/core/roundSummary.ts": [],
-  "lib/core/scheduler.test.ts": [],
-  "lib/core/scheduler.ts": [],
+  "lib/core/reviewRequest.test.ts": [
+    "lib/core/reviewRequest.ts"
+  ],
+  "lib/core/reviewRequest.ts": [
+    "lib/core/flashcard.ts"
+  ],
+  "lib/core/roundSummary.test.ts": [
+    "lib/core/roundSummary.ts"
+  ],
+  "lib/core/roundSummary.ts": [
+    "lib/core/deck.ts",
+    "lib/core/flashcard.ts"
+  ],
+  "lib/core/scheduler.test.ts": [
+    "lib/core/scheduler.ts"
+  ],
+  "lib/core/scheduler.ts": [
+    "lib/core/flashcard.ts",
+    "lib/core/onboarding.ts"
+  ],
   "lib/core/scoringSeed.test.ts": [
     "lib/core/batchRecord.ts",
     "lib/core/contentSchema.ts",
@@ -766,12 +1402,16 @@
     "lib/core/spring.ts"
   ],
   "lib/core/spring.ts": [],
-  "lib/core/storyGate.test.ts": [],
+  "lib/core/storyGate.test.ts": [
+    "lib/core/storyGate.ts"
+  ],
   "lib/core/storyGate.ts": [
     "lib/core/cefrLevels.ts",
     "lib/core/contentSchema.ts"
   ],
-  "lib/core/storyIntro.test.ts": [],
+  "lib/core/storyIntro.test.ts": [
+    "lib/core/storyIntro.ts"
+  ],
   "lib/core/storyIntro.ts": [],
   "lib/core/storyPick.test.ts": [
     "lib/core/storyPick.ts"
@@ -831,7 +1471,9 @@
     "lib/core/worldApps.ts"
   ],
   "lib/core/worldApps.ts": [],
-  "lib/core/worldAppsRoutes.test.ts": [],
+  "lib/core/worldAppsRoutes.test.ts": [
+    "lib/core/worldApps.ts"
+  ],
   "lib/core/worldGate.test.ts": [
     "lib/core/worldGate.ts"
   ],
@@ -861,14 +1503,18 @@
   "lib/supabase/authRateLimit.test.ts": [
     "lib/supabase/authRateLimit.ts"
   ],
-  "lib/supabase/authRateLimit.ts": [],
+  "lib/supabase/authRateLimit.ts": [
+    "lib/core/rateLimit.ts"
+  ],
   "lib/supabase/cookieOptions.test.ts": [
     "lib/supabase/auth.ts"
   ],
   "lib/supabase/devUser.test.ts": [
     "lib/supabase/devUser.ts"
   ],
-  "lib/supabase/devUser.ts": [],
+  "lib/supabase/devUser.ts": [
+    "lib/core/devUser.ts"
+  ],
   "lib/supabase/layer2.test.ts": [],
   "lib/supabase/learnerLevel.test.ts": [],
   "lib/supabase/lexicalClassBackfill.test.ts": [],
@@ -876,14 +1522,20 @@
   "lib/supabase/onboarding.test.ts": [
     "lib/core/onboarding.ts"
   ],
-  "lib/supabase/postgrest.test.ts": [],
+  "lib/supabase/postgrest.test.ts": [
+    "lib/supabase/postgrest.ts"
+  ],
   "lib/supabase/postgrest.ts": [],
   "lib/supabase/reviewState.test.ts": [],
   "lib/supabase/rls.test.ts": [],
   "lib/supabase/serviceRole.test.ts": [],
   "lib/supabase/stories.test.ts": [],
-  "lib/supabase/stories.ts": [],
-  "lib/supabase/storyQuestions.test.ts": [],
+  "lib/supabase/stories.ts": [
+    "lib/core/storyPick.ts"
+  ],
+  "lib/supabase/storyQuestions.test.ts": [
+    "lib/core/storyQuestionGate.ts"
+  ],
   "lib/supabase/telemetry.test.ts": [
     "lib/core/dataSources.ts"
   ],
