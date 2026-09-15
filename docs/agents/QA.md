@@ -163,7 +163,7 @@ only ever mean «⛔ zero ⬜ rows», which is a fact about the REGISTER, ⛔ no
 learner.
 
 ```
-plan/05-departments.md   ⇐ PM writes it. ⛔ You ⛔ never edit it. ≤4,096 bytes (check 19).
+plan/05-departments.md   ⇐ PM writes it. ⛔ You ⛔ never edit it. ≤8,192 bytes (check 19, raised 15/09).
                             One summary line per department + the goals still OPEN.
 ```
 ⇒ **Read it before ④, next to `WORKSTREAM_ENDING`, and ask ⛔ one question:** the rows are
@@ -462,8 +462,21 @@ screen is a tool everyone learns to ignore.
 ## STEP 4.9 — SKILLS  ⟦NEW 30/08 · RULES § 0.7⟧
 
 🆕 **⟦11/09⟧ `find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
-🔴 **⟦תוקן 14/09 · נמדד בסשן התפעול⟧ השם הוא `anthropic-skills:find-skill`, ⛔ ולא
-`/find-skill`.** עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
+🔴 **⟦הוכרע 15/09 · `C-0621` · הוראת רוי⟧ ⛔ הם ⛔ אינם כלי בטיק שלך — הם **קבצים בריפו**.**
+🔬 **נמדד:** כל Routine נושאת `account_skills: []` · `enabled_plugins: []` ⇒ ⛔ **אף
+`anthropic-skills:*` ⛔ אינו נטען בטיק מתוזמן**, ⛔ ולא משנה באיזה שם תקרא לו.
+⇒ **הם הועתקו לריפו ומגיעים עם ה-clone שלך:**
+```
+anthropic-skills:<name>   ⇒   קרא   skills/anthropic/<name>/SKILL.md
+```
+**שלך:** `find-skill` · `review-animations` · `apple-design`.
+
+‏`skills/anthropic/README.md` הוא הרשימה המלאה ואומר מה ⛔ לא הועתק ולמה. ⛔ **אל תנסה
+`Skill(...)`** — ⛔ אין מה להפעיל, יש מה **לקרוא**. אותו הסדר בדיוק כמו `superpowers:<name>`
+מאז `F-189`.
+
+⟨הרקע ההיסטורי, ⛔ ואינו הוראה עוד: השם היה `anthropic-skills:find-skill` ⛔ ולא
+`/find-skill`.⟩ עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
 `anthropic-skills:`, וזה חל על **כל** שורה בטבלה שסומנה «⛔ לא מובטח» — לרבות
 `anthropic-skills:review-animations`, ש**שלך בלבד**. ⇒ **קריאה בשם `/find-skill` נכשלת על
 השם, ⛔ ולא על זמינות** —
@@ -629,6 +642,35 @@ exhausted are two different measurements**, and `§ 0.23 ז׳` turns on the seco
 `ACTIVE_WORKSTREAM` in `plan/00-control.md` is **yours**, and «exhausted» is ⛔ no longer a word you interpret:
 
 > 🔴 **EXHAUSTED = the workstream has ⛔ ZERO ⬜ rows.**
+
+🔴 ⛔ **AND AS OF 15/09 YOU ARE ⛔ NO LONGER THE ONLY ONE WHO MOVES IT — `D-247`, Roy's
+explicit instruction. ⛔ Read this before you are surprised by a focus that moved.**
+
+⛔ Two different questions were behind your one signature, and they are now separated:
+```
+«is this department FINISHED?»   judgement · three seals · expensive  ⇒ ⛔ STILL YOURS ALONE
+«is there work for me here?»      a count  · a number     · cheap     ⇒ DEV and PM too
+```
+⇒ **DEV and PM may now ADVANCE the focus** when the department counts **ZERO** eligible
+rows, walking `36 § 13` forward per `RULES § 0.23 ז׳`. 🔬 **Why it had to change, measured:**
+the focus sat on `general` from 13/09 14:04Z because ⛔ only a full-lane tick — **four a
+day** — could move it, and every build tick in between found an empty queue while four
+departments were dry.
+
+⛔ **And ⛔ nothing of yours was taken away. What you hold is bigger, ⛔ not smaller:**
+- **The three seals are yours alone, unchanged** (`36 § 13.1` · `D-116`).
+- 🔴 **⛔ ONLY A SEAL TAKES A DEPARTMENT OUT OF THE ROTATION.** An advance ⛔ does not:
+  a department that emptied and was ⛔ not sealed **stays in the sequence**, and the
+  wrap-around returns to it the moment a row is opened there. ⇒ **if you ⛔ do not seal,
+  the loop keeps coming back — and that is exactly the pressure that makes the seal mean
+  something.**
+- ⇒ **your job here shifted from «unblock the loop» to «decide whether this department is
+  finished».** ⛔ The first was a bottleneck; the second is a judgement only you can make.
+
+⚠️ **So when you arrive and the focus is ⛔ not where you left it: that is ⛔ not a defect
+and ⛔ not a finding.** Read `PREV_WORKSTREAM` and the why-line in `§ 0.1` — the agent that
+moved it is required to have written the **number it counted**. ⛔ A move with ⛔ no line, or
+with the word «emptied» instead of a number, **is** a finding.
 
 #### ⛔ AND EMPTY IS ⛔ NOT DONE — SEAL IT FIRST (`36 § 13.1` · D-116)
 Before you move the field, walk the **three seals** and write what you measured for each

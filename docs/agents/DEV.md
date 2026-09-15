@@ -271,10 +271,42 @@ is eligible too.** ⛔ **The NEXT one, ⛔ and ⛔ nothing else:**
 - ⛔ **⛔ Never to "balance the table"** — `RULES § 0.23 ז׳` is explicit that `36 § 13` is a
   **sequence**, and that reason is ⛔ untouched: this reads **one step forward** in the
   same sequence, it ⛔ does not reorder it.
-- ⛔ **`ACTIVE_WORKSTREAM` is still QA's to set, ⛔ and you ⛔ never move it.** You are
-  reading ahead, ⛔ not re-pointing.
 - **Say so in your report, in one line:** which workstream you read ahead into, and how
   many ⬜ the active one had when you did.
+
+### 🔓 AND WHEN IT IS ⛔ «NEARLY» DRY BUT **ZERO** — YOU ADVANCE THE FOCUS YOURSELF  ⟦NEW 15/09 · `D-247` · Roy's explicit instruction⟧
+
+🔴 **Reading ahead was ⛔ never enough, and the reason is a measurement.** Until today this
+file said `ACTIVE_WORKSTREAM` is QA's to set and that you ⛔ never move it. ⇒ a department
+that hit ⬜=0 stayed the focus until a **full-lane QA tick — four a day** — arrived to seal
+it, and every DEV tick in between found an empty queue. Measured: the focus sat on
+`general` from 13/09 14:04Z, and four of ten departments were bone dry.
+⇒ **the stall was ⛔ not a shortage of work. It was a shortage of PERMISSION to look at it.**
+
+⛔ **Two different questions were behind one signature, and they have been separated:**
+```
+«is this department FINISHED?»   judgement · three stamps · expensive  ⇒ QA ONLY, unchanged
+«is there work for me here?»      a count   · a number       · cheap   ⇒ YOURS
+```
+
+**The procedure is `RULES § 0.23 ז׳` and it is written there once.** ⛔ Do ⛔ not work from
+memory of this paragraph — read it. In short: count the ⬜ eligible **to you** in
+`ACTIVE_WORKSTREAM`; **>0 ⇒ you ⛔ do not move**; **=0 ⇒ walk `36 § 13` FORWARD, wrap
+around, skip SEALED departments, take the first with work**, and write
+`ACTIVE_WORKSTREAM` + `PREV_WORKSTREAM` + a why-line carrying **the number you counted**,
+in the same commit.
+
+🔴 ⛔ **ONE SLICE PER TICK, and this is the only hard rule left.** You choose at the open and
+you **stay**. Closing the department's last row mid-tick ⛔ does ⛔ NOT let you hop — the
+next tick advances. ⛔ Without this, «advance» becomes «skip», and one agent tours the whole
+sequence in a tick while finishing ⛔ nothing.
+
+⛔ **And three things this ⛔ does NOT give you:**
+- ⛔ **You still ⛔ do NOT seal.** Advancing is ⛔ not finishing: a department that emptied
+  and was ⛔ not sealed **stays in the rotation**, and the wrap-around comes back to it the
+  moment PM opens a row there. ⇒ **advancing is ⛔ not abandoning.**
+- ⛔ **Forward only.** ⛔ Never backwards, ⛔ never «the one with the most rows».
+- ⛔ **You still ⛔ never retag a feature row `general`** to make it eligible.
 
 Order: **`MERGE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`ACTIVE_TASK_ID`** → the next task in the active workstream that is not ⛔ → **then, only if fewer than 3 remain, the next workstream in sequence.**
 
@@ -284,13 +316,13 @@ Order: **`MERGE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`A
 general · loop · base          ⇐ all three are eligible while the focus is `general`
 ```
 🔴 **Why this exists, and it is a MEASUREMENT, ⛔ not a preference.** Measured 31/08 on a live clone: `loop` held **10 open ⬜** and `base` held **15** — **25 rows ⛔ no DEV tick could ever pick**, because you filter to `ACTIVE_WORKSTREAM` and that field has only ever held a *feature* workstream. ⇒ system-wide fixes, logical bugs and loop machinery were **written and never built**. That is the third time this failure class has been measured: `D-122 § ב`, then `D-171`, now this.
-⛔ **And it is ⛔ not a licence.** While the focus is `general` you take ⛔ **no** feature-workstream row — the exceptions above (🔴 finding · `ACTIVE_TASK_ID`) are still the only two. ⛔ You ⛔ do NOT set `ACTIVE_WORKSTREAM` yourself, and ⛔ you ⛔ never retag a feature row `general` to make it eligible.
+⛔ **And it is ⛔ not a licence.** While the focus is `general` you take ⛔ **no** feature-workstream row — the exceptions above (🔴 finding · `ACTIVE_TASK_ID`) are still the only two, **plus the advance of `D-247` when the cross-cutting set itself counts ZERO**. ⛔ And you ⛔ never retag a feature row `general` to make it eligible.
 
 ### ⏱️ `general` IS A HOLDING PATTERN, ⛔ NOT A HOME — A FEATURE SLICE COMES FIRST  ⟦NEW 06/09 · Roy's explicit instruction⟧
 🔴 **A focused feature SLICE is your first-priority work. `general` is what you take ⛔ only while there is no slice to take** — ⛔ it is ⛔ not your default, and ⛔ ⛔ not somewhere you settle in tick after tick because its rows are the easiest to find.
 **Measured 06/09 on a live clone, ⛔ not asserted:** `ACTIVE_WORKSTREAM` has read `general` since **31/08** (`2947668`, C-0376) — **six days**. In `docs/plan-open.md`'s balance table right now, the whole eligible set under that focus (`general` ∪ `loop` ∪ `base`) holds **3 open ⬜** (‏0 · 1 · 2), while the five feature workstreams hold **15 open ⬜** — `story` 3 · `cards` 5 · `arena` 3 · `msgs` 4 — ⛔ ⛔ none of them reachable by any DEV tick. ⇒ **12 build ticks a day go to cross-cutting work while `36 § 13`'s own sequence stands still.**
 **What this obliges you to do — three lines, and ⛔ ⛔ not one of them moves the focus:**
-1. ⛔ **You still ⛔ do NOT set `ACTIVE_WORKSTREAM`** — the return to a feature workstream is QA's alone (`RULES § 0.23ז`), and ⛔ you ⛔ never retag a row to reach it.
+1. ⟦תוקן 15/09 · `D-247`⟧ **You MAY advance `ACTIVE_WORKSTREAM` when the eligible set counts ZERO** — the procedure is `RULES § 0.23 ז׳`. ⛔ What is still QA's alone is the **SEAL**, and ⛔ you ⛔ never retag a row to reach a workstream.
 2. 🔴 **The eligible set under `general` measures ⬜=0? SAY SO IN THE FIRST LINE OF YOUR REPORT, in these words:** «`general` ⬜=0 — ⛔ אין עבודה חוצת-מערכת פנויה. `<N>` שורות ⬜ ממתינות בזרימות הפיצ'ר, וההחזרה למוקד פיצ'ר היא של QA בלבד» — with `N` **read from the balance table**, ⛔ ⛔ not guessed. That sentence is the **only** channel QA has for learning the holding pattern is over; a quiet `general` tick tells it nothing, and that is exactly how six days passed.
 3. ⚠️ **A row eligible through an exception (🔴 finding · `ACTIVE_TASK_ID`) beats a `general` row of the same size** — the exception exists because someone judged that row more urgent than the focus, and taking a comfortable `general` row instead ⛔ quietly overrules them.
 ⛔ **⛔ This changes ⛔ NOTHING about the filter and adds ⛔ NO third exception.** The two in STEP 2 are still the only two. This is about **what you prefer inside what you are already allowed to take**, and about ⛔ not letting a holding pattern silently become the product's build order.
@@ -304,7 +336,7 @@ general · loop · base          ⇐ all three are eligible while the focus is `
 אומר: שלושה מזהים בתור ⛔ אינם הוראה לקחת שלושה; קח לפי סדר הבחירה, ⛔ לא לפי אורך התור. An empty list (`[]`) means ⛔ no exception, exactly as an empty string did before. ⛔ You ⛔ do NOT write to this field, in any format — not to add, not to remove a finished id. Clearing a delivered id remains PM/QA's job, exactly as before.
 ⚠️ Screens follow `36 § 13`; Messages follows `39 § 9`, deliberately the **reverse**.
 ### 📇 AND THE GOALS THEMSELVES ARE IN A FILE — `plan/05-departments.md`  ⟦NEW 09/09⟧
-**⛔ Read it in STEP 2, before you pick.** PM writes it; you ⛔ never edit it. It is ≤4KB
+**⛔ Read it in STEP 2, before you pick.** PM writes it; you ⛔ never edit it. It is ≤8KB
 and holds one summary line per department plus **the goals still open** in each.
 ⇒ **This is what «build toward a goal» means concretely** — the section below tells you
 you may open the next obvious row of a goal the department already carries, and **this
@@ -448,8 +480,21 @@ Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact 
 ## STEP 4 — SKILLS
 
 🆕 **⟦11/09⟧ `find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
-🔴 **⟦תוקן 14/09 · נמדד בסשן התפעול⟧ השם הוא `anthropic-skills:find-skill`, ⛔ ולא
-`/find-skill`.** עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
+🔴 **⟦הוכרע 15/09 · `C-0621` · הוראת רוי⟧ ⛔ הם ⛔ אינם כלי בטיק שלך — הם **קבצים בריפו**.**
+🔬 **נמדד:** כל Routine נושאת `account_skills: []` · `enabled_plugins: []` ⇒ ⛔ **אף
+`anthropic-skills:*` ⛔ אינו נטען בטיק מתוזמן**, ⛔ ולא משנה באיזה שם תקרא לו.
+⇒ **הם הועתקו לריפו ומגיעים עם ה-clone שלך:**
+```
+anthropic-skills:<name>   ⇒   קרא   skills/anthropic/<name>/SKILL.md
+```
+**שלך:** `animate` · `apple-design` · `emil-design-eng` · `ask-sonner` · `pick-ui-library` · `find-skill`.
+
+‏`skills/anthropic/README.md` הוא הרשימה המלאה ואומר מה ⛔ לא הועתק ולמה. ⛔ **אל תנסה
+`Skill(...)`** — ⛔ אין מה להפעיל, יש מה **לקרוא**. אותו הסדר בדיוק כמו `superpowers:<name>`
+מאז `F-189`.
+
+⟨הרקע ההיסטורי, ⛔ ואינו הוראה עוד: השם היה `anthropic-skills:find-skill` ⛔ ולא
+`/find-skill`.⟩ עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
 `anthropic-skills:`, וזה חל על **כל** שורה בטבלה שסומנה «⛔ לא מובטח»: הוסף את התחילית
 לשם שכתוב שם, ⛔ ואל תמציא שם אחר. ⇒ **קריאה בשם `/find-skill` נכשלת על השם, ⛔ ולא על זמינות** —
 וזה מסביר «⛔ לא נטען» בלי שאיש הדליק או כיבה דבר.
@@ -581,8 +626,11 @@ and ⛔ you do ⛔ not need the `[SKILL: …]` cell: **the arena's polish is del
 ⛔ still ⛔ NOT yours  the RULES of the battle · scoring · what a card teaches · copy that
                       makes a pedagogical claim · anything under lib/core/**
 ```
-⇒ **use the motion skills here without waiting to be told** — `anthropic-skills:animate`,
-and `anthropic-skills:emil-design-eng` when `animate` sends you there. They are ⛔ still
+⇒ **use the motion skills here without waiting to be told** — read
+`skills/anthropic/animate/SKILL.md`, and `skills/anthropic/emil-design-eng/SKILL.md` when
+`animate` sends you there. ⟦15/09⟧ **They are files in your clone now**, ⛔ not a tool that
+⛔ does not load in a scheduled tick. And for anything the finger touches —
+`skills/anthropic/apple-design/SKILL.md`: it is what found `F-257`. They are ⛔ still
 DEV's alone (`RULES § 0.1 ז׳`), and the arena is exactly what they were allowed for.
 ⚠️ **Two fences, and they are the whole of it:** ⛔ **the accessibility gates are frozen**
 (contrast · 44px · colour never the only channel · reduced-motion · ⛔ no horizontal scroll
