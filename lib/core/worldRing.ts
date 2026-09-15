@@ -69,6 +69,13 @@ export interface RingNode {
 /** T-191 — the inbox the `הודעות` node opens onto. */
 export const MESSAGES_HREF = '/world/messages';
 
+/**
+ * T-370 — the dashboard the `אמירנט` node opens onto. ⛔ One constant, ⛔ not a second
+ * string: `MESSAGES_HREF` above is the precedent (`C-0518`), and a href written twice is
+ * a href that drifts.
+ */
+export const AMIRNET_HREF = '/world/amirnet';
+
 export const RING_ORDER: readonly RingNodeId[] = [
   'arena',
   'msgs',
@@ -147,19 +154,20 @@ export interface RingInputs {
 }
 
 /**
- * ⛔ ארבעת צמתי `locked_infra`, **וזו הרשימה כולה** (D-118 · T-204ⓔ).
+ * ⛔ שלושת צמתי `locked_infra`, **וזו הרשימה כולה** (D-118 · T-204ⓔ).
  * ⟦עודכן C-0518 · `T-191`⟧ `msgs` ⇢ `open` (`/world/messages`) — תיבת הסימולציות
  * נבנתה, ושלושת תנאי `D-074` נענו: שורת `T-190`, שורת `D-054`, והמסך עצמו.
- * ⟦עודכן 03/09 · `D-182` · `T-252`⟧ `amirnet` נוסף — `locked_infra` ⛔ ולא
- * `locked_count` (`D-118` מחלקה 3): `41 § 8` שלב 1 (סכמת פריטים · תפריט ·
- * מנוע תרגול · `T-222`/`T-223`/`T-224`) ⛔ טרם נבנה, ⇒ ⛔ אין ספרה בנוסח.
+ * ⟦עודכן 03/09 · `D-182` · `T-252`⟧ `amirnet` נוסף כ-`locked_infra`.
+ * ⟦הוסר C-0630 · `T-370` · `D-248`⟧ `amirnet` ⇢ `open` (`/world/amirnet`) — **הנימוק
+ * שהנעילה עצמה נקבה בו פג**: הנוסח שישב כאן אמר «אמירנט ייפתח כשמנוע התרגול שלו
+ * ייבנה», ו-`D-182` נימקה אותה ב«`41 § 8` שלב 1 טרם נבנה». שלב 1 נבנה — `T-222` ✅
+ * (תור המילים) · `T-297` ✅ (`app/api/amirnet/practice/route.ts` מגיש פריט אמיתי) ·
+ * `T-291` ✅ (דשבורד) · `T-308` ✅ (סימולציה) · `T-309` ✅ (התמדת ההשלמות). ⇒ הנעילה
+ * נשארה על חדר מרוהט, וששת המסכים כבר מחזירים 200.
  * ⛔ ⛔ אין בהם מספר ו⛔ אין בהם תאריך — הבדיקה אוכפת את ההיפך של D-046.
- * ⛔ מעבר של צומת מכאן ל-`open` הוא **משימה**, ⛔ ולא דגל.
+ * ⛔ מעבר של צומת מכאן ל-`open` הוא **משימה**, ⛔ ולא דגל — וזו הייתה `T-370`.
  */
-const INFRA_NOTE_HE: Readonly<
-  Record<'amirnet' | 'sentences' | 'leaders' | 'friends', string>
-> = {
-  amirnet: 'אמירנט ייפתח כשמנוע התרגול שלו ייבנה.',
+const INFRA_NOTE_HE: Readonly<Record<'sentences' | 'leaders' | 'friends', string>> = {
   sentences: 'המשפטים ייפתחו כשמאגר המשפטים ייבנה.',
   leaders: 'המובילים ייפתחו כשחשבונות המשתמשים יחוברו.',
   friends: 'החברים ייפתחו כשחשבונות המשתמשים יחוברו.',
@@ -249,7 +257,7 @@ export function ringScreen(
     compose: inputs.compose,
     vocab: inputs.vocab,
     msgs: { kind: 'open', href: MESSAGES_HREF },
-    amirnet: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.amirnet },
+    amirnet: { kind: 'open', href: AMIRNET_HREF },
     sentences: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.sentences },
     leaders: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.leaders },
     friends: { kind: 'locked_infra', noteHe: INFRA_NOTE_HE.friends },

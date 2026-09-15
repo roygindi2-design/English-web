@@ -12,8 +12,14 @@ export const metadata = { title: 'סימולציות אמירנט' };
  * zero answers, `zeroStats()` says exactly that, and the screen prints the written empty state
  * (T-291ⓓ) instead of inventing a number. ⛔ No `—`, ⛔ no `0%`.
  *
- * ⚠️ The ring node `אמירנט` stays `locked_infra` (`lib/core/worldRing.ts:252`) — flipping it is a
- * NAVIGATION decision and PM's alone (`RULES § 0.22`). This route exists; ⛔ nothing links to it yet.
+ * ⟦T-370 · C-0630 · `D-248`⟧ The ring node `אמירנט` is now `open` onto this route — PM made the
+ * navigation call, and this is the department's single entry point. ⛔ The comment that used to sit
+ * here («⛔ nothing links to it yet») is gone because it is ⛔ no longer true.
+ *
+ * ⛔ And the door opening does ⛔ NOT assume the room is stocked: on a database without the `0006`/
+ * `0007` seeds (`F-262` open) the learner still lands on a WRITTEN empty state, ⛔ never a dead end —
+ * `app/api/amirnet/practice/route.ts:47` answers `schema_missing`, `:86` answers `no_items`, and the
+ * dashboard below prints `T-291`ⓓ's empty state rather than inventing a number.
  *
  * Inside `(tabs)` ⇒ the tab bar is the layout's; ⛔ no `<ActionBar>` below (D-028).
  */

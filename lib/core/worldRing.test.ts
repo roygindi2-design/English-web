@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { RETRY_HE } from './failure';
 import { failureExit } from './failureExit';
 import {
+  AMIRNET_HREF,
   RING_ANGLE_DEG,
   RING_LABEL_HE,
   RING_ORDER,
@@ -158,12 +159,7 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     const screen = ringScreen(inputs(), '/world', 'unavailable');
     if (screen.kind !== 'ring') throw new Error('unreachable');
     const infra = screen.nodes.filter((n) => n.state.kind === 'locked_infra');
-    expect(infra.map((n) => n.id).sort()).toEqual([
-      'amirnet',
-      'friends',
-      'leaders',
-      'sentences',
-    ]);
+    expect(infra.map((n) => n.id).sort()).toEqual(['friends', 'leaders', 'sentences']);
     for (const node of infra) {
       if (node.state.kind !== 'locked_infra') throw new Error('unreachable');
       expect(/\d/.test(node.state.noteHe)).toBe(false);
@@ -175,6 +171,48 @@ describe('worldRing — the ring model (T-204 · D-118 · `36 § 6`)', () => {
     if (screen.kind !== 'ring') throw new Error('unreachable');
     const msgs = screen.nodes.find((n) => n.id === 'msgs')!;
     expect(msgs.state).toEqual({ kind: 'open', href: '/world/messages' });
+  });
+
+  // ── T-370 · D-248 — the door onto the furnished room ────────────────────────
+
+  it('אמירנט is open onto /world/amirnet — ⛔ the node is the department\'s ONLY entry point (T-370 · D-248)', () => {
+    const screen = ringScreen(inputs(), '/world', 'unavailable');
+    if (screen.kind !== 'ring') throw new Error('unreachable');
+    const amirnet = screen.nodes.find((n) => n.id === 'amirnet')!;
+    expect(amirnet.state).toEqual({ kind: 'open', href: AMIRNET_HREF });
+    expect(AMIRNET_HREF).toBe('/world/amirnet');
+  });
+
+  it('⛔ אמירנט carries ⛔ NO lock in any live-input combination — the flip is unconditional (T-370)', () => {
+    // ⛔ The measure of done is «0 locks on `אמירנט`», ⛔ not «0 locks on the default inputs».
+    // A learner whose progress opened nothing still reaches the department: `amirnet` is a
+    // CONSTANT node, exactly like `msgs`, so ⛔ no `RingInputs` shape may put a lock back.
+    for (const state of [
+      { kind: 'open', href: '/x' },
+      { kind: 'locked_count', noteHe: 'נדרשות 12 מילים ברמה, יש 8' },
+    ] as const) {
+      const screen = ringScreen(inputs({ arena: state }), '/world', 'unavailable');
+      if (screen.kind !== 'ring') throw new Error('unreachable');
+      const amirnet = screen.nodes.find((n) => n.id === 'amirnet')!;
+      expect(amirnet.state.kind).toBe('open');
+    }
+  });
+
+  it('⛔ `amirnet` is ⛔ NOT in the wire-driven set — D-064 still measures the empty screen (T-370)', () => {
+    // ⛔ `msgs` + `amirnet` are both constant `open`. If either leaked into the D-064 check,
+    // «every tile the learner earned is locked ⇒ empty screen with an exit» would be dead code
+    // the day it was written — the F-074 class the ⓑ comment above exists against.
+    const screen = ringScreen(
+      inputs({
+        arena: { kind: 'locked_infra', noteHe: 'הזירה תיפתח כשהמנוע ייבנה.' },
+        stories: { kind: 'locked_infra', noteHe: 'הסיפורים ייפתחו כשהמאגר ייבנה.' },
+        compose: { kind: 'locked_infra', noteHe: 'הכתיבה תיפתח כשהעורך ייבנה.' },
+        vocab: { kind: 'locked_infra', noteHe: 'אוצר המילים ייפתח כשהמאגר ייבנה.' },
+      }),
+      '/world',
+      'unavailable',
+    );
+    expect(screen.kind).toBe('empty');
   });
 
   it('⛔ ⛔ no `locked_infra` note says «בקרוב» (F-011 · F-016 · D-046)', () => {

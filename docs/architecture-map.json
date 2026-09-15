@@ -685,6 +685,9 @@
     "components/EnWord.tsx",
     "lib/core/arcadeResult.ts"
   ],
+  "components/ArenaScene.tsx": [
+    "lib/core/arenaScene.ts"
+  ],
   "components/ArenaShell.test.ts": [],
   "components/ArenaShell.tsx": [
     "components/ArenaBattle.tsx",
@@ -692,9 +695,12 @@
     "components/ArenaHome.tsx",
     "lib/core/arenaCharacter.ts"
   ],
-  "components/ArenaStage.test.ts": [],
+  "components/ArenaStage.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaStage.tsx": [
     "components/ArenaAvatar.tsx",
+    "components/ArenaScene.tsx",
     "lib/core/arcadeLadder.ts",
     "lib/core/arenaCharacter.ts",
     "lib/core/battle.ts"
@@ -1120,6 +1126,7 @@
     "lib/core/arcadeResult.ts",
     "lib/core/characterBase.ts"
   ],
+  "lib/core/arenaScene.ts": [],
   "lib/core/arenaSummary.test.ts": [
     "lib/core/arenaSummary.ts",
     "lib/core/arenaWords.ts",
