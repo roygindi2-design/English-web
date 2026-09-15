@@ -619,18 +619,51 @@ from 13/09 14:04Z, across ⛔ nine DEV ticks, while the two `cards` rows Roy had
 sat outside the eligible pool.** Both alarms were fixed on 14/09; ⛔ **this step is the one
 that answers them.**
 
+🔴 **⛔ ⟦REWRITTEN 15/09 · `C-0626` · `F-261` — AND IT REPLACES THE TEST THAT STOOD HERE
+FROM 14/09 TO 15/09, WHICH WAS THE WRONG QUESTION.⟧**
+
+⛔ **What this step used to say:** «read the ⬜ count of `ACTIVE_WORKSTREAM` **itself**;
+= 0 ⇒ decide». 🔬 **And that question can ⛔ never come back «yes».** `ACTIVE_WORKSTREAM` is
+**where PM opens its rows** ⇒ while it read `general`, every PM tick **refilled the very
+field whose emptiness was the only exit**. Measured on a live clone, 15/09:
+```
+general ⬜ (itself)                 = 1     ⇒ ⛔ the test above ⛔ never fires
+the eligible pool (∪ loop ∪ base)   = 7     ⇒ `§ 0.23 ז׳` ③ says «⛔ do not move»
+the 36 § 13 sequence                = 12 ⬜  amirnet · story · cards · arena · msgs
+                                            ⇒ ⛔ UNREACHABLE by ⛔ any agent
+```
+⇒ the focus read `general` from **31/08 — two weeks** — with **23/23 checks green** the
+whole time. ⛔ That was ⛔ not a slow loop: the loop would have run at full rate on
+cross-cutting self-maintenance **forever** and ⛔ never touched the product.
+
+**⇒ THE QUESTION IS ⛔ NOT «IS THE WAITING ROOM EMPTY». IT IS «IS ANYONE STILL WAITING
+OUTSIDE».**
+
 **⇒ COUNT IT, ⛔ DO NOT SENSE IT** — the same imperative `PM.md` STEP 5.7 already carries.
-Read the ⬜ count of `ACTIVE_WORKSTREAM` **itself** from `docs/plan-open.md`:
-
+⛔ **And ⛔ do ⛔ not derive the answer**: it is computed for you, in two places.
 ```
-> 0 ⬜ in the workstream itself   ⇒ ⛔ nothing to decide. Say the number in your report.
-= 0 ⬜                            ⇒ 🔴 DECIDE IN THIS TICK. Move it, ⛔ or write the line below.
+`docs/plan-open.md`   ⇒ 🔴 «מועמדים לפי הסדר» — the ordered rotation, already filtered
+`loop:health` 11      ⇒ 🟠 «חדר המתנה» + how many ⬜ the sequence is holding
+```
+```
+focus is a 36 § 13 department, ⬜ > 0   ⇒ ⛔ nothing to decide. Say the number.
+focus is a 36 § 13 department, ⬜ = 0   ⇒ 🔴 DECIDE IN THIS TICK — advance, ⛔ or write why.
+focus is `general`/`loop`/`base`
+        AND the sequence holds work     ⇒ 🔴 DECIDE IN THIS TICK. ⛔ The pool's count is
+                                          ⛔ IRRELEVANT here — a waiting room is ⛔ not a
+                                          department (`§ 0.23 ז׳` ⓪).
+focus is cross-cutting, sequence empty  ⇒ `§ 0.23 ז׳` ⑥ — a decision for **Roy**.
 ```
 
-⛔ **And «the pool still has work» is ⛔ NOT an answer.** While the focus is `general`, DEV
-can still take `loop` and `base` rows — so ⛔ nothing looks broken, and that is precisely
-how the focus stayed parked for a day. **DEV ⛔ not being starved and the workstream being
-exhausted are two different measurements**, and `§ 0.23 ז׳` turns on the second one.
+⛔ **And «the pool still has work» is ⛔ NOT an answer — it is the ⛔ TRAP.** While the focus
+is `general`, DEV can still take `loop` and `base` rows, so ⛔ nothing looks broken. **DEV
+⛔ not being starved and the product ⛔ not being built are two different measurements**, and
+this step turns on the second one.
+
+⚠️ **AND AN ADVANCE OWES ONE MORE LINE** — `plan/61-deferred.md`, one row per department the
+move stepped **past**, saying what was left open in it, in the same commit. ⛔ **That is
+⛔ not a seal** (an advanced-past department **stays in the rotation**) — it is a record of a
+count, and `loop:health` check 13 measures it.
 
 **⇒ Decided ⛔ not to move it? Then the reason goes in `plan/00-control.md`, in one line:**
 ```
@@ -652,7 +685,8 @@ explicit instruction. ⛔ Read this before you are surprised by a focus that mov
 «is there work for me here?»      a count  · a number     · cheap     ⇒ DEV and PM too
 ```
 ⇒ **DEV and PM may now ADVANCE the focus** when the department counts **ZERO** eligible
-rows, walking `36 § 13` forward per `RULES § 0.23 ז׳`. 🔬 **Why it had to change, measured:**
+rows — **and ⟦15/09 · `F-261`⟧ also whenever the focus is cross-cutting while the `36 § 13`
+sequence holds work**, walking `36 § 13` forward per `RULES § 0.23 ז׳` ⓪. 🔬 **Why it had to change, measured:**
 the focus sat on `general` from 13/09 14:04Z because ⛔ only a full-lane tick — **four a
 day** — could move it, and every build tick in between found an empty queue while four
 departments were dry.
