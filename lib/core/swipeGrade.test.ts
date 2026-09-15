@@ -12,6 +12,9 @@ import {
   SWIPE_FEEDBACK_MAX_MS,
   SWIPE_MAX_ANGLE_DEG,
   SWIPE_MIN_DISTANCE_PX,
+  SWIPE_DECELERATION_RATE,
+  SWIPE_FLING_MIN_DISTANCE_PX,
+  projectMomentum,
 } from './swipeGrade';
 
 /**
@@ -243,5 +246,102 @@ describe('T-259 — the exit pose is the render (render_video_A.py:364, :424-425
   });
   it('a non-finite offset is treated as rest', () => {
     expect(swipePose(Number.NaN, 375)).toEqual({ x: 0, y: 0, rotateDeg: 0 });
+  });
+});
+
+/**
+ * 🔴 **⟦NEW 15/09 · `C-0619` · `F-257` · הוראת רוי⟧ מסלול התנופה.**
+ *
+ * 🔬 **הבדיקות האלה נולדו ממדידה בדפדפן, ⛔ ולא מקריאת קוד.** על `/dev/deck` ב-iPhone 13
+ * נמדד לפני השינוי ששלושה נפנופים טבעיים — 50px/60ms · 40px/50ms · 60px/80ms, כולם
+ * מעל 750px/ש — **כולם נדחו**, בעוד גרירה איטית של 80px עברה. ⇒ המחווה קיבלה רק «איטי
+ * וארוך», והלומד היה מנסה שוב ושוב.
+ *
+ * ⛔ **וכל טענה כאן חייבת להאדים במוטציה** — אחרת היא תיאור ו⛔ לא שער.
+ */
+describe('F-257 — התנופה מכריעה נפנוף קצר ומהיר (apple-design § 6)', () => {
+  const flick = (dx: number, velocityX: number) =>
+    resolveSwipe({ ...base, endX: base.startX + dx, endY: base.startY, velocityX });
+
+  it('⛔ נפנוף של 50px בלי מהירות ⇒ עדיין null — D-042ⓑ ⛔ לא רוכך', () => {
+    expect(resolveSwipe({ ...base, endX: base.startX + 50, endY: base.startY })).toBeNull();
+  });
+
+  it('אותם 50px ב-830px/ש ⇒ מחווה — זה הנפנוף שנמדד כנדחה', () => {
+    expect(flick(50, 830)).toBe('good');
+  });
+
+  it('ו-40px ב-800px/ש, הנפנוף הקצר ביותר שנמדד ⇒ מחווה', () => {
+    expect(flick(40, 800)).toBe('good');
+  });
+
+  it('שמאלה באותה מידה — 50px ב-830px/ש ⇒ «לא ידעתי»', () => {
+    expect(flick(-50, -830)).toBe('again');
+  });
+
+  /**
+   * ⛔ הרצפה. בלעדיה נגיעת-רפאים מדרגת מילה — וציון הוא כתיבה לנתוני הלמידה.
+   * שני צדי הגבול, ⛔ ולא רק הצד הנוח.
+   */
+  it(`⛔ ${SWIPE_FLING_MIN_DISTANCE_PX - 1}px ⇒ null גם במהירות אבסורדית`, () => {
+    expect(flick(SWIPE_FLING_MIN_DISTANCE_PX - 1, 100_000)).toBeNull();
+  });
+
+  it(`${SWIPE_FLING_MIN_DISTANCE_PX}px בדיוק, עם תנופה שמספיקה ⇒ מחווה`, () => {
+    expect(flick(SWIPE_FLING_MIN_DISTANCE_PX, 800)).toBe('good');
+  });
+
+  /**
+   * 🔴 **חרטה ⛔ אינה החלטה.** אצבע שגררה ימינה ו**חזרה** שמאלה בשחרור — הסימן של
+   * המהירות הפוך לסימן המרחק. ‏`apple-design` § 3: «decide reverse vs. commit by the
+   * SIGN of the velocity».
+   */
+  it('⛔ מהירות בכיוון ההפוך ⇒ null, ⛔ ולא ציון לפי המרחק', () => {
+    expect(flick(50, -900)).toBeNull();
+    expect(flick(-50, 900)).toBeNull();
+  });
+
+  it('⛔ מהירות איטית ⛔ אינה מספיקה — 30px ב-60px/ש ⇒ null', () => {
+    expect(flick(30, 60)).toBeNull();
+  });
+
+  it('⛔ מהירות שאינה סופית ⛔ אינה «הרבה»', () => {
+    expect(flick(50, Number.POSITIVE_INFINITY)).toBeNull();
+    expect(flick(50, Number.NaN)).toBeNull();
+  });
+
+  it('⛔ והמסלול השני ⛔ אינו עוקף את רצועת הקצה ואת הזווית', () => {
+    // קצה שמאל — מחווה מושלמת עם תנופה אדירה, ועדיין null (D-042ⓐ)
+    expect(
+      resolveSwipe({ ...base, startX: SWIPE_EDGE_PX, endX: SWIPE_EDGE_PX + 50, endY: base.startY, velocityX: 900 }),
+    ).toBeNull();
+    // ‏45° — מעל 30°, ועדיין null גם עם תנופה
+    expect(
+      resolveSwipe({ ...base, endX: base.startX + 40, endY: base.startY + 40, velocityX: 900 }),
+    ).toBeNull();
+  });
+
+  /**
+   * ⛔ **הנוסחה עצמה, ⛔ ולא «מה שכתוב בקובץ»** — `apple-design` § 6 היא דעיכה
+   * מעריכית `(v/1000)·d/(1−d)`, ⛔ ולא `v²/2a` מספר הפיזיקה. ב-`d=0.998` המקדם הוא 499,
+   * ולכן 800px/ש מושלכים ל-**399px**.
+   */
+  it('projectMomentum הוא הדעיכה המעריכית של Apple, בערכים', () => {
+    expect(SWIPE_DECELERATION_RATE).toBe(0.998);
+    expect(projectMomentum(800)).toBeCloseTo(399, 0);
+    expect(projectMomentum(0)).toBe(0);
+    expect(projectMomentum(-800)).toBeCloseTo(-399, 0);
+  });
+
+  it('⛔ קצב דעיכה לא חוקי ⛔ אינו מחלק באפס', () => {
+    expect(projectMomentum(800, 1)).toBe(0);
+    expect(projectMomentum(800, 0)).toBe(0);
+    expect(Number.isFinite(projectMomentum(800, 0.5))).toBe(true);
+  });
+
+  it('⛔ קריאה בלי `velocityX` מתנהגת בדיוק כמו לפני השינוי', () => {
+    // ‏64 עובר, 63 ⛔ לא — בדיוק כפי ש-D-042ⓑ מדדה, בלי שדה המהירות בכלל.
+    expect(resolveSwipe({ ...base, endX: base.startX + SWIPE_MIN_DISTANCE_PX, endY: base.startY })).toBe('good');
+    expect(resolveSwipe({ ...base, endX: base.startX + SWIPE_MIN_DISTANCE_PX - 1, endY: base.startY })).toBeNull();
   });
 });

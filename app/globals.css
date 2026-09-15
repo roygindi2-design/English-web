@@ -241,6 +241,19 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   --kol-release-ms: 200ms;
   --kol-release-ease: ease-out;
   transition: opacity 200ms ease-out;
+  /* 🔴 ⟦NEW 15/09 · C-0619 · F-257⟧ הסיבה האמיתית ש«ההחלקה לא עובדת חלק».
+
+     🔬 נמדד ב-Chromium על /dev/deck, ⛔ ולא הוסק: `getComputedStyle(card).touchAction`
+     החזיר `auto` — על הכרטיס, ועל שלושת ההורים שמעליו. ⇒ במכשיר מגע הדפדפן מחזיק את
+     ההחלקה **האופקית** יחד איתנו, ומרגע שהוא מחליט שזו גלילה הוא יורה `pointercancel`
+     והכרטיס קופץ חזרה באמצע המחווה. זה ⛔ אינו באג שקורה תמיד — הוא קורה **לפעמים**,
+     וזה בדיוק למה התסמין הוא «צריך לנסות כמה פעמים» ⛔ ולא «⛔ לא עובד».
+
+     ⛔ `pan-y` ⛔ ולא `none`: הגלילה האנכית של העמוד נשארת של הדפדפן — היא חייבת. מה
+     שנלקח ממנו הוא **הציר האופקי בלבד**, שהוא הציר שהמחווה הזאת חיה עליו.
+     ⚠️ `touch-action` ⛔ אינו עובר בירושה — הוא נקבע על הצומת שמקבל את המגע, ⇒ מקומו
+     כאן ו⛔ לא על ההורה. */
+  touch-action: pan-y;
 }
 [data-flashcard][data-release] {
   transition: transform var(--kol-release-ms) var(--kol-release-ease), opacity 200ms ease-out;

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
 import { deckCardKey, isSentenceCard, type DeckCard, type DeckName } from '@/lib/core/deck';
 import { buildCard, type CardGrade } from '@/lib/core/flashcard';
@@ -113,7 +113,15 @@ export default function CardDeck({
   // T-276 — the round's own grades, in order. `graded` holds WHICH cards left; this holds
   // WHAT the learner marked on them, and it is the only source the finish state counts.
   const [grades, setGrades] = useState<readonly CardGrade[]>(initialGrades);
-  const [pending, setPending] = useState<string | null>(null);
+  /**
+   * ⟦הורחב 15/09 · `C-0619` · `F-258`⟧ המפתחות שהדירוג שלהם **באוויר** — קבוצה, ⛔ ולא
+   * מפתח יחיד. 🔬 **נמדד בקוד:** משהחפיסה מתקדמת מיד (אופטימי), שני דירוגים יכולים
+   * להיות באוויר בו-זמנית; `pending` יחיד היה נדרס ע"י השני, וה-`finally` של הראשון
+   * היה מנקה אותו ⇒ החסימה מפני דירוג כפול **נפתחת בשקט** בדיוק כשיש בה צורך.
+   * ⛔ `useRef` ⛔ ולא `useState`: זהו בקרת-מרוץ, ⛔ ולא מצב שמישהו מרנדר, ורינדור על כל
+   * שינוי כאן היה מרכיב מחדש את פני הכרטיס באמצע היציאה שלו.
+   */
+  const inFlight = useRef<Set<string>>(new Set());
   /**
    * 🔴 **⟦NEW 13/09 · `T-333` · `F-242` · המפרט שרוי כתב⟧ הכרטיסים שכבר דורגו ועדיין עפים.**
    *
@@ -215,25 +223,30 @@ export default function CardDeck({
 
   const grade = useCallback(
     async (key: string, wordId: string, value: CardGrade) => {
-      // One in flight at a time. Without this a double tap sends two grades for one card,
+      // One in flight PER CARD. Without this a double tap sends two grades for one card,
       // and on the `due` deck the second one schedules a word the learner answered once.
-      if (pending !== null) return;
-      setPending(key);
-      try {
-        await onGraded(wordId, value);
-      } catch {
-        // The grade never reached the server. The card stays exactly where it is, still
-        // gradable — ⛔ a swallowed grade is a lost answer. The message the learner reads
-        // belongs to the screen above (task 6), which is the layer that knows whether this
-        // was the network or the session.
-        return;
-      } finally {
-        setPending(null);
-      }
-      // ⟦13/09 · `T-294`⟧ **הדירוג מסיר את הכרטיס, וזה כל מה שצריך כדי להגיע לבא.**
-      // ⛔ הבחירה «מי הבא» ⛔ אינה נעשית כאן יותר: `remaining` נגזר מ-`cards` לפי הסדר,
-      // ולכן הראשון שנשאר **הוא** הבא. הנימוק הישן — «⛔ לא הראשון שנשאר, שהיה מושך
-      // לומד שגלל קדימה בחזרה למעלה» — הניח שאפשר לגלול קדימה. ⛔ כבר אי אפשר.
+      // ⚠️ ⟦הוצר 15/09 · `F-258`⟧ הבדיקה הייתה `pending !== null` — **כל** דירוג, ⛔ לא
+      // רק של הכרטיס הזה. ⇒ החלקה על הכרטיס ה**בא** בזמן שהקודם עוד באוויר **נבלעה
+      // בשקט**, והלומד ראה מחווה שלא עשתה כלום. עכשיו היא חוסמת בדיוק את מה שנועדה
+      // לחסום: דירוג כפול של **אותו** כרטיס.
+      if (inFlight.current.has(key)) return;
+      inFlight.current.add(key);
+      // 🔴 **⟦NEW 15/09 · `C-0619` · `F-258` · תלונת רוי⟧ הכרטיס עוזב **מיד**, ⛔ ולא
+      // אחרי הרשת.
+      //
+      // 🔬 **מה שהיה, ⛔ ונמדד בקוד ⛔ ולא שוער:** `await onGraded(...)` ישב **מעל**
+      // ‏`setGraded`, ⇒ הכרטיס הבא לא הופיע עד שה-POST חזר. ‏`sendGrade` הוא קריאת
+      // רשת אמיתית, ו-TTFB על מסלול קר בייצור נמדד 14/09 ב-**2,338–3,745ms**. ⇒ אחרי
+      // כל החלקה מוצלחת הלומד הביט בכרטיס שכבר דירג, לשניות. זה בדיוק «לוקח זמן
+      // לכרטיס לאחר מכן להיטען» — ⛔ והכרטיס הבא כלל ⛔ לא נטען, הוא **חיכה**.
+      //
+      // ⇒ **אופטימי, עם החזרה.** הדירוג יוצא לרשת בזמן שהחפיסה כבר התקדמה; אם הוא
+      // נכשל הכרטיס **חוזר בדיוק למקומו** ברשימה, עדיין ניתן לדירוג. ⛔ הבטחת
+      // `T-294` ⛔ לא נשברה: «⛔ בלוע = תשובה אבודה» — ⛔ שום כישלון ⛔ אינו נבלע.
+      //
+      // ⚠️ **ומניין הסיבוב נשאר כן:** `grades` — היחיד שמסך הסיום סופר — מתווסף כאן
+      // ונמשך חזרה באותו `catch`. ⇒ סיכום הסיבוב עדיין סופר **רק מה שהגיע לשרת**,
+      // וזה בדיוק מה ש-`CardDeck.test.ts` נועל.
       setGraded((previous) => [...previous, key]);
       setGrades((previous) => [...previous, value]);
       // `T-333` — ומיד אחרי ההסרה מהתור, הכרטיס נכנס לרשימת היוצאים כדי שימשיך לנוע
@@ -242,8 +255,28 @@ export default function CardDeck({
         const leaving = cards.find((card) => deckCardKey(card) === key);
         if (leaving !== undefined) setExiting((previous) => [...previous, leaving]);
       }
+      try {
+        await onGraded(wordId, value);
+      } catch {
+        // The grade never reached the server ⇒ the card comes BACK, still gradable —
+        // ⛔ a swallowed grade is a lost answer. The message the learner reads belongs to
+        // the screen above (task 6), which is the layer that knows whether this was the
+        // network or the session.
+        setGraded((previous) => previous.filter((entry) => entry !== key));
+        setGrades((previous) => {
+          const at = previous.lastIndexOf(value);
+          return at === -1 ? previous : [...previous.slice(0, at), ...previous.slice(at + 1)];
+        });
+        setExiting((previous) => previous.filter((card) => deckCardKey(card) !== key));
+        return;
+      } finally {
+        inFlight.current.delete(key);
+      }
+      // ⟦13/09 · `T-294`⟧ **הדירוג מסיר את הכרטיס, וזה כל מה שצריך כדי להגיע לבא.**
+      // ⛔ הבחירה «מי הבא» ⛔ אינה נעשית כאן: `remaining` נגזר מ-`cards` לפי הסדר, ולכן
+      // הראשון שנשאר **הוא** הבא. ⟦15/09⟧ וההסרה עלתה מעל ה-`await` — ראה `F-258`.
     },
-    [cards, onGraded, pending, reducedMotion],
+    [cards, onGraded, reducedMotion],
   );
 
   if (remaining.length === 0) {

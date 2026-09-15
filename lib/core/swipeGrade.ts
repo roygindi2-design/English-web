@@ -20,6 +20,12 @@ export interface SwipeInput {
   readonly endX: number;
   readonly endY: number;
   readonly viewportWidth: number;
+  /**
+   * ⟦NEW 15/09 · `C-0619` · `F-257` · הוראת רוי⟧ מהירות השחרור על הציר האופקי, ב-px/s,
+   * כפי ש-`releaseVelocity` כבר מחשב אותה. **אופציונלי**: קריאה בלי המספר הזה מתנהגת
+   * **בדיוק** כמו לפני השינוי, וזה מה שמשאיר את `D-042ⓑ` שלם.
+   */
+  readonly velocityX?: number;
 }
 
 export const SWIPE_EDGE_PX = 20;
@@ -31,6 +37,51 @@ export const SWIPE_MAX_ANGLE_DEG = 30;
  * ושני משכים היו שני easing בפועל.
  */
 export const SWIPE_FEEDBACK_MAX_MS = 200;
+
+/**
+ * 🔴 **⟦NEW 15/09 · `C-0619` · `F-257`⟧ מסלול התנופה — ⛔ נמדד, ⛔ ולא שוער.**
+ *
+ * 🔬 **מה שנמדד בדפדפן על `/dev/deck` (iPhone 13, 390×844) לפני השינוי:**
+ * ```
+ * נפנוף  50px /  60ms  (~830px/ש)  ⇒  ⛔ נדחה
+ * נפנוף  40px /  50ms  (~800px/ש)  ⇒  ⛔ נדחה
+ * נפנוף  60px /  80ms  (~750px/ש)  ⇒  ⛔ נדחה
+ * גרירה  80px / 600ms  (~133px/ש)  ⇒  ✅ עברה
+ * גרירה 140px / 700ms  (~200px/ש)  ⇒  ✅ עברה
+ * ```
+ * ⇒ **המחווה קיבלה רק «איטי וארוך».** נפנוף טבעי הוא **מהיר וקצר**, ולכן הלומד היה
+ * מנסה שלוש-ארבע פעמים עד שכרטיס עף — בדיוק התלונה שרוי דיווח עליה.
+ *
+ * ⛔ **ושלושת הספים למעלה ⛔ לא זזו ולו בפיקסל.** `D-042ⓑ` היא החלטה חתומה, וההערה
+ * שלה אומרת «⛔ אל תהפוך אותה כאן». ⇒ מה שנוסף הוא **מסלול שני**, ⛔ ולא ריכוך של
+ * הראשון: מי שעבר 64px עובר בדיוק כמו אתמול, ומי ש⛔ לא עבר מקבל **שאלה שנייה** —
+ * «לאן הכרטיס היה **מגיע**, לפי התנופה שכבר יש לו».
+ *
+ * זו נוסחת ההשלכה של Apple מ-*Designing Fluid Interfaces* (‏`apple-design` § 6), ⛔ ולא
+ * `v²/2a` מספר הפיזיקה: דעיכה מעריכית, בדיוק כמו האטת גלילה.
+ */
+export const SWIPE_DECELERATION_RATE = 0.998;
+
+/**
+ * ⛔ **הרצפה שמונעת מ«נגיעה מהירה» לדרג מילה.** בלעדיה נגיעת-רפאים של 10px ב-300px/ש
+ * הייתה משליכה ל-160px ו**מדרגת כרטיס שהלומד ⛔ לא התכוון לגעת בו** — וציון הוא כתיבה
+ * אמיתית לנתוני הלמידה, ⛔ לא אנימציה. 24px הם הרבה מעל רעד אצבע (סף הלכידה הוא 10)
+ * ו⛔ הרבה מתחת ל-64.
+ */
+export const SWIPE_FLING_MIN_DISTANCE_PX = 24;
+
+/**
+ * לאן מגיע משהו שנזרק ב-`velocityPxS` ואז נותנים לו לדעוך. ⛔ מוחזר **מרחק**, ⛔ לא יעד.
+ * ‏`apple-design` § 6: `(v/1000) · d / (1 − d)`.
+ */
+export function projectMomentum(
+  velocityPxS: number,
+  decelerationRate: number = SWIPE_DECELERATION_RATE,
+): number {
+  if (!Number.isFinite(velocityPxS)) return 0;
+  if (!(decelerationRate > 0) || decelerationRate >= 1) return 0;
+  return (velocityPxS / 1000) * (decelerationRate / (1 - decelerationRate));
+}
 
 /**
  * T-157 · D-090ⓑ — **הכרטיס נצמד לאצבע.**
@@ -89,14 +140,32 @@ export function resolveSwipe(input: SwipeInput): CardGrade | null {
   const dx = endX - startX;
   const dy = endY - startY;
 
-  // D-042ⓑ — המרחק. ⛔ נמדד על הציר האופקי ⛔ ולא כמרחק אוקלידי: גלילה אנכית של
-  // 300px עם סטייה של 10px היא גלילה, והמרחק האוקלידי שלה עובר כל סף.
-  if (Math.abs(dx) < SWIPE_MIN_DISTANCE_PX) return null;
-
   // D-042ⓑ — הזווית. `atan2` על הערכים המוחלטים מחזיר את הסטייה מהציר האופקי
   // ברביע הראשון, ולכן הסימטריה בין למעלה/למטה ובין ימין/שמאל היא תכונה של
   // הנוסחה ⛔ ולא ארבעה ענפים שצריך לזכור לתחזק.
   if (Math.atan2(Math.abs(dy), Math.abs(dx)) > MAX_ANGLE_RAD) return null;
+
+  // D-042ⓑ — המרחק, המסלול הראשון, ⛔ ללא שינוי. ⛔ נמדד על הציר האופקי ⛔ ולא כמרחק
+  // אוקלידי: גלילה אנכית של 300px עם סטייה של 10px היא גלילה, והמרחק האוקלידי שלה עובר
+  // כל סף.
+  // ⚠️ ⟦15/09⟧ הבדיקה הזאת הייתה **יציאה מוקדמת** מעל בדיקת הזווית. היא ירדה לכאן ⇒
+  // ‏(א) מחווה קצרה נבדקת עכשיו גם בזווית — מחמיר, ⛔ לא מקל; (ב) יש **מה להמשיך אליו**
+  // כשהמרחק ⛔ לא הספיק. 🔬 נמדד: השארתה למעלה הפכה את כל מסלול התנופה לקוד מת, והבדיקה
+  // `fling — 50px ב-830px/ש` נפלה. ⇒ הסדר כאן ⛔ אינו סגנון.
+  if (Math.abs(dx) >= SWIPE_MIN_DISTANCE_PX) return dx > 0 ? 'good' : 'again';
+
+  // ⟦NEW 15/09 · `F-257`⟧ המסלול השני — התנופה. ⛔ נבדק **רק** כשהמרחק ⛔ לא הספיק,
+  // ⇒ הוא ⛔ אינו יכול לשנות ולו תוצאה אחת שהייתה חיובית קודם.
+  const velocityX = input.velocityX;
+  if (velocityX === undefined || !Number.isFinite(velocityX)) return null;
+  // ⛔ רצפת מרחק לפני שמהירות נספרת בכלל — ראה `SWIPE_FLING_MIN_DISTANCE_PX`.
+  if (Math.abs(dx) < SWIPE_FLING_MIN_DISTANCE_PX) return null;
+  // ⛔ והמהירות חייבת להסכים עם הכיוון. אצבע שגררה ימינה ואז **חזרה** שמאלה בשחרור
+  // היא ביטול, ⛔ ולא «ידעתי»: ‏`apple-design` § 3 — «decide reverse vs. commit by the
+  // SIGN of the velocity». בלי השורה הזאת חרטה הייתה נקראת כהחלטה.
+  if (Math.sign(velocityX) !== Math.sign(dx)) return null;
+  const projected = dx + projectMomentum(velocityX);
+  if (Math.abs(projected) < SWIPE_MIN_DISTANCE_PX) return null;
 
   return dx > 0 ? 'good' : 'again';
 }

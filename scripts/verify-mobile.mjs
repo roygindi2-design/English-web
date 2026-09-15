@@ -3207,6 +3207,119 @@ try {
     }
     await context.close();
   }
+
+  /**
+   * 🔴 **⟦NEW 15/09 · `C-0619` · `F-257` · `F-258` · תלונת רוי⟧ ההחלקה, כמחווה — ⛔ ולא
+   * כקוד שנקרא.**
+   *
+   * 🔬 **למה זה כאן ו⛔ לא ב-vitest:** `swipeGrade.test.ts` מוכיח את **ההכרעה** על
+   * מספרים, ו-`CardDeck.test.ts` הוא שומר-מקור. ⛔ ששניהם יחד ⛔ אינם יכולים להוכיח
+   * שאצבע אמיתית מעיפה כרטיס — לשם כך צריך `pointerdown/move/up` עם **זמן** ביניהם,
+   * ‏`touch-action` שהדפדפן באמת חישב, ו-React שבאמת רינדר. ⇒ שער חי.
+   *
+   * 🔬 **מה שנמדד כאן לפני התיקון (iPhone-class, 390×844):** שלושה נפנופים טבעיים —
+   * ‏50px/60ms · 40px/50ms · 60px/80ms, כולם מעל 750px/ש — **כולם נדחו**, בעוד גרירה
+   * איטית של 80px עברה. ⇒ «צריך לנסות כמה פעמים כדי להעיף כרטיס».
+   */
+  {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    // ⛔ T-347 — כל דף שנפתח כאן נשמר. ⛔ ולא פורמליות: המחווה הזאת מריצה React על
+    // כל `pointermove`, וחריגה שנזרקת באמצע גרירה הייתה נבלעת בשקט והבדיקה הייתה
+    // ירוקה על מסך שבור. ‏`verify-mobile.test.ts` נועל את זה — והוא זה שתפס אותי כאן.
+    const swipeUncaught = watchUncaught(page);
+
+    const deckWord = () =>
+      page.evaluate(() => {
+        const el = document.querySelector('[data-flashcard]');
+        return el ? el.innerText.split('\n').filter(Boolean).slice(0, 2).join(' / ') : '';
+      });
+
+    /** One pointer gesture with REAL time between the moves — velocity needs a clock. */
+    async function swipe({ query, dx, ms, steps }) {
+      await page.goto(`${BASE}/dev/deck${query}`, { waitUntil: 'networkidle' });
+      await page.locator('[data-flashcard]').first().waitFor();
+      const before = await deckWord();
+      const box = await page.locator('[data-flashcard]').first().boundingBox();
+      if (box === null) return { advancedMs: -1, before, after: before };
+      const y = box.y + box.height / 2;
+      const x0 = box.x + box.width / 2;
+      await page.mouse.move(x0, y);
+      await page.mouse.down();
+      for (let i = 1; i <= steps; i += 1) {
+        await page.mouse.move(x0 + (dx * i) / steps, y);
+        await new Promise((resolve) => setTimeout(resolve, ms / steps));
+      }
+      const t0 = Date.now();
+      await page.mouse.up();
+      for (let i = 0; i < 250; i += 1) {
+        if ((await deckWord()) !== before) return { advancedMs: Date.now() - t0, before, after: await deckWord() };
+        await page.waitForTimeout(20);
+      }
+      return { advancedMs: -1, before, after: await deckWord() };
+    }
+
+    // ⛔ `touch-action` — הסיבה שהדפדפן חטף את המחווה. נמדד כ-`auto` לפני התיקון, על
+    // הכרטיס עצמו. ⛔ `pan-y` ⛔ ולא `none`: הגלילה האנכית נשארת של הדפדפן.
+    await page.goto(`${BASE}/dev/deck`, { waitUntil: 'networkidle' });
+    await page.locator('[data-flashcard]').first().waitFor();
+    const touchAction = await page.evaluate(() => {
+      const el = document.querySelector('[data-flashcard]');
+      return el === null ? '(no card)' : getComputedStyle(el).touchAction;
+    });
+    check(
+      touchAction === 'pan-y',
+      'card swipe · the card owns the horizontal axis (touch-action: pan-y)',
+      `computed touch-action is ${touchAction} — ⛔ the browser can still steal the gesture mid-drag`,
+    );
+
+    // `F-257` — נפנוף טבעי הוא מהיר וקצר. שלושת אלה נמדדו כנדחים לפני התיקון.
+    for (const flick of [
+      { label: '50px/60ms ~830px/s', dx: 50, ms: 60, steps: 5 },
+      { label: '40px/50ms ~800px/s', dx: 40, ms: 50, steps: 4 },
+      { label: '60px/80ms ~750px/s', dx: 60, ms: 80, steps: 6 },
+    ]) {
+      const r = await swipe({ query: '', dx: flick.dx, ms: flick.ms, steps: flick.steps });
+      check(
+        r.advancedMs >= 0,
+        `card swipe · a fast flick sends the card (${flick.label})`,
+        `the card ⛔ did not leave — still «${r.after}» (F-257: the gesture only accepted slow-and-long)`,
+      );
+    }
+
+    // ⛔ והרצפה עובדת לשני הכיוונים: נגיעה זעירה ⛔ אינה מדרגת מילה, ולו במהירות.
+    {
+      const r = await swipe({ query: '', dx: 12, ms: 20, steps: 3 });
+      check(
+        r.advancedMs === -1,
+        'card swipe · ⛔ a 12px twitch ⛔ never grades a word',
+        `a twitch graded «${r.before}» — a grade is a write to the learner's data, ⛔ not an animation`,
+      );
+    }
+
+    // `F-258` — הכרטיס הבא ⛔ אינו ממתין לרשת. נמדד לפני התיקון: 810 · 1,524 · 3,015ms
+    // מול השהיות של 800 · 1,500 · 3,000 — כלומר **בדיוק זמן הרשת**.
+    for (const ms of [800, 3000]) {
+      const r = await swipe({ query: `?gradems=${ms}`, dx: 100, ms: 200, steps: 8 });
+      check(
+        r.advancedMs >= 0 && r.advancedMs < ms / 2,
+        `card swipe · the next card ⛔ does not wait for the network (${ms}ms grade)`,
+        `the next word took ${r.advancedMs}ms behind a ${ms}ms grade — F-258: the advance is back behind the await`,
+      );
+    }
+
+    check(
+      swipeUncaught.length === 0,
+      'card swipe ⛔ no uncaught exception',
+      `threw: ${swipeUncaught.join(' · ')}`,
+    );
+
+    await context.close();
+  }
 } finally {
   await browser.close();
   if (server) server.kill('SIGTERM');

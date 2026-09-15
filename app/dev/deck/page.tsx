@@ -102,6 +102,28 @@ const FIXTURE: readonly QueueCardInput[] = [
   },
 ];
 
+/**
+ * 🔴 **⟦NEW 15/09 · `C-0619` · `F-258`⟧ תפר ההשהיה — `?gradems=N`.**
+ *
+ * 🔬 **למה הוא קיים, ⛔ ולא כנוחות:** התלונה של רוי הייתה «אחרי שכרטיס עף לוקח זמן
+ * לבא להיטען». הסיבה נמצאה — `await onGraded` ישב **מעל** הסרת הכרטיס ⇒ הבא חיכה
+ * לרשת — ⛔ אבל הפיקסצ׳ר הזה פותר מיד, ולכן **⛔ אף הרצת רתמה ⛔ לא יכלה לראות את
+ * התקלה, לפני התיקון ⛔ או אחריו.** זו בדיוק ההגדרה של חור: פיקסצ׳ר שנבדל מהייצור
+ * בממד אחד (‏§ 5, הלקח מ-23/08).
+ *
+ * ⇒ ‏`?gradems=1500` נותן ל-`onGraded` את ההשהיה שיש לו בייצור (TTFB נמדד 14/09:
+ * ‏2,338–3,745ms על מסלול קר). ⛔ **ברירת המחדל היא 0**, ⇒ כל הרצת רתמה קיימת
+ * מתנהגת **בדיוק** כמו קודם, וזו ⛔ אינה התנהגות חדשה על מסלול קיים.
+ */
+function gradeDelayMs(): number {
+  if (typeof window === 'undefined') return 0;
+  const raw = new URLSearchParams(window.location.search).get('gradems');
+  const ms = Number(raw);
+  // ⛔ מספר שאינו סופי ⛔ אינו «אפס» — ותקרה, כדי שפרמטר שגוי ⛔ לא יתלה את הרתמה.
+  if (!Number.isFinite(ms) || ms <= 0) return 0;
+  return Math.min(ms, 10_000);
+}
+
 export default function DevDeckPage() {
   return (
     <CardDeck
@@ -110,7 +132,15 @@ export default function DevDeckPage() {
       // Resolves and does nothing. A rejecting stub would leave the graded card in place
       // (that is `<CardDeck>`'s contract), and the harness could then never measure the
       // advance; a stub that recorded anything would be state the real screen owns.
-      onGraded={() => Promise.resolve()}
+      // ⟦15/09 · `F-258`⟧ ⛔ אלא אם `?gradems=N` — ראה `gradeDelayMs` למעלה.
+      onGraded={() => {
+        const ms = gradeDelayMs();
+        return ms === 0
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              setTimeout(resolve, ms);
+            });
+      }}
       // T-268 — the SAME exit slot the real study screen passes, so the harness measures the
       // header production renders. Until C-0490 this fixture rendered no exit at all, and
       // the overlay that broke the real screen was invisible to every run (§ 5 lesson:

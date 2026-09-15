@@ -303,12 +303,55 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
       expect(gradeFn).toContain('setGrades((previous) => [...previous, value])');
     });
 
-    it('⛔ never counts a grade the server rejected — the count sits after the catch, with setGraded', () => {
+    /**
+     * 🔴 **⟦נכתבה מחדש 15/09 · `C-0619` · `F-258`⟧ אותה טענה בדיוק, מנגנון אחר.**
+     *
+     * הטענה — «ציון שהשרת דחה ⛔ אינו נספר» — ⛔ לא זזה ולו במילה. מה שזז הוא **איך**
+     * היא מתקיימת. עד היום היא התקיימה בכך ש-`setGrades` ישב **אחרי** ה-`await`; ⇒
+     * הכרטיס ⛔ לא עזב עד שהרשת חזרה, והלומד המתין 2.3–3.7 שניות מול כרטיס שכבר דירג
+     * (‏`F-258`, TTFB נמדד בייצור 14/09). עכשיו החפיסה מתקדמת **מיד**, והכישלון
+     * **מחזיר** — ⇒ הבדיקה חייבת למדוד את ההחזרה, ⛔ ולא את סדר השורות.
+     *
+     * ⛔ **ובדיקת סדר הייתה עכשיו בדיקה שקרית לגמרי:** היא הייתה ירוקה על קוד שמונה
+     * ציון פעמיים ו⛔ אף פעם ⛔ לא מחזיר אותו, ואדומה על הקוד הנכון.
+     */
+    it('⛔ never counts a grade the server rejected — the catch ROLLS BACK both lists', () => {
       const gradeFn = braceRegion(CODE, 'const grade = useCallback(');
-      const rejected = gradeFn.indexOf('catch {');
-      const counted = gradeFn.indexOf('setGrades(');
-      expect(rejected).toBeGreaterThan(-1);
-      expect(counted).toBeGreaterThan(rejected);
+      const failure = braceRegion(gradeFn, 'catch {');
+      expect(failure, 'the failure path exists at all').not.toBe('');
+      // ⛔ הכרטיס חוזר לתור — בלי זה «תשובה אבודה» חוזרת, וזו הבטחת T-294.
+      expect(failure, 'the card returns to the deck').toContain(
+        "setGraded((previous) => previous.filter((entry) => entry !== key))",
+      );
+      // ⛔ והמניין מתקזז — בלי זה מסך הסיום סופר ציון שמעולם לא הגיע לשרת.
+      expect(failure, 'the round count is given back').toContain('setGrades(');
+      expect(failure, 'the count is REMOVED, ⛔ not re-added').toContain('lastIndexOf(value)');
+      // ⛔ ועותק היציאה מנוקה, אחרת כרטיס שחזר מרחף מעל עצמו.
+      expect(failure, 'the exiting copy is cleared').toContain('setExiting(');
+    });
+
+    /**
+     * 🔴 **`F-258` — הכרטיס עוזב לפני הרשת, ⛔ ולא אחריה.** זו הטענה שהופכת את התלונה
+     * «לוקח זמן לכרטיס הבא להיטען» לשער: אם `await onGraded` יחזור להיות מעל ההסרה,
+     * הבדיקה הזאת מאדימה.
+     */
+    it('the deck advances BEFORE the network — `setGraded` sits above the await (F-258)', () => {
+      const gradeFn = braceRegion(CODE, 'const grade = useCallback(');
+      const advanced = gradeFn.indexOf('setGraded((previous) => [...previous, key])');
+      const network = gradeFn.indexOf('await onGraded(');
+      expect(advanced).toBeGreaterThan(-1);
+      expect(network).toBeGreaterThan(-1);
+      expect(advanced, 'the card leaves first; the grade flies after it').toBeLessThan(network);
+    });
+
+    /**
+     * ⟦`F-258`⟧ **החלקה על הכרטיס הבא בזמן שהקודם באוויר ⛔ אינה נבלעת.** השמירה היא
+     * על **אותו** כרטיס, ⛔ ולא על «כל דירוג».
+     */
+    it('⛔ one grade in flight ⛔ does not swallow the next card\'s swipe', () => {
+      const gradeFn = braceRegion(CODE, 'const grade = useCallback(');
+      expect(gradeFn, 'the guard is per card').toContain('inFlight.current.has(key)');
+      expect(gradeFn, '⛔ ולא «any grade at all»').not.toContain('pending !== null');
     });
 
     it('asks the pure helper with the deck name — D-033 is decided by `deck`, ⛔ not re-derived here', () => {

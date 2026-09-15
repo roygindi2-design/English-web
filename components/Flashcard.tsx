@@ -412,6 +412,10 @@ export default function Flashcard({
           endX: e.clientX,
           endY: e.clientY,
           viewportWidth: window.innerWidth,
+          // ⟦NEW 15/09 · `F-257`⟧ אותה מהירות שה**שחרור** יקבל, ⇒ התג נדלק בדיוק
+          // כשהרמת אצבע **עכשיו** הייתה נספרת. בלי זה התצוגה המקדימה הבטיחה «⛔ לא
+          // יקרה כלום» לנפנוף שכן היה עובר — הבטחה שקרית, ⛔ ולא חוסר-מידע.
+          velocityX: releaseVelocity(samples.current),
         });
         queueDrag(
           dragOffset({ startX: from.x, currentX: e.clientX, reducedMotion, baseX: baseX.current }).x,
@@ -449,6 +453,9 @@ export default function Flashcard({
         }
         const fromX = pending.current.x;
         pending.current = { x: 0, preview: null };
+        // ⟦15/09 · `F-257`⟧ המהירות נמדדת **לפני** ההכרעה, ⛔ ולא אחריה: היא כבר ⛔ אינה
+        // רק מסירה לקפיץ (§ 5) — היא **חלק מההכרעה** (`apple-design` § 6).
+        const velocity = releaseVelocity(samples.current);
         const resolved = resolveSwipe({
           startX: from.x,
           startY: from.y,
@@ -457,8 +464,8 @@ export default function Flashcard({
           // ⛔ `window.innerWidth` is ⛔ not read in `/lib/core` — the component measures the
           // screen and hands over the number; that is exactly the project's purity boundary.
           viewportWidth: window.innerWidth,
+          velocityX: velocity,
         });
-        const velocity = releaseVelocity(samples.current);
         samples.current = [];
         baseX.current = 0;
         if (resolved === null) {
