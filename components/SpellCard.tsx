@@ -77,7 +77,11 @@ export default function SpellCard({
         // ⛔ `min-h-touch` **וגם** `h-[100px]`, ⛔ ולא שני `min-h-*`: שתי מחלקות
         // מאותה תכונה נחתכות לפי סדר ה-CSS ⛔ ולא לפי כוונה. ה-100px הוא הרנדר,
         // ורצפת 44px של שכבה א׳ היא זו ששורדת אם הרנדר יקטן אי-פעם.
-        'relative flex min-h-touch h-[100px] w-full flex-col items-center justify-center gap-1',
+        // ⟦15/09 · `C-0622` · `F-260`⟧ **76px ב-320×568, 100px מ-375 ומעלה.**
+        // 🔬 נמדד: אחרי שהקרב נכנס למסך, ב-320×568 נותרו 484px שימושיים והקלפים
+        // בני 100px עדיין חרגו ב-24px. ⛔ `min-h-touch` (44px) ⛔ לא זז — 76px הם
+        // הרבה מעליו, ⇒ יעד המגע ⛔ לא רוכך ולו בפיקסל.
+        'relative flex min-h-touch h-[76px] w-full flex-col items-center justify-center gap-1 min-[375px]:h-[100px]',
         'rounded-xl border-2 px-1 py-4 text-sm font-bold active:opacity-90',
         // F-149ⓐ — המילוי הוא הרנדר עצמו: `render_video_B.py:265` ממלא `(24, 33, 56)`.
         // ⛔ `--arena-stone-dark` (`#34323f`) היה אפור־אבן במקום כחול־ליל — פער גוון,

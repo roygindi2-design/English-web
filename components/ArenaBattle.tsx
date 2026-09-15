@@ -16,6 +16,7 @@ import { resolveGesture } from '@/lib/core/arenaGesture';
 import { endingOf, summarize } from '@/lib/core/arenaSummary';
 import {
   BATTLE_MS,
+  ENEMY_HP,
   MANA_CAP,
   cast,
   dodge,
@@ -266,6 +267,16 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
    * ו⛔ אין ולו `setTimeout` אחד בנתיב הזה.
    */
   const [impact, setImpact] = useState<'off' | 'a' | 'b'>('off');
+  /**
+   * ⟦NEW 15/09 · `C-0622` · `T-358`⟧ שתי תכונות שמתחלפות `a`⇄`b` בדיוק כמו `impact`,
+   * ומאותה סיבה בדיוק: **החלפת שם האנימציה היא מה שמאתחל אותה בדפדפן**, וערך זהה
+   * שחוזר ⛔ אינו מפעיל אותה שוב. ⇒ שתי פגיעות ברצף מקבלות שתי אנימציות, ⛔ ולא אחת.
+   * ⛔ זו ⛔ אינה כפילות — זה מנגנון האתחול, והוא כבר כתוב בקובץ הטוקנים.
+   */
+  const [crit, setCrit] = useState<'off' | 'a' | 'b'>('off');
+  /** ⛔ ref ⛔ ולא state: הוא נקרא **בתוך** האפקט של ההטלה, ו-state כאן היה מוסיף רינדור. */
+  const prevEnemyHp = useRef(ENEMY_HP);
+  const [damage, setDamage] = useState<{ readonly amount: number; readonly key: number } | null>(null);
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(query.matches);
@@ -287,6 +298,16 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     if (castCount === 0 || reducedMotion) return;
     if (battle === null || stagePhase(battle) !== 'hit') return;
     setImpact((prev) => (prev === 'a' ? 'b' : 'a'));
+    // ⟦15/09 · `T-358`⟧ הנזק והרעד נגזרים מ**אותה** הטלה, ⛔ ומאותו אפקט: אפקט שני
+    // על אותה תלות היה יורה בסדר שאינו מובטח, ושני מקורות לאותו רגע הם שני רגעים.
+    const last = battle.casts[battle.casts.length - 1];
+    if (last === undefined || !last.correct) return;
+    // ⛔ הנזק נמדד מהפרש החיים בפועל, ⛔ ואינו מחושב מחדש כאן: חישוב שני של אותו
+    // מספר הוא בדיוק איך שהמסך מתחיל לשקר על מה שקרה.
+    const dealt = Math.max(0, prevEnemyHp.current - battle.enemyHp);
+    prevEnemyHp.current = battle.enemyHp;
+    if (dealt > 0) setDamage({ amount: dealt, key: battle.casts.length });
+    if (last.critical) setCrit((prev) => (prev === 'a' ? 'b' : 'a'));
     // ⛔ תלות ב-`battle` **כולו** הייתה יורה בכל פריים של הלולאה: `tick` מחזיר אובייקט חדש.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [castCount]);
@@ -693,7 +714,36 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   return (
     <section
       data-arena-scope
-      className="flex min-h-[100dvh] flex-col gap-4 pb-28"
+      /* 🔴 **⟦NEW 15/09 · `C-0622` · `F-260`⟧ הקרב **נכנס למסך**, ⛔ ואינו נגלל.
+         זו התקלה שמאחורי הדיווח של רוי, ⛔ והיא חמורה מהתסמין שהוא תיאר.**
+
+         🔬 **נמדד בדפדפן בארבעה רוחבים, ⛔ ולא הוסק מהקוד:**
+         ```
+         320×568   מסמך 976  ⇒ 🔴 גלילה 408px · הקלפים 232px **מתחת לקפל**
+         375×667   מסמך 976  ⇒ 🔴 גלילה 309px · הקלפים 133px **מתחת לקפל**
+         390×844   מסמך 960  ⇒ 🔴 גלילה 116px
+         414×896   מסמך 980  ⇒ 🔴 גלילה  84px
+         ```
+         ⇒ **בשני גדלי הטלפון הנפוצים ביותר ארבעת קלפי הלחש ⛔ אינם על המסך בכלל.**
+         הלומד רואה מילה גדולה ו⛔ אין לו במה לענות עליה בלי לגלול — ובזירה שיש בה
+         שעון של 90 שניות, גלילה ⛔ אינה «אי-נוחות», היא **הפסד**.
+
+         🔬 **והחשבון פשוט:** `min-h-[100dvh]` **ועוד** `pb-28` (‏112px) **ועוד** `gap-4`
+         שש פעמים (‏96px) ⇒ הקטע גבוה מהמסך **בהגדרה**, לפני שנספר ולו ילד אחד.
+         ⛔ ו-`pb-28` ⛔ לא ניקה כלום: ל-`/arcade` ⛔ אין סרגל לשוניות (נמדד — חמישה
+         לחיצים, כולם של הזירה). זה ריפוד שנשאר ממסך אחר.
+
+         ⇒ `h-[calc(100dvh-5.25rem)]` **מדויק** ⛔ ולא מינימום · `overflow-hidden` ⇒
+         גלילה ⛔ אינה אפשרות · הריפוד התחתון הוא **בטיחות המכשיר בלבד** · והבמה
+         (`flex-1 min-h-0`) היא מי שבולעת את מה שנשאר.
+
+         🔬 **ו-5.25rem ⛔ אינם מספר יפה — הם נמדדו בשרשרת ההורים:** הכותרת של הפריסה
+         השורשית **52px** ועוד `pb-32` של `<main>` **32px** = **84px = 5.25rem**, וזה
+         בדיוק פער הגלישה הקבוע שנמדד בארבעת הרוחבים אחרי שהקטע כבר תוקן.
+         📎 **וזה התקדים של הריפו עצמו, ⛔ ולא המצאה:** `CardDeck.tsx` מחזיק
+         `h-[calc(100dvh-10rem)]` על אותו היגיון בדיוק — שם הכרום כולל גם סרגל
+         לשוניות, וכאן ⛔ אין אחד (‏`/arcade` יושב מחוץ ל-`app/(tabs)/`, בכוונה). */
+      className="flex h-[calc(100dvh-5.25rem)] flex-col gap-3 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     >
       {topBar(null)}
 
@@ -708,7 +758,9 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             ה-bidi שהעטיפה קובעת פנימה (T-009). ערך הפתיחה כאן הוא רינדור ראשון בלבד. */}
         <p
           ref={clockRef}
-          className="text-4xl font-black tabular-nums text-[color:var(--arena-ink)]"
+          /* ⟦15/09 · `F-260`⟧ `text-3xl` ב-320/375 ו-`text-4xl` מ-`sm` ומעלה: 36px של
+             שעון על מסך בגובה 568 הם 6% מהמסך שנלקחים מאזור המשחק. */
+          className="text-3xl font-black tabular-nums text-[color:var(--arena-ink)] sm:text-4xl"
           role="timer"
           aria-label={`${CLOCK_HE} ${clockHe(BATTLE_MS - elapsedRef.current)}`}
         >
@@ -790,9 +842,35 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
                 נותנים את אותו עוגן ימני שה-`width` הישן ייצר בעקיפין. */}
             <span
               aria-hidden
+              data-arena-hp-fill
               className="absolute inset-y-0 end-0 w-full bg-[color:var(--arena-hp)]"
               style={{ transform: `scaleX(${enemyPct / 100})`, transformOrigin: 'right center' }}
             />
+            {/* 🔴 **⟦NEW 15/09 · `C-0622` · `T-358`⟧ כמה. ⛔ עד היום ⛔ שום דבר ⛔ לא ענה על זה.**
+
+                🔬 **נמדד:** פס החיים מצויר ב-`scaleX()` **בלי `transition`** ⇒ 100⇢90
+                קרה בפריים אחד, והלומד ⛔ לא ראה שפגע — הוא ראה **מספר אחר**. הפס שופר
+                לזרימה בקובץ הטוקנים, וזה המספר עצמו.
+
+                ⛔ **והמספר הזה הוא מידע, ⛔ ולא אפקט:** הוא נגזר מהפרש החיים **בפועל**
+                (`prevEnemyHp`), ⛔ ואינו מחושב מחדש מהכללים — חישוב שני של אותו מספר
+                הוא בדיוק איך שמסך מתחיל לשקר על מה שקרה. ⇒ תחת `prefers-reduced-motion`
+                הוא **נשאר על המסך ומפסיק לנוע**, ⛔ ואינו נעלם.
+
+                ⛔ `key` מכריח החלפת צומת בכל הטלה ⇒ האנימציה מתחילה מחדש; בלעדיו פגיעה
+                שנייה בתוך 560ms הייתה מקבלת אפס תנועה. `aria-hidden` — פס החיים כבר
+                נושא `role="img"` עם הערך, ⇒ קורא-מסך ⛔ אינו שומע את אותו נתון פעמיים. */}
+            {damage !== null && !reducedMotion && (
+              <span
+                key={damage.key}
+                data-arena-damage
+                aria-hidden
+                onAnimationEnd={() => setDamage(null)}
+                className="pointer-events-none absolute -top-5 end-2 text-base font-black tabular-nums text-[color:var(--arena-gold-light)]"
+              >
+                <EnWord>{`−${damage.amount}`}</EnWord>
+              </span>
+            )}
             {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
                 המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
             <span
@@ -814,10 +892,16 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
       <div
         data-arena-stage-area
         data-arena-impact={impact}
+        data-arena-crit={crit === 'off' ? undefined : crit}
         onAnimationEnd={(e) => {
           if (e.animationName.startsWith('arena-hitstop')) setImpact('off');
+          // ⟦15/09⟧ הרעד משוחרר באותו מנגנון בדיוק — ⛔ אין כאן `setTimeout` חדש.
+          if (e.animationName === 'arena-crit-shake') setCrit('off');
         }}
-        className="rounded-2xl bg-[color:var(--arena-night)] px-4 py-6"
+        /* ⟦15/09 · `F-260`⟧ `flex-1 min-h-0` — **הבמה בולעת את מה שנשאר.** ⛔ `min-h-0`
+           ⛔ אינו קישוט: ילד flex מקבל `min-height:auto` כברירת מחדל ולכן **מסרב
+           להתכווץ מתחת לתוכנו**, וזה בדיוק מה שדוחף ילדים אחרים מתחת לקפל. */
+        className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl bg-[color:var(--arena-night)] px-4 py-4"
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(e) => { stageFrom.current = { x: e.clientX, y: e.clientY }; }}
         onPointerUp={(e) => {
@@ -916,7 +1000,28 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
               unknown={option.kind === 'unseen'}
               selected={selected === option.he}
               reducedMotion={reducedMotion}
-              onSelect={() => setSelected((prev) => (prev === option.he ? null : option.he))}
+              /* 🔴 **⟦NEW 15/09 · `C-0622` · `F-259` · Roy reported it⟧ A SECOND TAP ON THE
+                 SAME CARD CASTS IT. It used to DESELECT.**
+
+                 🔬 **Measured in a browser, ⛔ not reasoned about:** this line was
+                 `prev === option.he ? null : option.he` — a toggle. ⇒ tap once, the card
+                 is armed; tap again, it is disarmed. **The learner taps the translation
+                 twice and the word ⛔ never changes**, which is exactly the report:
+                 «לוחצים על תרגום של המילה… אך היא לא מתחלפת».
+
+                 ⇒ tap-tap on one card is now the whole attack. ⛔ Nothing was taken away:
+                 the drag-up path (`§ 5`) and the tap-the-enemy path both still work, and
+                 you still change your mind by tapping a DIFFERENT card — which is the
+                 only thing anyone actually does with «deselect».
+                 ⚖️ **And the trade is one-sided:** losing «tap to disarm» costs a learner
+                 one extra tap on a different card; keeping it cost them the whole game. */
+              onSelect={() => {
+                // ⛔ ה-updater של `setSelected` נשאר **טהור**: הענף מוכרע מ-`selected`
+                // שכבר ברינדור הזה, ⇒ ⛔ אין כאן תופעת לוואי בתוך מעדכן state — טעות
+                // שנכתבה כאן לרגע ותוקנה לפני שנדחפה. `fire` כבר מאפס `selected`.
+                if (selected === option.he) fire(option.he);
+                else setSelected(option.he);
+              }}
               onCast={() => fire(option.he)}
             />
           </li>

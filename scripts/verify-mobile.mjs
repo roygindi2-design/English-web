@@ -3320,6 +3320,97 @@ try {
 
     await context.close();
   }
+
+  /**
+   * 🔴 **⟦NEW 15/09 · `C-0622` · `F-259` · `F-260` · Roy played it and reported⟧
+   * THE ARENA, AS A GAME — ⛔ not as source.**
+   *
+   * 🔬 **Measured before the fix, on `/dev/arcade`:**
+   * ```
+   * 320×568  document 976 ⇒ scrolls 408px · the spell cards 232px BELOW THE FOLD
+   * 375×667  document 976 ⇒ scrolls 309px · the spell cards 133px BELOW THE FOLD
+   * tap a card, tap it again  ⇒  the word ⛔ NEVER changed (the second tap DESELECTED)
+   * ```
+   * ⇒ on the two commonest phone sizes the learner had ⛔ nothing to answer with
+   * without scrolling, inside a 90-second clock. ⛔ Neither could be caught by a source
+   * guard — both need a real viewport and real taps.
+   */
+  {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 667 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    // ⛔ T-347 — every page opened here is watched.
+    const arenaUncaught = watchUncaught(page);
+
+    const arenaWord = () =>
+      page.evaluate(() => (document.body.innerText.match(/Lorem\d+|Ipsum\d+/) ?? ['—'])[0]);
+
+    for (const [w, h] of [[320, 568], [375, 667], [414, 896]]) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+      await page.locator('[data-arena-scope]').first().waitFor();
+      const fit = await page.evaluate(() => {
+        const cards = [...document.querySelectorAll('button')].filter(
+          (b) => !b.hasAttribute('data-arena-fire') && (b.textContent ?? '').trim(),
+        );
+        const lowest = cards.length === 0 ? 0 : Math.max(...cards.map((e) => e.getBoundingClientRect().bottom));
+        return {
+          overflow: document.documentElement.scrollHeight - window.innerHeight,
+          belowFold: Math.round(lowest - window.innerHeight),
+          cards: cards.length,
+        };
+      });
+      check(
+        fit.overflow <= 1,
+        `arena · the battle fits ${w}×${h} — ⛔ no scrolling (F-260)`,
+        `the document is ${fit.overflow}px taller than the screen — a 90-second clock ⛔ cannot be scrolled through`,
+      );
+      check(
+        fit.cards === 4 && fit.belowFold <= 1,
+        `arena · all four spell cards are on screen at ${w}×${h} (F-260)`,
+        `${fit.cards} cards, lowest ${fit.belowFold}px below the fold — the learner has ⛔ nothing to answer with`,
+      );
+    }
+
+    // `F-259` — tap, tap the SAME card: that is the whole attack.
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+    await page.locator('[data-arena-scope]').first().waitFor();
+    const before = await arenaWord();
+    const card = page.locator('button').filter({ hasText: /אפשרות|מסיח/ }).first();
+    await card.click();
+    await page.waitForTimeout(140);
+    await card.click();
+    await page.waitForTimeout(700);
+    const after = await arenaWord();
+    check(
+      before !== after && after !== '—',
+      'arena · tapping the same card twice casts it (F-259)',
+      `the word stayed «${before}» — the second tap deselected instead of casting, which is exactly the report`,
+    );
+
+    // `T-358` — the enemy bar DRAINS rather than teleporting, and the damage is shown.
+    const motion = await page.evaluate(() => {
+      const hp = document.querySelector('[data-arena-hp-fill]');
+      return { drain: hp === null ? '' : getComputedStyle(hp).transitionDuration };
+    });
+    check(
+      motion.drain !== '' && motion.drain !== '0s',
+      'arena · the enemy health bar drains, ⛔ it does not jump (T-358)',
+      `transition-duration is «${motion.drain}» — a bar that teleports ⛔ never tells the learner they landed a hit`,
+    );
+
+    check(
+      arenaUncaught.length === 0,
+      'arena ⛔ no uncaught exception',
+      `threw: ${arenaUncaught.join(' · ')}`,
+    );
+
+    await context.close();
+  }
 } finally {
   await browser.close();
   if (server) server.kill('SIGTERM');

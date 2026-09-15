@@ -320,3 +320,80 @@
   0%, 100% { transform: translateY(-2.2px); }
   50% { transform: translateY(2.2px); }
 }
+
+
+/* ═══ ⟦NEW 15/09 · `C-0622` · `T-358` · רוי: «תשפר משמעותית את האנימציה»⟧
+   שלוש שכבות שחסרו, ⛔ ואף אחת מהן ⛔ אינה מחליפה את א1/א2 שכבר כאן.
+
+   ⚖️ **ותיקון לקריאה ראשונה שלי, כי היא הייתה שגויה:** `arena-hitstop-a/b` נראים
+   כקיפריימים ריקים ו⛔ אינם קישוט — הם ה**שעון** שמשחרר את הקיפאון דרך
+   `onAnimationEnd`, ⛔ בלי ולו `setTimeout` אחד. זה מנגנון טוב, ו⛔ לא נגעתי בו.
+
+   🔬 **מה שכן חסר, נמדד בקוד ⛔ ולא שוער:** שני פסי המצב מצוירים ב-`scaleX()`
+   **בלי `transition`** ⇒ הם **קופצים**. ‏100 ⇒ 90 חיים מתרחש בפריים אחד, ולכן
+   הלומד ⛔ אינו רואה שפגע — הוא רואה מספר אחר. ⛔ וזו ⛔ אינה קוסמטיקה: «האם
+   הלחש שלי עשה משהו» היא השאלה המרכזית של הקרב.
+
+   ⛔ **transition, ⛔ ולא keyframes** — `animate` § 6: פס שיכול להשתנות פעמיים
+   בשנייה חייב **לכוון מחדש מהערך הנוכחי**; קיפריימים היו מתחילים מאפס בכל פגיעה
+   ומייצרים קפיצה לאחור. ⛔ transform בלבד ⇒ ⛔ אפס layout, ⛔ אפס paint. */
+
+:root {
+  /* `animate` § 5 — עקומות מהטבלה, ⛔ ולא cubic-bezier שנראה מוכר. */
+  --arena-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --arena-drain-ms: 260ms;
+  --arena-float-ms: 560ms;
+  --arena-shake-ms: 180ms;
+}
+
+/* ① **פס חיי היריב נשפך**, ⛔ ולא קופץ. 260ms — בתוך תקרת 300ms של `animate` § 5.
+
+   ⛔ **ופס המאנה ⛔ אינו כאן, וזו החלטה ⛔ ולא שכחה.** 🔬 נמדד: `manaFillRef` כותב
+   `style.transform` **בכל פריים** מתוך לולאת ה-rAF (`ArenaBattle.tsx:453`) ⇒
+   `transition` עליו היה נלחם בלולאה ומכניס פיגור בין השעון לפס — בדיוק מה
+   ש-`Flashcard` כבר למד כשכיבה את המעבר בזמן גרירה. ⇒ **ערך שנכתב בכל פריים ⛔ אינו
+   מקבל transition.** ‏HP, לעומתו, משתנה רק בהטלה. */
+[data-arena-scope] [data-arena-hp-fill] {
+  transition: transform var(--arena-drain-ms) var(--arena-ease-out);
+}
+
+/* ② **מספר הנזק עולה מהיריב ונמוג.** ⛔ זו ⛔ אינה קישוט — זו התשובה לשאלה «כמה».
+   ⛔ `translateY` באחוזים (‏`animate` § 4) ⇒ יחסי לגובה עצמו, ⛔ ולא פיקסלים קשיחים.
+   ⛔ ומתחיל מ-`scale(0.9)` ⛔ ולא מ-`scale(0)` — «⛔ שום דבר במציאות ⛔ אינו מופיע מאין». */
+@keyframes arena-damage-float {
+  from { opacity: 0; transform: translateY(0) scale(0.9); }
+  20%  { opacity: 1; transform: translateY(-40%) scale(1.06); }
+  to   { opacity: 0; transform: translateY(-160%) scale(1); }
+}
+[data-arena-scope] [data-arena-damage] {
+  animation: arena-damage-float var(--arena-float-ms) var(--arena-ease-out) 1 both;
+  will-change: transform, opacity;
+}
+
+/* ③ **רעד מסך — ⛔ רק על קריטי.** ‏`animate` § 1: תקציב ההנאה חי בשכבה הנדירה, וקריטי
+   הוא בדיוק זה (מתחת ל-1.5 שניות תגובה). ⛔ רעד על **כל** פגיעה היה הופך אותו לרעש
+   ומבטל את מה שהוא מסמן. ⛔ תנועה זעירה ובתדר גבוה — 3px, 180ms, ⛔ ונגמר. */
+@keyframes arena-crit-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  45% { transform: translateX(3px); }
+  70% { transform: translateX(-2px); }
+  90% { transform: translateX(1px); }
+}
+[data-arena-stage-area][data-arena-crit='a'] { animation: arena-crit-shake var(--arena-shake-ms) linear 1; }
+[data-arena-stage-area][data-arena-crit='b'] { animation: arena-crit-shake var(--arena-shake-ms) linear 1; }
+
+/* ⛔ **חוקה שכבה א׳ א7 — והיא נשלחת עם התנועה, ⛔ ולא אחריה** (`animate` § 7).
+   ⛔ שני מחסומים כמו למעלה: הרכיב ⛔ אינו מציב את התכונות כשההעדפה דלוקה, והבלוק
+   הזה מנטרל גם אם כן. ⛔ **המספר ⛔ אינו נעלם** — הוא מפסיק **לנוע**: הנזק הוא
+   **מידע**, ו-`prefers-reduced-motion` מסיר תנועה ⛔ ולא ידע. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-hp-fill] { transition: none; }
+  [data-arena-stage-area][data-arena-crit='a'],
+  [data-arena-stage-area][data-arena-crit='b'] { animation: none; }
+  [data-arena-scope] [data-arena-damage] {
+    animation: none;
+    opacity: 1;
+    transform: translateY(-80%);
+  }
+}

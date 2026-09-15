@@ -345,10 +345,19 @@ describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פרי
     );
   });
 
+  /**
+   * ⚠️ **⟦תוקן 15/09 · `C-0622`⟧ הטענה חיפשה את הבלוק ה**אחרון** של
+   * `prefers-reduced-motion` והניחה שהוא של הפיגור.** ⇒ ברגע ש-`T-358` הוסיף בלוק
+   * תנועה-מופחתת משלו בסוף הקובץ, הטענה נכשלה על כלל ש**ממשיך להתקיים** — היא מדדה
+   * **מיקום בקובץ**, ⛔ ולא את מה שהיא מתכוונת לשמור עליו.
+   * ⇒ עכשיו היא מחפשת את הבלוק ש**באמת** נוגע ב-`[data-arena-part]`. ⛔ הטענה ⛔ לא
+   * רוככה: מחיקת הכלל עדיין מאדימה אותה, ו⛔ הוספת בלוק שישי כבר ⛔ אינה.
+   */
   it('שכבה א׳ א7 — `prefers-reduced-motion` מסיר את הפיגור', () => {
-    const at = CSS_CODE.lastIndexOf('@media (prefers-reduced-motion: reduce)');
-    expect(at, 'הבלוק חייב להתקיים').toBeGreaterThan(-1);
-    expect(CSS_CODE.slice(at)).toMatch(/\[data-arena-part\][^{]*\{\s*animation: none/);
+    const blocks = CSS_CODE.split('@media (prefers-reduced-motion: reduce)').slice(1);
+    expect(blocks.length, 'הבלוק חייב להתקיים').toBeGreaterThan(0);
+    const guarded = blocks.filter((b) => /\[data-arena-part\][^{]*\{\s*animation: none/.test(b));
+    expect(guarded.length, '⛔ ⛔ אף בלוק תנועה-מופחתת ⛔ אינו מכבה את הפיגור').toBeGreaterThan(0);
   });
 
   it('⛔ אפס JS — הפיגור חי ב-CSS בלבד, ובשלושת הרכיבים אין לו ולו אזכור', () => {
@@ -393,5 +402,87 @@ describe('T-281 · 37 § 7 גדר 4 — המספרים חיים ב-lib/core, ⛔
 
   it('גדר 1 — המילים ⛔ אינן תלויות בדמות: wordsOf ⛔ אינה מקבלת אותה', () => {
     expect(CODE).not.toMatch(/wordsOf\([^)]*character/);
+  });
+});
+
+/**
+ * 🔴 **⟦NEW 15/09 · `C-0622` · רוי דיווח, ואני מדדתי⟧ הזירה: ההקשה שלא הטילה,
+ * המסך שלא נכנס, והתנועה שחסרה.**
+ *
+ * 🔬 **שלושת הממצאים נמדדו בדפדפן על `/dev/arcade`, ⛔ ולא נקראו מהקוד:**
+ * ```
+ * F-259  הקשה על קלף שכבר נבחר **ביטלה את הבחירה** ⇒ הקשה-הקשה ⛔ לא הטילה לעולם
+ * F-260  320×568 ⇒ גלילה 408px, הקלפים **232px מתחת לקפל** · 375×667 ⇒ 133px מתחתיו
+ * T-358  שני פסי המצב ב-`scaleX()` **בלי `transition`** ⇒ הפס **קופץ**, ⛔ ואינו נשפך
+ * ```
+ */
+describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () => {
+  /**
+   * 🔴 **`F-259` — הבאג שרוי דיווח עליו, במילותיו:** «לוחצים על תרגום של המילה
+   * שמסומנת בגדול אך היא לא מתחלפת אחרי הלחיצה».
+   * ⛔ הטענה נועלת את ה**התנהגות**, ⛔ ולא את הניסוח: `selected === option.he ⇒ fire`.
+   */
+  it('F-259 · הקשה שנייה על אותו קלף **מטילה**, ⛔ ואינה מבטלת בחירה', () => {
+    expect(CODE, 'ההקשה השנייה מטילה').toMatch(/if \(selected === option\.he\) fire\(option\.he\)/);
+    // ⛔ והחלופה הישנה ⛔ חייבת להיעלם — שני הכללים באותו קובץ הם שני מוצרים.
+    expect(CODE, '⛔ הביטול הישן ⛔ ירד').not.toMatch(/prev === option\.he \? null : option\.he/);
+    // ⛔ ו⛔ אין תופעת לוואי בתוך מעדכן state — טעות שנכתבה כאן לרגע ותוקנה לפני הדחיפה.
+    expect(CODE, '⛔ `fire` ⛔ אינו בתוך setSelected').not.toMatch(/setSelected\(\(prev\)[^}]*fire\(/);
+  });
+
+  /**
+   * 🔴 **`F-260` — הקרב נכנס למסך.** ⛔ הגלילה ⛔ אינה «אי-נוחות» בזירה עם שעון של
+   * 90 שניות; היא הפסד. ‏5.25rem = 84px = כותרת הפריסה (52) + `pb-32` של `<main>` (32),
+   * שנמדדו בשרשרת ההורים — ⛔ ולא מספר יפה.
+   */
+  it('F-260 · מסך הקרב בגובה קבוע שמנכה את הכרום, ⛔ ואינו נגלל', () => {
+    const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
+    expect(battle, 'גובה מדויק, ⛔ לא מינימום').toMatch(/h-\[calc\(100dvh-5\.25rem\)\]/);
+    expect(battle, 'גלילה ⛔ אינה אפשרות').toMatch(/overflow-hidden/);
+    // ⛔ והריפוד שלא ניקה כלום ⛔ ירד: ל-`/arcade` ⛔ אין סרגל לשוניות.
+    expect(battle, '⛔ `pb-28` ⛔ ירד ממסך הקרב').not.toMatch(/h-\[calc\(100dvh-5\.25rem\)\][^"]*pb-28/);
+    // ⛔ והבמה בולעת את הנותר — `min-h-0`, בלעדיו ילד flex מסרב להתכווץ מתחת לתוכנו.
+    expect(battle, 'הבמה בולעת את הנותר').toMatch(/flex min-h-0 flex-1/);
+  });
+
+  /**
+   * `T-358` — שלוש שכבות התנועה. ⛔ כל אחת נבדקת **בקובץ הטוקנים**, כי `36 § 14`
+   * ו-T-041 מחזיקים את תנועת הזירה ב-CSS ⛔ ולא ברכיב.
+   */
+  it('T-358 · פס חיי היריב נשפך — `transition`, ⛔ ולא `keyframes`', () => {
+    expect(CODE, 'הצומת מסומן').toMatch(/data-arena-hp-fill/);
+    expect(CSS, 'מעבר על transform').toMatch(/\[data-arena-hp-fill\][^}]*transition: transform/);
+    // 🔴 ⛔ **`transition` ⛔ ולא `animation`** — `animate` § 6: פס שמשתנה פעמיים בשנייה
+    // חייב לכוון מחדש מהערך הנוכחי; קיפריימים היו מתחילים מאפס ומקפיצים אותו לאחור.
+    expect(CSS, '⛔ ⛔ לא קיפריימים על הפס').not.toMatch(/\[data-arena-hp-fill\][^}]*animation:/);
+    // ⛔ ופס המאנה ⛔ אינו מקבל מעבר — הוא נכתב בכל פריים מלולאת ה-rAF.
+    expect(CSS, '⛔ המאנה ⛔ אינה במעבר').not.toMatch(/data-arena-mana-fill/);
+  });
+
+  it('T-358 · מספר הנזק הוא **מידע** — נגזר מהפרש החיים, ו⛔ אינו מחושב מחדש', () => {
+    expect(CODE, 'נגזר מהפרש בפועל').toMatch(/prevEnemyHp\.current - battle\.enemyHp/);
+    // ⛔ ⛔ לא חישוב שני של הנזק מהכללים — זה איך שמסך מתחיל לשקר על מה שקרה.
+    expect(CODE, '⛔ ⛔ לא חישוב שני').not.toMatch(/data-arena-damage[\s\S]{0,400}criticalDamage/);
+    expect(CSS, 'האנימציה קיימת').toMatch(/@keyframes arena-damage-float/);
+    // ⛔ ⛔ לא `scale(0)` — «שום דבר במציאות אינו מופיע מאין» (`animate` § 4).
+    expect(CSS, '⛔ ⛔ לא scale(0)').not.toMatch(/arena-damage-float[\s\S]{0,200}scale\(0\)/);
+    // ⛔ ותחת תנועה מופחתת המספר **נשאר** ומפסיק לנוע — הוא מידע, ⛔ ולא אפקט.
+    expect(CSS, 'תנועה מופחתת ⇒ נשאר').toMatch(
+      /prefers-reduced-motion[\s\S]*data-arena-damage[\s\S]{0,140}opacity: 1/,
+    );
+  });
+
+  it('T-358 · הרעד שמור ל**קריטי בלבד**, ומשוחרר באותו מנגנון של הקיפאון', () => {
+    expect(CODE, 'רק קריטי מדליק').toMatch(/if \(last\.critical\) setCrit/);
+    expect(CODE, 'ומשוחרר ב-onAnimationEnd, ⛔ ולא ב-setTimeout').toMatch(
+      /arena-crit-shake'\) setCrit\('off'\)/,
+    );
+    expect(CODE, '⛔ ⛔ אין setTimeout בנתיב').not.toMatch(/setTimeout\([^)]*setCrit/);
+    expect(CSS, 'הרעד קיים').toMatch(/@keyframes arena-crit-shake/);
+    expect(CSS, 'ומכובה בתנועה מופחתת').toMatch(
+      /prefers-reduced-motion[\s\S]*data-arena-crit='a'\][\s\S]{0,120}animation: none/,
+    );
+    // 🔴 החלפת `a`⇄`b` היא מנגנון האתחול — בלעדיה שתי פגיעות ברצף מקבלות אנימציה אחת.
+    expect(CODE, 'החלפת שם מאתחלת').toMatch(/setCrit\(\(prev\) => \(prev === 'a' \? 'b' : 'a'\)\)/);
   });
 });
