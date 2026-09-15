@@ -128,6 +128,19 @@ function optionClasses(revealed: boolean, isCorrect: boolean, isChosen: boolean)
   return `${base} border-border-subtle bg-surface-raised text-ink`;
 }
 
+/**
+ * ⟦T-372ⓒ⟧ What the component hands up when the learner chooses — a FACT about the answer, and
+ * ⛔ nothing derived from it. ⛔ No percentage, ⛔ no running total, ⛔ no response time: the
+ * seconds are shown to the learner (`41 § 7`) and `R-020` forbids scoring by time outside the
+ * arena, so a field carrying them up to a writer would be inviting exactly that.
+ */
+export interface AmirnetAnswered {
+  readonly itemId: string;
+  readonly type: AmirnetServedItem['type'];
+  readonly level: AmirnetLevel;
+  readonly correct: boolean;
+}
+
 export interface AmirnetQuestionProps {
   /** Already gated by `servableItems()`. ⛔ The component filters nothing. */
   readonly items: readonly AmirnetServedItem[];
@@ -135,9 +148,23 @@ export interface AmirnetQuestionProps {
   /** ⛔ Injectable so the walk and the tests are deterministic; defaults to the real clock. */
   readonly now?: () => number;
   readonly onBackToMenu?: () => void;
+  /**
+   * ⟦T-372ⓒ⟧ Called ONCE per question, at the moment the learner chooses — ⛔ never on `הבא`,
+   * ⛔ never on unmount, and ⛔ never twice: `answer()` returns early once `answered`.
+   * ⛔ **The component still ⛔ does ⛔ not touch the database** (the header's own rule, and
+   * RULES): it reports, and the CALLER writes. A `fetch` placed here would make every future
+   * host of this component a writer, including the two dev harnesses.
+   */
+  readonly onAnswered?: (answer: AmirnetAnswered) => void;
 }
 
-export default function AmirnetQuestion({ items, level, now, onBackToMenu }: AmirnetQuestionProps) {
+export default function AmirnetQuestion({
+  items,
+  level,
+  now,
+  onBackToMenu,
+  onAnswered,
+}: AmirnetQuestionProps) {
   const clock = now ?? (() => Date.now());
   const clockRef = useRef(clock);
   clockRef.current = clock;
@@ -185,7 +212,11 @@ export default function AmirnetQuestion({ items, level, now, onBackToMenu }: Ami
   const answer = (i: number) => {
     if (answered) return;
     setChosen(i);
-    setFeedback(feedbackFor(item, i, clock() - startedAt));
+    const verdict = feedbackFor(item, i, clock() - startedAt);
+    setFeedback(verdict);
+    // ⛔ The verdict is `feedbackFor`'s, ⛔ never recomputed here — `i === correctIndex` written a
+    // second time is a second place for the answer to be wrong (T-372ⓒ).
+    onAnswered?.({ itemId: item.id, type: item.type, level, correct: verdict.correct });
   };
 
   const advance = () => {

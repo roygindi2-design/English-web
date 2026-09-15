@@ -17,6 +17,32 @@ describe('AmirnetQuestion — T-287, renders kol-D-04 · kol-D-05', () => {
     expect(CODE).not.toMatch(/fetch\(|supabase|createRouteClient/);
   });
 
+  it('⟦T-372ⓒ⟧ reports the answer up, ⛔ and still ⛔ never writes it itself', () => {
+    // The callback carries the four facts the route needs and ⛔ nothing derived.
+    expect(CODE).toMatch(/onAnswered\?\.\(\{/);
+    expect(CODE).toMatch(/itemId:\s*item\.id/);
+    expect(CODE).toMatch(/correct:\s*verdict\.correct/);
+    // ⛔ The write stays the caller's: a fetch here would make every host of this component a
+    // writer, the two dev harnesses included.
+    expect(CODE).not.toMatch(/fetch\(/);
+  });
+
+  it('⟦T-372ⓒ⟧ fires on the CHOICE, ⛔ not on `הבא`, and ⛔ never twice', () => {
+    // `answer()` returns early once `answered`, so the guard is what makes «once» true.
+    const answerFn = CODE.slice(CODE.indexOf('const answer ='), CODE.indexOf('const advance ='));
+    expect(answerFn).toMatch(/if \(answered\) return;/);
+    expect(answerFn).toMatch(/onAnswered/);
+    const advanceFn = CODE.slice(CODE.indexOf('const advance ='), CODE.indexOf('return ('));
+    expect(advanceFn).not.toMatch(/onAnswered/);
+  });
+
+  it('⟦T-372ⓒ⟧ ⛔ hands up no response time — R-020 forbids scoring by time outside the arena', () => {
+    const answerFn = CODE.slice(CODE.indexOf('const answer ='), CODE.indexOf('const advance ='));
+    for (const banned of [/seconds/, /elapsed/, /startedAt:/]) {
+      expect(answerFn).not.toMatch(banned);
+    }
+  });
+
   it('⛔ recomputes no verdict of its own — the core module decides (one place to be wrong)', () => {
     expect(CODE).toMatch(/feedbackFor\(/);
     expect(CODE).not.toMatch(/===\s*item\.correctIndex|!==\s*item\.correctIndex/);

@@ -37,8 +37,7 @@
     "components/StudiesScreen.tsx"
   ],
   "app/(tabs)/world/amirnet/page.tsx": [
-    "components/AmirnetDashboard.tsx",
-    "lib/core/amirnetPractice.ts"
+    "components/AmirnetDashboardLive.tsx"
   ],
   "app/(tabs)/world/amirnet/practice/page.tsx": [
     "components/AmirnetPracticeMenu.tsx",
@@ -62,6 +61,11 @@
   ],
   "app/(tabs)/world/story/page.tsx": [
     "components/StoryScreen.tsx"
+  ],
+  "app/api/amirnet/practice/result/route.test.ts": [],
+  "app/api/amirnet/practice/result/route.ts": [
+    "lib/core/amirnetAttempts.ts",
+    "lib/supabase/auth.ts"
   ],
   "app/api/amirnet/practice/route.test.ts": [],
   "app/api/amirnet/practice/route.ts": [
@@ -535,6 +539,16 @@
     "components/EnWord.tsx",
     "components/amirnetTypeBar.ts",
     "lib/core/amirnetPractice.ts"
+  ],
+  "components/AmirnetDashboardLive.test.ts": [
+    "components/AmirnetDashboardLive.tsx",
+    "lib/core/failure.ts"
+  ],
+  "components/AmirnetDashboardLive.tsx": [
+    "components/AmirnetDashboard.tsx",
+    "components/AmirnetTabs.tsx",
+    "lib/core/amirnetPractice.ts",
+    "lib/core/failure.ts"
   ],
   "components/AmirnetEstimateNotice.test.ts": [
     "components/AmirnetEstimateNotice.tsx"
@@ -1015,6 +1029,13 @@
     "lib/api/client.ts"
   ],
   "lib/api/client.ts": [],
+  "lib/core/amirnetAttempts.test.ts": [
+    "lib/core/amirnetAttempts.ts",
+    "lib/core/amirnetPractice.ts"
+  ],
+  "lib/core/amirnetAttempts.ts": [
+    "lib/core/amirnetPractice.ts"
+  ],
   "lib/core/amirnetChapterGate.test.ts": [
     "lib/core/amirnetChapterGate.ts",
     "lib/core/amirnetItemGate.ts"
