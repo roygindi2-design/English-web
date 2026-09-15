@@ -431,3 +431,5 @@ PROMOTION_BLOCKERS: "🔴 C-0607 (PROMOTER) 2026-09-14T13:32Z — בדיקת ע�
 ```
 **ומה שנמדד אחריו, 18:29Z, דרך `Kernel` על האתר החי:** שש משיכות רצופות של `/api/health` ⇒ `200 · ok:true`, **כולל `database_schema=true`** — כלומר הקפצנות שנמדדה ב-13:32Z **חלפה**. ⛔ החסם עצמו ⛔ לא נוקה כאן: הוא של PROMOTER.
 
+
+loop(DEV): C-0628 idle — a concurrent DEV tick holds the lock (LOCK_AT 2026-09-15T20:08:04Z, taken 22s before mine, same row T-323, same cycle id C-0627). Three Smart Wait rounds spent (20:13:25Z · 20:16:34Z · 20:19:41Z), still held at 12.0 min ⇒ yielded per DEV.md STEP 1. Zero work commits. Measured on the way in, and it is a NEW defect, not this yield: `git rebase origin/dev` in STEP 0.5 rewrote all 25 SHAs of `work/current` although `origin/work/current..origin/dev` = 0 commits — the cause is the merge commit 788e06a9 ("C-0622 merge Roy's uploaded renders from dev into work/current"), which the default rebase backend flattens. ⇒ every DEV/CONTENT tick that obeys STEP 0.5 as written now needs a force-push to land anything, and the recovery is `git reset --hard origin/work/current`. `origin/dev..origin/work/current` = 26 commits.
