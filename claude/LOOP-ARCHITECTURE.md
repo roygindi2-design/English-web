@@ -11,16 +11,55 @@
 
 ---
 
-## 1 · שש המשימות המתוזמנות — נמדד 2026-09-09T12:00Z ב-`list_triggers`
+## 1 · שש המשימות המתוזמנות — נמדד 2026-09-14T23:50Z ב-`list_triggers`
 
-| סוכן | `cron` UTC | מודל שהמשימה מריצה | ענף התוצאה של הפלטפורמה | דלוק? |
-|---|---|---|---|---|
-| **DEV** | `30 */2 * * *` | `claude-opus-5` ⚠️ | `claude/confident-meitner` | ⛔ כבוי |
-| **PM** | `0 1,9,17 * * *` | `claude-opus-5` | `claude/gallant-carson` | ⛔ כבוי |
-| **QA — מסלול מלא** | `15 5,11,15,21 * * *` | `claude-sonnet-5` | `claude/nice-ride` | ⛔ כבוי |
-| **QA — מסלול שער** | `55 1,4,7,10,13,16,19,22 * * *` | `claude-haiku-4-5-20251001` | `claude/ecstatic-ramanujan` | ⛔ כבוי |
-| **CONTENT** | `15 3,7,13,19 * * *` | `claude-sonnet-5` | `claude/focused-ride` | ⛔ כבוי |
-| **PROMOTER** | `5 0,12 * * *` | `claude-sonnet-5` | `claude/optimistic-mendel` | ⛔ כבוי |
+| סוכן | `cron` UTC | ליום | מודל | ענף התוצאה של הפלטפורמה | connectors | דלוק? |
+|---|---|---|---|---|---|---|
+| **DEV** | `5 0,1,2,3,5,6,7,8,9,11,12,13,14,15,17,18,19,20,21,23 * * *` | 20 | `claude-opus-5` | `claude/exciting-cray` | Supabase · Figma · Adobe · Mobbin | ⛔ כבוי |
+| **PM** | `35 0,2,5,8,11,14,17,19,20 * * *` | 9 | `claude-opus-5` | `claude/focused-ride` | Supabase · Figma · Descript · Mobbin · Adobe | ⛔ כבוי |
+| **QA — מסלול מלא** | `35 4,10,16,22 * * *` | 4 | `claude-sonnet-5` | `claude/dazzling-shannon` | Supabase · Figma · **Kernel** | ⛔ כבוי |
+| **QA — מסלול שער** | `35 1,6,12,18,23 * * *` | 5 | `claude-haiku-4-5-20251001` | `claude/confident-noether` | ⛔ אין | ⛔ כבוי |
+| **CONTENT** | `35 3,9,15,21 * * *` | 4 | `claude-sonnet-5` | `claude/elegant-allen` | Linear · Notion | ⛔ כבוי |
+| **PROMOTER** | `35 7,13 * * *` | 2 | `claude-sonnet-5` | `claude/kind-meitner` | Supabase · Netlify · Figma · **Kernel** | ⛔ כבוי |
+
+### 🕐 למה דווקא הרשת הזאת — ⛔ נמדד, ⛔ לא נבחר לנוחות  ⟦נבנה מחדש 14/09⟧
+
+🔬 **המדד הוא זמן החזקת נעילה, ⛔ ולא אורך טיק** — כי `LOCK_HELD_BY` הוא מה שבאמת חוסם
+סוכן אחר. חושב מיומן הקומיטים, זוג «lock» ⇄ «release the lock» לכל סוכן, שלושה ימים:
+
+```
+DEV       n=27   חציון 24ד     CONTENT   n= 9   חציון 32ד  (זנב ל-53)
+PM        n=13   חציון 20ד     PROMOTER  n= 4   חציון 22ד
+QA        n= 8   חציון 16ד
+```
+
+⇒ DEV יורה ב-**:05** ומחזיק את הנעילה בערך **:09–:33**. ⇒ **כל סוכן שאינו DEV יורה
+ב-:35**, כל אחד בשעות משלו. ⛔ ארבע השעות ש-DEV מדלג עליהן — **04 · 10 · 16 · 22** —
+הן אלה שאחרי טיק CONTENT, שהחזקתו של 32ד גולשת אל תוך השעה הבאה.
+
+🔴 **ומה שהרשת הזאת מתקנת, כי זו הייתה תקלה של סשן התפעול ⛔ ולא של הסוכנים:**
+הגרסה שנכתבה שעה קודם לכן העלתה את DEV לשעתי ב-:05 ו**השאירה** את QA-שער ו-PROMOTER
+על :12. שניהם נחתו **בתוך** נעילת DEV ב**כל** ירייה — ⛔ לא לפעמים, **100%** — ו-Smart
+Wait של תשע דקות ⛔ אינו מכסה חמש-עשרה דקות שנותרו. PROMOTER הוא **היחיד** שדוחף
+ל-`main`, ⇒ הייצור כולו היה קופא בשקט. ⇒ ⛔ **⛔ אין ברשת הנוכחית ולו התנגשות מתוכננת
+אחת**; ה-Smart Wait (שלושה סבבי `sleep 180`) קיים לרעש, ⛔ ולא לחפיפה.
+
+📊 **הטבלה המלאה, 24 שעות:**
+```
+h  :05        :35        │ h  :05        :35
+00 DEV        PM         │ 12 DEV        QA-שער
+01 DEV        QA-שער     │ 13 DEV        PROMOTER
+02 DEV        PM         │ 14 DEV        PM
+03 DEV        CONTENT    │ 15 DEV        CONTENT
+04 —          QA-מלא     │ 16 —          QA-מלא
+05 DEV        PM         │ 17 DEV        PM
+06 DEV        QA-שער     │ 18 DEV        QA-שער
+07 DEV        PROMOTER   │ 19 DEV        PM
+08 DEV        PM         │ 20 DEV        PM
+09 DEV        CONTENT    │ 21 DEV        CONTENT
+10 —          QA-מלא     │ 22 —          QA-מלא
+11 DEV        PM         │ 23 DEV        QA-שער
+```
 
 **⛔ כולן כבויות בכוונה.** נמדד: `enabled=false` בשש, `ended_reason` ריק
 ו-`suspension_reason` ריק ⇒ לפי תיעוד הכלי זהו **השהיה בידי המשתמש**, ⛔ ולא
