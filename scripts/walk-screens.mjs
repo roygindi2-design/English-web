@@ -19,6 +19,7 @@ import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { resolveChromiumPath } from './lib/chromium-path.mjs';
 import { requestFailureLine, splitAborted } from './lib/walk-errors.mjs';
+import { walkRoutes } from './lib/walk-routes.mjs';
 
 const ARGV = process.argv.slice(2);
 const flag = (name, dflt) => {
@@ -30,24 +31,11 @@ const OUT = flag('out', 'walk-shots');
 const WIDTH = Number(flag('width', '390'));
 
 /**
- * ⛔ המסכים שהלומד באמת פוגש, ⛔ ולא כל `page.tsx` במאגר. ⇒ רשימה מוצהרת, כדי
- * שהוספת מסך תהיה **החלטה** ו⛔ לא תוצר לוואי של גלוב.
+ * ⟦הועבר C-0630 · `T-371`⟧ הרשימה המוצהרת יושבת ב-`./lib/walk-routes.mjs` — מודול
+ * טהור שגם הבדיקה קוראת. ⛔ כל עוד היא ישבה כאן, ⛔ אף בדיקה ⛔ לא יכלה לייבא אותה
+ * בלי להריץ דפדפן, ⇒ «כמה מסכים ההליכה רואה» היה מספר בלתי-נמדד.
  */
-const DEFAULT_ROUTES = [
-  '/',
-  '/dev/onboarding',
-  '/dev/tabs/cards',
-  '/dev/card/choice',
-  '/dev/tabs/studies',
-  '/dev/story',
-  '/dev/arcade/home',
-  '/dev/arcade/summary',
-  '/dev/world',
-  '/dev/tabs/me',
-];
-const ROUTES = (flag('routes', '') || '').trim() === ''
-  ? DEFAULT_ROUTES
-  : flag('routes', '').split(',').map((r) => r.trim()).filter((r) => r !== '');
+const ROUTES = walkRoutes(flag('routes', ''));
 
 const slug = (r) => (r === '/' ? 'root' : r.replace(/^\//, '').replace(/\//g, '-'));
 

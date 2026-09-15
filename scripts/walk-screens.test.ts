@@ -6,6 +6,7 @@ import {
   requestFailureLine,
   splitAborted,
 } from './lib/walk-errors.mjs';
+import { DEFAULT_ROUTES, walkRoutes } from './lib/walk-routes.mjs';
 
 /**
  * 🧹 **`T-305` — ביטול פריפֶּץ' של Next ⛔ אינו «פגם נראה».**  ⟦NEW 13/09 · `D-219` · סוגרת את `F-230`⟧
@@ -66,13 +67,70 @@ describe('🧹 T-305 — REQFAIL net::ERR_ABORTED הוא מידע, ⛔ ולא פ
  * משתמש בו.
  */
 describe('the hand-written declaration file', () => {
-  it('declares exactly the names the module exports', async () => {
-    const mod = await import('./lib/walk-errors.mjs');
+  // ⟦הורחב C-0630 · `T-371`⟧ שתי הצהרות ידניות עכשיו, ⛔ ולא אחת ⇒ הבדיקה עוברת על
+  // שתיהן. הצהרה שנייה שהבדיקה ⛔ אינה מכסה היא בדיוק הסטייה שהבלוק הזה קיים נגדה.
+  it.each([
+    ['./lib/walk-errors.mjs', 'scripts/lib/walk-errors.d.mts'],
+    ['./lib/walk-routes.mjs', 'scripts/lib/walk-routes.d.mts'],
+  ])('%s declares exactly the names the module exports', async (spec, decl) => {
+    const mod = await import(spec);
     const declared = [
-      ...readFileSync('scripts/lib/walk-errors.d.mts', 'utf8').matchAll(
+      ...readFileSync(decl, 'utf8').matchAll(
         /export declare (?:const|function)\s+([A-Za-z_$][\w$]*)/g,
       ),
     ].map((m) => m[1]);
     expect([...declared].sort()).toEqual(Object.keys(mod).sort());
+  });
+});
+
+/**
+ * 🔭 **`T-371` — השער שמעולם ⛔ לא ראה את `amirnet`.**  ⟦NEW 15/09 · `C-0630`⟧
+ *
+ * 🔬 **נמדד לפני השינוי, ⛔ ולא שוער:** `grep -c amirnet` על רשימת המסלולים המוצהרת
+ * של ההליכה ⇒ **0**, בעוד ששת מסכי `/dev/amirnet/*` מחזירים 200 ו-`/dev/amirnet`
+ * עצמו החזיר 404. ⇒ ההליכה של `STEP 6.5` — הכלי **היחיד** שמצלם מסך — ⛔ מעולם
+ * ⛔ לא צילמה ולו מסך אמירנט אחד, וב-`T-370` בדיוק עכשיו נפתחו ששת המסכים האלה
+ * ללומד דרך הטבעת.
+ *
+ * ⛔ **הבדיקות האלה מודדות את הרשימה, ⛔ ולא מריצות הליכה** — בדיוק בשביל זה
+ * `DEFAULT_ROUTES` יצא ל-`lib/walk-routes.mjs`: כל עוד הוא ישב בתוך סקריפט עם
+ * `await` ברמה העליונה שמפעיל דפדפן, ⛔ אי אפשר היה לייבא אותו בלי להריץ את הכול.
+ */
+describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
+  it('שלושת מסכי amirnet שהלומד נוחת עליהם נמצאים ברשימה המוצהרת', () => {
+    expect(DEFAULT_ROUTES).toContain('/dev/amirnet/dashboard');
+    expect(DEFAULT_ROUTES).toContain('/dev/amirnet/practice');
+    expect(DEFAULT_ROUTES).toContain('/dev/amirnet/simulation');
+  });
+
+  it('⛔ ולא ששת המסכים — שלושת מצבי הביניים ⛔ אינם ברשימה, וזו הצהרה', () => {
+    // ⛔ «כל `page.tsx` במאגר» היה הופך את הרשימה לגלוב, וזה בדיוק מה שהקבוע ⛔ אינו.
+    for (const midFlow of [
+      '/dev/amirnet/question',
+      '/dev/amirnet/levels',
+      '/dev/amirnet/result',
+    ]) {
+      expect(DEFAULT_ROUTES).not.toContain(midFlow);
+    }
+  });
+
+  it('🔴 המספר שהשורה מודדת: 13 מסכים, ⛔ ולא 10', () => {
+    expect(DEFAULT_ROUTES).toHaveLength(13);
+    expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
+  });
+
+  it('⛔ ⛔ אין מסלול כפול, ו⛔ אין מסלול בלי / מוביל', () => {
+    expect(new Set(DEFAULT_ROUTES).size).toBe(DEFAULT_ROUTES.length);
+    for (const route of DEFAULT_ROUTES) expect(route.startsWith('/')).toBe(true);
+  });
+
+  it('⛔ `--routes=` ריק פירושו «⛔ לא נמסר דגל», ⛔ ולא «אפס מסכים»', () => {
+    expect(walkRoutes('')).toBe(DEFAULT_ROUTES);
+    expect(walkRoutes(undefined)).toBe(DEFAULT_ROUTES);
+    expect(walkRoutes('   ')).toBe(DEFAULT_ROUTES);
+  });
+
+  it('🔴 `--routes=` מלא **כן** גובר — אחרת הדגל היה קוד מת ביום שנולד', () => {
+    expect(walkRoutes('/a, /b ,')).toEqual(['/a', '/b']);
   });
 });

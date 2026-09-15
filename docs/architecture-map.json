@@ -271,6 +271,7 @@
   "app/dev/amirnet/levels/page.tsx": [
     "components/AmirnetLevels.tsx"
   ],
+  "app/dev/amirnet/page.tsx": [],
   "app/dev/amirnet/practice/page.tsx": [
     "app/dev/amirnet/practice/practice-fixture.ts",
     "components/AmirnetPracticeMenu.tsx",
