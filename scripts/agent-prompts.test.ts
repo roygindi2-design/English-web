@@ -1378,6 +1378,29 @@ describe('docs/agents/*.md — שער ה-verify, סוף הנסיגה השקטה,
     expect(pm, 'ושלד ⛔ אינו ספינר').toMatch(/a spinner says «wait», a skeleton says/);
   });
 
+  /**
+   * 🔴 **⟦NEW 15/09 · `C-0625` · `F-261`⟧ חדר ההמתנה ⛔ אינו מחלקה — ושני הפרומפטים אומרים זאת.**
+   *
+   * 🔬 **נמדד, ⛔ ולא שוער:** המוקד קרא `general` מ-31/08 — **שבועיים** — כי כלל «⬜>0 ⇒ ⛔ אל
+   * תזוז» חל גם על הבריכה החוצה-מערכת, ו-PM פותח את שורותיו **לתוך** `general` ⇒ תנאי
+   * היציאה («הבריכה ריקה») ⛔ לעולם ⛔ לא היה יכול להתקיים. ‏12 שורות פיצ׳ר היו בלתי-נגישות.
+   * ⇒ הטענה הזאת נועלת את **התיקון**: היציאה נמדדת על ה**רצף**, ⛔ ולא על חדר ההמתנה.
+   */
+  it('⛔ DEV ו-PM ⛔ אינם נשארים בחדר ההמתנה כשלרצף יש עבודה (F-261)', () => {
+    for (const who of ['DEV', 'PM'] as const) {
+      const t = text(who);
+      expect(t, `${who} — חדר המתנה, ⛔ ולא מחלקה`).toMatch(/waiting room, ⛔ not a\s+department/i);
+      expect(t, `${who} — נוקב בממצא`).toContain('F-261');
+      // ⛔ **והתנאי שנמדד הוא הרצף** — ⛔ ולא «הבריכה החוצה-מערכת ריקה», שהוא בדיוק
+      //    הנוסח שנמדד כבלתי-ניתן להתקיים.
+      expect(t, `${who} — התנאי הוא הרצף`).toMatch(/36 § 13[^\n]{0,80}(SEQUENCE|sequence)/);
+    }
+    // ⛔ והנוסח שנמדד כשגוי ⛔ אינו חוזר כתנאי היציאה של DEV.
+    expect(text('DEV'), '⛔ ⛔ לא «when the cross-cutting set counts ZERO»').not.toMatch(
+      /You MAY advance `ACTIVE_WORKSTREAM` when the eligible set counts ZERO/,
+    );
+  });
+
   it('⛔ PM ⛔ אינו מתאר את DEV כמעבד שורה אחת בטיק (14/09)', () => {
     const pm = text('PM');
     expect(pm, '⛔ הנוסח הישן ⛔ אינו חוזר כמשפט שלם').not.toContain(

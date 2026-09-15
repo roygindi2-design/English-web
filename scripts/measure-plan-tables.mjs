@@ -471,21 +471,58 @@ for (let i = 0; i < ORDERED.length; i += 1) {
  */
 if (ACTIVE_WORKSTREAM !== null && OUTSIDE_SEQUENCE.has(ACTIVE_WORKSTREAM)) {
   const selfOpen = tally(byStream.get(ACTIVE_WORKSTREAM) ?? []).open;
-  if (selfOpen === 0) {
-    const pool = [...OUTSIDE_SEQUENCE].reduce((n, w) => n + tally(byStream.get(w) ?? []).open, 0);
-    const from = PREV_WORKSTREAM === '' ? undefined : PREV_WORKSTREAM;
-    const start = from === undefined ? 0 : Math.max(0, ORDERED.indexOf(from));
-    const next = ORDERED.slice(start).find((w) => tally(byStream.get(w) ?? []).open > 0);
-    const where = next === undefined
-      ? '⛔ ו⛔ **אין ברצף זרימה עם עבודה פנויה** — ⇒ זו הכרעה לרוי, ⛔ לא לסוכן.'
-      : `⇒ **החזרה לרצף היא ל-\`${next}\`** (${tally(byStream.get(next) ?? []).open} משימות ⬜), לפי \`PREV_WORKSTREAM\` = \`${from ?? '—'}\`.`;
+  const pool = [...OUTSIDE_SEQUENCE].reduce((n, w) => n + tally(byStream.get(w) ?? []).open, 0);
+
+  /**
+   * 🔴 **⟦REWRITTEN 15/09 · `C-0625` · `F-261` · Roy: «make sure they really hand the
+   * slice over, otherwise they are stuck»⟧ — and the old condition is exactly what made
+   * them stuck.**
+   *
+   * 🔬 **Measured on this clone, ⛔ not argued.** The flag used to require
+   * `selfOpen === 0` — `general` ITSELF empty. But:
+   * ```
+   * ACTIVE_WORKSTREAM        general      selfOpen = 1   (T-352)   ⇒ ⛔ no flag
+   * eligible pool for DEV    general ∪ loop ∪ base = 7            ⇒ ⛔ never advances (§ 0.23 ז׳ ③)
+   * the 36 § 13 sequence     story 5 · arena 4 · cards 1 · amirnet 1 = 11 rows
+   *                                                               ⇒ ⛔ UNREACHABLE
+   * ```
+   * ⇒ **and `general` is where PM opens its rows** ⇒ every PM tick refills the very field
+   * whose emptiness was the only exit. **The focus has read `general` since 31/08 — two
+   * weeks — while eleven feature rows sat outside the pool.** ⛔ That is ⛔ not a slow
+   * loop; it is a **trap with no exit condition that can occur.**
+   *
+   * ⇒ **`general` is a WAITING ROOM, ⛔ not a department.** It is step ⑤ of `§ 0.23 ז׳` —
+   * where you go when the sequence has ⛔ nothing — so the moment step ④ CAN succeed, ⑤
+   * is ⛔ no longer the answer. The condition below is therefore the sequence, ⛔ not
+   * `general`'s own count.
+   *
+   * ⛔ **And the next department is ⛔ not guessed — nor is it a single name.** Only the
+   * agent knows whether a row is takeable BY IT (‏`msgs` holds one row and it is
+   * CONTENT's — which is what pushed the focus to `general` in `C-0576` to begin with).
+   * ⇒ the flag prints the **ordered candidate list**, rotating from `PREV_WORKSTREAM`,
+   * and the agent takes the first one with work it can actually take.
+   */
+  const startAfter = PREV_WORKSTREAM === '' ? -1 : ORDERED.indexOf(PREV_WORKSTREAM);
+  const rotation = [...ORDERED.slice(startAfter + 1), ...ORDERED.slice(0, startAfter + 1)];
+  const candidates = rotation
+    .map((w) => ({ w, open: tally(byStream.get(w) ?? []).open }))
+    .filter((c) => c.open > 0);
+
+  if (candidates.length > 0) {
     flags.push(
-      `🔴 **המוקד החוצה-מערכת מוצה — \`${ACTIVE_WORKSTREAM}\` עצמה ⬜=0.** ${where}
-` +
-        `  **QA מכריע ב-\`STEP 5.8\` — בטיק הזה, ⛔ ולא בבא.** ` +
-        `⚠️ **ו⛔ זה ⛔ אינו «DEV רעב»:** הבריכה (\`general\` ∪ \`loop\` ∪ \`base\`) מחזיקה **${pool}** ⬜ ⇒ ⛔ אין חירום. ` +
-        `מה שכן: תנאי המיצוי של \`§ 0.23 ז׳\` **מתקיים**, ו-\`general\` ⛔ אינה פריט ב-\`36 § 13\` ⇒ היא ⛔ אינה נחתמת ו⛔ אינה «נגמרת» — היציאה ממנה היא **החזרת המוקד**. ` +
-        `⛔ **שתיקה ⛔ אינה אפשרות** (\`F-252\`): או להזיז, או לכתוב שורה למה ⛔ לא.`,
+      `🔴 **המוקד יושב על \`${ACTIVE_WORKSTREAM}\` בזמן שיש עבודה ברצף \`36 § 13\` — ⇒ הוא חייב לחזור.**\n` +
+        `  **מועמדים לפי הסדר** (גלגול מ-\`PREV_WORKSTREAM\` = \`${PREV_WORKSTREAM === '' ? '—' : PREV_WORKSTREAM}\`): ` +
+        candidates.map((c) => `\`${c.w}\` (${c.open} ⬜)`).join(' · ') +
+        `. ⇒ **קח את הראשון שיש בו שורה כשירה לך**, ⛔ ולא בהכרח את הראשון ברשימה — ורשום שורת «למה» עם המספר שספרת.\n` +
+        `  ⛔ **\`${ACTIVE_WORKSTREAM}\` היא חדר המתנה, ⛔ ולא מחלקה** (\`§ 0.23 ז׳\` שלב ⑤): היא התשובה **רק** כשלרצף ⛔ אין דבר. ` +
+        `⚠️ **ו⛔ זה ⛔ אינו «DEV רעב»** — הבריכה (\`general\` ∪ \`loop\` ∪ \`base\`) מחזיקה **${pool}** ⬜ ⇒ ⛔ אין חירום; ` +
+        `יש **${candidates.reduce((n, c) => n + c.open, 0)}** שורות פיצ׳ר שאיש ⛔ אינו יכול לגעת בהן. ` +
+        `⛔ **שתיקה ⛔ אינה אפשרות** (\`F-252\` · \`F-261\`): או להזיז, או לכתוב שורה למה ⛔ לא.`,
+    );
+  } else if (selfOpen === 0) {
+    flags.push(
+      `🔴 **המוקד החוצה-מערכת מוצה — \`${ACTIVE_WORKSTREAM}\` עצמה ⬜=0, ו⛔ אין ברצף זרימה עם עבודה פנויה.**\n` +
+        `  ⇒ זו **הכרעה לרוי** (\`§ 0.23 ז׳\` שלב ⑥), ⛔ ולא טיק סרק. הבריכה מחזיקה **${pool}** ⬜.`,
     );
   }
 }

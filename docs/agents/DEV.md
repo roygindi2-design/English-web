@@ -296,6 +296,27 @@ around, skip SEALED departments, take the first with work**, and write
 `ACTIVE_WORKSTREAM` + `PREV_WORKSTREAM` + a why-line carrying **the number you counted**,
 in the same commit.
 
+🔴 **⟦15/09 · `C-0625` · `F-261`⟧ AND STEP ⓪ IS THE ONE THAT UNSTICKS THE LOOP — READ IT.**
+**`general` · `loop` · `base` are a WAITING ROOM, ⛔ not a department, ⇒ rule ③ (`>0 ⇒ stay`)
+⛔ does ⛔ NOT apply to them.** 🔬 **Measured on a live clone, ⛔ not argued:** `general` held
+⬜=1, the pool (`general` ∪ `loop` ∪ `base`) held **7** ⇒ rule ③ said «stay» — **forever**,
+because `general` is precisely where PM opens its rows, so every PM tick refilled the one
+field whose emptiness was the only exit. Meanwhile the `36 § 13` sequence held **12 ⬜**
+across `amirnet` · `story` · `cards` · `arena` · `msgs` that ⛔ no tick could reach, and the
+focus had read `general` since **31/08 — two weeks**.
+⇒ **On a cross-cutting focus you go straight to ④.** The ordered candidate list is already
+computed for you — `docs/plan-open.md` (🔴 `מועמדים לפי הסדר`) and `loop:health` check 11.
+⛔ Do ⛔ not derive it yourself.
+
+🔴 **⟦15/09 · `C-0625` · `F-261`⟧ AND AN ADVANCE OWES ONE MORE LINE — `plan/61-deferred.md`.**
+Every department the move stepped **past** gets a row there saying what was left open in it,
+in the same commit. ⛔ **That is ⛔ not a seal** — a department you advanced past **stays in
+the rotation** — it is a **record of a count**, exactly like the count that let you move
+(`D-247`). ⛔ The SEAL is still QA's alone. 🔬 **And it is ⛔ not bookkeeping for its own
+sake:** `loop:health` check 13 measures «every workstream the sequence passed has a debt
+row», and it was written when the only way past was a seal ⇒ without this line **every
+advance turns check 13 red until a full-lane QA tick arrives**.
+
 🔴 ⛔ **ONE SLICE PER TICK, and this is the only hard rule left.** You choose at the open and
 you **stay**. Closing the department's last row mid-tick ⛔ does ⛔ NOT let you hop — the
 next tick advances. ⛔ Without this, «advance» becomes «skip», and one agent tours the whole
@@ -316,14 +337,15 @@ Order: **`MERGE_BLOCKERS`** → 🔴 finding → 🟠 marked **defect** → **`A
 general · loop · base          ⇐ all three are eligible while the focus is `general`
 ```
 🔴 **Why this exists, and it is a MEASUREMENT, ⛔ not a preference.** Measured 31/08 on a live clone: `loop` held **10 open ⬜** and `base` held **15** — **25 rows ⛔ no DEV tick could ever pick**, because you filter to `ACTIVE_WORKSTREAM` and that field has only ever held a *feature* workstream. ⇒ system-wide fixes, logical bugs and loop machinery were **written and never built**. That is the third time this failure class has been measured: `D-122 § ב`, then `D-171`, now this.
-⛔ **And it is ⛔ not a licence.** While the focus is `general` you take ⛔ **no** feature-workstream row — the exceptions above (🔴 finding · `ACTIVE_TASK_ID`) are still the only two, **plus the advance of `D-247` when the cross-cutting set itself counts ZERO**. ⛔ And you ⛔ never retag a feature row `general` to make it eligible.
+⛔ **And it is ⛔ not a licence.** While the focus is `general` you take ⛔ **no** feature-workstream row — the exceptions above (🔴 finding · `ACTIVE_TASK_ID`) are still the only two. ⛔ And you ⛔ never retag a feature row `general` to make it eligible.
+🔴 **⟦15/09 · `F-261`⟧ ⛔ But «while the focus is `general`» ⛔ must ⛔ not become «forever».** The sentence above governs what you may TAKE, ⛔ not how long the field may READ `general`: if the `36 § 13` sequence holds eligible work you **advance first** (`§ 0.23 ז׳` ⓪) and then take a row in the department you advanced to. ⇒ the two sentences ⛔ never conflict — one is about the filter, the other about the field.
 
 ### ⏱️ `general` IS A HOLDING PATTERN, ⛔ NOT A HOME — A FEATURE SLICE COMES FIRST  ⟦NEW 06/09 · Roy's explicit instruction⟧
 🔴 **A focused feature SLICE is your first-priority work. `general` is what you take ⛔ only while there is no slice to take** — ⛔ it is ⛔ not your default, and ⛔ ⛔ not somewhere you settle in tick after tick because its rows are the easiest to find.
 **Measured 06/09 on a live clone, ⛔ not asserted:** `ACTIVE_WORKSTREAM` has read `general` since **31/08** (`2947668`, C-0376) — **six days**. In `docs/plan-open.md`'s balance table right now, the whole eligible set under that focus (`general` ∪ `loop` ∪ `base`) holds **3 open ⬜** (‏0 · 1 · 2), while the five feature workstreams hold **15 open ⬜** — `story` 3 · `cards` 5 · `arena` 3 · `msgs` 4 — ⛔ ⛔ none of them reachable by any DEV tick. ⇒ **12 build ticks a day go to cross-cutting work while `36 § 13`'s own sequence stands still.**
 **What this obliges you to do — three lines, and ⛔ ⛔ not one of them moves the focus:**
-1. ⟦תוקן 15/09 · `D-247`⟧ **You MAY advance `ACTIVE_WORKSTREAM` when the eligible set counts ZERO** — the procedure is `RULES § 0.23 ז׳`. ⛔ What is still QA's alone is the **SEAL**, and ⛔ you ⛔ never retag a row to reach a workstream.
-2. 🔴 **The eligible set under `general` measures ⬜=0? SAY SO IN THE FIRST LINE OF YOUR REPORT, in these words:** «`general` ⬜=0 — ⛔ אין עבודה חוצת-מערכת פנויה. `<N>` שורות ⬜ ממתינות בזרימות הפיצ'ר, וההחזרה למוקד פיצ'ר היא של QA בלבד» — with `N` **read from the balance table**, ⛔ ⛔ not guessed. That sentence is the **only** channel QA has for learning the holding pattern is over; a quiet `general` tick tells it nothing, and that is exactly how six days passed.
+1. ⟦תוקן 15/09 · `C-0625` · `F-261`⟧ **You MUST advance `ACTIVE_WORKSTREAM` off a cross-cutting focus the moment the `36 § 13` SEQUENCE holds eligible work** — ⛔ **not** «when the cross-cutting set counts ZERO», which is the condition that was written here on 15/09 morning and which 🔬 **measurement showed can ⛔ never occur**: PM opens its rows into `general`, so the pool refills faster than it drains. The procedure is `RULES § 0.23 ז׳` ⓪→④. ⛔ What is still QA's alone is the **SEAL**, and ⛔ you ⛔ never retag a row to reach a workstream.
+2. 🔴 **Advanced? The why-line carries BOTH numbers** — what the waiting room held and what the sequence held — «המוקד `general` ⬜=`<P>` (בריכה) ⇒ הוזז ל-`<dept>`; הרצף החזיק `<S>` ⬜ בלתי-נגישות» — both **read from `docs/plan-open.md`**, ⛔ ⛔ not guessed. ⛔ **Did ⛔ NOT advance while the sequence held work? That is a line in your report saying why** — ⛔ silence is ⛔ not an option (`F-252` · `F-261`), and a quiet `general` tick is exactly how two weeks passed.
 3. ⚠️ **A row eligible through an exception (🔴 finding · `ACTIVE_TASK_ID`) beats a `general` row of the same size** — the exception exists because someone judged that row more urgent than the focus, and taking a comfortable `general` row instead ⛔ quietly overrules them.
 ⛔ **⛔ This changes ⛔ NOTHING about the filter and adds ⛔ NO third exception.** The two in STEP 2 are still the only two. This is about **what you prefer inside what you are already allowed to take**, and about ⛔ not letting a holding pattern silently become the product's build order.
 

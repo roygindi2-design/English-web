@@ -254,11 +254,82 @@ describe('scripts/measure-plan-tables.mjs', () => {
     });
 
     const open = readFileSync(fixtureOpenOut, 'utf8');
-    expect(open, 'הדגל המחייב נפלט').toContain('המוקד החוצה-מערכת מוצה');
-    expect(open, 'ומנותב ל-QA בשלב הנכון').toContain('STEP 5.8');
-    expect(open, 'הממצא נקוב בשמו').toContain('F-252');
+    /* ⚠️ **⟦הותאם 15/09 · `C-0625` · `F-261`⟧ ⛔ הטענה ⛔ לא נחלשה — היא עברה לענף הנכון.**
+       ‏`F-252` שאל «האם `general` **עצמה** ריקה», ו-`F-261` מדד שהשאלה הזאת ⛔ לעולם
+       ⛔ אינה נעשית «כן» — PM פותח את שורותיו **לתוך** `general`. ⇒ הענף הראשון עכשיו הוא
+       **«יש עבודה ברצף»**, והוא שנפלט על המתקן הזה (שבו `story` מלאה). הענף הישן נשאר
+       חי ונמדד בטענה שאחריה, על מתקן שבו **גם הרצף ריק**. */
+    expect(open, 'הדגל המחייב נפלט').toContain('המוקד יושב על `general`');
+    expect(open, 'ורשימת המועמדים מסודרת, ⛔ ולא שם יחיד').toContain('מועמדים לפי הסדר');
+    expect(open, 'הממצא נקוב בשמו').toContain('F-261');
     // ⛔ ו⛔ אינו מדווח חירום — הבריכה עדיין מחזיקה עבודה, ו-DEV ⛔ אינו רעב.
     expect(open, '⛔ ⛔ לא «DEV רעב»').toContain('⛔ אין חירום');
+  });
+
+  /**
+   * 🔴 **`F-261` — וזה המתקן שמשחזר את הלכידה עצמה, ⛔ ולא את קצה הענף.**
+   *
+   * 🔬 **הצורה החיה, נמדדת ⛔ ולא מומצאת:** `general` **⛔ אינה ריקה** (‏PM פותח לתוכה) **ו**
+   * הרצף מחזיק עבודה. ⇒ התנאי הישן (`selfOpen === 0`) ⛔ אינו מתקיים ⇒ **⛔ אפס דגלים**,
+   * וזה בדיוק המצב שבו המוקד ישב שבועיים. ⛔ בלי המתקן הזה התיקון ⛔ אינו נמדד כלל.
+   */
+  it('flags the trap in its LIVE shape — `general` NOT empty, sequence full (F-261)', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-trap-'));
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    // ⛔ הרגיסטר החי, ⛔ בלי שינוי: היום הוא כבר נושא `general` ⬜>0 ורצף מלא.
+    writeFileSync(fixtureTasks, readFileSync(join('plan', '50-tasks.md'), 'utf8'), 'utf8');
+    const fixtureControl = join(tmp, '00-control.md');
+    writeFileSync(fixtureControl, 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "msgs"\n', 'utf8');
+    const fixtureOpenOut = join(tmp, 'plan-open.md');
+    execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: fixtureOpenOut,
+        PLAN_TASKS_FILE: fixtureTasks,
+        PLAN_CONTROL_FILE: fixtureControl,
+      },
+    });
+    const open = readFileSync(fixtureOpenOut, 'utf8');
+    // ⛔ הראיה שהמתקן באמת נושא את הצורה: `general` עצמה ⛔ אינה ריקה.
+    expect(open, '`general` ⛔ אינה ריקה במתקן הזה').toMatch(/`general` \(מחוץ לרצף\) \|[^|]*\|\s*[1-9]/);
+    expect(open, 'ובכל זאת הדגל נפלט').toContain('המוקד יושב על `general`');
+    expect(open, 'ורשימת המועמדים מסודרת').toContain('מועמדים לפי הסדר');
+  });
+
+  /**
+   * 🔴 **`F-261` — והענף הישן (`F-252`) נמדד בנפרד, כדי שהוא ⛔ לא ייעלם בשקט.**
+   * כשגם הרצף ריק, ⛔ אין לאן להתקדם ⇒ זו הכרעה לרוי (`§ 0.23 ז׳` שלב ⑥), ⛔ ולא טיק סרק.
+   */
+  it('and when the SEQUENCE is empty too, it is a decision for Roy (F-252 · § 0.23 ז׳ ⑥)', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-crosscut-empty-'));
+    const tasksSrc = readFileSync(join('plan', '50-tasks.md'), 'utf8');
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    // ⛔ כל שורה פתוחה עוברת ל-`loop` ⇒ הרצף כולו ⬜=0, ו-`general` עצמה גם היא.
+    writeFileSync(
+      fixtureTasks,
+      tasksSrc.replace(/^\| (T-\d+) \| (M\d) · [a-z]+ ·/gm, '| $1 | $2 · loop ·'),
+      'utf8',
+    );
+    const fixtureControl = join(tmp, '00-control.md');
+    writeFileSync(fixtureControl, 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "story"\n', 'utf8');
+    const fixtureOpenOut = join(tmp, 'plan-open.md');
+    execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: fixtureOpenOut,
+        PLAN_TASKS_FILE: fixtureTasks,
+        PLAN_CONTROL_FILE: fixtureControl,
+      },
+    });
+    const open = readFileSync(fixtureOpenOut, 'utf8');
+    expect(open, 'הענף הישן חי').toContain('המוקד החוצה-מערכת מוצה');
+    expect(open, 'ומנותב לרוי, ⛔ ולא לסוכן').toContain('הכרעה לרוי');
+    // ⛔ ו⛔ אינו מציע מועמדים — ⛔ אין אף אחד.
+    expect(open, '⛔ ⛔ אין רשימת מועמדים').not.toContain('מועמדים לפי הסדר');
   });
 
   it('holds every cancelled-in-prose task cell to a status cell that was actually flipped (T-229 · F-125)', () => {

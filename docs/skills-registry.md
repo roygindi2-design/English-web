@@ -53,55 +53,40 @@ skills/ui-ux-pro-max/ui-styling/            + references/tailwind-responsive.md 
 skills/superpowers/<12 שמות>/SKILL.md       ⇒ «הפעל superpowers:X» פירושו **קרא את הקובץ**
 ```
 
-### ⛔ סקילי תוסף — **⛔ אינם זמינים לסוכנים, ונמדד**
-```
-DEV · PM · QA · CONTENT · PROMOTER  ⇒  "account_skills": []   "account_plugins": []
-                                        "enabled_plugins": []
-```
-🔴 **⇒ `anthropic-skills:*` ⛔ אינם קיימים בטיק מתוזמן.** ⛔ זו ⛔ **אינה** שאלת שם: התחילית
-נכונה (נמדדה בסביבת התפעול), ⛔ אבל התוסף עצמו ⛔ אינו מורכב ל-Routines. ⇒ **`/find-skill`
-⛔ לא ייטען, ו⛔ זו ⛔ אינה תקלה שלך.**
-⛔ **ומה שכן עושים במקומם — בכל שורה בטבלה למטה יש «נפילה לאחור», והיא ⛔ לא «דלג»:**
-```
-dataviz            ⇒ npm run check:palette  ⛔ חובה לפני כל גרף, עם סקיל או בלעדיו
-animate            ⇒ skills/taste-skill + apple-design principles ב-36 § 14
-review-animations  ⇒ ההליכה של QA + diff:render
-pick-ui-library    ⇒ ⛔ אל תוסיף תלות. package.json הוא ההכרעה
-ask-sonner         ⇒ ⛔ sonner ⛔ אינו בתלויות ⇒ ⛔ לא רלוונטי
-codebase-investigator ⇒ npm run affected · architecture-map.json · grep
-```
-🔴 **והטריגר ⛔ לא בוטל, הכלי בוטל** — ⛔ זו ההבחנה שכל השורות למעלה תלויות בה. הדרישה
-שהסקיל שירת נשארת במלואה; מה שהשתנה הוא **מי מבצע אותה**.
-⚠️ 🆕 **⟦תוקן 14/09⟧ ו«⛔ אין פעולה שרוי יכול לעשות» ⛔ אינה מדויקת עוד.** ‏09/09 מדד
-שהממשק ⛔ אינו חושף את המדור; 14/09 מדד ש-`session_request.config` של כל Routine **כן
-נושא `account_skills` ו-`account_plugins` כשדות** (ריקים). ⇒ ייתכן שזה ניתן להרכבה,
-**וזו הכרעה של רוי** — **פריט 124** ב-`plan/03-for-roy.md`. עד אז הרשימה הזאת היא מה שיש,
-ו**היא מלאה**.
+### ✅ סקילי `anthropic-skills:*` — **בשכפול מאז 15/09, ⛔ ואינם עוד «לא מובטח»**
 
-4.5 🆕 🔴 **⟦14/09 · נמדד בסשן התפעול, ⛔ ולא שוער — וזה משנה את 4 ואת 5 למעלה⟧
-   **עשרת ה«סקילי סשן» ⛔ אינם חסרים. הם קיימים — תחת תחילית ש⛔ אף פרומפט ⛔ אינו נוקב בה.**
-   הרשימה החיה בסשן הזה נושאת את כולם, וכל אחד מהם בשם:
+🔴 **⟦נכתב מחדש 15/09 · `C-0625` · בדיקת המוכנות של רוי⟧ המדור הזה הצהיר «⛔ אינם זמינים»
+ושלח לטבלת נפילה-לאחור — ו⛔ **זה כבר ⛔ אינו נכון**: שמונה מהם הועתקו לריפו ב-`C-0621`
+בהוראת רוי («אם `anthropic-skills:*` לא נגישים אז תוסיף אותם לריפו»). ⇒ הצהרה מיושנת
+שיושבת בקובץ ש-PM קורא **בכל טיק תכנון** היא ⛔ לא רק בזבוז — היא **שולחת סוכן לנפילה
+לאחור בזמן שהקובץ עצמו בעץ**.
+
 ```
-anthropic-skills:apple-design      anthropic-skills:animate        anthropic-skills:dataviz
-anthropic-skills:emil-design-eng   anthropic-skills:ask-sonner     anthropic-skills:canvas-design
-anthropic-skills:review-animations anthropic-skills:pick-ui-library
-anthropic-skills:web-artifacts-builder            anthropic-skills:find-skill
+anthropic-skills:<name>   ⇒   skills/anthropic/<name>/SKILL.md      ⟵ ⛔ קרא את הקובץ
 ```
-   ⇒ 🔴 **`/find-skill` ⛔ אינו השם.** השם הוא **`anthropic-skills:find-skill`**, וארבעת
-   הפרומפטים מורים להפעיל `/find-skill` — ⇒ **גם אם התוסף כן הורכב ל-Routine, הקריאה
-   נכשלת על השם.** זה מסביר «⛔ לא נטען» בלי שאיש הדליק או כיבה דבר.
-   ⚠️ ⛔ **ומה ש⛔ עדיין ⛔ לא נמדד, ו⛔ אין לי דרך למדוד אותו מהריפו:** האם ה-Routines של
-   חמשת הסוכנים נושאות את התוסף **היום**. המדידה של 09/09 (`list_triggers`) אמרה שלא;
-   הסשן הזה אומר שבסביבת התפעול כן. ⇒ **הראיה תגיע מהטיק המתוזמן הבא** — הפרומפטים
-   נוקבים עכשיו בשם המלא, ודוח הסוכן יאמר אם נטען.
-   ⛔ **עד אז ⛔ אין למחוק את השורות** — סקיל שקיים ונקרא בשם שגוי ⛔ אינו סקיל חסר.
+
+| הסקיל | הקובץ |
+|---|---|
+| `animate` · `apple-design` · `emil-design-eng` | `skills/anthropic/{animate,apple-design,emil-design-eng}/SKILL.md` |
+| `review-animations` · `find-animation-opportunities` | `skills/anthropic/{review-animations,find-animation-opportunities}/SKILL.md` |
+| `ask-sonner` · `pick-ui-library` · `find-skill` | `skills/anthropic/{ask-sonner,pick-ui-library,find-skill}/SKILL.md` |
+
+⛔ **«הפעל `anthropic-skills:X`» פירושו **קרא את הקובץ**, בדיוק כמו `superpowers:*`** —
+⛔ ואין קריאת-כלי שצריך לקוות שתיטען. ⇒ תג `[SKILL: anthropic-skills:animate]` בשורת
+משימה הוא **נתיב**, ⛔ ולא הימור.
+
+⚠️ **ומה ש⛔ עדיין ⛔ אינו בשכפול ו⛔ אין לו קובץ** — ⇒ הנפילה לאחור עדיין חלה עליהם:
+```
+dataviz               ⇒ npm run check:palette   ⛔ חובה לפני כל גרף
+codebase-investigator ⇒ npm run affected · docs/architecture-map.json · grep
+canvas-design · web-artifacts-builder  ⇒ ⛔ מחוץ לתחולה של הלופ
+```
+📎 **והשאלה אם התוסף מורכב ל-Routines ⛔ אינה רלוונטית עוד לשמונה שלמעלה** — קובץ בעץ
+⛔ אינו תלוי ב-`account_skills`. ‏**פריט 124** ב-`plan/03-for-roy.md` נשאר פתוח לשאר.
+📎 **הראיות ההיסטוריות** (המדידות של 09/09 ו-14/09, `account_skills: []`, ושאלת התחילית)
+⇒ `docs/skills-registry-superpowers.md § הארכיון`. ⛔ אינן הוראה עוד.
 
 ---
-
-4. 🔴 **סטטוס סקילי התוסף — הועבר ל-§ «🧩 סקילים» למעלה, שנמדד 14/09.**
-   ⛔ בקצרה: `account_skills: []` בכל שש המשימות ⇒ ⛔ אינם זמינים, ולכל אחד
-   מהם יש נפילה-לאחור כתובה שם. **הנוסח המלא של 09/09 והראיות שלו:**
-   `docs/skills-registry-superpowers.md § הארכיון`.
 
 ## 🏷️ תג הסקיל בשורת משימה — `[SKILL: x]`
 
@@ -122,12 +107,12 @@ anthropic-skills:web-artifacts-builder            anthropic-skills:find-skill
 | **`taste-skill`** | 🔄 **הורחב 11/09 (רוי) — הטווח הצר הוסר.** ⛔ **⛔ לא «מיקרו-קופי · צללים · ריווחים» בלבד:** הסקיל נושא **14 סעיפים + 3 נספחים**, והלופ כבר משתמש ברחבים מהם. מה שבאמת שמיש: **§ 4** הנחיות הנדסת-עיצוב (תיקון הטיות) · **§ 6** מעקי ביצועים ונגישות · **§ 8** פרוטוקול מצב כהה · **§ 9** «AI tells» — תבניות אסורות · **§ 11** פרוטוקול עיצוב-מחדש · **§ 14** בדיקת טרום-טיסה. 🔬 **והראיה שהטווח הרחב עובד, ⛔ ולא הוּנחה:** `D-195` — `§ 4.5` («NO DUPLICATE CTA INTENT») תפס שהוספת `נסה שוב` ליד `התחברות` היא **אותה כוונה פעמיים** ⇒ Pre-Flight Fail, כלומר המסקנה הנאיבית **הייתה שוברת** את המסך. ‏`D-206` — `§ 9.C` הכריע את המרזב. ⇒ שני סעיפים **מחוץ** לטווח הצר, ששניהם הכריעו. ⚠️ **ודיוק, ⛔ לא הגבלה:** חוקיו נכתבו לדפי-נחיתה (`§ 13` OUT OF SCOPE מצהיר «⛔ not multi-step product UI») ⇒ על מסכי מוצר מיישמים את **העקרונות האוניברסליים** (נעילת תמה · ניגודיות · מוטיבציית-אנימציה · תבניות אסורות), ⛔ ולא את חוקי ה-hero/eyebrow/בנטו. | PM (בתכנון ובביצוע `STEP 5.5`) · DEV (לפי תג) | **`skills/taste-skill/SKILL.md`** |
 | 🔴 **`hebrew-content-writer`** | 🔴 **חובה ל-CONTENT בכל ריצה, ⛔ בלי יוצא מן הכלל** ⟦דרישת רוי, 09/09⟧ — רגיסטר · כתיב מלא ⛔ בלי ניקוד · לשון מגדרית · ספרות. ⛔ **⛔ לא «כשרלוונטי»:** CONTENT הוא הסוכן היחיד שכותב עברית שהלומד קורא | **CONTENT (חובה)** · PM (מיקרו-קופי) | **`skills/hebrew-content-writer/SKILL.md`** (‏MIT · גם `SKILL_HE.md` וגם `references/hebrew-grammar-quick-ref.md`) |
 | **`imagegen-frontend-mobile`** | 🆕 **חוקי מובייל-פירסט: אזורים בטוחים · ניווט תחתון · צפיפות · קריאוּת טקסט · «⛔ קופסה בתוך קופסה».** ⚠️ **הסקיל עצמו מייצר תמונות ⛔ ולא קוד** — מה שנלקח ממנו הוא **§ 13 · § 14 · § 15 · § 29 · § 30 · § 31** כעקרונות | PM (בתכנון) · DEV (לפי תג) | **`skills/imagegen-frontend-mobile/SKILL.md`** |
-| `apple-design` | ⚠️ **נדיר, והטריגר הוא מונה ⛔ ולא מצב־רוח** — טיק הכרעה, ורק כשאין ולו שורה פתוחה אחת שנושאת `apple-design` בתא `סקיל` | PM (נדיר) · DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
-| `animate` | שורה שנושאת **גם** `arena` **וגם** `שכבה ב׳` — שניהם, ⛔ לא אחד | DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
-| `emil-design-eng` | **רק** אם `animate` שלח לשם. ⛔ אינו עצמאי | DEV (לפי תג) | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
-| `review-animations` | הדיף נוגע ב-`app/arcade/**` · `components/Arena*`, או מכיל `animate\|transition\|motion\|glow(` | **QA בלבד** | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
-| `pick-ui-library` | המשימה דורשת תלות UI ש-`package.json` ⛔ **אינו** נושא | DEV | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
-| `ask-sonner` | `sonner` בתלויות · רכיב `*Toast*` · או השורה אומרת «טוסט» | DEV | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) |
+| `apple-design` | ⚠️ **נדיר, והטריגר הוא מונה ⛔ ולא מצב־רוח** — טיק הכרעה, ורק כשאין ולו שורה פתוחה אחת שנושאת `apple-design` בתא `סקיל` | PM (נדיר) · DEV (לפי תג) | **`skills/anthropic/apple-design/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
+| `animate` | שורה שנושאת **גם** `arena` **וגם** `שכבה ב׳` — שניהם, ⛔ לא אחד | DEV (לפי תג) | **`skills/anthropic/animate/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
+| `emil-design-eng` | **רק** אם `animate` שלח לשם. ⛔ אינו עצמאי | DEV (לפי תג) | **`skills/anthropic/emil-design-eng/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
+| `review-animations` | הדיף נוגע ב-`app/arcade/**` · `components/Arena*`, או מכיל `animate\|transition\|motion\|glow(` | **QA בלבד** | **`skills/anthropic/review-animations/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
+| `pick-ui-library` | המשימה דורשת תלות UI ש-`package.json` ⛔ **אינו** נושא | DEV | **`skills/anthropic/pick-ui-library/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
+| `ask-sonner` | `sonner` בתלויות · רכיב `*Toast*` · או השורה אומרת «טוסט» | DEV | **`skills/anthropic/ask-sonner/SKILL.md`** ⟦בשכפול `C-0621` ⇒ **קרא את הקובץ**⟧ |
 | `dataviz` | לפני **כל** גרף, טבלת מדדים, סרגל התקדמות או דשבורד — בקוד המוצר ובכל ארטיפקט. חובה `npm run check:palette` | DEV · PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
 | `web-artifacts-builder` | ארטיפקט HTML **מורכב לרוי** בלבד | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |
 | `canvas-design` | נכס סטטי: לוגו, אייקון, תמונת שיתוף (`.png` / `.pdf`) | PM | ⚠️ **⛔ לא מובטח** — סקיל תוסף (§ 4) · `RULES § 0.9` |

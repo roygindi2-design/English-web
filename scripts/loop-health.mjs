@@ -957,6 +957,28 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
    */
   const selfRow = table.find((w) => w.name === active);
   const selfOpen = selfRow && Number.isFinite(selfRow.open) ? selfRow.open : null;
+
+  /**
+   * 🔴 **⟦REWRITTEN 15/09 · `C-0625` · `F-261`⟧ AND THE CONDITION WAS THE BUG.**
+   *
+   * ‏`F-252` asked «is `general` ITSELF empty?» — and 🔬 **measured on this clone, that
+   * question can ⛔ never become true**, because `general` is exactly where PM opens its
+   * rows. ⇒ every PM tick refills the one field whose emptiness was the only exit:
+   * ```
+   * general selfOpen = 1        ⇒ ⛔ no alarm
+   * pool (general∪loop∪base)=7  ⇒ DEV ⛔ never advances (§ 0.23 ז׳ ③: >0 ⇒ stay)
+   * 36 § 13 sequence            = 12 ⬜ across amirnet · story · cards · arena · msgs
+   *                             ⇒ ⛔ UNREACHABLE, and the focus has read `general`
+   *                               since 31/08 — two weeks.
+   * ```
+   * ⇒ **the question that matters is ⛔ not «is the waiting room empty» but «is anyone
+   * still waiting outside».** `general` is step ⑤ of `§ 0.23 ז׳` — the answer ⛔ only when
+   * the sequence has nothing — so a non-empty sequence is itself the signal.
+   */
+  const sequenceOpen = table
+    .filter((w) => !CROSS_CUTTING.has(w.name) && Number.isFinite(w.open))
+    .reduce((n, w) => n + w.open, 0);
+  const stranded = CROSS_CUTTING.has(active) && sequenceOpen > 0;
   const focusDry = CROSS_CUTTING.has(active) && selfOpen === 0 && open > 0;
 
   /**
@@ -965,12 +987,18 @@ check('11', 'לזרימה הפעילה יש עבודה פנויה', () => {
    * is a DATE mechanism and would expire. This finding ⛔ never expires. ⇒ it rides in
    * `items`, the same channel check 17 uses for «alive, ⛔ but ⛔ without the marker».
    */
-  const items = focusDry
+  const items = stranded
     ? [
-        `🟠 \`${active}\` **עצמה** ⬜=0 — הבריכה מחזיקה ${open} ⇒ DEV ⛔ אינו רעב, ⛔ אבל תנאי המיצוי של \`§ 0.23 ז׳\` **מתקיים**.`,
-        `⇒ **QA מכריע ב-STEP 5.8** — מזיז את המוקד, או כותב שורה למה ⛔ לא. ⛔ שתיקה ⛔ אינה אפשרות (\`F-252\`).`,
+        `🟠 המוקד \`${active}\` הוא **חדר המתנה**, ⛔ ולא מחלקה — ולרצף \`36 § 13\` יש **${sequenceOpen}** ⬜ שאיש ⛔ אינו יכול לגעת בהן.`,
+        `⇒ **הפרוסה חייבת לחזור לרצף** (\`§ 0.23 ז׳\` — ⑤ הוא התשובה **רק** כשלרצף ⛔ אין דבר). הרשימה המסודרת ⇒ \`docs/plan-open.md\`.`,
+        `⚠️ ⛔ **ו⛔ זה ⛔ אינו «DEV רעב»** — הבריכה מחזיקה ${open} ⬜ ⇒ ⛔ אין חירום. מה שיש הוא **עבודה בלתי-נראית**. ⛔ שתיקה ⛔ אינה אפשרות (\`F-252\` · \`F-261\`).`,
       ]
-    : [];
+    : focusDry
+      ? [
+          `🟠 \`${active}\` **עצמה** ⬜=0 — הבריכה מחזיקה ${open} ⇒ DEV ⛔ אינו רעב, ⛔ אבל תנאי המיצוי של \`§ 0.23 ז׳\` **מתקיים**.`,
+          `⇒ **QA מכריע ב-STEP 5.8** — מזיז את המוקד, או כותב שורה למה ⛔ לא. ⛔ שתיקה ⛔ אינה אפשרות (\`F-252\`).`,
+        ]
+      : [];
 
   return {
     ok: open > 0,
