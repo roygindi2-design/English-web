@@ -2516,6 +2516,41 @@ rows need a deterministic, tested emitter — `supabase/seed/**` is a generated 
 opened in this tick as the declared continuation, and the plan covering all three is
 `docs/superpowers/plans/2026-09-13-amirnet-vocab-into-the-database.md`.
 
+### `T-323` · `supabase/seed/0007_amirnet_vocab.sql` — the 6,715 rows become SQL
+`0026` created the table **empty**, and `T-270`'s own note above says why that was not a
+half-finished task: `supabase/seed/**` is a generated tree, so the rows need a deterministic,
+tested emitter before anything can be loaded or measured. `scripts/build-amirnet-vocab-sql.mjs`
+is that emitter, and it is the **one impure layer** — it reads
+`data/generated/amirnet-vocab.csv` and writes one file, exactly the split
+`scripts/build-ingest-sql.mjs:66` draws. ⛔ **The derivation is ⛔ not repeated:**
+`scripts/build-amirnet-vocab.mjs` (`T-222`) still owns the union, the lowest-band merge, the
+`A1`/`C2` drops and the tier map; its CSV is this script's INPUT, and a disagreement between
+the two is a bug in the derivation, ⛔ never something the emitter repairs.
+
+**Measured, ⛔ not asserted:** 6,715 rows emitted — `1,244 · 2,140 · 2,417 · 914` by tier and
+**56** connectors, the exact split `T-222`'s case-sensitive merge is locked to — into 585,246
+bytes of SQL.
+
+🔴 **The six gates of `0026` are repeated in the emitter ON PURPOSE, and that is ⛔ not
+duplication.** A row the table would refuse still *emits* fine; the refusal then arrives at
+load time, six thousand rows in, reading as a transaction failure instead of as the named
+defect it is. ⇒ `refuseUnwritable()` throws **by the constraint's name** —
+`amirnet_vocab_cefr_check` for a band `41 § 6` steps 3-4 dropped, `amirnet_vocab_tier_name_pairing`
+for a tier carrying another tier's Hebrew name, and four more. The same reason
+`scripts/build-amirnet-items.mjs` refuses an item with no `vocab_band`, rather than emitting it.
+
+⚠️ **`SEED_OUT_DIR` is honoured (`F-048`ⓑ)** ⇒ the suite points the generator at a throwaway
+directory, asserts against THAT, and then asserts the committed seed is **byte-identical** —
+so a seed that has fallen behind `data/generated/` is a RED TEST, ⛔ not a silence that repairs
+itself on the next agent's `npm test`. ⚠️ And the declaration file
+`scripts/build-amirnet-vocab-sql.d.mts` is hand-written, because `tsconfig.json` keeps
+`allowJs: false` on purpose; the suite's last block compares its exported names against the
+module's, which is the same anti-drift pairing `next-cycle-id.test.ts` uses.
+
+⚠️ **The zero-row branch emits `select … where false`, ⛔ not an empty `values`.** A `values`
+list with no tuple is ⛔ not valid SQL — an empty seed would be a file Postgres rejects at load
+time rather than one that inserts nothing.
+
 ## C-0584 (DEV) — `T-326` — the licence footer asks the ROUTE whether it is inside a task
 
 `T-011` put the attribution link in `app/layout.tsx`'s `<footer>`, and a root layout has
