@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                                # ▶️ C-0630 (DEV): `T-370` 🟣 + `T-371` 🟣. הטבעת פותחת את `אמירנט` (0⇢1 כניסות, נמדד: `data-ring-node-blocked` ⛔ אינו מכיל `amirnet`), וההליכה רואה את המחלקה לראשונה (10⇢13 מסכים). `amirnet` ⬜=1 (`T-372`, >60 דק׳ בהצהרה).
-STATE: READY                      # ▶️ C-0611 (QA): `dev`==`work/current` (ff-only שקט כבר קרה בשער זול לפני הטיק). ⛔ אין חוסם.
+NEXT_AGENT: DEV                                # ▶️ C-0632 (QA, מלא): מוזג `work/current⇢dev` (41 קומיטים, ff-only), 17 שורות 🟣⇢✅. `amirnet` ⬜=1 (`T-372`, עדיין מוצהרת >60 דק׳) ⇒ נשאר המוקד, שום דבר לא זז ב-STEP 5.8 (⬜>0 בזרימה הפעילה עצמה).
+STATE: READY                      # ▶️ C-0632 (QA): `dev`==`work/current` (ff-only, 41 קומיטים). ⛔ אין חוסם.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-15T21:26:00Z"   # C-0630 (DEV, בנייה) — 2 שורות 🟣. ⛔ המוקד ⛔ לא זז: `amirnet` החזיקה ⬜=3 בפתיחה ⇒ כלל ③ אומר «אל תזוז», והרצף ⛔ אינו נסרק.
+LAST_HANDOFF_AT: "2026-09-15T23:09:14Z"   # C-0632 (QA, מלא) — מיזוג + 17 🟣⇢✅ + RELEASE_READY. amirnet ⬜=1 (T-372), נשאר המוקד.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"               # 🔒 ננעל C-0632 (QA, מלא) — טיק מלא מתחיל.
-LOCK_AT: "2026-09-15T22:46:39Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה C-0632 (QA) — מיזוג + 17 🟣⇢✅ + RELEASE_READY. `verify` יצא 0.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  13 / 120           # § 13-1 · **מוצתה (⬜=0) · הוזזה→`nav` ב-C-0310 (QA).** הפרוסות A/B/C נמסרו (T-185…T-188 · T-202/203 · T-150). שלוש החותמות (36§13.1) — ראה SEALS למטה.
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ▶️ C-0610 (DEV): `T-340` 🟣 — תא «סיבת ההעברה» מקבל תקרת 320 תווים ומצבה לארכיון (נמדד על `C-0588`: 1,539⇐581 בתים), ובדיקה 9 נוקבת בשורה הארוכה ביותר ⇒ ההישנות החמישית (`F-182`·`F-211`·`F-245`) מקבלת אכיפה, ⛔ לא תקרה חדשה. `T-315` 🟣 — ⓐ/ⓑ נמדדו **כבר-חיים** (‏`T-299`/`F-225`), ⓒ נבנתה ואומתה במוטציה.
 #   msgs:    4 / 120           # 39-messages-spec § 9 · ⛔ **⛔ אינה המוקד** (הוזז→`amirnet` ב-C-0625). ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "c4b318d4 · 2026-09-14T17:44Z · **C-0611 (QA, מלא).** `dev`==`work/current` (שער זול קדם). `verify` מיוחס ירוק ל-c4b318d4 (17:26:51Z) · `loop:health` 22/23 (18=שני ענפי `claude/*` תקועים — `F-248` נסגר, `F-254` חדש → CONTENT) · הליכה חיה 375×780 על `ArenaSummary`/`DeckSelector` — 0 פגם חדש, תואם `F-151`/פריט 105. 5 🟣→✅. בדיקת עשן `/api/health` 4/4 `ok:true`. `PROMOTION_BLOCKERS`/קידום ל-main ⇐ PROMOTER בלבד."
+RELEASE_READY: "054d2847 · 2026-09-15T23:09Z · **C-0632 (QA, מלא).** `dev`==`work/current` (ff-only, 41 קומיטים). `verify` מיוחס ירוק ל-054d2847 (23:06:16Z, 2911/2911 בדיקות) · `loop:health` 21/23 (9=רגיסטר מעל תקרה → PM · 17=PROMOTER שקט 33.5ש׳ → PM, `F-263`/`F-264`) · הליכה חיה 375×780 (`next start`) על אמירנט (5 מסכים) + זירה (5 מסכים) + `/dev/tabs/cards` — 0 פגם חדש, 0 שגיאות קונסול חדשות (503 ב-`/dev/tabs/cards` קדום, ⛔ מהדיף הזה). 17 🟣→✅. **מה שהלומד מקבל:** אמירנט נגיש מהטבעת (היה נעול), והזירה מרגישה חיה — יריב נושם, פס חיים נשפך, מספר נזק. smoke test דולג — `LAST_PROMOTED_AT` לא זז מהטיק הקודם. `PROMOTION_BLOCKERS`/קידום ל-main ⇐ PROMOTER בלבד."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "c4b318d"  # dev אחרי C-0611 (QA, מלא). `verify` מיוחס ירוק על אותו SHA.
+LAST_REVIEWED_COMMIT: "054d284"  # dev אחרי C-0632 (QA, מלא). `verify` מיוחס ירוק על אותו SHA.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -65,3 +65,4 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 | C-0630 | DEV | QA | 2026-09-15T21:26:00Z | 🔨 **בנייה — 2 שורות. הדלת נפתחה, והרתמה ראתה את החדר בפעם הראשונה.** `T-370`: `amirnet` ⇢ `open` בתבנית `msgs` הקבועה (מחוץ ל-`LIVE_IDS`, כך ש-`D-064` נשארת חיה — נבדק בבדיקה חדשה); `INFRA_NOTE_HE` ירד ל-3 מפתחות. `T-371`: `DEFAULT_ROUTES` יצא ל-`scripts/lib/walk-routes.mjs` כדי שיהיה **נבדק**, שלושה מסכי אמירנט נכנסו, ו-`/dev/amirnet` נבנה. הליכה 375: 13 מסכים, כולם 200, 0 גלישה, 0 שגיאות על אמירנט. ⛔ נעצר על **תיבת הזמן** — `T-372` מוצהרת >60 דק׳. ⚠️ ל-QA: `/dev/tabs/cards` מחזיר **8 שגיאות קונסול** בהליכה, ⛔ קדום לטיק הזה (הדיף ⛔ אינו נוגע ב-`cards`). | `lib/core/worldRing.ts` · `lib/core/worldRing.test.ts` · `app/(tabs)/world/amirnet/page.tsx` · `app/dev/amirnet/page.tsx` · `scripts/lib/walk-routes.mjs` · `scripts/lib/walk-routes.d.mts` · `scripts/walk-screens.mjs` · `scripts/walk-screens.test.ts` |
 | C-0631 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-15T22:07:05Z | 📚 **אצוות רקע — 17 מילים Tier 1 אמירנט (`melon`…`orphan`), K-005.** שער אמיתי 17/17 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא, ⛔ לא בקיצור-הנפח. כיסוי: 885→902/3,382. | `data/generated/batch-2026-09-15.jsonl` · `manifest-2026-09-15.json` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` |
+| C-0632 | QA | DEV | 2026-09-15T23:09:14Z | 🚪 **שער מלא — מיזוג `ff-only` (41 קומיטים) ל-`dev`, 17 🟣⇢✅.** `verify`/`loop:health`/הליכה חיה 375×780 — 0 חוסם. `amirnet` ⬜=1 (`T-372`) ⇒ נשאר המוקד. `F-263`/`F-264` נפתחו (רגיסטר מעל תקרה · PROMOTER שקט) → PM. | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/03-for-roy.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
