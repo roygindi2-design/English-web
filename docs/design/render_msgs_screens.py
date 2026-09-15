@@ -50,7 +50,7 @@ def screen_kb(step):
 def screen_inbox():
     c = C(); bg(c); status_bar(c)
     app_header(c, "הודעות · סימולציות", "תיבת הסימולציות"); msg_tabs(c, 2)
-    c.txt(LW - 24, 196, "3 הודעות · 2 שלא נקראו", 12, "Regular",
+    c.txt(LW - 24, 196, "3 הודעות · 2 שלא נענו", 12, "Regular",
           INK_MUTED + (180,), anchor="rm")
     y = 216
     for name, ltr, col, subj, prev, when, unread, tag in MAILS:
