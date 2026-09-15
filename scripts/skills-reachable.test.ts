@@ -111,11 +111,18 @@ describe('⛔ אף פרומפט ⛔ אינו מפנה לסקיל שאינו במ
     const files = execFileSync('git', ['ls-files', 'skills/'], { encoding: 'utf8' })
       .split('\n')
       .filter((f) => f.endsWith('SKILL.md'));
-    expect(files.length, '⛔ אין קובצי סקיל ⇒ הטענה חלולה').toBeGreaterThanOrEqual(17);
+    // ⟦15/09⟧ 17 ⇒ 25: שמונת הסקילים מ-`skills/anthropic/` נכנסו לריפו (`C-0621`).
+    expect(files.length, '⛔ אין קובצי סקיל ⇒ הטענה חלולה').toBeGreaterThanOrEqual(25);
     const drift: string[] = [];
     for (const f of files) {
       const dir = f.split('/').at(-2) as string;
-      const declared = /^name:\s*(.+)$/m.exec(readFileSync(f, 'utf8'))?.[1]?.trim() ?? '';
+      // ⟦תוקן 15/09 · `C-0621`⟧ ⛔ מרכאות ⛔ אינן הפרש-שם. שמונת הסקילים שהועתקו
+      // מהחשבון ל-`skills/anthropic/` מצהירים `name: "animate"` — YAML תקין לחלוטין —
+      // והפרסר החשוף קרא את זה כ-«"animate"» ≠ «animate» ו**הפיל את הבנייה על התאמה
+      // מושלמת**. ⇒ מקלפים גרש/גרשיים עוטפים, ⛔ ואז משווים. ⛔ הטענה ⛔ לא רוככה:
+      // מיזוג-שם אמיתי עדיין נתפס — ‏`taste-skill` עדיין החריג היחיד המוצהר.
+      const declared = (/^name:\s*(.+)$/m.exec(readFileSync(f, 'utf8'))?.[1]?.trim() ?? '')
+        .replace(/^(['"])(.*)\1$/, '$2');
       if (declared === dir) continue;
       if (KNOWN.get(dir) === declared) continue;
       drift.push(`${dir} ⇒ «${declared}»`);
