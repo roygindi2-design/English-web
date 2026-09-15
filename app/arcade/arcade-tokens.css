@@ -279,11 +279,22 @@
 /* ⛔ **הסימן הפוך לסימן של הגוף, ⛔ ולא זהה לו:** היריב נהדף `+0.75rem` ⇒ הגלימה
    נגררת `-`; הגיבור מתחמק `-0.75rem` ⇒ הגלימה נגררת `+`. סימן זהה היה **מכפיל**
    את התזוזה במקום לפגר אחריה. */
+/* 🔴 **⟦`C-0624` · `T-366`⟧ ‏`arena-sway` ⛔ ראשון ברשימה, וזה ⛔ אינו סדר שרירותי.**
+   🔬 **נמדד, ⛔ ולא שוער:** קיצור `animation` **מחליף** את הרשימה כולה, ו-CSS מתאים
+   אנימציה ישנה לחדשה **לפי מיקום ברשימה**. ⇒ אילו ההינף היה נכתב `arena-follow-hit`
+   לבדו, הנדנוד היה **מת** לרגע הפגיעה ומתחיל מחדש אחריה — בדיוק הקפיצה שהוא נועד
+   למנוע; ואילו היה נכתב **אחריו** (מקום 1 במקום 0), ההתאמה לפי מיקום הייתה נשברת
+   והוא היה מתאפס. ⇒ **אותו שם, באותו מקום, בשני הכללים** ⇒ הנדנוד **ממשיך** בזמן
+   שההינף רץ מעליו. ⛔ והם ⛔ אינם נלחמים: הנדנוד הוא `rotate`, ההינף הוא `transform`. */
 [data-arena-stage][data-arena-phase='hit'] [data-arena-figure='enemy'] [data-arena-part] {
-  animation: arena-follow-hit var(--arena-follow-settle-ms) ease-out 1;
+  animation:
+    arena-sway var(--arena-sway-ms) ease-in-out infinite,
+    arena-follow-hit var(--arena-follow-settle-ms) ease-out 1;
 }
 [data-arena-stage][data-arena-phase='dodge'] [data-arena-figure='hero'] [data-arena-part] {
-  animation: arena-follow-dodge var(--arena-follow-settle-ms) ease-out 1;
+  animation:
+    arena-sway var(--arena-sway-ms) ease-in-out infinite,
+    arena-follow-dodge var(--arena-follow-settle-ms) ease-out 1;
 }
 
 /* א1 — **הקיפאון עוצר שלושה ערוצים, ⛔ ולא שניים.** עד T-216 עצר hit-stop את לולאת
@@ -511,4 +522,115 @@
   }
   [data-arena-scope] [data-arena-slot='hero'] { transform-origin: bottom center; }
   [data-arena-scope] [data-arena-slot='enemy'] { transform-origin: top center; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ⟦NEW 15/09 · `C-0624` · `T-366` · הוראת רוי: «תשפר את האנימציה של הדמויות עצמן»⟧
+   **הדמויות מפסיקות להיות פסלים.**
+
+   🔬 **מה שנמדד בקוד לפני, ⛔ ולא שוער:**
+   ```
+   grep -c "data-arena-idle"  ArenaStage.tsx  ⇒ 1   ⇒ **הגיבור נושם. היריב ⛔ לא.**
+   [data-arena-part]                          ⇒ זז **אך ורק** ברגע פגיעה/התחמקות
+   [data-arena-figure] ב-hit/dodge            ⇒ `translateX` בלבד — **החלקה, ⛔ לא מכה**
+   ```
+   ⇒ יריב קפוא מול גיבור נושם ⛔ אינו «יריב» — הוא **תפאורה**. ושיער שדומם בזמן שהגוף
+   נושם הוא בדיוק ה«בובת נייר» שכל אנימציית דמות נמדדת נגדה.
+
+   🔴 **ומה שאיפשר את זה הוא שינוי השער באותו טיק, ⛔ ולא טריק:** ‏`COMPOSITOR_ONLY`
+   קיבל את `rotate`/`scale`/`translate` (‏`T-366`ⓐ). ⇒ לדמות יש עכשיו **שני ערוצי
+   תנועה בלתי-תלויים על אותו אלמנט**: `transform` נשאר של ההדיפה, ו-`rotate` הוא של
+   ההישענות והנדנוד. ⛔ **בכתיב הישן זה היה בלתי-אפשרי**: שניהם היו `transform`, והכלל
+   המאוחר היה **דורס** את המוקדם — למשל 🔬 `translate` על עוטף היריב, שנושא
+   `scale-[0.66]` כ-`transform`: אנימציית `transform: translateY()` הייתה **מוחקת את
+   הקטנת העומק** ומחזירה את היריב לגודל הגיבור.
+
+   ⛔ **וזה ⛔ אינו קישוט שמתחרה בתוכן (T-041):** המשרעות הן **פחות מ-2px ופחות
+   מ-2°**, המחזורים ארוכים (3.1–3.4 שניות), ואזור השאלה ⛔ עדיין ⛔ אינו זז. תנועה
+   בסדר גודל כזה ⛔ אינה נקראת כאירוע — היא נקראת כ«זה חי».
+   ⛔ **וכולה מתבטלת ב-`prefers-reduced-motion`** — הבלוק בסוף המדור. */
+
+:root {
+  /* מחזורים **שאינם כפולה זה של זה**, וזו הנקודה: 2600 (הגיבור) · 3400 (היריב) ·
+     3100 (השכבות הרכות) ⇒ שלושתם **נסחפים** זה מזה ו⛔ לעולם אינם פועמים ביחד.
+     דופק משותף קורא כמטרונום, ⛔ ולא כשתי נשימות. */
+  --arena-breath-ms: 3400ms;
+  --arena-sway-ms: 3100ms;
+  /* ההישענות. ⛔ מעלות, ⛔ ולא פיקסלים: גוף שמקבל מכה **מסתובב סביב כפות הרגליים**,
+     ⛔ ואינו מחליק. ‏`docs/design/kol-B-04-impact.png` מצייר את היריב **נטוי אחורה**. */
+  --arena-recoil-deg: 3deg;
+  --arena-lean-deg: 4deg;
+}
+
+/* ⓐ **היריב נושם.** ⛔ `translate` ו⛔ לא `transform` — העוטף כבר נושא `scale-[0.66]`
+   כ-`transform`, ⇒ ‏`transform` כאן היה מוחק את חיווי העומק ① של הבמה.
+   ⛔ **והמשרעת קטנה מזו של הגיבור (0.7 מול 2):** היריב **רחוק**, ותנועה רחוקה
+   נראית קטנה יותר. זו אותה פרספקטיבה של `ArenaScene`, ⛔ ולא ערך שנבחר. */
+@keyframes arena-breath {
+  0%, 100% { translate: 0 0.7px; }
+  50% { translate: 0 -0.7px; }
+}
+[data-arena-scope] [data-arena-breath='enemy'] {
+  animation: arena-breath var(--arena-breath-ms) ease-in-out infinite;
+}
+
+/* ⓑ **השכבות הרכות מתנדנדות** — שיער וגלימה, ⛔ ולא הנשק: בד ושיער **מפגרים** אחרי
+   הגוף, מוט שמוחזק ביד ⛔ אינו מפגר. ⛔ הציר הוא נקודת החיבור (‏`fill-box` + `50% 0%`)
+   ⇒ הקצוות זזים והבסיס ⛔ אינו זז, שזה ההבדל בין נדנוד לבין צורה שמסתובבת. */
+@keyframes arena-sway {
+  0%, 100% { rotate: -1.6deg; }
+  50% { rotate: 1.6deg; }
+}
+[data-arena-scope] [data-arena-figure] [data-arena-part='hair'],
+[data-arena-scope] [data-arena-figure] [data-arena-part='cape'] {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: arena-sway var(--arena-sway-ms) ease-in-out infinite;
+}
+
+/* ⓒ **ההישענות — הערוץ השני של ההדיפה.** הסימן **עוקב אחרי `translateX` של הגוף**
+   (‏`app/globals.css`): היריב נהדף `+0.75rem` ⇒ הוא נוטה `+`; הגיבור מתחמק `-0.75rem`
+   ⇒ הוא נוטה `-`. סימן הפוך היה קורא כ«נשען **אל** המכה».
+   ⛔ **והציר בכפות הרגליים** — `50% 100%`: גוף מסתובב סביב מה שנוגע ברצפה. ציר במרכז
+   היה מרים את הרגליים מהרצפה שהסט בדיוק צייר. */
+[data-arena-scope] [data-arena-stage] [data-arena-figure] {
+  transform-origin: 50% 100%;
+  transition: transform 200ms ease-out, rotate 200ms ease-out;
+}
+[data-arena-scope] [data-arena-phase='hit'] [data-arena-figure='enemy'] {
+  rotate: var(--arena-recoil-deg);
+}
+[data-arena-scope] [data-arena-phase='dodge'] [data-arena-figure='hero'] {
+  rotate: calc(var(--arena-lean-deg) * -1);
+}
+
+/* ⓓ **הקיפאון עוצר גם את שני הערוצים החדשים.** א1 — ערוץ שממשיך לזוז בתוך hit-stop
+   הוא בדיוק הפגם שהיא קיימת נגדו, ו⛔ אין סיבה שנשימה תהיה חריגה ממנו. */
+[data-arena-stage-area][data-arena-impact='a'] [data-arena-breath],
+[data-arena-stage-area][data-arena-impact='b'] [data-arena-breath] {
+  animation-play-state: paused;
+}
+
+/* ⓔ חוקה שכבה א׳ א7 — ⛔ **עצירה, ⛔ ולא האצה.** ‏`animation: none` ⛔ ולא
+   `animation-duration: 0.01ms`: משך זעיר על `infinite` הוא לולאה בתדר גבוה.
+   ⛔ **וההישענות מתבטלת גם היא** — `rotate: 0deg` מחזיר את הגוף לזקוף, ⛔ ולא
+   משאיר אותו נטוי לנצח כשהתנועה כבויה.
+   🔴 **ושני סלקטורי הפיגור חוזרים כאן בכוונה, ⛔ ולא בהיסח הדעת:** הבלוק המוקדם
+   (`prefers-reduced-motion`, למעלה בקובץ) מכבה אותם — ⛔ אבל כללי הפיגור **נכתבו
+   מחדש** בטיק הזה כדי לשאת גם את `arena-sway`, ומדיה ⛔ אינה מוסיפה ספציפיות. ⇒ באותה
+   ספציפיות מנצח **המאוחר בקובץ**, ולולא החזרה כאן `prefers-reduced-motion` היה
+   **נשבר בשקט** דווקא במסלול שהוא הכי חשוב בו. זו בדיוק הטענה של ההערה שם. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-breath='enemy'],
+  [data-arena-scope] [data-arena-figure] [data-arena-part='hair'],
+  [data-arena-scope] [data-arena-figure] [data-arena-part='cape'],
+  [data-arena-stage][data-arena-phase='hit'] [data-arena-figure='enemy'] [data-arena-part],
+  [data-arena-stage][data-arena-phase='dodge'] [data-arena-figure='hero'] [data-arena-part] {
+    animation: none;
+  }
+  [data-arena-scope] [data-arena-phase='hit'] [data-arena-figure='enemy'],
+  [data-arena-scope] [data-arena-phase='dodge'] [data-arena-figure='hero'] {
+    rotate: 0deg;
+  }
 }

@@ -167,3 +167,90 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
     expect(SCENE_CODE, '⛔ ⛔ אין hex').not.toMatch(/#[0-9a-fA-F]{3,8}\b(?![-\w])/);
   });
 });
+
+/**
+ * 🎭 **⟦NEW 15/09 · `C-0624` · `T-366` · רוי: «תשפר את האנימציה של הדמויות עצמן»⟧**
+ *
+ * 🔬 **מה שנמדד בקוד לפני, ⛔ ולא שוער:** `data-arena-idle` הופיע **פעם אחת** בבמה ⇒
+ * הגיבור נשם והיריב היה **פסל**; `[data-arena-part]` זז **אך ורק** ברגע פגיעה; והתנוחות
+ * היו `translateX` בלבד — **החלקה, ⛔ ולא מכה**.
+ */
+describe('C-0624 — הדמויות חיות', () => {
+  const STAGE = readFileSync('components/ArenaStage.tsx', 'utf8');
+  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+  const TOKENS_CODE = TOKENS.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  it('⛔ **שתי** הדמויות נושמות, ⛔ ולא אחת', () => {
+    // ⓐ הגיבור — המנגנון הקיים, ⛔ שלא נגעתי בו.
+    expect(STAGE).toMatch(/data-arena-idle=\{idle \? 'on' : 'off'\}/);
+    // ⓑ היריב — תכונה **משלו**. ⛔ שימוש חוזר ב-`data-arena-idle` היה מוחק את
+    //    `scale-[0.66]` שלו: הכלל שלה ב-`globals.css` הוא `transform`, וכך גם הסקאלה.
+    expect(STAGE).toMatch(/data-arena-breath="enemy"/);
+    expect(TOKENS_CODE).toMatch(
+      /\[data-arena-breath='enemy'\]\s*\{[^}]*animation:\s*arena-breath var\(--arena-breath-ms\)/,
+    );
+  });
+
+  it('⛔ נשימת היריב על `translate`, ⛔ ולא על `transform` — אחרת העומק נמחק', () => {
+    const frames = TOKENS_CODE.match(/@keyframes arena-breath\s*\{[\s\S]*?\}\s*\}/);
+    expect(frames, 'הקדר חייב להתקיים').not.toBeNull();
+    expect(String(frames)).toMatch(/translate:/);
+    // 🔴 זו הטענה כולה: `transform` כאן היה דורס את `scale-[0.66]` של העוטף.
+    expect(String(frames), '⛔ ⛔ לא transform').not.toMatch(/transform:/);
+    // …והעוטף אכן נושא את שניהם על אותו אלמנט, ⇒ ההתנגשות ⛔ אינה תיאורטית.
+    expect(STAGE).toMatch(/data-arena-breath="enemy"[\s\S]{0,120}scale-\[0\.66\]/);
+  });
+
+  it('שני מחזורים שונים ⇒ שתי נשימות, ⛔ ולא מטרונום', () => {
+    const breath = Number(/--arena-breath-ms:\s*(\d+)ms/.exec(TOKENS)?.[1]);
+    const sway = Number(/--arena-sway-ms:\s*(\d+)ms/.exec(TOKENS)?.[1]);
+    const hero = Number(/animation: arena-idle (\d+)ms/.exec(readFileSync('app/globals.css', 'utf8'))?.[1]);
+    for (const [name, v] of [['breath', breath], ['sway', sway], ['hero', hero]] as const) {
+      expect(Number.isFinite(v), `${name} חייב להימדד`).toBe(true);
+    }
+    // ⛔ שלושה מחזורים **שונים**, ו⛔ אף אחד ⛔ אינו כפולה שלמה של אחר ⇒ הם נסחפים
+    // זה מזה ו⛔ לעולם אינם פועמים יחד.
+    expect(new Set([breath, sway, hero]).size).toBe(3);
+    const pairs: readonly (readonly [number, number])[] = [
+      [breath, hero],
+      [sway, hero],
+      [breath, sway],
+    ];
+    for (const [a, b] of pairs) {
+      expect(Math.max(a, b) % Math.min(a, b), `${a}/${b} ⛔ אינם כפולה`).not.toBe(0);
+    }
+  });
+
+  it('ההישענות היא ערוץ **שני**, ⛔ ולא החלפה של ההדיפה', () => {
+    // ⛔ `rotate` לצד `transform`, ⇒ שניהם רצים. בכתיב הישן זה היה מאפיין אחד.
+    expect(TOKENS_CODE).toMatch(/transition:\s*transform 200ms ease-out,\s*rotate 200ms ease-out/);
+    expect(TOKENS_CODE).toMatch(/\[data-arena-phase='hit'\] \[data-arena-figure='enemy'\]\s*\{\s*rotate:/);
+    expect(TOKENS_CODE).toMatch(/\[data-arena-phase='dodge'\] \[data-arena-figure='hero'\]\s*\{\s*rotate:/);
+    // ⛔ **הציר בכפות הרגליים** — גוף מסתובב סביב מה שנוגע ברצפה שהסט צייר.
+    expect(TOKENS_CODE).toMatch(/\[data-arena-figure\]\s*\{[^}]*transform-origin:\s*50% 100%/);
+  });
+
+  it('⛔ הנדנוד על השכבות ה**רכות** בלבד — ⛔ ולא על הנשק', () => {
+    expect(TOKENS_CODE).toMatch(/\[data-arena-part='hair'\]/);
+    expect(TOKENS_CODE).toMatch(/\[data-arena-part='cape'\]/);
+    // 🔴 מוט שמוחזק ביד ⛔ אינו מפגר אחרי הגוף. בד ושיער כן.
+    const sway = TOKENS_CODE.slice(TOKENS_CODE.indexOf("[data-arena-part='hair']"));
+    expect(sway.slice(0, 260), '⛔ ⛔ לא הנשק').not.toMatch(/data-arena-part='weapon'/);
+    // …והציר הוא נקודת החיבור, ⛔ ולא מרכז הצורה.
+    expect(TOKENS_CODE).toMatch(/transform-box:\s*fill-box;\s*transform-origin:\s*50% 0%/);
+  });
+
+  it('חוקה א7 — שלושת הערוצים החדשים נעצרים ב-`prefers-reduced-motion`', () => {
+    const blocks = [...TOKENS_CODE.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '');
+    const joined = blocks.join('\n');
+    expect(blocks.length, 'חייב להימדד בלוק אחד לפחות').toBeGreaterThan(0);
+    for (const sel of ["[data-arena-breath='enemy']", "[data-arena-part='hair']", "[data-arena-part='cape']"]) {
+      expect(joined, `${sel} חייב להיעצר`).toContain(sel);
+    }
+    // ⛔ `animation: none` ו⛔ לא משך זעיר — משך 0.01ms על `infinite` הוא לולאה מהירה.
+    expect(joined).toMatch(/animation:\s*none/);
+    // ⛔ **וההישענות חוזרת לזקוף**, ⛔ ולא נשארת נטויה לנצח כשהתנועה כבויה.
+    expect(joined).toMatch(/rotate:\s*0deg/);
+  });
+});

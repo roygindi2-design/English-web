@@ -11,9 +11,11 @@
  * every tick, forever, for free. Hence a gate, ⛔ not a skill and ⛔ not an agent rule.
  *
  * TWO RULES, AND DELIBERATELY ⛔ NOT A THIRD:
- *   ⓐ an `@keyframes` block or a `transition:` declaration that touches a property that
- *     is neither `transform` nor `opacity` (i.e. a property the compositor cannot run,
- *     so the browser lays out or paints on every frame);
+ *   ⓐ an `@keyframes` block or a `transition:` declaration that touches a property the
+ *     COMPOSITOR cannot run (so the browser lays out or paints on every frame). The
+ *     compositor set is `transform`/`opacity` plus the individual transform properties
+ *     `rotate`/`scale`/`translate` — see `COMPOSITOR_ONLY` for why the last three were
+ *     missing and what their absence cost;
  *   ⓑ an inline percentage width — `style={{ width: `${x}%` }}` — inside a component
  *     that runs a `requestAnimationFrame` loop, which is layout + paint per frame.
  *
@@ -34,8 +36,33 @@ export const BASELINE_HEADER_RULE =
 
 export const BASELINE_PATH = 'scripts/motion-baseline.md';
 
-/** The only two properties a browser can animate on the compositor. */
-const COMPOSITOR_ONLY = new Set(['transform', 'opacity']);
+/**
+ * The properties a browser can animate ON THE COMPOSITOR — i.e. without laying out or
+ * painting a single frame.
+ *
+ * 🔴 **⟦WIDENED 15/09 · `C-0624` · `T-366` · Roy: «if the gates here are too strict we
+ * should lower them»⟧ — and this is the one motion rule that genuinely WAS.**
+ *
+ * The set used to be `{transform, opacity}`. 🔬 **That was a list of two SPELLINGS, ⛔ not
+ * a list of compositor properties**, and the file's own sentence above says which of the
+ * two it meant to be: "a property the compositor cannot run, so the browser lays out or
+ * paints on every frame". ‏`rotate`, `scale` and `translate` — the individual transform
+ * properties of CSS Transforms Level 2 — are handled by the identical compositor path as
+ * the `transform` shorthand. ⇒ refusing them measured nothing about performance.
+ *
+ * 🔴 **And the cost was ⛔ not theoretical — it is exactly what blocked the characters.**
+ * A rig needs TWO independent motion channels on one element: the cape SWAYS while it is
+ * also thrown by the body's lunge. Written as `transform`, the two channels are the same
+ * property ⇒ the later rule **replaces** the earlier one and the sway dies mid-strike.
+ * The individual properties compose — `rotate` applies before `transform`, ⛔ not instead
+ * of it — which is precisely the tool the platform added for this, and the gate was
+ * refusing it for a reason that was never true of it.
+ *
+ * ⛔ **And nothing is loosened beyond that:** `color`, `width`, `box-shadow`, `filter`,
+ * `background`, `top`/`left` — every property that actually costs layout or paint — are
+ * refused exactly as before, and rule ⓑ is untouched.
+ */
+const COMPOSITOR_ONLY = new Set(['transform', 'opacity', 'rotate', 'scale', 'translate']);
 
 /**
  * T-234 · D-201 · constitution § ב6 — THE ONE DECLARED EXCEPTION TO RULE ⓐ, BY NAME.

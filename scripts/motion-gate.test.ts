@@ -104,6 +104,38 @@ describe('rule ⓐ — animated properties that are not transform/opacity', () =
     ).toHaveLength(0);
   });
 
+  /**
+   * 🔴 **⟦NEW 15/09 · `C-0624` · `T-366`⟧ The individual transform properties.**
+   *
+   * The old set was `{transform, opacity}` — two SPELLINGS, ⛔ not the compositor. `rotate`,
+   * `scale` and `translate` (CSS Transforms Level 2) take the identical compositor path as
+   * the `transform` shorthand ⇒ refusing them measured nothing about performance, and what
+   * it cost was real: two motion channels on one element (a cape that sways WHILE the body
+   * throws it) are the same property when both are written `transform`, so the later rule
+   * replaces the earlier and the sway dies mid-strike.
+   */
+  it('passes the individual transform properties — they are the same compositor path', () => {
+    expect(
+      violationsInCss('a.css', `@keyframes sway {\n  0%, 100% { rotate: -1.5deg; }\n  50% { rotate: 1.5deg; }\n}`),
+    ).toHaveLength(0);
+    expect(
+      violationsInCss('a.css', `.x { transition: rotate 200ms ease-out, translate 200ms ease-out, scale 200ms ease-out; }`),
+    ).toHaveLength(0);
+    // …and they COMPOSE with `transform` in one block, which is the whole point.
+    expect(
+      violationsInCss('a.css', `@keyframes both {\n  from { rotate: 0deg; transform: translateX(0); }\n}`),
+    ).toHaveLength(0);
+  });
+
+  it('⛔ still refuses every property that actually costs layout or paint', () => {
+    // ⛔ The widening is three names, ⛔ not a softening. `rotate` is ⛔ not `filter`.
+    for (const prop of ['width', 'height', 'top', 'left', 'margin', 'filter', 'box-shadow', 'background']) {
+      const found = violationsInCss('a.css', `@keyframes k { from { ${prop}: 0; } }`);
+      expect(found, `${prop} must still be a violation`).toHaveLength(1);
+      expect(found[0]?.detail).toContain(prop);
+    }
+  });
+
   it('ignores prefers-reduced-motion longhands, which are a stop and not an animation', () => {
     const css = `@media (prefers-reduced-motion: reduce) {\n  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }\n}`;
     expect(violationsInCss('a.css', css)).toHaveLength(0);

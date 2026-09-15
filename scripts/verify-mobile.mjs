@@ -3403,6 +3403,82 @@ try {
       `transition-duration is «${motion.drain}» — a bar that teleports ⛔ never tells the learner they landed a hit`,
     );
 
+    /**
+     * `T-366` — **THE CHARACTERS ARE ALIVE, AND ⛔ THIS IS THE ONLY PLACE IT CAN BE
+     * MEASURED.** A source guard reads a stylesheet; it ⛔ cannot tell you that two
+     * transform channels actually COMPOSE in a real engine, and composition is the
+     * entire claim. So it is measured on a live figure, ⛔ not on a regex.
+     */
+    const breath0 = await page.evaluate(() => {
+      const el = document.querySelector('[data-arena-breath="enemy"]');
+      return el === null ? '' : getComputedStyle(el).translate;
+    });
+    await page.waitForTimeout(900);
+    const rig = await page.evaluate(() => {
+      const el = document.querySelector('[data-arena-breath="enemy"]');
+      const enemy = document.querySelector('[data-arena-figure="enemy"]');
+      const hero = document.querySelector('[data-arena-figure="hero"]');
+      const parts = [...document.querySelectorAll('[data-arena-part]')].map((n) => ({
+        part: n.getAttribute('data-arena-part'),
+        animation: getComputedStyle(n).animationName,
+      }));
+      return {
+        breath: el === null ? '' : getComputedStyle(el).translate,
+        enemyH: enemy === null ? 0 : enemy.getBoundingClientRect().height,
+        heroH: hero === null ? 0 : hero.getBoundingClientRect().height,
+        parts,
+      };
+    });
+    check(
+      breath0 !== '' && breath0 !== rig.breath,
+      'arena · the enemy breathes — ⛔ it is ⛔ not a statue (T-366)',
+      `translate stayed «${breath0}» across 900ms — one figure breathing and one frozen reads as scenery, ⛔ not an opponent`,
+    );
+    // 🔴 **The depth cue SURVIVES the breath, and this is the whole reason the breath
+    //    rides `translate`:** the enemy's wrapper carries `scale-[0.66]` as `transform`,
+    //    so a `transform` animation would have ERASED it and returned the enemy to the
+    //    hero's size. A live ratio is the only honest proof that it did not.
+    const ratio = rig.heroH === 0 ? 0 : rig.enemyH / rig.heroH;
+    check(
+      Math.abs(ratio - 0.66) <= 0.03,
+      'arena · the depth scale survives the breath (T-366 · depth cue ①)',
+      `enemy/hero = ${ratio.toFixed(3)}, expected ~0.66 — the breath overwrote the depth scale, which is exactly what \`transform\` would do and \`translate\` must not`,
+    );
+    const soft = rig.parts.filter((n) => n.part === 'hair' || n.part === 'cape');
+    check(
+      soft.length > 0 && soft.every((n) => n.animation.includes('arena-sway')),
+      'arena · hair and cape sway — ⛔ the paper doll is gone (T-366)',
+      `soft layers: ${JSON.stringify(rig.parts)} — a layer that is dead still while the body breathes is the paper-doll tell`,
+    );
+    check(
+      rig.parts.every((n) => n.part !== 'weapon' || !n.animation.includes('arena-sway')),
+      'arena · ⛔ the weapon does ⛔ not sway — a held rod ⛔ does not lag (T-366)',
+      `a weapon layer is running arena-sway: ${JSON.stringify(rig.parts)}`,
+    );
+
+    // 🔴 **The two channels, running AT THE SAME TIME on one element.** This is the
+    //    measurement that justifies widening `COMPOSITOR_ONLY`: written as `transform`
+    //    both would be one property and the later rule would replace the earlier.
+    const lean = await page.evaluate(() => {
+      const stage = document.querySelector('[data-arena-stage]');
+      if (stage !== null) stage.setAttribute('data-arena-phase', 'hit');
+      return null;
+    });
+    void lean;
+    await page.waitForTimeout(260);
+    const channels = await page.evaluate(() => {
+      const el = document.querySelector('[data-arena-figure="enemy"]');
+      if (el === null) return { rotate: '', transform: '' };
+      const cs = getComputedStyle(el);
+      return { rotate: cs.rotate, transform: cs.transform };
+    });
+    const shifted = /matrix\(1, 0, 0, 1, (?!0[,)])/.test(channels.transform);
+    check(
+      channels.rotate !== 'none' && channels.rotate !== '' && shifted,
+      'arena · the strike runs BOTH channels at once — lean and shove (T-366)',
+      `rotate=«${channels.rotate}» transform=«${channels.transform}» — one of the two channels overwrote the other, which is precisely the defect the widened compositor set removes`,
+    );
+
     check(
       arenaUncaught.length === 0,
       'arena ⛔ no uncaught exception',

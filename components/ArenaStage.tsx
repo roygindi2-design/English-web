@@ -103,7 +103,17 @@ export default function ArenaStage({
         <span data-arena-shadow aria-hidden className="absolute bottom-[3%] h-3 w-12" />
         {/* ⛔ **`scale`, ⛔ ולא קופסה קטנה יותר** — ראה `FIGURE_CLASS` למעלה: הרוחב
             הנומינלי הוא המכנה שממנו נגזרת משרעת תנועת ההמשך. 0.66 הוא יחס העומק ①. */}
-        <span data-arena-depth="far" className="relative inline-flex origin-bottom scale-[0.66]">
+        {/* 🔴 **⟦`C-0624` · `T-366`⟧ ‏`data-arena-breath`, ⛔ ולא `data-arena-idle`.**
+            🔬 **נמדד, ⛔ ולא הונח:** הכלל של `data-arena-idle` ב-`app/globals.css` הוא
+            `transform: translateY()`, והעוטף הזה נושא `scale-[0.66]` — שהוא **גם
+            `transform`**. ⇒ שימוש חוזר בתכונה הקיימת היה **מוחק את חיווי העומק ①**
+            ומחזיר את היריב לגודל הגיבור. ⇒ תכונה משלו, ועל ערוץ `translate` שמתחבר
+            עם `transform` במקום לדרוס אותו (`arcade-tokens.css` · `T-366`ⓐ). */}
+        <span
+          data-arena-depth="far"
+          data-arena-breath="enemy"
+          className="relative inline-flex origin-bottom scale-[0.66]"
+        >
           <ArenaAvatar role="enemy" items={[]} className={FIGURE_CLASS} />
         </span>
       </div>

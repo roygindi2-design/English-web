@@ -296,7 +296,13 @@ describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פרי
    */
   it('משך ההדבקה = משך המעבר של הגוף, ⛔ ולא ליטרל שני', () => {
     expect(declared('--arena-follow-settle-ms')).toBe(BODY_MS);
-    expect(CSS_CODE).toMatch(/animation: arena-follow-hit var\(--arena-follow-settle-ms\)/);
+    /* ⚠️ **⟦הותאם 15/09 · `C-0624` · `T-366`⟧ הטענה נקבה ב-`animation: arena-follow-hit`
+       **בתחילת ההצהרה**. ‏`T-366` הוסיף את `arena-sway` לאותה רשימה (וחייב אותו להיות
+       **ראשון** — ראה הטענה הבאה), ⇒ הליטרל הצמוד נשבר על כלל ש⛔ אין בו שום פגם.
+       ⇒ נמדד מה שהיא **התכוונה** למדוד: שהמשך מגיע מהטוקן, ⛔ ולא ממספר שני. */
+    expect(CSS_CODE).toMatch(/arena-follow-hit var\(--arena-follow-settle-ms\)/);
+    // ⛔ ו⛔ אין משך **ליטרלי** על אף אחת משתי ההדבקות — זה הפגם שהשורה נולדה נגדו.
+    expect(CSS_CODE).not.toMatch(/arena-follow-(?:hit|dodge) \d/);
   });
 
   it('שלוש השכבות מסומנות בשמן ב-`ArenaAvatar`, ⇒ הכלל ⛔ אינו מנחש שכבה (`38 § 5`)', () => {
@@ -310,10 +316,10 @@ describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פרי
    */
   it('לכל תנוחה כלל משלה, והסימן הפוך לסימן של הגוף', () => {
     expect(CSS_CODE).toMatch(
-      /\[data-arena-phase='hit'\][^{]*\[data-arena-part\][^{]*\{\s*animation: arena-follow-hit/,
+      /\[data-arena-phase='hit'\][^{]*\[data-arena-part\][^{]*\{[^}]*arena-follow-hit/,
     );
     expect(CSS_CODE).toMatch(
-      /\[data-arena-phase='dodge'\][^{]*\[data-arena-part\][^{]*\{\s*animation: arena-follow-dodge/,
+      /\[data-arena-phase='dodge'\][^{]*\[data-arena-part\][^{]*\{[^}]*arena-follow-dodge/,
     );
     const hit = CSS_CODE.match(/@keyframes arena-follow-hit\s*\{[^}]*\}[^}]*\}/);
     const dodge = CSS_CODE.match(/@keyframes arena-follow-dodge\s*\{[^}]*\}[^}]*\}/);
@@ -321,6 +327,30 @@ describe('א4 — תנועת המשך: שלוש שכבות מפגרות 2 פרי
     expect(dodge, 'הקדר של `dodge` חייב להתקיים').not.toBeNull();
     expect(String(hit)).toMatch(/translateX\(calc\(var\(--arena-follow-x\) \* -1\)\)/);
     expect(String(dodge)).toMatch(/translateX\(var\(--arena-follow-x\)\)/);
+  });
+
+  /**
+   * 🔴 **⟦NEW 15/09 · `C-0624` · `T-366`⟧ ‏`arena-sway` ⛔ ראשון, וזה ⛔ אינו סגנון.**
+   *
+   * 🔬 **המנגנון, ⛔ ולא טעם:** קיצור `animation` **מחליף** את הרשימה כולה, ו-CSS מתאים
+   * אנימציה רצה לאנימציה חדשה **לפי מיקום ברשימה**. ⇒ הנדנוד של השכבות הרכות שורד את
+   * ההינף **אך ורק** אם הוא באותו **מקום (0)** בכלל הבסיס ובשני כללי התנוחה. בכל סדר
+   * אחר הוא מתאפס באמצע הפגיעה — בדיוק הקפיצה שהוא נועד למנוע.
+   */
+  it('הנדנוד שורד את ההינף — אותו שם, במקום 0, בשלושת הכללים', () => {
+    const lists = [...CSS_CODE.matchAll(/animation:\s*([^;}]*arena-follow-(?:hit|dodge)[^;}]*)/g)]
+      .map((m) => (m[1] ?? '').split(',').map((part) => part.trim().split(/\s+/)[0]));
+    expect(lists.length, 'שני כללי תנוחה').toBe(2);
+    for (const names of lists) {
+      expect(names[0], 'הנדנוד ראשון ⇒ ההתאמה לפי מיקום מחזיקה').toBe('arena-sway');
+      expect(names).toHaveLength(2);
+    }
+    // …וכלל הבסיס של השכבות הרכות מריץ את אותו שם, ⇒ יש מה להתאים אליו.
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-part='hair'\][\s\S]{0,240}animation:\s*arena-sway var\(--arena-sway-ms\)/,
+    );
+    // ⛔ ושני הערוצים ⛔ אינם אותו מאפיין: הנדנוד `rotate`, ההינף `transform`.
+    expect(CSS_CODE).toMatch(/@keyframes arena-sway\s*\{[^@]*rotate:/);
   });
 
   /**

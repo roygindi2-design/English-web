@@ -163,7 +163,7 @@ export function cssRadiiIn(source: string): { selector: string; value: string }[
     const cut = Math.max(head.lastIndexOf('}'), head.lastIndexOf('{'), head.lastIndexOf(';'));
     out.push({
       selector: head.slice(cut + 1).replace(/\s+/g, ' ').trim(),
-      value: m[1].replace(/\s+/g, ' ').trim(),
+      value: (m[1] ?? '').replace(/\s+/g, ' ').trim(),
     });
   }
   return out;
