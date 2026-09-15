@@ -71,7 +71,7 @@ const SCREENS: readonly {
 
 export default function DevAmirnetIndexPage() {
   return (
-    <main dir="rtl" className="mx-auto w-full max-w-md px-4 py-6">
+    <main dir="rtl" className="mx-auto w-full max-w-md py-6">
       <h1 className="text-xl font-semibold text-ink">אמירנט — מסכי הרתמה</h1>
       <p className="mt-2 text-sm text-ink-muted">
         שישה מסכים. שלושה מהם נמצאים ברשימת ההליכה, ושלושת האחרים הם מצבי ביניים של אותה
