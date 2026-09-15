@@ -267,6 +267,59 @@ describe('scripts/measure-plan-tables.mjs', () => {
   });
 
   /**
+   * 🔴 **`F-261`ⓑ — ההקפאה השנייה, ⛔ שנתפסה בסימולציה ⛔ ולא בקריאה.**
+   *
+   * ‏`§ 0.23 ז׳` אומר «בגלגול מסביב» מהיום הראשון — ו-`ORDERED.slice(i + 1)` ⛔ **לא
+   * גלגל**. ⇒ כשהזרימה הפעילה היא ה**אחרונה** ברצף (`amirnet` — ובדיוק לשם הוזז המוקד
+   * ב-`C-0625`), ניקויה היה פולט «⛔ אין אחריו זרימה ⇒ הכרעה לרוי» בזמן ש-`story`
+   * מחזיקה 5 ו-`arena` 4. ⇒ **אותה הקפאה בדיוק, מחלקה אחת קדימה.**
+   */
+  it('wraps around at the END of the sequence, ⛔ never stalls there (F-261ⓑ)', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-wrap-'));
+    const tasksSrc = readFileSync(join('plan', '50-tasks.md'), 'utf8');
+    // ⛔ `amirnet` — האחרון ברצף — מנוקה, ⇒ ⛔ אין **אחריו** דבר. ‏`story` נשארת מלאה.
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    writeFileSync(
+      fixtureTasks,
+      tasksSrc
+        .split('\n')
+        .map((l) =>
+          l.startsWith('| T-') && / · amirnet · /.test(l)
+            ? l.replace(/\| ⬜([^|]*)\|/, '| ✅ SIM$1|')
+            : l,
+        )
+        .join('\n'),
+      'utf8',
+    );
+    const fixtureControl = join(tmp, '00-control.md');
+    writeFileSync(
+      fixtureControl,
+      readFileSync(join('plan', '00-control.md'), 'utf8').replace(
+        /^ACTIVE_WORKSTREAM: \S+/m,
+        'ACTIVE_WORKSTREAM: amirnet',
+      ),
+      'utf8',
+    );
+    const fixtureOpenOut = join(tmp, 'plan-open.md');
+    execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: fixtureOpenOut,
+        PLAN_TASKS_FILE: fixtureTasks,
+        PLAN_CONTROL_FILE: fixtureControl,
+      },
+    });
+    const open = readFileSync(fixtureOpenOut, 'utf8');
+    expect(open, 'הזרימה האחרונה מוצתה').toContain('הזרימה הפעילה מוצתה — `amirnet`');
+    // 🔴 ⛔ **ו⛔ לא «הכרעה לרוי»** — יש עבודה, היא פשוט מאחור ברצף.
+    expect(open, '⛔ ⛔ לא מסלים לרוי').not.toContain('אין ברצף כולו זרימה עם עבודה פנויה');
+    expect(open, 'ונוקב בבא בגלגול').toMatch(/הבא ברצף עם עבודה פנויה הוא `story`/);
+    expect(open, 'ואומר שזה גלגול').toContain('בגלגול מסביב');
+  });
+
+  /**
    * 🔴 **`F-261` — וזה המתקן שמשחזר את הלכידה עצמה, ⛔ ולא את קצה הענף.**
    *
    * 🔬 **הצורה החיה, נמדדת ⛔ ולא מומצאת:** `general` **⛔ אינה ריקה** (‏PM פותח לתוכה) **ו**
