@@ -397,3 +397,112 @@
     transform: translateY(-80%);
   }
 }
+
+
+/* ═══ ⟦NEW 15/09 · `C-0623` · `T-361`⟧ העומק — הצל והמעגל.
+   ⛔ שניהם ⛔ אינם קישוט: הצל הוא מה שמצמיד גוף ל**רצפה** (בלעדיו הדמות **מרחפת**
+   על רקע), והמעגל הוא **אליפסה** ולכן הוא שוכב על מישור שנסוג. עיגול עגול היה
+   מצמיד אותו בחזרה למישור המסך ומבטל את כל הפרספקטיבה של הסט. */
+
+[data-arena-scope] [data-arena-shadow] {
+  /* ⛔ **העגלגלות חיה כאן ו⛔ לא במחלקה**: `rounded-[50%]` ⛔ אינו אחד מחמשת הרדיוסים
+     שחוקה v2 שכבה ב׳ § ב2 מתירה, ו-`radius-hygiene.test.ts` תפס אותי. ⇒ **אליפסה
+     ⛔ אינה רדיוס של ממשק** — היא **צורה**, ומקומה לצד הגרדיאנט שמצייר אותה. */
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--arena-night) 0%, transparent 100%);
+  opacity: 0.55;
+}
+
+/* מעגל הזימון — שלוש טבעות, ⛔ ולא מילוי: טבעות הן מה שקורא כ«מעגל מצויר על הקרקע». */
+[data-arena-scope] [data-arena-sigil] {
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, transparent 58%, var(--arena-cast) 60%, transparent 66%),
+    radial-gradient(closest-side, transparent 74%, var(--arena-cast-edge) 76%, transparent 82%),
+    radial-gradient(closest-side, var(--arena-cast) 0%, transparent 72%);
+  opacity: 0.3;
+}
+
+/* ⛔ **הבמה נושאת `perspective`, ⇒ `translateZ` של ילד הוא מרחק אמיתי** ⛔ ולא סקאלה
+   שמחקה אותו. זה מה שמתיר לקלף לעוף **אל תוך** המסך אל היריב (`T-359`), ⛔ ולא
+   להתכווץ במקום. ⛔ `perspective` על ההורה ⛔ אינו מצייר דבר בעצמו — הוא מגדיר את
+   המצלמה, והוא חינם עד שמישהו משתמש בו. */
+[data-arena-scope] [data-arena-stage] {
+  perspective: 720px;
+  perspective-origin: 50% 38%;
+}
+
+
+/* ═══ ⟦NEW 15/09 · `C-0623` · `T-361`⟧ היריב הוא **קוסם**, ⛔ ולא עותק אפור של הגיבור.
+
+   🎯 **הרנדר, ⛔ ולא טעם:** ב-`kol-B-03-battle.png` היריב **סגול** ועומד במעגל זימון
+   סגול; הגיבור בזהב. ⇒ עד היום שניהם נצבעו בדיו הגלובלי (`text-ink-muted` מול
+   `text-brand`), ושתי דמויות באותה משפחת אפור-כחול הן שני אייקונים, ⛔ ולא יריבים.
+   ⛔ **וזה צבע, ⛔ ולא שכבה:** `38 § 5` אוסר להמציא שכבות ו⛔ לא נוספה ולו אחת —
+   `currentColor` של אותן שכבות בדיוק קיבל את הגוון שהזירה כבר הצהירה עליו
+   (`--arena-cast`, `37 § 13.5`). ⛔ **וההבחנה ⛔ אינה בצבע בלבד** (שכבה א׳ א2):
+   ה-`aria-label` («היריב» מול «הדמות שלך») ⛔ לא נגע, והוא עדיין נושא אותה. */
+[data-arena-scope] [data-arena-figure='enemy'] {
+  color: var(--arena-cast);
+}
+
+/* ═══ הקלפים — עומק, ⛔ ולא מלבנים.
+
+   ⛔ **`perspective` על הרשימה ⇒ `rotateX` של קלף הוא **נטייה במרחב**, ⛔ ולא קיצור
+   מזויף.** בלי perspective על ההורה, `rotateX` הוא הטלה אורתוגונלית — הקלף פשוט
+   נעשה נמוך יותר. ⛔ זה ההבדל בין תלת-ממד לבין «נראה כמו תלת-ממד».
+
+   ⛔ **transition, ⛔ ולא keyframes** (`animate` § 6): קלף נבחר ומבוטל פעמיים בשנייה,
+   ⇒ הוא חייב **לכוון מחדש מהערך הנוכחי**. ו-160ms הוא בדיוק תחום «משוב על לחיצה»
+   של `animate` § 5. */
+[data-arena-scope] [data-arena-hand] {
+  perspective: 620px;
+  perspective-origin: 50% 120%;
+}
+[data-arena-scope] [data-arena-hand] [data-arena-card] {
+  /* ⛔ **שני המקורות מורכבים כאן**, ⛔ ולא נלחמים: `--arena-card-y` הוא האצבע
+     (‏`SpellCard` כותב אותו בכל `pointermove`), והנטייה היא העומק. ⛔ ברירת מחדל 0px
+     כדי שקלף שמעולם לא נגרר ⛔ יקבל `translateY()` ריק. */
+  transform: translateY(var(--arena-card-y, 0px)) rotateX(9deg);
+  transition: transform 160ms var(--arena-ease-out);
+  transform-style: preserve-3d;
+}
+/* ⛔ הקלף הנבחר **קם** — מתיישר, עולה, ומתקרב למצלמה. ⛔ `translateZ` ⛔ ולא `scale`:
+   זו אותה מצלמה שהקלף יעוף דרכה אל היריב (`T-359`), ⇒ אותו מרחב. */
+[data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
+  transform: translateY(calc(var(--arena-card-y, 0px) - 6px)) rotateX(0deg) translateZ(26px);
+}
+/* ⛔ **ובזמן גרירה ⛔ אין מעבר** — אחרת יש פיגור בין האצבע לקלף. זה בדיוק מה
+   ש-`Flashcard` כבר למד, ומאותה סיבה. */
+[data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='dragging'],
+[data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='ready'] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-hand] [data-arena-card],
+  [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
+    transform: translateY(var(--arena-card-y, 0px));
+    transition: none;
+  }
+}
+
+
+/* ═══ ⟦15/09 · `C-0623` · `T-361`⟧ מסך נמוך — **הכול מוקטן יחד**, ⛔ ולא נדחס.
+
+   🔬 **נמדד:** ב-568px גובה מסך הבמה מקבלת **172px**, ושתי הדמויות יחד הן 63+96=**159**.
+   ⇒ 13px של אוויר, והן חופפות. ב-664px הבמה מקבלת 260 והן יושבות בנוחות.
+
+   ⛔ **והפתרון ⛔ אינו להקטין את `FIGURE_CLASS`:** הרוחב הנומינלי שם הוא **המכנה**
+   שממנו `ArenaBattle.test.ts` גוזר את משרעת תנועת ההמשך (`--arena-follow-x`). שינוי
+   שלו הופך את הטוקן הזה לשקר — וזו בדיוק הבדיקה שתפסה אותי כבר פעם אחת בטיק הזה.
+   ⇒ **סקאלה על החריץ**: הדמות, הצל, המעגל ותנועת ההמשך קטנים **יחד ובאותו יחס**,
+   ⛔ והפיזיקה נשארת שלמה. זה גם מה שמצלמה באמת עושה כשהיא מתרחקת. */
+@media (max-height: 640px) {
+  [data-arena-scope] [data-arena-slot='hero'],
+  [data-arena-scope] [data-arena-slot='enemy'] {
+    transform: scale(0.76);
+  }
+  [data-arena-scope] [data-arena-slot='hero'] { transform-origin: bottom center; }
+  [data-arena-scope] [data-arena-slot='enemy'] { transform-origin: top center; }
+}

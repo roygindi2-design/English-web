@@ -56,8 +56,16 @@ export default function SpellCard({
      ⛔ No clock here (`SpellCard.test.ts:23`): the curve is a STRING, the duration a NUMBER,
      both computed once at `pointerup`. Unsupported `linear()` ⇒ the properties are not
      written and the CSS defaults (200ms ease-out) stand. */
-  const style: CSSProperties & Record<'--kol-release-ms' | '--kol-release-ease', string | undefined> = {
-    transform: `translateY(${drag.y}px)`,
+  const style: CSSProperties &
+    Record<'--kol-release-ms' | '--kol-release-ease', string | undefined> &
+    Record<'--arena-card-y', string> = {
+    /* 🔴 **⟦15/09 · `C-0623` · `T-361`⟧ הטרנספורם נמסר כ**משתנה**, ⛔ ולא כערך סופי.**
+       🔬 **נמדד:** הקלף נושא `transform` **מוטבע**, ו-`style` מוטבע גובר על כל כלל CSS.
+       ⇒ נטיית העומק שקובץ הטוקנים מוסיף לקלף הייתה **נדרסת בשקט** בכל רינדור, וכל
+       שכבת התלת-ממד של היד ⛔ לא הייתה מגיעה למסך בכלל.
+       ⇒ הגרירה מוסרת את ההיסט שלה ב-`--arena-card-y`, וה-CSS **מרכיב** את שניהם:
+       הנטייה ⛔ אינה נלחמת באצבע, והאצבע ⛔ אינה מוחקת את העומק. */
+    '--arena-card-y': `${drag.y}px`,
     touchAction: 'pan-y',
     '--kol-release-ms': supportsSpringEasing && drag.releaseMs !== null ? `${drag.releaseMs}ms` : undefined,
     '--kol-release-ease': supportsSpringEasing && drag.releaseMs !== null ? drag.releaseEase : undefined,

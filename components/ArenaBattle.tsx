@@ -743,14 +743,26 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
          📎 **וזה התקדים של הריפו עצמו, ⛔ ולא המצאה:** `CardDeck.tsx` מחזיק
          `h-[calc(100dvh-10rem)]` על אותו היגיון בדיוק — שם הכרום כולל גם סרגל
          לשוניות, וכאן ⛔ אין אחד (‏`/arcade` יושב מחוץ ל-`app/(tabs)/`, בכוונה). */
-      className="flex h-[calc(100dvh-5.25rem)] flex-col gap-3 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      className="relative flex h-[calc(100dvh-5.25rem)] flex-col gap-2 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     >
-      {topBar(null)}
+      {/* 🔴 **⟦15/09 · `C-0623` · `T-361`⟧ היציאה **מרחפת**, ⛔ ואינה שורה משלה.**
+          🔬 נמדד: העמודה חילקה 580px כך שהבמה — הקרב עצמו — קיבלה **52px, 9% מהמסך**,
+          בעוד ה-X לבדו אכל 44 ועוד רווח. ⇒ ברנדר (`kol-B-03`) כפתור ההשהיה **מרחף
+          מעל הזירה**, ⛔ ואינו תופס שורה. ⛔ יעד המגע ⛔ לא רוכך — `CLOSE_CLASS` עדיין
+          נושא את מידותיו, והוא רק יצא מזרימת העמודה. */}
+      <div className="absolute end-0 top-0 z-10">
+        <Link data-arena-close href="/cards" className={CLOSE_CLASS}>
+          <CloseIcon />
+          <span className="sr-only">{CLOSE_HE}</span>
+        </Link>
+      </div>
 
       {/* ⓐ השעון — `זמן קרב m:ss`. ⛔ **שעון אחד לקרב שלם** (`37 § 3`), ⛔ ולא טיימר
           לשאלה: טיימר לשאלה הופך אחזור מאומץ למרוץ ומעניש בדיוק את הלומד האיטי
           שהזירה אמורה לאמן. הערך מגיע מ-`BATTLE_MS` ⛔ ואינו נספר כאן. */}
-      <div className="flex flex-col items-center gap-1" data-arena-clock>
+      {/* ⛔ שורה אחת, ⛔ ולא שתיים. 🔬 נמדד: התווית והמספר אכלו 60px מתוך 580, בזמן
+          שהבמה קיבלה 216. ⇒ אותו מידע, חצי מהגובה. */}
+      <div className="flex flex-row items-baseline justify-center gap-2" data-arena-clock>
         <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
         {/* T-231 ⓐ — הטקסט וה-`aria-label` נכתבים מהלולאה דרך `clockRef`/`clockTextRef`;
             ⛔ ה-ref יושב על `<span>` **בתוך** `<EnWord>`, ⛔ ולא על העטיפה עצמה — `EnWord`
@@ -760,7 +772,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           ref={clockRef}
           /* ⟦15/09 · `F-260`⟧ `text-3xl` ב-320/375 ו-`text-4xl` מ-`sm` ומעלה: 36px של
              שעון על מסך בגובה 568 הם 6% מהמסך שנלקחים מאזור המשחק. */
-          className="text-3xl font-black tabular-nums text-[color:var(--arena-ink)] sm:text-4xl"
+          className="text-2xl font-black tabular-nums text-[color:var(--arena-ink)] sm:text-3xl"
           role="timer"
           aria-label={`${CLOCK_HE} ${clockHe(BATTLE_MS - elapsedRef.current)}`}
         >
@@ -774,114 +786,11 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           ⛔ אנגלית עוברת ב-`<EnWord>` בלבד (חוקה § 2 · `36 § 14`). */}
       <div
         data-arena-banner
-        className="rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)] px-4 py-4 text-center"
+        className="rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)] px-4 py-2 text-center"
       >
         <EnWord className="text-4xl font-black tracking-wide text-[color:var(--arena-gold-light)]">
           {word?.headword ?? ''}
         </EnWord>
-      </div>
-
-      {/* ⓒ היריב — שם **וגם** פס חיים עם המספר בתוכו. ⛔ שכבה א׳ א2: הצבע הוא הערוץ
-          השני, ⛔ ולעולם לא היחיד, ולכן `N/M` ⛔ אינו «ניקוי» שמותר להסיר. */}
-      <div className="flex flex-col gap-1" data-arena-enemy>
-        <p className="text-end text-base font-bold text-[color:var(--arena-gold-light)]">
-          {ENEMY_HE}
-        </p>
-        {/* ⓒ1 מד ההטלה — `37 § 6`. ⚠️ **שכבה א׳ גוברת על הרנדר:** השלב מוכרז ב**מילה**
-            ‏(«מטיל!») ⛔ ולעולם לא בגוון בלבד (א2), והיא `aria-live` כדי שהגלגול יהיה
-            נגיש בלי לראות את שינוי הצבע. תחת `prefers-reduced-motion` הפעימה נעצרת
-            ⛔ והמילה **נשארת**. */}
-        {telegraphPhase !== 'quiet' && (
-          <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraphPhase}>
-            {telegraphPhase !== 'charging' && (
-              <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
-                {CASTING_HE}
-              </p>
-            )}
-            {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width`: apple-design § 11 («animate only
-                compositor-friendly properties»). `castMeterWrapRef`/`castMeterFillRef`
-                נכתבים מהלולאה כל פריים (הרמפה חייבת להיות חלקה); הערך כאן הוא פתיחה. */}
-            <div
-              ref={castMeterWrapRef}
-              role="img"
-              aria-label={`${CASTING_METER_HE} ${Math.round(telegraphFrac * 100)} אחוז`}
-              className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--arena-cast-edge)] bg-[color:var(--arena-night)]"
-            >
-              {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: `width` פיזי על `<span>` לא
-                  ממוקם (⛔ לא `absolute`) תמיד מתחיל בקצה **הפיזי השמאלי** של המכיל,
-                  בלי קשר ל-`dir` — זו בדיוק ההתנהגות הישנה שנמדדה חזותית (`arena_t3.png`),
-                  ולכן העוגן החדש חייב להיות אותו צד, ⛔ לא «right» שמתאים ל-RTL תוכנית. */}
-              <span
-                ref={castMeterFillRef}
-                aria-hidden
-                className={`block h-full w-full ${telegraphPhase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
-                style={{ transform: `scaleX(${telegraphFrac})`, transformOrigin: 'left center', willChange: 'transform' }}
-              />
-            </div>
-          </div>
-        )}
-        {/* ⛔ מסלול הנגישות של `§ 5` — «הקשה בוחרת, **הקשה על היריב משגרת**».
-            פס החיים ו-`role="img"` שלו ⛔ לא השתנו; הם עברו **לתוך** הכפתור. */}
-        <button
-          type="button"
-          data-arena-fire
-          disabled={selected === null}
-          onClick={() => { if (selected !== null) fire(selected); }}
-          className="min-h-touch w-full rounded-lg text-start disabled:opacity-60"
-        >
-          <span className="sr-only">{selected === null ? FIRE_HINT_HE : `${FIRE_HE} ${selected}`}</span>
-          <div
-            role="img"
-            aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
-            className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
-          >
-            {/* T-214 · ⛔ `bg-danger` יצא: `--danger` מתחלף ב-`globals` לפי הסכימה
-                (`#b91c1c` בהירה · `#f87171` כהה) ⇒ בסכימה כהה המספר הלבן ישב עליו
-                ב-**2.70:1**. הערך כאן הוא של הרנדר, מוגה כלפי מעלה בשכבה א׳.
-                T-231 ⓑ — `scaleX` במקום `width` (apple-design § 11); `end-0` + `w-full`
-                נותנים את אותו עוגן ימני שה-`width` הישן ייצר בעקיפין. */}
-            <span
-              aria-hidden
-              data-arena-hp-fill
-              className="absolute inset-y-0 end-0 w-full bg-[color:var(--arena-hp)]"
-              style={{ transform: `scaleX(${enemyPct / 100})`, transformOrigin: 'right center' }}
-            />
-            {/* 🔴 **⟦NEW 15/09 · `C-0622` · `T-358`⟧ כמה. ⛔ עד היום ⛔ שום דבר ⛔ לא ענה על זה.**
-
-                🔬 **נמדד:** פס החיים מצויר ב-`scaleX()` **בלי `transition`** ⇒ 100⇢90
-                קרה בפריים אחד, והלומד ⛔ לא ראה שפגע — הוא ראה **מספר אחר**. הפס שופר
-                לזרימה בקובץ הטוקנים, וזה המספר עצמו.
-
-                ⛔ **והמספר הזה הוא מידע, ⛔ ולא אפקט:** הוא נגזר מהפרש החיים **בפועל**
-                (`prevEnemyHp`), ⛔ ואינו מחושב מחדש מהכללים — חישוב שני של אותו מספר
-                הוא בדיוק איך שמסך מתחיל לשקר על מה שקרה. ⇒ תחת `prefers-reduced-motion`
-                הוא **נשאר על המסך ומפסיק לנוע**, ⛔ ואינו נעלם.
-
-                ⛔ `key` מכריח החלפת צומת בכל הטלה ⇒ האנימציה מתחילה מחדש; בלעדיו פגיעה
-                שנייה בתוך 560ms הייתה מקבלת אפס תנועה. `aria-hidden` — פס החיים כבר
-                נושא `role="img"` עם הערך, ⇒ קורא-מסך ⛔ אינו שומע את אותו נתון פעמיים. */}
-            {damage !== null && !reducedMotion && (
-              <span
-                key={damage.key}
-                data-arena-damage
-                aria-hidden
-                onAnimationEnd={() => setDamage(null)}
-                className="pointer-events-none absolute -top-5 end-2 text-base font-black tabular-nums text-[color:var(--arena-gold-light)]"
-              >
-                <EnWord>{`−${damage.amount}`}</EnWord>
-              </span>
-            )}
-            {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
-                המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
-            <span
-              aria-hidden
-              className="absolute inset-0 grid place-items-center text-xs font-bold text-[color:var(--arena-ink)]"
-            >
-              {/* ⛔ אחוז, ⛔ ולא HP גולמי — בדיוק מה ש-`render_video_B.py:475` מצייר. */}
-              <EnWord>{`${enemyPct}/100`}</EnWord>
-            </span>
-          </div>
-        </button>
       </div>
 
       {/* ⓓ הבמה — שתי הדמויות. ⛔ **התנועה חיה כאן ובלבד** (T-041, עקרון הקוהרנטיות
@@ -901,7 +810,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
         /* ⟦15/09 · `F-260`⟧ `flex-1 min-h-0` — **הבמה בולעת את מה שנשאר.** ⛔ `min-h-0`
            ⛔ אינו קישוט: ילד flex מקבל `min-height:auto` כברירת מחדל ולכן **מסרב
            להתכווץ מתחת לתוכנו**, וזה בדיוק מה שדוחף ילדים אחרים מתחת לקפל. */
-        className="flex min-h-0 flex-1 flex-col justify-center rounded-2xl bg-[color:var(--arena-night)] px-4 py-4"
+        className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-2xl bg-[color:var(--arena-night)]"
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(e) => { stageFrom.current = { x: e.clientX, y: e.clientY }; }}
         onPointerUp={(e) => {
@@ -920,6 +829,126 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
         }}
         onPointerCancel={() => { stageFrom.current = null; }}
       >
+        {/* 🔴 **⟦הועבר 15/09 · `C-0623` · `T-361`⟧ שם היריב ופס חייו עברו **לתוך
+            הזירה**, ⛔ ואינם שורה ברוחב מלא מעליה.**
+
+            🔬 **נמדד:** העמודה חילקה 580px כך שהבמה קיבלה **52px**, בעוד השורה הזאת
+            לבדה אכלה **72** ועוד רווח. ⇒ הקרב עצמו קיבל **9% מהמסך**.
+            🎯 **והרנדר כבר מיקם אותם נכון:** ב-`kol-B-03-battle.png` «הקוסם» ופס חייו
+            יושבים **ליד היריב, בתוך הזירה** — ⛔ ולא כשורת כרום. ⇒ זו יישור לרנדר
+            (`36 § 14.4`), ⛔ ולא טעם, והמקום שהתפנה חוזר למשחק.
+
+            ⛔ **והכפתור נשאר כפתור:** זהו מסלול הנגישות של `§ 5` («הקשה על היריב
+            משגרת»), ⇒ יעד המגע, ה-`aria-label` ו-`role="img"` של הפס ⛔ לא נגעו. */}
+        {/* ⛔ `top-1` ו-`w-[54%]`: 🔬 נמדד — ב-`top-2 w-[62%]` הפס **חצה את היריב**,
+            שעומד במרכז. הרנדר מציב אותו **מעליו ולימינו**, ⇒ צר יותר וגבוה יותר. */}
+        <div className="pointer-events-none absolute inset-x-2 top-1 z-10 flex flex-col items-start gap-0.5">
+          <div className="pointer-events-auto w-[54%] max-w-[220px]">
+      {/* ⓒ היריב — שם **וגם** פס חיים עם המספר בתוכו. ⛔ שכבה א׳ א2: הצבע הוא הערוץ
+            השני, ⛔ ולעולם לא היחיד, ולכן `N/M` ⛔ אינו «ניקוי» שמותר להסיר. */}
+        <div className="flex flex-col gap-1" data-arena-enemy>
+          <p className="text-end text-base font-bold text-[color:var(--arena-gold-light)]">
+            {ENEMY_HE}
+          </p>
+          {/* ⓒ1 מד ההטלה — `37 § 6`. ⚠️ **שכבה א׳ גוברת על הרנדר:** השלב מוכרז ב**מילה**
+              ‏(«מטיל!») ⛔ ולעולם לא בגוון בלבד (א2), והיא `aria-live` כדי שהגלגול יהיה
+              נגיש בלי לראות את שינוי הצבע. תחת `prefers-reduced-motion` הפעימה נעצרת
+              ⛔ והמילה **נשארת**. */}
+          {telegraphPhase !== 'quiet' && (
+            <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraphPhase}>
+              {telegraphPhase !== 'charging' && (
+                <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
+                  {CASTING_HE}
+                </p>
+              )}
+              {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width`: apple-design § 11 («animate only
+                  compositor-friendly properties»). `castMeterWrapRef`/`castMeterFillRef`
+                  נכתבים מהלולאה כל פריים (הרמפה חייבת להיות חלקה); הערך כאן הוא פתיחה. */}
+              <div
+                ref={castMeterWrapRef}
+                role="img"
+                aria-label={`${CASTING_METER_HE} ${Math.round(telegraphFrac * 100)} אחוז`}
+                className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--arena-cast-edge)] bg-[color:var(--arena-night)]"
+              >
+                {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: `width` פיזי על `<span>` לא
+                    ממוקם (⛔ לא `absolute`) תמיד מתחיל בקצה **הפיזי השמאלי** של המכיל,
+                    בלי קשר ל-`dir` — זו בדיוק ההתנהגות הישנה שנמדדה חזותית (`arena_t3.png`),
+                    ולכן העוגן החדש חייב להיות אותו צד, ⛔ לא «right» שמתאים ל-RTL תוכנית. */}
+                <span
+                  ref={castMeterFillRef}
+                  aria-hidden
+                  className={`block h-full w-full ${telegraphPhase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
+                  style={{ transform: `scaleX(${telegraphFrac})`, transformOrigin: 'left center', willChange: 'transform' }}
+                />
+              </div>
+            </div>
+          )}
+          {/* ⛔ מסלול הנגישות של `§ 5` — «הקשה בוחרת, **הקשה על היריב משגרת**».
+              פס החיים ו-`role="img"` שלו ⛔ לא השתנו; הם עברו **לתוך** הכפתור. */}
+          <button
+            type="button"
+            data-arena-fire
+            disabled={selected === null}
+            onClick={() => { if (selected !== null) fire(selected); }}
+            className="min-h-touch w-full rounded-lg text-start disabled:opacity-60"
+          >
+            <span className="sr-only">{selected === null ? FIRE_HINT_HE : `${FIRE_HE} ${selected}`}</span>
+            <div
+              role="img"
+              aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
+              className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
+            >
+              {/* T-214 · ⛔ `bg-danger` יצא: `--danger` מתחלף ב-`globals` לפי הסכימה
+                  (`#b91c1c` בהירה · `#f87171` כהה) ⇒ בסכימה כהה המספר הלבן ישב עליו
+                  ב-**2.70:1**. הערך כאן הוא של הרנדר, מוגה כלפי מעלה בשכבה א׳.
+                  T-231 ⓑ — `scaleX` במקום `width` (apple-design § 11); `end-0` + `w-full`
+                  נותנים את אותו עוגן ימני שה-`width` הישן ייצר בעקיפין. */}
+              <span
+                aria-hidden
+                data-arena-hp-fill
+                className="absolute inset-y-0 end-0 w-full bg-[color:var(--arena-hp)]"
+                style={{ transform: `scaleX(${enemyPct / 100})`, transformOrigin: 'right center' }}
+              />
+              {/* 🔴 **⟦NEW 15/09 · `C-0622` · `T-358`⟧ כמה. ⛔ עד היום ⛔ שום דבר ⛔ לא ענה על זה.**
+
+                  🔬 **נמדד:** פס החיים מצויר ב-`scaleX()` **בלי `transition`** ⇒ 100⇢90
+                  קרה בפריים אחד, והלומד ⛔ לא ראה שפגע — הוא ראה **מספר אחר**. הפס שופר
+                  לזרימה בקובץ הטוקנים, וזה המספר עצמו.
+
+                  ⛔ **והמספר הזה הוא מידע, ⛔ ולא אפקט:** הוא נגזר מהפרש החיים **בפועל**
+                  (`prevEnemyHp`), ⛔ ואינו מחושב מחדש מהכללים — חישוב שני של אותו מספר
+                  הוא בדיוק איך שמסך מתחיל לשקר על מה שקרה. ⇒ תחת `prefers-reduced-motion`
+                  הוא **נשאר על המסך ומפסיק לנוע**, ⛔ ואינו נעלם.
+
+                  ⛔ `key` מכריח החלפת צומת בכל הטלה ⇒ האנימציה מתחילה מחדש; בלעדיו פגיעה
+                  שנייה בתוך 560ms הייתה מקבלת אפס תנועה. `aria-hidden` — פס החיים כבר
+                  נושא `role="img"` עם הערך, ⇒ קורא-מסך ⛔ אינו שומע את אותו נתון פעמיים. */}
+              {damage !== null && !reducedMotion && (
+                <span
+                  key={damage.key}
+                  data-arena-damage
+                  aria-hidden
+                  onAnimationEnd={() => setDamage(null)}
+                  className="pointer-events-none absolute -top-5 end-2 text-base font-black tabular-nums text-[color:var(--arena-gold-light)]"
+                >
+                  <EnWord>{`−${damage.amount}`}</EnWord>
+                </span>
+              )}
+              {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
+                  המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
+              <span
+                aria-hidden
+                className="absolute inset-0 grid place-items-center text-xs font-bold text-[color:var(--arena-ink)]"
+              >
+                {/* ⛔ אחוז, ⛔ ולא HP גולמי — בדיוק מה ש-`render_video_B.py:475` מצייר. */}
+                <EnWord>{`${enemyPct}/100`}</EnWord>
+              </span>
+            </div>
+          </button>
+        </div>
+
+          </div>
+        </div>
         <ArenaStage phase={stagePhase(battle)} items={[]} character={character} />
         {battle.dodgedSwing !== null && (
           <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">

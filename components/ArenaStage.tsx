@@ -1,4 +1,5 @@
 import ArenaAvatar from '@/components/ArenaAvatar';
+import ArenaScene from '@/components/ArenaScene';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
 import type { StagePhase } from '@/lib/core/battle';
@@ -10,19 +11,38 @@ import type { StagePhase } from '@/lib/core/battle';
  * ⛔ **אין כאן JS של תנועה** — אין `setTimeout` ואין `requestAnimationFrame`.
  * המעבר הוא כלל CSS יחיד לכל תנוחה, ‏`prefers-reduced-motion` מבטל אותו גלובלית
  * ב-`app/globals.css` ⛔ בלי ולו `if` אחד כאן.
- * ⚠️ **T-119 · D-128 — לולאת ההמתנה קיבלה צרכן.** הדגל `ARENA_IDLE_LOOP` היה מוצהר
- * ⛔ בלי ולו קורא אחד, ⇒ האישור של רוי (`03-for-roy` פריט 39) ⛔ לא הזיז פיקסל. הרכיב
- * קורא אותו כברירת מחדל של ה-prop, והתנועה עצמה חיה **כולה ב-CSS** — ⛔ אפס JS.
+ * ⚠️ **T-119 · D-128 — לולאת ההמתנה קיבלה צרכן.** התנועה חיה **כולה ב-CSS** — ⛔ אפס JS.
  * ⛔ **שלוש הגדרות, וכולן נאכפות בבדיקה ⛔ ולא בהערה:** ⓐ הבמה בלבד · ⓑ ≤2px ·
  * ⓒ `prefers-reduced-motion` מכבה לגמרי.
  *
- * ⚠️ **`StagePhase` עבר ל-`lib/core/battle.ts` ב-C-0325**, באותו קומיט שבו נמחק
- * `arcadeBattle.ts`. ⛔ הרכיב ⛔ לא השתנה מעבר לשורת ה-import: הוא נשאר **ציור טהור**
- * ⛔ בלי `useState`, `useEffect` ו-`requestAnimationFrame` — `ArenaStage.test.ts` אוסר
- * את שלושתם, ולכן לולאת הזמן של הקרב חיה ב-`components/ArenaBattle.tsx` ⛔ ולא כאן.
- *
  * ⚠️ **שני אזורים, וזה כל העניין (T-041):** התנועה חיה **אך ורק** כאן. אזור השאלה —
  * המילה וארבע האפשרויות — ⛔ לעולם אינו זז: עקרון הקוהרנטיות של Mayer.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 🏟️ **⟦נבנתה מחדש 15/09 · `C-0623` · `T-361` · הוראת רוי: «זה צריך להיות תלת-ממד»⟧**
+ *
+ * 🔬 **מה שהיה, ⛔ ונמדד בקוד ⛔ ולא שוער:** `flex-row items-end justify-between`, ושתי
+ * הדמויות `h-24 w-24` — כלומר **שורה שטוחה, באותו גודל בדיוק**, בלי רצפה, בלי אופק
+ * ובלי צל. ⇒ ⛔ **אין שום חיווי מי רחוק ומי קרוב**, ושתי דמויות באותו גודל הן שני
+ * אייקונים זה לצד זה, ⛔ ולא קרב.
+ *
+ * 🎯 **והרנדר כבר אמר את זה, ⛔ ואני ⛔ לא המצאתי:** `docs/design/kol-B-03-battle.png`
+ * מצייר את היריב **קטן, גבוה, על מעגל זימון אליפטי**, ואת הגיבור **גדול, נמוך,
+ * עם צל מוטל**. ‏`36 § 14.4` אומר שהרנדר מחייב בפריסה ובהיררכיה. ⇒ הבמה הזאת
+ * מיישרת אליו, ⛔ ואינה ממציאה שפה חדשה.
+ *
+ * ### שלושת חיווי העומק, ⛔ וכולם גאומטריים
+ * ```
+ * ① סקאלה     היריב 0.62 · הגיבור 1.0     ⇐ אותו אובייקט, רחוק יותר, קטן יותר
+ * ② גובה       היריב על 26% · הגיבור על 66% ⇐ רחוק = גבוה על המסך, מעל האופק של הרצפה
+ * ③ צל         אליפסה מתחת לכל דמות        ⇐ מה שמצמיד גוף ל**רצפה**, ⛔ ולא לרקע
+ * ```
+ * ⛔ **וזו ⛔ אינה «תחושת עומק» — זו פרספקטיבה:** שלושתם יחד הם בדיוק מה שעין קוראת
+ * כמרחק, והם אותם שלושה שהרנדר מצייר.
+ *
+ * ⛔ **ו-`ArenaAvatar` ⛔ לא נגעתי בו.** ‏`38 § 5` אוסר להמציא שכבות, ו-`F-157ⓑ` כבר
+ * מדד שחסרות לו שתיים משלוש. ⇒ מה שהשתנה הוא **מיקום וגודל** — שהם התפקיד של הבמה,
+ * ⛔ ולא של הדמות. ⛔ אפס שכבות נוספו.
  */
 export interface ArenaStageProps {
   readonly phase: StagePhase;
@@ -33,7 +53,28 @@ export interface ArenaStageProps {
   readonly character?: ArenaCharacter | null;
 }
 
-const STAGE_CLASS = 'flex flex-row items-end justify-between gap-4';
+/**
+ * ⛔ `h-full w-full`, ⛔ ולא `aspect-[4/3]`. 🔬 **נמדד:** יחס גובה-רוחב בתוך הורה
+ * `flex-1` הוא הגדרה מעגלית — גובה הילד נגזר מרוחבו, וגובה ההורה נגזר מהילד ⇒
+ * **שניהם קרסו ל-20px**, והסט נצבע כפס דק. ⇒ הבמה **ממלאת** את מה שההורה נתן לה,
+ * וההורה הוא זה שבולע את הנותר (`flex-1 min-h-0`). הגובה נגזר **כלפי מטה**, ⛔ ולא
+ * משני הכיוונים בו-זמנית.
+ */
+const STAGE_CLASS = 'relative h-full w-full overflow-hidden rounded-xl';
+
+/**
+ * 🔴 **⛔ שתי הדמויות נשארות באותו רוחב נומינלי, וזה ⛔ אינו סגנון — זו פיזיקה.**
+ *
+ * 🔬 **נתפס ע"י הבדיקה, ⛔ ולא על ידי:** `ArenaBattle.test.ts` גוזר את משרעת
+ * תנועת-ההמשך (`--arena-follow-x`) מ**רוחב הדמות כאן**: התזוזה של הגוף היא `rem` על
+ * ה-`<svg>`, והפיגור חי **בתוך** ה-`viewBox` ביחידות משתמש ⇒ ההמרה היא
+ * `BODY_SHIFT_REM / FIGURE_W_REM × VIEW_W`. ⛔ **הקטנת היריב ל-`w-16` הייתה משנה את
+ * המכנה מ-6 ל-4 ⇒ 25 יחידות הופכות ל-37.5, ו-`--arena-follow-x: 8.33px` נעשה שקר.**
+ *
+ * ⇒ **העומק מושג ב-`scale` על העוטף, ⛔ ולא בקופסה קטנה יותר.** זה גם **נכון פיזיקלית**
+ * ⛔ ולא רק נוח: דמות רחוקה מוקטנת **על כל מה שבה** — כולל תנועת ההמשך שלה — וזה
+ * בדיוק מה שעין מצפה לו. ⇒ ארבעת הפרימיטיבים של הבדיקה נשארים שלמים.
+ */
 const FIGURE_CLASS = 'h-24 w-24';
 
 export default function ArenaStage({
@@ -44,12 +85,40 @@ export default function ArenaStage({
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
-      {/* העוטף נושא את הלולאה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש
-          `transition: transform` ש-`hit`/`dodge` מפעילים. */}
-      <span data-arena-idle={idle ? 'on' : 'off'} className="inline-flex">
-        <ArenaAvatar role="hero" items={items} character={character} className={FIGURE_CLASS} />
-      </span>
-      <ArenaAvatar role="enemy" items={[]} className={FIGURE_CLASS} />
+      {/* ⓐ הסט. ⛔ ראשון ⇒ מאחור, ⛔ בלי `z-index` ובלי מיקום מוחלט על האחרים. */}
+      <ArenaScene />
+
+      {/* ⓑ היריב — **רחוק**: גבוה, קטן, ועומד על מעגל זימון.
+          ⛔ המעגל ⛔ אינו קישוט — הוא **אליפסה**, ולכן הוא קורא כמעגל ששוכב על
+          מישור שנסוג. עיגול עגול היה מצמיד אותו בחזרה למסך. */}
+      <div data-arena-slot="enemy" className="absolute inset-x-0 top-[16%] flex flex-col items-center">
+        {/* ⛔ מידות **מוחלטות**, ⛔ ולא אחוזים. 🔬 נמדד: אחוז על ילד של `flex-col`
+            שגובהו נגזר מתוכנו ⛔ אינו נפתר — הוא קורס לאפס או נופל חזרה לגודל
+            התוכן, והיריב יצא 96px במקום 64. ⇒ 64 מול 96 הוא **יחס 0.67**, וזה
+            חיווי העומק ① בפועל. */}
+        {/* ⛔ האחוזים כאן הם של ה**חריץ**, ⛔ ולא של הבמה — 🔬 נמדד: `h-[26%]` על
+            חריץ שהוא עצמו `h-[30%]` נתן **20px**, כי אחוזים **מצטברים**. ⇒ הדמות היא
+            אחוז גבוה מחריץ נמוך, והיחס בין השניים (0.67) הוא מה שנשמר. */}
+        <span data-arena-sigil aria-hidden className="absolute bottom-[-2%] h-10 w-28" />
+        <span data-arena-shadow aria-hidden className="absolute bottom-[3%] h-3 w-12" />
+        {/* ⛔ **`scale`, ⛔ ולא קופסה קטנה יותר** — ראה `FIGURE_CLASS` למעלה: הרוחב
+            הנומינלי הוא המכנה שממנו נגזרת משרעת תנועת ההמשך. 0.66 הוא יחס העומק ①. */}
+        <span data-arena-depth="far" className="relative inline-flex origin-bottom scale-[0.66]">
+          <ArenaAvatar role="enemy" items={[]} className={FIGURE_CLASS} />
+        </span>
+      </div>
+
+      {/* ⓒ הגיבור — **קרוב**: נמוך, גדול, עם צל רחב יותר. העוטף נושא את לולאת
+          ההמתנה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש `transition: transform`
+          ש-`hit`/`dodge` מפעילים. */}
+      <div data-arena-slot="hero" /* ⛔ `items-center`. 🔬 נמדד: `items-end` בתוך הורה RTL מיישר **שמאלה**,
+            ⇒ הגיבור נדחף לפינה בזמן שהרנדר מציב אותו במרכז, מול היריב. */
+          className="absolute inset-x-0 bottom-[2%] flex h-[42%] flex-col items-center justify-end">
+        <span data-arena-shadow aria-hidden className="absolute bottom-0 h-[8%] w-[26%]" />
+        <span data-arena-idle={idle ? 'on' : 'off'} className="relative inline-flex">
+          <ArenaAvatar role="hero" items={items} character={character} className={FIGURE_CLASS} />
+        </span>
+      </div>
     </div>
   );
 }
