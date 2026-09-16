@@ -481,3 +481,11 @@ loop(DEV): C-0646 story — T-380 delivered; T-266/T-269 blocked on F-267 (migra
 עם שומר סורק ב-`lib/core/failure.test.ts`.
 ‏**הטיק הסתיים בתיבת הזמן** (`STEP 4.5` תנאי 2), ⛔ ולא בשער ו⛔ לא במיצוי התוכנית:
 ‏`T-386` (שלד הטעינה) נשארה ⬜ והיא הצעד הבא המובן מאליו באותה מחלקה.
+
+loop(PM): C-0653 — planning tick on `cards`. Live walk ×2 at 375px against
+`docs/design/kol-A-02-deck.png`. Built `T-388` in the same tick (`STEP 5.5` ⓑ,
+source = `diff:render` gap, ⛔ not a row I invented). Opened `T-389`·`T-390`·`T-391` ⬜.
+Retired `T-386` on a measurement (`D-255`): 4 deck tiles in the DOM at
+`DOMContentLoaded`, ⛔ not 0 — the row's own success measure was already met, and a
+skeleton would have replaced a stable final layout with a placeholder. Second
+twin of `D-250` in one week. `WORKSTREAM_ENDING` written: `cards` · 4 ⬜ · 2026-09-16T12:20:22Z.
