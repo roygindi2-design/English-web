@@ -504,28 +504,22 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
   });
 
   /**
-   * 🎴 **⟦שונה `T-325`ⓐ⟧ — הפנים כבר ⛔ אינם **ממלאים** את המשבצת, והאינווריאנט ששמר
-   * עליהם ⛔ לא נגרע: הוא נשמר ב**דיוק**.**
+   * 🎴 **⟦`T-325` — נוסה, נמדד, ו⛔ לא נלקח.⟧**
    *
-   * `T-259`ⓓ נעלה `flex-1` כי הכוונה הייתה «⛔ לפנים אין גובה משל עצמם, וה-
-   * `h-[calc(100dvh-10rem)]` נשאר של `<CardDeck>`». ⇒ זו עדיין הטענה הנמדדת כאן:
-   * `aspect-[315/372]` הוא **יחס**, ⛔ ולא גובה, ו-`max-h-full` משאיר את המשבצת
-   * כתקרה.
-   *
-   * 🔬 **מה שהשתנה, ונמדד בטיק הזה בדפדפן חי, ⛔ ולא בקריאת קוד:** `flex-1` הגדיל את
-   * הכרטיס ל-**475px** ב-390×844 (ו-411px ב-375×780), בעוד שהתוכן כולו ~150px —
-   * זהו פגם ① של `T-325`, «דד-ספייס מלמעלה ומלמטה». ⛔ **והיחס ⛔ אינו מספר קסם:**
-   * `docs/design/render_video_A.py:326` קובע `CARD_W, CARD_H = LW - 60, 372` על
-   * ‏`LW = 375` ⇒ **315×372**. אחרי השינוי נמדד 327×**386** ב-375×780 — 14px מהרנדר.
+   * 🔬 **`T-325` ניסתה להחליף אותו ב-`aspect-[315/372]` (יחס הרנדר,
+   * `render_video_A.py:326`) כדי לסגור את פגם ① — «דד-ספייס»: `flex-1` מדד
+   * **475px** ב-390×844 מול ~150px תוכן. ⛔ והשער סירב, ⛔ ולא הסוכן:**
+   * `npm run check:mobile` נושא ערובה בשם «the card fills its viewport» והאדים
+   * ב-320 · 375 · 414 (‏«cards 0=367px inside a 535px card viewport»), ועוד
+   * `scrollHeight 556 מול clientHeight 535` ב-414 — כלומר `T-294` נשברה.
+   * ⇒ `flex-1` הוא **ערובה נמדדת**, ⛔ לא ברירת מחדל, ופגם ① ⛔ אינו נסגר בלי
+   * הכרעה על הערובה הזאת ⇒ `F-269`.
    */
-  it('T-259ⓓ · T-325ⓐ — לפנים ⛔ אין גובה משלהם, והיחס הוא של הרנדר', () => {
+  it('T-259ⓓ — the face fills the deck slot (flex-1) and the height stays CardDeck’s calc', () => {
     const faces = T085_CARD_SRC.match(/rounded-2xl border border-border-subtle bg-surface-raised[^"]*"/g) ?? [];
     expect(faces.length).toBe(2);
     for (const face of faces) {
-      // ⛔ יחס הרנדר, ⛔ ולא `flex-1` שמותח את הכרטיס לגובה המסך.
-      expect(face).toContain('aspect-[315/372]');
-      expect(face).toContain('max-h-full');
-      expect(face).not.toContain('flex-1');
+      expect(face).toContain('flex-1');
       expect(face).toContain('text-center');
       expect(face).toContain('relative');
     }

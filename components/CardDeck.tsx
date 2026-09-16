@@ -416,11 +416,12 @@ export default function CardDeck({
             📐 **והגיאומטריה נמדדה, ⛔ לא נבחרה:** הכרטיס עצמו מתחיל ב-`pt-4` של
             ה-`<article>` (‏16px מראש הבמה), ⇒ הצצה שראשה ב-8px מותירה **רצועה של
             8px** גלויה מעליו, וצדדיה (`inset-x-2`) נשארים מתחתיו. ⛔ הצצה **מתחת**
-            לכרטיס הייתה נחתכת: ל-`[data-deck-viewport]` יש `overflow-hidden`. ⇒ ההצצה נושאת את **אותו יחס**
-            שהרנדר נותן לכרטיס (`315/372`, `render_video_A.py:326`) על רוחב קטן
-            ב-16px ⇒ היא קצרה ממנו וגם תחתיתה נשארת מוסתרת. ⛔ אחרת נותר מלבן ריק
-            **מתחת** לכרטיס שקורא כפאנל ⛔ ולא כערימה — נמדד עם `bottom-2`: ההצצה
-            בלטה **125px** מתחת לכרטיס.
+            לכרטיס הייתה נחתכת: ל-`[data-deck-viewport]` יש `overflow-hidden`. ⇒ ההצצה חסומה ב-`top-2 bottom-8`: ראשה
+            8px מעל הכרטיס (שמתחיל ב-`pt-4`) ותחתיתה **32px מעל** תחתית הבמה ⇒ היא
+            נשארת בתוך `[data-deck-viewport]` בכל מידה. ⛔ **וזה ⛔ לא יחס קבוע:**
+            `aspect-[315/372]` הוצא כאן אחרי ש-`npm run check:mobile` מדד אותו
+            אדום ב-414px — `scrollHeight 556 מול clientHeight 535` ⇒ הבמה נעשתה
+            גלילה, וזה בדיוק מה ש-`T-294` אוסר.
 
             ⛔ **⛔ ואפס תנועה:** היסט סטטי, ⛔ ללא מעבר וללא אנימציה ⇒
             `prefers-reduced-motion` (‏`check:motion`) מכובד **בבנייה**.
@@ -428,11 +429,14 @@ export default function CardDeck({
             ⚠️ ⛔ **ורק כשבאמת יש עוד אחד** — `remaining.length > 1`. רמז לערימה מתחת
             לכרטיס האחרון הוא הבטחה שהמסך מפר בהקשה הבאה. */}
         {remaining.length > 1 ? (
-          <div
-            aria-hidden
-            data-deck-peek
-            className="pointer-events-none absolute inset-x-2 top-2 aspect-[315/372] max-h-full rounded-2xl border border-border-subtle bg-surface-raised"
-          />
+          /* 🔴 **העטיפה חייבת למלא את הבמה, וזה ⛔ לא סגנון — זו ערובה נמדדת.**
+             `scripts/verify-mobile.mjs:2168` מודד את **כל ילדי** `[data-deck-viewport]`
+             ומפיל כל אחד שנמוך מהבמה ב-יותר מ-1px («the card fills its viewport»,
+             ‏`T-086` · `C-0104`). ⇒ הצצה שהיא ילד ישיר בגובה 495 מתוך 535 מאדימה את
+             השער בשלוש המידות — נמדד. ⇒ העטיפה `inset-0`, והרצועה הנראית בתוכה. */
+          <div aria-hidden data-deck-peek className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-x-2 top-2 bottom-8 rounded-2xl border border-border-subtle bg-surface-raised" />
+          </div>
         ) : null}
         {/* ⟦`T-333`⟧ **הנוכחי קודם, היוצאים אחריו** — שניהם `absolute inset-0`, ולכן
             היוצא נצבע **מעל** הבא בלי `z-index` ובלי לשנות פריסה באמצע התנועה.
