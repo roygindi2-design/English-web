@@ -220,6 +220,15 @@ type DeckEntry = {
    * ⛔ אינו מחזיק `entry.key === 'unknown'` בשום מקום.
    */
   readonly tone?: 'danger';
+  /**
+   * `T-389` — ⛔ **«the number is 0» and «we do ⛔ not have the number» are ⛔ not the
+   * same fact, and only the first of them may decide the PRIMARY action.**
+   *
+   * ⛔ It is ⛔ not `enabled` under another name: since `T-389` a tile whose read FAILED
+   * is reachable (‏`enabled: true`) while ⛔ still carrying ⛔ no number ⇒ making it the
+   * primary would paint the screen's one marked action onto a deck ⛔ nobody measured.
+   */
+  readonly measured: boolean;
 } & (
   | { readonly enabled: true; readonly href: string }
   | { readonly enabled: false; readonly href: string | null }
@@ -272,6 +281,26 @@ function tileTone(entry: DeckEntry, primaryKey: string | null): string {
  * read was made»: BOTH are «we do not have this number», the distinction changed ⛔ nothing
  * a learner could act on, and paying for it cost three copies of one sentence on one screen.
  * ⇒ `tileNote` collapsed into `noteFor`, and the event is narrated ⛔ once, above the list.
+ *
+ * 🔴 **`T-389` — ⛔ AND A TILE WHOSE READ FAILED IS ⛔ NOT DISABLED. IT IS REACHABLE.**
+ *
+ * 🔬 **נמדד בהליכה חיה 16/09 (‏`next start`, 375×780) על `/dev/tabs/cards`, ⛔ ולא שוער:**
+ * ‏`<FilterBar>` צייר את המונה «לא ידעתי» עם **25** — מספר חי, מ-`summary` שכבר נחת —
+ * ובמרחק שני אריחים מתחתיו האריח «חזרה» נשא `aria-disabled="true"` ואת המשפט
+ * «— מילים שסימנת לא ידעתי», כי הקריאה הנפרדת שלו ל-`deck=unknown` נכשלה (`F-262`).
+ * ⇒ **הלומד מקבל מספר, ומיד נאמר לו שהוא ⛔ אינו קיים.**
+ *
+ * ⛔ **וזה ⛔ אינו «מושבת עם המספר» (§ 4.2ו) — זה בדיוק מה שהסעיף ההוא ⛔ אינו מתיר.**
+ * «—» ⛔ אינו מספר (`UNKNOWN_COUNT_HE` · `T-295`ⓒ · `T-384`ⓐ), ⇒ אריח מושבת שנושא «—»
+ * הוא אריח מושבת **בלי** מספר, כלומר הצורה היחידה שהחוקה פוסלת. ⛔ קריאה שנכשלה ⛔ לא
+ * מדדה «אפס» — היא ⛔ לא מדדה דבר, וזה אותו כלל בדיוק ש-`{dead && !readFailed}` כבר
+ * מקיים שורה אחת מעל: ⛔ אין להסיק ריקנות מקריאה ש⛔ לא הגיעה.
+ *
+ * ⇒ **קריאה שנכשלה ⇒ האריח נשאר בר-הגעה**, ו-`/study?deck=<x>` קורא **בעצמו** ויכול
+ * להצליח שם — ⛔ בדיוק כמו שכפתור «טעינה מחדש» יכול להצליח כאן. ⛔ **ומה שזה ⛔ אינו
+ * משנה:** חפיסה שנקראה והחזירה `0` ⛔ עדיין מושבתת **עם האפס שלה**, ואריח ש⛔ לא נקרא
+ * כאן כלל (‏`/dev/tabs/probe`, ו-`unseen` בכל ענף שאינו `ready`) ⛔ עדיין מושבת — ⛔ שם
+ * ⛔ אין מונה חי שסותר אותו, ⛔ ואין קריאה שנכשלה שאפשר לנסות שוב.
  */
 function toEntry(input: {
   readonly key: string;
@@ -280,12 +309,19 @@ function toEntry(input: {
   readonly count: number | null;
   readonly note?: string;
   readonly tone?: 'danger';
+  /**
+   * `T-389` — **the read for THIS deck came back and ⛔ failed.** ⛔ Not «the count is
+   * missing»: while a read is in flight, and on `/dev/tabs/probe` where ⛔ no read is
+   * made at all, the count is equally `null` and ⛔ nothing has failed.
+   */
+  readonly unmeasured?: boolean;
 }): DeckEntry {
   const { key, label, href, count, tone } = input;
   const note = input.note ?? noteFor(count);
-  return href !== null && count !== null && count > 0
-    ? { key, label, note, tone, enabled: true, href }
-    : { key, label, note, tone, enabled: false, href };
+  const measured = count !== null;
+  return href !== null && (count !== null ? count > 0 : input.unmeasured === true)
+    ? { key, label, note, tone, measured, enabled: true, href }
+    : { key, label, note, tone, measured, enabled: false, href };
 }
 
 /**
@@ -377,6 +413,9 @@ export default function DeckSelector({
       href: '/study?deck=unknown',
       count: unknown?.total ?? null,
       note: PRACTICE_NOTE_HE(noteFor(unknown?.total ?? null)),
+      // `T-389` — ⛔ **הפסק דין של המסך, ⛔ ולא `total === null`.** ‏`undefined` הוא
+      // «⛔ לא נעשתה קריאה» ⇒ ⛔ אינו «נכשל», בדיוק כמו ב-`readFailed` למעלה.
+      unmeasured: unknown?.failed === true,
       tone: 'danger',
     }),
     toEntry({
@@ -385,6 +424,9 @@ export default function DeckSelector({
       href: '/study',
       count: counts.due,
       note: DUE_NOTE_HE(noteFor(counts.due)),
+      // `T-389` — ⛔ ורק אחרי ש-`loading` נפל: בזמן שהקריאה באוויר המספר הוא `null`
+      // ו⛔ שום דבר ⛔ עוד לא נכשל (אותה הבחנה בדיוק שעושה `readFailed`).
+      unmeasured: !loading && counts.due === null,
     }),
     // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
     // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
@@ -395,6 +437,7 @@ export default function DeckSelector({
       href: '/study?deck=sentences',
       count: counts.sentences,
       note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
+      unmeasured: !loading && counts.sentences === null,
     }),
   ];
 
@@ -404,8 +447,17 @@ export default function DeckSelector({
    * (F-027), and the old rule — «`due` when enabled» — could not survive a second enabled
    * tile above it. The primary is the FIRST enabled tile in `36 § 5`'s own order, so the
    * count is one by construction whichever tiles happen to be live.
+   *
+   * 🔴 **`T-389` — ⛔ AND «enabled» ⛔ IS NO LONGER ENOUGH: it must also be MEASURED.**
+   * Since `T-389` a deck whose read failed is reachable ⛔ while carrying ⛔ no number,
+   * ⇒ without this clause the screen's one marked action would land on a tile nobody
+   * measured, and `טעינה מחדש` — the ⛔ only control that can repair the failure —
+   * would stop being the primary in exactly the state it exists for (`T-295`ⓑ ·
+   * `T-329`ⓑ · `T-349`ⓑ, all three measured at ≤736px). ⛔ The count stays **one** by
+   * construction either way: `recoveryBlock` carries the marker ⛔ only when this is
+   * `null`.
    */
-  const primaryKey = entries.find((entry) => entry.enabled)?.key ?? null;
+  const primaryKey = entries.find((entry) => entry.enabled && entry.measured)?.key ?? null;
 
   // T-123 · D-064: ⛔ בזמן טעינה אין מצב ריק. שלושת האריחים מציגים «—» וזה
   // נכון; «אין מה לתרגל» חצי שנייה לפני שהמספרים נוחתים הוא שקר קצר.

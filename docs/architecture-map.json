@@ -775,6 +775,10 @@
     "lib/core/failureExit.ts",
     "lib/core/world.ts"
   ],
+  "components/DeckSelector.dom.test.tsx": [
+    "components/DeckSelector.tsx",
+    "components/FilterBar.tsx"
+  ],
   "components/DeckSelector.test.ts": [
     "lib/testSource.ts"
   ],

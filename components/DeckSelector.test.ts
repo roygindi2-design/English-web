@@ -307,8 +307,29 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
     expect(link.match(/\{body\}/g)?.length).toBe(2);
   });
 
-  it('enables a deck only when its count is a positive number', () => {
-    expect(CODE).toMatch(/href !== null && count !== null && count > 0/);
+  it('enables a deck that was READ and came back positive', () => {
+    expect(CODE).toMatch(/href !== null && \(count !== null \? count > 0 : input\.unmeasured === true\)/);
+  });
+
+  /**
+   * 🔴 **`T-389` — הפגם עצמו, נמדד בהליכה חיה 16/09 ב-375×780 על `/dev/tabs/cards`:**
+   * המונה «לא ידעתי» הראה **25** (מ-`summary` שנחת), ובמרחק שני אריחים מתחתיו האריח
+   * «חזרה» נשא `aria-disabled="true"` ואת «— מילים שסימנת לא ידעתי», כי הקריאה שלו
+   * ל-`deck=unknown` נכשלה. ⇒ מספר, ומיד «⛔ אינו קיים».
+   *
+   * ⛔ **ו«מושבת עם המספר» (§ 4.2ו) ⛔ אינו מכסה את זה:** «—» ⛔ אינו מספר, ⇒ אריח
+   * מושבת שנושא «—» הוא בדיוק הצורה שהסעיף פוסל. ⇒ קריאה שנכשלה משאירה את האריח
+   * **בר-הגעה**, והיעד קורא בעצמו.
+   *
+   * ⚠️ **⛔ והמדידה האמיתית של השורה היא ב-DOM** — `DeckSelector.dom.test.tsx` מרנדר
+   * את המסך ומודד את האריח. מה שנמדד כאן הוא ש**מקור** הכלל ⛔ לא נשחק חזרה.
+   */
+  it('T-389 — קריאה שנכשלה ⛔ אינה משביתה את האריח: הפסק דין מגיע מ-`unmeasured`', () => {
+    // ⛔ ולא נגזר מ-`total === null`: «⛔ לא נעשתה קריאה» ⛔ אינו «נכשל».
+    expect(CODE).toContain('unmeasured: unknown?.failed === true');
+    // ⛔ ושתי החפיסות שהרכיב הזה כן קורא נמדדות מאותה הבחנה, אחרי ש-`loading` נפל.
+    expect(CODE).toContain('unmeasured: !loading && counts.due === null');
+    expect(CODE).toContain('unmeasured: !loading && counts.sentences === null');
   });
 
   it('marks a disabled card aria-disabled and ⛔ never renders it as a link', () => {
@@ -511,7 +532,12 @@ describe('T-123 · D-064 — מסך שכל האריחים בו מושבתים �
    * והספירה היא אחת מעצם הבנייה.
    */
   it('פעולה ראשית אחת בדיוק, והיא נגזרת ⛔ ולא מקודדת לאריח', () => {
-    expect(CODE).toMatch(/const primaryKey = entries\.find\(\(entry\) => entry\.enabled\)\?\.key \?\? null/);
+    // 🔴 `T-389` — ⛔ **ו«פעיל» לבדו ⛔ אינו מספיק עוד: הוא חייב גם להיות נמדד.**
+    // אריח שקריאתו נכשלה הוא בר-הגעה ו⛔ נטול מספר ⇒ פעולה ראשית עליו הייתה
+    // גוזלת את הסימון מ-`טעינה מחדש`, הפקד היחיד שיכול לתקן את הכשל.
+    expect(CODE).toMatch(
+      /const primaryKey = entries\.find\(\(entry\) => entry\.enabled && entry\.measured\)\?\.key \?\? null/,
+    );
     expect(CODE.match(/data-primary-action=\{entry\.key === primaryKey/g)?.length).toBe(1);
     // ⛔ אריח מושבת ⛔ אינו יכול לשאת סימון בכלל — הענף שלו ⛔ אינו פולט את התכונה.
     const disabled = braceRegion(CODE, '<button');
