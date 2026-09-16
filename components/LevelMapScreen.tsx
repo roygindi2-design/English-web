@@ -287,6 +287,10 @@ export default function LevelMapScreen({
             כפתור שמתקן שני שלישים מהמסך ושותק על השליש שהמשתמש רואה. */}
         <DeckSelector
           unseen={summary?.unseen ?? null}
+          /* `T-386`ⓐ — ⛔ **רק המסך יודע את זה.** `unseen` הוא `null` גם בזמן הקריאה
+             ל-`/api/levels/summary` וגם אחרי שהיא נכשלה, ו⛔ אלה שני מצבים הפוכים עבור
+             צורת המתנה. ⇒ המסך מוסר את ההבחנה, בדיוק כפי שהוא כבר מוסר את `unknown`. */
+          unseenPending={state.kind === 'loading'}
           unknown={state.kind === 'ready' ? unknownDeck : undefined}
           onRetry={state.kind === 'ready' ? () => void loadUnknown() : undefined}
         />

@@ -780,6 +780,7 @@
   ],
   "components/DeckSelector.tsx": [
     "components/LockIcon.tsx",
+    "components/UnknownMarkIcon.tsx",
     "lib/api/client.ts",
     "lib/core/deckTiles.ts"
   ],
@@ -787,6 +788,7 @@
   "components/EnWord.tsx": [],
   "components/FilterBar.test.ts": [],
   "components/FilterBar.tsx": [
+    "components/UnknownMarkIcon.tsx",
     "lib/core/filterProgress.ts"
   ],
   "components/Flashcard.test.ts": [],
@@ -989,6 +991,7 @@
   "components/UnknownList.tsx": [
     "components/EnWord.tsx"
   ],
+  "components/UnknownMarkIcon.tsx": [],
   "components/WordBank.test.ts": [],
   "components/WordBank.tsx": [
     "components/EnWord.tsx"

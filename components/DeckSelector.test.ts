@@ -329,7 +329,12 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
     expect(CODE).toContain("'—'");
     expect(CODE).not.toContain('StudyEmptyState');
     // ⛔ האריחים ⛔ אינם מוחלפים — הרשימה מרונדרת בלי תנאי.
-    expect(CODE).toMatch(/<ul aria-busy=\{loading\} data-deck-selector/);
+    // ⚠️ ⟦`T-386`⟧ העוגן הוא **התכונה** `data-deck-selector`, ⛔ ולא הביטוי שב-`aria-busy`.
+    //    הכוונה כאן היא «הרשימה מרונדרת ללא תנאי», ⛔ ולא «`aria-busy` נגזר מ-`loading`»;
+    //    קשירה לביטוי הפנימי הפילה את השומר הזה ברגע ש-`aria-busy` נעשה מדויק יותר
+    //    (‏«עוד נקרא» לכל אריח, ⛔ ולא רק לשתי החפיסות שהבלוק קורא בעצמו).
+    expect(CODE).toMatch(/<ul aria-busy=\{[^}]+\} data-deck-selector/);
+    expect(CODE).not.toMatch(/&&\s*<ul aria-busy=/);
   });
 
   /**
@@ -360,7 +365,8 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    */
   it('T-349 — דרך היציאה מרונדרת ⛔ לפני הרשימה בכל כשל, מלא כחלקי', () => {
     const site = '{readFailed && recoveryBlock}';
-    const listOpen = CODE.indexOf('<ul aria-busy={loading}');
+    // ⟦`T-386`⟧ אותו תיקון עוגן: מיקום הרשימה נמדד מהתכונה, ⛔ לא מהביטוי שב-`aria-busy`.
+    const listOpen = CODE.indexOf('data-deck-selector');
     const listClose = CODE.indexOf('</ul>');
 
     // ⛔ אתר אחד, ⛔ ולא שניים — ⛔ אין עוד «לפני» ו«אחרי».
@@ -510,6 +516,45 @@ describe('T-123 · D-064 — מסך שכל האריחים בו מושבתים �
    * יכול לשרוד אריח פעיל **מעליו** — ולכן הראשי הוא **האריח הפעיל הראשון בסדר של `36 § 5`**,
    * והספירה היא אחת מעצם הבנייה.
    */
+  /**
+   * ⏳ **`T-386`ⓐ — ⛔ «עוד נקרא» ⛔ אינו «⛔ אין לנו את המספר», וזה כל ההבדל.**
+   *
+   * 🔬 **נמדד בטיק הזה על `next start` חי, ⛔ ולא נקרא מהקוד:** ה-HTML הראשוני של
+   * `/dev/tabs/cards` נושא `data-deck-selector` עם **4** `<li>` ⇒ הנחת השורה («⛔ 0
+   * אריחים ב-`DOMContentLoaded`») ⛔ **לא שוחזרה**. מה שכן נמדד: שלושה מתוך הארבעה
+   * נושאים «—» — הגליף ש-`UNKNOWN_COUNT_HE` מגדיר כ«מספר שאין לנו» — עד שהקריאות
+   * צד-הלקוח נוחתות. ⇒ המסך **פותח בהודעת כשל** ואז מתקן את עצמו בשקט.
+   *
+   * ⛔ **⛔ ולא ספינר**, ⛔ ואפס תנועה: `check:motion` מכובד **בבנייה**, בדיוק כמו
+   * `components/CardSkeleton.tsx`.
+   */
+  it('T-386 — אריח שהמספר שלו עוד נקרא נושא צורה, ⛔ ולא את גליף הכשל «—»', () => {
+    expect(CODE).toContain('data-tile-skeleton');
+    expect(CODE).toMatch(/entry\.pending === true \? \(\s*<TileNoteSkeleton \/>/);
+    // ⛔ אותה תיבת שורה של `text-sm` (20px) ⇒ ⛔ אפס הזזת פריסה כשהמספר נוחת.
+    expect(CODE).toMatch(/data-tile-skeleton className="flex h-5 items-center"/);
+  });
+
+  it('T-386 — השלד ⛔ אינו זז: ⛔ אפס `animate-`, ⛔ אפס `transition` בצורה', () => {
+    const skeleton = CODE.slice(CODE.indexOf('function TileNoteSkeleton'), CODE.indexOf('function TileNoteSkeleton') + 400);
+    expect(skeleton).not.toMatch(/animate-|transition|duration-/);
+    expect(skeleton).toContain('aria-hidden');
+  });
+
+  /**
+   * ⛔ **ההבחנה «עוד נקרא» מול «נכשל» שייכת ל**מסך**, ⛔ ולא לבלוק.** `unseen` הוא `null`
+   * בשני המצבים, ⇒ גזירה מקומית שלו הייתה מציירת צורת המתנה על כשל — בדיוק המצב ש-
+   * `T-295`/`T-384` בנו את `recoveryBlock` בשבילו.
+   */
+  it('T-386 — `unseenPending` מגיע כ-prop מהמסך, ⛔ ואינו נגזר מ-`unseen === null`', () => {
+    expect(CODE).toContain('unseenPending');
+    expect(CODE).toContain('pending: unseenPending');
+    expect(CODE).not.toMatch(/pending:\s*unseen === null/);
+    // ⛔ ושני האריחים שהבלוק עצמו קורא נשענים על ה-state שלו, ⛔ לא על פרוקסי.
+    expect(CODE).toMatch(/pending: loading/);
+    expect(CODE).toMatch(/pending: unknown\?\.loading === true/);
+  });
+
   it('פעולה ראשית אחת בדיוק, והיא נגזרת ⛔ ולא מקודדת לאריח', () => {
     expect(CODE).toMatch(/const primaryKey = entries\.find\(\(entry\) => entry\.enabled\)\?\.key \?\? null/);
     expect(CODE.match(/data-primary-action=\{entry\.key === primaryKey/g)?.length).toBe(1);
