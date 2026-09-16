@@ -76,7 +76,7 @@
 | `/dev/story/done` | `חזרה לעולם` · `חזרה לשאלה` · `לבחירת הרמה` | `app/dev/story/story-fixture.ts` · `components/StoryEndScreen.tsx` · `components/StoryScreen.tsx` | ⛔ — | ✅ | `—` |
 | `/dev/story/live` | `חזרה לעולם` · `חזרה לשאלה` · `לבחירת הרמה` … +6 | ⛔ — | ⛔ — | ✅ | `components/StoryScreen` |
 | `/dev/story` | `חזרה לעולם` · `חזרה לשאלה` · `לבחירת הרמה` | `/dev/messages/open` · `/dev/story/live` · `app/dev/story/story-fixture.ts` … +1 | ⛔ — | ✅ | `—` |
-| `/dev/tabs/cards` | `נסה שוב` · `טעינה מחדש` · `שינוי רמה · הגדרות` … +1 | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +1 | `/settings` | ✅ | `components/LevelMapScreen` |
+| `/dev/tabs/cards` | `נסה שוב` · `טעינה מחדש` · `שינוי רמה · הגדרות` … +1 | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +2 | `/settings` | ✅ | `components/LevelMapScreen` |
 | `/dev/tabs/me` | `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` | `/me` · `components/MeScreen.tsx` | `/studies` · `/sources` · `/me` | ✅ | `components/MeScreen` |
 | `/dev/tabs/probe` | `טעינה מחדש` · `פתיחת הכרטיסיות` | `components/DeckSelector.tsx` | ⛔ — | ✅ | `components/DeckSelector` |
 | `/dev/tabs/studies` | `כניסה לאוצר המילים` | `/studies` · `/dev/tabs/me` · `components/StudiesScreen.tsx` | ⛔ — | ✅ | `components/StudiesScreen` |
