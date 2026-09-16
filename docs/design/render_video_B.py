@@ -172,7 +172,9 @@ def screen_home(c, t, drawer=0.0, equipped=0, tap=None, xp=.62):
              outline=(GOLD if filled else BORDER_SUB) + (255,), width=1.6 if filled else 1.1)
         if filled:
             gear_glyph(c, x + sw/2, 582 + sw/2 - 4, kind, GOLD_LIGHT, sc=1.2)
-            c.txt(x + sw/2, 582 + sw - 13, name, 9, "Medium", INK_MUTED + (210,))
+            # T-241ⓓ · constitution א9 — 9px in a 375x812 space is under the text floor,
+            # and the floor is a GATE (`check:text-floor`), ⛔ not taste. ⇒ 12.
+            c.txt(x + sw/2, 582 + sw - 13, name, 12, "Medium", INK_MUTED + (210,))
         else:
             icon_lock(c, x + sw/2, 582 + sw/2, BORDER_STRONG + (150,), sc=1.0)
     # CTA + chips

@@ -987,7 +987,10 @@ def screen_story(c, t, active=None, pop=0.0, added=False, question=False,
                  q_sel=None, q_rev=False):
     c.txt(LW - 24, 106, "העולם · סיפורים", 12.5, "Regular", INK_MUTED + (190,), anchor="rm")
     c.txt(LW - 24, 132, "הספרייה של מאיה", 25, "Bold", INK, anchor="rm")
-    c.txt(LW - 24, 160, "סיפור ברמה שלך · הקש על מילה מודגשת לתרגום", 12.5,
+    # T-241ⓑ · `36 § 7` names this subtitle word for word, and `36 § 1` gives 36 the
+    # win in any conflict. The retired wording promised a visual marker the screen
+    # ⛔ never draws — the only marking is «ידועה» (§ 4.2יג-ב ⓑ) — which is F-123.
+    c.txt(LW - 24, 160, "סיפור ברמה שלך · הקש על מילה לתרגום", 12.5,
           "Regular", INK_MUTED + (185,), anchor="rm")
     cw_ = c.tw("A1", 12, "Bold") + 26
     c.rr(24, 182, cw_, 26, 13, fill=BRAND + (46,))
@@ -1008,14 +1011,23 @@ def screen_story(c, t, active=None, pop=0.0, added=False, question=False,
             c.line(x, y + 12, x + wpx, y + 12, SUCCESS + (200,), 1.6)
             c.txt(x, y, word, 15.5, "SemiBold", INK, anchor="lm", rtl=False)
         elif key:
+            # T-241ⓐ · `36 § 7`: «⛔ מילים חדשות אינן מסומנות מראש» — retrieval only helps
+            # when it is effort. ⇒ a tappable-but-new word is drawn EXACTLY like any other
+            # untouched word, and `components/StoryScreen.tsx` already paints it that way
+            # (§ 4.2יג-ב ⓑ · D-108 «New words carry NOTHING»). The chip and the brand
+            # underline that used to sit here were the pre-marking F-123 measured.
+            # ⚠️ **The ACTIVE chip stays, and it is ⛔ not pre-marking:** it is the tap
+            # itself — the frame where the finger lands, one word at a time, which is the
+            # only thing a video can show a press with. The screen's equivalent is the
+            # popover, and it opens on exactly the same event.
             on = (key == active)
-            c.rr(x - 5, y - 13, wpx + 10, 27, 7,
-                 fill=(BRAND + (150,)) if on else BRAND + (40,))
-            if not on:
-                c.line(x, y + 12, x + wpx, y + 12, BRAND + (190,), 1.4)
-            c.txt(x, y, word, 15.5, "SemiBold",
-                  BRAND_ON if on else INK, anchor="lm", rtl=False)
-            if on: box = (x, y, wpx)
+            if on:
+                c.rr(x - 5, y - 13, wpx + 10, 27, 7, fill=BRAND + (150,))
+                c.txt(x, y, word, 15.5, "SemiBold", BRAND_ON, anchor="lm", rtl=False)
+                box = (x, y, wpx)
+            else:
+                c.txt(x, y, word, 15.5, "Regular", INK_MUTED + (238,),
+                      anchor="lm", rtl=False)
         else:
             c.txt(x, y, word, 15.5, "Regular", INK_MUTED + (238,), anchor="lm", rtl=False)
     c.txt(LW - 24, ST_Y + ST_H + 30, "5 מילים חדשות · 2 שכבר ידעת", 12,
@@ -1023,7 +1035,11 @@ def screen_story(c, t, active=None, pop=0.0, added=False, question=False,
     c.line(48, ST_Y + ST_H + 30 - 6, 76, ST_Y + ST_H + 30 - 6, SUCCESS + (200,), 1.6)
     c.txt(84, ST_Y + ST_H + 30, "ידועה", 11, "Regular", INK_MUTED + (160,), anchor="lm")
     c.rr(24, ST_Y + ST_H + 50, LW - 48, 54, 16, fill=BRAND_SURFACE)
-    c.txt(LW/2, ST_Y + ST_H + 77, "הסיפור הבא", 15.5, "Bold", BRAND_ON)
+    # T-241ⓑ · T-151ⓓ — there is ⛔ no next item in a sequence: `lib/core/storyPick.ts`
+    # picks on a DAY index in `LEARNER_TIME_ZONE`, so a press returns the SAME story and
+    # the next one is tomorrow's. The label now names what the button does, exactly as
+    # `components/StoryScreen.tsx` (`DONE_READING_HE`) already labels it.
+    c.txt(LW/2, ST_Y + ST_H + 77, "סיימתי לקרוא", 15.5, "Bold", BRAND_ON)
     # translation popover
     if box and pop > 0:
         x, y, wpx = box
@@ -1323,6 +1339,25 @@ SCENES = [
 ]
 XF = 0.35  # crossfade
 
+# T-241ⓒ — THE TWO STILLS `docs/design/` SHIPS, AND THE FRAME EACH ONE IS.
+# ⛔ Measured, ⛔ not remembered: both were reproduced PIXEL-IDENTICAL (mean abs diff
+# 0.00000 over all 1125x2436 px) from the pre-T-241 source at exactly these times, which
+# is how the mapping below stopped being a guess. ⇒ after ANY edit to `screen_story`,
+# `python3 render_video_A.py stills` re-cuts them; hand-editing the PNG is forbidden
+# (HARD INVARIANTS — a derived file).
+# ⚠️ The font is `FONT_PATH` above, and the same measurement proves it: a different
+# Heebo build would ⛔ not land on 0.00000.
+STILLS = {
+    "kol-A-05-story.png":    4.00,
+    "kol-A-06-question.png": 7.90,
+}
+
+def stills():
+    here = os.path.dirname(os.path.abspath(__file__))
+    for name, t in STILLS.items():
+        scene_story(t).convert("RGB").save(os.path.join(here, name))
+        print(f"  {name}  <- scene_story({t})", flush=True)
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
@@ -1351,4 +1386,7 @@ def main():
     print("frames done", flush=True)
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "stills":
+        stills()
+    else:
+        main()
