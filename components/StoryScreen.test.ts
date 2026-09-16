@@ -138,3 +138,68 @@ describe('T-374 — the English body is laid out LEFT, exactly as the render dra
     expect(body?.[0]).not.toMatch(/\sdir=/);
   });
 });
+
+/**
+ * 🔑 **T-208 · `D-254`ⓑ — התקרה ⛔ אינה מספר שנבחר, והבדיקה הזאת היא מה שמחזיק את זה
+ * נכון כשהמקור יזוז.**
+ *
+ * ⛔ **ולמה הצלבת טקסט ו⛔ לא ייבוא:** `app/api/study/queue/route.ts` הוא נתיב שרת
+ * (`next/headers`), ⇒ ייבוא שלו לרכיב לקוח היה גורר את השרת אל הדפדפן; והקובץ עצמו
+ * מצהיר במפורש ש-`NEW_CARDS_PER_DAY` הוא **פרמטר מוצר** ש⛔ אינו עובר ל-`/lib/core`,
+ * כדי שקורא מאוחר ⛔ לא יצטט אותו כאילו השכבה הטהורה גזרה אותו.
+ * ⇒ אותה תבנית בדיוק שבה `app/api/review/context/route.test.ts` מצליב את `CONFLICT_KEY`
+ * מול המיגרציה — הכפילות מותרת, **הסטייה השקטה ⛔ לא**.
+ */
+describe('T-208 · D-254ⓑ — the ceiling is DERIVED, ⛔ and it ⛔ cannot drift', () => {
+  const QUEUE_ROUTE = readFileSync('app/api/study/queue/route.ts', 'utf8');
+
+  it('`RECALL_CAP` is exactly `NEW_CARDS_PER_DAY`, read from the route that owns it', () => {
+    const declared = /const NEW_CARDS_PER_DAY = (\d+);/.exec(QUEUE_ROUTE);
+    expect(declared).not.toBeNull();
+    expect(SRC).toContain(`const RECALL_CAP = ${declared![1]};`);
+  });
+
+  it('the screen cites the source of the number, ⛔ so nobody re-derives it by taste', () => {
+    expect(SRC).toContain('app/api/study/queue/route.ts');
+    expect(SRC).toContain('NEW_CARDS_PER_DAY');
+  });
+
+  it('⛔ the ceiling ⛔ did ⛔ not move into the pure layer', () => {
+    const PURE = readFileSync('lib/core/storyRecallBatch.ts', 'utf8');
+    expect(PURE).not.toMatch(/const\s+\w*CAP\w*\s*=\s*\d/);
+    expect(PURE).not.toContain('NEW_CARDS_PER_DAY = ');
+  });
+});
+
+describe('T-208 · D-254ⓐⓓ — ⛔ no new path, ⛔ no new column, ⛔ no automatic write', () => {
+  it('the batch goes through the SAME endpoint a single tap already uses', () => {
+    expect(SRC).toContain("'/api/review/context'");
+    // ⛔ D-254ⓓ — אפס מיגרציות ⇒ ⛔ אין כאן נתיב חדש שצריך חוזה חדש.
+    expect(SRC).not.toMatch(/\/api\/review\/(batch|bulk|story)/);
+  });
+
+  it('⛔ zero SM-2 columns are ⛔ ever named by the screen', () => {
+    for (const column of ['ease_factor', 'interval_days', 'due_at', 'repetitions', 'lapses']) {
+      expect(SRC).not.toContain(column);
+    }
+  });
+
+  it('the action is gated on `revealed`, ⛔ and ⛔ never on the reading phase (D-254ⓒ)', () => {
+    // ⛔ הכרטיס כולו מורכב ⛔ רק ב-`inQuestion`, ⇒ הגדר הנוסף הוא **החשיפה**.
+    expect(END).toContain('const recallSlot = !revealed ? null :');
+  });
+
+  it('the confirmation is a WRITTEN line, ⛔ never a disabled button (D-254ⓒ)', () => {
+    expect(END).toContain('data-story-recall-done');
+    // 🔑 D-228ⓐ — one slot, ⛔ never a third control in the secondary row.
+    expect(END).toContain('recallSlot === null && reviewedCount > 0');
+    expect(END).toContain('נוספה לחזרה');
+    expect(END).toContain('נוספו לחזרה');
+  });
+
+  it('⛔ «1 מילים» is ⛔ never written — Hebrew singular names the word (§ 4.2כא ⓑ)', () => {
+    expect(END).not.toMatch(/הוסף \$\{count\} מילים[\s\S]{0,40}count === 1 \?/);
+    expect(END).toContain("count === 1 ? 'הוסף מילה אחת לחזרה'");
+    expect(END).toContain("count === 1 ? 'מילה אחת נוספה לחזרה'");
+  });
+});

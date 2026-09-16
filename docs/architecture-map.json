@@ -927,6 +927,7 @@
   ],
   "components/StoryEndScreen.tsx": [
     "components/EnWord.tsx",
+    "lib/core/failure.ts",
     "lib/core/storyQuestion.ts"
   ],
   "components/StoryScreen.dom.test.tsx": [
@@ -944,6 +945,7 @@
     "lib/core/failureExit.ts",
     "lib/core/storyIntro.ts",
     "lib/core/storyQuestion.ts",
+    "lib/core/storyRecallBatch.ts",
     "lib/core/storyTapTargets.ts",
     "lib/core/worldApps.ts"
   ],
@@ -1530,6 +1532,10 @@
   "lib/core/storyQuestionGate.ts": [
     "lib/core/storyGate.ts"
   ],
+  "lib/core/storyRecallBatch.test.ts": [
+    "lib/core/storyRecallBatch.ts"
+  ],
+  "lib/core/storyRecallBatch.ts": [],
   "lib/core/storyTapTargets.test.ts": [
     "lib/core/storyTapTargets.ts",
     "scripts/story-tap-audit.d.mts"

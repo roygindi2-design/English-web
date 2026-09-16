@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback } from 'react';
 import EnWord from '@/components/EnWord';
+import { RETRY_HE } from '@/lib/core/failure';
 import { shuffleAnswers, type StoryQuestion } from '@/lib/core/storyQuestion';
 
 /**
@@ -53,6 +54,25 @@ const PRACTICE_HE = 'לתרגל אותן בכרטיסיות';
 const BACK_TO_STORY_HE = 'חזרה לסיפור';
 const CARDS_HREF = '/cards';
 /**
+ * 🔑 **T-208 · `D-254`ⓒ — הפעולה נוקבת ב-N, ו-N הוא מה שבאמת ייכתב.**
+ * ⛔ **ויחיד בעברית נוקב במילה, ⛔ ולא במספר** — אותה משפחת נוסח בדיוק של
+ * `introLineHe`/`addedLineHe` ב-`components/StoryScreen.tsx`. ⛔ «⛔ 1 מילים» ⛔ אינו
+ * נכתב כאן יותר משהוא נכתב שם.
+ * ⛔ **ו-`N = 0` ⛔ אינו מטופל במחרוזת אלא באתר הקריאה** — «⛔ אין אלמנט כלל»
+ * (`D-254`ⓒ · `§ 4.2יג-ב ⓒ` · `T-151`ⓔ), ⛔ ולא «0 מילים» ו⛔ לא כפתור מנוטרל.
+ */
+const addRecallHe = (count: number): string =>
+  count === 1 ? 'הוסף מילה אחת לחזרה' : `הוסף ${count} מילים לחזרה`;
+/**
+ * 🔑 **T-208 · `D-254`ⓒ — האישור הוא **שורה כתובה**, ⛔ ולא כפתור שהשתנה.** הלומד
+ * הצהיר פעם אחת, ⇒ ⛔ אין כאן מה ללחוץ שנית: פעולה שנשארת לחיצה היא הזמנה להעלות
+ * את אותו `attempts` שוב על אותה שליפה אחת.
+ * ⛔ **והמספר כאן הוא מה ש**נחת**, ⛔ ולא מה שנשלח** (`D-183`): כתיבה שנכשלה ⛔ אינה
+ * מזיזה אותו, ובדיוק כמו ב-`WordPopover` היא נאמרת ⛔ ולא מוסתרת.
+ */
+const recallAddedHe = (count: number): string =>
+  count === 1 ? 'מילה אחת נוספה לחזרה' : `${count} מילים נוספו לחזרה`;
+/**
  * ⚠️ **`px-2.5` ⛔ אינו טעם — הוא המספר שמחזיק את שתי הפעולות בשורה אחת ב-320px.**
  * 🔬 **נמדד חי (‏`next start`, 320×780) ⛔ ולא שוער:** הרוחב הפנוי בעמודה הוא **272px**,
  * ושתי הפעולות ב-`px-4` הן `110 + 169` ועוד `gap-3` ⇒ **291** ⇒ הן נשברות לשתי שורות,
@@ -79,6 +99,22 @@ export interface StoryEndScreenProps {
   readonly onChoose: (index: number) => void;
   /** 🔙 T-381ⓐ — חזרה לגוף הסיפור. ⛔ אינה מאפסת דבר ו⛔ אינה נספרת. */
   readonly onBackToReading: () => void;
+  /**
+   * 🔑 **T-208 · `D-254`ⓐⓑ — כמה מילים **שהלומד שלף** ממתינות לכניסה לתור.**
+   * ⛔ הכרטיס הזה ⛔ אינו בוחר אותן ו⛔ אינו סופר אותן: `selectStoryRecallBatch` עושה
+   * את שניהם ב-`lib/core/storyRecallBatch.ts`, והמכולה מעבירה את האורך. ⛔ אפס ⇒
+   * ⛔ אין אלמנט כלל.
+   */
+  readonly recallCount: number;
+  /**
+   * 🔑 **T-208 · `D-254`ⓒ — `null` = עוד ⛔ לא הצהיר · מספר = מה ש**נחת**.**
+   * ⛔ `0` ⛔ אינו «⛔ לא לחץ»: הוא «לחץ ו⛔ שום דבר ⛔ לא נשמר» ⇒ שורת כישלון, ⛔ ולא
+   * אישור על כלום (`D-183`).
+   */
+  readonly recallAdded: number | null;
+  /** הכתיבה באוויר. ⛔ הכפתור מנוטרל, ⛔ ולא נעלם — היעלמות היא מסך שקופץ. */
+  readonly recallPending: boolean;
+  readonly onAddRecall: () => void;
 }
 
 function CheckIcon() {
@@ -124,9 +160,58 @@ export default function StoryEndScreen({
   chosen,
   onChoose,
   onBackToReading,
+  recallCount,
+  recallAdded,
+  recallPending,
+  onAddRecall,
 }: StoryEndScreenProps): React.JSX.Element {
   const shuffled = shuffleAnswers(question, storyId);
   const revealed = chosen !== null;
+
+  /**
+   * 🔑 **T-208 · `D-254`ⓒ — משבצת אחת, שלושה מצבים, ו⛔ אף אחד מהם ⛔ אינו כפתור מנוטרל.**
+   * ```
+   * ⛔ לא נחשף · ⛔ אין מה להוסיף   ⇒  null   ⇐ ⛔ אין אלמנט כלל (§ 4.2יג-ב ⓒ · T-151ⓔ)
+   * טרם הצהיר, N>0                  ⇒  «הוסף N מילים לחזרה»
+   * הצהיר, ו-K>0 נחתו               ⇒  שורה כתובה «K מילים נוספו לחזרה»
+   * הצהיר, ו⛔ אפס נחתו             ⇒  «נסה שוב» — ⛔ ואין אישור על כלום (D-183)
+   * ```
+   * ⛔ **ומצב הכישלון ⛔ אינו שתי שורות כמו ב-`WordPopover`, וזו מדידה ⛔ ולא קיצור:**
+   * שם יש חלונית עם מקום, כאן יש **18 פיקסלים** של מרווח מתחת ל-320px עד תקרת
+   * `D-228`ⓐ. ⛔ **וגם `taste-skill § 4.5`:** ‏`FAILURE_HE.save` הוא «השמירה נכשלה.
+   * נסה שוב.» — משפט ש**מכיל** את תווית הכפתור שלידו ⇒ שני פקדים באותה כוונה בדיוק.
+   * ⇒ **התווית עצמה מחליפה מצב**: «הוסף 3 מילים לחזרה» ⇢ «נסה שוב» הוא **טקסט**
+   * שהשתנה, ⛔ ולא גוון ⇒ הגדר «⛔ אין מצב בצבע בלבד» ⛔ אינו נשען כאן על המסגרת.
+   */
+  const recallSlot = !revealed ? null : recallAdded === null ? (
+    recallCount > 0 ? (
+      <button
+        type="button"
+        data-story-recall
+        onClick={onAddRecall}
+        disabled={recallPending}
+        className={`${SECONDARY_HE_CLASS} disabled:opacity-60`}
+      >
+        {addRecallHe(recallCount)}
+      </button>
+    ) : null
+  ) : recallAdded > 0 ? (
+    /* ⛔ **שורה כתובה, ⛔ ולא כפתור מנוטרל** — `D-254`ⓒ: כפתור אפור הוא הזמנה ללחוץ
+       שוב על משהו שכבר קרה, כלומר להעלות את אותו `attempts` על אותה שליפה אחת. */
+    <p data-story-recall-done className="text-sm text-ink-muted">
+      {recallAddedHe(recallAdded)}
+    </p>
+  ) : (
+    <button
+      type="button"
+      data-story-recall-error
+      onClick={onAddRecall}
+      disabled={recallPending}
+      className={`${SECONDARY_HE_CLASS} border-danger text-danger disabled:opacity-60`}
+    >
+      {RETRY_HE}
+    </button>
+  );
 
   const choose = useCallback(
     (index: number) => {
@@ -230,11 +315,33 @@ export default function StoryEndScreen({
           בדיוק (שתיהן משניות לפי `T-379` ⓓ — גודל וצורה, ⛔ לא גוון), ו⛔ אפס פיקסלים
           אנכיים נוספים. ⚠️ `flex-wrap` כי ב-320px שתי התוויות ⛔ אינן נכנסות לשורה,
           ו⛔ אין גלילה אופקית. ⚠️ ו-`min-h-touch` על שתיהן — שער קפוא. */}
+      {/* 🔑 **T-208 · `D-254`ⓒ — הפעולה יושבת בשורה המשנית הקיימת, ⛔ ולא מתחתיה,
+          ו⛔ היא ⛔ אינה פקד שלישי בה.**
+          🔬 **נמדד חי בטיק הזה (`next start`, 780 גובה), ⛔ ולא שוער** — שלושה פקדים
+          בשורה, עם שלוש הקשות על מילים:
+          ```
+          320px   שורה משנית 44 ⇢ 96   ·  היציאה «חזרה לעולם»  718 ⇢ 770   🔴
+          375px   שורה משנית 44 ⇢ 96   ·  היציאה                694 ⇢ 746   🔴
+          414px   שורה משנית 44 ⇢ 96   ·  היציאה                640 ⇢ 692   ✅
+          ```
+          ⇒ בשני הרוחבים הצרים היציאה **יוצאת מהמסך הראשון** מול תקרת `D-228`ⓐ
+          (`780 − 44 = 736`, `scripts/verify-mobile.mjs`) — בדיוק הכשל ש-`F-131` פתחה
+          ו-`T-318` סגרה. ⛔ **ו-`check:mobile` ⛔ לא היה תופס את זה לעולם**: הוא מודד
+          את `/dev/story/done` **בלי הקשות**, ⇒ שם `recallCount === 0` ו⛔ אין אלמנט.
+          זהו בדיוק «פיקסטורה שנבדלת מנתוני הייצור בממד אחד» מ-23/08.
+          ⇒ **משבצת אחת, ⛔ ולא שלושה פקדים:** כל עוד יש מה להצהיר או מה לאשר, המשבצת
+          שייכת ל-`T-208`; אין ⇒ היא חוזרת ל«לתרגל אותן בכרטיסיות».
+          🎨 **ו⛔ זו ⛔ אינה רק מדידה — `taste-skill § 4.5` («NO DUPLICATE CTA INTENT»)
+          אוסר שני פקדים באותה כוונה על מסך אחד**, ושני אלה מצביעים על אותו יעד בדיוק:
+          מנוע החזרות. ⛔ אחד מוסיף אליו ואחד מנווט אליו ⇒ ⛔ אין טעם להציג את הניווט
+          **לפני** שיש מה לנווט אליו.
+          ⛔ **ו⛔ רק אחרי `revealed`** (`D-254`ⓒ). */}
       <div data-story-secondary className="flex flex-wrap items-center gap-2 self-start">
+        {recallSlot}
         <button type="button" onClick={onBackToReading} className={SECONDARY_HE_CLASS}>
           {BACK_TO_STORY_HE}
         </button>
-        {reviewedCount > 0 ? (
+        {recallSlot === null && reviewedCount > 0 ? (
           <Link href={CARDS_HREF} className={SECONDARY_HE_CLASS}>
             {PRACTICE_HE}
           </Link>

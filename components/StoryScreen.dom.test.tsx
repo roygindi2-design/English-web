@@ -913,3 +913,176 @@ describe('T-379 — המקרא מופיע ⛔ רק כשיש מה למקרא', ()
     }
   });
 });
+
+/**
+ * 🔑 **T-208 · `D-254` (`§ 4.2כב`) — סוף הסיפור מכניס לתור החזרות את מה שהלומד שלף.**
+ *
+ * ⛔ **המדידה שפתחה את השורה:** `app/api/world/recall/route.ts` הוא קריאה בלבד, ו-
+ * `app/api/review/context/route.ts` נכתב ⛔ רק כשהלומד לוחץ «הוסף לכרטיסיות» על מילה
+ * בודדת ⇒ **לומד שקרא סיפור, פגש ~80 מילים ולא לחץ ⛔ אף פעם — יוצא בלי ולו מילה אחת
+ * שנכנסה לתור.**
+ *
+ * ⛔ **ומה שהשורה ⛔ אינה:** ⛔ לא «הכול נכנס», ⛔ לא «נכנס אוטומטית», ⛔ ולא ניקוד.
+ */
+describe('T-208 · D-254 — «הוסף N מילים לחזרה» בסוף הסיפור', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function readStory(): HTMLElement {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    return container;
+  }
+
+  function toQuestion(): void {
+    fireEvent.click(screen.getByRole('button', { name: 'סיימתי לקרוא' }));
+  }
+
+  /** חשיפה = בחירת תשובה כלשהי. `D-254`ⓒ תולה את הפעולה ב-`revealed`, ⛔ ולא בנכונות. */
+  function reveal(): void {
+    fireEvent.click(screen.getAllByRole('button', { name: /מִשְׁפָּט|מַפָּה|תְּמוּנָה/ })[0]!);
+  }
+
+  it('⛔ אפס הקשות ⇒ ⛔ אין אלמנט כלל — ⛔ לא «0 מילים» ו⛔ לא כפתור מנוטרל', () => {
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    readStory();
+    toQuestion();
+    reveal();
+    expect(screen.queryByText(/לחזרה$/)).toBeNull();
+    expect(document.querySelector('[data-story-recall]')).toBeNull();
+  });
+
+  it('⛔ מילה שהלומד רק עבר מעליה ⛔ אינה מועמדת — ⛔ רק מה שהוקש', () => {
+    // ⛔ THE POINT: שבע מילים בגוף נושאות גלוסה, הלומד הקיש על **אחת**.
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    readStory();
+    clickWord(bodyWord('quiet'));
+    toQuestion();
+    reveal();
+    expect(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' })).toBeTruthy();
+  });
+
+  it('⛔ אינה מוצגת לפני שהשאלה נחשפה, ⛔ ולא בפאזת הקריאה', () => {
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    readStory();
+    clickWord(bodyWord('quiet'));
+    expect(screen.queryByRole('button', { name: /לחזרה$/ })).toBeNull();
+    toQuestion();
+    expect(screen.queryByRole('button', { name: /לחזרה$/ })).toBeNull();
+    reveal();
+    expect(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' })).toBeTruthy();
+  });
+
+  it('שתי הקשות ⇒ «הוסף 2 מילים לחזרה», ו⛔ לא תקרה מלאה', () => {
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    readStory();
+    clickWord(bodyWord('quiet'));
+    clickWord(bodyWord('smell'));
+    toQuestion();
+    reveal();
+    // ⛔ `D-254`ⓑ: «הקיש על 2 ⇒ נכנסות 2, ⛔ ולא 5». השארית ⛔ אינה מולאת.
+    expect(screen.getByRole('button', { name: 'הוסף 2 מילים לחזרה' })).toBeTruthy();
+  });
+
+  it('לחיצה כותבת לכל מילה, ומחליפה את הפעולה בשורת אישור כתובה', async () => {
+    const seen: string[] = [];
+    stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        seen.push(String((JSON.parse(String(init?.body ?? '{}')) as { wordId?: string }).wordId));
+        return new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 });
+      }),
+    );
+    readStory();
+    clickWord(bodyWord('quiet'));
+    clickWord(bodyWord('smell'));
+    toQuestion();
+    reveal();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף 2 מילים לחזרה' }));
+    await waitFor(() => {
+      expect(screen.getByText('2 מילים נוספו לחזרה')).toBeTruthy();
+    });
+    // ⛔ `D-254`ⓓ — אותו נתיב שקיים, ⛔ ואין נתיב חדש.
+    expect(seen.sort()).toEqual(['fixture-quiet', 'fixture-smell']);
+    // ⛔ והיא ⛔ אינה נלחצת שוב.
+    expect(screen.queryByRole('button', { name: /^הוסף/ })).toBeNull();
+  });
+
+  it('מילה שכבר הוספה בחלונית ⛔ אינה מוצעת שנית — המספר הוא טענה נכונה', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })),
+    );
+    readStory();
+    clickWord(bodyWord('quiet'));
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await waitFor(() => {
+      expect(screen.getByText('הוספת מילה אחת מהסיפור הזה')).toBeTruthy();
+    });
+    clickWord(bodyWord('smell'));
+    toQuestion();
+    reveal();
+    expect(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' })).toBeTruthy();
+  });
+
+  it('⛔ אפס כתיבות שנחתו ⇒ ⛔ אין אישור — שורת הכישלון והצעת החזרה (D-183)', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 })),
+    );
+    readStory();
+    clickWord(bodyWord('quiet'));
+    toQuestion();
+    reveal();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' }));
+    await waitFor(() => {
+      expect(document.querySelector('[data-story-recall-error]')).not.toBeNull();
+    });
+    // ⛔ THE POINT: ⛔ no confirmation on a write that ⛔ did not happen (D-183).
+    expect(screen.queryByText(/נוספה לחזרה$/)).toBeNull();
+    // ⛔ והמצב ⛔ אינו בצבע בלבד: **התווית** היא שהשתנתה.
+    expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'הוסף מילה אחת לחזרה' })).toBeNull();
+  });
+
+  it('🔑 המשבצת משותפת — «לתרגל אותן בכרטיסיות» ⛔ אינה פקד שלישי (D-228ⓐ)', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })),
+    );
+    readStory();
+    toQuestion();
+    reveal();
+    // ⛔ אפס הקשות ⇒ ⛔ אין מה להצהיר ⇒ המשבצת חוזרת לניווט.
+    expect(screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' })).toBeTruthy();
+    cleanup();
+
+    readStory();
+    clickWord(bodyWord('quiet'));
+    toQuestion();
+    reveal();
+    // 🔬 נמדד חי: שלושה פקדים ⇒ שורה שנייה ⇒ היציאה ב-770 (320px) מול תקרת 736.
+    expect(screen.queryByRole('link', { name: 'לתרגל אותן בכרטיסיות' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' }));
+    await waitFor(() => {
+      expect(screen.getByText('מילה אחת נוספה לחזרה')).toBeTruthy();
+    });
+    // ⛔ גם אחרי האישור — האישור עצמו יושב במשבצת.
+    expect(screen.queryByRole('link', { name: 'לתרגל אותן בכרטיסיות' })).toBeNull();
+  });
+
+  it('החזרה לגוף הסיפור ⛔ אינה מאפסת את ההצהרה — הלומד ⛔ אינו מוסיף פעמיים', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })),
+    );
+    readStory();
+    clickWord(bodyWord('quiet'));
+    toQuestion();
+    reveal();
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף מילה אחת לחזרה' }));
+    await waitFor(() => {
+      expect(screen.getByText('מילה אחת נוספה לחזרה')).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לשאלה' }));
+    expect(screen.getByText('מילה אחת נוספה לחזרה')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^הוסף \d|^הוסף מילה/ })).toBeNull();
+  });
+});

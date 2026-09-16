@@ -12,6 +12,7 @@ import { apiGet, apiPost } from '@/lib/api/client';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { storyIntro } from '@/lib/core/storyIntro';
+import { selectStoryRecallBatch } from '@/lib/core/storyRecallBatch';
 import type { StoryQuestion } from '@/lib/core/storyQuestion';
 import {
   buildStorySegments,
@@ -117,6 +118,23 @@ const DONE_READING_HE = 'סיימתי לקרוא';
  */
 const BACK_TO_QUESTION_HE = 'חזרה לשאלה';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
+/**
+ * 🔑 **T-208 · `D-254`ⓑ — התקרה ⛔ אינה נבחרת כאן, היא **נגזרת**, והיא ⛔ לא הומצאה.**
+ * ```
+ * app/api/study/queue/route.ts   NEW_CARDS_PER_DAY = 5
+ * plan/70-engines § 7.1          SM-2:  I(1) = 1 יום  ⇒ כל מה שנכנס היום נופל על מחר
+ * ```
+ * ⇒ SM-2 מתזמן את **כולן** לאותו יום אחד, ו-`planDailyQueue` מורשה להכניס 5 חדשות
+ * ביום ⇒ סיפור שמזרים 20 מילים ⛔ אינו מוסיף 20: הוא מוסיף 20 שורות שהבלם יפרוס על
+ * ארבעה ימים, וההבטחה של `I(1)=1` נשברת ל-15 מהן.
+ * ⛔ **ולמה המספר ⛔ אינו מיובא ו⛔ אינו יושב ב-`/lib/core`:** `app/api/study/queue/route.ts`
+ * מצהיר עליו במפורש כ**פרמטר מוצר** ש⛔ אינו עובר לשכבה הטהורה, כדי שקורא מאוחר
+ * ⛔ לא יצטט אותו כאילו נגזר שם; והקובץ עצמו הוא נתיב שרת (`next/headers`) ⇒ ייבוא
+ * שלו לרכיב לקוח היה גורר את השרת אל הדפדפן.
+ * ⇒ ‏`components/StoryScreen.test.ts` מצליב את המספר הזה מול המקור **בטקסט**, בדיוק
+ * כפי ש-`app/api/review/context/route.test.ts` מצליב את `CONFLICT_KEY` מול המיגרציה.
+ */
+const RECALL_CAP = 5;
 const AMBIGUOUS_HE = 'לאיזו מילה התכוונת?';
 const LOADING_HE = 'טוען את הסיפור שלך…';
 const NO_LEVEL_HE = 'עוד לא בחרת רמה, ובלי רמה אין סיפור ברמה שלך.';
@@ -397,6 +415,23 @@ function StoryReady({
     height: 0,
   });
   const [wordStatus, setWordStatus] = useState<Readonly<Record<string, WordPopoverStatus>>>({});
+  /**
+   * 🔑 **T-208 · `D-254`ⓐ — סדר ההקשה הוא **נתון**, ⛔ ולא נגזרת של `wordStatus`.**
+   * ‏`wordStatus` מחזיק ⛔ רק מילים שהלומד **הוסיף**, ו-`Object.keys` על אובייקט
+   * ⛔ אינו מבטיח סדר הכנסה למפתחות שאינם אינדקסים — ⇒ «חמש הראשונות לפי סדר ההקשה»
+   * (`D-254`ⓑ) ⛔ לא הייתה ניתנת לגזירה משם ⛔ בכלל. ⇒ רשימה, ⛔ ולא קבוצה.
+   * ⛔ **ומה שנרשם כאן הוא **הקשה**, ⛔ ולא הוספה** — זו בדיוק ההבחנה של `D-254`ⓐ:
+   * הקשה היא שליפה מוצהרת, וההוספה היא מה שהשורה הזאת באה לתת ללומד **אחריה**.
+   */
+  const [tapOrder, setTapOrder] = useState<readonly string[]>([]);
+  /**
+   * 🔑 **T-208 · `D-254`ⓒ — `null` = עוד ⛔ לא הצהיר · מספר = מה ש**נחת**.**
+   * ⛔ הוא יושב כאן ו⛔ לא ב-`StoryEndScreen` מאותה סיבה בדיוק כמו `chosen` (`T-381`ⓐ):
+   * הכרטיס מורכב ⛔ רק בפאזת השאלה ⇒ state מקומי שלו מתאפס בכל חזרה לגוף הסיפור,
+   * והלומד היה מוזמן להוסיף את אותן מילים פעם שנייה.
+   */
+  const [recallAdded, setRecallAdded] = useState<number | null>(null);
+  const [recallPending, setRecallPending] = useState(false);
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
   /**
    * 🔴 **T-240 — אותה חלונית, שני משטחים.** החלונית יושבת `absolute` בתוך המשטח
@@ -407,6 +442,21 @@ function StoryReady({
    */
   const [openSurface, setOpenSurface] = useState<'body' | 'title'>('body');
   const titleRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * 🔑 **T-208 · `D-254`ⓐ — נרשם **פעם אחת**, בהקשה הראשונה, ו⛔ לא בכל הקשה.**
+   * ⛔ אותה מילה שהוקשה פעמיים היא **שליפה אחת של אותה מילה**, ⛔ ולא שתי מועמדות;
+   * ‏`selectStoryRecallBatch` מסנן כפילות גם הוא, ו⛔ זו ⛔ אינה כפילות: כאן זה מה
+   * שמונע רשימה שגדלה בלי תקרה במסך אחד.
+   * ⚠️ **⛔ ומדובר בשני משטחים, ⛔ ולא באחד — וזו קריאה הפיכה (`RULES § 0.22`).**
+   * ‏`D-254`ⓐ כותב «המילים שהלומד הקיש עליהן **בפסקה**», ו-`T-240` הפך את הכותרת
+   * למשטח הקשה **זהה** לגוף — אותו `buildStorySegments`, אותה מפת גלוסות, אותו תנאי 1
+   * של `36 § 3`. ⇒ הקשה בכותרת היא אותה שליפה מוצהרת בדיוק, וההחרגה שלה הייתה
+   * הופכת «מה שהלומד שלף» למשהו שתלוי **היכן** המילה מודפסת.
+   */
+  const recordTap = useCallback((lemma: string) => {
+    setTapOrder((prev) => (prev.includes(lemma) ? prev : [...prev, lemma]));
+  }, []);
 
   /**
    * 🔴 **T-232ⓑ — שכבת המלבנים: נקראת פעם אחת לפריסה, ⛔ ולא בכל הקשה.**
@@ -517,7 +567,8 @@ function StoryReady({
     tappedWordRef.current = event.currentTarget;
     setOpenSurface('body');
     setOpenLemma(lemma);
-  }, []);
+    recordTap(lemma);
+  }, [recordTap]);
 
   /**
    * 🔴 **T-240 — יעד ההקשה בכותרת הוא 44×44 מלאים, ⛔ ולא חריג ה-inline של `36 § 3`.**
@@ -544,8 +595,9 @@ function StoryReady({
       tappedWordRef.current = event.currentTarget;
       setOpenSurface('title');
       setOpenLemma(lemma);
+      recordTap(lemma);
     },
-    [],
+    [recordTap],
   );
 
   /**
@@ -640,6 +692,64 @@ function StoryReady({
     },
     [payload.glosses],
   );
+
+  /**
+   * 🔑 **T-208 · `D-254`ⓐⓑ — הבחירה טהורה, וההחלטה ⛔ אינה כאן.**
+   * ⛔ המסך ⛔ אינו יודע «מי ראויה» — הוא מוסר שלושה נתונים (סדר ההקשה · מי כבר נחתה ·
+   * התקרה) ומקבל רשימה. ⇒ ⛔ אין כאן פדגוגיה, ⛔ ואין מה להמציא (`R-010`).
+   */
+  const alreadyAdded = useMemo(
+    () =>
+      Object.entries(wordStatus)
+        .filter(([, st]) => st === 'added')
+        .map(([lemma]) => lemma),
+    [wordStatus],
+  );
+  const recallBatch = useMemo(
+    () => selectStoryRecallBatch(tapOrder, payload.glosses, alreadyAdded, RECALL_CAP),
+    [tapOrder, payload.glosses, alreadyAdded],
+  );
+
+  /**
+   * 🔑 **T-208 · `D-254`ⓓ — אפס מיגרציות, ואותו נתיב בדיוק שכבר קיים.**
+   * ‏`POST /api/review/context` הוא `upsert` על `word_progress` — שורה לזוג
+   * `(user_id, word_id)`, ⛔ לא לאירוע (`0003b`) ⇒ N קריאות הן N שורות לכל היותר,
+   * ⛔ ולא N אירועים. ⛔ **אין כאן עמודה חדשה, ⛔ אין טבלה ו⛔ אין נתיב חדש.**
+   * ⛔ **ו-`attempts` הוא כל מה שעולה** — ⛔ אפס עמודות SM-2 (`D-084` · `§ 4.2יג` 3).
+   *
+   * ⛔ **מה ש**נחת** ⛔ ולא מה שנשלח (`D-183`).** כתיבה שנכשלה מסומנת `'error'` — בדיוק
+   * כמו במסלול של מילה בודדת — ⇒ היא ⛔ נשארת מועמדת, והמספר באישור ⛔ אינו כולל אותה.
+   * ⛔ **וכישלון ⛔ אינו הופך את המסך למסך שגיאה**: הוא שורה אחת בשורה המשנית.
+   */
+  const addRecall = useCallback(() => {
+    if (recallBatch.length === 0 || recallPending) return;
+    const batch = recallBatch;
+    setRecallPending(true);
+    setRecallAdded(null);
+    setWordStatus((prev) => {
+      const next = { ...prev };
+      for (const candidate of batch) next[candidate.lemma] = 'pending';
+      return next;
+    });
+    void Promise.all(
+      batch.map((candidate) =>
+        apiPost<{ ok: boolean }>('/api/review/context', { wordId: candidate.wordId })
+          .then((body) => (body.ok ? candidate.lemma : null))
+          .catch(() => null),
+      ),
+    ).then((settled) => {
+      const landed = new Set(settled.filter((lemma): lemma is string => lemma !== null));
+      setWordStatus((prev) => {
+        const next = { ...prev };
+        for (const candidate of batch) {
+          next[candidate.lemma] = landed.has(candidate.lemma) ? 'added' : 'error';
+        }
+        return next;
+      });
+      setRecallPending(false);
+      setRecallAdded(landed.size);
+    });
+  }, [recallBatch, recallPending]);
 
   const openGloss = openLemma === null ? undefined : payload.glosses[openLemma];
 
@@ -753,6 +863,10 @@ function StoryReady({
           chosen={chosen}
           onChoose={setChosen}
           onBackToReading={backToReading}
+          recallCount={recallBatch.length}
+          recallAdded={recallAdded}
+          recallPending={recallPending}
+          onAddRecall={addRecall}
         />
       ) : (
         <>
