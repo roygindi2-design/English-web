@@ -503,6 +503,46 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
   });
 
   /**
+   * ⟦NEW 16/09 · `C-0665` · `T-359`⟧ **הקלף עף אל היריב.**
+   * 🔬 הבדיקה מודדת את מה שאפשר למדוד בקוד — ⛔ שההיסט **מחושב משני מלבנים**
+   * ו⛔ אינו מספר שנכתב; שהתנועה היא `transform`/`opacity` בלבד; ושתנועה מופחתת
+   * חוסמת אותה **בשני** מחסומים. ⛔ «נראה טוב» ⛔ אינו נמדד כאן, ⛔ ואינו יכול.
+   */
+  it('T-359 · הקלף עף — ההיסט נמדד משני מלבנים, ⛔ ואינו מספר כתוב', () => {
+    // ⛔ ① שני `getBoundingClientRect`, ⛔ ולא אחד: הקלף מודד את עצמו ב-`pointerup`
+    //    (‏הרגע היחיד שבו הוא עוד במסמך), וההורה מודד את היריב.
+    const CARD = withoutComments(readFileSync('components/SpellCard.tsx', 'utf8'));
+    expect(CARD, 'הקלף מוסר את המלבן שממנו יצא').toMatch(
+      /onCast\(e\.currentTarget\.getBoundingClientRect\(\)\)/,
+    );
+    expect(CODE, 'וההורה מודד את היריב').toMatch(
+      /data-arena-enemy[\s\S]{0,200}getBoundingClientRect/,
+    );
+    expect(CODE, 'ההיסט הוא חיסור, ⛔ ולא קבוע').toMatch(/dx:[\s\S]{0,80}from\.left/);
+    // ⛔ ② ההיסט נמסר כ**משתנה** — `style` מוטבע היה דורס את האנימציה כולה (`T-361`).
+    expect(CODE, 'משתנה, ⛔ ולא transform מוטבע').toMatch(/--arena-throw-dx/);
+    expect(CODE, '⛔ ⛔ אין transform מוטבע על הרפאים').not.toMatch(
+      /data-arena-throw[\s\S]{0,600}transform:/,
+    );
+    // ⛔ ③ התנועה עצמה — `transform`/`opacity` בלבד, בעקומה ובחלון של השורה.
+    expect(CSS, 'האנימציה קיימת').toMatch(/@keyframes arena-throw-fly/);
+    expect(CSS, '⛔ ⛔ לא scale(0)').not.toMatch(/arena-throw-fly[\s\S]{0,240}scale\(0\)/);
+    expect(CSS, '≤240ms, מהשורה').toMatch(/--arena-throw-ms:\s*240ms/);
+    expect(CSS, 'ועקומת הזירה').toMatch(
+      /\[data-arena-throw\][^}]*var\(--arena-ease-out\)/,
+    );
+    // ⛔ ולא `width`/`height`/`top`/`left` באנימציה — הן מפילות layout **ו**paint.
+    expect(CSS, '⛔ ⛔ לא תכונות פריסה').not.toMatch(
+      /@keyframes arena-throw-fly[\s\S]{0,400}(width|height|left|top):/,
+    );
+    // ⛔ ④ שני מחסומים לתנועה מופחתת — הרכיב ⛔ אינו יוצר, וה-CSS מוריד גם אם כן.
+    expect(CODE, 'מחסום ברכיב').toMatch(/launchThrow[\s\S]{0,400}if \(reducedMotion\) return;/);
+    expect(CSS, 'ומחסום ב-CSS').toMatch(
+      /prefers-reduced-motion[\s\S]*data-arena-throw\][\s\S]{0,60}display: none/,
+    );
+  });
+
+  /**
    * ⟦NEW 16/09 · `C-0665` · `T-364`⟧ **המספר עבר אל היריב.**
    * 🔬 שלוש הטענות של השורה נמדדות כאן אחת-אחת, ⛔ ולא כאחת: **מקום** (על היריב,
    * ⛔ לא על פס החיים) · **גודל וגוון** (גדול, אדום) · **התפרצות** (שלוש טבעות זהב).

@@ -277,6 +277,32 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   /** ⛔ ref ⛔ ולא state: הוא נקרא **בתוך** האפקט של ההטלה, ו-state כאן היה מוסיף רינדור. */
   const prevEnemyHp = useRef(ENEMY_HP);
   const [damage, setDamage] = useState<{ readonly amount: number; readonly key: number } | null>(null);
+  /**
+   * 🔴 **⟦NEW 16/09 · `C-0665` · `T-359`⟧ הקלף **עף** אל היריב, ⛔ ואינו נעלם.**
+   *
+   * 🔬 **הפער שנמדד:** בין היד לבין היריב ⛔ לא היה ולו פריים אחד — הקלף היה **ביד**,
+   * ואז ⛔ לא היה. ‏`apple-design § 7`: «אם משהו נעלם בדרך אחת, מצפים שיופיע משם».
+   *
+   * ⛔ **ולמה **רפאים** ⛔ ולא אנימציה על הקלף עצמו**, וזו ⛔ אינה העדפת מימוש:
+   * 🔬 נמדד — `fire` קורא ל-`cast`, היד נגזרת מהשאלה ה**נוכחית**, ⇒ הקלף
+   * **מתפרק באותו רינדור**. אנימציה עליו הייתה נקטעת בפריים הראשון, בכל הטלה, תמיד.
+   * ⇒ הצומת שעף הוא עותק קצר-חיים שנולד **אחרי** שהמקור ירד, ⛔ ואין ביניהם תחרות.
+   *
+   * ⛔ **`position: fixed` ⛔ ולא `absolute`** — הרפאים חוצה **שני** הורים עם
+   * `overflow-hidden` (‏אזור הבמה והשורש), וכל אחד מהם היה גוזר אותו באמצע הדרך.
+   * ⇒ קואורדינטות חלון, בדיוק כפי ששני ה-`getBoundingClientRect` מחזירים.
+   */
+  const [throwFx, setThrowFx] = useState<{
+    readonly key: number;
+    readonly label: string;
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+    readonly dx: number;
+    readonly dy: number;
+  } | null>(null);
+  const stageAreaRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(query.matches);
@@ -331,6 +357,31 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     setChosenSoFar((prev) => [...prev, option]);
     setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedRef.current)));
   }, []);
+
+  /**
+   * ⛔ **המחסום הראשון של `prefers-reduced-motion`, והוא ⛔ אינו היחיד** (`animate` § 7):
+   * כאן ⛔ אין רפאים בכלל, ובקובץ הטוקנים הכלל מנוטרל גם אם העדפה השתנתה באמצע.
+   * ⛔ **וההיסט מחושב ⛔ ולא מונח:** מרכז הקלף מול פס חיי היריב — הצומת שהשורה נוקבת
+   * בשמה — ושניהם נמדדים **באותו רגע**, ⇒ הם ⛔ אינם יכולים לסטות זה מזה.
+   */
+  const launchThrow = useCallback((label: string, from: DOMRect) => {
+    if (reducedMotion) return;
+    const area = stageAreaRef.current;
+    if (area === null) return;
+    const enemy = area.querySelector('[data-arena-enemy]');
+    if (!(enemy instanceof HTMLElement)) return;
+    const to = enemy.getBoundingClientRect();
+    setThrowFx({
+      key: Date.now(),
+      label,
+      x: from.left,
+      y: from.top,
+      w: from.width,
+      h: from.height,
+      dx: (to.left + to.width / 2) - (from.left + from.width / 2),
+      dy: (to.top + to.height / 2) - (from.top + from.height / 2),
+    });
+  }, [reducedMotion]);
 
   const load = useCallback(async () => {
     setScreen({ kind: 'loading' });
@@ -799,6 +850,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           נגמרת אחרי `--arena-hitstop-ms`, והאירוע הזה הוא מה שמשחרר את הקיפאון. ⇒ המספר
           חי בקובץ הטוקנים ⛔ ולא כאן, והשם נבדק כי אנימציות אחרות בבמה מבעבעות למעלה. */}
       <div
+        ref={stageAreaRef}
         data-arena-stage-area
         data-arena-impact={impact}
         data-arena-crit={crit === 'off' ? undefined : crit}
@@ -1083,7 +1135,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
                 if (selected === option.he) fire(option.he);
                 else setSelected(option.he);
               }}
-              onCast={() => fire(option.he)}
+              onCast={(from) => { launchThrow(option.he, from); fire(option.he); }}
             />
           </li>
         ))}
@@ -1093,6 +1145,38 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
       <p className="text-center text-xs text-[color:var(--arena-ink-dim)]" data-arena-isolation>
         {ARENA_ISOLATION_HE}
       </p>
+
+      {/* 🔴 **⟦NEW 16/09 · `C-0665` · `T-359`⟧ הרפאים — הפריים שהיה חסר בין היד ליריב.**
+          ⛔ **אחרון בעץ, ⛔ ולא ליד היד:** הוא `fixed`, ⇒ מיקומו ⛔ אינו תלוי בהורה —
+          אבל סדר ה-DOM הוא מה שמשאיר אותו **מעל** בלי `z-index` שמתחרה בשכבות הבמה.
+          ⛔ `aria-hidden` ו-`pointer-events-none`: הוא ⛔ אינו מידע ו⛔ אינו יעד מגע —
+          מסלול הנגישות של `§ 5` (הקשה על היריב) ⛔ לא נגע, ⛔ ואסור לו להיחסם.
+          ⛔ **⛔ ואין כאן `setTimeout`:** `onAnimationEnd` הוא מה שמפנה אותו, בדיוק
+          כמו הקיפאון והרעד — שעון ב-JS היה נפרד מהמספר שב-CSS ומתחיל לסטות ממנו. */}
+      {throwFx !== null && (
+        <div
+          key={throwFx.key}
+          data-arena-throw
+          aria-hidden
+          onAnimationEnd={() => setThrowFx(null)}
+          onTransitionEnd={() => setThrowFx(null)}
+          style={{
+            position: 'fixed',
+            left: `${throwFx.x}px`,
+            top: `${throwFx.y}px`,
+            width: `${throwFx.w}px`,
+            height: `${throwFx.h}px`,
+            /* ⛔ שני משתנים, ⛔ ולא `transform` מוטבע: ‏`style` מוטבע **גובר** על כל
+               כלל CSS ⇒ הוא היה מוחק את האנימציה עצמה. אותה מדידה בדיוק שנרשמה
+               ב-`SpellCard` ב-`T-361`. ⇒ ה-CSS מרכיב, וה-JS רק **מוסר את ההיסט**. */
+            ['--arena-throw-dx' as string]: `${throwFx.dx}px`,
+            ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
+          }}
+          className="pointer-events-none z-50 flex items-center justify-center rounded-xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)] text-sm font-bold text-[color:var(--arena-ink)]"
+        >
+          {throwFx.label}
+        </div>
+      )}
     </section>
   );
 }

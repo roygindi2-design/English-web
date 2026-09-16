@@ -30,7 +30,13 @@ export interface SpellCardProps {
   readonly selected: boolean;
   readonly reducedMotion: boolean;
   readonly onSelect: () => void;
-  readonly onCast: () => void;
+  /** ⟦16/09 · `C-0665` · `T-359`⟧ **ההטלה מוסרת את המלבן שממנו יצאה.**
+   * 🔬 **ולמה הקלף הוא זה שמודד אותו, ⛔ ולא ההורה:** ברגע ש-`cast` מתקדם, היד
+   * נבנית מהשאלה הבאה והקלף הזה **מתפרק**. ⇒ ההורה שינסה למדוד אותו אחרי הקריאה
+   * ימדוד צומת שכבר ⛔ אינו במסמך. הרגע היחיד שבו המלבן קיים הוא **כאן**, ב-`pointerup`.
+   * ⛔ זהו קריאה בלבד (`getBoundingClientRect`) — הקלף עדיין ⛔ אינו יודע דבר על היריב
+   * ו⛔ אינו נוגע בקרב. */
+  readonly onCast: (from: DOMRect) => void;
 }
 
 const UNKNOWN_SPELL_HE = 'לחש לא מזוהה';
@@ -140,7 +146,7 @@ export default function SpellCard({
           viewportWidth: window.innerWidth,
         });
         // ⛔ הכרעה אחת: גרירה מוכרת ⇒ הטלה; כל השאר ⇒ הקשה, כלומר **בחירה**.
-        if (gesture?.kind === 'cast') onCast();
+        if (gesture?.kind === 'cast') onCast(e.currentTarget.getBoundingClientRect());
         else onSelect();
       }}
       onPointerCancel={() => {
