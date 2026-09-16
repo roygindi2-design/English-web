@@ -15,6 +15,7 @@
  */
 
 import { BINARY_GRADES, directionFor, type CardDirection, type CardGrade } from './flashcard';
+import { classifyProgress } from './levelSummary';
 import type { SentenceItem } from './sentenceItem';
 
 /**
@@ -54,6 +55,14 @@ export interface QueueRow {
   readonly intervalDays: number;
   readonly attempts: number;
   readonly repetition: number;
+  /**
+   * `T-393` — «ידעתי» שהלומד סימן ביד (`/api/levels/scan`), ⛔ ולא תוצאה של דירוג.
+   * העמודה `self_marked_known boolean not null default false` (‏`0013`), ⇒ ⛔ אין כאן
+   * `| null`: «⛔ לא סימנתי» היא **מדידה**, ⛔ ולא חוסר. הוא נכנס לצורה הזאת מפני
+   * ש-`classifyProgress` — ההגדרה **היחידה** של «לא ידעתי» — קורא אותו, וזה השדה
+   * ש-`QueueRow` ⛔ לא נשא ולכן ⛔ אי-אפשר היה ליישר בלעדיו.
+   */
+  readonly selfMarkedKnown: boolean;
   readonly consecutiveCorrectRecognition: number;
 }
 
@@ -133,9 +142,19 @@ export function bandRank(band: string | null): number {
  * exist. `attempts > 0` means the learner has met the word; `repetition === 0` means SM-2
  * has not yet recorded a correct answer for it, and a correct answer is exactly what takes
  * the word out of this deck.
+ *
+ * 🔴 **⟦`T-393` · ‏`F-271`⟧ ⛔ והפרדיקט ⛔ אינו כתוב כאן עוד — הוא נקרא מ-`classifyProgress`.**
+ *
+ * 🔬 **נמדד ב-`C-0658` בקוד, ⛔ ולא שוער:** עד היום היו לאותה מילה **שני** פרדיקטים —
+ * `classifyProgress` מסווג `selfMarkedKnown || repetition >= 1` כ-`known` **לפני** שהוא
+ * מגיע ל-`attempts > 0`, בעוד כאן ישב `attempts > 0 && repetition === 0` **בלבד**. ⇒ מילה
+ * שהלומד סימן «ידעתי» ביד ושיש לה `attempts > 0` נספרה `known` במונה שמעל המסך ו**נכנסה
+ * לחפיסת «חזרה»** באותו רגע: הפעולה שהוא ביצע ⛔ לא שינתה דבר במקום שבו הוא מצפה שתשנה.
+ * ⇒ **מודול אחד, ⛔ ולא שני עותקים** — אותה מחלקה בדיוק ש-`T-056` כבר פתר עבור
+ * `lib/core/failure.ts`, ובדיוק מה ש-§ 4.2ז מחייב («⛔ אין הגדרה שנייה»).
  */
 export function isUnknownRow(row: QueueRow): boolean {
-  return row.attempts > 0 && row.repetition === 0;
+  return classifyProgress(row) === 'in_review';
 }
 
 /** null בסוף: מילה שאין לה מועד חזרה אינה "מועדה עכשיו" — היא פשוט לא תוזמנה. */

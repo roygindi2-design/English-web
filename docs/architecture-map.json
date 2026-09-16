@@ -1231,10 +1231,12 @@
   ],
   "lib/core/decay.ts": [],
   "lib/core/deck.test.ts": [
-    "lib/core/deck.ts"
+    "lib/core/deck.ts",
+    "lib/core/levelSummary.ts"
   ],
   "lib/core/deck.ts": [
     "lib/core/flashcard.ts",
+    "lib/core/levelSummary.ts",
     "lib/core/sentenceItem.ts"
   ],
   "lib/core/deckTiles.test.ts": [
@@ -1259,7 +1261,8 @@
   ],
   "lib/core/failureExit.ts": [],
   "lib/core/filterProgress.test.ts": [
-    "lib/core/filterProgress.ts"
+    "lib/core/filterProgress.ts",
+    "lib/core/levelSummary.ts"
   ],
   "lib/core/filterProgress.ts": [],
   "lib/core/flashcard.test.ts": [

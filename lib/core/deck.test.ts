@@ -5,6 +5,7 @@ import {
   excludeSeen, isSentenceCard, isUnknownRow, parseDeckName, selectDeck,
   sortQueue, toQueueCardInput, type QueueRow,
 } from '@/lib/core/deck';
+import { classifyProgress } from '@/lib/core/levelSummary';
 
 const row = (over: Partial<QueueRow>): QueueRow => ({
   wordId: '00000000-0000-4000-8000-000000000001',
@@ -13,7 +14,9 @@ const row = (over: Partial<QueueRow>): QueueRow => ({
   needsHumanReview: false, cefrProfileBand: 'A1', nextReviewAtMs: 1_000,
   // T-100 — ברירת מחדל `0` = «SM-2 טרם תזמן», בדיוק כמו `not null default 0` בעמודה.
   intervalDays: 0,
-  attempts: 0, repetition: 0, consecutiveCorrectRecognition: 0, ...over,
+  attempts: 0, repetition: 0, consecutiveCorrectRecognition: 0,
+  // `T-393` — `not null default false` בעמודה, ⇒ «⛔ לא סומן» הוא מדידה ⛔ ולא חוסר.
+  selfMarkedKnown: false, ...over,
 });
 
 describe('sortQueue — D-034', () => {
@@ -63,6 +66,40 @@ describe('חפיסת «לא ידעתי» — attempts > 0 AND repetition = 0 (�
   });
   it('מילה שענו עליה נכון יצאה מהחפיסה', () => {
     expect(isUnknownRow(row({ attempts: 5, repetition: 2 }))).toBe(false);
+  });
+
+  /**
+   * 🔀 **`T-393` · `F-271` — שני הצדדים על **אותה שורה**, ⛔ ולא שתי בדיקות נפרדות.**
+   *
+   * 🔬 **נמדד ב-`C-0658` בקוד:** `classifyProgress` מסווג `selfMarkedKnown || repetition >= 1`
+   * כ-`known` **לפני** `attempts > 0`, בעוד `isUnknownRow` היה `attempts > 0 && repetition === 0`
+   * בלבד ⇒ מילה שהלומד סימן «ידעתי» ידנית ושיש לה `attempts > 0` נספרה `known` במונה
+   * **ו**נכנסה לחפיסת «חזרה» באותו רגע. ⛔ הבדיקה הזאת מפילה בדיוק את המצב הזה: מוטציה
+   * חזרה לפרדיקט הישן מחזירה `true` כאן מול `'known'` שם.
+   */
+  it('🔑 המונה והחפיסה ⛔ אינם חלוקים על אותה שורה — סומנה «ידעתי» ויש לה ניסיונות', () => {
+    const marked = row({ attempts: 4, repetition: 0, selfMarkedKnown: true });
+    expect(classifyProgress(marked)).toBe('known');
+    expect(isUnknownRow(marked)).toBe(false);
+  });
+
+  it('🔑 ושני הצדדים מסכימים על כל צירוף של שלושת השדות', () => {
+    for (const attempts of [0, 1, 4]) {
+      for (const repetition of [0, 1, 3]) {
+        for (const selfMarkedKnown of [false, true]) {
+          const candidate = row({ attempts, repetition, selfMarkedKnown });
+          expect(isUnknownRow(candidate)).toBe(classifyProgress(candidate) === 'in_review');
+        }
+      }
+    }
+  });
+
+  it('⛔ סימון «ידעתי» מוציא את המילה גם מ-selectDeck, ⛔ ולא רק מהפרדיקט', () => {
+    const rows = [
+      row({ wordId: 'a', attempts: 1, repetition: 0, selfMarkedKnown: true }),
+      row({ wordId: 'b', attempts: 1, repetition: 0 }),
+    ];
+    expect(selectDeck(rows, 'unknown', 10).map((r) => r.wordId)).toEqual(['b']);
   });
   it('selectDeck מסנן, ממיין וחותך ב-limit', () => {
     const rows = [
@@ -193,6 +230,9 @@ describe('T-100 · D-043 — התזמון נוסע בחוט, ⛔ ואפס עמו
     nextReviewAtMs: Date.parse('2026-08-01T09:00:00.000Z'),
     attempts: 3,
     repetition: 2,
+    // `T-393` — השדה שהפרדיקט המאוחד קורא. כאן הוא `false`: שורה שנפתרה ב-SM-2,
+    // ⛔ ולא מילה שהלומד סימן ביד.
+    selfMarkedKnown: false,
     consecutiveCorrectRecognition: 1,
     intervalDays: 7,
   };

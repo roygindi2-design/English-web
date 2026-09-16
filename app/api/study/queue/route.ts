@@ -69,6 +69,10 @@ const MAX_QUEUE_ROWS = 200;
  */
 const PROGRESS_SELECT =
   'word_id, attempts, correct_attempts, repetition, consecutive_correct_recognition, next_review_at, interval_days, ' +
+  // `T-393` — `self_marked_known` נבחר מפני ש-`classifyProgress` (ההגדרה היחידה של
+  // «לא ידעתי») קורא אותו. בלעדיו `QueueRow` ⛔ לא נשא את השדה, ⇒ הפרדיקט כאן ⛔ לא יכול
+  // היה להיות אותו פרדיקט שהמונה שמעל המסך משתמש בו. ⛔ זו ⛔ אינה ספירה שנייה ב-SQL.
+  'self_marked_known, ' +
   'words!inner(headword, cefr_profile_band, ' +
   'senses(sense_index, translation_he, needs_human_review, sense_examples(kind, text_en)))';
 
@@ -200,6 +204,7 @@ type ProgressJoinRow = {
   consecutive_correct_recognition: number | null;
   next_review_at: string | null;
   interval_days: number | null;
+  self_marked_known: boolean | null;
   words: WordRow | WordRow[] | null;
 };
 
@@ -273,6 +278,9 @@ function toQueueRow(row: ProgressJoinRow): QueueRow | null {
     intervalDays: row.interval_days ?? 0,
     attempts: row.attempts ?? 0,
     repetition: row.repetition ?? 0,
+    // `=== true` ⛔ ולא `?? false`: העמודה `not null default false`, ⇒ null כאן פירושו
+    // שהשורה הגיעה משאילתה שלא ביקשה אותה — ו«⛔ לא סומן» הוא בדיוק מה שהיא אומרת.
+    selfMarkedKnown: row.self_marked_known === true,
     consecutiveCorrectRecognition: row.consecutive_correct_recognition ?? 0,
   };
 }
@@ -307,6 +315,9 @@ function toNewQueueRow(row: NewWordRow): QueueRow | null {
     intervalDays: 0,
     attempts: 0,
     repetition: 0,
+    // `T-393` — ליטרל, ⛔ ולא ברירת מחדל שאולה משורה חסרה: מילה בלי שורת התקדמות
+    // ⛔ לא סומנה «ידעתי» ביד, בדיוק כשם שאין לה ניסיונות ואין לה חזרות.
+    selfMarkedKnown: false,
     consecutiveCorrectRecognition: 0,
   };
 }
@@ -616,7 +627,11 @@ export async function GET(request: Request) {
   // failed words might be rows 400-430. The pure filter below stays as the single definition
   // of the deck; this is the same rule stated to the database.
   if (deck === 'unknown') {
-    query = query.gt('attempts', 0).eq('repetition', 0);
+    // `T-393` — השלישי נוסף מפני שהפרדיקט הטהור גדל בו: `classifyProgress` מוציא מילה
+    // שהלומד סימן «ידעתי» ביד מהחפיסה, ⇒ תקרת 200 השורות חייבת לחתוך את **אותה**
+    // אוכלוסייה. ⛔ ⛔ אין כאן הגדרה שנייה: `isUnknownRow` למטה נשאר ההגדרה, וזו אותה
+    // כלל בדיוק שנאמר לדאטהבייס — בדיוק כפי ש-`F-034` כבר קבע לשני הראשונים.
+    query = query.gt('attempts', 0).eq('repetition', 0).eq('self_marked_known', false);
   }
 
   const { data, error } = await query;
