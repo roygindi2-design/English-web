@@ -7,6 +7,7 @@ import {
   splitAborted,
 } from './lib/walk-errors.mjs';
 import { DEFAULT_ROUTES, walkRoutes } from './lib/walk-routes.mjs';
+import { EXPECTED_CONSOLE, splitExpected } from './lib/walk-expected.mjs';
 
 /**
  * 🧹 **`T-305` — ביטול פריפֶּץ' של Next ⛔ אינו «פגם נראה».**  ⟦NEW 13/09 · `D-219` · סוגרת את `F-230`⟧
@@ -114,9 +115,21 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     }
   });
 
-  it('🔴 המספר שהשורה מודדת: 13 מסכים, ⛔ ולא 10', () => {
-    expect(DEFAULT_ROUTES).toHaveLength(13);
+  it('🔴 המספר שהשורה מודדת: 14 מסכים, ⛔ ולא 10', () => {
+    // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`. ⛔ המספר ⛔ אינו «נתון
+    // שמתעדכן» — הוא ננעל כדי שהוספה תהיה **החלטה**, ולכן כל שינוי שלו נושא שורה.
+    expect(DEFAULT_ROUTES).toHaveLength(14);
     expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
+  });
+
+  it('🔑 `T-380` — ההליכה רואה את שרשרת הסיפור האמיתית, ⛔ ולא רק את הפיקסטורה', () => {
+    // ⛔ **שניהם, ⛔ ולא אחד:** הפיקסטורה מודדת פריסה מול הרנדר ו⛔ אינה תלויה בסביבה;
+    // החי מודד שרשרת. מי שמחליף אותם מאבד את הראשון ביום שאין env.
+    expect(DEFAULT_ROUTES).toContain('/dev/story');
+    expect(DEFAULT_ROUTES).toContain('/dev/story/live');
+    expect(DEFAULT_ROUTES.indexOf('/dev/story/live')).toBe(
+      DEFAULT_ROUTES.indexOf('/dev/story') + 1,
+    );
   });
 
   it('⛔ ⛔ אין מסלול כפול, ו⛔ אין מסלול בלי / מוביל', () => {
@@ -132,5 +145,41 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
 
   it('🔴 `--routes=` מלא **כן** גובר — אחרת הדגל היה קוד מת ביום שנולד', () => {
     expect(walkRoutes('/a, /b ,')).toEqual(['/a', '/b']);
+  });
+});
+
+describe('📜 T-380 — שגיאת קונסול שהיא החוזה, ⛔ ולא פגם', () => {
+  const LIVE = '/dev/story/live';
+  const HTTP_503 = 'HTTP 503 ⇐ http://127.0.0.1:3000/api/world/story';
+  const BROWSER_503 =
+    'Failed to load resource: the server responded with a status of 503 (Service Unavailable)';
+
+  it('שתי שורות ה-503 של `/dev/story/live` מוצהרות ⇒ ⛔ אינן נספרות כפגם', () => {
+    const split = splitExpected(LIVE, [HTTP_503, BROWSER_503]);
+    expect(split.errors).toHaveLength(0);
+    expect(split.expected).toHaveLength(2);
+  });
+
+  it('⛔ מפריד, ⛔ ולא מוחק — «⛔ אין שגיאות» ו«שתיים מוצהרות» ⛔ אינם אותו דבר', () => {
+    expect(splitExpected(LIVE, []).expected).toHaveLength(0);
+  });
+
+  it('🔴 צר בסטטוס: 401 על אותו נתיב ⛔ אינו מוחרג', () => {
+    const line = 'HTTP 401 ⇐ http://127.0.0.1:3000/api/world/story';
+    expect(splitExpected(LIVE, [line]).errors).toEqual([line]);
+  });
+
+  it('🔴 צר בנתיב: 503 על נתיב אחר ⛔ אינו מוחרג', () => {
+    const line = 'HTTP 503 ⇐ http://127.0.0.1:3000/api/study/queue';
+    expect(splitExpected(LIVE, [line]).errors).toEqual([line]);
+  });
+
+  it('🔴 צר במסלול: אותה שורה בדיוק על `/dev/story` ⛔ אינה מוחרגת', () => {
+    expect(splitExpected('/dev/story', [HTTP_503]).errors).toEqual([HTTP_503]);
+  });
+
+  it('⛔ ⛔ אין החרגה גורפת — מסלול בלי רשומה מחזיר את הכל', () => {
+    expect(EXPECTED_CONSOLE['/dev/story']).toBeUndefined();
+    expect(splitExpected('/', [BROWSER_503]).errors).toEqual([BROWSER_503]);
   });
 });

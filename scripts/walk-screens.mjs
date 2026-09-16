@@ -20,6 +20,7 @@ import { chromium } from 'playwright';
 import { resolveChromiumPath } from './lib/chromium-path.mjs';
 import { requestFailureLine, splitAborted } from './lib/walk-errors.mjs';
 import { walkRoutes } from './lib/walk-routes.mjs';
+import { splitExpected } from './lib/walk-expected.mjs';
 
 const ARGV = process.argv.slice(2);
 const flag = (name, dflt) => {
@@ -94,12 +95,16 @@ for (const route of ROUTES) {
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   // 🧹 ⟦`T-305`⟧ ⛔ ביטול פריפץ׳ של Next ⛔ אינו פגם — נספר לחוד, ⛔ ואינו נמחק.
-  const { errors, aborted } = splitAborted(allErrors.slice(before));
+  const { errors: unaborted, aborted } = splitAborted(allErrors.slice(before));
+  // 📜 ⟦`T-380`⟧ שגיאה שהיא **החוזה** של הנתיב בקלון בלי env נספרת לחוד, ⛔ ואינה
+  // נמחקת — «⛔ אין שגיאות» ו«היו שתיים, שתיהן מוצהרות» ⛔ אינם אותו דבר.
+  const { errors, expected } = splitExpected(route, unaborted);
   rows.push({
     route, status, dir, lang, overflowPx,
     chars: text.length,
     head: text.slice(0, 100),
     newErrors: errors.length,
+    expected: expected.length,
     aborted: aborted.length,
     shot,
   });
@@ -121,10 +126,10 @@ for (const r of rows) {
 
 const pad = (s, n) => String(s).padEnd(n);
 console.log(`🚶 הליכת מסכים — ${BASE} · רוחב ${WIDTH}px · ${rows.length} מסכים`);
-console.log(`${pad('מסך', 24)} ${pad('HTTP', 9)} ${pad('ovf', 5)} ${pad('dir', 5)} ${pad('שגיאות', 7)} ${pad('בוטלו', 7)} טקסט`);
+console.log(`${pad('מסך', 24)} ${pad('HTTP', 9)} ${pad('ovf', 5)} ${pad('dir', 5)} ${pad('שגיאות', 7)} ${pad('מוצהרות', 8)} ${pad('בוטלו', 7)} טקסט`);
 for (const r of rows) {
   console.log(
-    `${pad(r.route, 24)} ${pad(r.status, 9)} ${pad(r.overflowPx ?? '-', 5)} ${pad(r.dir ?? '-', 5)} ${pad(r.newErrors ?? '-', 7)} ${pad(r.aborted ?? '-', 7)} ${r.chars ?? '-'}`,
+    `${pad(r.route, 24)} ${pad(r.status, 9)} ${pad(r.overflowPx ?? '-', 5)} ${pad(r.dir ?? '-', 5)} ${pad(r.newErrors ?? '-', 7)} ${pad(r.expected ?? '-', 8)} ${pad(r.aborted ?? '-', 7)} ${r.chars ?? '-'}`,
   );
 }
 writeFileSync(join(OUT, 'walk.json'), JSON.stringify({ base: BASE, width: WIDTH, rows, allErrors }, null, 1), 'utf8');

@@ -53,7 +53,8 @@
     "hooks:install": "node scripts/install-hooks.mjs",
     "generate-map": "node scripts/generate-map.mjs",
     "prepare": "node scripts/install-hooks.mjs",
-    "affected": "node scripts/affected.mjs"
+    "affected": "node scripts/affected.mjs",
+    "probe:story": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/probe-story-chain.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
