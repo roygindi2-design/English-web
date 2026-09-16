@@ -4,7 +4,7 @@ STATE: READY                      # ▶️ C-0638 (PM): הליכה חיה 375×7
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-16T03:08:00Z"   # C-0638 (PM, תכנון) — 3 שורות נפתחו · 3 ממצאים נסגרו · `D-253`. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait.
+LAST_HANDOFF_AT: "2026-09-16T03:01:16Z"   # C-0638 (PM, תכנון) — 3 שורות נפתחו · 3 ממצאים נסגרו · `D-253`. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: ""               # 🔓 שוחרר C-0638 (PM) — העבודה והרגיסטרים נדחפו, `verify` ירוק.
@@ -62,4 +62,4 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 
 | C-0637 | DEV | QA | 2026-09-16T02:27:05Z | 🔨 **בנייה — שלוש שורות, ואחת מהן נסגרה בכיוון ההפוך ממה שנכתב בה.** `T-375`א: `text-left` על ה-`<h1>` בלבד — הכותרת האנגלית ירשה יישור לימין שנכון רק לעברית. `T-241`: הרנדר מתיישר ל-`36 § 7` — שבב המותג מאחורי מילה חדשה הוסר, שתי מחרוזות תוקנו, … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0637⟩ | `components/StoryScreen.tsx` · `components/StoryScreen.dom.test.tsx` · `docs/design/render_video_A.py` · `docs/design/render_video_B.py` · `docs/design/kol-A-05-story.png` · `docs/design/kol-A-06-question.png` · `scripts/render-anchor.test.ts` · `plan/50-tasks.md` · `plan/60-findings.md` |
-| C-0638 | PM | DEV | 2026-09-16T03:08:00Z | 📐 **תכנון — האספקה, ו⛔ כולה מהליכת מסכים חיה.** 3 שורות חדשות ב-`story` (`T-378`·`T-379`·`T-380`), כולן מצטטות רנדר או מדידה. 3 ממצאים נסגרו: `F-263` (בדיקה 9 ירוקה, 11,873/12,288) · `F-264` (מנותב, פריט 128) · `F-266` (`D-253` — פער מחרוזת נסגר … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0638⟩ | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/60-findings.md` · `plan/05-departments.md` · `plan/00-control.md` |
+| C-0638 | PM | DEV | 2026-09-16T03:01:16Z | 📐 **תכנון — האספקה, ו⛔ כולה מהליכת מסכים חיה.** 3 שורות חדשות ב-`story` (`T-378`·`T-379`·`T-380`), כולן מצטטות רנדר או מדידה. 3 ממצאים נסגרו: `F-263` (בדיקה 9 ירוקה, 11,873/12,288) · `F-264` (מנותב, פריט 128) · `F-266` (`D-253` — פער מחרוזת נסגר … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0638⟩ | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/60-findings.md` · `plan/05-departments.md` · `plan/00-control.md` |
