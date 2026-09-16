@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                                # ▶️ C-0639 (DEV): **בנייה — שתי שורות `story`, שתיהן נמדדו חי ב-375×780 על `next start`.** `T-378` (החלונית אומרת על איזו מילה היא, ו⛔ אינה חורגת מהכרטיס) · `T-379` (⛔ אין אלמנט דקורטיבי בין שתי הפעולות). `story` ⬜=**4**.
-STATE: READY                      # ▶️ C-0639 (DEV): `verify` מלא ירוק (1985 בדיקות מובייל, 320/375/414) · הליכה חיה על `/dev/story` ו-`/dev/story/done`: 0 גלילה אופקית · 0 מתחת ל-44px · 0 שגיאות קונסול. ⛔ אין חוסם.
+NEXT_AGENT: DEV                                # ▶️ C-0641 (QA, מלא): מוזג ל-`dev` (ff-only, 20 קומיטים). `story` ⬜=**4** (`T-232`·`T-240`·`T-266`·`T-269`) — עדיין המוקד, עדיין עבודה פנויה.
+STATE: READY                      # ▶️ C-0641 (QA, מלא): `verify` מלא ירוק (ece4e4e3, 4678/4678) · `loop:health` 22/23 · הליכה חיה + `diff:render` על `/dev/story`+`/dev/story/done` — ⛔ אין חוסם.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-16T03:28:23Z"   # C-0639 (DEV, בנייה) — 2 שורות נבנו ונדחפו, `verify` מיוחס ירוק. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait.
+LAST_HANDOFF_AT: "2026-09-16T05:09:36Z"   # C-0641 (QA, מלא) — שער + הליכה + מיזוג ל-`dev`. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"               # 🔒 C-0641 (QA, מלא) — נעילה בלבד, לפני עבודה.
-LOCK_AT: "2026-09-16T04:47:12Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0641 (QA, מלא) סגור. מוזג ל-`dev`, `verify` יצא 0.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  17 / 120           # § 13-1 · **המוקד**. ⬜=4 · 🟣=8 · ⛔=1 (נמדד אחרי C-0639). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    4 / 120           # 39-messages-spec § 9 · ⛔ **⛔ אינה המוקד** (הוזז→`amirnet` ב-C-0625). ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "054d2847 · 2026-09-15T23:09Z · **C-0632 (QA, מלא).** `dev`==`work/current` (ff-only, 41 קומיטים). `verify` מיוחס ירוק ל-054d2847 (23:06:16Z, 2911/2911 בדיקות) · `loop:health` 21/23 (9=רגיסטר מעל תקרה → PM · 17=PROMOTER שקט 33.5ש׳ → PM, `F-263`/`F-264`) · הליכה חיה 375×780 (`next start`) על אמירנט (5 מסכים) + זירה (5 מסכים) + `/dev/tabs/cards` — 0 פגם חדש, 0 שגיאות קונסול חדשות (503 ב-`/dev/tabs/cards` קדום, ⛔ מהדיף הזה). 17 🟣→✅. **מה שהלומד מקבל:** אמירנט נגיש מהטבעת (היה נעול), והזירה מרגישה חיה — יריב נושם, פס חיים נשפך, מספר נזק. smoke test דולג — `LAST_PROMOTED_AT` לא זז מהטיק הקודם. `PROMOTION_BLOCKERS`/קידום ל-main ⇐ PROMOTER בלבד."
+RELEASE_READY: "ece4e4e3 · 2026-09-16T05:10Z · **C-0641 (QA, מלא).** `dev`==`work/current` (ff-only, 20 קומיטים). `verify` רץ מלא בקלון הזה (ece4e4e3, 4678/4678 בדיקות, כולל `build`+`check:mobile` 1985 בדיקות) · `loop:health` 22/23 (17=PROMOTER שקט 39.2ש׳ → נמדד מחדש ב-`F-264`/פריט 128, ⛔ אינו נוגע ללומד) · הליכה חיה 375×780 (`next start`) על `/dev/story` ו-`/dev/story/done` — 0 פגם חדש, 0 גלילה אופקית, 0 מתחת ל-44px, 0 שגיאות קונסול · `diff:render` על שתי המסכים מול `kol-A-05-story`/`kol-A-06-question` — מבנה/סדר/מחרוזות תואמים, ⛔ אין ממצא (הבדל הרקע כהה/בהיר אינו ממצא לפי הכרעת 11/09). 5 🟣→✅ (T-207·T-241·T-375·T-378·T-379). **מה שהלומד מקבל:** חלונית תרגום המילה במסך הסיפור אומרת עכשיו בפירוש איזו מילה נלחצה ואינה חורגת מהכרטיס, ומקרא «ידועה» בסוף הסיפור כבר לא יושב כאלמנט תלוי בין שתי הפעולות. smoke test דולג — `LAST_PROMOTED_AT` לא זז מהטיק הקודם. `PROMOTION_BLOCKERS`/קידום ל-main ⇐ PROMOTER בלבד."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "054d284"  # dev אחרי C-0632 (QA, מלא). `verify` מיוחס ירוק על אותו SHA.
+LAST_REVIEWED_COMMIT: "ece4e4e3"  # dev אחרי C-0641 (QA, מלא). `verify` רץ מלא על אותו SHA בקלון הזה.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -61,6 +61,6 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 
 
-| C-0639 | DEV | QA | 2026-09-16T03:28:23Z | 🔨 **בנייה — שתי שורות `story`, ושתיהן נסגרו על מספר שנמדד ⛔ ולא נטען.** `T-378`: החלונית ⛔ לא אמרה על איזו מילה היא — `class` על המילה שהוקשה היה **זהה** לפני ואחרי, ו-`aria-expanded` היה `null`; עכשיו שבב + `aria-expanded` + זנב, ⛔ ואפס שינוי מטרי בפסקה. והחריגה מהכרטיס: **74px ⇒ 0** — נמדד על **7 מילים × 3 רוחבים**, כולן שליליות. `T-379`: המקרא «ידועה» ירד משלב השאלה ⇒ **1 אלמנט דקורטיבי בין שני כפתורים ⇒ 0**, והפעולה המשנית ⛔ כבר אינה נמתחת (169×44 מול 327×60) ⇒ המדרג ⛔ אינו צבע. ⛔ היציאה ⛔ לא נמחקה. | `components/WordPopover.tsx` · `components/StoryScreen.tsx` · `components/StoryEndScreen.tsx` · `components/WordPopover.test.ts` · `components/StoryScreen.dom.test.tsx` · `plan/50-tasks.md` · `docs/architecture-map.json` |
-
 | C-0640 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-16T04:02:00Z | 📚 **אצוות רקע — 14 מילים Tier 1 אמירנט (`oven`…`photography`), K-005/K-007.** שער אמיתי 14/14 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא, ⛔ לא בקיצור-הנפח שרוי ביקש 14/09. כיסוי: 902→916/3,382. שלוש כותרות דולגו (`pacific`·`pc`·`pence`, מנומק במניפסט). | `data/generated/batch-2026-09-16.jsonl` · `manifest-2026-09-16.json` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` |
+
+| C-0641 | QA | DEV | 2026-09-16T05:09:36Z | 🚪 **שער — מלא ירוק, מוזג ל-`dev`.** `verify` מלא (4678/4678, כולל `build`+`check:mobile`) · `loop:health` 22/23 (17=PROMOTER שקט 39.2ש׳, נמדד מחדש ב-`F-264`/פריט 128, ⛔ לא ממצא חדש) · הליכה חיה + `diff:render` על `/dev/story`/`/dev/story/done` — ⛔ אין ממצא עיצוב. `merge --ff-only` (20 קומיטים) · 5 🟣→✅ (`T-207`·`T-241`·`T-375`·`T-378`·`T-379`) · `RELEASE_READY` + שלוש הקשות חדשות ב-`03-for-roy`. `ACTIVE_WORKSTREAM` נשאר `story` (⬜=4>0, `STEP 5.8` — כלום לא הוזז). | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/03-for-roy.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
