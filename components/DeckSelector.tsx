@@ -220,14 +220,6 @@ type DeckEntry = {
    * ⛔ אינו מחזיק `entry.key === 'unknown'` בשום מקום.
    */
   readonly tone?: 'danger';
-  /**
-   * `T-386`ⓐ — ⛔ **«the number is still being read» is ⛔ NOT «we do not have this
-   * number».** Both rendered «—» until this row, and that is the whole defect: the FIRST
-   * thing a learner sees on this screen is the glyph this file's own documentation defines
-   * as «the read failed, or ⛔ no read was made» (`noteFor`, `UNKNOWN_COUNT_HE`). ⇒ while a
-   * read is in flight the tile carries a SHAPE at the note's exact height instead.
-   */
-  readonly pending?: boolean;
 } & (
   | { readonly enabled: true; readonly href: string }
   | { readonly enabled: false; readonly href: string | null }
@@ -288,46 +280,12 @@ function toEntry(input: {
   readonly count: number | null;
   readonly note?: string;
   readonly tone?: 'danger';
-  /** `T-386`ⓐ — the read for THIS tile is still in flight. ⛔ Not «failed», ⛔ not «0». */
-  readonly pending?: boolean;
 }): DeckEntry {
-  const { key, label, href, count, tone, pending } = input;
+  const { key, label, href, count, tone } = input;
   const note = input.note ?? noteFor(count);
   return href !== null && count !== null && count > 0
-    ? { key, label, note, tone, pending, enabled: true, href }
-    : { key, label, note, tone, pending, enabled: false, href };
-}
-
-/**
- * ⏳ **`T-386`ⓐ — the waiting state of a tile is the tile's own SHAPE, ⛔ not a spinner and
- * ⛔ not «—».**
- *
- * 🔬 **Measured in THIS tick on a live `next start`, ⛔ not read off the code.** The row's
- * premise — «⛔ 0 deck tiles in the DOM at `DOMContentLoaded`» — ⛔ did ⛔ **not** reproduce:
- * the initial HTML of `/dev/tabs/cards` already carries `data-deck-selector` with **4**
- * `<li>`. ⇒ the hole is ⛔ not an absent block. What the same HTML also carries is the
- * **note** of three of those four tiles, and it reads «—» — the glyph `UNKNOWN_COUNT_HE`
- * defines as «a count we do not have». ⇒ **the screen opens by telling the learner the
- * read failed, and then quietly corrects itself.** ⛔ That is a worse first second than an
- * empty block, because it is a claim rather than a gap.
- *
- * ⛔ **⛔ Not a spinner** (`STEP 5.6` ② · `T-382` drew the same distinction for the story
- * screen): a spinner says «wait», a shape says «this is what is coming».
- * ⛔ **⛔ And zero motion** ⇒ `prefers-reduced-motion` (`check:motion`) is honoured **by
- * construction**, ⛔ not by a media query someone can forget — exactly as
- * `components/CardSkeleton.tsx` already is.
- * ⚠️ **`h-5` is ⛔ not a taste value:** the note it stands in for is `text-sm`, whose line
- * box is 20px. Same height ⇒ ⛔ zero layout shift when the number lands, which is the row's
- * own success measure.
- * ♿ `aria-hidden` on the shape, and the `<ul>`'s `aria-busy` already carries the fact to a
- * screen reader ⇒ a reader gets a state, ⛔ not four empty rectangles.
- */
-function TileNoteSkeleton(): React.JSX.Element {
-  return (
-    <span aria-hidden data-tile-skeleton className="flex h-5 items-center">
-      <span className="block h-3 w-24 rounded-md bg-border-subtle" />
-    </span>
-  );
+    ? { key, label, note, tone, enabled: true, href }
+    : { key, label, note, tone, enabled: false, href };
 }
 
 /**
@@ -338,20 +296,10 @@ function TileNoteSkeleton(): React.JSX.Element {
  */
 export default function DeckSelector({
   unseen = null,
-  unseenPending = false,
   unknown,
   onRetry,
 }: {
   readonly unseen?: number | null;
-  /**
-   * `T-386`ⓐ — ⛔ **the SCREEN has to say it, because this block ⛔ cannot derive it.**
-   * `unseen` is `null` both while `<LevelMapScreen>` is still reading `/api/levels/summary`
-   * and after that read failed, and the two are the ⛔ opposite states for a waiting shape.
-   * ⇒ the screen passes `state.kind === 'loading'`, exactly as it already passes `unknown`.
-   * ⛔ Optional and `false` by default, so `/dev/tabs/probe` keeps rendering `<DeckSelector />`
-   * with no props at all.
-   */
-  readonly unseenPending?: boolean;
   /** `T-385`ⓐ — ⛔ אופציונלי, בדיוק כמו `unseen`. ⛔ חסר ⇒ «—», ⛔ ולא «נכשל». */
   readonly unknown?: UnknownDeckProp;
   /**
@@ -419,10 +367,6 @@ export default function DeckSelector({
       // `T-384`ⓐ — «—» when the screen did not hand this number down. ⛔ The tile ⛔ does
       // not narrate WHY; `recoveryBlock` above narrates the event, once.
       note: LEVEL_NOTE_HE(noteFor(unseen)),
-      // `T-386`ⓐ — ⛔ **`unseenPending`, ⛔ and ⛔ never «`unseen === null`»**: the screen is
-      // the only place that can tell «still reading» from «the read failed», and both of
-      // those hand this tile a `null`.
-      pending: unseenPending,
     }),
     // `T-385`ⓐ — ⛔ **the number is the SCREEN's**, read once at `limit=50` together with
     // the list below it. ⛔ `undefined` is ⛔ not `'failed'`: it means no read was made at
@@ -434,9 +378,6 @@ export default function DeckSelector({
       count: unknown?.total ?? null,
       note: PRACTICE_NOTE_HE(noteFor(unknown?.total ?? null)),
       tone: 'danger',
-      // `T-386`ⓐ — the screen already carries this deck's own `loading` in the same object
-      // `T-385` built ⇒ ⛔ nothing new is derived here.
-      pending: unknown?.loading === true,
     }),
     toEntry({
       key: 'due',
@@ -444,9 +385,6 @@ export default function DeckSelector({
       href: '/study',
       count: counts.due,
       note: DUE_NOTE_HE(noteFor(counts.due)),
-      // `T-386`ⓐ — `loading` is THIS component's own state for the two decks it reads ⇒ it
-      // is exact, ⛔ not a proxy.
-      pending: loading,
     }),
     // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
     // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
@@ -457,7 +395,6 @@ export default function DeckSelector({
       href: '/study?deck=sentences',
       count: counts.sentences,
       note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
-      pending: loading,
     }),
   ];
 
@@ -576,7 +513,7 @@ export default function DeckSelector({
           22/45 (`c.txt(…, 508/531, …)` on a box at 486). `min-h-touch` (44) still holds
           under it, so a wrapping note grows the box instead of clipping. Measured live
           before: x=20 · w=335 · h=78 (C-0321, unchanged at C-0499). */}
-      <ul aria-busy={entries.some((entry) => entry.pending === true)} data-deck-selector className="flex list-none flex-col gap-3 p-0">
+      <ul aria-busy={loading} data-deck-selector className="flex list-none flex-col gap-3 p-0">
         {entries.map((entry) => {
           // ONE body, shared by both branches. If each branch carried its own copy, the
           // disabled one could quietly lose its number — and «disabled WITH the number» is
@@ -612,18 +549,9 @@ export default function DeckSelector({
                 {entry.locked === true ? <span className="sr-only">{LOCKED_HE}</span> : null}
                 {entry.label}
               </span>
-              {/* `T-386`ⓐ — ⛔ **the shape replaces the NOTE, ⛔ never the tile.** «מושבת
-                  עם המספר» (§ 4.2ו) is a rule about a tile whose number is KNOWN; while it
-                  is still being read there is ⛔ no number to show and «—» is the wrong
-                  answer, because «—» already means «we do not have it». ⇒ same slot, same
-                  20px line box, ⛔ zero layout shift when the number lands. */}
-              {entry.pending === true ? (
-                <TileNoteSkeleton />
-              ) : (
-                <span className={`text-sm ${onFill ? 'text-brand-on opacity-90' : 'text-ink-muted'}`}>
-                  {entry.note}
-                </span>
-              )}
+              <span className={`text-sm ${onFill ? 'text-brand-on opacity-90' : 'text-ink-muted'}`}>
+                {entry.note}
+              </span>
             </>
           );
 
