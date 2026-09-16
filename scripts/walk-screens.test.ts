@@ -115,11 +115,34 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     }
   });
 
-  it('🔴 המספר שהשורה מודדת: 14 מסכים, ⛔ ולא 10', () => {
-    // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`. ⛔ המספר ⛔ אינו «נתון
+  it('🔴 המספר שהשורה מודדת: 16 מסכים, ⛔ ולא 10', () => {
+    // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`.
+    // ⟦עודכן `T-395`⟧ 14 ⇢ 16 עם `/dev/deck` ו-`/dev/deck/done`. ⛔ המספר ⛔ אינו «נתון
     // שמתעדכן» — הוא ננעל כדי שהוספה תהיה **החלטה**, ולכן כל שינוי שלו נושא שורה.
-    expect(DEFAULT_ROUTES).toHaveLength(14);
+    expect(DEFAULT_ROUTES).toHaveLength(16);
     expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
+  });
+
+  /**
+   * 🔭 **`T-395` — מסך הכרטיס, המסך המרכזי של `cards`, ⛔ לא היה ברשימה.**
+   *
+   * 🔬 **נמדד `C-0659` לפני השינוי, ⛔ ולא שוער:** `grep -c '/dev/deck'` על הרשימה
+   * המוצהרת ⇒ **0**, בעוד `/dev/deck` ו-`/dev/deck/done` שניהם מחזירים 200. ⇒ שלוש
+   * עבודות `cards` רצופות (`T-325` · `F-269` · `T-392`) נמדדו על מסך שההליכה ⛔ מעולם
+   * ⛔ לא צילמה. ⛔ התקדים הוא `T-371` מילה במילה.
+   */
+  it('🔑 `T-395` — שני מסכי החפיסה שהלומד נוחת עליהם ברשימה המוצהרת', () => {
+    expect(DEFAULT_ROUTES).toContain('/dev/deck');
+    expect(DEFAULT_ROUTES).toContain('/dev/deck/done');
+    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/deck'))).toHaveLength(2);
+  });
+
+  it('⛔ ולא חמישה — שלושת מצבי-הביניים של הכרטיס ⛔ אינם ברשימה, וזו הצהרה', () => {
+    // אותו שיקול בדיוק שהשאיר את `/dev/card/choice` לבדו ואת `question`/`levels`/`result`
+    // של `amirnet` בחוץ: הלומד **עובר דרכם** ו⛔ אינו נוחת עליהם.
+    for (const midFlow of ['/dev/card/typed', '/dev/card/swap', '/dev/deck/skeleton']) {
+      expect(DEFAULT_ROUTES).not.toContain(midFlow);
+    }
   });
 
   it('🔑 `T-380` — ההליכה רואה את שרשרת הסיפור האמיתית, ⛔ ולא רק את הפיקסטורה', () => {
