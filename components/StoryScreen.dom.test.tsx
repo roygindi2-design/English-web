@@ -55,11 +55,12 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
     expect(screen.getByText('שאלת הבנה')).toBeTruthy();
     // ⛔ THE POINT OF THE TEST: the chrome must still be there after the swap.
     expect(screen.getByText('סיפור 3 מתוך 12')).toBeTruthy();
-    expect(
-      screen.getByText(
-        `${FIXTURE_COUNTS.newWords} מילים חדשות · ${FIXTURE_COUNTS.alreadyKnown} שכבר ידעת`,
-      ),
-    ).toBeTruthy();
+    // ⚠️ **⟦T-207 · `§ 4.2כא` ⓔ⟧ הסריקה הזאת החזיקה את שורת המלאי, והיא ⛔ כבר אינה
+    // על המסך.** מה שהטענה כאן באמת בודקת הוא ש**הכרום שורד את ההחלפה**, ⇒ היא עוברת
+    // למקרא «ידועה» — האלמנט שבאמת נשאר בשני המצבים — ומוסיפה את הצד השני של `ⓒ`:
+    // ⛔ אפס מילים שנוספו ⇒ ⛔ אין שורת סיכום, ⛔ גם ⛔ לא אחרי ההחלפה.
+    expect(screen.getByText('ידועה')).toBeTruthy();
+    expect(document.querySelector('[data-story-summary]')).toBeNull();
   });
 
   it('⛔ the reading paragraph is gone once the question is up — it is a SWAP, ⛔ not an append', () => {
@@ -477,5 +478,84 @@ describe('T-375ⓐ — the English title reads left, and the Hebrew around it do
       <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />,
     );
     expect(container.querySelector('h1')?.className).toContain('text-left');
+  });
+});
+
+/**
+ * 🩺 **T-207 — שורת הסיכום מדווחת מה הלומד עשה, ⛔ ולא מה הסיפור מכיל.**
+ * *(התוכנית היא `40-decisions § 4.2כא`, שנכתבה במלואה ב-`C-0412`.)*
+ *
+ * 🔬 **הפער שנמדד:** שני המספרים שהשורה הציגה נגזרים ב-`GET /api/world/story`
+ * **לפני ההקשה הראשונה** (‏`app/api/world/story/route.ts:133-149`) ⇒ הם זהים לשני
+ * לומדים שאחד מהם הוסיף עשר מילים והשני ⛔ אף לא אחת. ⇒ **מ-0 מספרים במסך שמגיבים
+ * ללומד — ל-1** (`D-120`).
+ *
+ * ⚠️ **המשבצת ⛔ אינה זזה** (`§ 4.2כא` ⓐ): המיקום, הגודל, המשקל והצבע נשארים כפי
+ * שהרנדר מצייר אותם, והמקרא «ידועה» שלצדה ⛔ אינו מושפע. `36 § 14.4` כובל **פריסה
+ * וגימור**, ⛔ ואינו מפרט את תוכן המשפט הזה.
+ */
+describe('T-207 — the summary line reports an ACTION, ⛔ not an inventory', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const summary = (container: HTMLElement): string | null =>
+    container.querySelector('[data-story-summary]')?.textContent?.trim() ?? null;
+
+  it('⛔ N=0 ⇒ ⛔ no line at all — ⛔ not «0 מילים» and ⛔ not «עדיין לא הוספת»', () => {
+    // ⛔ בדיוק הכלל ש-`§ 4.2יג-ב ⓒ` כבר אוכף ב-`StoryEndScreen`: משפט שאין בו מה
+    // לומר ⛔ אינו משפט, ו⛔ אפס ⛔ אינו נזיפה (`§ 4.2כא` ⓒ).
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    expect(summary(container)).toBeNull();
+    // ⛔ ⛔ AND THE ROW ITSELF SURVIVES: the «ידועה» legend is ⛔ not what went away.
+    expect(screen.getByText('ידועה')).toBeTruthy();
+  });
+
+  it('⛔ the inventory sentence is gone from the screen entirely', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    expect(
+      container.textContent?.includes(
+        `${FIXTURE_COUNTS.newWords} מילים חדשות · ${FIXTURE_COUNTS.alreadyKnown} שכבר ידעת`,
+      ),
+    ).toBe(false);
+  });
+
+  it('one added word ⇒ «הוספת מילה אחת מהסיפור הזה»', async () => {
+    // ⚠️ «‏1 מילים» ⛔ אינו עברית. ⛔ ומספר שנראה נכון באנגלית ⛔ אינו תירוץ.
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })),
+    );
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await screen.findByText('נוספה לחזרה');
+    expect(summary(container)).toBe('הוספת מילה אחת מהסיפור הזה');
+  });
+
+  it('two added words ⇒ the number MOVES — that is the whole claim', async () => {
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 })),
+    );
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await screen.findByText('נוספה לחזרה');
+    clickWord(bodyWord('quiet'));
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await waitFor(() => expect(summary(container)).toBe('הוספת 2 מילים מהסיפור הזה'));
+  });
+
+  it('⛔ a FAILED write ⛔ does not count — the line reports what landed', async () => {
+    // 🔴 `D-183`: the popover ⛔ never claims a write that did ⛔ not happen, and this
+    // line is the same claim one element over.
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 })),
+    );
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    fireEvent.click(screen.getByRole('button', { name: 'הוסף לכרטיסיות' }));
+    await screen.findByText(FAILURE_HE.save);
+    expect(summary(container)).toBeNull();
   });
 });

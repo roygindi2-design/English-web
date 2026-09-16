@@ -71,6 +71,18 @@ const KNOWN_LEGEND_HE = 'ידועה';
 const introLineHe = (total: number, known: number): string =>
   `בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.`;
 /**
+ * 🩺 **T-207 · `§ 4.2כא` ⓑ — השורה מדווחת פעולה, ⛔ ולא מלאי.**
+ * המספר היחיד במסך שהוא **טענה על הלומד** הוא מה שהוא עצמו הוסיף בקריאה הזאת; שני
+ * המספרים שישבו כאן קודם נגזרים ב-`GET` **לפני ההקשה הראשונה** ⇒ הם זהים לשני לומדים
+ * שאחד מהם הוסיף עשר מילים והשני ⛔ אף לא אחת.
+ * ⛔ **ו⛔ אין «‏1 מילים»:** ‏`§ 4.2כא` ⓑ מפנה למשפחת הנוסח של `StoryEndScreen`, והמשפחה
+ * הזאת היא **עברית** — יחיד נוקב במילה, ⛔ ולא במספר. ⚠️ המקרה `N=0` ⛔ אינו מטופל כאן
+ * אלא **באתר הקריאה**, כי הכלל הוא «⛔ אין שורה כלל» (`ⓒ`), ⛔ ולא «מחרוזת ריקה».
+ * ⛔ **ומה שהשורה ⛔ אינה** (`ⓓ`): ⛔ ניקוד · ⛔ רצף · ⛔ מטבע · ⛔ לוח מובילים (`D-050`).
+ */
+const addedLineHe = (added: number): string =>
+  added === 1 ? 'הוספת מילה אחת מהסיפור הזה' : `הוספת ${added} מילים מהסיפור הזה`;
+/**
  * T-203 · F-123 · T-151ⓓ — התווית הקודמת הבטיחה מעבר לפריט הבא ברצף, ו⛔ אין רצף כזה:
  * ‏`pickStory` בוחר על **אינדקס-יום** ב-`LEARNER_TIME_ZONE`, ולכן לחיצה מחזירה את **אותו
  * סיפור** — הפריט הבא הוא של מחר. הכפתור הבטיח ניווט שהמוצר ⛔ אינו יודע לבצע.
@@ -545,6 +557,16 @@ function StoryReady({
    * ⛔ גם אינו מוסתר: `WordPopover` עובר ל-`'error'` (`FAILURE_HE.save` + `RETRY_HE`),
    * ולחיצה על `RETRY_HE` מריצה מחדש בדיוק את אותה קריאה — קריאה חוזרת ל-`add`.
    */
+  /**
+   * T-207 — **מה שנחת, ⛔ ולא מה שנלחץ.** `wordStatus` מחזיק `pending`/`error` באותה
+   * מפה, ו-`D-183` כבר קבע שהחלונית ⛔ לעולם ⛔ אינה מצהירה על כתיבה שלא קרתה. ⇒ השורה
+   * סופרת `added` בלבד, וכתיבה שנכשלה ⛔ אינה מזיזה אותה.
+   */
+  const addedCount = useMemo(
+    () => Object.values(wordStatus).filter((st) => st === 'added').length,
+    [wordStatus],
+  );
+
   const add = useCallback(
     (lemma: string) => {
       const wordId = payload.glosses[lemma]?.wordId;
@@ -763,9 +785,18 @@ function StoryReady({
           `x = 48…84` (הקצה **השמאלי**), ושורת הסיכום `anchor="rm"` על `LW - 24`
           (הקצה **הימני**). ⇒ הסיכום ראשון והמקרא אחרון. */}
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-ink-muted">
-          {`${payload.counts.newWords} מילים חדשות · ${payload.counts.alreadyKnown} שכבר ידעת`}
-        </span>
+        {/* ⛔ **N=0 ⇒ ⛔ אין אלמנט כלל — `§ 4.2כא` ⓒ.** ⛔ לא «0 מילים» ו⛔ לא «עדיין
+            לא הוספת»: משפט שאין בו מה לומר ⛔ אינו משפט, ו⛔ אפס ⛔ אינו נזיפה. זהו
+            **בדיוק** הכלל ש-`§ 4.2יג-ב ⓒ` כבר אוכף ב-`StoryEndScreen`.
+            ⚠️ **והמשבצת ⛔ אינה זזה** (`ⓐ`): ה-`justify-between` נשאר, ולכן המקרא
+            «ידועה» יושב בקצה שלו בין אם השורה כאן קיימת ובין אם ⛔ לא. */}
+        {addedCount > 0 ? (
+          <span data-story-summary className="text-sm text-ink-muted">
+            {addedLineHe(addedCount)}
+          </span>
+        ) : (
+          <span aria-hidden />
+        )}
         <span className="flex items-center gap-2 text-sm text-ink-muted">
           <span aria-hidden className="inline-block h-[2px] w-7 rounded-full bg-success" />
           {KNOWN_LEGEND_HE}
