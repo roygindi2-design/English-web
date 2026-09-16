@@ -44,6 +44,15 @@ import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
  * ו-`role="dialog"`, שבלעדיו ⛔ אין לקורא-מסך מה להכריז כשהחלונית נפתחת.
  * ⛔ **⛔ ואין מלכודת מיקוד** — זו חלונית, ⛔ לא מודאל.
  *
+ * 🆕 **T-378 · `docs/design/kol-A-05-story.png` · `36 § 7`.** שני פגמים שנמדדו חי,
+ * ⛔ ולא הוסקו: ⓐ ⛔ **שום דבר ⛔ לא קשר את החלונית למילה** — `getAttribute('class')`
+ * על המילה שהוקשה החזיר מחרוזת **זהה** לפני ההקשה ואחריה, ו-`aria-expanded` החזיר
+ * `null`. ⓑ **החלונית חרגה 74px מתחתית הכרטיס** שהיא אמורה להיות מעוגנת בתוכו, והם
+ * ישבו **מעל** «סיימתי לקרוא». ⇒ שלושה תיקונים, כולם ברכיב אחד: `popoverTopFor`
+ * חוסם אנכית לגובה המכולה (‏`popoverWidthFor` עשה זאת לרוחב ⛔ ולבדו), `popoverTailLeft`
+ * מצביע על המילה, ו-`aria-expanded` + שבב המצב יושבים ב-`StoryScreen` שהוא בעל המילה.
+ * ⛔ **⛔ ואין כאן מחרוזת חדשה** — `36 § 7` נוקב ב-`ADD_HE`/`ADDED_HE` מילה במילה (`F-266`).
+ *
  * ⚠️ **טבעת המיקוד (ⓓ) ⛔ אינה נכתבת כאן בשנית:** `app/globals.css:72` מגדיר
  * `:focus-visible { outline: 3px solid var(--brand) }` **גלובלית**, ושלושת הפקדים
  * כאן ⛔ אינם מכבים אותה. ⇒ מחלקה מקומית הייתה כפילות שמתפצלת ביום שהאסימון זז.
@@ -53,6 +62,10 @@ import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 export const POPOVER_GAP = 8;
 export const POPOVER_GUTTER = 8;
 export const POPOVER_MAX_WIDTH = 288;
+/** צלע הריבוע המסובב שמשמש זנב. ⛔ נמדד ברנדר כמשולש שנכנס לקצה העליון של החלונית. */
+export const POPOVER_TAIL = 10;
+/** ⛔ הזנב ⛔ אינו נוגע בפינה המעוגלת — `rounded-2xl` הוא 16, ו-4 נוספים הם נשימה. */
+export const POPOVER_TAIL_INSET = 20;
 
 /** מיקום המילה שהוקשה, **יחסית לכרטיס הגוף** — ⛔ ולא ל-viewport. */
 export interface WordAnchor {
@@ -81,6 +94,47 @@ export function popoverWidthFor(containerWidth: number): number {
   return Math.max(0, Math.min(POPOVER_MAX_WIDTH, containerWidth - POPOVER_GUTTER * 2));
 }
 
+/**
+ * 🔴 **T-378 ⓒⓘⓘⓘ — המקבילה האנכית של `popoverWidthFor`, ו⛔ עד היום ⛔ לא הייתה אחת.**
+ *
+ * 🔬 **נמדד ב-`next start` 375×780, ⛔ ולא שוער:** תחתית כרטיס הגוף `y≈598` מול תחתית
+ * החלונית `y≈672` ⇒ **74px** יושבים **מעל** «סיימתי לקרוא». הסיבה היא שהענף האחרון של
+ * `popoverPlacement` החזיר `below` **בלי חסם**: כשהחלונית ⛔ אינה נכנסת מתחת למילה
+ * ו⛔ גם ⛔ אינה נכנסת מעליה, הקוד בחר `below` וזלג החוצה.
+ * ⇒ העיגון של `T-290`/`D-209` — «מעוגן **בתוך** כרטיס הגוף» — הוא אינווריאנטה, ⛔ ולא
+ * העדפה, ⇒ המיקום נחסם לגובה **המכולה**, בדיוק כמו שהרוחב נחסם לרוחבה.
+ *
+ * ⛔ **וחלונית גבוהה מהמכולה ⛔ אינה שגיאה שמטפלים בה כאן:** היא נצמדת לשוליים העליונים
+ * ו⛔ אין מה לחסום — `Math.max` הוא מה שמונע `top` שלילי.
+ */
+export function popoverTopFor(
+  preferredTop: number,
+  containerHeight: number,
+  popoverHeight: number,
+): number {
+  const maxTop = containerHeight - popoverHeight - POPOVER_GUTTER;
+  return Math.round(Math.max(POPOVER_GUTTER, Math.min(preferredTop, maxTop)));
+}
+
+/**
+ * 🔴 **T-378 ⓒⓘⓘ — הזנב, ו⛔ הוא ⛔ אינו קישוט.**
+ *
+ * אחרי החסימה האנכית והאופקית החלונית כבר ⛔ אינה בהכרח צמודה למילה ⇒ **המיקום שלה
+ * ⛔ אינו אומר על מה היא**. הזנב יושב על `anchor.centerX`, באותו מרחב קואורדינטות של
+ * `left`, ⇒ הוא מצביע על המילה גם כשהחלונית נדחפה הצדה.
+ * ⛔ **והוא נחסם לגוף החלונית** — זנב שיוצא מהפינה המעוגלת נראה כמו פגם, ⛔ לא כמו חץ.
+ */
+export function popoverTailLeft(
+  anchorCenterX: number,
+  popoverLeft: number,
+  popoverWidth: number,
+): number {
+  const center = anchorCenterX - popoverLeft;
+  const min = POPOVER_TAIL_INSET;
+  const max = Math.max(min, popoverWidth - POPOVER_TAIL_INSET);
+  return Math.round(Math.min(Math.max(center, min), max));
+}
+
 export function popoverPlacement(anchor: WordAnchor, box: AnchorBox): AnchorPlacement {
   const width = popoverWidthFor(box.containerWidth);
   const maxLeft = Math.max(POPOVER_GUTTER, box.containerWidth - width - POPOVER_GUTTER);
@@ -89,8 +143,10 @@ export function popoverPlacement(anchor: WordAnchor, box: AnchorBox): AnchorPlac
   const below = anchor.bottom + POPOVER_GAP;
   const above = anchor.top - POPOVER_GAP - box.popoverHeight;
   const fitsBelow = below + box.popoverHeight <= box.containerHeight;
-  if (!fitsBelow && above >= 0) return { left, top: Math.round(above), placement: 'above' };
-  return { left, top: Math.round(below), placement: 'below' };
+  if (!fitsBelow && above >= 0) {
+    return { left, top: popoverTopFor(above, box.containerHeight, box.popoverHeight), placement: 'above' };
+  }
+  return { left, top: popoverTopFor(below, box.containerHeight, box.popoverHeight), placement: 'below' };
 }
 
 /** מלבן, בקואורדינטות של אותו מרחב שבו נמדדו המילים. */
@@ -192,6 +248,7 @@ export default function WordPopover({
     containerHeight,
     popoverHeight: height,
   });
+  const tailLeft = popoverTailLeft(anchor.centerX, left, width);
 
   return (
     <div
@@ -204,6 +261,30 @@ export default function WordPopover({
       style={{ position: 'absolute', top, left, width }}
       className="z-20 rounded-2xl border border-brand/75 bg-surface-raised px-4 py-4 text-center shadow-lg"
     >
+      {/* 🔴 **T-378 ⓒⓘⓘ — הזנב מצביע על המילה שהוקשה.**
+          ⛔ **ריבוע מסובב, ⛔ ולא `border`-משולש:** רק כך יש לו **שתי צלעות מסגרת**
+          שממשיכות את `border-brand/75` של החלונית, והשלישית מוסתרת מאחורי הרקע שלה.
+          ⛔ **`aria-hidden`** — הקישור לקורא-מסך יושב ב-`aria-expanded` על המילה
+          עצמה (`StoryScreen`), ⛔ ולא באלמנט דקורטיבי.
+          ⚠️ `overflow` ⛔ אינו נחתך: הזנב יוצא מגבול החלונית במכוון, ולכן
+          `rounded-2xl` ⛔ אינו יכול לשבת על מכולה שחותכת. */}
+      <span
+        aria-hidden
+        data-word-popover-tail
+        style={{
+          position: 'absolute',
+          left: tailLeft - POPOVER_TAIL / 2,
+          width: POPOVER_TAIL,
+          height: POPOVER_TAIL,
+          ...(placement === 'below'
+            ? { top: -POPOVER_TAIL / 2 }
+            : { bottom: -POPOVER_TAIL / 2 }),
+        }}
+        className={[
+          'block rotate-45 border-brand/75 bg-surface-raised',
+          placement === 'below' ? 'border-l border-t' : 'border-b border-r',
+        ].join(' ')}
+      />
       <p className="text-sm text-ink-muted">
         <EnWord>{word}</EnWord>
       </p>

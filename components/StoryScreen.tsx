@@ -628,8 +628,16 @@ function StoryReady({
                     type="button"
                     data-story-title-word
                     data-story-translation={gloss?.translationHe ?? ''}
+                    // 🔴 **T-378 ⓒⓘ — אותו ערוץ בדיוק בכותרת.** ⛔ המילה בכותרת פותחת
+                    // את אותה חלונית ⇒ היא חייבת להצהיר על אותו מצב.
+                    aria-expanded={openLemma === lemma && openSurface === 'title'}
                     onClick={(e) => onTitleWordClick(e, lemma)}
                     className={[
+                      // 🔴 **T-378 ⓒⓘ — שבב המצב `open`, כמו בגוף.** ⛔ השבב בכותרת
+                      // ⛔ אינו משנה מטרים גם הוא: היעד כבר `min-w-[44px]` ממורכז.
+                      openLemma === lemma && openSurface === 'title'
+                        ? 'rounded-md bg-brand-surface text-brand-on'
+                        : '',
                       // 🔴 `א4` — **44×44 מלאים.** הכותרת ⛔ אינה «פסקת קריאה רציפה»
                       // ⇒ חריג ה-inline של `36 § 3` ⛔ אינו חל עליה, ⛔ ואין כאן שוליים
                       // שליליים שמחזירים את המרווח: הגובה **אמור** לגדול.
@@ -728,12 +736,31 @@ function StoryReady({
                       type="button"
                       data-story-word
                       data-story-translation={gloss?.translationHe ?? ''}
+                      // 🔴 **T-378 ⓒⓘ — הערוץ שאינו ויזואלי, ו⛔ עד היום הוא החזיר `null`.**
+                      // ⛔ `aria-expanded` יושב על **כל** מילת יעד, ⛔ ולא רק על הפתוחה:
+                      // `false` הוא מה שמצהיר שיש כאן מה לפתוח, ובלעדיו קורא-מסך שומע
+                      // «כפתור» ו⛔ אינו יודע שנפתחה חלונית כשהיא נפתחה.
+                      aria-expanded={openLemma === lemma && openSurface === 'body'}
                       onClick={(e) => onWordClick(e, lemma)}
                       className={[
                         // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
                         // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
                         // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
                         'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
+                        // 🔴 **T-378 ⓒⓘ — שבב המצב `open`, והוא **הרנדר**.**
+                        // `render_video_A.py:1026-1028` מצייר את המילה ה**פעילה** כשבב
+                        // מלא (`fill=BRAND`, טקסט `BRAND_ON`, רדיוס 7 → `rounded-md`),
+                        // וההערה שם אומרת מפורשות שזה ⛔ **אינו** סימון מוקדם של `F-123`:
+                        // «it is the tap itself … The screen's equivalent is the popover,
+                        // and it opens on exactly the same event».
+                        // ⛔ **⛔ ואין כאן שינוי מטרי** — רקע וצבע בלבד, ⛔ לא משקל ו⛔ לא
+                        // מרווח ⇒ הפסקה ⛔ אינה זזה ולו פיקסל כשהחלונית נפתחת, וזו בדיוק
+                        // האינווריאנטה של `T-290`.
+                        // ⛔ **ו⛔ אין כאן «צבע בלבד»** (חוקה שכבה A): השבב הוא ערוץ אחד,
+                        // `aria-expanded` הוא השני, וזנב החלונית הוא השלישי.
+                        openLemma === lemma && openSurface === 'body'
+                          ? 'rounded-md bg-brand-surface text-brand-on'
+                          : '',
                         // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
                         // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
                         // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא

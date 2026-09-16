@@ -4,7 +4,10 @@ import {
   POPOVER_GAP,
   POPOVER_GUTTER,
   POPOVER_MAX_WIDTH,
+  POPOVER_TAIL_INSET,
   popoverPlacement,
+  popoverTailLeft,
+  popoverTopFor,
   popoverWidthFor,
   stolenWordCount,
 } from './WordPopover';
@@ -219,5 +222,84 @@ describe('T-319 · ההתנהגות, ⛔ ולא הכוונה — נמדדת על
 
   it('⛔ והעיגון ⛔ לא נסוג — `D-209`/`F-167` עומדים', () => {
     expect(popover).toContain("position: 'absolute'");
+  });
+});
+
+
+/**
+ * 🔴 **T-378 ⓑⓒ — החסם האנכי והזנב.**
+ *
+ * 🔬 **המדידה שפתחה את השורה, ב-`next start` 375×780:** תחתית כרטיס הגוף `y≈598`,
+ * תחתית החלונית `y≈672` ⇒ **74px** ישבו **מעל** «סיימתי לקרוא». הענף האחרון של
+ * `popoverPlacement` החזיר `below` בלי חסם, כלומר `T-290`/`D-209` — «מעוגן **בתוך**
+ * כרטיס הגוף» — נשבר בדיוק במקרה שבו החלונית ⛔ אינה נכנסת בשום צד.
+ *
+ * ✔ מוכיח: `top + popoverHeight` ⛔ אינו חורג מהמכולה בשלושת הענפים.
+ * ✔ מוכיח: הזנב יושב על מרכז המילה, ונחסם לגוף החלונית.
+ * ✘ ⛔ אינו מוכיח: את הפיקסל בדפדפן. זו ההליכה החיה, והיא בשורת המסירה.
+ */
+describe('T-378 ⓑ · popoverTopFor — החלונית ⛔ אינה יוצאת מהכרטיס', () => {
+  it('⛔ אינה נוגעת במיקום שכבר נכנס', () => {
+    expect(popoverTopFor(78, 400, 180)).toBe(78);
+  });
+
+  it('🔴 משחזרת את החריגה שנמדדה: מילה בשורה האחרונה ⇒ החלונית נחסמת, ⛔ ולא זולגת', () => {
+    // ⛔ המספרים הם המדידה עצמה: כרטיס בגובה 300, חלונית בגובה 180, מילה שתחתיתה 260.
+    const { top } = popoverPlacement(
+      { top: 230, bottom: 260, centerX: 167 },
+      { containerWidth: 335, containerHeight: 300, popoverHeight: 180 },
+    );
+    expect(top + 180).toBeLessThanOrEqual(300);
+  });
+
+  it('⛔ בשלושת הענפים — below · above · «אף אחד מהם» — ⛔ אין חריגה', () => {
+    const box = { containerWidth: 335, containerHeight: 300, popoverHeight: 180 } as const;
+    for (const bottom of [40, 150, 260, 299]) {
+      const { top } = popoverPlacement({ top: bottom - 30, bottom, centerX: 167 }, box);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(top + box.popoverHeight).toBeLessThanOrEqual(box.containerHeight);
+    }
+  });
+
+  it('⛔ חלונית גבוהה מהמכולה נצמדת למעלה — ⛔ ולא `top` שלילי', () => {
+    expect(popoverTopFor(48, 120, 180)).toBe(POPOVER_GUTTER);
+  });
+});
+
+describe('T-378 ⓒⓘⓘ · popoverTailLeft — הזנב מצביע על המילה', () => {
+  const WIDTH = popoverWidthFor(335);
+
+  it('יושב על מרכז המילה כשהחלונית ממורכזת עליה', () => {
+    expect(popoverTailLeft(167, 167 - WIDTH / 2, WIDTH)).toBe(Math.round(WIDTH / 2));
+  });
+
+  it('🔴 ⛔ ומצביע **החוצה** כשהחלונית נחסמה הצדה — זו כל נקודת הזנב', () => {
+    // מילה בקצה הימני, חלונית שנחסמה ⇒ מרכז המילה ⛔ אינו מרכז החלונית.
+    const { left } = popoverPlacement({ top: 40, bottom: 70, centerX: 330 }, {
+      containerWidth: 335,
+      containerHeight: 400,
+      popoverHeight: 180,
+    });
+    expect(popoverTailLeft(330, left, WIDTH)).toBeGreaterThan(Math.round(WIDTH / 2));
+  });
+
+  it('⛔ אינו יוצא מהפינה המעוגלת בשני הקצוות', () => {
+    expect(popoverTailLeft(0, 100, WIDTH)).toBe(POPOVER_TAIL_INSET);
+    expect(popoverTailLeft(9999, 100, WIDTH)).toBe(WIDTH - POPOVER_TAIL_INSET);
+  });
+});
+
+describe('T-378 ⓒ · המקור — הזנב קיים, ו⛔ אינו מוכרז לקורא-מסך', () => {
+  const source = readFileSync(new URL('./WordPopover.tsx', import.meta.url), 'utf8');
+
+  it('הזנב מצויר, ומתהפך עם `placement`', () => {
+    expect(source).toContain('data-word-popover-tail');
+    expect(source).toContain('rotate-45');
+    expect(source).toContain("placement === 'below' ? 'border-l border-t' : 'border-b border-r'");
+  });
+
+  it('⛔ הזנב ⛔ אינו ערוץ נגישות — הוא `aria-hidden`', () => {
+    const tail = source.slice(source.indexOf('data-word-popover-tail') - 400);
+    expect(tail.slice(0, 500)).toContain('aria-hidden');
   });
 });

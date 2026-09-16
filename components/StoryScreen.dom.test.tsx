@@ -559,3 +559,76 @@ describe('T-207 — the summary line reports an ACTION, ⛔ not an inventory', (
     expect(summary(container)).toBeNull();
   });
 });
+
+/**
+ * 🔴 **T-378 ⓐⓒⓘ — מה שקושר את החלונית למילה שהוקשה.**
+ *
+ * 🔬 **המדידה שפתחה את השורה, ב-`next start` 375×780:** הקשה תוכניתית על מילת יעד
+ * החזירה `getAttribute('class')` **זהה** לפני ההקשה ואחריה, ו-`aria-expanded` החזיר
+ * **`null`** ⇒ ⛔ אף סימן, ⛔ לא ויזואלי ו⛔ לא לקורא-מסך, ⛔ לא אמר על איזו מילה
+ * החלונית מדברת. ⇒ **מ-0 סימנים ל-2**, והם נמדדים כאן אחד-אחד.
+ *
+ * ✔ מוכיח: `aria-expanded` קיים על **כל** מילת יעד, ומתהפך על זו שהוקשה בלבד.
+ * ✔ מוכיח: שבב המצב נוסף למילה שהוקשה, ו⛔ אינו משנה ולו מטר אחד של הפסקה.
+ * ✘ ⛔ אינו מוכיח: את הפיקסל. זו ההליכה החיה, והיא בשורת המסירה.
+ */
+describe('T-378 — הקשה על מילה אומרת **על איזו מילה**', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** יעד הקשה סגור — `36 § 3.2/3.3` ו⛔ שום דבר מעבר. */
+  const BASE_WORD_CLASSES = ['inline', 'cursor-pointer', 'px-2', 'py-2', '-mx-2', '-my-2'];
+
+  it('ⓒⓘ `aria-expanded` יושב על כל מילת יעד — ⛔ ולא `null`', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const words = Array.from(container.querySelectorAll('[data-story-body] [data-story-word]'));
+    expect(words.length).toBeGreaterThan(0);
+    for (const w of words) expect(w.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('🔴 ⓒⓘ ההקשה מהפכת אותו על המילה שהוקשה, ⛔ ורק עליה', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    const target = bodyWord('library');
+    clickWord(target);
+    expect(target.getAttribute('aria-expanded')).toBe('true');
+    const others = Array.from(
+      container.querySelectorAll('[data-story-body] [data-story-word]'),
+    ).filter((el) => el !== target);
+    for (const w of others) expect(w.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('🔴 ⓒⓘ והמחלקה ⛔ כבר אינה זהה לפני ההקשה ואחריה — זו המדידה עצמה', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    const target = bodyWord('library');
+    const before = target.getAttribute('class');
+    clickWord(target);
+    expect(target.getAttribute('class')).not.toBe(before);
+    expect(target.getAttribute('class')).toContain('bg-brand-surface');
+  });
+
+  it('⛔ והשבב ⛔ אינו מזיז את הפסקה — ⛔ אפס שינוי מטרי (‏`T-290`)', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    const target = bodyWord('library');
+    clickWord(target);
+    const open = (target.getAttribute('class') ?? '').split(/\s+/).filter((c) => c !== '');
+    // ⛔ **הנמדד הוא מה שהמצב **מוסיף**, ⛔ ולא מחרוזת המחלקות כולה:** `px-2 py-2 -mx-2
+    // -my-2` הן `36 § 3.2/3.3` והן שם בשני המצבים ⇒ סריקה על המחרוזת השלמה הייתה
+    // מודדת את אזור ההקשה, ⛔ ולא את השבב.
+    const added = open.filter((c) => !BASE_WORD_CLASSES.includes(c));
+    expect(added.length).toBeGreaterThan(0);
+    // ⛔ רקע · צבע · רדיוס בלבד. ⛔ אף מחלקה שמשנה משקל, מרווח, שוליים או גודל גופן.
+    for (const c of added) {
+      expect(c).toMatch(/^(rounded-|bg-|text-brand-on$)/);
+    }
+  });
+
+  it('ⓒⓘⓘ והחלונית נושאת זנב שמצביע על המילה', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    const tail = container.querySelector('[data-word-popover] [data-word-popover-tail]');
+    expect(tail).not.toBeNull();
+  });
+});
