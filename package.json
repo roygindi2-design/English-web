@@ -35,6 +35,7 @@
     "measure:amirnet-gate": "node scripts/measure-amirnet-gate.mjs",
     "measure:amirnet-coverage": "node scripts/measure-amirnet-coverage.mjs",
     "measure:plan": "node scripts/measure-plan-tables.mjs",
+    "measure:story-repetition": "node scripts/measure-story-repetition.mjs",
     "build:ingest": "node scripts/build-ingest-sql.mjs",
     "build:levels": "node scripts/build-word-levels-sql.mjs",
     "build:preview": "node scripts/build-preview-cards.mjs",

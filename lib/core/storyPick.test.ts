@@ -69,3 +69,66 @@ describe('pickStory — the failure scenario T-185 closes', () => {
     expect(pickStory({ stories: [], dayIndex: day, readStoryIds: new Set() })).toBeNull();
   });
 });
+
+/**
+ * `T-209` ⓑ — `D-121 § ה`: the next story is chosen **to repeat words, ⛔ not to vary**.
+ * 🔬 The measurement that justified this and bounded it lives in
+ * `scripts/measure-story-repetition.mjs`; `npm run measure:story-repetition` prints it.
+ */
+describe('pickStory — the SKIP path repeats words (T-209 ⓑ · D-121 § ה)', () => {
+  const P = (n: number, body: string): StoryCandidate => ({
+    id: `p-${n}`,
+    titleEn: `Story ${n}`,
+    bodyEn: body,
+    createdAt: `2026-08-${String(10 + n).padStart(2, '0')}T00:00:00Z`,
+  });
+  // Deterministic order is p-1 · p-2 · p-3. `p-3` shares its whole vocabulary with `p-1`;
+  // `p-2` shares ⛔ nothing. The old forward scan returns `p-2` — the NEXT INDEX — which
+  // is «to vary», the exact thing `D-121 § ה` rules out.
+  const POOL = [P(1, 'market river bridge'), P(2, 'office desk lamp'), P(3, 'market river tower')];
+  const startsAtOne = 0; // dayIndex 0 ⇒ start = 0 ⇒ p-1
+
+  it('returns the day’s story untouched while it is unread', () => {
+    const picked = pickStory({ stories: POOL, dayIndex: startsAtOne, readStoryIds: new Set() })!;
+    expect(picked.story.id).toBe('p-1');
+    expect(picked.index).toBe(1);
+  });
+
+  it('after the day’s story is read, takes the story that REPEATS its words', () => {
+    const picked = pickStory({
+      stories: POOL,
+      dayIndex: startsAtOne,
+      readStoryIds: new Set(['p-1']),
+    })!;
+    expect(picked.story.id).toBe('p-3');
+  });
+
+  it('still reports the position in the ordered pool, ⛔ not the order it was chosen in', () => {
+    const picked = pickStory({
+      stories: POOL,
+      dayIndex: startsAtOne,
+      readStoryIds: new Set(['p-1']),
+    })!;
+    expect(picked.index).toBe(3);
+    expect(picked.total).toBe(3);
+  });
+
+  it('⛔ falls back to the forward scan when ⛔ no unread story shares a word', () => {
+    const picked = pickStory({
+      stories: POOL,
+      dayIndex: startsAtOne,
+      readStoryIds: new Set(['p-1', 'p-3']),
+    })!;
+    expect(picked.story.id).toBe('p-2');
+  });
+
+  it('is the same answer on two calls — ⛔ zero Math.random, still (T-185 ⓐ)', () => {
+    const a = pickStory({ stories: POOL, dayIndex: startsAtOne, readStoryIds: new Set(['p-1']) })!;
+    const b = pickStory({
+      stories: [...POOL].reverse(),
+      dayIndex: startsAtOne,
+      readStoryIds: new Set(['p-1']),
+    })!;
+    expect(b.story.id).toBe(a.story.id);
+  });
+});

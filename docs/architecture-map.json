@@ -1508,10 +1508,18 @@
     "lib/core/storyIntro.ts"
   ],
   "lib/core/storyIntro.ts": [],
+  "lib/core/storyOverlap.test.ts": [
+    "lib/core/storyOverlap.ts"
+  ],
+  "lib/core/storyOverlap.ts": [
+    "lib/core/storyTapTargets.ts"
+  ],
   "lib/core/storyPick.test.ts": [
     "lib/core/storyPick.ts"
   ],
-  "lib/core/storyPick.ts": [],
+  "lib/core/storyPick.ts": [
+    "lib/core/storyOverlap.ts"
+  ],
   "lib/core/storyQuestion.test.ts": [
     "lib/core/storyQuestion.ts"
   ],
