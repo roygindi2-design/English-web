@@ -140,6 +140,30 @@ const CLOCK_HE = 'זמן קרב';
 const ENEMY_HE = 'הקוסם';
 const ENEMY_HP_HE = 'חיי היריב';
 const MANA_HE = 'מאנה';
+
+/** ⓔ `T-397` — צבע מקטע מאנה מלא. ⛔ טוקן, ⛔ ולא hex: `--arena-mana` הוא
+ *  ‏`#5684e2` == ה-`(86,132,226)` של `render_video_B.py:300`, ו-`--arena-cast-warn`
+ *  הוא צבע ה-`RAGE` שאותה פונקציה מחליפה אליו. */
+function manaSegColor(raging: boolean): string {
+  return raging ? 'var(--arena-cast-warn)' : 'var(--arena-mana)';
+}
+
+/** ⓔ `T-397` — צובע את עשרת המקטעים מתוך לולאת ה-rAF, ⛔ בלי רינדור חוזר.
+ *  ⛔ **פונקציה טהורה מעל ה-DOM שנמסר לה** — היא ⛔ אינה קוראת ל-`document` ו⛔ אינה
+ *  מחזיקה מצב, ⇒ הבדיקה מריצה אותה על מערך מזויף בלי דפדפן. */
+function paintManaSegments(
+  segs: readonly (HTMLSpanElement | null)[],
+  mana: number,
+  raging: boolean,
+): void {
+  for (let k = 0; k < segs.length; k += 1) {
+    const el = segs[k];
+    if (el === null || el === undefined) continue;
+    const full = k < mana;
+    el.dataset.full = full ? 'true' : 'false';
+    el.style.backgroundColor = full ? manaSegColor(raging) : 'transparent';
+  }
+}
 const RAGE_HE = 'זמן זעם · מאנה כפולה';
 /**
  * ⛔ **הערת הבידוד ⛔ אינה אופציונלית** (אינווריאנט `37 § 13.1`), והיא מופיעה ברנדר
@@ -239,7 +263,9 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   const castMeterFillRef = useRef<HTMLSpanElement>(null);
   const manaTextRef = useRef<HTMLSpanElement>(null);
   const manaMeterWrapRef = useRef<HTMLDivElement>(null);
-  const manaFillRef = useRef<HTMLSpanElement>(null);
+  /** ⓔ `T-397` — עשרה מקטעים, ⛔ ולא מילוי רציף אחד. הלולאה כותבת ישירות
+      לכל מקטע, בדיוק כפי שכתבה קודם ל-`scaleX` היחיד: ⛔ אפס רינדורים חוזרים. */
+  const manaSegRefs = useRef<(HTMLSpanElement | null)[]>([]);
   /** ⛔ עותק קריא-בזמן-פריים של `battle` — הלולאה צריכה `manaSpent` חי בלי לתלות בו. */
   const battleRef = useRef<BattleState | null>(battle);
   useEffect(() => { battleRef.current = battle; }, [battle]);
@@ -518,7 +544,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
         if (mana !== lastMana) {
           lastMana = mana;
           if (manaTextRef.current !== null) manaTextRef.current.textContent = `${mana} / ${MANA_CAP}`;
-          if (manaFillRef.current !== null) manaFillRef.current.style.transform = `scaleX(${mana / MANA_CAP})`;
+          paintManaSegments(manaSegRefs.current, mana, nowRaging);
           const manaWrap = manaMeterWrapRef.current;
           if (manaWrap !== null) {
             manaWrap.setAttribute('aria-label', `${nowRaging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`);
@@ -644,7 +670,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   /**
    * T-231 ⓔ — ערך **הפתיחה** בלבד (רינדור ראשון של הקרב, ורינדורים על מעברים בדידים
    * כמו `cast`). ⛔ אינו `useMemo` על `elapsedMs` — אין יותר state כזה; העדכון הרציף
-   * בין רינדורים חי בכתיבת ה-ref שבלולאת ה-rAF (`manaTextRef` / `manaFillRef`).
+   * בין רינדורים חי בכתיבת ה-ref שבלולאת ה-rAF (`manaTextRef` / `manaSegRefs`).
    */
   const mana = battle === null ? 0 : manaAt(elapsedRef.current, battle.manaSpent);
 
@@ -1088,21 +1114,33 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             </EnWord>
           </span>
         </div>
-        {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width` (apple-design § 11). */}
+        {/* T-397 ⓐ — **עשרה מקטעים, ⛔ ולא מילוי רציף.** נמדד ב-`render_video_B.py`
+            ‏(`mana_bar`, `:288`): מסילה בגובה 14 ורדיוס 7, ובתוכה `cap` מקטעים בגובה 10
+            עם 1.5px מרווח מכל צד ⇒ ‏`p-[2px]` + `gap-[3px]` כאן, ו-`--arena-mana`
+            הוא בדיוק ה-`(86,132,226)` שהרנדר צובע בו.
+            ⛔ **המילוי מתחיל מימין** — ברנדר `sx = x + w - (k+1)*seg_w`, וכאן `dir="rtl"`
+            מסדר את ה-flex באותו כיוון בלי חשבון ידני.
+            ⚠️ **⛔ והצורה ⛔ אינה הערוץ היחיד:** המספר `N / 10` יושב מעליה ו-`aria-label`
+            נושא «N מתוך 10» — ⛔ שניהם ⛔ לא זזו (ⓑ). */}
         <div
           ref={manaMeterWrapRef}
           role="img"
           aria-label={`${raging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`}
-          className="h-4 w-full overflow-hidden rounded-full border border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)]"
+          className="flex h-4 w-full flex-row gap-[3px] overflow-hidden rounded-full border border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)] p-[2px]"
         >
-          {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: אותו נימוק כמו מד הטלגרף למעלה —
-              `width` פיזי על `<span>` שאינו `absolute` תמיד עוגן שמאל, בלי קשר ל-`dir`. */}
-          <span
-            ref={manaFillRef}
-            aria-hidden
-            className={`block h-full w-full ${raging ? 'bg-[color:var(--arena-cast-warn)]' : 'bg-[color:var(--arena-mana)]'}`}
-            style={{ transform: `scaleX(${mana / MANA_CAP})`, transformOrigin: 'left center', willChange: 'transform' }}
-          />
+          {Array.from({ length: MANA_CAP }, (_, k) => (
+            <span
+              key={k}
+              ref={(el) => {
+                manaSegRefs.current[k] = el;
+              }}
+              aria-hidden
+              data-arena-mana-seg
+              data-full={k < mana ? 'true' : 'false'}
+              className="block h-full flex-1 rounded-full"
+              style={{ backgroundColor: k < mana ? manaSegColor(raging) : 'transparent' }}
+            />
+          ))}
         </div>
       </div>
 

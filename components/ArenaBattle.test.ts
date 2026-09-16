@@ -499,6 +499,55 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(CSS, '⛔ המאנה ⛔ אינה במעבר').not.toMatch(/data-arena-mana-fill/);
   });
 
+  /**
+   * ⟦NEW 16/09 · `C-0669` · `T-397`⟧ **מד המאנה הוא עשרה מקטעים ספירים.**
+   * 🔬 הרנדר המחייב: `docs/design/render_video_B.py:288` (`mana_bar`) מצייר `cap`
+   * מקטעים נפרדים, ‏`kol-B-03-battle.png` מראה 3 מתוך 10 מלאים, ו-`37 § 4` מתמחר
+   * את היכולות ב**יחידות שלמות** ⇒ השאלה «האם 5 בידי» היא **ספירה**, ⛔ ולא קריאת
+   * מספר בקרב בן 90 שניות שחלון התגובה בו 400ms.
+   */
+  it('T-397 · עשרה מקטעים נפרדים, ⛔ ולא מילוי רציף אחד', () => {
+    // ⛔ המספר ⛔ אינו ליטרל ברכיב — הוא `MANA_CAP`, המקור היחיד שגם `manaAt` נגזר ממנו.
+    expect(CODE, 'המקטעים נגזרים מ-MANA_CAP').toMatch(
+      /Array\.from\(\{ length: MANA_CAP \}/,
+    );
+    expect(CODE, 'כל מקטע מסומן לבדיקה ולהליכה').toMatch(/data-arena-mana-seg/);
+    expect(CODE, 'מצב המקטע נקרא מ-data, ⛔ ולא מהצבע בלבד').toMatch(/data-full=\{k < mana/);
+    // 🔴 ⛔ **המילוי הרציף הישן ⛔ לא נשאר לצדם.** `scaleX(mana / MANA_CAP)` הוא בדיוק
+    // הצורה ש-`T-397` מודדת כ-«0 יחידות ספירות», ושתי צורות במקביל הן מסך שסותר את עצמו.
+    expect(CODE, '⛔ ⛔ לא scaleX על המאנה').not.toMatch(/scaleX\(\$\{mana \/ MANA_CAP\}\)/);
+  });
+
+  it('T-397 ⓑ · הערוץ הנגיש ⛔ לא זז — `aria-label` עדיין «N מתוך 10», והמספר עדיין על המסך', () => {
+    // ⛔ זו הגדר של השורה: השינוי הוא **חזותי בלבד**. קורא מסך שקרא «3 מתוך 10»
+    // לפני השינוי קורא בדיוק אותו דבר אחריו.
+    expect(CODE).toMatch(/aria-label=\{`\$\{raging \? RAGE_HE : MANA_HE\} \$\{mana\} מתוך \$\{MANA_CAP\}`\}/);
+    expect(CODE, 'המספר הנראה נשאר').toMatch(/manaTextRef[\s\S]{0,120}\$\{mana\} \/ \$\{MANA_CAP\}/);
+    // ⛔ **ו⛔ אין כאן מצב שמקודד בצבע בלבד** (שכבה א׳ א2): שלושה ערוצים —
+    // כמה מקטעים מלאים (מיקום), המספר `N / 10` (טקסט), ו-`aria-label`.
+    expect(CODE, 'data-full הוא ערוץ שאינו צבע').toMatch(/dataset\.full = full/);
+  });
+
+  it('T-397 · הצבע הוא **טוקן**, ⛔ ולא ה-hex שהרנדר מצייר בו', () => {
+    // 🔬 `render_video_B.py:300` צובע `(86,132,226)`; `arcade-tokens.css` מצהיר
+    // `--arena-mana: #5684e2` — אותו צבע. ⇒ הרכיב נוקב ב**טוקן**, ⛔ ולא במספר.
+    expect(CSS_CODE, 'הטוקן מוצהר').toMatch(/--arena-mana:\s*#5684e2/i);
+    expect(CODE, 'הרכיב נוקב בטוקן').toMatch(/var\(--arena-mana\)/);
+    expect(CODE, '⛔ ⛔ לא hex ברכיב').not.toMatch(/#5684e2/i);
+    // ⛔ ובזמן זעם המקטעים מתחלפים לצבע ה-RAGE, בדיוק כמו ב-`mana_bar(rage=True)`.
+    expect(CODE, 'זמן זעם מחליף את צבע המקטע').toMatch(
+      /raging \? 'var\(--arena-cast-warn\)' : 'var\(--arena-mana\)'/,
+    );
+  });
+
+  it('T-397 · הלולאה כותבת למקטעים ישירות — ⛔ אפס רינדורים חוזרים בקרב', () => {
+    // 🔴 זו הסיבה ש-`T-231` בנה את המד על refs מלכתחילה: `setState` בלולאת rAF
+    // מרנדר את כל הזירה 30 פעמים בשנייה. המעבר לעשרה מקטעים ⛔ אינו מבטל את זה.
+    expect(CODE, 'ref למערך המקטעים').toMatch(/manaSegRefs = useRef<\(HTMLSpanElement \| null\)\[\]>/);
+    expect(CODE, 'הלולאה קוראת לצובע').toMatch(/paintManaSegments\(manaSegRefs\.current, mana, nowRaging\)/);
+    expect(CODE, '⛔ ⛔ לא setState על שינוי מאנה').not.toMatch(/setMana\(/);
+  });
+
   it('T-358 · מספר הנזק הוא **מידע** — נגזר מהפרש החיים, ו⛔ אינו מחושב מחדש', () => {
     expect(CODE, 'נגזר מהפרש בפועל').toMatch(/prevEnemyHp\.current - battle\.enemyHp/);
     // ⛔ ⛔ לא חישוב שני של הנזק מהכללים — זה איך שמסך מתחיל לשקר על מה שקרה.
