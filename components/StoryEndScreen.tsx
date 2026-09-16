@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import EnWord from '@/components/EnWord';
 import { shuffleAnswers, type StoryQuestion } from '@/lib/core/storyQuestion';
 
@@ -46,13 +46,39 @@ const QUESTION_LABEL_HE = 'שאלת הבנה';
 const CORRECT_HE = 'נכונה';
 const WRONG_HE = 'לא זו';
 const PRACTICE_HE = 'לתרגל אותן בכרטיסיות';
+/**
+ * 🔙 **T-381ⓐ — התווית נוקבת ביעד, ⛔ ולא בפעולה על התשובה.** «נסה שוב» היה הופך
+ * את החזרה לניסיון שני, ו-`§ 4.2יג` סעיף 3 אוסר עונש ⇒ גם את ההיפוך שלו.
+ */
+const BACK_TO_STORY_HE = 'חזרה לסיפור';
 const CARDS_HREF = '/cards';
+/**
+ * ⚠️ **`px-2.5` ⛔ אינו טעם — הוא המספר שמחזיק את שתי הפעולות בשורה אחת ב-320px.**
+ * 🔬 **נמדד חי (‏`next start`, 320×780) ⛔ ולא שוער:** הרוחב הפנוי בעמודה הוא **272px**,
+ * ושתי הפעולות ב-`px-4` הן `110 + 169` ועוד `gap-3` ⇒ **291** ⇒ הן נשברות לשתי שורות,
+ * והיציאה «חזרה לעולם» נדדה ל-`top = 750` מול תקרת `D-228`ⓐ (‏≤736). ‏`px-2.5` ו-`gap-2`
+ * מורידים אותן ל-263 ⇒ שורה אחת, והיציאה חוזרת ל-694.
+ * ⛔ **ו-`min-h-touch` ⛔ לא זז** — הריפוד שהצטמצם הוא **אופקי**, ורוחב שני הפקדים
+ * (98 · 157) רחוק מעל 44. ⚠️ `flex-wrap` נשאר כרשת ביטחון: אם מתישהו ⛔ לא ייכנסו,
+ * הן יישברו ⇒ ⛔ אפס גלילה אופקית, וזה שער קפוא.
+ */
+const SECONDARY_HE_CLASS =
+  'inline-flex min-h-touch items-center rounded-lg border border-border-strong px-2.5 py-2 text-sm text-ink-muted active:opacity-90';
 
 export interface StoryEndScreenProps {
   readonly storyId: string;
   readonly question: StoryQuestion;
   /** כמה מילים בסיפור היו בתור החזרה של הלומד. ⛔ אפס ⇒ ⛔ אין שורה כלל. */
   readonly reviewedCount: number;
+  /**
+   * 🔙 **T-381ⓐ — הבחירה **נשלטת מבחוץ**, ⛔ ואינה state של הכרטיס הזה.** הכרטיס
+   * מורכב ⛔ רק בפאזת השאלה ⇒ state מקומי היה מתאפס בכל חזרה לגוף הסיפור, והמסך
+   * היה מציע שלוש תשובות פנויות ללומד שכבר ענה. `null` = עוד לא בחר.
+   */
+  readonly chosen: number | null;
+  readonly onChoose: (index: number) => void;
+  /** 🔙 T-381ⓐ — חזרה לגוף הסיפור. ⛔ אינה מאפסת דבר ו⛔ אינה נספרת. */
+  readonly onBackToReading: () => void;
 }
 
 function CheckIcon() {
@@ -95,16 +121,24 @@ export default function StoryEndScreen({
   storyId,
   question,
   reviewedCount,
+  chosen,
+  onChoose,
+  onBackToReading,
 }: StoryEndScreenProps): React.JSX.Element {
   const shuffled = shuffleAnswers(question, storyId);
-  const [chosen, setChosen] = useState<number | null>(null);
   const revealed = chosen !== null;
 
-  const choose = useCallback((index: number) => {
-    // ⛔ הלומד בוחר פעם אחת, והמשוב מיידי. ⛔ אין כאן ציון, ⛔ אין מונה ו⛔ אין כתיבה
-    // לשרת — § 4.2יג סעיף 3: «⛔ אין טעות בקריאה, ולכן ⛔ אין עונש».
-    setChosen((prev) => (prev === null ? index : prev));
-  }, []);
+  const choose = useCallback(
+    (index: number) => {
+      // ⛔ הלומד בוחר פעם אחת, והמשוב מיידי. ⛔ אין כאן ציון, ⛔ אין מונה ו⛔ אין כתיבה
+      // לשרת — § 4.2יג סעיף 3: «⛔ אין טעות בקריאה, ולכן ⛔ אין עונש».
+      // 🔙 **T-381ⓒ — והנעילה היא מה שהופך את החזרה לקריאה חוזרת ⛔ ולא לניסיון שני.**
+      // ⛔ היא ⛔ אינה נשענת על `disabled` לבדה: `disabled` הוא מה שהלומד רואה, וזה
+      // מה שקורה כשבכל זאת נקראנו.
+      if (chosen === null) onChoose(index);
+    },
+    [chosen, onChoose],
+  );
 
   return (
     <>
@@ -189,14 +223,23 @@ export default function StoryEndScreen({
           מבטל את `align-items: stretch` של העמודה), הטקסט יורד מ-`text-lg` ל-`text-sm`
           והריפוד מתהדק ⇒ ההבדל הוא **גודל וצורה**, ⛔ ולא גוון.
           ⚠️ **ו-44px ⛔ אינם זזים** — `min-h-touch` נשאר, וזה שער קפוא. */}
-      {reviewedCount > 0 ? (
-        <Link
-          href={CARDS_HREF}
-          className="inline-flex min-h-touch self-start items-center rounded-lg border border-border-strong px-4 py-2 text-sm text-ink-muted active:opacity-90"
-        >
-          {PRACTICE_HE}
-        </Link>
-      ) : null}
+      {/* 🔙 **T-381ⓐ — שתי הפעולות המשניות חולקות **שורה אחת**, ו⛔ זה ⛔ אינו קיצור:**
+          🔬 `scripts/verify-mobile.mjs` מודד ש-«חזרה לעולם» נצבעת בתוך המסך הראשון
+          (`D-228`ⓐ: ‏`top ≤ 736` בחלון 780), ⇒ כל בלוק חדש **מתחת** לכרטיס השאלה דוחף
+          את היציאה החוצה. ⇒ החזרה יושבת לצד «לתרגל אותן», ⛔ ולא מתחתיה: אותו מדרג
+          בדיוק (שתיהן משניות לפי `T-379` ⓓ — גודל וצורה, ⛔ לא גוון), ו⛔ אפס פיקסלים
+          אנכיים נוספים. ⚠️ `flex-wrap` כי ב-320px שתי התוויות ⛔ אינן נכנסות לשורה,
+          ו⛔ אין גלילה אופקית. ⚠️ ו-`min-h-touch` על שתיהן — שער קפוא. */}
+      <div data-story-secondary className="flex flex-wrap items-center gap-2 self-start">
+        <button type="button" onClick={onBackToReading} className={SECONDARY_HE_CLASS}>
+          {BACK_TO_STORY_HE}
+        </button>
+        {reviewedCount > 0 ? (
+          <Link href={CARDS_HREF} className={SECONDARY_HE_CLASS}>
+            {PRACTICE_HE}
+          </Link>
+        ) : null}
+      </div>
 
       {/* ⛔ **הפעולה הראשית ⛔ אינה כאן (T-202ⓑ · T-203).** התווית שהייתה כאן הבטיחה מעבר
           לפריט הבא ברצף, ו-`pickStory` בוחר על אינדקס-יום ⇒ אין רצף כזה (T-151ⓓ). הפעולה

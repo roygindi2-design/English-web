@@ -696,6 +696,85 @@ describe('T-378 — הקשה על מילה אומרת **על איזו מילה**
  * ✔ מוכיח: היציאה ⛔ **לא נמחקה** — `36 § 7` נוקב בה.
  * ✘ ⛔ אינו מוכיח: את הפיקסל. זו ההליכה החיה, והיא בשורת המסירה.
  */
+/**
+ * 🔙 **T-381 — הלומד שטעה יכול לחזור לפסקה שבה התשובה כתובה, ולחזור לשאלה.**
+ *
+ * 🔬 **מה שנמדד לפני הטיק הזה:** `grep -n 'setPhase' components/StoryScreen.tsx` החזיר
+ * קריאה **אחת** — `setPhase('question')` — ו⛔ אף אחת שמחזירה ל-`reading`. ⇒ לומד
+ * שבחר תשובה שגויה ראה «לא זו» באדום, ראה איזו נכונה, ו⛔ ⛔ לא יכול היה לראות
+ * **מדוע**: הטקסט שממנו נגזרת התשובה כבר ⛔ לא היה על המסך.
+ *
+ * ⛔ **וזה ⛔ אינו «נסה שוב» (`§ 4.2יג` סעיף 3).** ⛔ אין עונש, ⛔ אין מונה, והבחירה
+ * ⛔ אינה נפתחת מחדש — אחרת המסך היה מלמד שאפשר לנחש עד שמצליחים, שהוא בדיוק הכשל
+ * שנמדד בזירה ב-23/08.
+ */
+describe('T-381 — חזרה לגוף הסיפור, ⛔ ובלי לאבד את הבחירה', () => {
+  const inQuestion = () =>
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />);
+
+  it('ⓐ בפאזת השאלה יש פעולה משנית שמחזירה לגוף הסיפור', () => {
+    const { container } = inQuestion();
+    expect(container.querySelector('[data-story-body]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    expect(container.querySelector('[data-story-body]')).toBeTruthy();
+    expect(screen.queryByText('שאלת הבנה')).toBeNull();
+  });
+
+  it('🔴 ⓐ ⛔ הבחירה ⛔ אינה מתאפסת בחזרה-והלוך — ⛔ ואי אפשר לנחש שוב', () => {
+    inQuestion();
+    // ⛔ תשובה שגויה במכוון: `correctIndex` הוא 0, והלומד בוחר את השנייה.
+    fireEvent.click(screen.getByRole('button', { name: /מַפָּה יְשָׁנָה/ }));
+    expect(screen.getByText('לא זו')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לשאלה' }));
+
+    // ⛔ המשוב חזר כפי שהיה, ⛔ ולא מסך שלוש-תשובות-פנויות.
+    expect(screen.getByText('לא זו')).toBeTruthy();
+    expect(screen.getByText('נכונה')).toBeTruthy();
+    for (const answer of FIXTURE_QUESTION.answersHe) {
+      expect(
+        (screen.getByRole('button', { name: new RegExp(answer) }) as HTMLButtonElement).disabled,
+      ).toBe(true);
+    }
+  });
+
+  it('ⓑ אחרי חזרה, הפעולה הראשית אומרת «חזרה לשאלה» — ⛔ ולא «סיימתי לקרוא»', () => {
+    inQuestion();
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    expect(screen.getByRole('button', { name: 'חזרה לשאלה' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'סיימתי לקרוא' })).toBeNull();
+  });
+
+  it('ⓑ ⛔ ובקריאה ראשונה היא ⛔ עדיין «סיימתי לקרוא»', () => {
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    expect(screen.getByRole('button', { name: 'סיימתי לקרוא' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'חזרה לשאלה' })).toBeNull();
+  });
+
+  it('ⓒ החזרה ⛔ אינה עונש: הלומד יכול לחזור עוד לפני שבחר', () => {
+    const { container } = inQuestion();
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    expect(container.querySelector('[data-story-body]')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לשאלה' }));
+    // ⛔ שלוש תשובות פנויות — כי ⛔ עוד לא בחר, ⛔ ולא כי האיפוס החזיר אותן.
+    for (const answer of FIXTURE_QUESTION.answersHe) {
+      expect(
+        (screen.getByRole('button', { name: new RegExp(answer) }) as HTMLButtonElement).disabled,
+      ).toBe(false);
+    }
+    expect(screen.queryByText('לא זו')).toBeNull();
+  });
+
+  it('ⓒ ⛔ אפס מונה ו⛔ אפס ציון על המסך אחרי חזרה', () => {
+    const { container } = inQuestion();
+    fireEvent.click(screen.getByRole('button', { name: /מַפָּה יְשָׁנָה/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לסיפור' }));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה לשאלה' }));
+    expect(container.textContent).not.toMatch(/ניסיון|נקוד|ציון|פעם שנייה/);
+  });
+});
+
 describe('T-379 — המקרא מופיע ⛔ רק כשיש מה למקרא', () => {
   it('ⓒ חי בשלב הקריאה — שם יש קו ירוק בגוף הסיפור', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
@@ -710,19 +789,26 @@ describe('T-379 — המקרא מופיע ⛔ רק כשיש מה למקרא', ()
     expect(screen.queryByText('ידועה')).toBeNull();
   });
 
-  it('🔴 ⓑ ⛔ אפס אלמנטים בין הפעולה המשנית לפעולה הראשית', () => {
+  /**
+   * ⚠️ **⟦הותאם 16/09 · `C-0644` · `T-381`⟧ הנמדד הוא **שורת המשניות**, ⛔ ולא הקישור.**
+   * הטענה של `T-379` ⓑ היא ש⛔ אין אלמנט **תלוי** בין המשני לראשי — המקרא שישב שם.
+   * מאז `T-381` יש **שתי** פעולות משניות שחולקות שורה אחת (חזרה לסיפור · לתרגל), ⇒
+   * האח של היציאה הוא השורה, ⛔ ולא אחד משני הפקדים שבתוכה. ⛔ הכוונה ⛔ לא זזה:
+   * ⛔ אפס אלמנטים בין השורה הזאת ליציאה.
+   */
+  it('🔴 ⓑ ⛔ אפס אלמנטים בין שורת הפעולות המשניות לפעולה הראשית', () => {
     const { container } = render(
       <StoryScreenView
         state={{ kind: 'ready', payload: { ...PAYLOAD, counts: { ...PAYLOAD.counts, alreadyKnown: 2 } } }}
         initialPhase="question"
       />,
     );
-    const practice = screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' });
+    const row = container.querySelector('[data-story-secondary]');
     const exit = screen.getByRole('link', { name: 'חזרה לעולם' });
-    // ⛔ שניהם אחים באותה עמודה ⇒ «ביניהם» הוא ספירת אחים, ⛔ ולא עין.
-    expect(practice.parentElement).toBe(exit.parentElement);
-    const siblings = Array.from(practice.parentElement?.children ?? []);
-    expect(siblings.indexOf(exit) - siblings.indexOf(practice)).toBe(1);
+    expect(row).toBeTruthy();
+    expect(row?.parentElement).toBe(exit.parentElement);
+    const siblings = Array.from(exit.parentElement?.children ?? []);
+    expect(siblings.indexOf(exit) - siblings.indexOf(row as Element)).toBe(1);
   });
 
   it('⛔ ⓓ והיציאה ⛔ לא נמחקה — `36 § 7` נוקב בה', () => {
@@ -735,20 +821,27 @@ describe('T-379 — המקרא מופיע ⛔ רק כשיש מה למקרא', ()
     expect(screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' })).toBeTruthy();
   });
 
-  it('🔴 ⓓ והמדרג ⛔ כבר אינו צבע: הפעולה המשנית ⛔ אינה נמתחת, וטקסטה קטן', () => {
-    render(
+  it('🔴 ⓓ והמדרג ⛔ כבר אינו צבע: הפעולות המשניות ⛔ אינן נמתחות, וטקסטן קטן', () => {
+    const { container } = render(
       <StoryScreenView
         state={{ kind: 'ready', payload: { ...PAYLOAD, counts: { ...PAYLOAD.counts, alreadyKnown: 2 } } }}
         initialPhase="question"
       />,
     );
+    const row = container.querySelector('[data-story-secondary]') as HTMLElement;
     const practice = screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' });
+    const back = screen.getByRole('button', { name: 'חזרה לסיפור' });
     const exit = screen.getByRole('link', { name: 'חזרה לעולם' });
-    expect(practice.className).toContain('self-start');
-    expect(practice.className).toContain('text-sm');
+    // ⛔ ה-`self-start` עבר לשורה, כי הוא מבטל את `align-items: stretch` של העמודה
+    // ⇒ מה ש⛔ אינו נמתח הוא מה שיושב **בה**.
+    expect(row.className).toContain('self-start');
     expect(exit.className).toContain('w-full');
     expect(exit.className).toContain('text-lg');
-    // ⛔ ⛔ ו-44px הוא שער קפוא — הוא ⛔ לא זז.
-    expect(practice.className).toContain('min-h-touch');
+    for (const secondary of [practice, back]) {
+      expect(secondary.className).toContain('text-sm');
+      // ⛔ ⛔ ו-44px הוא שער קפוא — הוא ⛔ לא זז.
+      expect(secondary.className).toContain('min-h-touch');
+      expect(secondary.className).not.toContain('w-full');
+    }
   });
 });

@@ -108,6 +108,14 @@ const addedLineHe = (added: number): string =>
  * ⇒ שתי תוויות, כל אחת נוקבת במה שהכפתור **עושה** במצב שלה.
  */
 const DONE_READING_HE = 'סיימתי לקרוא';
+/**
+ * 🔙 **T-381ⓑ — הפעולה הראשית נוקבת במה שהיא עושה **במצב שלה**, וזה ⛔ אותו כלל
+ * בדיוק שהערה למעלה כבר קבעה (`T-203`).** לומד שחזר לגוף הסיפור ⛔ אינו קורא סיפור
+ * חדש — הוא **קורא שוב** משפט שכבר ענה עליו — ⇒ «סיימתי לקרוא» היה מבטיח לו מעבר
+ * קדימה אל שאלה שכבר לפניו. ⛔ הכפתור ⛔ אינו משנה מה הוא **עושה** (‏`setPhase`
+ * ל-`question` בשני המקרים); הוא משנה מה הוא **אומר**.
+ */
+const BACK_TO_QUESTION_HE = 'חזרה לשאלה';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const AMBIGUOUS_HE = 'לאיזו מילה התכוונת?';
 const LOADING_HE = 'טוען את הסיפור שלך…';
@@ -338,6 +346,25 @@ function StoryReady({
   );
 
   const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading');
+  /**
+   * 🔙 **T-381ⓐ — הבחירה יושבת **מעל** ההחלפה, ⛔ ולא בתוך הכרטיס שמתחלף.**
+   * 🔬 **וזה ⛔ אינו סגנון:** `StoryEndScreen` מורכב ⛔ רק כש-`inQuestion`, ⇒ state
+   * מקומי שלו **מתאפס בכל חזרה-והלוך**. הלומד היה חוזר לפסקה, חוזר לשאלה, ומוצא
+   * שלוש תשובות פנויות — כלומר המסך היה מלמד שאפשר לנחש עד שמצליחים. ⛔ זה בדיוק
+   * הכשל שהזירה נמדדה עליו ב-23/08, ו-`§ 4.2יג` סעיף 3 אוסר עליו במפורש.
+   * ⇒ הבחירה מורמת לכאן, ⇒ היא שורדת את ההחלפה כי ⛔ היא מעולם ⛔ לא ישבה בה.
+   */
+  const [chosen, setChosen] = useState<number | null>(null);
+  /**
+   * 🔙 **T-381ⓑ — «הגעתי לכאן בחזרה» הוא מצב, ⛔ ולא ניחוש מתוך `chosen`.** לומד
+   * יכול לחזור לפסקה **לפני** שבחר (⛔ אין עונש ⇒ ⛔ אין תנאי), ואז `chosen` הוא
+   * `null` בעוד הפעולה הראשית עדיין חייבת לומר «חזרה לשאלה».
+   */
+  const [returnedToReading, setReturnedToReading] = useState(false);
+  const backToReading = useCallback(() => {
+    setPhase('reading');
+    setReturnedToReading(true);
+  }, []);
   const [openLemma, setOpenLemma] = useState<string | null>(null);
   /**
    * T-290 — **העיגון נמדד ברגע ההקשה, ⛔ ולא נגזר משם הרכיב.** הוא נשמר **יחסית
@@ -710,6 +737,9 @@ function StoryReady({
           storyId={payload.story.id}
           question={question}
           reviewedCount={payload.counts.alreadyKnown}
+          chosen={chosen}
+          onChoose={setChosen}
+          onBackToReading={backToReading}
         />
       ) : (
         <>
@@ -873,7 +903,7 @@ function StoryReady({
         </Link>
       ) : (
         <button type="button" onClick={() => setPhase('question')} className={PRIMARY_ACTION_CLASS}>
-          {DONE_READING_HE}
+          {returnedToReading ? BACK_TO_QUESTION_HE : DONE_READING_HE}
         </button>
       )}
     </>
