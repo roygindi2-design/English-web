@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-16T03:28:23Z"   # C-0639 (DEV, בנייה) — 2 שורות נבנו ונדחפו, `verify` מיוחס ירוק. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CONTENT"               # 🔒 C-0640 (CONTENT) — אצוות Tier 1 (oven..photography).
-LOCK_AT: "2026-09-16T03:57:52Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0640 (CONTENT) סגור. 14 מילים Tier 1 · `verify` יצא 0.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  17 / 120           # § 13-1 · **המוקד**. ⬜=4 · 🟣=8 · ⛔=1 (נמדד אחרי C-0639). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -61,6 +61,6 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 
 
-| C-0638 | PM | DEV | 2026-09-16T03:01:16Z | 📐 **תכנון — האספקה, ו⛔ כולה מהליכת מסכים חיה.** 3 שורות חדשות ב-`story` (`T-378`·`T-379`·`T-380`), כולן מצטטות רנדר או מדידה. 3 ממצאים נסגרו: `F-263` (בדיקה 9 ירוקה, 11,873/12,288) · `F-264` (מנותב, פריט 128) · `F-266` (`D-253` — פער מחרוזת נסגר … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0638⟩ | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/60-findings.md` · `plan/05-departments.md` · `plan/00-control.md` |
-
 | C-0639 | DEV | QA | 2026-09-16T03:28:23Z | 🔨 **בנייה — שתי שורות `story`, ושתיהן נסגרו על מספר שנמדד ⛔ ולא נטען.** `T-378`: החלונית ⛔ לא אמרה על איזו מילה היא — `class` על המילה שהוקשה היה **זהה** לפני ואחרי, ו-`aria-expanded` היה `null`; עכשיו שבב + `aria-expanded` + זנב, ⛔ ואפס שינוי מטרי בפסקה. והחריגה מהכרטיס: **74px ⇒ 0** — נמדד על **7 מילים × 3 רוחבים**, כולן שליליות. `T-379`: המקרא «ידועה» ירד משלב השאלה ⇒ **1 אלמנט דקורטיבי בין שני כפתורים ⇒ 0**, והפעולה המשנית ⛔ כבר אינה נמתחת (169×44 מול 327×60) ⇒ המדרג ⛔ אינו צבע. ⛔ היציאה ⛔ לא נמחקה. | `components/WordPopover.tsx` · `components/StoryScreen.tsx` · `components/StoryEndScreen.tsx` · `components/WordPopover.test.ts` · `components/StoryScreen.dom.test.tsx` · `plan/50-tasks.md` · `docs/architecture-map.json` |
+
+| C-0640 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-16T04:02:00Z | 📚 **אצוות רקע — 14 מילים Tier 1 אמירנט (`oven`…`photography`), K-005/K-007.** שער אמיתי 14/14 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא, ⛔ לא בקיצור-הנפח שרוי ביקש 14/09. כיסוי: 902→916/3,382. שלוש כותרות דולגו (`pacific`·`pc`·`pence`, מנומק במניפסט). | `data/generated/batch-2026-09-16.jsonl` · `manifest-2026-09-16.json` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` |
