@@ -502,6 +502,43 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     );
   });
 
+  /**
+   * ⟦NEW 16/09 · `C-0665` · `T-364`⟧ **המספר עבר אל היריב.**
+   * 🔬 שלוש הטענות של השורה נמדדות כאן אחת-אחת, ⛔ ולא כאחת: **מקום** (על היריב,
+   * ⛔ לא על פס החיים) · **גודל וגוון** (גדול, אדום) · **התפרצות** (שלוש טבעות זהב).
+   * ⛔ **הבדיקה ⛔ אינה מודדת «נראה טוב»** — היא מודדת שהמספר ⛔ אינו חוזר לתוך
+   * `[role="img"]` של הפס, וזו בדיוק הרגרסיה שהשורה נפתחה עליה.
+   */
+  it('T-364 · הנזק יושב על היריב — גדול, אדום, ועם התפרצות', () => {
+    // ⛔ ① מקום: הצומת יוצא מהכפתור של פס החיים ונכנס לאזור הבמה, שבו יושב היריב.
+    expect(CODE, '⛔ ⛔ לא בתוך פס החיים').not.toMatch(
+      /data-arena-hp-fill[\s\S]{0,600}data-arena-damage/,
+    );
+    expect(CODE, 'אחרי הבמה ⇒ על היריב').toMatch(
+      /<ArenaStage[\s\S]{0,3000}data-arena-damage/,
+    );
+    // ⛔ `top-[16%]` הוא בדיוק המיקום של `[data-arena-slot="enemy"]` ב-`ArenaStage`,
+    // ⛔ ולא מספר שנבחר — `STAGE_CLASS` הוא `h-full w-full` ⇒ אותה מערכת קואורדינטות.
+    expect(CODE, 'על קואורדינטת היריב').toMatch(/top-\[16%\][^"]*/);
+    const STAGE = readFileSync('components/ArenaStage.tsx', 'utf8');
+    expect(STAGE, 'והיריב באמת שם').toMatch(/data-arena-slot="enemy"[^>]*top-\[16%\]/);
+    // ⛔ ② גודל וגוון — שניהם ערכי רנדר, ⛔ ולא טעם.
+    expect(CODE, 'אדום הרנדר').toMatch(/data-arena-damage[\s\S]{0,400}--arena-damage/);
+    expect(CODE, '⛔ ⛔ לא זהב יותר').not.toMatch(
+      /data-arena-damage[\s\S]{0,400}--arena-gold-light/,
+    );
+    expect(CSS, 'הגוון הוא של הרנדר').toMatch(/--arena-damage:\s*#ff8282/);
+    // ⛔ ③ ההתפרצות — שלוש טבעות, ⛔ ואין בה נכס חדש.
+    expect(CODE, 'שלוש טבעות').toMatch(/data-arena-burst/);
+    expect(CSS, 'ההתפרצות מתרחבת').toMatch(/@keyframes arena-burst-ring/);
+    expect(CSS, '⛔ ⛔ לא scale(0)').not.toMatch(/arena-burst-ring[\s\S]{0,160}scale\(0\)/);
+    expect(CSS, 'זהב הרנדר').toMatch(/--arena-burst:\s*#ffecbe/);
+    // ⛔ ④ וההתפרצות היא **קישוט** ⇒ היא זו שנעלמת תחת תנועה מופחתת, ⛔ ולא המספר.
+    expect(CSS, 'תנועה מופחתת ⇒ ההתפרצות יורדת').toMatch(
+      /prefers-reduced-motion[\s\S]*data-arena-burst\][\s\S]{0,60}display: none/,
+    );
+  });
+
   it('T-358 · הרעד שמור ל**קריטי בלבד**, ומשוחרר באותו מנגנון של הקיפאון', () => {
     expect(CODE, 'רק קריטי מדליק').toMatch(/if \(last\.critical\) setCrit/);
     expect(CODE, 'ומשוחרר ב-onAnimationEnd, ⛔ ולא ב-setTimeout').toMatch(

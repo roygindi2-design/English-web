@@ -909,31 +909,6 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
                 className="absolute inset-y-0 end-0 w-full bg-[color:var(--arena-hp)]"
                 style={{ transform: `scaleX(${enemyPct / 100})`, transformOrigin: 'right center' }}
               />
-              {/* 🔴 **⟦NEW 15/09 · `C-0622` · `T-358`⟧ כמה. ⛔ עד היום ⛔ שום דבר ⛔ לא ענה על זה.**
-
-                  🔬 **נמדד:** פס החיים מצויר ב-`scaleX()` **בלי `transition`** ⇒ 100⇢90
-                  קרה בפריים אחד, והלומד ⛔ לא ראה שפגע — הוא ראה **מספר אחר**. הפס שופר
-                  לזרימה בקובץ הטוקנים, וזה המספר עצמו.
-
-                  ⛔ **והמספר הזה הוא מידע, ⛔ ולא אפקט:** הוא נגזר מהפרש החיים **בפועל**
-                  (`prevEnemyHp`), ⛔ ואינו מחושב מחדש מהכללים — חישוב שני של אותו מספר
-                  הוא בדיוק איך שמסך מתחיל לשקר על מה שקרה. ⇒ תחת `prefers-reduced-motion`
-                  הוא **נשאר על המסך ומפסיק לנוע**, ⛔ ואינו נעלם.
-
-                  ⛔ `key` מכריח החלפת צומת בכל הטלה ⇒ האנימציה מתחילה מחדש; בלעדיו פגיעה
-                  שנייה בתוך 560ms הייתה מקבלת אפס תנועה. `aria-hidden` — פס החיים כבר
-                  נושא `role="img"` עם הערך, ⇒ קורא-מסך ⛔ אינו שומע את אותו נתון פעמיים. */}
-              {damage !== null && !reducedMotion && (
-                <span
-                  key={damage.key}
-                  data-arena-damage
-                  aria-hidden
-                  onAnimationEnd={() => setDamage(null)}
-                  className="pointer-events-none absolute -top-5 end-2 text-base font-black tabular-nums text-[color:var(--arena-gold-light)]"
-                >
-                  <EnWord>{`−${damage.amount}`}</EnWord>
-                </span>
-              )}
               {/* ⛔ `text-brand-on` יצא: בסכימה **כהה** הוא `#0f172a` ⇒ **1.42:1** על
                   המסילה — והמספר הזה הוא הערוץ ה**שני** של פס החיים (א2). */}
               <span
@@ -950,6 +925,63 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           </div>
         </div>
         <ArenaStage phase={stagePhase(battle)} items={[]} character={character} />
+        {/* 🔴 **⟦הועבר 16/09 · `C-0665` · `T-364`⟧ המספר עבר **אל היריב**, ⛔ ואינו יושב על המסילה.**
+
+            🔬 **נמדד ברנדר, ⛔ ולא באומדן:** `render_video_B.py:564` קורא
+            `dmg_number(c, wx + 18, wy - 6, …)` — `wx`/`wy` הם ה**יריב**, ⇒ המספר נולד
+            **עליו**, ⛔ ולא על פס החיים שמעליו. עד היום הוא היה `end-2 -top-5` בתוך
+            `[role="img"]` של הפס, בגודל `text-base` ובזהב — שלוש סטיות מהרנדר בבת אחת
+            (מקום · גודל · גוון), ⛔ ולא אחת.
+
+            ⛔ **ולמה זה ⛔ אינו קוסמטיקה:** הנזק הוא התשובה ל«מה הלחש שלי עשה **לו**».
+            מספר שמרחף על כרום בקצה המסך עונה «משהו קרה»; מספר שמתפוצץ על היריב עונה
+            **על מי**. זו אותה טענה בדיוק ש-`apple-design § 7` עושה על מרחב.
+
+            ⛔ **המספר עצמו ⛔ לא חושב מחדש** — אותו `damage.amount` מ-`prevEnemyHp`,
+            אותו `key`, אותו `onAnimationEnd`. ⛔ הועבר, ⛔ לא נכתב מחדש.
+             🔴 **⟦NEW 15/09 · `C-0622` · `T-358`⟧ כמה. ⛔ עד היום ⛔ שום דבר ⛔ לא ענה על זה.**
+
+                  🔬 **נמדד:** פס החיים מצויר ב-`scaleX()` **בלי `transition`** ⇒ 100⇢90
+                  קרה בפריים אחד, והלומד ⛔ לא ראה שפגע — הוא ראה **מספר אחר**. הפס שופר
+                  לזרימה בקובץ הטוקנים, וזה המספר עצמו.
+
+                  ⛔ **והמספר הזה הוא מידע, ⛔ ולא אפקט:** הוא נגזר מהפרש החיים **בפועל**
+                  (`prevEnemyHp`), ⛔ ואינו מחושב מחדש מהכללים — חישוב שני של אותו מספר
+                  הוא בדיוק איך שמסך מתחיל לשקר על מה שקרה. ⇒ תחת `prefers-reduced-motion`
+                  הוא **נשאר על המסך ומפסיק לנוע**, ⛔ ואינו נעלם.
+
+                  ⛔ `key` מכריח החלפת צומת בכל הטלה ⇒ האנימציה מתחילה מחדש; בלעדיו פגיעה
+                  שנייה בתוך 560ms הייתה מקבלת אפס תנועה. `aria-hidden` — פס החיים כבר
+                  נושא `role="img"` עם הערך, ⇒ קורא-מסך ⛔ אינו שומע את אותו נתון פעמיים. */}
+        {damage !== null && !reducedMotion && (
+          <div
+            key={damage.key}
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-[16%] z-20 grid place-items-center"
+          >
+            {/* ⛔ שלוש הטבעות — `render_video_B.py:543-548`. ⛔ הן ⛔ אינן נושאות מידע
+                (הן חוזרות על מה שהמספר כבר אומר) ⇒ הן, ⛔ ולא המספר, מה שנעלם תחת
+                `prefers-reduced-motion`. ⛔ מידה קבועה בפיקסלים: הטבעת ⛔ אינה יכולה
+                לקחת אחוז מהורה שגובהו נגזר מתוכנו (אותה מדידה כמו `data-arena-slot`). */}
+            <span data-arena-burst className="absolute grid place-items-center">
+              <span className="absolute h-[120px] w-[120px] rounded-full border-[3px] border-[color:var(--arena-burst)]" />
+              <span className="absolute h-[120px] w-[120px] rounded-full border-2 border-[color:var(--arena-burst)]" />
+              <span className="absolute h-[120px] w-[120px] rounded-full border border-[color:var(--arena-burst)]" />
+            </span>
+            {/* ⛔ `text-3xl` ⛔ ולא `text-base`: הרנדר מצייר את המספר ב-20px **ועוד**
+                `scale` של 1.55 בשיא (`:344-345`) ⇒ **גדול**, וזה מה ש«גדול, אדום» אומר.
+                ⛔ ו-`--arena-damage` ⛔ ולא `--arena-gold-light` — הרנדר נוקב `(255,130,130)`.
+                ⛔ `drop-shadow` הוא צל המספר ברנדר (`:350` — `(50, 8, 8)` ב-60% אלפא),
+                ⛔ ולא הילה: תקציב הזוהר של שכבה ב׳ נוגע ל-`--brand` בלבד. */}
+            <span
+              data-arena-damage
+              onAnimationEnd={() => setDamage(null)}
+              className="relative text-3xl font-black tabular-nums text-[color:var(--arena-damage)] [text-shadow:0_2px_0_rgba(50,8,8,0.6)]"
+            >
+              <EnWord>{`−${damage.amount}`}</EnWord>
+            </span>
+          </div>
+        )}
         {battle.dodgedSwing !== null && (
           <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
             {DODGED_HE}

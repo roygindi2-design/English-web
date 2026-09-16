@@ -58,6 +58,14 @@
   --arena-cast-edge: #b478f0;
   --arena-cast-warn: #ff7878;
   --arena-dodge: #96e6ff;
+  /* T-364 · `37 § 13.5` — **הנזק וההתפרצות, שני ערכי רנדר ⛔ ולא שני ערכים שנבחרו.**
+     🔬 נמדד ב-`render_video_B.py`, ⛔ ולא באומדן מהתמונה: `dmg_number(... (255, 130, 130))`
+     ‏(`:564`) ⇒ `#ff8282`, וטבעות ההתפרצות `(255, 236, 190)` (`:546`) ⇒ `#ffecbe`.
+     ⛔ **ושכבה א׳ נמדדה, ⛔ ולא הונחה:** `#ff8282` על `--arena-night` = **6.24:1**,
+     ‏`#ffecbe` = **12.8:1** — שניהם מעל רצפת 4.5:1, וזה מה שמתיר להעביר את המספר
+     מהמסילה הכהה של פס החיים אל הבמה. ⛔ שניהם scoped לזירה (אינווריאנט `37 § 13.5`). */
+  --arena-damage: #ff8282;
+  --arena-burst: #ffecbe;
 
   /* F-149ⓐ · `36 § 14.4` — **מילוי קלף הלחש והדיו שיושב עליו.**
      ⛔ שלושתם **נמדדו מהרנדר** (`docs/design/render_video_B.py`) ⛔ ולא נבחרו, בדיוק
@@ -355,6 +363,9 @@
   --arena-drain-ms: 260ms;
   --arena-float-ms: 560ms;
   --arena-shake-ms: 180ms;
+  /* T-364 — ההתפרצות נגמרת **לפני** שהמספר נגמר, בדיוק כמו ברנדר: שם ההבזק הוא
+     `seg(t, h, h+.75)` והמספר `seg(t, h, h+1.15)` ⇒ יחס 0.65. `560 × 0.65 ≈ 360`. */
+  --arena-burst-ms: 360ms;
 }
 
 /* ① **פס חיי היריב נשפך**, ⛔ ולא קופץ. 260ms — בתוך תקרת 300ms של `animate` § 5.
@@ -371,15 +382,44 @@
 /* ② **מספר הנזק עולה מהיריב ונמוג.** ⛔ זו ⛔ אינה קישוט — זו התשובה לשאלה «כמה».
    ⛔ `translateY` באחוזים (‏`animate` § 4) ⇒ יחסי לגובה עצמו, ⛔ ולא פיקסלים קשיחים.
    ⛔ ומתחיל מ-`scale(0.9)` ⛔ ולא מ-`scale(0)` — «⛔ שום דבר במציאות ⛔ אינו מופיע מאין». */
+/* 🔴 **⟦NEW 16/09 · `C-0665` · `T-364`⟧ הקשת — ⛔ ולא עלייה ישרה, וזה מדוד.**
+   🔬 `dmg_number` ב-`render_video_B.py:338-353` מזיז את המספר ב**שלושה** צירים בבת אחת:
+   `x = x0 + 46·ease_out(p)` · `y = y0 − 56·sin(p·π·0.82)` (‏**קשת**, ⛔ ולא קו) ·
+   `rot = lerp(−14, 16)` · וה-scale **יורד** (`(1−0.35p)`) ⛔ ולא עולה. ⇒ המספר **נזרק**
+   מהיריב החוצה ונופל, ⛔ ואינו «מרחף למעלה». הקיפריימים כאן הם אותה קשת בדיוק.
+   ⛔ **אחוזים ב-`translate` (`animate` § 4)** ⇒ יחסי לגודל המספר עצמו, ⛔ ולא פיקסלים
+   קשיחים שהיו נשברים כש-`−9` ו-`−132` נושאים רוחב שונה.
+   ⛔ **ומתחיל מ-`scale(0.9)` ⛔ ולא מ-`scale(0)`** — «⛔ שום דבר במציאות ⛔ אינו מופיע מאין». */
 @keyframes arena-damage-float {
-  from { opacity: 0; transform: translateY(0) scale(0.9); }
-  20%  { opacity: 1; transform: translateY(-40%) scale(1.06); }
-  to   { opacity: 0; transform: translateY(-160%) scale(1); }
+  from { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9) rotate(-14deg); }
+  18%  { opacity: 1; transform: translate3d(14%, -46%, 0) scale(1.18) rotate(-6deg); }
+  55%  { opacity: 1; transform: translate3d(34%, -78%, 0) scale(1.06) rotate(6deg); }
+  to   { opacity: 0; transform: translate3d(46%, -104%, 0) scale(0.92) rotate(16deg); }
 }
 [data-arena-scope] [data-arena-damage] {
   animation: arena-damage-float var(--arena-float-ms) var(--arena-ease-out) 1 both;
   will-change: transform, opacity;
 }
+
+/* 🔴 **⟦NEW 16/09 · `C-0665` · `T-364`⟧ ההתפרצות — שלוש טבעות, ו⛔ אין כאן נכס חדש.**
+   ⚠️ **השורה שאלה «SVG או לבקש רנדר», וההכרעה היא ⛔ לא שניהם:** 🔬 נמדד —
+   `render_video_B.py:543-548` מצייר את ההתפרצות כ-`c.circ(...)` בלולאת `k in range(3)`,
+   כלומר **שלוש טבעות מתרחבות** בהיסט `k·0.17` מרדיוס `12` ל-`12+108`, עובי `3 − k·0.7`,
+   ואלפא `(1−p)^1.5`. ⇒ זה `border-radius: 50%` ועוד `scale()` — ⛔ אין כאן צורה שדורשת
+   נכס, ⛔ ולא SVG: מעגל הוא הדבר היחיד ש-CSS כבר יודע לצייר בלי ולו בית אחד של נכס.
+   ⇒ ⛔ **⛔ לא נפתחה בקשת רנדר**, וזו ההכרעה שהשורה ביקשה.
+   ⛔ `transform`+`opacity` בלבד ⇒ ⛔ אפס layout, ⛔ אפס paint (‏`animate` § 4). */
+@keyframes arena-burst-ring {
+  from { opacity: 0.75; transform: scale(0.1); }
+  to   { opacity: 0; transform: scale(1); }
+}
+[data-arena-scope] [data-arena-burst] > span {
+  animation: arena-burst-ring var(--arena-burst-ms) var(--arena-ease-out) 1 both;
+  will-change: transform, opacity;
+}
+/* ⛔ ההיסט הוא `k · 0.17` של הרנדר, מומר ליחס אותה אנימציה — ⛔ ולא שלושה מספרים שנבחרו. */
+[data-arena-scope] [data-arena-burst] > span:nth-child(2) { animation-delay: 60ms; }
+[data-arena-scope] [data-arena-burst] > span:nth-child(3) { animation-delay: 120ms; }
 
 /* ③ **רעד מסך — ⛔ רק על קריטי.** ‏`animate` § 1: תקציב ההנאה חי בשכבה הנדירה, וקריטי
    הוא בדיוק זה (מתחת ל-1.5 שניות תגובה). ⛔ רעד על **כל** פגיעה היה הופך אותו לרעש
@@ -407,6 +447,10 @@
     opacity: 1;
     transform: translateY(-80%);
   }
+  /* ⛔ **וההתפרצות ⛔ אינה «מופחתת» — היא ⛔ נעלמת, וזו ⛔ אינה אותה הכרעה כמו המספר.**
+     המספר הוא **מידע** (כמה נזק) ⇒ נשאר ומפסיק לנוע. הטבעות ⛔ אינן נושאות ולו ביט אחד
+     שאינו במספר ⇒ תחת תנועה מופחתת הן תנועה טהורה, ו-`animate` § 7 מסיר תנועה. */
+  [data-arena-scope] [data-arena-burst] { display: none; }
 }
 
 
