@@ -44,8 +44,16 @@ describe('T-150 — the intro layer states what the learner ALREADY has', () => 
     expect(SRC).toContain('בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.');
   });
 
-  it('⛔ zero pre-marking: `isKnown` branches EXACTLY once (T-150ⓑ · § 4.2יג-ב ⓑ)', () => {
-    expect(SRC.match(/isKnown/g)?.length ?? 0).toBe(1);
+  /**
+   * ⚠️ **⟦עודכן C-0634 · `T-240`⟧ הספירה עלתה מ-1 ל-2, ⛔ והכוונה ⛔ לא זזה.** הטענה
+   * היא «הענף היחיד שמסמן מילה הוא `isKnown`» — ⛔ ולא «יש משטח אחד». מאז `T-240`
+   * **שני** משטחים מציירים פלחים: פסקת הקריאה והכותרת, ⇒ ענף אחד לכל משטח.
+   * 🔴 **ומה שמחזיק את הכוונה עצמה הוא המבחן שמעל** («⛔ never pre-marks a new word»)
+   * ועוד שתי בדיקות DOM ב-`StoryScreen.dom.test.tsx` שמודדות שבדיוק מילה **ידועה**
+   * אחת מסומנת בכותרת. ⛔ מספר בלי הסבר הוא בדיוק מה שהעריכה הבאה תשנה בשקט.
+   */
+  it('⛔ zero pre-marking: `isKnown` branches EXACTLY once per painted surface (T-150ⓑ · § 4.2יג-ב ⓑ)', () => {
+    expect(SRC.match(/isKnown/g)?.length ?? 0).toBe(2);
   });
 });
 

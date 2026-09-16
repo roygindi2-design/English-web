@@ -202,20 +202,35 @@ export function StoryScreenView({
       dir="rtl"
       className="flex min-h-[100dvh] flex-col gap-5 pb-8 has-[[data-story-question]]:gap-3"
     >
-      <header className="flex flex-col gap-1 text-right">
-        <p className="text-sm text-ink-muted">{KICKER_HE}</p>
-        <h1 className="text-2xl font-bold leading-tight">
-          {state.kind === 'ready' ? <EnWord>{state.payload.story.titleEn}</EnWord> : ' '}
-        </h1>
-        <p className="text-sm text-ink-muted">{SUBTITLE_HE}</p>
-      </header>
-
       {state.kind === 'ready' ? (
         <StoryReady payload={state.payload} initialPhase={initialPhase} />
       ) : (
-        <StoryNotReady state={state} onRetry={onRetry} />
+        <>
+          <StoryHeader>{' '}</StoryHeader>
+          <StoryNotReady state={state} onRetry={onRetry} />
+        </>
       )}
     </section>
+  );
+}
+
+/**
+ * 🔴 **T-240 — הכותרת נשארת אנגלית, ומילותיה נעשות יעדי הקשה בדיוק כמו גוף הסיפור.**
+ *
+ * ⛔ **הכרעת רוי 31/08, וההפך ממנה ⛔ אינו אפשרות:** ⛔ אין עמודת כותרת עברית ו⛔ אין
+ * מיגרציה שלישית — המסך מציג `stories.title_en` **כפי שהוא**.
+ *
+ * הפרק חולץ כדי ששני המצבים יציירו **בדיוק** את אותה כותרת: `StoryReady` מספק כותרת
+ * שמילותיה ניתנות להקשה, וכל מצב אחר מספק רווח — ⛔ ולא שני עותקים של אותו markup
+ * שנפרדים בשקט בעריכה הבאה.
+ */
+function StoryHeader({ children }: { children: React.ReactNode }): React.JSX.Element {
+  return (
+    <header className="flex flex-col gap-1 text-right">
+      <p className="text-sm text-ink-muted">{KICKER_HE}</p>
+      <h1 className="text-2xl font-bold leading-tight">{children}</h1>
+      <p className="text-sm text-ink-muted">{SUBTITLE_HE}</p>
+    </header>
   );
 }
 
@@ -268,6 +283,15 @@ function StoryReady({
     () => buildStorySegments(payload.story.bodyEn, glosses, known),
     [payload.story.bodyEn, glosses, known],
   );
+  /**
+   * 🔴 **T-240 — הכותרת עוברת באותו מסלול פילוח בדיוק, ⛔ ולא בשני.** אותו
+   * `buildStorySegments`, אותה מפת גלוסות, אותו תנאי 1 של `36 § 3` ⇒ מילה שאין לה
+   * תרגום ⛔ אינה יעד בכותרת בדיוק כמו בגוף, ומילת תפקוד ⛔ לעולם ⛔ אינה יעד.
+   */
+  const titleSegments = useMemo(
+    () => buildStorySegments(payload.story.titleEn, glosses, known),
+    [payload.story.titleEn, glosses, known],
+  );
   // ⛔ מפתחות `glosses` הם «מילות הסיפור שיש להן משמעות אצלנו» — בדיוק הקבוצה ש-
   // `36 § 3` תנאי 1 מגדיר כיעדי הקשה. מילה בלעדיהם ⛔ אינה נספרת באף מספר (T-150ⓓ).
   const intro = useMemo(
@@ -296,6 +320,15 @@ function StoryReady({
   });
   const [wordStatus, setWordStatus] = useState<Readonly<Record<string, WordPopoverStatus>>>({});
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
+  /**
+   * 🔴 **T-240 — אותה חלונית, שני משטחים.** החלונית יושבת `absolute` בתוך המשטח
+   * שהוקש בו, כי `T-290` קבע שהעיגון הוא **יחסי למכולה** ⇒ חלונית של כותרת שנפתחת
+   * בתוך כרטיס הגוף הייתה נפתחת **מתחת למסך שהלומד הסתכל בו**. ⛔ המצב (‏`openLemma` ·
+   * `wordStatus` · `add` · `closePopover`) משותף — ⛔ ולא מוכפל: יש חלונית אחת פתוחה
+   * בכל רגע, והשדה הזה אומר **איפה** לצייר אותה.
+   */
+  const [openSurface, setOpenSurface] = useState<'body' | 'title'>('body');
+  const titleRef = useRef<HTMLDivElement | null>(null);
 
   /**
    * 🔴 **T-232ⓑ — שכבת המלבנים: נקראת פעם אחת לפריסה, ⛔ ולא בכל הקשה.**
@@ -404,8 +437,38 @@ function StoryReady({
       }
     }
     tappedWordRef.current = event.currentTarget;
+    setOpenSurface('body');
     setOpenLemma(lemma);
   }, []);
+
+  /**
+   * 🔴 **T-240 — יעד ההקשה בכותרת הוא 44×44 מלאים, ⛔ ולא חריג ה-inline של `36 § 3`.**
+   *
+   * ⛔ **הגדר צר במכוון, וזו ⛔ אינה החמרה שלי:** `36 § 3` פוטר **יעד inline בתוך פסקת
+   * קריאה רציפה** בלבד. כותרת ⛔ אינה פסקת קריאה ⇒ ⛔ אין לה פטור, ⇒ כל מילה בכותרת היא
+   * שבב `min-h-[44px] min-w-[44px]`. ⚠️ **ולכן ⛔ אין כאן מבחן חפיפה:** השבבים ⛔ אינם
+   * נושאים שוליים שליליים, ⛔ אינם חופפים, ⇒ `36 § 3.4` ⛔ אינו רלוונטי כאן — ⛔ ולא
+   * «הושמט». מדידה אחת בהקשה, על השבב עצמו.
+   */
+  const onTitleWordClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>, lemma: string) => {
+      const box = titleRef.current?.getBoundingClientRect() ?? null;
+      setAmbiguous(null);
+      if (box !== null) {
+        const word = event.currentTarget.getBoundingClientRect();
+        setBodyBox({ width: box.width, height: box.height });
+        setAnchor({
+          top: word.top - box.top,
+          bottom: word.bottom - box.top,
+          centerX: word.left - box.left + word.width / 2,
+        });
+      }
+      tappedWordRef.current = event.currentTarget;
+      setOpenSurface('title');
+      setOpenLemma(lemma);
+    },
+    [],
+  );
 
   /**
    * T-319 ⓐ — **מסלול סגירה אחד, ⛔ ולא ארבעה.** `Escape`, הקשה בחוץ, כפתור «סגור»
@@ -416,6 +479,15 @@ function StoryReady({
     setOpenLemma(null);
     setAnchor(null);
   }, []);
+
+  /**
+   * ⛔ **החלפת מצב סוגרת את החלונית, ⛔ ולא משאירה אותה תלויה.** במצב השאלה ⛔ אין
+   * כותרת ניתנת להקשה ו⛔ אין פסקה ⇒ חלונית פתוחה הייתה מצב ש⛔ אי אפשר להגיע אליו
+   * שוב ⛔ ואי אפשר לסגור ממנו.
+   */
+  useEffect(() => {
+    closePopover();
+  }, [phase, closePopover]);
 
   /**
    * 🔴 T-319 ⓐ — **החזרת המיקוד היא אפקט, ⛔ ולא שורה בתוך `closePopover`. נמדד חי,
@@ -490,6 +562,77 @@ function StoryReady({
 
   return (
     <>
+      {/* 🔴 **T-240 — הכותרת, ומילותיה יעדי הקשה.** ⛔ `relative` כאן ⛔ אינו קישוט:
+          `WordPopover` מעגן **יחסית למכולה** (`T-290`) ⇒ בלי מכולה משלה, חלונית של
+          כותרת הייתה נמדדת מול כרטיס הגוף ונפתחת מחוץ לתצוגה. */}
+      <div ref={titleRef} className="relative">
+        <StoryHeader>
+          {/* ⛔ **אותו `<EnWord>` בדיוק** — `lang` · `dir` · בידוד נוסעים יחד (T-009),
+              ו-`components/EnWord.test.ts` מפיל כל קובץ שכותב אותם ביד. */}
+          {inQuestion ? (
+            /* 🔴 **יעדי ההקשה בכותרת שייכים למצב הקריאה, ⛔ בדיוק כמו שכבת הפתיחה.**
+               ⛔ וזו ⛔ אינה נסיגה מ-`T-240`: במצב השאלה גוף הסיפור עצמו ⛔ אינו על
+               המסך ⇒ «כמו בגוף הסיפור» ⛔ אין לו מה להיות. 🔬 **ונמדד, ⛔ ולא הועדף:**
+               שבבי 44px מגביהים את הכותרת, ו-`check:mobile` מדד את הפעולה הראשית של
+               `/dev/story/done` מתחילה ב-`top = 764` מול תקרת `D-228`ⓐ (‏≤736 בחלון
+               780) ⇒ הפעולה **יוצאת מהמסך הראשון**. הכותרת כאן היא כרומו, ⛔ והשער
+               גובר על נוחות (`35 § 5`). */
+            <EnWord>{payload.story.titleEn}</EnWord>
+          ) : (
+          <EnWord>
+            <span
+              data-story-title
+              // ⛔ הכותרת ⛔ אינה ניתנת למיקוד כל עוד החלונית שלה פתוחה — אותו נימוק
+              // בדיוק של `T-319` ⓒ בפסקה: מילה **מתחת** לחלונית ⛔ אינה יעד.
+              {...(openLemma !== null && openSurface === 'title' ? { inert: true } : {})}
+            >
+              {titleSegments.map((segment, i) => {
+                if (!segment.isTarget || segment.lemma === null) {
+                  return <span key={i}>{segment.text}</span>;
+                }
+                const lemma = segment.lemma;
+                const gloss = payload.glosses[lemma];
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    data-story-title-word
+                    data-story-translation={gloss?.translationHe ?? ''}
+                    onClick={(e) => onTitleWordClick(e, lemma)}
+                    className={[
+                      // 🔴 `א4` — **44×44 מלאים.** הכותרת ⛔ אינה «פסקת קריאה רציפה»
+                      // ⇒ חריג ה-inline של `36 § 3` ⛔ אינו חל עליה, ⛔ ואין כאן שוליים
+                      // שליליים שמחזירים את המרווח: הגובה **אמור** לגדול.
+                      'inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center px-1 align-middle',
+                      // ⛔ **מילה חדשה ⛔ אינה נושאת סימון גם בכותרת** (`36 § 7`).
+                      // הסימון היחיד הוא «ידועה», והוא משקל + קו — ⛔ לעולם לא צבע לבדו.
+                      segment.isKnown ? 'underline decoration-success decoration-2 underline-offset-4' : '',
+                    ].join(' ')}
+                  >
+                    {segment.text}
+                  </button>
+                );
+              })}
+            </span>
+          </EnWord>
+          )}
+        </StoryHeader>
+
+        {openLemma === null || openGloss === undefined || openSurface !== 'title' || inQuestion ? null : (
+          <WordPopover
+            word={openLemma}
+            translationHe={openGloss.translationHe}
+            posHe={openGloss.posHe}
+            status={wordStatus[openLemma] ?? 'idle'}
+            onAdd={() => add(openLemma)}
+            onClose={closePopover}
+            anchor={anchor}
+            containerWidth={bodyBox.width}
+            containerHeight={bodyBox.height}
+          />
+        )}
+      </div>
+
       <StatusRow level={payload.level} index={payload.index} total={payload.total} />
 
       {/* 🎯 T-150 · המיקום מ-`docs/design/kol-A-05-story.png`: מעל כרטיס הגוף, מתחת
@@ -529,7 +672,7 @@ function StoryReady({
             שיושבת **מתחת** לחלונית ⛔ אינה מציגה את עצמה כיעד, ולכן ⛔ אין מה לגנוב
             ממנה (`stolenWordCount(..., interactive=false) === 0`). ⛔ **ו⛔ אין כאן
             מלכודת מיקוד** — `Tab` יוצא מהחלונית אל שאר המסך, בדיוק כמו בכל חלונית. */}
-            <p className="text-ink-muted" inert={openLemma !== null}>
+            <p className="text-ink-muted" inert={openLemma !== null && openSurface === 'body'}>
               <EnWord>
                 {segments.map((segment, i) => {
                   if (!segment.isTarget || segment.lemma === null) {
@@ -568,7 +711,7 @@ function StoryReady({
 
             {/* ⛔ **T-290 — הפופאובר יושב בתוך הכרטיס, ⛔ ולא אחריו.** `absolute` בתוך
                 `relative` ⇒ הוא יוצא מהזרימה, ולכן פתיחתו ⛔ אינה דוחפת ולו פסקה אחת. */}
-            {openLemma === null || openGloss === undefined ? null : (
+            {openLemma === null || openGloss === undefined || openSurface !== 'body' ? null : (
               <WordPopover
                 word={openLemma}
                 translationHe={openGloss.translationHe}

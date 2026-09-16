@@ -136,7 +136,7 @@ interface WordRectMeter {
  */
 function layoutStoryWords(container: HTMLElement): WordRectMeter {
   const meter: WordRectMeter = { reads: 0 };
-  const buttons = Array.from(container.querySelectorAll('[data-story-word]'));
+  const buttons = Array.from(container.querySelectorAll('[data-story-body] [data-story-word]'));
   buttons.forEach((el, i) => {
     Object.defineProperty(el, 'getBoundingClientRect', {
       configurable: true,
@@ -161,6 +161,21 @@ function layoutStoryWords(container: HTMLElement): WordRectMeter {
   return meter;
 }
 
+/**
+ * ⚠️ **T-240 — «library» הוא מעכשיו **שני** כפתורים:** אחד בכותרת ואחד בגוף.
+ * ⇒ בדיקה שמחפשת לפי שם בלבד ⛔ אינה אומרת על איזה משטח היא מדברת. העזר הזה בוחר
+ * את יעד ההקשה שב**פסקת הקריאה**, והוא המשטח שכל הבדיקות שלפני T-240 דיברו עליו.
+ */
+function bodyWord(text: string): Element {
+  const body = document.querySelector('[data-story-body]');
+  if (body === null) throw new Error('⛔ [data-story-body] is ⛔ not on the screen');
+  const hit = Array.from(body.querySelectorAll('[data-story-word]')).find(
+    (el) => (el.textContent ?? '').trim() === text,
+  );
+  if (hit === undefined) throw new Error(`⛔ ⛔ no body tap target «${text}»`);
+  return hit;
+}
+
 function clickWord(el: Element): void {
   const rect = el.getBoundingClientRect();
   fireEvent.click(el, {
@@ -176,7 +191,7 @@ function stubFetch(impl: () => Promise<Response> | Response): void {
 function openPopoverOnLibrary(): void {
   const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
   layoutStoryWords(container);
-  clickWord(screen.getByRole('button', { name: 'library' }));
+  clickWord(bodyWord('library'));
 }
 
 describe('T-238ⓑ — הפופאובר בסיפור מדווח מה שקרה באמת (D-183)', () => {
@@ -282,7 +297,7 @@ describe('T-232 — the tap stops measuring the paragraph', () => {
   it('⛔ אפס קריאות מלבן על מילים בתוך ההקשה — המטמון נקרא פעם אחת לפריסה', () => {
     const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
     const meter = layoutStoryWords(container);
-    tapMeasured(screen.getByRole('button', { name: 'library' }), meter);
+    tapMeasured(bodyWord('library'), meter);
     // ⛔ THE POINT: the popover opened, and ⛔ not one word was measured to do it.
     expect(screen.getByRole('button', { name: 'הוסף לכרטיסיות' })).toBeTruthy();
     expect(meter.reads).toBe(0);
@@ -291,9 +306,9 @@ describe('T-232 — the tap stops measuring the paragraph', () => {
   it('⛔ וגם ההקשה השנייה ⛔ אינה מודדת — המטמון שורד בין הקשות', () => {
     const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
     const meter = layoutStoryWords(container);
-    tapMeasured(screen.getByRole('button', { name: 'library' }), meter);
+    tapMeasured(bodyWord('library'), meter);
     fireEvent.keyDown(document, { key: 'Escape' });
-    tapMeasured(screen.getByRole('button', { name: 'river' }), meter);
+    tapMeasured(bodyWord('river'), meter);
     expect(meter.reads).toBe(0);
   });
 
@@ -330,5 +345,93 @@ describe('T-232 — the tap stops measuring the paragraph', () => {
     expect(chip).toBeTruthy();
     expect(chip?.textContent).toContain((first?.textContent ?? '').trim());
     expect(chip?.textContent).toContain((second?.textContent ?? '').trim());
+  });
+});
+
+/**
+ * 🔴 **T-240 — הכותרת נשארת אנגלית, ומילותיה נעשות יעדי הקשה.**
+ *
+ * ⛔ **הכרעת רוי 31/08, וההפך ממנה ⛔ אינו אפשרות:** ⛔ אין עמודת כותרת עברית ו⛔ אין
+ * מיגרציה שלישית — המסך מציג `title_en` כפי שהוא, ועובר בו באותו מסלול פילוח
+ * (`buildStorySegments`) שבו עובר הגוף.
+ *
+ * ⚠️ **והגדר, והוא צר במכוון:** יעד בכותרת ⛔ **אינו** נהנה מחריג ה-inline של `36 § 3` —
+ * כותרת ⛔ אינה «פסקת קריאה רציפה» ⇒ **44×44 מלאים** (‏א4). ⛔ בדיקת המחלקה כאן ⛔ אינה
+ * מחליפה את `check:mobile`, שמודד פיקסלים בדפדפן אמיתי; היא מחזיקה את ה**כוונה**
+ * במקום שבו עריכה עתידית תמחק אותה בשקט.
+ */
+describe('T-240 — the story title is tappable, and stays English', () => {
+  function titleWords(container: HTMLElement): Element[] {
+    return Array.from(container.querySelectorAll('[data-story-title-word]'));
+  }
+
+  it('the words with a gloss are targets, and ⛔ the function words are ⛔ not', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const words = titleWords(container).map((el) => (el.textContent ?? '').trim());
+    // 'The library near the river' ⇒ `library` · `river` carry a gloss; ⛔ `The` · `near` · `the` do ⛔ not.
+    expect(words).toEqual(['library', 'river']);
+  });
+
+  it('the title still renders every glyph — ⛔ nothing is dropped by the segmentation', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const title = container.querySelector('[data-story-title]');
+    expect((title?.textContent ?? '').trim()).toBe(FIXTURE_TITLE_EN);
+  });
+
+  it('`א4` — a title target carries the full 44×44 floor, ⛔ not the inline exemption', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    for (const el of titleWords(container)) {
+      expect(el.className).toContain('min-h-[44px]');
+      expect(el.className).toContain('min-w-[44px]');
+      // ⛔ ⛔ no negative margin may claw the area back — that is the body's trick,
+      // and it is exactly what `36 § 3` exempts and a title ⛔ may not.
+      expect(el.className).not.toContain('-my-');
+      expect(el.className).not.toContain('-mx-');
+    }
+  });
+
+  /**
+   * 🔴 **החלונית נפתחת **בתוך הכותרת**, ⛔ ולא בכרטיס הגוף.** `T-290` עיגן את החלונית
+   * יחסית למכולה ⇒ חלונית של כותרת שמצוירת בכרטיס הגוף נפתחת מתחת למסך שהלומד
+   * הסתכל בו. ⛔ זו ⛔ אינה העדפה — זו אותה סיבה בדיוק ש-`T-290` נכתבה בשבילה.
+   */
+  it('a tap on a title word opens the popover INSIDE the title, ⛔ not in the body card', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const [first] = titleWords(container);
+    expect(first).toBeTruthy();
+    fireEvent.click(first as Element, { clientX: 10, clientY: 10 });
+    expect(screen.getByText('סִפְרִיָּה')).toBeTruthy();
+    const popover = container.querySelector('[data-word-popover]');
+    expect(popover).toBeTruthy();
+    // ⛔ החלונית יושבת במכולה שגם הכותרת יושבת בה — זה מה ש-`T-290` מעגן מולו.
+    expect(popover?.parentElement?.querySelector('[data-story-title]')).toBeTruthy();
+    // ⛔ THE POINT: ⛔ not inside the reading card.
+    expect(container.querySelector('[data-story-body] [data-word-popover]')).toBeNull();
+  });
+
+  /**
+   * ⛔ **`36 § 7` ⛔ לא זז: מילה חדשה ⛔ אינה מסומנת מראש — גם ⛔ לא בכותרת.** בפיקסטורה
+   * `river` ידועה ו-`library` ⛔ אינה ⇒ בדיוק אחת מהשתיים נושאת סימון.
+   */
+  /**
+   * 🔴 **`D-228`ⓐ הוא שער, ⛔ ולא טעם — ולכן הוא גובר.** שבבי 44px מגביהים את הכותרת,
+   * ו-`check:mobile` מדד שהפעולה הראשית של `/dev/story/done` מתחילה ב-`top = 764`
+   * מול תקרת ≤736 בחלון 780 ⇒ **הלומד ⛔ אינו רואה אותה**. ⇒ יעדי ההקשה שייכים למצב
+   * הקריאה, בדיוק כמו שכבת הפתיחה — ובמצב השאלה גוף הסיפור עצמו ⛔ אינו על המסך,
+   * ⇒ «כמו בגוף הסיפור» ⛔ אין לו שם מה להיות.
+   */
+  it('`D-228`ⓐ — במצב השאלה הכותרת היא טקסט, ⛔ ואין בה ולו יעד הקשה אחד', () => {
+    const { container } = render(
+      <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />,
+    );
+    expect(titleWords(container)).toEqual([]);
+    // ⛔ ⛔ and the title itself is still there, still English, still unchanged.
+    expect(container.querySelector('h1')?.textContent?.trim()).toBe(FIXTURE_TITLE_EN);
+  });
+
+  it('`36 § 7` — ⛔ a NEW word carries ⛔ no marking in the title either', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const marked = titleWords(container).filter((el) => el.className.includes('decoration-success'));
+    expect(marked.map((el) => (el.textContent ?? '').trim())).toEqual(['river']);
   });
 });

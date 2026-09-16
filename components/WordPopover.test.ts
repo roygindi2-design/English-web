@@ -164,8 +164,17 @@ describe('T-319 · ההתנהגות, ⛔ ולא הכוונה — נמדדת על
   const popover = readFileSync(new URL('./WordPopover.tsx', import.meta.url), 'utf8');
   const screen = readFileSync(new URL('./StoryScreen.tsx', import.meta.url), 'utf8');
 
-  it('ⓒ פסקת הקריאה `inert` בדיוק כשהחלונית פתוחה', () => {
-    expect(screen).toContain('inert={openLemma !== null}');
+  /**
+   * ⚠️ **⟦עודכן C-0634 · `T-240`⟧ «כשהחלונית פתוחה» הפך ל«כשהחלונית פתוחה **על
+   * הפסקה**», ⛔ וזו ⛔ אינה הרפיה.** מאז `T-240` החלונית יכולה להיפתח גם על הכותרת,
+   * ואז היא ⛔ אינה מכסה ולו מילה אחת בפסקה ⇒ `inert` על הפסקה היה **גונב** ללומד
+   * את גוף הסיפור בלי סיבה. ⛔ הקריטריון של `T-319` ⓒ — «מילה מתחת לחלונית ⛔ אינה
+   * מציגה את עצמה כיעד» — נשמר על **שני** המשטחים, כל אחד מול החלונית שלו.
+   */
+  it('ⓒ פסקת הקריאה `inert` בדיוק כשהחלונית פתוחה עליה', () => {
+    expect(screen).toContain("inert={openLemma !== null && openSurface === 'body'}");
+    // ⛔ והכותרת נושאת את אותו תנאי בדיוק, מול המשטח שלה.
+    expect(screen).toContain("openLemma !== null && openSurface === 'title' ? { inert: true }");
   });
 
   it('ⓐ `Escape` סוגר', () => {
