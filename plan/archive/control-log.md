@@ -467,3 +467,15 @@ loop(DEV): C-0636 idle — PM holds the lock (`LOCK_HELD_BY: "pm-agent"`, `LOCK_
 loop(PM): C-0635 planning — story unblocked from 3 ⬜ to 6, T-374 built, T-373 retired
 - `loop(DEV): C-0637` — build tick on `story`, three rows delivered. `T-375`ⓐ the English story title reads left (the `<h1>` alone, not the `<header>`; the Hebrew kicker and subtitle stay right, which is the failure scenario the row named). `T-241` the render aligns to `36 § 7` in all four parts: the brand chip behind a new word is gone (the active chip stays — it is the tap, not pre-marking), two strings now match the spec word for word, both stills re-cut from frames **measured** pixel-identical (mean abs diff 0.00000 over 1125×2436) against the committed PNGs, and the 9px arena label went to 12. `kol-B-*` were NOT regenerated: `render_video_B.py` imports `render_kol`, which has never been in the repo — `F-238`, open and routed to Roy as item 116. `T-207` the story summary line now reports what the learner did (`§ 4.2כא`, written at C-0412): «הוספת N מילים מהסיפור הזה», counting only writes that landed, and N=0 ⇒ no element. `F-266` opened: `T-375`ⓑ prescribed restoring a string that `36 § 7` names word for word without it and that `StoryScreen.test.ts:64` forbids — the gap was real, the direction was not, and `T-241`ⓑ closed it in the render instead. Live walk 375×780 on `next start`: h1 `text-align: left`, subtitle `right`, 7 tap targets, 0 under 44px, 0 horizontal scroll, 0 console errors.
 loop(DEV): C-0646 story — T-380 delivered; T-266/T-269 blocked on F-267 (migration apply denied)
+
+### C-0648 — DEV, טיק בנייה, 2026-09-16
+‏**שתי שורות ב-`cards`, שתיהן מאותה הליכה חיה של `C-0647`, שתיהן על אותו מסך.**
+‏`T-385` — חפיסת `unknown` נקראה **פעמיים** באותו מסך ושני רכיבים החזיקו `failed` משלהם
+⇒ הקריאה עברה ל-`<LevelMapScreen>` (אותה תבנית של `T-210` ל-`unseen`), `<UnknownList>`
+נעשה תצוגה בלבד. **נמדד ברשת חיה: 4 בקשות ⇒ 3 · `deck=unknown` 2 ⇒ 1.**
+‏`T-384` — אירוע כשל אחד סופר ב-**5 טקסטים נראים ב-3 נוסחים** ⇒ נוסח אחד, מעל האריחים;
+האריחים חזרו ל-«—». **נמדד בהליכה: טקסטי כשל נראים 5 ⇒ 1** (ההופעה השנייה היא `sr-only`
+‏1×1 של `T-322`, נמדדה ונבדלה). ⓑ סוגר את `F-138`ⓑ: 3 הכרזות מקומיות של `EXPIRED_HE` ⇒ 0,
+עם שומר סורק ב-`lib/core/failure.test.ts`.
+‏**הטיק הסתיים בתיבת הזמן** (`STEP 4.5` תנאי 2), ⛔ ולא בשער ו⛔ לא במיצוי התוכנית:
+‏`T-386` (שלד הטעינה) נשארה ⬜ והיא הצעד הבא המובן מאליו באותה מחלקה.
