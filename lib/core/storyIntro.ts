@@ -20,6 +20,21 @@ export interface StoryIntro {
   readonly total: number;
   /** Of those, the ones the learner already carries. ⛔ Never «how many are missing» (T-150ⓒ). */
   readonly known: number;
+  /**
+   * T-383ⓐ — **what this story came to TEACH him**, derived here and ⛔ nowhere else.
+   *
+   * ⛔ **And it is ⛔ not `payload.counts.newWords`, which travels on the wire.** The
+   * server counts the story BODY (`app/api/world/story/route.ts`), while `glosses` —
+   * the set these three numbers are built from — carries the TITLE's words too since
+   * `T-240`. ⇒ reading the wire field would print «5 חדשות · 2 ידועות» over **8**
+   * marked words, and the learner would be counting a screen that ⛔ does not add up.
+   * ⇒ the split is derived from the SAME set the screen paints, ⛔ or it is not derived.
+   *
+   * ⛔ **`fresh` is ⛔ never «how many are missing» either (T-150ⓒ).** The distinction
+   * is the sentence it feeds: «this story teaches you N new words» is what the story is
+   * WORTH; «you are missing N words» is a debt list. Same arithmetic, ⛔ opposite screen.
+   */
+  readonly fresh: number;
 }
 
 export function storyIntro(
@@ -32,5 +47,7 @@ export function storyIntro(
   for (const lemma of vocabulary) {
     if (carried.has(lemma)) known += 1;
   }
-  return { total: vocabulary.size, known };
+  // ⛔ `fresh` ⛔ is ⛔ not a second traversal and ⛔ not a second source: `known` is
+  // counted out of `vocabulary`, so the complement ⛔ cannot disagree with it (T-383ⓐ).
+  return { total: vocabulary.size, known, fresh: vocabulary.size - known };
 }

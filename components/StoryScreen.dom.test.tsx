@@ -92,18 +92,54 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
     expect(screen.getByRole('link', { name: 'חזרה לעולם' })).toBeTruthy();
   });
 
-  it('T-150 — the intro layer states what the learner ALREADY has', () => {
+  /**
+   * 🔢 **T-383 — the leading number is «how many NEW», ⛔ not «how many in total».**
+   * On this fixture the render's own sentence is «5 מילים חדשות · 2 שכבר ידעת», and
+   * `7 − 2 = 5` is measured here rather than written down, so a fixture that grows a
+   * word moves the assertion with it instead of freezing a stale literal.
+   */
+  it('T-150 · T-383 — the intro layer states what the story came to TEACH him', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
     expect(GLOSS_COUNT).toBe(7);
     expect(KNOWN_COUNT).toBe(2);
     expect(
-      screen.getByText(`בסיפור הזה ${GLOSS_COUNT} מילים. ${KNOWN_COUNT} מהן אתה כבר מכיר.`),
+      screen.getByText(`בסיפור הזה ${GLOSS_COUNT - KNOWN_COUNT} מילים חדשות · ${KNOWN_COUNT} שכבר ידעת`),
     ).toBeTruthy();
+  });
+
+  /**
+   * ⛔ **T-383ⓒ — «0 מילים חדשות» ⛔ is ⛔ never printed.** A learner who already
+   * carries every word of the story is in a real state, and it gets a sentence of its
+   * own — ⛔ not a counted zero, which reads as a sum he is expected to subtract from.
+   */
+  it('T-383ⓒ — a learner who carries every word gets a statement, ⛔ not a zero', () => {
+    render(
+      <StoryScreenView
+        state={{
+          kind: 'ready',
+          payload: { ...PAYLOAD, knownLemmas: Object.keys(FIXTURE_GLOSSES) },
+        }}
+      />,
+    );
+    expect(screen.getByText('אין כאן מילה חדשה — כל המילים בסיפור הזה כבר שלך')).toBeTruthy();
+    expect(screen.queryByText(/0 מילים חדשות/)).toBeNull();
+  });
+
+  /**
+   * ⛔ **T-383ⓒ, the other half.** `known === 0` would print «· 0 שכבר ידעת», a half
+   * sentence that counts nothing. The new-word half stands alone instead.
+   */
+  it('T-383ⓒ — a learner who carries nothing gets ⛔ no second half', () => {
+    render(
+      <StoryScreenView state={{ kind: 'ready', payload: { ...PAYLOAD, knownLemmas: [] } }} />,
+    );
+    expect(screen.getByText(`בסיפור הזה ${GLOSS_COUNT} מילים חדשות`)).toBeTruthy();
+    expect(screen.queryByText(/שכבר ידעת/)).toBeNull();
   });
 
   it('⛔ the intro layer belongs to the READING phase only', () => {
     render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />);
-    expect(screen.queryByText(new RegExp(`בסיפור הזה ${GLOSS_COUNT} מילים\\.`))).toBeNull();
+    expect(screen.queryByText(/מילים חדשות/)).toBeNull();
   });
 });
 
@@ -511,12 +547,23 @@ describe('T-207 — the summary line reports an ACTION, ⛔ not an inventory', (
     expect(screen.getByText('ידועה')).toBeTruthy();
   });
 
-  it('⛔ the inventory sentence is gone from the screen entirely', () => {
+  /**
+   * 🔴 **⟦הוצר 16/09 · `C-0644` · `T-383`⟧ הטענה היא על **המשבצת**, ⛔ ולא על המסך.**
+   * עד הטיק הזה הבדיקה קראה את `container.textContent` כולו, כלומר אסרה את המחרוזת
+   * **בכל מקום בעמוד** — ו⛔ זה ⛔ מעולם ⛔ לא היה מה ש-`T-207` הכריעה. `§ 4.2כא` ⓐ
+   * נוקב במפורש ב**משבצת התחתונה**: היא מדווחת **פעולה של הלומד** (`addedCount`),
+   * כי שני מספרי המלאי נגזרים ב-`GET` לפני ההקשה הראשונה ⇒ הם זהים לשני לומדים
+   * שאחד מהם הוסיף עשר מילים והשני אף לא אחת. **שורת הפתיחה היא שורה אחרת**, היא
+   * מתארת מה **עומד** להיקרא, ו-`T-383` שמה בה בדיוק את הפיצול שהרנדר מצייר.
+   * ⇒ ⛔ הכוונה של `T-207` ⛔ לא זזה כאן במילימטר; מה שהצטמצם הוא **תחום** הסריקה,
+   * שהיה רחב ממנה ⇒ היה אוסר על הרנדר עצמו להתממש.
+   */
+  it('⛔ the inventory sentence is gone from the SUMMARY SLOT (`§ 4.2כא` ⓐ)', () => {
     const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
     expect(
-      container.textContent?.includes(
+      summary(container)?.includes(
         `${FIXTURE_COUNTS.newWords} מילים חדשות · ${FIXTURE_COUNTS.alreadyKnown} שכבר ידעת`,
-      ),
+      ) ?? false,
     ).toBe(false);
   });
 

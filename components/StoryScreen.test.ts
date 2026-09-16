@@ -39,9 +39,25 @@ describe('T-150 — the intro layer states what the learner ALREADY has', () => 
     expect(SRC).not.toContain('חסרות');
   });
 
-  it('the two numbers are derived at display time, ⛔ not read off a new wire field (T-150ⓐ)', () => {
+  it('the numbers are derived at display time, ⛔ not read off a new wire field (T-150ⓐ)', () => {
     expect(SRC).toMatch(/from ['"]@\/lib\/core\/storyIntro['"]/);
-    expect(SRC).toContain('בסיפור הזה ${total} מילים. ${known} מהן אתה כבר מכיר.');
+    expect(SRC).toContain('בסיפור הזה ${fresh} מילים חדשות');
+  });
+
+  /**
+   * 🔢 **T-383ⓐ — the split is derived, ⛔ never read off the wire.** `payload.counts`
+   * is counted on the story BODY by the API, while the three numbers here are built from
+   * `glosses`, which carries the TITLE's words too since `T-240`. ⇒ an intro line fed by
+   * `counts.newWords` would contradict the words the same screen paints. `alreadyKnown`
+   * is still read — but by `StoryEndScreen`, for a different sentence entirely.
+   */
+  it('⛔ the intro line ⛔ never reads `counts.newWords` off the wire (T-383ⓐ)', () => {
+    expect(SRC).not.toContain('counts.newWords');
+  });
+
+  it('⛔ zero half-sentence on zero: «0 מילים חדשות» is ⛔ never a string (T-383ⓒ)', () => {
+    expect(SRC).toContain('אין כאן מילה חדשה');
+    expect(SRC).toContain('intro.total === 0');
   });
 
   /**
