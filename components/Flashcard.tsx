@@ -523,7 +523,13 @@ export default function Flashcard({
           type="button"
           onClick={reveal}
           data-reveal
-          className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center"
+          /* 🎴 `T-325`ⓐ — ההגבהה. הכלל עצמו ב-`app/globals.css` על `[data-card-face]`,
+             כי הוא מתכון `box-shadow` על טוקן (‏`--glow-brand`) ו-Tailwind ⛔ אינו
+             יכול לגזור אותו ממחלקה. `data-glow` הוא מה שהופך את התקציב (ב3, שניים
+             למסך) ל**נמדד** ב-`scripts/verify-mobile.mjs`, ⛔ ולא למוצהר. */
+          data-card-face
+          data-glow="true"
+          className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full max-h-full flex-none aspect-[315/372] flex-col p-6 text-center"
         >
           <div className="my-auto">
             <p className="text-sm text-ink-muted">{prompt}</p>
@@ -550,7 +556,11 @@ export default function Flashcard({
           </p>
         </button>
       ) : (
-        <div className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full flex-1 flex-col p-6 text-center">
+        <div
+          data-card-face
+          data-glow="true"
+          className="rounded-2xl border border-border-subtle bg-surface-raised relative flex w-full max-h-full flex-none aspect-[315/372] flex-col p-6 text-center"
+        >
           <div className="my-auto">
           <p className="text-sm text-ink-muted">{prompt}</p>
           {/* T-066 · D-156 ⓐ — on a `choice` card the front is the STEM with its blank, drawn in

@@ -514,4 +514,25 @@ describe('the deck comment cites D-042 and ⛔ never the repealed ban (T-127)', 
     expect(SRC).toMatch(/onGrade=\{\(value\) =>\s*grade\(deckCardKey\(card\), .*card\.word_id, value\)\s*\}/);
     expect(SRC).not.toContain('void grade(');
   });
+
+  /**
+   * 🎴 **`T-325`ⓓ — «נותרו N» היה הערוץ **היחיד** לערימה, ונמדד כך בטיק הזה:**
+   * הדק מרנדר `remaining.slice(0, 1)` — כרטיס אחד — ⇒ ⛔ אפס רמז חזותי לכך שיש עוד.
+   * ⇒ הצצה סטטית מאחוריו, ⛔ ורק כשבאמת יש עוד אחד.
+   *
+   * 📐 נמדד חי ב-375×780 אחרי השינוי: ההצצה ב-`y=145 · h=367` מול כרטיס ב-`y=153 ·
+   * h=386` ⇒ רצועה של **8px** גלויה מעליו, והתחתית והצדדים נשארים מוסתרים.
+   */
+  it('T-325ⓓ — הצצה לכרטיס הבא, ⛔ רק כשיש עוד אחד, ⛔ ובלי תנועה ובלי מגע', () => {
+    const src = readFileSync('components/CardDeck.tsx', 'utf8');
+    expect(src).toContain('data-deck-peek');
+    expect(src).toMatch(/remaining\.length > 1 \? \(/);
+    const peek = src.slice(src.indexOf('data-deck-peek'), src.indexOf('data-deck-peek') + 260);
+    // ⛔ ⛔ אינה יעד מגע ו⛔ אינה נשמעת — «נותרו N» נשאר הערוץ הנגיש.
+    expect(peek).toContain('pointer-events-none');
+    // ⛔ ⛔ ואינה נושאת זוהר: ההגבהה שייכת לאובייקט שעל הבמה בלבד (תקציב ב3).
+    expect(peek).not.toContain('data-glow');
+    // ⛔ ⛔ ואפס תנועה ⇒ `prefers-reduced-motion` מכובד בבנייה.
+    expect(peek).not.toMatch(/transition|animate-|duration-/);
+  });
 });

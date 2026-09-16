@@ -133,6 +133,33 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
   box-shadow: var(--glow-brand);
 }
 
+/* 🎴 **`T-325`ⓐ — הכרטיס הוא אובייקט פיזי, ⛔ ולא `div` עם גבול.**
+
+   🔬 **נמדד בטיק הזה בדפדפן חי על `/dev/deck` ב-390×844, ⛔ ולא בקריאת קוד:**
+   `getComputedStyle(card).boxShadow` החזיר **`none`** — כלומר לבן על לבן עם מסגרת
+   `1px solid rgb(226,232,240)`. ⇒ האלמנט המרכזי של המסך ⛔ אינו קורא כאובייקט
+   שמונח על משהו, וזה הפגם ② בשורה.
+
+   ⛔ **וזו ⛔ אינה טעם — זה מה שהרנדר מצייר.** `docs/design/render_video_A.py:346`
+   מצייר את הכרטיס עם `rglow(lc, ox, oy, w, h, 26, BRAND, spread=16, a0=46)` — הילה
+   של `--brand` סביב הכרטיס, **לפני** המילוי ולפני המסגרת. ⇒ המתכון הנכון הוא
+   `--glow-brand`, האסימון היחיד לזוהר בחוקה (‏ב3), ⛔ ולא צל אפור שהומצא כאן.
+
+   ⚠️ **התקציב נמדד, ⛔ ולא הונח:** `[data-glow]` נספר ב-`scripts/verify-mobile.mjs`
+   ונופל מעל **שניים** למסך. נמדד חי לפני השינוי: `/dev/deck` ⇒ **0** · `/dev/card`
+   ⇒ **0** (מסך הכרטיסייה ⛔ אינו נושא סרגל לשוניות — D-028). ⇒ הכרטיס הוא הזוהר
+   **הראשון** במסך, ⛔ ולא השלישי. ⛔ ואינו על טקסט גוף.
+
+   ⚠️ **⛔ אפס תנועה:** זהו `box-shadow` **סטטי**, ⛔ לא מונפש — בדיוק הלקח של
+   `T-230` למעלה. ⇒ `check:motion` מכובד בבנייה.
+
+   ⛔ **פנים אחד בכל רגע.** `Flashcard` מצייר או את הפנים או את הגב, ⛔ לעולם לא את
+   שניהם ⇒ `data-glow` אחד. ⛔ וכרטיס ההצצה (`[data-deck-peek]`) ⛔ אינו נושא אותו:
+   הוא רמז לערימה, ⛔ ולא אובייקט שני על הבמה. */
+[data-card-face] {
+  box-shadow: var(--glow-brand);
+}
+
 /* T-230 — `box-shadow` is a PAINT property, not a compositor one: animating it directly
    (as this rule used to) forces the browser to repaint the circle and its blur halo on
    every frame, forever, on 5/5 tab routes (`apple-design` § 11 — animate only

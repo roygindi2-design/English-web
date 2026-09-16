@@ -503,16 +503,50 @@ describe('the card face is the button (T-085 · D-039 · § 4.2ח ⓐ)', () => {
     expect(block).not.toContain('onGrade(');
   });
 
-  it('T-259ⓓ — the face fills the deck slot (flex-1) and the height stays CardDeck’s calc', () => {
+  /**
+   * 🎴 **⟦שונה `T-325`ⓐ⟧ — הפנים כבר ⛔ אינם **ממלאים** את המשבצת, והאינווריאנט ששמר
+   * עליהם ⛔ לא נגרע: הוא נשמר ב**דיוק**.**
+   *
+   * `T-259`ⓓ נעלה `flex-1` כי הכוונה הייתה «⛔ לפנים אין גובה משל עצמם, וה-
+   * `h-[calc(100dvh-10rem)]` נשאר של `<CardDeck>`». ⇒ זו עדיין הטענה הנמדדת כאן:
+   * `aspect-[315/372]` הוא **יחס**, ⛔ ולא גובה, ו-`max-h-full` משאיר את המשבצת
+   * כתקרה.
+   *
+   * 🔬 **מה שהשתנה, ונמדד בטיק הזה בדפדפן חי, ⛔ ולא בקריאת קוד:** `flex-1` הגדיל את
+   * הכרטיס ל-**475px** ב-390×844 (ו-411px ב-375×780), בעוד שהתוכן כולו ~150px —
+   * זהו פגם ① של `T-325`, «דד-ספייס מלמעלה ומלמטה». ⛔ **והיחס ⛔ אינו מספר קסם:**
+   * `docs/design/render_video_A.py:326` קובע `CARD_W, CARD_H = LW - 60, 372` על
+   * ‏`LW = 375` ⇒ **315×372**. אחרי השינוי נמדד 327×**386** ב-375×780 — 14px מהרנדר.
+   */
+  it('T-259ⓓ · T-325ⓐ — לפנים ⛔ אין גובה משלהם, והיחס הוא של הרנדר', () => {
     const faces = T085_CARD_SRC.match(/rounded-2xl border border-border-subtle bg-surface-raised[^"]*"/g) ?? [];
     expect(faces.length).toBe(2);
     for (const face of faces) {
-      expect(face).toContain('flex-1');
+      // ⛔ יחס הרנדר, ⛔ ולא `flex-1` שמותח את הכרטיס לגובה המסך.
+      expect(face).toContain('aspect-[315/372]');
+      expect(face).toContain('max-h-full');
+      expect(face).not.toContain('flex-1');
       expect(face).toContain('text-center');
       expect(face).toContain('relative');
     }
+    // ⛔ והאינווריאנט המקורי, מילה במילה: ⛔ אפס גובה בפיקסלים בקובץ הזה, וה-`calc`
+    //    נשאר אצל `<CardDeck>`.
     expect(T085_CARD_SRC).not.toContain('h-[calc(');
     expect(readFileSync(join('components', 'CardDeck.tsx'), 'utf8')).toContain('h-[calc(100dvh-10rem)]');
+  });
+
+  /**
+   * 🎴 **`T-325`ⓐ — ההגבהה נמדדת, ⛔ ולא מוצהרת.** נמדד לפני השורה ב-390×844:
+   * `getComputedStyle(card).boxShadow === 'none'`. הכלל עצמו ב-`app/globals.css`
+   * (‏`[data-card-face]` ⇒ `--glow-brand`), ⇒ מה שנמדד **כאן** הוא שהפנים נושאים את
+   * הווים — ו-`data-glow` הוא מה שמכניס אותם לתקציב ב3 שנספר ב-`verify-mobile`.
+   */
+  it('T-325ⓐ — שני הפנים נושאים `data-card-face` ו-`data-glow`, ⛔ ואין שלישי', () => {
+    expect((T085_CARD_SRC.match(/data-card-face/g) ?? []).length).toBe(2);
+    expect((T085_CARD_SRC.match(/data-glow="true"/g) ?? []).length).toBe(2);
+    // ⛔ פנים אחד בכל רגע ⇒ זוהר אחד. הענפים הם `? :` על אותו תנאי, ⛔ ולא שני ענפים
+    //    שיכולים להיצבע יחד.
+    expect(readFileSync(join('app', 'globals.css'), 'utf8')).toContain('[data-card-face] {');
   });
 
   it('T-259ⓔ — the reveal button is byte-for-byte the native <button> (⛔ not a div, ⛔ not a gesture)', () => {
