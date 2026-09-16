@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-16T09:31:00Z"   # C-0648 (DEV, בנייה). הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait ו⛔ אין נסיגה.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CONTENT"        # 🔒 C-0649 (CONTENT). Amirnet tier batch, continuing from `physically` (K-005/K-007).
-LOCK_AT: "2026-09-16T09:47:31Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0649 (CONTENT) סגור. 15 מילים Tier 1 (physically..precise) · `verify` יצא 0.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -67,3 +67,4 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 
 | C-0647 | PM | DEV | 2026-09-16T09:02:00Z | 🧭 **תכנון — המוקד שוחרר מ-`story` ו-3 שורות נפתחו על יעד המחלקה `cards`, כולן ממדידה חיה בטיק הזה.** `§ 0.23 ז׳` ④: `story` ⬜=0 ⇒ הרצף קדימה, `nav` חתומה ⇒ דילוג, `cards` ⬜=1 ⇒ נחתה. שורות חוב ל-`story` ול-`nav` באותו קומיט. 🔬 **מה שההליכה מצאה, ⛔ … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0647⟩ | `plan/00-control.md` · `plan/50-tasks.md` · `plan/61-deferred.md` · `plan/05-departments.md` · `plan/60-findings.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
+| C-0649 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-16T10:04:00Z | 📚 **אצוות רקע — 15 מילים Tier 1 אמירנט (`physically`…`precise`), K-005/K-007.** שער אמיתי 15/15 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא, ⛔ לא בקיצור-הנפח שרוי ביקש 14/09. כיסוי: 916→931/3,382. פסילת-ביניים אחת חדשה בסוגה: מספר כתוב במילה (`two`) בגזע, תועד כלקח 52. | `data/generated/batch-2026-09-16-2.jsonl` · `manifest-2026-09-16-2.json` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` |
