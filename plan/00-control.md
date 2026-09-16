@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0659 (PM, תכנון): **4 שורות `cards` — `T-392` 🟣 (נבנתה בטיק, `STEP 5.5` ⓑ, מקור `F-270`) · `T-393`·`T-394`·`T-395` ⬜.** ‏`cards` ⬜=**4** ⇒ `§ 0.23 ז׳` ③ «הישאר», ⛔ **אין להזיז את המוקד.** ‏`D-256`…`D-259` · `F-269`/`F-270` נסגרו · `T-386` 🚫.
-STATE: PLANNING                # ▶️ C-0659 (PM): הליכה חיה ×2 375×780 (`next start`) ⇒ `[data-deck-selector]` נושא **3 «—» ב-`domcontentloaded` עם 0 בלוקי כשל**, ו**אותם 3** אחרי שלושה 503 — גליף אחד, שני מצבים. ‏`/dev/deck`: `[role=progressbar]`=**0** מול סרגל ברנדר · `grep /dev/deck` ברשימת ההליכה ⇒ **0 מתוך 14**.
+NEXT_AGENT: DEV                    # ▶️ C-0662 (QA, מלא): שער ירוק, מוזג ל-dev, 5 🟣→✅ (T-325·T-388·T-389·T-391·T-392). `cards` ⬜=**4** (T-390·T-393·T-394·T-395) ⇒ `§ 0.23 ז׳` ③ «הישאר», ⛔ **אין להזיז את המוקד** — ⬜>0, שום דבר להכריע.
+STATE: BUILDING                # ▶️ C-0662 (QA): הליכה חיה 375×780 על 9 מסכי `cards` (`next start`) — 0 פגם חוסם, `/dev/tabs/cards` 3 שגיאות 503 ידועות (F-262, אין Supabase בסביבה). `diff:render` × 2 (`kol-A-02-deck` · `kol-A-03-card`) נקרא בעיניים — הפערים כבר רשומים ב-T-390/393/394/395.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
 LAST_HANDOFF_AT: "2026-09-16T15:10:00Z"   # C-0659 (PM, תכנון). הנעילה הייתה ריקה ב-14:46:13Z ⇒ ⛔ אין Smart Wait ו⛔ אין נסיגה.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"               # 🔒 C-0662 (QA, מלא) — טיק מלא, STEP 1.
-LOCK_AT: "2026-09-16T16:45:52Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0662 (QA) סגור. מוזג ל-dev, RELEASE_READY, handoff ל-DEV.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    4 / 120           # 39-messages-spec § 9 · ⛔ **⛔ אינה המוקד** (הוזז→`amirnet` ב-C-0625). ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "4a6b60f7 · 2026-09-16T11:21Z · **C-0651 (QA, מלא).** `dev`==`work/current` (ff-only, 38 קומיטים מ-ece4e4e3). `verify` מלא ×2 ירוק (4678/4678 + 1985 מובייל) · `loop:health` 22/23 (17=PROMOTER 45.2ש׳, שורש תוקן `C-0650`/`F-268`, ממתין לחלון 13:45Z, ⛔ אינו נוגע ללומד) · הליכה חיה 375×780 על 5 מסכי סיפור/כרטיסיות/הגדרות — 0 פגם חוסם; `/dev/tabs/cards` 6 שגיאות 503 (היעדר Supabase, F-262, ⛔ רגרסיה) · `diff:render` story×2 — תואם, ⛔ ממצא. 8 🟣→✅ (T-208·T-209·T-380…T-385). **ללומד:** כרטיסיות — הודעת כשל אחת במקום חמש, קריאה אחת במקום שתיים; סיפור — שדה מה-שלמד בסוף, חזרה לפסקה אחרי טעות, שלד טעינה במקום חור. smoke דולג (`LAST_PROMOTED_AT` קפוא מ-14/09). קידום ⇐ PROMOTER בלבד."
+RELEASE_READY: "7e360efc · 2026-09-16T17:12Z · **C-0662 (QA, מלא).** `dev`==`work/current` (ff-only, 32 קומיטים מ-4a6b60f7). `verify` מלא ירוק (280/280 · 4795/4796, 1 דולגה · build✅ · mobile 1985) · `loop:health` 23/23 · הליכה חיה 375×780 על 9 מסכי `cards` — 0 פגם חוסם; `/dev/tabs/cards` 3×503 ידועות (F-262, אין Supabase, ⛔ רגרסיה). `diff:render`×2 (`kol-A-02-deck`·`kol-A-03-card`) בעיניים — פערים כבר ⬜ (T-390·393·394·395). smoke Kernel×5 ok:true 5/5. 5 🟣→✅ (T-325·388·389·391·392) + archive+measure:plan+build:surfaces. **ללומד:** ארבעת אריחי «דרכים לתרגל» מקבלים היררכיה (⛔ לא זהים); «חזרה» נשאר נגיש כשמונה חי ליד קריאה שנכשלה; «טעינה מחדש» מלא ובולט; גליף ההמתנה נושא משמעות אחת. קידום ⇐ PROMOTER בלבד."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "4a6b60f7"  # dev אחרי C-0651 (QA, מלא). ⛔ לא זז ב-DEV ticks — DEV ⛔ אינו ממזג.
+LAST_REVIEWED_COMMIT: "7e360efc"  # dev אחרי C-0662 (QA, מלא). ⛔ לא זז ב-DEV ticks — DEV ⛔ אינו ממזג.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -66,6 +66,6 @@ PROMOTIONS_THIS_MONTH: 19         # 19 this month (➕ 16/09 13:24Z, C-0655 OPS 
 
 
 
-| C-0659 | PM | DEV | 2026-09-16T15:10:00Z | 📐 **טיק תכנון — 4 שורות `cards`, אחת מהן נבנתה, ו-4 הכרעות.** הליכה חיה ×2 (375×780) מול `kol-A-02-deck.png` ו-`kol-A-03-card.png`: `T-392` (גליף ההמתנה — נבנתה **באותו טיק**, `STEP 5.5` ⓑ, מקור **`F-270`** של DEV) 🟣 · `T-393` (`F-271`) · `T-394` … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0659⟩ | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/60-findings.md` · `plan/02-inbox.md` · `plan/05-departments.md` · `components/DeckSelector.tsx` |
 | C-0661 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-16T16:10:00Z | 📚 **אצוות רקע — 25 מילים Tier 1 אמירנט (`predict`…`quietly`), K-005/K-007.** שער אמיתי 25/25 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא. כיסוי: 931→956/3,382. הליכה חיה 375×780 — 0 פגם. פסילת-סבב-1 חוזרת (11/25, לקחים 49·51·52) — תועד כלקח 53, ⛔ אין תוספת ל-§ א׳1. | `data/generated/batch-2026-09-16-3.jsonl` · `manifest-2026-09-16-3.json` · `plan/80-content-lessons.md` |
+| C-0662 | QA | DEV | 2026-09-16T17:12:00Z | ✅ **שער מלא, מוזג ל-dev.** `verify` 280/280 ירוק · `loop:health` 23/23 · הליכה חיה 9 מסכי `cards` — 0 פגם · smoke Kernel 5/5. 5 🟣→✅ · archive+measure:plan+build:surfaces. `cards` ⬜=4, המוקד נשאר (`§ 0.23 ז׳` ③). `RELEASE_READY` + שלוש הקשות ב-`03-for-roy`. | `plan/00-control.md` · `plan/50-tasks.md` · `plan/61-deferred.md` · `plan/03-for-roy.md` · `docs/plan-open.md` |
 
