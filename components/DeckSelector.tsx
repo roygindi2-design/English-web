@@ -479,6 +479,31 @@ export default function DeckSelector({
      ⇒ **`readFailed` alone renders it, before the list.** `primaryKey` still decides
      whether it is the PRIMARY action (`F-027` — exactly one per screen), ⛔ and that is
      now the only thing `primaryKey` decides here. */
+  /**
+   * 🎯 **`T-391` — ⛔ **`[data-primary-action]` נושא שפה חזותית אחת, ⛔ ולא אחת לכל מצב
+   * שבו נפל.** **המשך של: `T-388`**, שהביא את המילוי מהרנדר אל האריח הראשי ובכך חשף
+   * שהסימון עצמו ⛔ אינו עקבי.
+   *
+   * 🔬 **נמדד בקוד אחרי `T-388`, ⛔ ולא שוער — שלושה מצבים, שלוש הגשות:** ⓐ `ready` ⇒
+   * האריח הראשי **מלא** (`bg-brand-surface text-brand-on`) · ⓑ כשל מלא
+   * (`primaryKey === null`) ⇒ הסימון יושב על «טעינה מחדש», שהוגש כ**מסגרת**
+   * (`border border-border-strong`) · ⓒ מצב ריק ⇒ `DECK_ALL_EMPTY_ACTION_HE` **מלא**.
+   * ⇒ **2 מתוך 3 מלאים ו-1 ⛔ לא** — ולומד שנתקל בכשל רואה פעולה ראשית שנראית משנית
+   * בדיוק כשהיא הדבר היחיד שנשאר לו לעשות.
+   *
+   * ⇒ **המילוי הולך אחרי הסימון, ⛔ ולא אחרי סוג האלמנט.** נושא `data-primary-action`
+   * ⇒ מלא; ⛔ אינו נושא ⇒ מסגרת, כלומר פעולה משנית — וזה בדיוק מה שהוא כשאריח נמדד
+   * וחי כבר לקח את התפקיד (`T-389`).
+   *
+   * ⛔ **והצורה ⛔ לא זזה:** האריח נשאר `rounded-2xl` והפקד נשאר `rounded-full` —
+   * ‏`render_video_A.py:301,558` מצייר אריח ופקד כשתי צורות, ו«שפה אחת» כאן היא
+   * ה**משקל** (`§ 4.2ט` · `taste-skill § 4.5` — «פעולה ראשית חייבת לקרוא כראשית»),
+   * ⛔ ולא רדיוס אחד לכל דבר שאפשר ללחוץ עליו.
+   *
+   * ⛔ **והספירה נשארת 1** (`F-027`): `primaryKey === null` הוא בדיוק התנאי שבו ⛔ אף
+   * אריח ⛔ אינו נושא את התכונה.
+   */
+  const retryIsPrimary = primaryKey === null;
   const recoveryBlock = (
     <div data-deck-failed className="flex flex-col items-start gap-2">
       <p className="text-base text-ink-muted">{READ_FAILED_BODY_HE}</p>
@@ -491,8 +516,10 @@ export default function DeckSelector({
           // fixes two tiles of three is ⛔ not a way out of THIS failure.
           onRetry?.();
         }}
-        data-primary-action={primaryKey === null ? 'true' : undefined}
-        className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg font-semibold text-ink active:opacity-90"
+        data-primary-action={retryIsPrimary ? 'true' : undefined}
+        className={`flex min-h-touch items-center justify-center rounded-full px-5 py-3 text-lg font-semibold active:opacity-90 ${
+          retryIsPrimary ? 'bg-brand-surface text-brand-on' : 'border border-border-strong text-ink'
+        }`}
       >
         {RETRY_ACTION_HE}
       </button>

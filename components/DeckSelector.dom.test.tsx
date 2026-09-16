@@ -4,13 +4,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import DeckSelector from '@/components/DeckSelector';
 import FilterBar from '@/components/FilterBar';
 
+/**
+ * ⛔ **הרשת ⛔ אינה נקראת כאן, ו⛔ אין `fetch` ממוקה**: `apiGet` הוא הגבול שהמסך חוצה,
+ * ⇒ הוא הדבר היחיד שמוחלף. ברירת המחדל היא **כשל** — זה המצב שרוב הקובץ מודד — ומצב
+ * `zero` הוא חפיסה שנקראה והחזירה 0, שהיא מדידה ⛔ ולא כשל.
+ */
+const api = vi.hoisted(() => ({ mode: 'fail' as 'fail' | 'zero' }));
+
 vi.mock('@/lib/api/client', () => ({
   apiGet: vi.fn(async () => {
-    throw new Error('503');
+    if (api.mode === 'fail') throw new Error('503');
+    return { ok: true, total: 0 };
   }),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  api.mode = 'fail';
+});
 
 /**
  * 🔴 **`T-389` — שני אריחים במרחק זה מזה אומרים ללומד שני דברים סותרים על אותה
@@ -88,6 +99,7 @@ describe('T-389 — כשל בקריאת חפיסה ⛔ אינו הופך לטע�
    * ש⛔ כן נקראה והחזירה `0` היא מדידה, ⇒ היא נשארת מושבתת — עם האפס שלה.
    */
   it('⛔ חפיסה שנקראה והחזירה 0 ⛔ עדיין מושבתת, ⛔ ועם המספר שלה', async () => {
+    api.mode = 'zero';
     render(<DeckSelector unseen={0} unknown={{ total: 0, failed: false, loading: false }} />);
     await waitFor(() => {
       const tile = practiceTile();
@@ -122,5 +134,70 @@ describe('T-389 — כשל בקריאת חפיסה ⛔ אינו הופך לטע�
       expect(document.querySelectorAll('[data-primary-action]').length).toBe(1);
     });
     expect(document.querySelector('[data-primary-action]')?.textContent).toContain('סינון מילים');
+  });
+});
+
+/**
+ * 🎯 **`T-391` — ל-`[data-primary-action]` הייתה שפה חזותית לכל מצב שבו נפל, ⛔ ולא אחת.**
+ * **המשך של: `T-388`**, שהביא את המילוי מהרנדר אל האריח הראשי ובכך חשף את השניים האחרים.
+ *
+ * 🔬 **נמדד בקוד, ומאומת כאן ב-DOM על שלושת המצבים:** ⓐ `ready` ⇒ אריח **מלא** ·
+ * ⓑ כשל מלא ⇒ «טעינה מחדש» כ**מסגרת** · ⓒ מצב ריק ⇒ **מלא**. ⇒ 2 מתוך 3, והלומד שנתקל
+ * בכשל ראה פעולה ראשית שנראית משנית בדיוק כשהיא הדבר היחיד שנשאר לו.
+ *
+ * ⛔ **הצורה ⛔ אינה נמדדת כאן** — אריח `rounded-2xl` מול פקד `rounded-full` הן שתי צורות
+ * שהרנדר מצייר. מה שנמדד הוא ה**משקל**: המילוי.
+ */
+describe('T-391 — שפה אחת ל-[data-primary-action], בשלושת המצבים', () => {
+  /** `bg-brand-surface` + `text-brand-on` — המילוי של הרנדר, ⛔ ולא גוון שנבחר כאן. */
+  function primary(): HTMLElement {
+    const all = document.querySelectorAll('[data-primary-action]');
+    expect(all.length).toBe(1); // F-027 — אחד בדיוק, בכל מצב
+    return all[0] as HTMLElement;
+  }
+
+  it('ⓐ מצב חי — הסימון על האריח הנמדד, והוא מלא', async () => {
+    render(<DeckSelector unseen={314} unknown={{ total: 12, failed: false, loading: false }} />);
+    await waitFor(() => {
+      expect(primary().className).toContain('bg-brand-surface');
+    });
+    expect(primary().className).toContain('text-brand-on');
+  });
+
+  it('🔴 ⓑ כשל מלא — «טעינה מחדש» נושא את הסימון, ⛔ והוא מלא כמו השניים האחרים', async () => {
+    render(<DeckSelector unknown={{ total: null, failed: true, loading: false }} />);
+    await waitFor(() => {
+      expect(primary().textContent).toBe('טעינה מחדש');
+    });
+    expect(primary().className).toContain('bg-brand-surface');
+    expect(primary().className).toContain('text-brand-on');
+    // ⛔ ו⛔ לא «מסגרת» — זה היה הפגם עצמו.
+    expect(primary().className).not.toContain('border-border-strong');
+  });
+
+  /**
+   * ⛔ **ומשהפקד ⛔ אינו הראשי — הוא ⛔ אינו נראה כראשי.** כשל **חלקי**: אריח נמדד וחי
+   * לקח את התפקיד (`T-389`), ⇒ «טעינה מחדש» הוא פעולה משנית, ומסגרת היא הגשתה.
+   */
+  it('⛔ כשל חלקי — הפקד מוותר על המילוי יחד עם הסימון', async () => {
+    render(<DeckSelector unseen={314} unknown={{ total: null, failed: true, loading: false }} />);
+    await waitFor(() => {
+      expect(document.querySelector('[data-deck-failed] button')).not.toBeNull();
+    });
+    const retry = document.querySelector('[data-deck-failed] button') as HTMLElement;
+    expect(retry.getAttribute('data-primary-action')).toBeNull();
+    expect(retry.className).toContain('border-border-strong');
+    expect(retry.className).not.toContain('bg-brand-surface');
+  });
+
+  it('ⓒ מצב ריק — הפעולה מלאה, ⛔ ואותה שפה בדיוק', async () => {
+    // ⛔ ריק ⛔ ואינו כשל: שלוש הקריאות מצליחות ומחזירות 0 ⇒ `dead && !readFailed`.
+    api.mode = 'zero';
+    render(<DeckSelector unseen={0} unknown={{ total: 0, failed: false, loading: false }} />);
+    await waitFor(() => {
+      expect(document.querySelector('[data-deck-empty]')).not.toBeNull();
+    });
+    expect(primary().className).toContain('bg-brand-surface');
+    expect(primary().className).toContain('text-brand-on');
   });
 });

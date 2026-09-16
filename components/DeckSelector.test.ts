@@ -360,7 +360,23 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    */
   it('T-295ⓑ — פקד הטעינה מחדש ראשי ⛔ רק כשאין אריח פעיל', () => {
     const retry = recoveryRegion(CODE);
-    expect(retry).toContain("data-primary-action={primaryKey === null ? 'true' : undefined}");
+    // `T-391` — אותו תנאי בדיוק, בשם: המשקל החזותי נגזר ממנו יחד עם התכונה, ⇒ ⛔ אי-אפשר
+    // עוד שהסימון יהיה על הפקד והמילוי ⛔ לא.
+    expect(CODE).toContain('const retryIsPrimary = primaryKey === null;');
+    expect(retry).toContain("data-primary-action={retryIsPrimary ? 'true' : undefined}");
+  });
+
+  /**
+   * 🎯 **`T-391` — שפה חזותית אחת לסימון, ⛔ ולא אחת לכל מצב.** ⛔ המדידה האמיתית היא
+   * ב-DOM (`DeckSelector.dom.test.tsx`): שלושת המצבים מרונדרים, והאלמנט שנושא
+   * `data-primary-action` נמדד בכל אחד מהם. כאן נשמר רק השורש — שהמילוי ⛔ אינו מקודד
+   * לסוג האלמנט אלא נגזר מאותו תנאי שקובע את התכונה.
+   */
+  it('T-391 — המילוי של הפקד נגזר מהסימון, ⛔ ולא קבוע כמסגרת', () => {
+    const retry = recoveryRegion(CODE);
+    expect(retry).toContain("retryIsPrimary ? 'bg-brand-surface text-brand-on'");
+    // ⛔ «מסגרת תמיד» ⛔ אינו קיים עוד — זה בדיוק הניסוח שהפך את הפעולה הראשית למשנית.
+    expect(retry).not.toMatch(/className="[^"]*border border-border-strong[^"]*"/);
   });
 
   /**
