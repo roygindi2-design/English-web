@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import LevelPath from '@/components/LevelPath';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE, SESSION_EXPIRED_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import type { CefrBand } from '@/lib/core/cefrLevels';
 import type { LevelSummary } from '@/lib/core/levelSummary';
@@ -57,12 +57,11 @@ type LevelState =
   | { readonly kind: 'ready'; readonly current: CefrBand | null; readonly levels: readonly LevelSummary[] }
   | { readonly kind: 'failed'; readonly code: 'schema_missing' | 'session_expired' | 'unavailable' };
 
-const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
 
 /** ⛔ שני משפטים לשני אירועים שונים — אותו כלל של `<LevelMapScreen>` (T-056). */
 function failureText(code: string): string {
   if (code === 'schema_missing') return SCHEMA_MISSING_HE;
-  if (code === 'session_expired') return EXPIRED_HE;
+  if (code === 'session_expired') return SESSION_EXPIRED_HE;
   return FAILURE_HE.load;
 }
 

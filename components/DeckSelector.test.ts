@@ -210,29 +210,45 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   });
 
   /**
-   * ⛔ «—» ⛔ אינו `0` — ⛔ ומאז `T-295` הוא גם ⛔ אינו «נכשל». שלושת המצבים נפרדים
-   * **בטקסט**, ⛔ ולא בצבע, וכולם עוברים דרך `tileNote` — נקודת הכרעה אחת, בדיוק כמו
-   * ש-`noteFor` היה הנקודה היחידה קודם.
+   * 🔴 **`T-384`ⓐ — הבדיקה הזאת הפכה כיוון, וההיפוך הוא המדידה.**
+   *
+   * ‏`T-295` דרשה כאן שכל אריח **ינקוב בכשל במשפט משלו**. 🔬 `C-0647` מדד מה שזה
+   * ייצר על מסך אחד: **5 טקסטי כשל נראים ב-3 נוסחים** על אירוע אחד — והלומד ⛔ אינו
+   * יכול לדעת אם פגש תקלה אחת או שלוש.
+   * ⇒ **הערוץ נשאר, החזרה הולכת:** האירוע מסופר **פעם אחת**, מעל הרשימה
+   * (`recoveryBlock` · `T-349`) ובאזור ה-`role="status"` של `T-322`. האריח חוזר
+   * ל-«—» — «מושבת עם המספר» (§ 4.2ו), ⛔ ולא הודעה.
    */
-  it('T-295ⓐ — קריאה שנכשלה נוקבת בכך במשפט, ⛔ ולא «—» ו⛔ לא 0', () => {
+  it('T-384ⓐ — אריח ללא מספר אומר «—», ⛔ ולא משפט כשל משלו', () => {
     const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
-    expect(region).toContain(
-      'tileNote(deckState(counts.sentences), counts.sentences, SENTENCES_NOTE_HE)',
-    );
+    expect(region).toContain('SENTENCES_NOTE_HE(noteFor(counts.sentences))');
     // ⛔ `noteFor` ⛔ לא רוכך: «—» עדיין נוסע כשאין מספר, והוא עדיין ⛔ אינו `0`.
     expect(CODE).toMatch(/count === null \? UNKNOWN_COUNT_HE : String\(count\)/);
     expect(CODE).toContain("const UNKNOWN_COUNT_HE = '—'");
-    // ⛔ והמשפט של הכשל ⛔ אינו «—» ו⛔ אינו מספר.
-    expect(CODE).toContain("const READ_FAILED_NOTE_HE = 'הנתונים לא נטענו'");
-    expect(CODE).toMatch(/state === 'failed' \? READ_FAILED_NOTE_HE : sentence\(noteFor\(count\)\)/);
+    // 🔴 **מ-5 ל-1:** הנוסח הכפול ⛔ אינו קיים עוד בקובץ, ⛔ בשום צורה.
+    expect(CODE).not.toContain('הנתונים לא נטענו');
+    expect(CODE).not.toContain('READ_FAILED_NOTE_HE');
+    expect(CODE).not.toContain('tileNote');
+  });
+
+  /**
+   * `T-384`ⓐ — **הנוסח היחיד ששרד, והוא ⛔ יחיד גם בספירה.** ‏`READ_FAILED_BODY_HE`
+   * מוכרז פעם אחת, ומרונדר בשני מקומות ש⛔ אינם שני משפטים: `recoveryBlock` הנראה,
+   * ואזור ה-`role="status"` שהוא `sr-only` (‏`T-322` — ⛔ אינו מצייר פיקסל נוסף).
+   * ⛔ **`role="alert"` ⛔ אינו קיים** (`T-384`ⓒ): הלומד ⛔ לא גרם לתקלה, ו-`alert`
+   * קוטע את מה שנקרא לו באותו רגע.
+   */
+  it('T-384ⓐⓒ — נוסח כשל אחד בקובץ, ו⛔ אפס role="alert"', () => {
+    expect(CODE.split('חלק מהנתונים לא הגיעו מהשרת.').length - 1).toBe(1);
+    expect(CODE).not.toContain('role="alert"');
+    expect(CODE).toContain('role="status"');
   });
 
   /**
    * ⛔ **הבדיקה שמונעת את השקר הקצר** (D-064, אותו כלל): בזמן שהקריאות בדרך כל מונה הוא
-   * `null` ו⛔ שום דבר ⛔ לא נכשל. `'failed'` נגזר ⛔ אך ורק אחרי ש-`loading` נפל.
+   * `null` ו⛔ שום דבר ⛔ לא נכשל. ⇒ `readFailed` נגזר ⛔ אך ורק אחרי ש-`loading` נפל.
    */
   it('T-295ⓐ — «נכשל» ⛔ אינו נגזר מ-`null` לבדו, אלא רק אחרי שהטעינה הסתיימה', () => {
-    expect(CODE).toMatch(/loading \? 'unknown' : count === null \? 'failed' : 'ok'/);
     expect(CODE).toMatch(/readFailed =\s*\n?\s*\(!loading &&/);
     // `T-385` — ⛔ והשליש השלישי של המסך נספר גם הוא, מהפסק דין שהמסך מוסר.
     // ⛔ `undefined` (⛔ לא נעשתה קריאה) ⛔ אינו «נכשל» ⇒ ההשוואה היא ל-`=== true`.
@@ -243,10 +259,10 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * ⓒ — אריח `סינון מילים` ⛔ אינו יכול לדווח «נכשל»: הרכיב הזה ⛔ אינו קורא את המספר
    * שלו כלל (`unseen` מגיע מהמסך, § 4.2ז), ולכן היעדרו הוא «⛔ לא ידוע» ⛔ ולא כשל.
    */
-  it('T-295ⓐ — אריח שלא נקרא כאן מדווח «—», ⛔ ולא «נכשל»', () => {
+  it('T-384ⓐ — אריח שלא נקרא כאן מדווח «—», ⛔ ולא משפט', () => {
     const region = braceRegion(CODE, `{\n      key: 'level'`);
-    expect(region).toContain("tileNote(unseen === null ? 'unknown' : 'ok', unseen, LEVEL_NOTE_HE)");
-    expect(region).not.toContain('deckState');
+    expect(region).toContain('LEVEL_NOTE_HE(noteFor(unseen))');
+    expect(region).not.toContain('tileNote');
   });
 
   /**

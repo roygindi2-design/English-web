@@ -39,6 +39,28 @@ export const FAILURE_HE = Object.freeze({
 export const SCHEMA_MISSING_HE = 'המאגר עדיין לא הוקם';
 
 /**
+ * `T-384`ⓑ · closes `F-138`ⓑ — the session ran out, and the learner has to sign in again.
+ *
+ * ⛔ Not in `FAILURE_HE`: that map is «the product failed, not you», and an expired session
+ * is neither a failure of the product nor of the learner — it is a state with one exit.
+ * ⇒ its own constant, in the one place the screens read it from, exactly as
+ * `SCHEMA_MISSING_HE` was collapsed here in `C-0477`.
+ *
+ * 🔬 **Measured `C-0647`, and the number had grown since `F-138`ⓑ was filed:** this exact
+ * sentence was declared locally in THREE files — `app/(tabs)/settings/page.tsx:60`,
+ * `components/LevelScan.tsx:41`, `components/LevelMapScreen.tsx:60`. Three declarations of
+ * one sentence is three places for it to drift, and `T-056` exists because that is what
+ * happened last time.
+ *
+ * ⛔ **And the two Amirnet wordings are ⛔ deliberately NOT collapsed into this**
+ * (`AmirnetSimulationEntry.tsx` · `AmirnetDashboardLive.tsx`): they name what the learner
+ * was about to do («כדי להתחיל סימולציה» · «כדי לראות את הביצועים שלך»), which is
+ * information this sentence does not carry. A different sentence for a different screen is
+ * `T-056`'s own rule, ⛔ not a violation of it.
+ */
+export const SESSION_EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
+
+/**
  * T-274 · D-195 — the request never left the device on a login / signup attempt
  * (`ApiUnreachableError`, lib/api/client.ts). Until 07/09 that branch in
  * `AuthForm` printed `AUTH_MESSAGES_HE.unavailable` — a sentence that sounds

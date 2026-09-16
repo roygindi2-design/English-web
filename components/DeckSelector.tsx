@@ -48,17 +48,17 @@ import {
  * 3. **The sentences deck OPENS — `T-199ⓐ` · `D-169`.** It goes through `toEntry` like the
  *    other three: an empty band is DISABLED WITH ITS NUMBER (§ 4.2ו), ⛔ never locked.
  *
- * 4. **A failed read SAYS SO, in words — ⛔ and «—» no longer carries two meanings.**
- *    ⟦REPLACED by `T-295` · `D-214`, 12/09. The rule it replaces said «a failed read leaves
- *    all three disabled reading «—», ⛔ and shows no error screen», and it was measured
- *    wrong in a live walk (C-0530 · C-0535): on `/dev/tabs/cards` the `סינון מילים` tile
- *    read `314 מילים שעוד לא סוננו` while `חזרה` · `מנת היום` · `משפטים` all read «—».
- *    ⇒ a screen that looks intact with three dead tiles, and ⛔ no learner can tell that
- *    anything broke.⟧ Three states are now separate **in text** (layer A — ⛔ never colour):
- *      `ok`       the number was read. **`0` stays `0`** — an empty deck is not a failure.
- *      `failed`   the read came back `{ok:false}` or threw ⇒ the tile says so, in Hebrew.
- *      `unknown`  ⛔ no read was made at all here (`unseen` was not handed down) ⇒ «—».
- *    ⛔ «—» is still not `0`, and it is now also not «נכשל».
+ * 4. **A failed read SAYS SO — ⛔ once, above the list, ⛔ and ⛔ not on every tile.**
+ *    ⟦`T-295` · `D-214` (12/09) replaced «a failed read leaves all three disabled reading
+ *    «—» and shows ⛔ no error screen», which a live walk measured wrong (C-0530 · C-0535):
+ *    three dead tiles reading «—» next to one live tile look like an intact screen.
+ *    ⟦`T-384` (16/09) then measured the overshoot: `C-0647` counted **5 visible failure
+ *    strings in 3 wordings** for ONE event on this screen. ⇒ the CHANNEL `T-295` built
+ *    stays — `recoveryBlock` above the list, and the `role="status"` region of `T-322` —
+ *    and the per-tile sentence goes.⟧ Two states now, in text (layer A — ⛔ never colour):
+ *      `ok`        the number was read. **`0` stays `0`** — an empty deck is not a failure.
+ *      ⛔ no number the read failed, or ⛔ no read was made here ⇒ «—», ⛔ and the event is
+ *                  narrated ⛔ once, above. ⛔ «—» is still ⛔ not `0`.
  *
  * ⛔ No `<ActionBar>` — D-028 forbids two bottom-anchored bars on one screen and this screen
  * carries the tab bar. ⚠️ **But there IS a way out of the failure now** (`T-295`ⓑ ·
@@ -72,13 +72,36 @@ import {
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
 /**
- * `T-295`ⓐ — **the word «—» stopped meaning two things.** A tile whose read FAILED says it
- * in a sentence; «—» is left to mean only «⛔ no read was made», which is what it says on
- * `/dev/tabs/probe` where `<DeckSelector />` gets no `unseen` at all.
- * ⛔ Text, ⛔ never colour — layer A, and `ui-ux-pro-max` § Accessibility, «Color is not the
- * only indicator».
+ * `T-384`ⓐ — ⛔ **`READ_FAILED_NOTE_HE` was DELETED here, and the deletion is the row.**
+ *
+ * 🔬 **Measured `C-0647` in a live walk at 375×780 on `/dev/tabs/cards`, ⛔ not read off
+ * the code:** four reads of `/api/study/queue` came back 503 and this ONE event was
+ * narrated by **five** visible strings in **three** wordings — `READ_FAILED_BODY_HE`
+ * once, `READ_FAILED_NOTE_HE` three times (one per tile), and `FAILURE_HE.load` once in
+ * `<UnknownList>`. ⇒ a learner cannot tell whether they met one problem or three, and
+ * pressing «טעינה מחדש» tells them nothing about which of the three it applies to.
+ *
+ * ⛔ **And this is exactly the failure `T-056` already measured and fixed** —
+ * `lib/core/failure.ts` collapsed four wordings into one module, and the screen then
+ * unfolded them again one layer above it.
+ *
+ * ⇒ **one wording and one way out, ABOVE the tiles**, where `T-349` already put them. The
+ * tiles keep their «—» — «disabled WITH the number» (§ 4.2ו) is ⛔ not «locked» — and
+ * ⛔ lose the repeated sentence: **a number that was not read is «—», ⛔ not a message.**
+ *
+ * ⚠️ **This SUPERSEDES `T-295`ⓐ's ««—» stopped meaning two things», ⛔ and does not
+ * contradict its reasoning.** `T-295` was answering «⛔ nothing on screen says anything
+ * broke» — and the answer it built is still here, in `recoveryBlock` and in the
+ * `role="status"` region of `T-322`. What `C-0647` measured is that the sentence was
+ * *additionally* stamped onto every tile, which is where the count of five came from.
+ * ⇒ the channel survives; the repetition does not.
+ *
+ * ⚠️ `taste-skill § 4.5` («NO DUPLICATE CTA INTENT — one label per intent, a Pre-Flight
+ * Fail otherwise») is the same rule one level up: **one event, one wording.** ⛔ Its
+ * § 14 em-dash ban ⛔ does ⛔ not reach «—» here — that glyph is a measured product token
+ * (`D-096` · `render_video_A.py:290,296`), and a gate beats a design skill
+ * (`35-design-constitution.md § 5`).
  */
-const READ_FAILED_NOTE_HE = 'הנתונים לא נטענו';
 /**
  * `T-295`ⓑ — the way out. ⚠️ **Noun form, ⛔ not an imperative:** the product's own actions
  * are `פתיחת הכרטיסיות` · `שינוי רמה`, and an imperative in Hebrew carries a gender the
@@ -163,7 +186,7 @@ type DeckCounts = {
 /**
  * `T-385`ⓐ — מה שהמסך מוסר על חפיסת `unknown`. ‏`failed` נוסע כשדה ⛔ ואינו נגזר
  * מ-`total === null`: בזמן שהקריאה באוויר `total` הוא `null` ו⛔ שום דבר ⛔ עוד לא
- * נכשל — אותה הבחנה בדיוק ש-`deckState` עושה כאן למטה עבור `due` ו-`sentences`.
+ * נכשל — אותה הבחנה בדיוק ש-`readFailed` עושה כאן למטה עבור `due` ו-`sentences`.
  * ⛔ **`undefined` ⛔ אינו «נכשל»** — הוא «⛔ לא נעשתה קריאה», וזה מצבו של
  * `/dev/tabs/probe` ושל כל ענף שאינו `ready`.
  */
@@ -211,25 +234,15 @@ function noteFor(count: number | null): string {
 }
 
 /**
- * `T-295`ⓐⓒ — the three states of a tile's number, and they are ⛔ not two.
- * ⛔ `'failed'` is ⛔ never inferred from `count === null` alone: while the reads are still
- * in flight every count is `null` and nothing has failed yet (the D-064 rule — «אין מה
- * לתרגל» half a second early is a short lie, and so is «לא נטען»).
+ * `T-295`ⓒ — **a real zero stays `0`**, and that half of the rule is untouched: `count === 0`
+ * renders the sentence with `0` in it, because an empty deck is ⛔ not a failure.
+ *
+ * `T-384`ⓐ — ⛔ **and a count that was not read renders «—», in the sentence's place,
+ * whatever the reason.** ⛔ The tile ⛔ no longer distinguishes «the read failed» from «⛔ no
+ * read was made»: BOTH are «we do not have this number», the distinction changed ⛔ nothing
+ * a learner could act on, and paying for it cost three copies of one sentence on one screen.
+ * ⇒ `tileNote` collapsed into `noteFor`, and the event is narrated ⛔ once, above the list.
  */
-type ReadState = 'ok' | 'failed' | 'unknown';
-
-/**
- * `T-295`ⓒ — **a real zero stays `0`.** `state === 'ok'` with `count === 0` renders the
- * sentence with `0` in it, exactly as before; only `'failed'` swaps the sentence out.
- */
-function tileNote(
-  state: ReadState,
-  count: number | null,
-  sentence: (n: string) => string,
-): string {
-  return state === 'failed' ? READ_FAILED_NOTE_HE : sentence(noteFor(count));
-}
-
 function toEntry(input: {
   readonly key: string;
   readonly label: string;
@@ -297,14 +310,6 @@ export default function DeckSelector({
   }, [attempt]);
 
   /**
-   * `T-295`ⓐ — `null` AFTER the reads settled is a failure; `null` DURING them is not.
-   * ⛔ `level` ⛔ never reaches this function: its number is `unseen`, which this component
-   * ⛔ does not read, so its only two states are `'ok'` and `'unknown'`.
-   */
-  const deckState = (count: number | null): ReadState =>
-    loading ? 'unknown' : count === null ? 'failed' : 'ok';
-
-  /**
    * ⛔ One failed deck out of three is already a screen that lies — ⛔ not «all three».
    * ⛔ **`T-385`: and the third deck's verdict now arrives from the screen** — ⛔ never
    * re-derived here from a second read of the same deck.
@@ -328,9 +333,9 @@ export default function DeckSelector({
       label: LEVEL_LABEL_HE,
       href: '/study?deck=level',
       count: unseen ?? null,
-      // ⛔ `'unknown'` and ⛔ never `'failed'`: this component ⛔ did not read this number,
-      // so it ⛔ cannot claim the read broke. «—» is exactly what that means.
-      note: tileNote(unseen === null ? 'unknown' : 'ok', unseen, LEVEL_NOTE_HE),
+      // `T-384`ⓐ — «—» when the screen did not hand this number down. ⛔ The tile ⛔ does
+      // not narrate WHY; `recoveryBlock` above narrates the event, once.
+      note: LEVEL_NOTE_HE(noteFor(unseen)),
     }),
     // `T-385`ⓐ — ⛔ **the number is the SCREEN's**, read once at `limit=50` together with
     // the list below it. ⛔ `undefined` is ⛔ not `'failed'`: it means no read was made at
@@ -340,22 +345,14 @@ export default function DeckSelector({
       label: PRACTICE_LABEL_HE,
       href: '/study?deck=unknown',
       count: unknown?.total ?? null,
-      note: tileNote(
-        unknown === undefined || unknown.loading
-          ? 'unknown'
-          : unknown.failed
-            ? 'failed'
-            : 'ok',
-        unknown?.total ?? null,
-        PRACTICE_NOTE_HE,
-      ),
+      note: PRACTICE_NOTE_HE(noteFor(unknown?.total ?? null)),
     }),
     toEntry({
       key: 'due',
       label: DUE_LABEL_HE,
       href: '/study',
       count: counts.due,
-      note: tileNote(deckState(counts.due), counts.due, DUE_NOTE_HE),
+      note: DUE_NOTE_HE(noteFor(counts.due)),
     }),
     // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
     // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
@@ -365,7 +362,7 @@ export default function DeckSelector({
       label: SENTENCES_LABEL_HE,
       href: '/study?deck=sentences',
       count: counts.sentences,
-      note: tileNote(deckState(counts.sentences), counts.sentences, SENTENCES_NOTE_HE),
+      note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
     }),
   ];
 

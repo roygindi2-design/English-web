@@ -1,7 +1,13 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FAILURE_HE, FAILURE_TITLE_HE, RETRY_HE, UNREACHABLE_HE } from '@/lib/core/failure';
+import {
+  FAILURE_HE,
+  FAILURE_TITLE_HE,
+  RETRY_HE,
+  SESSION_EXPIRED_HE,
+  UNREACHABLE_HE,
+} from '@/lib/core/failure';
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -109,5 +115,52 @@ describe('UNREACHABLE_HE (T-274)', () => {
   it('⛔ no screen restates it as a literal', () => {
     const offenders = SCREENS.filter((file) => readFileSync(file, 'utf8').includes(UNREACHABLE_HE));
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * `T-384`ⓑ · closes `F-138`ⓑ — the expired-session sentence, collapsed to one place.
+ *
+ * 🔬 **Measured `C-0647`, and the number had GROWN since `F-138`ⓑ was filed:** this exact
+ * sentence was declared locally in **three** files — `app/(tabs)/settings/page.tsx:60`,
+ * `components/LevelScan.tsx:41`, `components/LevelMapScreen.tsx:60`. Three declarations is
+ * three places to drift, which is the whole of `T-056`'s argument, and `SCHEMA_MISSING_HE`
+ * had already been collapsed for the same reason in `C-0477`.
+ */
+describe('SESSION_EXPIRED_HE (T-384ⓑ · F-138ⓑ)', () => {
+  it('is Hebrew, ends in a full stop, ⛔ carries no English and no error code', () => {
+    expect(SESSION_EXPIRED_HE).toMatch(/^[֐-׿]/);
+    expect(SESSION_EXPIRED_HE).not.toMatch(/[A-Za-z0-9]/);
+    expect(SESSION_EXPIRED_HE).toMatch(/\.$/);
+  });
+
+  it('⛔ is not a load failure reused — an expired session is a different event', () => {
+    expect(Object.values(FAILURE_HE)).not.toContain(SESSION_EXPIRED_HE);
+  });
+
+  /**
+   * 🔴 **This is the assertion that closes `F-138`ⓑ**, and it is measured across the whole
+   * of `app/` + `components/` rather than against the three files that happened to carry it.
+   */
+  it('⛔ no screen restates it as a literal — ⛔ zero local declarations', () => {
+    const offenders = SCREENS.filter((file) =>
+      markupOnly(readFileSync(file, 'utf8')).includes(SESSION_EXPIRED_HE),
+    );
+    expect(offenders, 'restate SESSION_EXPIRED_HE instead of importing it').toEqual([]);
+  });
+
+  /**
+   * ⛔ **And the two Amirnet wordings are ⛔ deliberately NOT swept in** (`T-384`ⓑ, verbatim).
+   * They name what the learner was about to do — «כדי להתחיל סימולציה» · «כדי לראות את
+   * הביצועים שלך» — which is information this sentence does not carry. A different sentence
+   * for a different screen is `T-056`'s own rule, ⛔ not a violation of it, and collapsing
+   * them would be a row in `amirnet`, ⛔ not here.
+   */
+  it('⛔ the two Amirnet sentences stay their own — ⛔ this guard does not reach them', () => {
+    for (const file of ['components/AmirnetSimulationEntry.tsx', 'components/AmirnetDashboardLive.tsx']) {
+      const src = readFileSync(file, 'utf8');
+      expect(src, file).toContain('SESSION_EXPIRED_HE =');
+      expect(src, file).not.toContain(SESSION_EXPIRED_HE);
+    }
   });
 });

@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import EnWord from '@/components/EnWord';
-import { FAILURE_HE } from '@/lib/core/failure';
 
 /**
  * שורה 5 של § 4.2ז — «רשימה מסודרת של המילים שסימן כלא ידע, כדי שיוכל לחזור עליהן»
@@ -105,7 +104,14 @@ export default function UnknownList({
         </button>
       )}
 
-      {failed ? <p className="text-base text-ink-muted">{FAILURE_HE.load}</p> : null}
+      {/* `T-384`ⓐ — ⛔ **`FAILURE_HE.load` was DELETED from here, and that is the row.**
+          🔬 `C-0647` counted **five** visible failure strings in **three** wordings for one
+          event on this screen, and this line was the fifth. The event is narrated ⛔ once,
+          in `<DeckSelector>`'s recovery block ABOVE this list — which is also the only
+          place carrying a way out of it (`T-349`). ⛔ A second sentence down here could
+          only tell the learner they had met a second problem.
+          ⛔ **`failed` itself is ⛔ not dropped:** it still keeps `empty` from claiming
+          «הרשימה ריקה» off a read that never arrived, which is `T-295`'s own rule. */}
       {empty ? <p className="text-base text-ink-muted">{EMPTY_HE}</p> : null}
 
       <ul aria-busy={loading} className="flex list-none flex-col gap-2 p-0">

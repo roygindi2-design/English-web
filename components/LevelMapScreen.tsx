@@ -12,7 +12,7 @@ import UnknownList, {
 } from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { MAX_QUEUE_LIMIT } from '@/lib/core/deck';
-import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE, SESSION_EXPIRED_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { LEVEL_LABELS_HE, type LevelSummary } from '@/lib/core/levelSummary';
@@ -62,7 +62,6 @@ const HEADING_HE = 'כרטיסיות';
 const INVARIANT_NOTE_HE = 'הסימון של מילים מתבצע בכרטיסיות בלבד';
 const CHOOSE_HE = 'בחר רמה להתחיל';
 const CHOOSE_HINT_HE = 'אפשר להחליף רמה בכל רגע.';
-const EXPIRED_HE = 'ההתחברות פגה. היכנס שוב.';
 const PRACTICE_HE = 'דרכים לתרגל';
 
 type SummaryResponse =
@@ -108,7 +107,7 @@ type ScreenState =
  */
 function failureText(code: string): string {
   if (code === 'schema_missing') return SCHEMA_MISSING_HE;
-  if (code === 'session_expired') return EXPIRED_HE;
+  if (code === 'session_expired') return SESSION_EXPIRED_HE;
   return FAILURE_HE.load;
 }
 

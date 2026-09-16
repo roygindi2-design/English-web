@@ -987,8 +987,7 @@
     "lib/testSource.ts"
   ],
   "components/UnknownList.tsx": [
-    "components/EnWord.tsx",
-    "lib/core/failure.ts"
+    "components/EnWord.tsx"
   ],
   "components/WordBank.test.ts": [],
   "components/WordBank.tsx": [
