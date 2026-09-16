@@ -738,6 +738,10 @@
     "lib/core/auth.ts",
     "lib/core/failure.ts"
   ],
+  "components/CardDeck.dom.test.tsx": [
+    "components/CardDeck.tsx",
+    "lib/core/deck.ts"
+  ],
   "components/CardDeck.test.ts": [
     "lib/testSource.ts"
   ],

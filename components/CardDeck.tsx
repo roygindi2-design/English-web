@@ -189,6 +189,17 @@ export default function CardDeck({
   );
 
   const remaining = cards.filter((card) => !graded.includes(deckCardKey(card)));
+  /**
+   * 📍 `T-394` — המכנה, המונה והאחוז. ⛔ שלושתם **נגזרים** מ-`cards` ו-`remaining`
+   * שכבר כאן: ⛔ אפס קריאה, ⛔ אפס `state` ו⛔ אפס מספר להמציא.
+   * ‏`position` הוא הכרטיס ש**מולו הלומד יושב עכשיו** (‏`completed + 1`), ⛔ ולא מספר
+   * הכרטיסים שנגמרו — ולכן הוא נחסם בתקרת `roundTotal`: ברגע ש-`remaining` מתרוקן
+   * הרכיב מרנדר את מסך הסיום, אבל חסם ⛔ אינו עולה דבר וטעות פה הייתה «21 מתוך 20».
+   */
+  const roundTotal = cards.length;
+  const completed = roundTotal - remaining.length;
+  const position = Math.min(completed + 1, Math.max(roundTotal, 1));
+  const completedPct = roundTotal === 0 ? 0 : (completed / roundTotal) * 100;
   const exitingKeys = exiting.map((card) => deckCardKey(card));
 
   /** ⛔ הסרה סופית. נקראת גם מ-`transitionend` וגם מהתקרה — `transitionend` ⛔ אינו מובטח
@@ -380,7 +391,59 @@ export default function CardDeck({
           {deck !== 'due' && (
             <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
           )}
-          <span data-remaining={remaining.length}>נותרו {remaining.length}</span>
+          {/* 📍 **⟦`T-394`⟧ «N מתוך M» **ליד** «נותרו N», ⛔ ולא במקומו.**
+              🔬 **נמדד `C-0659` ב-`/dev/deck` (‏`next start`, 375×780):** כל מה שהמסך אמר
+              על המיקום בסבב היה `נותרו 5` — **מספר בלי מכנה** ⇒ הלומד ⛔ אינו יודע אם הוא
+              בתחילת הסבב או בסופו, וזו בדיוק ההחלטה שהמסך מבקש ממנו.
+              ⛔ **והמכנה ⛔ אינו מספר חדש:** `cards.length` כבר בזיכרון — `remaining` נגזר
+              ממנו — ⇒ ⛔ אפס קריאות, ⛔ אפס מצב ו⛔ אפס מיגרציה.
+              ⛔ **ו«נותרו» נשאר:** הוא נמדד ב-`data-remaining` ע"י הרתמה מאז `C-0104`,
+              ושתי המחרוזות אומרות שני דברים — כמה **נשאר** וכמה **מתוך כמה**. */}
+          <span className="flex items-baseline gap-2">
+            <span data-deck-position={position}>
+              {position} מתוך {roundTotal}
+            </span>
+            <span aria-hidden className="text-ink-muted/60">·</span>
+            <span data-remaining={remaining.length}>נותרו {remaining.length}</span>
+          </span>
+        </div>
+
+        {/* 📊 **⟦`T-394`⟧ המסלול — מד התקדמות של סדרה אחת, ⛔ ולא גרף.**
+
+            🔬 **נמדד `C-0659` ב-`/dev/deck`, ⛔ ולא שוער:** `[role="progressbar"]` ⇒ **0**
+            ו-`<progress>` ⇒ **0**, בעוד `docs/design/render_video_A.py:336-338` מצייר
+            מסלול מלא-חלקי מתחת לכותרת — `c.rr(24, 152, LW-48, 6, 3, fill=BORDER_SUB)`
+            ומעליו מילוי ב-`BRAND` **מהקצה הימני** (‏`# RTL: fills right→left`).
+            ⇒ הגובה (6px ⇒ `h-1.5`), הרדיוס (מלא) והשוליים (24px ⇒ הגוטר של הכותרת)
+            נלקחו מהרנדר, ⛔ ולא נבחרו.
+
+            ⛔ **ו-`flex` רגיל, ⛔ ולא `flex-row-reverse`** — אותה מדידה בדיוק של `T-337`
+            ב-`<FilterBar>`: במיכל RTL `row` **כבר** מניח את הילד הראשון בימין, ו-
+            `flex-row-reverse` הופך זאת פעם שנייה ומחזיר ל-LTR.
+
+            ♿ **וה-`aria` ⛔ אינו קישוט:** `valuenow` הוא מה שהושלם, `valuetext` הוא
+            **אותה מחרוזת** שהעין קוראת ⇒ הצבע ⛔ אינו הערוץ היחיד (חוקה שכבה A), וקורא
+            מסך מקבל את המיקום בלי לראות את הפס.
+            ⛔ **⛔ ואפס תנועה:** `flex-basis` סטטי, ⛔ ללא `transition` ⇒
+            `prefers-reduced-motion` (`check:motion`) מכובד **בבנייה**.
+            ⛔ **⛔ ולא ניקוד, ⛔ לא רצף ו⛔ לא XP (`D-050`)** — זהו **מיקום**, ⛔ ולא תגמול. */}
+        <div
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuenow={completed}
+          aria-valuemax={roundTotal}
+          aria-valuetext={`${position} מתוך ${roundTotal}`}
+          className="flex h-1.5 overflow-hidden rounded-full bg-border-subtle"
+          data-deck-progress
+        >
+          {/* ⚠️ **`bg-brand-surface`, ⛔ ולא אסימון המותג החשוף — ו⛔ זו ⛔ אינה טעמנות.**
+              הרנדר צובע את המסלול ב-`BRAND` (`#3987e5`), ו-`lib/core/palette.test.ts`
+              (‏`F-036`) מודד אותו **4.42:1** ⇒ הוא ⛔ אינו מילוי, והשער הזה **קופא**
+              (חוקה שכבה A · רצפת ניגודיות). ⇒ `--brand-surface` הוא אותו אסימון מותג
+              שכל שאר הרכיבים כבר משתמשים בו לאותו תפקיד בדיוק (‏נקודות ההתקדמות
+              ב-`<AmirnetSectionBreak>`). ⇒ **אותה שפה חזותית, ⛔ בלי לפרוץ שער** —
+              והפרש הגוון יושב בשכבה ב׳ (חיה), ⛔ ולא בפריסה שהרנדר מחייב. */}
+          <span className="block bg-brand-surface" style={{ flexBasis: `${completedPct}%` }} />
         </div>
       </header>
 
