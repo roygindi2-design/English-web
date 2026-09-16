@@ -228,7 +228,15 @@ function StoryHeader({ children }: { children: React.ReactNode }): React.JSX.Ele
   return (
     <header className="flex flex-col gap-1 text-right">
       <p className="text-sm text-ink-muted">{KICKER_HE}</p>
-      <h1 className="text-2xl font-bold leading-tight">{children}</h1>
+      {/* ⛔ **`text-left` על ה-`<h1>` בלבד, ⛔ ולא על ה-`<header>` — `T-375`ⓐ.**
+      `T-240` קבעה שהכותרת **נשארת אנגלית**, אבל `render_video_A.py:989` מצייר שם
+      כותרת **עברית** ב-`anchor="rm"` ⇒ היישור לימין שנלקח מהרנדר נכון ⛔ רק לעברית,
+      והכותרת האנגלית ירשה אותו יתומה ונשברה כששתי שורותיה צמודות לימין — בדיוק הפגם
+      ש-`T-374` תיקנה בגוף הסיפור. ⛔ **וה-`<header>` ⛔ אינו הופך כולו:** הוא מחזיק גם
+      את הקיקר וגם את שורת ההסבר, ושתיהן עברית. ⛔ אין כאן `dir` ו⛔ אין `lang` בכתב
+      יד — `<EnWord>` נושא אותם, ו-`components/EnWord.test.ts` מפיל כל קובץ שכותב
+      אותם בעצמו (`T-009`). */}
+      <h1 className="text-2xl font-bold leading-tight text-left">{children}</h1>
       <p className="text-sm text-ink-muted">{SUBTITLE_HE}</p>
     </header>
   );

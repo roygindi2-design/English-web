@@ -435,3 +435,47 @@ describe('T-240 — the story title is tappable, and stays English', () => {
     expect(marked.map((el) => (el.textContent ?? '').trim())).toEqual(['river']);
   });
 });
+
+/**
+ * 🔴 **T-375ⓐ — הכותרת האנגלית קוראת שמאלה, והשורות העבריות סביבה ⛔ לא זזות.**
+ *
+ * 🔬 **הפער נמדד ב-375px אחרי שנחתה `T-240`, ⛔ ולא הוסק מקוד:** `T-240` קבעה
+ * שהכותרת **נשארת אנגלית** — אבל `render_video_A.py:989` מצייר שם כותרת **עברית**
+ * ב-`anchor="rm"`, כלומר היישור לימין שנלקח מהרנדר נכון ⛔ רק לעברית. ⇒ הכותרת
+ * האנגלית ירשה `text-right` מה-`<header>` ונשברה כששתי שורותיה צמודות לימין —
+ * **בדיוק הפגם ש-`T-374` תיקנה בגוף הסיפור**, שורה אחת מתחתיה.
+ *
+ * ⚠️ **ותרחיש הכשל שהשורה נקבה בו מראש הוא שהיישור ייכתב על ה-`<header>`:** הוא
+ * מחזיק גם את הקיקר וגם את שורת ההסבר, **ושתיהן עברית** ⇒ הן היו קופצות שמאלה.
+ * ⇒ שתי הטענות כאן, ⛔ ולא אחת: ה-`<h1>` זז, ⛔ והאחרות ⛔ לא.
+ */
+describe('T-375ⓐ — the English title reads left, and the Hebrew around it does not move', () => {
+  it('the `<h1>` carries `text-left`, exactly like the reading paragraph', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const h1 = container.querySelector('h1');
+    expect(h1).not.toBeNull();
+    expect(h1?.className).toContain('text-left');
+  });
+
+  it('⛔ the `<header>` itself stays right — the kicker and the subtitle are HEBREW', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const header = container.querySelector('h1')?.closest('header');
+    expect(header).not.toBeNull();
+    expect(header?.className).toContain('text-right');
+    expect(header?.className).not.toContain('text-left');
+    // ⛔ THE FAILURE SCENARIO THE ROW NAMED: neither Hebrew line may carry the flip.
+    const hebrewLines = Array.from(header?.querySelectorAll('p') ?? []);
+    expect(hebrewLines.map((p) => (p.textContent ?? '').trim())).toEqual([
+      'העולם · סיפורים',
+      'סיפור ברמה שלך · הקש על מילה לתרגום',
+    ]);
+    for (const p of hebrewLines) expect(p.className).not.toContain('text-left');
+  });
+
+  it('the title reads left in the QUESTION phase too — it is the same header', () => {
+    const { container } = render(
+      <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />,
+    );
+    expect(container.querySelector('h1')?.className).toContain('text-left');
+  });
+});
