@@ -244,7 +244,20 @@ export function StoryScreenView({
         <StoryReady payload={state.payload} initialPhase={initialPhase} />
       ) : (
         <>
-          <StoryHeader>{' '}</StoryHeader>
+          {/* ⏳ **T-382ⓐ — הכותרת היא הצורה הראשונה שנוחתת, ⇒ היא הצורה הראשונה בשלד.**
+              ⛔ ורק בטעינה: במצב כשל ⛔ אין כותרת שעומדת להגיע, ⇒ מלבן אפור שם היה
+              מבטיח משהו שלעולם ⛔ לא יבוא. הרווח הקשיח מחזיק את גובה ה-`<h1>` בדיוק
+              כפי שהחזיק עד היום. */}
+          <StoryHeader>
+            {state.kind === 'loading' ? (
+              <span
+                aria-hidden
+                className="inline-block h-7 w-4/5 rounded-md bg-border-subtle align-middle"
+              />
+            ) : (
+              ' '
+            )}
+          </StoryHeader>
           <StoryNotReady state={state} onRetry={onRetry} />
         </>
       )}
@@ -910,14 +923,85 @@ function StoryReady({
   );
 }
 
-function StoryNotReady({ state, onRetry }: { state: ScreenState; onRetry?: () => void }) {
-  if (state.kind === 'loading') {
-    return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-8">
-        <p className="text-lg text-ink-muted">{LOADING_HE}</p>
+/**
+ * ⏳ **T-382 — מה שנצבע בזמן ההתנעה הקרה הוא **צורת הסיפור**, ⛔ ולא משפט אפור.**
+ *
+ * 🔬 **הבעיה נמדדה, ⛔ ולא הורגשה:** `F-255` מדד בייצור 14/09 דרך `Kernel`, 375×780,
+ * ‏`TTFB` של **3,745ms קר מול 305ms חם** ⇒ שלוש שניות ויותר שבהן המסך צבוע. מה שישב
+ * כאן עד הטיק הזה היה אלמנט **אחד** — פסקה אחת בתוך מסגרת — כלומר המסך אמר «חכה»
+ * למשך שלוש שניות ואז החליף את עצמו כולו.
+ *
+ * ⛔ **ו-`loading.tsx` ⛔ לא היה פותר כאן דבר, וזו בדיוק הטעות ש-`T-373` נסוגה עליה
+ * (`D-250`):** ‏`/world/story` הוא `○` בבנייה — הקליפה כבר סטטית — וההמתנה היא על
+ * `fetch` של `ƒ /api/world/story` **בתוך הלקוח** ⇒ ⛔ אין כאן גבול `<Suspense>`
+ * שאפשר לתלות בו שלד, והמקום היחיד שמצייר את ההמתנה הוא הענף הזה.
+ *
+ * ⛔ **⛔ ולא ספינר (ⓑ):** ספינר אומר «משהו קורה», שלד אומר «זה מה שמגיע». הסדר כאן
+ * הוא הסדר האמיתי של `StoryReady` — שורת המצב, שורת הפתיחה, כרטיס הגוף, שורת המקרא,
+ * הפעולה הראשית — ⛔ כי שלד שצורתו ⛔ אינה הצורה שנוחתת הוא הבטחה שהמסך מפר, ו-
+ * `app/(tabs)/cards/loading.tsx` כותב את המשפט הזה בעצמו.
+ * ⚠️ **הכותרת ⛔ אינה כאן** — `StoryScreenView` כבר מצייר `<StoryHeader>` מעל כל מצב
+ * שאינו `ready` ⇒ שלד שני שלה היה **כפילות** שקופצת כשהאמיתית נוחתת.
+ *
+ * ⛔ **⛔ ואפס תנועה (ⓓ).** `prefers-reduced-motion` הוא שער (`check:motion`), ו⛔ אין
+ * תנועה ⇒ הוא מכובד **בבנייה**, ⛔ ולא בתנאי מדיה שמישהו ישכח. זהו בדיוק מה ש-
+ * `components/CardSkeleton.tsx` כבר עושה, ⛔ ואין כאן שפה שנייה.
+ *
+ * ♿ **ⓒ — `aria-busy` · `aria-live` · משפט `sr-only`.** קורא מסך מקבל **מילה**,
+ * ⛔ ולא שבע מלבנים ריקים; ⇒ כל הצורות `aria-hidden`.
+ */
+const SKELETON_LINE_WIDTHS = [
+  'w-full',
+  'w-full',
+  'w-11/12',
+  'w-full',
+  'w-10/12',
+  'w-2/3',
+] as const;
+
+function StorySkeleton(): React.JSX.Element {
+  return (
+    <div aria-busy="true" aria-live="polite" data-story-skeleton className="flex flex-col gap-5">
+      <span className="sr-only">{LOADING_HE}</span>
+
+      {/* שורת המצב: «סיפור N מתוך M» · הפס · שבב הרמה — ⛔ באותו סדר RTL של `StatusRow`. */}
+      <div aria-hidden className="flex items-center gap-3">
+        <span className="h-4 w-24 shrink-0 rounded-md bg-border-subtle" />
+        <span className="h-2 flex-1 rounded-full bg-border-subtle" />
+        <span className="h-7 w-12 shrink-0 rounded-full bg-border-subtle" />
       </div>
-    );
-  }
+
+      {/* שורת הפתיחה */}
+      <span aria-hidden className="h-4 w-3/5 rounded-md bg-border-subtle" />
+
+      {/* כרטיס הגוף — ⛔ אותו `rounded-2xl`, אותה מסגרת ואותו ריפוד של `data-story-body`,
+          ושש שורות ב-`leading-[34px]` של `36 § 3.2` ⇒ הגובה ⛔ אינו קופץ כשהטקסט נוחת.
+          ⚠️ השורה האחרונה קצרה, כמו סוף פסקה אמיתי. */}
+      <div
+        aria-hidden
+        className="rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5"
+      >
+        <div className="flex flex-col gap-[14px]">
+          {SKELETON_LINE_WIDTHS.map((w, i) => (
+            <span key={i} className={`h-5 rounded-md bg-border-subtle ${w}`} />
+          ))}
+        </div>
+      </div>
+
+      {/* שורת המקרא — הקו הירוק ו«ידועה» יושבים בקצה השמאלי, בדיוק כמו ב-`StoryReady`. */}
+      <div aria-hidden className="flex items-center justify-between gap-3">
+        <span />
+        <span className="h-4 w-20 rounded-md bg-border-subtle" />
+      </div>
+
+      {/* הפעולה הראשית — ⛔ אותו גובה מגע ואותו רדיוס, ⇒ היא ⛔ אינה זזה כשהיא נעשית אמיתית. */}
+      <span aria-hidden className="min-h-touch w-full rounded-2xl bg-border-subtle py-4" />
+    </div>
+  );
+}
+
+function StoryNotReady({ state, onRetry }: { state: ScreenState; onRetry?: () => void }) {
+  if (state.kind === 'loading') return <StorySkeleton />;
 
   if (state.kind === 'no_level') {
     return (

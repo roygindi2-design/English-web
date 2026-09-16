@@ -697,6 +697,74 @@ describe('T-378 — הקשה על מילה אומרת **על איזו מילה**
  * ✘ ⛔ אינו מוכיח: את הפיקסל. זו ההליכה החיה, והיא בשורת המסירה.
  */
 /**
+ * ⏳ **T-382 — מה שנצבע בשלוש השניות של ההתנעה הקרה.**
+ *
+ * 🔬 **הנמדד:** `F-255` — `TTFB 3,745ms` קר מול `305ms` חם בייצור (14/09, `Kernel`,
+ * 375×780). ⇒ מצב ה-`loading` של המסך הזה ⛔ אינו הבזק, הוא **המסך** לשלוש שניות.
+ * ⛔ **וזו ⛔ אינה בדיקת מחלקות:** מה שנמדד כאן הוא שהצורות שנצבעות הן הצורות שנוחתות
+ * — הכרטיס, מספר השורות, גובה המגע של הפעולה — כי שלד שצורתו אחרת הוא קפיצת פריסה
+ * בכל פתיחה, וזה גרוע מהמשפט האפור שהיה כאן.
+ */
+describe('T-382 — שלד בצורת מסך הסיפור, ⛔ ולא משפט אפור', () => {
+  const loading = () => render(<StoryScreenView state={{ kind: 'loading' }} />);
+
+  it('ⓐ הסדר האמיתי של `StoryReady`: שורת מצב · שורת פתיחה · כרטיס גוף · מקרא · פעולה', () => {
+    const { container } = loading();
+    const skeleton = container.querySelector('[data-story-skeleton]');
+    expect(skeleton).toBeTruthy();
+    // ⛔ חמישה בלוקים, ⛔ ולא «משהו מלבני»: זה הסדר האנכי שהמסך האמיתי נוחת בו.
+    expect(skeleton?.children.length).toBe(6); // sr-only + חמשת הבלוקים
+    const card = skeleton?.querySelector('.rounded-2xl.border');
+    expect(card).toBeTruthy();
+    // 5–7 שורות בכרטיס הגוף — ⛔ לא שורה אחת ו⛔ לא פסקה מלאה.
+    const lines = card?.querySelectorAll('span').length ?? 0;
+    expect(lines).toBeGreaterThanOrEqual(5);
+    expect(lines).toBeLessThanOrEqual(7);
+  });
+
+  it('ⓑ ⛔ אפס ספינר ו⛔ אפס תנועה — `prefers-reduced-motion` מכובד בבנייה', () => {
+    const { container } = loading();
+    const html = container.innerHTML;
+    expect(html).not.toMatch(/animate-|animation|transition-|spin/);
+  });
+
+  it('ⓒ קורא מסך מקבל מילה, ⛔ ולא שבעה מלבנים ריקים', () => {
+    const { container } = loading();
+    const skeleton = container.querySelector('[data-story-skeleton]') as HTMLElement;
+    expect(skeleton.getAttribute('aria-busy')).toBe('true');
+    expect(skeleton.getAttribute('aria-live')).toBe('polite');
+    expect(screen.getByText('טוען את הסיפור שלך…').className).toContain('sr-only');
+    // ⛔ כל צורה שאינה המשפט מוסתרת מעץ הנגישות.
+    for (const child of Array.from(skeleton.children).slice(1)) {
+      expect(child.getAttribute('aria-hidden')).toBe('true');
+    }
+  });
+
+  it('⛔ הפעולה הראשית בשלד נושאת את אותו גובה מגע ורדיוס של האמיתית', () => {
+    const { container } = loading();
+    const action = (container.querySelector('[data-story-skeleton]') as HTMLElement).lastElementChild;
+    expect(action?.className).toContain('min-h-touch');
+    expect(action?.className).toContain('rounded-2xl');
+    expect(action?.className).toContain('w-full');
+  });
+
+  it('ⓐ הכותרת מקבלת שלד משלה — ⛔ ופעם אחת, ב-`StoryHeader` שכבר מעל כל מצב', () => {
+    const { container } = loading();
+    expect(container.querySelectorAll('header').length).toBe(1);
+    expect(container.querySelectorAll('[data-story-skeleton] header').length).toBe(0);
+    expect(container.querySelector('header h1 span[aria-hidden]')).toBeTruthy();
+  });
+
+  it('⛔ ובמצב כשל ⛔ אין שלד כותרת — ⛔ אין כותרת שעומדת להגיע', () => {
+    const { container } = render(
+      <StoryScreenView state={{ kind: 'no_level' }} />,
+    );
+    expect(container.querySelector('[data-story-skeleton]')).toBeNull();
+    expect(container.querySelector('header h1 span[aria-hidden]')).toBeNull();
+  });
+});
+
+/**
  * 🔙 **T-381 — הלומד שטעה יכול לחזור לפסקה שבה התשובה כתובה, ולחזור לשאלה.**
  *
  * 🔬 **מה שנמדד לפני הטיק הזה:** `grep -n 'setPhase' components/StoryScreen.tsx` החזיר
