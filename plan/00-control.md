@@ -1,16 +1,16 @@
 <!--
-NEXT_AGENT: QA                                # ▶️ C-0642 (DEV): **בנייה — שורה אחת, `story`, והתוצר שלה הוא **מספר שהפריך את ההנחה של השורה עצמה.** `T-209` ⓒ+ⓑ: הבריכה שהלומד רואה היא **3 סיפורים** (`route.ts:78` מסנן `.eq(cefr_level)` לפני `pickStory`), «נפגשות ≥2» היא **26/27/27/26 מתוך 97/120/122/135** ו**בלתי-תלויה בסדר** ⇒ סידור מחדש ⛔ אינו מוסיף מפגש; הוא **מקדים 25**. ‏`story` ⬜=**3**.
-STATE: READY                      # ▶️ C-0642 (DEV): `verify` מלא ירוק דרך ה-hook (attestation על הקצה). ⛔ טיק ⛔ לא-UI (‏`lib/core/` + סקריפט מדידה) ⇒ ⛔ אין חובת הליכה ב-STEP 6.5. ⛔ אין חוסם.
+NEXT_AGENT: DEV                    # ▶️ C-0643 (PM): **תכנון — 3 שורות `story` נפתחו (`T-381`·`T-382`·`T-383`) ו-`T-208` שוחררה מ-⛔ ל-⬜ עם `D-254`.** ⇒ `story` ⬜=**7**. ⛔ אפס קוד, ⛔ אפס חסם.
+STATE: PLANNING                   # ▶️ C-0643 (PM): הליכת מסכים חיה 375px (13 מסכים, `next start`) + `diff:render` בעיניים מול `kol-A-05-story`. ⛔ אפס שינוי קוד ⇒ ⛔ אין הליכה שנייה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-16T05:26:00Z"   # C-0642 (DEV, בנייה) — שורה אחת נבנתה ונדחפה. הנעילה של QA (C-0641) הייתה תפוסה בפתיחה ⇒ **Smart Wait, 2 סבבים**, שוחררה 05:15:33Z ⇒ ⛔ אין נסיגה.
+LAST_HANDOFF_AT: "2026-09-16T06:00:52Z"   # C-0643 (PM, תכנון). הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אין Smart Wait ו⛔ אין נסיגה.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "pm-agent"       # 🔒 C-0643 (PM) — נעילה נלקחה בתחילת הטיק, קומיט בודד, לפני כל עבודה (`F-251`).
-LOCK_AT: "2026-09-16T05:47:05Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0643 (PM, תכנון) סגור. `verify` מלא ירוק ומיוחס, נדחף ל-`work/current`.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
-#   story:  18 / 120           # § 13-1 · **המוקד**. ⬜=3 · 🟣=7 · ⛔=1 (נמדד אחרי C-0642). הנרטיב ⇒ `plan/archive/control-log.md`
+#   story:  18 / 120           # § 13-1 · **המוקד**. ⬜=7 · 🟣=4 · ⛔=0 (נמדד אחרי C-0643). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  14 / 120           # § 13-3 · ⬜=1 · ⛔ אינה חתומה (ⓑⓒ ב-env). הנרטיב ⇒ `plan/61-deferred.md`
 #   arena:  25 / 120           # § 13-4 · ⬜=4 · ⛔ אינה חתומה. הנרטיב ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md`
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: story            # ▶️ **הוזז C-0634 (DEV · `§ 0.23 ז׳` ①→④, גלגול מסביב).** 🔬 נספר ב-`docs/plan-open.md` בטיק הזה, ⛔ ולא שוער: `amirnet` ⬜=**0** (‏`T-312`/`T-324` ⛔ חסומות, `T-372` 🟣) ⇒ שלב ④. `amirnet` הוא פריט 7 ב-`36 § 13` ⇒ הגלגול מסביב מגיע ל-`story` (פריט 1), שמחזיק **5 ⬜ כשירות ל-DEV** (`T-232`·`T-240`·`T-241`·`T-266`·`T-269`) ⇒ הראשון ברצף עם עבודה. ⛔ אף מחלקה ⛔ לא נעברה בדרך ⇒ ⛔ אין שורת חוב חדשה ב-`61-deferred` (בדיקה 13 על `story`=1 היא ריקה בהגדרה). ⛔ החתימה של `amirnet` נשארת של QA בלבד.
 PREV_WORKSTREAM: "amirnet"     # 🆕 C-0634 (DEV) — המחלקה שממנה נסוג המוקד. בדיקות 13 ו-14 מודדות ממנה. ⛔ «התקדמתי» ⛔ אינו «גמרתי»: `amirnet` נשארת ברוטציה ו⛔ אינה חתומה.
-WORKSTREAM_ENDING: ""             # 🟢 **רוקן C-0638 (PM) — מדידה, ⛔ ולא הערכה.** שלוש שורות נפתחו בטיק הזה ⇒ `story` ⬜=**6** ⇒ **>5** ⇒ האות כבוי (`STEP 5.7`). ⛔ אינו חותם ⛔ ואינו מבטל חותמת — החתימה של QA בלבד.
+WORKSTREAM_ENDING: ""             # 🟢 **נשאר ריק — מדידה `C-0643`, ⛔ ולא הערכה.** `story` ⬜=**7** (3 נותרו · 3 נפתחו · `T-208` שוחררה) ⇒ **>5** ⇒ האות כבוי (`STEP 5.7`). ⛔ אינו חותם ו⛔ אינו מבטל חותמת.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
@@ -61,8 +61,8 @@ PROMOTIONS_THIS_MONTH: 18         # 18 this month (➕ 14/09 13:30Z, C-0607 PROM
 
 
 
-| C-0640 | CONTENT | QA (ללא שינוי ב-`NEXT_AGENT`) | 2026-09-16T04:02:00Z | 📚 **אצוות רקע — 14 מילים Tier 1 אמירנט (`oven`…`photography`), K-005/K-007.** שער אמיתי 14/14 (סבב שני), 0 `low`. `T-353` עדיין ⬜ ⇒ נכתב עם המנגנון המלא, ⛔ לא בקיצור-הנפח שרוי ביקש 14/09. כיסוי: 902→916/3,382. שלוש כותרות דולגו (`pacific`·`pc`·`pence`, מנומק במניפסט). | `data/generated/batch-2026-09-16.jsonl` · `manifest-2026-09-16.json` · `plan/25-content-commissions.md` · `plan/80-content-lessons.md` |
 
-| C-0641 | QA | DEV | 2026-09-16T05:09:36Z | 🚪 **שער — מלא ירוק, מוזג ל-`dev`.** `verify` מלא (4678/4678, כולל `build`+`check:mobile`) · `loop:health` 22/23 (17=PROMOTER שקט 39.2ש׳, נמדד מחדש ב-`F-264`/פריט 128, ⛔ לא ממצא חדש) · הליכה חיה + `diff:render` על `/dev/story`/`/dev/story/done` — ⛔ אין ממצא עיצוב. `merge --ff-only` (20 קומיטים) · 5 🟣→✅ (`T-207`·`T-241`·`T-375`·`T-378`·`T-379`) · `RELEASE_READY` + שלוש הקשות חדשות ב-`03-for-roy`. `ACTIVE_WORKSTREAM` נשאר `story` (⬜=4>0, `STEP 5.8` — כלום לא הוזז). | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/03-for-roy.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
 
-| C-0642 | DEV | QA | 2026-09-16T05:26:00Z | 🔨 **בנייה — `T-209`, והתוצר האמיתי שלה הוא שהמדידה **הפריכה את ⓑ של השורה**.** ⓒ נעשה ראשון, כפי שהשורה דורשת: `npm run measure:story-repetition` (חדש) קורא את `0004_stories.sql` ומדפיס את ההתפלגות. 🔬 **מה שהתגלה ו⛔ לא שוער:** `app/api/world/story/route.ts:78` מסנן `.eq('cefr_level', level)` **לפני** `pickStory` ⇒ הבריכה היא **3 סיפורים ולא 12**; מילות תוכן שנפגשות ≥2 בתוך רמה הן **26/27/27/26 מתוך 97/120/122/135**, ו**המספר הזה בלתי-תלוי בסדר** — מעבר מלא קורא את אותם סיפורים ⇒ ההנחה «סידור מחדש מעלה את החזרתיות» **שקרית אריתמטית**, ⛔ ולא רק בלתי-נמדדת. מה שסדר כן מזיז: **25 מפגשים מוקדמים** (אחרי הסיפור השני A1 ‏8⇢13 · A2 ‏9⇢16 · B1 ‏6⇢19 · B2 ‏13⇢13). ⓑ נבנה על הראיה ועל **נתיב הדילוג בלבד** — `pickStory` בוחר את הלא-נקרא שחולק הכי הרבה מילות תוכן (‏`D-121 § ה`), סיפור היום ⛔ אינו זז, ⛔ אפס `Math.random`, ⛔ אפס שדה, ⛔ אפס מיגרציה. ⚠️ ו**הפרמטר `read` ⛔ עדיין ⛔ אינו מיוצר בייצור** ⇒ הבורר הוא no-op ללומד עד ש-`T-269` ⓐ תנחת — ו-`T-269` ⓑ הייתה חסומה בדיוק בקיומו. | `lib/core/storyOverlap.ts` · `lib/core/storyOverlap.test.ts` · `lib/core/storyPick.ts` · `lib/core/storyPick.test.ts` · `scripts/measure-story-repetition.mjs` · `scripts/measure-story-repetition.test.ts` · `package.json` · `docs/api-contract.md` · `plan/50-tasks.md` · `docs/architecture-map.json` |
+| C-0642 | DEV | QA | 2026-09-16T05:26:00Z | 🔨 **בנייה — `T-209`, והתוצר האמיתי שלה הוא שהמדידה **הפריכה את ⓑ של השורה**.** ⓒ נעשה ראשון, כפי שהשורה דורשת: `npm run measure:story-repetition` (חדש) קורא את `0004_stories.sql` ומדפיס את ההתפלגות. 🔬 **מה שהתגלה ו⛔ לא שוער:** … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0642⟩ | `lib/core/storyOverlap.ts` · `lib/core/storyOverlap.test.ts` · `lib/core/storyPick.ts` · `lib/core/storyPick.test.ts` · `scripts/measure-story-repetition.mjs` · `scripts/measure-story-repetition.test.ts` · `package.json` · `docs/api-contract.md` · `plan/50-tasks.md` · `docs/architecture-map.json` |
+
+| C-0643 | PM | DEV | 2026-09-16T06:00:52Z | 🗺️ **תכנון — אספקה: 3 שורות `story` חדשות ושורה רביעית ששוחררה.** הליכת מסכים חיה 375px (13 מסכים, `next start`) + `diff:render` בעיניים מול `kol-A-05-story`. `T-381` המעבר «קריאה ⇢ שאלה» חד-כיווני (`setPhase` = קריאה אחת) · `T-382` שלד למסך הסיפור … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0643⟩ | `plan/50-tasks.md` · `plan/40-decisions.md` · `plan/05-departments.md` · `plan/60-findings.md` · `plan/00-control.md` |
