@@ -62,11 +62,27 @@ export interface CounterCell {
   readonly value: number | null;
 }
 
-/** סדר RTL, ⛔ מוצהר כאן ו⛔ לא ב-JSX: `36 § 5` קובע «ידעתי» בימין. */
+/**
+ * סדר RTL, ⛔ מוצהר כאן ו⛔ לא ב-JSX: `36 § 5` קובע «ידעתי» בימין.
+ *
+ * 🔢 **⟦`T-390` · `§ 4.2ז`⟧ «ברמה» ⛔ אינו קישוט — הוא ה**אוכלוסייה** של המספר.**
+ *
+ * 🔬 **נמדד בקוד, ⛔ ולא שוער — אותו פרדיקט בדיוק, שני היקפים:** התא הזה ניזון מ-
+ * `summary.inReviewList`, שהוא `LevelSummary` ⇒ **מוגבל לרמה אחת**; ובאותו מסך בדיוק
+ * אריח «חזרה» ב-`<DeckSelector>` נושא את **אותן שתי מילים** על מספר שמגיע מ-
+ * `deck=unknown`, שמסונן ב-`user_id` **בלבד** (‏`app/api/study/queue/route.ts`) ⇒ **כל
+ * הרמות**. ⇒ גם כששתי הקריאות **מצליחות** שני המספרים רשאים להיות שונים, ו⛔ שום דבר
+ * במסך ⛔ לא אמר ללומד למה.
+ * ⇒ **מ-2 מספרים עם משמעות אחת ל-2 מספרים עם 2 משמעויות מוצהרות.** הצד השני של אותו
+ * זוג הוא `PRACTICE_NOTE_HE` ב-`<DeckSelector>` — «…בכל הרמות».
+ * ⚠️ **ורק התא הזה, ⛔ ולא שלושתם:** «ידעתי» ו«לא סוננו» ⛔ אין להם קורא שני על המסך
+ * הזה, וכותרת המקטע («התקדמות ברמה») כבר מצהירה עליהם. הצהרה חוזרת בשלושה תאים היא
+ * רעש, ⛔ ולא דיוק.
+ */
 export function counterCells(summary: LevelSummaryLike | null): readonly CounterCell[] {
   return [
     { key: 'known', labelHe: 'ידעתי', value: summary === null ? null : summary.known },
-    { key: 'unknown', labelHe: 'לא ידעתי', value: summary === null ? null : summary.inReviewList },
+    { key: 'unknown', labelHe: 'לא ידעתי ברמה', value: summary === null ? null : summary.inReviewList },
     { key: 'unfiltered', labelHe: 'לא סוננו', value: summary === null ? null : summary.unseen },
   ];
 }
