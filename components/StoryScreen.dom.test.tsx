@@ -56,10 +56,12 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
     // ⛔ THE POINT OF THE TEST: the chrome must still be there after the swap.
     expect(screen.getByText('סיפור 3 מתוך 12')).toBeTruthy();
     // ⚠️ **⟦T-207 · `§ 4.2כא` ⓔ⟧ הסריקה הזאת החזיקה את שורת המלאי, והיא ⛔ כבר אינה
-    // על המסך.** מה שהטענה כאן באמת בודקת הוא ש**הכרום שורד את ההחלפה**, ⇒ היא עוברת
-    // למקרא «ידועה» — האלמנט שבאמת נשאר בשני המצבים — ומוסיפה את הצד השני של `ⓒ`:
-    // ⛔ אפס מילים שנוספו ⇒ ⛔ אין שורת סיכום, ⛔ גם ⛔ לא אחרי ההחלפה.
-    expect(screen.getByText('ידועה')).toBeTruthy();
+    // על המסך.** מה שהטענה כאן באמת בודקת הוא ש**הכרום שורד את ההחלפה**.
+    // 🔴 **⟦T-379 ⓒ⟧ והעוגן עובר שוב, ⛔ ומאותה סיבה בדיוק כמו בפעם הקודמת:** המקרא
+    // «ידועה» ⛔ כבר אינו אלמנט ששורד את ההחלפה — הוא מפרש קו תחתון **בגוף הסיפור**,
+    // וגוף הסיפור ⛔ אינו על המסך בשלב השאלה. ⇒ העוגן הוא שורת המצב, שהיא כרום
+    // בשני המצבים, וזה מה שהטענה הזאת תמיד התכוונה למדוד.
+    expect(screen.getByText('סיפור 3 מתוך 12')).toBeTruthy();
     expect(document.querySelector('[data-story-summary]')).toBeNull();
   });
 
@@ -630,5 +632,76 @@ describe('T-378 — הקשה על מילה אומרת **על איזו מילה**
     clickWord(bodyWord('library'));
     const tail = container.querySelector('[data-word-popover] [data-word-popover-tail]');
     expect(tail).not.toBeNull();
+  });
+});
+
+
+/**
+ * 🔴 **T-379 — ⛔ אין אלמנט דקורטיבי בין שתי פעולות.**
+ *
+ * 🔬 **נמדד חי על `/dev/story/done` ב-375×780 (`next start`), ⛔ ולא שוער.** הסדר
+ * היה: שורת «עברת על N» ⇒ הפעולה המשנית «לתרגל אותן בכרטיסיות» ⇒ **המקרא «ידועה»**
+ * ⇒ הפעולה הראשית «חזרה לעולם». ⇒ קו ירוק ומילה תלויים **בין שני כפתורים**, ⛔ בלי
+ * ולו מילה מסומנת אחת על המסך שאליה הם מתייחסים.
+ *
+ * ✔ מוכיח: המקרא חי בשלב הקריאה ו⛔ אינו קיים בשלב השאלה.
+ * ✔ מוכיח: ⛔ אין ולו אלמנט אחד בין שתי הפעולות בסוף הסיפור.
+ * ✔ מוכיח: היציאה ⛔ **לא נמחקה** — `36 § 7` נוקב בה.
+ * ✘ ⛔ אינו מוכיח: את הפיקסל. זו ההליכה החיה, והיא בשורת המסירה.
+ */
+describe('T-379 — המקרא מופיע ⛔ רק כשיש מה למקרא', () => {
+  it('ⓒ חי בשלב הקריאה — שם יש קו ירוק בגוף הסיפור', () => {
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    expect(screen.getByText('ידועה')).toBeTruthy();
+  });
+
+  it('🔴 ⓑⓒ ו⛔ אינו קיים בשלב השאלה — גוף הסיפור ⛔ אינו על המסך', () => {
+    const { container } = render(
+      <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />,
+    );
+    expect(container.querySelector('[data-story-body]')).toBeNull();
+    expect(screen.queryByText('ידועה')).toBeNull();
+  });
+
+  it('🔴 ⓑ ⛔ אפס אלמנטים בין הפעולה המשנית לפעולה הראשית', () => {
+    const { container } = render(
+      <StoryScreenView
+        state={{ kind: 'ready', payload: { ...PAYLOAD, counts: { ...PAYLOAD.counts, alreadyKnown: 2 } } }}
+        initialPhase="question"
+      />,
+    );
+    const practice = screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' });
+    const exit = screen.getByRole('link', { name: 'חזרה לעולם' });
+    // ⛔ שניהם אחים באותה עמודה ⇒ «ביניהם» הוא ספירת אחים, ⛔ ולא עין.
+    expect(practice.parentElement).toBe(exit.parentElement);
+    const siblings = Array.from(practice.parentElement?.children ?? []);
+    expect(siblings.indexOf(exit) - siblings.indexOf(practice)).toBe(1);
+  });
+
+  it('⛔ ⓓ והיציאה ⛔ לא נמחקה — `36 § 7` נוקב בה', () => {
+    render(
+      <StoryScreenView
+        state={{ kind: 'ready', payload: { ...PAYLOAD, counts: { ...PAYLOAD.counts, alreadyKnown: 2 } } }}
+        initialPhase="question"
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' })).toBeTruthy();
+  });
+
+  it('🔴 ⓓ והמדרג ⛔ כבר אינו צבע: הפעולה המשנית ⛔ אינה נמתחת, וטקסטה קטן', () => {
+    render(
+      <StoryScreenView
+        state={{ kind: 'ready', payload: { ...PAYLOAD, counts: { ...PAYLOAD.counts, alreadyKnown: 2 } } }}
+        initialPhase="question"
+      />,
+    );
+    const practice = screen.getByRole('link', { name: 'לתרגל אותן בכרטיסיות' });
+    const exit = screen.getByRole('link', { name: 'חזרה לעולם' });
+    expect(practice.className).toContain('self-start');
+    expect(practice.className).toContain('text-sm');
+    expect(exit.className).toContain('w-full');
+    expect(exit.className).toContain('text-lg');
+    // ⛔ ⛔ ו-44px הוא שער קפוא — הוא ⛔ לא זז.
+    expect(practice.className).toContain('min-h-touch');
   });
 });

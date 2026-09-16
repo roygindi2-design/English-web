@@ -27,6 +27,11 @@ import { shuffleAnswers, type StoryQuestion } from '@/lib/core/storyQuestion';
  * ⛔ **המשוב ⛔ אינו צבע בלבד** (חוקה שכבה A): כל שורה שנחשפת נושאת **אייקון SVG
  * ותווית עברית כתובה**. ⛔ אמוג'י אסור.
  *
+ * 🆕 **T-379 ⓓ — הפעולה המשנית היא משנית, וזה נמדד ⛔ ולא נטען.** היא ישבה ברוחב
+ * מלא באותו גובה כמו הפעולה הראשית ⇒ המדרג היחיד שהפריד ביניהן היה **המילוי**. ⇒
+ * היא ⛔ כבר אינה נמתחת, וטקסטה וריפודה קטנים ⇒ ההבדל הוא גודל וצורה. ⛔ **הקיום
+ * ⛔ לא נגע** (`36 § 7` נוקב ביציאה), ו⛔ גם ⛔ לא 44px.
+ *
  * ⚠️ **«עברת על N מילים», ⛔ ולעולם לא «אתה יודע אותן»** — `§ 4.2יג-ב ⓒ`, ⛔ לא בוטל:
  * הלומד אולי דילג, ו⛔ אין לנו דרך לדעת. טענה חזקה מזה היא המצאה.
  *
@@ -174,10 +179,20 @@ export default function StoryEndScreen({
         </p>
       ) : null}
 
+      {/* 🔴 **T-379 ⓓ — המדרג ⛔ כבר אינו נשען על צבע בלבד.**
+          🔬 **נמדד חי על `/dev/story/done`:** «לתרגל אותן בכרטיסיות» ו«חזרה לעולם»
+          היו **שתי פעולות ברוחב מלא באותו גובה** — הראשונה מתאר והשנייה מלאה ⇒ מה
+          שמבדיל ביניהן הוא המילוי, כלומר **צבע**. ברנדר יש באזור הזה פעולה ראשית
+          **אחת** (`render_video_A.py`: כפתור אחד ב-`ST_Y + ST_H + 50`).
+          ⛔ **והיציאה ⛔ אינה נמחקת** — `36 § 7` נוקב בה מילה במילה ⇒ שונה
+          **המשקל**, ⛔ ולא הקיום: היא ⛔ כבר אינה נמתחת לרוחב המלא (‏`self-start`
+          מבטל את `align-items: stretch` של העמודה), הטקסט יורד מ-`text-lg` ל-`text-sm`
+          והריפוד מתהדק ⇒ ההבדל הוא **גודל וצורה**, ⛔ ולא גוון.
+          ⚠️ **ו-44px ⛔ אינם זזים** — `min-h-touch` נשאר, וזה שער קפוא. */}
       {reviewedCount > 0 ? (
         <Link
           href={CARDS_HREF}
-          className="inline-flex min-h-touch items-center rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90"
+          className="inline-flex min-h-touch self-start items-center rounded-lg border border-border-strong px-4 py-2 text-sm text-ink-muted active:opacity-90"
         >
           {PRACTICE_HE}
         </Link>
