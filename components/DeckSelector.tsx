@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import LockIcon from '@/components/LockIcon';
+import UnknownMarkIcon from '@/components/UnknownMarkIcon';
 import { apiGet } from '@/lib/api/client';
 import {
   DECK_ALL_EMPTY_ACTION_HE,
@@ -212,6 +213,13 @@ type DeckEntry = {
    * coupling that made `«נעול»` a magic string.
    */
   readonly locked?: boolean;
+  /**
+   * `T-388` — ⛔ **נגזר מהחפיסה, ⛔ ולא מהמפתח בתוך ה-JSX.** הרנדר
+   * `docs/design/kol-A-02-deck.png` מצייר את «חזרה» בגוון האזהרה ועם ✕ — כי זו
+   * החפיסה של מה ש**נכשל**, ⛔ ולא עוד רשימה. ⛔ הגוון שייך ל**ישות**, כך שה-JSX
+   * ⛔ אינו מחזיק `entry.key === 'unknown'` בשום מקום.
+   */
+  readonly tone?: 'danger';
 } & (
   | { readonly enabled: true; readonly href: string }
   | { readonly enabled: false; readonly href: string | null }
@@ -234,6 +242,28 @@ function noteFor(count: number | null): string {
 }
 
 /**
+ * `T-388` — 🎨 **שלוש רמות משקל, ⛔ ולא אחת** — נגזר מ-`docs/design/kol-A-02-deck.png`.
+ *
+ * 🔬 **מה שנמדד בהליכה חיה 16/09 (‏`next start`, 375px) מול הרנדר, ⛔ ולא שוער:** הרנדר
+ * מצייר את «סינון מילים» כאריח **מלא** (רקע מותג, טקסט על-מותג) ואת «חזרה» בגוון
+ * **אזהרה** עם ✕ — כלומר שתי רמות משקל נפרדות מעל השאר. המוצר החי מצייר את **ארבעת**
+ * האריחים באותה מסגרת `border-border-strong` בדיוק ⇒ **מ-0 רמות היררכיה ל-3**.
+ *
+ * ⛔ **ומי שמקבל את המילוי ⛔ אינו מפתח קשיח.** הוא `primaryKey` — האריח הפעיל הראשון
+ * בסדר של `36 § 5` — ⇒ ⛔ בדיוק הצומת ש-`F-027` כבר סופר, והספירה נשארת **אחת**
+ * בהגדרה. ⛔ לא נוסף ו⛔ לא הוסר ולו `[data-primary-action]` אחד.
+ *
+ * ⚠️ **וגוון האזהרה נסוג מפני המילוי, ⛔ ולא מצטבר עליו.** כשהחפיסה של «חזרה» היא גם
+ * הראשית (כל השאר ריקות), אריח **מלא ואדום** היה רמה רביעית שהרנדר ⛔ אינו מכיר.
+ * ⇒ **המילוי גובר**, והגליף נשאר — הוא מסמן את החפיסה, ⛔ לא את המשקל.
+ */
+function tileTone(entry: DeckEntry, primaryKey: string | null): string {
+  if (entry.key === primaryKey) return 'border-transparent bg-brand-surface font-semibold text-brand-on';
+  if (entry.tone === 'danger') return 'border-danger text-danger';
+  return 'border-border-strong text-ink';
+}
+
+/**
  * `T-295`ⓒ — **a real zero stays `0`**, and that half of the rule is untouched: `count === 0`
  * renders the sentence with `0` in it, because an empty deck is ⛔ not a failure.
  *
@@ -249,12 +279,13 @@ function toEntry(input: {
   readonly href: string | null;
   readonly count: number | null;
   readonly note?: string;
+  readonly tone?: 'danger';
 }): DeckEntry {
-  const { key, label, href, count } = input;
+  const { key, label, href, count, tone } = input;
   const note = input.note ?? noteFor(count);
   return href !== null && count !== null && count > 0
-    ? { key, label, note, enabled: true, href }
-    : { key, label, note, enabled: false, href };
+    ? { key, label, note, tone, enabled: true, href }
+    : { key, label, note, tone, enabled: false, href };
 }
 
 /**
@@ -346,6 +377,7 @@ export default function DeckSelector({
       href: '/study?deck=unknown',
       count: unknown?.total ?? null,
       note: PRACTICE_NOTE_HE(noteFor(unknown?.total ?? null)),
+      tone: 'danger',
     }),
     toEntry({
       key: 'due',
@@ -490,6 +522,13 @@ export default function DeckSelector({
           // NAME above a sentence that carries the number. If each branch carried its own
           // copy, the disabled one could quietly lose the number, and «disabled WITH the
           // number» is the whole rule (§ 4.2ו).
+          /* `T-388` — ⛔ **והמשפט מתחת לשם חייב לרדת מהמילוי יחד עם השם.**
+             🔬 נמדד בהליכה חיה אחרי החצי הראשון של השורה: `text-ink-muted` הוא אפור
+             מעומעם, ועל רקע `--brand-surface` (‏`#1d4ed8`) הוא כמעט בלתי-קריא — ⇒
+             האריח הראשי היה קונה היררכיה במחיר **המספר שהוא נושא**. ⛔ הגוף משותף
+             לשני הענפים בכוונה (§ 4.2ו — «מושבת **עם** המספר»), ⇒ הגוון נמסר לו
+             כפרמטר, ⛔ ו⛔ לא נכתב ענף שני שבו המספר יכול ללכת לאיבוד. */
+          const onFill = entry.enabled && entry.key === primaryKey;
           const body = (
             <>
               <span className="inline-flex items-center gap-2 text-lg font-semibold">
@@ -499,6 +538,10 @@ export default function DeckSelector({
                     word is a single channel. ⚠️ **Keyed to `entry.locked` since C-0318**,
                     ⛔ no longer to the note's TEXT: the note is a sentence now, and a tile
                     can be locked while still showing its number (F-140 · «סינון מילים»). */}
+                {/* `T-388` — ⛔ **הגליף לפני המילה**, בדיוק כמו סימן הנעילה, ⛔ ולא
+                    במקומה. ברנדר הוא יושב בקצה האריח של «חזרה» ומסמן **איזו** חפיסה
+                    זו לפני שקוראים אותה. */}
+                {entry.tone === 'danger' ? <UnknownMarkIcon /> : null}
                 {entry.locked === true ? <LockIcon /> : null}
                 {/* ⛔ הנעילה ⛔ אינה נשענת על האייקון בלבד: `LockIcon` הוא `aria-hidden`
                     (⛔ בכוונה — הוא קישוט), ולכן בלי המילה הזאת לומד שמשתמש בקורא מסך
@@ -506,7 +549,9 @@ export default function DeckSelector({
                 {entry.locked === true ? <span className="sr-only">{LOCKED_HE}</span> : null}
                 {entry.label}
               </span>
-              <span className="text-sm text-ink-muted">{entry.note}</span>
+              <span className={`text-sm ${onFill ? 'text-brand-on opacity-90' : 'text-ink-muted'}`}>
+                {entry.note}
+              </span>
             </>
           );
 
@@ -516,7 +561,7 @@ export default function DeckSelector({
                 <Link
                   href={entry.href}
                   data-primary-action={entry.key === primaryKey ? 'true' : undefined}
-                  className="flex min-h-touch flex-col items-start justify-center rounded-2xl border border-border-strong px-5 py-1.5 text-ink active:opacity-90"
+                  className={`flex min-h-touch flex-col items-start justify-center rounded-2xl border px-5 py-1.5 active:opacity-90 ${tileTone(entry, primaryKey)}`}
                 >
                   {body}
                 </Link>

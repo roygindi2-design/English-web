@@ -1,3 +1,4 @@
+import UnknownMarkIcon from '@/components/UnknownMarkIcon';
 import {
   counterCells,
   filterProgress,
@@ -40,7 +41,10 @@ function CounterIcon({ kind }: { readonly kind: CounterKey }) {
     strokeWidth: 1.8,
   };
   if (kind === 'known') return <svg {...common}><path d="M3 8.5 6.5 12 13 4.5" /></svg>;
-  if (kind === 'unknown') return <svg {...common}><path d="M4 4l8 8M12 4l-8 8" /></svg>;
+  // `T-388` — ⛔ **הסימן הזה ⛔ אינו מצויר כאן עוד.** «לא ידעתי» קיבל קורא שני
+  // (אריח «חזרה» ב-`<DeckSelector>`), ⇒ ה-`path` עבר ל-`<UnknownMarkIcon>` ו⛔ אין לו
+  // שני עותקים. ⛔ `common` נשאר לשני האחרים, שעדיין יחידים.
+  if (kind === 'unknown') return <UnknownMarkIcon />;
   return <svg {...common}><circle cx="8" cy="8" r="5" /></svg>;
 }
 
