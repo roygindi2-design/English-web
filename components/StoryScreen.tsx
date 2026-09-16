@@ -672,7 +672,19 @@ function StoryReady({
             שיושבת **מתחת** לחלונית ⛔ אינה מציגה את עצמה כיעד, ולכן ⛔ אין מה לגנוב
             ממנה (`stolenWordCount(..., interactive=false) === 0`). ⛔ **ו⛔ אין כאן
             מלכודת מיקוד** — `Tab` יוצא מהחלונית אל שאר המסך, בדיוק כמו בכל חלונית. */}
-            <p className="text-ink-muted" inert={openLemma !== null && openSurface === 'body'}>
+            {/* ⛔ **`text-left` הוא הרנדר, ⛔ ולא טעם — `T-374`.** `render_video_A.py:951`
+            מתעד את עצמו `"""left-to-right wrap"""` ומצייר כל מילה ב-`anchor="lm"` מ-
+            `ST_X + ST_PAD` (‏`:1015-1020`), כלומר **הפסקה צמודה לשמאל**. בלי המחלקה הזאת
+            ה-`<p>` יורש `text-align: right` מ-`dir="rtl"` של `:202` ⇒ הפסקה האנגלית צמודה
+            לימין, וכל שורה **מתחילה** במקום אחר. ⛔ זו ⛔ אינה בעיית כיוון: `<EnWord>` כבר
+            נושא `dir="ltr"` ואת בידוד ה-bidi, והריצה עצמה כבר LTR. מה שירש RTL הוא
+            **היישור של הבלוק**, ו-`<EnWord>` הוא `<span>` שורתי ⇒ ⛔ אינו יכול לקבוע אותו.
+            ⛔ **ולכן היישור בלבד** — ⛔ אין כאן `dir` ו⛔ אין `lang` בכתב יד:
+            `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו (‏`T-009`). */}
+            <p
+              className="text-ink-muted text-left"
+              inert={openLemma !== null && openSurface === 'body'}
+            >
               <EnWord>
                 {segments.map((segment, i) => {
                   if (!segment.isTarget || segment.lemma === null) {

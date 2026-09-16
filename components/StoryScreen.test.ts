@@ -101,3 +101,24 @@ describe('T-202 — the end state is a STATE, ⛔ not a screen', () => {
     expect(END).not.toContain('data-story-body');
   });
 });
+
+describe('T-374 — the English body is laid out LEFT, exactly as the render draws it', () => {
+  it('the reading paragraph carries `text-left`', () => {
+    // 🔬 `docs/design/render_video_A.py:951` מתעד את עצמו `"""left-to-right wrap"""`
+    // ומצייר כל מילה ב-`anchor="lm"` מ-`ST_X + ST_PAD` ⇒ הפסקה **צמודה לשמאל**.
+    // בלי המחלקה ה-`<p>` יורש `text-align: right` מ-`dir="rtl"` של המסך, וכל שורה
+    // אנגלית **מתחילה** במקום אחר. ⚠️ הסריקה על ה-`<p>` שנושא `data-story-body`,
+    // ⛔ ולא על הקובץ כולו — `text-left` במקום אחר ⛔ אינו הטענה הזאת.
+    const body = SRC.match(/<p\s+[^>]*className="[^"]*"[\s\S]{0,200}?inert=/);
+    expect(body, 'the reading paragraph must still be found by this scan').not.toBeNull();
+    expect(body?.[0]).toContain('text-left');
+  });
+
+  it('⛔ the fix is alignment ONLY — ⛔ no hand-written `dir` or `lang` on that paragraph', () => {
+    // `T-009` · `components/EnWord.test.ts`: שלושת המאפיינים נוסעים יחד דרך `<EnWord>`
+    // בלבד. תיקון יישור שמוסיף `dir`/`lang` בכתב יד הוא בדיוק הפיזור שהשומר אוסר.
+    const body = SRC.match(/<p\s+[^>]*className="[^"]*text-left[^"]*"[\s\S]{0,200}?inert=/);
+    expect(body?.[0]).not.toMatch(/\slang=/);
+    expect(body?.[0]).not.toMatch(/\sdir=/);
+  });
+});

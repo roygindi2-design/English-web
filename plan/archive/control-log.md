@@ -435,3 +435,33 @@ PROMOTION_BLOCKERS: "🔴 C-0607 (PROMOTER) 2026-09-14T13:32Z — בדיקת ע�
 loop(DEV): C-0628 idle — a concurrent DEV tick holds the lock (LOCK_AT 2026-09-15T20:08:04Z, taken 22s before mine, same row T-323, same cycle id C-0627). Three Smart Wait rounds spent (20:13:25Z · 20:16:34Z · 20:19:41Z), still held at 12.0 min ⇒ yielded per DEV.md STEP 1. Zero work commits. Measured on the way in, and it is a NEW defect, not this yield: `git rebase origin/dev` in STEP 0.5 rewrote all 25 SHAs of `work/current` although `origin/work/current..origin/dev` = 0 commits — the cause is the merge commit 788e06a9 ("C-0622 merge Roy's uploaded renders from dev into work/current"), which the default rebase backend flattens. ⇒ every DEV/CONTENT tick that obeys STEP 0.5 as written now needs a force-push to land anything, and the recovery is `git reset --hard origin/work/current`. `origin/dev..origin/work/current` = 26 commits.
 
 loop(DEV): C-0636 idle — PM holds the lock (`LOCK_HELD_BY: "pm-agent"`, `LOCK_AT 2026-09-16T00:51:00Z`, lock commit 69c056dc "C-0635 lock — planning tick on story"). Three Smart Wait rounds spent (polled every 15–20s from 01:07:00Z to 01:17:12Z, `plan/00-control.md` re-read from `origin` on each), still held at **27.7 min** ⇒ yielded per `DEV.md` STEP 1. ⛔ The lock is ⛔ NOT orphaned and ⛔ was never a candidate for the `§ 0.4` stale exemption: DEV's honour window against a PM lock is **90 minutes**, ⛔ not the 30 that the pre-push hook's own comment quotes for a PM/QA/CONTENT *pusher*. ⛔ Zero work commits. `origin/dev..origin/work/current` = **6** commits. — **And one measurement made on the way in, which is a finding for PM to open, ⛔ not part of this yield:** `app/api/world/story/route.ts` filled `pickStory`'s `readStoryIds` from a **query parameter** (`?read=a,b`), and `grep` across the whole repo returns exactly **one** caller of that endpoint — `components/StoryScreen.tsx:160`, `apiGet('/api/world/story')`, bare. ⇒ the skip list has **⛔ zero producers**: a learner meets the same story on every visit, `docs/api-contract.md:859` states the behaviour as intended ("⛔ אינה נשמרת בשרת … הדילוג בזיכרון המסך בלבד"), and a caller who *did* send it would be writing their own history. That is exactly `T-269`ⓐ's scope (`story`, ⬜, the department's own focus), ⛔ and it is ⛔ not yet built.
+## ⟦C-0635 · PM⟧ הנרטיב של `WORKSTREAM_TICKS` — הוצא מ-`plan/00-control.md` כלשונו (`D-251` · `F-263`)
+> ⛔ **אף בית ⛔ לא נמחק.** הקובץ החי חצה את תקרת 12,288 בתים, ו-`gc:memory` אמר במילותיו
+> «החלק שאינו §0.1 גדול מדי — דווח, ⛔ אל תמציא ניקוי כאן». השדה מחזיק מעכשיו מספר + מצב
+> + מצביע; מה שהיה בהערה יושב כאן, כלשונו, לפי מחלקה.
+
+### `story`
+
+§ 13-1 · **המוקד — הוזז לכאן C-0634 (DEV, `§ 0.23 ז׳` ④, גלגול מסביב מ-`amirnet`).** ▶️ C-0634: `T-232` 🟣 — ארבע הגזירות ב-`StoryReady` ב-`useMemo`, ומבחן החפיפה של `36 § 3.4` עבר לגאומטריה טהורה (`hitStoryWordBoxes`) על מלבנים שנקראים **פעם אחת לפריסה** ⇒ **0** קריאות מלבן על מילים בתוך ההקשה (נמדד בבדיקה, מאדימה במוטציה). `T-240` 🟣 — הכותרת עוברת באותו `buildStorySegments`, `library` 97×**44** ו-`river` 72×**44** נמדדו חי; יעדי הכותרת שייכים למצב הקריאה בלבד — `check:mobile` מדד שבמצב השאלה הם דחפו את הפעולה הראשית ל-`top = 764` מול תקרת `D-228`ⓐ (≤736). ⬜=**3** נותרו (`T-241` · `T-266` · `T-269`).
+
+### `cards`
+
+§ 13-3 · **⬜=0 · מוצתה שנית · הוזזה→`arena` ב-C-0500 (QA), ⛔ אינה חתומה** (ⓑⓒ חסומות ב-env). 5 🟣 הפכו ✅ (T-066·T-199·T-228·T-243·T-259). פירוט מלא ⇒ `plan/61-deferred.md` · `plan/archive/control-log.md` (הוצא C-0418).
+
+### `arena`
+
+§ 13-4 · **מוצתה שנית (⬜=0), הוזזה→`msgs` ב-C-0514 (QA).** `T-217`·`T-220`·`T-234`·`T-281`·`T-282`·`T-283` 🟣→✅ מוזגו ל-`dev` בטיק הזה. ⛔ אינה חתומה — ⓑⓒ חסומות ב-env. פירוט ⇒ `plan/61-deferred.md` (מעבר שני) · `plan/archive/control-log.md`.
+
+### `amirnet`
+
+41 § 8-1..3 · **המוקד.** ▶️ C-0633 (DEV): `T-372` 🟣 — `app/(tabs)/world/amirnet/page.tsx` קרא `zeroStats()` **כקבוע** ⇒ «ביצועים לפי סוג שאלה» דיווחה לנצח על נתון ש⛔ לא נאסף. ארבע המידות נמסרו: ⓐ `0027_amirnet_practice_attempts.sql` **הורצה חי** (`apply_migration` ⇒ `success:true`; `list_tables` ⇒ הטבלה קיימת, RLS דלוקה, 0 שורות) · ⓑ `GET·POST /api/amirnet/practice/result` · ⓒ `AmirnetQuestion.onAnswered` יורה **בבחירה**, פעם אחת · ⓓ `AmirnetDashboardLive` עם שלושה מצבים, וקריאה שנכשלה ⛔ **אינה** מציירת «עדיין לא תרגלת». הליכה חיה 375×780 על `/world/amirnet`: 200 · rtl · 9 מטרות · 0 מתחת ל-44px · 0 גלישה · 0 שגיאות קונסול. ⬜=**0** (`T-312` ⛔ · `T-324` ⛔ על `F-262`). `T-323` 🟣 · `T-324` ⛔.
+
+### `general`
+
+⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ▶️ C-0614 (DEV): `T-351` 🟣 — הפאנל ב-`לימודים` מקבל יעד אמיתי (`trackDestination` טהורה: `vocabulary`⇢`/cards`, שלושת האחרים `null` ומוצהרים בעברית), ⛔ ולא נגזר מ-`metric` ⇒ `unreachable` ⛔ אינו מוחק אותו. `T-350` 🟣 — `daysUntilExamHe` מחוברת סוף-סוף למסך «אני» (ⓐ·ⓒ·ⓓ·ⓔ); ⓑ (נתיב עדכון לתאריך שעבר) פוצלה ל-`T-352` ⬜ — ⛔ אין ל-`exam_date` שום כותב מחוץ ל-onboarding, ו-`/onboarding` מנתב החוצה לומד שכבר סיים.
+
+### `loop`
+
+⛔ מחוץ לרצף `36 § 13`. ▶️ C-0610 (DEV): `T-340` 🟣 — תא «סיבת ההעברה» מקבל תקרת 320 תווים ומצבה לארכיון (נמדד על `C-0588`: 1,539⇐581 בתים), ובדיקה 9 נוקבת בשורה הארוכה ביותר ⇒ ההישנות החמישית (`F-182`·`F-211`·`F-245`) מקבלת אכיפה, ⛔ לא תקרה חדשה. `T-315` 🟣 — ⓐ/ⓑ נמדדו **כבר-חיים** (‏`T-299`/`F-225`), ⓒ נבנתה ואומתה במוטציה.
+
+loop(PM): C-0635 planning — story unblocked from 3 ⬜ to 6, T-374 built, T-373 retired
