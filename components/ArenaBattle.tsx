@@ -364,6 +364,23 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
    * ⛔ **וההיסט מחושב ⛔ ולא מונח:** מרכז הקלף מול פס חיי היריב — הצומת שהשורה נוקבת
    * בשמה — ושניהם נמדדים **באותו רגע**, ⇒ הם ⛔ אינם יכולים לסטות זה מזה.
    */
+  const handRef = useRef<HTMLUListElement | null>(null);
+
+  /**
+   * 🔴 **⟦16/09 · `C-0665` · `T-359`⟧ ⛔ **שני** מסלולי הטלה, ⛔ ולא אחד — וזה נמדד
+   * בהליכה החיה של הטיק הזה, ⛔ ולא הונח.**
+   * 🔬 **המדידה:** אחרי שהרפאים נבנה על `onCast`, הליכה ב-320/375/414 שירתה דרך
+   * **מסלול הנגישות** (`§ 5` — «הקשה בוחרת, הקשה על היריב משגרת») החזירה
+   * `[data-arena-throw]` = **0**. ⇒ הפער שהשורה נפתחה עליו נשאר **פתוח לגמרי** על
+   * המסלול שאינו גרירה, כלומר על המסלול שלומד עם מוגבלות מוטורית משתמש בו.
+   * ⛔ **⇒ המקור של המלבן ⛔ אינו האירוע** (להקשה על היריב ⛔ אין מלבן של קלף) —
+   * הוא הקלף ה**נבחר**, ו-`aria-pressed` הוא כבר הסימון שלו במסמך.
+   */
+  const selectedCardRect = useCallback((): DOMRect | null => {
+    const node = handRef.current?.querySelector('[data-arena-card][aria-pressed="true"]');
+    return node instanceof HTMLElement ? node.getBoundingClientRect() : null;
+  }, []);
+
   const launchThrow = useCallback((label: string, from: DOMRect) => {
     if (reducedMotion) return;
     const area = stageAreaRef.current;
@@ -941,7 +958,13 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             type="button"
             data-arena-fire
             disabled={selected === null}
-            onClick={() => { if (selected !== null) fire(selected); }}
+            onClick={() => {
+              if (selected === null) return;
+              // ⛔ המלבן **לפני** `fire`: `cast` מתקדם ⇒ הקלף הנבחר יורד מהמסמך.
+              const from = selectedCardRect();
+              if (from !== null) launchThrow(selected, from);
+              fire(selected);
+            }}
             className="min-h-touch w-full rounded-lg text-start disabled:opacity-60"
           >
             <span className="sr-only">{selected === null ? FIRE_HINT_HE : `${FIRE_HE} ${selected}`}</span>
@@ -1009,7 +1032,13 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           <div
             key={damage.key}
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-[16%] z-20 grid place-items-center"
+            /* 🔬 **⟦נמדד בהליכה החיה של `C-0665`, ⛔ ולא הונח⟧ `translate-y-12`, ⛔ ולא 0.**
+               ‏`top-[16%]` הוא ה**חריץ** של היריב, והחריץ מתחיל בקצה ה**עליון** של
+               הדמות — ⇒ מספר שממורכז עליו נוחת על **פס החיים** שמעליו. צילום המסך
+               ב-375×780 הראה את `−2` מכסה את `90/100`, כלומר אפקט שמוחק **מידע**.
+               ⛔ 48px מורידים אותו אל **גוף** הדמות, שם הרנדר מצייר אותו
+               (`wx`/`wy` הם היריב עצמו), והפס חוזר להיקרא במלואו. */
+            className="pointer-events-none absolute inset-x-0 top-[16%] z-20 grid translate-y-12 place-items-center"
           >
             {/* ⛔ שלוש הטבעות — `render_video_B.py:543-548`. ⛔ הן ⛔ אינן נושאות מידע
                 (הן חוזרות על מה שהמספר כבר אומר) ⇒ הן, ⛔ ולא המספר, מה שנעלם תחת
@@ -1102,7 +1131,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
         </p>
       )}
 
-      <ul data-arena-hand className="grid grid-cols-4 gap-2">
+      <ul ref={handRef} data-arena-hand className="grid grid-cols-4 gap-2">
         {hand.map((option) => (
           <li key={option.he}>
             {/* T-220 ⓐ · D-143 § ד׳ — `?` is the OPTION SOURCE'S property (`ArcadeOption.kind`,
@@ -1132,8 +1161,11 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
                 // ⛔ ה-updater של `setSelected` נשאר **טהור**: הענף מוכרע מ-`selected`
                 // שכבר ברינדור הזה, ⇒ ⛔ אין כאן תופעת לוואי בתוך מעדכן state — טעות
                 // שנכתבה כאן לרגע ותוקנה לפני שנדחפה. `fire` כבר מאפס `selected`.
-                if (selected === option.he) fire(option.he);
-                else setSelected(option.he);
+                if (selected === option.he) {
+                  const from = selectedCardRect();
+                  if (from !== null) launchThrow(option.he, from);
+                  fire(option.he);
+                } else setSelected(option.he);
               }}
               onCast={(from) => { launchThrow(option.he, from); fire(option.he); }}
             />
