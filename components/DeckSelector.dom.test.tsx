@@ -201,3 +201,69 @@ describe('T-391 — שפה אחת ל-[data-primary-action], בשלושת המצ�
     expect(primary().className).toContain('text-brand-on');
   });
 });
+
+/**
+ * 🔴 **`T-392` · `F-270` — ⛔ «עוד ⛔ לא ידוע» ו«⛔ אין לנו» ⛔ אינם אותו מצב, ו⛔ לבשו אותו גליף.**
+ *
+ * 🔬 **הפגם, נמדד בדפדפן חי `C-0659` (‏`next start`, 375×780), ⛔ ולא שוער:** ב-
+ * `domcontentloaded` ה-`innerText` של `[data-deck-selector]` נשא **3** מופעים של «—»
+ * ובאותו רגע היו **0** בלוקי התאוששות על המסך — כלומר ⛔ שום קריאה ⛔ לא נכשלה, ו⛔ אף
+ * אחת ⛔ עוד לא נשאלה. ב-`networkidle`, אחרי שלוש תשובות 503, נמדדו **אותם 3** בדיוק.
+ * ⇒ **גליף אחד, שני מצבים** — והקובץ עצמו מגדיר אותו כ«the read failed, or ⛔ no read
+ * was made» (`UNKNOWN_COUNT_HE`). ⇒ במשך כל זמן הטיסה זו הייתה טענה ש⛔ לא הייתה נכונה
+ * **עדיין**, ובייצור זמן הטיסה ⛔ אינו 800ms אלא שניות (`F-255`: TTFB 3,745ms קר).
+ *
+ * ⚠️ **⛔ וזו ⛔ אינה `T-386` ש⛔ נסוגה (`D-255`).** ‏`D-255` מדד נכון ש**האריחים קיימים**
+ * ב-`DOMContentLoaded` — 4, ⛔ ולא 0 — ⇒ ⛔ אין חור בפריסה. הטענה כאן היא על מה שכתוב
+ * **בתוך** האריח שכן קיים, ⛔ ולא על קיומו.
+ */
+describe('T-392 — מצב ההמתנה ⛔ אינו לובש את גליף הכשל', () => {
+  /** האריחים שבהם המספר ⛔ אינו נמסר מהמסך ⇒ הם קוראים בעצמם ⇒ הם הממתינים. */
+  function skeletons(): NodeListOf<Element> {
+    return document.querySelectorAll('[data-deck-selector] [data-note-skeleton]');
+  }
+
+  /** כל האזורים החיים על המסך, מחוברים — ⛔ ולא «הראשון ב-DOM». */
+  function liveRegionsText(): string {
+    return Array.from(document.querySelectorAll('[role="status"]'))
+      .map((el) => el.textContent ?? '')
+      .join(' | ');
+  }
+
+  it('🔴 הפגם עצמו: בזמן שהקריאות באוויר ⛔ אין ולו «—» אחד באריחים הממתינים', () => {
+    render(<DeckSelector unseen={314} unknown={{ total: 12, failed: false, loading: false }} />);
+    // ⛔ ⛔ בלי `waitFor`: הרגע הנמדד הוא **לפני** שהקריאות נחתו, ⛔ ולא אחריו.
+    expect(skeletons().length).toBe(2); // `due` · `sentences` — השניים שקוראים כאן
+    const list = document.querySelector('[data-deck-selector]') as HTMLElement;
+    expect(list.getAttribute('aria-busy')).toBe('true');
+    expect(list.textContent).not.toContain('—');
+  });
+
+  it('⛔ והצורה ⛔ אינה מדברת אל קורא מסך — משפט חי אחד עושה זאת במקומה', () => {
+    render(<DeckSelector unseen={314} unknown={{ total: 12, failed: false, loading: false }} />);
+    expect(skeletons()[0]?.getAttribute('aria-hidden')).toBe('true');
+    // ⛔ ⛔ לא `querySelector` — למסך יש כבר אזור חי משלו (`T-322`), ⇒ «הראשון» הוא
+    // שאלה על סדר ה-DOM, ⛔ ולא על מה שנאמר.
+    expect(liveRegionsText()).toContain('טוען את מספרי החפיסות');
+  });
+
+  it('⛔ «—» ⛔ לא נעלם — הוא חוזר למשמעות אחת: שאלנו, ו⛔ אין לנו', async () => {
+    render(<DeckSelector unseen={314} unknown={{ total: 12, failed: false, loading: false }} />);
+    await waitFor(() => {
+      expect(skeletons().length).toBe(0);
+    });
+    const list = document.querySelector('[data-deck-selector]') as HTMLElement;
+    // ⛔ ברירת המחדל של הקובץ היא כשל (`api.mode === 'fail'`) ⇒ שתי הקריאות נכשלו.
+    expect(list.textContent).toContain('—');
+    expect(list.getAttribute('aria-busy')).toBe('false');
+    // ⛔ והמשפט החי יורד איתן — אחרת המסך היה אומר «טוען» אחרי שסיים.
+    expect(liveRegionsText()).not.toContain('טוען את מספרי החפיסות');
+  });
+
+  it('⛔ ואריח שהמסך כבר מסר לו מספר ⛔ אינו ממתין כלל — הוא נושא את המספר מייד', () => {
+    render(<DeckSelector unseen={314} unknown={{ total: 12, failed: false, loading: false }} />);
+    const list = document.querySelector('[data-deck-selector]') as HTMLElement;
+    expect(list.textContent).toContain('314');
+    expect(list.textContent).toContain('12');
+  });
+});

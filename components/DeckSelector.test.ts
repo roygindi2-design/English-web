@@ -509,10 +509,20 @@ describe('T-322 — הכישלון מוכרז פעם אחת, בערוץ שאינ
     // ⛔ **המוטציה שנופלת בשם:** `{readFailed && <div role="status" …>}` מרכיב את האזור
     // באותו רגע שבו נכנס אליו הטקסט, ו⛔ אז הוא ⛔ אינו מוכרז. הצורה המחייבת היא
     // אזור קבוע שהתוכן שלו מותנה.
+    // 🔴 ⟦`T-392` · `C-0659`⟧ **הביטוי הפנימי כבר ⛔ אינו מקובע מילה במילה, והטענה ⛔ לא
+    // נחלשה.** הטענה של הבדיקה הזאת, בלשונה שלה, היא «האזור מותקן תמיד — ⛔ רק התוכן שלו
+    // מתחלף». ‏`T-392` הוסיף **הודעה שנייה לאותו אזור** (‏«טוען…» בזמן שהקריאות באוויר),
+    // ⇒ ה-`else` כבר ⛔ אינו `''` — והאזור עצמו מותקן בדיוק כמו קודם. ⛔ קיבוע הענף
+    // השני היה הופך את הבדיקה לטענה על **נוסח**, ⛔ ולא על **התקנה**.
+    // ⛔ **והמוטציה שהיא קיימת בשבילה ⛔ לא זזה** — היא השורה השלילית מתחת, והיא זו
+    // שנופלת על `{readFailed && <div …>}`.
     expect(CODE).toMatch(
-      /<div role="status" aria-atomic="true" className="sr-only" data-deck-status>\s*\{readFailed \? READ_FAILED_BODY_HE : ''\}/,
+      /<div role="status" aria-atomic="true" className="sr-only" data-deck-status>\s*\{readFailed$/m,
     );
     expect(CODE).not.toMatch(/readFailed && <div role="status"/);
+    // ⛔ ⟦`T-392`⟧ ושתי ההודעות יושבות **באזור הזה**, ⛔ ולא בשני אזורים.
+    expect(CODE).toMatch(/READ_FAILED_BODY_HE\s*:\s*entries\.some/);
+    expect(CODE).toContain('COUNTS_LOADING_HE');
   });
 
   it('שכבה A — האזור ⛔ אינו נראה, והטקסט הנראה ⛔ לא זז', () => {

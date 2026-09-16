@@ -73,6 +73,14 @@ import {
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
 /**
+ * `T-392` — ⛔ **the sentence a screen reader hears while the numbers are still in flight.**
+ *
+ * The same idiom `<CardSkeleton>` already ships: the bar is `aria-hidden` decoration and a
+ * live region carries the word. ⛔ `aria-busy` on the list says «this is changing»; it ⛔ does
+ * ⛔ not say what is coming, and it is ⛔ not read at all by a learner who can see.
+ */
+const COUNTS_LOADING_HE = 'טוען את מספרי החפיסות…';
+/**
  * `T-384`ⓐ — ⛔ **`READ_FAILED_NOTE_HE` was DELETED here, and the deletion is the row.**
  *
  * 🔬 **Measured `C-0647` in a live walk at 375×780 on `/dev/tabs/cards`, ⛔ not read off
@@ -229,6 +237,20 @@ type DeckEntry = {
    * primary would paint the screen's one marked action onto a deck ⛔ nobody measured.
    */
   readonly measured: boolean;
+  /**
+   * 🔴 `T-392` · `F-270` — ⛔ **THE READ FOR THIS TILE IS STILL IN THE AIR.**
+   *
+   * ⛔ It is ⛔ not `!measured`, and the difference is the row: `measured: false` covers
+   * ⛔ three different facts — the read failed, ⛔ no read was made here at all
+   * (`/dev/tabs/probe`), and the read has ⛔ not come back yet. Only the third one is a
+   * tile that ⛔ should ⛔ not be carrying «⛔ we do not have this number».
+   *
+   * ⛔ **And it is per-TILE, ⛔ not per-component.** `unseen` and `unknown.total` arrive
+   * as props from the screen and are ⛔ already known while this component's own two
+   * reads are in flight ⇒ a single `loading` flag would have painted a placeholder over
+   * numbers that were on screen. (Measured: it did, in this row's first draft.)
+   */
+  readonly awaiting?: boolean;
 } & (
   | { readonly enabled: true; readonly href: string }
   | { readonly enabled: false; readonly href: string | null }
@@ -315,13 +337,15 @@ function toEntry(input: {
    * made at all, the count is equally `null` and ⛔ nothing has failed.
    */
   readonly unmeasured?: boolean;
+  /** `T-392` — the read for THIS tile has ⛔ not come back yet. ⛔ See `DeckEntry.awaiting`. */
+  readonly awaiting?: boolean;
 }): DeckEntry {
-  const { key, label, href, count, tone } = input;
+  const { key, label, href, count, tone, awaiting } = input;
   const note = input.note ?? noteFor(count);
   const measured = count !== null;
   return href !== null && (count !== null ? count > 0 : input.unmeasured === true)
-    ? { key, label, note, tone, measured, enabled: true, href }
-    : { key, label, note, tone, measured, enabled: false, href };
+    ? { key, label, note, tone, measured, awaiting, enabled: true, href }
+    : { key, label, note, tone, measured, awaiting, enabled: false, href };
 }
 
 /**
@@ -416,6 +440,8 @@ export default function DeckSelector({
       // `T-389` — ⛔ **הפסק דין של המסך, ⛔ ולא `total === null`.** ‏`undefined` הוא
       // «⛔ לא נעשתה קריאה» ⇒ ⛔ אינו «נכשל», בדיוק כמו ב-`readFailed` למעלה.
       unmeasured: unknown?.failed === true,
+      // `T-392` — ⛔ the SCREEN reads this one, and it already says when it is in flight.
+      awaiting: unknown?.loading === true,
       tone: 'danger',
     }),
     toEntry({
@@ -427,6 +453,7 @@ export default function DeckSelector({
       // `T-389` — ⛔ ורק אחרי ש-`loading` נפל: בזמן שהקריאה באוויר המספר הוא `null`
       // ו⛔ שום דבר ⛔ עוד לא נכשל (אותה הבחנה בדיוק שעושה `readFailed`).
       unmeasured: !loading && counts.due === null,
+      awaiting: loading,
     }),
     // T-199ⓐ · D-169 — the tile OPENS: `/study?deck=sentences` draws the item on the existing
     // card (T-066). Through `toEntry` like the other three ⇒ an empty band or a failed read is
@@ -438,6 +465,7 @@ export default function DeckSelector({
       count: counts.sentences,
       note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
       unmeasured: !loading && counts.sentences === null,
+      awaiting: loading,
     }),
   ];
 
@@ -549,8 +577,20 @@ export default function DeckSelector({
           ⚠️ **Layer A:** `sr-only` ⇒ ⛔ the visible text ⛔ does not move and ⛔ no second
           copy of the sentence is painted. The sighted learner keeps exactly the screen
           `T-295` and `T-321` built. */}
+      {/* 🔴 `T-392` — ⛔ **THE LOADING SENTENCE GOES IN HERE, ⛔ NOT IN A SECOND REGION.**
+          🔬 A second `role="status"` was written first, and `T-322`'s own gate refused it
+          («אזור `status` אחד בדיוק»: `role="status"` × 1) — ⛔ correctly. One live region per
+          screen is the rule, ⛔ not «one per event», and a screen reader that has to track
+          two regions is the failure that rule exists against.
+          ⇒ ⛔ **and the two messages ⛔ cannot collide:** `awaiting` is true ⛔ only while a
+          read is in flight, and `readFailed` is gated on `!loading` ⇒ ⛔ no state carries
+          both. The region says «טוען» while they fly, then the failure, then ⛔ nothing. */}
       <div role="status" aria-atomic="true" className="sr-only" data-deck-status>
-        {readFailed ? READ_FAILED_BODY_HE : ''}
+        {readFailed
+          ? READ_FAILED_BODY_HE
+          : entries.some((entry) => entry.awaiting === true)
+            ? COUNTS_LOADING_HE
+            : ''}
       </div>
       {/* `T-349` — ⛔ **any failed read** ⇒ the way out goes above the fold, ⛔ before the
           tiles. ⛔ It is ⛔ not a new error screen (‏`T-295` forbade one) and ⛔ not a
@@ -628,8 +668,33 @@ export default function DeckSelector({
                 {entry.locked === true ? <span className="sr-only">{LOCKED_HE}</span> : null}
                 {entry.label}
               </span>
+              {/* 🔴 `T-392` · `F-270` — ⛔ **WAITING AND FAILING ⛔ MAY ⛔ NOT WEAR THE SAME
+                  GLYPH.** 🔬 Measured live this tick (`next start`, 375×780, `domcontentloaded`):
+                  `[data-deck-selector]` carried **3** «—» with **0** recovery blocks on screen —
+                  ⛔ nothing had failed, ⛔ nothing had even been asked. At `networkidle`, after
+                  three 503s, it carried **the same 3** «—». ⇒ one glyph, two states, and the
+                  file itself defines that glyph as «the read failed, or ⛔ no read was made»
+                  (`UNKNOWN_COUNT_HE`) — so for the whole flight it was a claim that was ⛔ not
+                  true yet.
+                  ⇒ **while the reads are in flight the note's place carries a SHAPE**, the same
+                  `bg-surface-raised` bar `<CardSkeleton>` uses (§ 4.2ו «טעינה — שלד בצורת
+                  הכרטיס, ⛔ לא ספינר»). ⛔ «—» keeps its ⛔ one meaning: we asked, and we ⛔ do
+                  ⛔ not have the number.
+                  ⚠️ **And ⛔ no layout moves.** The bar is `inline-block` inside the unchanged
+                  `text-sm` span, whose strut (20px) already sets the line box ⇒ the 62px tile
+                  geometry the render fixes (`rr(24, y, LW-48, 62, 16)`) is untouched when the
+                  numbers land. ⛔ No animation: § 5 honours `prefers-reduced-motion`, and having
+                  ⛔ none honours it by construction — exactly `<CardSkeleton>`'s own argument. */}
               <span className={`text-sm ${onFill ? 'text-brand-on opacity-90' : 'text-ink-muted'}`}>
-                {entry.note}
+                {entry.awaiting === true ? (
+                  <span
+                    aria-hidden
+                    className="inline-block h-3 w-28 rounded-lg bg-surface-raised align-middle"
+                    data-note-skeleton
+                  />
+                ) : (
+                  entry.note
+                )}
               </span>
             </>
           );
