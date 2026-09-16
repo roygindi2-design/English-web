@@ -35,7 +35,29 @@ describe('חמש השורות של 36 § 5, בסדרן (T-210 · D-123)', () => 
   });
 
   it('שורה 4 — `unseen` נמסר לחפיסות מהסיכום, ⛔ ולא נקרא שנית', () => {
-    expect(CODE).toMatch(/<DeckSelector unseen=\{summary\?\.unseen \?\? null\}/);
+    expect(CODE).toMatch(/unseen=\{summary\?\.unseen \?\? null\}/);
+  });
+
+  /**
+   * `T-385`ⓐ — **אותה תבנית בדיוק, על החפיסה השנייה.** ‏`T-210` קבעה ש-`unseen` שייך
+   * למסך; 🔬 `C-0647` מדד שחפיסת `unknown` ⛔ לא קיבלה את אותו יחס — היא נקראה **פעמיים**
+   * באותו מסך (`limit=1` מ-`<DeckSelector>` · `limit=50` מ-`<UnknownList>`), ושני
+   * הרכיבים החזיקו `failed` משלהם ⇒ שני פסקי דין אפשריים על חפיסה אחת.
+   * ⇒ קריאה אחת, כאן, ושני הצרכנים מקבלים את **אותו אובייקט**.
+   */
+  it('T-385ⓐ — חפיסת `unknown` נקראת כאן פעם אחת, ושני הצרכנים מקבלים אותה', () => {
+    expect(CODE).toContain('/api/study/queue?deck=unknown&limit=');
+    expect(CODE).toContain('MAX_QUEUE_LIMIT');
+    expect(CODE).toContain('unknown={state.kind === \'ready\' ? unknownDeck : undefined}');
+    expect(CODE).toContain('<UnknownList deck={unknownDeck} />');
+  });
+
+  /**
+   * `T-385`ⓑ — ⛔ **קריאה שנמחקה, ⛔ ולא אחת שנוספה.** ⛔ אפס שינוי חוזה: ⛔ אין פרמטר
+   * חדש ו⛔ אין נתיב חדש. ⇒ ⛔ מופע אחד בלבד של המחרוזת בכל הקובץ.
+   */
+  it('T-385ⓑ — ⛔ הגדרה אחת לחפיסה בקובץ, ⛔ ולא שתיים', () => {
+    expect(CODE.split('deck=unknown').length - 1).toBe(1);
   });
 
   it('שורה 5 — ההערה הקבועה חייבת להימצא בקובץ, היא נושאת את האינווריאנט', () => {

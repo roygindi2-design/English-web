@@ -5,8 +5,13 @@ import DeckSelector from '@/components/DeckSelector';
 import EnWord from '@/components/EnWord';
 import FilterBar from '@/components/FilterBar';
 import LevelCard from '@/components/LevelCard';
-import UnknownList from '@/components/UnknownList';
+import UnknownList, {
+  EMPTY_UNKNOWN_DECK,
+  type UnknownCard,
+  type UnknownDeck,
+} from '@/components/UnknownList';
 import { apiGet, apiPost } from '@/lib/api/client';
+import { MAX_QUEUE_LIMIT } from '@/lib/core/deck';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { failureExit, isRetryable } from '@/lib/core/failureExit';
 import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
@@ -65,6 +70,28 @@ type SummaryResponse =
   | { readonly ok: true; readonly level: null }
   | { readonly ok: false; readonly code: string };
 
+/**
+ * `T-385` — **הקריאה היחידה לחפיסת `unknown` במסך הזה, ⛔ ואין שנייה.**
+ *
+ * 🔬 **נמדד `C-0647` ברשת חיה (‏`next start`, 375×780):** המסך ירה **ארבע** בקשות
+ * ל-`/api/study/queue`, ו-`deck=unknown` הופיע ב**שתיים** — `limit=1` מ-`<DeckSelector>`
+ * ו-`limit=50` מ-`<UnknownList>`. ⇒ שני `failed` נפרדים על אירוע אחד, ⇒ מצב שבו האריח
+ * והרשימה אומרים דברים סותרים על אותה חפיסה.
+ *
+ * ⛔ **וזו ⛔ אינה קריאה שנוספה — זו קריאה שנמחקה** (`T-385`ⓑ): החוזה של
+ * `app/api/study/queue` ⛔ לא זז, ⛔ אין פרמטר חדש ו⛔ אין נתיב חדש. ‏`limit=50`
+ * היא הקריאה ששרדה מפני שהיא זו שמחזירה גם את הכרטיסים וגם את `total` שלפני
+ * החיתוך (`docs/api-contract.md`), ⇒ היא לבדה מספיקה לשני הצרכנים.
+ *
+ * ⛔ **ו⛔ אין לאחד את `due` ו-`sentences` לתוכה** (`T-385`ⓒ): הן חפיסות אחרות,
+ * ה-`Promise.all` עליהן ב-`<DeckSelector>` כבר מקבילי, ואיחודן היה **שינוי חוזה**.
+ */
+const UNKNOWN_QUERY = `/api/study/queue?deck=unknown&limit=${MAX_QUEUE_LIMIT}`;
+
+type UnknownQueueResponse =
+  | { readonly ok: true; readonly total: number; readonly cards: readonly UnknownCard[] }
+  | { readonly ok: false; readonly code: string };
+
 type ScreenState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'choose' }
@@ -96,6 +123,28 @@ export default function LevelMapScreen({
       : { kind: 'ready', summary: fixtureSummary, levels: [] },
   );
   const [saving, setSaving] = useState(false);
+  /**
+   * `T-385`ⓐ — **מקור אחד למספר `unknown` במסך**, בדיוק כמו `unseen` מאז `T-210`
+   * («המספר שייך למסך, ⛔ לא לבלוק»). ‏`<UnknownList>` מרנדר אותו, ואריח «חזרה»
+   * ב-`<DeckSelector>` מקבל את אותו אובייקט — ⇒ ⛔ אי-אפשר עוד ששניהם יחלקו.
+   */
+  const [unknownDeck, setUnknownDeck] = useState<UnknownDeck>(EMPTY_UNKNOWN_DECK);
+
+  const loadUnknown = useCallback(async () => {
+    setUnknownDeck((previous) => ({ ...previous, failed: false, loading: true }));
+    try {
+      const body = await apiGet<UnknownQueueResponse>(UNKNOWN_QUERY);
+      if (!body.ok) {
+        setUnknownDeck({ cards: [], total: null, failed: true, loading: false });
+        return;
+      }
+      // ⛔ אין מיון כאן: הסדר הוא של `sortQueue` ב-`lib/core/deck.ts`, ומיון שני
+      // בלקוח היה הגדרה שנייה שסוטה ברגע שהראשונה משתנה.
+      setUnknownDeck({ cards: body.cards, total: body.total, failed: false, loading: false });
+    } catch {
+      setUnknownDeck({ cards: [], total: null, failed: true, loading: false });
+    }
+  }, []);
 
   const load = useCallback(async () => {
     setState({ kind: 'loading' });
@@ -123,6 +172,16 @@ export default function LevelMapScreen({
     if (fixtureSummary !== undefined) return;
     void load();
   }, [load, fixtureSummary]);
+
+  /**
+   * `T-385` — הקריאה נורית **בדיוק מתי ש-`<UnknownList>` היה יורה אותה קודם**: הרשימה
+   * מרונדרת רק על `ready`, ⇒ ⛔ אין כאן בקשה חדשה בשום מסלול. בענף `choose` או `failed`
+   * ⛔ לא נקראה חפיסה, ⇒ האריח אומר «—» — «⛔ לא נעשתה קריאה», בדיוק כמו `unseen`.
+   */
+  useEffect(() => {
+    if (state.kind !== 'ready') return;
+    void loadUnknown();
+  }, [state.kind, loadUnknown]);
 
   const choose = useCallback(
     async (level: CefrBand) => {
@@ -223,7 +282,15 @@ export default function LevelMapScreen({
           את הניתוק. ⛔ הרכיב ⛔ לא נמחק ו⛔ לא נערך — הוא פשוט ⛔ אינו מרונדר כאן. */}
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">{PRACTICE_HE}</h2>
-        <DeckSelector unseen={summary?.unseen ?? null} />
+        {/* `T-385`ⓐ — אריח «חזרה» מקבל את **אותו** אובייקט שהרשימה למטה מרנדרת,
+            ⇒ ⛔ אין שני פסקי דין על `unknown`. ‏`onRetry` נמסר כי «טעינה מחדש»
+            שב-`<DeckSelector>` חייבת לקרוא גם למה שהמסך קורא — אחרת היא הייתה
+            כפתור שמתקן שני שלישים מהמסך ושותק על השליש שהמשתמש רואה. */}
+        <DeckSelector
+          unseen={summary?.unseen ?? null}
+          unknown={state.kind === 'ready' ? unknownDeck : undefined}
+          onRetry={state.kind === 'ready' ? () => void loadUnknown() : undefined}
+        />
       </section>
 
       {/* `36 § 5` שורה 5 — ההערה הקבועה. ⛔ היא ⛔ אינה קישוט: היא הניסוח של
@@ -233,7 +300,7 @@ export default function LevelMapScreen({
       {/* שורה 5 — «לא ידעתי» (T-083 · § 4.2ז). ⛔ רשימה ולא מונה: `<DeckSelector>`
           למעלה כבר מציג את המספר כאריח. מוצגת רק כשיש רמה — בלי רמה המסך הוא מצב
           בחירה, ורשימה מתחת לשש הרמות הייתה תשובה לשאלה שהלומד עוד לא שאל. */}
-      {state.kind === 'ready' ? <UnknownList /> : null}
+      {state.kind === 'ready' ? <UnknownList deck={unknownDeck} /> : null}
 
       {/* ⛔ **בורר שש הרמות ⛔ אינו כאן עוד** — `36 § 5`: «אין מעבר רמות כאן» (D-123).
           ‏`<LevelPath>` עבר ל`הגדרות` (T-211) יחד עם הקריאה ל-`POST /api/levels/current`,

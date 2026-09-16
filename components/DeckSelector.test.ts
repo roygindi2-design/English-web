@@ -96,9 +96,28 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    */
   it('asks each deck for one row and reads total — ⛔ never cards.length', () => {
     expect(CODE).toContain('deck=due&limit=1');
-    expect(CODE).toContain('deck=unknown&limit=1');
+    expect(CODE).toContain('deck=sentences&limit=1');
     expect(CODE).toContain('.total');
     expect(CODE).not.toContain('cards.length');
+  });
+
+  /**
+   * `T-385`ⓐ — ⛔ **`deck=unknown` ⛔ is ⛔ not read here at all any more, and this is the
+   * assertion that keeps it that way.**
+   *
+   * 🔬 Measured `C-0647` on a live network: the screen fired FOUR requests at one
+   * endpoint and `deck=unknown` was TWO of them — `limit=1` from this component and
+   * `limit=50` from `<UnknownList>`. Two components, two `failed` flags, one event ⇒ the
+   * tile could read «הנתונים לא נטענו» above a list showing real words. ⇒ the read moved
+   * to `<LevelMapScreen>`, which hands the verdict down as a prop — the SAME shape
+   * `T-210` already fixed for `unseen`.
+   *
+   * ⛔ The guard is on the SUBSTRING `deck=unknown`, ⛔ not on `limit=1`: a future read at
+   * any limit would rebuild exactly the contradiction this row measured.
+   */
+  it('T-385ⓐ — ⛔ אפס קריאות ל-`deck=unknown` מכאן; המספר מגיע מהמסך', () => {
+    expect(CODE).not.toContain('deck=unknown&limit');
+    expect(CODE).toMatch(/count: unknown\?\.total \?\? null/);
   });
 
   /**
@@ -187,7 +206,7 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
   it('T-199ⓒ — המונה נקרא בפועל, ובאותה קריאה מקבילה כמו השאר', () => {
     expect(CODE).toContain("const SENTENCES_QUERY = '/api/study/queue?deck=sentences&limit=1'");
     expect(CODE).toMatch(/Promise\.all\(\[[\s\S]{0,200}readTotal\(SENTENCES_QUERY\)/);
-    expect(CODE).toMatch(/setCounts\(\{ due, unknown, sentences \}\)/);
+    expect(CODE).toMatch(/setCounts\(\{ due, sentences \}\)/);
   });
 
   /**
@@ -214,7 +233,10 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    */
   it('T-295ⓐ — «נכשל» ⛔ אינו נגזר מ-`null` לבדו, אלא רק אחרי שהטעינה הסתיימה', () => {
     expect(CODE).toMatch(/loading \? 'unknown' : count === null \? 'failed' : 'ok'/);
-    expect(CODE).toMatch(/readFailed =\s*\n?\s*!loading &&/);
+    expect(CODE).toMatch(/readFailed =\s*\n?\s*\(!loading &&/);
+    // `T-385` — ⛔ והשליש השלישי של המסך נספר גם הוא, מהפסק דין שהמסך מוסר.
+    // ⛔ `undefined` (⛔ לא נעשתה קריאה) ⛔ אינו «נכשל» ⇒ ההשוואה היא ל-`=== true`.
+    expect(CODE).toContain("unknown?.failed === true");
   });
 
   /**

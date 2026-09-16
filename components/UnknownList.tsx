@@ -1,10 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
-import { apiGet } from '@/lib/api/client';
-import { MAX_QUEUE_LIMIT } from '@/lib/core/deck';
 import { FAILURE_HE } from '@/lib/core/failure';
 
 /**
@@ -19,6 +16,21 @@ import { FAILURE_HE } from '@/lib/core/failure';
  * המיון ש-D-034 מכתיב — ואת `total` לפני החיתוך ל-`limit`. נתיב שני היה **הגדרה שנייה**
  * לאותה חפיסה, וזה מה ש-§ 4.2ז אוסר במפורש.
  *
+ * ### `T-385` — ⛔ **והרכיב ⛔ אינו קורא עוד. המסך קורא, פעם אחת.**
+ *
+ * 🔬 **נמדד `C-0647` ברשת חיה על `/dev/tabs/cards`, ⛔ ולא שוער:** טעינת המסך ירתה
+ * **ארבע** בקשות לאותו endpoint, ו-`deck=unknown` הופיע ב**שתיים** מהן —
+ * `?limit=1` מ-`<DeckSelector>` ו-`?limit=50` מכאן. ⇒ שני הרכיבים החזיקו כל אחד
+ * `failed` משלו על **אותו אירוע**, ⛔ ולכן זו ⛔ לא הייתה בקשה מיותרת בלבד אלא
+ * **סתירה נראית**: אריח «חזרה» יכול לומר «הנתונים לא נטענו» בעוד הרשימה שמתחתיו
+ * מציגה מילים אמיתיות, או ההפך.
+ *
+ * ⇒ **אותה תבנית בדיוק ש-`T-210` כבר קבעה עבור `unseen`: «המספר שייך למסך, ⛔ לא
+ * לבלוק».** הקריאה היחידה חיה ב-`<LevelMapScreen>`, ה-`total` שלה מזין גם את
+ * הרשימה הזאת וגם את אריח «חזרה», ⇒ **פסק דין אחד על `unknown`, ⛔ ולא שניים.**
+ * הרכיב הזה נעשה **תצוגה בלבד** — ⛔ אפס `useEffect`, ⛔ אפס `apiGet`, ⛔ אפס `failed`
+ * משלו.
+ *
  * ⛔ **אין הסרה ידנית.** יציאה מהרשימה היא דרך המנוע בלבד — תשובה נכונה מאפסת את
  * החברות בחפיסה (`repetition >= 1`). כפתור הסרה היה מקור אמת שני על אותה מילה.
  *
@@ -32,48 +44,37 @@ const EMPTY_HE = 'הרשימה ריקה. כל מילה שתיפול בכרטיס
 /** ⛔ לא `0`. מספר שלא הצלחנו לקרוא אינו אפס — אותו כלל של `<DeckSelector>`. */
 const NO_NUMBER_HE = '—';
 
-type Card = {
+export type UnknownCard = {
   readonly word_id: string;
   readonly sense: { readonly headword: string; readonly translation_he: string };
 };
 
-type QueueResponse =
-  | { readonly ok: true; readonly total: number; readonly cards: readonly Card[] }
-  | { readonly ok: false; readonly code: string };
+/**
+ * `T-385` — **המצב שהמסך מחזיק ומוסר לשני הצרכנים שלו.** ‏`failed` ו-`loading` נוסעים
+ * יחד עם המספרים ⛔ ולא נגזרים מהם: `total === null` בזמן טעינה ⛔ אינו כשל, וזו בדיוק
+ * ההבחנה ש-`T-295` כבר עשתה בתוך `<DeckSelector>` (‏D-064 — «אין מה לתרגל» חצי שנייה
+ * מוקדם מדי הוא שקר קצר).
+ */
+export type UnknownDeck = {
+  readonly cards: readonly UnknownCard[];
+  readonly total: number | null;
+  readonly failed: boolean;
+  readonly loading: boolean;
+};
 
-const QUERY = `/api/study/queue?deck=unknown&limit=${MAX_QUEUE_LIMIT}`;
+export const EMPTY_UNKNOWN_DECK: UnknownDeck = Object.freeze({
+  cards: [],
+  total: null,
+  failed: false,
+  loading: true,
+});
 
-export default function UnknownList(): React.JSX.Element {
-  const [cards, setCards] = useState<readonly Card[]>([]);
-  const [total, setTotal] = useState<number | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const body = await apiGet<QueueResponse>(QUERY);
-        if (cancelled) return;
-        if (!body.ok) {
-          setFailed(true);
-        } else {
-          // ⛔ אין מיון כאן: הסדר הוא של `sortQueue` ב-`lib/core/deck.ts`, ומיון שני
-          // בלקוח היה הגדרה שנייה שסוטה ברגע שהראשונה משתנה.
-          setCards(body.cards);
-          setTotal(body.total);
-        }
-      } catch {
-        if (!cancelled) setFailed(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+export default function UnknownList({
+  deck,
+}: {
+  readonly deck: UnknownDeck;
+}): React.JSX.Element {
+  const { cards, total, failed, loading } = deck;
   const empty = !loading && !failed && cards.length === 0;
   const truncated = total !== null && total > cards.length;
 

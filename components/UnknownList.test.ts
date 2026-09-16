@@ -25,9 +25,19 @@ describe('רשימה, ⛔ ולא מונה (T-083)', () => {
 });
 
 describe('⛔ אין הגדרה שנייה לחפיסה (§ 4.2ז)', () => {
-  it('קוראת את הנתיב הקיים ⛔ ולא נתיב חדש', () => {
-    expect(CODE).toContain('/api/study/queue?deck=unknown');
-    expect(CODE).not.toContain('/api/levels/unknown');
+  /**
+   * `T-385`ⓐ — 🔬 **נמדד `C-0647`, ⛔ ולא שוער:** הרכיב הזה קרא `deck=unknown&limit=50`
+   * בעוד `<DeckSelector>` קרא `deck=unknown&limit=1` **באותו מסך**, וכל אחד החזיק
+   * `failed` משלו. ⇒ ⛔ לא בזבוז בלבד: קריאה אחת יכלה להצליח והשנייה ⛔ לא, ⇒ האריח
+   * והרשימה היו אומרים דברים סותרים על אותה חפיסה.
+   * ⇒ **הרכיב נעשה תצוגה בלבד.** הקריאה חיה ב-`<LevelMapScreen>` (שם היא נמדדת,
+   * `LevelMapScreen.test.ts`), בדיוק כפי ש-`T-210` עשתה ל-`unseen`.
+   */
+  it('T-385ⓐ — ⛔ אינה קוראת בעצמה: ⛔ אפס רשת, ⛔ אפס `failed` משלה', () => {
+    expect(CODE).not.toContain('apiGet');
+    expect(CODE).not.toContain('useEffect');
+    expect(CODE).not.toContain('/api/');
+    expect(CODE).not.toContain('setFailed');
   });
 
   it('⛔ אינה ממיינת מחדש בלקוח — המיון הוא של lib/core/deck.ts', () => {
@@ -53,7 +63,9 @@ describe('אמת על מספרים', () => {
 
   it('רשימה חתוכה אומרת את הסך ⛔ ואינה מתחזה לשלמה', () => {
     expect(CODE).toContain('מתוך');
-    expect(CODE).toContain('MAX_QUEUE_LIMIT');
+    // `T-385` — הסף עצמו (`MAX_QUEUE_LIMIT`) נמדד עכשיו באתר הקריאה, ⛔ במסך;
+    // כאן נמדד מה שהרכיב הזה עדיין אחראי לו: השוואת `total` מול מה שהוא מצייר.
+    expect(CODE).toContain('total > cards.length');
   });
 });
 

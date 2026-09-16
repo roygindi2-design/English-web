@@ -132,7 +132,18 @@ const DUE_NOTE_HE = (n: string) => `${n} כרטיסיות להיום`;
 /** Written out rather than built from a template so the requests are readable as what
  *  they are: one row each, because only `total` is wanted. */
 const DUE_QUERY = '/api/study/queue?deck=due&limit=1';
-const UNKNOWN_QUERY = '/api/study/queue?deck=unknown&limit=1';
+/**
+ * `T-385`ⓐ — ⛔ **`UNKNOWN_QUERY` נמחקה מכאן, ⛔ ולא הוחלפה.**
+ *
+ * 🔬 **נמדד `C-0647` ברשת חיה:** טעינת `/dev/tabs/cards` ירתה **ארבע** בקשות לאותו
+ * endpoint, ו-`deck=unknown` הופיע ב**שתיים** — `limit=1` מכאן ו-`limit=50`
+ * מ-`<UnknownList>` — ושני הרכיבים החזיקו כל אחד `failed` משלו על אותו אירוע. ⇒ קריאה
+ * אחת יכלה להצליח והשנייה ⛔ לא, והמסך היה אומר על חפיסה אחת שני דברים סותרים באותו רגע.
+ *
+ * ⇒ המספר מגיע עכשיו כ-prop מ-`<LevelMapScreen>`, **בדיוק כמו `unseen` מאז `T-210`**
+ * («המספר שייך למסך, ⛔ לא לבלוק»). ⛔ אופציונלי, ⇒ `/dev/tabs/probe` ממשיך לרנדר
+ * ‏`<DeckSelector />` בלי props ומקבל «—».
+ */
 /**
  * ⚠️ `limit=1` ⛔ ואינו מקצץ את המונה: `total` נספר **לפני** החיתוך בכל ארבע החפיסות
  * (`docs/api-contract.md`), וזו הסיבה היחידה שאריח יכול לקרוא מספר בשורה אחת.
@@ -143,10 +154,23 @@ type QueueResponse =
   | { readonly ok: true; readonly total: number }
   | { readonly ok: false; readonly code: string };
 
+/** `T-385` — ⛔ `unknown` ⛔ אינו כאן עוד: הוא נקרא פעם אחת, במסך. */
 type DeckCounts = {
   readonly due: number | null;
-  readonly unknown: number | null;
   readonly sentences: number | null;
+};
+
+/**
+ * `T-385`ⓐ — מה שהמסך מוסר על חפיסת `unknown`. ‏`failed` נוסע כשדה ⛔ ואינו נגזר
+ * מ-`total === null`: בזמן שהקריאה באוויר `total` הוא `null` ו⛔ שום דבר ⛔ עוד לא
+ * נכשל — אותה הבחנה בדיוק ש-`deckState` עושה כאן למטה עבור `due` ו-`sentences`.
+ * ⛔ **`undefined` ⛔ אינו «נכשל»** — הוא «⛔ לא נעשתה קריאה», וזה מצבו של
+ * `/dev/tabs/probe` ושל כל ענף שאינו `ready`.
+ */
+type UnknownDeckProp = {
+  readonly total: number | null;
+  readonly failed: boolean;
+  readonly loading: boolean;
 };
 
 /**
@@ -228,10 +252,20 @@ function toEntry(input: {
  */
 export default function DeckSelector({
   unseen = null,
+  unknown,
+  onRetry,
 }: {
   readonly unseen?: number | null;
+  /** `T-385`ⓐ — ⛔ אופציונלי, בדיוק כמו `unseen`. ⛔ חסר ⇒ «—», ⛔ ולא «נכשל». */
+  readonly unknown?: UnknownDeckProp;
+  /**
+   * `T-385`ⓐ — «טעינה מחדש» חייבת לקרוא גם למה ש**המסך** קורא. בלי זה הכפתור
+   * מתקן את `due` ואת `sentences` ומשאיר את «חזרה» על הכשל שלו, וזה בדיוק המצב
+   * הסותר שהשורה הזאת נכתבה נגדו.
+   */
+  readonly onRetry?: () => void;
 } = {}): React.JSX.Element {
-  const [counts, setCounts] = useState<DeckCounts>({ due: null, unknown: null, sentences: null });
+  const [counts, setCounts] = useState<DeckCounts>({ due: null, sentences: null });
   const [loading, setLoading] = useState(true);
   /**
    * `T-295`ⓑ — the retry is a **re-read in place**, ⛔ not a navigation and ⛔ not a page
@@ -243,17 +277,18 @@ export default function DeckSelector({
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      // The three counted decks in parallel: none depends on another, so serialising them
-      // would multiply the wait for no gain. ⛔ `level` is ⛔ not among them — its number is
-      // `unseen`, which the SCREEN already holds (§ 4.2ז), and a fourth read here would be
-      // a second definition of it.
-      const [due, unknown, sentences] = await Promise.all([
+      // The two counted decks in parallel: neither depends on the other, so serialising
+      // them would multiply the wait for no gain. ⛔ `level` is ⛔ not among them — its
+      // number is `unseen`, which the SCREEN already holds (§ 4.2ז), and a read here would
+      // be a second definition of it. ⛔ **`T-385`: ⛔ nor is `unknown`, for exactly the
+      // same reason** — `<LevelMapScreen>` reads that deck once, at `limit=50`, for both
+      // this tile and `<UnknownList>`.
+      const [due, sentences] = await Promise.all([
         readTotal(DUE_QUERY),
-        readTotal(UNKNOWN_QUERY),
         readTotal(SENTENCES_QUERY),
       ]);
       if (cancelled) return;
-      setCounts({ due, unknown, sentences });
+      setCounts({ due, sentences });
       setLoading(false);
     })();
     return () => {
@@ -269,9 +304,13 @@ export default function DeckSelector({
   const deckState = (count: number | null): ReadState =>
     loading ? 'unknown' : count === null ? 'failed' : 'ok';
 
-  /** ⛔ One failed deck out of three is already a screen that lies — ⛔ not «all three». */
+  /**
+   * ⛔ One failed deck out of three is already a screen that lies — ⛔ not «all three».
+   * ⛔ **`T-385`: and the third deck's verdict now arrives from the screen** — ⛔ never
+   * re-derived here from a second read of the same deck.
+   */
   const readFailed =
-    !loading && (counts.due === null || counts.unknown === null || counts.sentences === null);
+    (!loading && (counts.due === null || counts.sentences === null)) || unknown?.failed === true;
 
   // ⛔ **The order is `36 § 5`'s order**, ⛔ not a preference: «סינון מילים» first, `חזרה`
   // second. `מנת היום` follows as the DECLARED deviation recorded in the UX plan (§ 4.2כ ד׳)
@@ -293,12 +332,23 @@ export default function DeckSelector({
       // so it ⛔ cannot claim the read broke. «—» is exactly what that means.
       note: tileNote(unseen === null ? 'unknown' : 'ok', unseen, LEVEL_NOTE_HE),
     }),
+    // `T-385`ⓐ — ⛔ **the number is the SCREEN's**, read once at `limit=50` together with
+    // the list below it. ⛔ `undefined` is ⛔ not `'failed'`: it means no read was made at
+    // all here — `/dev/tabs/probe`, and every branch of the screen that is not `ready`.
     toEntry({
       key: 'unknown',
       label: PRACTICE_LABEL_HE,
       href: '/study?deck=unknown',
-      count: counts.unknown,
-      note: tileNote(deckState(counts.unknown), counts.unknown, PRACTICE_NOTE_HE),
+      count: unknown?.total ?? null,
+      note: tileNote(
+        unknown === undefined || unknown.loading
+          ? 'unknown'
+          : unknown.failed
+            ? 'failed'
+            : 'ok',
+        unknown?.total ?? null,
+        PRACTICE_NOTE_HE,
+      ),
     }),
     toEntry({
       key: 'due',
@@ -356,6 +406,9 @@ export default function DeckSelector({
         onClick={() => {
           setLoading(true);
           setAttempt((previous) => previous + 1);
+          // `T-385`ⓐ — ⛔ and the deck the SCREEN owns is re-read too. A way out that
+          // fixes two tiles of three is ⛔ not a way out of THIS failure.
+          onRetry?.();
         }}
         data-primary-action={primaryKey === null ? 'true' : undefined}
         className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg font-semibold text-ink active:opacity-90"

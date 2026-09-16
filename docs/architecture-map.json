@@ -836,6 +836,7 @@
     "components/UnknownList.tsx",
     "lib/api/client.ts",
     "lib/core/cefrLevels.ts",
+    "lib/core/deck.ts",
     "lib/core/failure.ts",
     "lib/core/failureExit.ts",
     "lib/core/levelSummary.ts"
@@ -987,8 +988,6 @@
   ],
   "components/UnknownList.tsx": [
     "components/EnWord.tsx",
-    "lib/api/client.ts",
-    "lib/core/deck.ts",
     "lib/core/failure.ts"
   ],
   "components/WordBank.test.ts": [],
