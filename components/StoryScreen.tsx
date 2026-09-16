@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import StoryEndScreen from '@/components/StoryEndScreen';
 import WordPopover, {
@@ -13,7 +13,12 @@ import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { storyIntro } from '@/lib/core/storyIntro';
 import type { StoryQuestion } from '@/lib/core/storyQuestion';
-import { buildStorySegments, type StoryGloss } from '@/lib/core/storyTapTargets';
+import {
+  buildStorySegments,
+  hitStoryWordBoxes,
+  type StoryGloss,
+  type StoryWordBox,
+} from '@/lib/core/storyTapTargets';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
 /**
@@ -248,17 +253,27 @@ function StoryReady({
   payload: StoryPayload;
   initialPhase?: StoryPhase;
 }) {
-  const known = new Set(payload.knownLemmas);
-  const glosses = new Map<string, StoryGloss>(
-    Object.entries(payload.glosses).map(([lemma, g]) => [
-      lemma,
-      { translationHe: g.translationHe, posHe: g.posHe },
-    ]),
+  const known = useMemo(() => new Set(payload.knownLemmas), [payload.knownLemmas]);
+  const glosses = useMemo(
+    () =>
+      new Map<string, StoryGloss>(
+        Object.entries(payload.glosses).map(([lemma, g]) => [
+          lemma,
+          { translationHe: g.translationHe, posHe: g.posHe },
+        ]),
+      ),
+    [payload.glosses],
   );
-  const segments = buildStorySegments(payload.story.bodyEn, glosses, known);
+  const segments = useMemo(
+    () => buildStorySegments(payload.story.bodyEn, glosses, known),
+    [payload.story.bodyEn, glosses, known],
+  );
   // ⛔ מפתחות `glosses` הם «מילות הסיפור שיש להן משמעות אצלנו» — בדיוק הקבוצה ש-
   // `36 § 3` תנאי 1 מגדיר כיעדי הקשה. מילה בלעדיהם ⛔ אינה נספרת באף מספר (T-150ⓓ).
-  const intro = storyIntro(Object.keys(payload.glosses), payload.knownLemmas);
+  const intro = useMemo(
+    () => storyIntro(Object.keys(payload.glosses), payload.knownLemmas),
+    [payload.glosses, payload.knownLemmas],
+  );
 
   const [phase, setPhase] = useState<StoryPhase>(initialPhase ?? 'reading');
   const [openLemma, setOpenLemma] = useState<string | null>(null);
@@ -283,41 +298,110 @@ function StoryReady({
   const [ambiguous, setAmbiguous] = useState<readonly string[] | null>(null);
 
   /**
-   * `36 § 3.4` — **מגע בטווח של שני יעדים מציג שבב עם שניהם, ⛔ ולעולם לא ניחוש.**
-   * המרווח האופקי מוחזר כשוליים שליליים, ולכן שני אזורי הקשה של מילים סמוכות **יכולים**
-   * לחפוף. ההכרעה נעשית על **הקואורדינטה של המגע** מול כל אזורי ההקשה בפסקה, ⛔ ולא על
-   * האלמנט שהדפדפן במקרה בחר.
+   * 🔴 **T-232ⓑ — שכבת המלבנים: נקראת פעם אחת לפריסה, ⛔ ולא בכל הקשה.**
+   *
+   * ⚠️ **הקואורדינטות הן יחסיות לכרטיס הגוף, ⛔ ולא לחלון** — וזו ⛔ אינה נוחות:
+   * `getBoundingClientRect` הוא יחסי-לחלון, ⇒ מטמון בקואורדינטות חלון היה נפסל בכל
+   * **גלילה** בלי שדבר יודיע על כך, והמגע היה נופל על המילה הלא נכונה. הפרש מול מלבן
+   * הכרטיס — שנקרא ממילא בכל הקשה — הופך את הגלילה ללא-רלוונטית.
+   *
+   * ⛔ **ומה שכן פוסל אותה:** `resize` (הרוחב משתנה ⇒ הגלישה משתנה) ו-`ResizeObserver`
+   * על הכרטיס, שתופס גם טעינת גופן שמזיזה שורות. ‏`ResizeObserver` ⛔ אינו קיים בכל
+   * סביבת הרצה ⇒ הוא **אופציונלי**, ומאזין ה-`resize` הוא הרצפה.
+   */
+  const wordBoxesRef = useRef<readonly (StoryWordBox & { readonly text: string })[]>([]);
+  const measureWords = useCallback(() => {
+    const body = bodyRef.current;
+    if (body === null) {
+      wordBoxesRef.current = [];
+      return;
+    }
+    const box = body.getBoundingClientRect();
+    wordBoxesRef.current = [...body.querySelectorAll('[data-story-word]')].map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - box.left,
+        right: r.right - box.left,
+        top: r.top - box.top,
+        bottom: r.bottom - box.top,
+        text: (el.textContent ?? '').trim(),
+      };
+    });
+  }, []);
+
+  // ⛔ `useLayoutEffect` ⛔ ולא `useEffect`: אחרי הפריסה ולפני הצביעה ⇒ ⛔ אין ולו פריים
+  // אחד שבו המסך מצויר והמטמון עדיין ריק.
+  useLayoutEffect(() => {
+    measureWords();
+  }, [measureWords, segments, phase]);
+
+  useEffect(() => {
+    const onResize = () => measureWords();
+    window.addEventListener('resize', onResize);
+    const body = bodyRef.current;
+    const observer =
+      body === null || typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(onResize);
+    if (observer !== null && body !== null) observer.observe(body);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (observer !== null) observer.disconnect();
+    };
+  }, [measureWords, phase]);
+
+  /**
+   * 🔴 **T-232ⓑ — שלוש שכבות של מדידה בתוך ההקשה ירדו לאחת. נמדד, ⛔ ולא שוער.**
+   *
+   * 🔬 **מה שהיה כאן, `C-0371`:** כל הקשה — ⛔ ולא רק הקשה דו-משמעית — הריצה
+   * `querySelectorAll('[data-story-word]')` ואז `getBoundingClientRect()` על **כל מילה
+   * בפסקה**, כלומר פריסה כפויה ועוד N קריאות מלבן **בתוך מטפל ההקשה**. `apple-design § 1`
+   * נוקב בדיוק בזה: «be vigilant about every latency … anything on the input path that
+   * isn't essential is a regression».
+   *
+   * ⇒ **המלבנים נקראים פעם אחת לפריסה** (`useLayoutEffect` למטה, ⛔ מחוץ לאינטראקציה),
+   * נשמרים **יחסית לכרטיס הגוף** — ולכן גלילה ⛔ אינה פוסלת אותם — ונפסלים ב-`resize`
+   * וב-`ResizeObserver`. ההקשה קוראת מלבן **אחד** (הכרטיס, שממילא נדרש ל-`bodyBox`),
+   * ממירה נקודה אחת, ומכריעה בפונקציה טהורה.
+   *
+   * 🔴 **⛔ והכלל ⛔ אינו זז: `36 § 3.4`** — מגע בטווח של **שני** יעדים מציג שבב עם
+   * **שניהם**, ⛔ ולעולם לא ניחוש. מה שהשתנה הוא **מתי נמדד**, ⛔ ולא **מה מוכרע**.
+   *
+   * ⚠️ **ומטמון ריק ⛔ אינו «אין פגיעה»:** אם השכבה ⛔ טרם נמדדה (רנדור ראשון, סביבה
+   * ⛔ בלי `useLayoutEffect` חי) — נופלים חזרה למלבן של המילה שהוקשה עצמה, שהוא מה
+   * שהדפדפן כבר הכריע. ⛔ הנפילה היא לעולם למסלול החד-משמעי, ⛔ ולא לניחוש בין שניים.
    */
   const onWordClick = useCallback((event: React.MouseEvent<HTMLButtonElement>, lemma: string) => {
-    const paragraph = event.currentTarget.closest('[data-story-body]');
+    const body = bodyRef.current;
+    // ⛔ מלבן אחד, ⛔ ולא N — והוא נדרש ממילא ל-`bodyBox` של החלונית.
+    const box = body?.getBoundingClientRect() ?? null;
     const hits =
-      paragraph === null
+      box === null
         ? []
-        : [...paragraph.querySelectorAll('[data-story-word]')].filter((el) => {
-            const r = el.getBoundingClientRect();
-            return (
-              event.clientX >= r.left &&
-              event.clientX <= r.right &&
-              event.clientY >= r.top &&
-              event.clientY <= r.bottom
-            );
-          });
+        : hitStoryWordBoxes(wordBoxesRef.current, event.clientX - box.left, event.clientY - box.top);
     if (hits.length > 1) {
       setOpenLemma(null);
       setAnchor(null);
-      setAmbiguous(hits.map((el) => (el.textContent ?? '').trim()));
+      setAmbiguous(hits.map((h) => h.text));
       return;
     }
     setAmbiguous(null);
-    if (paragraph !== null) {
-      const box = paragraph.getBoundingClientRect();
-      const word = event.currentTarget.getBoundingClientRect();
+    if (box !== null) {
       setBodyBox({ width: box.width, height: box.height });
-      setAnchor({
-        top: word.top - box.top,
-        bottom: word.bottom - box.top,
-        centerX: word.left - box.left + word.width / 2,
-      });
+      const hit = hits[0];
+      if (hit !== undefined) {
+        setAnchor({
+          top: hit.top,
+          bottom: hit.bottom,
+          centerX: hit.left + (hit.right - hit.left) / 2,
+        });
+      } else {
+        // ⛔ מטמון ⛔ לא חם ⇒ קריאה אחת, של המילה שהוקשה בלבד. ⛔ ולא של הפסקה.
+        const word = event.currentTarget.getBoundingClientRect();
+        setAnchor({
+          top: word.top - box.top,
+          bottom: word.bottom - box.top,
+          centerX: word.left - box.left + word.width / 2,
+        });
+      }
     }
     tappedWordRef.current = event.currentTarget;
     setOpenLemma(lemma);

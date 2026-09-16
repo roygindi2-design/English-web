@@ -110,3 +110,41 @@ export function buildStorySegments(
   }
   return out;
 }
+
+/**
+ * `36 § 3.4` — **the ambiguity test as PURE geometry, ⛔ not as a DOM sweep.**
+ *
+ * 🔬 **T-232ⓑ, measured in `C-0371` and re-measured here:** the tap handler used to run
+ * `querySelectorAll('[data-story-word]')` and then `getBoundingClientRect()` on **every
+ * word in the paragraph**, ⛔ inside the interaction — one forced layout plus N rect reads
+ * per tap, on every tap, ⛔ not only on an ambiguous one. `apple-design § 1` names exactly
+ * that: «be vigilant about every latency … anything on the input path that isn't essential
+ * is a regression».
+ *
+ * ⇒ the boxes are read **once per layout** by the caller and handed here in
+ * **container-local** coordinates, so a scroll ⛔ cannot invalidate them; the tap converts
+ * one viewport point into the same space and this function does the rest with ⛔ no DOM
+ * access at all.
+ *
+ * ⛔ **The RULE itself ⛔ does not move:** a point inside **two** boxes returns **both**,
+ * in DOM order, and the caller shows the chip with both. ⛔ It ⛔ never guesses.
+ */
+export interface StoryWordBox {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
+/**
+ * Every box containing `(x, y)`, in the order given. Bounds are **inclusive** on all four
+ * sides — that is what makes two boxes sharing an edge read as ambiguous rather than as a
+ * silent pick, and it is the same comparison the DOM sweep used.
+ */
+export function hitStoryWordBoxes<T extends StoryWordBox>(
+  boxes: readonly T[],
+  x: number,
+  y: number,
+): readonly T[] {
+  return boxes.filter((b) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom);
+}

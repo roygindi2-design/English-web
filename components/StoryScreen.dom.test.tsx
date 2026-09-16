@@ -119,24 +119,46 @@ describe('T-202 — the question is a STATE, and the chrome survives the swap', 
  * מסויעת הייתה פוגעת בכל שבע המילים בבת אחת ופותחת את שבב האי-ודאות ⛔ במקום הפופאובר.
  * `layoutStoryWords` נותן לכל מילה מלבן ייחודי ולא חופף כדי שלחיצה במרכזו תפגע **רק** בה.
  */
-function layoutStoryWords(container: HTMLElement): void {
+interface WordRectMeter {
+  /** Rect reads on `[data-story-word]` elements SINCE the last layout event. */
+  reads: number;
+}
+
+/**
+ * 🔴 **T-232ⓑ — העזר הזה מודד עכשיו גם **מתי** נקראים המלבנים, ⛔ ולא רק מה הם.**
+ * הרכיב מודד פעם אחת **לפריסה** ושומר במטמון; השינוי של מלבן מצוטט
+ * אחרי הרנדור ⛔ אינו אירוע שהדפדפן מדווח עליו ⇒ **העזר יורה `resize`**, שהוא בדיוק הערוץ
+ * שהרכיב מצהיר עליו כמפסיל מטמון. ⛔ בלעדיו הבדיקה היתה מודדת את מסלול הנפילה
+ * (מטמון קר) ומדווחת ירוק על נתיב שהלומד ⛔ אינו פוגש.
+ *
+ * ⚠️ תשתית הבדיקה המקורית: ב-jsdom כל אלמנט מחזיר מלבן אפס, כך שלחיצה לא
+ * מסויעת הייתה פוגעת בכל שבע המילות בבת אחת ופותחת את שבב האי-ודאות.
+ */
+function layoutStoryWords(container: HTMLElement): WordRectMeter {
+  const meter: WordRectMeter = { reads: 0 };
   const buttons = Array.from(container.querySelectorAll('[data-story-word]'));
   buttons.forEach((el, i) => {
     Object.defineProperty(el, 'getBoundingClientRect', {
       configurable: true,
-      value: () => ({
-        left: i * 20,
-        right: i * 20 + 15,
-        top: 0,
-        bottom: 20,
-        width: 15,
-        height: 20,
-        x: i * 20,
-        y: 0,
-        toJSON: () => ({}),
-      }),
+      value: () => {
+        meter.reads += 1;
+        return {
+          left: i * 20,
+          right: i * 20 + 15,
+          top: 0,
+          bottom: 20,
+          width: 15,
+          height: 20,
+          x: i * 20,
+          y: 0,
+          toJSON: () => ({}),
+        };
+      },
     });
   });
+  fireEvent(window, new Event('resize'));
+  meter.reads = 0;
+  return meter;
 }
 
 function clickWord(el: Element): void {
@@ -226,5 +248,87 @@ describe('T-238ⓑ — הפופאובר בסיפור מדווח מה שקרה ב
     fireEvent.click(screen.getByRole('button', { name: RETRY_HE }));
     expect(await screen.findByText('נוספה לחזרה')).toBeTruthy();
     expect(calls).toBe(2);
+  });
+});
+
+/**
+ * 🔴 **T-232 — ההקשה מפסיקה למדוד את כל הפסקה. `apple-design § 1`.**
+ *
+ * 🔬 **מה שנמדד ב-`C-0371` וסגר את השורה הזאת:** `onWordClick` הריץ
+ * `querySelectorAll('[data-story-word]')` ואז `getBoundingClientRect()` על **כל מילה
+ * בפסקה**, בכל הקשה — ⛔ ולא רק בהקשה דו-משמעית. ⇒ פריסה כפויה ועוד N קריאות מלבן
+ * **בתוך מטפל ההקשה**, על נתיב הקלט עצמו.
+ *
+ * ⚠️ **ולמה הבדיקה סופרת קריאות ⛔ ולא מודדת זמן:** זמן ב-jsdom הוא רעש; **מספר
+ * הקריאות** הוא בדיוק מה שהשורה מחייבת («מלבנים שנקראים פעם אחת לפריסה»), והוא
+ * מדיד בלי שעון. ⛔ בדיקה שמודדת «מהר יותר» היא בדיקה שתאדים על מכונה עמוסה.
+ */
+describe('T-232 — the tap stops measuring the paragraph', () => {
+  /**
+   * ⚠️ `clickWord` קורא את המלבן של המילה כדי לחשב את נקודת המגע — זו קריאה של
+   * **הבדיקה**, ⛔ ולא של המוצר. ⇒ המונה מתאפס **אחרי** חישוב הנקודה
+   * ולפני היריית האירוע, כדי שמה שנספר יהיה **מה שהמטפל עצמו עשה**.
+   */
+  function tapMeasured(el: Element, meter: WordRectMeter): void {
+    const rect = el.getBoundingClientRect();
+    const point = {
+      clientX: (rect.left + rect.right) / 2,
+      clientY: (rect.top + rect.bottom) / 2,
+    };
+    meter.reads = 0;
+    fireEvent.click(el, point);
+  }
+
+  it('⛔ אפס קריאות מלבן על מילים בתוך ההקשה — המטמון נקרא פעם אחת לפריסה', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const meter = layoutStoryWords(container);
+    tapMeasured(screen.getByRole('button', { name: 'library' }), meter);
+    // ⛔ THE POINT: the popover opened, and ⛔ not one word was measured to do it.
+    expect(screen.getByRole('button', { name: 'הוסף לכרטיסיות' })).toBeTruthy();
+    expect(meter.reads).toBe(0);
+  });
+
+  it('⛔ וגם ההקשה השנייה ⛔ אינה מודדת — המטמון שורד בין הקשות', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const meter = layoutStoryWords(container);
+    tapMeasured(screen.getByRole('button', { name: 'library' }), meter);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    tapMeasured(screen.getByRole('button', { name: 'river' }), meter);
+    expect(meter.reads).toBe(0);
+  });
+
+  /**
+   * 🔴 **הגדר של השורה: `36 § 3.4` ⛔ אינו זז.** מה שהשתנה הוא **מתי** נמדד, ⛔ ולא
+   * **מה** מוכרע — מגע בטווח של שני יעדים עדיין מציג שבב עם **שניהם**, ⛔ ולא מנחש.
+   */
+  it('`36 § 3.4` — מגע בטווח של שני יעדים מציג את שניהם, ⛔ ולא בוחר אחד', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const words = Array.from(container.querySelectorAll('[data-story-word]'));
+    const [first, second] = words;
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+    // ⛔ שני אזורי הקשה חופפים — בדיוק מה שהשוליים השליליים של `36 § 3.3` מייצרים.
+    [first, second].forEach((el) => {
+      Object.defineProperty(el, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({
+          left: 0,
+          right: 30,
+          top: 0,
+          bottom: 20,
+          width: 30,
+          height: 20,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        }),
+      });
+    });
+    fireEvent(window, new Event('resize'));
+    fireEvent.click(first as Element, { clientX: 10, clientY: 10 });
+    const chip = container.querySelector('[data-story-ambiguity-chip]');
+    expect(chip).toBeTruthy();
+    expect(chip?.textContent).toContain((first?.textContent ?? '').trim());
+    expect(chip?.textContent).toContain((second?.textContent ?? '').trim());
   });
 });

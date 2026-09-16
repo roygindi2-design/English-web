@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildStorySegments,
   FUNCTION_WORD_FLOOR,
+  hitStoryWordBoxes,
   normalizeWord,
   type StoryGloss,
 } from './storyTapTargets';
@@ -56,5 +57,44 @@ describe('the mirrored floor agrees with the judge, word for word', () => {
     for (const w of ['The', 'to,', 'river.', "don't", '“quiet”', 'Maya']) {
       expect(normalizeWord(w)).toBe(audit.normalizeWord(w));
     }
+  });
+});
+
+/**
+ * 🔴 **T-232ⓑ — `36 § 3.4` כגאומטריה טהורה.**
+ *
+ * ⛔ **הכלל ⛔ אינו זז, והבדיקה הזאת היא מה שמחזיק אותו:** נקודה בתוך **שני** מלבנים
+ * מחזירה את **שניהם**, בסדר שניתן — ⛔ ולא את הראשון, ⛔ ולא את הקרוב ביותר. הבוחר
+ * היחיד שמותר לו להכריע בין שניים הוא **הלומד**, דרך השבב.
+ */
+describe('hitStoryWordBoxes — 36 § 3.4 as pure geometry', () => {
+  const A = { left: 0, right: 30, top: 0, bottom: 20, id: 'a' };
+  const B = { left: 20, right: 50, top: 0, bottom: 20, id: 'b' };
+  const C = { left: 60, right: 90, top: 0, bottom: 20, id: 'c' };
+
+  it('a point inside one box returns that box alone', () => {
+    expect(hitStoryWordBoxes([A, B, C], 5, 10).map((b) => b.id)).toEqual(['a']);
+  });
+
+  it('⛔ a point inside TWO boxes returns BOTH, in the order given — ⛔ it never picks', () => {
+    expect(hitStoryWordBoxes([A, B, C], 25, 10).map((b) => b.id)).toEqual(['a', 'b']);
+  });
+
+  it('a point outside every box returns nothing — ⛔ and ⛔ does not fall back to the nearest', () => {
+    expect(hitStoryWordBoxes([A, B, C], 55, 10)).toEqual([]);
+  });
+
+  /**
+   * ⚠️ **הגבולות כוללניים, וזו החלטה ⛔ ולא פליטה:** שני אזורי הקשה שחולקים קצה
+   * מדווחים כדו-משמעיים, ⛔ ולא נבחר אחד מהם בשקט. זו אותה השוואה שהסריקה הישנה
+   * על ה-DOM עשתה, ⇒ המעבר לגאומטריה ⛔ אינו משנה ולו הכרעה אחת.
+   */
+  it('bounds are inclusive — a shared edge is ambiguous, ⛔ not a silent pick', () => {
+    expect(hitStoryWordBoxes([A, B], 30, 10).map((b) => b.id)).toEqual(['a', 'b']);
+    expect(hitStoryWordBoxes([A, B], 20, 0).map((b) => b.id)).toEqual(['a', 'b']);
+  });
+
+  it('the vertical axis counts too — a point below the line is ⛔ no hit', () => {
+    expect(hitStoryWordBoxes([A, B, C], 25, 21)).toEqual([]);
   });
 });
