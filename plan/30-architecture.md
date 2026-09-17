@@ -2948,3 +2948,85 @@ whose index-4 cell carries the open glyph literally, and mutation-checked —
 classifying malformed rows by status turns 3 of the 4 red.
 ⛔ **The detector still ⛔ does not repair a row.** It reports. Auto-repairing a
 register is how prose gets deleted in silence (`T-302`).
+
+## C-0673 (DEV) — `T-360` · `T-363` — the round the learner can see again, and the mana that finally has somewhere to go
+
+### `T-360` · stamp ⓒ was a READ gap, ⛔ not a write gap
+
+`36 § 13.1` ⓒ asks that «what the learner did is saved and visible on the next
+entry». The arena was measured as failing it. **It was not failing the save.**
+`planArcadeWrites` has written `arcade_runs(finished_at, words_seen,
+words_correct, enemy_defeated)` on every battle since `0014_arcade.sql`, and
+that migration even built `arcade_runs_user_finished_idx (user_id, finished_at
+desc)` — the exact index this read wants. What no screen ever did was **read it
+back**: the home screen showed `wins` alone, which moves a node on the boss
+track and says ⛔ nothing about what happened in the learner's 90 seconds.
+
+⇒ the fix is a read, and it costs ⛔ no migration, ⛔ no column and ⛔ no write:
+`GET /api/arcade/home` adds one `order('finished_at', desc).limit(1)`,
+`lib/core/arenaLastRound.ts` shapes the raw row, and `<ArenaHome>` draws
+«הקרב האחרון» directly under the boss track — the track says where you are,
+the panel says how you got there. `37 § 13.1` is untouched: the route is still
+read-only, and `route.test.ts` still measures that byte for byte.
+
+**A malformed row is `null`, ⛔ not 503 and ⛔ not a false number.**
+`lastRoundFromRow` validates the same condition the schema's
+`arcade_runs_counts_check` states (`words_correct ≤ words_seen`), plus the ISO
+shape and every type. A row the route cannot trust becomes «⛔ no last round»,
+which is a state the screen already draws correctly for a learner who has never
+fought. ⛔ The alternative — trusting the store more than a client body — is how
+a wrong number reaches a learner with ⛔ nothing failing.
+
+**And the date carries ⛔ no clock.** `lastRoundDateHe` reads the `YYYY-MM-DD`
+prefix of the stored string with a regex. «two days ago» would have needed
+`Date.now` — impure in `lib/core/`, and a hydration mismatch in the component.
+
+### `T-363` · `§ 4` named three abilities and defined ⛔ none of them
+
+Measured: `manaSpent` was **constant 0 for the whole of every battle**. Mana
+accrued to the cap (`manaAt`, `T-176`) and the learner had ⛔ nothing to spend
+it on — the render draws the row (`render_video_B.py:308`), the build had ⛔ no
+such row at all.
+
+The three costs and the order are the render's own line, verbatim. **The three
+EFFECTS were nowhere**, and each is derived from a constant the spec already
+carries — ⛔ no new number was introduced, and all three are written into
+`37 § 4` as a declared `RULES § 0.22` call PM or Roy can replace in one commit:
+
+| ability | effect | derived from |
+|---|---|---|
+| `כפול` (4) | the next **correct** cast doubles its damage | «נזק כפול», the render's own badge (`:487`) |
+| `מגן` (3) | the next enemy swing does ⛔ nothing | the immunity `§ 6` already defines, and `dodge()` already implements |
+| `הקפאה` (5) | the swing clock is pushed a full `ENEMY_SWING_MS` forward | `§ 3`, «the enemy attacks at its own rate», 8 seconds |
+
+⛔ **`ריפוי` is ⛔ not built and ⛔ not forgotten:** `§ 4` lists four, the render
+draws three, and `36 § 14.4` makes the render binding. It stays a declared gap.
+
+**⛔ No second clock.** Freeze moves `lastSwingMs`, the field `tick` already
+divides by `ENEMY_SWING_MS` to count what has landed ⇒ «the swings in this
+window did ⛔ not happen» is expressed in the mechanism that is already tested.
+A `frozenUntil` field would have been a second clock, and the second always drifts.
+
+**A wrong cast ⛔ does not consume `כפול`.** It deals ⛔ no damage at all, so
+consuming the boost would charge 4 mana for nothing — punishment for an error,
+which `§ 5` («⛔ no failure state on slowness») and `R-016` both forbid.
+
+**`immuneBy` — ⛔ one immunity, two words.** `§ 6` (a roll) and `§ 4` (`מגן`)
+both land on `dodgedSwing`, so ⛔ one field was enough for `tick` — but the
+screen printed «התחמקות!» for both, telling a learner who tapped `מגן` about a
+gesture they ⛔ never made. `tick` ⛔ does not read the new field; only the
+sentence does.
+
+**Two measured deviations from the render, both forced by layer A.** The cost
+digit is `--arena-ink`, ⛔ not `--arena-mana`: this repo's own token file
+records `--arena-mana` on `--arena-stone-dark` at **3.46:1** — above the 3:1
+floor for a graphic, ⛔ below the 4.5:1 floor for small text. And it is 12px,
+⛔ not the render's 11 (`D-137`: ⛔ no font size under 12 in the arena). The
+button row is `flex-1` rather than the render's fixed 92px: `3×92 + 2×14 = 304`
+⛔ does not fit the 272 free at 320px, and horizontal scroll is a gate.
+
+**Live walk, `next start`, 320 · 375 · 414 × 780.** `/dev/arcade/home` — the
+panel at `y=528`, width 272/327/366, right under the boss track at `y=476`.
+`/dev/arcade` — the ability row at `y=672`, height **44 exactly**, `כפול` on
+the right at `x=215/251/277` and `הקפאה` on the left at `x=24`. Both routes:
+`hscroll=0`, ⛔ zero target under 44px, ⛔ zero console error.
