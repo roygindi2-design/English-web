@@ -1,0 +1,1 @@
+../../../skills/anthropic/animate/SKILL.md

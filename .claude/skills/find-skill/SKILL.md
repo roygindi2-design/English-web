@@ -1,0 +1,1 @@
+../../../skills/anthropic/find-skill/SKILL.md

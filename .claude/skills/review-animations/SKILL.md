@@ -1,0 +1,1 @@
+../../../skills/anthropic/review-animations/SKILL.md

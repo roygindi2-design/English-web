@@ -1,0 +1,1 @@
+../../../skills/hebrew-content-writer/SKILL_HE.md
