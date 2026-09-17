@@ -25,9 +25,6 @@ export type GestureSource = 'card' | 'stage';
  */
 export const GESTURE_THRESHOLD_PX = 60;
 
-/** `spell_card` ברנדר: `py = (y - pad - lift*14)` ⇒ הקלף עולה **14px** בהרמה מלאה. */
-export const CARD_LIFT_MAX_PX = 14;
-
 export interface GestureInput {
   readonly source: GestureSource;
   readonly startX: number;
@@ -92,13 +89,26 @@ export function cardLift(input: {
   readonly currentY: number;
   readonly reducedMotion: boolean;
 }): CardLift {
-  // ⛔ ההעדפה נבדקת **ראשונה** ומחזירה אפס תנועה, ⛔ ולא מספר קטן יותר: שכבה א׳ א7
-  // דורשת שהתנועה **תיפסק**. המחווה עצמה עדיין מוכרעת ב-`resolveGesture`, ⇒ לומד
-  // שכיבה תנועה עדיין מטיל בגרירה.
-  if (input.reducedMotion) return { y: 0, lift: 0, settleMs: 0 };
   const delta = input.currentY - input.startY;
   if (!Number.isFinite(delta)) return { y: 0, lift: 0, settleMs: 0 };
   if (delta >= 0) return { y: 0, lift: 0, settleMs: 0 };
   const travel = Math.min(Math.abs(delta), GESTURE_THRESHOLD_PX);
-  return { y: -travel, lift: travel / GESTURE_THRESHOLD_PX, settleMs: 0 };
+  const lift = travel / GESTURE_THRESHOLD_PX;
+
+  // ✋ `T-418` · סוגר את `F-280` — **ההעדפה מכבה את ה**תנועה**, ⛔ ולא את ההצהרה.**
+  // 🔬 **מה עמד כאן עד היום, ⛔ ולמה זה היה פגם ⛔ ולא הקפדה:** השורה הראשונה של
+  // הפונקציה החזירה `{ y: 0, lift: 0 }` ⇒ תחת `prefers-reduced-motion` ה-`lift` היה
+  // **0 לאורך כל הגרירה**, ‏`data-arena-lift` נשאר `'rest'` מתחילתה ועד סופה
+  // (‏`components/SpellCard.tsx` גוזר אותו מכאן), ⇒ **הלומד שכיבה תנועה ⛔ לא קיבל
+  // ולו סימן אחד שהגרירה נתפסה** — הוא גרר, שחרר, והלחש הוטל בלי ששום דבר הקדים
+  // ואמר לו שהוא חצה את הסף. ⛔ הוא היה **היחיד במוצר בלי משוב בכלל**.
+  //
+  // ⛔ **שכבה א׳ א7 ⛔ לא רוככה, ו⛔ הסף ⛔ לא ירד** (`37 § 5` — 60px הם מה שמפריד
+  // גרירה מהקשה): ‏`y` נשאר **0** — הקלף ⛔ אינו זז ולו פיקסל — ומה שנוסף הוא
+  // **מדידה**, ⛔ לא אנימציה: `lift` מדווח את ההתקדמות אל הסף, ו-`app/globals.css`
+  // מצייר את החצייה בערוץ **סטטי** (טבעת מוצקה), ⛔ לא ב-`animation` ו⛔ לא בתנועה.
+  // ⇒ «הצהרה ⛔ אינה אנימציה» (`35 § 5`).
+  if (input.reducedMotion) return { y: 0, lift, settleMs: 0 };
+
+  return { y: -travel, lift, settleMs: 0 };
 }

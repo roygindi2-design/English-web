@@ -74,8 +74,34 @@ describe('cardLift — ההרמה, ⛔ ולא ההכרעה', () => {
     expect(cardLift({ startY: 600, currentY: 400, reducedMotion: false }).lift).toBe(1);
   });
 
-  it('⛔ prefers-reduced-motion ⇒ אפס תנועה, ⛔ ולא מספר קטן יותר (שכבה א׳ א7)', () => {
-    expect(cardLift({ startY: 600, currentY: 500, reducedMotion: true }))
-      .toEqual({ y: 0, lift: 0, settleMs: 0 });
+  // ✋ `T-418` · סוגר את `F-280` — **הטענה נוסחה מחדש, ו⛔ לא רוככה.**
+  // עד היום היא דרשה `lift: 0` תחת ההעדפה, כלומר **`data-arena-lift` שנשאר `'rest'`
+  // לאורך כל הגרירה** — ⇒ היא נעלה את הפגם במקום למדוד אותו. מה שהיא שומרת הוא
+  // המספר שבאמת נושא את שכבה א׳ א7: **`y === 0`, אפס תנועה, בכל אחת מהנקודות.**
+  it('⛔ prefers-reduced-motion ⇒ אפס תנועה — `y` הוא 0 גם בסף מלא (שכבה א׳ א7)', () => {
+    expect(cardLift({ startY: 600, currentY: 540, reducedMotion: true }).y).toBe(0);
+    expect(cardLift({ startY: 600, currentY: 500, reducedMotion: true }).y).toBe(0);
+    expect(cardLift({ startY: 600, currentY: 400, reducedMotion: true }).settleMs).toBe(0);
+  });
+
+  it('✋ ההעדפה מכבה תנועה ⛔ ולא הצהרה — חצייה מלאה ⇒ `y === 0` **וגם** `lift >= 1`', () => {
+    // ⓓ של `T-418`, מילה במילה: `delta = -60` הוא הסף עצמו.
+    const crossed = cardLift({ startY: 600, currentY: 540, reducedMotion: true });
+    expect(crossed.y).toBe(0);
+    expect(crossed.lift).toBeGreaterThanOrEqual(1);
+  });
+
+  it('✋ ובאמצע הדרך ההצהרה ⛔ עדיין לא נדלקת — `delta = -30` ⇒ `lift` בין 0 ל-1', () => {
+    const halfway = cardLift({ startY: 600, currentY: 570, reducedMotion: true });
+    expect(halfway.y).toBe(0);
+    expect(halfway.lift).toBeGreaterThan(0);
+    expect(halfway.lift).toBeLessThan(1);
+  });
+
+  it('⛔ והסף ⛔ לא ירד: `lift` ⛔ אינו מגיע ל-1 לפני 60px, בשני המצבים', () => {
+    for (const reducedMotion of [true, false]) {
+      expect(cardLift({ startY: 600, currentY: 541, reducedMotion }).lift).toBeLessThan(1);
+      expect(cardLift({ startY: 600, currentY: 540, reducedMotion }).lift).toBe(1);
+    }
   });
 });
