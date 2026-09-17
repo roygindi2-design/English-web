@@ -524,3 +524,33 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 - **pollute** (לזהם): "Smoke from the factory can ____ the air." (רמה 1) / "Because the ship had a hole, it began to ____ the sea." (רמה 2, "because"). מסיחים: contaminate/protect (סמנטי) · salute (אורתוגרפי) · raincoat (לא קשור).
 
 ⟨נבדק: 2026-09-16⟩
+
+## דוח C-0700 — סוכן ה-CONTENT · ⟨נבדק: 2026-09-17⟩
+
+**מודל:** Sonnet 5 (`claude-sonnet-5`), כפי שנמסר בהוראת הריצה.
+
+**סקילים:** `hebrew-content-writer` — קרוא ב-`Skill()` נכשל בזיהוי השם הפרויקטלי (הרשימה שנחשפה הכילה רק `anthropic-skills:hebrew-content-writer`), ⇒ נקרא **כקובץ** ישירות מ-`skills/hebrew-content-writer/SKILL.md` (208 שורות, זהה בתוכן לגרסת ה-`anthropic-skills`) לפני כתיבת `translation_he` ראשון, כנדרש ב-STEP 5.9. `find-skill` לא נטען.
+
+**חסימת T-353, כפי שהפרומפט המתוזמן ביקש לדווח עליה במפורש:** נבדק חי ב-`plan/50-tasks.md` **לפני** תכנון האצווה — עדיין ⬜, אין קומיט סגירה. ⇒ הסכמה/`build:ingest`/הדגימה עדיין דוחים שורה בלי משפטים ⇒ **נכתב עם המנגנון המלא (2 משפטים · 3 גזעים · 4 מסיחים) לכל מילה, ⛔ לא בקיצור-הנפח שרוי ביקש 14/09.**
+
+**מסלול:** אצוות מילון שגרתית (K-005/K-007), ⛔ לא הזמנה חסומה. K-001/K-002 🟣 (ממתינות ל-Critic), K-003 ⛔ חסומה כדין, K-004 🟣 חלקית, K-006 🟣 (ממתינה ל-DEV על F-235ⓑ, מחוץ להיקף), K-007 ⬜ אך `T-244` תלותה ✅ סגורה — המשכתי בעבודת K-005.
+
+**🔴 גודל האצווה שנבחר: 16, ונומק:** נכתב עם המנגנון המלא (חובה כל עוד `T-353` פתוחה) ואומת שורה-שורה מול `gateSense` האמיתי — כולל שני סבבי תיקון, בקרת שלילה, בדיקת-קונפליקט תרגומים מול כל הבנק, קריאה ידנית של הצבת כל מסיח בכל גזע, בנייה מלאה, הליכת מסכים חיה ב-Playwright ו-`verify` המלא — הכול בתוך חלון הנעילה. 16 קרוב לגדלים שהוכחו כניתנים לאימות מלא (C-0631/C-0640/C-0700 הקודם); ⛔ אין תקרת אצווה כרשום, והתקרה האמיתית (1,200 שורות/קובץ) רחוקה.
+
+**K-005/K-007 — 16 מילים.** ⚠️ **הסמן הרשום ("robbery") היה מיושן** — אצווה מוקדמת יותר של היום (C-0687) כבר כתבה robbery..roughly, ורשמה next_marker="round". בדיקה חיה נוספת (לא הסתפקות בסמן) מצאה כותרת חד-מילית, `progressive`, אלפביתית *לפני* `round`, שאף טיק לא כתב — נכתבה ראשונה. הרצף המלא: progressive·round·roundabout·royal·rugby·ruin·runner·running·rush·sadly·safe·sailing·sake·salt·sauce·sausage. `gateSense` האמיתי (`scripts/.tmp-checkgate.test.ts`, נמחק לפני הקומיט): **סבב ראשון 7/16** — 9 פסילות סחיפת-רמה (מילת-רקע שנולדה בניסוח: palace·thousands·queen·saturday·england·wales·picnic·helmet·cyclist·harbour·awake·soup·chef·dull·pasta·spicy·delicious·grill·beans), ועוד פסילה מבנית חדשה — שני `____` בגזע אחד (`round`). סבב שני: **16/16**. בקרת שלילה (7 שורות, ציר נפרד לכל אחת) — 0/7 עברו. **קריאה ידנית אחרי השער** תפסה אי-התאמת זמן-פועל ש-`gateSense` אינו בודק (`ruin` item 2 — "he almost ruin" תוקן ל-"he was about to ruin"). **בדיקת-קונפליקט תרגומים** מול כל `batch-*.jsonl` מצאה ארבע חפיפות אמיתיות (progressive↔advanced · ruin↔destroy · safe↔sure/certain · sake↔favor, כולן תויגו `he_one_to_many_group`) ואחת כוזבת (`sailing` תוכנן כ"שייט" מול `cruise` — תוקן ל"הפלגה" המדויקת יותר, במקום תיוג-חפיפה שגוי).
+
+**כיסוי:** `npm run measure:amirnet-coverage` Tier 1+2: **1006→1022**/3,382 (+16 בדיוק). ארבעת הגנרטורים (`build:ingest`·`build:levels`·`measure:gate`·`build:preview`) רצו נקי על בנק של **1,605 שורות ב-45 קבצים**, 0 rejected. `measure-continuations.mjs` (לקח 55): סדר 2 = 24.0%, מעל התקרה 20.1. 13/16 `translation_confidence: high` · 2/16 `medium` (rush·sake) · 1/16 `low` (round — אין תרגום עברי חד-משמעי לצורת התואר-הפועל, מתועד ב-`he_interference_note`).
+
+**STEP 7.5 (בדיקה בדפדפן, פורט 3200):** בוצע. `npm run build` עבר נקי, השרת עלה על 3200 (`next start`), 5 מסכי `/dev/*` + `/` נצפו ב-375×780 דרך Playwright: HTTP 200 בכולם, `dir=rtl` בכולם, ⛔ אין גלישה אופקית, 0 שגיאות קונסול.
+
+**נעילה:** לוקחה מול `plan/00-control.md` פנוי (⛔ אין Smart Wait), נדחפה **לבדה** לפני `npm install`/העבודה (`F-251`). קומיט עבודה אחד (batch+manifest+ארבעת הגנרטורים+לקח+שורת commission, כולל שמירה על `LOCK_HELD_BY="CONTENT"` באותו קומיט — נלמד מדחייה ראשונה של הפוש שגילתה שקומיט-עבודה עם נעילה משוחררת בו-זמנית נחסם על ידי `pre-push`), נדחף בעודה מוחזקת; קומיט שחרור-נעילה נפרד אחריו. **שני קומיטי-עבודה על `work/current`, ⛔ אף קומיט על ענף `claude/*`** (F-248 לא חזר).
+
+**`npm run verify` המלא (תשעת הפקודות, `timeout:600000`) רץ ירוק פעמיים בטיק הזה מחוץ ל-hook** (אחת עם exit 0 מפורש, אחת דרך `pre-push` על קומיט העבודה) **ועוד פעם אחת דרך `pre-push` על קומיט השחרור** — כל הריצות ירוקות.
+
+**פקודות שנחסמו על ידי מסנן הרשאות:** אין.
+
+**דוגמות:**
+- **roundabout** (כיכר תנועה): "Turn left at the roundabout to reach the school." (רמה 1) / "The new roundabout made the traffic move faster." (רמה 2). מסיחים: crossing/junction (סמנטי) · roundworm (אורתוגרפי) · pillow (לא קשור).
+- **sausage** (נקניקייה): "We had eggs and sausage for breakfast." (רמה 1) / "The children liked the sausage more than the vegetables." (רמה 2). מסיחים: bacon/burger (סמנטי) · massage (אורתוגרפי) · pillow (לא קשור).
+
+⟨נבדק: 2026-09-17⟩
