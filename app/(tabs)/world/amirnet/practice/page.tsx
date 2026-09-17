@@ -1,20 +1,25 @@
-import AmirnetPracticeMenu from '@/components/AmirnetPracticeMenu';
-import { AMIRNET_TYPES, toTypeCards, zeroStats, type AmirnetPracticeType } from '@/lib/core/amirnetPractice';
+import AmirnetPracticeFlow from '@/components/AmirnetPracticeFlow';
+import { AMIRNET_TYPES, type AmirnetPracticeType } from '@/lib/core/amirnetPractice';
 
 export const metadata = { title: 'תרגול ממוקד · אמירנט' };
 
 /**
- * `/world/amirnet/practice` — the destination T-291ⓒ names: «קישור שמעביר לתפריט התרגול עם הסוג
- * הזה כבר נבחר». ⛔ Opened here and ⛔ not left for later because the alternative was a weakness
- * strip pointing at a 404, which is ⛔ not the requirement delivered.
+ * `/world/amirnet/practice` — the destination `T-291`ⓒ names («קישור שמעביר לתפריט התרגול עם
+ * הסוג הזה כבר נבחר»), and since `T-376` the ⛔ only production path into `AmirnetQuestion`.
  *
- * `?type=` is read here and ⛔ nowhere else: `AmirnetPracticeMenu` already takes `initialType`
- * (T-286), so the strip's link is the ⛔ only new thing in the flow.
+ * 🔴 **What changed, and it is a MEASUREMENT (`F-265`).** Until `T-376` this page rendered
+ * `AmirnetPracticeMenu` with `toTypeCards(zeroStats())` — a CONSTANT — and with ⛔ no `onStart`,
+ * so pressing `תרגל` did ⛔ nothing: `AmirnetQuestion` was reachable from `app/dev/**` alone and
+ * `onAnswered` (`T-372`ⓒ) ⛔ could never fire. ⇒ the menu, the question and the writer all
+ * existed and ⛔ nothing joined them. `AmirnetPracticeFlow` is that join.
+ *
+ * `?type=` is read here and ⛔ nowhere else: the flow hands it straight to the menu's
+ * `initialType` (`T-286`), so the dashboard's weakness strip is the ⛔ only new thing in the flow.
  * ⛔ An unknown value is dropped, ⛔ never coerced — a menu that opens on a type the learner did
  * not choose is the one failure `41 § 7` («רק אחרי שתי הבחירות») is written against.
  *
- * ⛔ Zero data access, same measured reason as `/world/amirnet`: `F-222` blocks the schema and
- * `T-297` is blocked on it, so ⛔ nothing writes a practice result yet.
+ * ⛔ **Zero data access here.** A page ⛔ never touches the database (RULES); the two calls live
+ * in the client component, through `lib/api/client.ts`.
  */
 function parseType(raw: string | string[] | undefined): AmirnetPracticeType | null {
   const one = Array.isArray(raw) ? raw[0] : raw;
@@ -28,7 +33,5 @@ export default async function WorldAmirnetPracticePage({
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  return (
-    <AmirnetPracticeMenu cards={toTypeCards(zeroStats())} initialType={parseType(params.type)} />
-  );
+  return <AmirnetPracticeFlow initialType={parseType(params.type)} />;
 }

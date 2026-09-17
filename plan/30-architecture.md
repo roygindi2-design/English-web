@@ -3054,3 +3054,71 @@ hand already carries and the one `selectedCardRect` itself reads. ⛔ **Nothing
 was relaxed:** the `=== 4` and the fold arithmetic are untouched, and a marker
 that ever disappears gives `length === 0`, which is ⛔ not 4 — the check fails
 loudly rather than passing empty.
+
+## C-0675 (DEV) — `T-376` — the door between a menu, a question and a writer that all already existed
+
+### The gap `F-265` measured, and why three green rows did not close it
+
+Three things shipped 🟣 and one thing was missing. `AmirnetPracticeMenu`
+(`T-286`) drew the two choices. `AmirnetQuestion` (`T-287`) drew the question
+and, since `T-372`ⓒ, called `onAnswered` with the fact of the answer.
+`POST /api/amirnet/practice/result` (`T-372`ⓑ) wrote that fact to
+`amirnet_practice_attempts` (`0027`, run live in `C-0633`). **⛔ Nothing joined
+them.** `AmirnetQuestion` was mounted by `app/dev/amirnet/question` alone, and
+`app/(tabs)/world/amirnet/practice/page.tsx` rendered the menu with ⛔ no
+`onStart` at all — so pressing `תרגל` on the production route did ⛔ nothing,
+`onAnswered` ⛔ could never fire, and `T-372`'s own success measure («three type
+cards carrying a real number») was ⛔ not performable by a learner.
+
+⇒ `27-pm-lessons § A1` line 12, verbatim: «a pure layer delivered ⛔ without a
+screen is ⛔ not finished — it is waiting for the wire, and ⛔ nobody writes it».
+
+### The shape: one client component, and ⛔ no new mechanic
+
+`components/AmirnetPracticeFlow.tsx` is a state machine over the two routes
+that already exist, and it is the ⛔ only new file under `components/`:
+
+```
+checking  ⇒ GET /api/amirnet/practice/result        the learner's own numbers
+menu      ⇒ AmirnetPracticeMenu, onStart = start    41 § 7 fires it only on BOTH choices
+starting  ⇒ GET /api/amirnet/practice?type&level    the bank, already gated by servableItems
+question  ⇒ AmirnetQuestion, onAnswered = record    POST …/result, once per question
+blocked   ⇒ one sentence + one way back
+```
+
+⛔ Zero migrations · ⛔ zero new content (`R-010`) · ⛔ zero adaptivity (`41 § 7`
+— both values come from the learner's own two taps, and ⛔ nothing here reads an
+answer to choose either). The page keeps `?type=`'s parse and hands it to
+`initialType`; a page ⛔ never speaks HTTP, so both calls go through
+`lib/api/client.ts`, exactly as `AmirnetSimulationEntry` and
+`AmirnetDashboardLive` do one screen over.
+
+### The one declared deviation, and this row is what made it necessary
+
+The page fed the menu `toTypeCards(zeroStats())` — a CONSTANT. **That was true
+by construction until today**, because ⛔ no production path had ever written an
+attempt. The door this row opens is precisely what makes «עדיין לא תרגלת» a
+claim the product can now get wrong. ⇒ the menu reads the learner's real stats,
+and a **failed** read draws `unknownStatsCards()` (`lib/core/amirnetPractice.ts`,
+pure, tested): ⛔ no percentage, ⛔ no `NEVER_PRACTISED_HE`, ⛔ no `—` — and
+⛔ without blocking `תרגל`. A statistic that did not arrive costs the learner a
+number; blocking the screen on it would cost them the thing they came to do.
+This is `weakestType()`'s three nulls applied one screen over: the product
+⛔ never asserts a zero it ⛔ did not measure.
+
+### The failure scenario the row named, measured by RENDERING
+
+«the door opens and `onAnswered` fires twice ⇒ two rows for one answer, and the
+dashboard counts double.» `AmirnetQuestion.answer()` returns early once
+`answered`, and `record` adds ⛔ no second trigger — but a source that posts
+twice reads exactly like one that posts once (`F-224`). ⇒
+`components/AmirnetPracticeFlow.dom.test.tsx` renders in jsdom, stubs `fetch`,
+presses an option three times and asserts **exactly one POST**, plus the body's
+four fields (⛔ no percentage, ⛔ no elapsed time — `R-020`).
+
+**Live walk, `next start`, 320 · 375 · 414 × 780:** heading «תרגול ממוקד», 15
+tap targets, **⛔ zero under 44px**, `hscroll=0`, **⛔ zero console errors**; a
+press on `רמה 2` then `תרגל` fired `GET /api/amirnet/practice?type=sc&level=2`
+against the live server. ⚠️ **What the clone ⛔ could not measure:** it carries
+⛔ no Supabase session, so both routes answered a soft failure and the question
+itself was measured in the ten render tests, ⛔ not on a live screen.

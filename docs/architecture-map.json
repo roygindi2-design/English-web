@@ -40,7 +40,7 @@
     "components/AmirnetDashboardLive.tsx"
   ],
   "app/(tabs)/world/amirnet/practice/page.tsx": [
-    "components/AmirnetPracticeMenu.tsx",
+    "components/AmirnetPracticeFlow.tsx",
     "lib/core/amirnetPractice.ts"
   ],
   "app/(tabs)/world/amirnet/simulation/page.tsx": [
@@ -567,6 +567,20 @@
   "components/AmirnetLevels.tsx": [
     "components/AmirnetTabs.tsx",
     "lib/core/amirnetPractice.ts"
+  ],
+  "components/AmirnetPracticeFlow.dom.test.tsx": [
+    "components/AmirnetPracticeFlow.tsx",
+    "components/AmirnetPracticeMenu.tsx",
+    "lib/core/amirnetPractice.ts"
+  ],
+  "components/AmirnetPracticeFlow.tsx": [
+    "components/AmirnetPracticeMenu.tsx",
+    "components/AmirnetQuestion.tsx",
+    "components/AmirnetTabs.tsx",
+    "lib/api/client.ts",
+    "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts",
+    "lib/core/failure.ts"
   ],
   "components/AmirnetPracticeMenu.test.ts": [
     "components/AmirnetPracticeMenu.tsx"

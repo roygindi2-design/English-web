@@ -80,6 +80,38 @@ export function toTypeCards(stats: readonly AmirnetTypeStat[]): readonly Amirnet
   });
 }
 
+/**
+ * `T-376` — the sentence for «the read failed», and it is ⛔ deliberately ⛔ NOT in
+ * `FAILURE_HE`: that map says «the product failed, not you» with a full stop, while this one
+ * names the single field the screen ⛔ could not fill. The menu still opens under it.
+ * ⛔ No digit, ⛔ no `0`, ⛔ no `—`: any of the three reads as a count the product ⛔ never took.
+ */
+export const STATS_UNKNOWN_HE = 'לא הצלחנו לקרוא את הביצועים שלך בסוג הזה';
+
+/**
+ * The three cards a learner sees when `GET /api/amirnet/practice/result` ⛔ did not answer.
+ *
+ * 🔴 **⛔ Not `toTypeCards(zeroStats())`, and the difference is the whole point.** `zeroStats()`
+ * is a MEASURED zero — «you have answered nothing yet» — and `toTypeCards` turns it into
+ * `NEVER_PRACTISED_HE`. A failed read measured ⛔ nothing, so printing that sentence would be
+ * the product asserting a zero it ⛔ does not hold. Same refusal as `weakestType()`'s three
+ * nulls, one screen over.
+ *
+ * ⚠️ And the menu is ⛔ still drawn: practice is the ACTION on this screen, and blocking the
+ * action because a statistic ⛔ did not load would cost the learner the thing they came for.
+ * ⇒ the cards lose their number, ⛔ never their `תרגל`.
+ */
+export function unknownStatsCards(): readonly AmirnetTypeCard[] {
+  return AMIRNET_TYPES.map(({ type, nameHe, nameEn }) => ({
+    type,
+    nameHe,
+    nameEn,
+    successPct: null,
+    answeredHe: STATS_UNKNOWN_HE,
+    answeredShortHe: STATS_UNKNOWN_HE,
+  }));
+}
+
 /** ⓓ's gate, and it is ⛔ not «are there cards» — a learner can hold three cards and zero answers. */
 export function hasAnyAnswers(stats: readonly AmirnetTypeStat[]): boolean {
   return stats.some((s) => s.answered > 0);

@@ -4,9 +4,11 @@ import {
   AMIRNET_TYPES,
   LEVEL_CHIP_HE,
   NEVER_PRACTISED_HE,
+  STATS_UNKNOWN_HE,
   hasAnyAnswers,
   practiceReady,
   toTypeCards,
+  unknownStatsCards,
   weakestCard,
   weakestType,
   zeroStats,
@@ -161,5 +163,43 @@ describe('T-291 — the dashboard is the first READER of these numbers', () => {
     expect(w?.successPct).toBe(card?.successPct);
     expect(w?.nameHe).toBe(card?.nameHe);
     expect(w?.adviceHe).toContain(`${card?.successPct}%`);
+  });
+});
+
+/**
+ * `T-376` — the menu opens even when the performance read failed, and it ⛔ never says the
+ * learner practised nothing. Until this row ⛔ nothing wrote a practice attempt from a
+ * production path, so `zeroStats()` on the menu was true by construction; the door this row
+ * opens is what makes «עדיין לא תרגלת» a claim the product can get wrong.
+ */
+describe('unknownStatsCards — ⛔ «we could not read» is ⛔ not «you answered nothing» (T-376)', () => {
+  it('draws all three types, in the render order, with ⛔ no percentage', () => {
+    const cards = unknownStatsCards();
+    expect(cards.map((c) => c.type)).toEqual(AMIRNET_TYPES.map((t) => t.type));
+    for (const card of cards) {
+      expect(card.successPct).toBeNull();
+    }
+  });
+
+  it('🔴 ⛔ never prints the never-practised sentence — that is the zero it did ⛔ not measure', () => {
+    for (const card of unknownStatsCards()) {
+      expect(card.answeredHe).not.toBe(NEVER_PRACTISED_HE);
+      expect(card.answeredShortHe).not.toBe(NEVER_PRACTISED_HE);
+      expect(card.answeredHe).toBe(STATS_UNKNOWN_HE);
+      expect(card.answeredShortHe).toBe(STATS_UNKNOWN_HE);
+    }
+  });
+
+  it('⛔ is ⛔ not `toTypeCards(zeroStats())` wearing another name', () => {
+    const zeroed = toTypeCards(zeroStats());
+    const unknown = unknownStatsCards();
+    expect(unknown).not.toEqual(zeroed);
+    // the names are the register's, ⛔ never retyped here
+    expect(unknown.map((c) => c.nameHe)).toEqual(AMIRNET_TYPES.map((t) => t.nameHe));
+  });
+
+  it('the sentence is Hebrew, and ⛔ carries no digit a learner could read as a count', () => {
+    expect(STATS_UNKNOWN_HE).toMatch(/[֐-׿]/);
+    expect(STATS_UNKNOWN_HE).not.toMatch(/[A-Za-z0-9]/);
   });
 });
