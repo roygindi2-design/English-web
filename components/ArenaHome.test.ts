@@ -157,10 +157,17 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     expect(SRC_RTL).not.toContain('flex-row-reverse');
   });
 
-  it('חמש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת **בנפרד**', () => {
+  /**
+   * ⚠️ **חמש ⇢ שש ב-T-360, וזה ⛔ אינו הרפיה של הבדיקה.** הלוח «הקרב האחרון» הוא שורה
+   * אופקית נוספת במסך RTL (עובדה כתובה בימין, מספר בשמאל) ⇒ הוא נושא את אותה ידית
+   * בדיוק, ו-`scripts/verify-mobile.mjs` מודד אותו ב-320/375/414 כמו את חמש האחרות.
+   * ⛔ שורה אופקית **בלי** הידית היא שורה שהשער ⛔ אינו רואה — וזה מה שהמספר כאן שומר.
+   */
+  it('שש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת **בנפרד**', () => {
     const handles = SRC_RTL.match(/data-rtl-row="([a-z-]+)"/g) ?? [];
-    expect(handles).toHaveLength(5);
-    expect(new Set(handles).size).toBe(5);
+    expect(handles).toHaveLength(6);
+    expect(new Set(handles).size).toBe(6);
+    expect(handles).toContain('data-rtl-row="last-round"');
   });
 
   /**

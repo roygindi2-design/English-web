@@ -34,6 +34,16 @@ export default function DevArenaHomePage() {
         wins: 3,
         unlockedItems: ['helmet', 'lantern', 'banner'],
         character: 'warrior',
+        // T-360 — ⛔ **הפיקסצ׳ר הוא הדרך היחידה למדוד את חותמת ⓒ בלי env**: `next start`
+        // רץ ⛔ בלי Supabase, `GET /api/arcade/home` עונה 503, ולוח «הקרב האחרון» ⛔ לא
+        // היה מצויר ⛔ באף הליכה. המספרים הם אלה של `37 § 10` (`נכונות 14/16`), כדי
+        // שהפיקסצ׳ר והמפרט יראו את אותו מסך.
+        lastRound: {
+          finishedAt: '2026-09-16T23:13:07.482Z',
+          wordsSeen: 16,
+          wordsCorrect: 14,
+          enemyDefeated: true,
+        },
       }}
       onStart={() => {}}
       onDesign={() => {}}

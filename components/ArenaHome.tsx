@@ -5,6 +5,13 @@ import { useCallback, useEffect, useState } from 'react';
 import ArenaAvatar, { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
+import {
+  LAST_ROUND_HEADING_HE,
+  lastRoundDateHe,
+  lastRoundOutcomeHe,
+  lastRoundScoreHe,
+  type ArenaLastRound,
+} from '@/lib/core/arenaLastRound';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { bossTrack, homeSlots, winsToBoss, type BossNode, type HomeSlot } from '@/lib/core/arenaHome';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
@@ -54,6 +61,12 @@ export interface ArenaHomeState {
   readonly unlockedItems: readonly string[];
   /** T-217 · `37 § 7` — `null` ⇒ הלומד טרם בחר, והמעטפת פותחת את הבחירה לפני הקרב. */
   readonly character: ArenaCharacter | null;
+  /**
+   * T-360 · `36 § 13.1` חותמת ⓒ — הקרב האחרון של הלומד, או `null` כשטרם קרב.
+   * ⛔ **רשות במכוון:** פיקסצ׳ר שאינו מתאר קרב קודם ⛔ אינו חייב להמציא אחד, ו-`undefined`
+   * מתנהג בדיוק כמו `null` ⇒ הלוח ⛔ אינו מצויר. ⛔ אין כאן מצב שלישי.
+   */
+  readonly lastRound?: ArenaLastRound | null;
 }
 
 export interface ArenaHomeProps {
@@ -72,6 +85,7 @@ interface HomeBody {
   readonly wins: number;
   readonly unlockedItems: readonly string[];
   readonly character: ArenaCharacter | null;
+  readonly lastRound: ArenaLastRound | null;
 }
 
 const TITLE_HE = 'זירת קרב';
@@ -90,6 +104,10 @@ const START_HE = 'התחל קרב';
 const DRAWER_HE = 'ארון ציוד';
 const DESIGN_HE = 'עיצוב דמות';
 const DRAWER_NOTE_HE = 'פריטים מקרבות בלבד';
+/** T-360 — ⛔ אינן מצוירות: הרנדר ⛔ אינו נושא תווית לשורת המספר, ו-`36 § 14.4` מחייב
+    את הפריסה. המקריא כן צריך לדעת מה המספר מודד ומה התאריך הזה. */
+const CORRECT_SR_HE = 'נכונות';
+const FINISHED_SR_HE = 'הסתיים בתאריך';
 const EMPTY_SLOT_HE = 'ריקה';
 const LOADING_HE = 'טוען את הזירה';
 
@@ -214,6 +232,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         wins: body.wins,
         unlockedItems: body.unlockedItems,
         character: body.character ?? null,
+        lastRound: body.lastRound ?? null,
       });
       setScreen('ready');
     } catch {
@@ -424,6 +443,53 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           ))}
         </ol>
       </div>
+
+      {/* 🏁 **T-360 · `36 § 13.1` חותמת ⓒ — «מה שהלומד עשה נשמר ונראה בכניסה הבאה».**
+          🔬 **מה שנמדד לפני שהלוח הזה נכתב:** הקרב **כבר נשמר** — `arcade_runs` נושאת
+          `finished_at` · `words_seen` · `words_correct` · `enemy_defeated` מאז
+          `0014_arcade.sql` — ומסך הבית הראה ממנו **אפס**. `wins` לבדו מזיז צומת במסלול
+          הבוס, ו⛔ אינו אומר ללומד מה קרה ב-90 השניות שלו. ⇒ הפער היה בקריאה, ⛔ ולא
+          בשמירה: ⛔ אין כאן מיגרציה, ⛔ אין עמודה ו⛔ אין כתיבה.
+          ⛔ **⛔ אינו יומן קרבות:** שורה אחת, האחרונה. היסטוריה היא מסך, והמסך הזה
+          ⛔ אינו שלי לפתוח (`RULES § 0.22`).
+          ⛔ **מיקומו מתחת למסלול הבוס ⛔ ולא מעליו, וזו הכרעה הפיכה:** המסלול אומר
+          **איפה אתה**, והלוח אומר **איך הגעת לשם** ⇒ הסיבה אחרי התוצאה, כמו בכל שאר
+          המסך. ⛔ מעל כרטיס הרמה הוא היה מקדים את הכותרת שהוא מתייחס אליה.
+          ⛔ **ואין כאן פסק דין** (R-016 · `37 § 9` ח4): שתי עובדות, אותן שתיים בדיוק
+          שמסך הסיום כבר אומר, ⛔ ואין ביניהן מילת הפסד. */}
+      {state.lastRound != null && (
+        <div className="flex flex-col gap-2" data-arena-last-round>
+          <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
+            {LAST_ROUND_HEADING_HE}
+          </p>
+          {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון כבר בימין, והתווית
+              הכתובה היא זו שנקראת ראשונה. ⛔ גובה 52 ⛔ ואינו יעד מגע: הלוח ⛔ אינו
+              נלחץ ו⛔ אינו מוביל לשום מקום ⇒ רצפת 44px ⛔ אינה חלה עליו, ⛔ והוא
+              ⛔ אינו נראה כמו כפתור. */}
+          <div className={`flex min-h-[52px] items-center justify-between px-4 ${CARD_CLASS}`} data-rtl-row="last-round">
+            <span className="text-[13px] font-bold leading-none text-[color:var(--arena-ink)]">
+              {lastRoundOutcomeHe(state.lastRound)}
+            </span>
+            <span className="flex items-baseline gap-2">
+              {/* ⛔ הצבע ⛔ אינו הערוץ היחיד (חוקה שכבה א׳ א2): «14 / 16» אינו מצב,
+                  והתווית שמסבירה אותו נקראת למקריא-מסך ⛔ ואינה מצוירת — שורת המספר
+                  ברנדר ⛔ אינה נושאת תווית, ו-`36 § 14.4` מחייב את הפריסה. */}
+              <span className="sr-only">{CORRECT_SR_HE} </span>
+              <span
+                dir="ltr"
+                data-arena-last-round-score
+                className="text-[15px] font-black leading-none text-[color:var(--arena-gold-light)]"
+              >
+                {lastRoundScoreHe(state.lastRound)}
+              </span>
+              <span className="sr-only">{FINISHED_SR_HE} </span>
+              <span dir="ltr" className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
+                {lastRoundDateHe(state.lastRound)}
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* `:166-176` — ארבע המשבצות. ⛔ מתויגות בשם ה**משבצת** (D-132), וארבעתן הן
           אלה ש-**D-135** מדד שהמשחק יודע למלא. */}

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { characterFromParts, type ArenaCharacter } from '@/lib/core/arenaCharacter';
+import { lastRoundFromRow, type ArenaLastRound } from '@/lib/core/arenaLastRound';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +10,10 @@ export const dynamic = 'force-dynamic';
  * `GET /api/arcade/home` — T-181 · `37 § 12`. **המצב המתמיד של מסך הבית, ⛔ ותו לא.**
  *
  * ⛔ `37 § 13.1`: הזירה ⛔ אינה כותבת למנוע החזרות — הקובץ הזה ⛔ אינו כותב **כלל**.
- * ⛔ `D-052`: טבלת הפרופיל והצד הלימודי ⛔ אינם נקראים. ארבע עמודות, מטבלה אחת.
+ * ⛔ `D-052`: טבלת הפרופיל והצד הלימודי ⛔ אינם נקראים.
+ * ⚠️ **T-360 — שתי טבלאות של הזירה, ⛔ ולא אחת:** `arcade_progress` (ארבע עמודות) ועוד
+ * שורה **אחת** מטבלת הקרבות, הקרב האחרון. ⛔ שתיהן בצד הזירה בלבד, ⛔ ושתי הקריאות
+ * ⛔ אינן כותבות דבר — `37 § 13.1` ⛔ לא זז.
  * ⚠️ **T-217 · D-152 — העמודה הרביעית היא `avatar_parts`**, והגוף נושא ממנה
  * `character` אחד דרך `characterFromParts` (‏`lib/core/arenaCharacter.ts`) — `null` ללומד
  * שטרם בחר, ⇒ המעטפת פותחת את `בחירת דמות` לפני הקרב הראשון. ⛔ הנתיב נשאר קריאה בלבד.
@@ -24,6 +28,15 @@ export const dynamic = 'force-dynamic';
  * ⛔ שלושת גופי הכשל הם אלה של `GET /api/arcade/collected` **מילה במילה** — ⛔ ואין רביעי.
  */
 const HOME_SELECT = 'arcade_level, wins, unlocked_items, avatar_parts';
+
+/**
+ * T-360 · `36 § 13.1` חותמת ⓒ — **הקרב האחרון, ⛔ ולא היסטוריית קרבות.**
+ * ⛔ שורה אחת, ארבע עמודות, `order(finished_at desc).limit(1)` — בדיוק מה שהאינדקס
+ * `arcade_runs_user_finished_idx` (`0014_arcade.sql:79-80`) נבנה בשבילו. ⛔ `response_snapshot`
+ * ⛔ אינו נקרא: הוא גוף התשובה של הקרב ההוא, ⛔ ולא מצב של מסך הבית.
+ * ⛔ **הקריאה נוספה, הכתיבה ⛔ לא:** `37 § 13.1` על כנו — הקובץ נשאר קריאה בלבד.
+ */
+const LAST_ROUND_SELECT = 'finished_at, words_seen, words_correct, enemy_defeated';
 
 /**
  * ברירות המחדל של `0014_arcade.sql:24-27`, ⛔ מועתקות ⛔ ולא נבחרות: `arcade_level`
@@ -71,11 +84,26 @@ export async function GET() {
 
   if (error) return isSchemaMissing(error.code) ? schemaMissing() : unavailable();
 
+  // ⛔ **שאילתה שנייה, ⛔ ולא צירוף:** שתי הטבלאות ⛔ אינן קשורות במפתח זר (D-044 · הזירה
+  // מפוצלת מהצד הלימודי), ו-`arcade_progress` היא לכל היותר שורה אחת ללומד ⇒ join היה
+  // מחזיר את אותה שורה כפול מספר הקרבות. שתי קריאות, כל אחת על האינדקס שלה.
+  const { data: runRow, error: runError } = await supabase
+    .from('arcade_runs')
+    .select(LAST_ROUND_SELECT)
+    .eq('user_id', user.id)
+    .order('finished_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (runError) return isSchemaMissing(runError.code) ? schemaMissing() : unavailable();
+
   return NextResponse.json({
     ok: true,
     arcadeLevel: data?.arcade_level ?? NEW_LEARNER.arcadeLevel,
     wins: data?.wins ?? NEW_LEARNER.wins,
     unlockedItems: data?.unlocked_items ?? NEW_LEARNER.unlockedItems,
     character: characterFromParts(data?.avatar_parts) ?? NEW_LEARNER.character,
+    // ⛔ `null` הוא ערך תקין ו⛔ לא כשל: לומד שטרם קרב ⛔ אין לו שורה, והמסך ⛔ אינו
+    // מצייר לוח ריק. אותו היגיון בדיוק של ברירות המחדל שלוש שורות מעל.
+    lastRound: lastRoundFromRow(runRow) satisfies ArenaLastRound | null,
   });
 }

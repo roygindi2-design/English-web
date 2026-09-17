@@ -48,4 +48,27 @@ describe('GET /api/arcade/home — `37 § 13.1`: קריאה, ⛔ ואפס כתי
   it('⛔ still read-only — no insert/update/upsert/delete', () => {
     expect(CODE).not.toMatch(/\.(insert|update|upsert|delete)\(/);
   });
+
+  it('T-360 · חותמת ⓒ — קורא את הקרב האחרון, שורה אחת וארבע עמודות', () => {
+    expect(SRC).toContain("from('arcade_runs')");
+    expect(SRC).toMatch(/LAST_ROUND_SELECT = 'finished_at, words_seen, words_correct, enemy_defeated'/);
+    expect(SRC).toMatch(/\.order\('finished_at', \{ ascending: false \}\)/);
+    expect(SRC).toContain('.limit(1)');
+  });
+
+  it('T-360 — ⛔ `response_snapshot` ⛔ אינו נקרא: הוא גוף התשובה של הקרב ההוא', () => {
+    expect(CODE).not.toContain('response_snapshot');
+  });
+
+  it('T-360 — הגוף נושא `lastRound`, והעיצוב שלו עובר דרך השכבה הטהורה', () => {
+    expect(SRC).toContain('lastRound: lastRoundFromRow(');
+    expect(SRC).toContain("from '@/lib/core/arenaLastRound'");
+  });
+
+  it('T-360 — ⛔ הקריאה השנייה ⛔ אינה מחלישה את סדר השומרים', () => {
+    const session = SRC.indexOf('auth.getUser');
+    const runs = SRC.indexOf("from('arcade_runs')");
+    expect(session).toBeGreaterThan(-1);
+    expect(session).toBeLessThan(runs);
+  });
 });

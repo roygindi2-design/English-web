@@ -1388,13 +1388,29 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 
 ⛔ **הנתיב אינו כותב דבר** — אין בו `.insert(` · `.update(` · `.upsert(` · `.delete(`,
 ו⛔ הוא אינו נוגע במנוע החזרות (`37 § 13.1`) ו⛔ אינו קורא את טבלת הפרופיל (D-052).
-הטבלה היחידה שהוא קורא היא `arcade_progress`, ובדיוק בארבע עמודות (T-217 הוסיפה את
-`avatar_parts`; הנתיב נשאר קריאה בלבד).
+⚠️ **T-360 — שתי טבלאות של הזירה, ⛔ ולא אחת:** `arcade_progress` (ארבע עמודות, T-217
+הוסיפה את `avatar_parts`) ועוד שורה **אחת** מ-`arcade_runs` — הקרב האחרון,
+`order(finished_at desc).limit(1)`, בדיוק הקריאה שהאינדקס
+`arcade_runs_user_finished_idx` (`0014_arcade.sql:79-80`) נבנה בשבילה. ⛔ שתיהן בצד
+הזירה, ⛔ שתיהן קריאה בלבד, ו-`response_snapshot` ⛔ **אינו** נקרא: הוא גוף התשובה של
+`POST /api/arcade/result`, ⛔ ולא מצב של מסך הבית.
 
 **200:**
 
 ```json
-{ "ok": true, "arcadeLevel": 7, "wins": 3, "unlockedItems": ["helmet"], "character": "warrior" }
+{
+  "ok": true,
+  "arcadeLevel": 7,
+  "wins": 3,
+  "unlockedItems": ["helmet"],
+  "character": "warrior",
+  "lastRound": {
+    "finishedAt": "2026-09-16T23:13:07.482Z",
+    "wordsSeen": 16,
+    "wordsCorrect": 14,
+    "enemyDefeated": true
+  }
+}
 ```
 
 | השדה | ההגדרה |
@@ -1403,10 +1419,11 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 | `wins` | `arcade_progress.wins`. ‏`lib/core/arenaHome.ts` גוזר ממנה את מסלול הבוס — `37 § 9`, «בוס כל 5 ניצחונות» |
 | `unlockedItems` | `arcade_progress.unlocked_items`. שם שאינו ב-`ARCADE_ITEMS` **מדולג בשקט**, וכך גם `banner`, שאינה משבצת ציוד (D-135) |
 | `character` | T-217 · `37 § 7` · D-152 — `characterFromParts(arcade_progress.avatar_parts)`: `"wizard"` · `"warrior"` · `"armorer"`, או **`null`** כשהמפתח `avatar_parts.character` חסר או אינו אחד משלושת הערכים. ⛔ ערך אחסון, ⛔ לעולם אינו טקסט על המסך. `null` ⇒ המעטפת פותחת את `בחירת דמות` לפני הקרב הראשון |
+| `lastRound` | 🆕 **T-360 · `36 § 13.1` חותמת ⓒ** — הקרב האחרון של הלומד, מעוצב ב-`lib/core/arenaLastRound.ts`: `finishedAt` · `wordsSeen` · `wordsCorrect` · `enemyDefeated`. **`null`** כשאין שורה, וכן כששורה קיימת ⛔ אך אינה עוברת ולידציה (`words_correct > words_seen`, `finished_at` שאינו ISO, טיפוס שגוי) — ⛔ **שורה פגומה ⛔ אינה 503 ו⛔ אינה מספר שקרי על המסך; היא «⛔ אין קרב אחרון»**. ⛔ הזירה ⛔ אינה שופטת: המסך אומר `היריב נוצח` או `היריב החזיק מעמד` (R-016 · `37 § 9` ח4), ⛔ ואין בו מילת הפסד |
 
 ⚠️ **לומד בלי שורה ⛔ אינו כישלון:** מוחזרות ברירות המחדל של `0014_arcade.sql` —
-`arcadeLevel: 1` · `wins: 0` · `unlockedItems: []` — ⛔ ולא 503. מסך בית ריק הוא
-**עובדה נכונה** על לומד שטרם קרב.
+`arcadeLevel: 1` · `wins: 0` · `unlockedItems: []` · `lastRound: null` — ⛔ ולא 503.
+מסך בית ריק הוא **עובדה נכונה** על לומד שטרם קרב.
 
 **כשלים:** `401 session_expired` · `503 schema_missing` · `503 unavailable` — אותם
 שלושה גופים בדיוק של `GET /api/arcade/collected`.
