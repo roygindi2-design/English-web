@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import StudyDeckScreen from '@/components/StudyDeckScreen';
 import { parseDeckName, type DeckName } from '@/lib/core/deck';
+import { parseLevel } from '@/lib/core/levelSummary';
+import { moduleReturnDestination } from '@/lib/core/studyTracks';
 
 /**
  * T-264 → T-199ⓐ — `<StudyDeckScreen>` renders one `<h1>` per deck (`HEADINGS` in
@@ -64,5 +66,23 @@ export default async function StudyPage({
   const raw = params.deck;
   const deck = parseDeckName(typeof raw === 'string' ? raw : null) ?? 'due';
 
-  return <StudyDeckScreen deck={deck} />;
+  /**
+   * `T-408` — שני פרמטרים נוספים, ו**שניהם עוברים דרך שער טהור** ⛔ ולא
+   * מועברים כמות שהם: `parseLevel` לרמה, `moduleReturnDestination` לעוגן.
+   * ⛔ **ערך פסול ⛔ אינו 404 ו⛔ אינו שגיאה**, בדיוק כמו `?deck=` שלא זוהה
+   * מעל: הדרך היחידה להגיע לאחד היא סימנייה ישנה או עריכה ידנית, ⛔ ואין דבר
+   * שהלומד יכול לעשות איתו ⵒ המסך נופל חזרה להתנהגות שלו מלפני `T-408`.
+   */
+  const rawBand = params.band;
+  const band = parseLevel(typeof rawBand === 'string' ? rawBand : null);
+  const rawReturn = params.return;
+  const returnTo = moduleReturnDestination(typeof rawReturn === 'string' ? rawReturn : null);
+
+  return (
+    <StudyDeckScreen
+      deck={deck}
+      {...(band === null ? {} : { band })}
+      {...(returnTo === null ? {} : { returnTo })}
+    />
+  );
 }

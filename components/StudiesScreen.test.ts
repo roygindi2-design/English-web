@@ -264,3 +264,50 @@ describe('<StudiesScreen> — נתיב המודולים (T-407 · kol-A-04-learn
     expect(path).not.toContain('data-glow');
   });
 });
+
+describe('T-408 — פריט נפתח מהנתיב, ומחזיר אליו', () => {
+  it('ⓐ כרטיס המודול הוא קישור — ⛔ ולא כרטיס לקריאה בלבד', () => {
+    const path = CODE.match(/data-track-modules[\s\S]{0,6000}?<\/ol>/)?.[0] ?? '';
+    expect(path).toContain('moduleItemHref(active, module)');
+    expect(path).toMatch(/<Link[\s\S]{0,200}href=\{itemHref\}/);
+  });
+
+  it('ⓐ מודול שאין לו מה לפתוח נשאר `<article>` — ⛔ ואין קישור מת', () => {
+    // ⛔ ההכרעה על **מי** נפתח יושבת ב-`moduleItemHref` (ונבדקת שם); כאן נבדק
+    // שהרכיב מכבד את ה-`null` במקום לצייר קישור לשום מקום.
+    const path = CODE.match(/data-track-modules[\s\S]{0,6000}?<\/ol>/)?.[0] ?? '';
+    expect(path).toMatch(/itemHref === null \?[\s\S]{0,120}<article/);
+  });
+
+  it('⛔ אפס `data-primary-action` על כרטיס מודול — `check:mobile` סופר אחת למסך (F-027)', () => {
+    const path = CODE.match(/data-track-modules[\s\S]{0,6000}?<\/ol>/)?.[0] ?? '';
+    expect(path).not.toContain('data-primary-action');
+  });
+
+  it('ⓑ+ⓒ לכל מודול יש עוגן — זה מה שהחזרה נוחתת עליו', () => {
+    const path = CODE.match(/data-track-modules[\s\S]{0,6000}?<\/ol>/)?.[0] ?? '';
+    expect(path).toContain('id={moduleAnchorId(active, module.id)}');
+  });
+
+  it('ⓑ+ⓒ החזרה נקראת מה-`hash` — ⛔ ולא מפרמטר שאילתה (T-328: המסלול סטטי)', () => {
+    expect(CODE).toContain('parseModuleAnchor(window.location.hash)');
+    // ⛔ קריאת פרמטר שאילתה בעמוד הזה הייתה מחזירה את `/studies` ל-`ƒ`.
+    expect(CODE).not.toContain('useSearchParams');
+  });
+
+  it('ⓑ+ⓒ הנחיתה מכבדת `prefers-reduced-motion` — שער, ⛔ לא טעם', () => {
+    const effect = CODE.match(/parseModuleAnchor\(window\.location\.hash\)[\s\S]{0,1200}?\}, \[active, modules\]\);/)?.[0] ?? '';
+    expect(effect.length).toBeGreaterThan(0);
+    expect(effect).toContain("matchMedia?.('(prefers-reduced-motion: reduce)')");
+    expect(effect).toMatch(/behavior: reduced \? 'auto' : 'smooth'/);
+  });
+
+  it('ⓑ+ⓒ הנחיתה גם ממקדת — לומד במקלדת חוזר לנקודה שלו, ⛔ ולא לראש המסך', () => {
+    expect(CODE).toContain("querySelector<HTMLElement>('a')?.focus({ preventScroll: true })");
+  });
+
+  it('⛔ פעם אחת בלבד — הקשה מאוחרת על שבב אחר ⛔ אינה נשאבת חזרה לעוגן', () => {
+    expect(CODE).toContain('returnHandled');
+    expect(CODE).toMatch(/if \(returnHandled\.current\) return;/);
+  });
+});

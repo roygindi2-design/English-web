@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0682 (OPS · הוראת רוי): **21 יעדים ב-10 מחלקות** ב-`05-departments.md` (6,970/8,192) + `F-277`…`F-280` מדודים. ⛔ **ביקורת C-0681 עדיין שלך** (הפירוט המלא ⇒ `plan/archive/handoff-log.md` C-0681). `F-277` (סינון הכרטיסיות) היא **פרוסה ⇒ PM**.
-STATE: BUILDING                # ▶️ C-0681 (DEV): `verify` מלא **exit 0**. `T-407` — נתיב המודולים של `אוצר מילים` **נגזר** משש הרמות ש-`/api/levels/summary` כבר מחזיר ⇒ ⛔ אפס תוכן חדש (R-010). 🔴 **נפתח `F-276`:** הרנדר מצייר נעילה בין רמות («ייפתח אחרי A1» · «נעול») ו-`R-017` אוסר אותה מילה במילה ⇒ המצב השלישי נמסר כ**היעדר תוכן**, ⛔ ולא כהיעדר רשות, והסתירה עלתה לממצא ⛔ ולא לסטייה שקטה.
+NEXT_AGENT: QA                     # ▶️ C-0684 (DEV): `T-408` 🟣 — כרטיס המודול נפתח ומחזיר לנתיב, על העוגן שממנו יצא. ⛔ **ביקורת C-0681 עדיין שלך** (⇒ `plan/archive/handoff-log.md` C-0681). `F-277` (סינון הכרטיסיות) היא **פרוסה ⇒ PM**.
+STATE: BUILDING                # ▶️ C-0684 (DEV): `verify` מלא **exit 0**. `?band=` נוסף ל-`GET /api/study/queue` כדי שכרטיס «רמה B1» יפתח B1 ו⛔ לא את רמת הלומד — מה נסרק, ⛔ ולא מי רשאי (`R-017` ⛔ אינו נוגע). החזרה על `hash` ⛔ ולא על `searchParams` ⇒ `/studies` נשאר `○` בפלט הבנייה (`T-328`).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-17T07:23:07Z"   # C-0681 (DEV, בנייה). הנעילה הייתה **פנויה** בפתיחה ⇒ ⛔ אפס Smart Wait.
+LAST_HANDOFF_AT: "2026-09-17T08:24:14Z"   # C-0684 (DEV, בנייה). הנעילה הייתה **פנויה** בפתיחה ⇒ ⛔ אפס Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "dev-agent"           # 🔒 C-0684 (DEV) — נלקחה 2026-09-17T08:07:14Z. הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אפס Smart Wait.
@@ -14,7 +14,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  19 / 120           # § 13-3 · **⛔ אינה המוקד — הוזז→`studies` ב-`C-0679` (PM).** ⬜=0 · 🟣=1 (`T-400`) · ⛔=1 (`T-237`). ⛔ אינה חתומה, נשארת ברוטציה. חוב ⇒ `plan/61-deferred.md`
 #   arena:  31 / 120          # § 13-4 · **⛔ אינה המוקד.** ⬜=**0** · 🟣→✅ **9** ב-`C-0677` · ⛔=3 · ⛔ אינה חתומה, נשארת ברוטציה. שורת חוב ⇒ `plan/61-deferred.md`
-#   studies: 5 / 120           # § 13-5 · **המוקד.** ⬜=**2** — `T-408`·`T-409` (שרשרת). 🟣=3 — `T-405`·`T-406` (`C-0680`) · `T-407` (`C-0681`). ⛔=1 (`T-144`) · `T-247` 🚫 (פוצלה, `STEP 5.4`)
+#   studies: 6 / 120           # § 13-5 · **המוקד.** ⬜=**1** — `T-409` בלבד. 🟣=4 — `T-405`·`T-406` (`C-0680`) · `T-407` (`C-0681`) · `T-408` (`C-0684`). ⛔=1 (`T-144`) · `T-247` 🚫 (פוצלה, `STEP 5.4`)
 #   amirnet: 25 / 120          # § 41 § 8-1..3 · **נמסרה ⇒ המוקד עבר ל-`cards` ב-`C-0677` (QA).** ⬜=0 · 🟣→✅ 2 (T-372·T-376) · ⛔=2. SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
@@ -69,4 +69,4 @@ PROMOTIONS_THIS_MONTH: 20         # 20 this month (➕ 17/09 07:57Z, C-0683 PROM
 
 
 
-| C-0681 | DEV | QA | 2026-09-17T07:23:07Z | 🔨 **בנייה — שורה אחת `studies`, `T-407`.** בחירת מסלול פותחת את **נתיב המודולים** שהרנדר מצייר בחצי התחתון של `kol-A-04-learning.png`: עמוד שדרה אנכי, כרטיס מודול לכל רמה, ונקודת מצב עליו. **המודולים נגזרים** משש הרמות ש-`GET /api/levels/summary` כבר … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0681⟩ | `lib/core/studyTracks.ts` · `lib/core/studyTracks.test.ts` · `components/StudiesScreen.tsx` · `components/StudiesScreen.test.ts` · `scripts/verify-mobile.mjs` · `docs/architecture-map.json` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/00-control.md` |
+| C-0684 | DEV | QA | 2026-09-17T08:24:14Z | 🔨 **בנייה — שורה אחת `studies`, `T-408`.** כרטיס המודול כולו הוא יעד הקשה (285×85px · ⛔ אפס מתחת ל-44px) ומוביל לחפיסה **שכבר בנויה**, עם `?band=` של המודול עצמו ⇒ ⛔ אפס שקר בין הכרטיס לחפיסה. הסיום והיציאה באמצע נוחתים על העוגן (`scrollY=124`, ⛔ ולא ראש הרשימה — `D-065`) | `lib/core/studyTracks.ts` · `components/StudiesScreen.tsx` · `components/StudyDeckScreen.tsx` · `app/study/page.tsx` · `app/api/study/queue/route.ts` · `docs/api-contract.md` · ⟨+4 ⇒ git⟩ |

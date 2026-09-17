@@ -10,6 +10,11 @@ import {
   trackMetric,
   trackModules,
   vocabularyMetric,
+  MODULE_RETURN_LABEL_HE,
+  moduleAnchorId,
+  moduleItemHref,
+  moduleReturnDestination,
+  parseModuleAnchor,
 } from './studyTracks';
 import type { LevelSummary } from './levelSummary';
 
@@ -299,5 +304,82 @@ describe('trackModules — נתיב המודולים, T-407 · 36 § 9', () => {
     // ⛔ ההבדל בין «⛔ לא הצלחנו לטעון» ל«ריק» הוא בדיוק D-046/D-082: נתיב ריק
     // היה אומר ללומד «אין לך מודולים», וזו קביעה שאיש ⛔ לא מדד.
     expect(trackModules('vocabulary', null)).toEqual([]);
+  });
+});
+
+describe('T-408 — הפריט נפתח מהנתיב, וחוזר אליו', () => {
+  const LEVELS: readonly LevelSummary[] = [
+    level({ level: 'A1', totalInLevel: 300, known: 300 }),
+    level({ level: 'A2', totalInLevel: 100, known: 40 }),
+    level({ level: 'B1', totalInLevel: 50, known: 0 }),
+    level({ level: 'C1', totalInLevel: 0, known: 0 }),
+  ];
+
+  it('⛔ זהות המודול **היא** הרמה — ההנחה ש-`moduleItemHref` נשען עליה, נעוצה כאן', () => {
+    // ⛔ בלי הבדיקה הזאת `band: module.id` הוא צירוף מקרים. איתה, שינוי
+    // ב-`trackModules` מפיל את הבדיקה במקום לייצר כתובת שקטה עם רמה שגויה.
+    expect(trackModules('vocabulary', LEVELS).map((m) => m.id)).toEqual(['A1', 'A2', 'B1', 'C1']);
+  });
+
+  it('ⓐ כל מודול שיש בו מילים נפתח — ⛔ ואין נעילה בין רמות (R-017)', () => {
+    const modules = trackModules('vocabulary', LEVELS);
+    const openable = modules.filter((m) => moduleItemHref('vocabulary', m) !== null);
+    expect(openable.map((m) => m.id)).toEqual(['A1', 'A2', 'B1']);
+  });
+
+  it('ⓐ הכתובת נושאת את הרמה של המודול עצמו, ⛔ ולא את רמת הלומד', () => {
+    const b1 = trackModules('vocabulary', LEVELS).find((m) => m.id === 'B1');
+    expect(b1).toBeDefined();
+    const href = moduleItemHref('vocabulary', b1!);
+    expect(href).toContain('deck=level');
+    expect(href).toContain('band=B1');
+    expect(href).toContain('return=studies-module-vocabulary-B1');
+  });
+
+  it('⛔ מודול בלי מילים ⛔ אינו נפתח — היעדר תוכן, ⛔ ולא היעדר רשות', () => {
+    const c1 = trackModules('vocabulary', LEVELS).find((m) => m.id === 'C1');
+    expect(c1?.state).toBe('empty');
+    expect(moduleItemHref('vocabulary', c1!)).toBeNull();
+  });
+
+  it('⛔ לשלושת המסלולים בלי תוכן ⛔ אין פריט לפתוח', () => {
+    const a1 = trackModules('vocabulary', LEVELS)[0]!;
+    for (const id of ['grammar', 'writing', 'reading'] as const) {
+      expect(moduleItemHref(id, a1)).toBeNull();
+    }
+  });
+
+  it('ⓑ+ⓒ החזרה היא אל הנתיב, על העוגן שממנו יצא', () => {
+    const anchor = moduleAnchorId('vocabulary', 'A2');
+    expect(moduleReturnDestination(anchor)).toEqual({
+      href: '/studies#studies-module-vocabulary-A2',
+      labelHe: MODULE_RETURN_LABEL_HE,
+    });
+    // ⛔ ולא לראש הרשימה: העוגן הוא חלק מהכתובת, ⛔ לא קישוט.
+    expect(moduleReturnDestination(anchor)!.href).not.toBe('/studies');
+  });
+
+  it('⛔ ערך שאינו עוגן מודול ⛔ אינו הופך לכתובת — שער, ⛔ ולא פענוח', () => {
+    for (const bad of [
+      null,
+      undefined,
+      '',
+      '/cards',
+      'https://example.com',
+      'studies-module-vocabulary-',
+      'studies-module-vocabulary-A1/../../x',
+      'studies-module-nosuchtrack-A1',
+      'studies-module-vocabulary-A1?x=1',
+    ]) {
+      expect(parseModuleAnchor(bad as string | null), String(bad)).toBeNull();
+      expect(moduleReturnDestination(bad as string | null), String(bad)).toBeNull();
+    }
+  });
+
+  it('⛔ `#` מוביל נבלע — אותו עוגן בדיוק מגיע גם מ-`location.hash`', () => {
+    expect(parseModuleAnchor('#studies-module-vocabulary-B2')).toEqual({
+      trackId: 'vocabulary',
+      moduleId: 'B2',
+    });
   });
 });

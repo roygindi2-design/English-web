@@ -36,6 +36,9 @@ import {
   trackLabelHe,
   trackMetric,
   trackModules,
+  moduleAnchorId,
+  moduleItemHref,
+  parseModuleAnchor,
   type StudyModuleState,
   type StudyTrackId,
 } from '@/lib/core/studyTracks';
@@ -219,6 +222,44 @@ export default function StudiesScreen({
    * ⛔ `Home`/`End` הם הראשון/האחרון **בסדר הקריאה העברי** — כלומר הימני ביותר
    * והשמאלי ביותר, ⛔ ולא להפך.
    */
+  /**
+   * `T-408`ⓑ+ⓒ · **החזרה נוחתת על המודול שממנו יצא, ⛔ ולא על ראש הרשימה.**
+   * זה בדיוק מה שהשורה קונה: פריט שנפתח מהנתיב והסתיים מחזיר את הלומד
+   * למקום שלו במסלול (`D-065`).
+   *
+   * ⛔ **העוגן ו⛔ לא `searchParams`, וזו הכרעה מדודה:** `T-328` הפך את
+   * `’/studies’` מ-`ƒ` ל-`○` — סטטי, מוגש מהקצה — וקריאת פרמטר שאילתה בעמוד
+   * הייתה מחזירה אותו להלוך-ושוב לשרת שהטיק ההוא הסיר. `hash` ⛔ אינו נשלח
+   * לשרת בכלל ⵒ החזרה ⛔ אינה עולה ולו בקריאה אחת.
+   *
+   * ⛔ **ופעם אחת בלבד:** `handled` נועל אחרי הנחיתה, ⵒ לומד שהקיש
+   * אחר-כך על שבב אחר ⛔ אינו נשאב בחזרה למודול שבכתובת.
+   */
+  const returnHandled = useRef(false);
+
+  useEffect(() => {
+    if (returnHandled.current) return;
+    const anchor = parseModuleAnchor(window.location.hash);
+    if (anchor === null) {
+      returnHandled.current = true;
+      return;
+    }
+    if (anchor.trackId !== active) {
+      setActive(anchor.trackId);
+      return;
+    }
+    const target = document.getElementById(moduleAnchorId(anchor.trackId, anchor.moduleId));
+    if (target === null) return;
+    returnHandled.current = true;
+    // ⛔ ההעדפה נקראת כאן ו⛔ לא ב-CSS — אותו דפוס כמו גלילת השבבים מעל,
+    // ⵒ `prefers-reduced-motion` ⛔ אינו נעקף (חוקה שכבה A · `check:motion`).
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    // ⛔ המיקוד ו⛔ לא הגלילה לבדה: לומד שמנווט במקלדת או בקורא-מסך
+    // חוזר לנקודה שלו ברשימה, ⛔ ולא לראש המסך.
+    target.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
+  }, [active, modules]);
+
   const onTrackKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       const index = STUDY_TRACKS.findIndex((track) => track.id === active);
@@ -402,31 +443,24 @@ export default function StudiesScreen({
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-3 start-[15px] w-0.5 -translate-x-1/2 bg-border-subtle"
           />
-          {modules.map((module) => (
-            <li key={module.id} className="flex items-start gap-3">
-              <span
-                data-module-state={module.state}
-                className={
-                  module.state === 'done'
-                    ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-success bg-surface text-success'
-                    : module.state === 'current'
-                      ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-brand bg-surface text-brand-surface'
-                      : 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-ink-muted'
-                }
-              >
-                <ModuleStateMark state={module.state} />
-              </span>
-              <article
-                className={
-                  module.state === 'current'
-                    ? 'flex flex-1 flex-col gap-1 rounded-2xl border-2 border-brand bg-surface-raised px-4 py-3'
-                    : 'flex flex-1 flex-col gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3'
-                }
-              >
+          {modules.map((module) => {
+            /**
+             * `T-408`ⓐ · **כרטיס המודול נפתח.** `null` הוא מצב תקין ⛔ ולא פער:
+             * רמה שאין בה מילים ⛔ אין לה מה לפתוח, והתווית הכתובה כבר אומרת זאת
+             * במילים (`אין עדיין מילים`) ⛔ ולא בצבע בלבד (`36 § 12.7`).
+             * ⛔ **וזה ⛔ אינו מנעול** — `R-017`: היעדר תוכן, ⛔ ולא היעדר רשות.
+             */
+            const itemHref = moduleItemHref(active, module);
+            const cardClass =
+              module.state === 'current'
+                ? 'flex flex-1 flex-col gap-1 rounded-2xl border-2 border-brand bg-surface-raised px-4 py-3'
+                : 'flex flex-1 flex-col gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3';
+            const body = (
+              <>
                 <h3 className="text-[15px] font-semibold text-ink">{module.titleHe}</h3>
                 {/*
                   ⛔ התווית הכתובה יושבת כאן ו⛔ לא באייקון בלבד — `36 § 12.7`.
-                  ⛔ ו⛔ אין «נעול»: `R-017` אוסר נעילה בין רמות, ⇒ המצב השלישי
+                  ⛔ ו⛔ אין «נעול»: `R-017` אוסר נעילה בין רמות, ⵒ המצב השלישי
                   אומר **אין עדיין מילים**, שזו עובדה על המאגר ⛔ ולא על הלומד.
                 */}
                 <p
@@ -442,7 +476,7 @@ export default function StudiesScreen({
                 </p>
                 {/*
                   פס ההתקדמות — הרנדר מצייר אותו אך ורק על המודול הפעיל
-                  (`c.rr(46, y + 44, 90, 6, 3, ...)`), ⇒ כאן `progress !== null`
+                  (`c.rr(46, y + 44, 90, 6, 3, ...)`), ⵒ כאן `progress !== null`
                   אך ורק ב-`'current'`. ⛔ `aria-hidden`: אותו מספר כבר נאמר
                   במילים בשורה שמעליו, וקורא-מסך ⛔ אינו צריך לשמוע אותו פעמיים.
                 */}
@@ -455,7 +489,7 @@ export default function StudiesScreen({
                     {/*
                       ⛔ מילוי `brand-surface` ו⛔ לא צבע הסימן העירום, והרנדר ⛔ אינו גובר כאן:
                       `F-036` מדד ש-`--brand` העירום הוא מילוי 4.42:1, ו-`lib/core/palette.test.ts`
-                      הוא שער. ⇒ אותה החלטה בדיוק שכבר נלקחה בשבב הפעיל למעלה.
+                      הוא שער. ⵒ אותה החלטה בדיוק שכבר נלקחה בשבב הפעיל למעלה.
                     */}
                     <span
                       className="block h-full rounded-full bg-brand-surface"
@@ -463,9 +497,47 @@ export default function StudiesScreen({
                     />
                   </span>
                 )}
-              </article>
+              </>
+            );
+            return (
+            <li
+              key={module.id}
+              id={moduleAnchorId(active, module.id)}
+              className="flex items-start gap-3 scroll-mt-4"
+            >
+              <span
+                data-module-state={module.state}
+                className={
+                  module.state === 'done'
+                    ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-success bg-surface text-success'
+                    : module.state === 'current'
+                      ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-brand bg-surface text-brand-surface'
+                      : 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-ink-muted'
+                }
+              >
+                <ModuleStateMark state={module.state} />
+              </span>
+              {itemHref === null ? (
+                <article className={cardClass}>{body}</article>
+              ) : (
+                /*
+                  `T-408`ⓐ — הכרטיס כולו הוא יעד ההקשה, ⛔ ולא כפתור קטן בתוכו:
+                  שלוש שורות על `py-3` הן הרבה מעל 44px, והשטח שהאצבע רואה הוא
+                  השטח שהוא מקבל. ⛔ **ו⛔ אין כאן `data-primary-action`** — הפעולה
+                  הראשית של המסך היא כניסת המסלול שבפאנל, ו-`check:mobile` סופר
+                  בדיוק אחת למסך (`F-027`).
+                */
+                <Link
+                  href={itemHref}
+                  data-module-item={module.id}
+                  className={`${cardClass} active:opacity-90`}
+                >
+                  {body}
+                </Link>
+              )}
             </li>
-          ))}
+            );
+          })}
         </ol>
       )}
     </section>

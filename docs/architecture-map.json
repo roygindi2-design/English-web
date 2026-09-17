@@ -526,7 +526,9 @@
   ],
   "app/study/page.tsx": [
     "components/StudyDeckScreen.tsx",
-    "lib/core/deck.ts"
+    "lib/core/deck.ts",
+    "lib/core/levelSummary.ts",
+    "lib/core/studyTracks.ts"
   ],
   "app/study/scan/page.tsx": [
     "components/LevelScan.tsx"
@@ -1010,7 +1012,8 @@
     "lib/core/failureExit.ts",
     "lib/core/flashcard.ts",
     "lib/core/reviewRequest.ts",
-    "lib/core/sentenceItem.ts"
+    "lib/core/sentenceItem.ts",
+    "lib/core/studyTracks.ts"
   ],
   "components/StudyEmptyState.tsx": [],
   "components/TabBar.test.ts": [],

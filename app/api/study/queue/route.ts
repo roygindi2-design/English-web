@@ -646,18 +646,40 @@ export async function GET(request: Request) {
   // T-155 · D-089 — «סינון מילים» answers from `words` and therefore ⛔ never touches the
   // `word_progress` query below. It returns FIRST so that query is not paid for at all.
   if (deck === 'level') {
-    const profile = await readCurrentLevel(supabase, user.id);
-    if (!profile.ok) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
-    // ⛔ 409 and ⛔ not 503: the request is well-formed and the server is healthy — the
-    // learner simply has no level yet. ⛔ And ⛔ not a silent fall-back to A1, which would
-    // teach a band nobody chose. `<LevelMapScreen>` already renders this as `kind: 'choose'`.
-    if (profile.level === null) {
-      return NextResponse.json({ ok: false, code: 'no_level' }, { status: 409 });
+    // `T-408` — **`?band=` היא הרמה שהמודול הצהיר, ⛔ ולא העדפה.** עד היום החפיסה
+    // הזאת נגזרה מ-`profiles.current_level` בלבד, ⵒ כרטיס מודול שכתוב עליו «רמה B1»
+    // היה פותח את הרמה של הלומד — **שקר מדיד על המסך**, ⛔ ולא אי-דיוק.
+    //
+    // ⛔ **וזו ⛔ אינה נעילה ו⛔ אינה שער** (`R-017` · `D-037`): כל רמה שיש בה מילים
+    // נפתחת לכל לומד. מה שהפרמטר קובע הוא **מה נסנן**, ⛔ ולא מי רשאי.
+    //
+    // ⛔ **וערך שאינו רמה הוא 400, ⛔ ולא נפילה שקטה לרמת הלומד** — אותה הכרעה
+    // בדיוק ש-`deck` עצמה עושה שורות ספורות מעל: חפיסה שהלומד ⛔ לא ביקש היא הכשל.
+    const rawBand = params.get('band');
+    const requestedBand = rawBand === null ? null : parseLevel(rawBand);
+    if (rawBand !== null && requestedBand === null) {
+      return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
+    }
+
+    // ⛔ הפרופיל נקרא אך ורק כשאין רמה בכתובת — קריאה שהתשובה ⛔ אינה
+    // תלויה בה היא קריאה שהלומד משלם עליה בהמתנה.
+    let band: string | null = requestedBand;
+    if (band === null) {
+      const profile = await readCurrentLevel(supabase, user.id);
+      if (!profile.ok)
+        return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+      // ⛔ 409 and ⛔ not 503: the request is well-formed and the server is healthy — the
+      // learner simply has no level yet. ⛔ And ⛔ not a silent fall-back to A1, which would
+      // teach a band nobody chose. `<LevelMapScreen>` already renders this as `kind: 'choose'`.
+      if (profile.level === null) {
+        return NextResponse.json({ ok: false, code: 'no_level' }, { status: 409 });
+      }
+      band = profile.level;
     }
 
     let levelRows: QueueRow[];
     try {
-      levelRows = await loadLevelWords(supabase, profile.level);
+      levelRows = await loadLevelWords(supabase, band);
     } catch (levelError) {
       const code = (levelError as { code?: string }).code;
       if (code === '42P01' || code === 'PGRST205') {
@@ -687,7 +709,7 @@ export async function GET(request: Request) {
     // change on the wire is one optional field. ⛔ `null` ⇒ the field is absent, ⛔ and ⛔ not
     // `unseen: null` — the contract's other optional fields (`cards`/`items`) are absent
     // rather than null, and a consumer that reads `body.unseen` gets `undefined` either way.
-    const unseen = await readLevelUnseen(supabase, user.id, profile.level);
+    const unseen = await readLevelUnseen(supabase, user.id, band);
     return NextResponse.json({
       ok: true,
       deck,

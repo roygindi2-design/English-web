@@ -316,3 +316,88 @@ export function trackModules(
     };
   });
 }
+
+/**
+ * T-408 · **הפריט שנפתח מתוך כרטיס מודול, והדרך חזרה ממנו.** `D-065` («שלושה מסכי
+ * כשל בלי יציאה») חל כאן במלואו: פריט שנפתח מהנתיב חייב להחזיר **לנתיב**, ובמקום
+ * שממנו יצא — ⛔ ולא לראש הרשימה ו⛔ לא למסך אחר.
+ *
+ * ⛔ **אפס מסך לימוד חדש (`T-408` מילה במילה):** הפריט של `אוצר מילים` הוא
+ * `/study?deck=level` — חפיסה ש**כבר בנויה** — והשורה הזאת רק **מחברת** אליה את
+ * כרטיס המודול ומחזירה ממנה.
+ *
+ * 🔴 **ולמה `band` בכתובת, ו⛔ לא בלעדיו:** ‏`GET /api/study/queue?deck=level` גוזרת
+ * את הרמה מ-`profiles.current_level` בלבד ⇒ כרטיס שכתוב עליו «רמה B1» היה פותח את
+ * חפיסת הרמה של הלומד. זה **שקר מדיד** על המסך, ⛔ ולא אי-דיוק: המודול מצהיר רמה,
+ * והחפיסה מציגה אחרת. ⇒ הכתובת נושאת את הרמה של המודול עצמו.
+ * ⛔ **ו⛔ אין כאן נעילה** (`R-017` · `D-037`): כל מודול שיש בו מילים נפתח, ⛔ בלי
+ * שער אחוזים ו⛔ בלי סדר כפוי. המודול היחיד שאינו נפתח הוא `'empty'` — רמה שאין בה
+ * מילים — ⇒ **היעדר תוכן, ⛔ ולא היעדר רשות.**
+ */
+const MODULE_ANCHOR_PREFIX = 'studies-module-';
+/** ⛔ סגור בכוונה: כל תו אחר בזהות מודול הוא כתובת שלא אנחנו בנינו. */
+const MODULE_ID_SHAPE = /^[A-Za-z0-9-]{1,24}$/;
+
+/** הזהות של כרטיס המודול ב-DOM — היעד שאליו החזרה נוחתת. */
+export function moduleAnchorId(trackId: StudyTrackId, moduleId: string): string {
+  return `${MODULE_ANCHOR_PREFIX}${trackId}-${moduleId}`;
+}
+
+export interface ModuleAnchor {
+  readonly trackId: StudyTrackId;
+  readonly moduleId: string;
+}
+
+/**
+ * ⛔ **שער, ⛔ ולא פענוח.** הערך מגיע מכתובת שהלומד יכול לערוך, והיחיד שעושים בו
+ * שימוש הוא בנייה של `/studies#<עוגן>` ⇒ ערך שאינו עוגן מודול תקין מוחזר כ-`null`,
+ * והמסך נופל חזרה ליציאה הקבועה שלו. ⛔ אפס הפניה לכתובת חיצונית.
+ */
+export function parseModuleAnchor(value: string | null | undefined): ModuleAnchor | null {
+  if (typeof value !== 'string') return null;
+  const raw = value.startsWith('#') ? value.slice(1) : value;
+  if (!raw.startsWith(MODULE_ANCHOR_PREFIX)) return null;
+  const rest = raw.slice(MODULE_ANCHOR_PREFIX.length);
+  for (const track of STUDY_TRACKS) {
+    const prefix = `${track.id}-`;
+    if (!rest.startsWith(prefix)) continue;
+    const moduleId = rest.slice(prefix.length);
+    if (!MODULE_ID_SHAPE.test(moduleId)) return null;
+    return { trackId: track.id, moduleId };
+  }
+  return null;
+}
+
+/**
+ * הכתובת שכרטיס המודול פותח. `null` הוא מצב תקין ו⛔ לא פער: מודול `'empty'` —
+ * רמה שאין בה מילים — ⛔ אין לו מה לפתוח, ושלושת המסלולים בלי תוכן ⛔ אין להם
+ * מודולים מלכתחילה (`trackModules` מחזירה להם רשימה ריקה).
+ */
+export function moduleItemHref(trackId: StudyTrackId, module: StudyModule): string | null {
+  if (trackId !== 'vocabulary') return null;
+  if (module.state === 'empty') return null;
+  const params = new URLSearchParams({
+    deck: 'level',
+    // ⛔ `module.id` **הוא** הרמה — `trackModules` בונה אותו כ-`level.level`, וזה
+    // נעוץ בבדיקה בקובץ הבדיקות לצד השורה הזאת.
+    band: module.id,
+    return: moduleAnchorId(trackId, module.id),
+  });
+  return `/study?${params.toString()}`;
+}
+
+/** ⛔ «חזרה לכרטיסיות» ⛔ אינו נכון כאן: הלומד הגיע מהנתיב, ⛔ ולא ממפת הרמות. */
+export const MODULE_RETURN_LABEL_HE = 'חזרה למסלול';
+
+/**
+ * היעד שאליו הפריט מחזיר — **הנתיב, על העוגן שממנו יצא** (`T-408`ⓑ+ⓒ). ⛔ נבנה
+ * מתוך `parseModuleAnchor` בלבד ⇒ ⛔ אי-אפשר להזריק לכאן כתובת.
+ */
+export function moduleReturnDestination(rawAnchor: string | null | undefined): TrackDestination | null {
+  const anchor = parseModuleAnchor(rawAnchor);
+  if (anchor === null) return null;
+  return {
+    href: `/studies#${moduleAnchorId(anchor.trackId, anchor.moduleId)}`,
+    labelHe: MODULE_RETURN_LABEL_HE,
+  };
+}

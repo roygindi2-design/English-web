@@ -402,12 +402,43 @@ describe('T-400 — `unseen` בחפיסת `level`, ⛔ בלי בקשה שניי�
       CODE.indexOf("if (deck === 'level')"),
       CODE.indexOf('let query = supabase'),
     );
-    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, profile.level)');
+    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, band)');
     expect(CODE).not.toContain('/api/levels/summary');
   });
 
   it('החוזה מתעדכן באותו קומיט — `unseen` מתועד ב-`docs/api-contract.md`', () => {
     expect(CONTRACT).toContain('`unseen`');
     expect(CONTRACT).toContain('נשארו N מילים ברמה');
+  });
+});
+
+describe('T-408 — `?band=` בחפיסת `level`: מה נסרק, ⛔ ולא מי רשאי', () => {
+  const levelBranch = CODE.slice(
+    CODE.indexOf("if (deck === 'level')"),
+    CODE.indexOf('let query = supabase'),
+  );
+
+  it('הרמה עוברת דרך `parseLevel` — ⛔ ולא מגיעה לשאילתה כמות שהיא', () => {
+    expect(levelBranch).toContain("const rawBand = params.get('band')");
+    expect(levelBranch).toContain('parseLevel(rawBand)');
+  });
+
+  it('⛔ ערך שאינו רמה הוא 400 — ⛔ ולא נפילה שקטה לרמת הלומד', () => {
+    // אותה הכרעה בדיוק ש-`deck` עצמה עושה מעל: חפיסה שהלומד ⛔ לא ביקש היא הכשל.
+    expect(levelBranch).toMatch(/rawBand !== null && requestedBand === null[\s\S]{0,160}status: 400/);
+  });
+
+  it('⛔ הפרופיל ⛔ אינו נקרא כשהרמה בכתובת — ⛔ אין תשלום על קריאה שהתשובה אינה תלויה בה', () => {
+    expect(levelBranch).toMatch(/if \(band === null\)[\s\S]{0,400}readCurrentLevel\(supabase, user\.id\)/);
+  });
+
+  it('שתי השאילתות קוראות את אותה רמה — ⛔ אין שתי הגדרות של «הרמה הזאת»', () => {
+    expect(levelBranch).toContain('loadLevelWords(supabase, band)');
+    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, band)');
+    expect(levelBranch).not.toContain('profile.level)');
+  });
+
+  it('החוזה מתעדכן באותו קומיט — `?band=` מתועד ב-`docs/api-contract.md`', () => {
+    expect(CONTRACT).toContain('`?band=<A1..C2>`');
   });
 });

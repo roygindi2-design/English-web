@@ -122,7 +122,17 @@ describe('<StudyDeckScreen> — the screen that owns the network (T-065 · § 4.
   });
 
   it('asks the queue endpoint for the deck it was given', () => {
-    expect(CODE).toMatch(/\/api\/study\/queue\?deck=/);
+    // `T-408` — הכתובת נבנית מ-`URLSearchParams` מאז שיש פרמטר שני (`band`),
+    // ⛔ והטענה שהבדיקה הזאת שומרת ⛔ לא השתנתה: החפיסה שנמסרה לרכיב
+    // היא החפיסה שנשאלת, ⛔ ולא קבועה.
+    expect(CODE).toMatch(/\/api\/study\/queue\?\$\{query\.toString\(\)\}/);
+    expect(CODE).toContain('new URLSearchParams({ deck })');
+  });
+
+  it('`T-408` — `band` נוסף לשאילתה אך ורק כשנמסר, ⛔ ולעולם ⛔ לא כמחרוזת ריקה', () => {
+    expect(CODE).toContain("if (band !== undefined) query.set('band', band)");
+    // ⛔ והטעינה מחדש כשהרמה משתנה — אחרת מודול שני היה מציג את הקודם.
+    expect(CODE).toContain('}, [deck, band]);');
   });
 
   it('clamps elapsed_ms with the imported ceiling — ⛔ not a re-typed 600000', () => {
@@ -316,8 +326,13 @@ describe('the study screen carries a WRITTEN way out (T-087 · § 4.2ח ⓒ → 
 
   it('הענף `cards` מוסר ל-`<CardDeck>` יציאה כתובה — `exit` עם `href="/cards"` ו-`BACK_TO_CARDS_HE`', () => {
     const branch = cardsBranch(T087_SRC);
-    expect(branch, 'חסרה יציאה — `exit=` לא נמסר ל-`<CardDeck>`').toMatch(/<CardDeck[\s\S]*?exit=\{\{/);
+    expect(branch, 'חסרה יציאה — `exit=` לא נמסר ל-`<CardDeck>`').toMatch(/<CardDeck[\s\S]*?exit=\{/);
+    // `T-408` — הברירת מחדל ⛔ לא השתנתה; מה שנוסף הוא שלומד שהגיע מנתיב
+    // המודולים חוזר ל**נתיב** ו⛔ לא לבורר (`D-065`).
     expect(branch, 'היציאה חייבת לחזור לבורר `/cards` (§ 4.2ח ⓒ)').toMatch(/href: '\/cards'/);
+    expect(branch, '`T-408` — יעד החזרה של מי שפתח גובר על הברירה').toMatch(
+      /exit=\{returnTo \?\?/,
+    );
     expect(branch, 'הנוסח הוא `חזרה ל<יעד>` (D-187 §ג׳.1) — הקבוע הקיים, ⛔ מחרוזת חדשה').toMatch(
       /labelHe: BACK_TO_CARDS_HE/,
     );

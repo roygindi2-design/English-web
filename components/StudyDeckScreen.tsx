@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
+import type { TrackDestination } from '@/lib/core/studyTracks';
 import CardDeck from '@/components/CardDeck';
 import CardSkeleton from '@/components/CardSkeleton';
 import StudyEmptyState from '@/components/StudyEmptyState';
@@ -177,7 +178,25 @@ function boundElapsed(ms: number): number {
   return Math.min(Math.round(ms), MAX_ELAPSED_MS);
 }
 
-export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
+/**
+ * `T-408` — **הדרך חזרה היא של מי שפתח, ⛔ ולא של המסך.** עד היום היציאה
+ * מהחפיסה הייתה `’/cards’` קבועה ⵒ לומד שנכנס מנתיב המודולים ב-`’/studies’`
+ * היה נזרק ללשונית אחרת — בדיוק «מסך שאין ממנו דרך חזרה למסלול» ש-`T-408`
+ * סוגרת, ובדיוק מה ש-`D-065` אוסר. ⛔ **והיעד ⛔ אינו מגיע מהכתובת כמות שהיא:**
+ * `moduleReturnDestination` בונה אותו מעוגן שעבר שער, ⵒ ⛔ אי-אפשר להזריק לכאן כתובת.
+ *
+ * `band` — `T-408` · הרמה שהמודול הצהיר. ⛔ רלוונטית ל-`deck === 'level'` בלבד,
+ * ו-`undefined` משאיר את הנתיב בדיוק כפי שהיה: הרמה מגיעה מ-`profiles.current_level`.
+ */
+export default function StudyDeckScreen({
+  deck,
+  band,
+  returnTo,
+}: {
+  readonly deck: DeckName;
+  readonly band?: string;
+  readonly returnTo?: TrackDestination;
+}) {
   const [state, setState] = useState<ScreenState>({ kind: 'loading' });
   const [gradeError, setGradeError] = useState('');
   const shownAt = useRef(0);
@@ -185,7 +204,11 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
   const load = useCallback(async () => {
     setState({ kind: 'loading' });
     try {
-      const body = await apiGet<QueueResponse>(`/api/study/queue?deck=${deck}`);
+      // ⛔ `URLSearchParams` ו⛔ לא שרשור ידני: ערך שהגיע מכתובת נכנס לכאן
+      // מקודד, ⛔ ולא כמות שהוא. השרת בודק אותו בכל מקרה (`parseLevel`).
+      const query = new URLSearchParams({ deck });
+      if (band !== undefined) query.set('band', band);
+      const body = await apiGet<QueueResponse>(`/api/study/queue?${query.toString()}`);
       shownAt.current = Date.now();
       if (!body.ok) {
         if (body.code === 'session_expired') setState({ kind: 'session_expired' });
@@ -214,7 +237,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
       // there is no code to act on, so this is the generic failure and not a lie about why.
       setState({ kind: 'error' });
     }
-  }, [deck]);
+  }, [deck, band]);
 
   useEffect(() => {
     void load();
@@ -278,7 +301,7 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           deck={deck}
           cards={state.cards}
           onGraded={onGraded}
-          exit={{ href: '/cards', labelHe: BACK_TO_CARDS_HE }}
+          exit={returnTo ?? { href: '/cards', labelHe: BACK_TO_CARDS_HE }}
           // `T-400` · `F-272` — ⛔ no second request and ⛔ no lifted state: the number came
           // down with the queue this screen already asked for (`§ 4.2ז` forbids the second
           // `/api/levels/summary` read, and `<LevelMapScreen>` is a DIFFERENT screen).
@@ -351,11 +374,14 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           // at, which is the dead end F-027 was opened for. The practice deck reuses the
           // deck's own existing way out rather than inventing a second wording.
           <Link
-            href={deck === 'due' ? '/study?deck=unknown' : '/cards'}
+            // `T-408`ⓑ — הסיום מחזיר **לנתיב**, כשמשם הלומד הגיע. ⛔ הסדר
+            // קודם לכל השאר: לומד שנכנס ממודול ⛔ אינו רוצה «התחל מילים
+            // חדשות» ו⛔ אינו רוצה את מפת הרמות — הוא רוצה חזרה למסלול.
+            href={returnTo?.href ?? (deck === 'due' ? '/study?deck=unknown' : '/cards')}
             data-primary-action="true"
             className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
           >
-            {deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE}
+            {returnTo?.labelHe ?? (deck === 'due' ? START_NEW_HE : BACK_TO_CARDS_HE)}
           </Link>
         ) : (
           // ⚠️ סטייה מוצהרת מנוסח הצעד בתוכנית, והכרעה 4 של אותה תוכנית היא
