@@ -253,18 +253,80 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
   );
 
   if (screen !== 'ready' || state === null) {
+    /* 🦴 **T-398 — השלד מצייר את ששת האזורים של המסך, ⛔ ולא שלושה מתוכם.**
+       🔬 **נמדד `C-0664` בדפדפן חי עם עיכוב מלאכותי של 2,500ms על `/api/arcade/home`
+       (375×780), ⛔ ולא שוער:** במצב `loading` נספרו **3** בלוקים — `h-40` · `h-[66px]` ·
+       `h-[66px]` — ובמסך המיוצב יש **6** אזורים, ו-`התחל קרב` נמדדה שם ב-`top = 654`
+       בעוד ⛔ אין לה ולו פיקסל שמור בשלד. ⇒ החצי התחתון ריק לכל אורך ההמתנה ואז מתמלא
+       בבת אחת, והאצבע שכבר יצאה לדרך נוחתת על מה שקפץ לשם.
+       ⚠️ **הכלל נקוב בשמו:** `ui-ux-pro-max` ⇒ `ux-guidelines` · Layout · **Content
+       Jumping** · Severity **High** — «skeleton replacements can shift nearby content
+       when they update» ⇒ Do: «Reserve appropriate space or keep async states in a
+       stable content-driven container».
+       ⛔ **ולכן המעטפת ⛔ אינה `gap-6` אלא `gap-5` — בדיוק זו של המסך המיוצב**, וקבוצת
+       הפעולות נושאת את אותו `mt-auto pt-4 gap-3`: מרווח שונה בשלב אחד הוא בדיוק הקפיצה
+       שהשורה הזאת קיימת נגדה. הגבהים הם של המסך המיוצב, אחד-אחד: הדמות **188**
+       (`h-40` ‏160 + רצועת האליפסות `h-10` פחות `-mt-3` ⇒ 28) · כרטיס הרמה **66** ·
+       מסלול הבוס **57** · כותרת הציוד עם ארבע המשבצות **88** · `התחל קרב` **58**
+       (`START_CLASS`) · שתי הפעולות המשניות **44** (`min-h-touch`).
+       ⛔ **⛔ ולא ספינר:** שלד אומר «זה מה שמגיע», ספינר אומר «חכה». ⛔ ואין כאן טוקן
+       צבע חדש — הכול על `--arena-card`, כמו קודם. */
+    const loading = screen === 'loading';
     return (
-      <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-6 pb-16">
+      <section
+        data-arena-scope
+        aria-busy={loading || undefined}
+        className={`flex min-h-[100dvh] flex-col ${loading ? 'gap-5' : 'gap-6'} pb-16`}
+      >
         {header}
-        {screen === 'loading' ? (
-          <div className="flex flex-col gap-4" aria-busy="true">
+        {loading ? (
+          <>
             <p className="sr-only" role="status">
               {LOADING_HE}
             </p>
-            <div aria-hidden className="h-40 rounded-2xl bg-[color:var(--arena-card)]" />
-            <div aria-hidden className="h-[66px] rounded-2xl bg-[color:var(--arena-card)]" />
-            <div aria-hidden className="h-[66px] rounded-xl bg-[color:var(--arena-card)]" />
-          </div>
+            {/* הדמות — ⛔ מרוכזת וברוחב רצועת האליפסות, ⛔ ולא כרטיס לרוחב המסך. */}
+            <div className="flex justify-center">
+              <div
+                aria-hidden
+                data-arena-skeleton="figure"
+                className="h-[188px] w-[128px] rounded-2xl bg-[color:var(--arena-card)]"
+              />
+            </div>
+            <div
+              aria-hidden
+              data-arena-skeleton="level"
+              className="h-[66px] rounded-2xl bg-[color:var(--arena-card)]"
+            />
+            <div
+              aria-hidden
+              data-arena-skeleton="boss-track"
+              className="h-[57px] rounded-2xl bg-[color:var(--arena-card)]"
+            />
+            {/* ⛔ **`162` ⛔ אינו מספר שני — זו אותה נקודת שבירה בדיוק שהרצועה עצמה נושאת.**
+                🔬 נמדד חי בשלושה רוחבים: האזור הזה הוא **88** ב-375 וב-414, ו-**162**
+                ב-320, כי `max-w-[140px]` מקפל את ארבעת התאים ל-2×2 מתחת ל-375
+                (`min-[375px]:max-w-none` משחרר אותו). ⇒ שלד בגובה 88 ב-320 היה משאיר
+                את `התחל קרב` נמוכה ב-**72px** ממקומה, כלומר הקפיצה שהשורה הזאת קיימת
+                נגדה, ברוחב שבו היא הכי כואבת. */}
+            <div
+              aria-hidden
+              data-arena-skeleton="gear"
+              className="h-[162px] min-[375px]:h-[88px] rounded-2xl bg-[color:var(--arena-card)]"
+            />
+            {/* אותה קבוצה בדיוק כמו במסך המיוצב ⇒ `התחל קרב` שומרת את מקומה. */}
+            <div className="mt-auto flex flex-col gap-3 pt-4">
+              <div
+                aria-hidden
+                data-arena-skeleton="start"
+                className="h-[58px] rounded-2xl bg-[color:var(--arena-card)]"
+              />
+              <div
+                aria-hidden
+                data-arena-skeleton="actions"
+                className="min-h-touch rounded-xl bg-[color:var(--arena-card)]"
+              />
+            </div>
+          </>
         ) : (
           <>
             <p className="text-lg leading-relaxed text-[color:var(--arena-ink)]">{FAILURE_HE.load}</p>

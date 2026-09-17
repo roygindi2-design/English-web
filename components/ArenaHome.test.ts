@@ -220,3 +220,65 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
     }
   });
 });
+
+/**
+ * 🦴 **T-398 — השלד מצייר את ששת האזורים, ⛔ ולא שלושה מתוכם.**
+ *
+ * 🔬 **נמדד `C-0664` בדפדפן חי עם עיכוב מלאכותי של 2,500ms על `/api/arcade/home`
+ * (‏`next start`, 375×780), ⛔ ולא שוער:** במצב `loading` נספרו **3** בלוקים
+ * (`h-40` · `h-[66px]` · `h-[66px]`) מול **6** אזורים במסך המיוצב, ו-`התחל קרב`
+ * נמדדה ב-`top = 654` עם ⛔ אפס פיקסלים שמורים לה בשלד.
+ *
+ * ⚠️ **הכלל נקוב בשמו:** `ui-ux-pro-max` ⇒ `ux-guidelines` · Layout · **Content
+ * Jumping** · Severity **High**. ⇒ שתי הטענות כאן הן **שתיים ו⛔ לא אחת**: ששת
+ * הבלוקים, **וגם** המעטפת שנושאת את אותו `gap` ואת אותה קבוצת פעולות — שלד בגבהים
+ * נכונים בתוך מעטפת במרווח אחר הוא בדיוק אותה קפיצה, במספר קטן יותר.
+ */
+describe('ArenaHome — שלד הטעינה (T-398)', () => {
+  const LOADING =
+    SRC.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').match(
+      /\{loading \? \([\s\S]*?\n {8}\) : \(/,
+    )?.[0] ?? '';
+
+  it('ששת האזורים מקבלים בלוק שלד, ⛔ ולא שלושה', () => {
+    const blocks = LOADING.match(/data-arena-skeleton="([a-z-]+)"/g) ?? [];
+    expect(blocks).toHaveLength(6);
+    expect(new Set(blocks).size).toBe(6);
+  });
+
+  it('הגבהים הם של המסך המיוצב, אחד-אחד', () => {
+    // 188 = `h-40` (160) + רצועת האליפסות `h-10` (40) פחות `-mt-3` (12).
+    expect(LOADING).toContain('h-[188px]');
+    expect(LOADING).toContain('h-[66px]'); // כרטיס הרמה
+    expect(LOADING).toContain('h-[57px]'); // מסלול הבוס
+    // כותרת הציוד + ארבע המשבצות: **162** מתחת ל-375 (הרצועה מקפלת ל-2×2) ו-**88**
+    // מ-375 ומעלה. ⛔ אותה נקודת שבירה של `max-w-[140px]` / `min-[375px]:max-w-none`,
+    // ⛔ ולא מספר שנבחר: שלד 88 ב-320 משאיר את `התחל קרב` נמוכה ב-72px ממקומה.
+    expect(LOADING).toContain('h-[162px] min-[375px]:h-[88px]');
+    expect(LOADING).toContain('h-[58px]'); // `START_CLASS`
+    expect(LOADING).toContain('min-h-touch'); // שתי הפעולות המשניות
+  });
+
+  it('🔑 `התחל קרב` שומרת את מקומה — אותה קבוצה, אותו `mt-auto pt-4`', () => {
+    expect(LOADING).toContain('mt-auto flex flex-col gap-3 pt-4');
+  });
+
+  it('🔑 המעטפת נושאת את `gap-5` של המסך המיוצב, ⛔ ולא `gap-6`', () => {
+    const shell = SRC.match(/className=\{`flex min-h-\[100dvh\] flex-col \$\{[^`]*`\}/)?.[0] ?? '';
+    expect(shell).toContain("loading ? 'gap-5' : 'gap-6'");
+    // המסך המיוצב עצמו — אותו מרווח בדיוק, וזו הטענה כולה.
+    expect(SRC).toContain('flex min-h-[100dvh] flex-col gap-5 pb-16');
+  });
+
+  it('⛔ שלד, ⛔ ולא ספינר — ו-`aria-busy` יושב על המעטפת', () => {
+    expect(LOADING).not.toMatch(/animate-spin|spinner/i);
+    expect(SRC).toContain('aria-busy={loading || undefined}');
+    expect(LOADING).toContain('role="status"');
+  });
+
+  it('⛔ ⛔ אין טוקן צבע חדש — הכול על `--arena-card`', () => {
+    const fills = LOADING.match(/bg-\[color:var\(--[a-z-]+\)\]/g) ?? [];
+    expect(fills.length).toBeGreaterThan(0);
+    expect(new Set(fills)).toEqual(new Set(['bg-[color:var(--arena-card)]']));
+  });
+});
