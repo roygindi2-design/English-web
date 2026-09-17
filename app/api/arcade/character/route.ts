@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  * and the merged object is `withCharacter`, both in `lib/core/arenaCharacter.ts`.
  *
  * ⛔ **The upsert carries `user_id` and `avatar_parts` — and nothing else.** That is how
- * `§ 7`'s «בלי לאבד רמה, גביעים, ציוד או שברים» holds **by construction**: the level, the
+ * `§ 7`'s «בלי לאבד רמה או ציוד» holds **by construction**: the level, the
  * wins and the unlocked items are ⛔ not in the statement, so a character change ⛔ cannot
  * touch them. `route.test.ts` asserts it on the source.
  * ⛔ `37 § 13.1`: the arena never writes the review engine — this file touches

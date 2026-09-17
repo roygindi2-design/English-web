@@ -41,6 +41,27 @@ describe('arenaCharacter — `37 § 7`', () => {
     for (const s of all) expect(s).not.toMatch(/\d/);
   });
 
+  /**
+   * 🏷️ **`T-399` · `D-261` — the promise names what the database can actually hold.**
+   *
+   * 🔬 Measured `C-0664` by grep, ⛔ not assumed: the sentence named four things, while
+   * `supabase/migrations/0014_arcade.sql` gives `arcade_progress` exactly three columns
+   * (`arcade_level` · `wins` · `unlocked_items`). ⇒ two of the four ⛔ have no column at
+   * all, and `D-131` had already taken the shard chip off the home screen.
+   * ⛔ **Two assertions and ⛔ not one:** that the two unbacked names are gone, **and**
+   * that the two real ones are still there. Dropping the whole clause would have removed
+   * the reassurance instead of correcting it, and ⛔ nothing here would have noticed.
+   */
+  it('T-399 — the intro names רמה and ציוד, and ⛔ nothing the schema cannot hold', () => {
+    expect(CHARACTER_INTRO_HE).toContain('רמה');
+    expect(CHARACTER_INTRO_HE).toContain('ציוד');
+    for (const unbacked of ['גביעים', 'שברים']) {
+      expect(CHARACTER_INTRO_HE).not.toContain(unbacked);
+    }
+    // ⛔ ולא מחיקה של המשפט: הערובה עצמה היא מה שמרגיע לומד שמתלבט על הדמות.
+    expect(CHARACTER_INTRO_HE).toContain('ניתן לשינוי בכל רגע');
+  });
+
   it('isArenaCharacter accepts the three and nothing else', () => {
     expect(isArenaCharacter('wizard')).toBe(true);
     expect(isArenaCharacter('Wizard')).toBe(false);

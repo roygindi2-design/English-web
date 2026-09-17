@@ -42,9 +42,23 @@ export const CHARACTER_BIAS_HE: Readonly<Record<ArenaCharacter, readonly string[
     ]),
   });
 
-/** `37 § 7`, the third bullet, verbatim — the screen's one description line. */
-export const CHARACTER_INTRO_HE =
-  'ניתן לשינוי בכל רגע ממסך הבית, בלי לאבד רמה, גביעים, ציוד או שברים';
+/**
+ * `37 § 7`, the third bullet, verbatim - the screen's one description line.
+ *
+ * 🏷️ **`T-399` · `D-261` (which carries `D-131` into `§ 7`) - it names two things, ⛔ not four.**
+ * 🔬 Measured `C-0664` by grep and on the live screen (`/dev/arcade/character`, 375x780),
+ * ⛔ not assumed: this sentence named four things a learner cannot lose, while
+ * `supabase/migrations/0014_arcade.sql` defines exactly three columns on `arcade_progress`
+ * `arcade_level` · `wins` · `unlocked_items`. ⇒ two of those four ⛔ have no column,
+ * `D-131` had already taken the shard chip off the home screen «until an economy is
+ * written», and `components/ArenaHome.test.ts` locks its absence.
+ * ⇒ the sentence was reassuring a learner about losing two things the product ⛔ cannot
+ * hold, on the first screen the arena ever shows them.
+ * ⛔ **⛔ Not a removal of the mechanic:** `37 § 9` and `§ 13` keep trophies and shards as
+ * future mechanics. What moved is what is SAID to a learner today, and the two names come
+ * back to this string the day they have a column.
+ */
+export const CHARACTER_INTRO_HE = 'ניתן לשינוי בכל רגע ממסך הבית, בלי לאבד רמה או ציוד';
 
 export function isArenaCharacter(value: unknown): value is ArenaCharacter {
   return typeof value === 'string' && (ARENA_CHARACTERS as readonly string[]).includes(value);
