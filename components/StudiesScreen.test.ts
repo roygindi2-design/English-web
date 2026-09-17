@@ -222,3 +222,45 @@ describe('<StudiesScreen> — הבורר מכריז tablist ו⛔ מתנהג כ�
     expect(CODE).not.toContain('function metricFor');
   });
 });
+
+describe('<StudiesScreen> — נתיב המודולים (T-407 · kol-A-04-learning)', () => {
+  it('הרשימה נגזרת מהליבה — ⛔ אפס שם מודול במקור הרכיב', () => {
+    // ⛔ R-010: שם מודול שנכתב כאן היה תוכן לימודי שנוצר בקוד. `trackModules`
+    // גוזר אותם משש הרמות ש-`/api/levels/summary` כבר החזיר.
+    expect(CODE).toContain('trackModules(active');
+    expect(CODE).toContain('data-track-modules');
+    expect(CODE).toContain('modules.map');
+  });
+
+  it('⛔ רשימה ריקה ⛔ אינה מרונדרת כרשימה ריקה — ⓒ', () => {
+    // שלושת המסלולים בלי תוכן מציגים את המבנה הריק המוצהר של T-406,
+    // ⛔ ולא `<ol>` ריק מתחתיו.
+    expect(CODE).toContain('modules.length > 0');
+  });
+
+  it('ⓐ כל מצב נושא אייקון **ותווית כתובה** — 36 § 12.7', () => {
+    expect(CODE).toContain('<ModuleStateMark');
+    expect(CODE).toContain('module.stateLabelHe');
+    expect(CODE).toContain('data-module-state');
+  });
+
+  it('🔴 R-017 · ⛔ אפס מנעול ואפס שפת נעילה על המסך', () => {
+    // «⛔ אין שער אחוזים ואין נעילה בין רמות» (R-017 · D-037) ⇒ גם המילה
+    // ⛔ אינה מופיעה, וגם הצורה: מנעול אומר «אין לך רשות».
+    for (const forbidden of ['נעול', 'ייפתח אחרי', 'icon_lock', 'Lock'])
+      expect(CODE, `"${forbidden}" סותר את R-017`).not.toContain(forbidden);
+  });
+
+  it('פס ההתקדמות ⛔ אינו הערוץ היחיד — הוא aria-hidden והמספר נאמר במילים', () => {
+    const bar = CODE.match(/<span[\s\S]{0,400}?data-module-progress[\s\S]{0,200}?>/)?.[0] ?? '';
+    expect(bar).toContain('aria-hidden');
+    expect(CODE).toContain('module.summaryHe');
+  });
+
+  it('⛔ אפס זוהר על נקודות הנתיב — תקציב שכבה ב3 הוא שניים למסך', () => {
+    // ⛔ מספר המודולים «בתהליך» נגזר מנתונים ⇒ זוהר לכל אחד ⛔ אינו חסום בשניים.
+    const path = CODE.match(/data-track-modules[\s\S]{0,4000}?<\/ol>/)?.[0] ?? '';
+    expect(path.length).toBeGreaterThan(0);
+    expect(path).not.toContain('data-glow');
+  });
+});

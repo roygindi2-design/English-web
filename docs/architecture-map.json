@@ -1596,6 +1596,7 @@
     "lib/core/studyTracks.ts"
   ],
   "lib/core/studyTracks.ts": [
+    "lib/core/cefrLevels.ts",
     "lib/core/levelSummary.ts"
   ],
   "lib/core/swipeGrade.test.ts": [

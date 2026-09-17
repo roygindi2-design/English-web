@@ -8,6 +8,7 @@ import {
   trackFallbackAction,
   trackLabelHe,
   trackMetric,
+  trackModules,
   vocabularyMetric,
 } from './studyTracks';
 import type { LevelSummary } from './levelSummary';
@@ -216,5 +217,87 @@ describe('trackDestination — הדרך קדימה מכל מסלול (T-351)', (
       expect(dest.href.startsWith('/')).toBe(true);
       expect(dest.href).not.toMatch(/^https?:/);
     }
+  });
+});
+
+describe('trackModules — נתיב המודולים, T-407 · 36 § 9', () => {
+  /** ‏שש הרמות בדיוק כפי ש-`GET /api/levels/summary` מחזיר אותן. */
+  const LEVELS: readonly LevelSummary[] = [
+    { level: 'A1', totalInLevel: 315, known: 315, inReviewList: 0, unseen: 0 },
+    { level: 'A2', totalInLevel: 80, known: 10, inReviewList: 4, unseen: 66 },
+    { level: 'B1', totalInLevel: 20, known: 0, inReviewList: 0, unseen: 20 },
+    { level: 'B2', totalInLevel: 2, known: 0, inReviewList: 0, unseen: 2 },
+    { level: 'C1', totalInLevel: 0, known: 0, inReviewList: 0, unseen: 0 },
+    { level: 'C2', totalInLevel: 0, known: 0, inReviewList: 0, unseen: 0 },
+  ];
+
+  it('ⓑ מודול לכל רמה, ⛔ ואפס שם שנכתב ביד — הרשימה נגזרת מהרמות עצמן', () => {
+    // ⛔ R-010: «אוצר מילים A1 316 · A2 125 · B1 96 · B2 85» הוא **תוכן קיים**
+    // ב-`36 § 9`, ⇒ המודולים הם אותן רמות ו⛔ לא רשימה חדשה.
+    const modules = trackModules('vocabulary', LEVELS);
+    expect(modules.map((m) => m.id)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  });
+
+  it('ⓐ שלושת המצבים שהרנדר מצייר נמדדים כאן, וכל אחד נושא תווית כתובה', () => {
+    const modules = trackModules('vocabulary', LEVELS);
+    const byId = new Map(modules.map((m) => [m.id, m]));
+    expect(byId.get('A1')?.state).toBe('done');
+    expect(byId.get('A2')?.state).toBe('current');
+    expect(byId.get('B1')?.state).toBe('open');
+    expect(byId.get('C1')?.state).toBe('empty');
+    // ⛔ 36 § 12.7 — «⛔ אין קידוד מצב בצבע בלבד, אייקון ותווית תמיד»: התווית
+    // ⛔ אינה אופציונלית, ⇒ ⛔ אף מודול ⛔ אינו יוצא בלי אחת.
+    for (const m of modules) expect(m.stateLabelHe.length).toBeGreaterThan(0);
+  });
+
+  it('🔴 R-017 · ⛔ אפס נעילה בין רמות — רמה שיש בה מילים ⛔ לעולם אינה חסומה', () => {
+    // `plan/20-alerts.md` R-017 (D-037), מילה במילה: «⛔ אין שער אחוזים ואין
+    // נעילה בין רמות». ⇒ הרנדר מצייר «ייפתח אחרי A1» ו«נעול», והכלל גובר:
+    // המצב היחיד שאינו פתוח הוא רמה שאין בה מילים, וזו עובדה על המאגר.
+    const closed = trackModules('vocabulary', LEVELS).filter((m) => m.state === 'empty');
+    expect(closed.map((m) => m.id)).toEqual(['C1', 'C2']);
+    for (const m of trackModules('vocabulary', LEVELS)) {
+      expect(m.stateLabelHe).not.toContain('נעול');
+      expect(m.summaryHe).not.toContain('ייפתח אחרי');
+    }
+  });
+
+  it('הספירה היא של הרמה עצמה, ⛔ ולא מספר שנוסח מחדש', () => {
+    const a2 = trackModules('vocabulary', LEVELS).find((m) => m.id === 'A2');
+    expect(a2?.summaryHe).toBe('10 מתוך 80 מילים ידועות');
+  });
+
+  it('פס ההתקדמות קיים אך ורק על המודול שבתהליך — כמו ברנדר', () => {
+    const modules = trackModules('vocabulary', LEVELS);
+    for (const m of modules) {
+      if (m.state === 'current') expect(m.progress).toBeCloseTo(10 / 80);
+      else expect(m.progress).toBeNull();
+    }
+  });
+
+  it('הסדר הוא BAND_ORDER, ⛔ ולא הסדר שבו הנתיב החזיר את המערך', () => {
+    const shuffled = [...LEVELS].reverse();
+    expect(trackModules('vocabulary', shuffled).map((m) => m.id)).toEqual([
+      'A1',
+      'A2',
+      'B1',
+      'B2',
+      'C1',
+      'C2',
+    ]);
+  });
+
+  it('ⓒ לשלושת המסלולים בלי תוכן ⛔ אין נתיב — המבנה הריק המוצהר של T-406 במקומו', () => {
+    // `36 § 9`: «לדקדוק, כתיבה והבנת הנקרא ⛔ אין תוכן» ⇒ רשימה ריקה כאן היא
+    // **הכרעה**, ⛔ ולא פער: הפאנל שלהם כבר מצהיר מה יהיה שם ונושא פעולה.
+    for (const id of ['grammar', 'writing', 'reading'] as const) {
+      expect(trackModules(id, LEVELS)).toEqual([]);
+    }
+  });
+
+  it('⛔ קריאה שנכשלה ⛔ אינה נתיב ריק — `null` ⇒ ⛔ אין רשימה בכלל', () => {
+    // ⛔ ההבדל בין «⛔ לא הצלחנו לטעון» ל«ריק» הוא בדיוק D-046/D-082: נתיב ריק
+    // היה אומר ללומד «אין לך מודולים», וזו קביעה שאיש ⛔ לא מדד.
+    expect(trackModules('vocabulary', null)).toEqual([]);
   });
 });

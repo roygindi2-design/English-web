@@ -35,6 +35,8 @@ import {
   trackFallbackAction,
   trackLabelHe,
   trackMetric,
+  trackModules,
+  type StudyModuleState,
   type StudyTrackId,
 } from '@/lib/core/studyTracks';
 
@@ -70,6 +72,35 @@ function ActiveTrackMark() {
       strokeLinejoin="round"
     >
       <path d="M3.5 8.5l3 3 6-7" />
+    </svg>
+  );
+}
+
+/**
+ * T-407 · **סימן המצב על הנתיב** — הערוץ השני של המצב, לצד התווית הכתובה
+ * בכרטיס (`36 § 12.7`: «⛔ אין קידוד מצב בצבע בלבד — אייקון ותווית תמיד»).
+ * SVG מוטבע ⛔ ולא אמוג׳י (חוקה שכבה A · § 6).
+ *
+ * ⛔ **ו⛔ אין כאן מנעול, ובכוונה:** מנעול אומר «אין לך רשות», ו-`R-017` אוסר
+ * נעילה בין רמות. המצב היחיד שאינו פתוח כאן הוא **רמה שאין בה מילים**, וסימנה
+ * הוא קו — היעדר תוכן, ⛔ ולא היעדר רשות.
+ */
+function ModuleStateMark({ state }: { readonly state: StudyModuleState }): React.JSX.Element {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 16 16"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {state === 'done' && <path d="M3.5 8.5l3 3 6-7" />}
+      {state === 'current' && <circle cx="8" cy="8" r="3" fill="currentColor" stroke="none" />}
+      {state === 'open' && <circle cx="8" cy="8" r="3.2" />}
+      {state === 'empty' && <path d="M4.5 8h7" />}
     </svg>
   );
 }
@@ -118,6 +149,12 @@ export default function StudiesScreen({
    * שכבר יש לו יעד ⇒ ⛔ לעולם ⛔ אין כאן שתי פעולות באותו פאנל.
    */
   const fallback = trackFallbackAction(active);
+  /**
+   * T-407 · נתיב המודולים של המסלול. ⛔ נגזר, ⛔ ולא כתוב ביד — ראה
+   * `trackModules`. רשימה ריקה היא מצב תקין: שלושת המסלולים בלי תוכן מציגים
+   * את המבנה הריק המוצהר של `T-406` במקומה.
+   */
+  const modules = trackModules(active, loading ? null : levels);
 
   /**
    * T-330 — הבורר גולש אופקית ב-375px (`הבנת הנקרא` נחתך ל«הג»), ו⛔ שני הדברים
@@ -338,6 +375,99 @@ export default function StudiesScreen({
           </>
         )}
       </div>
+
+      {/*
+        🎯 **T-407 · נתיב המודולים** — `docs/design/kol-A-04-learning.png`, החצי
+        התחתון, וערכי הפריסה מ-`render_video_A.py:1205-1264` (`screen_hub`):
+        עמוד שדרה אנכי בקצה ה**התחלה** (‏RTL ⇒ ימין, `spine_x = LW - 46`), נקודת
+        מצב בקוטר 30 עליו (`c.circ(spine_x, y + 34, 15)`), וכרטיס מודול משמאלו
+        (`c.rr(28, y, LW - 100, 72, 16)`) — ⇒ `rounded-2xl`, מרווח 24px בין
+        כרטיסים (‏96 − 72 ברנדר).
+
+        🔬 **מה זה ממלא, נמדד בהליכה חיה 375×780:** מתחת לכרטיס-הסטטוס היחיד
+        נשארו ⛔ ~375px ריקים עד הקיפול, והרנדר ממלא בדיוק את הרצועה הזאת.
+
+        ⛔ **אפס זוהר על הנקודות** (D-110, מתועד בדוח): הרנדר נותן `glow` למודול
+        הפעיל, אבל תקציב הזוהר הוא **שניים למסך** (חוקה שכבה ב3) ומספר המודולים
+        «בתהליך» כאן **נגזר מנתונים** ⇒ ⛔ אי-אפשר לחסום אותו בשניים. ⇒ הערוץ
+        שמסמן את הפעיל הוא המסגרת, האייקון והתווית.
+      */}
+      {modules.length > 0 && (
+        <ol data-track-modules={active} className="relative flex flex-col gap-6">
+          {/*
+            עמוד השדרה. `start-[15px]` הוא מרכז נקודת המצב, ו-`aria-hidden`
+            כי הוא קישוט: הסדר עצמו כבר נאמר על ידי `<ol>`.
+          */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-3 start-[15px] w-0.5 -translate-x-1/2 bg-border-subtle"
+          />
+          {modules.map((module) => (
+            <li key={module.id} className="flex items-start gap-3">
+              <span
+                data-module-state={module.state}
+                className={
+                  module.state === 'done'
+                    ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-success bg-surface text-success'
+                    : module.state === 'current'
+                      ? 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-brand bg-surface text-brand-surface'
+                      : 'relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-ink-muted'
+                }
+              >
+                <ModuleStateMark state={module.state} />
+              </span>
+              <article
+                className={
+                  module.state === 'current'
+                    ? 'flex flex-1 flex-col gap-1 rounded-2xl border-2 border-brand bg-surface-raised px-4 py-3'
+                    : 'flex flex-1 flex-col gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3'
+                }
+              >
+                <h3 className="text-[15px] font-semibold text-ink">{module.titleHe}</h3>
+                {/*
+                  ⛔ התווית הכתובה יושבת כאן ו⛔ לא באייקון בלבד — `36 § 12.7`.
+                  ⛔ ו⛔ אין «נעול»: `R-017` אוסר נעילה בין רמות, ⇒ המצב השלישי
+                  אומר **אין עדיין מילים**, שזו עובדה על המאגר ⛔ ולא על הלומד.
+                */}
+                <p
+                  className={
+                    module.state === 'done'
+                      ? 'text-xs text-success'
+                      : module.state === 'current'
+                        ? 'text-xs text-brand-surface'
+                        : 'text-xs text-ink-muted'
+                  }
+                >
+                  {module.stateLabelHe} · {module.summaryHe}
+                </p>
+                {/*
+                  פס ההתקדמות — הרנדר מצייר אותו אך ורק על המודול הפעיל
+                  (`c.rr(46, y + 44, 90, 6, 3, ...)`), ⇒ כאן `progress !== null`
+                  אך ורק ב-`'current'`. ⛔ `aria-hidden`: אותו מספר כבר נאמר
+                  במילים בשורה שמעליו, וקורא-מסך ⛔ אינו צריך לשמוע אותו פעמיים.
+                */}
+                {module.progress !== null && (
+                  <span
+                    aria-hidden="true"
+                    data-module-progress={module.id}
+                    className="mt-1 block h-1.5 w-[90px] overflow-hidden rounded-full bg-border-subtle"
+                  >
+                    {/*
+                      ⛔ מילוי `brand-surface` ו⛔ לא צבע הסימן העירום, והרנדר ⛔ אינו גובר כאן:
+                      `F-036` מדד ש-`--brand` העירום הוא מילוי 4.42:1, ו-`lib/core/palette.test.ts`
+                      הוא שער. ⇒ אותה החלטה בדיוק שכבר נלקחה בשבב הפעיל למעלה.
+                    */}
+                    <span
+                      className="block h-full rounded-full bg-brand-surface"
+                      style={{ width: `${Math.round(module.progress * 100)}%` }}
+                    />
+                  </span>
+                )}
+              </article>
+            </li>
+          ))}
+        </ol>
+      )}
     </section>
   );
 }

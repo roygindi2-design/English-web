@@ -1184,6 +1184,67 @@ try {
             `${at} T-406ⓒ · ⛔ אפס באנר תחזית ב-${labelHe} (D-237)`,
             `panel text: ${panelText.slice(0, 120)}`,
           );
+
+          // T-407ⓒ — ⛔ ולמסלול בלי תוכן ⛔ אין נתיב מודולים ריק מתחתיו.
+          const emptyPath = await page.locator('main [data-track-modules]').count();
+          check(
+            emptyPath === 0,
+            `${at} T-407ⓒ · ${labelHe} ⛔ בלי רשימת מודולים ריקה`,
+            `found ${emptyPath} [data-track-modules]`,
+          );
+        }
+
+        // 🔴 T-407 — נתיב המודולים של `אוצר מילים`, נמדד ב**הקשה חיה**.
+        // 🔬 **מה נמדד לפני התיקון (375×780):** מתחת לכרטיס-הסטטוס היחיד נשארו
+        // ⛔ ~375px ריקים עד הקיפול, בעוד הרנדר
+        // (`docs/design/kol-A-04-learning.png` · `render_video_A.py:1205-1264`)
+        // ממלא בדיוק את הרצועה הזאת בנתיב אנכי של כרטיסי מודול.
+        const vocabTab = page.locator('main [role="tab"]', { hasText: 'אוצר מילים' }).first();
+        if ((await vocabTab.count()) > 0) {
+          await vocabTab.click();
+
+          const path = page.locator('main [data-track-modules="vocabulary"]');
+          check(
+            (await path.count()) === 1,
+            `${at} T-407 · אוצר מילים ⇒ נתיב מודולים אחד`,
+            `found ${await path.count()} [data-track-modules]`,
+          );
+
+          const nodes = await page.locator('main [data-module-state]').count();
+          check(nodes >= 4, `${at} T-407 · ≥4 מודולים על הנתיב`, `found ${nodes}`);
+
+          // ⓐ ⛔ **⛔ אין מצב שמקודד בצבע בלבד** (`36 § 12.7`): כל כרטיס מודול
+          // חייב להדפיס את התווית הכתובה של מצבו, ⛔ ולא רק לצבוע נקודה.
+          const STATE_LABELS_HE = ['הושלם', 'בתהליך', 'טרם התחלת', 'אין עדיין מילים'];
+          const pathText = (await path.count()) === 1 ? await path.innerText() : '';
+          const labelled = STATE_LABELS_HE.filter((l) => pathText.includes(l));
+          check(
+            labelled.length >= 2,
+            `${at} T-407ⓐ · ≥2 מצבים נושאים תווית כתובה`,
+            `found ${labelled.length} of ${STATE_LABELS_HE.length} in the path text`,
+          );
+
+          // 🔴 `R-017` · `D-037` — ⛔ אין נעילה בין רמות, ⛔ ולא בשום ניסוח.
+          const mainText = await page.locator('main').innerText();
+          for (const forbidden of ['נעול', 'ייפתח אחרי']) {
+            check(
+              !mainText.includes(forbidden),
+              `${at} T-407 · ⛔ «${forbidden}» ⛔ אינו על המסך (R-017)`,
+              `found "${forbidden}" in main text`,
+            );
+          }
+
+          // ⓔ ⛔ אפס טקסט מתחת ל-12px נבדק בשער נפרד; כאן נמדד שהנתיב **נראה**
+          // ⛔ ולא נדחף מתחת לקיפול בלי ולו כרטיס אחד גלוי.
+          const firstCard = page.locator('main [data-track-modules] li').first();
+          if ((await firstCard.count()) > 0) {
+            const box = await firstCard.boundingBox();
+            check(
+              box !== null && box.height > 0 && box.width > 0,
+              `${at} T-407 · כרטיס המודול הראשון מצויר`,
+              `box=${box === null ? 'null' : `${box.width}x${box.height}`}`,
+            );
+          }
         }
       }
 

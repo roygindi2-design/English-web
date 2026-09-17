@@ -8,6 +8,7 @@
  *
  * ⚠️ הוספת מסלול היא שורה ב-`STUDY_TRACKS`, ⛔ לא מסך חדש (T-246ⓐ).
  */
+import { BAND_ORDER } from './cefrLevels';
 import type { LevelSummary } from './levelSummary';
 
 export type StudyTrackId = 'vocabulary' | 'grammar' | 'writing' | 'reading';
@@ -229,4 +230,89 @@ export function trackDestination(id: StudyTrackId): TrackDestination | null {
       // שהפאנל עושה במקום קישור הוא `T-406`, ⛔ ולא קישור למסך שאינו קיים.
       return null;
   }
+}
+
+/**
+ * T-407 · **המודולים של מסלול** — הפריטים שהנתיב האנכי ב-
+ * `docs/design/kol-A-04-learning.png` מצייר מתחת לשורת השבבים
+ * (`render_video_A.py:1205-1264`, `screen_hub`).
+ *
+ * ⛔ **אפס תוכן חדש (R-010):** המודולים של `אוצר מילים` **נגזרים** משש הרמות
+ * ש-`GET /api/levels/summary` כבר מחזיר — אותו מערך שהפאנל כבר מחזיק — ⇒ אין
+ * כאן ולו שם מודול אחד שנכתב ביד. `36 § 9` מונה את התוכן הקיים בדיוק כך:
+ * «אוצר מילים A1 316 · A2 125 · B1 96 · B2 85».
+ *
+ * 🔴 **⛔ ואין כאן נעילה בין רמות, ובכוונה — `R-017` · `D-037`.** הרנדר מצייר
+ * למודולים הגבוהים «ייפתח אחרי A1» ו«נעול», כלומר שער בין רמות; `plan/20-alerts.md`
+ * ‏`R-017` אוסר זאת מילה במילה: «⛔ אין שער אחוזים ו⛔ אין נעילה בין רמות… המוצר
+ * מציג לו **ספירה עובדתית** ⛔ ולעולם לא הערכת מוכנות». ⇒ המצב השלישי כאן הוא
+ * **היעדר תוכן** (`'empty'` — רמה שאין בה מילים), ⛔ ולא היעדר רשות, והמצב הרביעי
+ * הוא `'open'` — יש תוכן ו⛔ טרם התחלת. ⇒ **כל רמה שיש בה מילים פתוחה ללומד.**
+ * ⟨הפער בין הרנדר לכלל נרשם כממצא בטיק הזה, ⛔ ולא כסטייה שקטה — `36 § 14.4`.⟩
+ */
+export type StudyModuleState = 'done' | 'current' | 'open' | 'empty';
+
+export interface StudyModule {
+  readonly id: string;
+  readonly titleHe: string;
+  /** ⛔ הערוץ השני של המצב — `36 § 12.7` אוסר מצב שמקודד בצבע בלבד. */
+  readonly stateLabelHe: string;
+  readonly summaryHe: string;
+  readonly state: StudyModuleState;
+  /** ‏0..1, ⛔ ורק ל-`'current'`: הרנדר מצייר פס התקדמות אך ורק על המודול הפעיל. */
+  readonly progress: number | null;
+}
+
+const MODULE_STATE_LABEL_HE: Readonly<Record<StudyModuleState, string>> = Object.freeze({
+  done: 'הושלם',
+  current: 'בתהליך',
+  open: 'טרם התחלת',
+  empty: 'אין עדיין מילים',
+});
+
+export function moduleStateLabelHe(state: StudyModuleState): string {
+  return MODULE_STATE_LABEL_HE[state];
+}
+
+/**
+ * ⛔ **ארבעת הענפים הם ספירה, ⛔ ולא שיפוט.** `known >= totalInLevel` היא עובדה
+ * על השורות שהלומד סימן, ⛔ ולא «הוא שולט ברמה» (`R-017` · § 4.4.3).
+ */
+function vocabularyModuleState(level: LevelSummary): StudyModuleState {
+  if (level.totalInLevel === 0) return 'empty';
+  if (level.known >= level.totalInLevel) return 'done';
+  return level.known > 0 ? 'current' : 'open';
+}
+
+/**
+ * ⛔ **`levels === null` פירושו «⛔ לא הצלחנו לטעון»** ⇒ ⛔ אין נתיב, ⛔ ולא נתיב
+ * ריק: רשימה ריקה הייתה אומרת ללומד «אין לך מודולים», וזה בדיוק ההבדל
+ * בין `'empty'` ל-`'unreachable'` שכבר נשמר למעלה (D-046/D-082).
+ *
+ * ⛔ **ולשלושת המסלולים בלי תוכן ⛔ אין כאן רשימה** — `36 § 9`: «לדקדוק, כתיבה
+ * והבנת הנקרא ⛔ אין תוכן. מוצגים כמבנה ריק מוצהר» ⇒ הפאנל שלהם ממשיך להציג את
+ * ההצהרה ואת הפעולה של `T-406`, ⛔ ולא רשימה ריקה בלי הסבר (‏`T-407`ⓒ).
+ */
+export function trackModules(
+  id: StudyTrackId,
+  levels: readonly LevelSummary[] | null,
+): readonly StudyModule[] {
+  if (id !== 'vocabulary' || levels === null) return [];
+  const ordered = [...levels].sort(
+    (a, b) => BAND_ORDER.indexOf(a.level) - BAND_ORDER.indexOf(b.level),
+  );
+  return ordered.map((level) => {
+    const state = vocabularyModuleState(level);
+    return {
+      id: level.level,
+      titleHe: `רמה ${level.level}`,
+      state,
+      stateLabelHe: MODULE_STATE_LABEL_HE[state],
+      summaryHe:
+        state === 'empty'
+          ? '0 מתוך 0 מילים במאגר'
+          : `${level.known} מתוך ${level.totalInLevel} מילים ידועות`,
+      progress: state === 'current' ? level.known / level.totalInLevel : null,
+    };
+  });
 }
