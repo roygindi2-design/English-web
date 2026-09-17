@@ -1096,6 +1096,44 @@ try {
 
         const text = await page.locator('main').innerText();
         check(!text.includes('—'), `${at} ⛔ no "—" as a metric (D-046/D-082)`, 'found "—" in main text');
+
+        // 🔴 T-405ⓒ — `הבנת הנקרא` נמדד **בהקשה חיה**, ⛔ ולא בקריאת מקור.
+        // 🔬 **התקלה שזה נועל:** עד T-405 הפאנל של המסלול הזה הדפיס
+        // «המסלול הזה עדיין בבנייה, ואין בו לאן להיכנס» בזמן ש-`/world/story`
+        // **קיים ובנוי** ונגיש מטבעת העולם ⇒ מסלול שהמוצר כבר יודע לספק אותו
+        // הוצג כמבוי סתום. ⇒ הבדיקה לוחצת את השבב ודורשת **קישור**, ⛔ לא משפט.
+        const readingTab = page.locator('main [role="tab"]', { hasText: 'הבנת הנקרא' }).first();
+        if ((await readingTab.count()) > 0) {
+          await readingTab.click();
+          const entrance = page.locator('main [data-track-destination="reading"]');
+          check(
+            (await entrance.count()) === 1,
+            `${at} T-405 · הבנת הנקרא ⇒ כניסה אחת`,
+            `found ${await entrance.count()} [data-track-destination="reading"]`,
+          );
+          if ((await entrance.count()) === 1) {
+            const href = await entrance.getAttribute('href');
+            check(
+              href === '/world/story',
+              `${at} T-405 · הכניסה מובילה אל /world/story`,
+              `href=${href ?? 'null'}`,
+            );
+            // ⛔ יעד מגע: הכניסה היא הפעולה היחידה בפאנל ⇒ 44px ⛔ אינו המלצה.
+            const box = await entrance.boundingBox();
+            check(
+              box !== null && box.height >= 44,
+              `${at} T-405 · גובה הכניסה ≥44px`,
+              `height=${box === null ? 'null' : box.height}`,
+            );
+          }
+          // ⛔ והפאנל ⛔ אינו מדפיס עוד «אין לאן להיכנס» למסלול הזה.
+          const deadEnd = await page.locator('main [data-track-destination="none"]').count();
+          check(
+            deadEnd === 0,
+            `${at} T-405 · ⛔ אפס מבוי סתום ב-הבנת הנקרא`,
+            `found ${deadEnd}`,
+          );
+        }
       }
 
       // 🔴 T-337 — ציר ה-RTL של פס הסינון, נמדד ב**פיקסלים** ⛔ ולא במחרוזת מחלקה.

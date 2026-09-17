@@ -131,9 +131,17 @@ export function trackDestination(id: StudyTrackId): TrackDestination | null {
     case 'vocabulary':
       // `app/(tabs)/cards` — המסך שבו מילים נלמדות בפועל (`36 § 5`).
       return { href: '/cards', labelHe: 'כניסה לאוצר המילים' };
-    case 'grammar':
     case 'reading':
+      // T-405 · `app/(tabs)/world/story` — המסך **שכבר בנוי**, ונגיש מטבעת העולם
+      // (`app/dev/world/ring/page.tsx` ⇒ `stories: { kind: 'open', href: '/world/story' }`).
+      // ⛔ **⛔ ואין כאן תוכן חדש:** `36 § 9` סופר בעצמו «12 סיפורים» תחת «תוכן קיים»,
+      // ⇒ הכניסה מפנה למה שהמסמך כבר מונה, ו-R-010 ⛔ אינו נוגע בשורה.
+      return { href: '/world/story', labelHe: 'כניסה לסיפורים' };
+    case 'grammar':
     case 'writing':
+      // ⛔ `36 § 9` אומר במפורש שלשני אלה ⛔ אין תוכן, ו⛔ אסור לייצר תוכן כדי
+      // למלא אותם (R-010) ⇒ `null` הוא מצב אמיתי כאן, ⛔ ולא פער שנשכח. מה
+      // שהפאנל עושה במקום קישור הוא `T-406`, ⛔ ולא קישור למסך שאינו קיים.
       return null;
   }
 }

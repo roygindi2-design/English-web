@@ -101,12 +101,28 @@ describe('trackDestination — הדרך קדימה מכל מסלול (T-351)', (
     expect(dest?.labelHe.trim().length).toBeGreaterThan(0);
   });
 
-  it('⛔ שלושת המסלולים בלי תוכן מחזירים `null`, ⛔ ולא נתיב שאינו קיים', () => {
-    // D-176 §ד · `36 § 9`: לדקדוק, לכתיבה ולהבנת הנקרא ⛔ אין מסך בנוי.
-    // ⛔ קישור אליהם היה מבוי סתום, וזו בדיוק התקלה ש-T-351 נפתחה עליה.
+  it('T-405 · הבנת הנקרא מוביל אל `/world/story`, המסך **שכבר בנוי**', () => {
+    // 🔬 נמדד, ⛔ ולא שוער: `app/(tabs)/world/story/page.tsx` קיים, והוא היעד
+    // שטבעת העולם עצמה כבר פותחת (`stories: { kind: 'open', href: '/world/story' }`).
+    // ⛔ `36 § 9` סופר «12 סיפורים» תחת «תוכן קיים» ⇒ ⛔ אפס תוכן חדש, R-010 ⛔ לא נגע.
+    const dest = trackDestination('reading');
+    expect(dest).not.toBeNull();
+    expect(dest?.href).toBe('/world/story');
+    expect(dest?.labelHe.trim().length).toBeGreaterThan(0);
+  });
+
+  it('⛔ שני המסלולים בלי תוכן מחזירים `null`, ⛔ ולא נתיב שאינו קיים', () => {
+    // D-176 §ד · `36 § 9`: לדקדוק ולכתיבה ⛔ אין מסך בנוי, ו`36 § 9` אוסר לייצר
+    // להם תוכן (R-010). ⛔ קישור אליהם היה מבוי סתום — התקלה ש-T-351 נפתחה עליה.
+    // ⟦צומצם ב-T-405 משלושה לשניים: `reading` קיבל יעד אמיתי, ⛔ ולא ויתור.⟧
     expect(trackDestination('grammar')).toBeNull();
     expect(trackDestination('writing')).toBeNull();
-    expect(trackDestination('reading')).toBeNull();
+  });
+
+  it('T-405 · מ-1 מסלול מתוך 4 עם כניסה ל-2 מתוך 4 — הספירה עצמה, ⛔ לא תחושה', () => {
+    const withEntrance = STUDY_TRACKS.filter((t) => trackDestination(t.id) !== null);
+    expect(withEntrance.length).toBe(2);
+    expect(withEntrance.map((t) => t.id).sort()).toEqual(['reading', 'vocabulary']);
   });
 
   it('לכל מסלול ברישום יש הכרעה — ⛔ אף אחד ⛔ אינו מחזיר `undefined`', () => {
