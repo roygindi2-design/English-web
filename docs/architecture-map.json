@@ -164,6 +164,7 @@
   ],
   "app/api/levels/summary/route.ts": [
     "lib/core/cefrLevels.ts",
+    "lib/core/levelCursor.ts",
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
@@ -208,6 +209,7 @@
   ],
   "app/api/study/queue/route.ts": [
     "lib/core/deck.ts",
+    "lib/core/levelCursor.ts",
     "lib/core/levelSummary.ts",
     "lib/core/queue.ts",
     "lib/core/sentenceItem.ts",
@@ -1360,6 +1362,10 @@
     "lib/core/lesson.ts"
   ],
   "lib/core/lesson.ts": [],
+  "lib/core/levelCursor.test.ts": [
+    "lib/core/levelCursor.ts"
+  ],
+  "lib/core/levelCursor.ts": [],
   "lib/core/levelGate.test.ts": [
     "lib/core/levelGate.ts"
   ],

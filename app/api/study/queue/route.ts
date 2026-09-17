@@ -15,7 +15,8 @@ import {
   type SentenceCandidate,
   type SentenceItem,
 } from '@/lib/core/sentenceItem';
-import { parseLevel, summarizeLevel, type ProgressFacts } from '@/lib/core/levelSummary';
+import { parseLevel, unfilteredInLevel } from '@/lib/core/levelSummary';
+import { applyLevelCursor, type LevelCursor } from '@/lib/core/levelCursor';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -303,7 +304,8 @@ type LevelWordRow = NewWordRow & { ngsl_rank: number | null };
  * `T-411` — the learner's place in one band: the ordering key of the last word SERVED to
  * them. ⛔ Both halves, ⛔ never the rank alone — see `loadLevelWords` for the measurement.
  */
-type LevelCursor = { readonly lastNgslRank: number | null; readonly lastWordId: string };
+// `T-413` — `LevelCursor` moved to `lib/core/levelCursor.ts`, where the predicate that
+// consumes it lives. ⛔ A type beside one of its two users is how the two drifted.
 
 /** One page of the level deck, plus the ranks the page's rows carried — the cursor has to be
  *  advanced to the ordering key of the last card ACTUALLY SENT, and `QueueRow` has no rank. */
@@ -535,20 +537,10 @@ async function loadLevelWords(
   // `limit`" inside the statement that starts at `.eq('cefr_profile_band', band)`, and a chain
   // split across statements would make that measurement read an empty region and pass on
   // nothing. ⛔ A gate that stops measuring is worse than a gate that fails.
-  let scoped = supabase.from('words').select(LEVEL_SELECT);
-  if (cursor !== null) {
-    if (cursor.lastNgslRank === null) {
-      // The learner is already inside the unranked tail, so every ranked row is behind them.
-      scoped = scoped.is('ngsl_rank', null).gt('id', cursor.lastWordId);
-    } else {
-      // Still inside the ranked head ⇒ the whole unranked tail is still ahead (`nulls last`).
-      scoped = scoped.or(
-        `ngsl_rank.gt.${cursor.lastNgslRank},` +
-          `and(ngsl_rank.eq.${cursor.lastNgslRank},id.gt.${cursor.lastWordId}),` +
-          `ngsl_rank.is.null`,
-      );
-    }
-  }
+  // `T-413` — ⛔ the predicate is ⛔ NOT written here any more. It lives in
+  // `lib/core/levelCursor.ts`, and `readLevelUnfiltered` below applies the SAME function to
+  // its count. Two callers of one function ⛔ cannot drift; two hand-written filters did.
+  const scoped = applyLevelCursor(supabase.from('words').select(LEVEL_SELECT), cursor);
 
   const { data, error } = await scoped
     .eq('cefr_profile_band', band)
@@ -587,78 +579,71 @@ async function loadLevelWords(
  * `docs/design/kol-A-03-card.png` draws under the grade buttons
  * (`render_video_A.py:391` — «5 מתוך 20 · נשארו 314 מילים ברמה»).
  *
- * 🔬 **Measured `C-0663`/`C-0664`, ⛔ not assumed:** `<StudyDeckScreen>` holds ⛔ no such
- * number — `grep -n 'summary|unseen|levels/summary' components/StudyDeckScreen.tsx` ⇒ **0**
- * — and both direct routes to it are closed: a second `GET /api/levels/summary` from the
- * deck screen contradicts `§ 4.2ז`, and lifting state to `<LevelMapScreen>` crosses into a
- * DIFFERENT screen. ⇒ the number rides the answer the deck ALREADY asks for.
+ * 🔴 **`T-413` · `F-277` — REWRITTEN, and the rewrite IS the finding.** Until today this
+ * function read `word_progress` and returned `summarizeLevel(...).unseen`, i.e.
+ * `totalInLevel − known − inReviewList` — a count of what the learner had ⛔ not GRADED.
+ * ⛔ But the deck above it has continued from the **bookmark** since `T-411`, and the
+ * bookmark moves when the deck is SERVED. ⇒ **the footer counted one population and the
+ * cards came from another**: a learner who filtered twenty words and graded ⛔ none saw
+ * «נשארו 314» twice in a row and concluded the product was ⛔ not counting them.
  *
- * ⛔ **⛔ No second definition.** The arithmetic stays in `lib/core/levelSummary.ts`
- * (`totalInLevel − known − inReviewList`); this function hands it rows and reads `unseen`
- * off the result. A count written in SQL here would be the parallel definition `§ 4.2ז`
- * forbids by name, and `/api/levels/summary` would drift away from it word by word.
+ * ⇒ it now counts the words still AHEAD OF THE CURSOR, through `applyLevelCursor` — the
+ * ⛔ same function `loadLevelWords` applies to the page itself. ⛔ **⛔ No second
+ * definition** (`§ 4.2ז`): the predicate is `lib/core/levelCursor.ts` and the arithmetic
+ * is `unfilteredInLevel` in `lib/core/levelSummary.ts`; this function only reads a count.
  *
- * ⛔ **And it returns `null` on every doubt, ⛔ never a smaller number.** A ceiling that cut
- * the progress list, a band the schema does not carry, a read that failed — each produces a
- * count that LOOKS right and is wrong, and the learner would build a decision on it. `null`
- * omits the field, and the deck simply does not print the line. ⛔ The cards are the point;
- * the footer is not worth a 503.
+ * ⚠️ **A `head` count and ⛔ not `levelPage.rows.length`:** `loadLevelWords` cuts at
+ * `MAX_QUEUE_ROWS` (200) and A1 holds 315 authored words, so the rows in hand are ⛔ not
+ * what is left. Same `count: 'exact', head: true` shape `/api/levels/summary` already uses.
  *
- * ⚠️ **`totalInLevel` is a head count and ⛔ not `levelRows.length`:** `loadLevelWords` cuts
- * at `MAX_QUEUE_ROWS` (200) and A1 holds 315 authored words, so the rows in hand are ⛔ not
- * the level. Same `count: 'exact', head: true` shape `/api/levels/summary` already uses.
+ * ⚠️ **And it counts WORDS, ⛔ not cards.** `toNewQueueRow` drops a row with no usable
+ * sense, so a handful of the words counted here will never become a card. The tile's
+ * promise is about the level's words — the same population `total` counts — and inventing
+ * a second, sense-aware count here would be exactly the parallel definition this row closes.
+ *
+ * ⛔ **And it returns `null` on every doubt, ⛔ never a smaller number.** A band the schema
+ * does not carry, a read that failed — each produces a count that LOOKS right and is wrong.
+ * `null` omits the field and the deck simply does not print the line. ⛔ The cards are the
+ * point; the footer is not worth a 503.
  */
-async function readLevelUnseen(
+async function readLevelUnfiltered(
   supabase: RouteClient,
-  userId: string,
   band: string,
+  cursor: LevelCursor | null,
 ): Promise<number | null> {
   const level = parseLevel(band);
-  // ⛔ Not one of the six bands ⇒ ⛔ no claim. `summarizeLevel` types on `CefrBand`, and
-  // guessing one here is exactly the invented level `D-034` closed.
+  // ⛔ Not one of the six bands ⇒ ⛔ no claim. `unfilteredInLevel` is fed a band-scoped
+  // count, and guessing a band here is exactly the invented level `D-034` closed.
   if (level === null) return null;
 
-  const [total, progress] = await Promise.all([
+  const [total, ahead] = await Promise.all([
     supabase.from('words').select('id', { count: 'exact', head: true }).eq('cefr_profile_band', band),
-    supabase
-      .from('word_progress')
-      // ⛔ `words!inner` — a progress row whose word was deleted belongs to ⛔ no level, and
-      // an outer join would count it into this one. The predicate is `cefr_profile_band`
-      // and ⛔ never `senses.cefr_level` (`D-034`: the two disagree on 125 of 343 senses).
-      .select('attempts, repetition, self_marked_known, words!inner(cefr_profile_band)')
-      .eq('user_id', userId)
-      .eq('words.cefr_profile_band', band)
-      .limit(MAX_SEEN_ROWS),
+    // ⚠️ The cursor predicate goes on BEFORE the band, exactly as in `loadLevelWords` —
+    // same function, same order, ⇒ the two ⛔ cannot answer about different rows.
+    applyLevelCursor(
+      supabase.from('words').select('id', { count: 'exact', head: true }),
+      cursor,
+    ).eq('cefr_profile_band', band),
   ]);
 
-  if (total.error || progress.error) {
+  if (total.error || ahead.error) {
     console.error(
-      '[api/study/queue] level unseen read failed:',
-      (total.error ?? progress.error)?.message,
+      '[api/study/queue] level unfiltered read failed:',
+      (total.error ?? ahead.error)?.message,
     );
     return null;
   }
 
-  const rows = (progress.data ?? []) as unknown as readonly {
-    attempts: number | null;
-    repetition: number | null;
-    self_marked_known: boolean | null;
-  }[];
-  // A truncated list under-counts `known` and therefore OVER-counts «נשארו» — the one
-  // direction that flatters the product. ⇒ ⛔ no number rather than a kind one.
-  if (rows.length >= MAX_SEEN_ROWS) return null;
-
-  const facts: ProgressFacts[] = rows.map((row) => ({
-    attempts: row.attempts ?? 0,
-    repetition: row.repetition ?? 0,
-    selfMarkedKnown: row.self_marked_known === true,
-  }));
-
   try {
-    return summarizeLevel({ level, totalInLevel: total.count ?? 0, rows: facts }).unseen;
+    return unfilteredInLevel({
+      totalInLevel: total.count ?? 0,
+      // ⛔ `cursor === null` ⇒ `null` and ⛔ not the count: a learner who never opened the
+      // level has filtered ⛔ nothing, and `unfilteredInLevel` says so in one place.
+      aheadOfCursor: cursor === null ? null : (ahead.count ?? 0),
+    });
   } catch (rangeError) {
-    // `summarizeLevel` throws when the two reads disagree about the band's population.
-    // That is a real inconsistency, ⛔ and the deck is ⛔ not the screen that reports it.
+    // Thrown when the two reads disagree about the band's population. That is a real
+    // inconsistency, ⛔ and the deck is ⛔ not the screen that reports it.
     console.error('[api/study/queue] impossible level counts:', (rangeError as Error).message);
     return null;
   }
@@ -866,7 +851,7 @@ export async function GET(request: Request) {
     // change on the wire is one optional field. ⛔ `null` ⇒ the field is absent, ⛔ and ⛔ not
     // `unseen: null` — the contract's other optional fields (`cards`/`items`) are absent
     // rather than null, and a consumer that reads `body.unseen` gets `undefined` either way.
-    const unseen = await readLevelUnseen(supabase, user.id, band);
+    const unseen = await readLevelUnfiltered(supabase, band, cursor);
 
     // `T-412` · `F-277` — **the end of the level is a DECLARED state, ⛔ not an empty list.**
     // ⛔ The distinction is the whole row: a learner who filtered the whole band and one whose

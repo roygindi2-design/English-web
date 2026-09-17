@@ -4,6 +4,8 @@ import { withoutComments } from '@/lib/testSource';
 
 const CODE = withoutComments(readFileSync('app/api/study/queue/route.ts', 'utf8'));
 const CONTRACT = readFileSync('docs/api-contract.md', 'utf8');
+/** `T-413` — ההגדרה של הצמד עברה לשכבה הטהורה, ⇒ הטענה עליה נמדדת שם. */
+const CURSOR_CODE = withoutComments(readFileSync('lib/core/levelCursor.ts', 'utf8'));
 
 describe('סדר ההגנות — ⛔ קורא לא מזוהה אינו לומד אילו פרמטרים מתקבלים (דפוס C-0032)', () => {
   // ⚠️ נמדד על **אתרי הקריאה** ולא על השמות: שניהם מיובאים מאותה שורת `import`, ושם
@@ -360,15 +362,28 @@ describe('T-400 — `unseen` בחפיסת `level`, ⛔ בלי בקשה שניי�
    */
   const readLevelUnseenBody = () =>
     CODE.slice(
-      CODE.indexOf('async function readLevelUnseen'),
+      CODE.indexOf('async function readLevelUnfiltered'),
       CODE.indexOf('async function loadSentenceCandidates'),
     );
 
-  it('⛔ אפס ספירה חדשה — החשבון הוא `summarizeLevel` של השכבה הטהורה', () => {
-    expect(CODE).toContain('summarizeLevel');
+  it('🔴 `T-413` · `F-277` — החשבון נגזר מה**סימנייה**, ⛔ ולא מ-`word_progress`', () => {
+    // ⛔ זו ⛔ אינה הקלה של הטענה הישנה — היא ההפך שלה, ומדידה היא שכפתה את ההיפוך:
+    // החפיסה ממשיכה מהסימנייה מאז `T-411`, והמספר מעליה המשיך לספור דירוגים ⇒ שתי
+    // אוכלוסיות תחת הבטחה אחת. ⇒ מה שנאסר כאן היום הוא בדיוק מה שנדרש אתמול.
+    const helper = readLevelUnseenBody();
+    expect(CODE).toContain('unfilteredInLevel');
     expect(CODE).toContain("from '@/lib/core/levelSummary'");
-    // ⛔ ולא `count` על `word_progress`: זו הייתה ההגדרה המקבילה ש-`§ 4.2ז` אוסר בשמה.
-    expect(CODE).not.toMatch(/from\('word_progress'\)[\s\S]{0,200}count:\s*'exact'/);
+    expect(CODE).toContain("from '@/lib/core/levelCursor'");
+    // ⛔ ואפס `word_progress` בפונקציה הזאת — זו הייתה ההגדרה המקבילה עצמה.
+    expect(helper).not.toContain('word_progress');
+  });
+
+  it('⛔ אין predicate שני — הספירה והדף מפעילים את **אותה** `applyLevelCursor`', () => {
+    const helper = readLevelUnseenBody();
+    expect(helper).toContain('applyLevelCursor(');
+    expect(CODE).toContain('applyLevelCursor(supabase.from(\'words\').select(LEVEL_SELECT), cursor)');
+    // ⛔ ו⛔ לא סינון שנכתב ביד: זה בדיוק מה שהתפצל לשתי אוכלוסיות.
+    expect(helper).not.toContain('ngsl_rank.gt.');
   });
 
   it('המכנה הוא ספירת-ראש על `words`, ⛔ ולא אורך הרשימה החתוכה ב-MAX_QUEUE_ROWS', () => {
@@ -383,12 +398,15 @@ describe('T-400 — `unseen` בחפיסת `level`, ⛔ בלי בקשה שניי�
     expect(readLevelUnseenBody()).not.toContain('cefr_level');
   });
 
-  it('תקרה · רמה לא מוכרת · כשל קריאה ⇒ `null`, ⛔ ולא מספר מחמיא', () => {
+  it('רמה לא מוכרת · כשל קריאה ⇒ `null`, ⛔ ולא מספר מחמיא', () => {
     const helper = readLevelUnseenBody();
-    expect(helper).toContain('MAX_SEEN_ROWS');
     expect(helper).toContain('return null');
     // ⛔ ואינו מפיל את החפיסה: הכרטיסים הם העיקר, השורה ⛔ אינה שווה 503.
     expect(helper).not.toContain('status: 503');
+  });
+
+  it('⛔ אין סימנייה ⇒ הרמה כולה, ⛔ ולא אפס — וההכרעה חיה בשכבה הטהורה', () => {
+    expect(readLevelUnseenBody()).toContain('aheadOfCursor: cursor === null ? null :');
   });
 
   it('השדה נעדר כשאין מספר — ⛔ ולא `unseen: null` על החוט', () => {
@@ -402,7 +420,7 @@ describe('T-400 — `unseen` בחפיסת `level`, ⛔ בלי בקשה שניי�
       CODE.indexOf("if (deck === 'level')"),
       CODE.indexOf('let query = supabase'),
     );
-    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, band)');
+    expect(levelBranch).toContain('readLevelUnfiltered(supabase, band, cursor)');
     expect(CODE).not.toContain('/api/levels/summary');
   });
 
@@ -436,7 +454,7 @@ describe('T-408 — `?band=` בחפיסת `level`: מה נסרק, ⛔ ולא מ�
     // ⟦T-411⟧ החתימה קיבלה שלישי (`cursor`), והטענה ⛔ לא נחלשה: היא עדיין מודדת ש**אותה**
     // `band` מגיעה לשתי השאילתות, ⛔ ולא שהחתימה ⛔ לא זזה לעולם.
     expect(levelBranch).toContain('loadLevelWords(supabase, band, cursor)');
-    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, band)');
+    expect(levelBranch).toContain('readLevelUnfiltered(supabase, band, cursor)');
     expect(levelBranch).not.toContain('profile.level)');
   });
 
@@ -500,7 +518,10 @@ describe('T-411 — סמן-מקום ב-«סינון מילים», ⛔ ולא ס�
   it('המפתח הוא **הצמד** — `ngsl_rank` לבדו מת על הנתונים שיש (0 מתוך 476)', () => {
     expect(CODE).toContain("select('last_ngsl_rank, last_word_id')");
     expect(CODE).toContain(".order('id', { ascending: true })");
-    expect(CODE).toContain('lastNgslRank: number | null');
+    // `T-413` — הצמד עצמו נמדד עכשיו במקום שבו הוא חי: `lib/core/levelCursor.ts`.
+    // ⛔ טענה על מחרוזת בקובץ הזה הייתה מודדת עותק, ⛔ לא את ההגדרה.
+    expect(CURSOR_CODE).toContain('lastNgslRank: number | null');
+    expect(CURSOR_CODE).toContain('and(ngsl_rank.eq.${cursor.lastNgslRank},id.gt.${cursor.lastWordId})');
   });
 
   it('הטבלה קיימת כמיגרציה בריפו, ⛔ ולא רק במסד החי', () => {

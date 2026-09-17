@@ -4,9 +4,11 @@ import {
   parseLevel,
   summarizeAllLevels,
   summarizeLevel,
+  unfilteredInLevel,
   type BandedProgressFacts,
   type ProgressFacts,
 } from '@/lib/core/levelSummary';
+import { applyLevelCursor, type LevelCursor } from '@/lib/core/levelCursor';
 import { BAND_ORDER, type CefrBand } from '@/lib/core/cefrLevels';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -62,6 +64,77 @@ function schemaMissing() {
 
 function unavailable() {
   return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+}
+
+
+/**
+ * `T-413` · `F-277` · `D-266` — **«עוד לא סוננו» on the tile, from the SAME place the deck
+ * itself reads.**
+ *
+ * 🔬 **The defect this closes, measured ⛔ and not argued:** `DeckSelector` printed
+ * «314 מילים שעוד לא סוננו» from `summary.unseen` — `totalInLevel − known − inReviewList`,
+ * i.e. from `word_progress`, i.e. from GRADING. The deck behind that tile is `deck=level`,
+ * which since `T-411` continues from the **bookmark** and excludes ⛔ nothing by progress.
+ * ⇒ the tile promised a population the deck was ⛔ not serving, and the number stood still
+ * while the learner filtered.
+ *
+ * ⛔ **⛔ No second definition** (`§ 4.2ז`): the predicate is `applyLevelCursor` — the same
+ * function `app/api/study/queue/route.ts` applies to the page — and the arithmetic is
+ * `unfilteredInLevel`. This function reads two counts and hands them over.
+ *
+ * ⛔ **Every failure path returns `null`, ⛔ never a number.** A bookmark table that is not
+ * in this environment yet, a read that failed — the tile falls back to «—», exactly as it
+ * already does when the screen made no read at all. ⛔ A count that LOOKS right and is
+ * wrong is what this row exists against.
+ */
+async function readUnfiltered(
+  supabase: ReturnType<typeof createRouteClient>,
+  userId: string,
+  band: CefrBand,
+  totalInLevel: number,
+): Promise<number | null> {
+  const { data, error } = await supabase
+    .from('study_level_cursor')
+    .select('last_ngsl_rank, last_word_id')
+    .eq('user_id', userId)
+    .eq('band', band)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[api/levels/summary] level cursor read failed:', error.message);
+    return null;
+  }
+
+  const row = data as { last_ngsl_rank?: number | null; last_word_id?: string | null } | null;
+  const wordId = row?.last_word_id;
+  // ⛔ No bookmark ⇒ the learner has filtered ⛔ nothing in this level, and the whole band
+  // is still ahead. `unfilteredInLevel` states that in one place.
+  if (typeof wordId !== 'string' || wordId === '') {
+    return unfilteredInLevel({ totalInLevel, aheadOfCursor: null });
+  }
+
+  const rank = row?.last_ngsl_rank;
+  const cursor: LevelCursor = {
+    lastNgslRank: typeof rank === 'number' && Number.isInteger(rank) ? rank : null,
+    lastWordId: wordId,
+  };
+
+  const ahead = await applyLevelCursor(
+    supabase.from('words').select('id', { count: 'exact', head: true }),
+    cursor,
+  ).eq('cefr_profile_band', band);
+
+  if (ahead.error) {
+    console.error('[api/levels/summary] ahead-of-cursor count failed:', ahead.error.message);
+    return null;
+  }
+
+  try {
+    return unfilteredInLevel({ totalInLevel, aheadOfCursor: ahead.count ?? 0 });
+  } catch (rangeError) {
+    console.error('[api/levels/summary] impossible cursor count:', (rangeError as Error).message);
+    return null;
+  }
 }
 
 /** GET /api/levels/summary — see docs/api-contract.md */
@@ -152,8 +225,17 @@ export async function GET() {
 
     const rows: ProgressFacts[] = banded.filter((row) => row.band === level);
     const summary = summarizeLevel({ level, totalInLevel: totals[level] ?? 0, rows });
-    // ⛔ **תוספת בלבד:** חמשת השדות הקיימים יוצאים בדיוק כפי שיצאו קודם.
-    return NextResponse.json({ ok: true, ...summary, levels });
+    // `T-413` · `F-277` — ⛔ **תוספת, ⛔ ולא החלפה.** `unseen` נשאר «טרם התחיל» — מה
+    // שטבעות ההתקדמות מודדות — ו-`unfiltered` הוא «עוד לא סוננו», שנגזר מה**סימנייה**
+    // ומאותו predicate שהחפיסה עצמה מריצה. שתי כמויות, שני שמות. ⛔ `null` ⇒ השדה נעדר,
+    // בדיוק כמו שאר השדות האופציונליים בחוזה, והאריח מדפיס «—».
+    const unfiltered = await readUnfiltered(supabase, user.id, level, totals[level] ?? 0);
+    return NextResponse.json({
+      ok: true,
+      ...summary,
+      ...(unfiltered === null ? {} : { unfiltered }),
+      levels,
+    });
   } catch (rangeError) {
     console.error('[api/levels/summary] impossible counts:', (rangeError as Error).message);
     return unavailable();

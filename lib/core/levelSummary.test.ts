@@ -6,6 +6,7 @@ import {
   parseLevel,
   summarizeAllLevels,
   summarizeLevel,
+  unfilteredInLevel,
   type ProgressFacts,
 } from './levelSummary';
 
@@ -180,5 +181,56 @@ describe('T-102 — שש רשומות, בסדר, וסכום שלוש הספיר�
         rows: [{ band: 'A1', attempts: 0, repetition: 1, selfMarkedKnown: false }],
       }),
     ).toThrow(RangeError);
+  });
+});
+
+/**
+ * `T-413` · `F-277` · `D-266` — «עוד לא סוננו» is a question about the BOOKMARK, and this
+ * is the only place it is answered.
+ */
+describe('unfilteredInLevel — one definition of «עוד לא סוננו»', () => {
+  it('⛔ no bookmark ⇒ the whole level, ⛔ and ⛔ not zero', () => {
+    // A learner who never opened A1 has filtered ⛔ nothing in it. This is also the value
+    // every failure path of `readLevelCursor` produces, and «the whole level» is the
+    // honest claim there — ⛔ not a smaller number that flatters the product.
+    expect(unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: null })).toBe(315);
+  });
+
+  it('🔴 the number falls by twenty after twenty were SERVED, ⛔ with nothing graded', () => {
+    // This is the whole of `F-277` as the learner meets it: before today the tile read
+    // `totalInLevel − known − inReviewList`, so a learner who filtered and did ⛔ not grade
+    // saw the same 315 tomorrow.
+    expect(unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: 295 })).toBe(295);
+  });
+
+  it('the end of the level is 0, ⛔ and 0 is a real answer', () => {
+    expect(unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: 0 })).toBe(0);
+  });
+
+  it('⛔ more ahead than the level holds ⇒ throws, ⛔ never a number on the screen', () => {
+    // The only meaning is that the two counts ran against different bands. A number larger
+    // than the level itself looks like a display bug; throwing says the truth.
+    expect(() => unfilteredInLevel({ totalInLevel: 10, aheadOfCursor: 11 })).toThrow(RangeError);
+  });
+
+  it('⛔ rejects a non-integer and a negative, exactly like the other counts', () => {
+    expect(() => unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: -1 })).toThrow(RangeError);
+    expect(() => unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: 2.5 })).toThrow(RangeError);
+    expect(() => unfilteredInLevel({ totalInLevel: -3, aheadOfCursor: null })).toThrow(RangeError);
+  });
+
+  it('⛔ it is ⛔ NOT `unseen` — the two answer different questions about the same level', () => {
+    // 315 words · 189 known · 18 in review ⇒ `unseen` (never started) is 108. The learner
+    // has been served 20. «עוד לא סוננו» is 295, ⛔ not 108, and both are correct.
+    const summary = summarizeLevel({
+      level: 'A1',
+      totalInLevel: 315,
+      rows: [
+        ...Array.from({ length: 189 }, () => ({ attempts: 3, repetition: 2, selfMarkedKnown: false })),
+        ...Array.from({ length: 18 }, () => ({ attempts: 1, repetition: 0, selfMarkedKnown: false })),
+      ],
+    });
+    expect(summary.unseen).toBe(108);
+    expect(unfilteredInLevel({ totalInLevel: 315, aheadOfCursor: 295 })).toBe(295);
   });
 });

@@ -65,7 +65,15 @@ const CHOOSE_HINT_HE = 'אפשר להחליף רמה בכל רגע.';
 const PRACTICE_HE = 'דרכים לתרגל';
 
 type SummaryResponse =
-  | ({ readonly ok: true; readonly levels?: readonly LevelSummary[] } & LevelSummary)
+  | ({
+      readonly ok: true;
+      readonly levels?: readonly LevelSummary[];
+      /**
+       * `T-413` · `F-277` — «עוד לא סוננו», נגזר מה**סימנייה** ⛔ ולא מהדירוג. ⛔ אופציונלי:
+       * הנתיב משמיט אותו כשהסימנייה ⛔ לא נקראה, והאריח מדפיס «—» ⛔ ולא מספר שקרי.
+       */
+      readonly unfiltered?: number;
+    } & LevelSummary)
   | { readonly ok: true; readonly level: null }
   | { readonly ok: false; readonly code: string };
 
@@ -94,7 +102,16 @@ type UnknownQueueResponse =
 type ScreenState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'choose' }
-  | { readonly kind: 'ready'; readonly summary: LevelSummary; readonly levels: readonly LevelSummary[] }
+  | {
+      readonly kind: 'ready';
+      readonly summary: LevelSummary;
+      readonly levels: readonly LevelSummary[];
+      /**
+       * `T-413` · `F-277` — «עוד לא סוננו», נגזר מה**סימנייה**. ⛔ `null` הוא «⛔ לא נמדד»
+       * ⛔ ולא אפס, והאריח מדפיס «—» — בדיוק מה ש-`unseen` עשה כשהוא נעדר.
+       */
+      readonly unfiltered: number | null;
+    }
   | { readonly kind: 'failed'; readonly code: 'schema_missing' | 'session_expired' | 'unavailable' };
 
 /**
@@ -119,7 +136,7 @@ export default function LevelMapScreen({
   const [state, setState] = useState<ScreenState>(
     fixtureSummary === undefined
       ? { kind: 'loading' }
-      : { kind: 'ready', summary: fixtureSummary, levels: [] },
+      : { kind: 'ready', summary: fixtureSummary, levels: [], unfiltered: fixtureSummary.unseen },
   );
   const [saving, setSaving] = useState(false);
   /**
@@ -161,7 +178,14 @@ export default function LevelMapScreen({
       }
       // ⛔ `?? []` ⛔ ואינו קריסה: שרת ישן (לפני T-102) אינו נושא את השדה, ומסלול
       // שנופל על `undefined.map` היה הופך תוספת תואמת-אחורה לשבירה.
-      setState({ kind: 'ready', summary: body, levels: body.levels ?? [] });
+      setState({
+        kind: 'ready',
+        summary: body,
+        levels: body.levels ?? [],
+        // `T-413` — `?? null` ⛔ ולא `?? body.unseen`: שרת שלא מסר את השדה ⛔ אינו
+        // הזמנה ליפול חזרה על המספר שנמדד שגוי. «—» אומר «⛔ לא נמדד», וזו האמת.
+        unfiltered: body.unfiltered ?? null,
+      });
     } catch {
       setState({ kind: 'failed', code: 'unavailable' });
     }
@@ -199,6 +223,7 @@ export default function LevelMapScreen({
   );
 
   const summary = state.kind === 'ready' ? state.summary : null;
+  const unfiltered = state.kind === 'ready' ? state.unfiltered : null;
 
   return (
     <section className="flex flex-col gap-6" data-level-map>
@@ -285,8 +310,11 @@ export default function LevelMapScreen({
             ⇒ ⛔ אין שני פסקי דין על `unknown`. ‏`onRetry` נמסר כי «טעינה מחדש»
             שב-`<DeckSelector>` חייבת לקרוא גם למה שהמסך קורא — אחרת היא הייתה
             כפתור שמתקן שני שלישים מהמסך ושותק על השליש שהמשתמש רואה. */}
+        {/* `T-413` · `F-277` — ⛔ `unfiltered` ו⛔ לא `unseen`: «עוד לא סוננו» היא שאלה
+            על ה**סימנייה** — מה שהחפיסה עוד ⛔ לא הגישה — ⛔ ולא על הדירוג. `unseen` נשאר
+            «טרם התחיל» ומשרת את טבעות ההתקדמות, ו⛔ אינו מה שהאריח מבטיח. */}
         <DeckSelector
-          unseen={summary?.unseen ?? null}
+          unseen={unfiltered}
           unknown={state.kind === 'ready' ? unknownDeck : undefined}
           onRetry={state.kind === 'ready' ? () => void loadUnknown() : undefined}
         />

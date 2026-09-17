@@ -34,8 +34,14 @@ describe('חמש השורות של 36 § 5, בסדרן (T-210 · D-123)', () => 
     expect(CODE.indexOf('<FilterBar')).toBeLessThan(CODE.indexOf('<DeckSelector'));
   });
 
-  it('שורה 4 — `unseen` נמסר לחפיסות מהסיכום, ⛔ ולא נקרא שנית', () => {
-    expect(CODE).toMatch(/unseen=\{summary\?\.unseen \?\? null\}/);
+  it('שורה 4 — המספר נמסר לחפיסות מהסיכום, ⛔ ולא נקרא שנית', () => {
+    // `T-413` · `F-277` — ⛔ עדיין קריאה אחת ומקור אחד (זו הטענה של `T-210`, והיא
+    // ⛔ לא נחלשה), ⛔ אבל השדה הוא `unfiltered`: «עוד לא סוננו» היא שאלה על
+    // ה**סימנייה**, ⛔ ולא על הדירוג. ‏`unseen` נשאר «טרם התחיל» ומשרת את הטבעות.
+    expect(CODE).toContain('unseen={unfiltered}');
+    expect(CODE).toContain('unfiltered: body.unfiltered ?? null');
+    // ⛔ ו⛔ אין נפילה חזרה על המספר שנמדד שגוי: «—» אומר «⛔ לא נמדד».
+    expect(CODE).not.toContain('body.unfiltered ?? body.unseen');
   });
 
   /**

@@ -87,6 +87,46 @@ export function summarizeLevel(input: {
 }
 
 /**
+ * `T-413` · `F-277` · `D-266` — **ההגדרה האחת של «עוד לא סוננו».**
+ *
+ * 🔬 **הכשל שזה סוגר, נמדד ⛔ ולא שוער:** האריח הדפיס «314 מילים שעוד לא סוננו» מתוך
+ * `unseen` שלמעלה — `totalInLevel − known − inReviewList`, כלומר מתוך `word_progress`,
+ * כלומר מתוך **דירוג**. ⛔ אבל החפיסה שמאחורי אותו אריח (‏`deck=level`) ⛔ אינה מחסירה
+ * דבר לפי דירוג: מאז `T-411` היא ממשיכה מה**סימנייה**. ⇒ המספר ספר אוכלוסייה אחת
+ * והכרטיסים הגיעו מאחרת, וההבטחה «עוד לא סוננו» ⛔ לא התקיימה.
+ *
+ * ⇒ **«עוד לא סוננו» = מה שנשאר לחפיסה להגיש מהמקום שבו הלומד עומד**, ⛔ ולא «מה שלא
+ * דורג». הנתיב סופר את המילים שלפני הסימנייה עם **אותו** predicate שהחפיסה עצמה
+ * מריצה (‏`lib/core/levelCursor.ts`), ומוסר את המספר לכאן.
+ *
+ * ⛔ **`aheadOfCursor: null` ⇒ הרמה כולה**, ⛔ ולא אפס: לומד שמעולם לא פתח את הרמה
+ * ⛔ לא סינן בה דבר. זה בדיוק המצב שבו `readLevelCursor` מחזיר `null`, כולל בכשל
+ * קריאה — ו«הרמה כולה» היא הטענה הנכונה שם, ⛔ לא הקטנה שמחמיאה למוצר.
+ *
+ * ⛔ **ו-`unseen` שלמעלה ⛔ אינו משתנה ו⛔ אינו מוחלף.** הוא «טרם התחיל» — מה שטבעות
+ * ההתקדמות של שש הרמות מודדות, וזו כמות אחרת ולגיטימית. שתי כמויות, שני שמות, ⛔ ולא
+ * שתי הגדרות לאותו שם.
+ */
+export function unfilteredInLevel(input: {
+  readonly totalInLevel: number;
+  readonly aheadOfCursor: number | null;
+}): number {
+  requireCount(input.totalInLevel, 'totalInLevel');
+  if (input.aheadOfCursor === null) return input.totalInLevel;
+  requireCount(input.aheadOfCursor, 'aheadOfCursor');
+  if (input.aheadOfCursor > input.totalInLevel) {
+    // המשמעות היחידה: ספירת המילים שלפני הסימנייה וספירת הרמה רצו על רמות שונות.
+    // מספר גדול מהרמה עצמה נראה כמו באג תצוגה; חריגה כאן אומרת את האמת, בדיוק כמו
+    // ב-`summarizeLevel`.
+    throw new RangeError(
+      `levelSummary: ${input.aheadOfCursor} words ahead of the cursor in a level that holds ` +
+        `${input.totalInLevel}`,
+    );
+  }
+  return input.aheadOfCursor;
+}
+
+/**
  * שורת התקדמות עם הרמה של המילה שלה. T-102.
  *
  * ‏`band: null` הוא מילה ש-`cefr_profile_band` שלה NULL או ערך לא מוכר — היא ⛔ אינה
