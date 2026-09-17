@@ -475,12 +475,19 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * 90 שניות; היא הפסד. ‏5.25rem = 84px = כותרת הפריסה (52) + `pb-32` של `<main>` (32),
    * שנמדדו בשרשרת ההורים — ⛔ ולא מספר יפה.
    */
-  it('F-260 · מסך הקרב בגובה קבוע שמנכה את הכרום, ⛔ ואינו נגלל', () => {
+  it('F-260 · מסך הקרב בגובה קבוע, ⛔ ואינו נגלל', () => {
     const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
-    expect(battle, 'גובה מדויק, ⛔ לא מינימום').toMatch(/h-\[calc\(100dvh-5\.25rem\)\]/);
+    // 🎬 **⟦17/09 · `T-423`ⓑ⟧ הגובה הוא `100dvh` **מלא**, ⛔ ולא `100dvh` פחות הכרום.**
+    // ⛔ זו ⛔ אינה החלשה של `F-260` — היא אותה טענה אחרי ש**הכרום עצמו ירד**
+    // (`arcade-tokens.css`, `body:has([data-arena-scope])`). ניכוי של 84px שכבר
+    // ⛔ אינם על המסך היה משאיר 84px של כלום בתחתית, כלומר `F-284` מהצד השני.
+    expect(battle, 'גובה מדויק, ⛔ לא מינימום').toMatch(/h-\[100dvh\]/);
+    expect(battle, '⛔ הניכוי ⛔ אינו חוזר — הכרום ⛔ אינו קיים במסלול הזה').not.toMatch(
+      /h-\[calc\(100dvh-5\.25rem\)\]/,
+    );
     expect(battle, 'גלילה ⛔ אינה אפשרות').toMatch(/overflow-hidden/);
     // ⛔ והריפוד שלא ניקה כלום ⛔ ירד: ל-`/arcade` ⛔ אין סרגל לשוניות.
-    expect(battle, '⛔ `pb-28` ⛔ ירד ממסך הקרב').not.toMatch(/h-\[calc\(100dvh-5\.25rem\)\][^"]*pb-28/);
+    expect(battle, '⛔ `pb-28` ⛔ ירד ממסך הקרב').not.toMatch(/h-\[100dvh\][^"]*pb-28/);
     // ⛔ והבמה בולעת את הנותר — `min-h-0`, בלעדיו ילד flex מסרב להתכווץ מתחת לתוכנו.
     expect(battle, 'הבמה בולעת את הנותר').toMatch(/flex min-h-0 flex-1/);
   });
@@ -517,19 +524,127 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * שייוולד כאן נמדד איתם, ⛔ ולא מחליק מתחת לגדר.
    */
   it('F-278 · כל שורש-מסך בזירה על תבנית הקרב — גובה מדויק, ⛔ אפס `pb-28`', () => {
-    const roots = [...CODE.matchAll(/<section\b[^>]*>/g)].map((tag) => {
-      const cls = tag[0].match(/className="([^"]*)"/);
-      return cls === null ? '' : cls[1];
-    });
+    const roots = [...CODE.matchAll(/<section\b[^>]*>/g)].map((tag) => ({
+      scoped: /data-arena-scope/.test(tag[0]),
+      cls: tag[0].match(/className="([^"]*)"/)?.[1] ?? '',
+    }));
     // טעינה · כשל · סוף סיבוב · קרב. ⛔ טענה על קבוצה ריקה היא טענה ירוקה על כלום.
     expect(roots.length, 'ארבעת שורשי-המסך').toBeGreaterThanOrEqual(4);
+    // ⛔ ושתי הקבוצות ⛔ אינן ריקות — אחרת הלולאה למטה ירוקה על כלום.
+    expect(roots.filter((r) => r.scoped).length, 'שורש נושא-סקופ אחד לפחות').toBeGreaterThanOrEqual(1);
+    expect(roots.filter((r) => !r.scoped).length, 'שורש שאינו נושא סקופ אחד לפחות').toBeGreaterThanOrEqual(1);
 
-    for (const cls of roots) {
-      expect(cls, `גובה מדויק, ⛔ לא מינימום: "${cls}"`).toMatch(/\bh-\[calc\(100dvh-5\.25rem\)\]/);
+    for (const { scoped, cls } of roots) {
+      /**
+       * 🎬 **⟦17/09 · `T-423`ⓑ⟧ הגובה נגזר מ**מי מוריד את הכרום**, ⛔ ולא מהקובץ.**
+       *
+       * 🔬 **וזו מדידה, ⛔ ולא שני סגנונות:** `arcade-tokens.css` מוריד את ה-84
+       * (‏`<header>` 52 + `pb-8` 32) **אך ורק** במסמך שיש בו `data-arena-scope`.
+       * ⇒ שורש שנושא אותו רואה `100dvh` **מלא**, ושורש שאינו נושא אותו — מסכי
+       * הטעינה, הכשל וסוף הסיבוב — עדיין יושב מתחת לכותרת ⇒ **חייב** להמשיך לנכות
+       * אותה. ⛔ אותו מספר לשניהם היה שובר בדיוק אחד מהם, בכל כיוון שייבחר.
+       * ⚠️ **ומה שמאחד אותם ⛔ לא נגע:** גובה **מדויק**, ⛔ לא מינימום · גלילה
+       * ⛔ אינה אפשרות · ⛔ אפס `pb-28`. זה `F-278`, והוא ⛔ לא הוחלש.
+       */
+      if (scoped) {
+        expect(cls, `גובה מלא כשהכרום ירד: "${cls}"`).toMatch(/\bh-\[100dvh\]/);
+        expect(cls, `⛔ ניכוי כרום שאינו קיים: "${cls}"`).not.toMatch(
+          /\bh-\[calc\(100dvh-5\.25rem\)\]/,
+        );
+      } else {
+        expect(cls, `גובה מדויק שמנכה את הכרום: "${cls}"`).toMatch(
+          /\bh-\[calc\(100dvh-5\.25rem\)\]/,
+        );
+      }
       expect(cls, `גלילה ⛔ אינה אפשרות: "${cls}"`).toMatch(/\boverflow-hidden\b/);
       expect(cls, `⛔ ריפוד ששרד ממסך אחר: "${cls}"`).not.toMatch(/\bpb-28\b/);
       expect(cls, `⛔ מינימום ⛔ אינו גובה: "${cls}"`).not.toMatch(/\bmin-h-\[100dvh\]/);
     }
+  });
+
+  /**
+   * 🎬 **`T-423`ⓑ — שמונה רצועות, סכום אחד: `56+110+330+44+28+196+68+20 = 852`.**
+   *
+   * 🔬 **שמונת המספרים נקראו מ-Figma בטיק הזה** (`get_metadata` על
+   * `v216k02v3L0azhfOw3y2ur / 3316:2`, ‏393×852) ⛔ ולא נבחרו — וקריאה של
+   * ה**קואורדינטות** היא מה שמכריע את `gap`:
+   * ```
+   * top-bar      y=0    h=56        enemy-block  y=56   h=110
+   * stage        y=166  h=330       mana         y=496  h=44
+   * hint         y=540  h=28        deck         y=568  h=196
+   * abilities    y=764  h=68        (bottom)     y=832  h=20
+   * ```
+   * ⇒ כל רצועה מתחילה **בדיוק** היכן שקודמתה נגמרה ⇒ **`gap` הוא אפס**, והמרווח חי
+   * בתוך הרצועה. ⛔ `gap-2` היה מוסיף 48px שאין להם מקום, והם היו נגרעים מהבמה —
+   * שכבר נמדדה פעם אחת ב-52px (`T-361`).
+   *
+   * ⚠️ **סריקת-מקור, ⛔ ולא פריסה.** הטענה החיה — שהמקטע שווה ל-`clientHeight`,
+   * שאין גלילה, ושכל רצועה מחזירה את גובהה ב-±1px — היא ⓒ, והיא רצה ב-`check:mobile`
+   * ב-393×852 וב-430×932. ‏`jsdom` ⛔ אינו מודד פריסה, ⇒ טענת גובה כאן הייתה
+   * **טענה ירוקה על כלום**.
+   */
+  it('T-423ⓑ · שבע רצועות בגובה מוצהר, והבמה בולעת את השארית — סכום 852', () => {
+    const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
+
+    // ⛔ הרצועה, הגובה שלה, וה-Figma node שממנו הוא נקרא. ⛔ אף אחד מהם ⛔ לא נבחר.
+    const BANDS = [
+      { mark: 'data-arena-clock', px: 56, node: '3316:3' },
+      { mark: 'data-arena-enemy-block', px: 110, node: '3316:8' },
+      { mark: 'data-arena-mana', px: 44, node: '3319:2' },
+      { mark: 'data-arena-hintrow', px: 28, node: '3319:15' },
+      { mark: 'data-arena-hand', px: 196, node: '3319:16' },
+      { mark: 'data-arena-abilities', px: 68, node: '3319:33' },
+      { mark: 'data-arena-isolation', px: 20, node: '832→852' },
+    ] as const;
+
+    for (const { mark, px, node } of BANDS) {
+      const at = battle.indexOf(mark);
+      expect(at, `הרצועה ${mark} קיימת`).toBeGreaterThan(-1);
+      // ⛔ החלון הוא התגית עצמה — `className` יושב לידה, ⛔ ולא שלוש רצועות הלאה.
+      const tag = battle.slice(Math.max(0, at - 400), at + 400);
+      expect(tag, `${mark} מצהיר ${px}px (Figma ${node})`).toContain(`h-[${px}px]`);
+      // ⛔ **`shrink-0` ⛔ אינו קישוט:** בלעדיו ילד flex מתכווץ מתחת לגובה המוצהר
+      // ברגע שהסכום לוחץ, ⇒ «גובה מוצהר» היה הופך ל«גובה מבוקש».
+      expect(tag, `${mark} ⛔ אינו מתכווץ`).toContain('shrink-0');
+    }
+
+    // 🔢 **הסכום עצמו, ⛔ ולא שבע טענות נפרדות:** שבע הרצועות ועוד הבמה = 852.
+    const declared = BANDS.reduce((sum, b) => sum + b.px, 0);
+    expect(declared, 'שבע הרצועות שאינן הבמה').toBe(522);
+    expect(declared + 330, '‏`36 § 8.0` ② — הסכום ב-393×852').toBe(852);
+
+    // ⛔ **ואפס `gap` על השורש** — זה מה שמאפשר לסכום להסתכם.
+    const root = battle.slice(0, battle.indexOf('>'));
+    expect(root, 'אפס `gap` — הרצועות צמודות, כמו ב-Figma').toMatch(/\bgap-0\b/);
+
+    // ⛔ **והבמה היא היחידה שגובהה ⛔ אינו מוצהר** — היא בולעת את השארית.
+    expect(battle, 'הבמה גמישה').toMatch(/flex min-h-0 flex-1/);
+    const stage = battle.slice(battle.indexOf('data-arena-stage-area'));
+    expect(stage.slice(0, 900), '⛔ ולבמה ⛔ אין גובה מוצהר').not.toMatch(/h-\[\d+px\]/);
+  });
+
+  /**
+   * 🎬 **`T-423`ⓑ — הכרום יורד **פעם אחת**, ב-CSS, ו⛔ אך ורק במסמך של הזירה.**
+   *
+   * 🔴 **האילוץ שקובע את הצורה:** ה-`<header>` (52) ו-`pb-8` (32) יושבים ב-
+   * `app/layout.tsx` — **שורש המוצר כולו**. ⇒ כלל שמוריד אותם ⛔ חייב להיות בלתי-אפשרי
+   * להחיל על מסך שאינו זירה, ו-`:has()` הוא מה שהופך את זה למדיד: הוא דורש **צאצא**
+   * שנושא `data-arena-scope`. ⛔ מסך שאינו זירה ⛔ אינו יכול להיתפס בו.
+   * ⚠️ **והראיה ההופכית חיה ב-`check:mobile`**, ⛔ ולא כאן: `/dev/tabs/me` מחזיר
+   * ‏`<header>` בגובה **52px**, ⛔ ולא 0.
+   */
+  it('T-423ⓑ · הורדת הכרום היא כלל CSS אחד, מותנה ב-`data-arena-scope`', () => {
+    expect(CSS_CODE, 'הכותרת יורדת במסמך של הזירה').toMatch(
+      /body:has\(\[data-arena-scope\]\)[^{]*header\s*\{[^}]*display:\s*none/,
+    );
+    expect(CSS_CODE, 'ו-`pb-8` של ה-`<main>` איתה').toMatch(
+      /body:has\(\[data-arena-scope\]\)[^{]*main\s*\{[^}]*padding-bottom:\s*0/,
+    );
+    // ⛔ **⛔ ולא כלל אחד בלי התנאי** — `header { display: none }` גלובלי היה מוחק את
+    // הכותרת מכל מסך במוצר, וזו בדיוק התקלה שהשורה הזאת אוסרת במפורש.
+    expect(CSS_CODE, '⛔ אין כלל גלובלי על `header`').not.toMatch(
+      /(^|\})\s*header\s*\{[^}]*display:\s*none/,
+    );
   });
 
   /**

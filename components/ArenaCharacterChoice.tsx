@@ -166,8 +166,15 @@ export default function ArenaCharacterChoice({
        *
        * ⛔ **`pb-16` ירד:** 64px של ריפוד **מתחת** לבלוק בעמודה מדויקת הם 64px שנגרעים
        *     מהכרטיסים בלי לשרת דבר. במקומו בטיחות המכשיר בלבד, כמו ב-`ArenaBattle`.
+       *
+       * 🎬 **⟦17/09 · `C-0709` · `T-423`ⓑ⟧ ⛔ וה-84 ⛔ אינם מנוכים עוד, ⛔ כי הם ⛔ אינם
+       *     קיימים.** ‏`arcade-tokens.css` מוריד את ה-`<header>` (52) ואת `pb-8` של
+       *     ה-`<main>` (32) בכל מסמך שנושא `data-arena-scope` — והמקטע הזה נושא אותו
+       *     (‏`:145`). ⇒ ניכוי שלהם כאן היה משאיר **84px של כלום** בתחתית המסך, כלומר
+       *     בדיוק הפגם ההפוך מזה ש-`T-416` סגר. ⛔ המסך הזה ⛔ אינו שורה משלו: הוא
+       *     נופל מהמנגנון, כפי ש-`T-423` אומר על ארבעת הנותרים.
        */
-      className="flex h-[calc(100dvh-5.25rem)] flex-col gap-5 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      className="flex h-[100dvh] flex-col gap-5 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     >
       {/* `:113-114` — הכותרת ב-24px Bold ותת-הכותרת (11.5 ⇒ 12, D-137). */}
       <header className="flex flex-col items-center gap-1 pt-8 text-center">

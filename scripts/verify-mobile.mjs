@@ -3395,6 +3395,127 @@ try {
     }
   }
 
+  // ---- 2d. T-423ⓒ · the arena's vertical budget, measured in a real browser ----
+  //
+  // 🔴 **`36 § 8.0` ② — `56+110+330+44+28+196+68+20 = 852`.** The eight numbers were read
+  // from Figma (`v216k02v3L0azhfOw3y2ur / 3316:2`, 393×852) as COORDINATES: every band
+  // starts exactly where the previous one ends, so the stack carries ⛔ no gap and the
+  // sum is the viewport itself.
+  //
+  // ⚠️ **This block exists because `jsdom` ⛔ cannot measure layout.** The source scan in
+  // `components/ArenaBattle.test.ts` proves each band DECLARES its height; only a real
+  // browser proves the declaration SURVIVES — that the section equals the viewport, that
+  // nothing scrolls, and that no band was silently compressed by the one above it.
+  //
+  // ⛔ **320×568 carries ⛔ no height claim, and that is deliberate:** 522px of declared
+  // bands against a 568px viewport leaves the stage 46px — it compresses, by design, and
+  // asserting 330 there would be asserting a number the screen ⛔ cannot have. What holds
+  // at every width is the one claim that matters to a learner: ⛔ nothing scrolls.
+  {
+    const BUDGET = [
+      { mark: '[data-arena-clock]', px: 56, band: 'top-bar' },
+      { mark: '[data-arena-enemy-block]', px: 110, band: 'enemy-block' },
+      { mark: '[data-arena-mana]', px: 44, band: 'mana' },
+      { mark: '[data-arena-hintrow]', px: 28, band: 'hint' },
+      { mark: '[data-arena-hand]', px: 196, band: 'deck' },
+      { mark: '[data-arena-abilities]', px: 68, band: 'abilities' },
+      { mark: '[data-arena-isolation]', px: 20, band: 'bottom' },
+    ];
+    // 393×852 and 430×932 carry the height claims; 320×568 carries ⑵ alone.
+    const SIZES = [
+      { width: 393, height: 852, heights: true },
+      { width: 430, height: 932, heights: true },
+      { width: 320, height: 568, heights: false },
+    ];
+
+    for (const size of SIZES) {
+      const ctx = await browser.newContext({ viewport: { width: size.width, height: size.height } });
+      const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
+      await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+      await page.waitForSelector('[data-arena-scope]');
+
+      const m = await page.evaluate((budget) => {
+        const scope = document.querySelector('[data-arena-scope]');
+        const doc = document.documentElement;
+        return {
+          section: Math.round(scope.getBoundingClientRect().height),
+          client: doc.clientHeight,
+          scroll: doc.scrollHeight,
+          header: document.querySelector('header')?.getBoundingClientRect().height ?? 0,
+          stage: Math.round(
+            document.querySelector('[data-arena-stage-area]')?.getBoundingClientRect().height ?? -1,
+          ),
+          bands: budget.map((b) => ({
+            ...b,
+            got: Math.round(document.querySelector(b.mark)?.getBoundingClientRect().height ?? -1),
+          })),
+        };
+      }, BUDGET);
+
+      const at = `T-423ⓒ · /dev/arcade @ ${size.width}×${size.height}`;
+
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+
+      // ⑵ — the one claim that holds at EVERY width. ⛔ A battle with a 90-second clock
+      // that asks the learner to scroll is a loss, ⛔ not an inconvenience (`F-260`).
+      check(m.scroll === m.client, `${at} · ⛔ nothing scrolls`, `scrollHeight ${m.scroll} vs clientHeight ${m.client}`);
+
+      // ⛔ **The app chrome is gone on this route, and that is measured, ⛔ not assumed.**
+      check(m.header === 0, `${at} · the app header is not on the battle route`, `header is ${m.header}px`);
+
+      if (!size.heights) {
+        await ctx.close();
+        continue;
+      }
+
+      // ⑴ — the section IS the viewport.
+      check(
+        m.section === m.client,
+        `${at} · the section fills the viewport exactly`,
+        `section ${m.section} vs clientHeight ${m.client}`,
+      );
+
+      // ⑶ — every non-stage band returns its declared height, ±1px for sub-pixel rounding.
+      for (const b of m.bands) {
+        check(
+          Math.abs(b.got - b.px) <= 1,
+          `${at} · band ${b.band} is ${b.px}px`,
+          `${b.mark} measured ${b.got}px`,
+        );
+      }
+
+      // ⑷ — and the stage, the only flexible band, still has a battle in it.
+      check(m.stage >= 280, `${at} · the stage keeps at least 280px`, `stage is ${m.stage}px`);
+
+      await ctx.close();
+    }
+
+    // 🔴 **THE INVERSE PROOF, and it is ⛔ not optional.** The rule that removes the
+    // chrome lives in `app/arcade/arcade-tokens.css` and is keyed on `:has([data-arena-scope])`,
+    // but the `<header>` it removes belongs to `app/layout.tsx` — **the root of the whole
+    // product**. ⇒ a screen that is ⛔ not the arena must still measure **52px**, ⛔ not 0.
+    // ⛔ Without this line the gate could not tell "scoped correctly" from "deleted the
+    // product's header everywhere".
+    {
+      const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
+      const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
+      await page.goto(`${BASE}/dev/tabs/me`, { waitUntil: 'networkidle' });
+      const header = await page.evaluate(
+        () => Math.round(document.querySelector('header')?.getBoundingClientRect().height ?? -1),
+      );
+      const at = 'T-423ⓒ · /dev/tabs/me';
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+      check(
+        header === 52,
+        `${at} keeps the product header — the rule is scoped to the arena`,
+        `header is ${header}px, expected 52`,
+      );
+      await ctx.close();
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

@@ -1004,7 +1004,26 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
          📎 **וזה התקדים של הריפו עצמו, ⛔ ולא המצאה:** `CardDeck.tsx` מחזיק
          `h-[calc(100dvh-10rem)]` על אותו היגיון בדיוק — שם הכרום כולל גם סרגל
          לשוניות, וכאן ⛔ אין אחד (‏`/arcade` יושב מחוץ ל-`app/(tabs)/`, בכוונה). */
-      className="relative flex h-[calc(100dvh-5.25rem)] flex-col gap-2 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      /* 🎬 **⟦17/09 · `C-0709` · `T-423`ⓑ · `36 § 8.0` הכרעה ②⟧ — `100dvh` **מלא**,
+         ⛔ ואפס `gap`.
+
+         🔬 **שני השינויים הם אותה מדידה, ⛔ ולא שניים:** `arcade-tokens.css` מוריד
+         עכשיו את `<header>` (52) ואת `pb-8` של `<main>` (32) בכל מסמך שנושא
+         `data-arena-scope` ⇒ ה-84 ש-`5.25rem` ניכה ⛔ אינם קיימים עוד, וניכוי שלהם
+         היה משאיר **84px של כלום** בתחתית (זה `F-284`).
+
+         ⛔ **ו-`gap-0` ⛔ אינו ויתור על מרווח — הוא מה שמאפשר לסכום להסתכם.** שמונת
+         המספרים של `36 § 8.0` ② נקראו מ-Figma (`3316:2`) כ**קואורדינטות**, ⛔ ולא
+         כגבהים עם אוויר ביניהם: `0 · 56 · 166 · 496 · 540 · 568 · 764 · 832` ⇒ כל
+         רצועה מתחילה בדיוק היכן שקודמתה נגמרה. ‏`gap-2` היה מוסיף 48px שאין להם מקום
+         בתקציב, והם היו נגרעים מהבמה. ⇒ **המרווח חי בתוך הרצועה**, ⛔ ולא בינה לבין
+         שכנתה.
+
+         ⛔ **והריפוד התחתון הוא בטיחות מכשיר ⛔ ולבד** — הרצועה התחתונה (20) היא
+         הערת הבידוד עצמה. ‏`env(safe-area-inset-bottom)` הוא **0** בדפדפן שאין לו
+         מגרעת, ⇒ הסכום מסתכם שם בדיוק ל-852; במכשיר עם מגרעת הוא נגרע מהבמה
+         (`flex-1`), ⛔ ולא גולש. */
+      className="relative flex h-[100dvh] flex-col gap-0 overflow-hidden pb-[env(safe-area-inset-bottom)]"
     >
       {/* 🔴 **⟦15/09 · `C-0623` · `T-361`⟧ היציאה **מרחפת**, ⛔ ואינה שורה משלה.**
           🔬 נמדד: העמודה חילקה 580px כך שהבמה — הקרב עצמו — קיבלה **52px, 9% מהמסך**,
@@ -1029,7 +1048,12 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           שהזירה אמורה לאמן. הערך מגיע מ-`BATTLE_MS` ⛔ ואינו נספר כאן. */}
       {/* ⛔ שורה אחת, ⛔ ולא שתיים. 🔬 נמדד: התווית והמספר אכלו 60px מתוך 580, בזמן
           שהבמה קיבלה 216. ⇒ אותו מידע, חצי מהגובה. */}
-      <div className="relative flex flex-row items-baseline justify-center gap-2" data-arena-clock>
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `top-bar` — **56px מוצהרים** (`3316:3`).
+          ⛔ העטיפה נושאת את הגובה, והשורה הפנימית נשארת `items-baseline`: קו הבסיס
+          הוא מה שמיישר תווית `text-sm` למספר `text-2xl`, ו-`items-center` היה מזיז
+          את שניהם זה ביחס לזה. ⇒ **מרכוז אנכי בחוץ, קו בסיס בפנים.** */}
+      <div className="relative flex h-[56px] shrink-0 flex-row items-center justify-center" data-arena-clock>
+        <div className="flex flex-row items-baseline justify-center gap-2">
         <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
         {/* T-231 ⓐ — הטקסט וה-`aria-label` נכתבים מהלולאה דרך `clockRef`/`clockTextRef`;
             ⛔ ה-ref יושב על `<span>` **בתוך** `<EnWord>`, ⛔ ולא על העטיפה עצמה — `EnWord`
@@ -1047,6 +1071,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             <span ref={clockTextRef}>{clockHe(BATTLE_MS - elapsedRef.current)}</span>
           </EnWord>
         </p>
+        </div>
 
         {/* 🔥 **⟦17/09 · `C-0672` · `T-401`⟧ שבב הרצף — `:372-378` של `clock_hud`.**
 
@@ -1089,13 +1114,35 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
 
       {/* ⓑ באנר המילה — היריב מטיל מילה, והיא באנגלית מעליו (`37 § 5`).
           ⛔ אנגלית עוברת ב-`<EnWord>` בלבד (חוקה § 2 · `36 § 14`). */}
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `enemy-block` — **110px מוצהרים** (`3316:8`).
+          🔬 **נקרא מ-Figma בטיק הזה (`get_metadata` על `3316:2`), ⛔ ולא שוער:** הרצועה
+          מחזיקה שם (`3316:9`, ‏y=8) · פס חיים (`3316:10..12`, ‏y=32) · ו**באנר המילה**
+          (`cast-word`, `3316:13`, ‏y=58 h=44 w=200) ⇒ הבאנר יושב בתחתיתה, 8px מהקצה.
+          ⛔ **ושלושת הראשונים ⛔ אינם נבנים כאן** — שם היריב ופס חייו יושבים היום
+          **בתוך הבמה** (`T-361` · `C-0623`), ו-`T-424` הוא שמעביר אותם לרצועה הזאת
+          (`36 § 8.0` הכרעה ③). ⇒ **הרצועה מוצהרת עכשיו כדי שיהיה לאן להעביר אותם**,
+          וזה בדיוק למה השורה הזאת נוחתת לפניה.
+          🔴 **⟦נמדד ב-`C-0709`, ⛔ ולא שוער⟧ ⛔ ובמסך נמוך הרצועה הזאת מוותרת — כי
+          אחרת הקרב ⛔ אינו קיים.** שבע הרצועות הן **522px קבועים**; ב-320×568 נשארו
+          לבמה **46px** — כלומר ⛔ אין במה, ⛔ ואין קרב. ⛔ «⑵ בלבד ב-320» (‏`T-423`ⓒ)
+          אומר שאין לטעון שם על **הגבהים**; הוא ⛔ אינו אומר שמותר לשלוח ללומד מסך
+          שאי אפשר לשחק בו.
+          ⇒ **והמספר שהיא יורדת אליו הוא של Figma עצמו, ⛔ ולא נבחר:** הרצועה מצוירת
+          סביב תוכן שגובהו **52px** (`cast-word` 44 ועוד 8 מתחתיו) — כלומר 58px מתוכה הם **אוויר**, וזה
+          מה שנגרע ⛔ ולא התוכן. מעל 700px גובה ⛔ שום דבר ⛔ אינו משתנה, ⇒ שתי המידות
+          ש-ⓒ טוען עליהן (852 · 932) ⛔ לא נגעו. */}
       <div
-        data-arena-banner
-        className="rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)] px-4 py-2 text-center"
+        data-arena-enemy-block
+        className="flex h-[110px] shrink-0 flex-col items-center justify-end pb-2 [@media(max-height:700px)]:h-[52px]"
       >
-        <EnWord className="text-4xl font-black tracking-wide text-[color:var(--arena-gold-light)]">
-          {word?.headword ?? ''}
-        </EnWord>
+        <div
+          data-arena-banner
+          className="flex h-[44px] w-[200px] max-w-full items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)] px-4 text-center"
+        >
+          <EnWord className="text-3xl font-black leading-none tracking-wide text-[color:var(--arena-gold-light)]">
+            {word?.headword ?? ''}
+          </EnWord>
+        </div>
       </div>
 
       {/* ⓓ הבמה — שתי הדמויות. ⛔ **התנועה חיה כאן ובלבד** (T-041, עקרון הקוהרנטיות
@@ -1315,7 +1362,9 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           משאב. ⚠️ ⟦17/09 · `T-363`⟧ **שלוש היכולות שהרנדר מצייר נבנו** ויושבות מתחת ליד
           (`ABILITY_ORDER`); `ריפוי` — הרביעית ב-`§ 4` שהרנדר ⛔ **אינו** מצייר — נשארת
           **פער מוצהר**, ⛔ ולא השמטה. */}
-      <div className="flex flex-col gap-1" data-arena-mana>
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `mana` — **44px מוצהרים** (`3319:2`): תווית
+          ‏y=2 h=16, המד y=22 h=10. שלנו 16 + `gap-1` + `h-4` = 36 ⇒ `justify-center`. */}
+      <div className="flex h-[44px] shrink-0 flex-col justify-center gap-1" data-arena-mana>
         <div className="flex flex-row items-baseline justify-between gap-2">
           <span
             className={`text-sm font-semibold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink-dim)]'}`}
@@ -1365,6 +1414,13 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           בערוץ אחד ומפר את שכבה א׳ א2. */}
       {/* ⛔ הרמז יושב **מעל** היד ו⛔ לעולם לא עליה (קוהרנטיות, T-041): אזור היד
           ⛔ אינו זז, ולכן הרמז ⛔ אינו יכול להיות שכבה מעליו. */}
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ שורת הרמז — **28px מוצהרים** (`3319:15`: הטקסט
+          ‏y=544 h=16, בין המאנה ב-540 לחפיסה ב-568). 🔴 **והרצועה קיימת גם כשהיא ריקה,
+          וזו ⛔ אינה קפדנות:** שני הדיירים שלה מותנים (`showHint` · `returned`), ⇒ בלי
+          עטיפה בגובה מוצהר החפיסה והיכולות **קופצות 28px** ברגע שאחד מהם נכנס או יוצא —
+          באמצע קרב של 90 שניות, מתחת לאגודל. ⛔ רצועה ריקה כאן היא **יציבות**, ⛔ ולא
+          רעש: היא ⛔ אינה מציירת דבר. */}
+      <div data-arena-hintrow className="flex h-[28px] shrink-0 items-center justify-center">
       {showHint && (
         <p data-arena-hint className="text-center text-xs text-[color:var(--arena-ink-dim)]">{DRAG_HINT_HE}</p>
       )}
@@ -1383,8 +1439,27 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           <span className="font-bold">{returned.translationHe}</span>
         </p>
       )}
+      </div>
 
-      <ul ref={handRef} data-arena-hand className="grid grid-cols-4 gap-2">
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `deck` — **196px מוצהרים** (`3319:16`).
+          ⛔ **`content-start` ⛔ ולא מתיחה:** ‏Figma מצייר את הקלפים 132 גבוהים בראש
+          רצועה של 196 (`3319:17`, ‏y=8) ⇒ הם שומרים על גובהם הטבעי ונארזים למעלה.
+          ‏`h-[196px]` לבדו היה מותח שורת grid יחידה על כל הרצועה ומעוות ארבעה קלפים
+          שגובהם נגזר מהתוכן שלהם.
+          🔴 **⟦נמדד ב-`C-0709`, ⛔ ולא שוער⟧ ⛔ ובמסך נמוך הרצועה הזאת מוותרת — כי
+          אחרת הקרב ⛔ אינו קיים.** שבע הרצועות הן **522px קבועים**; ב-320×568 נשארו
+          לבמה **46px** — כלומר ⛔ אין במה, ⛔ ואין קרב. ⛔ «⑵ בלבד ב-320» (‏`T-423`ⓒ)
+          אומר שאין לטעון שם על **הגבהים**; הוא ⛔ אינו אומר שמותר לשלוח ללומד מסך
+          שאי אפשר לשחק בו.
+          ⇒ **והמספר שהיא יורדת אליו הוא של Figma עצמו, ⛔ ולא נבחר:** הרצועה מצוירת
+          סביב תוכן שגובהו **140px** (קלף `3319:17` בגובה 132 ועוד 8 מעליו) — כלומר 56px מתוכה הם **אוויר**, וזה
+          מה שנגרע ⛔ ולא התוכן. מעל 700px גובה ⛔ שום דבר ⛔ אינו משתנה, ⇒ שתי המידות
+          ש-ⓒ טוען עליהן (852 · 932) ⛔ לא נגעו. */}
+      <ul
+        ref={handRef}
+        data-arena-hand
+        className="grid h-[196px] shrink-0 grid-cols-4 content-start gap-2 pt-2 [@media(max-height:700px)]:h-[140px]"
+      >
         {hand.map((option) => (
           <li key={option.he}>
             {/* T-220 ⓐ · D-143 § ד׳ — `?` is the OPTION SOURCE'S property (`ArcadeOption.kind`,
@@ -1440,8 +1515,28 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           ⛔ **⛔ והמצב ⛔ אינו בצבע בלבד** (שכבה א׳ א2): לא-זמין הוא `disabled` אמיתי
           (⛔ לא רק עמעום), והאפקטים הפעילים נאמרים ב**מילים** בשורת הסטטוס מתחת.
           ⛔ **גובה 44 הוא רצפת שכבה א׳** — הרנדר מצייר 44, ⇒ ⛔ אין כאן סטייה. */}
-      <div className="flex flex-col gap-2" data-arena-abilities>
-        <p className="text-xs font-semibold text-[color:var(--arena-ink-dim)]">{ABILITIES_HE}</p>
+      {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `abilities` — **68px מוצהרים** (`3319:33`:
+          הלחיצים y=8 h=44). והתקציב מסתכם בדיוק: **16 + 8 + 44 = 68**.
+
+          🔴 **ולכן התווית והסטטוס חולקים שורה אחת, ו⛔ זו ⛔ אינה קיצוץ:** שורת הסטטוס
+          ‏(`data-arena-ability-on`) ישבה מתחת ללחיצים ⇒ ברצועה של 68 היא הייתה נחתכת
+          ב-`overflow-hidden` של המקטע — כלומר **המצב נאמר בצבע בלבד**, וזה בדיוק מה
+          ששכבה א׳ א2 אוסרת. ⇒ שתיהן `text-xs`, שתיהן על אותה שורה, ⛔ אפס ערוץ שנגרע:
+          ה-`role="status"` וה-`aria-live` ⛔ לא נגעו. */}
+      <div className="flex h-[68px] shrink-0 flex-col justify-center gap-2" data-arena-abilities>
+        <div className="flex h-4 flex-row items-center justify-between gap-2">
+          <p className="shrink-0 text-xs font-semibold text-[color:var(--arena-ink-dim)]">{ABILITIES_HE}</p>
+          {activeAbilities.length > 0 && (
+            <p
+              data-arena-ability-on
+              role="status"
+              aria-live="polite"
+              className="truncate text-xs font-bold text-[color:var(--arena-gold-light)]"
+            >
+              {activeAbilities.map((key) => ABILITY_ON_HE[key]).join(' · ')}
+            </p>
+          )}
+        </div>
         <div className="flex flex-row gap-[14px]" data-rtl-row="abilities">
           {ABILITY_ORDER.map((key) => {
             const ready = canUseAbility(battle, key, elapsedRef.current);
@@ -1489,24 +1584,17 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             );
           })}
         </div>
-        {/* ⛔ **האפקטים הפעילים, ⛔ במילים.** הרנדר מצייר אותם כתגים על הבמה
-            (`:483` · `:487`), ⛔ אבל תג בצבע זהב ⛔ אינו ערוץ שני — כאן הם נאמרים,
-            ו-`aria-live` נותן אותם גם למי שאינו רואה את הבמה. ⛔ מוצג אך ורק כשיש מה
-            להציג: שורה ריקה היא רעש, ⛔ לא מידע. */}
-        {activeAbilities.length > 0 && (
-          <p
-            data-arena-ability-on
-            role="status"
-            aria-live="polite"
-            className="text-xs font-bold text-[color:var(--arena-gold-light)]"
-          >
-            {activeAbilities.map((key) => ABILITY_ON_HE[key]).join(' · ')}
-          </p>
-        )}
       </div>
 
-      {/* ⓖ הערת הבידוד — אינווריאנט `37 § 13.1`, והשורה התחתונה ברנדר. */}
-      <p className="text-center text-xs text-[color:var(--arena-ink-dim)]" data-arena-isolation>
+      {/* ⓖ הערת הבידוד — אינווריאנט `37 § 13.1`, והשורה התחתונה ברנדר.
+          ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ **והיא הרצועה התחתונה, 20px מוצהרים**: Figma
+          נותן ‏832→852 מתחת ל-`abilities` (`3319:33` נגמר ב-832) ⛔ בלי לצייר שם דבר,
+          וההערה הזאת — שהיא **אינווריאנט**, ⛔ ולא קישוט — היא מה שיושב שם במוצר.
+          ‏`text-xs` הוא 16px גובה שורה ⇒ נכנס ב-20 בלי להידחס. */}
+      <p
+        className="flex h-[20px] shrink-0 items-center justify-center text-center text-xs text-[color:var(--arena-ink-dim)]"
+        data-arena-isolation
+      >
         {ARENA_ISOLATION_HE}
       </p>
 
