@@ -841,7 +841,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
 
   if (screen.kind === 'loading') {
     return (
-      <section className="flex min-h-[100dvh] flex-col gap-6 pb-28">
+      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-6 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {topBar(null)}
         <div className="flex flex-col gap-3" data-skeleton>
           <p className="sr-only" role="status">
@@ -863,7 +863,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           ? SCHEMA_MISSING_HE
           : FAILURE_HE.load;
     return (
-      <section className="flex min-h-[100dvh] flex-col gap-4 pb-28">
+      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {topBar(CLOCK_HE)}
         <p className="text-lg leading-relaxed text-ink">{message}</p>
         {screen.kind === 'too_small' && (
@@ -929,7 +929,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
       );
     }
     return (
-      <section className="flex min-h-[100dvh] flex-col gap-4 pb-28">
+      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {topBar(outcome === null && sendError === '' ? SAVING_HE : FINISHED_HE)}
         {sendError !== '' && (
           <p role="status" className="text-base text-danger">
