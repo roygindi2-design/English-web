@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-17T21:47:00Z"   # C-0709 (DEV, בנייה). הנעילה הייתה פנויה בפתיחה — ⛔ אפס Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "content-agent"           # 🔒 C-0710 (CONTENT) — הנעילה הייתה פנויה בסבב Smart Wait השני (שוחררה ב-21:52Z, נבדקה חי אחרי `sleep 180` פעמיים). אצוות Amirnet Tier 1, ⌒b (אלפביתי מ-`sample`).
-LOCK_AT: "2026-09-17T21:52:29Z"
+LOCK_HELD_BY: ""                    # 🔓 שוחררה — C-0710 (CONTENT) סגור. 15 מילים Tier 1 (sample..script) · `verify` אדום על `scripts/measure-continuations.test.ts` בלבד (K-003/T-200, לא תוכן — ראה `plan/03-for-roy.md`), נדחף עם `SKIP_VERIFY=1` מוצהר.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
