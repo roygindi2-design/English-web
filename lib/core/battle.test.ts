@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { ArenaWord } from './arenaWords';
 import {
+  ABILITY_COST,
+  ABILITY_ORDER,
   ANNOUNCE_AT_MS,
   BATTLE_MS,
+  canUseAbility,
+  isFrozen,
+  spendAbility,
   ENEMY_SWING_MS,
   MANA_CAP,
   TELEGRAPH_MS,
@@ -418,10 +423,19 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
     for (const line of ['יכולות מתקררות מהר', 'ירי מטווח']) expect(CHARACTER_BIAS_HE.armorer).toContain(line);
     const code = readFileSync('lib/core/battle.ts', 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-    // `(?<!Object\.)freeze` — `Object.freeze` is how the stats rows are sealed (the plan's own
-    // Interfaces block); the ban is on a freeze *ability* (§ 4 ק6), ⛔ not on the verb.
-    for (const banned of [/cooldown/i, /shield/i, /heal/i, /(?<!Object\.)freeze/i, /ranged/i, /manaMs\b/]) {
+    // 🔴 **צומצם ב-T-363, ⛔ ולא הורפה.** שתי שורות «⛔ טרם» מדברות על **הטיה** —
+    // «יכולות מתקררות מהר» (‏`cooldown`) ו«ירי מטווח» (‏`ranged`) — והן עדיין ⛔ אינן
+    // בנויות. מה שנבנה ב-T-363 הוא `§ 4` עצמו: `מגן` ו-`הקפאה` **זהים לשלוש הדמויות**
+    // (‏`§ 7` גדר 1), ⇒ `shield`/`freeze` ⛔ אינם עוד ראיה להטיה שנבנתה בשקט.
+    // ⛔ `heal` (‏`ריפוי`) ו-`manaMs` (‏«מאנה מהירה יותר») ⛔ נשארים אסורים.
+    for (const banned of [/cooldown/i, /heal/i, /ranged/i, /manaMs\b/]) {
       expect(code, `${banned} — § 4 ⛔ אינו בנוי`).not.toMatch(banned);
+    }
+    // ⛔ **וההטיה נמדדת ישירות, ⛔ ולא דרך מילה:** העלות ⛔ אינה תלויה בדמות, ושורת
+    // `§ 7` ⛔ אינה נושאת שדה יכולת. זו הטענה שהאיסור על המילים ניסה לקרב אליה.
+    expect(Object.keys(ABILITY_COST).sort()).toEqual(['double', 'freeze', 'shield']);
+    for (const c of ARENA_CHARACTERS) {
+      expect(Object.keys(CHARACTER_STATS[c]).sort()).toEqual(Object.keys(BASE_STATS).sort());
     }
   });
 
@@ -507,5 +521,124 @@ describe('T-401 · streakAt — הרצף הנוכחי בסרגל העליון', 
     const before = JSON.stringify(s);
     expect(streakAt(s)).toBe(streakAt(s));
     expect(JSON.stringify(s)).toBe(before);
+  });
+});
+
+describe('T-363 · `37 § 4` — שלוש היכולות, והמאנה שיש לה לאן ללכת', () => {
+  const words: ArenaWord[] = [
+    { wordId: 'w1', headword: 'ECLIPSE', translationHe: 'ליקוי', kind: 'base' },
+    { wordId: 'w2', headword: 'ABANDON', translationHe: 'לנטוש', kind: 'base' },
+  ];
+
+  it('שלוש עלויות, מהרנדר — ⛔ ולא נבחרו כאן', () => {
+    expect(ABILITY_COST).toEqual({ double: 4, shield: 3, freeze: 5 });
+    expect(ABILITY_ORDER).toEqual(['double', 'shield', 'freeze']);
+  });
+
+  it('⛔ אין מאנה ⇒ ⛔ אי אפשר, והמצב חוזר כ**אותה הפניה**', () => {
+    const s = startBattle(words);
+    // ‏t=0 ⇒ מאנה 0.
+    expect(canUseAbility(s, 'shield', 0)).toBe(false);
+    expect(spendAbility(s, 'shield', 0)).toBe(s);
+  });
+
+  it('קנייה מורידה בדיוק את העלות מהמפלס', () => {
+    const s = startBattle(words);
+    // ‏20 שניות ⇒ 10 מאנה (תקרה).
+    expect(manaAt(20_000, s.manaSpent)).toBe(MANA_CAP);
+    const after = spendAbility(s, 'double', 20_000);
+    expect(after.manaSpent).toBe(4);
+    expect(manaAt(20_000, after.manaSpent)).toBe(MANA_CAP - 4);
+  });
+
+  it('`כפול` — ההטלה הנכונה הבאה מכפילה נזק, ואחריה התג נגמר', () => {
+    const base = startBattle(words);
+    const plain = cast({ ...base, shownAtMs: 20_000 }, 'ליקוי', 22_000);
+    const doubled = cast({ ...spendAbility(base, 'double', 20_000), shownAtMs: 20_000 }, 'ליקוי', 22_000);
+    const plainDamage = base.enemyHp - plain.enemyHp;
+    expect(plainDamage).toBeGreaterThan(0);
+    expect(base.enemyHp - doubled.enemyHp).toBe(plainDamage * 2);
+    expect(doubled.pendingDouble).toBe(false);
+  });
+
+  it('⛔ הטלה שגויה ⛔ אינה צורכת את `כפול` — ⛔ אין ענישה על טעות (R-016 · `§ 5`)', () => {
+    const s = { ...spendAbility(startBattle(words), 'double', 20_000), shownAtMs: 20_000 };
+    const wrong = cast(s, 'תשובה שגויה', 22_000);
+    expect(wrong.pendingDouble).toBe(true);
+    expect(wrong.enemyHp).toBe(s.enemyHp);
+  });
+
+  it('⛔ `כפול` פעיל ⇒ ⛔ אי אפשר לקנות שוב, ו⛔ אין גבייה שנייה', () => {
+    const s = spendAbility(startBattle(words), 'double', 20_000);
+    expect(canUseAbility(s, 'double', 20_000)).toBe(false);
+    expect(spendAbility(s, 'double', 20_000).manaSpent).toBe(4);
+  });
+
+  it('`מגן` — המכה הבאה ⛔ אינה פוגעת, באותה חסינות של `§ 6`', () => {
+    const s = startBattle(words);
+    // מכה 2 נוחתת ב-16,000. קנייה ב-10,000 מכוונת אליה.
+    const unshielded = tick({ ...s, lastSwingMs: 8_000 }, 16_000);
+    expect(unshielded.learnerHp).toBeLessThan(s.learnerHp);
+    const shielded = tick(spendAbility({ ...s, lastSwingMs: 8_000 }, 'shield', 10_000), 16_000);
+    expect(shielded.learnerHp).toBe(s.learnerHp);
+  });
+
+  it('⛔ `מגן` על מכה שכבר מוגנת ⛔ אינו נקנה פעמיים', () => {
+    const s = spendAbility({ ...startBattle(words), lastSwingMs: 8_000 }, 'shield', 10_000);
+    expect(canUseAbility(s, 'shield', 10_000)).toBe(false);
+    expect(spendAbility(s, 'shield', 10_000).manaSpent).toBe(ABILITY_COST.shield);
+  });
+
+  it('`הקפאה` — מחזור שלם בלי מכה, ואז הקרב ממשיך כרגיל', () => {
+    const s = { ...startBattle(words), lastSwingMs: 8_000 };
+    const frozen = spendAbility(s, 'freeze', 10_000);
+    expect(isFrozen(frozen, 10_000)).toBe(true);
+    // המכה של 16,000 ⛔ לא קרתה.
+    const during = tick(frozen, 16_000);
+    expect(during.learnerHp).toBe(s.learnerHp);
+    // ⛔ ואינה נצברת: המכה של 24,000 כן נוחתת, ופעם אחת.
+    const after = tick(during, 24_000);
+    expect(s.learnerHp - after.learnerHp).toBe(1);
+    expect(isFrozen(after, 24_000)).toBe(false);
+  });
+
+  it('⛔ הקפאה בזמן הקפאה ⛔ אינה נקנית — ⛔ ואין הארכה אינסופית', () => {
+    const frozen = spendAbility({ ...startBattle(words), lastSwingMs: 8_000 }, 'freeze', 10_000);
+    expect(canUseAbility(frozen, 'freeze', 11_000)).toBe(false);
+    expect(spendAbility(frozen, 'freeze', 11_000)).toBe(frozen);
+  });
+
+  it('🛡️ גלגול ומגן מגיעים לאותה חסינות — ⛔ והמסך עדיין יודע להבדיל ביניהם', () => {
+    const s = { ...startBattle(words), lastSwingMs: 8_000 };
+    // חלון הגלגול של מכה 2: `2*8000 - 6000 + 5300` ⇒ 15,300 עד 15,700.
+    const rolled = dodge(s, 15_400);
+    const shielded = spendAbility(s, 'shield', 10_000);
+    expect(rolled.immuneBy).toBe('dodge');
+    expect(shielded.immuneBy).toBe('shield');
+    expect(rolled.dodgedSwing).toBe(shielded.dodgedSwing);
+    // ⛔ ‏`tick` ⛔ אינו קורא את השדה: אותה חסינות בדיוק, בשני המסלולים.
+    expect(tick(rolled, 16_000).learnerHp).toBe(tick(shielded, 16_000).learnerHp);
+    // ⛔ והחסינות שנצרכה לוקחת איתה את השם.
+    expect(tick(shielded, 16_000).immuneBy).toBeNull();
+  });
+
+  it('🔴 גדר 1 של `§ 7` — ⛔ אף יכולת ⛔ אינה נוגעת בכמה אנגלית הלומד פוגש', () => {
+    const s = startBattle(words);
+    for (const key of ABILITY_ORDER) {
+      const after = spendAbility(s, key, 20_000);
+      expect(after.words).toBe(s.words);
+      expect(after.index).toBe(s.index);
+      expect(after.casts).toBe(s.casts);
+      expect(after.shownAtMs).toBe(s.shownAtMs);
+    }
+  });
+
+  it('⛔ יכולת ⛔ אינה מרפאה ו⛔ אינה מזיזה חיים בעצמה', () => {
+    const s = startBattle(words);
+    for (const key of ABILITY_ORDER) {
+      const after = spendAbility(s, key, 20_000);
+      expect(after.learnerHp).toBe(s.learnerHp);
+      expect(after.enemyHp).toBe(s.enemyHp);
+    }
   });
 });

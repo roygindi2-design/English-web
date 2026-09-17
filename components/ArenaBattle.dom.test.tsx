@@ -308,3 +308,83 @@ describe('T-403 — «בקרב הראשון בלבד»: שער אחד, ⛔ ול�
     expect(hint.textContent).toContain('גרור קלף כלפי מעלה');
   });
 });
+
+/**
+ * ⚡ **T-363 · `37 § 4` — שורת היכולות על המסך האמיתי.**
+ * ⛔ **המכניקה נמדדת ב-`lib/core/battle.test.ts`** (מכפיל, חסינות, הקפאה) — כאן נמדד
+ * מה שסריקת מקור ⛔ אינה יכולה לראות: שלושה כפתורים **מרונדרים**, בסדר של הרנדר,
+ * ושכשאין מאנה הם `disabled` **באמת** ⛔ ולא רק מעומעמים.
+ */
+describe('T-363 — שורת היכולות', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  const buttons = (): HTMLButtonElement[] =>
+    Array.from(document.querySelectorAll<HTMLButtonElement>('[data-arena-ability]'));
+
+  /** ⛔ ⛔ לא `buttons()[i]`: `noUncheckedIndexedAccess` נותן `| undefined`, והבדיקה
+      צריכה **להיכשל בשם היכולת** ⛔ ולא ליפול על `undefined` שלוש שורות אחר כך. */
+  const ability = (key: string): HTMLButtonElement => {
+    const el = document.querySelector<HTMLButtonElement>(`[data-arena-ability="${key}"]`);
+    expect(el, `הכפתור «${key}» חייב להיות על המסך`).not.toBeNull();
+    return el as HTMLButtonElement;
+  };
+
+  it('שלושה כפתורים, בסדר של `render_video_B.py:308` — `כפול` הראשונה בקריאה', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    const keys = buttons().map((b) => b.getAttribute('data-arena-ability'));
+    expect(keys).toEqual(['double', 'shield', 'freeze']);
+    expect(buttons().map((b) => b.textContent)).toEqual([
+      expect.stringContaining('כפול'),
+      expect.stringContaining('מגן'),
+      expect.stringContaining('הקפאה'),
+    ]);
+  });
+
+  it('העלות מודפסת על כל כפתור — ⛔ ולא נקודות צבע', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(ability('double').textContent).toContain('4');
+    expect(ability('shield').textContent).toContain('3');
+    expect(ability('freeze').textContent).toContain('5');
+    // ⛔ והמספר נאמר גם במילים למקריא־מסך.
+    expect(ability('double').textContent).toContain('עולה');
+    expect(ability('double').textContent).toContain('מאנה');
+  });
+
+  it('⛔ אפס מאנה בפתיחה ⇒ שלושתם `disabled` **באמת**, ⛔ ולא רק כהים', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    for (const b of buttons()) {
+      expect(b.disabled).toBe(true);
+      expect(b.getAttribute('data-ready')).toBe('false');
+    }
+  });
+
+  it('⛔ הקשה על יכולת שאין לה כיסוי ⛔ אינה עושה דבר — ⛔ ואין שורת אפקט', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(document.querySelector('[data-arena-ability-on]')).toBeNull();
+    fireEvent.click(ability('double'));
+    expect(document.querySelector('[data-arena-ability-on]')).toBeNull();
+  });
+
+  it('השורה נושאת `data-rtl-row` ⇒ `check:mobile` מודד אותה ב-320 · 375 · 414', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(document.querySelector('[data-rtl-row="abilities"]')).not.toBeNull();
+  });
+
+  it('⛔ `ריפוי` — הרביעית של `§ 4` שהרנדר ⛔ אינו מצייר — ⛔ אינה על המסך', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    const row = document.querySelector('[data-arena-abilities]');
+    expect(row?.textContent).not.toContain('ריפוי');
+  });
+});

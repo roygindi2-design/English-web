@@ -15,11 +15,16 @@ import { mixArenaWords, type ArenaWord, type ArenaWordKind } from '@/lib/core/ar
 import { resolveGesture } from '@/lib/core/arenaGesture';
 import { endingOf, summarize } from '@/lib/core/arenaSummary';
 import {
+  ABILITY_COST,
+  ABILITY_ORDER,
   BATTLE_MS,
   ENEMY_HP,
   MANA_CAP,
+  canUseAbility,
   cast,
   dodge,
+  isFrozen,
+  spendAbility,
   isRage,
   manaAt,
   returnedSpell,
@@ -29,6 +34,7 @@ import {
   STREAK_HOT,
   telegraphAt,
   tick,
+  type AbilityKey,
   type BattleState,
   type TelegraphPhase,
 } from '@/lib/core/battle';
@@ -167,6 +173,46 @@ function paintManaSegments(
   }
 }
 const RAGE_HE = 'זמן זעם · מאנה כפולה';
+
+/**
+ * ⚡ **T-363 · `37 § 4` — שלוש היכולות, בסדר ובעלויות של `render_video_B.py:308`.**
+ * ⛔ **הרכיב ⛔ אינו מחזיק עלות ו⛔ אינו מחזיק חוק** — `ABILITY_COST` ו-`canUseAbility`
+ * חיים ב-`lib/core/battle.ts`. כאן יש **שם עברי בלבד**, וזה כל מה שמסך רשאי להחזיק.
+ */
+const ABILITY_HE: Readonly<Record<AbilityKey, string>> = {
+  double: 'כפול',
+  shield: 'מגן',
+  freeze: 'הקפאה',
+};
+/** ⛔ המצב ⛔ לעולם ⛔ אינו בצבע בלבד (חוקה שכבה א׳ א2) — לכל אפקט פעיל יש **מילה**. */
+const ABILITY_ON_HE: Readonly<Record<AbilityKey, string>> = {
+  double: 'נזק כפול',
+  shield: 'מגן פעיל',
+  freeze: 'היריב קפוא',
+};
+const ABILITIES_HE = 'יכולות';
+const ABILITY_COST_SR_HE = 'עולה';
+const ABILITY_MANA_SR_HE = 'מאנה';
+const SHIELDED_HE = 'מגן!';
+
+/**
+ * ⚡ T-363 — **אותו דפוס בדיוק של `paintManaSegments`** (T-231 ⓔ): הזמינות משתנה עם
+ * המאנה, שגדלה **בין רינדורים**, ⇒ כפתור שנצבע ברינדור בלבד היה נשאר מושבת עד
+ * ההטלה הבאה. ⛔ הכלל עצמו ⛔ אינו כאן — `canUseAbility` היא הפוסקת היחידה.
+ */
+function paintAbilities(
+  els: Partial<Record<AbilityKey, HTMLButtonElement | null>>,
+  state: BattleState,
+  elapsedMs: number,
+): void {
+  for (const key of ABILITY_ORDER) {
+    const el = els[key];
+    if (el === null || el === undefined) continue;
+    const ready = canUseAbility(state, key, elapsedMs);
+    el.disabled = !ready;
+    el.setAttribute('data-ready', ready ? 'true' : 'false');
+  }
+}
 /**
  * ⛔ **הערת הבידוד ⛔ אינה אופציונלית** (אינווריאנט `37 § 13.1`), והיא מופיעה ברנדר
  * כשורה התחתונה של המסך. היא ⛔ אינה נוסח שיווקי: הלומד רשאי לדעת שקרב ⛔ אינו מזיז
@@ -280,6 +326,8 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   /** ⓔ `T-397` — עשרה מקטעים, ⛔ ולא מילוי רציף אחד. הלולאה כותבת ישירות
       לכל מקטע, בדיוק כפי שכתבה קודם ל-`scaleX` היחיד: ⛔ אפס רינדורים חוזרים. */
   const manaSegRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  /** ⚡ T-363 — אותו טעם של `manaSegRefs`: הזמינות נכתבת בלולאה, ⛔ ולא ברינדור. */
+  const abilityRefs = useRef<Partial<Record<AbilityKey, HTMLButtonElement | null>>>({});
   /** ⛔ עותק קריא-בזמן-פריים של `battle` — הלולאה צריכה `manaSpent` חי בלי לתלות בו. */
   const battleRef = useRef<BattleState | null>(battle);
   useEffect(() => { battleRef.current = battle; }, [battle]);
@@ -414,6 +462,18 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     try { window.localStorage.setItem(ARENA_TAUGHT_KEY, '1'); } catch { /* ⛔ אחסון חסום ⛔ אינו שגיאה */ }
     setChosenSoFar((prev) => [...prev, option]);
     setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedRef.current)));
+  }, []);
+
+  /**
+   * ⚡ **T-363 · `37 § 4` — ההקשה מוסרת את ההכרעה ל-`spendAbility`, ⛔ ואינה מכריעה.**
+   * ⛔ אין כאן «יש לי מספיק מאנה?»: ⛔ בדיקה ברכיב היא עותק שני של החוק, והשני תמיד
+   * סוטה — ו-`spendAbility` מחזירה את **אותה הפניה** כשאי אפשר, ⇒ הקשה עקרה ⛔ אינה
+   * מרנדרת ו⛔ אינה גובה דבר.
+   * ⛔ **⛔ ואינה נוגעת ב-`selected`:** יכולת ⛔ אינה הטלה, ו-`§ 4` מפורש שמענה
+   * ⛔ אינו עולה מאנה ⇒ הקלף שנבחר נשאר בדיוק כפי שהיה.
+   */
+  const spend = useCallback((key: AbilityKey) => {
+    setBattle((prev) => (prev === null ? prev : spendAbility(prev, key, elapsedRef.current)));
   }, []);
 
   /**
@@ -575,6 +635,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     let lastTimeUp = elapsedRef.current >= BATTLE_MS;
     let lastClockText = '';
     let lastMana = -1;
+    let lastFrozen = false;
     const step = (now: number) => {
       if (originRef.current === null) originRef.current = now;
       const next = now - originRef.current;
@@ -620,6 +681,14 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
       const currentBattle = battleRef.current;
       if (currentBattle !== null) {
         const mana = manaAt(next, currentBattle.manaSpent);
+        // ⚡ T-363 — ההקפאה נגמרת **מעצמה עם השעון**, ⛔ בלי שהמאנה תזוז ו⛔ בלי רינדור
+        // ⇒ שני טריגרים, ⛔ ולא אחד. בלי השני, כפתור `הקפאה` היה נשאר מושבת אחרי שהיריב
+        // כבר הפשיר.
+        const nowFrozen = isFrozen(currentBattle, next);
+        if (mana !== lastMana || nowFrozen !== lastFrozen) {
+          lastFrozen = nowFrozen;
+          paintAbilities(abilityRefs.current, currentBattle, next);
+        }
         if (mana !== lastMana) {
           lastMana = mana;
           if (manaTextRef.current !== null) manaTextRef.current.textContent = `${mana} / ${MANA_CAP}`;
@@ -752,6 +821,23 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
    * בין רינדורים חי בכתיבת ה-ref שבלולאת ה-rAF (`manaTextRef` / `manaSegRefs`).
    */
   const mana = battle === null ? 0 : manaAt(elapsedRef.current, battle.manaSpent);
+
+  /**
+   * ⚡ T-363 — **נגזר, ⛔ ולא שדה.** שלושת האפקטים כבר נקראים מהמצב (`pendingDouble` ·
+   * `immuneBy` · `isFrozen`), ⇒ רשימה שנשמרת בנפרד הייתה מקור אמת שני שיכול לסטות.
+   * ⛔ ‏`elapsedRef` נקרא כאן כערך **פתיחה** בלבד, בדיוק כמו `mana` שמעליו: את השינוי
+   * הרציף עושה הלולאה, והשלושה האלה משתנים בקומיטים בדידים ש**כן** מרנדרים.
+   */
+  const activeAbilities: readonly AbilityKey[] =
+    battle === null
+      ? []
+      : ABILITY_ORDER.filter((key) =>
+          key === 'double'
+            ? battle.pendingDouble
+            : key === 'shield'
+              ? battle.immuneBy === 'shield'
+              : isFrozen(battle, elapsedRef.current),
+        );
 
   if (screen.kind === 'loading') {
     return (
@@ -1208,17 +1294,21 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             </span>
           </div>
         )}
+        {/* ⛔ **T-363 — אותה חסינות, שתי מילים.** `§ 6` (גלגול) ו-`§ 4` (`מגן`) מגיעות
+            שתיהן ל-`dodgedSwing`, ⇒ עד היום שתיהן היו מדפיסות «התחמקות!» — ולומד
+            שלחץ `מגן` היה מקבל הודעה על מחווה ש⛔ לא עשה. `immuneBy` הוא מה שמפריד. */}
         {battle.dodgedSwing !== null && (
           <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
-            {DODGED_HE}
+            {battle.immuneBy === 'shield' ? SHIELDED_HE : DODGED_HE}
           </p>
         )}
       </div>
 
       {/* ⓔ מד המאנה — `מאנה N / 10`, ובזמן זעם התווית מתחלפת.
           ⛔ **מענה ⛔ אינו מעלה מאנה אף פעם** (`37 § 4`): הלמידה ⛔ אינה נחסמת מאחורי
-          משאב. ⚠️ **המד מצויר ומחושב; ארבע היכולות (`הקפאה`·`מגן`·`כפול`·`ריפוי`)
-          ⛔ אינן בפרוסה הזאת** — הרנדר מצייר את שורתן, וזה **פער מוצהר**, ⛔ לא השמטה. */}
+          משאב. ⚠️ ⟦17/09 · `T-363`⟧ **שלוש היכולות שהרנדר מצייר נבנו** ויושבות מתחת ליד
+          (`ABILITY_ORDER`); `ריפוי` — הרביעית ב-`§ 4` שהרנדר ⛔ **אינו** מצייר — נשארת
+          **פער מוצהר**, ⛔ ולא השמטה. */}
       <div className="flex flex-col gap-1" data-arena-mana>
         <div className="flex flex-row items-baseline justify-between gap-2">
           <span
@@ -1329,6 +1419,85 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           </li>
         ))}
       </ul>
+
+      {/* ⚡ **⟦17/09 · `C-0673` · `T-363`⟧ שורת היכולות — `37 § 4`, ומתחת ליד כמו ברנדר.**
+          🔬 **הפער שנמדד:** `manaSpent` היה **קבוע 0 לאורך כל קרב** — המאנה נצברה עד
+          התקרה ו⛔ לא היה במה להוציא אותה. ⇒ זו שורת המשימה מילה במילה.
+          📐 **הגאומטריה מ-`render_video_B.py:308-322` ב-grep, ⛔ ולא מה-PNG:** שלושה
+          כפתורים `92×44` ברדיוס 14, מרווח 14 ביניהם (`x = LW-62-i*106`, רוחב 92),
+          ו-`ABILITIES` מצייר את `כפול` **הימנית** ⇒ `flex` רגיל ב-RTL נותן בדיוק את
+          הסדר הזה (`T-338`). ⛔ **רדיוס 14 ⛔ אינו בסולם החמישה** ⇒ `rounded-xl` (12),
+          אותה סטייה מדודה בדיוק שנרשמה ב-`ArenaHome` (D-036).
+          ⛔ **הרוחב ⛔ אינו 92 קבוע:** ב-320px נותרים 272 פנויים ו-`3×92 + 2×14 = 304`
+          ⇒ גלילה אופקית, שהיא שער (`check:mobile`). `flex-1` נותן את הרנדר ב-375
+          ומתכווץ מתחתיו — הרנדר מחייב **פריסה**, והשער גובר על מספר יחיד.
+          ⛔ **⛔ והמצב ⛔ אינו בצבע בלבד** (שכבה א׳ א2): לא-זמין הוא `disabled` אמיתי
+          (⛔ לא רק עמעום), והאפקטים הפעילים נאמרים ב**מילים** בשורת הסטטוס מתחת.
+          ⛔ **גובה 44 הוא רצפת שכבה א׳** — הרנדר מצייר 44, ⇒ ⛔ אין כאן סטייה. */}
+      <div className="flex flex-col gap-2" data-arena-abilities>
+        <p className="text-xs font-semibold text-[color:var(--arena-ink-dim)]">{ABILITIES_HE}</p>
+        <div className="flex flex-row gap-[14px]" data-rtl-row="abilities">
+          {ABILITY_ORDER.map((key) => {
+            const ready = canUseAbility(battle, key, elapsedRef.current);
+            return (
+              <button
+                key={key}
+                type="button"
+                ref={(el) => {
+                  abilityRefs.current[key] = el;
+                }}
+                data-arena-ability={key}
+                data-ready={ready ? 'true' : 'false'}
+                disabled={!ready}
+                onClick={() => spend(key)}
+                className={
+                  'flex min-h-touch flex-1 flex-row items-center justify-center gap-2 rounded-xl ' +
+                  'border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] ' +
+                  'text-[color:var(--arena-ink)] ' +
+                  'data-[ready=true]:border-[color:var(--arena-mana)] ' +
+                  'disabled:text-[color:var(--arena-ink-dim)] disabled:opacity-60 ' +
+                  'active:opacity-90 motion-safe:active:scale-[0.98] ' +
+                  'motion-safe:transition-transform motion-safe:duration-150'
+                }
+              >
+                {/* ⛔ העלות היא **מספר כתוב**, ⛔ ולא נקודות צבע — הרנדר מצייר עיגול עם
+                    הספרה בתוכו (`:320-322`), וזה בדיוק מה שנבנה כאן.
+                    🔴 **⛔ והספרה ⛔ אינה `--arena-mana`, וזו מדידה:** הקובץ עצמו רושם
+                    ‏`--arena-mana` על `--arena-stone-dark` כ-**3.46:1** — מעל רצפת 3:1
+                    ל**גרפיקה**, ⛔ ומתחת ל-4.5:1 של **טקסט קטן** (שכבה א׳). ⇒ הספרה
+                    ב-`--arena-ink`, והכחול עובר לגבול הכפתור הזמין, שם 3:1 הוא הרצפה
+                    הנכונה. ⛔ **וגודלה 12 ⛔ ולא 11** — `D-137`: ⛔ אין בזירה מספר גופן
+                    מתחת ל-12. שתיהן סטיות מהרנדר ש**שכבה א׳ מחייבת** (`36 § 14.4`). */}
+                <span
+                  aria-hidden
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--arena-stone-dark)] text-xs font-bold text-[color:var(--arena-ink)]"
+                >
+                  <EnWord>{`${ABILITY_COST[key]}`}</EnWord>
+                </span>
+                <span className="text-xs font-bold">{ABILITY_HE[key]}</span>
+                <span className="sr-only">
+                  {' · '}
+                  {ABILITY_COST_SR_HE} {ABILITY_COST[key]} {ABILITY_MANA_SR_HE}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {/* ⛔ **האפקטים הפעילים, ⛔ במילים.** הרנדר מצייר אותם כתגים על הבמה
+            (`:483` · `:487`), ⛔ אבל תג בצבע זהב ⛔ אינו ערוץ שני — כאן הם נאמרים,
+            ו-`aria-live` נותן אותם גם למי שאינו רואה את הבמה. ⛔ מוצג אך ורק כשיש מה
+            להציג: שורה ריקה היא רעש, ⛔ לא מידע. */}
+        {activeAbilities.length > 0 && (
+          <p
+            data-arena-ability-on
+            role="status"
+            aria-live="polite"
+            className="text-xs font-bold text-[color:var(--arena-gold-light)]"
+          >
+            {activeAbilities.map((key) => ABILITY_ON_HE[key]).join(' · ')}
+          </p>
+        )}
+      </div>
 
       {/* ⓖ הערת הבידוד — אינווריאנט `37 § 13.1`, והשורה התחתונה ברנדר. */}
       <p className="text-center text-xs text-[color:var(--arena-ink-dim)]" data-arena-isolation>

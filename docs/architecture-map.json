@@ -99,6 +99,7 @@
   "app/api/arcade/home/route.test.ts": [],
   "app/api/arcade/home/route.ts": [
     "lib/core/arenaCharacter.ts",
+    "lib/core/arenaLastRound.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/arcade/result/route.test.ts": [
@@ -686,6 +687,10 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
+  "components/ArenaHome.dom.test.tsx": [
+    "components/ArenaHome.tsx",
+    "lib/core/arenaLastRound.ts"
+  ],
   "components/ArenaHome.test.ts": [],
   "components/ArenaHome.tsx": [
     "components/ArenaAvatar.tsx",
@@ -693,6 +698,7 @@
     "lib/api/client.ts",
     "lib/core/arenaCharacter.ts",
     "lib/core/arenaHome.ts",
+    "lib/core/arenaLastRound.ts",
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
@@ -1162,6 +1168,10 @@
     "lib/core/arcadeResult.ts",
     "lib/core/characterBase.ts"
   ],
+  "lib/core/arenaLastRound.test.ts": [
+    "lib/core/arenaLastRound.ts"
+  ],
+  "lib/core/arenaLastRound.ts": [],
   "lib/core/arenaScene.ts": [],
   "lib/core/arenaSummary.test.ts": [
     "lib/core/arenaSummary.ts",

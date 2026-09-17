@@ -131,6 +131,13 @@ export interface BattleState {
    * (`ArcadeCandidate.distractorsEn`). המפלס נגזר תמיד מ-`manaAt`, ⇒ מקום אחד.
    */
   readonly manaSpent: number;
+  /**
+   * ⚡ **T-363 · `37 § 4` — «נזק כפול עכשיו».** `true` אחרי `כפול` ועד ההטלה הנכונה
+   * הבאה. ⛔ **הטלה שגויה ⛔ אינה צורכת אותו:** היא ⛔ אינה פוגעת כלל (`cast`: `damage = 0`),
+   * ⇒ צריכה עליה הייתה גובה 4 מאנה תמורת ⛔ כלום — ענישה על טעות, וזה בדיוק מה ש-`§ 5`
+   * («⛔ אין מצב כישלון על איטיות») ו-R-016 אוסרים.
+   */
+  readonly pendingDouble: boolean;
   /** מתי המילה הנוכחית עלתה למסך — הבסיס ל`§ 5` («הנזק נגזר ממהירות התשובה»). */
   readonly shownAtMs: number;
   /** ה-`elapsedMs` של המכה האחרונה שכבר יושמה. ⛔ הקצב עצמאי, ולכן הוא נמדד מהשעון. */
@@ -139,6 +146,13 @@ export interface BattleState {
   readonly pendingPenalty: number;
   /** `37 § 6` — המכה שהלומד התגלגל ממנה. ⛔ אחת: החסינות שייכת למכה ש**הוכרזה**. */
   readonly dodgedSwing: number | null;
+  /**
+   * 🛡️ **T-363 — ⛔ איך הגיעה החסינות, ⛔ ולא רק שהיא כאן.** ‏`§ 6` (גלגול) ו-`§ 4`
+   * (‏`מגן`) מגיעות לאותה חסינות בדיוק, ⇒ שדה אחד היה מספיק ל-`tick` — ⛔ אבל המסך
+   * אומר «התחמקות!» על אחת ו«מגן» על השנייה, ⛔ ושתיהן ⛔ לא היו ניתנות להבחנה.
+   * ⛔ ⛔ אינו חוק שני: `tick` ⛔ אינו קורא אותו כלל.
+   */
+  readonly immuneBy: 'dodge' | 'shield' | null;
   readonly casts: readonly BattleCast[];
   /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
   readonly stats: CharacterBattleStats;
@@ -162,10 +176,12 @@ export function startBattle(
     enemyHp: ENEMY_HP,
     enemyHpMax: ENEMY_HP,
     manaSpent: 0,
+    pendingDouble: false,
     shownAtMs: 0,
     lastSwingMs: 0,
     pendingPenalty: 0,
     dodgedSwing: null,
+    immuneBy: null,
     casts: [],
     stats,
   };
@@ -226,7 +242,11 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
   const correct = chosen === word.translationHe;
   const critical = correct && responseMs < CRITICAL_MS;
   const bonus = correct && word.kind === 'unfiltered' ? UNFILTERED_BONUS_DAMAGE : 0;
-  const damage = correct ? (critical ? state.stats.criticalDamage : state.stats.hitDamage) + bonus : 0;
+  const base = correct ? (critical ? state.stats.criticalDamage : state.stats.hitDamage) + bonus : 0;
+  // ⚡ T-363 · `37 § 4` — «נזק כפול». ⛔ **מכפיל ⛔ ולא תוספת**, וזה מה שהרנדר קורא לו
+  // (`render_video_B.py:487`, התג `נזק כפול`). ⛔ הוא מוכפל **אחרי** בונוס `§ 2`, כי שניהם
+  // מתארים את אותה הטלה — ⛔ ואין כאן מכפיל שני שמתחבא בסדר הפעולות.
+  const damage = correct && state.pendingDouble ? base * 2 : base;
 
   // `§ 2` — «טעית — הלחש חוזר אליך». ⛔ **פעם אחת בלבד**: המילה החוזרת נכנסת כ-`base`,
   // ולכן שגיאה שנייה עליה ⛔ אינה מחזירה אותה שוב ו⛔ אין לולאה שאינה נגמרת.
@@ -244,6 +264,7 @@ export function cast(state: BattleState, chosen: string, elapsedMs: number): Bat
     enemyHp: Math.max(0, state.enemyHp - damage),
     shownAtMs: elapsedMs,
     pendingPenalty: correct ? 0 : state.stats.swingPenalty,
+    pendingDouble: correct ? false : state.pendingDouble,
     casts: [...state.casts, { wordId: word.wordId, correct, responseMs, critical, kind: word.kind }],
   };
 }
@@ -299,6 +320,7 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
     lastSwingMs: elapsedMs,
     pendingPenalty: 0,
     dodgedSwing: immune ? null : state.dodgedSwing,
+    immuneBy: immune ? null : state.immuneBy,
   };
 }
 
@@ -346,7 +368,7 @@ export function dodge(state: BattleState, elapsedMs: number): BattleState {
   const telegraph = telegraphAt(elapsedMs);
   if (telegraph.phase !== 'window') return state;
   if (state.dodgedSwing === telegraph.swingIndex) return state;
-  return { ...state, dodgedSwing: telegraph.swingIndex };
+  return { ...state, dodgedSwing: telegraph.swingIndex, immuneBy: 'dodge' };
 }
 
 /**
@@ -396,3 +418,84 @@ export function streakAt(state: BattleState): number {
  * ⛔ **מספר אחד, ⛔ ולא שניים:** הרכיב ⛔ אינו כותב 3 משלו.
  */
 export const STREAK_HOT = 3;
+
+/**
+ * ⚡ **T-363 · `37 § 4` — שלוש היכולות, ⛔ והמאנה סוף סוף יש לה לאן ללכת.**
+ *
+ * 🔬 **הפער שנמדד:** `grep -c 'הקפאה\|כפול' components/ArenaBattle.tsx` ⇒ **0**. מד המאנה
+ * נבנה ב-`T-397`, `manaAt` צוברת מאז `T-176`, ו-`manaSpent` היה **קבוע 0 לאורך כל קרב**
+ * — כלומר משאב שנצבר עד התקרה ו⛔ אין במה להוציא אותו. זו שורת המשימה מילה במילה.
+ *
+ * ⛔ **שלוש ⛔ ולא ארבע:** `§ 4` מונה גם `ריפוי`, והרנדר (`render_video_B.py:308`) מצייר
+ * **שלוש** — `ABILITIES = [("כפול", 4), ("מגן", 3), ("הקפאה", 5)]`. ‏`36 § 14.4`: הרנדר
+ * מחייב. ⛔ `ריפוי` ⛔ אינה נבנית כאן, ו⛔ אינה «נשכחה».
+ *
+ * 🔴 **⛔ והעלויות ⛔ אינן שלי:** שלושת המספרים הם `render_video_B.py:308` בדיוק,
+ * וה-`ABILITY_ORDER` הוא סדר הציור שלו (‏`x = LW - 62 - i*106` ⇒ `כפול` הימנית).
+ *
+ * ⚠️ 🔴 **מה ש⛔ אינו במפרט, ונאמר כאן במפורש — `RULES § 0.22`, הכרעה הפיכה.**
+ * ‏`§ 4` נוקב בשמות היכולות ובמשפט אחד על ההכרעה («נזק כפול עכשיו, או לשמור למגן»),
+ * ו⛔ **אינו** מגדיר את האפקט של `מגן` ו-`הקפאה`. ⇒ שלושתם נגזרו **מקבועים שכבר במפרט**,
+ * ⛔ ובלי ולו מספר חדש אחד:
+ *   · `כפול` — מכפיל את נזק ההטלה הנכונה הבאה. **המילה של הרנדר עצמו** (`:487`).
+ *   · `מגן` — מבטל את המכה הבאה של היריב, דרך אותה חסינות בדיוק ש-`§ 6` כבר מגדירה
+ *     ומימשה ב-`dodge()` (`dodgedSwing`) ⇒ ⛔ מנגנון חדש ⛔ אין כאן, יש כניסה שנייה אליו.
+ *   · `הקפאה` — שעון המכות של היריב נדחף **מחזור שלם** קדימה, `ENEMY_SWING_MS` של
+ *     `§ 3` ⇒ 8 שניות שבהן ⛔ אין מכה ו⛔ אין טלגרף. זו הסיבה שהיא עולה 5 ו-`מגן` 3:
+ *     `מגן` מבטל מכה, `הקפאה` קונה גם את השקט שאחריה.
+ * ⇒ **PM ורוי רשאים להחליף כל אחד משלושת האפקטים בקומיט אחד** — הם חיים כאן, בשכבה
+ * הטהורה, ⛔ ולא ברכיב (‏`§ 7` גדר 4).
+ */
+export type AbilityKey = 'double' | 'shield' | 'freeze';
+
+/** `render_video_B.py:308` — סדר הציור מימין לשמאל, מילה במילה. */
+export const ABILITY_ORDER: readonly AbilityKey[] = Object.freeze(['double', 'shield', 'freeze'] as const);
+
+/** `render_video_B.py:308` — `("כפול", 4)` · `("מגן", 3)` · `("הקפאה", 5)`. ⛔ ⛔ לא נבחרו כאן. */
+export const ABILITY_COST: Readonly<Record<AbilityKey, number>> = Object.freeze({
+  double: 4,
+  shield: 3,
+  freeze: 5,
+});
+
+/**
+ * ⛔ **היכולת ⛔ אינה «זמינה» רק כי יש מאנה.** יכולת שכבר פעילה ⛔ אינה נקנית שוב:
+ * שני `כפול` זה אחר זה היו גובים 8 מאנה על אפקט אחד, וזה בדיוק סוג הבזבוז שלומד
+ * ⛔ אינו יכול לראות מראש ⛔ ולא לבטל.
+ */
+export function canUseAbility(state: BattleState, key: AbilityKey, elapsedMs: number): boolean {
+  if (manaAt(elapsedMs, state.manaSpent) < ABILITY_COST[key]) return false;
+  if (key === 'double') return !state.pendingDouble;
+  if (key === 'shield') return state.dodgedSwing !== telegraphAt(elapsedMs).swingIndex;
+  return !isFrozen(state, elapsedMs);
+}
+
+/**
+ * ⛔ **טהורה, ואידמפוטנטית כלפי מצב שאי אפשר לקנות בו:** הקשה שאין לה כיסוי מחזירה את
+ * **אותה הפניה** ⇒ הרכיב ⛔ אינו מרנדר, ו⛔ אין «קניתי ולא קרה כלום».
+ */
+// ⛔ **`spendAbility` ו⛔ לא `useAbility`, וזה ⛔ אינו טעם:** `react-hooks/rules-of-hooks`
+// מזהה **כל** שם שמתחיל ב-`use` כ-Hook ⇒ קריאה מתוך `onClick` הייתה הפרה, והשם היה
+// מכתיב איפה מותר לקרוא לפונקציה טהורה שאין לה שום קשר ל-React.
+export function spendAbility(state: BattleState, key: AbilityKey, elapsedMs: number): BattleState {
+  if (!canUseAbility(state, key, elapsedMs)) return state;
+  const manaSpent = state.manaSpent + ABILITY_COST[key];
+  if (key === 'double') return { ...state, manaSpent, pendingDouble: true };
+  if (key === 'shield') {
+    return {
+      ...state,
+      manaSpent,
+      dodgedSwing: telegraphAt(elapsedMs).swingIndex,
+      immuneBy: 'shield',
+    };
+  }
+  // ⛔ **⛔ אין כאן שעון שני.** `tick` סופר מכות ב-`floor(lastSwingMs / ENEMY_SWING_MS)`,
+  // ⇒ דחיפת `lastSwingMs` מחזור אחד קדימה היא **בדיוק** «המכות בחלון הזה ⛔ לא קרו»,
+  // באותו מנגנון שכבר נבדק. ⛔ שדה `frozenUntil` היה שעון שני, והשני תמיד סוטה.
+  return { ...state, manaSpent, lastSwingMs: elapsedMs + ENEMY_SWING_MS };
+}
+
+/** מה שהמסך מצייר בזמן הקפאה. ⛔ נגזר, ⛔ ולא שדה. */
+export function isFrozen(state: BattleState, elapsedMs: number): boolean {
+  return state.lastSwingMs > elapsedMs;
+}
