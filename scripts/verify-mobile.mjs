@@ -39,7 +39,27 @@ const JOURNEYS_ONLY = ARGV.includes('--journeys-only');
 const BASE_ARG = ARGV.find((a) => !a.startsWith('--'));
 const PORT = Number(process.env.PORT) || 3000;
 const BASE = BASE_ARG || `http://localhost:${PORT}`;
-const WIDTHS = [320, 375, 414];
+// 📱 `T-417` · סוגר את `F-279` · יעד ② של `arena`, בלשונו של רוי: «המכשיר האמיתי נבדק».
+// 🔬 נמדד `C-0682`, ⛔ ולא שוער: עד היום המערך הזה החזיק **רוחבים בלבד** — `320 · 375 · 414` —
+// והלולאה הריצה את כולם על גובה קבוע של `780`. ⇒ אייפון 12/13/14 (**390×844**),
+// אייפון 14 Pro/15/16 (**393×852**) ואייפון 14 Pro Max/15 Pro Max/16 Plus (**430×932**) —
+// שלושת הגדלים הנפוצים ביותר בידיים של לומדים — ⛔ **מעולם ⛔ לא נמדדו**, ו-`414×896` שהשער
+// התהדר בו הוא אייפון 11/XR, מכשיר בן שש שנים. ⇒ אלפיים טענות ירוקות אמרו «עבר ב-320/375/414»,
+// ⛔ ולא «עבר במכשיר של הלומד».
+//
+// ⛔ **שלוש הרשומות הראשונות ⛔ לא זזו, וזה מכוון:** הן שומרות על גובה ה-`780` שתמיד רצו בו,
+// ⇒ ⛔ אף טענה קיימת ⛔ אינה משנה את משמעותה — מה שמתרחב הוא הכיסוי בלבד. ⛔ ואין כאן שינוי
+// של מספר שהוא שער (`RULES § 0.1 ז׳`): ⛔ לא 44px, ⛔ לא רצפת ה-12px, ⛔ לא תקציב הזוהר.
+// שלוש הרשומות החדשות נושאות את הגובה ה**אמיתי** של המכשיר, מפני ש«גולש אנכית» ⛔ אינה שאלה
+// שאפשר לשאול על רוחב לבדו.
+const WIDTHS = [
+  { width: 320, height: 780, device: 'legacy 320 · הרוחב הצר ביותר שהמוצר מבטיח' },
+  { width: 375, height: 780, device: 'legacy 375 · אייפון SE/8' },
+  { width: 414, height: 780, device: 'legacy 414 · אייפון 11/XR' },
+  { width: 390, height: 844, device: 'אייפון 12 · 13 · 14' },
+  { width: 393, height: 852, device: 'אייפון 14 Pro · 15 · 16' },
+  { width: 430, height: 932, device: 'אייפון 14 Pro Max · 15 Pro Max · 16 Plus' },
+];
 const ROUTES = [
   '/',
   '/signup',
@@ -1000,9 +1020,10 @@ try {
   }
 
   // ---- 2. per-width layout guarantees (MF-1, MF-2, MF-4) -------------------
-  for (const width of WIDTHS) {
+  for (const { width, height, device } of WIDTHS) {
+    report(`── viewport ${width}×${height} (${device})`);
     const context = await browser.newContext({
-      viewport: { width, height: 780 },
+      viewport: { width, height },
       deviceScaleFactor: 2,
       isMobile: true,
       hasTouch: true,
@@ -1037,7 +1058,7 @@ try {
       uncaught.length = 0;
       await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
 
-      const at = `${route} @${width}px`;
+      const at = `${route} @${width}×${height}px`;
 
       // Horizontal scroll (MF-4)
       const overflow = await page.evaluate(
@@ -1142,8 +1163,8 @@ try {
         // הגלובלי נשאר ירוק, והלומד ראה **שלושה** מתוך ארבעה.
         // 🔬 נמדד `C-0685` ב-375×812: רצועה 327px מול `scrollWidth` 408px ⇒ **גלישה
         // 81px**, ו-`הבנת הנקרא` — המסלול היחיד שיש בו תוכן — 51% מחוץ למסך.
-        // ⇒ הטענה היא על ה**רצועה עצמה**, ⛔ ולא על הדף, והיא רצה בשלושת
-        // הרוחבים ש-`WIDTHS` נוקב (320 · 375 · 414).
+        // ⇒ הטענה היא על ה**רצועה עצמה**, ⛔ ולא על הדף, והיא רצה בכל ששת הגדלים
+        // ש-`WIDTHS` נוקב (`T-417`: 320 · 375 · 414 · 390×844 · 393×852 · 430×932).
         const strip = await page.locator('main [role="tablist"]').first().evaluate((el) => ({
           client: Math.round(el.clientWidth),
           scroll: Math.round(el.scrollWidth),
@@ -3759,4 +3780,6 @@ if (failures.length) {
   for (const f of failures) console.error('  - ' + f);
   process.exit(1);
 }
-console.log(`\n✓ all mobile/PWA guarantees hold (${notes.length} checks, widths ${WIDTHS.join('/')}px)`);
+console.log(
+  `\n✓ all mobile/PWA guarantees hold (${notes.length} checks, viewports ${WIDTHS.map((v) => `${v.width}×${v.height}`).join(' · ')})`,
+);
