@@ -79,6 +79,15 @@ const ROUTES = [
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
+  // `T-400` — the `סינון מילים` deck WITH the foot row «נשארו N מילים ברמה», the second
+  // number `kol-A-03-card.png` draws. `/dev/deck` renders `deck="due"`, which has ⛔ no
+  // level for anything to be "left in", so the row is unreachable from the route above it —
+  // the same reason `/dev/deck/done` and `/dev/deck/skeleton` are routes of their own.
+  // What this measures and nothing else does: that one more `flex-none` row inside
+  // `h-[calc(100dvh-10rem)]` still leaves the two grade targets thumb-sized and above the
+  // fold at 320/375/414, and that a 314-word Hebrew line does not scroll sideways at 320.
+  // ⛔ It asks the server for nothing ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/deck/level',
   // T-089 · § 4.2ט — אנטומיית מסך השיעור. ⛔ אין עדיין מסלול מוצר: T-090 (התוכן)
   // חסומה ב-R-018, ולכן `<LessonScreen>` ⛔ אינו מרונדר בשום מקום שהארנס מגיע
   // אליו, וכל טענה על 320/375/414 עליו הייתה הצהרה. שתי שורות ו⛔ לא אחת, מאותו

@@ -3122,3 +3122,89 @@ press on `רמה 2` then `תרגל` fired `GET /api/amirnet/practice?type=sc&lev
 against the live server. ⚠️ **What the clone ⛔ could not measure:** it carries
 ⛔ no Supabase session, so both routes answered a soft failure and the question
 itself was measured in the ten render tests, ⛔ not on a live screen.
+
+## C-0678 (DEV) — `T-400` — the level's second number rides the answer the deck already asks for
+
+### The gap `F-272` measured, and why the two obvious fixes were both closed
+
+`T-394` put the round's position on screen — «N מתוך M», a progress bar — and left ⓒ open on
+one number: the **second** one `docs/design/kol-A-03-card.png` draws, under the grade buttons.
+`render_video_A.py:391` draws the whole line in one call:
+
+```py
+c.txt(LW/2, y + h + 34, "5 מתוך 20 · נשארו 314 מילים ברמה", 12.5, "Regular", INK_MUTED + (…,))
+```
+
+Measured `C-0663` and confirmed `C-0664`: `grep -n 'summary\|unseen\|levels/summary'
+components/StudyDeckScreen.tsx` ⇒ **0**. The screen that renders the deck does ⛔ not hold the
+number, and both direct routes to it are closed by decisions that already exist:
+
+- a second `GET /api/levels/summary` from the deck screen ⇒ `§ 4.2ז` («⛔ אין הגדרה שנייה»),
+- lifting state to `<LevelMapScreen>` ⇒ that is a **different screen**, ⛔ not a parent.
+
+`D-260` chose ⓐ: the number rides the answer the deck **already** asks for. ⇒ ⛔ zero new
+requests from the client, and the whole change on the wire is one optional field.
+
+### What that costs on the server, and what it deliberately does ⛔ not cost
+
+`readLevelUnseen` adds **two reads inside the request that was already happening** — a
+`count: 'exact', head: true` on `words` for the band, and the learner's `word_progress` rows
+joined `words!inner` and filtered to the same band. It then hands them to `summarizeLevel`
+and reads `.unseen` off the result.
+
+⛔ **The arithmetic is ⛔ not re-written here.** `totalInLevel − known − inReviewList` stays in
+`lib/core/levelSummary.ts`, the same function `/api/levels/summary` calls. A `count` per
+predicate written in SQL in this route would have been the parallel definition `§ 4.2ז`
+forbids by name, and the two routes would have drifted a line at a time.
+
+⚠️ **And `totalInLevel` is a head count, ⛔ not `levelRows.length`.** `loadLevelWords` cuts at
+`MAX_QUEUE_ROWS = 200`; A1 holds **315** authored words. The rows in hand are the deck, ⛔ not
+the level, and using their length would have printed «נשארו 200−N» on every level above the
+ceiling — a number that looks right in every test with a small fixture.
+
+### Doubt returns absence, ⛔ never a smaller number
+
+Three states return `null` and the field is simply **absent** from the response: the
+`MAX_SEEN_ROWS` ceiling was reached, the band is not one of the six (`parseLevel` ⇒ `null`,
+`D-034`), or either read failed. A truncated progress list under-counts `known` and therefore
+**over**-counts «נשארו» — the one direction that flatters the product — and a learner would
+build a decision on it.
+
+⛔ **And it never becomes a 503.** The cards are what the screen exists for; a footer line is
+⛔ not worth failing the deck over. `<StudyDeckScreen>` reads it with `typeof … === 'number'`
+and ⛔ not with `??`/`||`, because `unseen: 0` («⛔ no word in this level is still unseen») is
+a real answer and truthiness would delete exactly the count the learner earned.
+
+### The row is a SIBLING of the stage, and that is a measured constraint
+
+`scripts/verify-mobile.mjs` measures **every child** of `[data-deck-viewport]` and fails any
+that is shorter than the stage (`T-086` · `C-0104`). ⇒ the foot row is a `flex-none` sibling
+of the stage inside `[data-card-deck]`, and the stage (`min-h-0 flex-1`) shrinks around it on
+its own. A `CardDeck.dom.test.tsx` case pins that placement so a later tidy-up cannot move it
+inside the stage and redden the gate in three widths at once.
+
+### TD — `/dev/deck/level` is a fourth deck fixture, and it exists because the row is unreachable from the third
+
+`/dev/deck` renders `deck="due"`, which has ⛔ no level for anything to be "left in" ⇒ the foot
+row cannot appear there, and a fixture that carried it would be asserting a false sentence on
+the screen. Same reasoning that already gave `/dev/deck/done` and `/dev/deck/skeleton` routes
+of their own. It is registered in `ROUTES` in `scripts/verify-mobile.mjs` and ⛔ **not** in
+`scripts/lib/walk-routes.mjs`: it is an intermediate state of a deck the learner passes
+through, ⛔ not a screen they land on — the same call that kept `/dev/deck/skeleton` out.
+
+### Measured live, ⛔ not asserted — `next start`, 320 · 375 · 414 × 780
+
+| width | foot row | grade buttons | under 44px | hscroll | stage scroll | console |
+|---|---|---|---|---|---|---|
+| 320 | «נשארו 314 מילים ברמה» · `top=648 bottom=672` · 12px | `130×52`, `bottom=648` | 0 | 0 | 0 | 0 |
+| 375 | same · `top=648 bottom=672` | `158×52`, `bottom=648` | 0 | 0 | 0 | 0 |
+| 414 | same · `top=648 bottom=672` | `177×52`, `bottom=648` | 0 | 0 | 0 | 0 |
+
+The line's `scrollWidth === clientWidth` at all three widths ⇒ it does ⛔ not wrap out of its
+box at 320, which is the width the 314-word Hebrew string was actually at risk in.
+
+⚠️ **The one rounding, declared:** the render draws the line at **12.5px** at 65% opacity. It
+ships at `text-xs` (**12px**) at full `--ink-muted`. 12px is the constitution's hard floor
+(`§ א9` · `check:text-floor`) and the nearest step in the scale; the opacity was ⛔ not copied
+because the contrast floor is a **frozen gate** and 65% of a muted token is the one part of
+the render the gates override.

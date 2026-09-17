@@ -200,6 +200,7 @@
   ],
   "app/api/study/queue/route.ts": [
     "lib/core/deck.ts",
+    "lib/core/levelSummary.ts",
     "lib/core/queue.ts",
     "lib/core/sentenceItem.ts",
     "lib/supabase/auth.ts"
@@ -359,6 +360,10 @@
     "components/CardDeck.tsx"
   ],
   "app/dev/deck/layout.tsx": [],
+  "app/dev/deck/level/page.tsx": [
+    "components/CardDeck.tsx",
+    "lib/core/deck.ts"
+  ],
   "app/dev/deck/page.tsx": [
     "components/CardDeck.tsx",
     "lib/core/deck.ts"

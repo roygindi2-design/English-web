@@ -87,6 +87,13 @@ type QueueResponse =
       readonly cards?: readonly QueueCardInput[];
       /** …and `sentences` answers `items` (docs/api-contract.md) — T-066 · D-169. */
       readonly items?: readonly SentenceItem[];
+      /**
+       * `T-400` — «כמה מילים ברמה טרם נראו», on the `level` deck ALONE and only when the
+       * route could count it honestly. ⛔ Optional on purpose: the other three decks are not
+       * defined by a level, and a ceiling or a failed read omits the field rather than
+       * sending a number that looks right (`readLevelUnseen`).
+       */
+      readonly unseen?: number;
     }
   | { readonly ok: false; readonly code: string };
 
@@ -94,7 +101,12 @@ type GradeResponse = { readonly ok: boolean };
 
 type ScreenState =
   | { readonly kind: 'loading' }
-  | { readonly kind: 'cards'; readonly cards: readonly DeckCard[] }
+  | {
+      readonly kind: 'cards';
+      readonly cards: readonly DeckCard[];
+      /** `T-400` — carried beside the cards because it arrived in the SAME answer. */
+      readonly unseenInLevel?: number;
+    }
   | { readonly kind: 'empty' }
   | { readonly kind: 'schema_missing' }
   | { readonly kind: 'session_expired' }
@@ -185,7 +197,18 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
       // same `<CardDeck>`. ⛔ `??` and not a deck check: the SHAPE of the response is the
       // contract, and a deck that answered neither is an empty deck, ⛔ not a crash.
       const list: readonly DeckCard[] = body.items ?? body.cards ?? [];
-      setState(list.length === 0 ? { kind: 'empty' } : { kind: 'cards', cards: list });
+      setState(
+        list.length === 0
+          ? { kind: 'empty' }
+          : // `T-400` — ⛔ `typeof` and ⛔ not a truthiness check: `unseen: 0` is a real
+            // answer («⛔ no word in this level is still unseen»), and `??`/`||` here would
+            // drop exactly the one count the learner earned.
+            {
+              kind: 'cards',
+              cards: list,
+              ...(typeof body.unseen === 'number' ? { unseenInLevel: body.unseen } : {}),
+            },
+      );
     } catch {
       // `apiGet` only rejects when the answer never arrived or was not JSON — either way
       // there is no code to act on, so this is the generic failure and not a lie about why.
@@ -256,6 +279,10 @@ export default function StudyDeckScreen({ deck }: { readonly deck: DeckName }) {
           cards={state.cards}
           onGraded={onGraded}
           exit={{ href: '/cards', labelHe: BACK_TO_CARDS_HE }}
+          // `T-400` · `F-272` — ⛔ no second request and ⛔ no lifted state: the number came
+          // down with the queue this screen already asked for (`§ 4.2ז` forbids the second
+          // `/api/levels/summary` read, and `<LevelMapScreen>` is a DIFFERENT screen).
+          unseenInLevel={state.unseenInLevel}
         />
       </section>
     );

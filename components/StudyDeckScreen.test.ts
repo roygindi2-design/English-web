@@ -376,3 +376,32 @@ describe('T-066 — «משפטים» on the same screen (D-169)', () => {
     expect(review).toBeGreaterThan(guard);
   });
 });
+
+/**
+ * 📍 **`T-400` · `F-272` · `D-260` — החוט: המספר יורד עם התור, ⛔ ולא בבקשה שנייה.**
+ *
+ * 🔬 **נמדד `C-0663`, ⛔ ולא שוער:** `grep -n 'summary|unseen|levels/summary'` על הקובץ
+ * הזה החזיר **0** ⇒ המסך ⛔ לא החזיק את המספר, ושתי הדרכים הישירות אליו חסומות —
+ * קריאה שנייה ל-`/api/levels/summary` סותרת את `§ 4.2ז`, והרמת מצב ל-`<LevelMapScreen>`
+ * חוצה למסך אחר. ⇒ מה שנשאר הוא בדיוק מה שהבדיקות כאן סוגרות.
+ */
+describe('T-400 — `unseen` נוסע מהתשובה אל הדק, ⛔ בלי קריאה שנייה', () => {
+  it('⛔ אפס בקשה ל-/api/levels/summary מהמסך הזה', () => {
+    expect(CODE).not.toContain('/api/levels/summary');
+    // בקשת ה-GET היחידה של המסך היא התור, בדיוק כפי שהייתה.
+    const gets = CODE.match(/apiGet</g) ?? [];
+    expect(gets).toHaveLength(1);
+  });
+
+  it('`unseen` נקרא מגוף התשובה בתוך load()', () => {
+    const load = braceRegion(CODE, 'const load = useCallback(async () => {');
+    expect(load).toContain('body.unseen');
+    // ⛔ `typeof` ⛔ ולא נפילה לאמת: `unseen: 0` הוא תשובה אמיתית, ו-`??`/`||`
+    // היו מוחקים בדיוק את המספר היחיד שהלומד הרוויח.
+    expect(load).toContain("typeof body.unseen === 'number'");
+  });
+
+  it('הוא מועבר ל-<CardDeck> כ-`unseenInLevel`, ⛔ ואינו נגזר שם מחדש', () => {
+    expect(CODE).toContain('unseenInLevel={state.unseenInLevel}');
+  });
+});

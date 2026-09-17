@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                     # ▶️ C-0677 (QA, מלא): שער ירוק, מוזג ל-`dev`. `amirnet` נמסרה (ⓐ מלאה · ⓑⓒ קוד+בדיקות — `F-275`) והמוקד עבר ⇢ `cards` (⬜=1, גלגול מסביב, `docs/plan-open.md`). 11 🟣→✅.
-STATE: BUILD                   # ▶️ C-0677 (QA): `verify` מלא פעמיים ירוק (284/284·4918/4918·build✅·mobile 1997) · `loop:health` 23/23 (11 נפתר). הליכה 375×780 · 8 מסכי `/dev/amirnet/*` — 0 פגם. פירוט ⇒ `control-log`.
+NEXT_AGENT: QA                     # ▶️ C-0678 (DEV, בנייה): **שורת `cards` אחת נמסרה 🟣 — `T-400`,** והמספר השני של `kol-A-03-card.png` על המסך. ‏`verify` מלא **exit 0**. ⬜ ב-`cards` ירד מ-1 ל-**0** ⇒ המחלקה **מוצתה** ל-DEV, ⛔ ואינה חתומה. ⛔ המוקד ⛔ לא הוזז — `§ 0.23 ז׳` אוסר לקפוץ באמצע טיק.
+STATE: BUILD                   # ▶️ C-0678 (DEV): הליכה חיה 320·375·414 × 780 על `/dev/deck/level` (`next start`). **T-400:** «נשארו 314 מילים ברמה» ב-`top=648 bottom=672` מול קיפול 780 בשלושת הרוחבים, כפתורי דירוג `130×52`·`158×52`·`177×52`, ⛔ אפס יעד מתחת ל-44, `hscroll=0`, גלילת במה `0`, ⛔ אפס שגיאת קונסולה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-17T05:00:00Z"   # C-0677 (QA, מלא). הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אפס סבבי Smart Wait.
+LAST_HANDOFF_AT: "2026-09-17T05:34:11Z"   # C-0678 (DEV, בנייה). הנעילה הייתה של QA בפתיחה ⇒ **שלושה סבבי Smart Wait** ועוד המתנה, ו⛔ **מרוץ נעילה שאבד פעם אחת** (‏`F-251`) — חושב מזהה מחדש והטיק המשיך.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"               # 🔒 C-0678 (DEV, בנייה) — `cards` · `T-400`.
@@ -12,7 +12,7 @@ LOCK_AT: "2026-09-17T05:34:11Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
-#   cards:  18 / 120           # § 13-3 · **המוקד מ-`C-0677` (QA · גלגול מסביב).** ⬜=**1** (`T-400`) · ⛔=1 (`T-237`). שורת חוב קודמת ⇒ `plan/61-deferred.md`
+#   cards:  19 / 120           # § 13-3 · **המוקד מ-`C-0677` (QA · גלגול מסביב).** ⬜=**0** · 🟣=**1** (`T-400`) · ⛔=1 (`T-237`). ⛔ אינה חתומה, ונשארת ברוטציה. 🔨 **+טיק `C-0678` (DEV):** `T-400` — המספר השני של `kol-A-03-card.png`, וסוגרת את `F-272`. שורת חוב קודמת ⇒ `plan/61-deferred.md`
 #   arena:  31 / 120          # § 13-4 · **⛔ אינה המוקד.** ⬜=**0** · 🟣→✅ **9** ב-`C-0677` · ⛔=3 · ⛔ אינה חתומה, נשארת ברוטציה. שורת חוב ⇒ `plan/61-deferred.md`
 #   studies: 3 / 120           # § 13-5 · ⬜=0. פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   amirnet: 25 / 120          # § 41 § 8-1..3 · **נמסרה ⇒ המוקד עבר ל-`cards` ב-`C-0677` (QA).** ⬜=0 · 🟣→✅ 2 (T-372·T-376) · ⛔=2. SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: cards           # ▶️ **הוזז `C-0677` (QA · `STEP 5.8` — מחלקת `36 § 13`, ⬜=0 ⇒ החלטה בטיק).** ‏`docs/plan-open.md` 🔴 «מועמדים לפי הסדר»: `amirnet` מוצתה ⇒ הבא עם עבודה פנויה בגלגול הוא `cards` (⬜=1, `T-400`). SEALS · amirnet ⇒ `control-log`.
 PREV_WORKSTREAM: "amirnet"     # `C-0677` (QA) — נמסרה (ⓐ מלאה · ⓑⓒ קוד+בדיקות, `F-275`). ⛔=2 פתוחות (`T-312`·`T-324`, שתיהן חסומות-חיצונית).
-WORKSTREAM_ENDING: ""   # רוקן `C-0677` (QA) — האזעקה על `amirnet` טופלה (SEALS + הזזה באותו טיק).
+WORKSTREAM_ENDING: "cards · 0 ⬜ נותרו · 2026-09-17T05:34:11Z · C-0678"   # `STEP 5.7` — ⬜ נמדד **1** בפתיחת הפרוסה (`docs/plan-open.md`) ו-**0** בסגירתה אחרי `T-400`. 🔴 **המוקד ⛔ לא הוזז בתוך הטיק** — `§ 0.23 ז׳` אוסר לקפוץ באמצע («⛔ ONE SLICE PER TICK») ⇒ הטיק הבא מקדם. ⛔ ⛔ אינו היתר ל-QA לחתום.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0677 (QA) לפני הזזת המוקד → cards. ⇒ `plan/archive/control-log.md`.)
@@ -71,3 +71,4 @@ PROMOTIONS_THIS_MONTH: 19         # 19 this month (➕ 16/09 13:24Z, C-0655 OPS 
 
 | C-0675 | DEV | QA | 2026-09-17T03:20:00Z | 🔨 **בנייה — הדלת של אמירנט, ועמה קידום המוקד** `arena` ⇢ `amirnet` (`§ 0.23 ז׳` ④; הספירות ב-`ACTIVE_WORKSTREAM`). `T-376` — `AmirnetPracticeFlow` מחבר תפריט ⇒ `GET /api/amirnet/practice` ⇒ `AmirnetQuestion` ⇒ `POST …/result`, וסוגר את `F-265`. סטייה מוצהרת: התפריט הפסיק להיזון מ-`zeroStats()`. `verify` מלא exit 0. | `components/AmirnetPracticeFlow.tsx` · `app/(tabs)/world/amirnet/practice/page.tsx` · `lib/core/amirnetPractice.ts` |
 | C-0677 | QA | DEV | 2026-09-17T05:23:43Z | ⭐ **שער מלא — מיזוג ל-`dev` (ff-only, 37 קומיטים), 11 🟣→✅, `RELEASE_READY`.** `verify` מלא ×2 ירוק · `loop:health` 23/23 (11 נפתר). `STEP 5.8`: `amirnet` מוצתה (⬜=0, מחלקת `36 § 13`) ⇒ SEALS (ⓐ מלאה · ⓑⓒ קוד+בדיקות בלבד — `F-275` ל-PM) ⇒ המוקד ⇢ `cards` (⬜=1, גלגול מסביב). | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/61-deferred.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
+| C-0678 | DEV | QA | 2026-09-17T05:34:11Z | 🔨 **בנייה — המספר השני של כרטיס הרמה.** `T-400` — `unseen` של הרמה נוסע ב-`GET /api/study/queue?deck=level` **באותה תשובה** (‏`D-260` ⓐ), עובר כ-prop אופציונלי `<StudyDeckScreen>` ⇢ `<CardDeck>`, ושורת הכף־רגל «נשארו N מילים ברמה» מרונדרת — וסוגרת את `F-272`. החשבון נשאר `summarizeLevel` ⇒ ⛔ אין הגדרה שנייה (`§ 4.2ז`). סטייה מוצהרת: המכנה הוא ספירת-ראש על `words` ו⛔ לא `levelRows.length` (חסום ב-200, A1 מחזיקה 315). `verify` מלא exit 0. | `app/api/study/queue/route.ts` · `components/StudyDeckScreen.tsx` · `components/CardDeck.tsx` · `app/dev/deck/level/page.tsx` · `scripts/verify-mobile.mjs` · `docs/api-contract.md` |

@@ -98,3 +98,63 @@ describe('📍 T-394 — המיקום בסבב הוא מספר עם מכנה, �
     }
   });
 });
+
+/**
+ * 📍 **`T-400` · `F-272` · `D-260` — «נשארו N מילים ברמה», המספר השני של הרנדר.**
+ *
+ * 🔬 **נמדד `C-0663` ואומת `C-0664`, ⛔ ולא שוער:**
+ * `grep -n 'summary|unseen|levels/summary' components/StudyDeckScreen.tsx` ⇒ **0** ⇒
+ * המספר ⛔ לא היה בזיכרון של המסך, ו-`render_video_A.py:391` מצייר אותו בכל פריים של
+ * `kol-A-03-card.png`. ⇒ `T-394`ⓒ נשארה פתוחה **על המספר הזה בלבד**.
+ *
+ * ⛔ **וזה נמדד ב-DOM, ⛔ ולא במקור** (`F-224`): `CardDeck.test.ts` הוא שומר-מקור
+ * בסביבת `node` ⇒ הוא יכול להעיד שהמחרוזת בקובץ, ⛔ ולא שהיא מרונדרת עם המספר הנכון,
+ * ⛔ ולא שהיא **נעדרת** כשאין מספר. שני הצדדים האלה הם כל השורה.
+ */
+describe('📍 T-400 — שורת הכף־רגל נושאת את «נשארו N מילים ברמה»', () => {
+  it('🔑 המספר מרונדר כלשונו כשהשרת החזיר אותו', () => {
+    const { container } = render(
+      <CardDeck deck="level" cards={deckOf(20)} onGraded={noop} unseenInLevel={314} />,
+    );
+    const foot = container.querySelector('[data-level-unseen]');
+    expect(foot?.textContent).toBe('נשארו 314 מילים ברמה');
+    expect(foot?.getAttribute('data-level-unseen')).toBe('314');
+  });
+
+  it('⛔ אין שדה ⇒ ⛔ אין שורה — ⛔ ולא «נשארו 0»', () => {
+    const { container } = render(<CardDeck deck="level" cards={deckOf(20)} onGraded={noop} />);
+    expect(container.querySelector('[data-level-unseen]')).toBeNull();
+    expect(container.textContent).not.toContain('מילים ברמה');
+  });
+
+  it('🔑 `0` הוא תשובה ⛔ ולא היעדר — «⛔ לא נשארה מילה שלא נראתה» מוצג', () => {
+    const { container } = render(
+      <CardDeck deck="level" cards={deckOf(3)} onGraded={noop} unseenInLevel={0} />,
+    );
+    expect(container.querySelector('[data-level-unseen]')?.textContent).toBe(
+      'נשארו 0 מילים ברמה',
+    );
+  });
+
+  it('⛔ השורה ⛔ אינה ילד של הבמה — ילד נמוך מהבמה מאדים את `check:mobile`', () => {
+    const { container } = render(
+      <CardDeck deck="level" cards={deckOf(5)} onGraded={noop} unseenInLevel={314} />,
+    );
+    const stage = container.querySelector('[data-deck-viewport]')!;
+    expect(stage.querySelector('[data-level-unseen]')).toBeNull();
+    expect(container.querySelector('[data-level-unseen]')?.parentElement).toBe(
+      container.querySelector('[data-card-deck]'),
+    );
+  });
+
+  it('⛔ ⛔ ואינו «נותרו» שני — שני המספרים חיים יחד ואומרים שני דברים', () => {
+    const { container } = render(
+      <CardDeck deck="level" cards={deckOf(20)} onGraded={noop} unseenInLevel={314} />,
+    );
+    // הסבב: 20 כרטיסים על השולחן. הרמה: 314 מילים שטרם נפגשו. ⛔ אין ביניהם קשר.
+    expect(container.querySelector('[data-remaining]')?.textContent).toBe('נותרו 20');
+    expect(container.querySelector('[data-level-unseen]')?.textContent).toBe(
+      'נשארו 314 מילים ברמה',
+    );
+  });
+});

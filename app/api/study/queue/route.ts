@@ -15,6 +15,7 @@ import {
   type SentenceCandidate,
   type SentenceItem,
 } from '@/lib/core/sentenceItem';
+import { parseLevel, summarizeLevel, type ProgressFacts } from '@/lib/core/levelSummary';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -442,6 +443,88 @@ async function loadLevelWords(supabase: RouteClient, band: string): Promise<Queu
 }
 
 /**
+ * `T-400` · `F-272` · `D-260` — «נשארו N מילים ברמה», the SECOND number
+ * `docs/design/kol-A-03-card.png` draws under the grade buttons
+ * (`render_video_A.py:391` — «5 מתוך 20 · נשארו 314 מילים ברמה»).
+ *
+ * 🔬 **Measured `C-0663`/`C-0664`, ⛔ not assumed:** `<StudyDeckScreen>` holds ⛔ no such
+ * number — `grep -n 'summary|unseen|levels/summary' components/StudyDeckScreen.tsx` ⇒ **0**
+ * — and both direct routes to it are closed: a second `GET /api/levels/summary` from the
+ * deck screen contradicts `§ 4.2ז`, and lifting state to `<LevelMapScreen>` crosses into a
+ * DIFFERENT screen. ⇒ the number rides the answer the deck ALREADY asks for.
+ *
+ * ⛔ **⛔ No second definition.** The arithmetic stays in `lib/core/levelSummary.ts`
+ * (`totalInLevel − known − inReviewList`); this function hands it rows and reads `unseen`
+ * off the result. A count written in SQL here would be the parallel definition `§ 4.2ז`
+ * forbids by name, and `/api/levels/summary` would drift away from it word by word.
+ *
+ * ⛔ **And it returns `null` on every doubt, ⛔ never a smaller number.** A ceiling that cut
+ * the progress list, a band the schema does not carry, a read that failed — each produces a
+ * count that LOOKS right and is wrong, and the learner would build a decision on it. `null`
+ * omits the field, and the deck simply does not print the line. ⛔ The cards are the point;
+ * the footer is not worth a 503.
+ *
+ * ⚠️ **`totalInLevel` is a head count and ⛔ not `levelRows.length`:** `loadLevelWords` cuts
+ * at `MAX_QUEUE_ROWS` (200) and A1 holds 315 authored words, so the rows in hand are ⛔ not
+ * the level. Same `count: 'exact', head: true` shape `/api/levels/summary` already uses.
+ */
+async function readLevelUnseen(
+  supabase: RouteClient,
+  userId: string,
+  band: string,
+): Promise<number | null> {
+  const level = parseLevel(band);
+  // ⛔ Not one of the six bands ⇒ ⛔ no claim. `summarizeLevel` types on `CefrBand`, and
+  // guessing one here is exactly the invented level `D-034` closed.
+  if (level === null) return null;
+
+  const [total, progress] = await Promise.all([
+    supabase.from('words').select('id', { count: 'exact', head: true }).eq('cefr_profile_band', band),
+    supabase
+      .from('word_progress')
+      // ⛔ `words!inner` — a progress row whose word was deleted belongs to ⛔ no level, and
+      // an outer join would count it into this one. The predicate is `cefr_profile_band`
+      // and ⛔ never `senses.cefr_level` (`D-034`: the two disagree on 125 of 343 senses).
+      .select('attempts, repetition, self_marked_known, words!inner(cefr_profile_band)')
+      .eq('user_id', userId)
+      .eq('words.cefr_profile_band', band)
+      .limit(MAX_SEEN_ROWS),
+  ]);
+
+  if (total.error || progress.error) {
+    console.error(
+      '[api/study/queue] level unseen read failed:',
+      (total.error ?? progress.error)?.message,
+    );
+    return null;
+  }
+
+  const rows = (progress.data ?? []) as unknown as readonly {
+    attempts: number | null;
+    repetition: number | null;
+    self_marked_known: boolean | null;
+  }[];
+  // A truncated list under-counts `known` and therefore OVER-counts «נשארו» — the one
+  // direction that flatters the product. ⇒ ⛔ no number rather than a kind one.
+  if (rows.length >= MAX_SEEN_ROWS) return null;
+
+  const facts: ProgressFacts[] = rows.map((row) => ({
+    attempts: row.attempts ?? 0,
+    repetition: row.repetition ?? 0,
+    selfMarkedKnown: row.self_marked_known === true,
+  }));
+
+  try {
+    return summarizeLevel({ level, totalInLevel: total.count ?? 0, rows: facts }).unseen;
+  } catch (rangeError) {
+    // `summarizeLevel` throws when the two reads disagree about the band's population.
+    // That is a real inconsistency, ⛔ and the deck is ⛔ not the screen that reports it.
+    console.error('[api/study/queue] impossible level counts:', (rangeError as Error).message);
+    return null;
+  }
+}
+
+/**
  * T-165ⓓ — the same band predicate `loadLevelWords` uses, on the same column. The order is
  * `ngsl_rank` for the same reason: frequency is the teaching order the ingest pipeline
  * already computed, and the 200-row ceiling must cut the rare tail, ⛔ not the common core.
@@ -598,7 +681,20 @@ export async function GET(request: Request) {
     const levelCards = levelRows
       .slice(0, limit)
       .map((row) => toQueueCardInput(row, PROMOTE_AFTER_CONSECUTIVE_CORRECT));
-    return NextResponse.json({ ok: true, deck, total: levelRows.length, cards: levelCards });
+
+    // `T-400` — the second number of `kol-A-03-card.png`, in THIS answer. ⛔ The deck screen
+    // asks for nothing extra: `<StudyDeckScreen>` already awaits this response, so the whole
+    // change on the wire is one optional field. ⛔ `null` ⇒ the field is absent, ⛔ and ⛔ not
+    // `unseen: null` — the contract's other optional fields (`cards`/`items`) are absent
+    // rather than null, and a consumer that reads `body.unseen` gets `undefined` either way.
+    const unseen = await readLevelUnseen(supabase, user.id, profile.level);
+    return NextResponse.json({
+      ok: true,
+      deck,
+      total: levelRows.length,
+      cards: levelCards,
+      ...(unseen === null ? {} : { unseen }),
+    });
   }
 
   // F-034: the order comes BEFORE the ceiling, because Postgres does not promise row order

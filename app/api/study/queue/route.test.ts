@@ -340,3 +340,74 @@ describe('חפיסת «משפטים» — deck=sentences (T-165 · D-097)', () =
     expect(body).toContain('exampleNeutral');
   });
 });
+
+/**
+ * 📍 **`T-400` · `F-272` · `D-260` — «נשארו N מילים ברמה» נוסע באותה תשובה.**
+ *
+ * 🔬 **נמדד `C-0663`, ⛔ ולא שוער:** `<StudyDeckScreen>` ⛔ אינו מחזיק את המספר, ושתי
+ * הדרכים הישירות אליו אסורות — קריאה שנייה ל-`/api/levels/summary` סותרת את `§ 4.2ז`,
+ * והרמת מצב ל-`<LevelMapScreen>` חוצה למסך אחר. ⇒ השדה יורד עם התור.
+ *
+ * ⛔ שומר-מקור, ⛔ ולא בדיקת ריצה: אין כאן Supabase. מה שהוא כן סוגר הוא בדיוק
+ * הקבוצה שהייתה נטענת ⛔ ולא נמדדת — שההגדרה ⛔ אינה נכתבת פעם שנייה ב-SQL, שהמכנה
+ * הוא ספירת-ראש ⛔ ולא אורך הרשימה החתוכה, ושספק מחזיר היעדר ⛔ ולא מספר קטן יותר.
+ */
+describe('T-400 — `unseen` בחפיסת `level`, ⛔ בלי בקשה שנייה ו⛔ בלי הגדרה שנייה', () => {
+  /**
+   * ⚠️ **גוף הפונקציה, ⛔ ולא «מכאן ועד סוף הקובץ».** חיתוך פתוח היה גורר איתו את כל
+   * המסלול שמתחתיו — כולל `status: 503` של ענפים אחרים — וכל טענת «⛔ אינו מכיל» כאן
+   * הייתה נמדדת על קוד של מישהו אחר. הגבול הוא ההצהרה הבאה בקובץ.
+   */
+  const readLevelUnseenBody = () =>
+    CODE.slice(
+      CODE.indexOf('async function readLevelUnseen'),
+      CODE.indexOf('async function loadSentenceCandidates'),
+    );
+
+  it('⛔ אפס ספירה חדשה — החשבון הוא `summarizeLevel` של השכבה הטהורה', () => {
+    expect(CODE).toContain('summarizeLevel');
+    expect(CODE).toContain("from '@/lib/core/levelSummary'");
+    // ⛔ ולא `count` על `word_progress`: זו הייתה ההגדרה המקבילה ש-`§ 4.2ז` אוסר בשמה.
+    expect(CODE).not.toMatch(/from\('word_progress'\)[\s\S]{0,200}count:\s*'exact'/);
+  });
+
+  it('המכנה הוא ספירת-ראש על `words`, ⛔ ולא אורך הרשימה החתוכה ב-MAX_QUEUE_ROWS', () => {
+    const helper = readLevelUnseenBody();
+    expect(helper).toContain("count: 'exact', head: true");
+    expect(helper).toContain("eq('cefr_profile_band', band)");
+    // A1 מחזיקה 315 מילים ו-`MAX_QUEUE_ROWS` הוא 200 ⇒ `levelRows.length` ⛔ אינו הרמה.
+    expect(helper).not.toContain('levelRows.length');
+  });
+
+  it('⛔ ולעולם לא `senses.cefr_level` — D-034 חל גם על הספירה הזאת', () => {
+    expect(readLevelUnseenBody()).not.toContain('cefr_level');
+  });
+
+  it('תקרה · רמה לא מוכרת · כשל קריאה ⇒ `null`, ⛔ ולא מספר מחמיא', () => {
+    const helper = readLevelUnseenBody();
+    expect(helper).toContain('MAX_SEEN_ROWS');
+    expect(helper).toContain('return null');
+    // ⛔ ואינו מפיל את החפיסה: הכרטיסים הם העיקר, השורה ⛔ אינה שווה 503.
+    expect(helper).not.toContain('status: 503');
+  });
+
+  it('השדה נעדר כשאין מספר — ⛔ ולא `unseen: null` על החוט', () => {
+    expect(CODE).toContain('...(unseen === null ? {} : { unseen })');
+    expect(CODE).not.toContain('unseen: null');
+  });
+
+  it('⛔ אפס בקשה שנייה — הוא יוצא בתשובה שהמסך כבר מחכה לה', () => {
+    // הענף של `level` הוא היחיד שמחשב אותו, וכל השאר ⛔ אינם משתנים.
+    const levelBranch = CODE.slice(
+      CODE.indexOf("if (deck === 'level')"),
+      CODE.indexOf('let query = supabase'),
+    );
+    expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, profile.level)');
+    expect(CODE).not.toContain('/api/levels/summary');
+  });
+
+  it('החוזה מתעדכן באותו קומיט — `unseen` מתועד ב-`docs/api-contract.md`', () => {
+    expect(CONTRACT).toContain('`unseen`');
+    expect(CONTRACT).toContain('נשארו N מילים ברמה');
+  });
+});
