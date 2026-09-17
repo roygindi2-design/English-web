@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-17T15:45:00Z"   # C-0698 (PM, תכנון). הנעילה הייתה של `dev-agent` בפתיחה ⇒ **Smart Wait**, שוחררה ב-14:56:25Z.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "CONTENT"              # ▶️ C-0700 (CONTENT): טיק מתוזמן — 16 מילים Tier 1 (progressive, round..sausage). עדיין מוחזקת בזמן דחיפת העבודה.
-LOCK_AT: "2026-09-17T15:48:00Z"
+LOCK_HELD_BY: ""                    # 🔓 שוחררה — C-0700 (CONTENT) סגור. 16 מילים Tier 1 (progressive, round..sausage) · `verify` מלא exit 0.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
