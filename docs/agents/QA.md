@@ -461,31 +461,41 @@ screen is a tool everyone learns to ignore.
 
 ## STEP 4.9 — SKILLS  ⟦NEW 30/08 · RULES § 0.7⟧
 
-🆕 **⟦11/09⟧ `find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
-🔴 **⟦הוכרע 15/09 · `C-0621` · הוראת רוי⟧ ⛔ הם ⛔ אינם כלי בטיק שלך — הם **קבצים בריפו**.**
-🔬 **נמדד:** כל Routine נושאת `account_skills: []` · `enabled_plugins: []` ⇒ ⛔ **אף
-`anthropic-skills:*` ⛔ אינו נטען בטיק מתוזמן**, ⛔ ולא משנה באיזה שם תקרא לו.
-⇒ **הם הועתקו לריפו ומגיעים עם ה-clone שלך:**
+🔴 **⟦שוכתב 17/09 · `C-0692` · הוראת רוי⟧ ⛔ אחת-עשרה מהן הן **סקילים שאתה מפעיל**, ⛔ ולא קבצים שאתה קורא.**
+
 ```
-anthropic-skills:<name>   ⇒   קרא   skills/anthropic/<name>/SKILL.md
+Skill(<name>)          ⇐ ⛔ זו הדרך. אחת-עשרה, מ-`.claude/skills/<name>/SKILL.md`
 ```
 **שלך:** `find-skill` · `review-animations` · `apple-design`.
 
-‏`skills/anthropic/README.md` הוא הרשימה המלאה ואומר מה ⛔ לא הועתק ולמה. ⛔ **אל תנסה
-`Skill(...)`** — ⛔ אין מה להפעיל, יש מה **לקרוא**. אותו הסדר בדיוק כמו `superpowers:<name>`
-מאז `F-189`.
+🔬 **נמדד 17/09 בסשן ענן חי ששכפל את הענף, ⛔ ולא שוער:** 11 סקילים חזרו זמינים להפעלה
+(`animate` · `apple-design` · `ask-sonner` · `design-taste-frontend` · `emil-design-eng` ·
+`find-skill` · `hebrew-content-writer` · `imagegen-frontend-mobile` · `pick-ui-library` ·
+`review-animations` · `ui-styling`). ⇒ **הגילוי עובד בטיק מתוזמן.**
 
-⟨הרקע ההיסטורי, ⛔ ואינו הוראה עוד: השם היה `anthropic-skills:find-skill` ⛔ ולא
-`/find-skill`.⟩ עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
-`anthropic-skills:`, וזה חל על **כל** שורה בטבלה שסומנה «⛔ לא מובטח» — לרבות
-`anthropic-skills:review-animations`, ש**שלך בלבד**. ⇒ **קריאה בשם `/find-skill` נכשלת על
-השם, ⛔ ולא על זמינות** —
-וזה מסביר «⛔ לא נטען» בלי שאיש הדליק או כיבה דבר.
-⚠️ ⛔ **ומה ש⛔ עדיין ⛔ לא נמדד:** האם ה-Routine שלך נושאת את התוסף. ⇒ **נסה בשם המלא,
-ואמור בדוח מה קרה** — «נטען» או «⛔ אינו קיים». זו הראיה שחסרה, והיא שלך לספק.
-הוא מנתב לפי **רגע** (החלטה · בנייה · סקירה) × **תחום** (עיצוב · תוכנה), ⛔ ולא לפי
-זהות הסוכן. ⚠️ **והוא סקיל סשן ⇒ ⛔ אינו מובטח** (‏`enabled_plugins` ריק בשש המשימות) —
-⛔ לא נטען? המשך ל-`docs/skills-registry.md`, ⛔ ואל תמתין לו. ‏`RULES § 0.7`.
+🔴 **ולמה זה היה הפוך עד היום.** ‏`account_skills: []` · `enabled_plugins: []` נמדדו **נכון**
+בשש המשימות — **המסקנה** מהם הייתה שגויה. שני השדות מכבים סקילים של **תוסף**; סקיל של
+**פרויקט** מתגלה מ-`.claude/skills/` ו⛔ אינו תלוי בהם, ותיעוד ה-Routines אומר שסשן מתוזמן
+«can … **use skills committed to the cloned repository**». ⇒ הקבצים ישבו תחת `skills/` —
+נתיב שאינו נסרק — ומאז 08/09 נקראו ביד במקום להיות מופעלים.
+
+⚠️ **הנתיב נשאר, ⛔ כנפילה לאחור ⛔ ולא כדרך ראשית:**
+```
+anthropic-skills:<name>   ⇒   skills/anthropic/<name>/SKILL.md     ⟵ אותו קובץ בדיוק
+```
+⇒ ‏`Skill(<name>)` ⛔ לא נטען? **קרא את הקובץ והמשך** — ⛔ אל תעצור. ‏`RULES § 0.7`.
+**ובדוח אמור מה קרה בפועל** — «הופעל» או «נקרא כקובץ».
+
+**⛔ ושנים-עשר הסקילים של `superpowers` נשארו קבצים, בכוונה** — תהליך, ⛔ לא ידע-מסך:
+`superpowers:<name>` ⇒ קרא `skills/superpowers/<name>/SKILL.md`.
+
+## 🧰 STEP 4.10 — הכלים  ⟦NEW 17/09 · `C-0692`⟧
+
+🔴 **`docs/agents/TOOLS.md` — קרא את הסעיף של הכלי שאתה עומד לגעת בו, ⛔ ולא את הקובץ כולו.**
+⛔ **הכלי החי, ⛔ ולא טבלה, הוא האמת:** רשימת ה-`mcp__*` שאתה רואה בפתיחת הטיק **היא**
+הערכה שלך. כלי שאינו בה ⛔ אינו קיים ⇒ ⛔ אל תנסה, ו⛔ אל תדווח «נכשל».
+⇒ `Supabase` § 1 · `Kernel` § 2 · `Netlify` § 3 · `Figma` § 4. **ונוגעים בכל אחד רק כשהשורה אומרת.**
+
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
 🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
 ⇒ **The twelve skills now live in the repo**, exactly like `taste-skill`: `skills/superpowers/<name>/SKILL.md`. ⇒ **whenever any instruction below names `superpowers:<name>`, that means: `Read` that file.** ⛔ There is ⛔ nothing to «run», ⛔ nothing to install, and ⛔ nothing that can be missing — the file ships in your clone.

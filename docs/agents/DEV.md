@@ -501,63 +501,64 @@ Run `superpowers:writing-plans`. One plan covers **2–4 related tasks**: exact 
 
 ## STEP 4 — SKILLS
 
-🆕 **⟦11/09⟧ `find-skill` ראשון, והאינדקס הוא הרצפה — ⛔ בנוסף, ⛔ ולא במקום.**
-🔴 **⟦הוכרע 15/09 · `C-0621` · הוראת רוי⟧ ⛔ הם ⛔ אינם כלי בטיק שלך — הם **קבצים בריפו**.**
-🔬 **נמדד:** כל Routine נושאת `account_skills: []` · `enabled_plugins: []` ⇒ ⛔ **אף
-`anthropic-skills:*` ⛔ אינו נטען בטיק מתוזמן**, ⛔ ולא משנה באיזה שם תקרא לו.
-⇒ **הם הועתקו לריפו ומגיעים עם ה-clone שלך:**
-```
-anthropic-skills:<name>   ⇒   קרא   skills/anthropic/<name>/SKILL.md
-```
-**שלך:** `animate` · `apple-design` · `emil-design-eng` · `ask-sonner` · `pick-ui-library` · `find-skill`.
+🔴 **⟦שוכתב 17/09 · `C-0692` · הוראת רוי⟧ ⛔ אחת-עשרה מהן הן **סקילים שאתה מפעיל**, ⛔ ולא קבצים שאתה קורא.**
 
-‏`skills/anthropic/README.md` הוא הרשימה המלאה ואומר מה ⛔ לא הועתק ולמה. ⛔ **אל תנסה
-`Skill(...)`** — ⛔ אין מה להפעיל, יש מה **לקרוא**. אותו הסדר בדיוק כמו `superpowers:<name>`
-מאז `F-189`.
+```
+Skill(<name>)          ⇐ ⛔ זו הדרך. אחת-עשרה, מ-`.claude/skills/<name>/SKILL.md`
+```
+**שלך:** `animate` · `apple-design` · `emil-design-eng` · `ask-sonner` · `pick-ui-library` ·
+`find-skill` · `design-taste-frontend` · `imagegen-frontend-mobile` · `ui-styling`.
 
-⟨הרקע ההיסטורי, ⛔ ואינו הוראה עוד: השם היה `anthropic-skills:find-skill` ⛔ ולא
-`/find-skill`.⟩ עשרת «סקילי הסשן» שהאינדקס סימן כבלתי-נגישים **קיימים** — תחת התחילית
-`anthropic-skills:`, וזה חל על **כל** שורה בטבלה שסומנה «⛔ לא מובטח»: הוסף את התחילית
-לשם שכתוב שם, ⛔ ואל תמציא שם אחר. ⇒ **קריאה בשם `/find-skill` נכשלת על השם, ⛔ ולא על זמינות** —
-וזה מסביר «⛔ לא נטען» בלי שאיש הדליק או כיבה דבר.
-⚠️ ⛔ **ומה ש⛔ עדיין ⛔ לא נמדד:** האם ה-Routine שלך נושאת את התוסף. ⇒ **נסה בשם המלא,
-ואמור בדוח מה קרה** — «נטען» או «⛔ אינו קיים». זו הראיה שחסרה, והיא שלך לספק.
-הוא מנתב לפי **רגע** (החלטה · בנייה · סקירה) × **תחום** (עיצוב · תוכנה), ⛔ ולא לפי
-זהות הסוכן. ⚠️ **והוא סקיל סשן ⇒ ⛔ אינו מובטח** (‏`enabled_plugins` ריק בשש המשימות) —
-⛔ לא נטען? המשך ל-`docs/skills-registry.md`, ⛔ ואל תמתין לו. ‏`RULES § 0.7`.
-🔴 **HARD RULE, no discretion ⟦NEW 01/09 · Roy's explicit instruction · loop-overload emergency response⟧:** You MUST load and read all specified SKILL files *before* writing any code. Verifying compliance retroactively is strictly forbidden. ⛔ Writing the code first and then checking whether it happened to match the skill is not loading — it is a claim written after the fact, exactly the class of unmeasured claim `RULES § 0.18`/`loop:health` exist against.
+🔬 **נמדד 17/09 בסשן ענן חי ששכפל את הענף, ⛔ ולא שוער:** «Skills available in this session:
+animate · apple-design · ask-sonner · design-taste-frontend · emil-design-eng · find-skill ·
+hebrew-content-writer · imagegen-frontend-mobile · pick-ui-library · review-animations ·
+ui-styling (**11 total**)». ⇒ **הגילוי עובד בטיק מתוזמן.**
+
+🔴 **ולמה זה היה הפוך עד היום, ו⛔ למה זו ⛔ אינה החלפת דעה.** ‏`account_skills: []` ·
+`enabled_plugins: []` נמדדו נכון בשש המשימות — **המסקנה** מהם הייתה שגויה. שני השדות מכבים
+סקילים של **תוסף**; סקיל של **פרויקט** מתגלה מ-`.claude/skills/` ו⛔ **אינו תלוי בהם כלל**,
+ותיעוד ה-Routines אומר במפורש שסשן מתוזמן «can … **use skills committed to the cloned
+repository**». ⇒ 25 קובצי ה-`SKILL.md` ישבו תחת `skills/` — **נתיב שאינו נסרק**, ומאז 08/09
+שילמת ≈13,300 טוקנים בכל טיק כדי לקרוא ביד את מה שהיית יכול להפעיל.
+
+⚠️ **הנתיב נשאר קיים, ⛔ והוא הנפילה לאחור, ⛔ ולא הדרך הראשית:**
+```
+anthropic-skills:<name>   ⇒   skills/anthropic/<name>/SKILL.md     ⟵ אותו קובץ בדיוק
+```
+⇒ ‏`Skill(<name>)` ⛔ לא נטען מסיבה כלשהי? **קרא את הקובץ והמשך** — ⛔ אל תעצור ו⛔ אל
+תמתין. ‏`RULES § 0.7`. **ובדוח שלך אמור מה קרה בפועל** — «הופעל» או «נקרא כקובץ».
+
+**⛔ ושנים-עשר הסקילים של `superpowers` נשארו קבצים, בכוונה** — הם תהליך, ⛔ לא ידע-מסך:
+```
+superpowers:<name>        ⇒   קרא   skills/superpowers/<name>/SKILL.md
+```
 ⚡ **BEFORE ANYTHING ELSE IN THIS SESSION: read `skills/superpowers/using-superpowers/SKILL.md`** ⟦REWRITTEN 08/09 · Roy's explicit instruction⟧
-🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**, and every scheduled routine carries `enabled_plugins: []`. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
-⇒ **The twelve skills now live in the repo**, exactly like `taste-skill`: `skills/superpowers/<name>/SKILL.md`. ⇒ **whenever any instruction below names `superpowers:<name>`, that means: `Read` that file.** ⛔ There is ⛔ nothing to «run», ⛔ nothing to install, and ⛔ nothing that can be missing — the file ships in your clone.
+🔬 **Why the wording changed, and it is ⛔ not cosmetic.** This line used to say «run `superpowers:using-superpowers`». **Measured 08/09 in a CCR routine:** `ListPlugins` ⇒ `[]`, `SearchPlugins(['superpowers'])` ⇒ `[]` — **the plugin is ⛔ not in Roy's catalogue at all**. ⇒ for every tick since the loop was lit, this line sent you hunting for something that ⛔ did not exist. **That, ⛔ and not carelessness, was `F-189`.**
 ⚠️ **Read by trigger, ⛔ never all of them every tick** — that is what `docs/skills-registry.md` is for, and why it stays an index.
-⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`, and `RULES § 0.7` ⛔ did not carry it. That is why dozens of plans were "delivered" with unticked boxes.
-⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`); a split branch breaks F-121 and `loop:health` check 10. ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
+⛔ **Executing a plan with independent steps → `superpowers:subagent-driven-development`** ⟦NEW 30/08⟧ — every plan header in `docs/superpowers/plans/` already prints `REQUIRED SUB-SKILL`.
+⛔ **BLOCKED, ⛔ no exception: `superpowers:using-git-worktrees`** — one fixed branch `work/current` and one lock (`RULES § 0.23א`). ⛔ **`superpowers:finishing-a-development-branch` is QA's alone.**
 Before code → `test-driven-development`. Bug or failing test → `systematic-debugging` BEFORE proposing a fix. Done → `requesting-code-review`. Findings → `receiving-code-review`.
-Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette` (`scripts/validate_palette.mjs` — it exists since 24/08, T-172).
-✅ **Design skills — ⛔ and only the ones that EXIST.** ⟦CORRECTED 09/09 · RE-CORRECTED 11/09⟧
-This line named ⛔ `design-system` · `design-taste-frontend` · ⛔ `redesign-existing-projects`
-— for weeks. **Measured 09/09: ⛔ `design-system` and ⛔ `redesign-existing-projects` do not
-exist** — ⛔ not in `skills/`, ⛔ not on the `skills/superpowers` branch, ⛔ not in
-`docs/skills-registry.md`.
-🔴 **⛔ But the third one was a wrong call, and 11/09 corrected it: `design-taste-frontend`
-DOES exist** — it is the declared `name:` inside `skills/taste-skill/SKILL.md` line 2.
-⇒ the skill is real; only its declared name differs from its directory name. Measured 11/09:
-of 17 `SKILL.md` files, **16 match** directory-to-declared-name and `taste-skill` is the lone
-exception. ⇒ **use `taste-skill`** — that is the name the registry carries and the name task
-rows are tagged with. ⛔ A row still tagged `design-taste-frontend` is ⛔ not broken; it is
-the same skill under its other name. ⇒ every tick that tried
-to obey this line spent itself hunting three files that were ⛔ never written. **The three
-that are real, and where they live:**
+Chart, metric, meter or dashboard → **`dataviz` mandatory** + `npm run check:palette`.
+🔴 **HARD RULE, no discretion ⟦NEW 01/09 · Roy's explicit instruction · loop-overload emergency response⟧:** You MUST load and read all specified SKILL files *before* writing any code. Verifying compliance retroactively is strictly forbidden. ⛔ Writing the code first and then checking whether it happened to match the skill is not loading — it is a claim written after the fact, exactly the class of unmeasured claim `RULES § 0.18`/`loop:health` exist against.
+
+✅ **Design skills — שלושתן קיימות, ושלושתן ניתנות להפעלה:**
 ```
-skills/taste-skill/SKILL.md              micro-copy · shadows · spacing · «does this look generic»
-skills/imagegen-frontend-mobile/SKILL.md § 13 · 14 · 15 · 29 · 30 · 31 as PRINCIPLES (it renders images, ⛔ not code)
-ui-ux-pro-max:ui-styling                 Tailwind breakpoints · min-h-touch · tokens — on the skills branch:
-                                         ./scripts/g fetch origin skills/superpowers && ./scripts/g show FETCH_HEAD:skills/ui-ux-pro-max/ui-styling/SKILL.md
+Skill(design-taste-frontend)        micro-copy · shadows · spacing · «does this look generic»
+Skill(imagegen-frontend-mobile)     § 13 · 14 · 15 · 29 · 30 · 31 as PRINCIPLES (it renders images, ⛔ not code)
+Skill(ui-styling)                   Tailwind breakpoints · min-h-touch · tokens
 ```
+📎 ‏`design-taste-frontend` ו-`taste-skill` הם **אותו סקיל** — השם המוצהר מול שם הספרייה
+(נמדד 11/09). שורה שמתויגת באחד מהם ⛔ אינה שבורה.
 🔴 **Read at least one of the three before ANY screen in `36 § 4–§ 12`, and name it in your
-`[SKILL: …]` line.** ⛔ «⛔ no design skill» is ⛔ not an answer on a UI tick — all three
-ship in your clone or one `git show` away.
+`[SKILL: …]` line.** ⛔ «⛔ no design skill» is ⛔ not an answer on a UI tick.
 ⛔ Blocked skills: `RULES § 0.1 ז׳`.
+
+## 🧰 STEP 4.1 — הכלים  ⟦NEW 17/09 · `C-0692`⟧
+
+🔴 **`docs/agents/TOOLS.md` — קרא את הסעיף של הכלי שאתה עומד לגעת בו, ⛔ ולא את הקובץ כולו.**
+⛔ **הכלי החי, ⛔ ולא טבלה, הוא האמת:** רשימת ה-`mcp__*` שאתה רואה בפתיחת הטיק **היא**
+הערכה שלך. כלי שאינו בה ⛔ אינו קיים ⇒ ⛔ אל תנסה, ו⛔ אל תדווח «נכשל».
+⇒ ‏`Supabase` § 1 · `Kernel` § 2 · `Figma` § 4. **וכל אחד מהם נוגעים בו רק כשהשורה אומרת.**
 
 
 ### 🛰️ SUBAGENTS — FOR A PLAN WITH INDEPENDENT STEPS, ⛔ AND ⛔ NOT FOR A REGISTER  ⟦NEW 09/09 · `T-197`⟧
