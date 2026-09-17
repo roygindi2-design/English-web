@@ -53,6 +53,15 @@ export function trackLabelHe(id: StudyTrackId): string {
 export type TrackMetricState =
   | { readonly kind: 'measured'; readonly summaryHe: string }
   | { readonly kind: 'empty'; readonly summaryHe: string }
+  /**
+   * T-405/T-406 · **מבנה מוצהר שההתקדמות בו עדיין ⛔ אינה נספרת** — ⛔ וזה ⛔ אינו
+   * `'empty'` ו⛔ אינו `'unreachable'`. `הבנת הנקרא` קיבל כניסה אמיתית ב-`T-405`
+   * (`36 § 9` סופר «12 סיפורים» תחת «תוכן קיים») ⇒ «אין עדיין פריטים (0 מתוך 0)»
+   * הפך ל**שקר מדיד** שיושב מעל קישור חי. ⛔ ומספר התקדמות ⛔ אינו מומצא במקומו:
+   * `36 § 9` ⛔ אינו נוקב יחידת מדד ל`הבנת הנקרא`, ⇒ המצב הזה **מצהיר** ש⛔ אין
+   * ספירה, במקום להמציא אחת.
+   */
+  | { readonly kind: 'declared'; readonly summaryHe: string }
   | { readonly kind: 'unreachable' };
 
 /**
@@ -67,19 +76,95 @@ export function vocabularyMetric(levels: readonly LevelSummary[]): TrackMetricSt
 }
 
 /**
- * T-246ⓓ · D-176 §ד: «לדקדוק, לכתיבה ולהבנת הנקרא אין תוכן» הוא משפט מפורש
- * ב-`36 § 9`, ⛔ לא הנחה שלי — ולכן `0 מתוך 0` כאן הוא קבוע, ⛔ לא תוצאת שאילתה
- * שנכשלה. **כשתתווסף סכמה לאחד משלושת המסלולים האלה, הפונקציה הזאת צריכה
- * לזוז לקריאה אמיתית** — הקבוע הזה תקף אך ורק כל עוד `36 § 9` עצמו אומר שאין תוכן.
+ * T-406ⓐ · `36 § 9` מילה במילה: «**טיפוס המודול ומדד ההתקדמות הם פרמטר של
+ * המסלול, ⛔ לא הנחה**» — והדוגמאות שהוא נותן הן `18/40 מילים` · `4/9 נושאים` ·
+ * `3 חיבורים שנבדקו`. ⇒ יחידת המדד לכל מסלול לקוחה **משם**, ⛔ ו«פריטים» גנרי
+ * ⛔ אינו אחת מהן.
+ *
+ * 🔬 **מה זה מתקן, נמדד בהליכה חיה 375×780:** שני הפאנלים הדפיסו «אין עדיין
+ * פריטים ב<X> (0 מתוך 0)» — משפט שאומר ללומד ש⛔ אין כלום, ו⛔ לא אומר לו **מה
+ * יהיה שם**. המבנה הריק המוצהר של `36 § 9` הוא **הצהרה**, ⛔ ולא שקט.
+ */
+const EMPTY_TRACK_UNIT_HE: Readonly<Record<'grammar' | 'writing', string>> = Object.freeze({
+  grammar: 'נושאים',
+  writing: 'חיבורים שנבדקו',
+});
+
+/**
+ * T-246ⓓ · D-176 §ד: «לדקדוק ולכתיבה אין תוכן» הוא משפט מפורש ב-`36 § 9`,
+ * ⛔ לא הנחה שלי — ולכן `0 מתוך 0` כאן הוא קבוע, ⛔ לא תוצאת שאילתה שנכשלה.
+ * **כשתתווסף סכמה לאחד משני המסלולים האלה, הפונקציה הזאת צריכה לזוז לקריאה
+ * אמיתית** — הקבוע הזה תקף אך ורק כל עוד `36 § 9` עצמו אומר שאין תוכן.
+ *
+ * ⟦צומצם ב-`T-406` מ-`Exclude<StudyTrackId, 'vocabulary'>` לשני מזהים מפורשים:
+ * ‏`reading` יצא מכאן ב-`T-405`, ⛔ והצמצום הוא מה שמונע ממנו לחזור בשקט.⟧
  */
 export function emptyTrackMetric(
-  id: Exclude<StudyTrackId, 'vocabulary'>,
+  id: 'grammar' | 'writing',
 ): Extract<TrackMetricState, { kind: 'empty' }> {
-  // ⚠️ D-110 latitude, logged in the tick report: the plan's own draft string used
-  // an em dash ("— 0 מתוך 0"), but "—" is reserved for the 'unreachable' state
-  // (D-046/D-082 — see UNREACHABLE_HE in StudiesScreen.tsx) so a real "empty" string
-  // must never carry one. Parentheses replace the dash; the number stays real.
-  return { kind: 'empty', summaryHe: `אין עדיין פריטים ב${trackLabelHe(id)} (0 מתוך 0)` };
+  // ⚠️ D-110 latitude, logged in the tick report: "—" is reserved for the
+  // 'unreachable' state (D-046/D-082 — see UNREACHABLE_HE in StudiesScreen.tsx)
+  // so a real "empty" string must never carry one. Parentheses instead; the
+  // number stays real, and the UNIT is now the track's own (T-406ⓐ).
+  return {
+    kind: 'empty',
+    summaryHe: `עדיין אין ${EMPTY_TRACK_UNIT_HE[id]} במסלול הזה (0 מתוך 0)`,
+  };
+}
+
+/**
+ * T-405/T-406 · `הבנת הנקרא`. ⛔ **אפס מספר מומצא:** `36 § 9` ⛔ אינו נוקב יחידת
+ * מדד למסלול הזה (שלוש היחידות שהוא נותן הן `מילים` · `נושאים` ·
+ * `חיבורים שנבדקו`), ⇒ ספירה כאן הייתה קביעה על הלומד ש⛔ לא נמדדה.
+ * ⛔ **ו-`'empty'` ⛔ אינו נכון יותר:** מאז `T-405` הפאנל נושא כניסה חיה אל
+ * שנים-עשר הסיפורים ש-`36 § 9` סופר תחת «תוכן קיים».
+ */
+export function readingTrackMetric(): Extract<TrackMetricState, { kind: 'declared' }> {
+  return {
+    kind: 'declared',
+    summaryHe: 'ההתקדמות בסיפורים עדיין אינה נספרת. הכניסה למטה פותחת את הסיפורים הקיימים.',
+  };
+}
+
+/**
+ * ⛔ **נקודת הכניסה היחידה למדד של מסלול** — `<StudiesScreen>` החזיק את הענפים
+ * האלה אצלו, ⇒ כל שינוי במדד חייב היה לעבור בשני קבצים. כאן זה טהור ונבדק בלי DOM.
+ *
+ * ‏`levels === null` פירושו «⛔ לא הצלחנו לטעון», ⛔ ולא «ריק» — וזה חל **רק** על
+ * `אוצר מילים`, המסלול היחיד שיש לו קריאת רשת מאחוריו.
+ */
+export function trackMetric(
+  id: StudyTrackId,
+  levels: readonly LevelSummary[] | null,
+): TrackMetricState {
+  if (id === 'vocabulary') {
+    return levels === null ? { kind: 'unreachable' } : vocabularyMetric(levels);
+  }
+  if (id === 'reading') return readingTrackMetric();
+  return emptyTrackMetric(id);
+}
+
+/**
+ * T-406ⓑ · `ui-ux-pro-max` · `ux` · Feedback / **Empty States** (Severity Medium):
+ * «Do: Show helpful message **and action** · Don't: Blank empty screens».
+ *
+ * 🔬 **נמדד בהליכה חיה 375×780:** בפאנל של `דקדוק` ושל `כתיבה` ⛔ אין ולו פעולה
+ * אחת — היציאה היחידה מהם היא סרגל הלשוניות. ⇒ הפונקציה הזאת מחזירה **את הדבר
+ * האחד שאפשר לעשות עכשיו**: המסלול הראשון ברישום שיש לו יעד בנוי.
+ *
+ * ⛔ **ו⛔ אינה קישור למסך שאינו קיים:** היא נגזרת מ-`trackDestination` עצמה, ⇒
+ * יעד שאינו קיים ⛔ אינו יכול להופיע כאן. מסלול שכבר יש לו יעד מקבל `null` —
+ * ⛔ אין שתי פעולות באותו פאנל (`taste-skill § 4.5`, ⛔ אין כפילות כוונה).
+ */
+export function trackFallbackAction(id: StudyTrackId): TrackDestination | null {
+  if (trackDestination(id) !== null) return null;
+  for (const track of STUDY_TRACKS) {
+    const dest = trackDestination(track.id);
+    if (dest !== null) {
+      return { href: dest.href, labelHe: `בינתיים אפשר להמשיך ב${trackLabelHe(track.id)}` };
+    }
+  }
+  return null;
 }
 
 /**
@@ -97,7 +182,7 @@ export function emptyTrackMetric(
  */
 export function primaryStudyTrack(levels: readonly LevelSummary[]): StudyTrackId {
   for (const track of STUDY_TRACKS) {
-    const metric = track.id === 'vocabulary' ? vocabularyMetric(levels) : emptyTrackMetric(track.id);
+    const metric = trackMetric(track.id, levels);
     if (metric.kind !== 'empty') return track.id;
   }
   // Unreachable while `vocabularyMetric` never returns 'empty' and it is

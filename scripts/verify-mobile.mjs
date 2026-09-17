@@ -1134,6 +1134,57 @@ try {
             `found ${deadEnd}`,
           );
         }
+
+        // 🔴 T-406ⓑ — `דקדוק` ו-`כתיבה` מפסיקים להיות פאנל ללא יציאה.
+        // 🔬 **נמדד לפני התיקון (375×780):** שני הפאנלים החזיקו משפט אחד ו⛔ אפס
+        // פעולה ⇒ היציאה היחידה מהם הייתה סרגל הלשוניות. `ui-ux-pro-max` · `ux` ·
+        // Feedback / Empty States (Severity Medium) אומר «Show helpful message
+        // **and action**». ⇒ הבדיקה דורשת **גם** את ההצהרה **וגם** את הפעולה.
+        for (const [labelHe, trackId] of [
+          ['דקדוק', 'grammar'],
+          ['כתיבה', 'writing'],
+        ]) {
+          const tab = page.locator('main [role="tab"]', { hasText: labelHe }).first();
+          if ((await tab.count()) === 0) continue;
+          await tab.click();
+
+          const declared = await page.locator('main [data-track-destination="none"]').count();
+          check(
+            declared === 1,
+            `${at} T-406 · ${labelHe} מצהיר שאין לאן להיכנס`,
+            `found ${declared}`,
+          );
+
+          const action = page.locator(`main [data-track-fallback="${trackId}"]`);
+          check(
+            (await action.count()) === 1,
+            `${at} T-406ⓑ · ${labelHe} נושא פעולה אחת`,
+            `found ${await action.count()} [data-track-fallback]`,
+          );
+          if ((await action.count()) === 1) {
+            const box = await action.boundingBox();
+            check(
+              box !== null && box.height >= 44,
+              `${at} T-406ⓑ · גובה הפעולה ב-${labelHe} ≥44px`,
+              `height=${box === null ? 'null' : box.height}`,
+            );
+          }
+
+          // T-406ⓐ — יחידת המדד היא של המסלול (`36 § 9`), ⛔ ו«פריטים» גנרי ⛔ לא.
+          const panelText = await page.locator('main [data-track-status]').innerText();
+          check(
+            !panelText.includes('פריטים'),
+            `${at} T-406ⓐ · ${labelHe} ⛔ אינו מדבר על «פריטים» גנרי`,
+            `panel text: ${panelText.slice(0, 120)}`,
+          );
+
+          // ⓒ ⛔ אפס באנר תחזית (`D-237`).
+          check(
+            !panelText.includes('תחזית'),
+            `${at} T-406ⓒ · ⛔ אפס באנר תחזית ב-${labelHe} (D-237)`,
+            `panel text: ${panelText.slice(0, 120)}`,
+          );
+        }
       }
 
       // 🔴 T-337 — ציר ה-RTL של פס הסינון, נמדד ב**פיקסלים** ⛔ ולא במחרוזת מחלקה.

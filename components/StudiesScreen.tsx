@@ -31,12 +31,11 @@ import { apiGet } from '@/lib/api/client';
 import type { LevelSummary } from '@/lib/core/levelSummary';
 import {
   STUDY_TRACKS,
-  emptyTrackMetric,
   trackDestination,
+  trackFallbackAction,
   trackLabelHe,
-  vocabularyMetric,
+  trackMetric,
   type StudyTrackId,
-  type TrackMetricState,
 } from '@/lib/core/studyTracks';
 
 const TITLE_HE = 'לימודים';
@@ -75,12 +74,6 @@ function ActiveTrackMark() {
   );
 }
 
-function metricFor(id: StudyTrackId, levels: readonly LevelSummary[] | null): TrackMetricState {
-  if (id !== 'vocabulary') return emptyTrackMetric(id);
-  if (levels === null) return { kind: 'unreachable' };
-  return vocabularyMetric(levels);
-}
-
 export default function StudiesScreen({
   fixtureLevels,
 }: {
@@ -109,13 +102,22 @@ export default function StudiesScreen({
     };
   }, [fixtureLevels]);
 
-  const metric = metricFor(active, loading ? null : levels);
+  /**
+   * T-406 · ⛔ הענפים עברו ל-`lib/core/studyTracks.ts` (`trackMetric`) — הם היו
+   * כאן, ⇒ כל שינוי במדד של מסלול נגע בשני קבצים ו⛔ לא היה נבדק בלי DOM.
+   */
+  const metric = trackMetric(active, loading ? null : levels);
   /**
    * T-351 · ⛔ **⛔ לא נגזר מ-`metric`, ובכוונה.** הדרך קדימה היא תכונה של
    * המסלול, ⛔ לא של קריאת ההתקדמות ⇒ `metric.kind === 'unreachable'`
    * ⛔ אינו מוחק אותה (`T-349` · «דרך אחת החוצה מכל כשל»).
    */
   const destination = trackDestination(active);
+  /**
+   * T-406ⓑ · הדבר האחד שאפשר לעשות עכשיו במסלול שאין לו יעד. `null` למסלול
+   * שכבר יש לו יעד ⇒ ⛔ לעולם ⛔ אין כאן שתי פעולות באותו פאנל.
+   */
+  const fallback = trackFallbackAction(active);
 
   /**
    * T-330 — הבורר גולש אופקית ב-375px (`הבנת הנקרא` נחתך ל«הג»), ו⛔ שני הדברים
@@ -311,9 +313,29 @@ export default function StudiesScreen({
             {destination.labelHe}
           </Link>
         ) : (
-          <p data-track-destination="none" className="mt-1 text-sm text-ink-muted">
-            {NO_DESTINATION_HE}
-          </p>
+          /*
+            T-406ⓑ — עד היום זה היה משפט יחיד, ו⛔ אפס פעולה: היציאה היחידה
+            מהפאנל הייתה סרגל הלשוניות. `ui-ux-pro-max` · `ux` · Feedback /
+            Empty States אומר «Show helpful message **and action**» ⇒ ההצהרה
+            נשארת, ו**מתחתיה** הדרך האחת שכן פתוחה עכשיו.
+            ⛔ **אפס באנר תחזית** (`D-237` · `F-177` הוכרעה שם ו⛔ אינה נפתחת מחדש).
+            ⛔ **ואפס קישור למסך שאינו קיים:** `trackFallbackAction` נגזרת
+            מ-`trackDestination` עצמה.
+          */
+          <>
+            <p data-track-destination="none" className="mt-1 text-sm text-ink-muted">
+              {NO_DESTINATION_HE}
+            </p>
+            {fallback !== null && (
+              <Link
+                href={fallback.href}
+                data-track-fallback={active}
+                className="mt-1 inline-flex min-h-touch w-full items-center justify-center rounded-full border border-brand bg-brand-surface/20 px-5 text-base font-semibold text-brand-surface active:opacity-90"
+              >
+                {fallback.labelHe}
+              </Link>
+            )}
+          </>
         )}
       </div>
     </section>

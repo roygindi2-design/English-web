@@ -3,8 +3,11 @@ import {
   STUDY_TRACKS,
   emptyTrackMetric,
   primaryStudyTrack,
+  readingTrackMetric,
   trackDestination,
+  trackFallbackAction,
   trackLabelHe,
+  trackMetric,
   vocabularyMetric,
 } from './studyTracks';
 import type { LevelSummary } from './levelSummary';
@@ -69,26 +72,97 @@ describe('primaryStudyTrack — T-145ⓑ, נגזר מ-STUDY_TRACKS ⛔ ולא ק
   });
 });
 
-describe('emptyTrackMetric — מבנה ריק מוצהר, D-176 §ד', () => {
-  it('דקדוק · כתיבה · הבנת הנקרא — 0 מתוך 0, ⛔ ולעולם לא «—»', () => {
+describe('emptyTrackMetric — מבנה ריק מוצהר, D-176 §ד · T-406ⓐ', () => {
+  it('T-406ⓐ · יחידת המדד היא של המסלול, ⛔ ו«פריטים» גנרי ⛔ אינה אחת מהן', () => {
+    // `36 § 9` נותן שלוש יחידות מפורשות: `18/40 מילים` · `4/9 נושאים` ·
+    // `3 חיבורים שנבדקו`. ⇒ שתיים מהן שייכות לשני המסלולים האלה.
     expect(emptyTrackMetric('grammar')).toEqual({
       kind: 'empty',
-      summaryHe: 'אין עדיין פריטים בדקדוק (0 מתוך 0)',
+      summaryHe: 'עדיין אין נושאים במסלול הזה (0 מתוך 0)',
     });
     expect(emptyTrackMetric('writing')).toEqual({
       kind: 'empty',
-      summaryHe: 'אין עדיין פריטים בכתיבה (0 מתוך 0)',
-    });
-    expect(emptyTrackMetric('reading')).toEqual({
-      kind: 'empty',
-      summaryHe: 'אין עדיין פריטים בהבנת הנקרא (0 מתוך 0)',
+      summaryHe: 'עדיין אין חיבורים שנבדקו במסלול הזה (0 מתוך 0)',
     });
   });
 
+  it('⛔ אף מסלול ⛔ אינו מדבר עוד על «פריטים»', () => {
+    for (const id of ['grammar', 'writing'] as const) {
+      expect(emptyTrackMetric(id).summaryHe).not.toContain('פריטים');
+    }
+    expect(readingTrackMetric().summaryHe).not.toContain('פריטים');
+  });
+
   it('אף מחרוזת לא מכילה «—» — ⛔ הבדיקה של D-046/D-082', () => {
-    for (const id of ['grammar', 'writing', 'reading'] as const) {
+    for (const id of ['grammar', 'writing'] as const) {
       expect(emptyTrackMetric(id).summaryHe).not.toContain('—');
     }
+    expect(readingTrackMetric().summaryHe).not.toContain('—');
+  });
+});
+
+describe('readingTrackMetric — מבנה מוצהר בלי ספירה מומצאת (T-405/T-406)', () => {
+  it('⛔ אינו `empty`, ⛔ ואינו נושא מספר התקדמות', () => {
+    const metric = readingTrackMetric();
+    expect(metric.kind).toBe('declared');
+    // ⛔ `36 § 9` ⛔ אינו נוקב יחידת מדד למסלול הזה ⇒ ספירה כאן הייתה המצאה.
+    expect(metric.summaryHe).not.toMatch(/\d/);
+  });
+});
+
+describe('trackMetric — נקודת הכניסה היחידה למדד (T-406)', () => {
+  const levels: readonly LevelSummary[] = [
+    level({ level: 'A1', totalInLevel: 10, known: 4, unseen: 6 }),
+    level({ level: 'A2', totalInLevel: 5, known: 1, unseen: 4 }),
+  ];
+
+  it('אוצר מילים עם נתונים ⇒ `measured`, ובלי נתונים ⇒ `unreachable`', () => {
+    expect(trackMetric('vocabulary', levels).kind).toBe('measured');
+    expect(trackMetric('vocabulary', null).kind).toBe('unreachable');
+  });
+
+  it('⛔ שלושת האחרים ⛔ אינם `unreachable` — ⛔ אין מאחוריהם קריאת רשת', () => {
+    for (const id of ['grammar', 'writing', 'reading'] as const) {
+      expect(trackMetric(id, null).kind).not.toBe('unreachable');
+    }
+  });
+
+  it('לכל מסלול ברישום יש מצב מדד — ⛔ אף אחד ⛔ אינו `undefined`', () => {
+    for (const track of STUDY_TRACKS) {
+      expect(trackMetric(track.id, levels)).toBeDefined();
+    }
+  });
+});
+
+describe('trackFallbackAction — הדבר האחד שאפשר לעשות עכשיו (T-406ⓑ)', () => {
+  it('מסלול בלי יעד מקבל פעולה, ⛔ ולא פאנל ללא יציאה', () => {
+    for (const id of ['grammar', 'writing'] as const) {
+      const action = trackFallbackAction(id);
+      expect(action).not.toBeNull();
+      expect(action?.href.startsWith('/')).toBe(true);
+      expect(action?.labelHe.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('⛔ מסלול שכבר יש לו יעד ⛔ אינו מקבל פעולה שנייה (⛔ אין כפילות כוונה)', () => {
+    expect(trackFallbackAction('vocabulary')).toBeNull();
+    expect(trackFallbackAction('reading')).toBeNull();
+  });
+
+  it('T-406ⓑ · מ-2 פאנלים ללא יציאה ל-0 — הספירה עצמה', () => {
+    const deadEnds = STUDY_TRACKS.filter(
+      (t) => trackDestination(t.id) === null && trackFallbackAction(t.id) === null,
+    );
+    expect(deadEnds.length).toBe(0);
+  });
+
+  it('⛔ היעד שהפעולה מצביעה עליו הוא יעד **קיים** של מסלול אחר', () => {
+    const known = STUDY_TRACKS.map((t) => trackDestination(t.id)?.href).filter(
+      (h): h is string => typeof h === 'string',
+    );
+    const action = trackFallbackAction('grammar');
+    expect(action).not.toBeNull();
+    expect(known).toContain(action?.href);
   });
 });
 

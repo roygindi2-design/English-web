@@ -189,4 +189,36 @@ describe('<StudiesScreen> — הבורר מכריז tablist ו⛔ מתנהג כ�
     expect(panel).toContain('role="tabpanel"');
     expect(panel).toContain('aria-live="polite"');
   });
+
+  it('T-406ⓑ · הפאנל בלי יעד נושא **פעולה**, ⛔ ולא משפט לבדו', () => {
+    // `ui-ux-pro-max` · `ux` · Feedback / Empty States (Severity Medium):
+    // «Do: Show helpful message **and action** · Don't: Blank empty screens».
+    // 🔬 נמדד לפני התיקון: הענף הזה היה `<p>` יחיד ⇒ היציאה היחידה מהפאנל
+    // הייתה סרגל הלשוניות.
+    expect(CODE).toContain('trackFallbackAction');
+    expect(CODE).toContain('data-track-fallback');
+    const link = CODE.match(/<Link[\s\S]{0,600}?data-track-fallback[\s\S]{0,600}?>/)?.[0] ?? '';
+    expect(link).toContain('min-h-touch');
+    expect(link).toContain('href={fallback.href}');
+  });
+
+  it('T-406ⓑ · ההצהרה נשארת — הפעולה ⛔ אינה מחליפה את המשפט שאומר מה קורה', () => {
+    // ⛔ «יש כפתור ⇒ אפשר למחוק את ההסבר» הוא בדיוק מסך ריק עם כפתור.
+    expect(CODE).toContain('data-track-destination="none"');
+    expect(CODE).toContain('{NO_DESTINATION_HE}');
+  });
+
+  it('T-406ⓒ · ⛔ אפס באנר תחזית (D-237 · F-177)', () => {
+    for (const forbidden of ['תחזית', 'בקצב הזה', 'תסיים בעוד']) {
+      expect(SRC).not.toContain(`>${forbidden}`);
+    }
+    expect(CODE).not.toContain('תחזית');
+  });
+
+  it('T-406 · המדד נגזר מהליבה — ⛔ אפס ענף מצב שני ברכיב', () => {
+    // ⛔ `metricFor` המקומי הוחלף ב-`trackMetric` הטהור: מצב מדד שיושב ברכיב
+    // ⛔ אינו נבדק בלי DOM, וזו בדיוק ההגדרה השנייה ש-§ 4.2ז אוסר.
+    expect(CODE).toContain('trackMetric(active');
+    expect(CODE).not.toContain('function metricFor');
+  });
 });
