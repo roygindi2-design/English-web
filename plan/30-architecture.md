@@ -3030,3 +3030,27 @@ panel at `y=528`, width 272/327/366, right under the boss track at `y=476`.
 `/dev/arcade` — the ability row at `y=672`, height **44 exactly**, `כפול` on
 the right at `x=215/251/277` and `הקפאה` on the left at `x=24`. Both routes:
 `hscroll=0`, ⛔ zero target under 44px, ⛔ zero console error.
+
+### ⟦same tick⟧ the two rows met `check:mobile`, and the gate was right twice
+
+**`T-360` — the panel moved BELOW the three actions.** It was written under the
+boss track, which reads better: the track says where you are, the panel says how
+you got there. The gate measured otherwise. 93px above the actions pushed
+`עיצוב דמות` and `ארון ציוד` past the fold at 375×780, and the arena contrast
+probe clamps its sample point to `innerHeight - 1` ⇒ it sampled the gold
+`התחל קרב` beneath them and reported **1.01:1** on two buttons nobody had
+touched. ⛔ **The clamp is an artefact; the complaint underneath it is not** — a
+screen that pushes its primary action off the phone for a retrospective has
+inverted its own priorities. ⇒ the panel sits after the actions: they did ⛔ not
+move a pixel (`y=722..766`, above the 780 fold), and the panel is at `y=786`.
+⛔ The gate was ⛔ not touched — `RULES`: the contrast gates are frozen.
+
+**`T-363` — the `F-260` measure was bound to the name of its own claim.** The
+check is called «all four spell cards are on screen», and it measured *every
+`<button>` with text* except `data-arena-fire`. The ability row is three such
+buttons ⇒ `7 !== 4`, while the four cards were **141px above the fold** and
+`overflow` was **0**. ⇒ the selector is now `[data-arena-card]`, the marker the
+hand already carries and the one `selectedCardRect` itself reads. ⛔ **Nothing
+was relaxed:** the `=== 4` and the fold arithmetic are untouched, and a marker
+that ever disappears gives `length === 0`, which is ⛔ not 4 — the check fails
+loudly rather than passing empty.

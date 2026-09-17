@@ -86,7 +86,7 @@ describe('T-360 · לוח «הקרב האחרון» על מסך הבית', () =>
     expect(panel?.textContent).toContain('05.01');
   });
 
-  it('🔑 הלוח יושב **אחרי** מסלול הבוס — הסיבה אחרי התוצאה', () => {
+  it('🔑 הלוח יושב **אחרי** שלוש הפעולות — ⛔ הוא ⛔ אינו דוחף אותן מתחת לקפל', () => {
     mount({
       ...BASE,
       lastRound: {
@@ -96,12 +96,14 @@ describe('T-360 · לוח «הקרב האחרון» על מסך הבית', () =>
         enemyDefeated: true,
       },
     });
-    const track = document.querySelector('[data-rtl-row="boss-track"]');
+    const actions = document.querySelector('[data-rtl-row="home-actions"]');
     const panel = document.querySelector('[data-arena-last-round]');
-    expect(track).not.toBeNull();
+    expect(actions).not.toBeNull();
     expect(panel).not.toBeNull();
-    // `Node.DOCUMENT_POSITION_FOLLOWING` — הלוח בא אחרי המסלול במסמך.
-    expect(track!.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // `Node.DOCUMENT_POSITION_FOLLOWING` — הלוח בא **אחרי** שורת הפעולות במסמך.
+    // ⛔ זו ⛔ אינה העדפה: 93px מעל הפעולות דחפו אותן מתחת לקפל ב-375×780 והאדימו
+    // את `check:mobile` — ⛔ והשער צדק, מבט לאחור ⛔ אינו קודם לפעולה הראשית.
+    expect(actions!.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('⛔ הניקוד ⛔ אינו יעד מגע ו⛔ אינו כפתור — הלוח ⛔ אינו מוביל לשום מקום', () => {

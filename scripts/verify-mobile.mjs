@@ -3353,9 +3353,13 @@ try {
       await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
       await page.locator('[data-arena-scope]').first().waitFor();
       const fit = await page.evaluate(() => {
-        const cards = [...document.querySelectorAll('button')].filter(
-          (b) => !b.hasAttribute('data-arena-fire') && (b.textContent ?? '').trim(),
-        );
+        // 🔴 **⟦17/09 · `C-0673` · `T-363`⟧ `[data-arena-card]`, ⛔ ולא «כל כפתור עם טקסט».**
+        // ⛔ **וזו הצמדה לשם הטענה, ⛔ ולא הרפיה שלה:** השורה הזאת טוענת «ארבעת קלפי
+        // הלחש», והמדד היה **כל** כפתור בעץ למעט `data-arena-fire` ⇒ שורת היכולות של
+        // `37 § 4` (שלושה כפתורים, `y=672`, ⛔ מעל הקפל) הפילה אותה על `7 !== 4`
+        // בעוד ארבעת הקלפים היו **על המסך**, ‏64px מעל הקפל. ⛔ **ו-`overflow` לא זז.**
+        // ⛔ **וסימון שייעלם ⛔ אינו מפיל את השער בשקט:** `length === 0` ⛔ אינו 4.
+        const cards = [...document.querySelectorAll('[data-arena-card]')];
         const lowest = cards.length === 0 ? 0 : Math.max(...cards.map((e) => e.getBoundingClientRect().bottom));
         return {
           overflow: document.documentElement.scrollHeight - window.innerHeight,

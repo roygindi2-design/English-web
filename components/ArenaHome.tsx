@@ -444,53 +444,6 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         </ol>
       </div>
 
-      {/* 🏁 **T-360 · `36 § 13.1` חותמת ⓒ — «מה שהלומד עשה נשמר ונראה בכניסה הבאה».**
-          🔬 **מה שנמדד לפני שהלוח הזה נכתב:** הקרב **כבר נשמר** — `arcade_runs` נושאת
-          `finished_at` · `words_seen` · `words_correct` · `enemy_defeated` מאז
-          `0014_arcade.sql` — ומסך הבית הראה ממנו **אפס**. `wins` לבדו מזיז צומת במסלול
-          הבוס, ו⛔ אינו אומר ללומד מה קרה ב-90 השניות שלו. ⇒ הפער היה בקריאה, ⛔ ולא
-          בשמירה: ⛔ אין כאן מיגרציה, ⛔ אין עמודה ו⛔ אין כתיבה.
-          ⛔ **⛔ אינו יומן קרבות:** שורה אחת, האחרונה. היסטוריה היא מסך, והמסך הזה
-          ⛔ אינו שלי לפתוח (`RULES § 0.22`).
-          ⛔ **מיקומו מתחת למסלול הבוס ⛔ ולא מעליו, וזו הכרעה הפיכה:** המסלול אומר
-          **איפה אתה**, והלוח אומר **איך הגעת לשם** ⇒ הסיבה אחרי התוצאה, כמו בכל שאר
-          המסך. ⛔ מעל כרטיס הרמה הוא היה מקדים את הכותרת שהוא מתייחס אליה.
-          ⛔ **ואין כאן פסק דין** (R-016 · `37 § 9` ח4): שתי עובדות, אותן שתיים בדיוק
-          שמסך הסיום כבר אומר, ⛔ ואין ביניהן מילת הפסד. */}
-      {state.lastRound != null && (
-        <div className="flex flex-col gap-2" data-arena-last-round>
-          <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
-            {LAST_ROUND_HEADING_HE}
-          </p>
-          {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון כבר בימין, והתווית
-              הכתובה היא זו שנקראת ראשונה. ⛔ גובה 52 ⛔ ואינו יעד מגע: הלוח ⛔ אינו
-              נלחץ ו⛔ אינו מוביל לשום מקום ⇒ רצפת 44px ⛔ אינה חלה עליו, ⛔ והוא
-              ⛔ אינו נראה כמו כפתור. */}
-          <div className={`flex min-h-[52px] items-center justify-between px-4 ${CARD_CLASS}`} data-rtl-row="last-round">
-            <span className="text-[13px] font-bold leading-none text-[color:var(--arena-ink)]">
-              {lastRoundOutcomeHe(state.lastRound)}
-            </span>
-            <span className="flex items-baseline gap-2">
-              {/* ⛔ הצבע ⛔ אינו הערוץ היחיד (חוקה שכבה א׳ א2): «14 / 16» אינו מצב,
-                  והתווית שמסבירה אותו נקראת למקריא-מסך ⛔ ואינה מצוירת — שורת המספר
-                  ברנדר ⛔ אינה נושאת תווית, ו-`36 § 14.4` מחייב את הפריסה. */}
-              <span className="sr-only">{CORRECT_SR_HE} </span>
-              <span
-                dir="ltr"
-                data-arena-last-round-score
-                className="text-[15px] font-black leading-none text-[color:var(--arena-gold-light)]"
-              >
-                {lastRoundScoreHe(state.lastRound)}
-              </span>
-              <span className="sr-only">{FINISHED_SR_HE} </span>
-              <span dir="ltr" className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
-                {lastRoundDateHe(state.lastRound)}
-              </span>
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* `:166-176` — ארבע המשבצות. ⛔ מתויגות בשם ה**משבצת** (D-132), וארבעתן הן
           אלה ש-**D-135** מדד שהמשחק יודע למלא. */}
       <div className="flex flex-col gap-2">
@@ -568,6 +521,57 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           </button>
         </div>
       </div>
+
+      {/* 🏁 **T-360 · `36 § 13.1` חותמת ⓒ — «מה שהלומד עשה נשמר ונראה בכניסה הבאה».**
+          🔬 **מה שנמדד לפני שהלוח הזה נכתב:** הקרב **כבר נשמר** — `arcade_runs` נושאת
+          `finished_at` · `words_seen` · `words_correct` · `enemy_defeated` מאז
+          `0014_arcade.sql` — ומסך הבית הראה ממנו **אפס**. `wins` לבדו מזיז צומת במסלול
+          הבוס, ו⛔ אינו אומר ללומד מה קרה ב-90 השניות שלו. ⇒ הפער היה בקריאה, ⛔ ולא
+          בשמירה: ⛔ אין כאן מיגרציה, ⛔ אין עמודה ו⛔ אין כתיבה.
+          ⛔ **⛔ אינו יומן קרבות:** שורה אחת, האחרונה. היסטוריה היא מסך, והמסך הזה
+          ⛔ אינו שלי לפתוח (`RULES § 0.22`).
+          🔴 **מיקומו **אחרי** שלוש הפעולות, ⛔ ולא מתחת למסלול הבוס — ⛔ וזו מדידה
+          ⛔ ולא טעם.** הוא ישב שם, והשער האדים: `check:mobile` מודד את הזירה ב-375×780,
+          ‏93px נוספים דחפו את `עיצוב דמות` ו-`ארון ציוד` **מתחת לקפל**, ובדיקת
+          הניגודיות מצמידה את נקודת הדגימה ל-`innerHeight - 1` ⇒ היא דגמה את כפתור
+          ה-`התחל קרב` הזהוב מתחתיהם וקראה **1.01:1**. ⛔ **והשער צדק בדבר האמיתי:**
+          מסך שדוחף את הפעולה הראשית שלו מתחת לקפל בשביל מבט לאחור הפך סדר עדיפויות.
+          ⇒ הלוח יורד **מתחת** לפעולות: הן ⛔ לא זזו ולו פיקסל אחד, והוא נשאר על המסך.
+          ⛔ **ואין כאן פסק דין** (R-016 · `37 § 9` ח4): שתי עובדות, אותן שתיים בדיוק
+          שמסך הסיום כבר אומר, ⛔ ואין ביניהן מילת הפסד. */}
+      {state.lastRound != null && (
+        <div className="flex flex-col gap-2" data-arena-last-round>
+          <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
+            {LAST_ROUND_HEADING_HE}
+          </p>
+          {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון כבר בימין, והתווית
+              הכתובה היא זו שנקראת ראשונה. ⛔ גובה 52 ⛔ ואינו יעד מגע: הלוח ⛔ אינו
+              נלחץ ו⛔ אינו מוביל לשום מקום ⇒ רצפת 44px ⛔ אינה חלה עליו, ⛔ והוא
+              ⛔ אינו נראה כמו כפתור. */}
+          <div className={`flex min-h-[52px] items-center justify-between px-4 ${CARD_CLASS}`} data-rtl-row="last-round">
+            <span className="text-[13px] font-bold leading-none text-[color:var(--arena-ink)]">
+              {lastRoundOutcomeHe(state.lastRound)}
+            </span>
+            <span className="flex items-baseline gap-2">
+              {/* ⛔ הצבע ⛔ אינו הערוץ היחיד (חוקה שכבה א׳ א2): «14 / 16» אינו מצב,
+                  והתווית שמסבירה אותו נקראת למקריא-מסך ⛔ ואינה מצוירת — שורת המספר
+                  ברנדר ⛔ אינה נושאת תווית, ו-`36 § 14.4` מחייב את הפריסה. */}
+              <span className="sr-only">{CORRECT_SR_HE} </span>
+              <span
+                dir="ltr"
+                data-arena-last-round-score
+                className="text-[15px] font-black leading-none text-[color:var(--arena-gold-light)]"
+              >
+                {lastRoundScoreHe(state.lastRound)}
+              </span>
+              <span className="sr-only">{FINISHED_SR_HE} </span>
+              <span dir="ltr" className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
+                {lastRoundDateHe(state.lastRound)}
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* `:194-201` — ארון הציוד. ⛔ **⛔ אינו הרשימה של `DRAWER_ITEMS`** (D-132): הוא
           מציג את מה שללומד **באמת** יש, דרך `ITEM_LABELS_HE`. */}
