@@ -548,3 +548,4 @@ loop(DEV): C-0669 build — one `arena` row, and a tick that was ⛔ one push aw
 (‏`arena` נשארה עם ⬜=2: `T-360` שדורשת env ו-`T-363` שהיא כללי קרב בסדר גודל של שורה
 שלמה). ⛔ **DEV ⛔ אינו חותם** — `arena` נשארת ברוטציה, והחתימה של QA בלבד.
 loop(PM): C-0671 — 4 rows opened (T-401·T-402·T-403 arena, T-404 loop), D-263 closes F-274, D-264 routes F-273
+loop(PM): C-0674 idle — DEV lock C-0673 held from 2026-09-17T02:07:06Z, age 49 min at yield (under the 90-min DEV abandonment threshold). Three Smart Wait rounds spent (02:46:29Z → 02:56:07Z), the lock never released. Zero work commits; origin/dev..origin/work/current = 16.
