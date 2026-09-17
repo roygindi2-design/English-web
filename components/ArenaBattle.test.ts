@@ -652,3 +652,64 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(CODE, 'החלפת שם מאתחלת').toMatch(/setCrit\(\(prev\) => \(prev === 'a' \? 'b' : 'a'\)\)/);
   });
 });
+
+/**
+ * 🔥 **T-401 · `37 § 8` ק1 · `render_video_B.py:364-378` — שבב הרצף בסרגל העליון.**
+ *
+ * ⛔ **הבדיקה על המקור, ⛔ ולא על DOM** — אותה צורה בדיוק כמו כל שאר הקובץ הזה:
+ * הרכיב הוא לקוח (`'use client'`) עם `requestAnimationFrame` ו-`localStorage`, ואין
+ * כאן מסלול רינדור. ⇒ מה שנמדד הוא **המבנה**: היכן השבב יושב, מה שולט בו, ומה
+ * ⛔ אסור שיהיה בו.
+ */
+describe('T-401 — הרצף מגיע ללומד באמצע הקרב, ⛔ ולא רק בסיכום', () => {
+  it('השבב קיים ויושב בתוך שורת `[data-arena-clock]`, ⛔ ולא שורה משלו', () => {
+    expect(CODE).toMatch(/data-arena-streak/);
+    const clock = CODE.indexOf('data-arena-clock');
+    const streak = CODE.indexOf('data-arena-streak');
+    const banner = CODE.indexOf('data-arena-banner');
+    expect(clock).toBeGreaterThan(-1);
+    expect(streak).toBeGreaterThan(clock);
+    // ⛔ לפני הבאנר ⇒ עדיין בתוך ה-`<div>` של השעון, ⛔ ולא אחריו.
+    expect(streak).toBeLessThan(banner);
+  });
+
+  it('⛔ אינו מוסיף ולו פיקסל לגובה השורה — `absolute`, כי הקטע `overflow-hidden`', () => {
+    const chip = CODE.slice(CODE.indexOf('data-arena-streak'), CODE.indexOf('data-arena-banner'));
+    expect(chip).toMatch(/absolute/);
+    expect(chip).toMatch(/start-0/);
+  });
+
+  it('המספר מגיע מ-`streakAt` של השכבה הטהורה, ⛔ ואינו נספר ברכיב', () => {
+    expect(CODE).toMatch(/streakAt\(battle\)/);
+    // ⛔ אפס ספירה מקומית מעל `casts` ברכיב — מספר שנגזר בשני מקומות סוטה בשלישי.
+    expect(CODE).not.toMatch(/casts\.filter/);
+    expect(CODE).not.toMatch(/casts\.reduce/);
+  });
+
+  it('הסף 3 הוא `STREAK_HOT` מ-`lib/core/battle`, ⛔ ולא ליטרל ברכיב', () => {
+    expect(CODE).toMatch(/STREAK_HOT/);
+    const chip = CODE.slice(CODE.indexOf('data-arena-streak'), CODE.indexOf('data-arena-banner'));
+    expect(chip).not.toMatch(/>=\s*3\b/);
+  });
+
+  it('⛔ אינו מצויר ב-`N = 0` (‏`:374` — `if streak > 0`)', () => {
+    expect(CODE).toMatch(/\{streak > 0 &&/);
+  });
+
+  it('שכבה א׳ א2 — המצב ⛔ אינו בצבע בלבד: המילה והמספר הם הערוץ', () => {
+    const chip = CODE.slice(CODE.indexOf('data-arena-streak'), CODE.indexOf('data-arena-banner'));
+    expect(chip).toMatch(/STREAK_HE/);
+    expect(chip).toMatch(/\{streak\}/);
+    expect(chip).toMatch(/data-arena-streak-hot/);
+  });
+
+  it('⛔ אינווריאנט `37 § 13.5` — הטוקן החם ⛔ לא הדליף ל-`globals`/`palette`', () => {
+    expect(CSS_CODE).toMatch(/--arena-streak-hot/);
+    const globals = readFileSync('app/globals.css', 'utf8');
+    const palette = readFileSync('lib/core/palette.ts', 'utf8');
+    expect(globals).not.toContain('--arena-streak-hot');
+    expect(palette).not.toContain('--arena-streak-hot');
+    // ⛔ ה-hex עצמו חי בפלטה המתוחמת בלבד.
+    expect(CODE).not.toMatch(/#784614/i);
+  });
+});

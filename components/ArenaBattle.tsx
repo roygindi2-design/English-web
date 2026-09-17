@@ -25,6 +25,8 @@ import {
   returnedSpell,
   stagePhase,
   startBattle,
+  streakAt,
+  STREAK_HOT,
   telegraphAt,
   tick,
   type BattleState,
@@ -184,6 +186,12 @@ const FIRE_HINT_HE = 'בחר קלף לחש כדי לשגר';
 /** ⛔ זיכרון מכשיר, ⛔ ולא התקדמות למידה — ⛔ אינו נקודות, ⛔ אינו רצף, ⛔ אינו נוגע ב-`word_progress`. */
 export const ARENA_TAUGHT_KEY = 'kol.arena.dragTaught';
 const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · או הקש על קלף ואז על היריב';
+/**
+ * 🔥 **T-401 · `render_video_B.py:378`** — `רצף {N}`. ⛔ המילה של הרנדר, ⛔ ולא נוסח חדש.
+ * ⛔ **⛔ אינו תגמול ו⛔ אינו ניקוד** (`D-050`): הוא **מונה של מה שכבר קרה בקרב הזה**,
+ * מת ברגע שהקרב נגמר, ו⛔ אינו נוגע ב-`word_progress`.
+ */
+const STREAK_HE = 'רצף';
 /** T-220 ⓓ · D-139 — the spell that came back, revealed: «<headword> — <translation>». */
 const RETURNED_HE = 'הלחש חוזר אליך';
 const SAVING_HE = 'שומר את הקרב…';
@@ -796,6 +804,8 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   // T-220 ⓓ — derived from the battle, ⛔ not a second state: it is non-null exactly while
   // the last cast missed an `unfiltered` word, and the next cast clears it.
   const returned = returnedSpell(battle);
+  // 🔥 T-401 — נגזר מהמנוע הטהור (`streakAt`), ⛔ ולא state שני שיכול לסטות ממנו.
+  const streak = streakAt(battle);
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
   /**
    * ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו
@@ -856,7 +866,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           שהזירה אמורה לאמן. הערך מגיע מ-`BATTLE_MS` ⛔ ואינו נספר כאן. */}
       {/* ⛔ שורה אחת, ⛔ ולא שתיים. 🔬 נמדד: התווית והמספר אכלו 60px מתוך 580, בזמן
           שהבמה קיבלה 216. ⇒ אותו מידע, חצי מהגובה. */}
-      <div className="flex flex-row items-baseline justify-center gap-2" data-arena-clock>
+      <div className="relative flex flex-row items-baseline justify-center gap-2" data-arena-clock>
         <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
         {/* T-231 ⓐ — הטקסט וה-`aria-label` נכתבים מהלולאה דרך `clockRef`/`clockTextRef`;
             ⛔ ה-ref יושב על `<span>` **בתוך** `<EnWord>`, ⛔ ולא על העטיפה עצמה — `EnWord`
@@ -874,6 +884,44 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
             <span ref={clockTextRef}>{clockHe(BATTLE_MS - elapsedRef.current)}</span>
           </EnWord>
         </p>
+
+        {/* 🔥 **⟦17/09 · `C-0672` · `T-401`⟧ שבב הרצף — `:372-378` של `clock_hud`.**
+
+            🔬 **הפער, נמדד ⛔ ולא שוער:** `grep -c streak lib/core/battle.ts
+            components/ArenaBattle.tsx` ⇒ **0 · 0**. הרצף היה קיים במנוע (`state.casts`)
+            והגיע ללומד ⛔ רק במסך הסיכום — כלומר **אחרי** שכבר אי אפשר לעשות איתו דבר.
+
+            ⛔ **`absolute` ⛔ ולא ילד שלישי בזרימה, וזו מדידה:** הקטע כולו הוא
+            `h-[calc(100dvh-5.25rem)] overflow-hidden` (‏`T-350`) ⇒ **כל** פיקסל שנוסף
+            לשורה כאן נגרע מהבמה, שכבר נמדדה ב-52px פעם אחת. ⛔ שבב מרחף ⛔ אינו מוסיף
+            ולו פיקסל אחד לגובה השורה. ⛔ **ו-`start-0` הוא הקצה של הרנדר** — `:375`
+            מצייר ב-`LW - 20 - cw`, כלומר הקצה שבעברית הוא **תחילת** השורה, והיציאה
+            (`data-arena-close`) יושבת ב-`end-0` ממול.
+
+            ⛔ **המצב ⛔ לעולם אינו בצבע בלבד** (שכבה א׳ א2): **המספר עצמו** הוא הערוץ —
+            `רצף 3` אומר «שלוש» בלי שום קשר לגוון, והזהב הוא **הערוץ השני**, ⛔ לא היחיד.
+            ⛔ **ו-`N = 0` ⛔ אינו מצויר כלל** (‏`:374` — `if streak > 0`): שבב שמראה אפס
+            הוא ענישה על טעות, וזו ⛔ אינה הזירה הזאת. */}
+        {streak > 0 && (
+          <span
+            data-arena-streak
+            data-arena-streak-hot={streak >= STREAK_HOT ? 'on' : 'off'}
+            className={[
+              'absolute start-0 top-1/2 flex h-[30px] -translate-y-1/2 items-center gap-1',
+              /* ⚠️ **שכבה א׳ גוברת על הרנדר, ובמספר** (`36 § 14.4`, ההחרגה היחידה):
+                 `:378` נוקב ב-**11.5px**, ורצפת `§ א9` היא **12** ⇒ `text-xs`. ⛔ אותה
+                 סטייה בדיוק ש-`D-137` כבר רשם על שורות ההטיה (10.5 ⇒ 12), ⛔ ולא חדשה.
+                 ‏`check:text-floor` האדים על 11.5 בטיק הזה — ⇒ נמדד, ⛔ לא נזכר. */
+              'rounded-full border px-3 text-xs font-bold leading-none',
+              streak >= STREAK_HOT
+                ? 'border-[color:var(--arena-gold-light)] bg-[color:var(--arena-streak-hot)] text-[color:var(--arena-gold-light)]'
+                : 'border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] text-[color:var(--arena-ink-dim)]',
+            ].join(' ')}
+          >
+            {STREAK_HE}
+            <span dir="ltr" className="tabular-nums">{streak}</span>
+          </span>
+        )}
       </div>
 
       {/* ⓑ באנר המילה — היריב מטיל מילה, והיא באנגלית מעליו (`37 § 5`).

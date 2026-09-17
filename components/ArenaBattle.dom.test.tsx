@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ArenaBattle from '@/components/ArenaBattle';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
@@ -26,6 +26,10 @@ function stubFetch(impl: () => Promise<Response> | Response): void {
 beforeEach(() => {
   // ⛔ jsdom אינו מממש `matchMedia` — הרכיב קורא לו ללא תנאי ב-mount (`prefers-reduced-motion`,
   // בדיוק כמו `components/Flashcard.tsx:65-77`). בלי הסטאב הזה כל mount נופל לפני שנמדד דבר.
+  // ⛔ jsdom ⛔ אינו מממש Pointer Capture — `SpellCard.tsx:118` קורא לו ללא תנאי
+  // ב-`pointerdown`. בלי הסטאב הזה כל הקשה נופלת לפני ש-`onPointerUp` בכלל רץ.
+  HTMLElement.prototype.setPointerCapture = vi.fn();
+  HTMLElement.prototype.releasePointerCapture = vi.fn();
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
@@ -159,5 +163,96 @@ describe('T-267 — תשובת שרת שגויה (round.questions אינו מע�
     render(<ArenaBattle />);
     expect(await screen.findByText(FAILURE_HE.load)).toBeTruthy();
     expect(screen.getByRole('button', { name: RETRY_HE })).toBeTruthy();
+  });
+});
+
+/**
+ * 🔥 **T-401 — הרצף על המסך, נמדד ב-DOM אמיתי ⛔ ולא בסריקת מקור.**
+ *
+ * ⛔ **למה כאן ו⛔ לא ב-`ArenaBattle.test.ts`:** הקובץ ההוא רץ ב-`node` וסורק טקסט —
+ * הוא יכול למדוד ש**נכתב** `{streak > 0 && …}`, ⛔ ולא שהשבב **מופיע** אחרי הטלה
+ * נכונה ו**נעלם** אחרי שגויה. ⇒ הטענה «הרצף מגיע ללומד באמצע הקרב» נמדדת ⛔ אך ורק
+ * על עץ מורכב.
+ *
+ * ⛔ **הפיקסצ׳ר הוא הפיקסצ׳ר של הייצור** (`app/dev/arcade/page.tsx`, ⛔ לא צורה משלי):
+ * `kind: 'base'`, ארבע אפשרויות, והתשובה היא `אפשרות N` — בדיוק מה שהנתיב מחזיר
+ * ללומד עם מחסן ריק. ⚠️ **DEV.md STEP 5:** «פיקסצ׳ר שנבדל מייצור ולו במימד אחד הוא
+ * חור, ⛔ לא בדיקה».
+ */
+describe('T-401 — שבב הרצף מופיע באמצע הקרב ומתאפס על שגיאה', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  /**
+   * `§ 5` — מסלול הנגישות: הקשה בוחרת, הקשה שנייה על אותו קלף משגרת.
+   * ⛔ **`pointerdown`+`pointerup`, ⛔ ולא `click()`, וזו מדידה:** `SpellCard.tsx:128-149`
+   * מכריע בין גרירה להקשה ב-`onPointerUp` ⇒ ל-`click()` ⛔ אין כאן מאזין בכלל. ⛔ אותה
+   * נקודה לשני האירועים ⇒ `resolveGesture` מחזיר «הקשה», ⛔ ולא «הטלה».
+   */
+  const tap = (node: Element): void => {
+    fireEvent.pointerDown(node, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerUp(node, { clientX: 10, clientY: 10, pointerId: 1 });
+  };
+
+  /**
+   * ⛔ **הקלף ⛔ ולא «הכפתור ששמו מכיל את המילה»:** אחרי הבחירה הראשונה נולד גם כפתור
+   * `שגר לחש <המילה>` (`FIRE_HE`), ⇒ חיפוש לפי שם מחזיר **שניים**. ‏`[data-arena-card]`
+   * הוא הסימון שהיד כבר נושאת, והוא מה ש-`selectedCardRect` עצמו קורא.
+   */
+  const cardHe = (he: string): Element => {
+    const hit = Array.from(document.querySelectorAll('[data-arena-card]')).find(
+      (node) => (node.textContent ?? '').includes(he),
+    );
+    expect(hit, `קלף «${he}» חייב להיות ביד`).toBeTruthy();
+    return hit as Element;
+  };
+
+  const castHe = (he: string): void => {
+    tap(cardHe(he));
+    tap(cardHe(he));
+  };
+
+  const chip = (): HTMLElement | null => document.querySelector('[data-arena-streak]');
+
+  it('בפתיחה ⛔ אין שבב בכלל — `N = 0` ⛔ אינו מצויר', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(chip()).toBeNull();
+  });
+
+  it('הטלה נכונה ⇒ `רצף 1` על המסך, ⛔ ולא רק בסיכום', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    castHe('אפשרות 1');
+    await waitFor(() => expect(chip()).not.toBeNull());
+    expect(chip()?.textContent).toContain('רצף');
+    expect(chip()?.textContent).toContain('1');
+  });
+
+  it('⛔ המעבר לזהב הוא בדיוק ב-3, ⛔ ולא ב-2', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    castHe('אפשרות 1');
+    castHe('אפשרות 2');
+    await waitFor(() => expect(chip()?.getAttribute('data-arena-streak-hot')).toBe('off'));
+    castHe('אפשרות 3');
+    await waitFor(() => expect(chip()?.getAttribute('data-arena-streak-hot')).toBe('on'));
+  });
+
+  it('הטלה שגויה מאפסת ⇒ השבב נעלם, ⛔ ולא «יורד באחת»', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    castHe('אפשרות 1');
+    await waitFor(() => expect(chip()).not.toBeNull());
+    castHe('מסיח 2א');
+    await waitFor(() => expect(chip()).toBeNull());
   });
 });

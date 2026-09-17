@@ -362,3 +362,37 @@ export function stagePhase(state: BattleState): StagePhase {
   if (last === undefined) return 'idle';
   return last.correct ? 'hit' : 'dodge';
 }
+
+/**
+ * 🔥 **T-401 · `37 § 8` ק1 — הרצף שהלומד רואה ⛔ בזמן הקרב, ⛔ ולא אחריו.**
+ *
+ * 🔬 **הפער שנמדד:** `grep -c streak lib/core/battle.ts components/ArenaBattle.tsx`
+ * ⇒ **0 · 0**. המקום היחיד שבו רצף הגיע ללומד היה `ArenaSummary.tsx:50` («רצף מרבי»)
+ * — כלומר **אחרי** הקרב, כשכבר אי אפשר לעשות איתו דבר.
+ *
+ * ⛔ **הנוכחי, ⛔ ולא המרבי, וזו ⛔ אינה אותה פונקציה:** `arenaSummary.ts` סופר את
+ * הרצף הארוך ביותר בקרב כולו (שורה 3 של `§ 10`); כאן הטלה שגויה **מאפסת**. ⇒ שני
+ * מספרים, שני תפקידים, ⛔ ואין מקום שגוזר אחד מהשני.
+ *
+ * ⛔ **טהורה ונגזרת** (`DEV.md` — `/lib/core/` הוא PURE): היא קוראת את `state.casts`,
+ * המבנה שכבר קיים, ⇒ ⛔ אפס שדה חדש ב-`BattleState` ו⛔ אפס דרך שהמספר יסטה מהקרב.
+ *
+ * ⛔ **ומה ש⛔ אינו כאן, ומוצהר:** מכפיל הנזק 1.5 והחרב הלוהטת של `§ 8` ק1 — שניהם
+ * משנים את האריתמטיקה של `cast()` ⇒ שורה נפרדת, ⛔ ולא תוספת שקטה כאן.
+ */
+export function streakAt(state: BattleState): number {
+  let streak = 0;
+  for (let i = state.casts.length - 1; i >= 0; i -= 1) {
+    const done = state.casts[i];
+    if (done === undefined || !done.correct) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+/**
+ * `render_video_B.py:374-378` — הסף שבו השבב מתחלף לזהב: `streak >= 3` מצויר במילוי
+ * `(120, 70, 20)` ובמסגרת `GOLD_LIGHT`, ומתחתיו ב-`RAISED`/`BORDER_SUB`.
+ * ⛔ **מספר אחד, ⛔ ולא שניים:** הרכיב ⛔ אינו כותב 3 משלו.
+ */
+export const STREAK_HOT = 3;

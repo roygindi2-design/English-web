@@ -22,6 +22,8 @@ import {
   CHARACTER_STATS,
   ENEMY_HP,
   statsFor,
+  streakAt,
+  STREAK_HOT,
   wordsFromBoss,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
@@ -453,5 +455,57 @@ describe('wordsFromBoss — T-283 · 37 § 9 ח4', () => {
   it('⛔ אין חלוקה באפס גם על שורה שבורה', () => {
     const s = { ...FRESH, stats: { ...BASE_STATS, hitDamage: 0 } };
     expect(wordsFromBoss(s)).toBe(ENEMY_HP);
+  });
+});
+
+/**
+ * 🔥 **T-401 · `37 § 8` ק1 · `docs/design/render_video_B.py:364-378` — הרצף הנוכחי.**
+ *
+ * ⛔ **הנוכחי, ⛔ ולא המרבי.** `arenaSummary.ts` כבר מחזיק «רצף מרבי» — מספר שנועד
+ * למסך הסיכום, כלומר **אחרי** הקרב. ⇒ שתי הפונקציות ⛔ אינן אותה פונקציה, וההבדל
+ * ביניהן הוא כל מה שהשורה הזאת פותחת: הטלה שגויה מאפסת את הנוכחי, ⛔ ולא את המרבי.
+ * ⛔ **טהורה** — קוראת `state.casts` בלבד, המבנה שכבר קיים; ⛔ אפס שדה חדש ב-state.
+ */
+describe('T-401 · streakAt — הרצף הנוכחי בסרגל העליון', () => {
+  it('קרב טרי ⇒ 0, ⇒ השבב ⛔ אינו מצויר', () => {
+    expect(streakAt(FRESH)).toBe(0);
+  });
+
+  it('שלוש נכונות ברצף ⇒ 3, והמעבר לזהב הוא בדיוק `STREAK_HOT`', () => {
+    let s = FRESH;
+    s = cast(s, 'אפשרות 1', 1_000);
+    expect(streakAt(s)).toBe(1);
+    s = cast(s, 'אפשרות 2', 2_000);
+    expect(streakAt(s)).toBe(2);
+    expect(streakAt(s)).toBeLessThan(STREAK_HOT);
+    s = cast(s, 'אפשרות 3', 3_000);
+    expect(streakAt(s)).toBe(3);
+    expect(streakAt(s)).toBeGreaterThanOrEqual(STREAK_HOT);
+  });
+
+  it('⛔ הטלה שגויה מאפסת ל-0 — ⛔ ולא «מורידה באחת»', () => {
+    let s = FRESH;
+    s = cast(s, 'אפשרות 1', 1_000);
+    s = cast(s, 'אפשרות 2', 2_000);
+    expect(streakAt(s)).toBe(2);
+    s = cast(s, '⛔ תשובה שגויה', 3_000);
+    expect(streakAt(s)).toBe(0);
+  });
+
+  it('אחרי איפוס הרצף מתחיל למנות מחדש, ⛔ ואינו זוכר את מה שהיה לפניו', () => {
+    let s = FRESH;
+    s = cast(s, 'אפשרות 1', 1_000);
+    s = cast(s, 'אפשרות 2', 2_000);
+    s = cast(s, '⛔ תשובה שגויה', 3_000);
+    s = cast(s, 'אפשרות 4', 4_000);
+    expect(streakAt(s)).toBe(1);
+  });
+
+  it('⛔ טהורה — ⛔ אינה נוגעת ב-state ו⛔ אינה תלויה בסדר הקריאות', () => {
+    let s = FRESH;
+    s = cast(s, 'אפשרות 1', 1_000);
+    const before = JSON.stringify(s);
+    expect(streakAt(s)).toBe(streakAt(s));
+    expect(JSON.stringify(s)).toBe(before);
   });
 });
