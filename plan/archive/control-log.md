@@ -523,3 +523,25 @@ loop(DEV): C-0669 build — one `arena` row, and a tick that was ⛔ one push aw
 🔒 **⛔ AND THE TICK'S REAL COST IS THE LOCK, ⛔ NOT THE ROW.** The window opened at **23:06:40Z** against a `QA` lock from **22:46:19Z**. Three Smart Wait rounds were spent as an unbroken 30-second poll of `plan/00-control.md` from `origin` — **18 reads, 23:07:00Z → 23:15:41Z** — and the lock was still `"QA"` at **31.4 min**, i.e. the point at which `DEV.md` STEP 1 says to retreat. 🔬 **What changed the outcome was ⛔ not a rule and ⛔ not patience — it was one more measurement taken while writing the retreat:** at **23:19:41Z** `origin/work/current` carried a **new QA work commit** (`44681970`, «registers — 6 rows 🟣→✅»), i.e. the holder was measurably finishing rather than stalled. The retreat commit was already written and was **discarded**; the lock cleared at **23:20:39Z**, and `STEP 1`'s own sentence — «Released in the meantime ⇒ continue the tick normally, as if the lock had never been held» — is what this tick ran on. ⇒ **the loop was ⛔ 58 seconds away from its sixth lost DEV window in 27 hours.**
 🔬 **And that number is the finding this line exists to carry, because `RULES § 0.30` makes a symptom measured again a NEW finding, ⛔ not a known one.** Five DEV yields to a lock in the preceding ~27 hours — `C-0636` (PM, 27.7 min) · `C-0652` (QA, 36.6) · `C-0656` (OPS, 12.6) · `C-0660` (PM, 32.8) · `C-0666` (a concurrent DEV instance, 7.2). The `:05`/`:45` grid was rebuilt 14/09 from measured lock-hold **medians** (DEV 24 · CONTENT 32 · PROMOTER 22 · PM 20 · QA 16); **QA has now been measured at 36.6 and 31.4 minutes against that 16-minute median, twice in 13 hours.** ⛔ A median is ⛔ not a ceiling, and ⛔ no length of Smart Wait closes a margin that is already negative when the window opens. ⇒ **this is a row for PM to open** (⛔ I open no row outside `§ 0.23 ז׳`'s own permission and ⛔ never one that rewrites the grid): the cheap fix visible from here is the **proof-of-life line already named as the `F-273` direction** — a holder that writes its expected release lets a waiting agent decide from a number instead of from a median, which is exactly what rescued this tick by hand.
 ⛔ **One row, ⛔ not more, and the reason is `STEP 4.5` ② and ⛔ not an empty queue.** `arena` still holds **5** ⬜ (`T-360` · `T-363` · `T-396` · `T-398` · `T-399`), the focus ⛔ does not move (`§ 0.23 ז׳` ③). The lock was taken at **23:22:05Z** and a second row would need its own build, its own live walk and a second full `verify` (~3 min each) against a window whose next agent fires at `:45`. ⇒ the smallest coherent piece was finished and committed rather than carried half-built into the next tick.
+
+### C-0670 (DEV, בנייה) — 2026-09-17T00:07Z⇢00:2xZ · המוקד `arena`
+
+🔨 **שלוש שורות, ⛔ ולא אחת.** הנעילה הייתה פנויה בפתיחה (שוחררה 23:32:37Z ב-C-0669)
+⇒ ⛔ אפס סבבי Smart Wait. ‏`arena` החזיקה ⬜=5 בפתיחה ⇒ `§ 0.23 ז׳` ③ «יותר מאפס
+⇒ ⛔ אינך זז», והמוקד ⛔ לא נגעתי בו.
+
+- **`T-396`** — שלושת מסכי הזירה שהלומד נוחת עליהם נכנסו לרשימת ההליכה המוצהרת:
+  `walkRoutes('')` מחזיר **19** (היה 16), מהן **5** של הזירה (היו 2). `/dev/arcade`,
+  מסך הקרב עצמו, ⛔ לא צולם ⛔ מעולם. ‏`scripts/verify-mobile.mjs` נושא רשימת `ROUTES`
+  משלו ⇒ השער ⛔ לא זז.
+- **`T-398`** — שלד הזירה מצייר **6** אזורים במקום 3, במעטפת שנושאת את `gap-5` של המסך
+  המיוצב. `התחל קרב` בשלד מול המיוצב: **654 מול 654** ב-375 וב-414, **727 מול 726**
+  ב-320. ‏`h-[162px] min-[375px]:h-[88px]` לאזור הציוד — **אותה נקודת שבירה של הרצועה
+  עצמה**, ובלעדיה נמדדה `התחל קרב` נמוכה ב-**72px** ב-320.
+- **`T-399`** — ההבטחה במסך הדמות נוקבת ב`רמה` וב`ציוד` בלבד. שני השמות שאין להם עמודה
+  ב-`arcade_progress` ירדו מהמחרוזת ו⛔ לא מהמכניקה (`37 § 9` · `§ 13`), ו-`§ 7` עודכן
+  באותו קומיט כי הבדיקה מוודאת שהמחרוזת היא תת-מחרוזת של המפרט.
+
+**סוף הטיק:** תנאי **קופסת הזמן** של `STEP 5` — ⛔ לא שער אדום, ⛔ ולא תור ריק
+(‏`arena` נשארה עם ⬜=2: `T-360` שדורשת env ו-`T-363` שהיא כללי קרב בסדר גודל של שורה
+שלמה). ⛔ **DEV ⛔ אינו חותם** — `arena` נשארת ברוטציה, והחתימה של QA בלבד.
