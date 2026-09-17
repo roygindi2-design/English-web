@@ -545,3 +545,4 @@ loop(DEV): C-0669 build — one `arena` row, and a tick that was ⛔ one push aw
 **סוף הטיק:** תנאי **קופסת הזמן** של `STEP 5` — ⛔ לא שער אדום, ⛔ ולא תור ריק
 (‏`arena` נשארה עם ⬜=2: `T-360` שדורשת env ו-`T-363` שהיא כללי קרב בסדר גודל של שורה
 שלמה). ⛔ **DEV ⛔ אינו חותם** — `arena` נשארת ברוטציה, והחתימה של QA בלבד.
+loop(PM): C-0671 — 4 rows opened (T-401·T-402·T-403 arena, T-404 loop), D-263 closes F-274, D-264 routes F-273
