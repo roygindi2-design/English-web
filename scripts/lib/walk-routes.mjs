@@ -42,6 +42,16 @@
  * ⛔ **ו⛔ לא `/dev/card/typed` · `/dev/card/swap` · `/dev/deck/skeleton`:** שלושתם
  * **מצבי-ביניים של אותו כרטיס** שהלומד עובר דרכם ו⛔ אינו נוחת עליהם — אותו שיקול בדיוק
  * שהשאיר כאן את `/dev/card/choice` לבדו ואת שלושת מצבי-הביניים של `amirnet` בחוץ.
+ *
+ * ⟦הורחב C-0670 · `T-396`⟧ `/dev/arcade` · `/dev/arcade/result` · `/dev/arcade/character`
+ * נכנסו — **שלושה, ⛔ ולא אחד ו⛔ לא כל מסכי הזירה**. 🔬 **נמדד `C-0664` בהליכה חיה
+ * (`next start`, 375×780), ו⛔ לא שוער:** הרשימה הזאת הכריזה **16** כתובות, ומהן
+ * **2 בלבד** של הזירה — `/dev/arcade/home` ו-`/dev/arcade/summary` — בעוד שלוש הכתובות
+ * האלה מחזירות **200**. ⇒ `/dev/arcade`, **מסך הקרב עצמו**, המסך המרכזי של המחלקה
+ * שעליה נכתבות `T-359` · `T-363` · `T-364`, ⛔ לא צולם ⛔ מעולם. זו בדיוק המחלקה
+ * ש-`T-395` סגר עבור `cards` ו-`T-371` עבור `amirnet`, מילה במילה.
+ * ⛔ **ו⛔ לא `/dev/arcade/summary` במקום `/dev/arcade`:** הסיכום הוא **מה שקורה אחרי**
+ * הקרב; הקרב הוא מה שהלומד נוחת עליו ומבלה בו את תשעים השניות.
  */
 export const DEFAULT_ROUTES = [
   '/',
@@ -54,6 +64,9 @@ export const DEFAULT_ROUTES = [
   '/dev/story',
   '/dev/story/live',
   '/dev/arcade/home',
+  '/dev/arcade',
+  '/dev/arcade/result',
+  '/dev/arcade/character',
   '/dev/arcade/summary',
   '/dev/amirnet/dashboard',
   '/dev/amirnet/practice',

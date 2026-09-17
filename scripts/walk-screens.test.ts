@@ -115,12 +115,35 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     }
   });
 
-  it('🔴 המספר שהשורה מודדת: 16 מסכים, ⛔ ולא 10', () => {
+  it('🔴 המספר שהשורה מודדת: 19 מסכים, ⛔ ולא 10', () => {
     // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`.
     // ⟦עודכן `T-395`⟧ 14 ⇢ 16 עם `/dev/deck` ו-`/dev/deck/done`. ⛔ המספר ⛔ אינו «נתון
     // שמתעדכן» — הוא ננעל כדי שהוספה תהיה **החלטה**, ולכן כל שינוי שלו נושא שורה.
-    expect(DEFAULT_ROUTES).toHaveLength(16);
+    // ⟦עודכן C-0670 · `T-396`⟧ 16 ⇢ 19 עם `/dev/arcade` · `result` · `character`.
+    expect(DEFAULT_ROUTES).toHaveLength(19);
     expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
+  });
+
+  /**
+   * 🔭 **`T-396` — מסך הקרב, המסך המרכזי של `arena`, ⛔ לא היה ברשימה.**
+   *
+   * 🔬 **נמדד `C-0664` בהליכה חיה (`next start`, 375×780), ⛔ ולא שוער:** הרשימה
+   * המוצהרת החזיקה **16** כתובות ומהן **2 בלבד** של הזירה (`home` · `summary`),
+   * בעוד `/dev/arcade` · `/dev/arcade/result` · `/dev/arcade/character` שלושתם
+   * מחזירים **200**. ⇒ שלוש שורות הזירה הפתוחות נכתבות על מסך שההליכה — הכלי
+   * **היחיד** שמצלם מסך — ⛔ מעולם ⛔ לא ראתה. ⛔ התקדים הוא `T-395` מילה במילה.
+   */
+  it('🔑 `T-396` — חמשת מסכי הזירה שהלומד נוחת עליהם ברשימה המוצהרת', () => {
+    for (const arena of [
+      '/dev/arcade',
+      '/dev/arcade/home',
+      '/dev/arcade/result',
+      '/dev/arcade/character',
+      '/dev/arcade/summary',
+    ]) {
+      expect(DEFAULT_ROUTES).toContain(arena);
+    }
+    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/arcade'))).toHaveLength(5);
   });
 
   /**
