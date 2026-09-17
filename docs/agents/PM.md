@@ -811,15 +811,29 @@ returns to it the moment it has a goal again. ⇒ **advancing is ⛔ not abandon
 🔬 **What DEV sees:** while the focus is `general`, `general` ∪ `loop` ∪ `base` are all eligible (`DEV.md STEP 2`) — measured 31/08: **25 open rows** that ⛔ no tick could reach before this existed.
 
 ### 📇 IRON RULE — READ THE SKILLS INDEX BEFORE YOU PLAN  ⟦NEW 31/08 · C-0376 · Roy's explicit instruction⟧
-🔴 **In a planning tick (`STATE: PLANNING`, or any tick in which you derive rows into `plan/50-tasks.md`) you MUST read `docs/skills-registry.md` — whole. It is an index, ⛔ not a register — the smallest mandatory read in the tick (`wc -c docs/skills-registry.md`) — and it is ⛔ not optional.**
+🔴 **In a planning tick (`STATE: PLANNING`, or any tick in which you derive rows into `plan/50-tasks.md`) every row you derive carries a `סקיל · כלי` cell, and you are the only one who writes it.**
+🆕 ⟦**שונה 17/09 · `C-0692`**⟧ ⛔ **ו⛔ אינך קורא עוד את `docs/skills-registry.md` במלואו.**
+🔬 **הסיבה נמדדה:** הרישום הוא **18,500 בתים** ≈ 7,800 טוקנים, והוא נדרש «whole» בכל טיק
+תכנון מאז 31/08. מאז 17/09 אחת-עשרה הסקילים **מתגלים מעצמם** עם התיאור שלהם
+(`.claude/skills/`, הוכח בסשן חי) ⇒ **התיאורים כבר בהקשר שלך**, והרישום חזר להיות מה שהוא:
+מילון שפותחים **כשתג ⛔ אינו נפתר**, ⛔ ולא מס כניסה. ⇒ **קרא ממנו את השורה שאתה צריך.**
 Use what the relevant skills know to plan the architecture and the UX **better**, ⛔ not to decorate the row:
 - a row that touches interface text, spacing, shadows or visual hierarchy ⇒ think with **`taste-skill`**;
 - a row that touches a mobile screen's layout, safe areas, bottom navigation, density or text readability ⇒ think with **`imagegen-frontend-mobile` § 13 · § 14 · § 15 · § 29 · § 30 · § 31**.
-**Then attach the tag to every row you derive**, in the `סקיל` cell, literally:
+**Then attach the tag to every row you derive**, in the `סקיל · כלי` cell, literally:
 ```
-[SKILL: taste-skill]        [SKILL: imagegen-frontend-mobile]        —
+[SKILL: taste-skill]                                   ⟵ סקיל בלבד
+[SKILL: ui-styling] · Kernel: /world/amirnet @393×852 ⇒ ⛔ אפס גלילה     ⟵ סקיל + ראיה
+Figma: get_design_context 41:7                         ⟵ כלי בלבד
+—                                                      ⟵ ⛔ ולא בשורת מסך
 ```
-⛔ **`—` is a legitimate and common answer.** A tag on a row that ⛔ does not need it costs DEV a whole skill-file read for nothing, and that is exactly the waste the index exists to stop.
+🔴 **ואתה כותב ראיה, ⛔ ולא שם כלי.** ⛔ «`Kernel`» ⛔ אינה שורה — «`Kernel`: המסך ב-393×852
+⇒ `scrollHeight==clientHeight`» היא. ⇒ **DEV יודע מה חייב לחזור, ו-QA יודע מול מה לשפוט.**
+⛔ **ובשורה שהעבודה בה היא מסך** (‏`36 § 4–§ 12`, או `שכבה ב׳` בתא אבן־הדרך) — ⛔ **`—`
+⛔ אינה תשובה זמינה.** ‏(‏`STEP 5.5` כבר קובע בדיוק את זה על סקיל העיצוב ⇒ זהו תקדים, ⛔ ולא חידוש.)
+🔬 **ולמה זה נכתב עכשיו: נמדד 17/09 — התא הוא `—` ב-395 מתוך 409 שורות.** הערוץ בנוי
+מאז 31/08 ו**ריק ב-98%** ⇒ ⛔ אין טעם להוסיף הוראה חדשה כשזו שקיימת ⛔ לא נאכפה.
+⛔ **בשורה שאינה מסך `—` נשארת לגיטימית** — תג מיותר עולה ל-DEV קריאה שלמה לחינם.
 🔴 **And the tag is yours alone** — `DEV.md` says in so many words that DEV ⛔ never writes it. The gate ⛔ does not open from the inside.
 ⚠️ **The constitution still outranks every skill** (`35-design-constitution.md § 5`: a gate beats a design skill). A skill that contradicts the glow budget, the 12px floor, 44px, `prefers-reduced-motion` or the `37 § 6` timings is a **finding you open**, ⛔ not a deviation you plan.
 
