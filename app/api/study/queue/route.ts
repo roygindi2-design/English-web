@@ -87,6 +87,15 @@ const WORDS_SELECT =
   'senses!inner(sense_index, translation_he, needs_human_review, sense_examples(kind, text_en))';
 
 /**
+ * `T-411` · `F-277` — the level deck's own projection: `WORDS_SELECT` plus the half of the
+ * ordering key the cursor has to store. ⛔ A separate constant and ⛔ not a column added to
+ * `WORDS_SELECT`, because `loadNewWords` shares that one and ⛔ does not read a rank — a column
+ * nothing reads reads as a filter that is missing (the same reason `SENTENCES_SELECT` gives for
+ * leaving `translation_confidence` out).
+ */
+const LEVEL_SELECT = `ngsl_rank, ${WORDS_SELECT}`;
+
+/**
  * T-165ⓑ ⓓ ⓔ — the sentences deck. Three `!inner` joins, and each one drops a row that
  * could ⛔ not become an item anyway: a word with no sense, a sense with no stem, a sense
  * with no distractor. An outer join here would return rows the pure layer then discards,
@@ -288,6 +297,18 @@ function toQueueRow(row: ProgressJoinRow): QueueRow | null {
 
 type NewWordRow = WordRow & { id: string };
 
+type LevelWordRow = NewWordRow & { ngsl_rank: number | null };
+
+/**
+ * `T-411` — the learner's place in one band: the ordering key of the last word SERVED to
+ * them. ⛔ Both halves, ⛔ never the rank alone — see `loadLevelWords` for the measurement.
+ */
+type LevelCursor = { readonly lastNgslRank: number | null; readonly lastWordId: string };
+
+/** One page of the level deck, plus the ranks the page's rows carried — the cursor has to be
+ *  advanced to the ordering key of the last card ACTUALLY SENT, and `QueueRow` has no rank. */
+type LevelPage = { readonly rows: QueueRow[]; readonly rankOf: ReadonlyMap<string, number | null> };
+
 /**
  * A word the learner has never met, in the same `QueueRow` shape the progress rows arrive in
  * — so the pure layer sorts, cuts and serialises both through one path. The four progress
@@ -403,8 +424,78 @@ async function loadNewWords(
 }
 
 /**
+ * `T-411` · `F-277` · `D-266` — where this learner stopped in this band, or `null` for a
+ * learner who has never opened it.
+ *
+ * ⛔ **Every failure path returns `null`, ⛔ never throws and ⛔ never 503s.** A bookmark that
+ * could not be read is a learner who starts the level again — annoying, and recoverable in one
+ * open. A learner who gets an error screen instead of cards has lost the whole deck. ⇒ the
+ * cards are the point; the bookmark is not worth a 503.
+ */
+async function readLevelCursor(
+  supabase: RouteClient,
+  userId: string,
+  band: string,
+): Promise<LevelCursor | null> {
+  const { data, error } = await supabase
+    .from('study_level_cursor')
+    .select('last_ngsl_rank, last_word_id')
+    .eq('user_id', userId)
+    .eq('band', band)
+    .maybeSingle();
+
+  if (error) {
+    // 42P01 / PGRST205 — the table is not in this environment yet. ⛔ Not an error for the
+    // learner: the deck behaves exactly as it did before `T-411`, from the top.
+    console.error('[api/study/queue] level cursor read failed:', error.message);
+    return null;
+  }
+
+  const row = data as { last_ngsl_rank?: number | null; last_word_id?: string | null } | null;
+  const wordId = row?.last_word_id;
+  if (typeof wordId !== 'string' || wordId === '') return null;
+
+  const rank = row?.last_ngsl_rank;
+  return {
+    lastNgslRank: typeof rank === 'number' && Number.isInteger(rank) ? rank : null,
+    lastWordId: wordId,
+  };
+}
+
+/**
+ * `T-411` · `F-277` · `D-266` — the bookmark moves when the deck is **SERVED**, ⛔ and ⛔ not
+ * when the learner grades. 🔬 **That single distinction is the whole finding:** the only place
+ * the product recorded "met" was `word_progress`, and `grep` over `app/api` shows a row is
+ * created there in `review` · `practice` · `levels/scan` alone — i.e. on GRADING. ⇒ a learner
+ * who browses and never grades never moved, forever.
+ *
+ * ⛔ **Fire-and-forget, ⛔ and deliberately so:** the cards are already built. A failed
+ * bookmark write costs the learner one repeated page on the next open; a 503 costs them the
+ * deck. The failure is logged and the answer goes out.
+ */
+async function advanceLevelCursor(
+  supabase: RouteClient,
+  userId: string,
+  band: string,
+  cursor: LevelCursor,
+): Promise<void> {
+  const { error } = await supabase.from('study_level_cursor').upsert(
+    {
+      user_id: userId,
+      band,
+      last_ngsl_rank: cursor.lastNgslRank,
+      last_word_id: cursor.lastWordId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id,band' },
+  );
+
+  if (error) console.error('[api/study/queue] level cursor write failed:', error.message);
+}
+
+/**
  * T-155 · D-089 — «סינון מילים»: the learner's whole level, in the order the ingest
- * pipeline ranked it.
+ * pipeline ranked it, **continuing from where the learner stopped** (`T-411` · `F-277`).
  *
  * ⛔ **It reads `words`, ⛔ not `word_progress`,** and that is the point: the other two
  * decks can only ever show what the learner has already met, so a word nobody introduced
@@ -415,21 +506,60 @@ async function loadNewWords(
  * ⛔ and never to `senses.cefr_level`** (D-034: the two disagree on 125 of 343 measured
  * senses, and the second column has no provenance and is not maintained).
  *
- * ⛔ **Nothing is excluded.** `unknown` and `due` are defined by the learner's counters;
- * this deck is defined by the level, so a word already known is still IN the level and
- * still shown. Filtering by progress here would make «סינון מילים» a second, silent
- * spaced-repetition queue — which is exactly what D-032/D-033 keep it from being.
+ * ⛔ **Nothing is excluded BY PROGRESS.** `unknown` and `due` are defined by the learner's
+ * counters; this deck is defined by the level, so a word already known is still IN the level
+ * and still shown. Filtering by progress here would make «סינון מילים» a second, silent
+ * spaced-repetition queue — which is exactly what D-032/D-033 keep it from being. ⚠️ The
+ * cursor is ⛔ not that filter: it says which PAGE of the level was last served, ⛔ never what
+ * the learner knows, and `T-412`'s one action puts it back to the top of the same level.
+ *
+ * 🔬 **Keyset, ⛔ and ⛔ not `offset`, and ⛔ not `not.in`.** `deck.ts:196` already measured why
+ * a `not.in` URL breaks as the history grows; an `offset` would silently skip words whenever
+ * the bank changes underneath the learner. The predicate below is exactly the inverse of the
+ * ORDER BY two lines under it, which is what makes "the next page" mean the same thing twice.
+ *
+ * ⚠️ **The key is the PAIR `(ngsl_rank nulls last, id)`, and that is a MEASUREMENT.** Taken on
+ * the live database 2026-09-17: `select count(*), count(ngsl_rank) from words` ⇒ **476 rows, 0
+ * with a rank** (A1 315 · A2 116 · B1 37 · B2 8, all NULL). ⇒ a cursor on `ngsl_rank` alone —
+ * which is what `T-411`ⓐ asks for in words — would select **nothing** on the second open.
+ * `id` is the tie-break the ordering already needed, and the pair keeps working unchanged the
+ * day `T-007` fills the rank column. Recorded as `F-278`.
  */
-async function loadLevelWords(supabase: RouteClient, band: string): Promise<QueueRow[]> {
-  const { data, error } = await supabase
-    .from('words')
-    .select(WORDS_SELECT)
+async function loadLevelWords(
+  supabase: RouteClient,
+  band: string,
+  cursor: LevelCursor | null,
+): Promise<LevelPage> {
+  // ⚠️ The cursor predicate is applied BEFORE the band, and the band · order · ceiling stay one
+  // unbroken chain on purpose: `route.test.ts` (F-034) measures "there is an `order` before the
+  // `limit`" inside the statement that starts at `.eq('cefr_profile_band', band)`, and a chain
+  // split across statements would make that measurement read an empty region and pass on
+  // nothing. ⛔ A gate that stops measuring is worse than a gate that fails.
+  let scoped = supabase.from('words').select(LEVEL_SELECT);
+  if (cursor !== null) {
+    if (cursor.lastNgslRank === null) {
+      // The learner is already inside the unranked tail, so every ranked row is behind them.
+      scoped = scoped.is('ngsl_rank', null).gt('id', cursor.lastWordId);
+    } else {
+      // Still inside the ranked head ⇒ the whole unranked tail is still ahead (`nulls last`).
+      scoped = scoped.or(
+        `ngsl_rank.gt.${cursor.lastNgslRank},` +
+          `and(ngsl_rank.eq.${cursor.lastNgslRank},id.gt.${cursor.lastWordId}),` +
+          `ngsl_rank.is.null`,
+      );
+    }
+  }
+
+  const { data, error } = await scoped
     .eq('cefr_profile_band', band)
     // ⛔ The order is the contract, ⛔ not a preference: band first (a single band here, but
-    // stated so the two decks that share `WORDS_SELECT` cannot drift), then `ngsl_rank`,
-    // which is frequency — the teaching order the ingest pipeline already computed.
+    // stated so the two decks that share this projection cannot drift), then `ngsl_rank`,
+    // which is frequency — the teaching order the ingest pipeline already computed — and then
+    // `id`, which is ⛔ not decoration: without a unique tie-break "the next page" is undefined
+    // whenever two rows share a rank, and TODAY every row shares one (all NULL).
     .order('cefr_profile_band', { ascending: true, nullsFirst: false })
     .order('ngsl_rank', { ascending: true, nullsFirst: false })
+    .order('id', { ascending: true })
     .limit(MAX_QUEUE_ROWS);
 
   if (error) {
@@ -437,9 +567,19 @@ async function loadLevelWords(supabase: RouteClient, band: string): Promise<Queu
     throw error;
   }
 
-  return ((data ?? []) as unknown as NewWordRow[])
-    .map(toNewQueueRow)
-    .filter((row): row is QueueRow => row !== null);
+  const raw = (data ?? []) as unknown as LevelWordRow[];
+  // ⛔ A map and ⛔ not a parallel index: `toNewQueueRow` DROPS a row with no usable sense, so
+  // the two lists are a subsequence of each other, ⛔ not the same length.
+  const rankOf = new Map<string, number | null>();
+  for (const row of raw) {
+    const rank = row.ngsl_rank;
+    rankOf.set(row.id, typeof rank === 'number' && Number.isInteger(rank) ? rank : null);
+  }
+
+  return {
+    rows: raw.map(toNewQueueRow).filter((row): row is QueueRow => row !== null),
+    rankOf,
+  };
 }
 
 /**
@@ -677,9 +817,13 @@ export async function GET(request: Request) {
       band = profile.level;
     }
 
-    let levelRows: QueueRow[];
+    // `T-411` · `F-277` — the bookmark is read BEFORE the page, because it IS the page's
+    // predicate. ⛔ A failed read is `null` and ⛔ not a 503: see `readLevelCursor`.
+    const cursor = await readLevelCursor(supabase, user.id, band);
+
+    let levelPage: LevelPage;
     try {
-      levelRows = await loadLevelWords(supabase, band);
+      levelPage = await loadLevelWords(supabase, band, cursor);
     } catch (levelError) {
       const code = (levelError as { code?: string }).code;
       if (code === '42P01' || code === 'PGRST205') {
@@ -700,9 +844,22 @@ export async function GET(request: Request) {
     // so its tie-break would replace FREQUENCY with the alphabet. «anchor before apple» is
     // a dictionary, ⛔ not a teaching order. The pure layer still owns the deck's shape
     // (`selectDeck(rows, 'level', …)` keeps every row, and `deck.test.ts` pins that).
-    const levelCards = levelRows
-      .slice(0, limit)
-      .map((row) => toQueueCardInput(row, PROMOTE_AFTER_CONSECUTIVE_CORRECT));
+    const served = levelPage.rows.slice(0, limit);
+    const levelCards = served.map((row) => toQueueCardInput(row, PROMOTE_AFTER_CONSECUTIVE_CORRECT));
+
+    // `T-411`ⓒ — **the bookmark moves because the deck was SERVED**, ⛔ not because anything was
+    // graded, and that is the entire difference between this and `word_progress`. ⛔ To the last
+    // card ACTUALLY SENT and ⛔ not to the last row READ: the rows past `limit` were never shown,
+    // and skipping them here is precisely the twenty words `F-277` says the learner never sees.
+    // ⚠️ Awaited on purpose — a learner who double-taps «עוד» must ⛔ not race the write and get
+    // the same page twice, which is the very symptom being fixed.
+    const lastServed = served[served.length - 1];
+    if (lastServed !== undefined) {
+      await advanceLevelCursor(supabase, user.id, band, {
+        lastNgslRank: levelPage.rankOf.get(lastServed.wordId) ?? null,
+        lastWordId: lastServed.wordId,
+      });
+    }
 
     // `T-400` — the second number of `kol-A-03-card.png`, in THIS answer. ⛔ The deck screen
     // asks for nothing extra: `<StudyDeckScreen>` already awaits this response, so the whole
@@ -713,7 +870,10 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       deck,
-      total: levelRows.length,
+      // `T-411` — `total` is still "counted before the cut", ⛔ but the population it counts is
+      // now **what is left from the learner's place**, ⛔ not the whole band. That is the number
+      // `<DeckSelector>` needs in order to stop promising a level it has already served.
+      total: levelPage.rows.length,
       cards: levelCards,
       ...(unseen === null ? {} : { unseen }),
     });

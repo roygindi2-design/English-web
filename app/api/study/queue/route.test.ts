@@ -433,12 +433,84 @@ describe('T-408 — `?band=` בחפיסת `level`: מה נסרק, ⛔ ולא מ�
   });
 
   it('שתי השאילתות קוראות את אותה רמה — ⛔ אין שתי הגדרות של «הרמה הזאת»', () => {
-    expect(levelBranch).toContain('loadLevelWords(supabase, band)');
+    // ⟦T-411⟧ החתימה קיבלה שלישי (`cursor`), והטענה ⛔ לא נחלשה: היא עדיין מודדת ש**אותה**
+    // `band` מגיעה לשתי השאילתות, ⛔ ולא שהחתימה ⛔ לא זזה לעולם.
+    expect(levelBranch).toContain('loadLevelWords(supabase, band, cursor)');
     expect(levelBranch).toContain('readLevelUnseen(supabase, user.id, band)');
     expect(levelBranch).not.toContain('profile.level)');
   });
 
   it('החוזה מתעדכן באותו קומיט — `?band=` מתועד ב-`docs/api-contract.md`', () => {
     expect(CONTRACT).toContain('`?band=<A1..C2>`');
+  });
+});
+
+/**
+ * `T-411` · `F-277` · `D-266` — «סינון מילים» ממשיך מאיפה שהלומד עצר.
+ *
+ * ⛔ **הבדיקות כאן הן על קוד חי** (ההערות הוסרו למעלה), וכל אחת מהן מגינה על משהו שהשכבה
+ * הטהורה ⛔ אינה יכולה להגן עליו: הרכב השאילתה, **מתי** הסמן זז, ומה ⛔ אסור שייכנס לנתיב.
+ */
+describe('T-411 — סמן-מקום ב-«סינון מילים», ⛔ ולא סינון לפי דירוג', () => {
+  const levelBranch = CODE.slice(
+    CODE.indexOf("if (deck === 'level')"),
+    CODE.indexOf('let query = supabase'),
+  );
+
+  it('הסמן נקרא לפני העמוד — הוא **הפרדיקט** של העמוד, ⛔ ולא קישוט', () => {
+    expect(levelBranch).toContain('readLevelCursor(supabase, user.id, band)');
+    expect(levelBranch.indexOf('readLevelCursor(')).toBeLessThan(
+      levelBranch.indexOf('loadLevelWords('),
+    );
+  });
+
+  it('🔴 הסמן זז כשהחפיסה **מוגשת**, ⛔ ולא כשהלומד מדרג — זה כל הממצא', () => {
+    // ⛔ ל**כרטיס האחרון שנשלח בפועל**, ⛔ ולא לשורה האחרונה שנקראה: השורות שמעבר ל-`limit`
+    // ⛔ לא הוצגו, ודילוג עליהן הוא בדיוק עשרים המילים ש-`F-277` אומרת שהלומד ⛔ אינו רואה.
+    expect(levelBranch).toContain('const served = levelPage.rows.slice(0, limit)');
+    expect(levelBranch).toMatch(
+      /const lastServed = served\[served\.length - 1\][\s\S]{0,400}advanceLevelCursor\(/,
+    );
+  });
+
+  it('⛔ אפס `not.in` ו⛔ אפס `offset` — `deck.ts:196` כבר מדד למה הכתובת נשברת', () => {
+    expect(CODE).not.toContain('.not(');
+    expect(CODE).not.toContain('.range(');
+    expect(CODE).not.toMatch(/offset/i);
+  });
+
+  it('⛔ הסמן ⛔ אינו נגזר מ-`word_progress` — `D-032`/`D-033`', () => {
+    const cursorRegion = CODE.slice(
+      CODE.indexOf('async function readLevelCursor'),
+      CODE.indexOf('async function loadLevelWords'),
+    );
+    expect(cursorRegion).not.toContain('word_progress');
+    expect(cursorRegion).toContain("from('study_level_cursor')");
+  });
+
+  it('⛔ קריאה שנכשלה ⛔ אינה מפילה את החפיסה — הכרטיסים הם העיקר', () => {
+    const cursorRegion = CODE.slice(
+      CODE.indexOf('async function readLevelCursor'),
+      CODE.indexOf('async function loadLevelWords'),
+    );
+    expect(cursorRegion).not.toContain('status: 503');
+    expect(cursorRegion).toContain('console.error');
+  });
+
+  it('המפתח הוא **הצמד** — `ngsl_rank` לבדו מת על הנתונים שיש (0 מתוך 476)', () => {
+    expect(CODE).toContain("select('last_ngsl_rank, last_word_id')");
+    expect(CODE).toContain(".order('id', { ascending: true })");
+    expect(CODE).toContain('lastNgslRank: number | null');
+  });
+
+  it('הטבלה קיימת כמיגרציה בריפו, ⛔ ולא רק במסד החי', () => {
+    expect(readFileSync('supabase/migrations/0028_study_level_cursor.sql', 'utf8')).toContain(
+      'create table if not exists public.study_level_cursor',
+    );
+  });
+
+  it('החוזה מתעדכן באותו קומיט — `docs/api-contract.md` מתאר את הסמן', () => {
+    expect(CONTRACT).toContain('study_level_cursor');
+    expect(CONTRACT).toContain('T-411');
   });
 });
