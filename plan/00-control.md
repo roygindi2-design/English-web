@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0695 (DEV): שורה אחת 🟣 — `T-414`. ארבעת שבבי המסלולים בשורה אחת ב-375 ו-414, נמדד בכל ארבעת מצבי ה-`active`. ‏320 נשאר בשתי שורות בכוונה — הרצפה גוברת על הרנדר, כמו ב-`T-410`.
-STATE: BUILD                   # ▶️ C-0695 (DEV, בנייה): `px-3`⇒`px-2` בשבבים — הריפוד הוא המשתנה היחיד שנשאר (⛔ לא קיצור שם, ⛔ לא טקסט מתחת ל-12px, ⛔ לא `overflow-x-auto`). שער חי חדש ב-`verify-mobile.mjs`.
+NEXT_AGENT: QA                     # ▶️ C-0697 (DEV): שורה אחת 🟣 — `T-409`, **חותמת ⓒ של `36 § 13.2` שורה 5**. נמדד חי ב-320/375/414. 🔴 `0029` ⛔ לא הוחלה (`F-267`) ⇒ ⛔ אין התמדה חיה, ⛔ אין רגרסיה.
+STATE: BUILD                   # ▶️ C-0697 (DEV, בנייה): `studyPlace.ts` · `GET·POST /api/study/place` · `0029`. `/dev/tabs/studies/place` **בשער**, ו-`StudiesScreen.dom.test.tsx` **מרנדר** (מחלקת `F-282`).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-17T13:31:00Z"   # C-0695 (DEV, בנייה). הנעילה הייתה של `ops-agent` בפתיחה ⇒ **סבב Smart Wait אחד**, שוחררה בתוכו.
+LAST_HANDOFF_AT: "2026-09-17T14:50:37Z"   # C-0697 (DEV). הנעילה **פנויה** בפתיחה ⇒ ⛔ אפס Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "dev-agent"          # 🔒 C-0697 (DEV) — נעילה נלקחה, נדחפת לבדה לפני כל עבודה (`F-251`).
@@ -14,7 +14,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  20 / 120           # § 13-3 · **⛔ אינה המוקד.** ⬜=**1** — `T-413` (‏`T-411`+`T-412` ✅ `C-0689`, חריג ה-🔴 של `F-277`) ⇒ ⛔ **⛔ לא הזזת מוקד**. 🟣=1 · ⛔=1 (`T-237`). חוב ⇒ `plan/61-deferred.md`
 #   arena:  31 / 120          # § 13-4 · **⛔ אינה המוקד.** ⬜=**0** · 🟣→✅ **9** ב-`C-0677` · ⛔=3 · ⛔ אינה חתומה, נשארת ברוטציה. שורת חוב ⇒ `plan/61-deferred.md`
-#   studies: 9 / 120           # § 13-5 · **המוקד.** ⬜=**1** — `T-409` בלבד. 🟣=4 — `T-405`·`T-406` (`C-0680`) · `T-410` (`C-0690`) · `T-414` (`C-0695`). ✅=2 · ⛔=1 (`T-144`) · `T-247` 🚫
+#   studies: 10 / 120          # § 13-5 · **המוקד.** ⬜=**0** (`T-409` ⇒ `C-0697`) · 🟣=5 (`T-405`·`T-406`·`T-410`·`T-414`·`T-409`) · ✅=2 · ⛔=1 (`T-144`) · `T-247` 🚫. ⛔ המוקד ⛔ לא הוזז — `§ 0.23 ז׳`, פרוסה אחת לטיק.
 #   amirnet: 25 / 120          # § 41 § 8-1..3 · **נמסרה ⇒ המוקד עבר ל-`cards` ב-`C-0677` (QA).** ⬜=0 · 🟣→✅ 2 (T-372·T-376) · ⛔=2. SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: studies         # ▶️ **קודם `C-0679` (PM · `RULES § 0.23 ז׳` ①→④).** הספירה, ⛔ ולא תחושה: ל-`cards` **יעד פתוח = 0** (ⓐⓑ `C-0664` · ⓒ `T-400` 🟣 `C-0678`); קדימה ברצף ⇒ `arena` **יעד פתוח = 0** (ארבעת פערי `C-0671` כולם `✅ C-0677`) ⇒ נעקפה; `nav` **חתומה** ⇒ דילוג; `studies` נושאת יעד פתוח שטרם הושג ⇒ **נחתנו**. שורות חוב לשתיהן ⇒ `plan/61-deferred.md`, באותו קומיט. ⛔ **⛔ אינה חתימה.**
 PREV_WORKSTREAM: "cards"       # `C-0679` (PM) — היעד הכתוב שלה הושג במלואו; ⬜=0 · 🟣=1 (`T-400`) · ⛔=1 (`T-237`). ⛔ **⛔ אינה חתומה** ונשארת ברוטציה.
-WORKSTREAM_ENDING: "studies · 1 ⬜ נותרה · 2026-09-17T13:31:00Z · C-0695"   # `T-414` נמסרה 🟣. נותרה `T-409` בלבד (התמדת מיקום — `app/api/**` + `supabase/migrations/**`). ⛔ **המוקד ⛔ לא זז** — `§ 0.23 ז׳` ③: ⬜>0.
+WORKSTREAM_ENDING: "studies · 0 ⬜ נותרו · 2026-09-17T14:50:37Z · C-0697"   # `T-409` 🟣 ⇒ **⬜=0**. ⛔ **המוקד ⛔ לא הוזז, ובכוונה** — `§ 0.23 ז׳`: סגירת השורה האחרונה **באמצע** הטיק ⛔ אינה מתירה קפיצה ⇒ **הטיק הבא מקדם**. בדיקה 11 אדומה, ⛔ ונכונה.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0677 (QA) לפני הזזת המוקד → cards. ⇒ `plan/archive/control-log.md`.)
@@ -69,5 +69,5 @@ PROMOTIONS_THIS_MONTH: 20         # 20 this month (➕ 17/09 07:57Z, C-0683 PROM
 
 
 
-| C-0691 | PM | DEV | 2026-09-17T11:57:11Z | 🧭 **תכנון — שתי שורות ⬜.** `T-414` (‏`studies`·`נוחות`, **המשך של `T-410`**): רצועת השבבים נקראת ב-2 שורות (3+1) בעוד `kol-A-04-learning` מצייר **שורה אחת** — נמדד בהליכה חיה 375px בטיק הזה; הכלל הנקוב: `ui-ux-pro-max` ⇒ `Long Token Wrapping` (High). … ⟨הנוסח המלא הועבר לארכיון · plan/archive/handoff-log.md · C-0691⟩ | `plan/50-tasks.md` · `plan/05-departments.md` · `plan/02-inbox.md` · `plan/00-control.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
 | C-0695 | DEV | QA | 2026-09-17T13:31:00Z | 🔨 **בנייה — שורה אחת 🟣.** `T-414` — ארבעת שבבי המסלולים בשורה אחת, בדיוק כפי ש-`kol-A-04-learning` מצייר. נמדד חי לפני: 343.9px שבבים+רווחים מול רצועה של 327 ⇒ חסרו 16.9px. `px-3`⇒`px-2` ⇒ 311.9. נמדד אחרי **בכל ארבעת מצבי ה-`active`**: `offsetTop` אחד ב-375 וב-414, 0 גלישה בשלושת הרוחבים, 0 שבבים מחוץ למסך, 44px. ‏320 נשאר בשתי שורות בכוונה. | `components/StudiesScreen.tsx` · `components/StudiesScreen.test.ts` · `scripts/verify-mobile.mjs` · `plan/50-tasks.md` |
+| C-0697 | DEV | QA | 2026-09-17T14:51:06Z | 🔨 **בנייה — שורה אחת 🟣.** `T-409`, חותמת ⓒ של `36 § 13.2` שורה 5. לפני: `useState(STUDY_TRACKS[0].id)` ללא תנאי · `grep study_track|track_place` ⇒ **אפס**. אחרי, חי ב-320/375/414: `/dev/tabs/studies/place` ⇒ `aria-current` על `הבנת הנקרא`, מול `אוצר מילים` ב-`…/studies`. 🔴 `0029` ⛔ לא הוחלה (`F-267`) ⇒ ⛔ אפס רגרסיה, ⛔ אפס התמדה חיה. | `lib/core/studyPlace.ts` · `app/api/study/place/route.ts` · `components/StudiesScreen*.ts*` · `app/dev/tabs/studies/place/page.tsx` · `supabase/migrations/0029_study_track_place.sql` · `scripts/verify-mobile.mjs` · `docs/api-contract.md` |
