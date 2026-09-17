@@ -74,31 +74,39 @@ describe('<StudiesScreen> — הבורר הגולש אומר שהוא גולש (
     expect(CODE).not.toContain('scroll-smooth');
   });
 
-  it('ⓑ סימן הגלישה מותנה במדידה מה-DOM, ⛔ ואינו קבוע', () => {
-    expect(CODE).toContain('hiddenStart');
-    expect(CODE).toContain('hiddenEnd');
-    expect(CODE).toContain('scrollWidth');
-    expect(CODE).toContain('clientWidth');
-    // ⛔ `Math.abs`: ב-RTL `scrollLeft` שלילי, ומדידה ישירה מסמנת «אין עוד» כשיש.
-    expect(CODE).toMatch(/Math\.abs\(\s*el\.scrollLeft\s*\)/);
-    // שני הסימנים מרונדרים מאחורי תנאי, ⛔ לא תמיד.
-    expect(CODE).toMatch(/\{hiddenStart\s*&&/);
-    expect(CODE).toMatch(/\{hiddenEnd\s*&&/);
+  /**
+   * T-410 — שלוש הבדיקות שישבו כאן קיבעו את הפתרון של `T-330` (גלילה אופקית
+   * פנימית + שני סימני קצה), ו**הפתרון הזה הוא הפגם**: הרצועה גלשה 81px ב-375
+   * ⇒ הלומד ראה שלושה מסלולים מתוך ארבעה, בעוד הדף עצמו ⛔ לא גלש והשער
+   * הגלובלי נשאר ירוק. ⇒ הן ⛔ לא נשברו בשקט — הן הוחלפו בחוזה ההפוך, והוא
+   * חזק מהן: ⛔ **אין** גלישה, בשום רוחב.
+   */
+  it('ⓑ הרצועה ⛔ אינה גולשת — `flex-wrap`, ⛔ ולא גלילה אופקית פנימית (T-410)', () => {
+    expect(CODE).toContain('flex-wrap');
+    // ⛔ הגלילה הפנימית היא בדיוק מה שהחביא את `הבנת הנקרא` מאחורי קצה.
+    expect(CODE).not.toContain('overflow-x-auto');
+    // ⛔ ושבב ⛔ אינו מתכווץ אל מתחת לתוכן שלו — הוא יורד שורה.
+    expect(CODE).toContain('shrink-0');
   });
 
-  it('ⓑ הסימן הוא קישוט — ⛔ לא יעד הקשה ו⛔ לא טקסט', () => {
-    const hints = CODE.match(/<span[\s\S]{0,400}?data-track-scroll-hint[\s\S]{0,400}?\/>/g) ?? [];
-    expect(hints).toHaveLength(2);
-    for (const hint of hints) {
-      expect(hint).toContain('aria-hidden="true"');
-      expect(hint).toContain('pointer-events-none');
+  it('ⓑ מנגנון סימני הקצה הוסר במלואו — ⛔ ולא הושתק (T-410)', () => {
+    // קוד שתנאי הרינדור שלו ⛔ אינו יכול להתקיים גרוע מקוד שאינו קיים.
+    for (const dead of ['hiddenStart', 'hiddenEnd', 'data-track-scroll-hint', 'measureEdges']) {
+      expect(CODE).not.toContain(dead);
     }
   });
 
-  it('⛔ הבורר נשאר שורה אחת — ⛔ בלי עטיפה ו⛔ בלי כיווץ (36 § 14)', () => {
-    expect(CODE).not.toContain('flex-wrap');
-    expect(CODE).toContain('shrink-0');
-    expect(CODE).toContain('overflow-x-auto');
+  it('ⓒ השבבים על טיפוגרפיית הרנדר, ו⛔ לא מתחת לרצפת ה-12px (§ א9)', () => {
+    // `render_video_A.py:1277-1283` — 12.5px, ריפוד 26px. `text-xs` = 12px,
+    // כלומר **על** הרצפה ⛔ ולא מתחתיה, ו-`px-3` = 24px.
+    const chips = CODE.match(/'flex min-h-touch shrink-0[^']*'/g) ?? [];
+    expect(chips).toHaveLength(2);
+    for (const chip of chips) {
+      expect(chip).toContain('text-xs');
+      expect(chip).toContain('px-3');
+      // ⛔ יעד ההקשה ⛔ אינו יורד עם הטיפוגרפיה — 44px הוא שער קפוא.
+      expect(chip).toContain('min-h-touch');
+    }
   });
 });
 

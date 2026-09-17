@@ -160,41 +160,33 @@ export default function StudiesScreen({
   const modules = trackModules(active, loading ? null : levels);
 
   /**
-   * T-330 — הבורר גולש אופקית ב-375px (`הבנת הנקרא` נחתך ל«הג»), ו⛔ שני הדברים
-   * שחסרו לו ⛔ אינם קוסמטיקה: ⓐ בחירת מסלול חתוך השאירה את השבב **הנבחר** חצי
-   * מחוץ למסך, ⓑ ⛔ שום דבר ⛔ לא אמר ללומד שיש עוד מסלולים מעבר לקצה.
-   * ⛔ **⛔ לא כיווץ ו⛔ לא עטיפה לשתי שורות** — `36 § 14` קושר סדר והיררכיה,
-   * והרנדר (`docs/design/kol-A-04-learning.png`) מצייר שורה אחת.
+   * T-410 — ⛔ הבורר ⛔ אינו גולש עוד, ⛔ בשום רוחב. ‏`T-330` פתר את הגלישה
+   * בגלילה אופקית **פנימית** + סימני קצה, ⇒ הדף ⛔ לא גלש והשער הגלובלי נשאר
+   * ירוק, בעוד הלומד רואה **שלושה** מסלולים מתוך ארבעה.
+   * 🔬 **נמדד `C-0685` ב-375×812:** רצועה 327px מול `scrollWidth` 408px ⇒ גלישה
+   * 81px, ו-`הבנת הנקרא` — המסלול היחיד שיש בו תוכן — 51% מחוץ למסך.
+   *
+   * ⛔ **ולמה זו ⛔ אינה «שורה אחת מכווצת»:** ‏`render_video_A.py:1207-1285`
+   * מצייר את השורה ב-**12.5px** ריפוד 26px, ו-`LW = 375` — ⇒ הרנדר מדבר על
+   * 375 בלבד, ו**הלולאה שלו עצמה נוטשת שבב שלא נכנס** (`if x - w < 20: break`).
+   * ב-320px הרצועה היא 272px, וארבע התוויות בגודל הרצפה (12px · `§ א9`) ⛔ אינן
+   * נכנסות בה בשום ריפוד ⇒ שורה אחת ב-320 דורשת טקסט מתחת לרצפה.
+   * ⇒ **הרצפה גוברת על הרנדר** (`36 § 14.4` — שערי הנגישות, ⛔ והם בלבד).
+   *
+   * ⇒ הפתרון הוא `flex-wrap` על טיפוגרפיית הרנדר: ב-375 ו-414 ארבעת השבבים
+   * יושבים ב**שורה אחת**, בדיוק כפי שהרנדר מצייר; ב-320 הם נשברים לשתיים
+   * ⛔ במקום לגלוש. ⇒ ⛔ אפס גלילה אופקית בשלושת הרוחבים, וארבעה מתוך ארבעה
+   * גלויים בכולם.
    */
-  const listRef = useRef<HTMLDivElement | null>(null);
   const chipRefs = useRef(new Map<StudyTrackId, HTMLButtonElement>());
-  const [hiddenStart, setHiddenStart] = useState(false);
-  const [hiddenEnd, setHiddenEnd] = useState(false);
 
   /**
-   * ⛔ `Math.abs` ⛔ ולא `scrollLeft` גולמי: ב-RTL הדפדפן מחזיר כאן ערך **שלילי**
-   * ומדידה ישירה הייתה מסמנת «אין עוד» בדיוק כשיש.
-   */
-  const measureEdges = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const offset = Math.abs(el.scrollLeft);
-    const max = el.scrollWidth - el.clientWidth;
-    setHiddenStart(offset > 1);
-    setHiddenEnd(max - offset > 1);
-  }, []);
-
-  useEffect(() => {
-    measureEdges();
-    window.addEventListener('resize', measureEdges);
-    return () => window.removeEventListener('resize', measureEdges);
-  }, [measureEdges, levels, loading]);
-
-  /**
-   * ⓐ השבב הנבחר מגולגל לתצוגה. `inline: 'nearest'` ⛔ ולא `'center'` — מסלול
-   * שכבר נראה במלואו ⛔ אינו זז, ו⛔ אין קפיצה על כל הקשה. `block: 'nearest'`
-   * מונע גלילה **אנכית** של העמוד. ⛔ ו⛔ אין `scroll-smooth` במחלקות: ההעדפה
-   * נקראת כאן, ⇒ `prefers-reduced-motion` ⛔ אינו נעקף (35 § layer B).
+   * ⓐ השבב הנבחר מגולגל לתצוגה. ⛔ אחרי `T-410` ⛔ אין גלילה אופקית פנימית ⇒
+   * `inline: 'nearest'` הוא בפועל אל-פעולה, והערך כאן הוא **האנכי**: שבב
+   * שנבחר במקלדת בשורה השנייה (ב-320px) נגלל אל תוך התצוגה של הדף.
+   * `'nearest'` בשני הצירים ⇒ שבב שכבר נראה במלואו ⛔ אינו זז, ו⛔ אין קפיצה
+   * על כל הקשה. ⛔ ו⛔ אין `scroll-smooth` במחלקות: ההעדפה נקראת כאן, ⇒
+   * `prefers-reduced-motion` ⛔ אינו נעקף (35 § layer B).
    */
   useEffect(() => {
     const chip = chipRefs.current.get(active);
@@ -205,8 +197,7 @@ export default function StudiesScreen({
       inline: 'nearest',
       block: 'nearest',
     });
-    measureEdges();
-  }, [active, measureEdges]);
+  }, [active]);
 
   /**
    * T-331ⓐ — ניווט מקלדת, שהכרזת `role="tablist"` כבר הבטיחה ו⛔ לא סיפקה.
@@ -287,13 +278,11 @@ export default function StudiesScreen({
         <p className="text-sm text-ink-muted">{SUBTITLE_HE}</p>
       </header>
 
-      <div className="relative">
+      <div>
         <div
-          ref={listRef}
-          onScroll={measureEdges}
           role="tablist"
           aria-label={TITLE_HE}
-          className="flex gap-2 overflow-x-auto"
+          className="flex flex-wrap gap-2"
         >
         {STUDY_TRACKS.map((track) => {
           const isActive = track.id === active;
@@ -318,8 +307,8 @@ export default function StudiesScreen({
                   ? // F-036: the bare `--brand` mark colour is a 4.42:1 fill, never a
                     // text/chip background — the surface token at low opacity is the
                     // established fill here (components/StoryScreen.tsx:225).
-                    'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand-surface/20 px-4 text-sm font-bold text-brand-surface'
-                  : 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-4 text-sm text-ink-muted'
+                    'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand-surface/20 px-3 text-xs font-bold text-brand-surface'
+                  : 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-3 text-xs text-ink-muted'
               }
             >
               {isActive && <ActiveTrackMark />}
@@ -329,26 +318,11 @@ export default function StudiesScreen({
         })}
         </div>
         {/*
-          ⓑ סימן הגלישה, ו⛔ **רק כשיש גלישה** — `hiddenStart`/`hiddenEnd` נמדדים
-          מה-DOM, ⇒ ארבעה מסלולים שנכנסים במלואם ⛔ אינם מקבלים דהייה על כלום.
-          ‏`start`/`end` לוגיים, והכיוון הפיזי של המדרג מתהפך ב-`ltr:` — הדהייה
-          אטומה **בקצה** ומתבהרת פנימה, בשני כיווני הכתיבה.
-          ‏`aria-hidden` + `pointer-events-none`: קישוט, ⛔ לא יעד הקשה ו⛔ לא טקסט.
+          ⓑ ⛔ סימני הגלישה של `T-330` הוסרו, ⛔ ולא הושתקו: `flex-wrap` אומר
+          שהרצועה ⛔ לעולם ⛔ אינה גולשת ⇒ `hiddenStart`/`hiddenEnd` היו נמדדים
+          `false` תמיד. קוד שתנאי הרינדור שלו ⛔ אינו יכול להתקיים הוא גרוע
+          מקוד שאינו קיים — הקורא הבא מאמין לו.
         */}
-        {hiddenStart && (
-          <span
-            aria-hidden="true"
-            data-track-scroll-hint="start"
-            className="pointer-events-none absolute inset-y-0 start-0 w-8 bg-gradient-to-l from-surface to-transparent ltr:bg-gradient-to-r"
-          />
-        )}
-        {hiddenEnd && (
-          <span
-            aria-hidden="true"
-            data-track-scroll-hint="end"
-            className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-r from-surface to-transparent ltr:bg-gradient-to-l"
-          />
-        )}
       </div>
 
       {/*

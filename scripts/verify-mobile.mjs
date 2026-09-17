@@ -1094,6 +1094,39 @@ try {
         const targets = await page.locator('main [role="tab"]').count();
         check(targets >= 4, `${at} ≥4 track targets`, `found ${targets}`);
 
+        // 🔴 T-410 — «ארבעה יעדים» היה נכון ו⛔ לא מספיק: עד הטיק הזה הרצועה
+        // גלשה **בתוכה** (`overflow-x-auto`, `T-330`) ⇒ הדף ⛔ לא גלש, השער
+        // הגלובלי נשאר ירוק, והלומד ראה **שלושה** מתוך ארבעה.
+        // 🔬 נמדד `C-0685` ב-375×812: רצועה 327px מול `scrollWidth` 408px ⇒ **גלישה
+        // 81px**, ו-`הבנת הנקרא` — המסלול היחיד שיש בו תוכן — 51% מחוץ למסך.
+        // ⇒ הטענה היא על ה**רצועה עצמה**, ⛔ ולא על הדף, והיא רצה בשלושת
+        // הרוחבים ש-`WIDTHS` נוקב (320 · 375 · 414).
+        const strip = await page.locator('main [role="tablist"]').first().evaluate((el) => ({
+          client: Math.round(el.clientWidth),
+          scroll: Math.round(el.scrollWidth),
+        }));
+        check(
+          strip.scroll <= strip.client + 1,
+          `${at} T-410 · רצועת המסלולים ⛔ אינה גולשת`,
+          `scrollWidth ${strip.scroll} > clientWidth ${strip.client} (גלישה ${strip.scroll - strip.client}px)`,
+        );
+
+        // ⛔ ו-«אינה גולשת» ⛔ אינה «נראית»: שבב יכול לשבת בתוך רצועה
+        // שאינה גולשת ועדיין לחרוג מחוץ ל-viewport. ⇒ נמדדים את ארבעתם.
+        const offscreen = await page.locator('main [role="tab"]').evaluateAll((els) =>
+          els
+            .map((el) => {
+              const b = el.getBoundingClientRect();
+              return b.left < -0.5 || b.right > window.innerWidth + 0.5 ? el.textContent.trim() : null;
+            })
+            .filter(Boolean),
+        );
+        check(
+          offscreen.length === 0,
+          `${at} T-410 · ארבעת המסלולים בתוך המסך`,
+          `מחוץ למסך: ${offscreen.join(' · ')}`,
+        );
+
         const text = await page.locator('main').innerText();
         check(!text.includes('—'), `${at} ⛔ no "—" as a metric (D-046/D-082)`, 'found "—" in main text');
 
