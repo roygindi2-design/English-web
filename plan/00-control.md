@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-17T05:00:00Z"   # C-0677 (QA, מלא). הנעילה הייתה פנויה בפתיחה ⇒ ⛔ אפס סבבי Smart Wait.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "QA"               # 🔒 C-0677 (QA, מלא) — שער + STEP 5.8 (amirnet מוצתה, check 11).
-LOCK_AT: "2026-09-17T04:59:46Z"
+LOCK_HELD_BY: ""               # 🔓 שוחררה — C-0677 (QA) סגור. מוזג ל-dev, amirnet נחתמה, המוקד ⇢ cards.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    4 / 120           # 39-messages-spec § 9 · ⛔ **⛔ אינה המוקד** (הוזז→`amirnet` ב-C-0625). ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "<TIP> · 2026-09-17T05:xxZ · **C-0677 (QA, מלא).** `dev`==`work/current` (ff-only, 29 קומיטים מ-69bd9d0d). `verify` מלא ×2 ירוק (284/284·4918/4918·build✅·mobile 1997) · `loop:health` 23/23 (11 נפתר — `STEP 5.8`). הליכה חיה 375×780 · 8 מסכי `/dev/amirnet/*` — 0 פגם חוסם. `STEP 5.8`: `amirnet` נמסרה (ⓐ מלאה, ⓑⓒ קוד+בדיקות בלבד — `F-275`), המוקד ⇢ `cards`. 11 🟣→✅. **ללומד:** תפריט אמירנט מוביל בהקשות לשאלת תרגול אמיתית ולא ל-no-op (`F-265` נסגר); לוח «הקרב האחרון» בבית הזירה; 3 כפתורי יכולת פעילים עם עלות מאנה; רצועת רצף מרחפת בקרב; יד-רפאים מלמדת הטלת קלף בפעם הראשונה. קידום ⇐ PROMOTER בלבד."
+RELEASE_READY: "4b52ada5 · 2026-09-17T05:23:43Z · **C-0677 (QA, מלא).** `dev`==`work/current` (ff-only, 37 קומיטים מ-69bd9d0d). `verify` מלא ×2 ירוק (284/284·4918/4918·build✅·mobile 1997) · `loop:health` 23/23 (11 נפתר — `STEP 5.8`). הליכה חיה 375×780 · 8 מסכי `/dev/amirnet/*` — 0 פגם חוסם. `STEP 5.8`: `amirnet` נמסרה (ⓐ מלאה, ⓑⓒ קוד+בדיקות בלבד — `F-275`), המוקד ⇢ `cards`. 11 🟣→✅. **ללומד:** תפריט אמירנט מוביל בהקשות לשאלת תרגול אמיתית ולא ל-no-op (`F-265` נסגר); לוח «הקרב האחרון» בבית הזירה; 3 כפתורי יכולת פעילים עם עלות מאנה; רצועת רצף מרחפת בקרב; יד-רפאים מלמדת הטלת קלף בפעם הראשונה. קידום ⇐ PROMOTER בלבד."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "<TIP>"  # dev אחרי C-0677 (QA, מלא). ⛔ לא זז ב-DEV ticks — DEV ⛔ אינו ממזג.
+LAST_REVIEWED_COMMIT: "4b52ada5"  # dev אחרי C-0677 (QA, מלא). ⛔ לא זז ב-DEV ticks — DEV ⛔ אינו ממזג.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -70,4 +70,4 @@ PROMOTIONS_THIS_MONTH: 19         # 19 this month (➕ 16/09 13:24Z, C-0655 OPS 
 
 
 | C-0675 | DEV | QA | 2026-09-17T03:20:00Z | 🔨 **בנייה — הדלת של אמירנט, ועמה קידום המוקד** `arena` ⇢ `amirnet` (`§ 0.23 ז׳` ④; הספירות ב-`ACTIVE_WORKSTREAM`). `T-376` — `AmirnetPracticeFlow` מחבר תפריט ⇒ `GET /api/amirnet/practice` ⇒ `AmirnetQuestion` ⇒ `POST …/result`, וסוגר את `F-265`. סטייה מוצהרת: התפריט הפסיק להיזון מ-`zeroStats()`. `verify` מלא exit 0. | `components/AmirnetPracticeFlow.tsx` · `app/(tabs)/world/amirnet/practice/page.tsx` · `lib/core/amirnetPractice.ts` |
-| C-0677 | QA | DEV | 2026-09-17T05:xx:00Z | ⭐ **שער מלא — מיזוג ל-`dev` (ff-only, 29 קומיטים), 11 🟣→✅, `RELEASE_READY`.** `verify` מלא ×2 ירוק · `loop:health` 23/23 (11 נפתר). `STEP 5.8`: `amirnet` מוצתה (⬜=0, מחלקת `36 § 13`) ⇒ SEALS (ⓐ מלאה · ⓑⓒ קוד+בדיקות בלבד — `F-275` ל-PM) ⇒ המוקד ⇢ `cards` (⬜=1, גלגול מסביב). | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/61-deferred.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
+| C-0677 | QA | DEV | 2026-09-17T05:23:43Z | ⭐ **שער מלא — מיזוג ל-`dev` (ff-only, 37 קומיטים), 11 🟣→✅, `RELEASE_READY`.** `verify` מלא ×2 ירוק · `loop:health` 23/23 (11 נפתר). `STEP 5.8`: `amirnet` מוצתה (⬜=0, מחלקת `36 § 13`) ⇒ SEALS (ⓐ מלאה · ⓑⓒ קוד+בדיקות בלבד — `F-275` ל-PM) ⇒ המוקד ⇢ `cards` (⬜=1, גלגול מסביב). | `plan/00-control.md` · `plan/50-tasks.md` · `plan/60-findings.md` · `plan/61-deferred.md` · `docs/plan-open.md` · `docs/plan-tables.md` |
