@@ -66,6 +66,14 @@ const SAVING_HE = 'שומר את הבחירה';
 const ERROR_HE = `לא הצלחנו לשמור את הבחירה. ${RETRY_HE}.`;
 const SELECTED_HE = 'נבחר';
 const PICK_FIRST_HE = 'בחר דמות כדי להמשיך';
+/**
+ * 🚫 **T-402 — המשפט **מתחלף**, ⛔ ואינו נעלם.**
+ * ⛔ נוסח ממשק ש⛔ אינו תוכן לימודי ⇒ הכרעת DEV (`RULES § 0.22`), ונרשמה בדוח הטיק.
+ * 🔬 **הסיבה מדודה:** `{chosen === null && …}` הוציא את הפסקה מהזרימה ברגע שנבחרה
+ * דמות ⇒ הכפתור **קפץ מטה 24px** (הפסקה 12 + `gap-3`), כלומר היעד שהלומד בדיוק
+ * מתכוון ללחוץ עליו זז תחת האצבע. ⇒ שורה אחת תמיד, שני נוסחים.
+ */
+const READY_HE = 'אפשר להמשיך';
 
 /** `:136` — `rr(24, 404, LW-48, 66, 18, fill=RAISED)` + `BORDER_SUB` 1.1. */
 const CARD_CLASS =
@@ -133,7 +141,34 @@ export default function ArenaCharacterChoice({
    *     ולכן הגדר שלו היא אותה גדר — `x=24`, רוחב `LW-48`.
    */
   return (
-    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 pb-16">
+    <section
+      data-arena-scope
+      /**
+       * 🔴 **⟦17/09 · `C-0672` · `T-402`⟧ עמודה **מדויקת**, ⛔ ולא מינימום — והמעבר
+       *     הזה הוא **מדידה שהפריכה את הניסיון הראשון**, ⛔ ולא בחירה בין שתי דעות.
+       *
+       * 🔬 **הניסיון הראשון היה `sticky bottom-0`, והוא נמדד ⛔ ולא הונח:** הוא ⛔ לא
+       *     הזיז ולו פיקסל אחד — תחתית הבלוק נשארה ב-**805.5** ב-375×780. **הסיבה
+       *     נמדדה בשרשרת ההורים:** ‏`<body>` נושא `overflow: hidden auto` ⇒ **הוא**
+       *     תיבת הגלילה הקרובה של הדבק, ‏`scrollHeight` שלו שווה לגובהו (902 = 902)
+       *     ⇒ הוא ⛔ אינו גולל, ⇒ ההיסט ⛔ לעולם אינו נדרש. ⛔ דבק בתוך מיכל שאינו
+       *     גולל הוא `static` עם שם אחר.
+       *
+       * ⛔ **וסידור מחדש לבדו ⛔ לא היה פותר כלום, וזה חשבון:** גובה בלוק הפעולות הוא
+       *     סכום קבוע (משפט 12 + `gap-3` + כפתור 58), ⇒ העברת המשפט מעל הכפתור מזיזה
+       *     את שניהם **בתוך** הבלוק ו⛔ אינה מזיזה את תחתיתו.
+       *
+       * ⇒ **מה שכן עובד הוא התקדים של הריפו עצמו:** `ArenaBattle.tsx:850` (`T-350`)
+       *     ו-`CardDeck.tsx:368` מחזיקים עמודה **מדויקת** ומרשים לתוכן לגלול בתוכה.
+       *     ‏`5.25rem` ⛔ אינם מספר יפה — הם נמדדו באותה שרשרת: כותרת הפריסה **52px**
+       *     ועוד `pb-8` של `<main>` **32px** = **84px**. ⇒ הפעולות יושבות על תחתית
+       *     העמודה, והכרטיסים — ⛔ ולא הכפתור — הם מה שגולל אם חסר מקום.
+       *
+       * ⛔ **`pb-16` ירד:** 64px של ריפוד **מתחת** לבלוק בעמודה מדויקת הם 64px שנגרעים
+       *     מהכרטיסים בלי לשרת דבר. במקומו בטיחות המכשיר בלבד, כמו ב-`ArenaBattle`.
+       */
+      className="flex h-[calc(100dvh-5.25rem)] flex-col gap-5 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+    >
       {/* `:113-114` — הכותרת ב-24px Bold ותת-הכותרת (11.5 ⇒ 12, D-137). */}
       <header className="flex flex-col items-center gap-1 pt-8 text-center">
         <h1 className="text-2xl font-bold leading-tight text-[color:var(--arena-ink)]">{TITLE_HE}</h1>
@@ -141,7 +176,10 @@ export default function ArenaCharacterChoice({
       </header>
 
       {/* `§ 7` — שלוש הדמויות ב-idle חי, כל אחת בקופסת הכרטיס של `:136`. */}
-      <ul className="flex flex-col gap-3">
+      {/* ⛔ **`flex-1 min-h-0 overflow-y-auto` — הכרטיסים הם מה שגולל, ⛔ לא הכפתור.**
+          ⛔ `min-h-0` ⛔ אינו קישוט: בלעדיו פריט flex ⛔ אינו יכול להתכווץ מתחת לגובה
+          התוכן שלו, ⇒ הרשימה הייתה דוחפת את הפעולות מטה בדיוק כמו קודם. */}
+      <ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {ARENA_CHARACTERS.map((character) => {
           const selected = chosen === character;
           return (
@@ -197,8 +235,25 @@ export default function ArenaCharacterChoice({
         })}
       </ul>
 
-      {/* `:179-191` — הפעולות. */}
+      {/* `:179-191` — הפעולות. ⛔ **הן יושבות על רצפת העמודה** (`mt-auto` בתוך גובה
+          מדויק), ⇒ תחתית `בחר` ⛔ אינה יכולה לרדת מתחת לקיפול — ⛔ לא ב-320, ⛔ לא
+          ב-375 ו⛔ לא ב-414. **המדידה שפתחה את השורה** (`next start`, 780 גובה):
+          `בחר` ב-`y=735..793` ב-320 וב-`y=716..774` ב-375/414, והמשפט המסביר ב-
+          `y=805..817` / `y=786..798` — שלושתם **מתחת** ל-780. */}
       <div className="mt-auto flex flex-col gap-3 pt-4">
+        {/* ⛔ **מעל הכפתור, ⛔ ולא מתחתיו** (`ui-ux-pro-max` ⇢ Interaction ⇢ Disabled
+            States): הסיבה למצב המושבת נקראת **לפני** שהאצבע מגיעה אל היעד המת, ⛔ ולא
+            אחרי שהיא כבר נכשלה בו. ⛔ **ותמיד אחת** — ראה `READY_HE`: פסקה שנעלמת היא
+            פסקה שמזיזה את הכפתור. ‏`aria-live` כדי שההתחלפות תישמע גם במקריא מסך. */}
+        {state !== 'session_expired' && (
+          <p
+            id="arena-character-pick-first"
+            aria-live="polite"
+            className="text-center text-xs leading-none text-[color:var(--arena-ink-dim)]"
+          >
+            {chosen === null ? PICK_FIRST_HE : READY_HE}
+          </p>
+        )}
         {state === 'session_expired' ? (
           <a href="/login" className={START_CLASS}>
             {SIGN_IN_AGAIN_HE}
@@ -208,16 +263,11 @@ export default function ArenaCharacterChoice({
             type="button"
             className={`${START_CLASS} disabled:border-[color:var(--arena-card-edge)] disabled:bg-[color:var(--arena-card)] disabled:text-[color:var(--arena-ink-dim)]`}
             disabled={chosen === null || state === 'saving'}
-            aria-describedby={chosen === null ? 'arena-character-pick-first' : undefined}
+            aria-describedby="arena-character-pick-first"
             onClick={() => void confirm()}
           >
             {state === 'saving' ? SAVING_HE : CONFIRM_HE}
           </button>
-        )}
-        {chosen === null && (
-          <p id="arena-character-pick-first" className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
-            {PICK_FIRST_HE}
-          </p>
         )}
         {state === 'error' && (
           <p role="alert" className="text-xs leading-snug text-[color:var(--arena-ink)]">
