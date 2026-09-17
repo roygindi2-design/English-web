@@ -1,5 +1,7 @@
 # ארכיון יומן המחזורים של 00-control.md
 
+loop(QA): gate idle — LOCK_HELD_BY=ops-agent since 2026-09-17T11:56:00Z (~60 min), rev-list=14
+
 loop(QA): gate idle — LOCK_HELD_BY=DEV since 01:07:17Z (38+ min), rev-list=9
 
 loop(QA): C-0566 gate merged 1 commit (journal-only) ⇒ origin/dev — `7f0b0ab`. `verify` ✅ (fresh, full 9-command run before lock + fast-lane on register-only pushes) · `loop:health` 21/23 (2=`F-237`, already open ⇢ PM, not new — check 2's dead file:line and check 12's PM-block are both explained by that one finding). **Register repair (F-126 pattern):** `T-290`·`T-309`·`T-316`·`T-320` were stuck 🟣 though their commits (C-0560…C-0564) were already ancestors of `origin/dev` from the prior tick's merge (C-0565) — flipped to ✅ + archived (`npm run archive`), copying fact from `git log`, no judgement. `RELEASE_READY` updated (was stale since C-0559, predating four merged product commits); `03-for-roy.md` POST-PROMOTION CHECK section replaced with three fresh taps (T-290/T-316/T-309), outgoing section moved to `## נסגר` (item 115, unanswered). `docs/architecture-map.json` fresh (0 drift). `plan/05-departments.md` read: `msgs` still has 1 ⬜ (`T-193`, CONTENT's) ⇒ not exhausted, `ACTIVE_WORKSTREAM` unchanged. `03-for-roy.md` open-item stamps left at C-0540 (< 24h old, check 3 green) — not independently re-measured this tick.
