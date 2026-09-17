@@ -713,3 +713,83 @@ describe('T-401 — הרצף מגיע ללומד באמצע הקרב, ⛔ ולא
     expect(CODE).not.toMatch(/#784614/i);
   });
 });
+
+/**
+ * 👻 **T-403 · `37 § 5` («**גילוי:** בקרב הראשון בלבד יד רפאים שמדגימה את הגרירה»).**
+ *
+ * 🔬 **הפער, נמדד בטיק הזה:** `grep -rn ghost components/` ⇒ **0** — הסעיף קיים
+ * במפרט ו⛔ מעולם ⛔ לא נבנה; המחווה המרכזית של הקרב נלמדה מפסקה אחת.
+ * ⛔ **שער «הקרב הראשון» ⛔ לא נבנה מחדש:** `ARENA_TAUGHT_KEY` כבר שומר על הפסקה,
+ * ⇒ אותו ביט בדיוק (`showHint`) שומר גם על התנועה.
+ */
+describe('T-403 — יד הרפאים: המחווה נראית בקרב הראשון בלבד', () => {
+  const chip = (): string =>
+    CODE.slice(CODE.indexOf('data-arena-teach'), CODE.indexOf('data-arena-throw'));
+
+  it('הצומת קיים, `fixed`, ⛔ אינו מידע ו⛔ אינו יעד מגע', () => {
+    expect(CODE).toMatch(/data-arena-teach/);
+    expect(chip()).toMatch(/aria-hidden/);
+    expect(chip()).toMatch(/pointer-events-none/);
+    expect(chip()).toMatch(/position: 'fixed'/);
+  });
+
+  it('⛔ מוצג אך ורק כש-`showHint` — אותו שער של `ARENA_TAUGHT_KEY`, ⛔ ולא שני', () => {
+    expect(CODE).toMatch(/\{teach !== null &&/);
+    expect(CODE).toMatch(/if \(!showHint \|\| reducedMotion \|\| battle === null\) return undefined;/);
+    // ⛔ אפס מפתח אחסון שני — הרפאים ⛔ אינו זוכר דבר בעצמו.
+    expect((CODE.match(/localStorage/g) ?? []).length).toBeLessThanOrEqual(2);
+  });
+
+  it('לכל היותר **שני** מחזורים, והמספר חי ב-CSS ⛔ ולא ברכיב', () => {
+    expect(CSS_CODE).toMatch(/animation:\s*arena-teach-drag var\(--arena-teach-ms\) var\(--arena-ease-in-out\) 2 both/);
+    expect(CODE).toMatch(/onAnimationEnd=\{\(\) => setTeach\(null\)\}/);
+  });
+
+  it('משך המחזור ≤1,200ms, ⛔ נמדד מה-CSS ⛔ ולא מהערה', () => {
+    const ms = declared('--arena-teach-ms');
+    expect(ms).toBeLessThanOrEqual(1_200);
+    expect(ms).toBeGreaterThan(0);
+    expect(CODE).not.toMatch(new RegExp(`\\b${ms}\\b`));
+  });
+
+  it('`transform` ו-`opacity` בלבד (`animate` § 4), ⛔ ואינו מתחיל מ-`scale(0)`', () => {
+    const frames = CSS_CODE.slice(
+      CSS_CODE.indexOf('@keyframes arena-teach-drag'),
+      CSS_CODE.indexOf('[data-arena-teach]'),
+    );
+    expect(frames).toMatch(/transform/);
+    expect(frames).toMatch(/opacity/);
+    for (const banned of [/\bwidth:/, /\bheight:/, /\btop:/, /\bleft:/, /\bmargin/, /scale\(0\)/]) {
+      expect(frames, `${banned} — animate § 4`).not.toMatch(banned);
+    }
+  });
+
+  it('🔴 `prefers-reduced-motion` ⇒ ⛔ אין רפאים בכלל — ⛔ לא איטי ו⛔ לא מקוצר', () => {
+    expect(CSS_CODE).toMatch(/\[data-arena-teach\]\s*\{\s*display:\s*none;\s*\}/);
+    // ⛔ והמחסום השני, ברכיב: הוא ⛔ אפילו לא נמדד.
+    expect(CODE).toMatch(/reducedMotion \|\| battle === null/);
+  });
+
+  it('המגע הראשון עוצר, ⛔ ואין מאזין ששורד — `pointerdown` עם `once`', () => {
+    expect(CODE).toMatch(/window\.addEventListener\('pointerdown', stop, \{ once: true \}\)/);
+    expect(CODE).toMatch(/removeEventListener\('pointerdown', stop\)/);
+    // ⛔ והטלה עצמה מכבה אותו מייד, ⛔ ולא «אחרי שיסתיים».
+    expect(CODE).toMatch(/setShowHint\(false\);\s*setTeach\(null\);/);
+  });
+
+  it('ⓒ — הפסקה `[data-arena-hint]` **נשארת**: התנועה ⛔ אינה מחליפה טקסט', () => {
+    expect(CODE).toMatch(/data-arena-hint/);
+    expect(CODE).toMatch(/DRAG_HINT_HE/);
+  });
+
+  it('⛔ אינו מזיז את פריסת היד — `fixed` בקצה העץ, ⛔ ולא ילד של `[data-arena-hand]`', () => {
+    const hand = CODE.indexOf('data-arena-hand');
+    expect(CODE.indexOf('data-arena-teach')).toBeGreaterThan(hand);
+  });
+
+  it('⛔ אינווריאנט `37 § 13.5` — אפס ערך חדש שדלף, והצבעים הם טוקנים קיימים', () => {
+    expect(chip()).toMatch(/var\(--arena-gold-light\)/);
+    expect(chip()).toMatch(/var\(--arena-gold\)/);
+    expect(chip()).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+});

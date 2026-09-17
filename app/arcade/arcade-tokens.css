@@ -369,6 +369,15 @@
 :root {
   /* `animate` § 5 — עקומות מהטבלה, ⛔ ולא cubic-bezier שנראה מוכר. */
   --arena-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* 👻 **T-403 — יד הרפאים של `37 § 5` («גילוי: בקרב הראשון בלבד»).**
+     ⛔ `ease-in-out` ⛔ ולא `ease-out`, ⛔ ולא בחירה: `animate` § 5 — «Moving / morphing
+     on screen ⇒ ease-in-out», והרפאים ⛔ אינו נכנס ⛔ ואינו יוצא, הוא **נוסע** מהיד
+     אל היריב. הערך הוא זה שהסקיל נוקב בו, ⛔ ולא אחד שנראה מוכר.
+     ⛔ **ו-1100ms ⛔ אינם חריגה מתקרת 300ms של הממשק:** `animate` § 5 מחריג מפורשות
+     «Marketing / explanatory ⇒ can be longer», והמטרה כאן היא **Explanation** — תנועה
+     שמדגימה **איך** מחווה עובדת. ⛔ שורת המשימה גודרת ≤1,200ms ו**שני מחזורים**. */
+  --arena-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --arena-teach-ms: 1100ms;
   --arena-drain-ms: 260ms;
   --arena-float-ms: 560ms;
   --arena-shake-ms: 180ms;
@@ -732,4 +741,59 @@
    האנימציה ⛔ אין `animationend`, והצומת היה נשאר על המסך **לנצח**. */
 @media (prefers-reduced-motion: reduce) {
   [data-arena-throw] { display: none; }
+}
+
+
+/* ═══ ⟦NEW 17/09 · `C-0672` · `T-403`⟧ **יד הרפאים — המחווה נראית, ⛔ ולא נקראת.**
+
+   🔬 **הפער, נמדד ⛔ ולא הוערך:** `grep -rn ghost components/` ⇒ **0**, ו-`37 § 5`
+   («**גילוי:** בקרב הראשון בלבד יד רפאים שמדגימה את הגרירה») קיים במפרט ו⛔ מעולם
+   ⛔ לא נבנה. המחווה המרכזית של הקרב נלמדה מ**פסקה אחת** — `[data-arena-hint]`.
+
+   ⛔ **ארבע התשובות של `find-animation-opportunities`, ⛔ ולא שלוש:**
+   ① **תדירות** — rare/first-time, והשער כבר קיים (`ARENA_TAUGHT_KEY`) ⇒ כשיר ·
+   ② **מטרה** — **Explanation** (`animate` § 2), המפרט נוקב בזה בעצמו ·
+   ③ **מהירות** — מדרג ההסבר: `--arena-teach-ms` ושני מחזורים, ⛔ ולא לולאה ·
+   ④ **תפקוד** — עוזר: בלעדיו המחווה נלמדת מטקסט.
+
+   ⛔ **`transform` ו-`opacity` בלבד** (`animate` § 4) ⇒ ⛔ אפס layout, ⛔ אפס paint.
+   ⛔ **⛔ ואינו מתחיל מ-`scale(0)`** — 0.92, בדיוק כמו שהשורה «Never `scale(0)`»
+   של `animate` דורשת: אצבע ⛔ אינה מופיעה מאין.
+   ⛔ **וההיסט מגיע כשני משתנים מ-JS**, כמו ב-`arena-throw-fly` — הוא המרחק בין הקלף
+   הראשון ביד לבין היריב, ו⛔ אינו ידוע מראש. */
+@keyframes arena-teach-drag {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.92);
+  }
+  14% {
+    opacity: 0.95;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  72% {
+    opacity: 0.95;
+    transform:
+      translate3d(var(--arena-teach-dx, 0), var(--arena-teach-dy, 0), 0)
+      scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--arena-teach-dx, 0), var(--arena-teach-dy, 0), 0)
+      scale(0.72);
+  }
+}
+[data-arena-teach] {
+  animation: arena-teach-drag var(--arena-teach-ms) var(--arena-ease-in-out) 2 both;
+  will-change: transform, opacity;
+}
+
+/* ⛔ **המחסום, והוא נשלח עם התנועה ⛔ ולא אחריה** (`animate` § 7). 🔴 **וכאן הוא ⛔ אינו
+   «גרסה עדינה יותר» אלא ⛔ אין רפאים בכלל** — שורת המשימה מפורשת: ⛔ לא איטית, ⛔ לא
+   מקוצרת. ⛔ **וזה ⛔ אינו מוריד מידע:** הפסקה `[data-arena-hint]` **נשארת** ואומרת
+   את אותה מחווה במילים — היא מסלול הנגישות, והתנועה ⛔ אינה מחליפה אותה.
+   ⛔ `display: none` ⛔ ולא `animation: none`: בלי האנימציה ⛔ אין `animationend`,
+   והצומת היה נשאר על המסך לנצח — אותה מדידה בדיוק שנרשמה על `[data-arena-throw]`. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-teach] { display: none; }
 }

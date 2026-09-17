@@ -192,6 +192,12 @@ const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · א�
  * מת ברגע שהקרב נגמר, ו⛔ אינו נוגע ב-`word_progress`.
  */
 const STREAK_HE = 'רצף';
+/**
+ * 👻 T-403 — קוטר נקודת המגע של יד הרפאים, בפיקסלים. ⛔ ⛔ אינו יעד מגע (`aria-hidden`
+ * ו-`pointer-events-none`) ⇒ רצפת 44px ⛔ אינה חלה עליו; זה גודל של **סמן**, והוא
+ * מוצהר כאן כי ה-JS ממרכז אותו על הקלף ו⛔ אינו יכול לקרוא אותו מ-CSS.
+ */
+const TEACH_SIZE = 40;
 /** T-220 ⓓ · D-139 — the spell that came back, revealed: «<headword> — <translation>». */
 const RETURNED_HE = 'הלחש חוזר אליך';
 const SAVING_HE = 'שומר את הקרב…';
@@ -336,6 +342,22 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     readonly dx: number;
     readonly dy: number;
   } | null>(null);
+  /**
+   * 👻 **⟦17/09 · `C-0672` · `T-403`⟧ יד הרפאים — `37 § 5` («**גילוי:** בקרב הראשון
+   * בלבד יד רפאים שמדגימה את הגרירה»). הסעיף קיים במפרט ו⛔ מעולם ⛔ לא נבנה.
+   *
+   * ⛔ **⛔ אינה state שני על «האם ללמד»:** השער הוא `showHint` בדיוק — אותו ביט
+   * שכבר שומר על הפסקה, ⇒ ⛔ אין דרך שהתנועה תופיע בקרב שהפסקה ⛔ אינה מופיעה בו.
+   * ⛔ **`fixed`, מאותה סיבה מדודה של `throwFx`:** הנתיב חוצה שני הורים עם
+   * `overflow-hidden`, וכל אחד מהם היה גוזר אותו באמצע.
+   */
+  const [teach, setTeach] = useState<{
+    readonly key: number;
+    readonly x: number;
+    readonly y: number;
+    readonly dx: number;
+    readonly dy: number;
+  } | null>(null);
   const stageAreaRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -387,6 +409,8 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
   const fire = useCallback((option: string) => {
     setSelected(null);
     setShowHint(false);
+    // 👻 T-403 — ההדגמה מתה ברגע שהלומד עשה את הדבר עצמו. ⛔ ⛔ לא «אחרי שתסתיים».
+    setTeach(null);
     try { window.localStorage.setItem(ARENA_TAUGHT_KEY, '1'); } catch { /* ⛔ אחסון חסום ⛔ אינו שגיאה */ }
     setChosenSoFar((prev) => [...prev, option]);
     setBattle((prev) => (prev === null ? prev : cast(prev, option, elapsedRef.current)));
@@ -414,6 +438,53 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
     const node = handRef.current?.querySelector('[data-arena-card][aria-pressed="true"]');
     return node instanceof HTMLElement ? node.getBoundingClientRect() : null;
   }, []);
+
+  /**
+   * 👻 **T-403 — ההדגמה נמדדת מהעץ החי, ⛔ ואינה נתיב קבוע.**
+   *
+   * ⛔ **הקלף הראשון ביד ⇒ היריב** — בדיוק שני הצמתים ש-`launchThrow` כבר מודד,
+   * ⛔ ולא שני מספרים שנבחרו. ⇒ ההדגמה מראה את **אותה** נסיעה שההטלה עצמה עושה.
+   * ⛔ **`requestAnimationFrame` אחד:** `showHint` נדלק ב-`useEffect` של ה-mount,
+   * ⇒ ברגע ההוא היד עדיין ⛔ אינה בעץ. ⛔ שעון ⛔ אינו נדרש — פריים אחד מספיק,
+   * והוא ⛔ לא ימדוד 0×0.
+   * 🔴 **⛔ ואין רפאים תחת `prefers-reduced-motion`** — ⛔ לא איטי ⛔ ולא מקוצר
+   * (שורת המשימה, מפורשות). ⛔ שני מחסומים: כאן, וב-`arcade-tokens.css`.
+   */
+  useEffect(() => {
+    if (!showHint || reducedMotion || battle === null) return undefined;
+    let raf = 0;
+    raf = window.requestAnimationFrame(() => {
+      const card = handRef.current?.querySelector('[data-arena-card]');
+      const enemy = stageAreaRef.current?.querySelector('[data-arena-enemy]');
+      if (!(card instanceof HTMLElement) || !(enemy instanceof HTMLElement)) return;
+      const from = card.getBoundingClientRect();
+      const to = enemy.getBoundingClientRect();
+      if (from.width === 0 || to.width === 0) return;
+      setTeach({
+        key: Date.now(),
+        x: from.left + from.width / 2 - TEACH_SIZE / 2,
+        y: from.top + from.height / 2 - TEACH_SIZE / 2,
+        dx: to.left + to.width / 2 - (from.left + from.width / 2),
+        dy: to.top + to.height / 2 - (from.top + from.height / 2),
+      });
+    });
+    return () => window.cancelAnimationFrame(raf);
+    // ⛔ `battle` כולו היה יורה בכל פריים של הלולאה; מה שמעניין הוא **שיש** קרב.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showHint, reducedMotion, battle === null]);
+
+  /**
+   * 👻 **T-403 — המגע הראשון עוצר, ⛔ ולא «הקלקה על הקלף הנכון».**
+   * ⛔ `pointerdown` על החלון ⇒ **כל** נגיעה מבטלת מייד, כולל גרירה שנקטעה וכולל
+   * מגע במקום ריק. ⛔ הדגמה שממשיכה לרוץ בזמן שהאצבע כבר על המסך מתחרה בלומד.
+   * ⛔ `once: true` ⇒ ⛔ אין מאזין ששורד את ההדגמה.
+   */
+  useEffect(() => {
+    if (teach === null) return undefined;
+    const stop = () => setTeach(null);
+    window.addEventListener('pointerdown', stop, { once: true });
+    return () => window.removeEventListener('pointerdown', stop);
+  }, [teach]);
 
   const launchThrow = useCallback((label: string, from: DOMRect) => {
     if (reducedMotion) return;
@@ -1271,6 +1342,36 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           מסלול הנגישות של `§ 5` (הקשה על היריב) ⛔ לא נגע, ⛔ ואסור לו להיחסם.
           ⛔ **⛔ ואין כאן `setTimeout`:** `onAnimationEnd` הוא מה שמפנה אותו, בדיוק
           כמו הקיפאון והרעד — שעון ב-JS היה נפרד מהמספר שב-CSS ומתחיל לסטות ממנו. */}
+      {/* 👻 **⟦17/09 · `C-0672` · `T-403`⟧ יד הרפאים — `37 § 5` («גילוי»).**
+          ⛔ **הפסקה מעל היד ⛔ לא הוחלפה ו⛔ לא נגרעה** (ⓒ של השורה): היא מסלול
+          הנגישות, והיא היחידה שקיימת תחת `prefers-reduced-motion`. ⇒ התנועה
+          **מוסיפה** ערוץ, ⛔ ואינה מחליפה ערוץ.
+          ⛔ `aria-hidden` ו-`pointer-events-none`: ⛔ אינה מידע ו⛔ אינה יעד מגע —
+          מסלול הנגישות של `§ 5` (הקשה על היריב) ⛔ אסור לו להיחסם.
+          ⛔ **⛔ ואין `setTimeout`:** `onAnimationEnd` יורה **פעם אחת** אחרי המחזור
+          האחרון של `animation-iteration-count: 2`, ⇒ «לכל היותר שני מחזורים» הוא
+          מספר ב-CSS, ⛔ ולא שעון ב-JS שמתחיל לסטות ממנו. */}
+      {teach !== null && (
+        <div
+          key={teach.key}
+          data-arena-teach
+          aria-hidden
+          onAnimationEnd={() => setTeach(null)}
+          style={{
+            position: 'fixed',
+            left: `${teach.x}px`,
+            top: `${teach.y}px`,
+            width: `${TEACH_SIZE}px`,
+            height: `${TEACH_SIZE}px`,
+            /* ⛔ שני משתנים, ⛔ ולא `transform` מוטבע — `style` מוטבע **גובר** על כל
+               כלל CSS ⇒ הוא היה מוחק את האנימציה עצמה. אותה מדידה של `T-359`. */
+            ['--arena-teach-dx' as string]: `${teach.dx}px`,
+            ['--arena-teach-dy' as string]: `${teach.dy}px`,
+          }}
+          className="pointer-events-none z-40 rounded-full border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)]"
+        />
+      )}
+
       {throwFx !== null && (
         <div
           key={throwFx.key}

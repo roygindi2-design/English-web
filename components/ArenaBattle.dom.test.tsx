@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import ArenaBattle from '@/components/ArenaBattle';
+import ArenaBattle, { ARENA_TAUGHT_KEY } from '@/components/ArenaBattle';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 
 /**
@@ -254,5 +254,57 @@ describe('T-401 — שבב הרצף מופיע באמצע הקרב ומתאפס 
     await waitFor(() => expect(chip()).not.toBeNull());
     castHe('מסיח 2א');
     await waitFor(() => expect(chip()).toBeNull());
+  });
+});
+
+/**
+ * 👻 **T-403 — השער של «הקרב הראשון», נמדד על עץ חי.**
+ *
+ * ⛔ **מה ⛔ אינו נמדד כאן, ומוצהר:** הרפאים עצמו. הוא נולד משני
+ * `getBoundingClientRect` אמיתיים, ו-`jsdom` מחזיר **0×0** לכל צומת ⇒ השומר
+ * `from.width === 0` (שהוא נכון בייצור) חוסם אותו כאן תמיד. ⇒ בדיקה שהייתה
+ * «מוכיחה» שהוא מופיע ב-`jsdom` הייתה מודדת את הסטאב שלי, ⛔ לא את המוצר.
+ * 🔬 **הוא נמדד בהליכה החיה של הטיק** (`DEV.md` STEP 6.5, `next start` ב-375×780).
+ * ⇒ מה שכן נמדד כאן הוא **השער**: הביט היחיד שמחליט אם בכלל מלמדים.
+ */
+describe('T-403 — «בקרב הראשון בלבד»: שער אחד, ⛔ ולא שניים', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+
+  const ROUND = { level: 'A1', questions: [1, 2, 3].map(question) };
+
+  it('קרב ראשון (⛔ אין מפתח באחסון) — מסלול ההוראה פתוח', async () => {
+    window.localStorage.removeItem(ARENA_TAUGHT_KEY);
+    render(<ArenaBattle initialRound={ROUND} />);
+    await waitFor(() => expect(document.querySelector('[data-arena-hint]')).not.toBeNull());
+  });
+
+  it('קרב שני (המפתח קיים) — ⛔ אין רפאים ו⛔ אין פסקה, שניהם מאותו ביט', async () => {
+    window.localStorage.setItem(ARENA_TAUGHT_KEY, '1');
+    render(<ArenaBattle initialRound={ROUND} />);
+    await waitFor(() => expect(document.querySelector('[data-arena-hint]')).toBeNull());
+    expect(document.querySelector('[data-arena-teach]')).toBeNull();
+    window.localStorage.removeItem(ARENA_TAUGHT_KEY);
+  });
+
+  it('⛔ הפסקה ⛔ אינה מוחלפת — היא מסלול הנגישות, והתנועה ⛔ אינה תחליף לה', async () => {
+    window.localStorage.removeItem(ARENA_TAUGHT_KEY);
+    render(<ArenaBattle initialRound={ROUND} />);
+    const hint = await waitFor(() => {
+      const node = document.querySelector('[data-arena-hint]');
+      expect(node).not.toBeNull();
+      return node as Element;
+    });
+    expect(hint.textContent).toContain('גרור קלף כלפי מעלה');
   });
 });
