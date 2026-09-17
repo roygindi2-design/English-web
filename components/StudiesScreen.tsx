@@ -177,6 +177,38 @@ export default function StudiesScreen({
    * יושבים ב**שורה אחת**, בדיוק כפי שהרנדר מצייר; ב-320 הם נשברים לשתיים
    * ⛔ במקום לגלוש. ⇒ ⛔ אפס גלילה אופקית בשלושת הרוחבים, וארבעה מתוך ארבעה
    * גלויים בכולם.
+   *
+   * 🔴 **T-414 — ‏`flex-wrap` לבדו ⛔ לא הספיק, וזה נמדד ⛔ ולא שוער.** ב-`C-0691`
+   * נמדד ש-375px עדיין נשבר לשתי שורות: `אוצר מילים` · `דקדוק` · `כתיבה`
+   * בראשונה, ו-`הבנת הנקרא` — **המסלול היחיד שיש בו תוכן חי** (12 סיפורים,
+   * `T-405`) — לבדו בשנייה, כשארית. ⇒ הלומד קורא שלוש אפשרויות ועוד עודף,
+   * ⛔ ולא ארבע אפשרויות שוות כפי ש-`kol-A-04-learning` מצייר.
+   *
+   * 🔬 **המדידה, ב-`next start` 375×780 (‏Playwright, ⛔ ולא קריאת מקור):** רצועה
+   * `clientWidth` = **327px**; ארבעת השבבים ב-`px-3` = `109.5 + 59.4 + 57.7 +
+   * 93.3` = **319.9px**, ועוד שלושה רווחי `gap-2` = 24 ⇒ **343.9px**.
+   * ⇒ חסרים **16.9px**, ⛔ ולא «כמעט נכנס».
+   *
+   * ⛔ **ו⛔ אין שלושה מהמוצאים האלה:** ⓐ ⛔ אין קיצור שם מסלול — ארבעת השמות
+   * נקובים ב-`36 § 9` מילה במילה; ⓑ ⛔ אין הקטנת טקסט — `text-xs` **הוא**
+   * רצפת ה-12px (`§ א9` · `check:text-floor`), והרצפה ⛔ אינה נפתחת (וגם
+   * `imagegen-frontend-mobile § 29`: «⛔ אל תכווץ טקסט כדי לדחוס עוד UI»);
+   * ⓒ ⛔ אין החזרה של `overflow-x-auto` — `T-410` סגרה את הגלישה האופקית.
+   * ⇒ **הריפוד האופקי הוא המשתנה היחיד שנשאר**, והוא יורד מ-`px-3` ל-`px-2`:
+   * `223.9` תוכן + `8×8` ריפוד = `287.9`, ועוד 24 רווחים = **311.9 ≤ 327**,
+   * מרווח של **15.1px**.
+   *
+   * ⚠️ **וזו סטייה מהרנדר שנרשמת, ⛔ ולא נבלעת** (`36 § 14.4`): הרנדר מצייר
+   * ריפוד **13px** לכל צד (`render_video_A.py:1276` — `c.tw(tr, 12.5, …) + 26`).
+   * המדידה מראה שבמטריקות הגופן החי, 13px לצד ⛔ אינם ניתנים להשגה ברצפת
+   * ה-12px ⇒ נלקח **הקיצוץ הקטן ביותר שנכנס** (12 ⇒ 8), ו-`gap-2` נשאר 8px
+   * **בדיוק כמו הרנדר** (`x -= w + 8`, אותה שורה).
+   *
+   * ⛔ **ו-320px נשאר בשתי שורות, בכוונה.** נמדד: 272px רצועה מול 223.9px
+   * תוכן ⇒ שורה אחת דורשת ריפוד ≤4px לצד ורווחים של 4px, כלומר שבבים
+   * צמודים — `imagegen-frontend-mobile § 31` («⛔ אל תעשה את המסך צפוף»).
+   * ⇒ **הרצפה גוברת על הרנדר גם כאן**, בדיוק כמו ב-`T-410`, והרצועה
+   * ⛔ עדיין ⛔ אינה גולשת.
    */
   const chipRefs = useRef(new Map<StudyTrackId, HTMLButtonElement>());
 
@@ -307,8 +339,8 @@ export default function StudiesScreen({
                   ? // F-036: the bare `--brand` mark colour is a 4.42:1 fill, never a
                     // text/chip background — the surface token at low opacity is the
                     // established fill here (components/StoryScreen.tsx:225).
-                    'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand-surface/20 px-3 text-xs font-bold text-brand-surface'
-                  : 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-3 text-xs text-ink-muted'
+                    'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-brand bg-brand-surface/20 px-2 text-xs font-bold text-brand-surface'
+                  : 'flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-2 text-xs text-ink-muted'
               }
             >
               {isActive && <ActiveTrackMark />}
