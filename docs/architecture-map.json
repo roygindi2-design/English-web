@@ -195,6 +195,14 @@
     "lib/core/scheduler.ts",
     "lib/supabase/auth.ts"
   ],
+  "app/api/study/place/route.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/api/study/place/route.ts": [
+    "lib/core/studyPlace.ts",
+    "lib/core/studyTracks.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/study/queue/route.test.ts": [
     "lib/testSource.ts"
   ],
@@ -443,6 +451,12 @@
     "components/StudiesScreen.tsx",
     "components/TabBar.tsx",
     "lib/core/levelSummary.ts"
+  ],
+  "app/dev/tabs/studies/place/page.tsx": [
+    "components/StudiesScreen.tsx",
+    "components/TabBar.tsx",
+    "lib/core/levelSummary.ts",
+    "lib/core/studyPlace.ts"
   ],
   "app/dev/world/layout.tsx": [],
   "app/dev/world/page.tsx": [
@@ -990,12 +1004,17 @@
     "lib/core/storyTapTargets.ts",
     "lib/core/worldApps.ts"
   ],
+  "components/StudiesScreen.dom.test.tsx": [
+    "components/StudiesScreen.tsx",
+    "lib/core/levelSummary.ts"
+  ],
   "components/StudiesScreen.test.ts": [
     "lib/testSource.ts"
   ],
   "components/StudiesScreen.tsx": [
     "lib/api/client.ts",
     "lib/core/levelSummary.ts",
+    "lib/core/studyPlace.ts",
     "lib/core/studyTracks.ts"
   ],
   "components/StudyDeckScreen.test.ts": [
@@ -1593,6 +1612,12 @@
   ],
   "lib/core/storyTapTargets.ts": [
     "lib/core/storyGate.ts"
+  ],
+  "lib/core/studyPlace.test.ts": [
+    "lib/core/studyPlace.ts"
+  ],
+  "lib/core/studyPlace.ts": [
+    "lib/core/studyTracks.ts"
   ],
   "lib/core/studyTracks.test.ts": [
     "lib/core/levelSummary.ts",

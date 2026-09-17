@@ -27,8 +27,14 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { apiGet } from '@/lib/api/client';
+import { apiGet, apiPost } from '@/lib/api/client';
 import type { LevelSummary } from '@/lib/core/levelSummary';
+import {
+  latestStudyPlace,
+  parseStudyPlaces,
+  studyPlaceForTrack,
+  type StudyPlace,
+} from '@/lib/core/studyPlace';
 import {
   STUDY_TRACKS,
   trackDestination,
@@ -59,6 +65,15 @@ const TAB_ID_PREFIX = 'studies-track-tab-';
 
 type SummaryResponse =
   | { readonly ok: true; readonly level: string | null; readonly levels?: readonly LevelSummary[] }
+  | { readonly ok: false; readonly code: string };
+
+/**
+ * `T-409` · `GET /api/study/place`. ⛔ **`places` מגיע כ-`unknown` בכוונה** — הוא נכנס
+ * ל-`parseStudyPlaces`, שהוא שער ו⛔ לא פענוח: מזהה מסלול שאינו אחד מארבעת אלה, ושורה
+ * חסרה, ⛔ אינם מפילים את המסך ו⛔ אינם נסמכים עליהם.
+ */
+type PlaceResponse =
+  | { readonly ok: true; readonly places?: unknown }
   | { readonly ok: false; readonly code: string };
 
 /** SVG מוטבע ⛔ ולא אמוג׳י (חוקה שכבה A · § 6) — הערוץ השני של השבב הפעיל. */
@@ -110,12 +125,21 @@ function ModuleStateMark({ state }: { readonly state: StudyModuleState }): React
 
 export default function StudiesScreen({
   fixtureLevels,
+  fixturePlaces,
 }: {
   readonly fixtureLevels?: readonly LevelSummary[];
+  /**
+   * `T-409` · ⛔ **פיקסטורה, ⛔ ולא ברירת מחדל.** בדיוק כמו `fixtureLevels`: ערך
+   * שאינו `undefined` עוקף את קריאת הרשת, ⇒ `/dev/tabs/studies/place` מרנדר את
+   * **המצב המשוחזר** בלי env של Supabase. ⛔ בלי זה המצב הזה ⛔ אינו ניתן לרינדור
+   * בשום מקום בריפו, וזו בדיוק המחלקה ש-`F-282` מדד.
+   */
+  readonly fixturePlaces?: readonly StudyPlace[];
 } = {}): React.JSX.Element {
   const [active, setActive] = useState<StudyTrackId>(STUDY_TRACKS[0].id);
   const [levels, setLevels] = useState<readonly LevelSummary[] | null>(fixtureLevels ?? null);
   const [loading, setLoading] = useState(fixtureLevels === undefined);
+  const [places, setPlaces] = useState<readonly StudyPlace[]>(fixturePlaces ?? []);
 
   useEffect(() => {
     if (fixtureLevels !== undefined) return;
@@ -135,6 +159,52 @@ export default function StudiesScreen({
       cancelled = true;
     };
   }, [fixtureLevels]);
+
+  /**
+   * `T-409`ⓑ · **המקום נקרא בכל כניסה, ⛔ ולא מה-URL.** ‏`T-408` נתן את החזרה
+   * **מפריט** דרך עוגן ב-`hash`; עוגן ⛔ אינו שורד סגירת לשונית ⇒ «בכניסה הבאה»
+   * ⛔ לא היה קיים. הקריאה כאן היא מה שהופך את זה לכניסה, ⛔ ולא לחזרה.
+   *
+   * ⛔ **וכשלון ⛔ אינו מוצג ללומד** — ⛔ בניגוד ל-`levels`, שבלעדיו הפאנל היה
+   * מדפיס מספר שגוי (`UNREACHABLE_HE`, D-046/D-082). סימנייה שלא נקראה פירושה
+   * שהמסך נפתח על המסלול הראשון, כלומר בדיוק ההתנהגות שקדמה לשורה הזאת ⇒
+   * ⛔ אין כאן מה להודיע.
+   */
+  useEffect(() => {
+    if (fixturePlaces !== undefined) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const body = await apiGet<PlaceResponse>('/api/study/place');
+        if (cancelled || !body.ok) return;
+        setPlaces(parseStudyPlaces(body.places));
+      } catch {
+        // ⛔ בכוונה שקט — ראה למעלה.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fixturePlaces]);
+
+  /**
+   * `T-409`ⓐ · **הכתיבה, בשני הרגעים שהשורה נוקבת ו⛔ בשום רגע אחר:** כשפריט
+   * **מתחיל** (הקשה על כרטיס מודול) וכש הוא **נגמר** (החזרה נוחתת על העוגן).
+   * ⛔ **⛔ ולא על כל הקשה על שבב** — ⛔ סימנייה ⛔ אינה טלמטריה, ולומד שמציץ
+   * ב-`דקדוק` לשנייה ⛔ אינו מאבד את מקומו ב-`אוצר מילים`.
+   *
+   * ⛔ **ו⛔ אינה חוסמת דבר:** `void` ו-`catch` ריק — כתיבה שנכשלה (⛔ אין סשן,
+   * הטבלה ⛔ עוד לא הוקמה, הרשת נפלה) ⛔ לעולם ⛔ אינה עוצרת ניווט ו⛔ אינה
+   * מוצגת. זה בדיוק מה ש-`POST /api/study/place` מתעד כ«מה שהמסך עושה עם
+   * ה-503».
+   */
+  const savePlace = useCallback(
+    (trackId: StudyTrackId, moduleId: string | null) => {
+      if (fixturePlaces !== undefined) return;
+      void apiPost('/api/study/place', { trackId, moduleId }).catch(() => {});
+    },
+    [fixturePlaces],
+  );
 
   /**
    * T-406 · ⛔ הענפים עברו ל-`lib/core/studyTracks.ts` (`trackMetric`) — הם היו
@@ -281,7 +351,52 @@ export default function StudiesScreen({
     // ⛔ המיקוד ו⛔ לא הגלילה לבדה: לומד שמנווט במקלדת או בקורא-מסך
     // חוזר לנקודה שלו ברשימה, ⛔ ולא לראש המסך.
     target.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
-  }, [active, modules]);
+    // `T-409`ⓐ · החצי השני של «נכתב כשהפריט מתחיל **או נגמר**». החזרה מהפריט
+    // ⛔ אינה עוד הקשה — היא הרגע שבו ידוע איפה הלומד באמת עצר.
+    savePlace(anchor.trackId, anchor.moduleId);
+  }, [active, modules, savePlace]);
+
+  /**
+   * `T-409`ⓒ · **המסלול נפתח על המיקום השמור, ⛔ ולא על ראש הרשימה.**
+   *
+   * ⛔ **והעוגן שב-URL גובר על הסימנייה, תמיד.** החזרה של `T-408` היא הוראה
+   * שהלומד נתן לפני שנייה; הסימנייה היא זיכרון של הוראה שנתן אתמול. ⇒ כשיש
+   * עוגן, השחזור ⛔ אינו רץ בכלל — שני מנגנונים שמזיזים את אותו `active` היו
+   * מייצרים קפיצה כפולה.
+   *
+   * ⛔ **⛔ ואין כאן מיקוד, ⛔ בניגוד ל-`T-408` מעל.** שם הלומד **ביקש** לחזור
+   * לנקודה שלו; כאן הוא רק פתח את המסך. גניבת מיקוד על טעינה היא בדיוק מה
+   * ש-`prefers-reduced-motion` ו-`36 § 12` מגנים מפניו ⇒ הגלילה בלבד,
+   * ו-`block: 'nearest'` ⇒ מודול שכבר נראה במלואו ⛔ אינו זז.
+   *
+   * ⛔ **ופעם אחת בלבד:** `placeRestored` ננעל אחרי הנחיתה, ⇒ לומד שבחר שבב
+   * אחר-כך ⛔ אינו נשאב בחזרה אל המסלול של אתמול.
+   * ⚠️ **והוא ⛔ אינו ננעל כש-`places` ⛔ עדיין ריק** — הקריאה אסינכרונית, ונעילה
+   * לפני שהיא חזרה הייתה הופכת את השורה כולה לאל-פעולה.
+   */
+  const placeRestored = useRef(false);
+
+  useEffect(() => {
+    if (placeRestored.current) return;
+    if (parseModuleAnchor(window.location.hash) !== null) {
+      placeRestored.current = true;
+      return;
+    }
+    const last = latestStudyPlace(places);
+    if (last === null) return;
+    if (last.trackId !== active) {
+      setActive(last.trackId);
+      return;
+    }
+    placeRestored.current = true;
+    const saved = studyPlaceForTrack(places, active);
+    if (saved === null || saved.moduleId === null) return;
+    const target = document.getElementById(moduleAnchorId(active, saved.moduleId));
+    if (target === null) return;
+    // ⛔ ההעדפה נקראת כאן ו⛔ לא ב-CSS — אותו דפוס כמו שתי הגלילות מעל.
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+  }, [places, active, modules]);
 
   const onTrackKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -536,6 +651,10 @@ export default function StudiesScreen({
                 <Link
                   href={itemHref}
                   data-module-item={module.id}
+                  // `T-409`ⓐ · «נכתב כשהפריט **מתחיל**». ⛔ ב-`onClick` ו⛔ לא
+                  // בנתיב היעד: `<Link>` הוא מעבר בתוך אותה אפליקציה ⇒ הבקשה
+                  // ⛔ אינה נקטעת, ולומד שפותח בלשונית חדשה עדיין מסמן.
+                  onClick={() => savePlace(active, module.id)}
                   className={`${cardClass} active:opacity-90`}
                 >
                   {body}

@@ -118,6 +118,14 @@ const ROUTES = [
   // the reason. Naming them here would print "ok /cards" for the login screen,
   // which is F-027 cause 1 (TD-13).
   '/dev/tabs/studies',
+  // 🔴 `T-409`ⓒ — **המסך נפתח על המקום השמור**, ו⛔ המסלול שמעליו ⛔ אינו יכול
+  // למדוד את זה: הוא ⛔ אינו מקבל `fixturePlaces`, ו-`GET /api/study/place` עונה
+  // 401 בלי env של Supabase ⇒ ענף השחזור ⛔ אינו נגיש ממנו בשום רוחב. ⇒ מסלול
+  // משלו, מאותו נימוק בדיוק שהצדיק את `/dev/deck/done` מול `/dev/deck`.
+  // ⛔ הוא מקבל את שתי השורות כ-prop ⇒ `GET /api/study/place` ⛔ אינו נקרא ממנו
+  // כלל, והשתיקה על הכתובת ההיא ב-`EXPECTED_CONSOLE` היא ההוכחה. ⚠️ הרשומה
+  // היחידה שכן יש לו היא ה-503 של `<TabBar>`, בדיוק כמו לשלוש פיקסטורות הלשוניות.
+  '/dev/tabs/studies/place',
   '/dev/tabs/cards',
   '/dev/tabs/me',
   // T-329ⓐ · המשך של T-321 — ⛔ **הכשל המלא של בורר החפיסות, ⛔ ולא הכשל החלקי.**
@@ -689,7 +697,23 @@ const EXPECTED_CONSOLE = {
   // locked, and the 44px/no-scroll checks on these three routes are passing over exactly
   // that locked bar. Keyed to the one URL and the one status, like every entry above: a 401
   // (a real session that expired) or a 500 on the same URL still fails the check.
-  '/dev/tabs/studies': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
+  '/dev/tabs/studies': [
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+    // 🔴 `T-409` — **רשומה שנייה, והיא מדידה ⛔ ולא ויתור.** הפיקסטורה הזאת מקבלת
+    // `fixtureLevels` ו⛔ **לא** `fixturePlaces` ⇒ `<StudiesScreen>` באמת מבקש את
+    // המקום השמור, והרתמה — שרצה בלי env של Supabase — מקבלת 503 לפי החוזה של
+    // הנתיב עצמו. ⇒ **זה מסלול הכשל שהשורה נכתבה עבורו**, והשער עובר עליו: קריאה
+    // שנכשלה פירושה שהמסך נפתח על `אוצר מילים`, כלומר בדיוק ההתנהגות שקדמה
+    // ל-`T-409` — וזה מה שכל הבדיקות על המסלול הזה מודדות.
+    // ⛔ כתובת אחת וסטטוס אחד, כמו כל רשומה כאן: 401 (סשן שפג) או 500 על אותה
+    // כתובת עדיין מפילים את הבדיקה.
+    /status of 503[\s\S]*@\S*\/api\/study\/place/,
+  ],
+  // `T-409` — אותה רשומה בדיוק, ומאותה סיבה: הפיקסטורה מרנדרת `<TabBar>` ⇒ היא
+  // עושה את אותה בקשה אחת. ⛔ **ו⛔ אין לה רשומה שנייה:** `fixturePlaces` עוקף את
+  // `GET /api/study/place` לגמרי, ⇒ השתיקה על הכתובת ההיא היא ההוכחה שהמצב
+  // המשוחזר נמדד מה-prop ו⛔ לא ממסד שאינו קיים בהרתמה.
+  '/dev/tabs/studies/place': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
   '/dev/tabs/me': [/status of 503[\s\S]*@\S*\/api\/world\/status/],
   // C-0129 (T-063 task 9): the two real world routes. `/world` sits inside the `(tabs)`
   // group, so it makes BOTH requests — `<WorldFeed>` reads the feed and `<TabBar>` asks
@@ -1090,6 +1114,25 @@ try {
       // ⛔ לא הוצמד בשקט למספר נמוך יותר — הוא הושמט, ונפתח ממצא (`F-178`,
       // `plan/60-findings.md`) לכרעת PM. ⛔ שני השערים האחרים (≥4 יעדים · אפס «—»)
       // כן עוברים במדידה חיה ונשארים.
+      // 🔴 `T-409`ⓒ · `36 § 13.2` שורה 5 — «המיקום במסלול נשמר ונראה בכניסה הבאה».
+      //
+      // 🔬 **מה נמדד, ⛔ ולא נטען:** הפיקסטורה מחזיקה **שתי** שורות מקום —
+      // `אוצר מילים` (שהוא גם `STUDY_TRACKS[0]`, כלומר ברירת המחדל) עם החותמת
+      // ה**ישנה** וראשון במערך, ו-`הבנת הנקרא` עם החדשה. ⇒ שבב `הבנת הנקרא`
+      // פעיל על המסך הוא הוכחה ש-`updatedAt` הכריע (`latestStudyPlace`), ⛔ ולא
+      // סדר המערך ו⛔ לא ברירת המחדל. ⛔ בלי השורה הישנה הבדיקה הייתה עוברת גם
+      // אילו הרכיב פשוט לקח את האיבר הראשון.
+      if (route === '/dev/tabs/studies/place') {
+        const current = await page
+          .locator('main [role="tab"][aria-current="true"]')
+          .evaluateAll((els) => els.map((el) => el.textContent.trim()));
+        check(
+          current.length === 1 && current[0].includes('הבנת הנקרא'),
+          `${at} T-409 · המסך נפתח על המסלול השמור`,
+          `aria-current: ${current.length === 0 ? '⛔ אף שבב' : current.join(' · ')}`,
+        );
+      }
+
       if (route === '/dev/tabs/studies') {
         const targets = await page.locator('main [role="tab"]').count();
         check(targets >= 4, `${at} ≥4 track targets`, `found ${targets}`);

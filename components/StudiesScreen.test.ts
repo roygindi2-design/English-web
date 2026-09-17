@@ -321,7 +321,9 @@ describe('T-408 — פריט נפתח מהנתיב, ומחזיר אליו', () =
   });
 
   it('ⓑ+ⓒ הנחיתה מכבדת `prefers-reduced-motion` — שער, ⛔ לא טעם', () => {
-    const effect = CODE.match(/parseModuleAnchor\(window\.location\.hash\)[\s\S]{0,1200}?\}, \[active, modules\]\);/)?.[0] ?? '';
+    // ⚠️ `savePlace` נוסף לרשימת התלויות ב-`T-409`ⓐ — הנחיתה היא גם הרגע שבו
+    // המקום נכתב («נגמר»). הטענה עצמה ⛔ לא נחלשה: היא עדיין על **גוף האפקט הזה**.
+    const effect = CODE.match(/parseModuleAnchor\(window\.location\.hash\)[\s\S]{0,1200}?\}, \[active, modules, savePlace\]\);/)?.[0] ?? '';
     expect(effect.length).toBeGreaterThan(0);
     expect(effect).toContain("matchMedia?.('(prefers-reduced-motion: reduce)')");
     expect(effect).toMatch(/behavior: reduced \? 'auto' : 'smooth'/);
@@ -334,5 +336,78 @@ describe('T-408 — פריט נפתח מהנתיב, ומחזיר אליו', () =
   it('⛔ פעם אחת בלבד — הקשה מאוחרת על שבב אחר ⛔ אינה נשאבת חזרה לעוגן', () => {
     expect(CODE).toContain('returnHandled');
     expect(CODE).toMatch(/if \(returnHandled\.current\) return;/);
+  });
+});
+
+describe('T-409 — המיקום במסלול נשמר ונראה בכניסה הבאה (`36 § 13.2` שורה 5, חותמת ⓒ)', () => {
+  const FIXTURE = readFileSync('app/dev/tabs/studies/place/page.tsx', 'utf8');
+  const MOBILE = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+
+  it('ⓑ המקום נקרא מהשרת בכניסה — ⛔ ולא מה-`hash`, שאינו שורד סגירת לשונית', () => {
+    expect(CODE).toContain("apiGet<PlaceResponse>('/api/study/place')");
+    expect(CODE).toContain('parseStudyPlaces(');
+  });
+
+  it('ⓐ הכתיבה בשני הרגעים שהשורה נוקבת — כשהפריט מתחיל, וכשהוא נגמר', () => {
+    // «מתחיל» — ההקשה על כרטיס המודול.
+    expect(CODE).toContain('onClick={() => savePlace(active, module.id)}');
+    // «נגמר» — החזרה נוחתת על העוגן של `T-408`.
+    expect(CODE).toContain('savePlace(anchor.trackId, anchor.moduleId)');
+  });
+
+  it('⛔ בחירת שבב לבדה ⛔ אינה כותבת — ⛔ סימנייה ⛔ אינה טלמטריה', () => {
+    // ⛔ הקשה על שבב מזיזה `active` ו⛔ לא יותר מזה.
+    expect(CODE).toContain('onClick={() => setActive(track.id)}');
+    expect(CODE).not.toContain('savePlace(track.id');
+  });
+
+  it('⛔ כתיבה שנכשלה ⛔ אינה עוצרת ניווט ו⛔ אינה מוצגת ללומד', () => {
+    expect(CODE).toMatch(/void apiPost\('\/api\/study\/place'[\s\S]*?\.catch\(\(\) => \{\}\)/);
+  });
+
+  it('ⓒ העוגן שב-URL גובר על הסימנייה — שני מנגנונים על אותו `active` הם קפיצה כפולה', () => {
+    const restore = CODE.slice(CODE.indexOf('const placeRestored'), CODE.indexOf('const onTrackKeyDown'));
+    expect(restore).toContain('parseModuleAnchor(window.location.hash)');
+    expect(restore.indexOf('parseModuleAnchor')).toBeLessThan(restore.indexOf('latestStudyPlace('));
+  });
+
+  it('ⓒ השחזור קורה פעם אחת, ו⛔ אינו ננעל לפני שהקריאה חזרה', () => {
+    const restore = CODE.slice(CODE.indexOf('const placeRestored'), CODE.indexOf('const onTrackKeyDown'));
+    expect(restore).toContain('if (placeRestored.current) return;');
+    // ⛔ `places` ריק ⇒ יוצאים **בלי** לנעול, אחרת השורה כולה אל-פעולה.
+    expect(restore).toMatch(/if \(last === null\) return;/);
+  });
+
+  it('⛔ אפס גניבת מיקוד בשחזור — ⛔ בניגוד לחזרה של `T-408`, הלומד ⛔ לא ביקש', () => {
+    // ⛔ הפרוסה חסומה בסוף האפקט ו⛔ לא ברצה עד סוף הקובץ: `onTrackKeyDown`
+    // שמתחתיו **כן** ממקד (ניווט מקלדת, `T-331`), וזו התנהגות אחרת לגמרי.
+    const restore = CODE.slice(CODE.indexOf('const placeRestored'), CODE.indexOf('const onTrackKeyDown'));
+    expect(restore.length).toBeGreaterThan(0);
+    expect(restore).not.toContain('.focus(');
+  });
+
+  it('‏`prefers-reduced-motion` נקרא גם כאן — `check:motion` ⛔ אינו נעקף', () => {
+    const restore = CODE.slice(CODE.indexOf('const placeRestored'), CODE.indexOf('const onTrackKeyDown'));
+    expect(restore).toContain("matchMedia?.('(prefers-reduced-motion: reduce)')");
+    expect(restore).toContain("block: 'nearest'");
+  });
+
+  it('⛔ אפס ציון · מונה · «זמן לימוד» נכתבים — סימנייה, ⛔ ולא התקדמות', () => {
+    for (const forbidden of ['word_progress', 'easiness', 'repetition', 'studyTime'])
+      expect(CODE, `"${forbidden}" אסור על המסך הזה`).not.toContain(forbidden);
+  });
+
+  it('🔴 המצב המשוחזר ניתן לרינדור מנתיב `/dev` — ⛔ ולא רק מקריאת מקור (מחלקת `F-282`)', () => {
+    expect(FIXTURE).toContain('fixturePlaces={FIXTURE_PLACES}');
+    // שתי שורות ו⛔ לא אחת: הישנה היא ברירת המחדל וראשונה במערך ⇒ עוברת רק אם
+    // המיון לפי `updatedAt` הוא שהכריע.
+    expect(FIXTURE).toContain("trackId: 'vocabulary'");
+    expect(FIXTURE).toContain("trackId: 'reading'");
+    expect(FIXTURE).not.toContain('Date.now()');
+  });
+
+  it('🔴 והשער מודד אותו חי — `/dev/tabs/studies/place` ב-`check:mobile`', () => {
+    expect(MOBILE).toContain("'/dev/tabs/studies/place'");
+    expect(MOBILE).toContain('T-409 · המסך נפתח על המסלול השמור');
   });
 });

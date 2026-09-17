@@ -338,6 +338,18 @@ const MODULE_ANCHOR_PREFIX = 'studies-module-';
 /** ⛔ סגור בכוונה: כל תו אחר בזהות מודול הוא כתובת שלא אנחנו בנינו. */
 const MODULE_ID_SHAPE = /^[A-Za-z0-9-]{1,24}$/;
 
+/**
+ * `T-409` · **הצורה הזאת מוגדרת כאן ובמקום אחד בלבד.** העוגן שב-URL (`T-408`)
+ * והמקום שנשמר במסד (`lib/core/studyPlace.ts`) נושאים **אותו** מזהה מודול ⇒ שתי
+ * בדיקות צורה היו נעשות שונות זו מזו ברגע שאחת מהן משתנה. ⛔ שער, ⛔ ולא פענוח:
+ * הערך מגיע מכתובת שהלומד יכול לערוך ומשורה שהמסד החזיר, ⇒ מה שאינו בצורה
+ * ⛔ אינו מתוקן — הוא מוחזר כ-`null`.
+ */
+export function parseStudyModuleId(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  return MODULE_ID_SHAPE.test(value) ? value : null;
+}
+
 /** הזהות של כרטיס המודול ב-DOM — היעד שאליו החזרה נוחתת. */
 export function moduleAnchorId(trackId: StudyTrackId, moduleId: string): string {
   return `${MODULE_ANCHOR_PREFIX}${trackId}-${moduleId}`;
@@ -361,8 +373,8 @@ export function parseModuleAnchor(value: string | null | undefined): ModuleAncho
   for (const track of STUDY_TRACKS) {
     const prefix = `${track.id}-`;
     if (!rest.startsWith(prefix)) continue;
-    const moduleId = rest.slice(prefix.length);
-    if (!MODULE_ID_SHAPE.test(moduleId)) return null;
+    const moduleId = parseStudyModuleId(rest.slice(prefix.length));
+    if (moduleId === null) return null;
     return { trackId: track.id, moduleId };
   }
   return null;
