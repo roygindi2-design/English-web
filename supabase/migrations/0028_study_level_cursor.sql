@@ -26,7 +26,7 @@
 -- the second open instead of the same twenty words. ⇒ the cursor carries the ordering key the
 -- deck ACTUALLY orders by, which is `(ngsl_rank nulls last, id)`, and `last_ngsl_rank` stays
 -- NULLABLE so it keeps working unchanged on the day the NGSL ingest (`T-007`) fills the column.
--- ⇒ recorded as `F-278` and under `RULES § 0.22`.
+-- ⇒ recorded as `F-281` and under `RULES § 0.22`.
 --
 -- ⛔ **One row per (learner, band), ⛔ and ⛔ not one per learner** — `?band=` is a parameter of
 -- the deck since `T-408`, so a learner who filters B1 and then A1 has two places, ⛔ not one that

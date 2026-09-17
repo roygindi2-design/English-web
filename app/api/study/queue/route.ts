@@ -523,7 +523,7 @@ async function advanceLevelCursor(
  * with a rank** (A1 315 · A2 116 · B1 37 · B2 8, all NULL). ⇒ a cursor on `ngsl_rank` alone —
  * which is what `T-411`ⓐ asks for in words — would select **nothing** on the second open.
  * `id` is the tie-break the ordering already needed, and the pair keeps working unchanged the
- * day `T-007` fills the rank column. Recorded as `F-278`.
+ * day `T-007` fills the rank column. Recorded as `F-281`.
  */
 async function loadLevelWords(
   supabase: RouteClient,
