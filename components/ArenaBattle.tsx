@@ -1011,7 +1011,13 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
           בעוד ה-X לבדו אכל 44 ועוד רווח. ⇒ ברנדר (`kol-B-03`) כפתור ההשהיה **מרחף
           מעל הזירה**, ⛔ ואינו תופס שורה. ⛔ יעד המגע ⛔ לא רוכך — `CLOSE_CLASS` עדיין
           נושא את מידותיו, והוא רק יצא מזרימת העמודה. */}
-      <div className="absolute end-0 top-0 z-10">
+      {/* ⟦17/09 · `C-0707` · `T-423`ⓐ⟧ `end-6` ⛔ ולא `end-0`, וזה **תיקון של מה שהמלוא-רוחב
+          היה מזיז**, ⛔ ולא העדפה: `absolute` נמדד מול **תיבת הריפוד** של המקטע, והמקטע
+          קיבל עכשיו `padding-inline: 1.5rem` (`arcade-tokens.css`). ⇒ `end-0` היה מצמיד
+          את ה-X לקצה הפיזי של המסך — 24px משמאל למקום שבו הוא נמדד עד היום — ומכניס יעד
+          44px לפינה שבה האגודל פוגש את מסגרת המכשיר. `end-6` מחזיר אותו **בדיוק** לאותו
+          פיקסל שבו ישב לפני השינוי. */}
+      <div className="absolute end-6 top-0 z-10">
         <Link data-arena-close href="/cards" className={CLOSE_CLASS}>
           <CloseIcon />
           <span className="sr-only">{CLOSE_HE}</span>
