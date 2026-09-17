@@ -77,6 +77,15 @@ const HEADINGS: Record<DeckName, string> = {
   sentences: SENTENCES_HEADING_HE,
 };
 const START_NEW_HE = 'אין מה לחזור היום — התחל מילים חדשות';
+/**
+ * `T-412` · `F-277` — קצה הרמה, **במילים של הלומד**. ⛔ ולא «אין כרטיסיות»: זה בדיוק
+ * הבלבול שהשורה סוגרת — חפיסה ריקה נראתה כמו תקלה, והלומד הסיק שהמוצר נגמר.
+ * ⛔ ואין כאן טענה פדגוגית: «סיננת את כל מילות הרמה» הוא תיאור של מה שקרה, ⛔ ולא
+ * «אתה מוכן לרמה הבאה» — טענת מוכנות ש⛔ איש ⛔ לא מדד (`R-017`).
+ */
+const LEVEL_DONE_HE = 'סיננת את כל מילות הרמה הזאת. אפשר להתחיל אותה מחדש מההתחלה.';
+/** ⛔ פעולה אחת, ⛔ ולא שתיים (`taste-skill § 4.5`: ⛔ אין שתי כוונות CTA על מסך אחד). */
+const LEVEL_RESTART_HE = 'להתחיל את הרמה מחדש';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
 
 type QueueResponse =
@@ -95,6 +104,12 @@ type QueueResponse =
        * sending a number that looks right (`readLevelUnseen`).
        */
       readonly unseen?: number;
+      /**
+       * `T-412` — «הסמן עבר את המילה האחרונה ברמה», על חפיסת `level` בלבד. ⛔ נעדר, ⛔ ולא
+       * `false`, בכל מצב אחר — בדיוק כמו `unseen`, ומאותה סיבה: שדה שנוכח תמיד מזמין
+       * קריאה שלו כברירת מחדל.
+       */
+      readonly atEnd?: boolean;
     }
   | { readonly ok: false; readonly code: string };
 
@@ -109,6 +124,11 @@ type ScreenState =
       readonly unseenInLevel?: number;
     }
   | { readonly kind: 'empty' }
+  /**
+   * `T-412` · `F-277` — ⛔ מצב נפרד מ-`empty`, וזה כל העניין: `empty` אומר «⛔ אין כרטיסיות»
+   * ו⛔ אין ממנו דרך קדימה ברמה הזאת; זה אומר «סיימת את הרמה» ונושא **פעולה אחת**.
+   */
+  | { readonly kind: 'level_done' }
   | { readonly kind: 'schema_missing' }
   | { readonly kind: 'session_expired' }
   | { readonly kind: 'error' };
@@ -220,6 +240,12 @@ export default function StudyDeckScreen({
       // same `<CardDeck>`. ⛔ `??` and not a deck check: the SHAPE of the response is the
       // contract, and a deck that answered neither is an empty deck, ⛔ not a crash.
       const list: readonly DeckCard[] = body.items ?? body.cards ?? [];
+      // `T-412` — ⛔ נבדק **לפני** ריקנות הרשימה, כי שני המצבים מגיעים כרשימה ריקה והשרת הוא
+      // היחיד שיודע להבדיל ביניהם. ⛔ `=== true` ו⛔ לא אמת-ערכית: שדה נעדר ⛔ אינו «כן».
+      if (body.atEnd === true) {
+        setState({ kind: 'level_done' });
+        return;
+      }
       setState(
         list.length === 0
           ? { kind: 'empty' }
@@ -242,6 +268,27 @@ export default function StudyDeckScreen({
   useEffect(() => {
     void load();
   }, [load]);
+
+  /**
+   * `T-412` · `F-277` — the ONE way forward from the end of the level: put the bookmark back
+   * to the top of the SAME level and reload. ⛔ Not a jump to the next level (`R-017` — that
+   * is a readiness claim nobody measured), and ⛔ not a second action beside it.
+   *
+   * ⛔ **The band is taken from the prop and ⛔ never defaulted.** A restart is a write, and a
+   * fall-back to `profiles.current_level` would reset a band the learner never named — which
+   * is exactly the reason the route demands it too.
+   */
+  const restartLevel = useCallback(async () => {
+    if (band === undefined) return;
+    setState({ kind: 'loading' });
+    try {
+      await apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band });
+    } catch {
+      // ⛔ The reload below is ⛔ not skipped on failure: the bookmark may or may not have
+      // moved, and the honest next screen is whatever the server actually answers now.
+    }
+    await load();
+  }, [band, load]);
 
   const onGraded = useCallback(
     async (wordId: string, grade: CardGrade) => {
@@ -338,6 +385,10 @@ export default function StudyDeckScreen({
 
       {state.kind === 'empty' && <StudyEmptyState />}
 
+      {state.kind === 'level_done' && (
+        <p className="text-lg leading-relaxed text-ink">{LEVEL_DONE_HE}</p>
+      )}
+
       {/* 🟠 F-082 · `layout` is a MEASUREMENT and ⛔ not a style: only the
           `error` branch below puts two controls on two rows («נסה שוב» plus the
           way out that T-124 added), and that bar measures 135px against a 77px
@@ -367,6 +418,19 @@ export default function StudyDeckScreen({
           >
             {failureExit('schema_missing').labelHe}
           </a>
+        ) : state.kind === 'level_done' ? (
+          // `T-412`ⓑ — כפתור ⛔ ולא קישור: זו **כתיבה** (איפוס הסמן), ⛔ ולא ניווט, ואלמנט
+          // שנראה כמו קישור ומבצע כתיבה הוא בדיוק מה שמסך ⛔ לא אמור ללמד. ⛔ ופעולה
+          // **אחת**: `min-h-touch` הוא 44px (`check:mobile`), ⛔ ואין כאן יציאה שנייה
+          // שתתחרה בה (`taste-skill § 4.5`).
+          <button
+            type="button"
+            onClick={() => void restartLevel()}
+            data-primary-action="true"
+            className="flex w-full min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
+          >
+            {LEVEL_RESTART_HE}
+          </button>
         ) : state.kind === 'empty' ? (
           // ⚠️ Deck-dependent, and the deviation is reported in the plan: the action the
           // task names («…התחל מילים חדשות») is the way out of an empty DUE deck. On the

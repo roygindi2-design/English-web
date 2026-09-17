@@ -867,6 +867,16 @@ export async function GET(request: Request) {
     // `unseen: null` — the contract's other optional fields (`cards`/`items`) are absent
     // rather than null, and a consumer that reads `body.unseen` gets `undefined` either way.
     const unseen = await readLevelUnseen(supabase, user.id, band);
+
+    // `T-412` · `F-277` — **the end of the level is a DECLARED state, ⛔ not an empty list.**
+    // ⛔ The distinction is the whole row: a learner who filtered the whole band and one whose
+    // bank failed to load both saw «אין כרטיסיות» before today, and the first of the two had
+    // ⛔ no way forward at all. ⇒ the answer says which of the two happened, and ⛔ never asks
+    // the screen to guess it from `cards.length === 0`.
+    // ⛔ **And ⛔ no automatic spill into the next level** (`R-017` · `D-266`): jumping a
+    // learner to B1 because A1 ran out is a readiness claim ⛔ nobody measured.
+    const atEnd = cursor !== null && levelPage.rows.length === 0;
+
     return NextResponse.json({
       ok: true,
       deck,
@@ -876,6 +886,7 @@ export async function GET(request: Request) {
       total: levelPage.rows.length,
       cards: levelCards,
       ...(unseen === null ? {} : { unseen }),
+      ...(atEnd ? { atEnd: true } : {}),
     });
   }
 
@@ -975,4 +986,63 @@ export async function GET(request: Request) {
   // are tomorrow's, and counting them would tell the learner they are behind on work the
   // brake deliberately withheld.
   return NextResponse.json({ ok: true, deck, total: today.length, cards });
+}
+
+/**
+ * POST /api/study/queue — «להתחיל את הרמה מחדש». See docs/api-contract.md.
+ *
+ * `T-412` · `F-277` · `D-266` — the ONE action the end-of-level state offers, and it is
+ * exactly one (`taste-skill § 4.5`: ⛔ no two CTA intents on one screen). It removes this
+ * learner's bookmark for this band, ⛔ and nothing else.
+ *
+ * 🔴 ⛔ **It deletes a BOOKMARK, ⛔ never progress.** `word_progress` is a different table and
+ * is ⛔ not touched here — what the learner knows survives starting the level again, and the
+ * two concepts were never the same one (`D-032` · `D-033`).
+ *
+ * ⛔ **POST on the deck's own route, ⛔ not a new endpoint and ⛔ not a DELETE verb:** the
+ * client layer (`lib/api/client.ts`) carries `apiGet`/`apiPost`/`apiPatch` and ⛔ no delete,
+ * and a fourth verb added for one button is a wider surface than the button is worth.
+ */
+export async function POST(request: Request) {
+  const env = readSupabaseEnv();
+  if (!env) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+
+  const supabase = createRouteClient(env, await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  // Session BEFORE the body is read — the same C-0032 order the GET above uses.
+  if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
+
+  let body: { deck?: unknown; band?: unknown };
+  try {
+    body = (await request.json()) as { deck?: unknown; band?: unknown };
+  } catch {
+    return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
+  }
+
+  // ⛔ `level` alone. The other three decks have ⛔ no bookmark, so «restart» is meaningless
+  // there — and a silent success on a deck that has nothing to restart is a lie to the caller.
+  if (typeof body.deck !== 'string' || parseDeckName(body.deck) !== 'level') {
+    return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
+  }
+
+  // ⛔ The band is REQUIRED here and optional on the GET, and that is deliberate: the GET may
+  // fall back to `profiles.current_level` because it is only choosing what to show, while this
+  // DELETES a row — and a fall-back would silently reset a band the learner never named.
+  const band = typeof body.band === 'string' ? parseLevel(body.band) : null;
+  if (band === null) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 400 });
+
+  const { error } = await supabase
+    .from('study_level_cursor')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('band', band);
+
+  if (error) {
+    console.error('[api/study/queue] level cursor reset failed:', error.message);
+    return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+  }
+
+  return NextResponse.json({ ok: true, deck: 'level', band });
 }

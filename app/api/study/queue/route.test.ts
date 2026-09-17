@@ -514,3 +514,53 @@ describe('T-411 — סמן-מקום ב-«סינון מילים», ⛔ ולא ס�
     expect(CONTRACT).toContain('T-411');
   });
 });
+
+/**
+ * `T-412` · `F-277` · `D-266` — קצה הרמה הוא **מצב מוצהר** עם דרך אחת קדימה.
+ */
+describe('T-412 — קצה הרמה, ⛔ ולא רשימה ריקה שנראית כמו תקלה', () => {
+  const levelBranch = CODE.slice(
+    CODE.indexOf("if (deck === 'level')"),
+    CODE.indexOf('let query = supabase'),
+  );
+
+  it('המצב נאמר **במפורש** בתשובה, ⛔ ואינו מוסק מ-`cards.length === 0`', () => {
+    expect(levelBranch).toContain('const atEnd = cursor !== null && levelPage.rows.length === 0');
+    expect(levelBranch).toContain('...(atEnd ? { atEnd: true } : {})');
+  });
+
+  it('⛔ השדה נעדר כשאין מצב — ⛔ ולא `atEnd: false` על החוט, בדיוק כמו `unseen`', () => {
+    expect(CODE).not.toContain('atEnd: false');
+  });
+
+  it('⛔ אפס גלישה אוטומטית לרמה הבאה — `R-017`', () => {
+    // טענת מוכנות ש⛔ איש ⛔ לא מדד. ⛔ אין בענף שום כתיבה ל-`profiles.current_level`.
+    expect(levelBranch).not.toContain('current_level');
+    expect(levelBranch).not.toContain('nextLevel');
+  });
+
+  it('הפעולה האחת היא `POST` על אותו נתיב, והיא מוחקת **סמן** ⛔ ולא התקדמות', () => {
+    const post = CODE.slice(CODE.indexOf('export async function POST'));
+    expect(post).toContain("from('study_level_cursor')");
+    expect(post).toContain('.delete()');
+    expect(post).not.toContain('word_progress');
+  });
+
+  it('⛔ הרמה חובה ב-`POST` — ⛔ ואין נפילה חזרה ל-`profiles.current_level`', () => {
+    const post = CODE.slice(CODE.indexOf('export async function POST'));
+    expect(post).toContain('parseLevel(body.band)');
+    expect(post).not.toContain('readCurrentLevel');
+    expect(post).toMatch(/band === null[\s\S]{0,120}status: 400/);
+  });
+
+  it('`POST` שומר על אותו סדר הגנות — session לפני שהוא קורא את הגוף', () => {
+    const post = CODE.slice(CODE.indexOf('export async function POST'));
+    expect(post.indexOf('getUser')).toBeLessThan(post.indexOf('request.json()'));
+    expect(post).toContain("code: 'session_expired'");
+  });
+
+  it('החוזה מתעדכן באותו קומיט — `atEnd` ו-`POST` מתועדים', () => {
+    expect(CONTRACT).toContain('`atEnd`');
+    expect(CONTRACT).toContain('POST /api/study/queue');
+  });
+});

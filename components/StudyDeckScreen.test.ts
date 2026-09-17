@@ -261,10 +261,12 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
 
   it('⛔ סימון פעולה ראשית אחד בדיוק לכל ענף (F-027 · check:mobile)', () => {
     // `/study` הוא FLOW_ROUTE, והארנס סופר `main [data-primary-action]` ודורש
-    // **בדיוק 1**. ⇒ ב-`<ActionBar>` יש ארבע חלופות זרות (session_expired ·
-    // schema_missing · empty · ניסיון חוזר), וארבעה סימונים בסך הכל — אחד לכל
-    // חלופה. היציאה שנוספה לענף התקלה החולפת היא משנית **במכוון**, ולכן ⛔ אינה
-    // מסומנת: סימון חמישי היה מפיל את הארנס על `found 2 elements`.
+    // **בדיוק 1**. ⇒ ב-`<ActionBar>` יש **חמש** חלופות זרות (session_expired ·
+    // schema_missing · level_done · empty · ניסיון חוזר), וחמישה סימונים בסך הכל —
+    // אחד לכל חלופה. היציאה שנוספה לענף התקלה החולפת היא משנית **במכוון**, ולכן
+    // ⛔ אינה מסומנת: סימון נוסף בענף אחד היה מפיל את הארנס על `found 2 elements`.
+    // ⚠️ ⟦T-412⟧ המספר עלה מ-4 ל-5 מפני ש**נוספה חלופה**, ⛔ ולא מפני שנוסף סימון
+    // לחלופה קיימת — והאסרציה ⛔ לא נחלשה: היא עדיין «אחד בדיוק לכל ענף».
     // ⚠️ FIXED C-0214 (F-082) ו⛔ לא הוחלש: הביטוי היה `'<ActionBar>'` מילולי,
     // והחזיר -1 ברגע שהסרגל קיבל את התכונה `layout` שהממצא חייב. מה שהאסרציה
     // שומרת — ארבעה סימונים, אחד לכל חלופה — ⛔ לא זז; רק תג הפתיחה רשאי כעת
@@ -272,7 +274,7 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
     const open = CODE.search(/<ActionBar[\s>]/);
     expect(open).toBeGreaterThan(-1);
     const bar = CODE.slice(open, CODE.indexOf('</ActionBar>'));
-    expect((bar.match(/data-primary-action/g) ?? []).length).toBe(4);
+    expect((bar.match(/data-primary-action/g) ?? []).length).toBe(5);
 
     const errorBranch = bar.slice(bar.search(ERROR_BRANCH));
     expect(errorBranch).toMatch(/<a\s/);
@@ -418,5 +420,45 @@ describe('T-400 — `unseen` נוסע מהתשובה אל הדק, ⛔ בלי ק�
 
   it('הוא מועבר ל-<CardDeck> כ-`unseenInLevel`, ⛔ ואינו נגזר שם מחדש', () => {
     expect(CODE).toContain('unseenInLevel={state.unseenInLevel}');
+  });
+});
+
+/**
+ * `T-412` · `F-277` — «סיימת את הרמה» הוא מסך, ⛔ ולא היעדר מסך.
+ *
+ * סורק מקור, מאותה סיבה בדיוק שכל הבדיקות בקובץ הזה סורקות מקור: הענפים דורשים תשובת
+ * רשת, וההארנס רץ ב-`node` בלי `fetch`.
+ */
+describe('T-412 — קצה הרמה נפרד מ«אין כרטיסיות», ונושא פעולה אחת', () => {
+  it('⛔ מצב משלו, ⛔ ולא שימוש חוזר ב-`empty`', () => {
+    expect(CODE).toContain("kind: 'level_done'");
+    expect(CODE).toContain("state.kind === 'level_done'");
+  });
+
+  it('הוא נקבע מהשרת, ⛔ ולא מריקנות הרשימה, ו⛔ נבדק לפניה', () => {
+    expect(CODE).toContain('body.atEnd === true');
+    expect(CODE.indexOf('body.atEnd === true')).toBeLessThan(CODE.indexOf("list.length === 0"));
+  });
+
+  it('⛔ פעולה אחת בדיוק, והיא **כתיבה** ⇒ כפתור ⛔ ולא קישור', () => {
+    const at = CODE.indexOf("state.kind === 'level_done' ?");
+    expect(at).toBeGreaterThan(-1);
+    const branch = CODE.slice(at, CODE.indexOf("state.kind === 'empty' ?", at));
+    expect(branch).toContain('<button');
+    expect(branch).not.toMatch(/<Link\s/);
+    expect((branch.match(/data-primary-action/g) ?? []).length).toBe(1);
+    expect(branch).toContain('min-h-touch');
+  });
+
+  it('⛔ הרמה ⛔ אינה מומצאת — בלי `band` ⛔ אין איפוס', () => {
+    expect(CODE).toMatch(/restartLevel[\s\S]{0,300}band === undefined[\s\S]{0,60}return/);
+    expect(CODE).toContain("apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band })");
+  });
+
+  it('⛔ הנוסח ⛔ אינו טוען מוכנות לרמה הבאה — `R-017`', () => {
+    const at = CODE.indexOf('LEVEL_DONE_HE =');
+    const line = CODE.slice(at, CODE.indexOf('\n', at));
+    expect(line).not.toContain('הבאה');
+    expect(line).toContain('הרמה');
   });
 });
