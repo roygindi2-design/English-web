@@ -549,3 +549,12 @@ loop(DEV): C-0669 build — one `arena` row, and a tick that was ⛔ one push aw
 שלמה). ⛔ **DEV ⛔ אינו חותם** — `arena` נשארת ברוטציה, והחתימה של QA בלבד.
 loop(PM): C-0671 — 4 rows opened (T-401·T-402·T-403 arena, T-404 loop), D-263 closes F-274, D-264 routes F-273
 loop(PM): C-0674 idle — DEV lock C-0673 held from 2026-09-17T02:07:06Z, age 49 min at yield (under the 90-min DEV abandonment threshold). Three Smart Wait rounds spent (02:46:29Z → 02:56:07Z), the lock never released. Zero work commits; origin/dev..origin/work/current = 16.
+
+### SEALS · amirnet — נמדדו C-0677 (QA, מלא) לפני הזזת המוקד → cards
+
+# --- SEALS · amirnet (36 § 13.1 · § 41 § 8-1..3) · נמדד C-0677, 17/09 ---
+# ⬜=0 (docs/plan-open.md, נמדד בפתיחת הטיק): T-372·T-376 🟣→✅ באותו טיק. ⛔=2 (T-312 חסומה ב-T-309 · T-324 חסומה ב-F-262, נפח).
+#   ⓐ הגעה — נמדדה חי ב-C-0675 (DEV) עצמו: תפריט `/world/amirnet` ⇒ תג רמה ⇒ `תרגל` בלחיצות, ⛔ לא כתובת מוקלדת. אני (QA) אישרתי מבנית בלבד דרך `/dev/amirnet/*` (8 מסכים, 0 hscroll, 0 מתחת ל-44, 0 שגיאת קונסולה) — פיקסטורה, ⛔ לא ⓐ בעצמה, אך תואמת את עץ הרכיבים החי.
+#   ⓑ פעילות — **חלקית, ומוצהר כך:** קריאת קוד מלאה ב-`app/api/amirnet/practice/result/route.ts` מאמתת POST מוסתי-סשן (`auth.uid()=user_id`, ולידציה מלאה על 4 שדות, INSERT ⛔ לא upsert) ו-GET שמקפל אותם ל-`toTypeStats`; 20/20 בדיקות `amirnetPractice.test.ts` + `amirnetAttempts.test.ts` ירוקות. ⛔ **⛔ לא אומת בהליכה חיה מאומתת-סשן על ידי QA בטיק הזה** — נסיון להשיג session אמיתי נחסם משתי סיבות מדודות: `DEV_TEST_USER` (‏`lib/supabase/devUser.ts`) נסגר תחת `next start` (NODE_ENV=production, `.env.example` מצהיר זאת בעצמו), ו-`mcp__Supabase__execute_sql` על `auth.users` וגם `grep` על מחרוזת «test account» נדחו על ידי מסנן ההרשאות («PII Data Handling»). `/world/amirnet` נבדק חי עם מפתח anon אמיתי (`mcp__Supabase__get_publishable_keys`) ⇒ 401 `session_expired` עם מסך כשל בעל יציאה («ההתחברות פגה») — ⛔ לא מסך תקוע, ⛔ ולא 503.
+#   ⓒ שמירה — נמדד בקוד: כל תשובה היא שורת `amirnet_practice_attempts` נפרדת (⛔ לא upsert), RLS-מוגבלת למשתמש, נקראת בחזרה ב-GET ומוזנת לדשבורד (`T-372`). ⛔ לא אומת בכניסה שנייה חיה מאותה סיבה כמו ⓑ.
+# ⇒ (D-116) amirnet = **נמסרה, ⓐ מלאה · ⓑⓒ קוד+בדיקות בלבד**. הפער אינו פגם מוצר שנמדד — הוא פער בכלי הבדיקה של QA (⛔ אין נתיב session מקומי בטיק מתוזמן). ⬜ פתוח → **PM**: לספק ל-QA נתיב session אמיתי (חשבון QA ייעודי דרך רוי, או פתיחת שער DEV_TEST_USER תחת next start לבדיקה בלבד) כדי שהחותמת הבאה תהיה מלאה.
