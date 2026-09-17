@@ -533,6 +533,64 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
   });
 
   /**
+   * 🥊 **`T-422`ⓓ — שני המסכים השכנים, על אותה תבנית ובאותה טענה.**
+   *
+   * 🔬 **למה הטענה יושבת **כאן** ו⛔ לא בקובץ של כל רכיב:** התבנית שהיא מודדת היא של
+   * `ArenaBattle.tsx` — הוא הגדיר אותה ב-`T-416`, והשכנים **מיישמים** אותה. טענה
+   * שמפוצלת לשני קבצים היא שתי תבניות שמתחילות להיפרד ביום שאחד מהם משתנה.
+   * ⚠️ **סריקת-מקור, ⛔ ולא פריסה** — קובצי ה-`.dom.test.tsx` הם `jsdom`, ⇒ ⛔ אפס
+   * פריסה בהם; המדידה החיה נעשית ב-`check:mobile` ובהליכה, ⛔ לא כאן.
+   * ⚠️ ⛔ **ו-`pb-28` ⛔ אינו נאסר על `ArenaResult`** — ל-`ArenaBattle` ⛔ אין
+   * `<ActionBar>` קבוע ולו יש, ⇒ הריפוד שם משלם על הרצועה במקום לשרוד ממסך אחר.
+   */
+  it('T-422 · `ArenaSummary` ו-`ArenaResult` על תבנית הקרב — גובה מדויק ואזור גמיש', () => {
+    const NEIGHBOURS = ['components/ArenaSummary.tsx', 'components/ArenaResult.tsx'] as const;
+
+    for (const file of NEIGHBOURS) {
+      const code = withoutComments(readFileSync(file, 'utf8'));
+      const roots = [...code.matchAll(/<section\b[^>]*>/g)].map((tag) => {
+        const cls = tag[0].match(/className="([^"]*)"/);
+        return cls === null ? '' : cls[1];
+      });
+      expect(roots.length, `${file} — שורש אחד לפחות`).toBeGreaterThanOrEqual(1);
+
+      for (const cls of roots) {
+        expect(cls, `${file} — גובה מדויק, ⛔ לא מינימום: "${cls}"`).toMatch(
+          /\bh-\[calc\(100dvh-5\.25rem\)\]/,
+        );
+        expect(cls, `${file} — גלילת עמוד ⛔ אינה אפשרות: "${cls}"`).toMatch(/\boverflow-hidden\b/);
+        expect(cls, `${file} — ⛔ מינימום ⛔ אינו גובה: "${cls}"`).not.toMatch(/\bmin-h-\[100dvh\]/);
+      }
+
+      // ⛔ **וגובה מדויק בלי אזור גמיש הוא `overflow-hidden` שחותך תוכן בשקט** — זו
+      // בדיוק התקלה שהגובה המדויק לבדו היה מייצר, ⇒ היא נמדדת יחד איתו.
+      expect(code, `${file} — האזור שאורכו תלוי בקרב בולע את השארית`).toMatch(
+        /min-h-0 flex-1/,
+      );
+      expect(code, `${file} — והוא נגלל בתוך עצמו`).toMatch(/overflow-y-auto/);
+    }
+  });
+
+  /**
+   * ⛔ **שתי בקרות שליליות — טענה שאינה יכולה להיכשל ⛔ אינה טענה** (`T-422`ⓓ).
+   * שתיהן מריצות את **אותה** לוגיקה על מחרוזת שאמורה להפיל אותה.
+   */
+  it('T-422 · הטענה נופלת על `min-h-[100dvh]` ועל גובה מדויק בלי אזור גמיש', () => {
+    const exact = /\bh-\[calc\(100dvh-5\.25rem\)\]/;
+    const minimum = /\bmin-h-\[100dvh\]/;
+
+    // ⓐ מינימום במקום גובה מדויק ⇒ נופל על שתי הטענות גם יחד.
+    const REGRESSED = 'flex min-h-[100dvh] flex-col gap-6 pb-8 pt-10';
+    expect(REGRESSED).not.toMatch(exact);
+    expect(REGRESSED).toMatch(minimum);
+
+    // ⓑ גובה מדויק ⛔ בלי אזור גמיש ⇒ עובר את טענת הגובה ו**נופל** על הגמישות.
+    const CLIPPED = '<section className="flex h-[calc(100dvh-5.25rem)] flex-col overflow-hidden">';
+    expect(CLIPPED).toMatch(exact);
+    expect(CLIPPED).not.toMatch(/min-h-0 flex-1/);
+  });
+
+  /**
    * `T-358` — שלוש שכבות התנועה. ⛔ כל אחת נבדקת **בקובץ הטוקנים**, כי `36 § 14`
    * ו-T-041 מחזיקים את תנועת הזירה ב-CSS ⛔ ולא ברכיב.
    */

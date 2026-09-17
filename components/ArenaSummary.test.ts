@@ -31,10 +31,18 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
     expect(CODE).not.toMatch(/\.filter\(|\.reduce\(/);
   });
 
-  it('⛔ אפס hex, ⛔ אפס h-screen, ⛔ אפס רדיוס מחוץ לסולם', () => {
+  /**
+   * 🥊 **⟦17/09 · `C-0707` · `T-422`⟧ `min-h-[100dvh]` ⛔ **הוחלף**, ⛔ ולא נמחק בשקט.**
+   * הטענה כאן דרשה אותו מאז שנכתבה, והמדידה החיה של הטיק הזה הראתה שהוא **הוא עצמו**
+   * מקור הגלישה: מקטע בתוך כרום הפריסה שמבקש את מלוא `100dvh` גולש ב-**84px בדיוק**
+   * (‏52 כותרת + 32 `pb-32`), ⛔ לפני שנספר ילד אחד. ⇒ הגדר לא ירדה — היא **התהפכה**:
+   * הגובה המדויק נדרש, והמינימום נאסר. ‏`h-screen` ⛔ אסור כמקודם (חוקה § 4 · `F-011`).
+   */
+  it('⛔ אפס hex, ⛔ אפס h-screen, גובה **מדויק** ⛔ ולא מינימום, ⛔ אפס רדיוס מחוץ לסולם', () => {
     expect(CODE).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(CODE).not.toMatch(/\bh-screen\b/);
-    expect(CODE).toMatch(/min-h-\[100dvh\]/);
+    expect(CODE).toMatch(/h-\[calc\(100dvh-5\.25rem\)\]/);
+    expect(CODE, '⛔ המינימום הוא מה שגלש').not.toMatch(/min-h-\[100dvh\]/);
     expect(CODE).not.toMatch(/rounded-\[\d/);
   });
 

@@ -87,9 +87,18 @@ export default function ArenaResult({
   const rows = missed.slice(0, ARCADE_MISSED_LIMIT);
 
   return (
-    // ⛔ אפס `justify-center` ו⛔ אפס `h-screen` (חוקה § 4 · F-011 · F-016). `pb-28` משלם
-    // על הרצועה ש-`<ActionBar>` הקבוע מכסה.
-    <section className="flex min-h-[100dvh] flex-col gap-6 pb-28">
+    /* 🥊 **⟦17/09 · `C-0707` · `T-422`ⓑ⟧ גובה **מדויק**, ⛔ ולא מינימום — תבנית
+       `ArenaBattle.tsx` (`T-416` · `C-0623`).
+
+       🔬 **נמדד חי בטיק הזה:** `+305px` ב-393×852, `+589` ב-320 ⇒ ⛔ זו ⛔ אינה גלישת
+       הכרום לבדה (84) — **רשימת הפספוסים היא שגדלה עם הקרב**, ⇒ הגובה המדויק חייב
+       לבוא **יחד** עם אזור גמיש, אחרת `overflow-hidden` היה **חותך** אותה בשקט.
+
+       ⚠️ **`pb-28` נשאר, ו⛔ זו ⛔ אינה סטייה מהתבנית — היא ההפרש בין שני המסכים:**
+       ל-`ArenaBattle` ⛔ אין `<ActionBar>`, ולמסך הזה יש, והוא `fixed bottom-0`. ⇒ ריפוד
+       של `max(0.5rem,…)` בלבד — כלשון `T-422` — היה מסתיר את סוף הרשימה **מתחת** לרצועה
+       הקבועה. ⇒ הריפוד התחתון כאן משלם על הרצועה, בדיוק כפי שאמרה ההערה שהוא החליף. */
+    <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-6 overflow-hidden pb-28">
       <h1 className="text-3xl font-bold leading-tight">{enemyDefeated ? WON_HE : OVER_HE}</h1>
 
       <div className="flex flex-row items-center gap-4">
@@ -102,12 +111,16 @@ export default function ArenaResult({
         )}
       </div>
 
-      <div className="flex flex-col gap-3">
+      {/* 🥊 **`T-422`ⓑ — האזור הגמיש הוא הרשימה, ⛔ ולא המסך.** הכותרת, הדמות והפריט
+          שנפתח הם גובה **קבוע**; רשימת הפספוסים היא היחידה שאורכה תלוי בקרב ⇒ היא
+          היחידה שבולעת את השארית (`min-h-0 flex-1`) ונגללת בתוך עצמה. ⇒ «עוד סיבוב»
+          ו«חזרה לעולם» ⛔ אינם יורדים מתחת לקיפול לעולם. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
         <h2 className="text-xl font-semibold leading-tight">{MISSED_HEADING_HE}</h2>
         {missed.length === 0 ? (
           <p className="text-lg leading-relaxed text-ink-muted">{NOTHING_MISSED_HE}</p>
         ) : (
-          <ul data-arena-missed className="flex flex-col gap-3">
+          <ul data-arena-missed className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
             {rows.map((row) => (
               <li key={row.wordId} className={MISSED_ROW_CLASS}>
                 <EnWord className="text-xl font-bold">{row.headword}</EnWord>
