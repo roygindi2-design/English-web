@@ -7,6 +7,7 @@ import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import ArenaStage from '@/components/ArenaStage';
 import ArenaSummary from '@/components/ArenaSummary';
 import SpellCard from '@/components/SpellCard';
+import { foeRect } from '@/components/arenaAnchors';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -532,11 +533,12 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     let raf = 0;
     raf = window.requestAnimationFrame(() => {
       const card = handRef.current?.querySelector('[data-arena-card]');
-      const enemy = stageAreaRef.current?.querySelector('[data-arena-enemy]');
-      if (!(card instanceof HTMLElement) || !(enemy instanceof HTMLElement)) return;
+      // 🎯 `C-0717` — **אותו עוגן שההטלה משתמשת בו.** יד הרפאים ⛔ אינה רשאית ללמד
+      // מסלול שההטלה ⛔ אינה עושה: עד היום היא הדגימה גרירה אל **פס החיים**.
+      const to = foeRect(stageAreaRef.current);
+      if (!(card instanceof HTMLElement) || to === null) return;
       const from = card.getBoundingClientRect();
-      const to = enemy.getBoundingClientRect();
-      if (from.width === 0 || to.width === 0) return;
+      if (from.width === 0) return;
       setTeach({
         key: Date.now(),
         x: from.left + from.width / 2 - TEACH_SIZE / 2,
@@ -567,9 +569,14 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     if (reducedMotion) return;
     const area = stageAreaRef.current;
     if (area === null) return;
-    const enemy = area.querySelector('[data-arena-enemy]');
-    if (!(enemy instanceof HTMLElement)) return;
-    const to = enemy.getBoundingClientRect();
+    // 🎯 **⟦18/09 · `C-0717`⟧ היעד הוא **היריב**, ⛔ ולא פס החיים שמעליו.**
+    // 🔬 נמדד ב-393×852: `[data-arena-enemy]` (הלוח) יושב על `cy 206 · cx 272`
+    // בעוד `[data-arena-figure=enemy]` (הדמות) על `cy 283 · cx 197` ⇒ **77px אנכית
+    // ו-75px אופקית** של פער. ⇒ עד היום הקלף עף אל **מד החיים**, וזה ⛔ לא היה נראה
+    // רק מפני שהגרירה ⛔ מעולם לא עשתה יותר מ-60px ולא הצביעה לשום מקום.
+    // ⛔ **והמסלול חייב להיות אחד** עם הגרירה: «דבר שיוצא בדרך אחת — מצפים שיחזור בה».
+    const to = foeRect(area);
+    if (to === null) return;
     setThrowFx({
       key: Date.now(),
       label,

@@ -75,9 +75,31 @@ export function resolveGesture(input: GestureInput): ArenaGesture {
 
 export interface CardLift {
   readonly y: number;
+  /**
+   * 🎯 **⟦18/09 · `C-0717`⟧ הסחף האופקי אל היריב — «**לכיוון האמצע** של המסך».**
+   *
+   * 🔬 **מה שצילום המסך הראה אחרי שתיקנתי את `y` בלבד, ⛔ ולפני שנגעתי ב-`x`:**
+   * הקלף הימני עלה 261.8px ונעצר על `cx 329` — **בקצה הימני**, בעוד היריב עומד
+   * על `cx 197`. ⇒ «לגרור את הקלף **יותר לכיוון האמצע** ממש לכיוון היריב» ⛔ נענה
+   * רק בחציו: הקלף הגיע לגובה היריב ו⛔ לא אליו.
+   *
+   * ⛔ **וזה ⛔ אינו מעקב אחרי האצבע, בכוונה.** האצבע נעה **מעלה** — `resolveGesture`
+   * פוסל סטייה מעבר לזווית — ⇒ `x` ⛔ אינו מניפולציה ישירה אלא **כיוון**: «התנועה
+   * שבדרך צריכה לרמוז לאן הדברים הולכים». הקלף **מכוון את עצמו** בזמן שהוא עולה,
+   * בדיוק כמו דבר שנזרק.
+   */
+  readonly x: number;
   readonly lift: number;
   readonly settleMs: number;
 }
+
+/**
+ * 🎯 **⟦18/09 · `C-0717`⟧ הקבוע של אפל לגומייה, ⛔ ולא מספר שנבחר.**
+ * ‏`rubberband(over, dim) = over·dim·c / (dim + c·|over|)` — הנוסחה שמופיעה בקוד
+ * הדוגמה של *Designing Fluid Interfaces* ‏(WWDC 2018) עם `c = 0.55`. ⛔ אין כאן
+ * כוונון: מספר אחר היה **שלי**, וזה מדוד אצל מי שהמציא את התחושה.
+ */
+export const CARD_RUBBER_CONSTANT = 0.55;
 
 /**
  * ⚠️ **תקרת שמונת הפיקסלים של חוקה § 5 ⛔ אינה חלה כאן, מאותו נימוק בדיוק שנרשם
@@ -88,12 +110,41 @@ export function cardLift(input: {
   readonly startY: number;
   readonly currentY: number;
   readonly reducedMotion: boolean;
+  /**
+   * 🎯 **⟦18/09 · `C-0717`⟧ כמה רחוק הקלף רשאי לנסוע — **נמדד מהעץ החי**, ⛔ ולא קבוע.**
+   *
+   * 🔬 **הפער שרוי תיאר, ונמדד ב-393×852 לפני שנגעתי בשורה:** ראש הקלף יושב על
+   * `y = 576.6` ורגלי היריב על `y = 315` ⇒ **261.6px** מפרידים ביניהם. ‏`y` נעצר עד
+   * היום על `-60` ⇒ הקלף עשה **23%** מהדרך אל היריב ואז **קפא מתחת לאצבע**.
+   * ⇒ «אפשר לגרור את הקלף יותר לכיוון האמצע… ממש לכיוון היריב» ⛔ אינו בקשת נוחות:
+   * המחווה ⛔ לא הראתה את מה שהיא עושה.
+   *
+   * ⛔ **וזה ⛔ אינו הורדה של השער:** ‏`GESTURE_THRESHOLD_PX` (60px) הוא **המזהה** —
+   * מה נחשב גרירה — והוא ⛔ לא זז ולו פיקסל. ‏`reach` הוא **המרחק**, כלומר כמה רחוק
+   * האצבע נושאת את הקלף אחרי שהמחווה כבר הוכרה. שני מספרים, שתי שאלות.
+   *
+   * ⛔ **ולמה ⛔ אינו קבוע:** 261.6px נמדדו באייפון 15. ב-320×568 היריב יושב במקום
+   * אחר, ומספר קבוע היה שולח את הקלף אל מעבר לו או עוצר אותו באוויר. ⇒ המודד הוא
+   * ‏`components/arenaAnchors.ts`, והמספר נכנס לכאן.
+   *
+   * ⛔ ערך שאינו סופי, או כזה שאינו גדול מהסף, מחזיר את **התקרה הישנה בדיוק** —
+   * ⛔ «אין מדידה» ⇒ ⛔ «אין נסיעה שהומצאה».
+   */
+  readonly reach?: number;
+  /**
+   * 🎯 **⟦18/09 · `C-0717`⟧ כמה פיקסלים אופקית מפרידים את מרכז הקלף ממרכז היריב.**
+   * חיובי ⇒ היריב מימין. נמדד ב-`arenaAnchors.foeDrift`, ⛔ ואינו קבוע: הקלף
+   * השמאלי והימני ביד רואים שני מספרים **הפוכים בסימן**.
+   */
+  readonly driftX?: number;
 }): CardLift {
   const delta = input.currentY - input.startY;
-  if (!Number.isFinite(delta)) return { y: 0, lift: 0, settleMs: 0 };
-  if (delta >= 0) return { y: 0, lift: 0, settleMs: 0 };
-  const travel = Math.min(Math.abs(delta), GESTURE_THRESHOLD_PX);
-  const lift = travel / GESTURE_THRESHOLD_PX;
+  if (!Number.isFinite(delta)) return { y: 0, x: 0, lift: 0, settleMs: 0 };
+  if (delta >= 0) return { y: 0, x: 0, lift: 0, settleMs: 0 };
+  const travel = Math.abs(delta);
+  // ⛔ **ערוץ ההצהרה ⛔ לא נגע:** `lift` מדווח התקדמות אל **הסף**, ⛔ ולא אל היריב.
+  // הטבעת נדלקת ב-60px בדיוק כמו אתמול, גם כשהקלף ימשיך לנסוע עוד 200px אחריה.
+  const lift = Math.min(travel, GESTURE_THRESHOLD_PX) / GESTURE_THRESHOLD_PX;
 
   // ✋ `T-418` · סוגר את `F-280` — **ההעדפה מכבה את ה**תנועה**, ⛔ ולא את ההצהרה.**
   // 🔬 **מה עמד כאן עד היום, ⛔ ולמה זה היה פגם ⛔ ולא הקפדה:** השורה הראשונה של
@@ -108,7 +159,32 @@ export function cardLift(input: {
   // **מדידה**, ⛔ לא אנימציה: `lift` מדווח את ההתקדמות אל הסף, ו-`app/globals.css`
   // מצייר את החצייה בערוץ **סטטי** (טבעת מוצקה), ⛔ לא ב-`animation` ו⛔ לא בתנועה.
   // ⇒ «הצהרה ⛔ אינה אנימציה» (`35 § 5`).
-  if (input.reducedMotion) return { y: 0, lift, settleMs: 0 };
+  // ✋ ההעדפה מכבה **את שני הצירים**: `x` הוא תנועה בדיוק כמו `y`.
+  if (input.reducedMotion) return { y: 0, x: 0, lift, settleMs: 0 };
 
-  return { y: -travel, lift, settleMs: 0 };
+  const reach =
+    Number.isFinite(input.reach) && (input.reach as number) > GESTURE_THRESHOLD_PX
+      ? (input.reach as number)
+      : GESTURE_THRESHOLD_PX;
+
+  // 🎯 הסחף מתקדם עם הדרך שנעשתה, ⛔ ולא עם האצבע — ⇒ בקצה הטווח הקלף יושב
+  // **על** היריב, ובאמצע הדרך הוא בדיוק באמצע הדרך אליו.
+  const drift = Number.isFinite(input.driftX) ? (input.driftX as number) : 0;
+  const progress = Math.min(travel / reach, 1);
+  const x = drift * progress;
+
+  // 1:1 — «המגע והתוכן זזים יחד». הקלף **הוא** האצבע כל עוד הוא בתוך הטווח.
+  if (travel <= reach) return { y: -travel, x, lift, settleMs: 0 };
+
+  // 🎯 **גומייה, ⛔ ולא קיר.** «עצירה קשה נקראת «קפוא»; התנגדות מתמשכת נקראת
+  // «מגיב, אבל אין כאן יותר»». ⇒ מעבר לרגלי היריב הקלף ⛔ אינו נעצר — הוא **נמשך**,
+  // פחות ופחות.
+  // ⛔ **והגג הוא `reach` נוספים, ⛔ ולא `reach · c`:** כש-`over → ∞` המונה והמכנה
+  // שניהם נשלטים על ידי `c · over`, ⇒ `resisted → reach`. ‏`c` קובע **כמה מהר**
+  // מגיעים לגג, ⛔ ולא היכן הוא. ⇒ `|y| < 2 · reach` תמיד, וזה מה שהשער נועל.
+  const over = travel - reach;
+  const resisted = (over * reach * CARD_RUBBER_CONSTANT) / (reach + CARD_RUBBER_CONSTANT * over);
+  // ⛔ `x` **נעצר** על היריב ו⛔ אינו ממשיך מעבר לו: הגומייה היא על המרחק, ⛔ ולא
+  // על הכוונון — קלף שממשיך לסחוף הצידה מפספס את מי שהוא מכוון אליו.
+  return { y: -(reach + resisted), x: drift, lift, settleMs: 0 };
 }

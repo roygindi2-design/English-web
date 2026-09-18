@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { GESTURE_THRESHOLD_PX, cardLift, resolveGesture, type GestureInput } from './arenaGesture';
+import {
+  CARD_RUBBER_CONSTANT, GESTURE_THRESHOLD_PX, cardLift, resolveGesture, type GestureInput,
+} from './arenaGesture';
 
 const VW = 375;
 const base = { startX: 180, startY: 600, viewportWidth: VW };
@@ -63,7 +65,7 @@ describe('⛔ מספר שאינו סופי ⛔ אינו «אפס» ו⛔ אינ�
 describe('cardLift — ההרמה, ⛔ ולא ההכרעה', () => {
   it('מעקב 1:1 כלפי מעלה, ⛔ בלי transition בזמן הגרירה', () => {
     expect(cardLift({ startY: 600, currentY: 570, reducedMotion: false }))
-      .toEqual({ y: -30, lift: 0.5, settleMs: 0 });
+      .toEqual({ y: -30, x: 0, lift: 0.5, settleMs: 0 });
   });
 
   it('⛔ אינו יורד מתחת לאפס — «מעלה בלבד» חל גם על הציור', () => {
@@ -103,5 +105,115 @@ describe('cardLift — ההרמה, ⛔ ולא ההכרעה', () => {
       expect(cardLift({ startY: 600, currentY: 541, reducedMotion }).lift).toBeLessThan(1);
       expect(cardLift({ startY: 600, currentY: 540, reducedMotion }).lift).toBe(1);
     }
+  });
+});
+
+/**
+ * 🎯 **⟦18/09 · `C-0717`⟧ הקלף נוסע אל היריב — ⛔ ולא נעצר אחרי 60px.**
+ *
+ * 🔬 **המספר ⛔ אינו מומצא:** נמדד ב-393×852 על `/dev/arcade` לפני השינוי —
+ * ראש הקלף `y 576.6`, רגלי `[data-arena-figure=enemy]` ‏`y 315` ⇒ **261.6px**.
+ * הבדיקות למטה משתמשות ב-**260** כטווח עגול מאותו סדר גודל; מה שהן נועלות הוא
+ * **ההתנהגות**, ⛔ ולא המספר — המספר נמדד חי ב-`arenaAnchors.foeReach`.
+ */
+describe('🎯 cardLift · הטווח — «ממש לכיוון היריב» (C-0717)', () => {
+  const REACH = 260;
+
+  it('עוקב 1:1 **לכל אורך הטווח**, ⛔ ולא עד הסף', () => {
+    // ⛔ זו הטענה שהייתה מאדימה לפני השינוי: `-200` היה `-60`.
+    expect(cardLift({ startY: 600, currentY: 400, reducedMotion: false, reach: REACH }).y).toBe(-200);
+    expect(cardLift({ startY: 600, currentY: 340, reducedMotion: false, reach: REACH }).y).toBe(-REACH);
+  });
+
+  it('⛔ אינו נעצר בקיר מעבר לטווח — גומייה, ו⛔ היא ⛔ אינה 1:1', () => {
+    const past = cardLift({ startY: 600, currentY: 200, reducedMotion: false, reach: REACH });
+    // ⓐ **זז** מעבר לטווח — ⛔ לא קפוא.
+    expect(past.y).toBeLessThan(-REACH);
+    // ⓑ ו⛔ **לא** 1:1 — 400px של אצבע ⛔ אינם 400px של קלף.
+    expect(past.y).toBeGreaterThan(-400);
+  });
+
+  it('⛔ ולעולם ⛔ אינו חוצה את גג הגומייה — `2 · reach`', () => {
+    // 🔬 **הגג נגזר, ⛔ ולא נבחר:** `resisted = over·reach·c / (reach + c·over)`,
+    // וכש-`over → ∞` שני האגפים נשלטים על ידי `c · over` ⇒ `resisted → reach`.
+    // ⇒ גרירה של קילומטר ⛔ אינה מוציאה את הקלף מהמסך: זה מה שהופך «התנגדות»
+    // ל**גבול** ⛔ ולא להאטה בלבד.
+    for (const currentY of [200, 0, -5_000, -1_000_000]) {
+      const y = cardLift({ startY: 600, currentY, reducedMotion: false, reach: REACH }).y;
+      expect(Math.abs(y)).toBeLessThan(2 * REACH);
+      expect(Math.abs(y)).toBeGreaterThan(REACH);
+    }
+  });
+
+  it('⛔ והקבוע הוא הקבוע של אפל — הערך המדויק, ⛔ ולא «בערך»', () => {
+    // 🔬 מוטציה: `c = 0.55 ⇒ 0.7` מאדימה את השורה הזאת. ⇒ הקבוע ⛔ אינו ניתן
+    // לכוונון בשקט ⛔ ואינו יכול להיטמע כמספר קסם שאיש ⛔ לא יודע מאין בא.
+    const over = 100;
+    const expected = -(REACH + (over * REACH * CARD_RUBBER_CONSTANT) / (REACH + CARD_RUBBER_CONSTANT * over));
+    expect(cardLift({ startY: 600, currentY: 600 - REACH - over, reducedMotion: false, reach: REACH }).y)
+      .toBeCloseTo(expected, 10);
+  });
+
+  it('⛔ המזהה ⛔ לא זז: `lift` נשאר 1 לאורך כל הטווח, ⛔ ואינו נמתח אליו', () => {
+    // ⛔ אם `lift` היה נמדד מול `reach`, הטבעת הייתה נדלקת רק ב-260px —
+    // כלומר **השער היה עולה פי ארבעה בשקט**. הוא ⛔ אינו.
+    expect(cardLift({ startY: 600, currentY: 540, reducedMotion: false, reach: REACH }).lift).toBe(1);
+    expect(cardLift({ startY: 600, currentY: 400, reducedMotion: false, reach: REACH }).lift).toBe(1);
+  });
+
+  it('⛔ אין מדידה ⇒ ⛔ אין נסיעה שהומצאה — התקרה הישנה חוזרת', () => {
+    for (const reach of [0, undefined, Number.NaN, -40, GESTURE_THRESHOLD_PX]) {
+      const y = cardLift({ startY: 600, currentY: 400, reducedMotion: false, reach }).y;
+      // מעבר לסף יש גומייה גם כאן — «קיר» נקרא «קפוא» בכל תקרה — אבל התקרה
+      // עצמה היא 60px, ⛔ ולא מספר שהומצא מהיריב שאינו במסמך.
+      expect(Math.abs(y)).toBeGreaterThan(GESTURE_THRESHOLD_PX);
+      expect(Math.abs(y)).toBeLessThan(2 * GESTURE_THRESHOLD_PX);
+    }
+  });
+
+  it('✋ וההעדפה גוברת על הטווח: `reducedMotion` ⇒ `y === 0` גם עם 260px של טווח', () => {
+    const still = cardLift({ startY: 600, currentY: 300, reducedMotion: true, reach: REACH, driftX: -132 });
+    expect(still.y).toBe(0);
+    // ✋ **שני הצירים**: סחף אופקי הוא תנועה בדיוק כמו הרמה.
+    expect(still.x).toBe(0);
+    expect(still.lift).toBe(1);
+  });
+
+  /**
+   * 🎯 **«לכיוון האמצע» — הציר שצילום המסך חשף שחסר.**
+   * 🔬 נמדד ב-393×852 אחרי שתוקן `y` בלבד: הקלף הימני עלה 261.8px ונעצר על
+   * `cx 329` בעוד היריב עומד על `cx 197` ⇒ **132px** של פער שנשארו פתוחים.
+   */
+  describe('🎯 הסחף האופקי — הקלף מכוון את עצמו אל היריב', () => {
+    const DRIFT = -132; // היריב משמאל לקלף הימני
+
+    it('⛔ אפס בתחילת הגרירה — הקלף ⛔ אינו קופץ הצידה ברגע המגע', () => {
+      expect(cardLift({ startY: 600, currentY: 600, reducedMotion: false, reach: REACH, driftX: DRIFT }).x).toBe(0);
+      expect(cardLift({ startY: 600, currentY: 599, reducedMotion: false, reach: REACH, driftX: DRIFT }).x)
+        .toBeCloseTo(DRIFT / REACH, 6);
+    });
+
+    it('מחצית הדרך ⇒ מחצית הסחף — הכיוון **פרופורציוני**, ⛔ ולא מדרגה', () => {
+      expect(cardLift({ startY: 600, currentY: 600 - REACH / 2, reducedMotion: false, reach: REACH, driftX: DRIFT }).x)
+        .toBeCloseTo(DRIFT / 2, 6);
+    });
+
+    it('בקצה הטווח הקלף יושב **על** היריב — ⛔ ולא לידו', () => {
+      expect(cardLift({ startY: 600, currentY: 600 - REACH, reducedMotion: false, reach: REACH, driftX: DRIFT }).x)
+        .toBeCloseTo(DRIFT, 6);
+    });
+
+    it('⛔ ו⛔ אינו ממשיך מעבר ליריב — הגומייה היא על המרחק, ⛔ ולא על הכוונון', () => {
+      for (const currentY of [600 - REACH - 200, -5_000]) {
+        expect(cardLift({ startY: 600, currentY, reducedMotion: false, reach: REACH, driftX: DRIFT }).x)
+          .toBeCloseTo(DRIFT, 6);
+      }
+    });
+
+    it('⛔ אין יריב ⇒ ⛔ אין סחף — הקלף עולה ישר, בדיוק כמו קודם', () => {
+      for (const driftX of [undefined, 0, Number.NaN]) {
+        expect(cardLift({ startY: 600, currentY: 400, reducedMotion: false, reach: REACH, driftX }).x).toBe(0);
+      }
+    });
   });
 });

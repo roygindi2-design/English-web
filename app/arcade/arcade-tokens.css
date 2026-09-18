@@ -610,14 +610,14 @@ body:has([data-arena-scope]) > div > main {
   /* ⛔ **שני המקורות מורכבים כאן**, ⛔ ולא נלחמים: `--arena-card-y` הוא האצבע
      (‏`SpellCard` כותב אותו בכל `pointermove`), והנטייה היא העומק. ⛔ ברירת מחדל 0px
      כדי שקלף שמעולם לא נגרר ⛔ יקבל `translateY()` ריק. */
-  transform: translateY(var(--arena-card-y, 0px)) rotateX(9deg);
+  transform: translate(var(--arena-card-x, 0px), var(--arena-card-y, 0px)) rotateX(9deg);
   transition: transform 160ms var(--arena-ease-out);
   transform-style: preserve-3d;
 }
 /* ⛔ הקלף הנבחר **קם** — מתיישר, עולה, ומתקרב למצלמה. ⛔ `translateZ` ⛔ ולא `scale`:
    זו אותה מצלמה שהקלף יעוף דרכה אל היריב (`T-359`), ⇒ אותו מרחב. */
 [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
-  transform: translateY(calc(var(--arena-card-y, 0px) - 6px)) rotateX(0deg) translateZ(26px);
+  transform: translate(var(--arena-card-x, 0px), calc(var(--arena-card-y, 0px) - 6px)) rotateX(0deg) translateZ(26px);
 }
 /* ⛔ **ובזמן גרירה ⛔ אין מעבר** — אחרת יש פיגור בין האצבע לקלף. זה בדיוק מה
    ש-`Flashcard` כבר למד, ומאותה סיבה. */
@@ -629,7 +629,7 @@ body:has([data-arena-scope]) > div > main {
 @media (prefers-reduced-motion: reduce) {
   [data-arena-scope] [data-arena-hand] [data-arena-card],
   [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
-    transform: translateY(var(--arena-card-y, 0px));
+    transform: translate(var(--arena-card-x, 0px), var(--arena-card-y, 0px));
     transition: none;
   }
 }

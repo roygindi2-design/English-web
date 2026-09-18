@@ -794,8 +794,21 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(CARD, 'הקלף מוסר את המלבן שממנו יצא').toMatch(
       /onCast\(e\.currentTarget\.getBoundingClientRect\(\)\)/,
     );
-    expect(CODE, 'וההורה מודד את היריב').toMatch(
-      /data-arena-enemy[\s\S]{0,200}getBoundingClientRect/,
+    // 🎯 **⟦18/09 · `C-0717`⟧ הטענה ⛔ לא רוככה — היא עברה לעוגן, והעוגן נבדק כאן.**
+    // 🔬 **ולמה היא **חייבת** הייתה לעבור:** הביטוי הישן קיבל את `[data-arena-enemy]`,
+    // ונמדד ב-393×852 ש**זהו לוח החיים** (`cy 206 · cx 272`) ⛔ ולא היריב
+    // (`cy 283 · cx 197`). ⇒ השער אישר במשך שבועות שהקלף «נמדד אל היריב» בזמן
+    // שהוא עף אל **מד החיים**. ⛔ טענה ירוקה על הצומת הלא-נכון.
+    const ANCHORS = withoutComments(readFileSync('components/arenaAnchors.ts', 'utf8'));
+    expect(CODE, 'וההורה מודד את היריב — דרך העוגן, ⛔ ולא בשאילתה משלו').toMatch(
+      /const to = foeRect\(area\)/,
+    );
+    expect(ANCHORS, '⛔ והעוגן הוא **הדמות**, ⛔ ולא הלוח שמעליה').toMatch(
+      /FOE_SELECTOR = '\[data-arena-figure="enemy"\]'/,
+    );
+    expect(ANCHORS, 'והוא מודד מלבן חי').toMatch(/getBoundingClientRect/);
+    expect(CODE, '⛔ ⛔ ואין שאילתה שנייה לאותו צומת ב-ArenaBattle').not.toMatch(
+      /querySelector\('\[data-arena-enemy\]'\)/,
     );
     expect(CODE, 'ההיסט הוא חיסור, ⛔ ולא קבוע').toMatch(/dx:[\s\S]{0,80}from\.left/);
     // ⛔ ② ההיסט נמסר כ**משתנה** — `style` מוטבע היה דורס את האנימציה כולה (`T-361`).

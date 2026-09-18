@@ -2,6 +2,7 @@
 
 import { useRef, useState, type CSSProperties } from 'react';
 import { cardLift, resolveGesture } from '@/lib/core/arenaGesture';
+import { foeDrift, foeReach } from './arenaAnchors';
 import { pushSample, releaseCurve, releaseVelocity, type PointerSample } from '@/lib/core/spring';
 
 /**
@@ -49,8 +50,17 @@ export default function SpellCard({
   // שנרשם ב-`components/Flashcard.tsx:55-61`.
   const from = useRef<{ x: number; y: number } | null>(null);
   const samples = useRef<readonly PointerSample[]>([]);
-  const [drag, setDrag] = useState<{ y: number; lift: number; releaseMs: number | null; releaseEase: string }>({
+  /**
+   * 🎯 **⟦18/09 · `C-0717`⟧ הטווח נמדד **פעם אחת, ב-`pointerdown`**, ⛔ ולא בכל תזוזה.**
+   * ⛔ `getBoundingClientRect` בכל `pointermove` הוא reflow מסונכרן בלב לולאת המחווה —
+   * בדיוק הלטנציה ש«הרגע שבו מופיע פיגור, תחושת המיידיות נופלת מצוק» מדבר עליה.
+   * ⛔ **וזה ⛔ אינו קיפאון של המדידה:** היריב ⛔ אינו זז בזמן שאצבע על הקלף.
+   */
+  const reach = useRef(0);
+  const driftX = useRef(0);
+  const [drag, setDrag] = useState<{ y: number; x: number; lift: number; releaseMs: number | null; releaseEase: string }>({
     y: 0,
+    x: 0,
     lift: 0,
     releaseMs: null,
     releaseEase: 'ease-out',
@@ -64,7 +74,7 @@ export default function SpellCard({
      written and the CSS defaults (200ms ease-out) stand. */
   const style: CSSProperties &
     Record<'--kol-release-ms' | '--kol-release-ease', string | undefined> &
-    Record<'--arena-card-y', string> = {
+    Record<'--arena-card-y' | '--arena-card-x', string> = {
     /* 🔴 **⟦15/09 · `C-0623` · `T-361`⟧ הטרנספורם נמסר כ**משתנה**, ⛔ ולא כערך סופי.**
        🔬 **נמדד:** הקלף נושא `transform` **מוטבע**, ו-`style` מוטבע גובר על כל כלל CSS.
        ⇒ נטיית העומק שקובץ הטוקנים מוסיף לקלף הייתה **נדרסת בשקט** בכל רינדור, וכל
@@ -72,6 +82,9 @@ export default function SpellCard({
        ⇒ הגרירה מוסרת את ההיסט שלה ב-`--arena-card-y`, וה-CSS **מרכיב** את שניהם:
        הנטייה ⛔ אינה נלחמת באצבע, והאצבע ⛔ אינה מוחקת את העומק. */
     '--arena-card-y': `${drag.y}px`,
+    /* 🎯 `C-0717` — הציר השני נמסר באותו מנגנון בדיוק ומאותו נימוק: ה-CSS **מרכיב**
+       אותו עם נטיית העומק, ⛔ ואינו נדרס על ידו. */
+    '--arena-card-x': `${drag.x}px`,
     /* 🔴 ⟦תוקן `C-0713` · `F-288` — ⛔ `pan-x`, ⛔ ולא `pan-y`⟧
        🔬 **נמדד באצבע על האתר החי, ⛔ ולא הוסק.** רצף האירועים על קלף עם `pan-y` היה
        `pointerdown → touchstart → **pointercancel** → touchend`, החיים נשארו `100/100`
@@ -130,6 +143,12 @@ export default function SpellCard({
       onPointerDown={(e) => {
         from.current = { x: e.clientX, y: e.clientY };
         samples.current = [{ x: e.clientY, tMs: e.timeStamp }];
+        // 🎯 `C-0717` — ⛔ `document` ו⛔ לא ההורה: הקלף ⛔ אינו מחזיק ref לבמה,
+        // והעוגן הוא צומת אחד במסמך. ⛔ אין יריב ⇒ `0` ⇒ התקרה הישנה.
+        const root = typeof document === 'undefined' ? null : document;
+        const rect = e.currentTarget.getBoundingClientRect();
+        reach.current = foeReach(rect.top, root);
+        driftX.current = foeDrift(rect, root);
         e.currentTarget.setPointerCapture(e.pointerId);
       }}
       onPointerMove={(e) => {
@@ -137,8 +156,11 @@ export default function SpellCard({
         // The sample's `x` carries clientY on purpose — this card moves on Y, and
         // `releaseVelocity` is axis-agnostic.
         samples.current = pushSample(samples.current, { x: e.clientY, tMs: e.timeStamp });
-        const lift = cardLift({ startY: from.current.y, currentY: e.clientY, reducedMotion });
-        setDrag((d) => ({ ...d, y: lift.y, lift: lift.lift, releaseMs: null }));
+        const lift = cardLift({
+          startY: from.current.y, currentY: e.clientY, reducedMotion,
+          reach: reach.current, driftX: driftX.current,
+        });
+        setDrag((d) => ({ ...d, y: lift.y, x: lift.x, lift: lift.lift, releaseMs: null }));
       }}
       onPointerUp={(e) => {
         const start = from.current;
@@ -152,7 +174,7 @@ export default function SpellCard({
           reducedMotion,
         });
         samples.current = [];
-        setDrag({ y: 0, lift: 0, releaseMs: curve.ms, releaseEase: curve.easing });
+        setDrag({ y: 0, x: 0, lift: 0, releaseMs: curve.ms, releaseEase: curve.easing });
         if (start === null) return;
         const gesture = resolveGesture({
           source: 'card',
@@ -167,7 +189,9 @@ export default function SpellCard({
       onPointerCancel={() => {
         from.current = null;
         samples.current = [];
-        setDrag({ y: 0, lift: 0, releaseMs: null, releaseEase: 'ease-out' });
+        reach.current = 0;
+        driftX.current = 0;
+        setDrag({ y: 0, x: 0, lift: 0, releaseMs: null, releaseEase: 'ease-out' });
       }}
     >
       {/* ⛔ **גימור הרנדר, ⛔ ולא קישוט** (`36 § 14.4`): `render_video_B.py:267` מצייר

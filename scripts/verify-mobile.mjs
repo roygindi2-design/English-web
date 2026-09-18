@@ -3848,6 +3848,59 @@ try {
       );
     }
 
+    /* 🎯 `C-0717` — **THE CARD TRAVELS TO THE ENEMY, ⛔ IT DOES NOT STOP AT 60px.**
+       🔬 Measured at 393×852 before the change, ⛔ not supposed: the card's top sits at
+       `y 576.6` and the enemy's feet (`[data-arena-figure=enemy]`) at `y 315` ⇒ **261.6px**
+       apart, while `cardLift` clamped `y` at **−60** ⇒ the card covered **23%** of the way
+       and then froze under the finger. Roy's words: «it would be cooler if you could drag
+       the card further toward the middle of the screen, right at the enemy».
+       ⛔ **This gate measures the RENDERED transform, ⛔ not the returned number** — a unit
+       test already owns `cardLift`; what can silently die here is the CSS composing
+       `--arena-card-y` (`arcade-tokens.css:613`), and only the live tree can show that. */
+    {
+      const dragCard = page.locator('[data-arena-card]').first();
+      const box = await dragCard.boundingBox();
+      const reach = await page.evaluate(() => {
+        const card = document.querySelector('[data-arena-card]');
+        const foe = document.querySelector('[data-arena-figure="enemy"]');
+        if (card === null || foe === null) return null;
+        return card.getBoundingClientRect().top - foe.getBoundingClientRect().bottom;
+      });
+      const cdp = await page.context().newCDPSession(page);
+      const cx = Math.round(box.x + box.width / 2);
+      const cy = Math.round(box.y + box.height / 2);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: cx, y: cy }] });
+      let travelled = 0;
+      /* ⛔ The drag stops SHORT of the release: `touchEnd` here would cast, and the card
+         would unmount before it could be measured. The question is what the finger sees
+         DURING the gesture. */
+      for (let dy = 20; dy <= 200; dy += 20) {
+        await cdp.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [{ x: cx, y: cy - dy }],
+        });
+        await page.waitForTimeout(16);
+        travelled = await page.evaluate(() => {
+          const card = document.querySelector('[data-arena-card]');
+          if (card === null) return 0;
+          const m = new DOMMatrixReadOnly(getComputedStyle(card).transform);
+          return Math.abs(m.m42);
+        });
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+      await page.waitForTimeout(250);
+      check(
+        reach !== null && reach > 120,
+        'arena · the enemy is far enough above the hand to be a target (C-0717)',
+        `the measured reach is «${reach}» — with the foe that close the drag has nowhere to go`,
+      );
+      check(
+        travelled > 150,
+        'arena · a 200px finger drag CARRIES the card at the enemy (C-0717)',
+        `the card moved «${Math.round(travelled)}px» for 200px of finger — it is still clamped near the 60px recognizer`,
+      );
+    }
+
     // `T-358` — the enemy bar DRAINS rather than teleporting, and the damage is shown.
     const motion = await page.evaluate(() => {
       const hp = document.querySelector('[data-arena-hp-fill]');
