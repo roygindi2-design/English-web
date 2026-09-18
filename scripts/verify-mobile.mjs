@@ -3848,6 +3848,55 @@ try {
       );
     }
 
+    /* 👁️ `C-0719` — **THE WIZARD'S EYES ARE VISIBLE AGAINST HIS OWN HEAD.**
+       🔬 Why this needs its own check, measured ⛔ and not assumed: the icon-contrast
+       loop above is **controls only** — it skips anything under 100px² (the eyes render
+       ~6px²) and it deliberately excludes the figures, because a CSS background probe
+       cannot see an SVG fill. ⇒ I mutated the eyes back to the dark `--ink` token and
+       ran the whole mobile gate: it came back **green**. Nothing in this repo protected
+       them, and the claim that something did was mine to check, ⛔ not to assume.
+       ⛔ **And the threshold is ⛔ NOT the 3:1 of a control**: these are a detail INSIDE
+       a figure, ⛔ not text and ⛔ not something a learner presses. What can honestly be
+       protected is that they did ⛔ not dissolve into the head — the one failure that
+       makes the wizard faceless again. Measured today: light ink **2.59:1**, the dark
+       token **6.82:1**, the head's own purple **1.00:1**. ⇒ the floor is 2, which both
+       real choices clear and only «same colour as the head» fails. */
+    {
+      const eyes = await page.evaluate(() => {
+        const lum = ({ r, g, b }) => {
+          const f = (c) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const parse = (v) => {
+          const m = /rgba?\(([^)]+)\)/.exec(v ?? '');
+          if (m === null) return null;
+          const [r, g, b] = m[1].split(',').map((n) => Number.parseFloat(n));
+          return Number.isNaN(r) ? null : { r, g, b };
+        };
+        const foe = document.querySelector('[data-arena-figure="enemy"]');
+        if (foe === null) return { found: 0 };
+        const head = foe.querySelector('[data-arena-layer="head"] circle');
+        const marks = foe.querySelectorAll('[data-arena-character="wizard"] circle');
+        if (head === null || marks.length === 0) return { found: marks.length };
+        const hf = parse(getComputedStyle(head).fill);
+        const ef = parse(getComputedStyle(marks[0]).fill);
+        if (hf === null || ef === null) return { found: marks.length };
+        const a = lum(hf); const b = lum(ef);
+        const hi = Math.max(a, b); const lo = Math.min(a, b);
+        return { found: marks.length, ratio: Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100 };
+      });
+      check(
+        eyes.found >= 2,
+        'arena · the wizard has eyes at all (C-0719)',
+        `found ${eyes.found} eye shapes under [data-arena-character="wizard"]`,
+      );
+      check(
+        (eyes.ratio ?? 0) >= 2,
+        'arena · the wizard\u2019s eyes ⛔ do not dissolve into his head (C-0719)',
+        `eyes measure ${eyes.ratio}:1 against the head fill — at 1:1 he is faceless again`,
+      );
+    }
+
     /* 🎯 `C-0717` — **THE CARD TRAVELS TO THE ENEMY, ⛔ IT DOES NOT STOP AT 60px.**
        🔬 Measured at 393×852 before the change, ⛔ not supposed: the card's top sits at
        `y 576.6` and the enemy's feet (`[data-arena-figure=enemy]`) at `y 315` ⇒ **261.6px**
