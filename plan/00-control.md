@@ -20,10 +20,10 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    4 / 120           # 39-messages-spec § 9 · ⛔ **⛔ אינה המוקד** (הוזז→`amirnet` ב-C-0625). ⬜=1, `T-193` — **של CONTENT בלבד** ⇒ ⛔ אין ל-DEV שורה כשירה כאן. `WORKSTREAM_ENDING` פעיל.
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
-RELEASE_READY: "e8ac5674 · 2026-09-17T17:08:26Z · **C-0701 (QA, מלא).** `dev`=`work/current` (ff-only מ-`d55b3b6d`, 35 קומיטים). `verify` מלא exit 0 (287/287·5086/5086·build✅·mobile 2125). `loop:health` 23/23 (9 עלתה זמנית ל-FAIL על תקרת 12KB אחרי כתיבת השורה הזאת עצמה — נמדד ותוקן בטיק הזה, קוצרה לכאן). smoke ⛔ לא נמדד — `LAST_PROMOTED_AT` לא זז מהטיק הקודם. הליכה חיה 375×780 על `/dev/tabs/studies`·`/place` — 0 pageerror, 0 גלישה, 0<44px; 503 צפוי על `/api/study/place` (`F-267`, אין env, ⛔ אינו רגרסיה). `diff:render` מול `kol-A-04-learning` — רקע/תמה בלבד (`36 §14.4`). `affected` על שלושת קבצי הליבה — מוכל בתוך `studies`. RLS על `0029` נבדק — תקין. **ללומד:** לימודים נפתח על המסלול האחרון (T-409) · ארבעת השבבים בשורה אחת (T-410/T-414). קידום ⇐ PROMOTER בלבד."
+RELEASE_READY: "0441f8f5 · 2026-09-18T13:19:30Z · **C-0711 (OPS, ידני).** `dev`==`main`==`0441f8f5` (ff-only, 90 קומיטים ל-main · 28 ל-dev). `verify` exit 0 בריפו החי: 288 קבצים · 5,111 עוברות. ⛔ **ו-`work/current` ⛔ אינו כאן** — 4 קומיטים אחריו נושאים את `F-286` ו⛔ אינם ניתנים לדחיפה."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
 # (DEPLOYS_THIS_MONTH · LAST_DEPLOYED_AT — הוצאו 08/09, `D-203`ⓔ. קפאו ב-23/08; הבלם נמדד מ-`PROMOTIONS_THIS_MONTH`.)
-LAST_REVIEWED_COMMIT: "3b401b2e"  # ⛔ השדה הזה עוקב אחרי מה ש-PROMOTER קידם, ⛔ לא dev-tip החי. ▶️ `C-0683` (PROMOTER): קודם ל-`main`, ff-only מ-`4a6b60f7`.
+LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקודם. C-0711 (OPS) — `dev` ו-`main` שניהם כאן.
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
@@ -34,11 +34,11 @@ WORKSTREAM_ENDING: ""   # ⛔ רוקן `C-0698` עם הזזת המוקד (`STEP 
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0677 (QA) לפני הזזת המוקד → cards. ⇒ `plan/archive/control-log.md`.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
-MERGE_BLOCKERS: ""                # ⇐ **QA כותב · DEV קורא ראשון.** רק מה שחוסם **מיזוג** ל-`dev` (`§ 0.23 ז׳`). ⛔ לא חסם קידום. ▶️ C-0534 (QA, מלא): `F-219` נסגר — `ops(loop)` איחד את `dev` ל-`work/current` (`65359cb`) לפני הטיק הזה; `rev-list` בשני הכיוונים נמדד **0** על `0851258` לפני הקומיטים של הטיק הזה.
+MERGE_BLOCKERS: "F-286 — `measure-continuations` אדום על הקורפוס החי ⇒ 4 הקומיטים האחרונים של `work/current` (אצוות `C-0710`) ⛔ אינם ניתנים למיזוג, ו⛔ אף דחיפה ⛔ אינה אפשרית. פריט 139."
 PROMOTION_BLOCKERS: ""           # 🟢 רוקן C-0621 באישור רוי. `/api/health` נמדד **4/4 ירוקות** דרך Kernel (335·420·488·944ms, כל ארבעת ה-checks כולל `database_schema`), ועוד 6/6 ב-14/09 ⇒ **10/10 בשתי דגימות נפרדות.** ⇒ ⛔ «קופצנית» כבר ⛔ אינה טענה מדידה. הנוסח המלא: `plan/archive/control-log.md`. ⇐ PROMOTER בלבד כותב.
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
-LAST_PROMOTED_AT: "2026-09-17T07:57:54Z"  # 🚢 **C-0683 (PROMOTER) — קידום מתוזמן, שער מלא ירוק.** `4a6b60f7..3b401b2e` ff-only, 106 קומיטים. `verify` exit 0 על `dev` (284/284·4950/4950·build✅·mobile 2063) · עשן 10/10 דרך Kernel. ⛔ אינו יוצר קומיט על `main`.
-PROMOTIONS_THIS_MONTH: 20         # 20 this month (➕ 17/09 07:57Z, C-0683 PROMOTER — מתוזמן). תקרה 30/חודש · בלם 11ש׳ (נמדד 18.4ש׳ מאז הקודם — עבר את הבלם).
+LAST_PROMOTED_AT: "2026-09-18T13:19:30Z"  # 🚢 **C-0711 (OPS) — ידני, הוראת רוי, הלופ כבוי.** `3b401b2e..0441f8f5` · **90 קומיטים** · ff-only. עשן מלא עבר: נתיב חדש-בלבד 200 · בקרה שלילית 404 · `/api/health` 3/3 `ok:true`.
+PROMOTIONS_THIS_MONTH: 21         # 21 this month (➕ 18/09 13:19Z, C-0711 OPS — ידני, הוראת רוי).
 ```
 
 > 🧑‍⚖️ שתי ביקורות ידניות של רוי — **הפירוט המלא, כולל מצב כל ממצא, ב-`plan/OPERATOR-LOG.md`.**
