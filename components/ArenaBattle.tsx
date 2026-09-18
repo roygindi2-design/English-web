@@ -123,6 +123,23 @@ export interface ArenaBattleProps {
   readonly initialRound?: ArenaRound;
   /** T-217 · `37 § 7` — הדמות שנבחרה, מהמעטפת. ⛔ הקרב ⛔ אינו שואל עליה את השרת. */
   readonly character?: ArenaCharacter | null;
+  /**
+   * 🆕 ⟦`C-0712` · `T-431`⟧ **הציוד שהדמות נושאת בקרב.**
+   *
+   * 🔬 **נמדד, ⛔ ולא שוער.** הבמה נקראה עם `items={[]}` **מקודד קשיח**, ו-`ArenaAvatar`
+   * מחזיק ארבעה פריטים מצוירים — `cape` · `banner` · `lantern` · `boots` — שמעולם
+   * ⛔ לא הופיעו בקרב. ⇒ שני דברים נבעו מזה: ⓐ הדמות בקרב היא הגרסה **הכי פחות
+   * מלבושה** שלה, וכל שיפוט עיצוב (‏`diff:render`, ביקורת, ורוי) נעשה מולה; ⓑ
+   * `arena-sway` על `data-arena-part='cape'` ו**המשכיות התנועה על הנשק** ⛔ מעולם
+   * ⛔ לא היה להם על מה לחול — נמדד בהליכה חיה: מתוך שלושת ה-`data-arena-part`
+   * המוצהרים, **רק `hair` נרנדר**.
+   *
+   * ⛔ **וזה ⛔ אינו מחבר את הציוד למוצר.** הלומד **זוכה** בפריט (`unlocked` ב-
+   * `arcadeResult.ts:44`) ומסך התוצאה מציג אותו — ⛔ אבל אין מאגר «מה שיש לי»,
+   * ולכן ⛔ אין ממה למלא את השדה הזה בפרודקשן. **ברירת המחדל נשארת ריקה**
+   * ⇒ הפרודקשן ⛔ לא זז, והפיקסטורה יכולה סוף־סוף להציג את מה שקיים. `F-287`.
+   */
+  readonly items?: readonly string[];
 }
 
 /** ⚠️ **`no_level` הוסר — T-239 · D-052.** «רמת המשחק מתחילה ב-1 לכל לומד»: הנתיב
@@ -293,7 +310,7 @@ function wordsOf(questions: readonly ArcadeQuestion[]): readonly ArenaWord[] {
   });
 }
 
-export default function ArenaBattle({ initialRound, character = null }: ArenaBattleProps = {}): React.JSX.Element {
+export default function ArenaBattle({ initialRound, character = null, items = [] }: ArenaBattleProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
     initialRound === undefined ? { kind: 'loading' } : { kind: 'ready', level: initialRound.level },
   );
@@ -1283,7 +1300,7 @@ export default function ArenaBattle({ initialRound, character = null }: ArenaBat
 
           </div>
         </div>
-        <ArenaStage phase={stagePhase(battle)} items={[]} character={character} />
+        <ArenaStage phase={stagePhase(battle)} items={items} character={character} />
         {/* 🔴 **⟦הועבר 16/09 · `C-0665` · `T-364`⟧ המספר עבר **אל היריב**, ⛔ ואינו יושב על המסילה.**
 
             🔬 **נמדד ברנדר, ⛔ ולא באומדן:** `render_video_B.py:564` קורא

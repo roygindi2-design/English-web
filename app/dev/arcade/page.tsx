@@ -76,5 +76,12 @@ const FIXTURE: ArenaRound = {
 };
 
 export default function DevArcadePage() {
-  return <ArenaBattle initialRound={FIXTURE} />;
+  /**
+   * 🆕 ⟦`C-0712` · `T-431`⟧ **הפיקסטורה לובשת את הציוד, ⛔ ואינה עומדת עירומה.**
+   * 🔬 **הסיבה נמדדה:** עד היום הבמה קיבלה `items={[]}` מקודד קשיח, ולכן כל
+   * `diff:render` על `/dev/arcade` וכל ביקורת עיצוב השוו **דמות בלי גלימה ובלי נס**
+   * מול רנדר שמצייר דמות מלובשת. ⇒ הפער שנמדד היה פער **ציוד**, ⛔ ולא פער פריסה.
+   * ⛔ **ואלה ⛔ אינם פריטים שהומצאו** — ארבעתם מצוירים ב-`ArenaAvatar.tsx`.
+   */
+  return <ArenaBattle initialRound={FIXTURE} items={['cape', 'banner']} />;
 }
