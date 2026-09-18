@@ -114,7 +114,14 @@ export default function ArenaStage({
           data-arena-breath="enemy"
           className="relative inline-flex origin-bottom scale-[0.66]"
         >
-          <ArenaAvatar role="enemy" items={[]} className={FIGURE_CLASS} />
+          {/* 🧙 **⟦18/09 · `C-0718`⟧ היריב **הוא** הקוסם — ‏`character`, ⛔ ולא ברירת מחדל.**
+              🔬 **נמדד ב-`C-0718`, ⛔ ולא הוסק:** המסך קורא ליריב **«הקוסם»** בעברית
+              (`ENEMY_HE`, ‏`ArenaBattle.tsx`), הרנדר `kol-B-03-battle.png` מצייר גלימת
+              חרוט, מטה וכדור זוהר — ו-`CHARACTER_LAYERS.wizard` ‏(`ArenaAvatar.tsx:238`)
+              **כבר מחזיק את שלושתם מאז `T-217`**. ⇒ עד היום הצומת קיבל `character`
+              ⛔ לא-מוגדר, ולכן צייר את **שלד הבסיס בסגול**: כמוסה עם ראש.
+              ⛔ **⛔ לא נכתבה כאן ולו צורה אחת חדשה** — החתימה שהייתה שם חוברה. */}
+          <ArenaAvatar role="enemy" items={[]} character="wizard" className={FIGURE_CLASS} />
         </span>
       </div>
 
