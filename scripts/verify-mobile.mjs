@@ -3795,6 +3795,59 @@ try {
       `the word stayed «${before}» — the second tap deselected instead of casting, which is exactly the report`,
     );
 
+    /* 🔴 `F-288` — **THE DRAG, DISPATCHED AS A FINGER AND ⛔ NOT AS A MOUSE.**
+       🔬 Why this check exists, measured on the live site 18/09 and ⛔ not supposed:
+       the spell card carried `touch-action: pan-y` while its gesture is `dy < 0`
+       (`arenaGesture.ts:58`, «up only») ⇒ the browser and the gesture wanted the SAME
+       axis, and the browser wins every time: the real event sequence was
+       `pointerdown → touchstart → pointercancel → touchend`, health stayed 100/100.
+       ⛔ **The drag ⛔ did not fail — it ⛔ never happened.**
+       ⚠️ **And ⛔ nothing caught it for weeks**: `page.mouse` does ⛔ not pan, so every
+       mouse-driven walk — this gate included, every agent review, and mine — measured
+       the drag WORKING. ⇒ a gate that clicks can ⛔ never see this class of defect.
+       ⇒ this one speaks CDP touch, which is the only input that reproduces it. */
+    {
+      const dragCard = page.locator('[data-arena-card]').first();
+      const box = await dragCard.boundingBox();
+      const hpBefore = await page.evaluate(
+        () => document.body.innerText.match(/\d+\s*\/\s*100/)?.[0] ?? null,
+      );
+      const cancelled = await page.evaluate(() => {
+        window.__f288 = false;
+        document
+          .querySelector('[data-arena-card]')
+          ?.addEventListener('pointercancel', () => { window.__f288 = true; }, { passive: true });
+        return true;
+      });
+      const cdp = await page.context().newCDPSession(page);
+      const cx = Math.round(box.x + box.width / 2);
+      const cy = Math.round(box.y + box.height / 2);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: cx, y: cy }] });
+      for (let dy = 10; dy <= 120; dy += 10) {
+        await cdp.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [{ x: cx, y: cy - dy }],
+        });
+        await page.waitForTimeout(16);
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForTimeout(900);
+      const hpAfter = await page.evaluate(
+        () => document.body.innerText.match(/\d+\s*\/\s*100/)?.[0] ?? null,
+      );
+      const stolen = await page.evaluate(() => window.__f288 === true);
+      check(
+        cancelled && !stolen,
+        'arena · a FINGER drag ⛔ is not stolen by the scroller (F-288)',
+        'the card fired `pointercancel` mid-drag — `touch-action` hands the gesture axis to the browser',
+      );
+      check(
+        hpBefore !== hpAfter,
+        'arena · dragging a card upward casts it (F-288)',
+        `health stayed «${hpBefore}» — the drag never reached the cast threshold on touch`,
+      );
+    }
+
     // `T-358` — the enemy bar DRAINS rather than teleporting, and the damage is shown.
     const motion = await page.evaluate(() => {
       const hp = document.querySelector('[data-arena-hp-fill]');
