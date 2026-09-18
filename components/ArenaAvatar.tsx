@@ -95,6 +95,38 @@ const ROLE_INK: Record<ArenaRole, string> = {
  */
 const OUTLINE_CLASS = 'text-ink';
 
+/**
+ * 🎨 **⟦18/09 · `C-0720`⟧ שלושה גוונים, **נגזרים מ-`currentColor`**, ⛔ ולא שלושה צבעים.**
+ *
+ * 🔬 **הבעיה שנמדדה לפני שנגעתי בשורה:** הדמות הייתה **צללית שטוחה** — גוון אחד לכל
+ * הגוף — ולכן היא נראתה כמו כתם ולא כדמות. ⛔ **והסיבה ⛔ אינה עצלות:** השער החי
+ * ‏(`verify-mobile.mjs` — «`button svg *` מול הרקע, ≥ 3:1») מודד כל צורה מעל 100px²
+ * בתוך כפתור, ובמסך בחירת הדמות הדמות **יושבת בתוך `<button>`** על `--arena-card`.
+ * ⇒ נמדד: `--arena-stone` נותן **1.80:1** ו-`--arena-night` **1.07:1** ⇒ **כל גוון
+ * ביניים כהה נופל.** לכן מי שניסה להוסיף עומק בעבר יכול היה רק להאיר או לוותר.
+ *
+ * ⇒ **הפתרון הוא יחסי, ⛔ ולא מוחלט:** הגוונים נגזרים מ-`currentColor` ב-`color-mix`,
+ * ⇒ **אותן צורות בדיוק** נותנות לגיבור זהב ולקוסם סגול, והערוץ שמבדיל בין התפקידים
+ * (שכבה א׳ א2) ⛔ לא נגע. 🔬 **וכל ארבעת המצבים נמדדו מול הכרטיס:**
+ * ```
+ * גיבור  lit 13.06:1 · base 11.29:1 · deep 6.81:1
+ * קוסם   lit  9.30:1 · base  6.08:1 · deep 3.84:1   ⟵ הגרוע ביותר, ועדיין מעל 3
+ * ```
+ * ⛔ **אפס hex** (כלל הקובץ) ו⛔ אפס טוקן חדש — זו פונקציה של הצבע שכבר שם.
+ */
+const TONE = {
+  lit: 'text-[color:color-mix(in_srgb,currentColor_58%,white)]',
+  deep: 'text-[color:color-mix(in_srgb,currentColor_78%,black)]',
+} as const;
+
+/** ⛔ `fill="currentColor"` **חוזר** כאן: ה-`g` הפנימי משנה `color`, והמילוי נגזר ממנו. */
+function Tone({ tone, children }: {
+  readonly tone: keyof typeof TONE;
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return <g className={TONE[tone]} fill="currentColor">{children}</g>;
+}
+
 /* ── השלד. ⛔ כל מספר מגיע מ-`lib/core/characterBase.ts`, שמצטט את `38 § 3`. ── */
 const HEAD = anchorFor('head');
 const SHOULDER_R = anchorFor('shoulders');
@@ -122,11 +154,12 @@ const VIEW_BOX = '-100 -108 200 252';
  * ⛔ ולא קישוט: א4 נוקבת בשלושתם בשמם, ובלי סימון היא הייתה נאלצת לנחש שכבה.
  */
 const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
+  /* 🦵 מכנסיים כהים מהגוף — הרנדר `kol-B-03` מפריד אותם בגוון, ⛔ ולא בקו. */
   legs: (
-    <>
+    <Tone tone="deep">
       <rect x={BOOT_L.x - 13} y={BELT.y - 3} width={26} height={BOOT_L.y - BELT.y + 3} rx={12} />
       <rect x={BOOT_R.x - 13} y={BELT.y - 3} width={26} height={BOOT_R.y - BELT.y + 3} rx={12} />
-    </>
+    </Tone>
   ),
   boots: (
     <>
@@ -143,14 +176,25 @@ const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
       rx={18}
     />
   ),
+  /**
+   * 🛡️ **לוח החזה — השכבה `chest` הייתה **ריקה** בבסיס, והרנדר מצייר שם לוח בהיר.**
+   * ⛔ **⛔ אינה שכבה חדשה** (`38 § 5`): היא כבר ב-`LAYER_ORDER` ומחכה מאז `T-215`.
+   */
+  chest: (
+    <Tone tone="lit">
+      <rect x={BODY.x - 26} y={BODY.y - 26} width={52} height={34} rx={12} />
+    </Tone>
+  ),
   belt: (
-    <rect
-      x={BELT.x - BELT_SIZE.width / 2}
-      y={BELT.y - BELT_SIZE.height / 2}
-      width={BELT_SIZE.width}
-      height={BELT_SIZE.height}
-      rx={5}
-    />
+    <Tone tone="deep">
+      <rect
+        x={BELT.x - BELT_SIZE.width / 2}
+        y={BELT.y - BELT_SIZE.height / 2}
+        width={BELT_SIZE.width}
+        height={BELT_SIZE.height}
+        rx={5}
+      />
+    </Tone>
   ),
   /**
    * 💪 **⟦18/09 · `C-0719`⟧ הזרוע — כפות הידיים ⛔ מפסיקות לרחף.**
@@ -161,33 +205,57 @@ const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
    *
    * ⛔ **⛔ אין שכבה חדשה** (`38 § 5`): הרצועה נכנסת לשכבה שכף היד כבר יושבת בה,
    * ⇒ סדר הציור של `38 § 4` ⛔ לא נגע.
-   * ⛔ **וכל קצה הוא עוגן קיים** — כתף ⇐ כף יד, ⛔ אפס קואורדינטה מוחלטת: הרצועה
-   * מתכווצת ומתרחבת עם השלד במקום להיות מספר שיסטה ממנו.
+   * ⛔ **וכל קצה הוא עוגן קיים** — כתף ⇐ כף יד, ⛔ אפס קואורדינטה מוחלטת.
    */
   offHand: (
     <>
       <path
         d={`M${SHOULDER_L.x - 9} ${SHOULDER_L.y}L${OFF_HAND.x - 7} ${OFF_HAND.y}L${OFF_HAND.x + 7} ${OFF_HAND.y}L${SHOULDER_L.x + 9} ${SHOULDER_L.y}z`}
       />
-      <circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={13} />
+      <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={10} /></Tone>
     </>
   ),
   head: (
     <>
-      {/* ⛔ השיער ⛔ אינו קישוט — א4 (`T-216`) נוקבת בו בשמו, ולכן הוא שכבה מסומנת. */}
-      <path
-        data-arena-part="hair"
-        d={`M${HEAD.x - HEAD_RADIUS} ${HEAD.y - 4}a${HEAD_RADIUS} ${HEAD_RADIUS} 0 0 1 ${HEAD_RADIUS * 2} 0q-8 -14 -${HEAD_RADIUS} -14q-24 0 -${HEAD_RADIUS} 14z`}
-      />
-      <circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} />
+      {/* 💇 **⟦`C-0720`⟧ שיער **ופנים**, ⛔ ולא כדור אחד.**
+          🔬 **נמדד בצילום ×6:** ראש אחד ב-`r34` בגוון בהיר יצא **רחב כמעט כמו הגוף**
+          (76) ⇒ הדמות נקראה ככדור, ⛔ לא כדמות. וניסיון ראשון צייר קוצות **מתחת**
+          לקצה הראש ⇒ עיגול הראש כיסה אותן לגמרי והן ⛔ לא נראו כלל.
+          ⇒ **הראש נשאר עוגן אחד** (`38 § 3` ⛔ לא נגע) ומחולק לשניים בגוון:
+          כיפה כהה ב-`r34` והפנים **בהירות וקטנות יותר** (`r25`), נמוכות ב-6 ⇒ נשארת
+          רצועת שיער מעל המצח, וזה בדיוק מה שהרנדר מצייר. */}
+      <Tone tone="deep">
+        <path
+          data-arena-part="hair"
+          /* 🔬 **⟦`C-0720`⟧ הקוצות התקצרו — נמדד, ⛔ ולא נצפה.** הגרסה הראשונה הגיעה
+             ל-`y = -112` בעוד ה-`viewBox` מתחיל ב-`-108` ⇒ **שתי הקוצות הגבוהות
+             נחתכו שטוח**. ⇒ הקודקוד הגבוה ביותר יושב על `-104`, ארבע יחידות מתחת
+             לגבול — **אותו מרווח בדיוק שהכובע לוקח**. */
+          d={`M${HEAD.x - 26} ${HEAD.y - 16}l6 -20 8 14 7 -20 7 18 8 -14 6 22z`}
+        />
+        <circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} />
+      </Tone>
+      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y + 6} r={25} /></Tone>
     </>
+  ),
+  /**
+   * 🎽 **כתפיות — `shoulders` הייתה **ריקה** בבסיס, ולכן הזרוע יצאה משום מקום.**
+   * ⛔ שכבה קיימת (`38 § 4`), ⛔ ולא חדשה. ‏`mirror()` נותן את השמאלית ⛔ ולא מספר שני.
+   */
+  shoulders: (
+    <Tone tone="lit">
+      {/* 🔬 עיגולים ב-`r17` על העוגן (±52) יצאו **כדורים תלויים** מחוץ לגוף (חצי-רוחב 38).
+          ⇒ כתפייה היא **קשת שמחבקת את הגוף**: מלבן מעוגל שנוגע בפלג הגוף העליון. */}
+      <rect x={SHOULDER_R.x - 22} y={SHOULDER_R.y - 15} width={34} height={28} rx={13} />
+      <rect x={SHOULDER_L.x - 12} y={SHOULDER_L.y - 15} width={34} height={28} rx={13} />
+    </Tone>
   ),
   mainHand: (
     <>
       <path
         d={`M${SHOULDER_R.x - 9} ${SHOULDER_R.y}L${MAIN_HAND.x - 7} ${MAIN_HAND.y}L${MAIN_HAND.x + 7} ${MAIN_HAND.y}L${SHOULDER_R.x + 9} ${SHOULDER_R.y}z`}
       />
-      <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={13} />
+      <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={10} /></Tone>
     </>
   ),
 };
@@ -286,6 +354,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'headgear',
       shape: (
+        <Tone tone="deep">
         <path
           /* 🔬 **⟦`C-0719`⟧ השוליים עלו מעל העיניים — נמדד בצילום, ⛔ ולא נצפה מראש.**
              ‏`LAYER_ORDER` מציב את `headgear` **אחרי** `head` ⇒ הכובע נצבע **מעל**
@@ -295,6 +364,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
              קצה העין העליון. */
           d={`M${HEAD.x} ${HEAD.y - HEAD_RADIUS - 8}L${HEAD.x + HEAD_RADIUS + 10} ${HEAD.y - 13}H${HEAD.x - HEAD_RADIUS - 10}z`}
         />
+        </Tone>
       ),
     },
     {
@@ -325,6 +395,17 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'head',
       shape: (
+        <>
+        {/* 🌑 **⟦`C-0720`⟧ פנים **כהות** לקוסם — והשער הוא שדרש זאת, ⛔ לא הטעם שלי.**
+            🔬 **נמדד:** הבסיס מצייר פנים **בהירות** (עור), ועליהן עין בדיו בהיר נתנה
+            **1.67:1** — העין נשטפה. ⇒ השער `C-0719` האדים, ו**זה בדיוק מה שהוא נולד
+            לתפוס**: «העיניים נמסות לתוך הפנים».
+            ⇒ הקוסם מקבל פנים משלו בגוון `deep`, וזה גם מה ש-`kol-B-03-battle.png`
+            מצייר: **פנים כהות, עיניים זוהרות**. ‏⛔ הבסיס ⛔ לא נגע — לגיבור נשאר עור
+            בהיר, כי החתימה מצוירת **מעל** הבסיס באותה שכבה (`38 § 4`).
+            🔬 ושתי המדידות שמאשרות: עין מול הפנים החדשות **4.09:1** · הפנים מול
+            כרטיס הבחירה **3.84:1** ⇒ שתיהן מעל הרצפה. */}
+        <Tone tone="deep"><circle cx={HEAD.x} cy={HEAD.y + 6} r={25} /></Tone>
         <g
           /* 🔬 **⟦`C-0719`⟧ דיו **בהיר**, והנימוק תוקן אחרי שבדקתי את הטענה שלי.**
              ניסיתי `text-ink` תחילה (הטוקן ש-`OUTLINE_CLASS` כבר משתמש בו) ונמדד
@@ -343,17 +424,24 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
              **בדיוק המצב של היום**, ⛔ ולא נסיגה. */
           className="text-[color:var(--arena-ink,currentColor)]"
         >
-          <circle cx={HEAD.x - 11} cy={HEAD.y - 2} r={5} />
-          <circle cx={HEAD.x + 11} cy={HEAD.y - 2} r={5} />
+          <circle cx={HEAD.x - 11} cy={HEAD.y + 2} r={5} />
+          <circle cx={HEAD.x + 11} cy={HEAD.y + 2} r={5} />
         </g>
+        </>
       ),
     },
     {
       layer: 'mainHand',
       shape: (
         <>
-          <rect x={MAIN_HAND.x - 3} y={MAIN_HAND.y - 78} width={6} height={144} rx={3} />
-          <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y - 78} r={9} />
+          {/* 🪄 המטה כהה מהגלימה, והכדור **זוהר** — הרנדר מצייר כדור אור מעל הקצה,
+              ⛔ ולא כפתור באותו גוון. */}
+          <Tone tone="deep">
+            <rect x={MAIN_HAND.x - 4} y={MAIN_HAND.y - 78} width={8} height={144} rx={4} />
+          </Tone>
+          <g className="text-[color:var(--arena-ink,currentColor)]" fill="currentColor">
+            <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y - 78} r={11} />
+          </g>
         </>
       ),
     },

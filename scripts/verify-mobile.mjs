@@ -3863,27 +3863,55 @@ try {
        real choices clear and only «same colour as the head» fails. */
     {
       const eyes = await page.evaluate(() => {
-        const lum = ({ r, g, b }) => {
-          const f = (c) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
-          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
-        };
+        /* 🔬 **⟦`C-0720`⟧ the parser learned a second syntax, measured ⛔ not guessed.**
+           The figure's tones are `color-mix(in srgb, currentColor …)`, and Chromium
+           computes those to **`color(srgb 0.59 0.39 0.78)`** — 0–1 floats — ⛔ not to
+           `rgb()`. The first version of this check only knew `rgb()`, so it returned
+           `undefined` and **failed loudly the moment the tones landed**. That is the
+           gate working: it refused to score what it could not read. */
         const parse = (v) => {
+          const mix = /color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/.exec(v ?? '');
+          if (mix !== null) {
+            return { r: Number(mix[1]) * 255, g: Number(mix[2]) * 255, b: Number(mix[3]) * 255 };
+          }
           const m = /rgba?\(([^)]+)\)/.exec(v ?? '');
           if (m === null) return null;
           const [r, g, b] = m[1].split(',').map((n) => Number.parseFloat(n));
           return Number.isNaN(r) ? null : { r, g, b };
         };
+        const lum = ({ r, g, b }) => {
+          const f = (c) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
         const foe = document.querySelector('[data-arena-figure="enemy"]');
         if (foe === null) return { found: 0 };
-        const head = foe.querySelector('[data-arena-layer="head"] circle');
-        const marks = foe.querySelectorAll('[data-arena-character="wizard"] circle');
-        if (head === null || marks.length === 0) return { found: marks.length };
-        const hf = parse(getComputedStyle(head).fill);
-        const ef = parse(getComputedStyle(marks[0]).fill);
-        if (hf === null || ef === null) return { found: marks.length };
-        const a = lum(hf); const b = lum(ef);
+        const marks = [...foe.querySelectorAll('[data-arena-character="wizard"] circle')]
+          .filter((c) => Number(c.getAttribute('r')) <= 6);
+        if (marks.length === 0) return { found: 0 };
+
+        /* ⛔ **hit-test, ⛔ ולא selector** — and the reason is measured: the head used to be
+           ONE circle and is now a dark cap plus a lighter face, so `head circle` picked the
+           cap — the wrong surface, because the eyes sit on the FACE. A selector encodes a
+           guess about structure; the point under the eye is the structure. */
+        const eye = marks[0];
+        const box = eye.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        const y = box.top + box.height / 2;
+        const under = document.elementsFromPoint(x, y)
+          .find((el) => el !== eye && foe.contains(el) && 'getBBox' in el);
+        if (under === undefined) return { found: marks.length, behind: 'nothing' };
+        const ef = parse(getComputedStyle(eye).fill);
+        const bf = parse(getComputedStyle(under).fill);
+        if (ef === null || bf === null) {
+          return { found: marks.length, behind: getComputedStyle(under).fill, unreadable: true };
+        }
+        const a = lum(ef); const b = lum(bf);
         const hi = Math.max(a, b); const lo = Math.min(a, b);
-        return { found: marks.length, ratio: Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100 };
+        return {
+          found: marks.length,
+          behind: under.tagName,
+          ratio: Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100,
+        };
       });
       check(
         eyes.found >= 2,
@@ -3892,8 +3920,8 @@ try {
       );
       check(
         (eyes.ratio ?? 0) >= 2,
-        'arena · the wizard\u2019s eyes ⛔ do not dissolve into his head (C-0719)',
-        `eyes measure ${eyes.ratio}:1 against the head fill — at 1:1 he is faceless again`,
+        'arena · the wizard\u2019s eyes ⛔ do not dissolve into the face under them (C-0719)',
+        `eyes measure ${eyes.ratio}:1 against the ${eyes.behind} behind them — at 1:1 he is faceless again`,
       );
     }
 
