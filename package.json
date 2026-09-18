@@ -54,7 +54,8 @@
     "generate-map": "node scripts/generate-map.mjs",
     "prepare": "node scripts/install-hooks.mjs",
     "affected": "node scripts/affected.mjs",
-    "probe:story": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/probe-story-chain.mjs"
+    "probe:story": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/probe-story-chain.mjs",
+    "ingest:status": "node scripts/ingest-status.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
