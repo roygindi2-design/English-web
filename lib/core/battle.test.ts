@@ -13,8 +13,16 @@ import {
   MANA_CAP,
   TELEGRAPH_MS,
   WINDOW_END_MS,
+  AIM_CYCLE,
+  CENTRE,
+  LANE_NAMES,
+  aimLaneAt,
   cast,
   dodge,
+  isSafeLane,
+  laneOf,
+  moveLane,
+  swipe,
   isRage,
   manaAt,
   outcomeAt,
@@ -658,5 +666,96 @@ describe('T-363 · `37 § 4` — שלוש היכולות, והמאנה שיש ל
       expect(after.learnerHp).toBe(s.learnerHp);
       expect(after.enemyHp).toBe(s.enemyHp);
     }
+  });
+});
+
+/**
+ * 🛣️ **⟦19/09 · `T-433` · `D-269` ①⟧ שלושה נתיבים.**
+ *
+ * 🔴 **והבדיקה הראשונה כאן היא הסיבה שהעיצוב נראה כך:** כלל נאיבי מהצורה
+ * «המתקפה מכוונת לפי `swingIndex`, וחסין מי שעומד במקום אחר» מעניק חסינות
+ * למי ש⛔ מעולם ⛔ לא נגע במסך — ⇒ הוא מאדים **ארבע** בדיקות שכבר בקובץ הזה
+ * (‏`:75` אחת-עשרה מכות · `:223` בלי גלגול · `:238` מכה אחת · `:598` מגן).
+ * ⇒ `heroLane` מתחיל `null`, והיריב **עוקב** עד שהלומד בוחר.
+ */
+describe('T-433 · 37 § 5 — שלושה נתיבים', () => {
+  it('⛔ לומד שלא נגע במסך ⛔ אינו מקבל חסינות במתנה', () => {
+    expect(FRESH.heroLane).toBeNull();
+    // `§ 6`: «לא התחמקת — נזק». אחת-עשרה מכות ב-90 שניות, כולן נוחתות.
+    expect(tick(FRESH, BATTLE_MS).learnerHp).toBe(FRESH.learnerHp - 11);
+    // וכל עוד הוא `null`, המכה מכוונת למקום שבו הוא עומד ממילא.
+    for (const i of [1, 2, 3, 4, 5]) expect(aimLaneAt(FRESH, i)).toBe(CENTRE);
+  });
+
+  it('החלקה מזיזה **נתיב אחד**, ו⛔ אינה יוצאת מהגבול', () => {
+    const right = moveLane(FRESH, 80);
+    expect(right.heroLane).toBe(1);
+    expect(moveLane(right, 80).heroLane).toBe(1);
+    const left = moveLane(moveLane(FRESH, -80), -80);
+    expect(left.heroLane).toBe(-1);
+    expect(moveLane(left, -80).heroLane).toBe(-1);
+  });
+
+  it('⛔ בקיר — **אותה הפניה**, ⛔ ולא עותק שווה ⇒ ⛔ אין רינדור', () => {
+    const right = moveLane(FRESH, 40);
+    expect(moveLane(right, 40)).toBe(right);
+    for (const bad of [0, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(moveLane(FRESH, bad)).toBe(FRESH);
+    }
+  });
+
+  it('עמידה בנתיב בטוח מצילה — ⛔ גם בלי להחליק', () => {
+    // המכה הראשונה מכוונת ל-`AIM_CYCLE[0]`; הלומד עומד במקום אחר.
+    // המכה הראשונה מכוונת ל-`AIM_CYCLE[0]` = המרכז. ⇒ ימינה = בטוח.
+    const safe = moveLane(FRESH, 1);
+    expect(aimLaneAt(safe, 1)).not.toBe(laneOf(safe));
+    expect(tick(safe, ENEMY_SWING_MS).learnerHp).toBe(safe.learnerHp);
+    // ⛔ ובמרכז — נזק. ⚠️ ימינה **ואז** שמאלה: `heroLane` חייב לחדול מלהיות `null`,
+    //    אחרת היריב «עוקב» ו⛔ אין מה למדוד.
+    const hit = moveLane(moveLane(FRESH, 1), -1);
+    expect(hit.heroLane).toBe(CENTRE);
+    expect(aimLaneAt(hit, 1)).toBe(laneOf(hit));
+    expect(tick(hit, ENEMY_SWING_MS).learnerHp).toBeLessThan(hit.learnerHp);
+  });
+
+  it('⛔ נתיב בטוח ⛔ אינו צורך את הגלגול — הוא נשמר למכה הבאה', () => {
+    const safe = moveLane(FRESH, 1);
+    const rolled = { ...safe, dodgedSwing: 1, immuneBy: 'dodge' as const };
+    const after = tick(rolled, ENEMY_SWING_MS);
+    expect(after.learnerHp).toBe(rolled.learnerHp);
+    expect(after.dodgedSwing).toBe(1);
+  });
+
+  it('`swipe` מזיז **וגם** מגלגל בתוך החלון — ⛔ והמסך ⛔ אינו מרצף שתי פעולות', () => {
+    const inWindow = ENEMY_SWING_MS - TELEGRAPH_MS + ANNOUNCE_AT_MS + 10;
+    expect(telegraphAt(inWindow).phase).toBe('window');
+    const after = swipe(FRESH, 80, inWindow);
+    expect(after.heroLane).toBe(1);
+    expect(after.dodgedSwing).toBe(telegraphAt(inWindow).swingIndex);
+    // ומחוץ לחלון — מזיז בלבד, ⛔ ואינו עולה דבר.
+    const quiet = swipe(FRESH, 80, 100);
+    expect(quiet.heroLane).toBe(1);
+    expect(quiet.dodgedSwing).toBeNull();
+  });
+
+  it('המחזור מבקר בשלושת הנתיבים, והמרכז פעמיים', () => {
+    const moved = moveLane(FRESH, 1);
+    const visited = [1, 2, 3, 4].map((i) => aimLaneAt(moved, i));
+    expect(new Set(visited)).toEqual(new Set([-1, 0, 1]));
+    expect(visited.filter((l) => l === CENTRE)).toHaveLength(2);
+    expect(Object.isFrozen(AIM_CYCLE)).toBe(true);
+  });
+
+  it('`isSafeLane` נגזר — ⛔ ואינו שדה שיכול לסטות', () => {
+    const moved = moveLane(FRESH, 1);
+    const t = telegraphAt(0);
+    expect(isSafeLane(moved, 0)).toBe(laneOf(moved) !== aimLaneAt(moved, t.swingIndex));
+  });
+
+  it('⛔ שלושה שמות בדיוק, לתכונת ה-DOM', () => {
+    expect(LANE_NAMES[-1]).toBe('left');
+    expect(LANE_NAMES[0]).toBe('centre');
+    expect(LANE_NAMES[1]).toBe('right');
+    expect(Object.isFrozen(LANE_NAMES)).toBe(true);
   });
 });

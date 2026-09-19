@@ -161,6 +161,17 @@ export interface BattleState {
    * ⛔ ⛔ אינו חוק שני: `tick` ⛔ אינו קורא אותו כלל.
    */
   readonly immuneBy: 'dodge' | 'shield' | null;
+  /**
+   * 🛣️ **`null` ⇒ הלומד ⛔ טרם בחר נתיב, והיריב **עוקב** אחריו.**
+   *
+   * 🔴 **וזה ⛔ אינו נוחות — זה מה ש`§ 6` כבר מבטיח.** הטבלה שם קובעת «לא התחמקת —
+   * נזק», ⇒ לומד ש⛔ לא נגע במסך **חייב** לספוג את כל אחת-עשרה המכות של 90 השניות.
+   * 🔬 **נמדד:** כלל נאיבי מהצורה «המתקפה מכוונת לפי `swingIndex`» מאדים **ארבע**
+   * בדיקות נעולות (‏`battle.test.ts:75` · `:223` · `:238` · `:598`), כי הוא מעניק
+   * חסינות למי ש⛔ מעולם ⛔ לא זז. ⇒ כל עוד השדה `null`, `aimLaneAt` מחזיר `CENTRE`,
+   * שהוא גם המקום שבו עומד מי שלא זז — והמכה נוחתת, כלשון המפרט.
+   */
+  readonly heroLane: Lane | null;
   readonly casts: readonly BattleCast[];
   /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
   readonly stats: CharacterBattleStats;
@@ -190,6 +201,7 @@ export function startBattle(
     pendingPenalty: 0,
     dodgedSwing: null,
     immuneBy: null,
+    heroLane: null,
     casts: [],
     stats,
   };
@@ -315,9 +327,24 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   // `§ 6` — ⛔ החסינות מבטלת **מכה אחת מזוהה**, ⛔ ולא «את הנזק»: אם שתי מכות התאחדו
   // בפריים אחד (חלון שנרדם, מכשיר איטי), השנייה עדיין פוגעת. ⛔ «התגלגלתי פעם אחת
   // ולא נפגעתי שלוש» הוא בדיוק סוג החור ש-2,403 בדיקות ירוקות לא תופסות.
-  const immune =
-    state.dodgedSwing !== null && state.dodgedSwing > applied && state.dodgedSwing <= due;
-  const landed = swings - (immune ? 1 : 0);
+  // 🛣️ **⟦`T-433`⟧ שני מקורות לחסינות, ⛔ ולא אחד — והלולאה היא **הכללה** של הדגל
+  //    שהיה כאן, ⛔ ולא החלפתו:** למכה מסומנת אחת בטווח היא מחזירה בדיוק את אותה
+  //    תוצאה, ⇒ `מגן`, `הקפאה` ו«גלגול == מגן» נשארים ירוקים מילה במילה.
+  //    ⓐ `dodgedSwing` — גלגול (`§ 6`) או היכולת `מגן` (`§ 4`) · ⓑ **הנתיב**: עמדת
+  //    במקום אחר כשהמכה נחתה. ⛔ ו-ⓑ ⛔ אינו צורך את ⓐ — מי שעמד בטוח שומר את הגלגול.
+  let landed = 0;
+  let spent = false;
+  // 🔴 **והסדר כאן הוא מכניקה, ⛔ ולא סגנון:** הנתיב נבדק **ראשון**, ⇒ מי שכבר עמד
+  //    בטוח ⛔ אינו משלם על כך בגלגול שלו — הוא נשאר לו למכה הבאה. הסדר ההפוך היה
+  //    גובה מטבע עבור סכנה ש⛔ לא הייתה. ⛔ **ואת הבדיקות הנעולות זה ⛔ אינו מזיז:**
+  //    שם `heroLane` הוא `null` ⇒ `aimLaneAt` מחזיר `CENTRE` = `laneOf` ⇒ הענף
+  //    הראשון ⛔ לעולם אינו נלקח, והמסלול הוא בדיוק זה שהיה.
+  for (let i = applied + 1; i <= due; i += 1) {
+    if (laneOf(state) !== aimLaneAt(state, i)) continue;
+    if (state.dodgedSwing === i) { spent = true; continue; }
+    landed += 1;
+  }
+  const immune = spent;
   // ⛔ העונש חל על **המכה הבאה בלבד** (`§ 5`), ולכן הוא נצרך פעם אחת ⛔ ולא לכל מכה בקבוצה.
   // ⛔ והמכה שנמנעה לוקחת איתה את העונש שהיה תלוי בה — הוא חל על **המכה הבאה**, וזו
   // ⛔ לא הגיעה.
@@ -344,6 +371,24 @@ export const TELEGRAPH_MS = 6_000;
 export const ANNOUNCE_AT_MS = 5_300;
 /** `§ 6` — «חלון 5.3 עד 5.7 ש׳». ⛔ 400ms, וזה כל הרוחב. */
 export const WINDOW_END_MS = 5_700;
+
+/**
+ * 🛣️ **⟦19/09 · `T-433` · `D-269` ①⟧ שלושה נתיבים — `37 § 5`.**
+ *
+ * 🔬 **הפער שנמדד, ⛔ ולא שוער:** `§ 5` קובע «מחווה על הזירה = **תזוזת דמות, לצדדים
+ * בלבד**», ו-`resolveGesture` **כבר** מחזיר `{kind:'move', dx}` מאז שנכתב —
+ * ‏`ArenaBattle.tsx` קרא ל-`dodge` ו**זרק את `dx`**. ⇒ «תזוזת דמות» היה שם של מחווה
+ * ש⛔ אינה מזיזה דבר.
+ *
+ * ⛔ **פיזי, ⛔ ולא לוגי:** `-1` הוא שמאל **על המסך**. ⛔ RTL ⛔ אינו הופך אצבע.
+ */
+export type Lane = -1 | 0 | 1;
+export const CENTRE: Lane = 0;
+
+/** שמות לתכונת ה-DOM. ⛔ הבמה ⛔ אינה מחשבת מספרים. */
+export const LANE_NAMES: Readonly<Record<Lane, 'left' | 'centre' | 'right'>> = Object.freeze({
+  [-1]: 'left', 0: 'centre', 1: 'right',
+});
 
 export type TelegraphPhase = 'quiet' | 'charging' | 'window' | 'committed';
 
@@ -377,6 +422,57 @@ export function dodge(state: BattleState, elapsedMs: number): BattleState {
   if (telegraph.phase !== 'window') return state;
   if (state.dodgedSwing === telegraph.swingIndex) return state;
   return { ...state, dodgedSwing: telegraph.swingIndex, immuneBy: 'dodge' };
+}
+
+/**
+ * 🎯 **⟦19/09 · `T-433`⟧ לאיזה נתיב המכה מכוונת — מחזור קפוא, ⛔ ולא אקראי.**
+ *
+ * ⛔ **`Math.random` ⛔ אינו אפשרי כאן ו⛔ גם לא היה רצוי:** אקראיות ⛔ אינה ניתנת
+ * לטלגרף הוגן ו⛔ אינה ניתנת לבדיקה. מחזור הוא שניהם.
+ * ⚠️ **והמרכז מופיע פעמיים בכוונה:** הנתיב שאליו לומד **נסחף בחזרה** הוא זה שנענש.
+ * ⛔ **הכרעה הפיכה** (`RULES § 0.22`): PM או רוי מחליפים את המערך בקומיט אחד,
+ * ⛔ ובלי שאף פונקציה תשתנה.
+ */
+export const AIM_CYCLE: readonly Lane[] = Object.freeze([0, -1, 0, 1]);
+
+/**
+ * ⛔ **הנוסחה המתבקשת `swingIndex % 3 - 1` שגויה כאן, וזה נמדד:** היא מכוונת את
+ * המכה השנייה ל-`+1` ⇒ `battle.test.ts:238` («החסינות שייכת למכה אחת») מאדים.
+ */
+export function aimLaneAt(state: BattleState, swingIndex: number): Lane {
+  if (state.heroLane === null) return CENTRE;
+  const i = Math.max(1, Math.floor(Number.isFinite(swingIndex) ? swingIndex : 1));
+  return AIM_CYCLE[(i - 1) % AIM_CYCLE.length] as Lane;
+}
+
+/** איפה הלומד עומד בפועל. ⛔ `null` הוא «טרם בחר», ⛔ ולא «אין מקום». */
+export function laneOf(state: BattleState): Lane {
+  return state.heroLane ?? CENTRE;
+}
+
+/** האם הנתיב שבו הוא עומד **בטוח** מול המכה הקרובה. נגזר, ⇒ ⛔ אינו יכול לסטות. */
+export function isSafeLane(state: BattleState, elapsedMs: number): boolean {
+  const telegraph = telegraphAt(elapsedMs);
+  return laneOf(state) !== aimLaneAt(state, telegraph.swingIndex);
+}
+
+/**
+ * 🛣️ תזוזה של **נתיב אחד** לכיוון האצבע.
+ * ⛔ **אותה הפניה בקיר** ⇒ ⛔ אין רינדור, ו⛔ אין נתיב מומצא.
+ */
+export function moveLane(state: BattleState, dx: number): BattleState {
+  if (!Number.isFinite(dx) || dx === 0) return state;
+  const to = Math.max(-1, Math.min(1, laneOf(state) + Math.sign(dx))) as Lane;
+  if (to === state.heroLane) return state;
+  return { ...state, heroLane: to };
+}
+
+/**
+ * ⛔ **כניסה אחת, ⛔ ולא שתי פעולות שהמסך מרצף.** החלקה **מזיזה** (`§ 5`)
+ * ו**בתוך החלון גם מגלגלת** (`§ 6`) — ⇒ הגלגול ⛔ לא בוטל, הנתיב **נוסף** לו.
+ */
+export function swipe(state: BattleState, dx: number, elapsedMs: number): BattleState {
+  return dodge(moveLane(state, dx), elapsedMs);
 }
 
 /**
