@@ -1,11 +1,13 @@
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
 import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharacter';
 import {
+  ARMORER,
   BELT_SIZE,
   BODY_SIZE,
   CONE,
   HEAD_RADIUS,
   LAYER_ORDER,
+  WARRIOR,
   anchorFor,
   mirror,
   type Layer,
@@ -131,6 +133,54 @@ function Tone({ tone, children }: {
   return <g className={TONE[tone]} fill="currentColor">{children}</g>;
 }
 
+/**
+ * 🎭 **⟦19/09 · `C-0724`⟧ צבע **מקומי** לדמות — ⛔ ולא גוון של צבע התפקיד.**
+ *
+ * 🔬 **הפער שנמדד לפני שנגעתי בשורה:** הרנדר מצייר את הלוחם ב**עור, שיער כחול,
+ * פלדה, זהב וארגמן**; הקוד צבע את **כל** הדמות בגוון אחד של `currentColor`. ⇒ מה
+ * שיצא הוא צללית חד-גונית, וזה מה שרוי קרא לו «נראה גרוע». ⛔ **⛔ אין כאן hex**
+ * (כלל הקובץ) — כל ערך הוא טוקן ב-`app/arcade/arcade-tokens.css`, שם גם רשומה
+ * הניגודיות שכל אחד נותן ולמה ארבעה מהם הוארו מול הרנדר.
+ *
+ * ⛔ **וערוץ התפקיד ⛔ לא נמחק:** הצללית של הקוסם — החרוט — נשארה `currentColor`,
+ * ⇒ קוסם-יריב סגול וקוסם-גיבור זהוב, והמקרה היחיד שבו שתי הדמויות הן אותה דמות
+ * ⛔ אינו נופל לשוויון צבע. השם הנגיש נושא את אותה הבחנה בלאו הכי.
+ */
+const FIG = {
+  skin: 'text-[color:var(--arena-fig-skin,currentColor)]',
+  hair: 'text-[color:var(--arena-fig-hair,currentColor)]',
+  steelLit: 'text-[color:var(--arena-fig-steel-lit,currentColor)]',
+  steel: 'text-[color:var(--arena-fig-steel,currentColor)]',
+  steelDeep: 'text-[color:var(--arena-fig-steel-deep,currentColor)]',
+  slate: 'text-[color:var(--arena-fig-slate,currentColor)]',
+  belt: 'text-[color:var(--arena-fig-belt,currentColor)]',
+  blade: 'text-[color:var(--arena-fig-blade,currentColor)]',
+  gold: 'text-[color:var(--arena-gold,currentColor)]',
+  goldLight: 'text-[color:var(--arena-gold-light,currentColor)]',
+  voidInk: 'text-[color:var(--arena-fig-void,currentColor)]',
+  eye: 'text-[color:var(--arena-fig-eye,currentColor)]',
+  eyeCore: 'text-[color:var(--arena-fig-eye-core,currentColor)]',
+  orb: 'text-[color:var(--arena-fig-orb,currentColor)]',
+  cast: 'text-[color:var(--arena-cast,currentColor)]',
+  castShade: 'text-[color:var(--arena-fig-cast-shade,currentColor)]',
+  wand: 'text-[color:var(--arena-fig-wand,currentColor)]',
+} as const;
+
+function Paint({ hue, children }: {
+  readonly hue: keyof typeof FIG;
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return <g className={FIG[hue]} fill="currentColor">{children}</g>;
+}
+
+/**
+ * ⛔ **מזהה אחד לכל המסמך, ⛔ ולא אחד לכל דמות.** שתי דמויות על הבמה ⇒ שני
+ * ‏`<radialGradient>` באותו `id`; הדפדפן פותר את **הראשון**, ושניהם **זהים**
+ * ‏(אותה הגדרה בדיוק) ⇒ התוצאה נכונה בשני המקרים. מזהה ייחודי לכל מופע היה דורש
+ * מצב ברכיב שאין לו, ו-`useId` היה הופך אותו לרכיב לקוח בשביל שיפוע.
+ */
+const ORB_GLOW_ID = 'arena-orb-glow';
+
 /* ── השלד. ⛔ כל מספר מגיע מ-`lib/core/characterBase.ts`, שמצטט את `38 § 3`. ── */
 const HEAD = anchorFor('head');
 const SHOULDER_R = anchorFor('shoulders');
@@ -159,72 +209,96 @@ const VIEW_BOX = '-100 -108 200 252';
  */
 const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
   /**
-   * 🎨 **⟦19/09 · `C-0722`⟧ הצללית **נמדדה מהרנדר**, ⛔ ולא נוחשה.**
-   * ‏`docs/design/kol-B-03-battle.png` פורק לפי צבעים שטוחים והומר ליחידות השלד
-   * ‏(עיגון על מרכז הראש ועל קו הרגליים, `s = 0.928`). ⇒ **לוחם רחב ונמוך**:
-   * גוף `90×86`, רגליים קצרות, ראש `r30`. מה שהיה כאן תיאר דמות **צרה וגבוהה**,
-   * וזה בדיוק מה שרוי קרא לו «נראה גרוע».
-   * ⛔ **ו⛔ אין כאן מגפיים** — הרנדר מצייר שתי רגליים כהות **עד הסוף**, ⛔ בלי
-   * מגף נפרד. שכבה ריקה ⛔ אינה מצוירת (`38 § 4`).
+   * 🎨 **⟦19/09 · `C-0724`⟧ הצללית והצבע — שניהם **פילוח צבע של הרנדר**.**
+   * ‏`C-0722` תיקן את הפרופורציות; מה שנשאר שבור היה ה**צבע**: כל הדמות בגוון
+   * אחד. 🔬 `PIL` על `kol-B-03-battle.png` נתן לכל חלק את הצבע שלו, וההמרה
+   * ליחידות השלד היא אותה המרה של `38 § 3` (מרכז `x 544`, ראש `y 1298.5`, `s 0.902`).
+   * ⛔ **ו⛔ אין מגפיים** — הרנדר מצייר שתי רגליים כהות עד הסוף.
    */
   legs: (
-    <Tone tone="mid">
-      <rect x={BOOT_L.x - 17} y={BELT.y - 15} width={34} height={BOOT_L.y - BELT.y + 15} rx={10} />
-      <rect x={BOOT_R.x - 17} y={BELT.y - 15} width={34} height={BOOT_R.y - BELT.y + 15} rx={10} />
-    </Tone>
+    <Paint hue="slate">
+      <rect
+        x={BOOT_L.x - WARRIOR.legHalfWidth}
+        y={WARRIOR.legTopY}
+        width={WARRIOR.legHalfWidth * 2}
+        height={BOOT_L.y - WARRIOR.legTopY}
+        rx={WARRIOR.legR}
+      />
+      <rect
+        x={BOOT_R.x - WARRIOR.legHalfWidth}
+        y={WARRIOR.legTopY}
+        width={WARRIOR.legHalfWidth * 2}
+        height={BOOT_R.y - WARRIOR.legTopY}
+        rx={WARRIOR.legR}
+      />
+    </Paint>
   ),
   body: (
-    <rect
-      x={BODY.x - BODY_SIZE.width / 2}
-      y={BODY.y - BODY_SIZE.height / 2}
-      width={BODY_SIZE.width}
-      height={BODY_SIZE.height}
-      rx={16}
-    />
+    <Paint hue="steel">
+      <rect
+        x={BODY.x - BODY_SIZE.width / 2}
+        y={BODY.y - BODY_SIZE.height / 2}
+        width={BODY_SIZE.width}
+        height={BODY_SIZE.height}
+        rx={16}
+      />
+    </Paint>
   ),
   /**
    * ⛔ **קו אמצע, ⛔ ולא לוח חזה.** 🔬 הרנדר מצייר על הגוף **קו אנכי דק** בלבד —
    * לוח בהיר היה המצאה שלי, והוא זה שהפך את הגוף ל«סינר».
    */
   chest: (
-    <Tone tone="deep">
-      <rect x={BODY.x - 2} y={BODY.y - BODY_SIZE.height / 2 + 10} width={4} height={BODY_SIZE.height - 22} rx={2} />
-    </Tone>
+    <Paint hue="steelDeep">
+      <rect
+        x={BODY.x - WARRIOR.chestHalfWidth}
+        y={WARRIOR.chestTopY}
+        width={WARRIOR.chestHalfWidth * 2}
+        height={WARRIOR.chestH}
+        rx={2}
+      />
+    </Paint>
   ),
   belt: (
-    <Tone tone="deep">
+    <Paint hue="belt">
       <rect
         x={BELT.x - BELT_SIZE.width / 2}
         y={BELT.y - BELT_SIZE.height / 2}
         width={BELT_SIZE.width}
         height={BELT_SIZE.height}
-        rx={4}
+        rx={WARRIOR.beltR}
       />
-    </Tone>
+    </Paint>
   ),
-  offHand: <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={11} /></Tone>,
   head: (
     <>
-      {/* 💇 השיער — ברנדר זהו **מסרק של קוצות** מעל הראש, `-108..-82` ביחידות השלד.
-          🔬 הקצה הגבוה יושב על `-104`: ה-`viewBox` מתחיל ב-`-108`, והגולה הזהובה
-          שהרנדר מניח מעליו (`-118`) ⛔ **אינה נכנסת** ⇒ ⛔ לא צוירה, ⛔ ולא הוזזה. */}
-      <Tone tone="deep">
-        <path
-          data-arena-part="hair"
-          d={`M${HEAD.x - 31} ${HEAD.y - 22}l4 -22 7 14 6 -20 6 18 7 -16 5 26z`}
-        />
-      </Tone>
-      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} /></Tone>
+      {/* 💇 השיער — ברנדר זהו **מסרק של קוצות כחולים**, `x 510..572 · y 1249..1277`.
+          ⛔ **חמישה קוצות ו⛔ אפס צורת-מרווח:** 🔬 היסטוגרמת האזור מונה `#488edc`
+          ואת **רקע הבמה** — כלומר המרווחים הם הרקע שנראה בין הקוצות, ⛔ ולא פס
+          כהה מצויר. גרסה ראשונה שלי ציירה אותם, והשער תפס אותה (2.73:1). */}
+      <Paint hue="hair">
+        {WARRIOR.hairBarX.map((x) => (
+          <rect
+            key={x}
+            data-arena-part="hair"
+            x={HEAD.x + x}
+            y={WARRIOR.hairY}
+            width={WARRIOR.hairBarW}
+            height={WARRIOR.hairH}
+            rx={WARRIOR.hairBarR}
+          />
+        ))}
+      </Paint>
+      <Paint hue="skin"><circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} /></Paint>
     </>
   ),
   /** 🎽 כתפיות — **עיגולים על העוגן**, בדיוק כמו ברנדר (`r24` על `±46,-13`). */
   shoulders: (
-    <Tone tone="lit">
-      <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={24} />
-      <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={24} />
-    </Tone>
+    <Paint hue="steelLit">
+      <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={WARRIOR.shoulderRadius} />
+      <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={WARRIOR.shoulderRadius} />
+    </Paint>
   ),
-  mainHand: <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={11} /></Tone>,
 };
 
 /**
@@ -318,9 +392,23 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'body',
       shape: (
-        <path
-          d={`M${BODY.x} ${CONE.apexY}L${BODY.x + CONE.hemHalfWidth} ${BOOT_L.y}H${BODY.x - CONE.hemHalfWidth}z`}
-        />
+        <>
+          {/* ⛔ **שני פאנלים, ⛔ ולא משולש אחד.** 🔬 פילוח הצבע מצא ברנדר **שני**
+              סגולים — `#7e50ca` משמאל ו-`#683eb2` מימין — ⇒ החרוט הוא **נפח**,
+              ⛔ ולא כתם. קו הפיצול בשוליים נמדד על `x 482` ⇒ `-21` ביחידות השלד.
+              ⛔ **והצד המואר נשאר `currentColor`** — הוא הצללית, והוא זה שנושא
+              את התפקיד (סגול ליריב, זהב לגיבור). */}
+          <Paint hue="cast">
+            <path
+              d={`M${BODY.x} ${CONE.apexY}L${BODY.x + CONE.hemSplitX} ${BOOT_L.y}L${BODY.x - CONE.hemHalfWidth} ${BOOT_L.y}z`}
+            />
+          </Paint>
+          <Paint hue="castShade">
+            <path
+              d={`M${BODY.x} ${CONE.apexY}L${BODY.x + CONE.hemHalfWidth} ${BOOT_L.y}L${BODY.x + CONE.hemSplitX} ${BOOT_L.y}z`}
+            />
+          </Paint>
+        </>
       ),
     },
     /**
@@ -332,18 +420,26 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       layer: 'head',
       shape: (
         <>
-          <Tone tone="deep"><circle cx={BODY.x} cy={CONE.faceY} r={CONE.faceRadius} /></Tone>
+          {/* 🌑 הפנים — 🔬 ברנדר `#1e1030`, כמעט שחור. ⛔ **פנימי**: הן יושבות על
+              החרוט (3.50:1 מול הצד המוצל), ⛔ ולא על הכרטיס — ושם הן **חייבות**
+              להיות כהות, אחרת העיניים מפסיקות לזהור. */}
+          <Paint hue="voidInk"><circle cx={BODY.x} cy={CONE.faceY} r={CONE.faceRadius} /></Paint>
           {/* 👁️ שתי עיניים זוהרות — ⛔ הערוץ היחיד שהופך צללית לדמות.
               🔬 הרנדר מצייר אותן ורודות-בוהקות על פנים שחורות; כאן הן
               בדיו **הבהיר** של הזירה, וזה מה שמייצר את אותו זוהר. */}
-          <g className="text-[color:var(--arena-ink,currentColor)]" fill="currentColor">
-            {/* 🔬 ⟦`C-0723`⟧ `data-arena-eye` — **סימון, ⛔ ולא רדיוס.** השער
-                ‏(`verify-mobile.mjs` · `C-0719`) אסף «עיגול שרדיוסו ≤6», והמדידה
-                מהרנדר קבעה `r8` ⇒ **השער מצא אפס עיניים והאדים**. סף רדיוס הוא
-                ניחוש על מבנה; הסימון **הוא** המבנה. */}
+          {/* 🔬 ⟦`C-0723`⟧ `data-arena-eye` — **סימון, ⛔ ולא רדיוס.** השער
+              ‏(`verify-mobile.mjs` · `C-0719`) אסף «עיגול שרדיוסו ≤6», והמדידה
+              מהרנדר קבעה `r8` ⇒ **השער מצא אפס עיניים והאדים**. סף רדיוס הוא
+              ניחוש על מבנה; הסימון **הוא** המבנה. */}
+          <Paint hue="eye">
             <circle data-arena-eye cx={BODY.x - CONE.eyeX} cy={CONE.eyeY} r={CONE.eyeRadius} />
             <circle data-arena-eye cx={BODY.x + CONE.eyeX} cy={CONE.eyeY} r={CONE.eyeRadius} />
-          </g>
+          </Paint>
+          {/* ✨ נצנוץ בתוך כל עין — 🔬 ברנדר יש לעין ליבה בהירה יותר מהטבעת. */}
+          <Paint hue="eyeCore">
+            <circle cx={BODY.x - CONE.eyeX - 2} cy={CONE.eyeY - 2} r={CONE.eyeCoreRadius} />
+            <circle cx={BODY.x + CONE.eyeX - 2} cy={CONE.eyeY - 2} r={CONE.eyeCoreRadius} />
+          </Paint>
         </>
       ),
     },
@@ -351,61 +447,157 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'offHand',
       shape: (
-        <path
-          d={`M${-CONE.armInnerX} ${CONE.armInnerY}L${-CONE.armOuterX} ${CONE.armOuterY}L${-CONE.armTipX} ${CONE.armTipY}L${-CONE.armTopX} ${CONE.armTopY}z`}
-        />
+        <Paint hue="cast">
+          <path
+            d={`M${-CONE.armInnerX} ${CONE.armInnerY}L${-CONE.armOuterX} ${CONE.armOuterY}L${-CONE.armTipX} ${CONE.armTipY}L${-CONE.armTopX} ${CONE.armTopY}z`}
+          />
+        </Paint>
       ),
     },
     {
       layer: 'mainHand',
       shape: (
         <>
-          <path
-            d={`M${CONE.armInnerX} ${CONE.armInnerY}L${CONE.armOuterX} ${CONE.armOuterY}L${CONE.armTipX} ${CONE.armTipY}L${CONE.armTopX} ${CONE.armTopY}z`}
-          />
-          {/* 🔮 הכדור הזוהר מעל היד. 🔬 ברנדר הוא יושב על `y -124` — **מחוץ
-              ל-`viewBox`** — ולכן הורד אל קצה היד, ⛔ ולא הוקטן ו⛔ לא נמחק. */}
-          <g className="text-[color:var(--arena-ink,currentColor)]" fill="currentColor">
+          <Paint hue="cast">
+            <path
+              d={`M${CONE.armInnerX} ${CONE.armInnerY}L${CONE.armOuterX} ${CONE.armOuterY}L${CONE.armTipX} ${CONE.armTipY}L${CONE.armTopX} ${CONE.armTopY}z`}
+            />
+          </Paint>
+          {/* 🪄 המטה — מקל קצר מכף היד אל הגולה. 🔬 ברנדר הוא חום (`#5c4028`). */}
+          <Paint hue="wand">
+            <path
+              d={`M${CONE.wandX} ${CONE.wandY}L${CONE.wandX + CONE.wandW} ${CONE.wandY + CONE.wandH}L${CONE.wandX + CONE.wandW + CONE.wandRunX} ${CONE.wandY + CONE.wandH + CONE.wandRunY}L${CONE.wandX + CONE.wandRunX} ${CONE.wandY + CONE.wandRunY}z`}
+            />
+          </Paint>
+          {/* 🔮 הגולה. 🔬 ברנדר מרכזה `(85,-124.5)` — **מעל גג ה-`viewBox`** —
+              ולכן היא הונמכה, ⛔ ולא הוקטנה ו⛔ לא נמחקה (`characterBase.ts`).
+              ⛔ **והזוהר הוא שיפוע, ⛔ ולא עוד עיגול**: שלושה עיגולים בשקיפויות
+              שונות מייצרים **טבעת** — נמדד על המסך, והוא נראה כמו זכוכית מגדלת. */}
+          <Paint hue="orb">
+            <radialGradient id={ORB_GLOW_ID}>
+              <stop offset="0.35" stopColor="currentColor" stopOpacity="0.55" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+            </radialGradient>
+            <circle cx={CONE.orbX} cy={CONE.orbY} r={CONE.orbGlowRadius} fill={`url(#${ORB_GLOW_ID})`} />
             <circle cx={CONE.orbX} cy={CONE.orbY} r={CONE.orbRadius} />
-          </g>
+          </Paint>
         </>
       ),
     },
   ],
   warrior: [
-    { layer: 'offHand', shape: <circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={26} /> },
+    /**
+     * 🛡️ **המגן — ⛔ ולא עיגול על העוגן.** 🔬 ברנדר זהו **מלבן מעוגל** עם מסגרת
+     * זהב עבה, פנים פלדה ובליטת זהב במרכז: `x 432..496 · y 1336..1419`, בליטה
+     * ‏`(463.5,1377.5) r13.5`. מה שהיה כאן — עיגול `r26` בצבע התפקיד — ⛔ לא היה
+     * מגן, הוא היה **כתם**, וזה החלק שרוי ראה.
+     */
     {
-      layer: 'chest',
+      layer: 'offHand',
       shape: (
-        <rect
-          x={BODY.x - (BODY_SIZE.width + 16) / 2}
-          y={BODY.y - 22}
-          width={BODY_SIZE.width + 16}
-          height={40}
-          rx={8}
-        />
+        <>
+          <Paint hue="gold">
+            <rect
+              x={WARRIOR.shieldX}
+              y={WARRIOR.shieldY}
+              width={WARRIOR.shieldW}
+              height={WARRIOR.shieldH}
+              rx={WARRIOR.shieldR}
+            />
+          </Paint>
+          <Paint hue="steelDeep">
+            <rect
+              x={WARRIOR.shieldX + WARRIOR.shieldFaceInset}
+              y={WARRIOR.shieldY + WARRIOR.shieldFaceInset}
+              width={WARRIOR.shieldW - WARRIOR.shieldFaceInset * 2}
+              height={WARRIOR.shieldH - WARRIOR.shieldFaceInset * 2}
+              rx={WARRIOR.shieldFaceR}
+            />
+          </Paint>
+          <Paint hue="goldLight">
+            <circle cx={WARRIOR.bossX} cy={WARRIOR.bossY} r={WARRIOR.bossRadius} />
+          </Paint>
+        </>
+      ),
+    },
+    /**
+     * ⚔️ **החרב — להב שיוצא מהמסגרת, וניצב זהב על כף היד.**
+     * 🔬 ברנדר הלהב רץ `x 607..728 · y 1246..1362` ⇒ `x 57..166` ביחידות השלד,
+     * כלומר **הוא נחתך ב-`100`** — וזה נכון: חרב שנגמרת בתוך המסגרת היא חרב קצרה.
+     */
+    {
+      layer: 'mainHand',
+      shape: (
+        <>
+          <Paint hue="blade">
+            <path
+              data-arena-part="weapon"
+              d={`M${WARRIOR.bladeNearX} ${WARRIOR.bladeNearY}L${WARRIOR.bladeFarX} ${WARRIOR.bladeFarY}L${WARRIOR.bladeFarX} ${WARRIOR.bladeTipY}L${WARRIOR.bladeBackX} ${WARRIOR.bladeBackY}z`}
+            />
+          </Paint>
+          <Paint hue="gold">
+            <path
+              d={`M${WARRIOR.gripX} ${WARRIOR.gripY}L${WARRIOR.gripX + WARRIOR.gripRun} ${WARRIOR.gripY - WARRIOR.gripRun}L${WARRIOR.gripX + WARRIOR.gripRun + WARRIOR.gripW} ${WARRIOR.gripY - WARRIOR.gripRun + WARRIOR.gripW}L${WARRIOR.gripX + WARRIOR.gripW} ${WARRIOR.gripY + WARRIOR.gripW}z`}
+            />
+          </Paint>
+        </>
       ),
     },
   ],
   armorer: [
+    /**
+     * 🤖 **⟦`C-0724`⟧ השריונאי — **חליפת קרב**, ⛔ ולא שלושה כתמי זהב.**
+     * ⚠️ **`37 § 7` מתאר אותו במילים ⛔ ולא ברנדר** — `kol-B-03` מצייר רק קוסם
+     * ולוחם. ⇒ מה שכאן נגזר מהמילים («חליפת קרב טכנולוגית · ירי מטווח»)
+     * ובפלטה של השניים האחרים, ⛔ ולא מרנדר שאיננו. זה **מוצהר** ⛔ ולא מוסתר.
+     */
     {
       layer: 'headgear',
       shape: (
-        <rect x={HEAD.x - HEAD_RADIUS - 8} y={HEAD.y - 11} width={(HEAD_RADIUS + 8) * 2} height={10} rx={3} />
+        <Paint hue="steelDeep">
+          <rect
+            x={HEAD.x - HEAD_RADIUS - ARMORER.visorOverhang}
+            y={HEAD.y + ARMORER.visorTopY}
+            width={(HEAD_RADIUS + ARMORER.visorOverhang) * 2}
+            height={ARMORER.visorH}
+            rx={ARMORER.visorR}
+          />
+        </Paint>
       ),
     },
     {
       layer: 'shoulders',
       shape: (
-        <>
-          <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={16} />
-          <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={16} />
-        </>
+        <Paint hue="gold">
+          <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y - ARMORER.capRise} r={ARMORER.capRadius} />
+          <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y - ARMORER.capRise} r={ARMORER.capRadius} />
+        </Paint>
       ),
     },
     {
       layer: 'mainHand',
-      shape: <rect x={MAIN_HAND.x - 25} y={MAIN_HAND.y - 6} width={50} height={12} rx={4} />,
+      shape: (
+        <>
+          <Paint hue="steelLit">
+            <rect
+              x={MAIN_HAND.x + ARMORER.barrelBackX}
+              y={MAIN_HAND.y + ARMORER.barrelTopY}
+              width={ARMORER.barrelW}
+              height={ARMORER.barrelH}
+              rx={ARMORER.barrelR}
+            />
+          </Paint>
+          <Paint hue="gold">
+            <rect
+              x={MAIN_HAND.x + ARMORER.gripX}
+              y={MAIN_HAND.y + ARMORER.gripY}
+              width={ARMORER.gripW}
+              height={ARMORER.gripH}
+              rx={ARMORER.gripR}
+            />
+          </Paint>
+        </>
+      ),
     },
   ],
 };

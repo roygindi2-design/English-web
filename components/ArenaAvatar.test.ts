@@ -14,7 +14,13 @@ const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
 describe('<ArenaAvatar>', () => {
   it("⛔ אפס תמונה, אפס CDN, אפס אמוג'י — שכבות SVG מקומיות בלבד (§ 4.2י · תקציב אפס)", () => {
     expect(CODE).toMatch(/<svg/);
-    expect(CODE).not.toMatch(/<img|<Image|url\(|https?:|\.png|\.svg'|\.webp/);
+    /* 🔬 **⟦19/09 · `C-0724`⟧ `url(#…)` ⛔ אינו נכס.** מה שהשורה הזאת שומרת הוא
+       «אפס תמונה, אפס CDN» — ⛔ ולא «אפס הפניה». ‏`url(#arena-orb-glow)` מצביע על
+       `<radialGradient>` **באותו מסמך**: ⛔ אפס בקשת רשת, ⛔ אפס קובץ, ⛔ אפס תקציב.
+       ⇒ ההפניה הפנימית הוחרגה ו**כל** השאר נשאר אסור — `url(` לכל יעד אחר עדיין
+       מאדים, וזה נבדק בשורה שמתחת. */
+    expect(CODE).not.toMatch(/<img|<Image|url\((?!#)|https?:|\.png|\.svg'|\.webp/);
+    expect('fill="url(https://cdn.example/x.svg)"').toMatch(/url\((?!#)/);
     expect(CODE).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
   });
 
@@ -118,8 +124,13 @@ describe('<ArenaAvatar>', () => {
 
   it('the signature shapes are anchored — every coordinate comes from characterBase', () => {
     const block = SRC.slice(SRC.indexOf('CHARACTER_LAYERS'), SRC.indexOf('export default function'));
-    expect(block).toMatch(/anchorFor\('mainHand'\)|MAIN_HAND/);
-    expect(block).toMatch(/anchorFor\('offHand'\)|OFF_HAND/);
+    /* ⛔ **«מגיע מ-`characterBase`» ⛔ אינו «מגיע מ-`anchorFor`».** 🔬 `C-0724`
+       העביר את המגן ואת החרב מ-`OFF_HAND`/`MAIN_HAND` אל `WARRIOR.*` — קבועים
+       **מדודים** שיושבים באותו מודול טהור בדיוק. השורה הישנה נקבה בשני שמות
+       ובהם בלבד ⇒ היא האדימה על קוד שמציית לה **יותר**. הרשימה כאן היא של כל
+       היצוא הגיאומטרי של המודול, והחצי השני — ⛔ אפס `d="M…"` עם מספרים — ⛔ לא רוכך. */
+    expect(block).toMatch(/anchorFor\('mainHand'\)|MAIN_HAND|WARRIOR\.|ARMORER\./);
+    expect(block).toMatch(/anchorFor\('offHand'\)|OFF_HAND|WARRIOR\.|CONE\./);
     expect(block).not.toMatch(/\bd="M-?\d{2,}/);
   });
 

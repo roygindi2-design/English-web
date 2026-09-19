@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARMORER,
   BELT_SIZE,
   BODY_SIZE,
+  CONE,
   HEAD_RADIUS,
   LAYER_ORDER,
   MIRRORED_SLOTS,
+  WARRIOR,
   anchorFor,
   isCharacterSlot,
   isMirroredSlot,
@@ -94,5 +97,67 @@ describe('38 § 3 — «פריט שלא מתיישב על נקודת עיגון 
     // ⛔ ⛔ ולא שם ירושה של Object — `hasOwnProperty` ⛔ ולא `in`.
     expect(isCharacterSlot('toString')).toBe(false);
     expect(() => anchorFor('toString' as CharacterSlot)).toThrow();
+  });
+});
+
+/**
+ * 🔬 **⟦19/09 · `C-0724`⟧ הצורות שנמדדו מהרנדר — **הבדיקה נגזרת מהמדידה**.**
+ * ⛔ **הבדיקה ⛔ אינה מעתיקה את המספרים** (זו הייתה חותמת גומי) — היא בודקת את
+ * ה**יחסים** שהמדידה קבעה, כאלה שכל סטייה מהרנדר שוברת.
+ */
+describe('C-0724 — החרוט, הלוחם והשריונאי', () => {
+  it('החרוט נכנס ל-viewBox, והשוליים רחבים מהפיצול', () => {
+    // `viewBox="-100 -108 200 252"` ⇒ x ∈ [-100,100] · y ∈ [-108,144]
+    expect(CONE.apexY).toBeGreaterThan(-108);
+    expect(CONE.hemHalfWidth).toBeLessThanOrEqual(100);
+    // הצד המוצל מתחיל מימין לקצה השמאלי ⇒ שני פאנלים, ⛔ ולא אחד.
+    expect(CONE.hemSplitX).toBeGreaterThan(-CONE.hemHalfWidth);
+    expect(CONE.hemSplitX).toBeLessThan(CONE.hemHalfWidth);
+  });
+
+  it('הגולה **הונמכה** אל תוך המסגרת — ⛔ ולא הוקטנה', () => {
+    // ברנדר מרכזה `(85,-124.5)`; המסגרת נגמרת ב-`-108`.
+    expect(CONE.orbY - CONE.orbRadius).toBeGreaterThanOrEqual(-108);
+    expect(CONE.orbX + CONE.orbRadius).toBeLessThanOrEqual(100);
+    // הזוהר גדול מהליבה, אחרת ⛔ אין זוהר.
+    expect(CONE.orbGlowRadius).toBeGreaterThan(CONE.orbRadius);
+  });
+
+  it('העיניים בתוך הפנים, והליבה קטנה מהעין', () => {
+    expect(Math.abs(CONE.eyeX) + CONE.eyeRadius).toBeLessThan(CONE.faceRadius);
+    expect(CONE.eyeCoreRadius).toBeLessThan(CONE.eyeRadius);
+  });
+
+  it('המגן נכנס למסגרת, והבליטה בתוכו', () => {
+    expect(WARRIOR.shieldX).toBeGreaterThanOrEqual(-100);
+    expect(WARRIOR.shieldX + WARRIOR.shieldW).toBeLessThanOrEqual(100);
+    expect(WARRIOR.bossX - WARRIOR.bossRadius).toBeGreaterThan(WARRIOR.shieldX);
+    expect(WARRIOR.bossX + WARRIOR.bossRadius).toBeLessThan(WARRIOR.shieldX + WARRIOR.shieldW);
+    // הפנים נסוגות מהמסגרת בשני הצדדים ⇒ מסגרת הזהב **נראית**.
+    expect(WARRIOR.shieldFaceInset).toBeGreaterThan(0);
+    expect(WARRIOR.shieldW - WARRIOR.shieldFaceInset * 2).toBeGreaterThan(0);
+  });
+
+  it('הלהב **נחתך** בקצה המסגרת — חרב שנגמרת בפנים היא חרב קצרה', () => {
+    expect(WARRIOR.bladeFarX).toBe(100);
+    expect(WARRIOR.bladeFarY).toBeGreaterThan(WARRIOR.bladeTipY);
+    expect(WARRIOR.bladeNearY).toBeGreaterThan(WARRIOR.bladeFarY);
+  });
+
+  it('חמישה קוצות שיער — ⛔ ואפס צורת-מרווח (המרווח הוא הרקע)', () => {
+    expect(WARRIOR.hairBarX).toHaveLength(5);
+    expect(Object.keys(WARRIOR)).not.toContain('hairGapX');
+    // הקוצה הגבוהה ⛔ אינה חורגת מגג המסגרת.
+    expect(WARRIOR.hairY).toBeGreaterThanOrEqual(-108);
+    // ומרווח אמיתי בין קוצה לקוצה, אחרת זה לוח ⛔ ולא שיער.
+    const bars = [...WARRIOR.hairBarX];
+    for (let i = 1; i < bars.length; i += 1) {
+      expect((bars[i] ?? 0) - (bars[i - 1] ?? 0)).toBeGreaterThan(WARRIOR.hairBarW);
+    }
+  });
+
+  it('⚠️ השריונאי מוצהר כנגזר-ממילים — הוא **קיים**, ⛔ ואין לו רנדר', () => {
+    expect(ARMORER.capRadius).toBeGreaterThan(0);
+    expect(ARMORER.barrelW).toBeGreaterThan(ARMORER.gripW);
   });
 });

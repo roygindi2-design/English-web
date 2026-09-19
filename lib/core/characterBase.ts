@@ -76,20 +76,82 @@ export const MIRRORED_SLOTS = Object.freeze(['shoulders', 'legs'] as const);
  */
 export const CONE = Object.freeze({
   apexY: -100,
-  hemHalfWidth: 77,
+  /** 🔬 `C-0724` — **85, ⛔ ולא 77.** המדידה הראשונה קראה פרופיל שורות; הפילוח לפי
+   *  צבע נתן `x 421..583` ⇒ חצי-רוחב `81` בפיקסלים, `85` ביחידות השלד. */
+  hemHalfWidth: 85,
+  /** קו הפיצול בין הצד המואר למוצל, **בשוליים**: פילוח הצד המוצל נתן `x 482`. */
+  hemSplitX: -21,
   faceY: -12,
   faceRadius: 35,
   eyeX: 16,
   eyeY: -9,
   eyeRadius: 8,
-  orbX: 74,
-  orbY: -58,
-  orbRadius: 13,
+  eyeCoreRadius: 3,
+  /**
+   * ⚠️ **הגולה — סטייה מוצהרת, ⛔ ולא מיקום שנבחר.** 🔬 ברנדר מרכזה
+   * ‏`(583.5, 869.5)` ⇒ ביחידות השלד **`(85, -124.5)`** — ⛔ **מעל גג ה-`viewBox`
+   * ‏(`-108`) ומעבר לקצה הימני**. ⇒ היא הונמכה למקום הגבוה ביותר שהמסגרת נושאת.
+   */
+  orbX: 76,
+  orbY: -82,
+  orbRadius: 11,
+  orbGlowRadius: 27,
   /** קצות הזרוע המורמת: מהכתף אל היד, בארבע נקודות. */
   armInnerX: 21, armInnerY: 17,
   armOuterX: 53, armOuterY: 14,
   armTipX: 74, armTipY: -40,
   armTopX: 62, armTopY: -45,
+  /** המטה — מקל קצר מכף היד אל הגולה. */
+  wandX: 66, wandY: -36,
+  wandW: 10, wandH: -6,
+  wandRunX: 20, wandRunY: 32,
+});
+
+/**
+ * ⚔️ **⟦19/09 · `C-0724`⟧ חתימת הלוחם — מגן, חרב ומסרק שיער, **מפילוח צבע**.**
+ *
+ * 🔬 נמדדו מ-`kol-B-03-battle.png` באותה המרה כמו כל שורה ב-`38 § 3`
+ * ‏(מרכז `x 544`, מרכז הראש `y 1298.5`, `s = 0.902`):
+ * ```
+ * מגן   זהב  x 432..496  y 1336..1419   פנים #60749e  בליטה (463.5,1377.5) r13.5
+ * חרב   להב  x 607..728  y 1246..1362   ניצב  x 585..630  y 1350..1379
+ * שיער  x 510..572  y 1249..1277  ⇒ חמישה קוצות · ⛔ המרווח הוא הרקע
+ * ```
+ * ⛔ **ולמה כאן ו⛔ לא ברכיב:** בדיוק כמו `CONE` — `ArenaAvatar.test.ts:119` אוסר
+ * ‏`d="M…"` עם מספרים ברכיב, והוא **צודק**: קואורדינטה שנכתבת ברכיב היא קואורדינטה
+ * שאיש ⛔ אינו יכול למדוד מול הרנדר.
+ * ⚠️ **הלהב יוצא מהמסגרת בכוונה:** ברנדר הוא מגיע ל-`x 166` ביחידות השלד ⇒ הוא
+ * נחתך ב-`100`. חרב שנגמרת בתוך המסגרת הייתה חרב **קצרה**, ⛔ ולא חרב שנחתכה.
+ */
+export const WARRIOR = Object.freeze({
+  shieldX: -99, shieldY: -28, shieldW: 58, shieldH: 75, shieldR: 15,
+  shieldFaceInset: 6, shieldFaceR: 10,
+  bossX: -70, bossY: 9, bossRadius: 12,
+  bladeNearX: 57, bladeNearY: 3,
+  bladeFarX: 100, bladeFarY: -40,
+  bladeBackX: 43, bladeBackY: 3,
+  bladeTipY: -54,
+  gripX: 40, gripY: 16, gripRun: 33, gripW: 9,
+  hairBarX: Object.freeze([-30, -17, -4, 9, 22]),
+  hairY: -107, hairH: 28, hairBarW: 8, hairBarR: 2,
+  legHalfWidth: 17, legTopY: 54, legR: 11,
+  shoulderRadius: 24,
+  beltR: 5,
+  chestTopY: -15, chestH: 60, chestHalfWidth: 2,
+});
+
+/**
+ * 🤖 **⟦19/09 · `C-0724`⟧ השריונאי — ⚠️ **נגזר מהמילים, ⛔ ולא מרנדר.**
+ * ‏`kol-B-03-battle.png` מצייר **קוסם ולוחם בלבד**; ל-`שריונאי` יש ב-`37 § 7`
+ * תיאור מילולי («חליפת קרב טכנולוגית · ירי מטווח») ⛔ ואין לו תמונת ייחוס.
+ * ⇒ המספרים כאן הם **החלטה מוצהרת**, ⛔ ולא מדידה — וזה נכתב כאן במפורש כדי
+ * ש-`38 § 3` ⛔ לא ייקרא כאילו כל שורה בו נמדדה.
+ */
+export const ARMORER = Object.freeze({
+  visorOverhang: 4, visorTopY: -10, visorH: 16, visorR: 6,
+  capRadius: 13, capRise: 6,
+  barrelBackX: -14, barrelTopY: -7, barrelW: 52, barrelH: 14, barrelR: 5,
+  gripX: -10, gripY: 3, gripW: 14, gripH: 20, gripR: 4,
 });
 
 export const BODY_SIZE = Object.freeze({ width: 90, height: 86 });
