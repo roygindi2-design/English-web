@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { withoutComments } from '@/lib/testSource';
+import { TELEGRAPH_MS, WINDOW_END_MS } from '@/lib/core/battle';
 
 const SRC = readFileSync('components/ArenaStage.tsx', 'utf8');
 const CSS = readFileSync('app/globals.css', 'utf8');
@@ -312,5 +313,88 @@ describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
     expect(SCENE).toMatch(/const LANES = 3;/);
     expect(SCENE).toMatch(/length: LANES \+ 1/);
     expect(SCENE).not.toMatch(/\[-24, -12, 0, 12, 24\]/);
+  });
+});
+
+/**
+ * 🔥 **⟦19/09 · `C-0732` · `T-434` · `37 § 8` ק3 · `37 § 6`⟧ המתקפה הראשונה.**
+ *
+ * 🔬 **הפער שנמדד:** היריב טוען 5.3 שניות, מכריז «מטיל!», המד מהבהב — ו⛔ **שום
+ * עצם ⛔ אינו עף**. המכה פשוט **קורית**.
+ *
+ * 🔴 **והטענה שמכריעה את כל העיצוב היא ההפרדה, ⛔ ולא הכדור:** סימן הרצפה הוא
+ * ה**מידע** והכדור הוא ה**קישוט**. ⇒ תחת `prefers-reduced-motion` הכדור נעלם
+ * ו**הסימן נשאר** — ואילו היה הפוך, לומד עם תנועה מופחתת ⛔ לא היה יכול לשחק.
+ * ⇒ הבדיקה הזאת מודדת את ה**א-סימטריה** בין שני הצמתים, ⛔ ולא את קיומם.
+ */
+describe('C-0732 · T-434 — המתקפה הראשונה', () => {
+  const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+  const TOKENS = TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '');
+  const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+
+  const reduced = () =>
+    [...TOKENS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '')
+      .join('\n');
+
+  it('🔴 תנועה מופחתת — **הכדור נעלם, והסימן נשאר**', () => {
+    expect(reduced(), 'הכדור חייב להיעלם').toContain('[data-arena-bolt]');
+    // ⛔ **וזו הטענה שמגנה על המשחק:** סימן הרצפה ⛔ אינו מוסר לעולם.
+    expect(reduced(), '⛔ סימן הרצפה ⛔ אינו מוסר').not.toContain('[data-arena-aim]');
+  });
+
+  it('⛔ `display: none` לכדור ⛔ ולא `animation: none` — אחרת הצומת חי לנצח', () => {
+    // 🔬 בלי אנימציה ⛔ אין `animationend`, ⇒ `onAnimationEnd` ⛔ לעולם ⛔ אינו נורה
+    //    והצומת נשאר במסמך לנצח. ⛔ **גוף הכלל עצמו, ⛔ ולא חלון תווים** — 🔬 נמדד:
+    //    חלון של 120 תווים גלש אל הכלל הבא ומצא שם `display: none` ⇒ המוטציה
+    //    `animation: none` נשארה **ירוקה**, כלומר הבדיקה ⛔ לא מדדה דבר.
+    const body = /\[data-arena-bolt\]\s*\{([^}]*)\}/.exec(reduced())?.[1] ?? '';
+    expect(body, 'הכלל חייב להתקיים בתוך בלוק התנועה המופחתת').not.toBe('');
+    expect(body).toMatch(/display:\s*none/);
+    expect(body, '⛔ `animation: none` משאיר את הצומת על המסך לנצח').not.toMatch(/animation:/);
+  });
+
+  it('⛔ הסימן הוא **מצב** — ⛔ אפס אנימציה ו⛔ אפס `transition` עליו', () => {
+    const at = TOKENS.indexOf('[data-arena-aim]');
+    expect(at, 'הכלל חייב להתקיים').toBeGreaterThan(-1);
+    const rule = TOKENS.slice(at, TOKENS.indexOf('}', at));
+    expect(rule).not.toMatch(/animation|transition/);
+    for (const name of ['left', 'centre', 'right']) {
+      expect(TOKENS, `נתיב ${name}`).toContain(`[data-arena-aim='${name}']`);
+    }
+  });
+
+  it('🔬 משך הכדור **נגזר** מהטלגרף — 300ms, ⛔ ולא מספר שנבחר', () => {
+    // `§ 6`: החלון נסגר ב-`WINDOW_END_MS` והמכה נוחתת בתום `TELEGRAPH_MS`
+    // ⇒ ההפרש **הוא** המשך, ⛔ ואינו מספר שאפשר לכוונן בנפרד.
+    expect(TELEGRAPH_MS - WINDOW_END_MS).toBe(300);
+    expect(TOKENS).toMatch(/--arena-bolt-ms:\s*300ms/);
+  });
+
+  it('הכדור יוצא ב-`committed` בלבד — ⛔ ולא בחלון שעוד אפשר להתחמק בו', () => {
+    expect(BATTLE).toMatch(/phase === 'committed'\)\s*launchBoltRef\.current\(\)/);
+    // ⛔ **שני צמתים חיים, ⛔ ולא מספרים:** כדור שמכוון לחריץ טס למרכז בכל נתיב.
+    expect(BATTLE).toMatch(/heroRect\(area\)/);
+    expect(BATTLE).toMatch(/foeRect\(area\)/);
+  });
+
+  it('⛔ אפס שעון — השחרור הוא `onAnimationEnd`, כמו הקלף', () => {
+    expect(BATTLE).not.toMatch(/setTimeout|setInterval/);
+    const at = BATTLE.indexOf('data-arena-bolt');
+    expect(at).toBeGreaterThan(-1);
+    expect(BATTLE.slice(at, at + 400)).toMatch(/onAnimationEnd/);
+  });
+
+  it('🔴 **המחסום הראשון מתוך שניים** — הצומת ⛔ אפילו ⛔ אינו נולד', () => {
+    // ⛔ ה-CSS לבדו ⛔ אינו מספיק: `display:none` מסתיר צומת ש**נוצר**.
+    const at = BATTLE.indexOf('const launchBolt =');
+    expect(at).toBeGreaterThan(-1);
+    expect(BATTLE.slice(at, at + 200)).toMatch(/if \(reducedMotion\) return;/);
+  });
+
+  it('הסימן נדלק בהכרזה ⛔ ולא בפגיעה, והוא **נגזר מהנתיב** ⛔ ולא מאקראי', () => {
+    expect(BATTLE).toMatch(/telegraphPhase === 'window' \|\| telegraphPhase === 'committed'/);
+    expect(BATTLE).toMatch(/aim=\{aimed \? aimLaneAt\(battle, aimSwing\) : null\}/);
+    expect(BATTLE).not.toMatch(/Math\.random/);
   });
 });

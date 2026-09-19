@@ -68,3 +68,23 @@ export function foeDrift(cardRect: DOMRect | null, root: ParentNode | null | und
   if (foe === null || cardRect === null) return 0;
   return foe.left + foe.width / 2 - (cardRect.left + cardRect.width / 2);
 }
+
+/** הצומת שהוא **הלומד** — הדמות המצוירת, ⛔ ולא החריץ שסביבה. */
+export const HERO_SELECTOR = '[data-arena-figure="hero"]';
+
+/**
+ * 🔥 **⟦19/09 · `C-0732` · `T-434`⟧ המלבן של הלומד, בקואורדינטות חלון.**
+ *
+ * ⛔ **הדמות ו⛔ לא החריץ** — מאותה מדידה בדיוק שבגללה `FOE_SELECTOR` מצביע על
+ * הדמות ו⛔ לא על פס החיים (`C-0717`): החריץ הוא `inset-x-0`, ⇒ **מרכזו הוא מרכז
+ * הבמה**, ⛔ ולא המקום שבו הלומד עומד. כדור שמכוון אליו היה טס למרכז **בכל נתיב**.
+ *
+ * ⛔ **`0×0` מוחזר כ-`null`**, מאותה סיבה: מדידה שטרם קרתה ⛔ אינה מיקום.
+ */
+export function heroRect(root: ParentNode | null | undefined): DOMRect | null {
+  const node = root?.querySelector(HERO_SELECTOR);
+  if (!(node instanceof Element)) return null;
+  const rect = node.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return null;
+  return rect;
+}

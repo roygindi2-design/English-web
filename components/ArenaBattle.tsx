@@ -7,7 +7,7 @@ import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import ArenaStage from '@/components/ArenaStage';
 import ArenaSummary from '@/components/ArenaSummary';
 import SpellCard from '@/components/SpellCard';
-import { foeRect } from '@/components/arenaAnchors';
+import { foeRect, heroRect } from '@/components/arenaAnchors';
 import CloseIcon from '@/components/CloseIcon';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPost } from '@/lib/api/client';
@@ -22,6 +22,7 @@ import {
   ENEMY_HP,
   MANA_CAP,
   canUseAbility,
+  aimLaneAt,
   cast,
   isFrozen,
   spendAbility,
@@ -243,6 +244,8 @@ export const ARENA_ISOLATION_HE = 'זירת הקרב מבודדת · אין הש
  */
 /** `37 § 6` — הרנדר מצייר «מטיל!» מעל המד (`cast_meter`), וזה גם ערוץ שאינו צבע (שכבה א׳ א2). */
 const CASTING_HE = 'מטיל!';
+/** 🔥 `T-434` — קוטר הכדור בפיקסלים. ⛔ צומת `fixed` חייב מידה, ⛔ והוא ⛔ אינו יורש אחת. */
+const BOLT_SIZE = 26;
 const CASTING_METER_HE = 'היריב מטיל';
 const DODGED_HE = 'התחמקות!';
 const FIRE_HE = 'שגר לחש';
@@ -408,6 +411,28 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     readonly dx: number;
     readonly dy: number;
   } | null>(null);
+
+  /**
+   * 🔥 **⟦19/09 · `C-0732` · `T-434` · `37 § 8` ק3⟧ הכדור — **הקישוט**, ⛔ ולא המידע.**
+   *
+   * 🔬 **הפער שנמדד:** היריב טוען 5.3 שניות, מכריז «מטיל!», המד מהבהב — ו⛔ **שום
+   * דבר ⛔ אינו עף**. המכה פשוט **קורית**, ⇒ `apple-design § 7` («אם משהו נעלם
+   * בדרך אחת, מצפים שיופיע משם») נשבר בכיוון ההפוך: משהו **מופיע** בלי שיצא משום מקום.
+   *
+   * ⛔ **⛔ טכניקה חדשה ⛔ אינה נפתחת כאן:** זה אותו דפוס בדיוק של `throwFx` —
+   * צומת `position: fixed` שנושא היסט כשני משתנים ומשתחרר ב-`onAnimationEnd`.
+   * ⛔ **אפס `setTimeout`** — הבדיקה אוסרת אותם בקובץ **כולו**.
+   *
+   * 🔴 **ואם הוא ⛔ אינו מצויר — ⛔ שום ביט של מידע ⛔ אינו הולך לאיבוד:** סימן
+   * הרצפה כבר אמר לאן המכה הולכת, 300ms לפני שהכדור בכלל יצא.
+   */
+  const [boltFx, setBoltFx] = useState<{
+    readonly key: number;
+    readonly x: number;
+    readonly y: number;
+    readonly dx: number;
+    readonly dy: number;
+  } | null>(null);
   /**
    * 👻 **⟦17/09 · `C-0672` · `T-403`⟧ יד הרפאים — `37 § 5` («**גילוי:** בקרב הראשון
    * בלבד יד רפאים שמדגימה את הגרירה»). הסעיף קיים במפרט ו⛔ מעולם ⛔ לא נבנה.
@@ -565,6 +590,37 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     return () => window.removeEventListener('pointerdown', stop);
   }, [teach]);
 
+  /**
+   * 🔥 **`T-434` — הכדור נמדד מ**שני הצמתים החיים**, ⛔ ולא ממספרים.**
+   *
+   * ⛔ **`heroRect` ⛔ ולא החריץ:** החריץ הוא `inset-x-0` ⇒ מרכזו הוא מרכז הבמה,
+   * וכדור שהיה מכוון אליו היה טס לאותו מקום **בכל נתיב** — כלומר היה מציג שקר.
+   * 🔴 **המחסום הראשון מתוך שניים** ⟨`animate` § 7⟩: תחת תנועה מופחתת ⛔ הצומת
+   * ⛔ אפילו ⛔ אינו נולד. השני הוא `display: none` ב-`arcade-tokens.css`, והוא
+   * ⛔ אינו מיותר — הוא מה שתופס שינוי העדפה **באמצע** קרב.
+   */
+  const launchBolt = useCallback(() => {
+    if (reducedMotion) return;
+    const area = stageAreaRef.current;
+    if (area === null) return;
+    const from = foeRect(area);
+    const to = heroRect(area);
+    if (from === null || to === null) return;
+    setBoltFx({
+      key: Date.now(),
+      x: from.left + from.width / 2 - BOLT_SIZE / 2,
+      y: from.top + from.height / 2 - BOLT_SIZE / 2,
+      dx: (to.left + to.width / 2) - (from.left + from.width / 2),
+      dy: (to.top + to.height / 2) - (from.top + from.height / 2),
+    });
+  }, [reducedMotion]);
+  /* ⛔ **רף, ⛔ ולא תלות בלולאה:** הוספת `launchBolt` לרשימת התלויות של לולאת ה-rAF
+     הייתה **מפרקת ומרכיבה** אותה בכל שינוי העדפת תנועה, ו-`lastPhase` היה נדרך
+     מחדש — כלומר מעבר שלם היה נבלע. ⇒ הלולאה קוראת את ה**עדכני**, ⛔ ולא את
+     מה שנסגר בסגירה שלה. */
+  const launchBoltRef = useRef(launchBolt);
+  launchBoltRef.current = launchBolt;
+
   const launchThrow = useCallback((label: string, from: DOMRect) => {
     if (reducedMotion) return;
     const area = stageAreaRef.current;
@@ -671,6 +727,12 @@ export default function ArenaBattle({ initialRound, character = null, items = []
       if (telegraph.phase !== lastPhase) {
         lastPhase = telegraph.phase;
         setTelegraphPhase(telegraph.phase);
+        /* 🔥 **`T-434` — הכדור יוצא ברגע שההתחמקות ⛔ אינה אפשרית עוד.**
+           ⛔ **`committed` ⛔ ולא `window`, וזה נגזר ⛔ ולא נבחר:** `§ 6` סוגר את
+           החלון ב-5.7 שניות והמכה נוחתת ב-6.0 ⇒ **300ms**, שהם `--arena-bolt-ms`
+           בדיוק. כדור שהיה יוצא בחלון היה מבטיח פגיעה שעוד אפשר לבטל.
+           ⛔ **והוא נתלה על מעבר בדיד** ⇒ ⛔ אינו נורה פעמיים, ⛔ ובלי שעון. */
+        if (telegraph.phase === 'committed') launchBoltRef.current();
       }
 
       const nowRaging = isRage(next);
@@ -995,6 +1057,8 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    * למעלה — העדכון הרציף חי בכתיבת ה-ref שבלולאת ה-rAF.
    */
   const telegraphFrac = telegraphAt(elapsedRef.current).frac;
+  const aimSwing = telegraphAt(elapsedRef.current).swingIndex;
+  const aimed = telegraphPhase === 'window' || telegraphPhase === 'committed';
 
   return (
     <section
@@ -1313,7 +1377,18 @@ export default function ArenaBattle({ initialRound, character = null, items = []
 
           </div>
         </div>
-        <ArenaStage phase={stagePhase(battle)} items={items} character={character} lane={battle.heroLane} />
+        {/* 🎯 **`T-434` — הסימן נדלק בהכרזה ⛔ ולא בפגיעה.** `window` הוא החלון
+            שבו עוד אפשר לזוז, ו-`committed` הוא 300ms שבהם הכדור כבר נוסע ⇒ שניהם
+            מציגים לאן המכה הולכת. ⛔ **⛔ ולא נגזר בלולאה** — `telegraphPhase` הוא
+            כבר state שמשתנה **רק במעבר בדיד**, ו-`swingIndex` נקרא באותו רינדור
+            בדיוק כמו `telegraphFrac` למעלה. */}
+        <ArenaStage
+          phase={stagePhase(battle)}
+          items={items}
+          character={character}
+          lane={battle.heroLane}
+          aim={aimed ? aimLaneAt(battle, aimSwing) : null}
+        />
         {/* 🔴 **⟦הועבר 16/09 · `C-0665` · `T-364`⟧ המספר עבר **אל היריב**, ⛔ ואינו יושב על המסילה.**
 
             🔬 **נמדד ברנדר, ⛔ ולא באומדן:** `render_video_B.py:564` קורא
@@ -1688,6 +1763,30 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         >
           {throwFx.label}
         </div>
+      )}
+
+      {/* 🔥 **⟦19/09 · `C-0732` · `T-434`⟧ הכדור.** ⛔ **אותו דפוס של `throwFx`
+          מילה במילה:** `fixed` ⟨הנתיב חוצה שני הורים עם `overflow-hidden`⟩, היסט
+          כשני משתנים ⟨`style` מוטבע היה **דורס** את האנימציה⟩, ושחרור ב-`onAnimationEnd`.
+          ⛔ **אפס `setTimeout`** — הבדיקה אוסרת אותם בקובץ כולו. */}
+      {boltFx !== null && (
+        <div
+          key={boltFx.key}
+          data-arena-bolt
+          aria-hidden
+          onAnimationEnd={() => setBoltFx(null)}
+          onTransitionEnd={() => setBoltFx(null)}
+          style={{
+            position: 'fixed',
+            left: `${boltFx.x}px`,
+            top: `${boltFx.y}px`,
+            width: `${BOLT_SIZE}px`,
+            height: `${BOLT_SIZE}px`,
+            ['--arena-bolt-dx' as string]: `${boltFx.dx}px`,
+            ['--arena-bolt-dy' as string]: `${boltFx.dy}px`,
+          }}
+          className="pointer-events-none z-50 rounded-full bg-[color:var(--arena-cast-warn)]"
+        />
       )}
     </section>
   );

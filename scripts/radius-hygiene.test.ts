@@ -90,6 +90,16 @@ const DECLARED_SHAPES: readonly {
     value: '50%',
     rule: 'C-0624 · 37 § 13.5 — summoning circle: an ellipse on the floor, ⛔ not a pill',
   },
+  {
+    file: 'app/arcade/arcade-tokens.css',
+    selector: '[data-arena-scope] [data-arena-aim]',
+    value: '50%',
+    rule: 'C-0732 · T-434 · 37 § 13.5 — the aim marker: the THIRD ellipse on that same '
+      + 'receding floor, and it earns the row for the identical reason as the other two. '
+      + 'A pill (9999px) is a stadium with two straight edges, which reads as a shape '
+      + 'standing UP on the screen plane; this one lies DOWN with the shadow and the '
+      + 'summoning circle it sits between. ⛔ Not a sixth radius — the same declared 50%.',
+  },
 ];
 
 /**

@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ArenaBattle, { ARENA_TAUGHT_KEY } from '@/components/ArenaBattle';
+import ArenaStage from '@/components/ArenaStage';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 
 /**
@@ -468,5 +469,40 @@ describe('C-0730 · T-433ⓑ — ההחלקה מזיזה את הדמות על ה
     render(<ArenaBattle initialRound={ROUND} />);
     swipeBy(59);
     expect(lane()).toBe('centre');
+  });
+});
+
+/**
+ * 🎯 **⟦19/09 · `C-0732` · `T-434`⟧ סימן הרצפה — **המידע**, ⛔ ולא הקישוט.**
+ *
+ * ⛔ **ומדוע זה נבדק ברינדור ⛔ ולא במקור:** «`aim` מועבר» ⛔ אינו «הסימן נמצא
+ * במקום הנכון». בין השניים יושבים ההמרה ל-`LANE_NAMES` והבחירה ⛔ לצייר כלום
+ * כשאין מתקפה — ושתיהן שקטות בבדיקת מקור.
+ */
+describe('C-0732 · T-434 — סימן הרצפה', () => {
+  const aimOf = (aim: Parameters<typeof ArenaStage>[0]['aim']) => {
+    const { container } = render(<ArenaStage phase="idle" items={[]} aim={aim} />);
+    return container.querySelector('[data-arena-aim]')?.getAttribute('data-arena-aim') ?? null;
+  };
+
+  it('⛔ אין מתקפה ⇒ ⛔ אין סימן — ⛔ ולא «סימן במרכז תמיד»', () => {
+    expect(aimOf(null)).toBeNull();
+  });
+
+  it('שלושת הנתיבים נקראים בשמם על הרצפה', () => {
+    expect(aimOf(-1)).toBe('left');
+    cleanup();
+    expect(aimOf(0)).toBe('centre');
+    cleanup();
+    expect(aimOf(1)).toBe('right');
+  });
+
+  it('🔴 הסימן הוא **אח** של החריצים — ⇒ ⛔ אינו נע עם הלומד', () => {
+    // 🔬 הפגם שזה מונע: סימן שיושב בתוך `[data-arena-slot="hero"]` נע איתו בין
+    //    נתיבים, כלומר מצביע **תמיד** על הלומד ו⛔ לעולם ⛔ אינו מלמד להתחמק.
+    const { container } = render(<ArenaStage phase="idle" items={[]} lane={1} aim={-1} />);
+    const hero = container.querySelector('[data-arena-slot="hero"]');
+    expect(hero?.querySelector('[data-arena-aim]'), 'הסימן ⛔ אינו בתוך החריץ').toBeNull();
+    expect(container.querySelector('[data-arena-aim]'), 'ובכל זאת הוא על הבמה').not.toBeNull();
   });
 });

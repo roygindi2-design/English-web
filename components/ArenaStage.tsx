@@ -59,6 +59,15 @@ export interface ArenaStageProps {
    * ה**ציור** של השניים זהה: הדמות עומדת באמצע. ⇒ ההמרה כאן, ⛔ ולא בליבה.
    */
   readonly lane?: Lane | null;
+  /**
+   * 🔥 **`T-434` · `37 § 6` — הנתיב שהמתקפה מכוונת אליו, או `null` כשאין מתקפה.**
+   *
+   * 🔴 **זה ה**מידע**, ⛔ ולא הקישוט.** הסימן על הרצפה הוא **מצב** — תכונה על
+   * צומת, ⛔ אפס אנימציה — ⇒ הוא נראה **בדיוק אותו דבר** תחת `prefers-reduced-motion`.
+   * ⛔ אילו ההתחמקות הייתה תלויה בכדור הנוסע, לומד עם תנועה מופחתת ⛔ לא היה
+   * יכול לשחק.
+   */
+  readonly aim?: Lane | null;
 }
 
 /**
@@ -91,6 +100,7 @@ export default function ArenaStage({
   idle = ARENA_IDLE_LOOP,
   character = null,
   lane = null,
+  aim = null,
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
@@ -133,6 +143,15 @@ export default function ArenaStage({
           <ArenaAvatar role="enemy" items={[]} character="wizard" className={FIGURE_CLASS} />
         </span>
       </div>
+
+      {/* 🔥 **⟦19/09 · `C-0732` · `T-434`⟧ סימן הרצפה — **מה שאומר לאן המכה הולכת**.**
+          ⛔ **אח של שני החריצים, ⛔ ולא ילד של אחד מהם:** הוא שייך ל**רצפה**,
+          ו-`[data-arena-slot='hero']` נע בין נתיבים — סימן שיושב בתוכו היה נע איתו,
+          כלומר היה מצביע **תמיד** על הלומד.
+          ⛔ **ו⛔ אין לו `aria-live`:** «מטיל!» כבר מודיע שהמתקפה באה, וקורא מסך
+          ש⛔ אינו רואה את הרצפה ⛔ אינו זקוק להכרזה שנייה על **מיקום** שהוא ממילא
+          ⛔ אינו יכול לנצל בזמן שנותר. */}
+      {aim !== null && <span data-arena-aim={LANE_NAMES[aim]} aria-hidden />}
 
       {/* ⓒ הגיבור — **קרוב**: נמוך, גדול, עם צל רחב יותר. העוטף נושא את לולאת
           ההמתנה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש `transition: transform`

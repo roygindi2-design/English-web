@@ -539,6 +539,11 @@ body:has([data-arena-scope]) > div > main {
      «Marketing / explanatory ⇒ can be longer», והמטרה כאן היא **Explanation** — תנועה
      שמדגימה **איך** מחווה עובדת. ⛔ שורת המשימה גודרת ≤1,200ms ו**שני מחזורים**. */
   --arena-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* 🔥 **`T-434` — `ease-in` למה ש**נוחת**.** ‏`animate` § 5: «entering ⇒ ease-out ·
+     exiting ⇒ ease-in». הכדור **יוצא** מהיריב ו**נוחת** בלומד, ⇒ הרגע שהעין נעולה
+     עליו הוא ה**סוף**. ⛔ זהו ההפך מ-`arena-throw-fly`, ⛔ ובכוונה: שם היד היא
+     ההתחלה. */
+  --arena-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --arena-teach-ms: 1100ms;
   --arena-drain-ms: 260ms;
   --arena-float-ms: 560ms;
@@ -550,6 +555,11 @@ body:has([data-arena-scope]) > div > main {
      לתנועת ממשק; מעבר מקום שמסביר **מאין לאן** רוצה להיות קצר מזה, ⛔ אחרת הוא
      מתחיל להרגיש כמו המתנה במקום כמו סיבה. */
   --arena-throw-ms: 240ms;
+  /* 🔥 **`T-434` — משך נסיעת הכדור. ⛔ המספר נגזר, ⛔ ולא נבחר.** ‏`§ 6` קובע חלון
+     שנסגר ב-5.7 שניות והמכה נוחתת ב-6.0 ⇒ ⛔ **300ms בדיוק**: הכדור יוצא ברגע
+     שההתחמקות ⛔ אינה אפשרית עוד, ונוחת ברגע שהנזק מחושב. כל מספר אחר היה
+     או כדור שפוגע לפני החישוב, או כדור שממשיך לטוס אחריו. */
+  --arena-bolt-ms: 300ms;
 }
 
 /* ① **פס חיי היריב נשפך**, ⛔ ולא קופץ. 260ms — בתוך תקרת 300ms של `animate` § 5.
@@ -903,6 +913,72 @@ body:has([data-arena-scope]) > div > main {
    האנימציה ⛔ אין `animationend`, והצומת היה נשאר על המסך **לנצח**. */
 @media (prefers-reduced-motion: reduce) {
   [data-arena-throw] { display: none; }
+}
+
+/* ═══ 🔥 **⟦19/09 · `C-0732` · `T-434` · `37 § 8` ק3 · `D-269`⟧ המתקפה הראשונה.**
+
+   🔴 **שני צמתים, ⛔ ושני תפקידים שונים לגמרי — וזה כל העיצוב:**
+   ① **סימן הרצפה הוא ה**מידע**.** הוא **מצב** ⟨תכונה על צומת⟩, ⛔ ולא אנימציה,
+      ⇒ הוא נראה **בדיוק אותו דבר** כשהתנועה כבויה.
+   ② **הכדור הוא ה**קישוט**.** הוא נעלם תחת תנועה מופחתת, ו⛔ שום ביט של מידע
+      ⛔ אינו נעלם איתו.
+
+   ⛔ **ולמה זה ⛔ אינו «נחמד שיש»:** אילו ההתחמקות הייתה תלויה ב**ראיית** כדור
+   נוסע, לומד עם `prefers-reduced-motion` ⛔ **לא היה יכול לשחק**. זו הסיבה שהחלוקה
+   הזאת נקבעה **לפני** שנכתבה שורה, ⛔ ולא התגלתה תוך כדי. */
+
+/* ① סימן הרצפה — ⛔ **אפס אנימציה, ⛔ אפס `transition`.** הוא נדלק ונכבה עם
+   התכונה, ⇒ ⛔ אין לו מה להסיר תחת תנועה מופחתת. ⛔ **ואינו צבע בלבד** ⟨שכבה א׳ א2⟩:
+   הוא **עצם שמופיע** במקום שקודם היה ריק, וזה הערוץ הראשון. */
+[data-arena-scope] [data-arena-aim] {
+  /* 🔴 **צורה מוצהרת — `DECLARED_SHAPES` ב-`scripts/radius-hygiene.test.ts`.**
+     ⛔ **ו⛔ זו ⛔ אינה «גלולה שנרשמה כאליפסה כדי לעבור את השער»:** הסימן שוכב על
+     אותה **רצפה נסוגה** שעליה שוכבים הצל ומעגל הזימון, ו-`37 § 13.5` כבר פסק
+     עליהם את אותו הדבר בדיוק — גלולה (‏`9999px`) נותנת **אצטדיון עם שתי צלעות
+     ישרות**, שמצמיד את הצורה חזרה למישור המסך ומבטל את הפרספקטיבה שכל הבמה
+     בנויה עליה. ⇒ 50%, מוצהר בשם הקובץ ובשם הסלקטור. */
+  border-radius: 50%;
+  position: absolute;
+  bottom: 2%;
+  width: 22%;
+  height: 7%;
+  background: var(--arena-cast-warn);
+  opacity: 0.42;
+  outline: 2px solid var(--arena-cast-warn);
+  outline-offset: 2px;
+}
+/* 🔬 **שלושת המספרים נגזרים, ⛔ ואינם מכוונים בעין:** מרכזי הנתיבים הם ⅙ · ½ · ⅚
+   של הרוחב, והסימן רחב 22% ⇒ `left = מרכז − 11%`. */
+[data-arena-scope] [data-arena-aim='left'] { left: 5.6667%; }
+[data-arena-scope] [data-arena-aim='centre'] { left: 39%; }
+[data-arena-scope] [data-arena-aim='right'] { left: 72.3333%; }
+
+/* ② הכדור — **אותו דפוס בדיוק** של `arena-throw-fly`, בכיוון ההפוך: צומת
+   `position: fixed` שנושא `--arena-bolt-dx/-dy` מ-JS ומשתחרר ב-`onAnimationEnd`.
+   ⛔ **`ease-in` ⛔ ולא `ease-out`, וזה הפוך מההטלה בכוונה** ⟨`animate` § 5⟩: הרגע
+   שהלומד מסתכל בו הוא ה**סוף** — הפגיעה — ⛔ ולא ההתחלה. */
+@keyframes arena-bolt-fly {
+  from {
+    opacity: 0.2;
+    transform: translate3d(0, 0, 0) scale(0.5);
+  }
+  60% { opacity: 1; }
+  to {
+    opacity: 0;
+    transform: translate3d(var(--arena-bolt-dx, 0), var(--arena-bolt-dy, 0), 0) scale(1.35);
+  }
+}
+[data-arena-bolt] {
+  animation: arena-bolt-fly var(--arena-bolt-ms) var(--arena-ease-in) 1 both;
+  will-change: transform, opacity;
+}
+
+/* 🔴 **המחסום, ו⛔ `display: none` ⛔ ולא `animation: none`:** בלי אנימציה ⛔ אין
+   `animationend`, ⇒ הצומת היה נשאר במסמך **לנצח** — בדיוק המדידה שנרשמה על
+   `[data-arena-throw]`. ⛔ **והמידע ⛔ אינו הולך לאיבוד:** סימן הרצפה למעלה
+   ⛔ אינו נוגע בבלוק הזה. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-bolt] { display: none; }
 }
 
 
