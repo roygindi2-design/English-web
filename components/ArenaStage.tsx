@@ -153,7 +153,13 @@ export default function ArenaStage({
       >
         <span data-arena-shadow aria-hidden className="absolute bottom-0 h-[8%] w-[26%]" />
         <span data-arena-idle={idle ? 'on' : 'off'} className="relative inline-flex">
-          <ArenaAvatar role="hero" items={items} character={character} className={FIGURE_CLASS} />
+          {/* 🎭 **⟦19/09 · `C-0731` · `T-432` · `38 § 1א` · `D-269` ②⟧ בקרב — מגב.**
+              ⛔ **והחריג הוא כאן, ⛔ ולא ב-`ArenaAvatar`:** ברירת המחדל של הדמות
+              נשארת **חזיתית**, ⇒ הבית, בחירת הדמות והסיכום ⛔ לא נגעו בהם, והחזה
+              והפנים נבחנים בדיוק בשלושת המסכים שבהם בוחנים ציוד.
+              🔬 **ו⛔ זה ⛔ אינו רק «הבקשה של רוי»:** ארבעת רנדרי הקרב
+              (`kol-B-03` … `B-06`) מציירים גיבור **מגבו** מאז 23/08. */}
+          <ArenaAvatar role="hero" items={items} character={character} facing="back" className={FIGURE_CLASS} />
         </span>
       </div>
     </div>

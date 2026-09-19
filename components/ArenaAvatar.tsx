@@ -2,6 +2,10 @@ import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
 import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharacter';
 import {
   ARMORER,
+  BACK,
+  BACK_HIDDEN_LAYERS,
+  BACK_MIRROR,
+  BACK_MIRRORED_LAYERS,
   BELT_SIZE,
   ITEMS,
   ITEM_PATHS,
@@ -61,6 +65,14 @@ export interface ArenaAvatarProps {
    * ⇒ הציור של היום, ⛔ ללא שינוי. עם דמות ⇒ שכבת חתימה אחת על העוגנים הקיימים.
    */
   readonly character?: ArenaCharacter | null;
+  /**
+   * 🎭 **`T-432` · `38 § 1א` · `D-269` ② — לאיזה כיוון הדמות מסתכלת.**
+   *
+   * ⛔ **ברירת המחדל היא `front`, ⛔ והיא ⛔ אינה «נוחות»:** `38 § 1` פסק «חזיתי»
+   * מנימוק שנשאר בתוקף — החזה והפנים הם שתי משבצות הציוד היקרות, והן נבחנות
+   * ב**בית**, ב**בחירת דמות** וב**סיכום**. ⇒ **הקרב הוא החריג**, ⛔ ולא הכלל.
+   */
+  readonly facing?: 'front' | 'back';
   readonly className?: string;
 }
 
@@ -70,6 +82,13 @@ type ArcadeItem = (typeof ARCADE_ITEMS)[number];
  * שמות הפריטים בעברית — **מפה אחת בריפו**, ומיוצאת. מסך הסיום מייבא אותה במקום להחזיק
  * עותק שני: שם פריט בשתי צורות הוא בדיוק הפגם ש-`LockIcon` נולד כדי לסגור.
  */
+/**
+ * 🎭 **`T-432` · חוקה § 1 — הכיוון נאמר במילים, ⛔ ולא רק בצורה.**
+ * ⛔ **ומיוצא**, מאותה סיבה ש-`ITEM_LABELS_HE` מיוצא: מחרוזת בשני עותקים היא
+ * בדיוק הפגם שהמפה האחת קיימת כדי לסגור.
+ */
+export const FACING_HE = Object.freeze({ front: 'מלפנים', back: 'מגבו' });
+
 export const ITEM_LABELS_HE: Record<ArcadeItem, string> = {
   helmet: 'קסדה',
   cape: 'גלימה',
@@ -328,9 +347,13 @@ const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
       {/* 👁️ **⟦`C-0725`⟧ פנים — הפרט היחיד שהיריב קיבל והגיבור ⛔ לא.**
           ברנדר לגיבור ⛔ אין פנים כלל; נמדד על המסך שראש בלי עיניים נקרא **כתם**.
           רוי שחרר את הנאמנות המילולית ⇒ זה הדבר הראשון שהוחזר. */}
+      {/* 🔬 **⟦19/09 · `C-0731`⟧ `data-arena-eye` — הסימון היה חסר **דווקא כאן**.**
+          ‏`C-0723` סימן את עיני ארבע הדמויות ו⛔ פספס את **השלד**, ⇒ שער הניגודיות
+          ⛔ לא מדד אותן, ו-`T-432` ⛔ לא יכלה לטעון «מגב ⇒ אפס עיניים» על הבסיס.
+          ⛔ **הסימון הוא «זו עין», ⛔ ולא «זו דמות»** — ולכן הוא שייך גם לשלד. */}
       <Paint hue="voidInk">
-        <circle cx={HEAD.x - WARRIOR.eyeX} cy={WARRIOR.eyeY} r={WARRIOR.eyeRadius} />
-        <circle cx={HEAD.x + WARRIOR.eyeX} cy={WARRIOR.eyeY} r={WARRIOR.eyeRadius} />
+        <circle data-arena-eye cx={HEAD.x - WARRIOR.eyeX} cy={WARRIOR.eyeY} r={WARRIOR.eyeRadius} />
+        <circle data-arena-eye cx={HEAD.x + WARRIOR.eyeX} cy={WARRIOR.eyeY} r={WARRIOR.eyeRadius} />
       </Paint>
       <Paint hue="skin">
         <circle
@@ -352,6 +375,84 @@ const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
       <path d={pauldronPath(SHOULDER_R.x, SHOULDER_R.y)} />
       <path d={pauldronPath(SHOULDER_L.x, SHOULDER_L.y)} />
     </Paint>
+  ),
+};
+
+/**
+ * 🎭 **⟦19/09 · `C-0731` · `T-432` · `38 § 1א`⟧ אותו שלד, מהצד השני.**
+ *
+ * ⛔ **⛔ אין כאן דמות שנייה — יש כאן **שתי** שכבות שמוחלפות.** כל השאר — הגוף,
+ * החגורה, הרגליים, הכתפיות, המגפיים — הוא **אותו ציור בדיוק**, כי גוף נראה אותו
+ * דבר משני הצדדים. ⇒ יחס השימוש החוזר הוא מה שמוכיח שזה כיוון צפייה ⛔ ולא דמות.
+ *
+ * 🔬 **ומה ש⛔ אסור היה לעשות:** `scaleX(-1)` על הדמות כולה. זה היה הופך גם את
+ * המגן ואת החרב לצד הלא-נכון **ובנוסף** גורר את הגאומטריה אל הרכיב — בדיוק מה
+ * ש-`ArenaAvatar.test.ts` אוסר. ⇒ השיקוף מוגבל ל**משבצות היד** (`BACK_MIRRORED_LAYERS`).
+ *
+ * ⛔ **וכל מספר כאן מגיע מ-`BACK` שב-`characterBase.ts`** — ⛔ אפס קואורדינטה בקובץ הזה.
+ */
+const BACK_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
+  /**
+   * 💇 העורף — ⛔ **⛔ לא «ראש בלי עיניים».** ראש בלי עיניים נקרא **תקלה**; ראש
+   * שמכוסה שיער ומתחתיו עורף נקרא **גב**. שלושת הרכיבים: מסרק הקוצות שכבר קיים
+   * (מלפנים הוא קודקוד, מאחור הוא אותו קודקוד), מסת השיער, והעורף.
+   */
+  head: (
+    <>
+      <Paint hue="hair">
+        {WARRIOR.hairBarX.map((x) => (
+          <rect
+            key={x}
+            data-arena-part="hair"
+            x={HEAD.x + x}
+            y={WARRIOR.hairY}
+            width={WARRIOR.hairBarW}
+            height={WARRIOR.hairH}
+            rx={WARRIOR.hairBarR}
+          />
+        ))}
+      </Paint>
+      <Paint hue="skin">
+        <rect
+          x={HEAD.x - BACK.napeHalfWidth}
+          y={BACK.napeTopY}
+          width={BACK.napeHalfWidth * 2}
+          height={BACK.napeH}
+          rx={BACK.napeR}
+        />
+      </Paint>
+      {/* ⛔ **מסת השיער ⛔ אחרונה** — היא מה שמכסה את מה שהיו הפנים. */}
+      <Paint hue="hair">
+        <ellipse data-arena-part="hair" cx={HEAD.x} cy={BACK.hairCapY} rx={BACK.hairCapRx} ry={BACK.hairCapRy} />
+      </Paint>
+    </>
+  ),
+  /**
+   * 🦴 הגוף + **תפר עמוד השדרה**. הצווארון נשאר — מאחור רואים אותו בדיוק כמו
+   * מלפנים — ומה שנוסף הוא הפרט היחיד שהופך «חזית בלי פנים» ל«גב».
+   */
+  body: (
+    <>
+      <Paint hue="steel"><path d={WARRIOR_PATHS.body} /></Paint>
+      <Paint hue="steelLit">
+        <rect
+          x={-WARRIOR.collarHalfWidth}
+          y={WARRIOR.collarTopY}
+          width={WARRIOR.collarHalfWidth * 2}
+          height={WARRIOR.collarH}
+          rx={WARRIOR.collarR}
+        />
+      </Paint>
+      <Paint hue="steelDeep">
+        <rect
+          x={-BACK.spineHalfWidth}
+          y={BACK.spineTopY}
+          width={BACK.spineHalfWidth * 2}
+          height={BACK.spineH}
+          rx={BACK.spineR}
+        />
+      </Paint>
+    </>
   ),
 };
 
@@ -382,7 +483,17 @@ const CHARACTER_HIDES: Partial<Record<ArenaCharacter, readonly Layer[]>> = {
  * ⛔ אינו מהדר. ⚠️ **D-132 — משבצת ופריט הם שתי אוצרות מילים, ⛔ ולא שתי רשימות
  * מתחרות:** `ARCADE_ITEMS` נשארה כפי שהיא, וכל פריט **מצביע** על השכבה שהוא נכנס אליה.
  */
-type ItemLayer = { readonly layer: Layer; readonly shape: React.JSX.Element };
+/**
+ * ⛔ **`only` הוא ציר אחד, ⛔ ולא «דגל לכל צורה».** ‏`front` = פרט שרואים רק
+ * מלפנים ⟨פנים, עיניים⟩ · `back` = פרט שרואים רק מאחור ⟨עורף, תפר⟩ · חסר = **שניהם**.
+ * 🔴 **וזו הסיבה ש⛔ אין כאן «דמות אחורית»:** אותה רשימת חתימה, אותם עוגנים,
+ * ⛔ ואף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`.
+ */
+type ItemLayer = {
+  readonly layer: Layer;
+  readonly shape: React.JSX.Element;
+  readonly only?: 'front' | 'back';
+};
 
 const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
   helmet: {
@@ -531,8 +642,13 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
         </>
       ),
     },
+    /**
+     * 🎭 **`T-432` — כל שכבת ה-`head` של הקוסם **היא** הפנים**, ⇒ `only: 'front'`.
+     * מאחור נשארים הכובע והגלימה, וזה **בדיוק** מה שארבעת רנדרי הקרב מציירים.
+     */
     {
       layer: 'head',
+      only: 'front',
       shape: (
         <>
           {/* 🌑 פנים כהות — ⛔ **פנימיות**: הן יושבות על הגלימה ועל הכובע, ⛔ ולא
@@ -717,16 +833,16 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
         </Paint>
       ),
     },
+    /* 🎭 `T-432` — הגולגולת נשארת משני הצדדים; **הפנים** הן שכבה בפני עצמה. */
+    { layer: 'head', shape: <Paint hue="skin"><circle cx={0} cy={HUNTER.headY} r={HUNTER.headRadius} /></Paint> },
     {
       layer: 'head',
+      only: 'front',
       shape: (
-        <>
-          <Paint hue="skin"><circle cx={0} cy={HUNTER.headY} r={HUNTER.headRadius} /></Paint>
-          <Paint hue="voidInk">
-            <circle data-arena-eye cx={-HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
-            <circle data-arena-eye cx={HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
-          </Paint>
-        </>
+        <Paint hue="voidInk">
+          <circle data-arena-eye cx={-HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
+          <circle data-arena-eye cx={HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
+        </Paint>
       ),
     },
     {
@@ -775,18 +891,23 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
         </>
       ),
     },
+    /* 🎭 `T-432` — גוש האבן נראה משני הצדדים; **הליבה הזוהרת** ⛔ אינה. */
     {
       layer: 'head',
       shape: (
-        <>
-          <Paint hue="stone">
-            <rect x={-GOLEM.headHalfWidth} y={GOLEM.headTopY} width={GOLEM.headHalfWidth * 2} height={GOLEM.headH} rx={GOLEM.headR} />
-          </Paint>
-          <Paint hue="core">
-            <circle data-arena-eye cx={-GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
-            <circle data-arena-eye cx={GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
-          </Paint>
-        </>
+        <Paint hue="stone">
+          <rect x={-GOLEM.headHalfWidth} y={GOLEM.headTopY} width={GOLEM.headHalfWidth * 2} height={GOLEM.headH} rx={GOLEM.headR} />
+        </Paint>
+      ),
+    },
+    {
+      layer: 'head',
+      only: 'front',
+      shape: (
+        <Paint hue="core">
+          <circle data-arena-eye cx={-GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
+          <circle data-arena-eye cx={GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
+        </Paint>
       ),
     },
     {
@@ -822,11 +943,13 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
         </>
       ),
     },
+    /* 🎭 `T-432` — הברדס נראה משני הצדדים; **חלל הפנים והעיניים** ⛔ אינם. */
+    { layer: 'head', shape: <Paint hue="tealDeep"><path d={NEW_PATHS.shadeHood} /></Paint> },
     {
       layer: 'head',
+      only: 'front',
       shape: (
         <>
-          <Paint hue="tealDeep"><path d={NEW_PATHS.shadeHood} /></Paint>
           <Paint hue="voidInk"><ellipse cx={0} cy={SHADE.faceY} rx={SHADE.faceRx} ry={SHADE.faceRy} /></Paint>
           <Paint hue="wisp">
             <circle data-arena-eye cx={-SHADE.eyeX} cy={SHADE.eyeY} r={SHADE.eyeRadius} />
@@ -860,8 +983,10 @@ export default function ArenaAvatar({
   items,
   role,
   character,
+  facing = 'front',
   className,
 }: ArenaAvatarProps): React.JSX.Element {
+  const back = facing === 'back';
   // הסינון עובר על הרשימה הקנונית ⛔ ולא על הקלט: כך הסדר קבוע, ושם שאינו ברשימה נופל
   // בשקט במקום לצייר שכבה ריקה.
   const worn = ARCADE_ITEMS.filter((name) => items.includes(name));
@@ -870,8 +995,11 @@ export default function ArenaAvatar({
     character === undefined || character === null
       ? ROLE_LABEL_HE[role]
       : `${ROLE_LABEL_HE[role]} · ${CHARACTER_LABELS_HE[character]}`;
-  const label =
+  const dressed =
     worn.length === 0 ? who : `${who}, ${worn.map((name) => ITEM_LABELS_HE[name]).join(', ')}`;
+  /* 🔴 **חוקה § 1 — הכיוון ⛔ אינו צורה בלבד.** לומד שקורא מסך ⛔ אינו רואה שהדמות
+     הסתובבה, ⇒ השם הנגיש אומר זאת. זו אותה גדר בדיוק שהפרידה בין שני התפקידים. */
+  const label = back ? `${dressed}, ${FACING_HE.back}` : dressed;
 
   return (
     <svg
@@ -904,17 +1032,29 @@ export default function ArenaAvatar({
       {LAYER_ORDER.map((layer) => {
         // 🧙 `C-0722` — דמות שהצללית שלה **מחליפה** את הגוף מדלגת על שכבות הבסיס
         //    שהיא מספקת בעצמה. ⛔ אף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`.
-        const hidden = character == null ? false
-          : (CHARACTER_HIDES[character] ?? []).includes(layer);
-        const base = hidden ? undefined : BASE_LAYERS[layer];
+        const hidden = (character == null ? false
+          : (CHARACTER_HIDES[character] ?? []).includes(layer))
+          // 🎭 `T-432` — סמל החזה הוא **חזית**, ⇒ ⛔ אינו נראה מאחור.
+          || (back && BACK_HIDDEN_LAYERS.includes(layer));
+        // 🎭 `T-432` — שתי שכבות מוחלפות מגב; כל השאר הוא **אותו ציור**.
+        const base = hidden ? undefined : (back ? BACK_LAYERS[layer] ?? BASE_LAYERS[layer] : BASE_LAYERS[layer]);
         const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer
           && !(layer === 'boots' && character !== null && character !== undefined && NO_BOOTS.includes(character)));
         // 🎩 `C-0727` — פריט ראש **מחליף** את כיסוי הראש של הדמות, ⛔ ולא נערם עליו.
         const headgearTaken = layer === 'headgear' && worn.some((name) => HEADGEAR_ITEMS.includes(name));
-        const marks = headgearTaken ? [] : signature.filter((mark) => mark.layer === layer);
+        // 🎭 `T-432` — פרט שקיים רק בכיוון אחד ⛔ אינו מצויר בכיוון השני.
+        const marks = headgearTaken ? [] : signature.filter(
+          (mark) => mark.layer === layer && (mark.only === undefined || mark.only === facing),
+        );
         if (base === undefined && equipped.length === 0 && marks.length === 0) return null;
         return (
-          <g key={layer} data-arena-layer={layer}>
+          <g
+            key={layer}
+            data-arena-layer={layer}
+            /* 🪞 `T-432` — יד ימין של הדמות נראית מאחור בצד שמאל של המסך. ⛔ השיקוף
+               מוגבל למשבצות היד: שיקוף הדמות כולה היה הופך גם את תפר הגב. */
+            transform={back && BACK_MIRRORED_LAYERS.includes(layer) ? BACK_MIRROR : undefined}
+          >
             {base !== undefined && <g fill="currentColor">{base}</g>}
             {/* `38 § 4` — הבסיס מתחת לציוד: חתימת הדמות יושבת בין השניים. */}
             {marks.length > 0 && (
