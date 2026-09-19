@@ -363,6 +363,63 @@ export const NEW_PATHS = Object.freeze({
   shadeHood: polygon(SHADE.hoodPts),
 });
 
+/**
+ * 🎒 **⟦19/09 · `C-0727`⟧ חמשת פריטי `ARCADE_ITEMS` — **עצמים**, ⛔ ולא קו.**
+ *
+ * 🔬 **הפגם נמדד על הדף החי, ⛔ ולא שוער:** הציוד צויר כ-`stroke` אחד ב-`text-ink`,
+ * שבתוך הזירה נפתר ל-`rgb(28,38,66)` — **בדיוק `--arena-night`, רקע הבמה** ⇒ יחס
+ * **`1.00:1`**. ⇒ הגלימה והדגל, שרוב שטחם תלוי **מחוץ** לגוף, היו **בלתי נראים**.
+ * ⚠️ **וההנמקה שהייתה בקוד התיישנה בשקט:** «הבסיס ממולא ב-`currentColor` של התפקיד,
+ * וקו באותו גוון היה נעלם» — אלא ש-`C-0724` הפסיק לצבוע את הבסיס בצבע התפקיד.
+ * ⇒ הנימוק מת לפני התיקון, ואיש ⛔ לא חזר לשורה שהוא החזיק.
+ */
+export const ITEMS = Object.freeze({
+  capePts: Object.freeze([
+    [-46, -20], [-66, 98], [-50, 86], [-34, 106], [-18, 86], [0, 106],
+    [18, 86], [34, 106], [50, 86], [66, 98], [46, -20],
+  ] as const),
+  capeFoldPts: Object.freeze([
+    [46, -20], [66, 98], [50, 86], [34, 106], [18, 86], [28, -20],
+  ] as const),
+  helmetRadius: 33, helmetSkirtY: -54,
+  browHalfWidth: 37, browTopY: -58, browH: 11, browR: 4,
+  crestTopY: -96, crestTopHalf: 4, crestBaseHalf: 7,
+  lanternX: -60, lanternTopY: -6, lanternHalfWidth: 17, lanternH: 36, lanternR: 6,
+  lanternPaneInset: 6, lanternPaneR: 4, lanternFootH: 7, lanternLoopRadius: 10,
+  bootTopY: 88, bootCuffY: 86, bootCuffH: 8, bootCuffR: 3,
+  bootInner: 6, bootOuter: 40, bootFlare: 6,
+  poleX: 44, poleTopY: -92, poleW: 8, poleH: 150, poleR: 4,
+  finialY: -96, finialRadius: 7,
+  flagPts: Object.freeze([[52, -88], [98, -76], [84, -68], [98, -60], [52, -48]] as const),
+  flagFoldPts: Object.freeze([[52, -68], [98, -60], [52, -48]] as const),
+});
+
+export const ITEM_PATHS = Object.freeze({
+  cape: polygon(ITEMS.capePts),
+  capeFold: polygon(ITEMS.capeFoldPts),
+  helmetDome:
+    `M${-ITEMS.helmetRadius} ${-62}A${ITEMS.helmetRadius} ${ITEMS.helmetRadius} 0 0 1 ${ITEMS.helmetRadius} ${-62}` +
+    `L${ITEMS.helmetRadius} ${ITEMS.helmetSkirtY}L${-ITEMS.helmetRadius} ${ITEMS.helmetSkirtY}z`,
+  helmetCrest: polygon([
+    [-ITEMS.crestTopHalf, ITEMS.crestTopY], [ITEMS.crestTopHalf, ITEMS.crestTopY],
+    [ITEMS.crestBaseHalf, -62], [-ITEMS.crestBaseHalf, -62],
+  ]),
+  lanternLoop:
+    `M${ITEMS.lanternX} ${ITEMS.lanternTopY - ITEMS.lanternLoopRadius}` +
+    `A${ITEMS.lanternLoopRadius} ${ITEMS.lanternLoopRadius} 0 0 1 ${ITEMS.lanternX + ITEMS.lanternLoopRadius} ${ITEMS.lanternTopY}` +
+    `L${ITEMS.lanternX - ITEMS.lanternLoopRadius} ${ITEMS.lanternTopY}z`,
+  bootLeft: polygon([
+    [-ITEMS.bootOuter, ITEMS.bootTopY], [-ITEMS.bootInner, ITEMS.bootTopY],
+    [-ITEMS.bootInner, 112], [-ITEMS.bootOuter - ITEMS.bootFlare, 112],
+  ]),
+  bootRight: polygon([
+    [ITEMS.bootInner, ITEMS.bootTopY], [ITEMS.bootOuter, ITEMS.bootTopY],
+    [ITEMS.bootOuter + ITEMS.bootFlare, 112], [ITEMS.bootInner, 112],
+  ]),
+  flag: polygon(ITEMS.flagPts),
+  flagFold: polygon(ITEMS.flagFoldPts),
+});
+
 export const BODY_SIZE = Object.freeze({ width: 90, height: 86 });
 export const BELT_SIZE = Object.freeze({ width: 61, height: 24 });
 export const HEAD_RADIUS = 30;

@@ -197,20 +197,27 @@ export default function ArenaCharacterChoice({
                 onClick={() => setChosen(character)}
                 data-rtl-row="character-card"
                 className={[
-                  'flex w-full items-center gap-4 p-4 text-right',
+                  'flex w-full items-center gap-4 px-4 py-3 text-right',
                   CARD_CLASS,
                   selected ? 'border-2 border-[color:var(--arena-gold)]' : '',
                 ].join(' ')}
               >
                 {/* `:126-134` — הדמות נושמת מעל הכן: `sin(t*1.5)*2.2` ⇒ ±2.2px · 4.19s. */}
+                {/* 🔬 **⟦19/09 · `C-0727`⟧ הכרטיס צומצם — נמדד, ⛔ ולא הוחלט לפי תחושה.**
+                    הרשימה גדלה לשש דמויות, וב-320x568 נראו **1.8 כרטיסים** ⇒ הרשימה
+                    ⛔ לא **נראתה** כרשימה. ⛔ **ורשת של שתי עמודות נפסלה במספר:** היא
+                    נותנת לכרטיס **130px** ב-320, ושורת ההטיה הארוכה («חליפת קרב
+                    טכנולוגית») מודדת **150px** ⇒ היא הייתה נשברת בכל כרטיס.
+                    ⇒ הדמות והכן התכווצו במקום — הטקסט ⛔ לא נגע. */}
                 <span className="flex shrink-0 flex-col items-center">
                   <span
                     data-arena-idle="on"
                     className="animate-[arena-idle-bob_4.19s_ease-in-out_infinite] motion-reduce:animate-none"
                   >
-                    <ArenaAvatar role="hero" items={[]} character={character} className="h-28 w-auto" />
+                    <ArenaAvatar role="hero" items={[]} character={character} className="h-24 w-auto" />
                   </span>
-                  <svg aria-hidden viewBox="0 0 128 40" className="-mt-2 h-7 w-[90px] text-[color:var(--arena-ink-dim)]" fill="currentColor">
+                  {/* ⛔ הכן **שטוח יותר**: ב-`h-7` הוא נקרא כ**שלולית** מתחת לדמות. */}
+                  <svg aria-hidden viewBox="0 0 128 40" className="-mt-1 h-4 w-[76px] text-[color:var(--arena-ink-dim)]" fill="currentColor">
                     <ellipse cx="64" cy="20" rx="64" ry="17" />
                   </svg>
                 </span>

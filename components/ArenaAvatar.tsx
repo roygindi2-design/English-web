@@ -3,6 +3,8 @@ import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharac
 import {
   ARMORER,
   BELT_SIZE,
+  ITEMS,
+  ITEM_PATHS,
   GOLEM,
   HUNTER,
   NEW_PATHS,
@@ -98,11 +100,15 @@ const ROLE_INK: Record<ArenaRole, string> = {
 };
 
 /**
- * ⛔ **הקו של הציוד, ⛔ ולא צבע שני של הדמות.** הבסיס ממולא ב-`currentColor` של התפקיד,
- * והציוד מצויר כקו מעליו — קו באותו גוון היה נעלם. מחוץ לזירה זהו `--ink`; בתוך הזירה
- * ‏`app/arcade/arcade-tokens.css` דורס אותו לכחול־הליל, שנותן 10.66:1 מול הזהב.
- */
-const OUTLINE_CLASS = 'text-ink';
+ * 🎒 **⟦19/09 · `C-0727`⟧ `OUTLINE_CLASS` **נמחק**, ⛔ ולא נצבע מחדש.**
+ *
+ * 🔬 **נמדד על הדף החי:** הוא נפתר בזירה ל-`rgb(28,38,66)` — **בדיוק** `--arena-night`,
+ * רקע הבמה ⇒ **`1.00:1`**. הגלימה והדגל תלויים ברובם **מחוץ** לגוף ⇒ הם היו
+ * **בלתי נראים**, ומה שנראה מהם על הגוף היה קו דק שנקרא כפיגום.
+ * ⚠️ **וההנמקה שהחזיקה את השורה מתה לפני התיקון:** היא נימקה «הבסיס ממולא
+ * ב-`currentColor` של התפקיד, וקו באותו גוון היה נעלם» — אלא ש-`C-0724` הפסיק
+ * לצבוע את הבסיס בצבע התפקיד. ⇒ ההערה נשארה נכונה-למראה והפסיקה להיות נכונה.
+ * ⇒ הציוד מצויר עכשיו כ**עצמים מלאים** עם הטוקנים של `38 § 3א`, כמו הדמויות.
 
 /**
  * 🎨 **⟦18/09 · `C-0720`⟧ שלושה גוונים, **נגזרים מ-`currentColor`**, ⛔ ולא שלושה צבעים.**
@@ -169,6 +175,9 @@ const FIG = {
   orb: 'text-[color:var(--arena-fig-orb,currentColor)]',
   cast: 'text-[color:var(--arena-cast,currentColor)]',
   castShade: 'text-[color:var(--arena-fig-cast-shade,currentColor)]',
+  cloth: 'text-[color:var(--arena-fig-cloth,currentColor)]',
+  clothFold: 'text-[color:var(--arena-fig-cloth-fold,currentColor)]',
+  burst: 'text-[color:var(--arena-burst,currentColor)]',
   leaf: 'text-[color:var(--arena-fig-leaf,currentColor)]',
   leafShade: 'text-[color:var(--arena-fig-leaf-shade,currentColor)]',
   leather: 'text-[color:var(--arena-fig-leather,currentColor)]',
@@ -379,46 +388,96 @@ const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
   helmet: {
     layer: 'headgear',
     shape: (
-      <path
-        d={`M${HEAD.x - HEAD_RADIUS - 2} ${HEAD.y}a${HEAD_RADIUS + 2} ${HEAD_RADIUS + 2} 0 0 1 ${(HEAD_RADIUS + 2) * 2} 0M${HEAD.x - HEAD_RADIUS - 6} ${HEAD.y}h${(HEAD_RADIUS + 6) * 2}`}
-      />
+      <>
+        <Paint hue="steelLit"><path d={ITEM_PATHS.helmetDome} /></Paint>
+        <Paint hue="steelDeep">
+          <rect x={-ITEMS.browHalfWidth} y={ITEMS.browTopY} width={ITEMS.browHalfWidth * 2} height={ITEMS.browH} rx={ITEMS.browR} />
+        </Paint>
+        <Paint hue="gold"><path d={ITEM_PATHS.helmetCrest} /></Paint>
+      </>
     ),
   },
   cape: {
     layer: 'capeBack',
     shape: (
-      <path
-        data-arena-part="cape"
-        d={`M${SHOULDER_L.x} ${SHOULDER_L.y}L${SHOULDER_L.x - 22} ${BOOT_L.y - 16}h44zM${SHOULDER_R.x} ${SHOULDER_R.y}l22 ${BOOT_R.y - 16 - SHOULDER_R.y}h-44z`}
-      />
+      <>
+        {/* ⛔ `data-arena-part="cape"` **נשאר על הצורה הראשית** — הוא הווו של
+            א4 (`37 § 11`), ו-`ArenaBattle.test.ts` מודד דרכו את הפיגור. */}
+        <Paint hue="cloth"><path data-arena-part="cape" d={ITEM_PATHS.cape} /></Paint>
+        <Paint hue="clothFold"><path d={ITEM_PATHS.capeFold} /></Paint>
+      </>
     ),
   },
   lantern: {
     layer: 'offHand',
     shape: (
-      <path
-        d={`M${OFF_HAND.x - 11} ${OFF_HAND.y + 4}h22v22h-22zM${OFF_HAND.x} ${OFF_HAND.y + 4}v-14`}
-      />
+      <>
+        <Paint hue="gold">
+          <path d={ITEM_PATHS.lanternLoop} />
+          <rect x={ITEMS.lanternX - ITEMS.lanternHalfWidth} y={ITEMS.lanternTopY} width={ITEMS.lanternHalfWidth * 2} height={ITEMS.lanternH} rx={ITEMS.lanternR} />
+          <rect x={ITEMS.lanternX - ITEMS.lanternHalfWidth} y={ITEMS.lanternTopY + ITEMS.lanternH} width={ITEMS.lanternHalfWidth * 2} height={ITEMS.lanternFootH} rx={ITEMS.lanternR / 2} />
+        </Paint>
+        <Paint hue="burst">
+          <rect
+            x={ITEMS.lanternX - ITEMS.lanternHalfWidth + ITEMS.lanternPaneInset}
+            y={ITEMS.lanternTopY + ITEMS.lanternPaneInset}
+            width={(ITEMS.lanternHalfWidth - ITEMS.lanternPaneInset) * 2}
+            height={ITEMS.lanternH - ITEMS.lanternPaneInset * 2}
+            rx={ITEMS.lanternPaneR}
+          />
+        </Paint>
+      </>
     ),
   },
   boots: {
     layer: 'boots',
     shape: (
-      <path
-        d={`M${BOOT_L.x - 19} ${BOOT_L.y + 16}h38M${BOOT_R.x - 19} ${BOOT_R.y + 16}h38`}
-      />
+      <>
+        <Paint hue="leather">
+          <path d={ITEM_PATHS.bootLeft} />
+          <path d={ITEM_PATHS.bootRight} />
+        </Paint>
+        <Paint hue="gold">
+          <rect x={-ITEMS.bootOuter} y={ITEMS.bootCuffY} width={ITEMS.bootOuter - ITEMS.bootInner} height={ITEMS.bootCuffH} rx={ITEMS.bootCuffR} />
+          <rect x={ITEMS.bootInner} y={ITEMS.bootCuffY} width={ITEMS.bootOuter - ITEMS.bootInner} height={ITEMS.bootCuffH} rx={ITEMS.bootCuffR} />
+        </Paint>
+      </>
     ),
   },
   banner: {
     layer: 'mainHand',
     shape: (
-      <path
-        data-arena-part="weapon"
-        d={`M${MAIN_HAND.x} ${MAIN_HAND.y - 70}v${140}M${MAIN_HAND.x} ${MAIN_HAND.y - 70}h30l-8 14 8 14h-30z`}
-      />
+      <>
+        <Paint hue="gold">
+          <rect data-arena-part="weapon" x={ITEMS.poleX} y={ITEMS.poleTopY} width={ITEMS.poleW} height={ITEMS.poleH} rx={ITEMS.poleR} />
+        </Paint>
+        <Paint hue="cloth"><path d={ITEM_PATHS.flag} /></Paint>
+        <Paint hue="clothFold"><path d={ITEM_PATHS.flagFold} /></Paint>
+        <Paint hue="goldLight"><circle cx={ITEMS.poleX + ITEMS.poleW / 2} cy={ITEMS.finialY} r={ITEMS.finialRadius} /></Paint>
+      </>
     ),
   },
 };
+
+/**
+ * 🎩 **⟦19/09 · `C-0727`⟧ פריט **גובר** על כיסוי הראש של הדמות — ⛔ ורק שם.**
+ *
+ * 🔬 **נמדד על המסך:** קסדה על הקוסם ציירה **כיפת פלדה מעל הכובע המחודד** — שני
+ * כיסויי ראש זה על זה. ⇒ `38 § 2` כבר קובע שהמשבצת «ראש» היא **קסדה ללוחם** ו**כובע
+ * למכשף**, כלומר הכובע **הוא** פריט הראש שלו ⇒ פריט אמיתי מחליף אותו.
+ * ⛔ **וזה ⛔ אינו כלל כללי «ציוד מנצח שכבה»:** אותו כלל היה **מוחק את זרועו** של
+ * הקוסם כשנדלק פנס (`offHand`) ואת הגולה שלו כשנדלק דגל (`mainHand`). ⇒ **`headgear`
+ * בלבד**, כי זו המשבצת היחידה שבה שניהם באמת «מה שחובשים».
+ */
+const HEADGEAR_ITEMS: readonly string[] = ['helmet'];
+
+/**
+ * 👻 **⛔ ל`צל` ⛔ אין רגליים ⇒ ⛔ אין לו מגפיים.** 🔬 נמדד על המסך: המגפיים צוירו
+ * **בתוך הזנב** של דמות שאינה עומדת על הקרקע. ⛔ זו ⛔ אינה החרגה נוחה — זו אותה
+ * אנטומיה שבגללה `CHARACTER_HIDES` מסתיר לו את `legs` מלכתחילה.
+ */
+const NO_BOOTS: readonly ArenaCharacter[] = ['shade'];
+
 
 /**
  * T-217 — **שלוש צלליות על שלד אחד.** לכל דמות של `37 § 7` שכבת חתימה אחת, על שכבות
@@ -776,8 +835,17 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
         </>
       ),
     },
+    /**
+     * ✨ **⛔ `chest` ו⛔ לא `headgear`.** הרסיסים ⛔ אינם כיסוי ראש — הם מרחפים
+     * לצד הדמות. 🔬 וכשהם ישבו ב-`headgear`, כלל ההחלפה של `C-0727` **מחק אותם**
+     * ברגע שנדלקה קסדה. ⛔ אף פריט ⛔ אינו תופס את `chest`, ⇒ הם בטוחים שם.
+     * ⚠️ **וההערה יושבת **מעל** הסוגר בכוונה:** הערת בלוק כאיבר **ראשון** בתוך
+     * סוגר מסולסל גורמת למסיר-ההערות של `ArenaAvatar.test.ts` לבלוע **2,549 תווים**
+     * עד סוגר ההערה הבא שאחריו סוגר מסולסל סוגר — ⇒ הוא בלע את תג ה-`<svg>` עצמו
+     * ושלוש בדיקות האדימו. 🔬 נמדד על הפלט, ⛔ ולא שוער.
+     */
     {
-      layer: 'headgear',
+      layer: 'chest',
       shape: (
         <>
           <Paint hue="wisp"><circle cx={SHADE.moteX} cy={SHADE.moteY} r={SHADE.moteRadius} /></Paint>
@@ -839,8 +907,11 @@ export default function ArenaAvatar({
         const hidden = character == null ? false
           : (CHARACTER_HIDES[character] ?? []).includes(layer);
         const base = hidden ? undefined : BASE_LAYERS[layer];
-        const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer);
-        const marks = signature.filter((mark) => mark.layer === layer);
+        const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer
+          && !(layer === 'boots' && character !== null && character !== undefined && NO_BOOTS.includes(character)));
+        // 🎩 `C-0727` — פריט ראש **מחליף** את כיסוי הראש של הדמות, ⛔ ולא נערם עליו.
+        const headgearTaken = layer === 'headgear' && worn.some((name) => HEADGEAR_ITEMS.includes(name));
+        const marks = headgearTaken ? [] : signature.filter((mark) => mark.layer === layer);
         if (base === undefined && equipped.length === 0 && marks.length === 0) return null;
         return (
           <g key={layer} data-arena-layer={layer}>
@@ -854,13 +925,7 @@ export default function ArenaAvatar({
               </g>
             )}
             {equipped.length > 0 && (
-              <g
-                data-arena-equipment
-                className={OUTLINE_CLASS}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={5}
-              >
+              <g data-arena-equipment>
                 {equipped.map((name) => (
                   <g key={name}>{ITEM_LAYERS[name].shape}</g>
                 ))}
