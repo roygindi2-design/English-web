@@ -106,7 +106,18 @@ describe('א2 — פריים אימפקט: 1-2 פריימים של צללית ל
 describe('חוקה שכבה א׳ א7 — `prefers-reduced-motion` מסיר את שניהם, והסבב עדיין נפתר', () => {
   it('שני מחסומים: הרכיב ⛔ אינו מציב את התכונה, וה-CSS מנטרל את ההשפעה', () => {
     expect(CODE).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
-    expect(CODE).toMatch(/castCount === 0 \|\| reducedMotion/);
+    /* 🔴 **⟦עודכן 19/09 · `C-0738` · `T-439`⟧ נמדדת ה**הגעה**, ⛔ ולא מחרוזת.**
+       הגרסה הקודמת קיבעה `castCount === 0 || reducedMotion` **מילה במילה**, ⇒
+       היא האדימה כשהגדר פוצל לשתי שורות — **בלי ש⛔ אף התנהגות השתנתה**.
+       🔬 והטענה כאן **חזקה יותר**: `reducedMotion` חוסם ב-`return` **לפני**
+       ש-`setImpact` נקרא בכלל ⇒ התכונה ⛔ אינה מוצבת. זה מה שא7 דורשת,
+       ⛔ ולא איך שהתנאי מנוסח. */
+    const effect = CODE.slice(CODE.indexOf('const castCount ='));
+    const guard = effect.indexOf('if (reducedMotion) return;');
+    const setter = effect.indexOf('setImpact(');
+    expect(guard, '⛔ חייב להתקיים גדר של תנועה מופחתת').toBeGreaterThan(-1);
+    expect(setter, '⛔ וחייב להתקיים מי שמוצב').toBeGreaterThan(-1);
+    expect(guard, 'הגדר **לפני** ההצבה').toBeLessThan(setter);
     expect(CSS_CODE).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
   });
 

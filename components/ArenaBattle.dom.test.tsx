@@ -736,3 +736,79 @@ describe('C-0737 · T-438 — ההגנה על המסך', () => {
     expect(src).toMatch(/battle\.guardLane === null \? '' : GUARD_ON_HE/);
   });
 });
+
+/**
+ * 🎭 **⟦19/09 · `C-0738` · `T-439` · סוגר את `F-305`⟧ התנוחה היא **מכה**.**
+ *
+ * 🔬 **הפגם שנמדד:** `stagePhase` נגזר מה**הטלה האחרונה** ו⛔ **לעולם ⛔ אינו
+ * חוזר ל-`idle`** ⇒ הטלה נכונה **אחת** והיריב עמד מוטה ונדחף **עד סוף הקרב**.
+ * ⇒ שתי התנוחות היחידות שיש לזירה היו **לבוש**, ⛔ ולא מכות — וזו, ⛔ ולא
+ * היעדר אפקטים, הסיבה שהדמויות נראו סטטיות.
+ *
+ * 🔴 **ו⛔ הליבה ⛔ לא נגעו בה:** `stagePhase` ממשיך לומר «מה הייתה ההטלה
+ * האחרונה» — עובדה נכונה. מה שהשתנה הוא שה**מסך** מתייחס אליה כאל **רגע**.
+ */
+describe('C-0738 · T-439 — התנוחה חוזרת', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  const phase = (): string | null =>
+    document.querySelector('[data-arena-stage]')?.getAttribute('data-arena-phase') ?? null;
+  const figure = (): Element => document.querySelector('[data-arena-figure="enemy"]') as Element;
+  const tap = (node: Element): void => {
+    fireEvent.pointerDown(node, { clientX: 10, clientY: 10, pointerId: 3 });
+    fireEvent.pointerUp(node, { clientX: 10, clientY: 10, pointerId: 3 });
+  };
+  const cardHe = (he: string): Element => {
+    const hit = [...document.querySelectorAll('[data-arena-card]')]
+      .find((n) => (n.textContent ?? '').includes(he));
+    expect(hit).toBeTruthy();
+    return hit as Element;
+  };
+
+  it('בפתיחה `idle`, אחרי הטלה **מכה** — ואז **חוזרת**', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(phase(), 'בפתיחה').toBe('idle');
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(phase()).not.toBe('idle'); });
+    // 🔴 **וזו הטענה שמאדימה על הקוד הקודם:** המעבר שכבר קיים על הדמות הוא
+    //    מה שמשחרר. ⛔ אפס שעון, ⛔ אפס שדה חדש בליבה.
+    fireEvent.transitionEnd(figure(), { propertyName: 'transform' });
+    await waitFor(() => { expect(phase(), 'התנוחה חוזרת').toBe('idle'); });
+  });
+
+  it('⛔ מעבר של צומת **אחר** ⛔ אינו מאפס את התנוחה באמצע המכה', async () => {
+    // 🔬 בתוך אזור הבמה יש עוד מעברים על `transform` — ובראשם `[data-arena-hp-fill]`
+    //    של **שני** פסי החיים. בלי גדר הצומת, ריקון של פס חיים היה מבטל את המכה.
+    render(<ArenaBattle initialRound={ROUND} />);
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(phase()).not.toBe('idle'); });
+    const fill = document.querySelector('[data-arena-hp-fill]') as Element;
+    fireEvent.transitionEnd(fill, { propertyName: 'transform' });
+    expect(phase(), 'עדיין באמצע המכה').not.toBe('idle');
+  });
+
+  it('⛔ ותכונה **אחרת** של אותה דמות ⛔ אינה משחררת — המעבר מצהיר שתיים', async () => {
+    // 🔬 `transition: transform …, rotate …` ⇒ בלי גדר `propertyName` השחרור
+    //    היה נורה **פעמיים** על אותה מכה.
+    render(<ArenaBattle initialRound={ROUND} />);
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(phase()).not.toBe('idle'); });
+    fireEvent.transitionEnd(figure(), { propertyName: 'rotate' });
+    expect(phase()).not.toBe('idle');
+  });
+});

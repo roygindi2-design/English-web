@@ -44,6 +44,7 @@ import {
   type AbilityKey,
   type BattleState,
   type Lane,
+  type StagePhase,
   type TelegraphPhase,
 } from '@/lib/core/battle';
 import type { ArcadeAnswer } from '@/lib/core/arcadeResult';
@@ -482,6 +483,20 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     readonly dx: number;
     readonly dy: number;
   } | null>(null);
+  /**
+   * 🎭 **⟦19/09 · `C-0738` · `T-439` · סוגר את `F-305`⟧ התנוחה היא **מכה**, ⛔ ולא לבוש.**
+   *
+   * 🔬 **הפגם שנמדד:** `stagePhase` נגזר מה**הטלה האחרונה** ו⛔ **לעולם ⛔ אינו חוזר
+   * ל-`idle`** ⇒ הטלה נכונה **אחת** והיריב עומד מוטה 3° ונדחף 0.75rem **עד סוף
+   * הקרב**. ⛔ **והקובץ עצמו כבר תיעד את התוצאה** — «`hit`⇢`hit` ⛔ אינו מזיז את
+   * הגוף כלל» — ⇒ הפגם היה מוכר, ומעולם ⛔ לא הוסק ממנו שהתנוחה חייבת **לחזור**.
+   *
+   * ⛔ **ו-`stagePhase` ⛔ לא נגעתי בו:** הליבה ממשיכה לומר «מה הייתה ההטלה
+   * האחרונה» — זו עובדה נכונה. מה שהשתנה הוא שה**מסך** מתייחס אליה כאל **רגע**.
+   * ⇒ ⛔ אפס שדה חדש בליבה, ⛔ אפס שעון, ⛔ ואפס מנגנון: השחרור הוא `transitionend`
+   * של המעבר ש**כבר קיים** על הדמות.
+   */
+  const [pose, setPose] = useState<StagePhase>('idle');
   const stageAreaRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -501,8 +516,14 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    */
   const castCount = battle === null ? 0 : battle.casts.length;
   useEffect(() => {
-    if (castCount === 0 || reducedMotion) return;
-    if (battle === null || stagePhase(battle) !== 'hit') return;
+    if (castCount === 0 || battle === null) return;
+    // 🎭 `T-439` — ⛔ **לפני שאר הגדרים, ובכוונה:** התנוחה חלה גם על **התחמקות**
+    //    (הטלה שגויה) וגם תחת `prefers-reduced-motion` — שם המעבר ממילא מתאפס
+    //    ל-`0.01ms`, ⇒ היא ⛔ אינה תנועה שצריך להסיר. אימפקט, נזק ורעד שומרים
+    //    את הגדרים שלהם מילה במילה.
+    setPose(stagePhase(battle));
+    if (reducedMotion) return;
+    if (stagePhase(battle) !== 'hit') return;
     setImpact((prev) => (prev === 'a' ? 'b' : 'a'));
     // ⟦15/09 · `T-358`⟧ הנזק והרעד נגזרים מ**אותה** הטלה, ⛔ ומאותו אפקט: אפקט שני
     // על אותה תלות היה יורה בסדר שאינו מובטח, ושני מקורות לאותו רגע הם שני רגעים.
@@ -1279,6 +1300,20 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         data-arena-stage-area
         data-arena-impact={impact}
         data-arena-crit={crit === 'off' ? undefined : crit}
+        /**
+         * 🎭 **⟦`T-439`⟧ התנוחה חוזרת — והשחרור הוא המעבר ש**כבר קיים**.**
+         *
+         * ⛔ **שני גדרים, ושניהם נמדדו ⛔ ולא נזהרו:** ⓐ `propertyName` — המעבר
+         * על הדמות מצהיר **שתי** תכונות (`transform` ו-`rotate`) ⇒ בלי הגדר
+         * השחרור היה נורה פעמיים; ⓑ **הצומת** — בתוך אזור הבמה יש עוד מעברים על
+         * `transform`, ובראשם `[data-arena-hp-fill]` של **שני** פסי החיים,
+         * ⇒ ריקון של פס חיים היה **מאפס את התנוחה באמצע המכה**.
+         */
+        onTransitionEnd={(e) => {
+          if (e.propertyName !== 'transform') return;
+          if (!(e.target instanceof Element) || !e.target.matches('[data-arena-figure]')) return;
+          setPose('idle');
+        }}
         onAnimationEnd={(e) => {
           if (e.animationName.startsWith('arena-hitstop')) setImpact('off');
           // ⟦15/09⟧ הרעד משוחרר באותו מנגנון בדיוק — ⛔ אין כאן `setTimeout` חדש.
@@ -1513,7 +1548,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         </div>
 
         <ArenaStage
-          phase={stagePhase(battle)}
+          phase={pose}
           items={items}
           character={character}
           lane={battle.heroLane}
