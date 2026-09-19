@@ -256,6 +256,14 @@
   --arena-arms-deg: 26deg;
   /* 🩸 **`T-440` — משך הרתיעה.** ⛔ קצר: זו **תגובה**, ⛔ ולא תנוחה. */
   --arena-hurt-ms: 280ms;
+  /* 🤸 **`T-440`ⓑ — משך הגלגול. 🔬 המספר **נגזר מהרנדר**, ⛔ ולא נבחר.**
+     `render_video_B.py:414` נוהג את הגלגול ב-`sin(clamp((t − DODGE)/.55) · π)`
+     ⇒ **550ms**, החוצה וחזרה בתנועה אחת.
+     ⚠️ **ו⛔ זו ⛔ אינה העתקת sprite** — `38 § 5:213` פוסל את **הצורות** ההן
+     ומשאיר במפורש «מידות, צבעים, **תזמונים**» כמקור אמת. ⇒ ⛔ המספר בלבד. */
+  --arena-roll-ms: 550ms;
+  /* ⚔️ `T-440`ⓒ — הינף הלהב. הרנדר: 300ms החוצה ב-`ease_out`. */
+  --arena-swing-ms: 300ms;
   /* 🕹️ **⟦קוצר 19/09 · `C-0735` · `T-437` · `D-270` ④⟧ 200ms ⇒ 140ms.**
      רוי: «ההזזה של השחקן **איטית ולא רציפה**». ⛔ **ו-140 ⛔ אינם «מהר יותר»
      סתם:** סקיל `animate` גודר משוב-ממשק ב-150–250ms, והתזוזה הזאת היא
@@ -1137,6 +1145,79 @@ body:has([data-arena-scope]) > div > main {
   [data-arena-scope] [data-arena-hurt='a'] [data-arena-figure='hero'],
   [data-arena-scope] [data-arena-hurt='b'] [data-arena-figure='hero'] {
     animation: none;
+  }
+}
+
+/* ═══ 🤸 **⟦19/09 · `C-0741` · `T-440`ⓑ⟧ הגלגול — והגוף ⛔ לא זז בו מעולם.**
+
+   🔬 **נמדד:** `dodge()` מעניק חסינות, והמסך אומר «התחמקות!» ב**טקסט**. ⇒ הלומד
+   החליק, ניצל — ו⛔ **שום דבר בגוף שלו ⛔ לא הגיב**.
+   ⛔ **ותנוחת ה-`dodge` ⛔ אינה זה:** `battle.ts:479` פוסק ש-`'dodge'` פירושה
+   «ההטלה האחרונה הייתה **שגויה**», ⛔ ולא «התגלגלת». ⇒ שני דברים שונים לגמרי,
+   ושם משותף הוא בדיוק איך שפער נשאר פתוח שנה.
+
+   🔴 **והקפיצה האנכית היא מה שהופך החלקה ל**התחמקות**.** גוף שנע רק על `X`
+   **מחליק**; גוף שעולה ויורד תוך כדי **מתחמק**. ⇒ הקיפריים נושא `Y` שאינו אפס,
+   וזו הטענה היחידה שהבדיקה בודקת.
+
+   ⛔ **ועל עוטף ה-idle, ⛔ ולא על הדמות:** `translate` של הדמות תפוס בידי
+   הרתיעה (`arena-hurt`) — אפשר להתגלגל ממכה אחת ולספוג אחרת — ⇒ שתי אנימציות
+   על קיצור `animation` אחד היו **דורסות זו את זו**. העוטף נושא `transform`
+   ⟨לולאת ההמתנה⟩ ו-`translate` שלו **פנוי**. */
+@keyframes arena-roll-a {
+  0%   { translate: 0 0; }
+  35%  { translate: -14% -7%; }
+  70%  { translate: -6% -2%; }
+  100% { translate: 0 0; }
+}
+@keyframes arena-roll-b {
+  0%   { translate: 0 0; }
+  35%  { translate: -14% -7%; }
+  70%  { translate: -6% -2%; }
+  100% { translate: 0 0; }
+}
+/* 🔴 **והכלל הזה **מחליף** את לולאת ההמתנה לאורך הגלגול — ⛔ וזה מכוון, ⛔ ולא
+   תופעת לוואי שלא שמתי לב אליה.** ‏`animation-name` דורס את שם האנימציה
+   שהקיצור ב-`app/globals.css` נתן לצומת ⇒ הנשימה **נעצרת** ל-550ms וחוזרת.
+   ⛔ **וזו ההתנהגות הנכונה:** גוף שמתגלגל ⛔ אינו נושם במקום — בדיוק מה
+   שה-hit-stop כבר עושה לאותו צומת ⟨`animation-play-state: paused`⟩.
+   ⛔ **ולכן זה כאן ו⛔ לא על הדמות:** `translate` של הדמות תפוס בידי הרתיעה. */
+[data-arena-scope] [data-arena-roll='a'] [data-arena-slot='hero'] [data-arena-idle],
+[data-arena-scope] [data-arena-roll='b'] [data-arena-slot='hero'] [data-arena-idle] {
+  animation-name: arena-roll-a;
+  animation-duration: var(--arena-roll-ms);
+  animation-timing-function: var(--arena-ease-out);
+  animation-fill-mode: both;
+}
+[data-arena-scope] [data-arena-roll='b'] [data-arena-slot='hero'] [data-arena-idle] {
+  animation-name: arena-roll-b;
+}
+
+/* ⚔️ **⟦`T-440`ⓒ⟧ הלהב מסתובב סביב ה**ידית**.**
+   🔬 **ונמדד שהערוץ פנוי:** כללי תנועת ההמשך תופסים `[data-arena-part]` של
+   ה**יריב** ב-`hit` ושל ה**גיבור** ב-`dodge`; ⇒ להב הגיבור ב-`hit` ⛔ אינו
+   נגוע באף כלל, והנדנוד חל על `hair`/`cape` בלבד.
+   ⛔ **והציר `0% 100%` ⛔ ולא `50% 50%`:** חרב מסתובבת סביב היד שאוחזת בה —
+   סיבוב סביב המרכז היה מזיז את **הידית**, וזה נקרא כמו חרב שמרחפת. */
+[data-arena-scope] [data-arena-figure='hero'] [data-arena-part='weapon'] {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  transition: rotate var(--arena-swing-ms) var(--arena-ease-out);
+}
+[data-arena-scope] [data-arena-phase='hit'] [data-arena-figure='hero'] [data-arena-part='weapon'] {
+  rotate: -38deg;
+}
+
+/* חוקה שכבה א׳ א7 — שניהם **תנועה טהורה** ⟨המידע הוא «התחמקות!», מספר הנזק
+   ופס החיים⟩ ⇒ מוסרים. ⛔ והצמתים ⛔ אינם נתקעים: הם **הדמות עצמה**, ⛔ ולא
+   צמתים שנולדו מ-JS. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-roll='a'] [data-arena-slot='hero'] [data-arena-idle],
+  [data-arena-scope] [data-arena-roll='b'] [data-arena-slot='hero'] [data-arena-idle] {
+    animation-name: none;
+  }
+  [data-arena-scope] [data-arena-figure='hero'] [data-arena-part='weapon'] {
+    transition: none;
   }
 }
 

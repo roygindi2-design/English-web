@@ -473,3 +473,57 @@ describe('C-0739 · T-440 — הדמויות זזות במתקפה', () => {
     expect(blocks).toMatch(/\[data-arena-hurt='a'\][\s\S]{0,140}animation:\s*none/);
   });
 });
+
+/**
+ * 🤸⚔️ **⟦19/09 · `C-0741` · `T-440`ⓑⓒ⟧ הגלגול והלהב.**
+ *
+ * 🔬 **הפער:** `dodge()` מעניק חסינות והמסך אומר «התחמקות!» ב**טקסט** — ⇒
+ * הלומד החליק, ניצל, ו⛔ **שום דבר בגוף שלו ⛔ לא הגיב**.
+ * ⛔ **ותנוחת ה-`dodge` ⛔ אינה זה:** `battle.ts:479` פוסק ש-`'dodge'` פירושה
+ * «ההטלה האחרונה הייתה **שגויה**» — שני דברים שונים בשם אחד.
+ */
+describe('C-0741 · T-440ⓑⓒ — הגלגול והלהב', () => {
+  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+
+  it('🔴 **הקפיצה האנכית** — זו הטענה שמבדילה התחמקות מהחלקה', () => {
+    const at = TOKENS.indexOf('@keyframes arena-roll-a');
+    const block = TOKENS.slice(at, TOKENS.indexOf('}\n}', at));
+    // ⛔ גוף שנע רק על `X` **מחליק**; גוף שעולה ויורד תוך כדי **מתחמק**.
+    expect(block).toMatch(/translate:\s*-?[\d.]+%\s+-[\d.]+%/);
+    expect(block, '⛔ ועל `translate`, ⛔ לא `transform`').not.toMatch(/transform:/);
+  });
+
+  it('הגלגול נתלה ב-`dodgedSwing` — ⛔ ולא בתנוחת ה-`dodge`', () => {
+    // 🔬 שני דברים שונים בשם אחד: `'dodge'` = «ענית לא נכון».
+    expect(BATTLE).toMatch(/const dodgedSwing = battle\?\.dodgedSwing/);
+    expect(BATTLE).toMatch(/data-arena-roll=/);
+    expect(BATTLE).toMatch(/animationName\.startsWith\('arena-roll'\)/);
+  });
+
+  it('⛔ הגלגול על עוטף ה-idle — `translate` של הדמות תפוס בידי הרתיעה', () => {
+    // 🔬 שתי אנימציות על קיצור `animation` אחד היו **דורסות זו את זו**.
+    expect(TOKENS).toMatch(/\[data-arena-roll='a'\] \[data-arena-slot='hero'\] \[data-arena-idle\]/);
+    const at = TOKENS.indexOf("[data-arena-roll='a'] [data-arena-slot='hero']");
+    expect(TOKENS.slice(at, at + 260)).not.toMatch(/data-arena-figure/);
+  });
+
+  it('⚔️ הלהב מסתובב סביב ה**ידית** — ⛔ ולא סביב מרכזו', () => {
+    // 🔬 סיבוב סביב המרכז מזיז את הידית ⇒ נקרא כמו חרב שמרחפת.
+    expect(TOKENS).toMatch(/\[data-arena-part='weapon'\]\s*\{[\s\S]{0,180}transform-origin:\s*0% 100%/);
+    expect(TOKENS).toMatch(/\[data-arena-phase='hit'\][^{]*\[data-arena-part='weapon'\]\s*\{\s*rotate:/);
+  });
+
+  it('🔬 והמשכים **נגזרים מהרנדר** — ⛔ ולא נבחרו', () => {
+    // `render_video_B.py`: הגלגול `sin(… / .55 · π)` ⇒ 550ms · ההינף 300ms.
+    expect(TOKENS).toMatch(/--arena-roll-ms:\s*550ms/);
+    expect(TOKENS).toMatch(/--arena-swing-ms:\s*300ms/);
+  });
+
+  it('🔴 תנועה מופחתת — שניהם מוסרים, והמידע נשאר בטקסט ובפס', () => {
+    const blocks = [...TOKENS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '').join('\n');
+    expect(blocks).toMatch(/\[data-arena-roll='a'\][\s\S]{0,200}animation-name:\s*none/);
+    expect(blocks).toMatch(/\[data-arena-part='weapon'\][\s\S]{0,80}transition:\s*none/);
+  });
+});

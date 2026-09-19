@@ -434,6 +434,16 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    */
   const prevLearnerHp = useRef<number | null>(null);
   const [hurt, setHurt] = useState<'off' | 'a' | 'b'>('off');
+  /**
+   * 🤸 **⟦19/09 · `C-0741` · `T-440`ⓑ⟧ הגלגול — ו**הגוף ⛔ לא זז בו מעולם**.**
+   *
+   * 🔬 **נמדד:** `dodge()` מעניק חסינות, והמסך אומר «התחמקות!» ב**טקסט**.
+   * ⇒ הלומד החליק, ניצל — ו⛔ **שום דבר בגוף שלו ⛔ לא הגיב**. ⛔ **ותנוחת
+   * ה-`dodge` ⛔ אינה זה:** `battle.ts:479` פוסק ש-`'dodge'` היא «ההטלה
+   * האחרונה הייתה **שגויה**», ⛔ ולא «התגלגלת».
+   */
+  const prevDodged = useRef<number | null>(null);
+  const [roll, setRoll] = useState<'off' | 'a' | 'b'>('off');
   const [damage, setDamage] = useState<{ readonly amount: number; readonly key: number } | null>(null);
   /**
    * 🔴 **⟦NEW 16/09 · `C-0665` · `T-359`⟧ הקלף **עף** אל היריב, ⛔ ואינו נעלם.**
@@ -536,6 +546,19 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    * ‏`tick` מחזיר את **אותה הפניה** כשאף מכה לא זזה. ⇒ תלות בשדה עצמו היא
    * המעבר הבדיד המדויק.
    */
+  /**
+   * 🤸 `T-440`ⓑ — `null ⇢ מספר` הוא **הגלגול**. ⛔ והכיוון ההפוך ⟨`מספר ⇢ null`⟩
+   * הוא **צריכת** החסינות ב-`tick`, ⇒ ⛔ אינו אירוע שרואים.
+   */
+  const dodgedSwing = battle?.dodgedSwing ?? null;
+  useEffect(() => {
+    const was = prevDodged.current;
+    prevDodged.current = dodgedSwing;
+    if (dodgedSwing === null || was === dodgedSwing) return;
+    if (!reducedMotion) setRoll((prev) => (prev === 'a' ? 'b' : 'a'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dodgedSwing]);
+
   const learnerHp = battle?.learnerHp ?? null;
   useEffect(() => {
     const was = prevLearnerHp.current;
@@ -1334,6 +1357,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         data-arena-impact={impact}
         data-arena-crit={crit === 'off' ? undefined : crit}
         data-arena-hurt={hurt === 'off' ? undefined : hurt}
+        data-arena-roll={roll === 'off' ? undefined : roll}
         /**
          * 🎭 **⟦`T-439`⟧ התנוחה חוזרת — והשחרור הוא המעבר ש**כבר קיים**.**
          *
@@ -1354,6 +1378,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           if (e.animationName === 'arena-crit-shake') setCrit('off');
           // 🩸 `T-440` — הרתיעה משתחררת באותו מנגנון בדיוק. ⛔ אפס שעון.
           if (e.animationName.startsWith('arena-hurt')) setHurt('off');
+          if (e.animationName.startsWith('arena-roll')) setRoll('off');
         }}
         /* ⟦15/09 · `F-260`⟧ `flex-1 min-h-0` — **הבמה בולעת את מה שנשאר.** ⛔ `min-h-0`
            ⛔ אינו קישוט: ילד flex מקבל `min-height:auto` כברירת מחדל ולכן **מסרב
