@@ -413,3 +413,63 @@ describe('C-0732 · T-434 — המתקפה הראשונה', () => {
     expect(BATTLE).not.toMatch(/Math\.random/);
   });
 });
+
+/**
+ * ⚔️ **⟦19/09 · `C-0739` · `T-440` · `37 § 6`⟧ הדמויות זזות במתקפה.**
+ *
+ * 🔬 **שני פערים, ושניהם נמדדו ⛔ ולא שוערו:**
+ * ⓐ `§ 6` כותב «הכרזה 5.3 ש׳: **ידיים מורמות**» — ו⛔ **רק מד זז** היום.
+ * ⓑ `grep -c prevLearnerHp` ⇒ **0**: לזירה שלושה אותות ויזואליים, **שלושתם
+ *    על ההטלה של הלומד**. ⇒ המכה של ה**יריב** נוחתת, וה**גוף ⛔ אינו מגיב**.
+ */
+describe('C-0739 · T-440 — הדמויות זזות במתקפה', () => {
+  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+
+  it('🙌 הידיים עולות ב**הכרזה** — ⛔ ולא בטעינה', () => {
+    // `§ 6`: הטבלה ממקמת «ידיים מורמות» ב-5.3ש׳, שהוא בדיוק `charging ⇢ window`.
+    expect(TOKENS).toMatch(/\[data-arena-telegraph='window'\][^{]*\[data-arena-layer='mainHand'\]/);
+    expect(TOKENS).not.toMatch(/\[data-arena-telegraph='charging'\][^{]*rotate/);
+    expect(CODE, 'והשלב מגיע כ-prop').toMatch(/data-arena-telegraph=\{telegraph\}/);
+  });
+
+  it('⛔ הסיבוב על **קבוצת השכבה** — אחרת המטה מתנתק מהיד', () => {
+    // 🔬 `mainHand` נושא את הזרוע **ואת המטה והגולה**.
+    expect(TOKENS).toMatch(/\[data-arena-layer='mainHand'\],[\s\S]{0,120}\[data-arena-layer='offHand'\]\s*\{[\s\S]{0,140}transform-box:\s*fill-box/);
+    // ⛔ **`rotate` ⛔ ולא `transform`** — `transform` תפוס בציור מגב (`T-432`).
+    const at = TOKENS.indexOf("[data-arena-figure='enemy'] [data-arena-layer='mainHand']");
+    expect(TOKENS.slice(at, at + 400)).not.toMatch(/transform:\s/);
+  });
+
+  it('⛔ וסימנים **הפוכים** לשתי הידיים — אחרת אחת יורדת', () => {
+    expect(TOKENS).toMatch(/\[data-arena-layer='mainHand'\]\s*\{\s*rotate:\s*calc\(var\(--arena-arms-deg\) \* -1\)/);
+    expect(TOKENS).toMatch(/\[data-arena-layer='offHand'\]\s*\{\s*rotate:\s*var\(--arena-arms-deg\)/);
+  });
+
+  it('🩸 הרתיעה — האות שלא היה קיים כלל', () => {
+    expect(BATTLE, '⛔ היה 0 לפני השורה הזאת').toMatch(/prevLearnerHp/);
+    expect(BATTLE).toMatch(/data-arena-hurt=/);
+    // ⛔ `'a'⇄'b'` — שם זהה ⛔ אינו מפעיל מחדש ⇒ שתי מכות רצופות כמכה אחת.
+    expect(TOKENS).toMatch(/@keyframes arena-hurt-a/);
+    expect(TOKENS).toMatch(/@keyframes arena-hurt-b/);
+    expect(BATTLE).toMatch(/animationName\.startsWith\('arena-hurt'\)/);
+  });
+
+  it('⛔ הרתיעה על `translate` — `transform` תפוס בידי התנוחה', () => {
+    // 🔬 אנימציה על `transform` הייתה **דורסת מכה באמצע**.
+    const at = TOKENS.indexOf('@keyframes arena-hurt-a');
+    const block = TOKENS.slice(at, TOKENS.indexOf('}\n}', at));
+    expect(block).toMatch(/translate:/);
+    expect(block).not.toMatch(/transform:/);
+  });
+
+  it('🔴 תנועה מופחתת — הידיים **נשארות מורמות**, והרתיעה מוסרת', () => {
+    const blocks = [...TOKENS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '').join('\n');
+    // ⛔ «ידיים מורמות» היא **מידע** ⟨«עכשיו הוא מטיל»⟩ ⇒ רק המעבר מוסר.
+    expect(blocks).toMatch(/\[data-arena-layer='offHand'\][\s\S]{0,80}transition:\s*none/);
+    expect(blocks, '⛔ והתנוחה ⛔ אינה מאופסת').not.toMatch(/\[data-arena-layer='offHand'\][\s\S]{0,80}rotate:\s*0/);
+    // 🩸 הרתיעה היא **תנועה טהורה** ⇒ `animation: none`.
+    expect(blocks).toMatch(/\[data-arena-hurt='a'\][\s\S]{0,140}animation:\s*none/);
+  });
+});

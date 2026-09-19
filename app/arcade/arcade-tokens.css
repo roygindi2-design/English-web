@@ -249,6 +249,13 @@
      כף רגל מעל הרצפה, והצל ⟨שיושב על אותו חריץ⟩ נוטה איתה. 2° נראים ⛔ ואינם
      מנתקים. */
   --arena-lane-bank: 2deg;
+  /* 🙌 **`T-440` — משך הרמת הידיים.** ⛔ **קצר, ⛔ ולא 5.3 שניות:** `§ 6`
+     ממקם «ידיים מורמות» ב**הכרזה** ⟨5.3ש׳⟩ — זו **נקודה**, ⛔ ולא רמפה.
+     ⇒ תנוחה שנכנסת ב-220ms, בתוך תקרת הממשק. */
+  --arena-arms-ms: 220ms;
+  --arena-arms-deg: 26deg;
+  /* 🩸 **`T-440` — משך הרתיעה.** ⛔ קצר: זו **תגובה**, ⛔ ולא תנוחה. */
+  --arena-hurt-ms: 280ms;
   /* 🕹️ **⟦קוצר 19/09 · `C-0735` · `T-437` · `D-270` ④⟧ 200ms ⇒ 140ms.**
      רוי: «ההזזה של השחקן **איטית ולא רציפה**». ⛔ **ו-140 ⛔ אינם «מהר יותר»
      סתם:** סקיל `animate` גודר משוב-ממשק ב-150–250ms, והתזוזה הזאת היא
@@ -1042,6 +1049,96 @@ body:has([data-arena-scope]) > div > main {
 [data-arena-scope] [data-arena-guard-btn][data-arena-lane='left'] { translate: calc(var(--arena-lane-shift) * -1); }
 [data-arena-scope] [data-arena-guard-btn][data-arena-lane='centre'] { translate: 0; }
 [data-arena-scope] [data-arena-guard-btn][data-arena-lane='right'] { translate: var(--arena-lane-shift); }
+
+/* ═══ 🙌 **⟦19/09 · `C-0739` · `T-440` · `37 § 6`⟧ היריב **מרים ידיים** בהכרזה.**
+
+   🔬 **הסעיף כותב את זה מילה במילה, ו⛔ מעולם ⛔ לא נבנה:** «הכרזה 5.3 ש׳:
+   **ידיים מורמות**, גוון סגול, המד מהבהב». ⇒ היריב עמד ללא ניע חמש שניות,
+   ו**רק מד** זז — כלומר הטלגרף היה **חיווי**, ⛔ ולא דמות שמתכוננת.
+
+   ⛔ **הסיבוב על **קבוצת השכבה**, ⛔ ולא על הזרוע לבדה** — ‏`mainHand` נושא
+   את הזרוע **ואת המטה והגולה**; סיבוב הזרוע בלבד היה **מנתק** אותם ממנה.
+   ⇒ הקבוצה כולה, וכל דמות מקבלת את זה בחינם בלי לגעת ב-`ArenaAvatar`.
+
+   ⛔ **והציר מגיע מהצורה עצמה** (`transform-box: fill-box` + `50% 100%`),
+   ⛔ ולא ממספר ב-CSS — בדיוק הדפוס שהשיער והגלימה כבר משתמשים בו. ⇒ ⛔ אפס
+   קואורדינטה נוספה, ו⛔ אף עוגן של `38 § 3` ⛔ לא זז.
+
+   🔴 **ו-`rotate` ⛔ ולא `transform`:** קבוצות השכבה נושאות `transform`
+   בציור מגב (`T-432`), ⇒ כתיבה עליו הייתה מוחקת את השיקוף. */
+[data-arena-scope] [data-arena-figure='enemy'] [data-arena-layer='mainHand'],
+[data-arena-scope] [data-arena-figure='enemy'] [data-arena-layer='offHand'] {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: rotate var(--arena-arms-ms) var(--arena-ease-out);
+}
+
+/* ⛔ **סימנים הפוכים, ⛔ ולא אותו סיבוב:** סיבוב זהה לשתי הזרועות היה **מרים
+   אחת ומוריד את השנייה**. ⇒ כל יד מסתובבת אל **מחוץ** לגוף. */
+[data-arena-scope] [data-arena-telegraph='window'] [data-arena-figure='enemy'] [data-arena-layer='mainHand'],
+[data-arena-scope] [data-arena-telegraph='committed'] [data-arena-figure='enemy'] [data-arena-layer='mainHand'] {
+  rotate: calc(var(--arena-arms-deg) * -1);
+}
+[data-arena-scope] [data-arena-telegraph='window'] [data-arena-figure='enemy'] [data-arena-layer='offHand'],
+[data-arena-scope] [data-arena-telegraph='committed'] [data-arena-figure='enemy'] [data-arena-layer='offHand'] {
+  rotate: var(--arena-arms-deg);
+}
+
+/* חוקה שכבה א׳ א7 — ⛔ **התנוחה **נשארת**, המעבר מוסר.** 🔴 וזה ⛔ אינו
+   `rotate: 0`: «ידיים מורמות» היא **מידע** — היא אומרת «עכשיו הוא מטיל»,
+   בדיוק כמו המילה «מטיל!» שנשארת גם היא. ⇒ מה שמוסר הוא ה**מעבר** אליה. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-figure='enemy'] [data-arena-layer='mainHand'],
+  [data-arena-scope] [data-arena-figure='enemy'] [data-arena-layer='offHand'] {
+    transition: none;
+  }
+}
+
+/* ═══ 🩸 **⟦19/09 · `C-0739` · `T-440`⟧ הלומד **נרתע** — והאות הזה ⛔ לא היה קיים.**
+
+   🔬 **נמדד:** לזירה היו שלושה אותות ויזואליים, ו**שלושתם על ההטלה של הלומד**
+   ⟨`impact` · `crit` · `damage`⟩. ⇒ המכה של ה**יריב** נחתה, פס החיים ירד,
+   וה**גוף ⛔ לא הגיב** — «נפגעתי» הוא הדבר היחיד שהמשחק ⛔ מעולם ⛔ לא אמר בגוף.
+
+   ⛔ **על `translate` ⛔ ולא על `transform`:** `transform` על הדמות תפוס בידי
+   התנוחה (`hit`/`dodge`), ⇒ אנימציה עליו הייתה **דורסת מכה באמצע**. התכונות
+   הבודדות **מתחברות** — בדיוק הנימוק של `T-366`ⓐ.
+
+   ⛔ **ו⛔ זו ⛔ אינה קשת:** רתיעה היא **הדיפה אחורה שמתיישבת**, ⇒ שלושה
+   שלבים ⟨החוצה · חזרה מעבר לנקודה · התיישבות⟩ — זה מה שנותן לה **משקל**
+   במקום להיראות כמו החלקה.
+   🔴 **ושני שמות ⛔ ולא אחד:** שם זהה ⛔ אינו מפעיל אנימציה מחדש ⇒ שתי מכות
+   רצופות היו נראות כמכה אחת. אותו תעלול בדיוק של `arena-hitstop`. */
+@keyframes arena-hurt-a {
+  0%   { translate: 0 0; }
+  30%  { translate: -9% 3%; }
+  65%  { translate: 3% -1%; }
+  100% { translate: 0 0; }
+}
+@keyframes arena-hurt-b {
+  0%   { translate: 0 0; }
+  30%  { translate: -9% 3%; }
+  65%  { translate: 3% -1%; }
+  100% { translate: 0 0; }
+}
+[data-arena-scope] [data-arena-hurt='a'] [data-arena-figure='hero'] {
+  animation: arena-hurt-a var(--arena-hurt-ms) var(--arena-ease-out) 1 both;
+}
+[data-arena-scope] [data-arena-hurt='b'] [data-arena-figure='hero'] {
+  animation: arena-hurt-b var(--arena-hurt-ms) var(--arena-ease-out) 1 both;
+}
+
+/* חוקה שכבה א׳ א7 — ⛔ **והרתיעה ⛔ אינה `display: none`.** היא **תנועה טהורה**
+   ⟨פס החיים ומספר הנזק נושאים את המידע⟩, ⇒ `animation: none`.
+   ⛔ **והצומת ⛔ אינו נתקע:** הוא ⛔ אינו נולד מ-JS — הוא הדמות עצמה — ולכן
+   ⛔ אין כאן `animationend` שצריך לשחרר צומת. ⚠️ **והמחסום הראשון ממילא
+   ב-JS:** תחת תנועה מופחתת התכונה ⛔ אינה מוצבת כלל. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-hurt='a'] [data-arena-figure='hero'],
+  [data-arena-scope] [data-arena-hurt='b'] [data-arena-figure='hero'] {
+    animation: none;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   [data-arena-scope] [data-arena-guard-btn] { transition: none; }

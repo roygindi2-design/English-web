@@ -78,6 +78,14 @@ export interface ArenaStageProps {
    * בדיוק אותו דבר, ויודע היכן הוא מוגן.
    */
   readonly guard?: Lane | null;
+  /**
+   * 🙌 **`T-440` · `37 § 6` — שלב הטלגרף, כדי שהיריב **יזוז**.**
+   *
+   * 🔬 **הסעיף כותב את זה במפורש, ו⛔ מעולם ⛔ לא נבנה:** «הכרזה 5.3 ש׳:
+   * **ידיים מורמות**, גוון סגול, המד מהבהב». ⇒ עד היום היריב עמד ללא ניע
+   * חמש שניות, ו**רק מד** זז.
+   */
+  readonly telegraph?: 'quiet' | 'charging' | 'window' | 'committed';
 }
 
 /**
@@ -112,9 +120,10 @@ export default function ArenaStage({
   lane = null,
   aim = null,
   guard = null,
+  telegraph = 'quiet',
 }: ArenaStageProps): React.JSX.Element {
   return (
-    <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
+    <div data-arena-stage data-arena-phase={phase} data-arena-telegraph={telegraph} className={STAGE_CLASS}>
       {/* ⓐ הסט. ⛔ ראשון ⇒ מאחור, ⛔ בלי `z-index` ובלי מיקום מוחלט על האחרים. */}
       <ArenaScene />
 

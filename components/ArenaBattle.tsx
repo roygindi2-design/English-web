@@ -419,6 +419,21 @@ export default function ArenaBattle({ initialRound, character = null, items = []
   const [crit, setCrit] = useState<'off' | 'a' | 'b'>('off');
   /** ⛔ ref ⛔ ולא state: הוא נקרא **בתוך** האפקט של ההטלה, ו-state כאן היה מוסיף רינדור. */
   const prevEnemyHp = useRef(ENEMY_HP);
+  /**
+   * 🩸 **⟦19/09 · `C-0739` · `T-440`⟧ הלומד **נרתע** כשהמכה נוחתת.**
+   *
+   * 🔬 **הפער, ונמדד ⛔ ולא שוער:** `grep -c prevLearnerHp` ⇒ **0**. לזירה
+   * ⛔ **אין שום אות «היריב פגע בלומד»** — יש `impact` על **הטלה** שלו,
+   * ‏`crit` על קריטי שלו, ו-`damage` על נזק ש**הוא** גרם. ⇒ המכה של היריב
+   * נוחתת, פס החיים יורד — וה**גוף ⛔ אינו מגיב**.
+   * 🔴 **וזה ⛔ אינו קישוט:** «נפגעתי» הוא הדבר היחיד שהמשחק ⛔ מעולם ⛔ לא
+   * אמר לך בגוף, וזו הסיבה שהמכות מרגישות כמו מספר שמשתנה.
+   *
+   * ⛔ **ומראה מדויקת של `prevEnemyHp`** — אותו דפוס, אותו כיוון, ⛔ ואין
+   * כאן מנגנון חדש.
+   */
+  const prevLearnerHp = useRef<number | null>(null);
+  const [hurt, setHurt] = useState<'off' | 'a' | 'b'>('off');
   const [damage, setDamage] = useState<{ readonly amount: number; readonly key: number } | null>(null);
   /**
    * 🔴 **⟦NEW 16/09 · `C-0665` · `T-359`⟧ הקלף **עף** אל היריב, ⛔ ואינו נעלם.**
@@ -514,6 +529,24 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    * ⛔ תחת `prefers-reduced-motion` התכונה ⛔ אינה מוצבת כלל (מחסום ⓐ מתוך שניים —
    * השני הוא בלוק ה-`@media` ב-`app/arcade/arcade-tokens.css`), והסבב נפתר בדיוק כמו קודם.
    */
+  /**
+   * 🩸 **`T-440` — התלות היא ב**מספר**, ⛔ ולא ב-`battle`.** המכה של היריב
+   * נוחתת בתוך `tick`, כלומר בלולאת ה-rAF ⇒ ⛔ אין לה `castCount` להיתלות בו.
+   * ⛔ **אבל `learnerHp` משתנה אחת-עשרה פעמים בקרב, ⛔ ולא 60 בשנייה** —
+   * ‏`tick` מחזיר את **אותה הפניה** כשאף מכה לא זזה. ⇒ תלות בשדה עצמו היא
+   * המעבר הבדיד המדויק.
+   */
+  const learnerHp = battle?.learnerHp ?? null;
+  useEffect(() => {
+    const was = prevLearnerHp.current;
+    prevLearnerHp.current = learnerHp;
+    if (was === null || learnerHp === null || learnerHp >= was) return;
+    // ⛔ **`'a'⇄'b'`, כמו `impact` ו-`crit`:** שם אנימציה זהה ⛔ אינו מפעיל
+    //    מחדש ⇒ שתי מכות רצופות היו נראות כמכה אחת.
+    if (!reducedMotion) setHurt((prev) => (prev === 'a' ? 'b' : 'a'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [learnerHp]);
+
   const castCount = battle === null ? 0 : battle.casts.length;
   useEffect(() => {
     if (castCount === 0 || battle === null) return;
@@ -1300,6 +1333,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         data-arena-stage-area
         data-arena-impact={impact}
         data-arena-crit={crit === 'off' ? undefined : crit}
+        data-arena-hurt={hurt === 'off' ? undefined : hurt}
         /**
          * 🎭 **⟦`T-439`⟧ התנוחה חוזרת — והשחרור הוא המעבר ש**כבר קיים**.**
          *
@@ -1318,6 +1352,8 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           if (e.animationName.startsWith('arena-hitstop')) setImpact('off');
           // ⟦15/09⟧ הרעד משוחרר באותו מנגנון בדיוק — ⛔ אין כאן `setTimeout` חדש.
           if (e.animationName === 'arena-crit-shake') setCrit('off');
+          // 🩸 `T-440` — הרתיעה משתחררת באותו מנגנון בדיוק. ⛔ אפס שעון.
+          if (e.animationName.startsWith('arena-hurt')) setHurt('off');
         }}
         /* ⟦15/09 · `F-260`⟧ `flex-1 min-h-0` — **הבמה בולעת את מה שנשאר.** ⛔ `min-h-0`
            ⛔ אינו קישוט: ילד flex מקבל `min-height:auto` כברירת מחדל ולכן **מסרב
@@ -1554,6 +1590,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           lane={battle.heroLane}
           aim={aimed ? aimLaneAt(battle, aimSwing) : null}
           guard={battle.guardLane}
+          telegraph={telegraphPhase}
         />
 
         {/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ③⟧ מסלול הנגישות של ההצבה.**
