@@ -989,6 +989,64 @@ body:has([data-arena-scope]) > div > main {
 [data-arena-scope] [data-arena-aim='centre'] { left: 39%; }
 [data-arena-scope] [data-arena-aim='right'] { left: 65.5185%; }
 
+/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270`⟧ ההגנה המוצבת — **מצב**, ⛔ ולא אנימציה.**
+
+   🔴 **⛔ אפס `animation` ו⛔ אפס `transition`, וזה ⛔ אינו חיסכון:** ההגנה היא
+   **מידע** — «כאן אתה מוגן» — ⇒ היא חייבת להיראות **בדיוק אותו דבר** תחת
+   `prefers-reduced-motion`. ⇒ ⛔ אין לה מה להסיר שם, ולכן היא ⛔ אינה מופיעה
+   באף בלוק תנועה מופחתת.
+
+   ⛔ **ויושבת **מתחת** לדמות בסדר הצביעה** — היא נוספת לפני חריץ הגיבור ⇒
+   הלומד עומד **לפניה**, ⛔ ולא מאחוריה. 🔬 זה מה שהופך «קיר שבניתי» ל«קיר
+   שמגן עליי»: עצם שמצויר מעל הגוף קורא כמו **כלוב**.
+
+   🔬 **והרוחב נגזר מהנתיב:** מרכזי הנתיבים הם `50% ± --arena-lane-shift`,
+   וההגנה רחבה 26% ⇒ `left = מרכז − 13%`. ⛔ צרה מ**שליש** הבמה, כדי
+   ש⛔ תגלוש לנתיב השכן. */
+[data-arena-scope] [data-arena-guard] {
+  position: absolute;
+  bottom: 6%;
+  /* 🔬 **32% ו⛔ לא 26% — נמדד בדפדפן חי ב-393×852, ⛔ ולא נבחר.** בגרסה
+     הראשונה ההגנה הייתה רחבה 90px מול דמות ברוחב **76px** ⇒ הגוף כיסה כמעט
+     את כולה והיא נקראה **כתם**, ⛔ ולא כחומה. ⇒ היא חייבת לבלוט **משני
+     הצדדים** של הדמות, אחרת ⛔ אין לה צללית.
+     ⛔ **ועדיין צרה משליש הבמה** (‏33.3%) ⇒ ⛔ אינה גולשת לנתיב השכן. */
+  width: 32%;
+  height: 13%;
+  color: var(--arena-dodge);
+  opacity: 0.95;
+}
+[data-arena-scope] [data-arena-guard='left'] { left: 7.9815%; }
+[data-arena-scope] [data-arena-guard='centre'] { left: 34%; }
+[data-arena-scope] [data-arena-guard='right'] { left: 60.0185%; }
+
+/* 🛡️ **כפתור ההצבה — מסלול הנגישות של `§ 5`.**
+   ⛔ **שקוף ו⛔ לא נסתר:** `opacity: 0` היה מסתיר אותו גם מהעין וגם מהעכבר
+   ⛔ אבל משאיר אותו לקורא מסך ולמקלדת — וזה **בדיוק** מה שרוצים: ההקשה על
+   הלומד היא תאום לא-חזותי של המחווה, ⛔ ולא כפתור שמתחרה איתה על המסך.
+   ⛔ **`display:none`/`visibility` היו מוציאים אותו מסדר המקלדת** ⇒ מסלול
+   הנגישות היה נמחק בדיוק עבור מי שזקוק לו.
+   ⛔ **ו-`:focus-visible` מחזיר אותו** — מי שמנווט במקלדת **חייב** לראות
+   היכן הוא עומד. */
+[data-arena-scope] [data-arena-guard-btn] {
+  position: absolute;
+  bottom: 2%;
+  left: calc(50% - 22px);
+  opacity: 0;
+  transition: translate var(--arena-lane-ms) var(--arena-ease-out);
+}
+[data-arena-scope] [data-arena-guard-btn]:focus-visible {
+  opacity: 1;
+  outline: 3px solid var(--arena-gold-light);
+}
+[data-arena-scope] [data-arena-guard-btn][data-arena-lane='left'] { translate: calc(var(--arena-lane-shift) * -1); }
+[data-arena-scope] [data-arena-guard-btn][data-arena-lane='centre'] { translate: 0; }
+[data-arena-scope] [data-arena-guard-btn][data-arena-lane='right'] { translate: var(--arena-lane-shift); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-guard-btn] { transition: none; }
+}
+
 /* ② הכדור — **אותו דפוס בדיוק** של `arena-throw-fly`, בכיוון ההפוך: צומת
    `position: fixed` שנושא `--arena-bolt-dx/-dy` מ-JS ומשתחרר ב-`onAnimationEnd`.
    ⛔ **`ease-in` ⛔ ולא `ease-out`, וזה הפוך מההטלה בכוונה** ⟨`animate` § 5⟩: הרגע

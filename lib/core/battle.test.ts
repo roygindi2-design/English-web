@@ -804,7 +804,11 @@ describe('T-438 · D-270 ① — ההגנה המוצבת', () => {
     const hit = tick(guarded, ENEMY_SWING_MS);
     expect(hit.learnerHp, '⛔ אפס נזק').toBe(guarded.learnerHp);
     expect(hit.guardLane, 'נשברה').toBeNull();
-    expect(hit.immuneBy, 'והמסך יודע **מי** הציל').toBe('guard');
+    /* ⛔ **ו-`immuneBy` ⛔ אינו נוגע בזה, וזה נשקל ונדחה:** השדה מצומד
+       ל-`dodgedSwing` והמסך מצייר אותו רק כשיש גלגול תלוי ⇒ `'guard'` שם
+       היה ⛔ לעולם ⛔ לא מצויר ו**נדבק** — בדיוק מחלקת `F-305`. ⇒ הבליעה
+       נגזרת מ-`guardLane` שעובר ל-`null`, וזה **מצב בדיד** שאפשר לצפות בו. */
+    expect(hit.immuneBy, '⛔ ⛔ לא נפתח כאן מצב נדבק שני').toBeNull();
   });
 
   it('🔴 והמכה ה**שנייה** כן מורידה — ⛔ היא ⛔ אינה קיר קבוע', () => {

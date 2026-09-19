@@ -23,7 +23,10 @@ import {
   MANA_CAP,
   canUseAbility,
   aimLaneAt,
+  canPlaceGuard,
   cast,
+  placeGuard,
+  GUARD_COST,
   isFrozen,
   spendAbility,
   isRage,
@@ -36,8 +39,11 @@ import {
   STREAK_HOT,
   telegraphAt,
   tick,
+  CENTRE,
+  LANE_NAMES,
   type AbilityKey,
   type BattleState,
+  type Lane,
   type TelegraphPhase,
 } from '@/lib/core/battle';
 import type { ArcadeAnswer } from '@/lib/core/arcadeResult';
@@ -176,6 +182,21 @@ const ENEMY_HP_HE = 'חיי היריב';
  * 🔴 **ובלי זה כל מכניקת התנועה חסרת פשר:** ⛔ אין טעם להתחמק ממכה כשאי-אפשר
  * לראות מה היא עולה.
  */
+/**
+ * 🛡️ **`T-438` — ההכרזה על ההגנה **נגזרת מהמצב**, ⛔ ולא צומת חולף.**
+ *
+ * 🔬 **וזה נשקל ונדחה:** צומת חולף היה דורש שחרור, ובקובץ הזה שחרור פירושו
+ * `onAnimationEnd` — ⇒ תחת `prefers-reduced-motion` המשך מתאפס ל-`0.01ms`
+ * וההודעה הייתה **מהבהבת ונעלמת** לפני שקורא מסך הספיק להגיע אליה.
+ * ⇒ אזור `aria-live` **נגזר**: הוא משתנה בדיוק פעמיים לכל הגנה, ⛔ אינו זקוק
+ * לשחרור, ו⛔ אינו תלוי בתנועה כלל.
+ * ⛔ **וההכרזה ⛔ אינה מיותרת:** ההגנה **נראית** על הרצפה, ⛔ אבל לומד שקורא
+ * מסך ⛔ אינו רואה אותה — והמאנה שלו כן ירדה.
+ */
+const GUARD_ON_HE = 'הגנה מוצבת בנתיב שלך';
+/** ⛔ **השם הנגיש נוקב במחיר** — כפתור שגובה משאב ו⛔ אינו אומר כמה הוא פוגם. */
+const GUARD_BTN_HE = `הצבת הגנה בנתיב שלך · ${String(GUARD_COST)} מאנה`;
+
 const LEARNER_HE = 'את/ה';
 const LEARNER_HP_HE = 'החיים שלך';
 const MANA_HE = 'מאנה';
@@ -1332,6 +1353,14 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           if (gesture?.kind === 'move') {
             setBattle((prev) => (prev === null ? prev : swipe(prev, gesture.dx, elapsedRef.current)));
           }
+          // 🛡️ **⟦`T-438` · `D-270` ③⟧ החלקה **למטה** מציבה הגנה.**
+          //    ⛔ **ב-`pointerup` ו⛔ לא ב-`pointermove`, וזה ⛔ אינו חוסר עקביות:**
+          //    תזוזה היא **רציפה** ⇒ היא רוצה להיות מוכרעת תוך כדי; הצבה היא
+          //    **בדידה** וגובה מאנה ⇒ הכרעה תוך כדי גרירה הייתה מציבה **ומשלמת**
+          //    עוד לפני שהאצבע סיימה לומר מה היא רוצה.
+          if (gesture?.kind === 'guard') {
+            setBattle((prev) => (prev === null ? prev : placeGuard(prev, elapsedRef.current)));
+          }
         }}
         onPointerCancel={() => { stageFrom.current = null; }}
       >
@@ -1489,7 +1518,31 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           character={character}
           lane={battle.heroLane}
           aim={aimed ? aimLaneAt(battle, aimSwing) : null}
+          guard={battle.guardLane}
         />
+
+        {/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ③⟧ מסלול הנגישות של ההצבה.**
+
+            🔴 **`§ 5` מחייב אותו לכל מחווה** — «מסלול נגישות **נוסף**: הקשה
+            בוחרת, הקשה על היריב משגרת. **נוסף, לא במקום**». ⇒ החלקה למטה חייבת
+            תאום שאינו מחווה.
+            🎯 **והקשה על ה**לומד** היא הסימטריה שנלמדת מעצמה:** הקשה על היריב
+            כבר משמעותה «שגר»; על הלומד ⛔ לא הייתה לה משמעות. ⇒ מקישים על מי
+            שרוצים שיפעל.
+            ⛔ **והכפתור ⛔ אינו בולע את ההחלקה:** הוא **צאצא** של אזור הבמה,
+            ⇒ `pointerdown`/`pointermove` ממשיכים לבעבע אליו והתזוזה עובדת דרכו.
+            ⛔ **והוא נע עם הנתיב** — אותו `--arena-lane-shift` בדיוק, ⇒ הוא
+            תמיד **על** הלומד. */}
+        <button
+          type="button"
+          data-arena-guard-btn
+          data-arena-lane={LANE_NAMES[battle.heroLane ?? CENTRE]}
+          disabled={!canPlaceGuard(battle, elapsedRef.current)}
+          onClick={() => { setBattle((prev) => (prev === null ? prev : placeGuard(prev, elapsedRef.current))); }}
+          className="min-h-touch min-w-touch rounded-full"
+        >
+          <span className="sr-only">{GUARD_BTN_HE}</span>
+        </button>
         {/* 🔴 **⟦הועבר 16/09 · `C-0665` · `T-364`⟧ המספר עבר **אל היריב**, ⛔ ואינו יושב על המסילה.**
 
             🔬 **נמדד ברנדר, ⛔ ולא באומדן:** `render_video_B.py:564` קורא
@@ -1556,6 +1609,11 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         {/* ⛔ **T-363 — אותה חסינות, שתי מילים.** `§ 6` (גלגול) ו-`§ 4` (`מגן`) מגיעות
             שתיהן ל-`dodgedSwing`, ⇒ עד היום שתיהן היו מדפיסות «התחמקות!» — ולומד
             שלחץ `מגן` היה מקבל הודעה על מחווה ש⛔ לא עשה. `immuneBy` הוא מה שמפריד. */}
+        {/* 🛡️ `T-438` — ⛔ **`sr-only` ו⛔ לא מוסתר:** ההגנה כבר **נראית** על
+            הרצפה; מה שחסר הוא מי ש⛔ אינו רואה אותה. */}
+        <p className="sr-only" role="status" aria-live="polite">
+          {battle.guardLane === null ? '' : GUARD_ON_HE}
+        </p>
         {battle.dodgedSwing !== null && (
           <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
             {battle.immuneBy === 'shield' ? SHIELDED_HE : DODGED_HE}

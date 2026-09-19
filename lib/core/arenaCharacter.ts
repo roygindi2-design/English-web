@@ -76,6 +76,25 @@ export const CHARACTER_BIAS_HE: Readonly<Record<ArenaCharacter, readonly string[
  */
 export const CHARACTER_INTRO_HE = 'ניתן לשינוי בכל רגע ממסך הבית, בלי לאבד רמה או ציוד';
 
+/**
+ * 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ②⟧ איזו הגנה כל דמות מציבה.**
+ *
+ * ⚠️ **הכרעת רוי:** «לפי **סוג הדמות** — מכשף ⇒ **שדה**, לוחם ⇒ **חומה**».
+ * ⛔ **והמיפוי כאן ⛔ ולא ברכיב**, מאותה סיבה ש-`CHARACTER_LABELS_HE` כאן:
+ * עובדה על דמות שחיה בשני מקומות סוטה בשלישי.
+ * 🔬 **והצל מקבל `field` ⛔ ולא `wall`, וזה ⛔ אינו טעם:** ל`צל` ⛔ אין רגליים
+ * (`CHARACTER_HIDES`) — יצור שמרחף ⛔ אינו בונה לבנים.
+ */
+export const CHARACTER_GUARD: Readonly<Record<ArenaCharacter, 'wall' | 'field' | 'stakes'>> =
+  Object.freeze({
+    wizard: 'field',
+    warrior: 'wall',
+    armorer: 'wall',
+    golem: 'wall',
+    hunter: 'stakes',
+    shade: 'field',
+  });
+
 export function isArenaCharacter(value: unknown): value is ArenaCharacter {
   return typeof value === 'string' && (ARENA_CHARACTERS as readonly string[]).includes(value);
 }

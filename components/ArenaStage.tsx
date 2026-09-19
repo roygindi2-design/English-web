@@ -3,6 +3,8 @@ import ArenaScene from '@/components/ArenaScene';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
 import { CENTRE, LANE_NAMES, type Lane, type StagePhase } from '@/lib/core/battle';
+import { CHARACTER_GUARD } from '@/lib/core/arenaCharacter';
+import { GUARD_PATHS, GUARD_VIEW } from '@/lib/core/characterBase';
 
 /**
  * הבמה — T-117 · D-060 · חוקה § 5.
@@ -68,6 +70,14 @@ export interface ArenaStageProps {
    * יכול לשחק.
    */
   readonly aim?: Lane | null;
+  /**
+   * 🛡️ **`T-438` · `D-270` ① — הנתיב שההגנה המוצבת יושבת בו, או `null`.**
+   *
+   * 🔴 **והיא **מידע**, ⛔ ולא קישוט** — בדיוק כמו סימן הרצפה: צומת **שקיים
+   * או לא קיים**, ⛔ אפס אנימציה. ⇒ לומד עם `prefers-reduced-motion` רואה
+   * בדיוק אותו דבר, ויודע היכן הוא מוגן.
+   */
+  readonly guard?: Lane | null;
 }
 
 /**
@@ -101,6 +111,7 @@ export default function ArenaStage({
   character = null,
   lane = null,
   aim = null,
+  guard = null,
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
@@ -152,6 +163,22 @@ export default function ArenaStage({
           ש⛔ אינו רואה את הרצפה ⛔ אינו זקוק להכרזה שנייה על **מיקום** שהוא ממילא
           ⛔ אינו יכול לנצל בזמן שנותר. */}
       {aim !== null && <span data-arena-aim={LANE_NAMES[aim]} aria-hidden />}
+
+      {/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ②⟧ ההגנה המוצבת.**
+          ⛔ **אח של שני החריצים**, מאותה סיבה בדיוק של סימן הרצפה: היא יושבת
+          על ה**נתיב**, ⛔ ולא על הלומד — וזה **כל** ההבדל בינה לבין `מגן`.
+          צומת שייכנס לתוך חריץ הגיבור היה נע איתו, כלומר הופך להיות `מגן`.
+          🎭 **והצורה מגיעה מהדמות** ⟨הכרעת רוי⟩, וכל קואורדינטה
+          ב-`lib/core/characterBase.ts`. */}
+      {guard !== null && (
+        <span data-arena-guard={LANE_NAMES[guard]} aria-hidden>
+          <svg viewBox={`0 0 ${String(GUARD_VIEW.width)} ${String(GUARD_VIEW.height)}`} className="h-full w-full" fill="currentColor">
+            {GUARD_PATHS[character === null || character === undefined ? 'wall' : CHARACTER_GUARD[character]].map((d) => (
+              <path key={d} d={d} />
+            ))}
+          </svg>
+        </span>
+      )}
 
       {/* ⓒ הגיבור — **קרוב**: נמוך, גדול, עם צל רחב יותר. העוטף נושא את לולאת
           ההמתנה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש `transition: transform`

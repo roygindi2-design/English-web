@@ -160,7 +160,7 @@ export interface BattleState {
    * אומר «התחמקות!» על אחת ו«מגן» על השנייה, ⛔ ושתיהן ⛔ לא היו ניתנות להבחנה.
    * ⛔ ⛔ אינו חוק שני: `tick` ⛔ אינו קורא אותו כלל.
    */
-  readonly immuneBy: 'dodge' | 'shield' | 'guard' | null;
+  readonly immuneBy: 'dodge' | 'shield' | null;
   /**
    * 🛣️ **`null` ⇒ הלומד ⛔ טרם בחר נתיב, והיריב **עוקב** אחריו.**
    *
@@ -378,10 +378,14 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
     lastSwingMs: elapsedMs,
     pendingPenalty: 0,
     dodgedSwing: immune ? null : state.dodgedSwing,
-    // 🛡️ `T-438` — ⛔ **`'guard'` ⛔ אינו חוק שני:** `tick` ⛔ אינו קורא את השדה
-    //    הזה כלל. הוא קיים כדי שהמסך יאמר «חומה!» ⛔ ולא «התחמקות!» — אותה
-    //    הבחנה בדיוק ש-`T-363` פתחה עבור `מגן`.
-    immuneBy: guardBroken ? 'guard' : immune ? null : state.immuneBy,
+    /* 🛡️ **⟦`T-438`⟧ ⛔ **ההגנה ⛔ אינה נכנסת ל-`immuneBy`, וזה נשקל ונדחה.**
+       🔬 השדה הזה **מצומד** ל-`dodgedSwing`: הוא אומר «איך הגיעה החסינות
+       ה**תלויה**», והמסך מצייר אותו **רק** כש-`dodgedSwing !== null`. ⇒ ערך
+       `'guard'` שם היה ⓐ ⛔ לעולם ⛔ לא מצויר, ו-ⓑ **נדבק** — כי ⛔ שום ענף
+       ⛔ אינו מנקה אותו — ⇒ גלגול מאוחר יותר היה מוצג כ«חומה!».
+       ⛔ **וזו בדיוק מחלקת `F-305`** ⟨מצב שנדבק⟩, ⇒ ⛔ לא נפתחה כאן שנייה.
+       ⇒ הבליעה נגזרת במסך מ-`guardLane` שעובר ל-`null`, כמצב **בדיד**. */
+    immuneBy: immune ? null : state.immuneBy,
     guardLane: guardBroken ? null : state.guardLane,
   };
 }

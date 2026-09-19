@@ -2,6 +2,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ArenaBattle, { ARENA_TAUGHT_KEY } from '@/components/ArenaBattle';
+import { readFileSync } from 'node:fs';
+import { withoutComments } from '@/lib/testSource';
 import ArenaStage from '@/components/ArenaStage';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 
@@ -654,5 +656,83 @@ describe('C-0735 · T-437 — התנועה רציפה', () => {
     expect(lane(), 'חציה ② — היפוך כיוון באותה גרירה').toBe('centre');
     dragTo(240);
     expect(lane(), 'חציה ③').toBe('left');
+  });
+});
+
+/**
+ * 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270`⟧ ההגנה המוצבת, על המסך.**
+ *
+ * 🔴 **והטענה שמכריעה כאן ⛔ אינה «היא מצוירת» — היא «היא יושבת על ה**נתיב**».**
+ * צומת שייכנס לתוך חריץ הגיבור היה **נע איתו**, כלומר הופך להיות `מגן` —
+ * והמכניקה כולה מאבדת את מה שמבדיל אותה.
+ */
+describe('C-0737 · T-438 — ההגנה על המסך', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+  const guardOf = (g: Parameters<typeof ArenaStage>[0]['guard'], c: Parameters<typeof ArenaStage>[0]['character']) => {
+    const { container } = render(<ArenaStage phase="idle" items={[]} guard={g} character={c} />);
+    return container.querySelector('[data-arena-guard]');
+  };
+
+  it('⛔ אין הגנה ⇒ ⛔ אין צומת', () => {
+    expect(guardOf(null, 'warrior')).toBeNull();
+  });
+
+  it('🔴 יושבת על ה**נתיב**, ⛔ ולא על הלומד — וזה כל ההבדל מ`מגן`', () => {
+    const { container } = render(
+      <ArenaStage phase="idle" items={[]} lane={1} guard={-1} character="warrior" />,
+    );
+    const hero = container.querySelector('[data-arena-slot="hero"]');
+    expect(hero?.querySelector('[data-arena-guard]'), '⛔ ⛔ אינה בתוך החריץ').toBeNull();
+    expect(container.querySelector('[data-arena-guard]')?.getAttribute('data-arena-guard'))
+      .toBe('left');
+  });
+
+  it('🎭 הצורה **לפי הדמות** — הכרעת רוי', () => {
+    // 🔬 שתי דמויות, שתי צורות: אחרת «לפי סוג הדמות» הוא משפט בלי כיסוי.
+    const wizard = guardOf(0, 'wizard')?.querySelector('path')?.getAttribute('d');
+    cleanup();
+    const warrior = guardOf(0, 'warrior')?.querySelector('path')?.getAttribute('d');
+    expect(wizard).toBeTruthy();
+    expect(warrior).toBeTruthy();
+    expect(wizard, 'מכשף ⇒ שדה · לוחם ⇒ חומה').not.toBe(warrior);
+  });
+
+  it('⛔ אפס קואורדינטה ברכיב — הצורה מגיעה מהמודול הטהור', () => {
+    const src = readFileSync('components/ArenaStage.tsx', 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    expect(src).toContain('GUARD_PATHS');
+    expect(src).not.toMatch(/d="M-?\d/);
+  });
+
+  it('🔴 מסלול הנגישות קיים, נושא את **המחיר** בשם, ונע עם הנתיב', () => {
+    // `§ 5`: «מסלול נגישות **נוסף** … נוסף, לא במקום» ⇒ למחווה חייב להיות תאום.
+    render(<ArenaBattle initialRound={ROUND} />);
+    const btn = document.querySelector('[data-arena-guard-btn]');
+    expect(btn, 'הכפתור חייב להיות במסמך').not.toBeNull();
+    expect(btn?.textContent ?? '').toContain('מאנה');
+    expect(btn?.getAttribute('data-arena-lane')).toBe('centre');
+  });
+
+  it('⛔ אפס מאנה בפתיחה ⇒ הכפתור `disabled` **באמת**', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(document.querySelector('[data-arena-guard-btn]')?.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('⛔ ההכרזה לקורא מסך **נגזרת** — ⛔ ואינה צומת שצריך לשחרר', () => {
+    // 🔬 צומת חולף היה משתחרר ב-`onAnimationEnd`, ⇒ תחת תנועה מופחתת המשך
+    //    מתאפס ל-0.01ms וההודעה הייתה נעלמת לפני שקורא מסך הגיע אליה.
+    const src = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+    expect(src).toMatch(/battle\.guardLane === null \? '' : GUARD_ON_HE/);
   });
 });
