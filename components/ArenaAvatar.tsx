@@ -3,6 +3,7 @@ import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharac
 import {
   BELT_SIZE,
   BODY_SIZE,
+  CONE,
   HEAD_RADIUS,
   LAYER_ORDER,
   anchorFor,
@@ -116,7 +117,10 @@ const OUTLINE_CLASS = 'text-ink';
  */
 const TONE = {
   lit: 'text-[color:color-mix(in_srgb,currentColor_58%,white)]',
-  deep: 'text-[color:color-mix(in_srgb,currentColor_78%,black)]',
+  /** 🔬 `C-0722` — גוון שלישי נדרש **אחרי** שנמדד: החגורה והרגליים היו שתיהן
+   *  `deep` ⇒ הן **נמסו זו לזו** והחגורה נעלמה. ברנדר הן בשני גוונים שונים. */
+  mid: 'text-[color:color-mix(in_srgb,currentColor_88%,black)]',
+  deep: 'text-[color:color-mix(in_srgb,currentColor_70%,black)]',
 } as const;
 
 /** ⛔ `fill="currentColor"` **חוזר** כאן: ה-`g` הפנימי משנה `color`, והמילוי נגזר ממנו. */
@@ -155,101 +159,88 @@ const VIEW_BOX = '-100 -108 200 252';
  */
 const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
   /**
-   * 🎨 **⟦18/09 · `C-0721`⟧ הפרופורציות נבחרו ב-Figma, ⛔ ולא נוחשו כאן.**
-   * ארבע גרסאות צוירו זו לצד זו בעמוד `English-web · Arena` ונשפטו בצילום:
-   * ‏**v2** (גוף טרפז עם פינות חדות) יצא **נוקשה ושבור יותר** מהנשלח — תוצאה
-   * שלילית ששווה לרשום; **v3** הקטין ראש אך **שיקע** אותו בגוף; **v4** ניצחה,
-   * והמספרים כאן הם שלה. ⛔ כל אחד מהם עדיין נגזר מעוגן, ⛔ ולא מוחלט.
+   * 🎨 **⟦19/09 · `C-0722`⟧ הצללית **נמדדה מהרנדר**, ⛔ ולא נוחשה.**
+   * ‏`docs/design/kol-B-03-battle.png` פורק לפי צבעים שטוחים והומר ליחידות השלד
+   * ‏(עיגון על מרכז הראש ועל קו הרגליים, `s = 0.928`). ⇒ **לוחם רחב ונמוך**:
+   * גוף `90×86`, רגליים קצרות, ראש `r30`. מה שהיה כאן תיאר דמות **צרה וגבוהה**,
+   * וזה בדיוק מה שרוי קרא לו «נראה גרוע».
+   * ⛔ **ו⛔ אין כאן מגפיים** — הרנדר מצייר שתי רגליים כהות **עד הסוף**, ⛔ בלי
+   * מגף נפרד. שכבה ריקה ⛔ אינה מצוירת (`38 § 4`).
    */
   legs: (
-    <Tone tone="deep">
-      <rect x={BOOT_L.x - 13} y={BELT.y - 5} width={26} height={BOOT_L.y - BELT.y + 5} rx={11} />
-      <rect x={BOOT_R.x - 13} y={BELT.y - 5} width={26} height={BOOT_R.y - BELT.y + 5} rx={11} />
+    <Tone tone="mid">
+      <rect x={BOOT_L.x - 17} y={BELT.y - 15} width={34} height={BOOT_L.y - BELT.y + 15} rx={10} />
+      <rect x={BOOT_R.x - 17} y={BELT.y - 15} width={34} height={BOOT_R.y - BELT.y + 15} rx={10} />
     </Tone>
   ),
-  boots: (
-    <>
-      <rect x={BOOT_L.x - 17} y={BOOT_L.y - 10} width={34} height={24} rx={8} />
-      <rect x={BOOT_R.x - 17} y={BOOT_R.y - 10} width={34} height={24} rx={8} />
-    </>
-  ),
-  /**
-   * 🔬 **⟦`C-0721`⟧ הגוף **מגיע לחגורה** — נמדד, ⛔ ולא הונח.** הגובה היה
-   * `BODY_SIZE.height` (84) והסתיים על `y = 24`, בעוד החגורה יושבת על `40` ⇒
-   * **16 יחידות של רקע הציצו בין החזה למכנסיים**, והדמות נקראה כשני חלקים.
-   * ⇒ הגובה נגזר עכשיו מ**המרחק לחגורה**, ⛔ ולא ממספר קבוע.
-   */
   body: (
     <rect
       x={BODY.x - BODY_SIZE.width / 2}
       y={BODY.y - BODY_SIZE.height / 2}
       width={BODY_SIZE.width}
-      height={BELT.y - 3 - (BODY.y - BODY_SIZE.height / 2)}
-      rx={20}
+      height={BODY_SIZE.height}
+      rx={16}
     />
   ),
+  /**
+   * ⛔ **קו אמצע, ⛔ ולא לוח חזה.** 🔬 הרנדר מצייר על הגוף **קו אנכי דק** בלבד —
+   * לוח בהיר היה המצאה שלי, והוא זה שהפך את הגוף ל«סינר».
+   */
   chest: (
-    <Tone tone="lit">
-      <rect x={BODY.x - 26} y={BODY.y - 24} width={52} height={36} rx={14} />
+    <Tone tone="deep">
+      <rect x={BODY.x - 2} y={BODY.y - BODY_SIZE.height / 2 + 10} width={4} height={BODY_SIZE.height - 22} rx={2} />
     </Tone>
   ),
   belt: (
     <Tone tone="deep">
       <rect
         x={BELT.x - BELT_SIZE.width / 2}
-        y={BELT.y - BELT_SIZE.height / 2 - 2}
+        y={BELT.y - BELT_SIZE.height / 2}
         width={BELT_SIZE.width}
         height={BELT_SIZE.height}
-        rx={6}
+        rx={4}
       />
     </Tone>
   ),
-  /**
-   * 💪 **הזרוע — כפות הידיים ⛔ מפסיקות לרחף** (`C-0719`), ו⛔ **אינה רצועה ישרה**
-   * (`C-0721`): היא רחבה בכתף, צרה בפרק, ו**נכנסת אל תוך כף היד** ⇒ אין תפר.
-   * ⛔ אין שכבה חדשה (`38 § 5`) — היא נכנסת לשכבה שכף היד כבר יושבת בה.
-   */
-  offHand: (
-    <>
-      <path
-        d={`M${SHOULDER_L.x - 8} ${SHOULDER_L.y - 2}L${OFF_HAND.x - 8} ${OFF_HAND.y - 2}L${OFF_HAND.x + 8} ${OFF_HAND.y + 4}L${SHOULDER_L.x + 10} ${SHOULDER_L.y + 2}z`}
-      />
-      <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={11} /></Tone>
-    </>
-  ),
+  offHand: <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={11} /></Tone>,
   head: (
     <>
-      {/* 💇 שיער קוצני. ⛔ `data-arena-part` ⛔ לא זז — הוא הוו של א4 שמניע את הנדנוד.
-          🔬 והקודקוד הגבוה יושב על `-100`, בתוך ה-`viewBox` שמתחיל ב-`-108`. */}
+      {/* 💇 השיער — ברנדר זהו **מסרק של קוצות** מעל הראש, `-108..-82` ביחידות השלד.
+          🔬 הקצה הגבוה יושב על `-104`: ה-`viewBox` מתחיל ב-`-108`, והגולה הזהובה
+          שהרנדר מניח מעליו (`-118`) ⛔ **אינה נכנסת** ⇒ ⛔ לא צוירה, ⛔ ולא הוזזה. */}
       <Tone tone="deep">
         <path
           data-arena-part="hair"
-          d={`M${HEAD.x - 23} ${HEAD.y - 14}l5 -20 8 14 6 -18 7 16 7 -12 6 20z`}
+          d={`M${HEAD.x - 31} ${HEAD.y - 22}l4 -22 7 14 6 -20 6 18 7 -16 5 26z`}
         />
-        <circle cx={HEAD.x} cy={HEAD.y - 2} r={31} />
       </Tone>
-      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y + 2} r={23} /></Tone>
+      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} /></Tone>
     </>
   ),
-  /**
-   * 🎽 **הכתפיות **נכנסות אל הגוף**.** 🔬 העוגן יושב על `±52` בעוד חצי-רוחב הגוף
-   * הוא `38` ⇒ כתפייה שמרוכזת עליו **מרחפת מחוץ לגוף**, וכך היא נראתה. ⇒ היא
-   * מוסטת פנימה ב-12 ו**חופפת את קצה הגוף**.
-   */
+  /** 🎽 כתפיות — **עיגולים על העוגן**, בדיוק כמו ברנדר (`r24` על `±46,-13`). */
   shoulders: (
     <Tone tone="lit">
-      <rect x={SHOULDER_R.x - 28} y={SHOULDER_R.y - 16} width={32} height={28} rx={13} />
-      <rect x={SHOULDER_L.x - 4} y={SHOULDER_L.y - 16} width={32} height={28} rx={13} />
+      <circle cx={SHOULDER_R.x} cy={SHOULDER_R.y} r={24} />
+      <circle cx={SHOULDER_L.x} cy={SHOULDER_L.y} r={24} />
     </Tone>
   ),
-  mainHand: (
-    <>
-      <path
-        d={`M${SHOULDER_R.x - 10} ${SHOULDER_R.y - 2}L${MAIN_HAND.x - 6} ${MAIN_HAND.y - 4}L${MAIN_HAND.x + 8} ${MAIN_HAND.y + 2}L${SHOULDER_R.x + 6} ${SHOULDER_R.y}z`}
-      />
-      <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={11} /></Tone>
-    </>
-  ),
+  mainHand: <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={11} /></Tone>,
+};
+
+/**
+ * 🧙 **⟦19/09 · `C-0722`⟧ דמות שהצללית שלה **מחליפה** את הגוף, ⛔ ולא מלבישה אותו.**
+ *
+ * 🔬 **נמדד מהרנדר, ⛔ ולא הוחלט:** הקוסם ב-`kol-B-03-battle.png` הוא **חרוט אחד**
+ * מקצה הכובע (`y -100`) ועד השוליים (`y 112`, ±77) — ⛔ **אין לו ראש עגול, ⛔ אין
+ * כתפיות, ⛔ אין חגורה ו⛔ אין רגליים.** פניו הן **דיסק כהה על החרוט**, ⛔ ולא ראש.
+ * ⇒ לצייר עליו את שכבות הבסיס פירושו לצייר דמות אחרת ואז להסתיר אותה חלקית —
+ * וזה בדיוק מה שהיה כאן, וזה מה שנראה שבור.
+ *
+ * ⛔ **⛔ אינו «שכבה חדשה»** (`38 § 5`): הרשימה מונה שכבות שה-**בסיס** מדלג עליהן
+ * כשדמות מספקת אותן בעצמה. ⛔ אף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`.
+ */
+const CHARACTER_HIDES: Partial<Record<ArenaCharacter, readonly Layer[]>> = {
+  wizard: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
 };
 
 /**
@@ -320,119 +311,62 @@ const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
 const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
   wizard: [
     /**
-     * 🧙 **⟦18/09 · `C-0718`⟧ הכובע המחודד — **הצללית** שאומרת «קוסם».**
-     *
-     * 🔬 **הפער שנמדד ב-`C-0718` בצילום ×5 של `[data-arena-figure=enemy]`, ⛔ ולא הוסק:**
-     * ליריב היה **קו שיער של גיבור** (`BASE_LAYERS.head`, ‏`data-arena-part="hair"`) —
-     * אותה צורה בדיוק שהגיבור נושא. ⇒ שתי הדמויות חלקו ראש זהה, וההבדל היחיד ביניהן
-     * היה **הצבע**. ‏`kol-B-03-battle.png` מצייר חרוט אחד מקצה הכובע ועד שולי הגלימה.
-     *
-     * ⛔ **שכבה קיימת (`headgear`), ⛔ ולא שכבה שהומצאה** — `38 § 5`. ‏`armorer` כבר
-     * מניח שם מצחייה, ⇒ זהו הערוץ, ⛔ ולא תקדים חדש.
-     * ⛔ **ו⛔ אינו מועתק מ-`wizard_sprite`** (`38 § 5` אוסר): הוא נבנה על `HEAD` ועל
-     * `HEAD_RADIUS` בלבד, כמו כל צורה אחרת בקובץ.
-     * ⛔ **צבע התפקיד, ⛔ ולא צבע שני:** מילוי `currentColor` ⇒ הוא עובר את אותה
-     * מדידת ניגודיות שכל שכבת בסיס עוברת (C-0502), גם במסך בחירת הדמות.
-     *
-     * 🔬 **והחוד נגזר מה-`viewBox`, ⛔ ולא נבחר — אחרי שהנחתי אותו גבוה מדי וזה נמדד:**
-     * ניסיון ראשון שם את הקצה על `HEAD.y - HEAD_RADIUS - 46 = -142`, וה-`viewBox` מתחיל
-     * ב-`-108` ⇒ **34 יחידות מתוך 46 נחתכו**, והכובע צויר כ**גג שטוח**. הצילום ב-×5
-     * הראה זאת מייד. ⇒ הקצה יושב `8` מעל קודקוד הראש (`HEAD.y - HEAD_RADIUS = -96`),
-     * כלומר `-104`, ⇒ **4 יחידות של מרווח** מתחת לגבול המסגרת.
-     * ⛔ **וה-`viewBox` ⛔ לא הורחב כדי להכיל כובע גבוה יותר:** הוא נגזר מהעוגנים,
-     * והגדלתו הייתה **מכווצת כל דמות בכל מסך** ב-14% — מחיר פריסה עבור 30 יחידות של
-     * כובע. ⇒ הכובע התאים את עצמו למסגרת, ⛔ ולא להפך.
+     * 🧙 **החרוט — הכובע והגלימה הם **צורה אחת**, בדיוק כמו ברנדר.**
+     * 🔬 קודקוד `(0,-100)` · שוליים `(±77, 112)`. נמדד מפרופיל השורות של
+     * ‏`kol-B-03-battle.png`: `y 73` קודקוד, `y 276` שוליים, רוחב 144.
      */
     {
-      layer: 'headgear',
-      shape: (
-        <Tone tone="deep">
-        <path
-          /* 🔬 **⟦`C-0719`⟧ השוליים עלו מעל העיניים — נמדד בצילום, ⛔ ולא נצפה מראש.**
-             ‏`LAYER_ORDER` מציב את `headgear` **אחרי** `head` ⇒ הכובע נצבע **מעל**
-             הפנים. בבסיס הקודם (`HEAD.y + 4`) חצי-הרוחב שלו בגובה העיניים הוא
-             ‏**36.5** מול עיניים ב-`x = ±11` ⇒ **הוא כיסה את שתיהן לגמרי**, והצילום
-             ב-×5 הראה קוסם בלי פנים. ⇒ השוליים ב-`HEAD.y - 13`, שישה יחידות מעל
-             קצה העין העליון. */
-          d={`M${HEAD.x} ${HEAD.y - HEAD_RADIUS - 8}L${HEAD.x + HEAD_RADIUS + 10} ${HEAD.y - 13}H${HEAD.x - HEAD_RADIUS - 10}z`}
-        />
-        </Tone>
-      ),
-    },
-    {
-      layer: 'legs',
+      layer: 'body',
       shape: (
         <path
-          d={`M${BODY.x - BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2 - 10}L${BOOT_L.x - 24} ${BOOT_L.y - 6}H${BOOT_R.x + 24}L${BODY.x + BODY_SIZE.width / 2} ${BODY.y + BODY_SIZE.height / 2 - 10}z`}
+          d={`M${BODY.x} ${CONE.apexY}L${BODY.x + CONE.hemHalfWidth} ${BOOT_L.y}H${BODY.x - CONE.hemHalfWidth}z`}
         />
       ),
     },
     /**
-     * 👁️ **⟦18/09 · `C-0719`⟧ שתי עיניים זוהרות — הן, ⛔ ולא הצבע, שהופכות צללית לדמות.**
-     *
-     * 🔬 **ולמה **זוהרות** ⛔ ולא פנים כהות, וזו מדידה ⛔ ולא טעם:** ‏`kol-B-03-battle.png`
-     * מצייר **פנים שחורות עם עיניים ורודות**, וניסיתי בדיוק את זה. השער החי
-     * ‏(`verify-mobile.mjs:3315` — «`button svg *` מול הרקע, ≥ 3:1») מודד **כל צורה**
-     * בתוך כפתור, ובמסך בחירת הדמות (`/dev/arcade/character`) הדמות **יושבת בתוך
-     * `<button>` על כרטיס `--arena-card` (`#182138`)**. ⇒ דיסק בכחול-ליל (`#1c2642`)
-     * על אותו כרטיס נותן **≈1.1:1** — הוא היה נופל בשער, ו**בצדק**: שם הוא בלתי-נראה.
-     * ⇒ **הערוץ התהפך:** אותה תכונה בדיוק — «עיניים שאי-אפשר לפספס» — נבנית מ**בהיר
-     * על כהה** במקום כהה על בהיר. וזה גם מה שהרנדר עושה בפועל: העיניים שם **זוהרות**.
-     *
-     * ⛔ **שכבה קיימת (`head`), ⛔ ולא שכבה שהומצאה.** הבסיס מצייר את הראש, והחתימה
-     * יושבת מעליו — בדיוק סדר הציור ש-`38 § 4` קובע.
-     * ⛔ **ו⛔ אין כאן `animation`:** «הצהרה ⛔ אינה אנימציה» (`35 § 5`), ותקציב הזוהר
-     * של שכבה ב3 שייך לקלף. העיניים הן **צורה**, ⛔ לא הילה.
+     * 🌑 **הפנים — דיסק כהה **על החרוט**, ⛔ ולא ראש.**
+     * 🔬 מרכז `(0,-12)` ברנדר, `r35`. ⇒ הן יושבות בשליש העליון של החרוט,
+     * ⛔ ולא על עוגן הראש — לקוסם ⛔ אין ראש נפרד.
      */
     {
       layer: 'head',
       shape: (
         <>
-        {/* 🌑 **⟦`C-0720`⟧ פנים **כהות** לקוסם — והשער הוא שדרש זאת, ⛔ לא הטעם שלי.**
-            🔬 **נמדד:** הבסיס מצייר פנים **בהירות** (עור), ועליהן עין בדיו בהיר נתנה
-            **1.67:1** — העין נשטפה. ⇒ השער `C-0719` האדים, ו**זה בדיוק מה שהוא נולד
-            לתפוס**: «העיניים נמסות לתוך הפנים».
-            ⇒ הקוסם מקבל פנים משלו בגוון `deep`, וזה גם מה ש-`kol-B-03-battle.png`
-            מצייר: **פנים כהות, עיניים זוהרות**. ‏⛔ הבסיס ⛔ לא נגע — לגיבור נשאר עור
-            בהיר, כי החתימה מצוירת **מעל** הבסיס באותה שכבה (`38 § 4`).
-            🔬 ושתי המדידות שמאשרות: עין מול הפנים החדשות **4.09:1** · הפנים מול
-            כרטיס הבחירה **3.84:1** ⇒ שתיהן מעל הרצפה. */}
-        <Tone tone="deep"><circle cx={HEAD.x} cy={HEAD.y + 2} r={23} /></Tone>
-        <g
-          /* 🔬 **⟦`C-0719`⟧ דיו **בהיר**, והנימוק תוקן אחרי שבדקתי את הטענה שלי.**
-             ניסיתי `text-ink` תחילה (הטוקן ש-`OUTLINE_CLASS` כבר משתמש בו) ונמדד
-             שהוא נפתר ל-`rgb(15, 23, 42)` — **כהה**: `--ink` כאן הוא דיו על רקע בהיר.
-             ⛔ **וכתבתי אז שהעיניים היו «בלתי-נראות» ⇒ ⛔ זה ⛔ לא היה נכון.** עין
-             כהה על ראש סגול (`--arena-cast`) נותנת **6.8:1 מול הראש** — היא נראית
-             מצוין. ‏1.12:1 שמדדתי הוא מול **הכרטיס**, וזו בדיוק המדידה שהשער עצמו
-             מכריז כחסרת-משמעות לדמויות (`verify-mobile.mjs` — «בדיקת רקע ב-CSS
-             ⛔ אינה רואה מילוי SVG ⇒ היא מפילה דמות שקריאה לחלוטין»).
-             ⇒ **הבחירה היא עיצובית ⛔ ולא שער:** `kol-B-03-battle.png` מצייר עיניים
-             **זוהרות**, וזוהר הוא בהיר-על-כהה. ‏`--arena-ink` נותן **2.59:1 מול הראש**
-             ומייצר את אותו רושם.
-             ⛔ **אפס hex** (כלל הקובץ) ⛔ ואפס טוקן חדש — הוא כבר חי ב-`arcade-tokens.css`.
-             ⛔ **והנפילה היא `currentColor` בכוונה:** מחוץ לסקופ הזירה הטוקן ⛔ אינו
-             מוגדר, והעיניים מקבלות את צבע התפקיד ⇒ הן פשוט ⛔ אינן נראות — כלומר
-             **בדיוק המצב של היום**, ⛔ ולא נסיגה. */
-          className="text-[color:var(--arena-ink,currentColor)]"
-        >
-          <circle cx={HEAD.x - 11} cy={HEAD.y + 2} r={5} />
-          <circle cx={HEAD.x + 11} cy={HEAD.y + 2} r={5} />
-        </g>
+          <Tone tone="deep"><circle cx={BODY.x} cy={CONE.faceY} r={CONE.faceRadius} /></Tone>
+          {/* 👁️ שתי עיניים זוהרות — ⛔ הערוץ היחיד שהופך צללית לדמות.
+              🔬 הרנדר מצייר אותן ורודות-בוהקות על פנים שחורות; כאן הן
+              בדיו **הבהיר** של הזירה, וזה מה שמייצר את אותו זוהר. */}
+          <g className="text-[color:var(--arena-ink,currentColor)]" fill="currentColor">
+            {/* 🔬 ⟦`C-0723`⟧ `data-arena-eye` — **סימון, ⛔ ולא רדיוס.** השער
+                ‏(`verify-mobile.mjs` · `C-0719`) אסף «עיגול שרדיוסו ≤6», והמדידה
+                מהרנדר קבעה `r8` ⇒ **השער מצא אפס עיניים והאדים**. סף רדיוס הוא
+                ניחוש על מבנה; הסימון **הוא** המבנה. */}
+            <circle data-arena-eye cx={BODY.x - CONE.eyeX} cy={CONE.eyeY} r={CONE.eyeRadius} />
+            <circle data-arena-eye cx={BODY.x + CONE.eyeX} cy={CONE.eyeY} r={CONE.eyeRadius} />
+          </g>
         </>
+      ),
+    },
+    /** 🙌 שתי זרועות **מורמות** — הרנדר מצייר אותן פרושות כלפי מעלה־החוצה. */
+    {
+      layer: 'offHand',
+      shape: (
+        <path
+          d={`M${-CONE.armInnerX} ${CONE.armInnerY}L${-CONE.armOuterX} ${CONE.armOuterY}L${-CONE.armTipX} ${CONE.armTipY}L${-CONE.armTopX} ${CONE.armTopY}z`}
+        />
       ),
     },
     {
       layer: 'mainHand',
       shape: (
         <>
-          {/* 🪄 המטה כהה מהגלימה, והכדור **זוהר** — הרנדר מצייר כדור אור מעל הקצה,
-              ⛔ ולא כפתור באותו גוון. */}
-          <Tone tone="deep">
-            <rect x={MAIN_HAND.x - 4} y={MAIN_HAND.y - 78} width={8} height={144} rx={4} />
-          </Tone>
+          <path
+            d={`M${CONE.armInnerX} ${CONE.armInnerY}L${CONE.armOuterX} ${CONE.armOuterY}L${CONE.armTipX} ${CONE.armTipY}L${CONE.armTopX} ${CONE.armTopY}z`}
+          />
+          {/* 🔮 הכדור הזוהר מעל היד. 🔬 ברנדר הוא יושב על `y -124` — **מחוץ
+              ל-`viewBox`** — ולכן הורד אל קצה היד, ⛔ ולא הוקטן ו⛔ לא נמחק. */}
           <g className="text-[color:var(--arena-ink,currentColor)]" fill="currentColor">
-            <circle cx={MAIN_HAND.x} cy={MAIN_HAND.y - 78} r={11} />
+            <circle cx={CONE.orbX} cy={CONE.orbY} r={CONE.orbRadius} />
           </g>
         </>
       ),
@@ -522,7 +456,11 @@ export default function ArenaAvatar({
           ⛔ **שכבה ריקה ⛔ אינה מצוירת** — `<g>` ריק על אחת־עשרה שכבות בשתי דמויות
           הוא 22 צמתים שאיש ⛔ אינו רואה. */}
       {LAYER_ORDER.map((layer) => {
-        const base = BASE_LAYERS[layer];
+        // 🧙 `C-0722` — דמות שהצללית שלה **מחליפה** את הגוף מדלגת על שכבות הבסיס
+        //    שהיא מספקת בעצמה. ⛔ אף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`.
+        const hidden = character == null ? false
+          : (CHARACTER_HIDES[character] ?? []).includes(layer);
+        const base = hidden ? undefined : BASE_LAYERS[layer];
         const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer);
         const marks = signature.filter((mark) => mark.layer === layer);
         if (base === undefined && equipped.length === 0 && marks.length === 0) return null;

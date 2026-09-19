@@ -3885,8 +3885,11 @@ try {
         };
         const foe = document.querySelector('[data-arena-figure="enemy"]');
         if (foe === null) return { found: 0 };
-        const marks = [...foe.querySelectorAll('[data-arena-character="wizard"] circle')]
-          .filter((c) => Number(c.getAttribute('r')) <= 6);
+        /* 🔬 **⟦`C-0723`⟧ `data-arena-eye`, ⛔ ולא «עיגול שרדיוסו ≤6».** הסינון הראשון
+           היה ניחוש על מבנה: ברגע ש-`38 § 3` נמדד מהרנדר והעין קיבלה `r8`, השער
+           החזיר `found 0` ⇒ **הוא האדים על עיצוב תקין**. שער שנופל כשהמוצר נכון
+           אינו שער, ⇒ הסימון החליף את הסף. */
+        const marks = [...foe.querySelectorAll('[data-arena-character="wizard"] [data-arena-eye]')];
         if (marks.length === 0) return { found: 0 };
 
         /* ⛔ **hit-test, ⛔ ולא selector** — and the reason is measured: the head used to be
@@ -3916,7 +3919,7 @@ try {
       check(
         eyes.found >= 2,
         'arena · the wizard has eyes at all (C-0719)',
-        `found ${eyes.found} eye shapes under [data-arena-character="wizard"]`,
+        `found ${eyes.found} [data-arena-eye] shapes under [data-arena-character="wizard"]`,
       );
       check(
         (eyes.ratio ?? 0) >= 2,

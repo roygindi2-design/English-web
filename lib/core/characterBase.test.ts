@@ -51,11 +51,11 @@ describe('38 § 4 — סדר אחת־עשרה השכבות', () => {
 describe('38 § 3 — נקודות העיגון', () => {
   it.each([
     ['head', { x: 0, y: -62 }],
-    ['shoulders', { x: 52, y: -8 }],
-    ['body', { x: 0, y: -18 }],
-    ['belt', { x: 0, y: 47 }],
-    ['mainHand', { x: 66, y: 16 }],
-    ['offHand', { x: -70, y: 12 }],
+    ['shoulders', { x: 46, y: -13 }],
+    ['body', { x: 0, y: 16 }],
+    ['belt', { x: 0, y: 72 }],
+    ['mainHand', { x: 48, y: -10 }],
+    ['offHand', { x: -60, y: 5 }],
     ['legs', { x: 20, y: 112 }],
   ] as const)('%s יושבת על הערך של הטבלה', (slot, point) => {
     expect(anchorFor(slot)).toEqual(point);
@@ -66,14 +66,14 @@ describe('38 § 3 — נקודות העיגון', () => {
   });
 
   it('המידות של `§ 3` — גוף 76x84 · חגורה 68x14 · ראש r=34', () => {
-    expect(BODY_SIZE).toEqual({ width: 76, height: 84 });
-    expect(BELT_SIZE).toEqual({ width: 68, height: 14 });
-    expect(HEAD_RADIUS).toBe(34);
+    expect(BODY_SIZE).toEqual({ width: 90, height: 86 });
+    expect(BELT_SIZE).toEqual({ width: 61, height: 24 });
+    expect(HEAD_RADIUS).toBe(30);
   });
 
   it('הזוגות הסימטריים מתקבלים בשיקוף — ⛔ ולא ממספר שני', () => {
     expect([...MIRRORED_SLOTS]).toEqual(['shoulders', 'legs']);
-    expect(mirror(anchorFor('shoulders'))).toEqual({ x: -52, y: -8 });
+    expect(mirror(anchorFor('shoulders'))).toEqual({ x: -46, y: -13 });
     expect(mirror(anchorFor('legs'))).toEqual({ x: -20, y: 112 });
     for (const slot of ALL_SLOTS) {
       expect(isMirroredSlot(slot)).toBe((['shoulders', 'legs'] as string[]).includes(slot));

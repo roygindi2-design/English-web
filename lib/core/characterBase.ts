@@ -19,7 +19,10 @@
  */
 
 /**
- * שבע המשבצות של `38 § 3`. ⛔ הכותרת של `§ 2` אומרת «שש», והטבלה שמתחתיה מונה **שבע**
+ * שבע המשבצות של `38 § 3`. 🔬 **⟦19/09 · `C-0722`⟧ המספרים שם **נמדדו מהרנדר**
+ * ‏(`kol-B-03-battle.png`) ⛔ ואינם עוד נבחרים — הפער המלא, בשש שורות, נמצא בטבלה
+ * שם. ⇒ המשפט למטה («⛔ אף מספר ⛔ לא נבחר כאן») ⛔ לא רוכך: הוא רק הפך **נכון גם
+ * על המקור**. ⛔ הכותרת של `§ 2` אומרת «שש», והטבלה שמתחתיה מונה **שבע**
  * שורות — ⇒ הרשימה כאן היא של **טבלת נקודות העיגון** (`§ 3`), שהיא זו שהשלד נבנה עליה.
  */
 export type CharacterSlot =
@@ -42,16 +45,16 @@ export type Layer = (typeof LAYER_ORDER)[number];
 /**
  * נקודות העיגון, **מילה במילה מ-`38 § 3`**. ביחידות לוגיות ביחס למרכז הדמות.
  * ⛔ **שתי משבצות סימטריות** — `shoulders` ו-`legs` — והערך כאן הוא ה**ימני**, בדיוק
- * כפי שהטבלה כותבת אותו (`(-52,-8) / (52,-8)` · `(-20,112) / (20,112)`). השמאלי מתקבל
+ * כפי שהטבלה כותבת אותו (`(-46,-13) / (46,-13)` · `(-20,112) / (20,112)`). השמאלי מתקבל
  * מ-`mirror()`, ⛔ ולא ממספר שני שאפשר לסטות בו.
  */
 const ANCHORS: Readonly<Record<CharacterSlot, AnchorPoint>> = Object.freeze({
   head: { x: 0, y: -62 },
-  shoulders: { x: 52, y: -8 },
-  body: { x: 0, y: -18 },
-  belt: { x: 0, y: 47 },
-  mainHand: { x: 66, y: 16 },
-  offHand: { x: -70, y: 12 },
+  shoulders: { x: 46, y: -13 },
+  body: { x: 0, y: 16 },
+  belt: { x: 0, y: 72 },
+  mainHand: { x: 48, y: -10 },
+  offHand: { x: -60, y: 5 },
   legs: { x: 20, y: 112 },
 });
 
@@ -59,9 +62,39 @@ const ANCHORS: Readonly<Record<CharacterSlot, AnchorPoint>> = Object.freeze({
 export const MIRRORED_SLOTS = Object.freeze(['shoulders', 'legs'] as const);
 
 /** מידות הגוף מ-`38 § 3`. ⛔ הראש הוא רדיוס ⛔ ולא מלבן, ולכן הוא ⛔ אינו כאן. */
-export const BODY_SIZE = Object.freeze({ width: 76, height: 84 });
-export const BELT_SIZE = Object.freeze({ width: 68, height: 14 });
-export const HEAD_RADIUS = 34;
+/**
+ * 🧙 **⟦19/09 · `C-0722`⟧ צללית החרוט — **מדידה, ⛔ ולא בחירה.**
+ *
+ * 🔬 נמדדה מ-`docs/design/kol-B-03-battle.png` באותה המרה כמו כל שורה אחרת בטבלה:
+ * קודקוד הכובע `y 73`, שולי הגלימה `y 276` ברוחב `144`, פנים במרכז `(102,157)`
+ * ברדיוס `34`, עיניים ברדיוס `8`. ⇒ ביחידות השלד, בהתאמה לגובה המסגרת.
+ *
+ * ⛔ **ולמה זה כאן ו⛔ לא ברכיב:** הקוסם הוא הדמות שהצללית שלה **מחליפה** את הגוף,
+ * ⇒ המספרים האלה הם עובדה **ברמת השלד** בדיוק כמו `BODY_SIZE` — ⛔ ולא קואורדינטות
+ * שרכיב בחר. ‏`ArenaAvatar.test.ts:123` דורש בדיוק את זה, והוא **צדק**: הגרסה
+ * הראשונה שלי קידדה אותן כ-`d="M-21 17…"` בתוך הרכיב, והשער האדים.
+ */
+export const CONE = Object.freeze({
+  apexY: -100,
+  hemHalfWidth: 77,
+  faceY: -12,
+  faceRadius: 35,
+  eyeX: 16,
+  eyeY: -9,
+  eyeRadius: 8,
+  orbX: 74,
+  orbY: -58,
+  orbRadius: 13,
+  /** קצות הזרוע המורמת: מהכתף אל היד, בארבע נקודות. */
+  armInnerX: 21, armInnerY: 17,
+  armOuterX: 53, armOuterY: 14,
+  armTipX: 74, armTipY: -40,
+  armTopX: 62, armTopY: -45,
+});
+
+export const BODY_SIZE = Object.freeze({ width: 90, height: 86 });
+export const BELT_SIZE = Object.freeze({ width: 61, height: 24 });
+export const HEAD_RADIUS = 30;
 
 /**
  * ⛔ **פריט שאינו מתיישב על נקודת עיגון קיימת הוא פריט פסול** (`38 § 3`, מילה במילה) —
