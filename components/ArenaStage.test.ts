@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { withoutComments } from '@/lib/testSource';
+import { LANE_SHIFT_PCT, laneEdgeAtHorizon } from '@/components/ArenaScene';
 import { TELEGRAPH_MS, WINDOW_END_MS } from '@/lib/core/battle';
 
 const SRC = readFileSync('components/ArenaStage.tsx', 'utf8');
@@ -120,7 +121,10 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
     expect(SCENE, 'נקודת מגוז מוצהרת').toMatch(/const VANISHING_X = \d+/);
     // 🔴 **הרצפה היא `polygon`, ⛔ ולא `rect`.** מלבן הוא משטח; טרפז שמתכנס אל המגוז
     // הוא **מישור**, וזה כל ההבדל בין רקע כהה לבין מקום.
-    expect(SCENE, 'רצפה טרפזית').toMatch(/<polygon[\s\S]{0,200}VANISHING_X \+ 26/);
+    /* ⚠️ **⟨עודכן `C-0733`⟩ `FLOOR_HALF_FAR` ו⬛ לא `26` מוטבע — והטענה לא נחלשה.**
+       המספר היה כתוב פעמיים — במצולע ובמקדם ההתכנסות — ושני העותקים
+       **סטו זה מזה**. ⇒ מקור אחד, והטרפז עדיין נמדד כאן בשמו. */
+    expect(SCENE, 'רצפה טרפזית').toMatch(/<polygon[\s\S]{0,200}VANISHING_X \+ FLOOR_HALF_FAR/);
     expect(SCENE, '⛔ ⛔ לא מלבן במקום הרצפה').not.toMatch(/<rect[^>]*id="arena-floor"/);
   });
 
@@ -294,7 +298,12 @@ describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
     const lanes = TOKENS.slice(TOKENS.indexOf("[data-arena-slot='hero'][data-arena-lane='left']"));
     expect(lanes.slice(0, 400)).not.toMatch(/transform:/);
     expect(lanes.slice(0, 400)).toMatch(/translate:/);
-    expect(TOKENS).toMatch(/--arena-lane-shift:\s*33\.3333%/);
+    /* 🔬 **⟨`C-0733`⟩ המספר **מחושב מחדש** מארבעת מקורותיו, ⬛ ואינו מועתק.**
+       ⇒ שינוי ב-`HORIZON`, ברוחב הרצפה בחזית או באופק, או בגובה חריץ הגיבור
+       **מפיל את השורה הזאת בשם** — בדיוק כמו `--arena-follow-x`. */
+    expect(TOKENS).toContain(`--arena-lane-shift: ${LANE_SHIFT_PCT.toFixed(4)}%`);
+    // ⬛ **ו⬛ לא «שליש מרוחב הבמה»** — זה היה הפגם: הלומד עמד מחוץ לרצפה.
+    expect(LANE_SHIFT_PCT).toBeLessThan(100 / 3);
   });
 
   it('🔴 תנועה מופחתת — ה**מעבר** מוסר, וה**מיקום** נשאר', () => {
@@ -313,6 +322,12 @@ describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
     expect(SCENE).toMatch(/const LANES = 3;/);
     expect(SCENE).toMatch(/length: LANES \+ 1/);
     expect(SCENE).not.toMatch(/\[-24, -12, 0, 12, 24\]/);
+    /* 🔴 **⟨`C-0733`⟩ וקווי הנתיבים **שוכבים על הרצפה**, ⬛ ולא על מישור משלהם.**
+       🔬 המקדם הישן הוליד קו שפה שנחת על `43.8` באופק בעוד פינת המצולע שם על `24`
+       ⇒ שתי שכבות של אותה פרספקטיבה סיפרו שני סיפורים. */
+    expect(laneEdgeAtHorizon(0)).toBeCloseTo(24, 6);
+    expect(laneEdgeAtHorizon(100)).toBeCloseTo(76, 6);
+    expect(laneEdgeAtHorizon(50)).toBeCloseTo(50, 6);
   });
 });
 

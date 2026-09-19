@@ -294,7 +294,13 @@ describe('חוקה שכבה א׳ — ⛔ ההחרגה היחידה, ו⛔ אין
     expect(CODE).toContain('${enemyPct}/100');
     expect(CODE).toContain('${mana} / ${MANA_CAP}');
     expect(CODE).toContain('${Math.round(telegraph.frac * 100)} אחוז');
-    expect([...CODE.matchAll(/role="img"/g)]).toHaveLength(3);
+    /* 🩸 **⟦עודכן 19/09 · `C-0733` · `T-436`⟧ ⓸ — פס חיי ה**לומד**.**
+       ⛔ **והספירה עלתה ל-4 ⛔ ולא נמחקה:** היא מה שתופס `role="img"` **חדש**
+       שנוסף בלי שם נגיש, וזו בדיוק ההחמצה שהטענה הזאת קיימת בשבילה. ⇒ מי שמוסיף
+       מד רביעי חייב לעבור כאן, ולהוכיח שגם הוא נושא מספר. */
+    expect(CODE).toContain('${learnerPct}/100');
+    expect(CODE).toContain('${LEARNER_HP_HE} ${learnerPct} מתוך 100');
+    expect([...CODE.matchAll(/role="img"/g)]).toHaveLength(4);
   });
 
   it('⛔ אפס אמוג׳י (שכבה א׳ — אייקוני SVG בלבד)', () => {

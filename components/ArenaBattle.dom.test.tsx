@@ -506,3 +506,64 @@ describe('C-0732 · T-434 — סימן הרצפה', () => {
     expect(container.querySelector('[data-arena-aim]'), 'ובכל זאת הוא על הבמה').not.toBeNull();
   });
 });
+
+/**
+ * 🩸 **⟦19/09 · `C-0733` · `T-436` · סוגר את `F-304`⟧ ללומד לא היה פס חיים.**
+ *
+ * 🔬 **הפגם, כפי שנמדד:** `grep -rn "learnerHp" components/` ⇒ **0**. למנוע יש
+ * `learnerHp`/`learnerHpMax`, הם **יורדים מכל מכה**, ו-`outcomeAt` מכריע לפיהם —
+ * והלומד ⛔ **לא יכול היה לראות אותם**. ⇒ הוא הפסיד בלי לדעת שהוא בסכנה.
+ *
+ * 🔴 **ובלי זה כל מכניקת התנועה חסרת פשר:** ⛔ אין טעם להתחמק ממכה כשאי-אפשר
+ * לראות מה היא עולה.
+ */
+describe('C-0733 · T-436 — פס חיי הלומד', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  it('🔴 הפס **על המסך**, נגיש בשם, ומתחיל מלא', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    const bar = document.querySelector('[data-arena-learner] [role="img"]');
+    expect(bar, 'פס חיי הלומד חייב להיות על המסך').not.toBeNull();
+    expect(bar?.getAttribute('aria-label')).toContain('100');
+  });
+
+  it('⛔ שני הפסים נבדלים ב**צבע** — זהב שלי, אדום שלו (`T-427`)', () => {
+    // 🔬 צבע זהה לשניהם אומר «שני מדים», ⛔ ולא «שלי מול שלו».
+    render(<ArenaBattle initialRound={ROUND} />);
+    const mine = document.querySelector('[data-arena-learner] [data-arena-hp-fill]');
+    const his = document.querySelector('[data-arena-enemy] [data-arena-hp-fill]');
+    expect(mine?.className).toContain('--arena-gold');
+    expect(his?.className).toContain('--arena-hp');
+    expect(mine?.className).not.toBe(his?.className);
+  });
+
+  it('⛔ והצבע ⛔ אינו הערוץ היחיד — המספר על המסך (חוקה א2)', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(document.querySelector('[data-arena-learner]')?.textContent ?? '').toContain('100');
+  });
+
+  it('🩸 הפס יורש את אותה ריקון של היריב — ⛔ ולא מעבר שני', () => {
+    // ⛔ `data-arena-hp-fill` הוא הווו: 260ms, ונעצר תחת תנועה מופחתת — **באותו כלל**.
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(document.querySelectorAll('[data-arena-hp-fill]').length).toBe(2);
+  });
+
+  it('⛔ ⛔ לא רצועה שמינית — הפס **צף מעל הבמה**, כמו של היריב', () => {
+    // 🔬 תקציב הרצועות סגור על 522px ונמדד חי ב-`check:mobile`.
+    render(<ArenaBattle initialRound={ROUND} />);
+    const holder = document.querySelector('[data-arena-learner]')?.parentElement;
+    expect(holder?.className).toContain('absolute');
+  });
+});

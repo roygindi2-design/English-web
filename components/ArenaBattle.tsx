@@ -166,6 +166,18 @@ const CLOSE_HE = 'סגור';
 const CLOCK_HE = 'זמן קרב';
 const ENEMY_HE = 'הקוסם';
 const ENEMY_HP_HE = 'חיי היריב';
+/**
+ * 🩸 **⟦19/09 · `C-0733` · `T-436` · סוגר את `F-304`⟧ ללומד ⛔ לא היה פס חיים.**
+ *
+ * 🔬 **נמדד, ⛔ ולא שוער:** `grep -rn "learnerHp" components/` ⇒ **0**. למנוע יש
+ * `learnerHp`/`learnerHpMax`, הם **יורדים מכל מכה**, ו-`outcomeAt` מכריע לפיהם —
+ * והלומד ⛔ **לא יכול היה לראות אותם**. פס חיי ה**יריב** מצויר במלואו; שלו ⛔ לא.
+ * ⇒ הוא הפסיד **בלי לדעת שהוא בסכנה**.
+ * 🔴 **ובלי זה כל מכניקת התנועה חסרת פשר:** ⛔ אין טעם להתחמק ממכה כשאי-אפשר
+ * לראות מה היא עולה.
+ */
+const LEARNER_HE = 'את/ה';
+const LEARNER_HP_HE = 'החיים שלך';
 const MANA_HE = 'מאנה';
 
 /** ⓔ `T-397` — צבע מקטע מאנה מלא. ⛔ טוקן, ⛔ ולא hex: `--arena-mana` הוא
@@ -1050,6 +1062,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
   // 🔥 T-401 — נגזר מהמנוע הטהור (`streakAt`), ⛔ ולא state שני שיכול לסטות ממנו.
   const streak = streakAt(battle);
   const enemyPct = Math.round((battle.enemyHp / Math.max(1, battle.enemyHpMax)) * 100);
+  /* 🩸 `T-436` — **אחוז, ⛔ ולא HP גולמי**, בדיוק כמו של היריב: שני מדים בשתי
+     סקאלות שונות ⛔ אינם ניתנים להשוואה במבט, וזה כל מה שמד חיים אמור לאפשר. */
+  const learnerPct = Math.round((battle.learnerHp / Math.max(1, battle.learnerHpMax)) * 100);
   /**
    * ⛔ **מגיע** מהשכבה הטהורה — הרכיב ⛔ אינו סופר 5.3, ⛔ אינו סופר 5.7 ו⛔ אינו יודע מהו
    * חלון. T-231 ⓓ — `raging` ו-`telegraphPhase` הם עכשיו ה-state (מוגדר למעלה), ומתעדכנים
@@ -1382,6 +1397,48 @@ export default function ArenaBattle({ initialRound, character = null, items = []
             מציגים לאן המכה הולכת. ⛔ **⛔ ולא נגזר בלולאה** — `telegraphPhase` הוא
             כבר state שמשתנה **רק במעבר בדיד**, ו-`swingIndex` נקרא באותו רינדור
             בדיוק כמו `telegraphFrac` למעלה. */}
+        {/* 🩸 **⟦19/09 · `C-0733` · `T-436`⟧ פס חיי הלומד — סוגר את `F-304`.**
+
+            ⛔ **בתוך הבמה, ⛔ ולא רצועה שמינית:** תקציב הרצועות סגור על **522px**
+            ונמדד חי ב-`check:mobile` ⇒ רצועה נוספת מפילה אותו. ⇒ הפס יושב בדיוק
+            כמו של היריב — **צף מעל הבמה** — רק בצד הנגדי.
+
+            ⛔ **וזהב ⛔ ולא אדום, וזה ⛔ אינו טעם:** `--arena-hp` האדום הוא **שלו**.
+            צבע זהה לשני הפסים היה אומר «שני מדים», ⛔ ולא «שלי מול שלו». ⇒ זהב =
+            שלי, אדום = שלו — הצבע הופך ל**מידע** (`T-427`), ⛔ ובלי לפתוח משפחה
+            שביעית: שני הטוקנים כבר קיימים.
+
+            ⛔ **והמספר יושב ב**שורת התווית**, ⛔ ולא על המסילה.** 🔬 מספר בתוך הפס
+            יושב על **שני רקעים** — המילוי והמסילה הריקה — ⇒ הניגודיות שלו משתנה
+            לפי כמה חיים נשארו. בשורה נפרדת הוא על רקע אחד, ⛔ והוא עדיין הערוץ
+            ה**שני** שהחוקה (א2) דורשת. */}
+        <div className="pointer-events-none absolute inset-x-2 top-1 z-10 flex flex-col items-end gap-0.5">
+          <div className="w-[40%] max-w-[160px]" data-arena-learner>
+            <div className="flex items-baseline justify-between gap-1">
+              <p className="text-sm font-bold text-[color:var(--arena-gold-light)]">{LEARNER_HE}</p>
+              <p className="text-xs font-bold text-[color:var(--arena-ink)]">
+                <EnWord>{`${learnerPct}/100`}</EnWord>
+              </p>
+            </div>
+            <div
+              role="img"
+              aria-label={`${LEARNER_HP_HE} ${learnerPct} מתוך 100`}
+              className="relative h-3 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
+            >
+              {/* ⛔ `scaleX` ⛔ ולא `width` (‏`apple-design § 11`), ו-`data-arena-hp-fill`
+                  ⇒ הוא יורש את **אותה** ריקון בת 260ms ואת עצירתה תחת תנועה מופחתת.
+                  ⛔ **והעוגן `left` ⛔ ולא `right`:** הפס של היריב מתרוקן אל הקצה שלו,
+                  וזה מתרוקן אל **שלו** — שני מדים שמתרוקנים לאותו כיוון קוראים כמד אחד. */}
+              <span
+                aria-hidden
+                data-arena-hp-fill
+                className="absolute inset-y-0 start-0 w-full bg-[color:var(--arena-gold)]"
+                style={{ transform: `scaleX(${learnerPct / 100})`, transformOrigin: 'left center' }}
+              />
+            </div>
+          </div>
+        </div>
+
         <ArenaStage
           phase={stagePhase(battle)}
           items={items}

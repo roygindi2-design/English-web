@@ -60,12 +60,56 @@ const VANISHING_X = 50;
  */
 const LANES = 3;
 /** גבולות הנתיבים בחזית הרצפה (`y=100`), ביחידות ה-`viewBox`. */
-const LANE_EDGES = Array.from({ length: LANES + 1 }, (_, i) => (i * 100) / LANES);
+export const LANE_EDGES = Array.from({ length: LANES + 1 }, (_, i) => (i * 100) / LANES);
+
 /**
- * כמה קו הרצפה מתכנס בדרכו אל האופק. ⛔ המספר ⛔ אינו חדש — זה בדיוק המקדם שהיה
- * כתוב בשורה, וכעת הוא **המכנה** שממיר גבול בחזית הרצפה להיסט של אותו קו באופק.
+ * חצי-רוחב הרצפה בחזית ובאופק. ⛔ **שני המספרים היו מוטבעים ב-`points` של המצולע**
+ * (`0,100 100,100` ו-`VANISHING_X ± 26`), ⇒ הם קיימים כאן כדי שהרצפה וקווי
+ * הנתיבים ישאבו מאותו מקור **אחד**.
  */
-const FLOOR_SLOPE = 3.4;
+export const FLOOR_HALF_NEAR = 50;
+export const FLOOR_HALF_FAR = 26;
+
+/**
+ * 🔴 **⟦תוקן 19/09 · `C-0733`⟧ קו הנתיב מתכנס **בדיוק כמו הרצפה**, ⛔ ולא במקדם משלו.**
+ *
+ * 🔬 **נמדד, ⛔ ולא שוער:** המקדם הישן (`offset * 3.4` בחזית מול `offset * 0.42`
+ * באופק) הוליד קווים שהתכנסו **מהר יותר** מהמצולע — ⇒ קו השפה נחת על `43.8`
+ * באופק בעוד פינת הרצפה שם על `24`. כלומר קווי הנתיבים ⛔ **לא שכבו על הרצפה**,
+ * ושתי שכבות של אותה פרספקטיבה סיפרו שני סיפורים.
+ *
+ * ⇒ היחס הוא `FLOOR_HALF_FAR / FLOOR_HALF_NEAR` — **אותה הצטמקות בדיוק**, ⇒ שני
+ * הגבולות החיצוניים נוחתים על פינות המצולע, וזו הראיה שהם על אותו מישור.
+ */
+export function laneEdgeAtHorizon(x: number): number {
+  return VANISHING_X + (x - VANISHING_X) * (FLOOR_HALF_FAR / FLOOR_HALF_NEAR);
+}
+
+/** חצי-רוחב הרצפה בעומק `y` (יחידות `viewBox`). ⛔ אינטרפולציה ליניארית — הרצפה **מצולע**. */
+export function floorHalfWidthAt(y: number): number {
+  const t = (y - HORIZON) / (100 - HORIZON);
+  return FLOOR_HALF_FAR + (FLOOR_HALF_NEAR - FLOOR_HALF_FAR) * t;
+}
+
+/**
+ * 🛣️ **⟦19/09 · `C-0733`⟧ כמה זז הלומד בין נתיבים — **נגזר**, ⛔ ולא מכוונן.**
+ *
+ * 🔬 **הפגם שזה מתקן, נמדד בדפדפן חי ב-393×852 ⛔ ולא הונח:** `C-0730` חילק את
+ * **רוחב הבמה** לשלושה ⇒ `33.3333%`. ⛔ אבל הבמה ⛔ אינה הרצפה — הרצפה היא
+ * **מצולע שמתכנס**, ⇒ בנתיב השמאלי הלומד עמד על **הרקע הכהה מחוץ לרצפה**, ונראה
+ * מרחף ⛔ ולא עומד בזירה.
+ *
+ * ⇒ **אותו כלל שלישים בדיוק, על הרוחב הנכון:** חצי-רוחב הרצפה ב**מרכז גופה של
+ * הדמות** — הנקודה שהעין קוראת כ«איפה היא עומדת» — ⇒ מרכזי הנתיבים על `±⅔` ממנו.
+ *
+ * ⛔ **ומרכז הגוף ⛔ ולא כפות הרגליים:** ברגליים הרצפה כמעט ברוחב מלא, ⇒ הכלל היה
+ * מחזיר את אותם `33%` ואת אותו פגם. הדמות גבוהה כ-29% מהבמה, ⇒ הצללית שלה
+ * חוצה **פס עומק** שלם, והגבול האמיתי הוא באמצעו.
+ */
+export const HERO_SLOT_BOTTOM = 2;
+export const HERO_SLOT_HEIGHT = 42;
+export const LANE_SHIFT_PCT =
+  (2 / 3) * floorHalfWidthAt(100 - HERO_SLOT_BOTTOM - HERO_SLOT_HEIGHT / 2);
 
 /**
  * ⛔ הפסולת על הרצפה **קטנה ככל שהיא רחוקה**, וזה החישוב היחיד כאן. מיקום ורדיוס
@@ -164,7 +208,7 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
       {/* ⓔ הרצפה — **טרפז**, ⛔ ולא מלבן. שתי הצלעות מתכנסות אל נקודת המגוז, וזו
           נקודת הפרספקטיבה כולה בשורה אחת. */}
       <polygon
-        points={`0,100 100,100 ${String(VANISHING_X + 26)},${String(HORIZON)} ${String(VANISHING_X - 26)},${String(HORIZON)}`}
+        points={`0,100 100,100 ${String(VANISHING_X + FLOOR_HALF_FAR)},${String(HORIZON)} ${String(VANISHING_X - FLOOR_HALF_FAR)},${String(HORIZON)}`}
         fill="url(#arena-floor)"
       />
 
@@ -184,7 +228,7 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           key={`lane-${String(x)}`}
           x1={x}
           y1="100"
-          x2={VANISHING_X + ((x - VANISHING_X) / FLOOR_SLOPE) * 0.42}
+          x2={laneEdgeAtHorizon(x)}
           y2={HORIZON}
           stroke="var(--arena-ink)"
           strokeWidth="0.18"
