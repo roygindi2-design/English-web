@@ -254,3 +254,63 @@ describe('C-0624 — הדמויות חיות', () => {
     expect(joined).toMatch(/rotate:\s*0deg/);
   });
 });
+
+/**
+ * 🏃 **⟦19/09 · `C-0730` · `T-433`ⓑ · `37 § 5` · `D-269` הכרעה ①⟧ הנתיב על המסך.**
+ *
+ * 🔬 **מה שנמדד לפני, ⛔ ולא הונח:** הליבה ידעה על שלושה נתיבים (`C-0729`), המחווה
+ * זוהתה, `dx` חושב — ו⛔ **שום פיקסל על המסך לא זז**. ⇒ הבדיקות כאן מודדות את
+ * שלוש החוליות שסוגרות את הפער: ה**תכונה** על החריץ, ה**כלל** ב-CSS, וה**רצפה**
+ * שמראה שלוש רצועות ⛔ ולא ארבע.
+ *
+ * 🔴 **והטענה הכבדה ביותר היא זו של תנועה מופחתת** — כי היא הכלל שכל העיצוב נגזר
+ * ממנו: הנתיב הוא **מצב**, ⇒ כשהתנועה כבויה המעבר מוסר וה**מיקום נשאר**.
+ */
+describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
+  const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+  const TOKENS = TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '');
+  const SCENE = withoutComments(readFileSync('components/ArenaScene.tsx', 'utf8'));
+
+  it('הנתיב מגיע כ-prop ⛔ ואינו state — ונכתב כ**תכונה** על החריץ', () => {
+    expect(CODE).toMatch(/readonly lane\?/);
+    expect(CODE).toMatch(/data-arena-lane=\{LANE_NAMES\[lane \?\? CENTRE\]\}/);
+    // ⛔ הכלל של הבמה ⛔ אינו נחלש: ⛔ אפס state, ⛔ אפס שעון.
+    expect(CODE).not.toMatch(/useState|useEffect|requestAnimationFrame/);
+  });
+
+  it('⛔ התכונה יושבת על ה**חריץ**, ⛔ ולא על הדמות — הצל זז איתה', () => {
+    // 🔬 הפגם שזה מונע: צל שנשאר במרכז בזמן שהגוף עבר נתיב ⇒ הגוף מרחף.
+    const slot = CODE.slice(CODE.indexOf('data-arena-slot="hero"'));
+    expect(slot.slice(0, 200)).toContain('data-arena-lane=');
+    expect(slot).toMatch(/data-arena-lane=[\s\S]{0,300}data-arena-shadow/);
+  });
+
+  it('שלושת הנתיבים הם שלושה כללי CSS, ו**כולם** על `translate`', () => {
+    for (const name of ['left', 'centre', 'right']) {
+      expect(TOKENS, `נתיב ${name}`).toContain(`[data-arena-slot='hero'][data-arena-lane='${name}']`);
+    }
+    // ⛔ **⛔ לא `transform`** — הוא תפוס בידי התנוחה ובידי לולאת ה-idle (`T-366`ⓐ).
+    const lanes = TOKENS.slice(TOKENS.indexOf("[data-arena-slot='hero'][data-arena-lane='left']"));
+    expect(lanes.slice(0, 400)).not.toMatch(/transform:/);
+    expect(lanes.slice(0, 400)).toMatch(/translate:/);
+    expect(TOKENS).toMatch(/--arena-lane-shift:\s*33\.3333%/);
+  });
+
+  it('🔴 תנועה מופחתת — ה**מעבר** מוסר, וה**מיקום** נשאר', () => {
+    const blocks = [...TOKENS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '');
+    const lane = blocks.filter((b) => b.includes("[data-arena-slot='hero']"));
+    expect(lane.length, 'חייב להיות בלוק שעוצר את מעבר הנתיב').toBeGreaterThan(0);
+    expect(lane.join('\n')).toMatch(/transition:\s*none/);
+    // 🔴 **הטענה שמגנה על המשחק:** ⛔ אסור שהבלוק יאפס את המיקום עצמו — לומד עם
+    //    תנועה מופחתת עדיין **עומד בנתיב שבחר**, אחרת ההתחמקות ⛔ אינה קיימת עבורו.
+    expect(lane.join('\n')).not.toMatch(/translate:\s*0/);
+  });
+
+  it('הרצפה מראה **שלוש** רצועות — ⇒ ארבעה גבולות, ⛔ ולא חמישה קווים', () => {
+    // 🔬 הפגם: חמישה קווים ⇒ העין קוראת ארבעה נתיבים במשחק שיש בו שלושה.
+    expect(SCENE).toMatch(/const LANES = 3;/);
+    expect(SCENE).toMatch(/length: LANES \+ 1/);
+    expect(SCENE).not.toMatch(/\[-24, -12, 0, 12, 24\]/);
+  });
+});

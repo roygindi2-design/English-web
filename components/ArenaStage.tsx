@@ -2,7 +2,7 @@ import ArenaAvatar from '@/components/ArenaAvatar';
 import ArenaScene from '@/components/ArenaScene';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
-import type { StagePhase } from '@/lib/core/battle';
+import { CENTRE, LANE_NAMES, type Lane, type StagePhase } from '@/lib/core/battle';
 
 /**
  * הבמה — T-117 · D-060 · חוקה § 5.
@@ -51,6 +51,14 @@ export interface ArenaStageProps {
   readonly idle?: boolean;
   /** T-217 — הדמות שנבחרה (`37 § 7`), מועברת לגיבור בלבד. */
   readonly character?: ArenaCharacter | null;
+  /**
+   * 🏃 **`T-433`ⓑ · `37 § 5` — הנתיב שהלומד עומד בו, כ-prop.**
+   *
+   * ⛔ **`null` ⛔ אינו «מרכז» — הוא «עוד לא בחר».** הליבה מבדילה ביניהם
+   * (`heroLane: null` ⇒ היריב **עוקב** אחרי הלומד ⇒ ⛔ אין נתיב בטוח), ⛔ אבל
+   * ה**ציור** של השניים זהה: הדמות עומדת באמצע. ⇒ ההמרה כאן, ⛔ ולא בליבה.
+   */
+  readonly lane?: Lane | null;
 }
 
 /**
@@ -82,6 +90,7 @@ export default function ArenaStage({
   items,
   idle = ARENA_IDLE_LOOP,
   character = null,
+  lane = null,
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} className={STAGE_CLASS}>
@@ -128,9 +137,20 @@ export default function ArenaStage({
       {/* ⓒ הגיבור — **קרוב**: נמוך, גדול, עם צל רחב יותר. העוטף נושא את לולאת
           ההמתנה — ⛔ ולא הדמות, של-`[data-arena-figure]` כבר יש `transition: transform`
           ש-`hit`/`dodge` מפעילים. */}
-      <div data-arena-slot="hero" /* ⛔ `items-center`. 🔬 נמדד: `items-end` בתוך הורה RTL מיישר **שמאלה**,
-            ⇒ הגיבור נדחף לפינה בזמן שהרנדר מציב אותו במרכז, מול היריב. */
-          className="absolute inset-x-0 bottom-[2%] flex h-[42%] flex-col items-center justify-end">
+      {/* 🏃 **⟦19/09 · `C-0730` · `T-433`ⓑ · `37 § 5`⟧ המיקום הוא **תכונה**, ⛔ ולא סגנון מוטבע.**
+          הכלל חי ב-`app/arcade/arcade-tokens.css`, ⇒ `prefers-reduced-motion` מסיר את
+          ה**מעבר** בלי ולו `if` אחד כאן — בדיוק כמו התנוחה.
+          ⛔ **והוא יושב על ה**חריץ**, ⛔ ולא על הדמות:** הצל חי כאן, והוא חייב לזוז
+          **איתה** — צל שנשאר במרכז מנתק את הגוף מהרצפה.
+          ⛔ **`null` ⛔ אינו «מרכז»** בליבה — ⛔ אבל הוא **מצויר** כמרכז: לומד שעוד
+          לא בחר נתיב עומד באמצע. ⇒ ההמרה כאן. */}
+      {/* ⛔ `items-center`. 🔬 נמדד: `items-end` בתוך הורה RTL מיישר **שמאלה**,
+          ⇒ הגיבור נדחף לפינה בזמן שהרנדר מציב אותו במרכז, מול היריב. */}
+      <div
+        data-arena-slot="hero"
+        data-arena-lane={LANE_NAMES[lane ?? CENTRE]}
+        className="absolute inset-x-0 bottom-[2%] flex h-[42%] flex-col items-center justify-end"
+      >
         <span data-arena-shadow aria-hidden className="absolute bottom-0 h-[8%] w-[26%]" />
         <span data-arena-idle={idle ? 'on' : 'off'} className="relative inline-flex">
           <ArenaAvatar role="hero" items={items} character={character} className={FIGURE_CLASS} />

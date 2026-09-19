@@ -234,6 +234,16 @@
   --arena-follow-ms: 66ms;
   --arena-follow-settle-ms: 200ms;
   --arena-follow-x: 8.33px;
+
+  /* ‏🏃 **⟨19/09 · `C-0730` · `T-433`ⓑ · `37 § 5`⟩ — שלושה נתיבים.**
+
+     🔬 **33.3333% ⬛ אינו מספר יפה — הוא נגזר:** הבמה מתחלקת לשלושה נתיבים
+     שווים, ⦇ ומרכז נתיב הצד רחוק ממרכז הבמה בדיוק ⦈⅓⦉ מרוחבה: ⅔−½ = ⅙ ⬛לא,
+     אלא ⁵⁄₆ − ½ = ⅓. ⬛ **והאחוז נמדד מהצומת עצמו** (`animate` § 4) — והחריץ
+     נושא `inset-x-0` ⇒ רוחבו **הוא** רוחב הבמה. ⇒ אחוז ו⬛לא פיקסלים, כדי
+     שהנתיב יישאר נתיב בכל רוחב מסך. */
+  --arena-lane-shift: 33.3333%;
+  --arena-lane-ms: 200ms;
 }
 
 /* 🎬 **⟦17/09 · `C-0709` · `T-423`ⓑ · `36 § 8.0` הכרעה ①⟧ — **מסלול הזירה מוותר על
@@ -459,6 +469,33 @@ body:has([data-arena-scope]) > div > main {
   [data-arena-stage][data-arena-phase='dodge'] [data-arena-figure='hero'] [data-arena-part] {
     animation: none;
   }
+}
+
+/* ═══ 🏃 **⟨19/09 · `C-0730` · `T-433`ⓑ · `37 § 5` · `D-269` הכרעה ①⟩ — הנתיב על המסך.**
+
+   🔴 **הנתיב הוא **מצב**, ⬛ ולא אנימציה — וזה כל העיצוב כאן.** המיקום נכתב
+   כ-`data-arena-lane` על החריץ, והמעבר הוא **קישוט שניתן להסרה**. ⇒ תחת
+   `prefers-reduced-motion` הדמות **קופצת** לנתיב במקום להחליק אליו, והמשחק
+   נשאר **שמיש במלואו**: ⬛ אין ולו פיסת מידע אחת שחיה בתוך התנועה.
+
+   ⬛ **`translate`, ⬛ ולא `transform` — וזה נמדד כבר פעם אחת בריפו (`T-366`ⓐ).**
+   קיצור `transform` **דורס** מה שכבר שם: התנוחה (`translateX(-0.75rem)` ל-`dodge`)
+   ולולאת ה-idle הן שתיהן `transform`. התכונות הבודדות **מתחברות** ⇒ הנתיב
+   והתנוחה חיים זה לצד זה, ⬛ ולא זה במקום זה.
+
+   ⬛ **והכלל יושב על ה**חריץ**, ⬛ ולא על הדמות:** הצל והדמות חייבים
+   לנוע **יחד** — צל שנשאר במרכז מנתק את הגוף מהרצפה. */
+[data-arena-slot='hero'] {
+  transition: translate var(--arena-lane-ms) ease-out;
+}
+[data-arena-slot='hero'][data-arena-lane='left'] { translate: calc(var(--arena-lane-shift) * -1); }
+[data-arena-slot='hero'][data-arena-lane='centre'] { translate: 0; }
+[data-arena-slot='hero'][data-arena-lane='right'] { translate: var(--arena-lane-shift); }
+
+/* חוקה שכבה א׳ א7 — ⬛ **המעבר מוסר, ⬛ והמיקום נשאר.** ⬛ וזה ⬛ אינו
+   `translate: 0` — הדמות עדיין **עומדת בנתיב שבחרה**, רק בלי להחליק אליו. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-slot='hero'] { transition: none; }
 }
 
 

@@ -23,7 +23,6 @@ import {
   MANA_CAP,
   canUseAbility,
   cast,
-  dodge,
   isFrozen,
   spendAbility,
   isRage,
@@ -32,6 +31,7 @@ import {
   stagePhase,
   startBattle,
   streakAt,
+  swipe,
   STREAK_HOT,
   telegraphAt,
   tick,
@@ -1200,9 +1200,15 @@ export default function ArenaBattle({ initialRound, character = null, items = []
             endX: e.clientX, endY: e.clientY,
             viewportWidth: window.innerWidth,
           });
-          // ⛔ `move` ⛔ אינו «התחמקות» — `dodge` בליבה מכריע אם הוא נפל בתוך החלון.
+          // ⛔ `move` ⛔ אינו «התחמקות» — `swipe` בליבה מכריע **שניהם**: הוא מזיז נתיב
+          // (‏`moveLane`, תמיד) ורק אז מגלגל (`dodge`, ⛔ רק בתוך החלון).
           // ⛔ הרכיב ⛔ אינו יודע מהו חלון, ו⛔ אינו סופר 400 מילישניות.
-          if (gesture?.kind === 'move') setBattle((prev) => (prev === null ? prev : dodge(prev, elapsedRef.current)));
+          // 🔴 **⟦19/09 · `C-0730` · `T-433`ⓑ⟧ ‏`gesture.dx` הפסיק להיזרק.** עד כאן
+          //    המחווה זוהתה, הסימן חושב — ו⛔ נמחק בשורה הזאת: ⇒ **החלקה שמאלה
+          //    והחלקה ימינה עשו בדיוק את אותו דבר**, וזה בדיוק מה ש-`37 § 5` אוסר.
+          if (gesture?.kind === 'move') {
+            setBattle((prev) => (prev === null ? prev : swipe(prev, gesture.dx, elapsedRef.current)));
+          }
         }}
         onPointerCancel={() => { stageFrom.current = null; }}
       >
@@ -1307,7 +1313,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
 
           </div>
         </div>
-        <ArenaStage phase={stagePhase(battle)} items={items} character={character} />
+        <ArenaStage phase={stagePhase(battle)} items={items} character={character} lane={battle.heroLane} />
         {/* 🔴 **⟦הועבר 16/09 · `C-0665` · `T-364`⟧ המספר עבר **אל היריב**, ⛔ ואינו יושב על המסילה.**
 
             🔬 **נמדד ברנדר, ⛔ ולא באומדן:** `render_video_B.py:564` קורא

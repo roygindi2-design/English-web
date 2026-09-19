@@ -388,3 +388,85 @@ describe('T-363 — שורת היכולות', () => {
     expect(row?.textContent).not.toContain('ריפוי');
   });
 });
+
+/**
+ * 🏃 **⟦19/09 · `C-0730` · `T-433`ⓑ · `37 § 5`⟧ הדמות **זזה**, ⛔ ולא רק המנוע.**
+ *
+ * 🔬 **מה שנמדד לפני, ⛔ ולא נחשד:** `C-0729` בנה את שלושת הנתיבים בליבה הטהורה —
+ * ⛔ אבל אף אחד לא קרא ל-`moveLane`, ⇒ `heroLane` נשאר `null` לנצח והמוצר התנהג
+ * **בדיוק כמו קודם**. בדיקת מקור הייתה ירוקה על כך; רק רינדור מכריע.
+ *
+ * ⛔ **וזו הסיבה שהטענה היא על ה-DOM ⛔ ולא על הקוד:** «`swipe` נקרא» ⛔ אינו
+ * «הדמות עברה נתיב» — בין השניים יושבים הפרופ, ההמרה ל-`LANE_NAMES` והתכונה.
+ */
+describe('C-0730 · T-433ⓑ — ההחלקה מזיזה את הדמות על המסך', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  const stage = (): Element => {
+    const node = document.querySelector('[data-arena-stage-area]');
+    expect(node, 'אזור הבמה חייב להיות על המסך').toBeTruthy();
+    return node as Element;
+  };
+  const lane = (): string | null =>
+    document.querySelector('[data-arena-slot="hero"]')?.getAttribute('data-arena-lane') ?? null;
+
+  /**
+   * ⛔ **המרחק ⛔ אינו «מספיק גדול» — הוא נגזר:** `GESTURE_THRESHOLD_PX` הוא 60,
+   * ו-`SWIPE_EDGE_PX` פוסל התחלה בקצה ⇒ מתחילים ב-300 (‏`innerWidth` של jsdom הוא
+   * 1024) ועוברים 120. ⛔ ו-`dy` נשאר 0, אחרת גדר הזווית מבטלת את המחווה.
+   */
+  const swipeBy = (dx: number): void => {
+    fireEvent.pointerDown(stage(), { clientX: 300, clientY: 200, pointerId: 7 });
+    fireEvent.pointerUp(stage(), { clientX: 300 + dx, clientY: 200, pointerId: 7 });
+  };
+
+  it('בפתיחה הדמות במרכז — `null` בליבה **מצויר** כמרכז', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(lane()).toBe('centre');
+  });
+
+  it('🔴 החלקה ימינה ⇒ הדמות **עוברת** נתיב, ⛔ ואינה נשארת במרכז', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    swipeBy(120);
+    expect(lane()).toBe('right');
+  });
+
+  it('🔴 והסימן **נושא** — שמאלה ⛔ אינו עושה את אותו דבר כמו ימינה', () => {
+    // 🔬 זה בדיוק הפגם שהיה: `gesture.dx` חושב ו**נזרק**, ⇒ שני הכיוונים היו זהים.
+    render(<ArenaBattle initialRound={ROUND} />);
+    swipeBy(-120);
+    expect(lane()).toBe('left');
+  });
+
+  it('⛔ הקיר עוצר — שתי החלקות לאותו כיוון ⛔ אינן יוצאות מהזירה', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    swipeBy(120);
+    swipeBy(120);
+    expect(lane()).toBe('right');
+  });
+
+  it('החלקה חזרה מחזירה למרכז — התנועה **הפיכה**, ⛔ ולא כיוון אחד', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    swipeBy(120);
+    swipeBy(-120);
+    expect(lane()).toBe('centre');
+  });
+
+  it('⛔ מחווה מתחת לסף ⛔ אינה מזיזה — 59px ⛔ אינם נתיב', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    swipeBy(59);
+    expect(lane()).toBe('centre');
+  });
+});
