@@ -361,6 +361,27 @@ describe('T-179 · 37 § 6 — חלון ההתחמקות', () => {
     expect(CODE).toMatch(/lane=\{battle\.heroLane\}/);
   });
 
+  /**
+   * 🕹️ **⟦19/09 · `C-0735` · `T-437`⟧ התנועה מוכרעת באמצע הגרירה — ו**התפיסה
+   * ⛔ אינה ב-`pointerdown`.**
+   *
+   * 🔬 **הטענה השנייה ⛔ אינה סגנון — היא רגרסיה שנמדדה חי.** כשהתפיסה ישבה
+   * ב-`pointerdown`, ‏`check:mobile` האדים על «הקשה כפולה על אותו קלף משגרת»
+   * (`F-259`): אזור הבמה מכיל את **כפתור השיגור** של `§ 5`, ותפיסה מסיטה
+   * אליה את ה-`pointerup` ⇒ ה-`click` ⛔ לעולם ⛔ אינו נורה. הקיצור בלע את
+   * **מסלול הנגישות**. ⇒ תופסים רק אחרי שהמחווה חצתה סף; הקשה ⛔ לעולם
+   * ⛔ אינה חוצה סף.
+   */
+  it('התנועה מוכרעת ב-`pointermove`, והתפיסה ⛔ אינה ב-`pointerdown`', () => {
+    expect(CODE).toMatch(/onPointerMove=\{\(e\) => \{/);
+    // ⛔ נקודת המוצא **מתאפסת** — בלעדיה גרירה ארוכה שווה לקצרה.
+    expect(CODE).toMatch(/stageFrom\.current = \{ x: e\.clientX, y: e\.clientY \};\s*\n\s*setBattle/);
+    const down = CODE.slice(CODE.indexOf('onPointerDown={(e) => { stageFrom'));
+    expect(down.slice(0, 160), '⛔ תפיסה ב-pointerdown בולעת את כפתור השיגור')
+      .not.toMatch(/setPointerCapture/);
+    expect(CODE, 'ותופסים אחרי שהמחווה הוכיחה את עצמה').toMatch(/setPointerCapture/);
+  });
+
   it('⛔ אין hex חדש שדלף ל-globals או ל-palette', () => {
     const palette = readFileSync('lib/core/palette.ts', 'utf8');
     const globals = readFileSync('app/globals.css', 'utf8');

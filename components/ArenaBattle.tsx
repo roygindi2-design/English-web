@@ -1269,6 +1269,50 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-2xl bg-[color:var(--arena-night)]"
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(e) => { stageFrom.current = { x: e.clientX, y: e.clientY }; }}
+        /**
+         * 🕹️ **⟦19/09 · `C-0735` · `T-437` · `D-270` ④⟧ ההכרעה עוברת לאמצע הגרירה.**
+         *
+         * 🔬 **הפער, כלשון רוי ⛔ ולא בניסוח שלי:** «ההזזה של השחקן **איטית ולא
+         * רציפה**». ⇒ נמדד: המחווה הוכרעה **רק** ב-`onPointerUp` — כלומר ⛔ שום
+         * דבר ⛔ לא קרה כל עוד האצבע על המסך. מחליקים, **מרימים**, ורק **אז** הוא זז.
+         *
+         * 🔴 **ואיפוס נקודת המוצא הוא מה שהופך את זה ל«רציף»:** אחרי כל נתיב
+         * שנדלק, ההתחלה נקבעת **מחדש** למקום האצבע ⇒ גרירה אחת של 130px מעבירה
+         * **שני** נתיבים בלי להרים. ⛔ בלי האיפוס, גרירה ארוכה הייתה שווה לקצרה.
+         *
+         * ⛔ **ו-`onPointerUp` ⛔ לא נגעתי בו, וזה ⛔ אינו שכחה:** אחרי האיפוס
+         * השארית תמיד **קטנה מהסף** ⟨אחרת היא הייתה נורית כאן⟩ ⇒ `resolveGesture`
+         * מחזיר שם `null` מעצמו. ⛔ אפס דגל «כבר זזתי», ⛔ אפס תזוזה כפולה.
+         *
+         * ⛔ **ו-60 קריאות בשנייה ⛔ אינן 60 רינדורים:** `swipe` מחזיר את **אותה
+         * הפניה** כשהנתיב ⛔ אינו משתנה ⟨קיר⟩ וכש-`dodge` מחוץ לחלון, ⇒ React
+         * בולם על `Object.is`. מתחת לסף כלל ⛔ אין קריאה.
+         */
+        onPointerMove={(e) => {
+          const start = stageFrom.current;
+          if (start === null) return;
+          const gesture = resolveGesture({
+            source: 'stage',
+            startX: start.x, startY: start.y,
+            endX: e.clientX, endY: e.clientY,
+            viewportWidth: window.innerWidth,
+          });
+          if (gesture?.kind !== 'move') return;
+          /* 🔴 **התפיסה כאן, ⛔ ולא ב-`pointerdown` — וזה נמדד, ⛔ ולא נזהר.**
+             🔬 **מה שקרה כשהיא ישבה ב-`pointerdown`:** `check:mobile` האדים על
+             «הקשה כפולה על אותו קלף משגרת» (‏`F-259`). הסיבה: אזור הבמה מכיל את
+             **כפתור השיגור** של `§ 5` («הקשה על היריב משגרת»), ותפיסה על
+             `pointerdown` מסיטה אליה את ה-`pointerup` ⇒ ה-`click` על הכפתור
+             ⛔ **לעולם ⛔ אינו נורה**. כלומר הקיצור בלע את **מסלול הנגישות**.
+             ⇒ תופסים רק **אחרי** שהמחווה הוכיחה את עצמה: הקשה ⛔ לעולם ⛔ אינה
+             חוצה סף, ⇒ ⛔ לעולם ⛔ אינה נתפסת — וגרירה ארוכה שיוצאת מהאזור
+             ממשיכה לירות. */
+          if (e.currentTarget.hasPointerCapture?.(e.pointerId) !== true) {
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+          }
+          stageFrom.current = { x: e.clientX, y: e.clientY };
+          setBattle((prev) => (prev === null ? prev : swipe(prev, gesture.dx, elapsedRef.current)));
+        }}
         onPointerUp={(e) => {
           const start = stageFrom.current;
           stageFrom.current = null;

@@ -567,3 +567,92 @@ describe('C-0733 · T-436 — פס חיי הלומד', () => {
     expect(holder?.className).toContain('absolute');
   });
 });
+
+/**
+ * 🕹️ **⟦19/09 · `C-0735` · `T-437` · `D-270` ④⟧ התנועה הופכת לרציפה.**
+ *
+ * 🔬 **הפער, כלשון רוי ⛔ ולא בניסוח שלי:** «ההזזה של השחקן קצת **איטית ולא
+ * רציפה**». ⇒ נמדד בקוד: המחווה הוכרעה **רק** ב-`onPointerUp`, ⇒ ⛔ שום דבר
+ * ⛔ לא קרה כל עוד האצבע על המסך, וגרירה ארוכה שווה בדיוק לקצרה.
+ *
+ * 🔴 **וזו הטענה שמאדימה על הקוד הקודם:** `pointermove` **בלי** `pointerup`.
+ * בדיקה שמסתיימת בהרמת אצבע ⛔ אינה יכולה להבדיל בין השניים.
+ */
+describe('C-0735 · T-437 — התנועה רציפה', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'unseen' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+
+  const stage = (): Element => document.querySelector('[data-arena-stage-area]') as Element;
+  const lane = (): string | null =>
+    document.querySelector('[data-arena-slot="hero"]')?.getAttribute('data-arena-lane') ?? null;
+
+  /** ⛔ **⛔ מרימה את האצבע** — זו כל הנקודה. `dy = 0`, אחרת גדר הזווית פוסלת. */
+  const dragTo = (x: number): void => {
+    fireEvent.pointerMove(stage(), { clientX: x, clientY: 200, pointerId: 9 });
+  };
+  const press = (): void => {
+    fireEvent.pointerDown(stage(), { clientX: 300, clientY: 200, pointerId: 9 });
+  };
+
+  it('🔴 גרירה של 130px **בלי להרים** ⇒ **שני** נתיבים', () => {
+    // 🔬 זו הטענה שמאדימה על הקוד הקודם: שם הכול חיכה ל-`pointerup`.
+    render(<ArenaBattle initialRound={ROUND} />);
+    press();
+    dragTo(430);
+    expect(lane(), 'שני נתיבים בגרירה אחת').toBe('right');
+    // ⛔ ומרכז ⇒ ימין הוא נתיב **אחד**; שניים דורשים שהמדידה **התאפסה**.
+    fireEvent.pointerUp(stage(), { clientX: 430, clientY: 200, pointerId: 9 });
+  });
+
+  it('הנתיב נדלק **מיד** בחציית הסף — ⛔ ולא בהרמה', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    press();
+    dragTo(365);
+    expect(lane(), 'האצבע עדיין למטה').toBe('right');
+  });
+
+  it('⛔ מתחת לסף ⛔ אינו מזיז, גם באמצע גרירה', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    press();
+    dragTo(355);
+    expect(lane()).toBe('centre');
+  });
+
+  it('⛔ ו⛔ אין תזוזה כפולה — ההרמה אחרי גרירה ⛔ אינה מוסיפה נתיב', () => {
+    // 🔬 אחרי האיפוס השארית **קטנה מהסף**, ⇒ `resolveGesture` מחזיר `null`
+    //    ב-`pointerup` מעצמו. ⛔ אפס דגל «כבר זזתי».
+    render(<ArenaBattle initialRound={ROUND} />);
+    press();
+    dragTo(365);
+    fireEvent.pointerUp(stage(), { clientX: 365, clientY: 200, pointerId: 9 });
+    expect(lane()).toBe('right');
+  });
+
+  it('הכיוון **נושא** בתוך אותה גרירה — והאיפוס נמדד בשלוש חציות', () => {
+    /* 🔬 **המסלול, צעד-צעד — וזה מה שמוכיח שנקודת המוצא מתאפסת:**
+       ‏`300 ⇢ 365` ⟨+65⟩ ⇒ **ימין**, המוצא נקבע ל-365
+       ‏`365 ⇢ 300` ⟨−65⟩ ⇒ **מרכז**, המוצא נקבע ל-300
+       ‏`300 ⇢ 240` ⟨−60⟩ ⇒ **שמאל**
+       ⛔ **בלי האיפוס** ההפרש היה נמדד תמיד מ-300 ⇒ הצעד השני היה **אפס**
+       והשלישי היה מזיז נתיב **אחד בלבד**. ⇒ `left` הוא הראיה. */
+    render(<ArenaBattle initialRound={ROUND} />);
+    press();
+    dragTo(365);
+    expect(lane(), 'חציה ①').toBe('right');
+    dragTo(300);
+    expect(lane(), 'חציה ② — היפוך כיוון באותה גרירה').toBe('centre');
+    dragTo(240);
+    expect(lane(), 'חציה ③').toBe('left');
+  });
+});
