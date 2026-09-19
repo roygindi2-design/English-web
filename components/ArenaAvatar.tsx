@@ -154,108 +154,100 @@ const VIEW_BOX = '-100 -108 200 252';
  * ⛔ ולא קישוט: א4 נוקבת בשלושתם בשמם, ובלי סימון היא הייתה נאלצת לנחש שכבה.
  */
 const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
-  /* 🦵 מכנסיים כהים מהגוף — הרנדר `kol-B-03` מפריד אותם בגוון, ⛔ ולא בקו. */
+  /**
+   * 🎨 **⟦18/09 · `C-0721`⟧ הפרופורציות נבחרו ב-Figma, ⛔ ולא נוחשו כאן.**
+   * ארבע גרסאות צוירו זו לצד זו בעמוד `English-web · Arena` ונשפטו בצילום:
+   * ‏**v2** (גוף טרפז עם פינות חדות) יצא **נוקשה ושבור יותר** מהנשלח — תוצאה
+   * שלילית ששווה לרשום; **v3** הקטין ראש אך **שיקע** אותו בגוף; **v4** ניצחה,
+   * והמספרים כאן הם שלה. ⛔ כל אחד מהם עדיין נגזר מעוגן, ⛔ ולא מוחלט.
+   */
   legs: (
     <Tone tone="deep">
-      <rect x={BOOT_L.x - 13} y={BELT.y - 3} width={26} height={BOOT_L.y - BELT.y + 3} rx={12} />
-      <rect x={BOOT_R.x - 13} y={BELT.y - 3} width={26} height={BOOT_R.y - BELT.y + 3} rx={12} />
+      <rect x={BOOT_L.x - 13} y={BELT.y - 5} width={26} height={BOOT_L.y - BELT.y + 5} rx={11} />
+      <rect x={BOOT_R.x - 13} y={BELT.y - 5} width={26} height={BOOT_R.y - BELT.y + 5} rx={11} />
     </Tone>
   ),
   boots: (
     <>
-      <rect x={BOOT_L.x - 17} y={BOOT_L.y - 8} width={34} height={24} rx={7} />
-      <rect x={BOOT_R.x - 17} y={BOOT_R.y - 8} width={34} height={24} rx={7} />
+      <rect x={BOOT_L.x - 17} y={BOOT_L.y - 10} width={34} height={24} rx={8} />
+      <rect x={BOOT_R.x - 17} y={BOOT_R.y - 10} width={34} height={24} rx={8} />
     </>
   ),
+  /**
+   * 🔬 **⟦`C-0721`⟧ הגוף **מגיע לחגורה** — נמדד, ⛔ ולא הונח.** הגובה היה
+   * `BODY_SIZE.height` (84) והסתיים על `y = 24`, בעוד החגורה יושבת על `40` ⇒
+   * **16 יחידות של רקע הציצו בין החזה למכנסיים**, והדמות נקראה כשני חלקים.
+   * ⇒ הגובה נגזר עכשיו מ**המרחק לחגורה**, ⛔ ולא ממספר קבוע.
+   */
   body: (
     <rect
       x={BODY.x - BODY_SIZE.width / 2}
       y={BODY.y - BODY_SIZE.height / 2}
       width={BODY_SIZE.width}
-      height={BODY_SIZE.height}
-      rx={18}
+      height={BELT.y - 3 - (BODY.y - BODY_SIZE.height / 2)}
+      rx={20}
     />
   ),
-  /**
-   * 🛡️ **לוח החזה — השכבה `chest` הייתה **ריקה** בבסיס, והרנדר מצייר שם לוח בהיר.**
-   * ⛔ **⛔ אינה שכבה חדשה** (`38 § 5`): היא כבר ב-`LAYER_ORDER` ומחכה מאז `T-215`.
-   */
   chest: (
     <Tone tone="lit">
-      <rect x={BODY.x - 26} y={BODY.y - 26} width={52} height={34} rx={12} />
+      <rect x={BODY.x - 26} y={BODY.y - 24} width={52} height={36} rx={14} />
     </Tone>
   ),
   belt: (
     <Tone tone="deep">
       <rect
         x={BELT.x - BELT_SIZE.width / 2}
-        y={BELT.y - BELT_SIZE.height / 2}
+        y={BELT.y - BELT_SIZE.height / 2 - 2}
         width={BELT_SIZE.width}
         height={BELT_SIZE.height}
-        rx={5}
+        rx={6}
       />
     </Tone>
   ),
   /**
-   * 💪 **⟦18/09 · `C-0719`⟧ הזרוע — כפות הידיים ⛔ מפסיקות לרחף.**
-   *
-   * 🔬 **נמדד בצילום ×5 של שתי הדמויות, ⛔ ולא הוסק:** `offHand` ו-`mainHand` ציירו
-   * **עיגול בודד** כל אחת, ו-`shoulders` ריקה בבסיס ⇒ שתי כפות ידיים תלויות באוויר
-   * משני צדי הגוף, **בלי שום דבר שמחבר אותן אליו**. זה נראה בשתי הדמויות, בכל מסך.
-   *
-   * ⛔ **⛔ אין שכבה חדשה** (`38 § 5`): הרצועה נכנסת לשכבה שכף היד כבר יושבת בה,
-   * ⇒ סדר הציור של `38 § 4` ⛔ לא נגע.
-   * ⛔ **וכל קצה הוא עוגן קיים** — כתף ⇐ כף יד, ⛔ אפס קואורדינטה מוחלטת.
+   * 💪 **הזרוע — כפות הידיים ⛔ מפסיקות לרחף** (`C-0719`), ו⛔ **אינה רצועה ישרה**
+   * (`C-0721`): היא רחבה בכתף, צרה בפרק, ו**נכנסת אל תוך כף היד** ⇒ אין תפר.
+   * ⛔ אין שכבה חדשה (`38 § 5`) — היא נכנסת לשכבה שכף היד כבר יושבת בה.
    */
   offHand: (
     <>
       <path
-        d={`M${SHOULDER_L.x - 9} ${SHOULDER_L.y}L${OFF_HAND.x - 7} ${OFF_HAND.y}L${OFF_HAND.x + 7} ${OFF_HAND.y}L${SHOULDER_L.x + 9} ${SHOULDER_L.y}z`}
+        d={`M${SHOULDER_L.x - 8} ${SHOULDER_L.y - 2}L${OFF_HAND.x - 8} ${OFF_HAND.y - 2}L${OFF_HAND.x + 8} ${OFF_HAND.y + 4}L${SHOULDER_L.x + 10} ${SHOULDER_L.y + 2}z`}
       />
-      <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={10} /></Tone>
+      <Tone tone="lit"><circle cx={OFF_HAND.x} cy={OFF_HAND.y} r={11} /></Tone>
     </>
   ),
   head: (
     <>
-      {/* 💇 **⟦`C-0720`⟧ שיער **ופנים**, ⛔ ולא כדור אחד.**
-          🔬 **נמדד בצילום ×6:** ראש אחד ב-`r34` בגוון בהיר יצא **רחב כמעט כמו הגוף**
-          (76) ⇒ הדמות נקראה ככדור, ⛔ לא כדמות. וניסיון ראשון צייר קוצות **מתחת**
-          לקצה הראש ⇒ עיגול הראש כיסה אותן לגמרי והן ⛔ לא נראו כלל.
-          ⇒ **הראש נשאר עוגן אחד** (`38 § 3` ⛔ לא נגע) ומחולק לשניים בגוון:
-          כיפה כהה ב-`r34` והפנים **בהירות וקטנות יותר** (`r25`), נמוכות ב-6 ⇒ נשארת
-          רצועת שיער מעל המצח, וזה בדיוק מה שהרנדר מצייר. */}
+      {/* 💇 שיער קוצני. ⛔ `data-arena-part` ⛔ לא זז — הוא הוו של א4 שמניע את הנדנוד.
+          🔬 והקודקוד הגבוה יושב על `-100`, בתוך ה-`viewBox` שמתחיל ב-`-108`. */}
       <Tone tone="deep">
         <path
           data-arena-part="hair"
-          /* 🔬 **⟦`C-0720`⟧ הקוצות התקצרו — נמדד, ⛔ ולא נצפה.** הגרסה הראשונה הגיעה
-             ל-`y = -112` בעוד ה-`viewBox` מתחיל ב-`-108` ⇒ **שתי הקוצות הגבוהות
-             נחתכו שטוח**. ⇒ הקודקוד הגבוה ביותר יושב על `-104`, ארבע יחידות מתחת
-             לגבול — **אותו מרווח בדיוק שהכובע לוקח**. */
-          d={`M${HEAD.x - 26} ${HEAD.y - 16}l6 -20 8 14 7 -20 7 18 8 -14 6 22z`}
+          d={`M${HEAD.x - 23} ${HEAD.y - 14}l5 -20 8 14 6 -18 7 16 7 -12 6 20z`}
         />
-        <circle cx={HEAD.x} cy={HEAD.y} r={HEAD_RADIUS} />
+        <circle cx={HEAD.x} cy={HEAD.y - 2} r={31} />
       </Tone>
-      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y + 6} r={25} /></Tone>
+      <Tone tone="lit"><circle cx={HEAD.x} cy={HEAD.y + 2} r={23} /></Tone>
     </>
   ),
   /**
-   * 🎽 **כתפיות — `shoulders` הייתה **ריקה** בבסיס, ולכן הזרוע יצאה משום מקום.**
-   * ⛔ שכבה קיימת (`38 § 4`), ⛔ ולא חדשה. ‏`mirror()` נותן את השמאלית ⛔ ולא מספר שני.
+   * 🎽 **הכתפיות **נכנסות אל הגוף**.** 🔬 העוגן יושב על `±52` בעוד חצי-רוחב הגוף
+   * הוא `38` ⇒ כתפייה שמרוכזת עליו **מרחפת מחוץ לגוף**, וכך היא נראתה. ⇒ היא
+   * מוסטת פנימה ב-12 ו**חופפת את קצה הגוף**.
    */
   shoulders: (
     <Tone tone="lit">
-      {/* 🔬 עיגולים ב-`r17` על העוגן (±52) יצאו **כדורים תלויים** מחוץ לגוף (חצי-רוחב 38).
-          ⇒ כתפייה היא **קשת שמחבקת את הגוף**: מלבן מעוגל שנוגע בפלג הגוף העליון. */}
-      <rect x={SHOULDER_R.x - 22} y={SHOULDER_R.y - 15} width={34} height={28} rx={13} />
-      <rect x={SHOULDER_L.x - 12} y={SHOULDER_L.y - 15} width={34} height={28} rx={13} />
+      <rect x={SHOULDER_R.x - 28} y={SHOULDER_R.y - 16} width={32} height={28} rx={13} />
+      <rect x={SHOULDER_L.x - 4} y={SHOULDER_L.y - 16} width={32} height={28} rx={13} />
     </Tone>
   ),
   mainHand: (
     <>
       <path
-        d={`M${SHOULDER_R.x - 9} ${SHOULDER_R.y}L${MAIN_HAND.x - 7} ${MAIN_HAND.y}L${MAIN_HAND.x + 7} ${MAIN_HAND.y}L${SHOULDER_R.x + 9} ${SHOULDER_R.y}z`}
+        d={`M${SHOULDER_R.x - 10} ${SHOULDER_R.y - 2}L${MAIN_HAND.x - 6} ${MAIN_HAND.y - 4}L${MAIN_HAND.x + 8} ${MAIN_HAND.y + 2}L${SHOULDER_R.x + 6} ${SHOULDER_R.y}z`}
       />
-      <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={10} /></Tone>
+      <Tone tone="lit"><circle cx={MAIN_HAND.x} cy={MAIN_HAND.y} r={11} /></Tone>
     </>
   ),
 };
@@ -405,7 +397,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
             בהיר, כי החתימה מצוירת **מעל** הבסיס באותה שכבה (`38 § 4`).
             🔬 ושתי המדידות שמאשרות: עין מול הפנים החדשות **4.09:1** · הפנים מול
             כרטיס הבחירה **3.84:1** ⇒ שתיהן מעל הרצפה. */}
-        <Tone tone="deep"><circle cx={HEAD.x} cy={HEAD.y + 6} r={25} /></Tone>
+        <Tone tone="deep"><circle cx={HEAD.x} cy={HEAD.y + 2} r={23} /></Tone>
         <g
           /* 🔬 **⟦`C-0719`⟧ דיו **בהיר**, והנימוק תוקן אחרי שבדקתי את הטענה שלי.**
              ניסיתי `text-ink` תחילה (הטוקן ש-`OUTLINE_CLASS` כבר משתמש בו) ונמדד
