@@ -37,6 +37,19 @@ export interface GestureInput {
 export type ArenaGesture =
   | { readonly kind: 'cast' }
   | { readonly kind: 'move'; readonly dx: number }
+  /**
+   * 🛡️ **⟦19/09 · `T-438` · `D-270` ③⟧ הצבת ההגנה — החלקה **למטה** על הזירה.**
+   *
+   * 🔬 **והמחווה נבחרה כי היא **פנויה**, ⛔ ולא כי היא נוחה:** `37 § 5` תופס
+   * «מעלה על **קלף** = התקפה» ו«לצדדים על ה**זירה** = תזוזה», ⛔ ואף אחד
+   * מהם ⛔ אינו תופס «למטה». ⇒ עד השורה הזאת היא נפלה על גדר הזווית והוחזרה
+   * כ-`null` — כלומר **אצבע שירדה ⛔ לא עשתה דבר**.
+   *
+   * ⛔ **ושתי החלופות היו תפוסות:** כפתור רביעי מתנגש בשורת השלושה שהרנדר
+   * מחייב (`38 § 5`, ובדיקה נעולה אוסרת אותו), והקשה על הזירה כבר משמעותה
+   * «שגר לחש» (`§ 5`, מסלול הנגישות).
+   */
+  | { readonly kind: 'guard' }
   | null;
 
 const MAX_ANGLE_RAD = (SWIPE_MAX_ANGLE_DEG * Math.PI) / 180;
@@ -66,6 +79,15 @@ export function resolveGesture(input: GestureInput): ArenaGesture {
   // שחצתה את המסך, וזו שהדפדפן חוטף היא זו שמתחילה שם.
   if (startX <= SWIPE_EDGE_PX) return null;
   if (startX >= viewportWidth - SWIPE_EDGE_PX) return null;
+  // 🛡️ **⟦`T-438`⟧ למטה = הצבת הגנה. ⛔ ונבדק **לפני** גדר הזווית האופקית,**
+  //    ⛔ ולא אחריה: הגדר ההיא פוסלת כל מה שסוטה מהאופק, ⇒ בדיקה שתבוא אחריה
+  //    ⛔ לעולם ⛔ לא הייתה נורית.
+  //    ⛔ **ו«למטה» ⛔ אינו «אנכית»** — בדיוק אותה הבחנה שהקלף עושה בכיוון ההפוך
+  //    (`dy >= 0` שם): מעלה על הזירה ⛔ אינה מחווה איטית, היא מחווה **אחרת**.
+  if (dy > 0 && Math.abs(dy) >= GESTURE_THRESHOLD_PX
+      && Math.atan2(Math.abs(dx), Math.abs(dy)) <= MAX_ANGLE_RAD) {
+    return { kind: 'guard' };
+  }
   if (Math.abs(dx) < GESTURE_THRESHOLD_PX) return null;
   if (Math.atan2(Math.abs(dy), Math.abs(dx)) > MAX_ANGLE_RAD) return null;
   // ⛔ הסימן **נישא** ו⛔ אינו מפורש: `§ 5` אומר «לצדדים», ו-`§ 6` אומר «לצד» —

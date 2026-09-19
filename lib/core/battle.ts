@@ -160,7 +160,7 @@ export interface BattleState {
    * אומר «התחמקות!» על אחת ו«מגן» על השנייה, ⛔ ושתיהן ⛔ לא היו ניתנות להבחנה.
    * ⛔ ⛔ אינו חוק שני: `tick` ⛔ אינו קורא אותו כלל.
    */
-  readonly immuneBy: 'dodge' | 'shield' | null;
+  readonly immuneBy: 'dodge' | 'shield' | 'guard' | null;
   /**
    * 🛣️ **`null` ⇒ הלומד ⛔ טרם בחר נתיב, והיריב **עוקב** אחריו.**
    *
@@ -172,6 +172,19 @@ export interface BattleState {
    * שהוא גם המקום שבו עומד מי שלא זז — והמכה נוחתת, כלשון המפרט.
    */
   readonly heroLane: Lane | null;
+  /**
+   * 🛡️ **⟦19/09 · `T-438` · `D-270` ①⟧ ההגנה המוצבת — הנתיב שהיא יושבת בו,
+   * או `null` כשאין הגנה על המגרש.**
+   *
+   * 🔴 **ולמה זה שדה ב-`BattleState` ו⛔ לא ב-`CharacterBattleStats`:** גדר 1
+   * של `§ 7` קובעת **ארבעה** מפתחות לדף הדמות, ⛔ ואין חמישי. ההגנה היא
+   * **מצב של הקרב**, ⛔ ולא נתון של הדמות — מה שהדמות קובעת הוא רק איך היא
+   * **נראית** (`38 § 3ב`).
+   *
+   * ⛔ **ונכתב רק בשני רגעים בדידים** — בהצבה ובבליעה. ⛔ **⛔ לא בכל פריים**:
+   * `tick` **חייב להחזיר את אותה הפניה** כשאף מכה לא זזה, וזו בדיקה נעולה.
+   */
+  readonly guardLane: Lane | null;
   readonly casts: readonly BattleCast[];
   /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
   readonly stats: CharacterBattleStats;
@@ -202,6 +215,7 @@ export function startBattle(
     dodgedSwing: null,
     immuneBy: null,
     heroLane: null,
+    guardLane: null,
     casts: [],
     stats,
   };
@@ -339,9 +353,18 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   //    גובה מטבע עבור סכנה ש⛔ לא הייתה. ⛔ **ואת הבדיקות הנעולות זה ⛔ אינו מזיז:**
   //    שם `heroLane` הוא `null` ⇒ `aimLaneAt` מחזיר `CENTRE` = `laneOf` ⇒ הענף
   //    הראשון ⛔ לעולם אינו נלקח, והמסלול הוא בדיוק זה שהיה.
+  // 🛡️ **⟦`T-438`⟧ מקור שלישי לחסינות — ו**הסדר בתוך הלולאה הוא מכניקה**.**
+  //    ⓐ **נתיב בטוח** ⛔ אינו צורך דבר · ⓑ **גלגול/`מגן`** צורכים את החסינות
+  //    · ⓒ **ההגנה המוצבת** נשברת. ⇒ ההגנה היא ה**אחרונה** שנצרכת, בכוונה:
+  //    ⛔ **היא ⛔ אינה נשברת לריק.** מי שכבר עמד בטוח או כבר התגלגל שומר אותה
+  //    למכה הבאה — וזה מה שהופך אותה ל«תכנון» ⛔ ולא ל«מס».
+  //    🔴 **והיא נשברת **פעם אחת**:** ‏`guardBroken` נצרך בדיוק כמו `spent`, ⇒
+  //    שתי מכות שהתאחדו בפריים אחד ⛔ אינן נבלעות שתיהן בקיר אחד.
+  let guardBroken = false;
   for (let i = applied + 1; i <= due; i += 1) {
     if (laneOf(state) !== aimLaneAt(state, i)) continue;
     if (state.dodgedSwing === i) { spent = true; continue; }
+    if (!guardBroken && state.guardLane === aimLaneAt(state, i)) { guardBroken = true; continue; }
     landed += 1;
   }
   const immune = spent;
@@ -355,7 +378,11 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
     lastSwingMs: elapsedMs,
     pendingPenalty: 0,
     dodgedSwing: immune ? null : state.dodgedSwing,
-    immuneBy: immune ? null : state.immuneBy,
+    // 🛡️ `T-438` — ⛔ **`'guard'` ⛔ אינו חוק שני:** `tick` ⛔ אינו קורא את השדה
+    //    הזה כלל. הוא קיים כדי שהמסך יאמר «חומה!» ⛔ ולא «התחמקות!» — אותה
+    //    הבחנה בדיוק ש-`T-363` פתחה עבור `מגן`.
+    immuneBy: guardBroken ? 'guard' : immune ? null : state.immuneBy,
+    guardLane: guardBroken ? null : state.guardLane,
   };
 }
 
@@ -473,6 +500,42 @@ export function moveLane(state: BattleState, dx: number): BattleState {
  */
 export function swipe(state: BattleState, dx: number, elapsedMs: number): BattleState {
   return dodge(moveLane(state, dx), elapsedMs);
+}
+
+/**
+ * 🛡️ **⟦19/09 · `T-438` · `D-270` ①⟧ ההגנה המוצבת — מחיר המאנה.**
+ *
+ * ⛔ **4, ⛔ ולא 3 ⟨`מגן`⟩ ו⛔ לא 5 ⟨`הקפאה`⟩, וזה נגזר ⛔ ולא נבחר:** היא
+ * **חזקה יותר** מ-`מגן` — היא שורדת בין מכות ואפשר להציב אותה לפני שהטלגרף
+ * בכלל התחיל — ⇒ היא ⛔ אינה יכולה לעלות פחות ממנו. ⛔ **ופחות מ-`הקפאה`**,
+ * שעוצרת את היריב לגמרי.
+ *
+ * 🔴 **והמחיר האמיתי הוא ויתור על `כפול` ⟨4⟩** — בדיוק אותו מספר. ⇒ כל הצבה
+ * היא **החלטה**: להגן, או להכות חזק. וזו השכבה האסטרטגית היחידה שיש לזירה.
+ */
+export const GUARD_COST = 4;
+
+/**
+ * האם אפשר להציב עכשיו. ⛔ **שני תנאים, ⛔ ולא אחד:** מאנה, **ו⛔ אין כבר
+ * הגנה על המגרש** — אחרת הצבה שנייה הייתה גובה מאנה ו⛔ לא משנה דבר.
+ */
+export function canPlaceGuard(state: BattleState, elapsedMs: number): boolean {
+  return state.guardLane === null && manaAt(elapsedMs, state.manaSpent) >= GUARD_COST;
+}
+
+/**
+ * 🛡️ **מציבה את ההגנה בנתיב שהלומד עומד בו.**
+ *
+ * ⛔ **ומחזירה את **אותה הפניה** כשאי-אפשר** — בדיוק כמו `moveLane` בקיר וכמו
+ * `dodge` מחוץ לחלון. ⇒ הרכיב יכול לקרוא לה בלי לשאול, ו-React בולם.
+ *
+ * 🔴 **`laneOf` ⛔ ולא `state.heroLane`:** לומד שעוד ⛔ לא בחר נתיב עומד
+ * ב**מרכז** ⟨`heroLane === null`⟩, ⇒ שם ההגנה מוצבת. ⛔ אחרת הצבה ראשונה
+ * הייתה נופלת על `null` ומייצרת הגנה שאיש ⛔ אינו עומד בה.
+ */
+export function placeGuard(state: BattleState, elapsedMs: number): BattleState {
+  if (!canPlaceGuard(state, elapsedMs)) return state;
+  return { ...state, guardLane: laneOf(state), manaSpent: state.manaSpent + GUARD_COST };
 }
 
 /**

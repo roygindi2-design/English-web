@@ -38,6 +38,9 @@ import {
   streakAt,
   STREAK_HOT,
   wordsFromBoss,
+  GUARD_COST,
+  canPlaceGuard,
+  placeGuard,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
 
@@ -757,5 +760,90 @@ describe('T-433 · 37 § 5 — שלושה נתיבים', () => {
     expect(LANE_NAMES[0]).toBe('centre');
     expect(LANE_NAMES[1]).toBe('right');
     expect(Object.isFrozen(LANE_NAMES)).toBe(true);
+  });
+});
+
+/**
+ * 🛡️ **⟦19/09 · `C-0736` · `T-438` · `D-270` ①⟧ ההגנה המוצבת.**
+ *
+ * 🔴 **הטענה הכבדה כאן ⛔ אינה «היא בולמת» — היא «היא ⛔ אינה `מגן`».**
+ * לזירה **כבר** יש חסינות בלחיצת כפתור (`מגן`, 3 מאנה, בנוי). מכניקה שנייה
+ * שעושה את אותו דבר היא **כפל מקורות אמת**, ⛔ ולא תוכן. ⇒ הבדיקה שמכריעה
+ * היא זו שמראה **היכן הן נבדלות**: ההגנה יושבת על **מקום**, ⛔ ולא עליך.
+ */
+describe('T-438 · D-270 ① — ההגנה המוצבת', () => {
+  /** הלומד בנתיב `lane`, אחרי שצבר מספיק מאנה. ⛔ המאנה נגזרת מה**שעון**. */
+  const at = (lane: -1 | 0 | 1, ms: number) => {
+    let s = FRESH;
+    if (lane !== 0) s = moveLane(s, lane);
+    return { s, ms };
+  };
+  /** ⛔ מספיק זמן ל-4 מאנה, ⛔ ולפני המכה הראשונה. */
+  const RICH_MS = 8_000;
+
+  it('מוצבת בנתיב שהלומד עומד בו, וגובה מאנה', () => {
+    const { s, ms } = at(1, RICH_MS);
+    const g = placeGuard(s, ms);
+    expect(g.guardLane).toBe(1);
+    expect(g.manaSpent).toBe(s.manaSpent + GUARD_COST);
+  });
+
+  it('⛔ בלי מאנה ⛔ אין הצבה — ו**אותה הפניה** חוזרת', () => {
+    expect(canPlaceGuard(FRESH, 0)).toBe(false);
+    expect(placeGuard(FRESH, 0)).toBe(FRESH);
+  });
+
+  it('⛔ הצבה שנייה ⛔ אינה גובה מאנה בשקט', () => {
+    const first = placeGuard(FRESH, RICH_MS);
+    expect(first.guardLane).not.toBeNull();
+    expect(placeGuard(first, RICH_MS), 'אותה הפניה').toBe(first);
+  });
+
+  it('🔴 בולמת את המכה, ⛔ ואז **נשברת**', () => {
+    const guarded = placeGuard(FRESH, RICH_MS);
+    const hit = tick(guarded, ENEMY_SWING_MS);
+    expect(hit.learnerHp, '⛔ אפס נזק').toBe(guarded.learnerHp);
+    expect(hit.guardLane, 'נשברה').toBeNull();
+    expect(hit.immuneBy, 'והמסך יודע **מי** הציל').toBe('guard');
+  });
+
+  it('🔴 והמכה ה**שנייה** כן מורידה — ⛔ היא ⛔ אינה קיר קבוע', () => {
+    const guarded = placeGuard(FRESH, RICH_MS);
+    const after = tick(tick(guarded, ENEMY_SWING_MS), ENEMY_SWING_MS * 2);
+    expect(after.learnerHp).toBeLessThan(guarded.learnerHp);
+  });
+
+  it('🔴 **וזה ההבדל מ`מגן`:** הגנה בנתיב אחר ⛔ אינה מגינה עליך', () => {
+    /* 🔬 זו הטענה היחידה שמפרידה בין השתיים. בלעדיה נבנתה כאן **כפילות**.
+       ⛔ **והלומד חייב לעמוד בנתיב ש**מותקף**, אחרת אין מה לבלום:** המכה
+       הראשונה מכוונת ל-`AIM_CYCLE[0]` = **מרכז**, ⇒ שם הוא עומד. */
+    const s = placeGuard(FRESH, RICH_MS);
+    expect(s.guardLane, 'מוצבת במרכז — שם הוא עומד').toBe(0);
+    const here = tick({ ...s, heroLane: 0 as const, guardLane: 0 as const }, ENEMY_SWING_MS);
+    expect(here.learnerHp, 'באותו נתיב ⇒ בולמת').toBe(s.learnerHp);
+    const elsewhere = tick({ ...s, heroLane: 0 as const, guardLane: -1 as const }, ENEMY_SWING_MS);
+    expect(elsewhere.learnerHp, 'בנתיב אחר ⇒ ⛔ אינה בולמת').toBeLessThan(s.learnerHp);
+    expect(elsewhere.guardLane, '⛔ ו⛔ אינה נשברת לריק').toBe(-1);
+  });
+
+  it('⛔ **⛔ אינה נשברת לריק** — נתיב בטוח שומר אותה למכה הבאה', () => {
+    // 🔬 הסדר בלולאה: נתיב ⇒ גלגול ⇒ הגנה. מי שכבר ניצל ⛔ אינו משלם בקיר.
+    const s = { ...placeGuard(FRESH, RICH_MS), heroLane: 1 as const, guardLane: 1 as const };
+    // המכה הראשונה מכוונת למרכז (`AIM_CYCLE[0]`), והלומד בימין ⇒ בטוח ממילא.
+    const hit = tick(s, ENEMY_SWING_MS);
+    expect(hit.learnerHp).toBe(s.learnerHp);
+    expect(hit.guardLane, 'עדיין שם').toBe(1);
+  });
+
+  it('⛔ וגלגול קודם להגנה — הגלגול הוא המשחק הפעיל', () => {
+    const s = { ...placeGuard(FRESH, RICH_MS), dodgedSwing: 1 };
+    const hit = tick(s, ENEMY_SWING_MS);
+    expect(hit.learnerHp).toBe(s.learnerHp);
+    expect(hit.guardLane, 'ההגנה ⛔ לא נצרכה').toBe(0);
+  });
+
+  it('⛔ `tick` ⛔ לא נשבר — אותה הפניה כשאף מכה לא זזה', () => {
+    const guarded = placeGuard(FRESH, RICH_MS);
+    expect(tick(guarded, 10)).toBe(guarded);
   });
 });
