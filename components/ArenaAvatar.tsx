@@ -3,6 +3,10 @@ import { CHARACTER_LABELS_HE, type ArenaCharacter } from '@/lib/core/arenaCharac
 import {
   ARMORER,
   BELT_SIZE,
+  GOLEM,
+  HUNTER,
+  NEW_PATHS,
+  SHADE,
   HEAD_RADIUS,
   LAYER_ORDER,
   WARRIOR,
@@ -165,6 +169,17 @@ const FIG = {
   orb: 'text-[color:var(--arena-fig-orb,currentColor)]',
   cast: 'text-[color:var(--arena-cast,currentColor)]',
   castShade: 'text-[color:var(--arena-fig-cast-shade,currentColor)]',
+  leaf: 'text-[color:var(--arena-fig-leaf,currentColor)]',
+  leafShade: 'text-[color:var(--arena-fig-leaf-shade,currentColor)]',
+  leather: 'text-[color:var(--arena-fig-leather,currentColor)]',
+  string: 'text-[color:var(--arena-fig-string,currentColor)]',
+  stone: 'text-[color:var(--arena-fig-stone,currentColor)]',
+  stoneShade: 'text-[color:var(--arena-fig-stone-shade,currentColor)]',
+  core: 'text-[color:var(--arena-fig-core,currentColor)]',
+  coreLit: 'text-[color:var(--arena-fig-core-lit,currentColor)]',
+  teal: 'text-[color:var(--arena-fig-teal,currentColor)]',
+  tealDeep: 'text-[color:var(--arena-fig-teal-deep,currentColor)]',
+  wisp: 'text-[color:var(--arena-fig-wisp,currentColor)]',
   wand: 'text-[color:var(--arena-fig-wand,currentColor)]',
 } as const;
 
@@ -345,6 +360,12 @@ const BASE_LAYERS: Partial<Record<Layer, React.JSX.Element>> = {
  */
 const CHARACTER_HIDES: Partial<Record<ArenaCharacter, readonly Layer[]>> = {
   wizard: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
+  /* 🆕 `C-0726` — שלוש דמויות ש**מחליפות** את הבסיס, ⛔ ולא לובשות אותו.
+     ⛔ **`legs` של ה`צל` ⛔ אינה «מוסתרת בשביל האפקט»** — ל`צל` **אין רגליים**,
+     וזה בדיוק מה שמבדיל את הצללית שלו מכל השאר. */
+  hunter: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
+  golem: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
+  shade: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
 };
 
 /**
@@ -588,6 +609,179 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
               rx={ARMORER.gripR}
             />
           </Paint>
+        </>
+      ),
+    },
+  ],
+  /**
+   * 🏹 **`צייד` — ⛔ הקשת **היא** הצללית.** 🔬 נמדד ב-64px: מה שנקרא ממרחק הוא
+   * **הקשת** ⛔ ולא הדמות ⇒ היא גדולה, היא משמאל, והחץ **דרוך עליה** וחוצה את
+   * הגוף. גרסה ראשונה שלי ציירה קשת מנותקת וחץ מרחף ⇒ זה נקרא **תפאורה**.
+   */
+  hunter: [
+    {
+      layer: 'offHand',
+      shape: (
+        <>
+          <g className={FIG.leather} fill="none" stroke="currentColor" strokeWidth={HUNTER.bowWidth} strokeLinecap="round">
+            <path d={NEW_PATHS.hunterBow} />
+          </g>
+          <g className={FIG.string} fill="none" stroke="currentColor" strokeWidth={HUNTER.stringWidth} strokeLinejoin="round">
+            <path d={NEW_PATHS.hunterString} />
+          </g>
+        </>
+      ),
+    },
+    {
+      layer: 'legs',
+      shape: (
+        <Paint hue="leather">
+          <rect x={-HUNTER.legInner - HUNTER.legHalfWidth * 2} y={HUNTER.legTopY} width={HUNTER.legHalfWidth * 2} height={BOOT_L.y - HUNTER.legTopY} rx={8} />
+          <rect x={HUNTER.legInner} y={HUNTER.legTopY} width={HUNTER.legHalfWidth * 2} height={BOOT_R.y - HUNTER.legTopY} rx={8} />
+        </Paint>
+      ),
+    },
+    {
+      layer: 'body',
+      shape: (
+        <>
+          <Paint hue="leaf"><path d={NEW_PATHS.hunterTunic} /></Paint>
+          <Paint hue="leafShade"><path d={NEW_PATHS.hunterTunicShade} /></Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'belt',
+      shape: (
+        <Paint hue="leather">
+          <rect x={-HUNTER.beltHalfWidth} y={HUNTER.beltTopY} width={HUNTER.beltHalfWidth * 2} height={HUNTER.beltH} rx={HUNTER.beltR} />
+        </Paint>
+      ),
+    },
+    {
+      layer: 'head',
+      shape: (
+        <>
+          <Paint hue="skin"><circle cx={0} cy={HUNTER.headY} r={HUNTER.headRadius} /></Paint>
+          <Paint hue="voidInk">
+            <circle data-arena-eye cx={-HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
+            <circle data-arena-eye cx={HUNTER.eyeX} cy={HUNTER.eyeY} r={HUNTER.eyeRadius} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'headgear',
+      shape: (
+        <>
+          <Paint hue="leaf"><path d={NEW_PATHS.hunterHood} /></Paint>
+          <Paint hue="leafShade"><path d={NEW_PATHS.hunterHoodShade} /></Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'mainHand',
+      shape: (
+        <>
+          <g className={FIG.string} fill="none" stroke="currentColor" strokeWidth={4}>
+            <path data-arena-part="weapon" d={NEW_PATHS.hunterShaft} />
+          </g>
+          <Paint hue="leather"><path d={NEW_PATHS.hunterArrowHead} /></Paint>
+          <Paint hue="leafShade"><path d={NEW_PATHS.hunterFletch} /></Paint>
+        </>
+      ),
+    },
+  ],
+  /**
+   * 🗿 **`גולם` — ⛔ **מסה**.** שתי סלעי כתף גדולות מהראש, ראש **שקוע** ביניהן,
+   * וליבה בוערת בחזה. ⛔ אין לו נשק: מה שנקרא הוא ה**נפח**, ⛔ ולא מה שהוא אוחז.
+   */
+  golem: [
+    {
+      layer: 'legs',
+      shape: (
+        <Paint hue="stoneShade">
+          <rect x={-GOLEM.legInner - GOLEM.legHalfWidth * 2} y={GOLEM.legTopY} width={GOLEM.legHalfWidth * 2} height={BOOT_L.y - GOLEM.legTopY} rx={GOLEM.legR} />
+          <rect x={GOLEM.legInner} y={GOLEM.legTopY} width={GOLEM.legHalfWidth * 2} height={BOOT_R.y - GOLEM.legTopY} rx={GOLEM.legR} />
+        </Paint>
+      ),
+    },
+    { layer: 'body', shape: <Paint hue="stone"><path d={NEW_PATHS.golemBody} /></Paint> },
+    {
+      layer: 'chest',
+      shape: (
+        <>
+          <Paint hue="core"><path d={NEW_PATHS.golemCore} /></Paint>
+          <Paint hue="coreLit"><path d={NEW_PATHS.golemCoreInner} /></Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'head',
+      shape: (
+        <>
+          <Paint hue="stone">
+            <rect x={-GOLEM.headHalfWidth} y={GOLEM.headTopY} width={GOLEM.headHalfWidth * 2} height={GOLEM.headH} rx={GOLEM.headR} />
+          </Paint>
+          <Paint hue="core">
+            <circle data-arena-eye cx={-GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
+            <circle data-arena-eye cx={GOLEM.headEyeX} cy={GOLEM.headEyeY} r={GOLEM.headEyeRadius} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'shoulders',
+      shape: (
+        <>
+          <Paint hue="stone">
+            <circle cx={-GOLEM.boulderX} cy={GOLEM.boulderY} r={GOLEM.boulderRadius} />
+            <circle cx={GOLEM.boulderX} cy={GOLEM.boulderY} r={GOLEM.boulderRadius} />
+          </Paint>
+          <Paint hue="stoneShade">
+            <path d={NEW_PATHS.golemBoulderShadeLeft} />
+            <path d={NEW_PATHS.golemBoulderShadeRight} />
+          </Paint>
+        </>
+      ),
+    },
+  ],
+  /**
+   * 👻 **`צל` — ⛔ **בלי רגליים**.** זנב קרוע במקום רגליים, ברדס, פנים כהות
+   * ועיניים זוהרות. ⛔ זו הצללית היחידה שאינה עומדת על הקרקע, וזה מה שמבדיל
+   * אותה מכל השאר גם כשהצבע מוסר.
+   */
+  shade: [
+    { layer: 'offHand', shape: <Paint hue="tealDeep"><path d={NEW_PATHS.shadeArmLeft} /></Paint> },
+    { layer: 'mainHand', shape: <Paint hue="tealDeep"><path d={NEW_PATHS.shadeArmRight} /></Paint> },
+    {
+      layer: 'body',
+      shape: (
+        <>
+          <Paint hue="tealDeep"><path d={NEW_PATHS.shadeTail} /></Paint>
+          <Paint hue="teal"><path d={NEW_PATHS.shadeTailLit} /></Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'head',
+      shape: (
+        <>
+          <Paint hue="tealDeep"><path d={NEW_PATHS.shadeHood} /></Paint>
+          <Paint hue="voidInk"><ellipse cx={0} cy={SHADE.faceY} rx={SHADE.faceRx} ry={SHADE.faceRy} /></Paint>
+          <Paint hue="wisp">
+            <circle data-arena-eye cx={-SHADE.eyeX} cy={SHADE.eyeY} r={SHADE.eyeRadius} />
+            <circle data-arena-eye cx={SHADE.eyeX} cy={SHADE.eyeY} r={SHADE.eyeRadius} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'headgear',
+      shape: (
+        <>
+          <Paint hue="wisp"><circle cx={SHADE.moteX} cy={SHADE.moteY} r={SHADE.moteRadius} /></Paint>
+          <Paint hue="teal"><circle cx={SHADE.sparkX} cy={SHADE.sparkY} r={SHADE.sparkRadius} /></Paint>
         </>
       ),
     },

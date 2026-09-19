@@ -3312,54 +3312,94 @@ try {
         // legible. The avatar's own layers are `components/ArenaAvatar.tsx`, i.e. T-215.
         // ⇒ what is measured here is every icon a learner can PRESS.
         const icons = [];
-        for (const el of scope.querySelectorAll('a svg, a svg *, button svg, button svg *, [role="button"] svg, [role="button"] svg *')) {
-          const cs = getComputedStyle(el);
-          const fg = parse(cs.color);
-          if (fg === null) continue;
-          const paints = [cs.fill, cs.stroke].map(parse).filter((c) => c !== null);
-          if (!paints.some((c) => c.r === fg.r && c.g === fg.g && c.b === fg.b && c.a > 0.5)) continue;
-          const rect = el.getBoundingClientRect();
-          if (rect.width * rect.height < 100) continue;
-          const x = Math.min(window.innerWidth - 1, Math.max(0, rect.x + rect.width / 2));
-          const y = Math.min(window.innerHeight - 1, Math.max(0, rect.y + rect.height / 2));
-          /* 🎭 **⟦19/09 · `C-0724`⟧ בתוך דמות — **הצללית** נמדדת, וההצללה ⛔ לא.**
-             🔬 **שני מדידות, ⛔ ולא דעה אחת:**
-             ① הבדיקה הזאת הודיעה על שכנות **שאינה קיימת** — פני הקוסם נמדדו
-                «‏1.07:1 על `--arena-card`», אלא שהן יושבות על **החרוט**. הן ⛔ לא
-                נוגעות בכרטיס באף נקודה.
-             ② וכשלימדתי אותה למדוד את מה שבאמת מאחור, היא דרשה 3:1 **מכל מדרגת
-                הצללה** — כתפייה על גוף, ניצב על להב, בליטה על מגן. ⇒ זו בדיוק
-                הדרישה שמשטחת איור: 🔬 ברנדר עצמו, ש-`36 § 14.4` מכריז **מחייב**,
-                הכתפייה נותנת **1.48:1** על הגוף.
-             ⇒ **הכלל שנשאר הוא זה שאפשר להגן עליו**: צורה שיושבת **על המשטח**
-             חייבת 3:1 — כלומר «רואים את הדמות», וזה **כל** מה שהבדיקה הזאת
-             התיימרה לשמור; צורה שיושבת **על צורת-דמות אחרת** היא איור, והעניין
-             שלה נשמר במקום אחר — שער העיניים (`C-0719`), שמודד בדיוק את הפרט
-             שבלעדיו הדמות חוזרת להיות חסרת פנים.
-             ⛔ **וזו ⛔ אינה הקלה שקטה:** ⓐ כל תשע הצורות שיושבות על המשטח
-             נמדדו ועוברות (פלדה 3.92 · צפחה 3.27 · כתפייה 7.35 · עור 8.65 ·
-             שיער 4.70 · להב 11.55 · חרוט 6.08 · צד מוצל 3.27 · זהב 7.29),
-             ⓑ והשורה נרשמה כממצא עם המספרים. */
-          const figure = el.closest('[data-arena-figure]');
-          if (figure !== null) {
-            /* ⛔ **מאחור בסדר הציור, ⛔ ולא «כל צורה בנקודה».** 🔬 הגרסה הראשונה שלי
-               לקחה את הצומת הראשון שאינו `el` — ⇒ במרכז הגוף היא קיבלה את **קו
-               האמצע שמעליו** והכריזה «יש משהו מאחור», כלומר **דילגה על הצללית**.
-               ⛔ **וזה ⛔ לא נתפס בקריאה — זה נתפס במוטציה**: צביעת הגוף בגוון
-               הכרטיס השאירה את השער **ירוק**. ⇒ `elementsFromPoint` מחזיר מלמעלה
-               למטה, והחיתוך אחרי `el` הוא **בדיוק** מה שמאחוריו.
-               ⛔ **ו-`<g>` ⛔ אינו נמדד בתוך דמות** — הוא ⛔ אינו משתתף ב-hit-test,
-               ולכן ⛔ אי-אפשר לדעת על מה הוא יושב; ילדיו נמדדים ממילא. */
-            if (el.tagName === 'g') continue;
+        let skipped = 0;
+        let measured = 0;
+        const seen = new Set();
+        const collectIcons = () => {
+          for (const el of scope.querySelectorAll('a svg, a svg *, button svg, button svg *, [role="button"] svg, [role="button"] svg *')) {
+            if (seen.has(el)) continue;
+            const cs = getComputedStyle(el);
+            const fg = parse(cs.color);
+            if (fg === null) continue;
+            const paints = [cs.fill, cs.stroke].map(parse).filter((c) => c !== null);
+            if (!paints.some((c) => c.r === fg.r && c.g === fg.g && c.b === fg.b && c.a > 0.5)) continue;
+            const rect = el.getBoundingClientRect();
+            if (rect.width * rect.height < 100) continue;
+            /* 📍 **⟦19/09 · `C-0726`⟧ נקודת הדגימה היא **החלק הנראה**, ⛔ ולא מרכז
+               שהוצמד לקצה המסך.** 🔬 **נמדד כשהרשימה גדלה לשש דמויות:** שלוש
+               הכרטיסיות האחרונות יושבות **מתחת לקו הגלילה** של ה-`<ul>`, והשורה
+               שהייתה כאן הצמידה (`clamp`) את מרכזן אל תוך המסך ⇒ הבדיקה דגמה
+               **נקודה שבה הדמות ⛔ אינה מצוירת**, קיבלה את רקע הבמה, והאדימה על
+               פני ה`צל` — `1.14:1` מול `--arena-night` שהן ⛔ לא נוגעות בו.
+               ⇒ ⛔ **צורה שאינה נראית ⛔ אינה נמדדת** — ⛔ לא «עוברת» ו⛔ לא «נכשלת»:
+               היא נספרת ב-`skipped`, והמספר חוזר החוצה כדי שהדילוג ⛔ לא יהיה שקט. */
+            const vx0 = Math.max(0, rect.left); const vy0 = Math.max(0, rect.top);
+            const vx1 = Math.min(window.innerWidth, rect.right);
+            const vy1 = Math.min(window.innerHeight, rect.bottom);
+            if (vx1 <= vx0 || vy1 <= vy0) { skipped += 1; continue; }
+            const x = (vx0 + vx1) / 2; const y = (vy0 + vy1) / 2;
+            /* ⛔ **ועדיין ⛔ לא מספיק:** צומת יכול להיות בתוך המסך ועדיין **חתוך
+               בידי גולל** או מכוסה. ⇒ אם הוא ⛔ אינו בערימה בנקודה שלו, הוא ⛔ אינו
+               נראה שם, ו⛔ אין מה למדוד. */
             const stack = document.elementsFromPoint(x, y);
-            const i = stack.indexOf(el);
-            const behind = i < 0 ? undefined
-              : stack.slice(i + 1).find((n) => figure.contains(n) && !n.contains(el) && 'getBBox' in n);
-            if (behind !== undefined) continue;
+            if (!stack.includes(el)) { skipped += 1; continue; }
+            /* 🎭 **⟦19/09 · `C-0724`⟧ בתוך דמות — **הצללית** נמדדת, וההצללה ⛔ לא.**
+               🔬 **שני מדידות, ⛔ ולא דעה אחת:**
+               ① הבדיקה הזאת הודיעה על שכנות **שאינה קיימת** — פני הקוסם נמדדו
+                  «‏1.07:1 על `--arena-card`», אלא שהן יושבות על **החרוט**. הן ⛔ לא
+                  נוגעות בכרטיס באף נקודה.
+               ② וכשלימדתי אותה למדוד את מה שבאמת מאחור, היא דרשה 3:1 **מכל מדרגת
+                  הצללה** — כתפייה על גוף, ניצב על להב, בליטה על מגן. ⇒ זו בדיוק
+                  הדרישה שמשטחת איור: 🔬 ברנדר עצמו, ש-`36 § 14.4` מכריז **מחייב**,
+                  הכתפייה נותנת **1.48:1** על הגוף.
+               ⇒ **הכלל שנשאר הוא זה שאפשר להגן עליו**: צורה שיושבת **על המשטח**
+               חייבת 3:1 — כלומר «רואים את הדמות», וזה **כל** מה שהבדיקה הזאת
+               התיימרה לשמור; צורה שיושבת **על צורת-דמות אחרת** היא איור, והעניין
+               שלה נשמר במקום אחר — שער העיניים (`C-0719`), שמודד בדיוק את הפרט
+               שבלעדיו הדמות חוזרת להיות חסרת פנים.
+               ⛔ **וזו ⛔ אינה הקלה שקטה:** ⓐ כל תשע הצורות שיושבות על המשטח
+               נמדדו ועוברות (פלדה 3.92 · צפחה 3.27 · כתפייה 7.35 · עור 8.65 ·
+               שיער 4.70 · להב 11.55 · חרוט 6.08 · צד מוצל 3.27 · זהב 7.29),
+               ⓑ והשורה נרשמה כממצא עם המספרים. */
+            const figure = el.closest('[data-arena-figure]');
+            if (figure !== null) {
+              /* ⛔ **מאחור בסדר הציור, ⛔ ולא «כל צורה בנקודה».** 🔬 הגרסה הראשונה שלי
+                 לקחה את הצומת הראשון שאינו `el` — ⇒ במרכז הגוף היא קיבלה את **קו
+                 האמצע שמעליו** והכריזה «יש משהו מאחור», כלומר **דילגה על הצללית**.
+                 ⛔ **וזה ⛔ לא נתפס בקריאה — זה נתפס במוטציה**: צביעת הגוף בגוון
+                 הכרטיס השאירה את השער **ירוק**. ⇒ `elementsFromPoint` מחזיר מלמעלה
+                 למטה, והחיתוך אחרי `el` הוא **בדיוק** מה שמאחוריו.
+                 ⛔ **ו-`<g>` ⛔ אינו נמדד בתוך דמות** — הוא ⛔ אינו משתתף ב-hit-test,
+                 ולכן ⛔ אי-אפשר לדעת על מה הוא יושב; ילדיו נמדדים ממילא. */
+              if (el.tagName === 'g') { skipped += 1; continue; }
+              const i = stack.indexOf(el);
+              const behind = i < 0 ? undefined
+                : stack.slice(i + 1).find((n) => figure.contains(n) && !n.contains(el) && 'getBBox' in n);
+              if (behind !== undefined) continue;
+            }
+            const bg = backgroundAt(el, x, y);
+            const r = ratio(fg, bg);
+            measured += 1;
+            seen.add(el);
+            if (r < 3) icons.push({ label: el.closest('[data-arena-close]') !== null ? 'close' : el.tagName, ratio: r, color: show(fg), bg: show(bg) });
           }
-          const bg = backgroundAt(el, x, y);
-          const r = ratio(fg, bg);
-          if (r < 3) icons.push({ label: el.closest('[data-arena-close]') !== null ? 'close' : el.tagName, ratio: r, color: show(fg), bg: show(bg) });
+        };
+
+        /* 🔴 **⟦19/09 · `C-0726`⟧ הבדיקה **גוללת**, ⛔ ואינה בודקת רק את מה שנפתח.**
+           🔬 **נמדד ברגע שהרשימה גדלה לשש דמויות:** שלוש הכרטיסיות האחרונות יושבות
+           מתחת לקו הגלילה של ה-`<ul>` ⇒ עם תיקון ה«⛔ לא נראה ⇒ ⛔ לא נמדד» שמעליו,
+           **שלוש דמויות ⛔ לא היו נבדקות כלל** — והשער היה נשאר ירוק. ⇒ זו הייתה
+           הופכת להיות הקלה שקטה, וזה בדיוק מה שהתיקון ⛔ לא אמור לעשות.
+           ⇒ הלולאה רצה שוב בכל מיקום גלילה, ו-`seen` מונע מדידה כפולה. */
+        collectIcons();
+        const scrollers = [...scope.querySelectorAll('*')]
+          .filter((n) => n.scrollHeight > n.clientHeight + 4 && n.clientHeight > 40);
+        for (const sc of scrollers) {
+          const max = sc.scrollHeight - sc.clientHeight;
+          const step = Math.max(40, sc.clientHeight - 24);
+          for (let top = step; top < max; top += step) { sc.scrollTop = top; collectIcons(); }
+          sc.scrollTop = max; collectIcons();
+          sc.scrollTop = 0;
         }
 
         // The unselected spell card: its boundary is the ONLY thing separating it from
@@ -3382,7 +3422,7 @@ try {
         }
 
         const scopeBg = parse(getComputedStyle(scope).backgroundColor);
-        return { count: nodes.length, worst, failing, icons, cardEdge, scopeOpaque: scopeBg !== null && scopeBg.a > 0.5, scopeBg: getComputedStyle(scope).backgroundColor };
+        return { count: nodes.length, worst, failing, icons, iconsMeasured: measured, iconsSkipped: skipped, cardEdge, scopeOpaque: scopeBg !== null && scopeBg.a > 0.5, scopeBg: getComputedStyle(scope).backgroundColor };
       });
 
       await ctx.close();
@@ -3409,6 +3449,15 @@ try {
         measured.icons.length === 0,
         `${at} · every pressable arena icon clears 3:1`,
         measured.icons.map((i) => `${i.label} is ${i.ratio}:1 (${i.color} on ${i.bg})`).join(' · '),
+      );
+      /* 🔴 **⟦19/09 · `C-0726`⟧ הדילוג ⛔ אינו שקט.** הלולאה מעליה מדלגת על כל מה
+         שאינו **נראה** בנקודתו (גלול מחוץ לגולל, חתוך, מכוסה) — וזה נכון, אבל זו
+         בדיוק הדרך שבה שער מפסיק למדוד בלי שאיש שם לב: `0 failures` נראה זהה בין
+         «הכול עובר» לבין «⛔ לא נבדק דבר». ⇒ השורה הזאת דורשת שמשהו **כן** נמדד. */
+      check(
+        measured.iconsMeasured > 0,
+        `${at} · the pressable-icon check actually measured something`,
+        `measured ${measured.iconsMeasured} · skipped ${measured.iconsSkipped} — 0 measured means the loop stopped seeing the screen`,
       );
       // ⛔ **The spell card lives on the battle screen only** — the home screen has no
       // hand, and `measured.cardEdge === null` there is the CORRECT state, ⛔ not a

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   ARMORER,
+  GOLEM,
+  HUNTER,
+  NEW_PATHS,
+  SHADE,
   BELT_SIZE,
   BODY_SIZE,
   WIZARD,
@@ -191,5 +195,67 @@ describe('C-0725 — הכובע, הגלימה, הלוחם והשריונאי', (
   it('⚠️ השריונאי מוצהר כנגזר-ממילים — הוא **קיים**, ⛔ ואין לו רנדר', () => {
     expect(ARMORER.capRadius).toBeGreaterThan(0);
     expect(ARMORER.barrelW).toBeGreaterThan(ARMORER.gripW);
+  });
+});
+
+/**
+ * 🆕 **⟦19/09 · `C-0726`⟧ שלוש דמויות שאין להן רנדר — הבדיקה על מה שמבדיל אותן.**
+ * ⛔ **⛔ אין כאן העתקה של מספרים** (זו הייתה חותמת גומי): מה שנבדק הוא הדרישה
+ * של רוי — «שיהיו **שונות** מהדמויות הקיימות» — ככל שאפשר לנסח אותה כטענה.
+ */
+describe('C-0726 — צייד · גולם · צל', () => {
+  it('הכול נכנס ל-viewBox — x ∈ [-100,100] · y ∈ [-108,144]', () => {
+    const pts = [
+      ...HUNTER.hoodPts, ...HUNTER.hoodShadePts,
+      ...SHADE.tailPts, ...SHADE.armPts, ...SHADE.hoodPts,
+      [HUNTER.headTipX, 0], [HUNTER.bowBellyX, 0],
+      [GOLEM.boulderX + GOLEM.boulderRadius, GOLEM.boulderY],
+      [SHADE.moteX + SHADE.moteRadius, SHADE.moteY - SHADE.moteRadius],
+      [SHADE.sparkX - SHADE.sparkRadius, SHADE.sparkY - SHADE.sparkRadius],
+    ];
+    for (const [x, y] of pts) {
+      expect(Math.abs(x)).toBeLessThanOrEqual(100);
+      expect(y).toBeGreaterThanOrEqual(-108);
+      expect(y).toBeLessThanOrEqual(144);
+    }
+  });
+
+  it('🏹 הקשת גדולה מהגוף — ⛔ אחרת היא קישוט ⛔ ולא הצללית', () => {
+    const bowHeight = HUNTER.bowTopY * -2;
+    const bodyHeight = HUNTER.tunicHemY - HUNTER.tunicShoulderY;
+    expect(bowHeight).toBeGreaterThan(bodyHeight);
+    // והחץ **דרוך**: הוא מתחיל בנקודת המשיכה של המיתר, ⛔ ולא מרחף.
+    expect(NEW_PATHS.hunterShaft.startsWith(`M${HUNTER.bowNockX} 0`)).toBe(true);
+  });
+
+  it('🗿 סלעי הכתף של הגולם גדולים מראשו — זו **המסה**', () => {
+    expect(GOLEM.boulderRadius * 2).toBeGreaterThan(GOLEM.headHalfWidth * 2);
+    // והראש **שקוע** ביניהן, ⛔ ולא מעליהן.
+    expect(GOLEM.headTopY + GOLEM.headH).toBeGreaterThan(GOLEM.boulderY - GOLEM.boulderRadius);
+    // והגולם רחב מהלוחם — אחרת «מסה» היא מילה ⛔ ולא צורה.
+    expect(GOLEM.bodyShoulderX).toBeGreaterThan(WARRIOR.bodyTopHalfWidth);
+  });
+
+  it('👻 ל`צל` ⛔ אין רגליים, והזנב **קרוע** — ⛔ ולא קו ישר', () => {
+    const ys = SHADE.tailPts.map(([, y]) => y);
+    const bottom = Math.max(...ys);
+    // לפחות שלוש נקודות תחתונות בגבהים שונים ⇒ זנב משונן.
+    const low = ys.filter((y) => y > bottom - 50);
+    expect(low.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(low).size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('שלוש הצלליות **שונות זו מזו וגם מהקיימות** — רוחב, גובה וקרקע', () => {
+    // הגולם הוא הרחב, הצל הוא היחיד שאינו נוגע בקו הרגליים של השלד.
+    expect(GOLEM.bodyShoulderX).toBeGreaterThan(HUNTER.tunicShoulderX);
+    expect(GOLEM.bodyShoulderX).toBeGreaterThan(Math.max(...SHADE.tailPts.map(([x]) => Math.abs(x))));
+    expect(Math.max(...SHADE.tailPts.map(([, y]) => y))).toBeLessThan(112);
+  });
+
+  it('כל נתיב חדש מתחיל ב-M, ו⛔ אף אחד מהם ⛔ אינו ריק', () => {
+    for (const [name, d] of Object.entries(NEW_PATHS)) {
+      expect(d.startsWith('M'), name).toBe(true);
+      expect(d.length, name).toBeGreaterThan(8);
+    }
   });
 });

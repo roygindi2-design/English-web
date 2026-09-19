@@ -256,6 +256,113 @@ export const ARMORER = Object.freeze({
   gripX: -10, gripY: 3, gripW: 14, gripH: 20, gripR: 4,
 });
 
+/**
+ * 🆕 **⟦19/09 · `C-0726`⟧ שלוש דמויות שאין להן רנדר — `צייד` · `גולם` · `צל`.**
+ *
+ * ⚠️ **⛔ אף מספר כאן ⛔ לא נמדד, וזה נאמר במפורש.** `kol-B-03-battle.png` מצייר
+ * **קוסם ולוחם בלבד** ⇒ אלה **בחירות עיצוב** תחת החוזה של `38 § 3ב` (וקטור שטוח ·
+ * שני גוונים לנפח · פנים כהות ועיניים זוהרות). ⛔ **ואין לקרוא את `38 § 3` כאילו
+ * כל שורה בו נמדדה** — זו בדיוק הסתירה ש-`F-296` סגר, ו⛔ לא אחזיר אותה בדלת האחורית.
+ *
+ * 🔴 **הדרישה שכן נאכפת: כל אחת נקראת לפי ה**צללית** לבדה.** 🔬 נמדד ב-64px, ⛔ ולא
+ * שוער: **קשת** (צייד) · **מסה** (גולם) · **זנב קרוע בלי רגליים** (צל). שלושתן
+ * ⛔ **אינן** הצללית של קוסם/לוחם/שריונאי, וזו הדרישה של רוי מילה במילה
+ * («שיהיו שונות מהדמויות הקיימות»).
+ */
+export const HUNTER = Object.freeze({
+  bowTopX: -52, bowTopY: -74, bowBellyX: -88, bowNockX: -26, bowWidth: 9, stringWidth: 3,
+  legHalfWidth: 10, legInner: 4, legTopY: 56,
+  tunicShoulderX: 34, tunicShoulderY: -26, tunicCorner: 12,
+  tunicWaistX: 30, tunicWaistY: 44, tunicHemY: 62,
+  beltHalfWidth: 27, beltTopY: 26, beltH: 14, beltR: 4,
+  headY: -58, headRadius: 26, eyeX: 10, eyeY: -60, eyeRadius: 4.5,
+  hoodPts: Object.freeze([[-46, -48], [-20, -92], [0, -100], [20, -92], [30, -50], [-14, -62]] as const),
+  hoodShadePts: Object.freeze([[0, -96], [20, -92], [30, -50], [0, -66]] as const),
+  shaftFarX: 78, headTipX: 92, headBackX: 70, headHalf: 9,
+  fletchBackX: -30, fletchTipX: -18, fletchHalf: 8,
+});
+
+export const GOLEM = Object.freeze({
+  legHalfWidth: 18, legInner: 8, legTopY: 52, legR: 12,
+  bodyShoulderX: 52, bodyShoulderY: -34, bodyCorner: 20,
+  bodyHipX: 46, bodyHipY: 44, bodyHemY: 58, bodyHemX: 30,
+  coreRadius: 20, coreY: 6, coreInner: 12,
+  headHalfWidth: 20, headTopY: -64, headH: 34, headR: 8,
+  headEyeX: 9, headEyeY: -48, headEyeRadius: 5,
+  boulderX: 54, boulderY: -22, boulderRadius: 30,
+});
+
+export const SHADE = Object.freeze({
+  /** ⛔ **אין רגליים** — הזנב הקרוע הוא מה שהופך את הצללית לשונה מכולן. */
+  tailPts: Object.freeze([
+    [-34, -26], [-46, 40], [-34, 74], [-20, 56], [-6, 96], [6, 62],
+    [22, 92], [30, 48], [38, 66], [46, 26], [34, -26],
+  ] as const),
+  tailLitPts: Object.freeze([
+    [0, -26], [-46, 40], [-34, 74], [-20, 56], [-6, 96], [0, 62],
+  ] as const),
+  armPts: Object.freeze([[26, -8], [54, -20], [72, -58], [58, -64]] as const),
+  hoodPts: Object.freeze([[-32, -40], [-24, -76], [0, -84], [24, -76], [32, -40], [32, -22], [0, -8], [-32, -22]] as const),
+  faceY: -42, faceRx: 24, faceRy: 22,
+  eyeX: 10, eyeY: -44, eyeRadius: 6,
+  moteX: 68, moteY: -78, moteRadius: 9,
+  sparkX: -62, sparkY: -84, sparkRadius: 5,
+});
+
+/** נתיבי שלוש החדשות, **נבנים כאן** כמו כל השאר. */
+export const NEW_PATHS = Object.freeze({
+  hunterBow:
+    `M${HUNTER.bowTopX} ${HUNTER.bowTopY}` +
+    `Q${HUNTER.bowBellyX} 0 ${HUNTER.bowTopX} ${-HUNTER.bowTopY}`,
+  hunterString:
+    `M${HUNTER.bowTopX} ${HUNTER.bowTopY}L${HUNTER.bowNockX} 0L${HUNTER.bowTopX} ${-HUNTER.bowTopY}`,
+  hunterShaft: `M${HUNTER.bowNockX} 0L${HUNTER.shaftFarX} 0`,
+  hunterArrowHead: polygon([
+    [HUNTER.headBackX, -HUNTER.headHalf], [HUNTER.headTipX, 0], [HUNTER.headBackX, HUNTER.headHalf],
+  ]),
+  hunterFletch: polygon([
+    [HUNTER.fletchBackX, -HUNTER.fletchHalf], [HUNTER.fletchTipX, 0], [HUNTER.fletchBackX, HUNTER.fletchHalf],
+  ]),
+  hunterTunic:
+    `M${-HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY + HUNTER.tunicCorner}` +
+    `Q${-HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY} ${-HUNTER.tunicShoulderX + HUNTER.tunicCorner} ${HUNTER.tunicShoulderY}` +
+    `L${HUNTER.tunicShoulderX - HUNTER.tunicCorner} ${HUNTER.tunicShoulderY}` +
+    `Q${HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY} ${HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY + HUNTER.tunicCorner}` +
+    `L${HUNTER.tunicWaistX} ${HUNTER.tunicWaistY}L0 ${HUNTER.tunicHemY}L${-HUNTER.tunicWaistX} ${HUNTER.tunicWaistY}z`,
+  hunterTunicShade:
+    `M0 ${HUNTER.tunicShoulderY}L${HUNTER.tunicShoulderX - HUNTER.tunicCorner} ${HUNTER.tunicShoulderY}` +
+    `Q${HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY} ${HUNTER.tunicShoulderX} ${HUNTER.tunicShoulderY + HUNTER.tunicCorner}` +
+    `L${HUNTER.tunicWaistX} ${HUNTER.tunicWaistY}L0 ${HUNTER.tunicHemY}z`,
+  hunterHood: polygon(HUNTER.hoodPts),
+  hunterHoodShade: polygon(HUNTER.hoodShadePts),
+  golemBody:
+    `M${-GOLEM.bodyShoulderX} ${GOLEM.bodyShoulderY + GOLEM.bodyCorner}` +
+    `Q${-GOLEM.bodyShoulderX} ${GOLEM.bodyShoulderY} ${-GOLEM.bodyShoulderX + GOLEM.bodyCorner} ${GOLEM.bodyShoulderY}` +
+    `L${GOLEM.bodyShoulderX - GOLEM.bodyCorner} ${GOLEM.bodyShoulderY}` +
+    `Q${GOLEM.bodyShoulderX} ${GOLEM.bodyShoulderY} ${GOLEM.bodyShoulderX} ${GOLEM.bodyShoulderY + GOLEM.bodyCorner}` +
+    `L${GOLEM.bodyHipX} ${GOLEM.bodyHipY}Q${GOLEM.bodyHipX} ${GOLEM.bodyHemY} ${GOLEM.bodyHemX} ${GOLEM.bodyHemY}` +
+    `L${-GOLEM.bodyHemX} ${GOLEM.bodyHemY}Q${-GOLEM.bodyHipX} ${GOLEM.bodyHemY} ${-GOLEM.bodyHipX} ${GOLEM.bodyHipY}z`,
+  golemCore: polygon([
+    [0, GOLEM.coreY - GOLEM.coreRadius], [GOLEM.coreRadius - 2, GOLEM.coreY],
+    [0, GOLEM.coreY + GOLEM.coreRadius], [-(GOLEM.coreRadius - 2), GOLEM.coreY],
+  ]),
+  golemCoreInner: polygon([
+    [0, GOLEM.coreY - GOLEM.coreInner], [GOLEM.coreInner - 3, GOLEM.coreY],
+    [0, GOLEM.coreY + GOLEM.coreInner], [-(GOLEM.coreInner - 3), GOLEM.coreY],
+  ]),
+  golemBoulderShadeRight:
+    `M${GOLEM.boulderX - GOLEM.boulderRadius} ${GOLEM.boulderY}` +
+    `a${GOLEM.boulderRadius} ${GOLEM.boulderRadius} 0 0 0 ${GOLEM.boulderRadius * 2} 0z`,
+  golemBoulderShadeLeft:
+    `M${-GOLEM.boulderX - GOLEM.boulderRadius} ${GOLEM.boulderY}` +
+    `a${GOLEM.boulderRadius} ${GOLEM.boulderRadius} 0 0 0 ${GOLEM.boulderRadius * 2} 0z`,
+  shadeTail: polygon(SHADE.tailPts),
+  shadeTailLit: polygon(SHADE.tailLitPts),
+  shadeArmRight: polygon(SHADE.armPts),
+  shadeArmLeft: polygon(SHADE.armPts.map(([x, y]) => [-x, y] as const)),
+  shadeHood: polygon(SHADE.hoodPts),
+});
+
 export const BODY_SIZE = Object.freeze({ width: 90, height: 86 });
 export const BELT_SIZE = Object.freeze({ width: 61, height: 24 });
 export const HEAD_RADIUS = 30;

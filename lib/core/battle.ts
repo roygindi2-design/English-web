@@ -84,6 +84,14 @@ export const CHARACTER_STATS: Readonly<Record<ArenaCharacter, CharacterBattleSta
     wizard: Object.freeze({ ...BASE_STATS, hitDamage: 2, criticalDamage: 3 }),
     warrior: Object.freeze({ ...BASE_STATS, learnerHp: 18, criticalDamage: 3, swingPenalty: 0 }),
     armorer: BASE_STATS,
+    /**
+     * 🆕 `C-0726` — שלוש שורות חדשות מ-`37 § 7`, **וכל אחת עוברת את שלוש הגדרות**:
+     * גדר 2 `learnerHp >= 12` · גדר 3 `criticalDamage > hitDamage` · גדר 1 ⛔ אפס
+     * מפתח חדש. ⛔ **ו⛔ אף מספר של שלוש הראשונות ⛔ לא זז.**
+     */
+    hunter: Object.freeze({ ...BASE_STATS, learnerHp: 14, criticalDamage: 4 }),
+    golem: Object.freeze({ ...BASE_STATS, learnerHp: 24, swingPenalty: 0 }),
+    shade: Object.freeze({ ...BASE_STATS, hitDamage: 3, criticalDamage: 4 }),
   });
 
 /** Moved from `ArenaBattle.tsx` (T-281, `RULES § 0.22` ⓑ). ⛔ One enemy for all three (fence 1). */

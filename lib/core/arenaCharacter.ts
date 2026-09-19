@@ -16,7 +16,17 @@
  * read (F-202 — `§ 7` names no closed list of names).
  */
 
-export const ARENA_CHARACTERS = Object.freeze(['wizard', 'warrior', 'armorer'] as const);
+/**
+ * 🆕 **⟦19/09 · `C-0726`⟧ שש, ⛔ ולא שלוש — ו**בנוסף**, ⛔ ולא במקום.**
+ * רוי: «תעצב כמה דמויות ⛔ לא מהרנדר … ו**שיהיו בנוסף**». ⇒ שלוש הראשונות ⛔ לא זזו,
+ * ⛔ אף מספר שלהן ⛔ לא נגע, והסדר נשמר ⇒ בחירה שמורה ⛔ אינה נשברת.
+ * ⛔ **ו⛔ אין מיגרציה:** הערך יושב ב-`arcade_progress.avatar_parts.character`, שהוא
+ * ‏`jsonb default '{}'` — ⇒ מפתח קיים, ערך חדש. `characterFromParts` ממשיך להחזיר
+ * ‏`null` על כל מה שאינו ברשימה, ⇒ שורה ישנה עם ערך לא מוכר ⛔ אינה זורקת.
+ */
+export const ARENA_CHARACTERS = Object.freeze([
+  'wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade',
+] as const);
 export type ArenaCharacter = (typeof ARENA_CHARACTERS)[number];
 
 /** `37 § 7`, column «דמות», verbatim. */
@@ -24,6 +34,9 @@ export const CHARACTER_LABELS_HE: Readonly<Record<ArenaCharacter, string>> = Obj
   wizard: 'קוסם',
   warrior: 'לוחם',
   armorer: 'שריונאי',
+  hunter: 'צייד',
+  golem: 'גולם',
+  shade: 'צל',
 });
 
 /**
@@ -40,6 +53,9 @@ export const CHARACTER_BIAS_HE: Readonly<Record<ArenaCharacter, readonly string[
       'ירי מטווח',
       'מאוזן',
     ]),
+    hunter: Object.freeze(['קריטי קטלני', 'חיים בינוניים', 'נזק רגיל']),
+    golem: Object.freeze(['חיים גבוהים מאוד', 'עור אבן', 'נזק רגיל']),
+    shade: Object.freeze(['נזק גבוה מאוד', 'קריטי חזק', 'חיים בסיסיים']),
   });
 
 /**
@@ -70,7 +86,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * `arcade_progress.avatar_parts` is `jsonb default '{}'` — anything may be in it.
- * Returns the character when `parts.character` is one of the three, else `null`.
+ * Returns the character when `parts.character` is one of the six, else `null`.
  * ⛔ Never throws: `null`, a string, an array, a number, `{ character: 'x' }` ⇒ `null`.
  */
 export function characterFromParts(parts: unknown): ArenaCharacter | null {

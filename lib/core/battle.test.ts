@@ -341,6 +341,24 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
     expect(asRow(CHARACTER_STATS.wizard)).toEqual(specRow('קוסם'));
     expect(asRow(CHARACTER_STATS.warrior)).toEqual(specRow('לוחם'));
     expect(asRow(CHARACTER_STATS.armorer)).toEqual(specRow('שריונאי'));
+    expect(asRow(CHARACTER_STATS.hunter)).toEqual(specRow('צייד'));
+    expect(asRow(CHARACTER_STATS.golem)).toEqual(specRow('גולם'));
+    expect(asRow(CHARACTER_STATS.shade)).toEqual(specRow('צל'));
+  });
+
+  /**
+   * 🆕 **⟦19/09 · `C-0726`⟧ שלוש הגדרות של `§ 7`, **על כל שורה**, ⛔ ולא על השלוש
+   * שהיו.** ⛔ הבדיקה רצה על `ARENA_CHARACTERS` ⇒ שורה שביעית שתתווסף מחר **חייבת**
+   * לעבור אותן, ⛔ ואי-אפשר להוסיף אותה בשקט.
+   */
+  it('גדר 2 · גדר 3 — כל שורה, ⛔ ולא רק אלה שהיו', () => {
+    for (const c of ARENA_CHARACTERS) {
+      const row = CHARACTER_STATS[c];
+      expect(row.learnerHp, `גדר 2 · ${c}`).toBeGreaterThanOrEqual(12);
+      expect(row.criticalDamage, `גדר 3 · ${c}`).toBeGreaterThan(row.hitDamage);
+    }
+    expect(BASE_STATS.learnerHp).toBeGreaterThanOrEqual(12);
+    expect(BASE_STATS.criticalDamage).toBeGreaterThan(BASE_STATS.hitDamage);
   });
 
   it('גדר 4 — דמות לא מוכרת או null ⇒ הבסיס, ⛔ ולא זריקה', () => {
