@@ -3,11 +3,14 @@ import {
   ARMORER,
   BELT_SIZE,
   BODY_SIZE,
-  CONE,
+  WIZARD,
   HEAD_RADIUS,
   LAYER_ORDER,
   MIRRORED_SLOTS,
   WARRIOR,
+  WARRIOR_PATHS,
+  WIZARD_PATHS,
+  polygon,
   anchorFor,
   isCharacterSlot,
   isMirroredSlot,
@@ -105,54 +108,83 @@ describe('38 § 3 — «פריט שלא מתיישב על נקודת עיגון 
  * ⛔ **הבדיקה ⛔ אינה מעתיקה את המספרים** (זו הייתה חותמת גומי) — היא בודקת את
  * ה**יחסים** שהמדידה קבעה, כאלה שכל סטייה מהרנדר שוברת.
  */
-describe('C-0724 — החרוט, הלוחם והשריונאי', () => {
-  it('החרוט נכנס ל-viewBox, והשוליים רחבים מהפיצול', () => {
-    // `viewBox="-100 -108 200 252"` ⇒ x ∈ [-100,100] · y ∈ [-108,144]
-    expect(CONE.apexY).toBeGreaterThan(-108);
-    expect(CONE.hemHalfWidth).toBeLessThanOrEqual(100);
-    // הצד המוצל מתחיל מימין לקצה השמאלי ⇒ שני פאנלים, ⛔ ולא אחד.
-    expect(CONE.hemSplitX).toBeGreaterThan(-CONE.hemHalfWidth);
-    expect(CONE.hemSplitX).toBeLessThan(CONE.hemHalfWidth);
+describe('C-0725 — הכובע, הגלימה, הלוחם והשריונאי', () => {
+  it('הכובע והגלימה נכנסים ל-viewBox — x ∈ [-100,100] · y ∈ [-108,144]', () => {
+    expect(WIZARD.hatApexY).toBeGreaterThanOrEqual(-108);
+    expect(WIZARD.brimRx).toBeLessThanOrEqual(100);
+    expect(WIZARD.robeHemHalfWidth).toBeLessThanOrEqual(100);
+    for (const [x, y] of [...WIZARD.armPts, ...WIZARD.wandPts]) {
+      expect(Math.abs(x)).toBeLessThanOrEqual(100);
+      expect(y).toBeGreaterThanOrEqual(-108);
+    }
   });
 
-  it('הגולה **הונמכה** אל תוך המסגרת — ⛔ ולא הוקטנה', () => {
-    // ברנדר מרכזה `(85,-124.5)`; המסגרת נגמרת ב-`-108`.
-    expect(CONE.orbY - CONE.orbRadius).toBeGreaterThanOrEqual(-108);
-    expect(CONE.orbX + CONE.orbRadius).toBeLessThanOrEqual(100);
-    // הזוהר גדול מהליבה, אחרת ⛔ אין זוהר.
-    expect(CONE.orbGlowRadius).toBeGreaterThan(CONE.orbRadius);
+  it('⛔ **כובע וגלימה, ⛔ ולא חרוט אחד** — השוליים רחבים משניהם', () => {
+    // בלי זה השוליים נבלעים והצללית חוזרת להיות משולש.
+    expect(WIZARD.brimRx).toBeGreaterThan(WIZARD.hatBaseHalfWidth);
+    expect(WIZARD.brimRx).toBeGreaterThan(WIZARD.robeShoulderX);
+    // והכובע יושב **מעל** כתף הגלימה, ⛔ ולא נמשך ממנה.
+    expect(WIZARD.hatBaseY).toBeLessThan(WIZARD.robeShoulderY);
   });
 
-  it('העיניים בתוך הפנים, והליבה קטנה מהעין', () => {
-    expect(Math.abs(CONE.eyeX) + CONE.eyeRadius).toBeLessThan(CONE.faceRadius);
-    expect(CONE.eyeCoreRadius).toBeLessThan(CONE.eyeRadius);
+  it('הפנים יושבות מתחת לשוליים — אחרת השוליים חוצים אותן', () => {
+    expect(WIZARD.faceY - WIZARD.faceRadius).toBeGreaterThanOrEqual(WIZARD.brimFrontY);
+    expect(Math.abs(WIZARD.eyeX) + WIZARD.eyeRadius).toBeLessThan(WIZARD.faceRadius);
+    expect(WIZARD.eyeCoreRadius).toBeLessThan(WIZARD.eyeRadius);
+  });
+
+  it('הגולה **הונמכה** אל תוך המסגרת, והזוהר גדול מהליבה', () => {
+    expect(WIZARD.orbY - WIZARD.orbGlowRadius).toBeGreaterThanOrEqual(-108);
+    expect(WIZARD.orbX + WIZARD.orbGlowRadius).toBeLessThanOrEqual(100);
+    expect(WIZARD.orbGlowRadius).toBeGreaterThan(WIZARD.orbRadius);
+  });
+
+  it('הגוף **מחודד** כלפי מטה — ⛔ ולא מלבן', () => {
+    expect(WARRIOR.bodyBottomHalfWidth).toBeLessThan(WARRIOR.bodyTopHalfWidth);
+    // והצווארון צר מהגוף, אחרת הוא ⛔ אינו צווארון.
+    expect(WARRIOR.collarHalfWidth).toBeLessThan(WARRIOR.bodyTopHalfWidth);
+  });
+
+  it('ללוחם יש **עיניים** — הפרט היחיד שהיריב קיבל והגיבור ⛔ לא', () => {
+    expect(WARRIOR.eyeRadius).toBeGreaterThan(0);
+    expect(WARRIOR.eyeCoreRadius).toBeLessThan(WARRIOR.eyeRadius);
+    // בתוך עיגול הראש (r=30 על `(0,-62)`).
+    const dx = Math.abs(WARRIOR.eyeX) + WARRIOR.eyeRadius;
+    const dy = Math.abs(WARRIOR.eyeY - (-62)) + WARRIOR.eyeRadius;
+    expect(Math.hypot(dx, dy)).toBeLessThan(HEAD_RADIUS + WARRIOR.eyeRadius);
   });
 
   it('המגן נכנס למסגרת, והבליטה בתוכו', () => {
-    expect(WARRIOR.shieldX).toBeGreaterThanOrEqual(-100);
-    expect(WARRIOR.shieldX + WARRIOR.shieldW).toBeLessThanOrEqual(100);
-    expect(WARRIOR.bossX - WARRIOR.bossRadius).toBeGreaterThan(WARRIOR.shieldX);
-    expect(WARRIOR.bossX + WARRIOR.bossRadius).toBeLessThan(WARRIOR.shieldX + WARRIOR.shieldW);
-    // הפנים נסוגות מהמסגרת בשני הצדדים ⇒ מסגרת הזהב **נראית**.
-    expect(WARRIOR.shieldFaceInset).toBeGreaterThan(0);
-    expect(WARRIOR.shieldW - WARRIOR.shieldFaceInset * 2).toBeGreaterThan(0);
+    expect(WARRIOR.shieldCx - WARRIOR.shieldHalfWidth).toBeGreaterThanOrEqual(-100);
+    expect(WARRIOR.shieldCx + WARRIOR.shieldHalfWidth).toBeLessThanOrEqual(100);
+    expect(WARRIOR.bossY + WARRIOR.bossRadius).toBeLessThan(WARRIOR.shieldTipY);
+    expect(WARRIOR.shieldInset).toBeGreaterThan(0);
+    // הפנים נסוגות משני הצדדים ⇒ מסגרת הזהב **נראית**.
+    expect(WARRIOR_PATHS.shield).not.toBe(WARRIOR_PATHS.shieldFace);
   });
 
   it('הלהב **נחתך** בקצה המסגרת — חרב שנגמרת בפנים היא חרב קצרה', () => {
-    expect(WARRIOR.bladeFarX).toBe(100);
-    expect(WARRIOR.bladeFarY).toBeGreaterThan(WARRIOR.bladeTipY);
-    expect(WARRIOR.bladeNearY).toBeGreaterThan(WARRIOR.bladeFarY);
+    expect(Math.max(...WARRIOR.bladePts.map(([x]) => x))).toBe(100);
   });
 
-  it('חמישה קוצות שיער — ⛔ ואפס צורת-מרווח (המרווח הוא הרקע)', () => {
+  it('חמישה קוצות שיער, עם מרווח אמיתי ביניהם', () => {
     expect(WARRIOR.hairBarX).toHaveLength(5);
-    expect(Object.keys(WARRIOR)).not.toContain('hairGapX');
-    // הקוצה הגבוהה ⛔ אינה חורגת מגג המסגרת.
     expect(WARRIOR.hairY).toBeGreaterThanOrEqual(-108);
-    // ומרווח אמיתי בין קוצה לקוצה, אחרת זה לוח ⛔ ולא שיער.
     const bars = [...WARRIOR.hairBarX];
     for (let i = 1; i < bars.length; i += 1) {
       expect((bars[i] ?? 0) - (bars[i - 1] ?? 0)).toBeGreaterThan(WARRIOR.hairBarW);
+    }
+  });
+
+  it('⛔ `polygon` דורש שלוש נקודות — ⛔ ואינו מחזיר נתיב ריק בשקט', () => {
+    expect(polygon([[0, 0], [1, 0], [0, 1]])).toBe('M0 0L1 0L0 1z');
+    expect(() => polygon([[0, 0], [1, 1]])).toThrow();
+  });
+
+  it('כל נתיב שנבנה כאן מתחיל ב-M ונסגר ב-z — ⛔ ואינו ריק', () => {
+    for (const [name, d] of Object.entries({ ...WARRIOR_PATHS, ...WIZARD_PATHS })) {
+      expect(d.startsWith('M'), name).toBe(true);
+      expect(d.endsWith('z'), name).toBe(true);
     }
   });
 
