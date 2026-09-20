@@ -120,6 +120,10 @@ describe('classifyStatus', () => {
       ['⛔ חסום — פעולה אנושית', 'blocked'],
       ['🚫 **בוטלה — הוחלפה ב-T-010**', 'cancelled'],
       ['🔓 פתוח → PM', 'open'],
+      /* 🔵 **⟦20/09 · `C-0742` · `F-308`⟧ «בעבודה» — במקרא ו⛔ לא כאן.**
+         🔴 **והמקרה שהכריע הוא `T-184`:** בלי הגליף, הראשון ה**מוכר** בתא שלה
+         הוא `⛔` שיושב ב**פרוזה**, ⇒ שורה **בעבודה** דווחה `blocked`. */
+      ['🔵 **חצי ⓐ נמסר** — ⛔ החצי השני עדיין פתוח', 'open'],
       ['prose with no glyph', 'unknown'],
     ];
     for (const [cell, expected] of cases) expect(classifyStatus(cell)).toBe(expected);
