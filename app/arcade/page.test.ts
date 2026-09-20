@@ -410,7 +410,13 @@ describe('T-181 · `37 § 12` — `/arcade` נפתח על מסך הבית, ⛔ �
   });
 
   it('⛔ המעטפת מחזיקה מצב, ⛔ ואינה מוסיפה ראוט (`RULES § 0.22`)', () => {
-    const shell = readFileSync('components/ArenaShell.tsx', 'utf8');
+    /* ↩️ **⟦20/09 · `C-0743`⟧ — מולבן, כמו כל שאר הקובץ (`F-039`), ⛔ ולא גולמי.**
+       🔬 **נמדד, ⛔ ולא שוער:** ‏`F-287` הוסיף למעטפת **הערה** שמתעדת את הנתיב שממנו
+       המלאי מגיע — `app/api/arcade/home/route.ts` — והטענה השלילית למטה האדימה על
+       **פרוזה**, בעוד המעטפת ⛔ אינה מבקשת דבר. ⇒ מדידה גולמית כאן הפילה עמוד
+       ⛔ שאין בו ולו הפרה אחת, בדיוק הכשל ש-`withoutComments` קיימת נגדו שתי שורות
+       מעל. ⛔ **והטענה ⛔ לא נחלשה:** `fetch('/api/…')` אמיתי עדיין מאדים. */
+    const shell = withoutComments(readFileSync('components/ArenaShell.tsx', 'utf8'));
     // T-217 — המצב השלישי, `character`, הוא גבול מודול ⛔ ולא ראוט (`37 § 7`).
     expect(shell).toContain("'home' | 'character' | 'battle'");
     expect(shell).toContain('<ArenaCharacterChoice');
