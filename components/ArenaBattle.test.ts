@@ -50,6 +50,46 @@ describe('א1 — hit-stop: 3-4 פריימים של קיפאון מוחלט בפ
     expect(CODE).toMatch(/arena-hitstop/);
   });
 
+  /**
+   * 🔴 **⟦20/09 · `C-0746` · `F-306`ⓑ⟧ השעון והרעד ⛔ אינם רשאים לחלוק אלמנט.**
+   *
+   * 🔬 **נמדד בדפדפן חי (393×852, `/dev/arcade`), ⛔ ולא הוסק מקריאת הקובץ:**
+   * הצבת שתי התכונות על אזור הבמה וקריאת `getComputedStyle(area).animationName`
+   * החזירה `arena-hitstop-a` כשרק `data-arena-impact` היה דלוק, ו-`arena-crit-shake`
+   * **בלבד** כששניהם היו דלוקים. ⇒ אותה תכונה, אותו אלמנט, אותה ספציפיות `(0,2,0)`,
+   * והרעד מאוחר יותר ⇒ **החליף** את השעון.
+   *
+   * 🔴 **וההשלכה ⛔ אינה קוסמטית:** השחרור מאזין ל-`animationName.startsWith('arena-hitstop')`
+   * ⇒ בפגיעה קריטית `setImpact('off')` ⛔ לעולם ⛔ לא נקרא, ושתי הדמויות נשארות
+   * **צלליות לבנות עד סוף הקרב**.
+   *
+   * ⛔ **ו⛔ אין לתקן זאת בהעברת הרעד לערוץ `transform` אחר** (‏`translate`/`rotate`):
+   * ההתנגשות היא על תכונת ה-`animation` **עצמה**, ⛔ ולא על הערוץ שהקיפריימים מניעים.
+   */
+  it('⛔ השעון ⛔ אינו יושב על אזור הבמה — שם הרעד הקריטי מחליף אותו', () => {
+    const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)];
+    const carriers = rules
+      .filter(([, , body]) => /animation:\s*arena-hitstop-[ab]\b/.test(body ?? ''))
+      .map(([, selector]) => (selector ?? '').trim());
+    expect(carriers.length, '⛔ אף כלל ⛔ אינו מפעיל את השעון ⇒ הבדיקה ריקה').toBeGreaterThan(0);
+    for (const selector of carriers) {
+      expect(selector, `⛔ «${selector}» מחזיק את השעון על אזור הבמה, ששם הרעד דורס אותו`)
+        .not.toMatch(/data-arena-stage-area/);
+    }
+    // ⛔ **והצד השני של אותה טענה:** הרעד **כן** יושב שם, ⇒ אם מישהו יזיז אותו
+    //    אל צומת השעון ההתנגשות תחזור, והשורה הזאת תיפול.
+    const shake = rules
+      .filter(([, , body]) => /animation:\s*arena-crit-shake\b/.test(body ?? ''))
+      .map(([, selector]) => (selector ?? '').trim());
+    expect(shake.length).toBeGreaterThan(0);
+    for (const selector of shake) {
+      expect(selector, `⛔ «${selector}» — הרעד חוזר לחלוק צומת עם השעון`)
+        .not.toMatch(/data-arena-hitstop/);
+    }
+    // ⇒ והצומת קיים ברכיב, אחרת הכלל ⛔ אינו חל על דבר.
+    expect(CODE).toMatch(/data-arena-hitstop=\{impact\}/);
+  });
+
   it('⛔ שני שמות אנימציה ⛔ ולא אחד — אחרת פגיעה שנייה בתוך החלון ⛔ אינה מאתחלת', () => {
     for (const name of ['arena-hitstop-a', 'arena-hitstop-b']) {
       expect(CSS_CODE, `@keyframes ${name}`).toContain(`@keyframes ${name}`);
@@ -139,13 +179,19 @@ describe('חוקה שכבה א׳ א7 — `prefers-reduced-motion` מסיר את 
     /* ⛔ **⛔ לא «אין את המחרוזת `arena-hitstop`»** — מוטציה שהפילה את השורה הזאת ב-C-0335
        כיבתה את הנושאת דרך ה**סלקטור** (`[data-arena-impact='a'] { animation: none }`)
        ⛔ בלי לנקוב בשם האנימציה, והבדיקה נשארה ירוקה. ⇒ נמדד כאן **מה שמכובה**:
-       כל כלל שהסלקטור שלו **מסתיים** באזור הבמה עצמו ⛔ אינו רשאי לגעת ב-`animation`. */
+       כל כלל שהסלקטור שלו **מסתיים** בנושאת עצמה ⛔ אינו רשאי לגעת ב-`animation`.
+
+       ↩️ **⟦20/09 · `C-0746` · `F-306`ⓑ⟧ והנושאת עברה צומת** — מ-`[data-arena-impact]`
+       על אזור הבמה אל `[data-arena-hitstop]`, צומת אפס-גודל משלה, כי הרעד הקריטי
+       **החליף** את השעון על התכונה המשותפת. ⛔ **והשורה הזאת חייבת לזוז איתה:**
+       דפוס שמחפש נושאת שכבר ⛔ אינה קיימת עובר על **אפס** כללים ונשאר ירוק לנצח —
+       בדיוק המחלקה של המוטציה שההערה מעל מתעדת, מצד השני. */
     for (const match of block.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
       const selector = match[1] ?? '';
       const body = match[2] ?? '';
       const endsOnCarrier = selector
         .split(',')
-        .some((one) => /\[data-arena-impact='[ab]'\]\s*$/.test(one.trim()));
+        .some((one) => /\[data-arena-hitstop='[ab]'\]\s*$/.test(one.trim()));
       if (!endsOnCarrier) continue;
       expect(body, `⛔ «${selector.trim()}» מכבה את השעון ⇒ animationend ⛔ לא ייורה`)
         .not.toMatch(/animation(-name|-duration)?\s*:/);

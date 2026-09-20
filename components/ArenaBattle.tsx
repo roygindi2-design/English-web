@@ -1608,6 +1608,29 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           </div>
         </div>
 
+        {/* ⏱️ **⟦20/09 · `C-0746` · `F-306`ⓑ⟧ השעון של הקיפאון — צומת משלו, ⛔ ולא
+            תכונה על אזור הבמה.**
+
+            🔬 **נמדד חי, ⛔ ולא הוסק:** כש-`data-arena-impact` ו-`data-arena-crit`
+            היו שניהם על אזור הבמה, `getComputedStyle(area).animationName` החזיר
+            `arena-crit-shake` **בלבד** — אותה תכונה, אותו אלמנט, אותה ספציפיות,
+            והרעד מאוחר יותר בקובץ ⇒ הוא **החליף** את השעון. ⇒ ב**פגיעה קריטית**
+            ‏`animationend` של `arena-hitstop` ⛔ לעולם ⛔ לא נורה, `setImpact('off')`
+            ⛔ לא נקרא, ושתי הדמויות **נשארו צלליות לבנות עד סוף הקרב**.
+
+            ⛔ **ו⛔ אין כאן `setTimeout` חדש** — האירוע **מבעבע** לאזור הבמה, ומגיע
+            לאותו `onAnimationEnd` בדיוק. ⛔ **והצומת ⛔ אינו מצייר**: `arena-hitstop-*`
+            הוא `opacity: 1 → 1`, ⇒ אפס-גודל, מחוץ לזרימה, ו-`aria-hidden`.
+
+            ⚠️ **ו-`data-arena-impact` **נשאר** על אזור הבמה** — הוא ה**מצב** שכל
+            הכללים הצאצאיים תלויים בו (הצללית, הקפאת הלולאה, הנשימה). מה שירד לכאן
+            הוא ה**שעון** בלבד. */}
+        <span
+          aria-hidden
+          data-arena-hitstop={impact}
+          className="pointer-events-none absolute h-0 w-0"
+        />
+
         <ArenaStage
           phase={pose}
           items={items}

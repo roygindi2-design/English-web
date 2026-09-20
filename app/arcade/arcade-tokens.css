@@ -338,10 +338,37 @@ body:has([data-arena-scope]) > div > main {
 @keyframes arena-hitstop-a { from { opacity: 1; } to { opacity: 1; } }
 @keyframes arena-hitstop-b { from { opacity: 1; } to { opacity: 1; } }
 
-[data-arena-stage-area][data-arena-impact='a'] {
+/* 🔴 **⟦20/09 · `C-0746` · `F-306`ⓑ⟧ השעון עבר לצומת משלו — ⛔ והוא ⛔ אינו יושב
+   עוד על אזור הבמה.**
+
+   🔬 **נמדד בדפדפן חי (393×852, `/dev/arcade`), ⛔ ולא הוסק מקריאה.** הצבת
+   שתי התכונות על אזור הבמה והקריאה של `getComputedStyle(area).animationName`:
+
+       impact='a' בלבד          ⇒ `arena-hitstop-a`  0.12s
+       impact='a' + crit='a'    ⇒ `arena-crit-shake` 0.18s   ⛔ השעון **נעלם**
+
+   ⇒ שני הכללים היו על **אותה תכונה, אותו אלמנט, אותה ספציפיות `(0,2,0)`**,
+   והרעד **מאוחר יותר** בקובץ ⇒ הוא **החליף** את השעון.
+   🔴 **וזה ⛔ אינו רעש בדוח:** השחרור ב-`ArenaBattle.tsx` מאזין ל-
+   `animationName.startsWith('arena-hitstop')` ⇒ בפגיעה קריטית האנימציה
+   שנגמרת היא `arena-crit-shake`, ‏`setImpact('off')` ⛔ לעולם ⛔ אינו נקרא,
+   ו-`data-arena-impact` **נתקע** ⇒ שתי הדמויות **נשארות צלליות לבנות עד סוף
+   הקרב**.
+
+   ⛔ **והתרופה שנרשמה ב-`F-306` ⟨«להעביר את הרעד לערוץ `translate`»⟩ ⛔ אינה
+   פותרת את זה, ⛔ ולא במקצת:** ההתנגשות היא על תכונת ה-`animation` **עצמה**,
+   ⛔ ולא על ערוצי ה-`transform` שהקיפריימים מניעים. שתי הצהרות `animation`
+   על אותו צומת דורסות זו את זו יהיו הקיפריימים אשר יהיו.
+
+   ⇒ **מי שזז הוא השעון, ⛔ ולא הרעד** — וזה נגזר, ⛔ ולא הועדף: הרעד הוא
+   `translateX` של **אזור הבמה כולו** ⇒ הוא **חייב** לשבת שם; השעון הוא
+   `opacity: 1 → 1`, כלומר ⛔ אינו מצייר דבר, ו**כל** תפקידו הוא `animationend`.
+   ⇒ הוא יורד לצומת אפס-גודל משלו, האירוע מבעבע לאזור הבמה כמקודם,
+   ⛔ ואין ולו `setTimeout` אחד חדש. */
+[data-arena-hitstop='a'] {
   animation: arena-hitstop-a var(--arena-hitstop-ms) linear 1;
 }
-[data-arena-stage-area][data-arena-impact='b'] {
+[data-arena-hitstop='b'] {
   animation: arena-hitstop-b var(--arena-hitstop-ms) linear 1;
 }
 
