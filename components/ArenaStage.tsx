@@ -155,6 +155,7 @@ export default function ArenaStage({
             אחוז גבוה מחריץ נמוך, והיחס בין השניים (0.67) הוא מה שנשמר. */}
         <span data-arena-sigil aria-hidden className="absolute bottom-[-2%] h-10 w-28" />
         <span data-arena-shadow aria-hidden className="absolute bottom-[3%] h-3 w-12" />
+
         {/* ⛔ **`scale`, ⛔ ולא קופסה קטנה יותר** — ראה `FIGURE_CLASS` למעלה: הרוחב
             הנומינלי הוא המכנה שממנו נגזרת משרעת תנועת ההמשך. 0.66 הוא יחס העומק ①. */}
         {/* 🔴 **⟦`C-0624` · `T-366`⟧ ‏`data-arena-breath`, ⛔ ולא `data-arena-idle`.**
@@ -177,6 +178,17 @@ export default function ArenaStage({
               ⛔ **⛔ לא נכתבה כאן ולו צורה אחת חדשה** — החתימה שהייתה שם חוברה. */}
           <ArenaAvatar role="enemy" items={[]} character="wizard" className={FIGURE_CLASS} />
         </span>
+        {/* 💨 **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ «אבק מנקודת הפגיעה».**
+
+            ⛔ **ו⛔ אין כאן prop חדש, ובמפורש:** `data-arena-impact` ו-`data-arena-hurt`
+            יושבים על **אזור הבמה**, שהוא אב של שני החריצים ⇒ בורר צאצא ב-CSS מכיר
+            אותם בלי ולו שדה אחד שעובר דרך הרכיב הזה. ⛔ פרופ היה **מקור אמת שני**
+            לאותו מצב.
+            🔴 **ושני צמתים ⛔ ולא אחד, וזה ⛔ אינו סימטריה לשמה:** `impact` הוא
+            «הלומד פגע» ⇒ האבק עולה מרגלי ה**יריב**; `hurt` הוא «הלומד נפגע» ⇒
+            מרגלי ה**גיבור**. אבק במקום הלא-נכון אומר בדיוק את ההפך ממה שקרה.
+            ⛔ **ואחרי הדמות, ⛔ ולא לפניה** — נמדד: מאחוריה הגוף כיסה אותו. */}
+        <span data-arena-dust aria-hidden className="pointer-events-none absolute bottom-[-10%] h-9 w-20" />
       </div>
 
       {/* 🔥 **⟦19/09 · `C-0732` · `T-434`⟧ סימן הרצפה — **מה שאומר לאן המכה הולכת**.**
@@ -246,6 +258,13 @@ export default function ArenaStage({
               (`kol-B-03` … `B-06`) מציירים גיבור **מגבו** מאז 23/08. */}
           <ArenaAvatar role="hero" items={items} character={character} facing="back" className={FIGURE_CLASS} />
         </span>
+        {/* 💨 `C-0751` · א8 — האבק של ה**גיבור**, ודולק על `data-arena-hurt`:
+            «הלומד **נפגע**». הכלל חי ב-`arcade-tokens.css`, ⛔ ולא כאן.
+            🔬 **ו⛔ הוא ⛔ אינו לפני הדמות, וזה נמדד:** בגרסה הראשונה הוא צויר
+            **מתחת** לגוף וברוחב 34% ⇒ הגוף כיסה אותו כמעט כולו ובצילום חי
+            ⛔ **לא נראה דבר**. ⇒ אבק מתרומם **סביב** הרגליים ומול המבט, ⛔ ולא
+            מאחוריהן — זה גם מה שאבק עושה במציאות. */}
+        <span data-arena-dust aria-hidden className="pointer-events-none absolute bottom-[-3%] h-[26%] w-[44%]" />
       </div>
     </div>
   );

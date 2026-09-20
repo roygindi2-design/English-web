@@ -165,19 +165,31 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
         <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="var(--arena-ink)" opacity="0.55" />
       ))}
 
-      {/* ⓑ הקהל — מעל החומה, ⛔ בלי פרצופים. אטימות נמוכה = מרחק. */}
-      {CROWD.map((h, i) => (
-        <rect
-          key={`crowd-${String(i)}`}
-          x={i * 6.25 + 0.6}
-          y={HORIZON - 12 - h * 0.45}
-          width="5"
-          height={h * 0.45 + 12}
-          rx="1.6"
-          fill="var(--arena-stone-dark)"
-          opacity="0.75"
-        />
-      ))}
+      {/* ⓑ הקהל — מעל החומה, ⛔ בלי פרצופים. אטימות נמוכה = מרחק.
+          🏟️ **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ `data-arena-crowd` — וו, ⛔ ולא תנועה.**
+          ⛔ **הרכיב עדיין ⛔ אינו מנפיש דבר** ו⛔ אינו מחשב: כל הכלל חי ב-`arcade-tokens.css`
+          ותלוי ב-`data-arena-impact` של אזור הבמה. ⇒ המדור «והסט **סטטי**» בראש הקובץ
+          **נשאר נכון מילה במילה** — הקהל ⛔ אינו זז בזמן שהלומד חושב, אלא **אך ורק**
+          ברגע שהוא פגע. ⛔ זה ⛔ אינו ריצוד רקע; זו **תגובה**.
+          ↩️ **והקבוצה ⛔ אינה קישוט מבני:** היא קיימת כדי שה**השהיה המדורגת** תיכתב
+          ב-CSS כ-`:nth-child`, ⛔ ולא כ-`style={{ animationDelay }}` ברכיב. 🔬 נמדד:
+          הניסיון הראשון כתב את ההשהיה כאן, ו-`ArenaStage.test.ts` האדים בדין —
+          «⛔ אין אנימציה בסט». ⇒ השער תפס אותי, ⛔ והוא צודק: הרכיב **מצייר**. */}
+      <g data-arena-crowd-row>
+        {CROWD.map((h, i) => (
+          <rect
+            key={`crowd-${String(i)}`}
+            data-arena-crowd
+            x={i * 6.25 + 0.6}
+            y={HORIZON - 12 - h * 0.45}
+            width="5"
+            height={h * 0.45 + 12}
+            rx="1.6"
+            fill="var(--arena-stone-dark)"
+            opacity="0.75"
+          />
+        ))}
+      </g>
 
       {/* ⓒ חומת האבן — שלוש שורות לבנים בהיסט לסירוגין, כמו כל חומה אמיתית. */}
       <rect x="0" y={HORIZON - 14} width="100" height="14" fill="var(--arena-stone-dark)" />
@@ -199,7 +211,13 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
       {/* ⓓ לפידים — הילה, ואז הלהבה עצמה. ⛔ ארבעה, במרווחים שווים, כמו ברנדר. */}
       {[12, 37, 63, 88].map((x) => (
         <g key={`torch-${String(x)}`}>
-          <circle cx={x} cy={HORIZON - 7} r="7" fill="url(#arena-torch)" />
+          {/* 🔥 **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ «לפידים מתלקחים».**
+              ⛔ **על ההילה, ⛔ ולא על הלהבה:** לפיד ש**מתלקח** שופך יותר **אור**;
+              הגדלת הפתיל עצמו הייתה קוראת כנורה שגדלה. ⇒ הווו יושב על
+              `<circle>` של השיפוע הרדיאלי, שהוא **האור**.
+              ⛔ **ו-`transform-box: fill-box` חי ב-CSS** — בלעדיו `scale` על צומת
+              SVG מתייחס לראשית ה-`viewBox` ⇒ ההילה הייתה **נעה** במקום לגדול. */}
+          <circle data-arena-torch cx={x} cy={HORIZON - 7} r="7" fill="url(#arena-torch)" />
           <rect x={x - 0.5} y={HORIZON - 6} width="1" height="5" rx="0.4" fill="var(--arena-stone-dark)" />
           <ellipse cx={x} cy={HORIZON - 7.4} rx="1.1" ry="1.7" fill="var(--arena-gold-light)" />
         </g>

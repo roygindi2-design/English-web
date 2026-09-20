@@ -1143,3 +1143,177 @@ describe('C-0750 · `§ 8` ק1 — ההכרה על הרצף, ⛔ ולא נזק',
     );
   });
 });
+
+/**
+ * 🏟️ **⟦20/09 · `C-0751` · `T-441` · `37 § 11` א6 + א8⟧ המצלמה והזירה מגיבות.**
+ *
+ * 🔬 **מה כבר היה בנוי, נמדד ⛔ ולא שוער.** א6 נוקב ב**ארבעה**: «zoom · רעידה ·
+ * האטה · הטיה». ‏`arena-crit-shake` הוא הרעידה וה-hit-stop הוא ההאטה ⇒ **שניים
+ * כבר קיימים**, ומה שנבנה כאן הוא ה-zoom וההטיה.
+ */
+describe('C-0751 · `§ 11` א6 — המצלמה, ומספריה מהמפרט', () => {
+  const SPEC = readFileSync('plan/37-arena-spec.md', 'utf8');
+  /**
+   * ⛔ **המספרים נקראים מה**מפרט**, ⛔ ואינם מוקלדים כאן** — אותו דפוס בדיוק
+   * ש-`battle.test.ts` מפעיל על טבלת `§ 7`: מספר שזז במסמך **חייב** להפיל את
+   * הבדיקה, אחרת המסמך והקוד יכולים לסטות בשקט וכבר ⛔ אין מקור אמת.
+   */
+  const A6 = (SPEC.match(/^\| א6 \|[^|]*\|([^|]*)\|/m) ?? ['', ''])[1] ?? '';
+
+  it('שורת א6 קיימת במפרט — אחרת כל מה שמתחת מודד מחרוזת ריקה', () => {
+    expect(A6.trim().length, '⛔ שורת א6 ⛔ לא נמצאה ב-`37 § 11`').toBeGreaterThan(10);
+    expect(A6).toContain('zoom');
+  });
+
+  it('ה-zoom וההטיה הם **המספרים של א6**, ⛔ ולא ערכים שנבחרו', () => {
+    const zoom = (A6.match(/zoom\s+(\d+(?:\.\d+)?)/) ?? [])[1];
+    const tilt = (A6.match(/הטיה\s+(\d+(?:\.\d+)?)/) ?? [])[1];
+    expect(zoom, 'א6 נוקב ב-zoom').toBeTruthy();
+    expect(tilt, 'א6 נוקב בהטיה').toBeTruthy();
+    expect(CSS_CODE).toContain(`--arena-camera-zoom: ${String(zoom)}`);
+    expect(CSS_CODE).toContain(`--arena-camera-tilt: ${String(tilt)}deg`);
+  });
+
+  /**
+   * 🔴 **הערוץ ⛔ אינו בחירה — הוא מה ש**פנוי**.** ‏`animation` על אזור הבמה תפוס
+   * בידי `arena-crit-shake`, ו-`transform` תפוס בידי הקיפריים שלו. ⇒ `scale`
+   * ו-`rotate`, והשלושה **מתחברים** (`translate` → `rotate` → `scale` → `transform`).
+   */
+  it('המצלמה על `scale` ו-`rotate`, ⛔ ולא על `transform` — הערוץ תפוס', () => {
+    const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)];
+    const camera = rules.filter(([, sel, body]) =>
+      /\[data-arena-stage-area\]\[data-arena-impact='[ab]'\]/.test(sel ?? '')
+      && /(^|[;\s])(scale|rotate):/.test(body ?? ''));
+    expect(camera.length, 'למצלמה חייבים להיות כללים').toBeGreaterThan(0);
+    for (const [, sel, body] of camera) {
+      expect(body ?? '', `⛔ «${String(sel).trim()}» נוגע ב-transform, שתפוס בידי הרעד`)
+        .not.toMatch(/(^|[;\s])transform:/);
+    }
+  });
+
+  /**
+   * 🔴 **`[data-arena-stage]` נושא `perspective: 720px`** ⇒ כל `transform` עליו יוצר
+   * containing block חדש ו**שובר את מצלמת הקלפים**. ⇒ ⛔ אף כלל ⛔ אינו נוגע בו.
+   */
+  it('⛔ ⛔ אף `transform` על `[data-arena-stage]` — שם חיה הפרספקטיבה', () => {
+    const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)];
+    const onStage = rules.filter(([, sel]) => /\[data-arena-stage\](?!-)/.test(sel ?? ''));
+    expect(onStage.length, 'חייב להיות כלל אחד לפחות על הבמה').toBeGreaterThan(0);
+    const carries = onStage.some(([, , body]) => /(^|[;\s])(transform|scale|rotate|translate):/.test(body ?? ''));
+    expect(carries, '⛔ ערוץ תנועה על הצומת שנושא `perspective`').toBe(false);
+  });
+
+  it('כניסה **מהירה** ויציאה **איטית** — משך סימטרי קורא כנשימה, ⛔ ולא כמכה', () => {
+    const ms = (name: string): number => {
+      const hit = CSS_CODE.match(new RegExp(`${name}:\\s*(\\d+)ms`));
+      expect(hit, `${name} חייב להיות מוצהר`).not.toBeNull();
+      return Number((hit as RegExpMatchArray)[1]);
+    };
+    expect(ms('--arena-camera-in-ms')).toBeLessThan(ms('--arena-camera-out-ms'));
+    // ⛔ והכניסה קצרה מהקיפאון ⇒ הזום מגיע **לפני** שהקיפאון נגמר.
+    expect(ms('--arena-camera-in-ms')).toBeLessThan(declared('--arena-hitstop-ms'));
+  });
+
+  it('ההטיה מתחלפת בסימן בין `a` ל-`b` — אחרת המסך נוטה תמיד לאותו צד', () => {
+    expect(CSS_CODE).toMatch(/\[data-arena-impact='a'\]\s*\{[^}]*rotate:\s*var\(--arena-camera-tilt\)/);
+    expect(CSS_CODE).toMatch(/\[data-arena-impact='b'\]\s*\{[^}]*rotate:\s*calc\(var\(--arena-camera-tilt\)\s*\*\s*-1\)/);
+  });
+});
+
+/**
+ * 🔥 **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ «לפידים מתלקחים · הקהל קם».**
+ *
+ * 🔴 **ולמה זה ⛔ אינו סותר את «הסט **סטטי**»:** ההצהרה ב-`ArenaScene.tsx` אוסרת
+ * **ריצוד** — «תקציב התנועה הולך למה שהלומד **עשה**, ⛔ ולא לרקע שמנצנץ בזמן שהוא
+ * חושב». א8 היא **בדיוק** «מה שהלומד עשה»: הסט ⛔ אינו זז אף פעם מלבד ברגע הפגיעה.
+ */
+describe('C-0751 · `§ 11` א8 — הזירה מגיבה, ⛔ ואינה מרצדת', () => {
+  const SCENE = readFileSync('components/ArenaScene.tsx', 'utf8');
+  const SCENE_CODE = withoutComments(SCENE);
+
+  it('הווים בסט, וה**כללים** ⛔ אינם — הרכיב מצייר ו⛔ אינו מנפיש', () => {
+    expect(SCENE_CODE).toContain('data-arena-torch');
+    expect(SCENE_CODE).toContain('data-arena-crowd');
+    // ⛔ אותו גדר שראש `ArenaScene.tsx` מצהיר עליו, ושתפס אותי בטיק הזה.
+    expect(SCENE_CODE, '⛔ ⛔ אין אנימציה ברכיב הסט').not.toMatch(/animation|@keyframes|transition/);
+  });
+
+  it('⛔ שתיהן דולקות **אך ורק** תחת פגיעה — ⛔ ולא `infinite`', () => {
+    const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)];
+    /* ⛔ **שני שמות לכל אפקט, ⛔ ולא אחד** — `a`⇄`b` הוא מנגנון האתחול: שתי פגיעות
+       בתוך `--arena-hitstop-ms` מעבירות את התכונה `a` → `b` **בלי לעבור ב-`off`**,
+       ושם זהה ⛔ אינו מפעיל אנימציה מחדש ⇒ הלפידים היו קופאים על הפגיעה הראשונה. */
+    for (const name of [
+      'arena-torch-flare-a', 'arena-torch-flare-b',
+      'arena-crowd-rise-a', 'arena-crowd-rise-b',
+    ]) {
+      expect(CSS_CODE, `@keyframes ${name}`).toContain(`@keyframes ${name}`);
+      const carriers = rules
+        .filter(([, , body]) => new RegExp(`animation:\\s*${name}\\b`).test(body ?? ''))
+        .map(([, sel, body]) => ({ sel: (sel ?? '').trim(), body: body ?? '' }));
+      expect(carriers.length, `⛔ אף כלל ⛔ אינו מפעיל את ${name}`).toBeGreaterThan(0);
+      for (const { sel, body } of carriers) {
+        expect(sel, `⛔ «${sel}» מפעיל את ${name} בלי פגיעה ⇒ ריצוד רקע`)
+          .toMatch(/\[data-arena-impact='[ab]'\]/);
+        expect(body, `⛔ ${name} חוזר לנצח — זה בדיוק מה ש-T-041 אוסר`)
+          .not.toMatch(/\binfinite\b/);
+      }
+    }
+  });
+
+  /**
+   * 💨 **«אבק מנקודת הפגיעה» — ושתי הנקודות ⛔ אינן אותה נקודה.**
+   * `data-arena-impact` הוא «הלומד **פגע**» ⇒ אבק מרגלי ה**יריב**;
+   * `data-arena-hurt` הוא «הלומד **נפגע**» ⇒ מרגלי ה**גיבור**.
+   * ⛔ אבק במקום הלא-נכון אומר בדיוק את ההפך ממה שקרה — וזו הטענה שנמדדת כאן.
+   */
+  it('האבק עולה מהחריץ **הנכון** לכל אחד משני המקורות', () => {
+    const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+      .filter(([, , body]) => /animation:\s*arena-dust-[ab]\b/.test(body ?? ''))
+      .map(([, sel]) => (sel ?? '').trim());
+    expect(rules.length, '⛔ אף כלל ⛔ אינו מפעיל אבק').toBeGreaterThan(0);
+    for (const sel of rules) {
+      const onHit = sel.includes("[data-arena-impact=");
+      const onHurt = sel.includes("[data-arena-hurt=");
+      expect(onHit !== onHurt, `⛔ «${sel}» ⛔ אינו תלוי בדיוק באחד משני המקורות`).toBe(true);
+      expect(sel, onHit ? 'פגיעה ⇒ אבק אצל היריב' : 'רתיעה ⇒ אבק אצל הגיבור')
+        .toContain(onHit ? "[data-arena-slot='enemy']" : "[data-arena-slot='hero']");
+    }
+    // ⛔ ושני הצמתים קיימים בבמה, אחרת הכללים ⛔ אינם חלים על דבר.
+    const stage = readFileSync('components/ArenaStage.tsx', 'utf8');
+    expect((withoutComments(stage).match(/data-arena-dust/g) ?? []).length).toBe(2);
+  });
+
+  it('⛔ `scale` על צומת SVG דורש `transform-box: fill-box`, אחרת ההילה **נעה**', () => {
+    expect(CSS_CODE).toMatch(/\[data-arena-torch\]\s*\{[^}]*transform-box:\s*fill-box/);
+  });
+
+  /**
+   * ⛔ **ו⛔ זה ⛔ אינו אותו כלל כמו ההילה של ק1:** ההילה נושאת **מידע** ⇒ קצה קפוא.
+   * אלה ⛔ אינם נושאים דבר — הפגיעה נאמרת בפס החיים, במספר ובצללית — ⇒ **קישוט**,
+   * וקישוט נכבה. ⛔ ו-`globals.css` שמאפס משכים היה הופך זום של 4.5% ל**קפיצה**.
+   */
+  it('⛔ שם אחד לשני הערכים ⛔ אינו מאתחל — הווים נבדלים ב-`a`/`b`', () => {
+    for (const [attr, name] of [['a', 'arena-torch-flare-a'], ['b', 'arena-torch-flare-b'],
+      ['a', 'arena-crowd-rise-a'], ['b', 'arena-crowd-rise-b']] as const) {
+      const rules = [...CSS_CODE.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+        .filter(([, , body]) => new RegExp(`animation:\\s*${name}\\b`).test(body ?? ''));
+      expect(rules.length, `⛔ אף כלל ⛔ אינו מפעיל את ${name}`).toBe(1);
+      expect((rules[0]?.[1] ?? '').trim(), `${name} חייב לשבת על '${attr}' בלבד`)
+        .toContain(`[data-arena-impact='${attr}']`);
+    }
+  });
+
+  it('בתנועה מופחתת — המצלמה והזירה **כבויות**, ⛔ ולא מהירות', () => {
+    const blocks = [...CSS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '');
+    const camera = blocks.find((b) => b.includes('data-arena-camera') || /scale:\s*1;/.test(b));
+    expect(camera, 'למצלמה חייב להיות כלל בתנועה מופחתת').toBeTruthy();
+    expect(camera as string).toMatch(/scale:\s*1\s*;/);
+    expect(camera as string).toMatch(/rotate:\s*0deg/);
+    const set = blocks.find((b) => b.includes('data-arena-torch'));
+    expect(set, 'לסט חייב להיות כלל בתנועה מופחתת').toBeTruthy();
+    expect(set as string).toMatch(/animation:\s*none/);
+    expect(set as string).toContain('data-arena-crowd');
+  });
+});

@@ -179,6 +179,22 @@
      שהם `--arena-card`/`--arena-card-edge` שכבר קיימים (7.36:1 עם `--arena-ink-dim`).
      ⛔ **וזו פלטה מתוחמת** (`37 § 13.5`) — ⛔ אינה נכנסת ל-`lib/core/palette.ts`. */
   --arena-streak-hot: #784614;
+  /* 🏟️ **⟦20/09 · `C-0751` · `§ 11` א6⟧ המצלמה — **מספרי המפרט**, ⛔ ולא טעם.**
+     «zoom **1.045** · הטיה **1.5 מעלות**» כתובים בטבלה של `§ 11` א6 מילה במילה.
+     ⛔ **ושני המשכים ⛔ אינם במפרט ⇒ הם נגזרים:** הכניסה קצרה מ-`--arena-hitstop-ms`
+     (‏120ms) כדי שהזום יגיע **לפני** שהקיפאון נגמר, והיציאה היא 260ms של הריקון
+     שכבר מוצהר בקובץ — ⛔ ולא מספר שלישי. */
+  --arena-camera-zoom: 1.045;
+  --arena-camera-tilt: 1.5deg;
+  --arena-camera-in-ms: 90ms;
+  --arena-camera-out-ms: 260ms;
+  /* א8 — ההתלקחות והגל. ⛔ **שניהם קצרים מהקיפאון+הרעד יחד** (120+180) ⇒ הזירה
+     נרגעת **עם** הדמויות, ⛔ ולא אחריהן. */
+  --arena-flare-ms: 260ms;
+  --arena-crowd-ms: 420ms;
+  /* האבק **שורד** את הקיפאון ואת הרעד (120+180) ⇒ הוא מה שנשאר על המסך אחרי
+     שהמכה נגמרה, וזה מה שאבק עושה. */
+  --arena-dust-ms: 520ms;
 
   /* T-214 · שכבה א׳ **גוברת על הרנדר, ובמספר** (`36 § 14.4`, ההחרגה היחידה).
      `render_video_B.py:474` ממלא את פס חיי היריב ב-`(226, 62, 62)`,
@@ -1414,5 +1430,210 @@ body:has([data-arena-scope]) > div > main {
   [data-arena-scope] [data-arena-slot='hero'][data-arena-hot='on'] [data-arena-halo] {
     animation: none;
     opacity: 0.46;
+  }
+}
+
+/* ═══ 🏟️ ⟦20/09 · `C-0751` · `T-441` · `37 § 11` א6 + א8⟧ **המצלמה והזירה מגיבות.**
+
+   🔬 **מה היה בנוי ומה ⛔ לא, נמדד ⛔ ולא שוער.** א6 נוקב בארבעה: «zoom **1.045** ·
+   רעידה **74Hz** · האטה **0.4x** · הטיה **1.5 מעלות**». ‏`arena-crit-shake` (3px ·
+   180ms) הוא הרעידה, וה-hit-stop הוא ההאטה ⇒ **שניים מתוך ארבעה כבר קיימים**.
+   ⇒ מה שנבנה כאן הוא **ה-zoom וההטיה**, ⛔ ולא הרעידה מחדש.
+
+   🔴 **ולמה זה ⛔ אינו סותר את «והסט **סטטי**» ב-`ArenaScene.tsx`, ובמפורש:**
+   ההצהרה שם אוסרת **ריצוד** — «⛔ אין ריצוד לפידים ו⛔ אין הבהוב כוכבים … תקציב
+   התנועה הולך למה שהלומד **עשה**, ⛔ ולא לרקע שמנצנץ בזמן שהוא חושב» (`T-041`,
+   עקרון הקוהרנטיות של Mayer). ⇒ א8 היא בדיוק **«מה שהלומד עשה»**: הלפידים
+   והקהל ⛔ **אינם זזים אף פעם** מלבד ברגע שהפגיעה נרשמת. ⛔ **תגובה ⛔ אינה
+   קישוט**, והטקסט ההוא **נשאר נכון מילה במילה**.
+
+   ⛔ **והערוצים נמדדו לפני שנכתבו** (`[data-arena-stage-area]`):
+   ‏`animation` תפוס בידי `arena-crit-shake` · `transform` תפוס בידי הקיפריים שלו
+   ⇒ המצלמה יושבת על **`scale`** ו-**`rotate`**, שנמדדו **פנויים**, והשלושה
+   **מתחברים** ⛔ ואינם דורסים: `translate` → `rotate` → `scale` → `transform`
+   הוא סדר ההרכבה של CSS, ⛔ ולא שאלה של סדר כתיבה.
+   🔴 **ו⛔ אין נגיעה ב-`[data-arena-stage]`** — הוא נושא `perspective: 720px`,
+   וכל `transform` עליו היה יוצר containing block חדש ו**שובר את מצלמת הקלפים**.
+   ⚠️ **⇒ ומה שנרשם ב-`T-441` — «הרעד עובר ל-`translate`» — ⛔ אינו נדרש עוד**,
+   כי המצלמה ⛔ אינה מבקשת את `transform` בכלל. */
+
+/* ⓐ **ה-zoom וההטיה — `transition`, ⛔ ולא `animation`.**
+   ⛔ **וזו חוקה ⓷, ⛔ ולא העדפה:** מעבר ניתן לתפיסה **באמצע** ⇒ פגיעה שנייה בתוך
+   החלון מושכת את המצלמה מהמקום שבו היא נמצאת. קיפריים היה **קופץ** לאפס ומתחיל שוב.
+   ⛔ **ו-`animation` על הצומת הזה ממילא תפוס** — זו בדיוק ההתנגשות שנמדדה ב-`F-306`ⓑ.
+
+   🔴 **שני משכים, ⛔ ולא אחד — וזה מה שהופך זום ל**מכה**:** הכניסה **מהירה**
+   (‏`90ms`, מוצהרת על כלל הפגיעה) והיציאה **איטית** (`260ms`, על כלל הבסיס).
+   משך סימטרי קורא כ«נשימה», ⛔ ולא כפגיעה. */
+[data-arena-scope] [data-arena-stage-area] {
+  transition: scale var(--arena-camera-out-ms) var(--arena-ease-out),
+              rotate var(--arena-camera-out-ms) var(--arena-ease-out);
+}
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='a'],
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='b'] {
+  transition-duration: var(--arena-camera-in-ms);
+  scale: var(--arena-camera-zoom);
+}
+/* ⛔ **וההטיה מתחלפת בסימן בין `a` ל-`b`** — ⛔ ולא נשארת קבועה. `impact` כבר
+   מתחלף `a`⇄`b` בכל פגיעה (זה מנגנון האתחול שלו), ⇒ הסימן ההפוך נופל מזה **חינם**
+   ומונע את מה שקורא כ«המסך נטה, ונשאר נטוי לאותו צד בכל מכה». */
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='a'] {
+  rotate: var(--arena-camera-tilt);
+}
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='b'] {
+  rotate: calc(var(--arena-camera-tilt) * -1);
+}
+
+/* ⓑ **«לפידים מתלקחים» — `opacity` ו-`scale`, ⛔ ולא `filter` ו⛔ לא רדיוס.**
+   ⛔ **`transform-box: fill-box` חובה:** בלי זה `scale` על צומת SVG מתייחס
+   לראשית ה-`viewBox` ⇒ ההילה **נעה** אל הפינה במקום לגדול במקומה. */
+/* 🔴 **שני שמות ו⛔ לא אחד — וזה מנגנון האתחול, ⛔ ולא כפילות.** הקובץ הזה כבר
+   מתעד אותו על ה-hit-stop: «החלפת **שם** האנימציה היא מה שמאתחל אותה בדפדפן;
+   ערך זהה שחוזר ⛔ אינו מפעיל אנימציה מחדש».
+   🔬 **ולמה זה ⛔ אינו תיאורטי כאן:** ‏`data-arena-impact` חוזר ל-`off` ב-
+   `animationend`, ⇒ ברצף רגיל האנימציה **כן** מתאתחלת. אבל שתי פגיעות בתוך
+   `--arena-hitstop-ms` מעבירות אותו `a` → `b` **בלי לעבור ב-`off`** — וזה
+   בדיוק המקרה שבשבילו נולד ה-`a`⇄`b` ⇒ שם אחד היה משאיר את הלפידים **קפואים
+   על הפגיעה הראשונה** בדיוק כשהקרב הכי צפוף. */
+@keyframes arena-torch-flare-a {
+  0% { opacity: 1; scale: 1; }
+  30% { opacity: 1; scale: 1.5; }
+  100% { opacity: 1; scale: 1; }
+}
+@keyframes arena-torch-flare-b {
+  0% { opacity: 1; scale: 1; }
+  30% { opacity: 1; scale: 1.5; }
+  100% { opacity: 1; scale: 1; }
+}
+[data-arena-scope] [data-arena-torch] {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+[data-arena-scope] [data-arena-impact='a'] [data-arena-torch] {
+  animation: arena-torch-flare-a var(--arena-flare-ms) var(--arena-ease-out) 1;
+}
+[data-arena-scope] [data-arena-impact='b'] [data-arena-torch] {
+  animation: arena-torch-flare-b var(--arena-flare-ms) var(--arena-ease-out) 1;
+}
+
+/* ⓒ **«הקהל קם» — `translate` כלפי מעלה, בגל.**
+   ⛔ **והמרחק זעיר, `1.6` יחידות מתוך `viewBox` של 100** ⇒ פחות מ-2% מגובה הסט.
+   קהל שמזנק היה **גונב את העין** מהדמויות, וזה בדיוק מה ש-`T-041` אוסר.
+   ⛔ `translate` ⛔ ולא `y`: `y` ⛔ אינו ערוץ קומפוזיטור, והשער היה נופל. */
+@keyframes arena-crowd-rise-a {
+  0%, 100% { translate: 0 0; }
+  35% { translate: 0 -1.6px; }
+}
+@keyframes arena-crowd-rise-b {
+  0%, 100% { translate: 0 0; }
+  35% { translate: 0 -1.6px; }
+}
+[data-arena-scope] [data-arena-impact='a'] [data-arena-crowd] {
+  animation: arena-crowd-rise-a var(--arena-crowd-ms) var(--arena-ease-out) 1;
+}
+[data-arena-scope] [data-arena-impact='b'] [data-arena-crowd] {
+  animation: arena-crowd-rise-b var(--arena-crowd-ms) var(--arena-ease-out) 1;
+}
+/* ⛔ **ההשהיה היא **מדרגה**, ⛔ ולא ערך שנבחר:** קהל שקם כאיש אחד קורא כמלבן יחיד
+   שקופץ. ‏`14ms` לכל צללית על שש-עשרה ⇒ **גל** שעובר על היציע ונגמר בתוך 210ms.
+   ⛔ **וזה כאן ו⛔ לא ברכיב:** `ArenaScene` **מצייר ו⛔ אינו מנפיש** — `style={{
+   animationDelay }}` שם נתפס על ידי `ArenaStage.test.ts` בדין. ⇒ הקבוצה
+   `[data-arena-crowd-row]` קיימת בדיוק כדי ש-`:nth-child` יהיה אפשרי. */
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(2) { animation-delay: 14ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(3) { animation-delay: 28ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(4) { animation-delay: 42ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(5) { animation-delay: 56ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(6) { animation-delay: 70ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(7) { animation-delay: 84ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(8) { animation-delay: 98ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(9) { animation-delay: 112ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(10) { animation-delay: 126ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(11) { animation-delay: 140ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(12) { animation-delay: 154ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(13) { animation-delay: 168ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(14) { animation-delay: 182ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(15) { animation-delay: 196ms; }
+[data-arena-scope] [data-arena-crowd-row] [data-arena-crowd]:nth-child(16) { animation-delay: 210ms; }
+
+/* ⓓ **«אבק מנקודת הפגיעה» — `opacity` ו-`scale`, ⛔ ולא חלקיקים.**
+
+   ⛔ **ענן אחד, ⛔ ולא שנים-עשר:** `§ 11` א8 כותב «אבק **מנקודת הפגיעה**», ⛔ ולא
+   «חלקיקים». שנים-עשר צמתים שנולדים ומתים בכל פגיעה הם `useState` בלולאת הקרב —
+   בדיוק מה ש-`ArenaStage` ו-`ArenaScene` מצהירים ש⛔ אין בהם.
+   ⇒ **צומת אחד לכל חריץ**, שיפוע רדיאלי באבן, שנפתח החוצה ודוהה.
+
+   🔴 **ושני מקורות ⛔ ולא אחד:** `data-arena-impact` הוא «הלומד **פגע**» ⇒ האבק
+   עולה מרגלי ה**יריב**; `data-arena-hurt` הוא «הלומד **נפגע**» ⇒ מרגלי ה**גיבור**.
+   ⛔ אבק במקום הלא-נכון אומר בדיוק את ההפך ממה שקרה.
+
+   ⛔ **ושני שמות לכל צד**, מאותה סיבה כמו הלפידים: `a`⇄`b` הוא מנגנון האתחול. */
+/* 🔬 **שלוש עצירות ו⛔ לא שתיים, ונמדד למה.** הניסוח הראשון היה `0.8 → 0` על
+   `--arena-ease-out` ⇒ נמדד חי: `0.69` ב-40ms, **`0.41` ב-80ms**, `0.22` ב-160ms —
+   כלומר הענן כבר **דהה** לפני שהספיק להיפתח, ובצילום ⛔ **לא נראה דבר**.
+   ⇒ עלייה מהירה (`12%`), **החזקה** עד `40%`, ואז דעיכה — וזה מה שענן אבק עושה.
+   ⛔ **ו-`linear`, ⛔ ולא `ease-out`:** העקומה כבר קיימת **בתוך** הקיפריימים. */
+@keyframes arena-dust-a {
+  0% { opacity: 0; scale: 0.6 0.55; }
+  12% { opacity: 0.8; scale: 0.95 0.85; }
+  40% { opacity: 0.72; scale: 1.4 1.05; }
+  100% { opacity: 0; scale: 1.9 1.2; }
+}
+@keyframes arena-dust-b {
+  0% { opacity: 0; scale: 0.6 0.55; }
+  12% { opacity: 0.8; scale: 0.95 0.85; }
+  40% { opacity: 0.72; scale: 1.4 1.05; }
+  100% { opacity: 0; scale: 1.9 1.2; }
+}
+[data-arena-scope] [data-arena-dust] {
+  /* 🔴 **צורה מוצהרת** — `scripts/radius-hygiene.test.ts` · `DECLARED_SHAPES`.
+     ⛔ אליפסה, ⛔ ולא גלולה: האבק מתפשט על אותה **רצפה נסוגה** שהצל, מעגל הזימון,
+     סימן הנתיב וההילה שוכבים עליה (`37 § 13.5`). */
+  border-radius: 50%;
+  /* 🔬 **`--arena-ink-dim`, ⛔ ולא `--arena-stone` — ונמדד בצילום חי, ⛔ ולא נבחר.**
+     הענן צויר תחילה ב-`--arena-stone` (`#4a4858`), והיריב עומד מול **חומת אבן**
+     שצבועה ב-`--arena-stone-dark` (`#34323f`) ⇒ אבק בצבע הקיר על הקיר ⛔ **אינו
+     נראה**: נמדד `opacity: 0.28` בשיא ו⛔ ולא ⛔ נראה דבר בצילום. ⇒ הגוון עובר
+     לאפור הבהיר שכבר מוצהר, שנקרא **גם** על החומה **וגם** על הרצפה. */
+  background: radial-gradient(closest-side, var(--arena-ink-dim) 0%, transparent 100%);
+  /* ⛔ ברירת המחדל ⛔ אינה נראית, והציר בקרקע: ענן אבק נפתח **מהרצפה כלפי חוץ**,
+     ⛔ ואינו גדל סביב מרכזו כמו בועה. */
+  opacity: 0;
+  transform-origin: 50% 100%;
+}
+[data-arena-scope] [data-arena-impact='a'] [data-arena-slot='enemy'] [data-arena-dust] {
+  animation: arena-dust-a var(--arena-dust-ms) linear 1;
+}
+[data-arena-scope] [data-arena-impact='b'] [data-arena-slot='enemy'] [data-arena-dust] {
+  animation: arena-dust-b var(--arena-dust-ms) linear 1;
+}
+[data-arena-scope] [data-arena-hurt='a'] [data-arena-slot='hero'] [data-arena-dust] {
+  animation: arena-dust-a var(--arena-dust-ms) linear 1;
+}
+[data-arena-scope] [data-arena-hurt='b'] [data-arena-slot='hero'] [data-arena-dust] {
+  animation: arena-dust-b var(--arena-dust-ms) linear 1;
+}
+
+/* 🔴 **בתנועה מופחתת — המצלמה והזירה **כבויות**, ⛔ ולא «מהירות».**
+   ⛔ **וזה ⛔ אינו אותו כלל כמו ההילה של ק1:** ההילה נושאת **מידע** («אתה ברצף»)
+   ⇒ קצה קפוא; אלה ⛔ **אינם נושאים דבר** — הפגיעה כבר נאמרת בפס החיים, במספר
+   הנזק ובצללית הלבנה. ⇒ הם **קישוט**, ו`globals.css` שמאפס משכים ל-`0.01ms` היה
+   הופך זום של 4.5% ל**קפיצה** במקום להסיר אותה. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-stage-area],
+  [data-arena-scope] [data-arena-stage-area][data-arena-impact='a'],
+  [data-arena-scope] [data-arena-stage-area][data-arena-impact='b'] {
+    transition: none;
+    scale: 1;
+    rotate: 0deg;
+  }
+  [data-arena-scope] [data-arena-impact='a'] [data-arena-torch],
+  [data-arena-scope] [data-arena-impact='b'] [data-arena-torch],
+  [data-arena-scope] [data-arena-impact='a'] [data-arena-crowd],
+  [data-arena-scope] [data-arena-impact='b'] [data-arena-crowd],
+  [data-arena-scope] [data-arena-impact='a'] [data-arena-slot='enemy'] [data-arena-dust],
+  [data-arena-scope] [data-arena-impact='b'] [data-arena-slot='enemy'] [data-arena-dust],
+  [data-arena-scope] [data-arena-hurt='a'] [data-arena-slot='hero'] [data-arena-dust],
+  [data-arena-scope] [data-arena-hurt='b'] [data-arena-slot='hero'] [data-arena-dust] {
+    animation: none;
   }
 }
