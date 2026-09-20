@@ -30,20 +30,36 @@ const ALL_SLOTS: readonly CharacterSlot[] = [
   'head', 'shoulders', 'body', 'belt', 'mainHand', 'offHand', 'legs',
 ];
 
-describe('38 § 4 — סדר אחת־עשרה השכבות', () => {
-  it('אחת־עשרה, ⛔ ולא ארבע (F-157 ⓑ מדד ארבע ב-`ArenaAvatar`)', () => {
-    expect(LAYER_ORDER).toHaveLength(11);
+describe('38 § 4 — סדר שתים־עשרה השכבות', () => {
+  /**
+   * 🧥 **⟦20/09 · `C-0745` · `F-307`⟧ שתים־עשרה — וזה **ביצוע** של `D-136`.**
+   * ההכרעה נוקבת בשינוי הזה **מילה במילה**: «`toHaveLength(11)` ⇒
+   * `toHaveLength(12)`». ⇒ המספר כאן ⛔ אינו נגזר מ-`LAYER_ORDER` — הוא מצוטט
+   * מ-`38 § 4`, שכותב «**שתים־עשרה שכבות, ⛔ ולא אחת־עשרה**» בפירוש.
+   */
+  it('שתים־עשרה, ⛔ ולא ארבע (F-157 ⓑ מדד ארבע ב-`ArenaAvatar`)', () => {
+    expect(LAYER_ORDER).toHaveLength(12);
   });
 
   it('הסדר הוא של `38 § 4`, מילה במילה', () => {
     expect([...LAYER_ORDER]).toEqual([
-      'capeBack', 'legs', 'boots', 'body', 'chest', 'belt',
+      'capeBack', 'legs', 'capeFront', 'boots', 'body', 'chest', 'belt',
       'offHand', 'head', 'headgear', 'shoulders', 'mainHand',
     ]);
   });
 
   it('⛔ הגלימה האחורית מתחת לגוף — אחרת היא חותכת אותו', () => {
     expect(LAYER_ORDER.indexOf('capeBack')).toBeLessThan(LAYER_ORDER.indexOf('body'));
+  });
+
+  /**
+   * ⛔ **שתי הטענות יחד, כי אחת בלעדי השנייה ⛔ אינה המיקום ש-`D-136` נקב בו.**
+   * «מעל הרגליים» ⇒ הוא **אחרי** `legs`; ו«חלק **קדמי**» ⇒ הוא ⛔ אינו מטפס מעל
+   * הגוף — גלימה שמכסה את החזית כולה מוחקת את הדמות, ⛔ ולא נופלת סביבה.
+   */
+  it('⛔ הגלימה הקדמית מעל הרגליים ומתחת לגוף — `D-136`, מילה במילה', () => {
+    expect(LAYER_ORDER.indexOf('legs')).toBeLessThan(LAYER_ORDER.indexOf('capeFront'));
+    expect(LAYER_ORDER.indexOf('capeFront')).toBeLessThan(LAYER_ORDER.indexOf('body'));
   });
 
   it('⛔ פריט הראש מעל הראש, והכתפיים מעליו — סדר, ⛔ ולא אוסף', () => {

@@ -34,9 +34,24 @@ export interface AnchorPoint {
   readonly y: number;
 }
 
-/** `38 § 4`, in render order. The cape renders twice — back, then front. */
+/**
+ * `38 § 4`, in render order. The cape renders twice — back, then front.
+ *
+ * 🧥 **⟦20/09 · `C-0745` · `F-307`⟧ שתים־עשרה, ⛔ ולא אחת־עשרה — וזה **ביצוע**
+ * של `D-136`, ⛔ ולא הכרעה חדשה.**
+ *
+ * 🔬 **ההחלטה בת שלושה שבועות, והיא נוקבת בשינוי הזה בשמו:** «`LAYER_ORDER`
+ * ב-`lib/core/characterBase.ts` עובר ל-12, ו-`toHaveLength(11)` ⇒
+ * `toHaveLength(12)`» (`D-136`, ‏31/08). ‏`38 § 4` אומר את אותו הדבר במילים —
+ * «הגלימה מרונדרת פעמיים — חלק אחורי מתחת לגוף וחלק **קדמי מעל הרגליים**».
+ * ⇒ המסמך והחוק הסכימו, ו**חצי הקוד ⛔ מעולם ⛔ לא נעשה**.
+ *
+ * ⛔ **ו⛔ אין כאן שכבה שהומצאה** (`38 § 5`): `capeFront` נקוב בשמו ובמיקומו
+ * — **מיד אחרי `legs`** — בהכרעה עצמה. ⇒ ההערה שמעל שאמרה «back, then
+ * front» מאז שנכתבה **מפסיקה לשקר**.
+ */
 export const LAYER_ORDER = Object.freeze([
-  'capeBack', 'legs', 'boots', 'body', 'chest', 'belt',
+  'capeBack', 'legs', 'capeFront', 'boots', 'body', 'chest', 'belt',
   'offHand', 'head', 'headgear', 'shoulders', 'mainHand',
 ] as const);
 
@@ -373,14 +388,41 @@ export const NEW_PATHS = Object.freeze({
  * וקו באותו גוון היה נעלם» — אלא ש-`C-0724` הפסיק לצבוע את הבסיס בצבע התפקיד.
  * ⇒ הנימוק מת לפני התיקון, ואיש ⛔ לא חזר לשורה שהוא החזיק.
  */
+const CAPE_PTS = Object.freeze([
+  [-46, -20], [-66, 98], [-50, 86], [-34, 106], [-18, 86], [0, 106],
+  [18, 86], [34, 106], [50, 86], [66, 98], [46, -20],
+] as const);
+
+const CAPE_FOLD_PTS = Object.freeze([
+  [46, -20], [66, 98], [50, 86], [34, 106], [18, 86], [28, -20],
+] as const);
+
+/**
+ * 🧥 **⟦20/09 · `C-0745` · `F-307`⟧ שולי הגלימה — **נגזרים**, ⛔ ולא מוקלדים שוב.**
+ *
+ * ‏`D-136` מורה על «חלק אחורי מתחת לגוף וחלק קדמי **מעל הרגליים**». ⇒ החצי הקדמי
+ * הוא **אותו מצולע**, חתוך בקו העמקים של השִׁנַּיִם: הנקודות `1…9` של `CAPE_PTS`
+ * הן **רצף אחד** — כל אלה שעומקן `y ≥ 86` — ו-`CAPE_HEM_Y` הוא העומק הזה עצמו,
+ * ⛔ **⛔ ולא מספר שנבחר**: הוא נקרא מתוך `CAPE_PTS[2][1]`.
+ *
+ * ⛔ **וזו הסיבה שזה `slice` ו⛔ לא רשימה שנייה:** מצולע שני שמוקלד ביד הוא מקום
+ * שבו השניים יכולים לסטות בשקט — בדיוק המחלקה של «שמאלי ⛔ ולא מספר שני שאפשר
+ * לסטות בו» שכבר כתובה מעל `MIRRORED_SLOTS`.
+ *
+ * ⚠️ **והקפל נגזר באותה שורה בדיוק.** בלעדיו השוליים הקדמיים היו מכסים את החצי
+ * התחתון של הקפל בצבע אחיד ⇒ הצללית שנותנת לגלימה נפח הייתה נקטעת באמצע.
+ */
+const CAPE_HEM_Y = CAPE_PTS[2][1];
+
 export const ITEMS = Object.freeze({
-  capePts: Object.freeze([
-    [-46, -20], [-66, 98], [-50, 86], [-34, 106], [-18, 86], [0, 106],
-    [18, 86], [34, 106], [50, 86], [66, 98], [46, -20],
-  ] as const),
-  capeFoldPts: Object.freeze([
-    [46, -20], [66, 98], [50, 86], [34, 106], [18, 86], [28, -20],
-  ] as const),
+  capePts: CAPE_PTS,
+  capeFoldPts: CAPE_FOLD_PTS,
+  capeHemPts: Object.freeze([
+    [-66, CAPE_HEM_Y], ...CAPE_PTS.slice(1, 10), [66, CAPE_HEM_Y],
+  ] as readonly (readonly [number, number])[]),
+  capeFoldHemPts: Object.freeze([
+    [66, CAPE_HEM_Y], ...CAPE_FOLD_PTS.slice(1, 5),
+  ] as readonly (readonly [number, number])[]),
   helmetRadius: 33, helmetSkirtY: -54,
   browHalfWidth: 37, browTopY: -58, browH: 11, browR: 4,
   crestTopY: -96, crestTopHalf: 4, crestBaseHalf: 7,
@@ -397,6 +439,8 @@ export const ITEMS = Object.freeze({
 export const ITEM_PATHS = Object.freeze({
   cape: polygon(ITEMS.capePts),
   capeFold: polygon(ITEMS.capeFoldPts),
+  capeHem: polygon(ITEMS.capeHemPts),
+  capeFoldHem: polygon(ITEMS.capeFoldHemPts),
   helmetDome:
     `M${-ITEMS.helmetRadius} ${-62}A${ITEMS.helmetRadius} ${ITEMS.helmetRadius} 0 0 1 ${ITEMS.helmetRadius} ${-62}` +
     `L${ITEMS.helmetRadius} ${ITEMS.helmetSkirtY}L${-ITEMS.helmetRadius} ${ITEMS.helmetSkirtY}z`,

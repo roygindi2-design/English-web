@@ -493,7 +493,25 @@ type ItemLayer = {
   readonly layer: Layer;
   readonly shape: React.JSX.Element;
   readonly only?: 'front' | 'back';
+  /**
+   * 🧥 **⟦20/09 · `C-0745` · `F-307`⟧ פריט שמרונדר **פעמיים**, בשתי שכבות.**
+   * ‏`38 § 4` מונה בדיוק אחד כזה — הגלימה — ו-`D-136` נוקב במקום השני בשמו.
+   * ⛔ **וזה ⛔ אינו פריט שני:** `worn` עדיין מונה `cape` **אחת**, המשבצת
+   * ב-`ArenaHome` עדיין אחת, ו`ARCADE_ITEMS` ⛔ לא זז. **מה שכפול הוא הציור.**
+   */
+  readonly second?: { readonly layer: Layer; readonly shape: React.JSX.Element };
 };
+
+/**
+ * הצורה שפריט תורם לשכבה נתונה, ⛔ או `null` אם ⛔ אינו נוגע בה.
+ * ⛔ **⛔ לא `ITEM_LAYERS[name].layer === layer` עוד** — הגלימה נוגעת ב**שתיים**.
+ */
+function itemShapeAt(name: (typeof ARCADE_ITEMS)[number], layer: Layer): React.JSX.Element | null {
+  const item = ITEM_LAYERS[name];
+  if (item.layer === layer) return item.shape;
+  if (item.second !== undefined && item.second.layer === layer) return item.second.shape;
+  return null;
+}
 
 const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
   helmet: {
@@ -518,6 +536,26 @@ const ITEM_LAYERS: Record<(typeof ARCADE_ITEMS)[number], ItemLayer> = {
         <Paint hue="clothFold"><path d={ITEM_PATHS.capeFold} /></Paint>
       </>
     ),
+    /**
+     * 🧥 **⟦20/09 · `C-0745` · `F-307`⟧ החצי הקדמי — «מעל הרגליים», מילה במילה.**
+     * 🔬 **הפגם נמדד בצילום חי (393×852, `/dev/arcade`), ⛔ ולא שוער:** הגלימה
+     * פרושה `x ∈ [−66,66]` בעוד הגוף `±45` ⇒ **כל הפאנל המרכזי שלה מוסתר**
+     * מתחת לרגליים ולחגורה, והפרס שהלומד זכה בו נקרא כשתי כנפיים אדומות
+     * מנותקות ופס מתחת לחגורה. ⇒ החצי הקדמי הוא השוליים, ו⛔ לא הגלימה כולה:
+     * גלימה שלמה מלפנים הייתה **מוחקת את הדמות**.
+     * ⛔ **ו-`data-arena-part` ⛔ אינו חוזר כאן** — א4 (`37 § 11`) מפגרת צומת
+     * **אחד**, ושני צמתים באותו שם היו מריצים את אותה אנימציה פעמיים על אותו
+     * פריט ומפצלים את המדידה של `ArenaBattle.test.ts`.
+     */
+    second: {
+      layer: 'capeFront',
+      shape: (
+        <>
+          <Paint hue="cloth"><path d={ITEM_PATHS.capeHem} /></Paint>
+          <Paint hue="clothFold"><path d={ITEM_PATHS.capeFoldHem} /></Paint>
+        </>
+      ),
+    },
   },
   lantern: {
     layer: 'offHand',
@@ -1027,8 +1065,8 @@ export default function ArenaAvatar({
       {/* ⛔ **הסדר מגיע מ-`LAYER_ORDER`, ⛔ ולא מסדר הכתיבה בקובץ הזה.** זו ההפרדה
           כולה: `38 § 4` הוא **חוק**, ולכן הוא נבדק ביחידה ב-`characterBase.test.ts`
           ⛔ ולא נשמר בזכות זה שמישהו יזכור לא לגרור בלוק JSX למעלה.
-          ⛔ **שכבה ריקה ⛔ אינה מצוירת** — `<g>` ריק על אחת־עשרה שכבות בשתי דמויות
-          הוא 22 צמתים שאיש ⛔ אינו רואה. */}
+          ⛔ **שכבה ריקה ⛔ אינה מצוירת** — `<g>` ריק על שתים־עשרה שכבות בשתי דמויות
+          הוא 24 צמתים שאיש ⛔ אינו רואה. */}
       {LAYER_ORDER.map((layer) => {
         // 🧙 `C-0722` — דמות שהצללית שלה **מחליפה** את הגוף מדלגת על שכבות הבסיס
         //    שהיא מספקת בעצמה. ⛔ אף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`.
@@ -1038,7 +1076,7 @@ export default function ArenaAvatar({
           || (back && BACK_HIDDEN_LAYERS.includes(layer));
         // 🎭 `T-432` — שתי שכבות מוחלפות מגב; כל השאר הוא **אותו ציור**.
         const base = hidden ? undefined : (back ? BACK_LAYERS[layer] ?? BASE_LAYERS[layer] : BASE_LAYERS[layer]);
-        const equipped = worn.filter((name) => ITEM_LAYERS[name].layer === layer
+        const equipped = worn.filter((name) => itemShapeAt(name, layer) !== null
           && !(layer === 'boots' && character !== null && character !== undefined && NO_BOOTS.includes(character)));
         // 🎩 `C-0727` — פריט ראש **מחליף** את כיסוי הראש של הדמות, ⛔ ולא נערם עליו.
         const headgearTaken = layer === 'headgear' && worn.some((name) => HEADGEAR_ITEMS.includes(name));
@@ -1067,7 +1105,7 @@ export default function ArenaAvatar({
             {equipped.length > 0 && (
               <g data-arena-equipment>
                 {equipped.map((name) => (
-                  <g key={name}>{ITEM_LAYERS[name].shape}</g>
+                  <g key={name}>{itemShapeAt(name, layer)}</g>
                 ))}
               </g>
             )}

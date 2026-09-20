@@ -71,7 +71,7 @@ describe('<ArenaAvatar>', () => {
    * מ-`LAYER_ORDER` שב-`lib/core/characterBase.ts`, שנבדק שם ביחידה. הבדיקה כאן
    * מוודאת שהרכיב באמת **נגזר ממנו**, ⛔ ולא מחזיק עותק שני שיסטה.
    */
-  it('אחת־עשרה השכבות מגיעות מהמודול הטהור, ⛔ ולא מסדר הכתיבה כאן', () => {
+  it('שתים־עשרה השכבות מגיעות מהמודול הטהור, ⛔ ולא מסדר הכתיבה כאן', () => {
     expect(CODE).toMatch(/from '@\/lib\/core\/characterBase'/);
     expect(CODE).toMatch(/LAYER_ORDER\.map/);
     expect(CODE).toMatch(/data-arena-layer=\{layer\}/);
