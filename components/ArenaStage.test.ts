@@ -130,13 +130,20 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
 
   /** ⛔ **שלושת חיווי העומק, וכל אחד נבדק בנפרד** — שניים מהם לבד ⛔ אינם עומק. */
   it('שלושת חיווי העומק: סקאלה · גובה · צל', () => {
+    /* ↩️ **⟦20/09 · `C-0750`⟧ `STAGE_CODE` — מולבן, ⛔ ולא `STAGE` גולמי.**
+       ⚠️ **וזה הלקח שראש הקובץ הזה כבר כתוב עליו** (`F-039` · `F-065`), שהשורה
+       הזאת פשוט ⛔ לא קיימה: ספירת `data-arena-shadow` **גולמית** החזירה **3**
+       ברגע שהילת הרצף נוספה עם הערה שאומרת «בדפוס `[data-arena-shadow]` שורה
+       מעליו» ⇒ הקובץ האדים על **פרוזה**, בעוד מספר הצמתים ⛔ לא זז.
+       ⛔ **והטענה ⛔ לא נחלשה:** `<span data-arena-shadow>` שלישי אמיתי עדיין מאדים,
+       ושלושת חיווי העומק נמדדים על **הקוד**, שהוא מה שהדפדפן רואה. */
     // ① סקאלה — היריב מוקטן, ⛔ והגיבור לא.
-    expect(STAGE, 'היריב מוקטן').toMatch(/data-arena-depth="far"[^>]*scale-\[0\.\d+\]/);
+    expect(STAGE_CODE, 'היריב מוקטן').toMatch(/data-arena-depth="far"[^>]*scale-\[0\.\d+\]/);
     // ② גובה — היריב מעוגן למעלה, הגיבור למטה. ⛔ שניהם על אותו קו = ⛔ אין עומק.
-    expect(STAGE, 'היריב למעלה').toMatch(/data-arena-slot="enemy"[\s\S]{0,200}top-\[/);
-    expect(STAGE, 'הגיבור למטה').toMatch(/data-arena-slot="hero"[\s\S]{0,300}bottom-\[/);
+    expect(STAGE_CODE, 'היריב למעלה').toMatch(/data-arena-slot="enemy"[\s\S]{0,200}top-\[/);
+    expect(STAGE_CODE, 'הגיבור למטה').toMatch(/data-arena-slot="hero"[\s\S]{0,300}bottom-\[/);
     // ③ צל — לשתיהן. ⛔ בלי צל דמות **מרחפת** על רקע, ⛔ ואינה עומדת על רצפה.
-    expect((STAGE.match(/data-arena-shadow/g) ?? []).length, 'צל לשתי הדמויות').toBe(2);
+    expect((STAGE_CODE.match(/data-arena-shadow/g) ?? []).length, 'צל לשתי הדמויות').toBe(2);
     expect(TOKENS, 'והצל הוא אליפסה עם גרדיאנט').toMatch(
       /\[data-arena-shadow\]\s*\{[^}]*border-radius: 50%[^}]*radial-gradient/,
     );

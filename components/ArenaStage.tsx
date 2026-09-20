@@ -86,6 +86,20 @@ export interface ArenaStageProps {
    * חמש שניות, ו**רק מד** זז.
    */
   readonly telegraph?: 'quiet' | 'charging' | 'window' | 'committed';
+  /**
+   * 🔥 **⟦20/09 · `C-0750` · `37 § 8` ק1 · `D-271`⟧ הלומד ברצף — וזו **הכרה**,
+   * ⛔ ולא נזק.**
+   *
+   * ‏`D-271` מחק את «מכפיל 1.5» מק1 אחרי שנמדד ש**נזק ומילים הם אותו ציר,
+   * הפוך** — תגמול רצף בנזק חותך את הלמידה לחצי דווקא ללומד המדויק ביותר.
+   * ⇒ מה שנשאר משלושת הפריטים של ק1 הוא **הילה** ו**להב לוהט**, ושניהם
+   * ⛔ אינם נוגעים ב-`cast()`.
+   *
+   * ⛔ **הסף ⛔ אינו נכתב כאן:** `STREAK_HOT` חי ב-`lib/core/battle.ts` ומצטט
+   * את `render_video_B.py:374`, והרכיב שמעל הוא שמחשב אותו — בדיוק כמו
+   * שבב הרצף, שכבר משתמש באותו מספר.
+   */
+  readonly hot?: boolean;
 }
 
 /**
@@ -121,6 +135,7 @@ export default function ArenaStage({
   aim = null,
   guard = null,
   telegraph = 'quiet',
+  hot = false,
 }: ArenaStageProps): React.JSX.Element {
   return (
     <div data-arena-stage data-arena-phase={phase} data-arena-telegraph={telegraph} className={STAGE_CLASS}>
@@ -204,9 +219,24 @@ export default function ArenaStage({
       <div
         data-arena-slot="hero"
         data-arena-lane={LANE_NAMES[lane ?? CENTRE]}
+        /* 🔥 `C-0750` — הסימון יושב על ה**חריץ**, ⛔ ולא על הדמות: ההילה והלהב
+           נעים בין נתיבים **איתה**, בדיוק כמו הצל שורה מתחת. */
+        data-arena-hot={hot ? 'on' : 'off'}
         className="absolute inset-x-0 bottom-[2%] flex h-[42%] flex-col items-center justify-end"
       >
         <span data-arena-shadow aria-hidden className="absolute bottom-0 h-[8%] w-[26%]" />
+        {/* 🔥 **⟦20/09 · `C-0750` · `37 § 8` ק1⟧ ההילה — `opacity` בלבד.**
+            ⛔ **⛔ ולא `filter: drop-shadow`:** `COMPOSITOR_ONLY` ב-`check-motion.mjs`
+            ⛔ אינו מכיל `filter`, ו-`motion-baseline.md` מחזיק **אפס** שורות ⇒ הפרה
+            חדשה **מפילה בנייה**. ⇒ זוהר אמיתי על צומת אמיתי, בדפוס `[data-arena-shadow]`
+            שורה מעליו: שיפוע רדיאלי שדוהה ל-`transparent`, ו-`opacity` פועם.
+            ⛔ **ואחרי הצל ולפני הדמות** — הוא **מאחוריה**, ⛔ ולא עליה: הילה שמכסה
+            את הגוף מוחקת בדיוק את מי שהיא מציינת.
+            🔬 **והרוחב נגזר מהנתיב, ⛔ ולא נבחר:** רוחב נתיב בחזית הרצפה הוא **שליש**
+            מרוחב הבמה (`ArenaScene`), ⇒ `34%` יושב בתוכו. ⛔ נמדד בצילום חי ש-`62%`
+            **גלש לשני הנתיבים השכנים** ונקרא כזרקור על הרצפה — כלומר התחרה בסימן
+            הנתיב ובהגנה, שהם ה**מידע** שהרצפה נושאת. */}
+        <span data-arena-halo aria-hidden className="pointer-events-none absolute bottom-[2%] h-[46%] w-[34%]" />
         <span data-arena-idle={idle ? 'on' : 'off'} className="relative inline-flex">
           {/* 🎭 **⟦19/09 · `C-0731` · `T-432` · `38 § 1א` · `D-269` ②⟧ בקרב — מגב.**
               ⛔ **והחריג הוא כאן, ⛔ ולא ב-`ArenaAvatar`:** ברירת המחדל של הדמות

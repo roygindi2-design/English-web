@@ -761,6 +761,53 @@ body:has([data-arena-scope]) > div > main {
   opacity: 0.55;
 }
 
+/* ═══ 🔥 ⟦20/09 · `C-0750` · `37 § 8` ק1 · `D-271`⟧ **הרצף משלם בהכרה.**
+
+   ‏`D-271` מחק את «מכפיל 1.5» מק1 אחרי שנמדד ש**נזק ומילים הם אותו ציר, הפוך**
+   (‏`ceil(ENEMY_HP / hitDamage)` — החישוב של `wordsFromBoss` עצמו) ⇒ תגמול רצף
+   ב**נזק** חותך את הלמידה לחצי **דווקא ללומד המדויק ביותר**. ⇒ שני הפריטים
+   שנשארו בק1 הם **הילה** ו**להב לוהט**, ו⛔ אף אחד מהם ⛔ אינו נוגע ב-`cast()`.
+
+   ⛔ **ו⛔ אין כאן טוקן צבע חדש** (`38 § 5`): `--arena-fig-core` ו-`--arena-fig-core-lit`
+   הם **הליבה הבוערת של הגולם**, שכבר מוצהרים ונמדדו — `6.82:1` ו-`10.01:1`.
+   ⇒ «לוהט» במוצר הזה כבר **יש לו גוון**, ⛔ ואין להמציא לו שני. */
+
+/* ⓐ **ההילה — `opacity` בלבד, ⛔ ולא `filter`.**
+   ⛔ `COMPOSITOR_ONLY` ב-`scripts/check-motion.mjs` ⛔ אינו מכיל `filter`, ו-
+   `scripts/motion-baseline.md` מחזיק **אפס** שורות ⇒ הפרה חדשה **מפילה בנייה**.
+   ⇒ הזוהר הוא **צומת אמיתי** בדפוס `[data-arena-shadow]`: שיפוע רדיאלי שדוהה
+   ל-`transparent`, ו-`opacity` שפועם.
+   🔴 **והמחזור ⛔ אינו כפולה של אף אחד מהאחרים** — 2,200ms מול 2,600 / 3,100 /
+   3,400 ⇒ הוא **נסחף** מהנשימה ומהנדנוד, ⛔ ואינו נקרא כמטרונום משותף. */
+@keyframes arena-halo {
+  0%, 100% { opacity: 0.30; }
+  50% { opacity: 0.62; }
+}
+[data-arena-scope] [data-arena-halo] {
+  /* 🔴 **צורה מוצהרת** — `scripts/radius-hygiene.test.ts` · `DECLARED_SHAPES`.
+     ⛔ אליפסה, ⛔ ולא גלולה: ההילה שוכבת סביב הדמות על אותה **רצפה נסוגה**
+     שהצל והמעגל שוכבים עליה (`37 § 13.5`), ⇒ `rounded-full` על קופסה לא-ריבועית
+     היה נותן **סטדיון עם שתי צלעות ישרות** — צורה שעומדת על מישור המסך. */
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--arena-fig-core-lit) 0%, transparent 100%);
+  /* ⛔ **ברירת המחדל היא ⛔ אינה נראית** — ⇒ אין רצף, אין הילה, ⛔ ואין צומת
+     שמרצד רגע אחד בין שתי הטלות. */
+  opacity: 0;
+}
+[data-arena-scope] [data-arena-slot='hero'][data-arena-hot='on'] [data-arena-halo] {
+  animation: arena-halo 2200ms ease-in-out infinite;
+}
+
+/* ⓑ **הלהב לוהט — הצבה על משתנה קיים, ⛔ ולא כלל צבע חדש על הצומת.**
+   🔬 `components/ArenaAvatar.tsx` מצייר את הנשק ב-`text-[color:var(--arena-fig-blade,currentColor)]`
+   ⇒ **הווריאבל הוא הווו שכבר קיים**, וההצבה כאן ⛔ אינה נוגעת ולו במחלקה אחת
+   ברכיב ו⛔ אינה מוסיפה סלקטור על `[data-arena-part]` (ערוץ תפוס).
+   ⛔ **והחלפה, ⛔ ולא אנימציה:** `color` ⛔ אינו ב-`COMPOSITOR_ONLY`, ⇒ מעבר או
+   קיפריים עליו היו הפרה. הלהב **נדלק** ברצף השלישי, וזה גם מה שהוא אמור לעשות. */
+[data-arena-scope] [data-arena-slot='hero'][data-arena-hot='on'] {
+  --arena-fig-blade: var(--arena-fig-core);
+}
+
 /* מעגל הזימון — שלוש טבעות, ⛔ ולא מילוי: טבעות הן מה שקורא כ«מעגל מצויר על הקרקע».
    ⛔ 50% כאן הוא **צורה מוצהרת** (`C-0624`), ⛔ ולא רדיוס שישי — ראה הצל למעלה. */
 [data-arena-scope] [data-arena-sigil] {
@@ -1349,4 +1396,23 @@ body:has([data-arena-scope]) > div > main {
    והצומת היה נשאר על המסך לנצח — אותה מדידה בדיוק שנרשמה על `[data-arena-throw]`. */
 @media (prefers-reduced-motion: reduce) {
   [data-arena-teach] { display: none; }
+}
+
+/* 🔥 **⟦20/09 · `C-0750` · `37 § 8` ק1⟧ ההילה בתנועה מופחתת — **קצה קפוא**,
+   ⛔ ולא `animation: none` ו⛔ לא `display: none`.**
+
+   🔬 **הכלל נגזר מ-`app/globals.css`**, שמאפס כל משך ל-`0.01ms`: צומת FX
+   שמשוחרר ב-`onAnimationEnd` ⇒ `display: none` · לולאה **מקשטת** ⇒
+   `animation: none` · אבל צומת שנושא **מידע** ⇒ **קצה קפוא**, כי הוא חייב
+   להישאר **נראה**.
+   ⇒ ההילה היא **הכרה** — היא אומרת ללומד «אתה ברצף». ‏`animation: none` לבדה
+   הייתה משאירה אותו על `opacity: 0` מברירת המחדל, כלומר **מוחקת** דווקא
+   ללומד שביקש פחות תנועה את המשוב שק1 קיימת בשבילו.
+   ⛔ **והערך הוא אמצע המחזור** (`0.46`), ⛔ ולא השיא: הקצה הקפוא ⛔ אינו אמור
+   לקרוא כ«רגע הבהוב שנתקע». */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-slot='hero'][data-arena-hot='on'] [data-arena-halo] {
+    animation: none;
+    opacity: 0.46;
+  }
 }

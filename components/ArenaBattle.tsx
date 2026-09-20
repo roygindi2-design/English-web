@@ -1649,6 +1649,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           aim={aimed ? aimLaneAt(battle, aimSwing) : null}
           guard={battle.guardLane}
           telegraph={telegraphPhase}
+          /* 🔥 `C-0750` · `37 § 8` ק1 — **אותו `streak` ואותו `STREAK_HOT` בדיוק
+             ששבב הרצף כבר משתמש בהם**, ⛔ ולא ספירה שנייה שיכולה לסטות ממנה. */
+          hot={streak >= STREAK_HOT}
         />
 
         {/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ③⟧ מסלול הנגישות של ההצבה.**

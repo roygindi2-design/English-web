@@ -258,6 +258,46 @@ describe('T-401 — שבב הרצף מופיע באמצע הקרב ומתאפס 
     castHe('מסיח 2א');
     await waitFor(() => expect(chip()).toBeNull());
   });
+
+  /**
+   * 🔥 **⟦20/09 · `C-0750` · `37 § 8` ק1 · `D-271`⟧ הרצף מגיע אל ה**דמות**.**
+   *
+   * ‏`D-271` מחק את «מכפיל 1.5» אחרי שנמדד ש**נזק ומילים הם אותו ציר, הפוך**
+   * ⇒ מה שנשאר מק1 הוא **הכרה**: הילה ולהב לוהט.
+   * ⛔ **והסף ⛔ אינו נספר פעמיים:** אותו `streak >= STREAK_HOT` שהשבב כבר
+   * משתמש בו הוא מה שמגיע לבמה, ⇒ שבב זהוב ודמות קרה ⛔ אינם מצב אפשרי.
+   */
+  const heroHot = (): string | null =>
+    document.querySelector('[data-arena-slot="hero"]')?.getAttribute('data-arena-hot') ?? null;
+
+  it('שלוש נכונות ברצף ⇒ הגיבור **לוהט**, ⛔ ולא רק השבב', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    expect(heroHot(), 'בפתיחה').toBe('off');
+    castHe('אפשרות 1');
+    castHe('אפשרות 2');
+    await waitFor(() => expect(heroHot(), '⛔ ולא ב-2').toBe('off'));
+    castHe('אפשרות 3');
+    await waitFor(() => expect(heroHot(), 'בדיוק ב-3').toBe('on'));
+  });
+
+  it('הטלה שגויה מכבה את הדמות, בדיוק כמו את השבב', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    castHe('אפשרות 1');
+    castHe('אפשרות 2');
+    castHe('אפשרות 3');
+    await waitFor(() => expect(heroHot()).toBe('on'));
+    castHe('מסיח 4א');
+    await waitFor(() => expect(heroHot()).toBe('off'));
+  });
+
+  it('⛔ השבב והדמות ⛔ אינם יכולים להיפרד — סף אחד, ⛔ ולא שניים', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    castHe('אפשרות 1');
+    castHe('אפשרות 2');
+    castHe('אפשרות 3');
+    await waitFor(() => expect(heroHot()).toBe('on'));
+    expect(chip()?.getAttribute('data-arena-streak-hot')).toBe('on');
+  });
 });
 
 /**

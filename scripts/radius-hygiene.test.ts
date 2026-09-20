@@ -92,6 +92,15 @@ const DECLARED_SHAPES: readonly {
   },
   {
     file: 'app/arcade/arcade-tokens.css',
+    selector: '[data-arena-scope] [data-arena-halo]',
+    value: '50%',
+    rule: 'C-0750 · 37 § 8 ק1 · 37 § 13.5 — the streak halo: it lies around the figure '
+      + 'on the SAME receding floor as the shadow and the summoning circle, so it is an '
+      + 'ellipse for the identical reason. A pill (9999px) is a stadium with two straight '
+      + 'edges, which reads as a shape standing UP on the screen plane.',
+  },
+  {
+    file: 'app/arcade/arcade-tokens.css',
     selector: '[data-arena-scope] [data-arena-aim]',
     value: '50%',
     rule: 'C-0732 · T-434 · 37 § 13.5 — the aim marker: the THIRD ellipse on that same '

@@ -1083,3 +1083,63 @@ describe('T-403 — יד הרפאים: המחווה נראית בקרב הראש
     expect(chip()).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 });
+
+/**
+ * 🔥 **⟦20/09 · `C-0750` · `37 § 8` ק1 · `D-271`⟧ הרצף משלם ב**הכרה**.**
+ *
+ * ‏`D-271` מחק את «מכפיל 1.5» מק1 אחרי שנמדד ש**נזק ומילים הם אותו ציר, הפוך**:
+ * `ceil(ENEMY_HP / hitDamage)` — החישוב של `wordsFromBoss` עצמו — הוא מספר המילים
+ * שהלומד **פוגש**, ⇒ תגמול רצף ב**נזק** חותך את הלמידה לחצי **דווקא ללומד המדויק
+ * ביותר**. ⇒ שני הפריטים שנשארו הם **הילה** ו**להב לוהט**.
+ */
+describe('C-0750 · `§ 8` ק1 — ההכרה על הרצף, ⛔ ולא נזק', () => {
+  it('⛔ אפס נגיעה במכניקה — `cast` ⛔ אינו יודע מהו רצף', () => {
+    const battle = readFileSync('lib/core/battle.ts', 'utf8');
+    // ⛔ **גדר 1 של `§ 7`, ובשמה:** ארבעה מפתחות ל-`CharacterBattleStats`, ⇒ שדה
+    //    רצף בטבלת ההטיה היה מוסיף חמישי ומפיל את הסריקה במקור.
+    expect(withoutComments(battle)).not.toMatch(/stats\.streak/);
+    // ⛔ ו«מכפיל 1.5» ⛔ אינו קיים עוד במפרט — `D-271` מחק אותו, ⛔ ולא דחה.
+    const spec = readFileSync('plan/37-arena-spec.md', 'utf8');
+    const row = (spec.match(/^\| ק1 \|.*$/m) ?? [''])[0];
+    expect(row, 'שורת ק1 חייבת להיות בטבלה').toContain('ק1');
+    expect(row, '«מכפיל 1.5» נמחק מהשורה עצמה').not.toContain('מכפיל 1.5');
+  });
+
+  it('⛔ ההילה היא `opacity`, ⛔ ולא `filter` — `COMPOSITOR_ONLY` ⛔ אינו מכיל אותו', () => {
+    const halo = CSS.slice(CSS.indexOf('@keyframes arena-halo'));
+    expect(CSS, 'הקיפריימים קיימים').toContain('@keyframes arena-halo');
+    const frames = halo.slice(0, halo.indexOf('}\n['));
+    expect(frames, '⛔ אך ורק `opacity` בקיפריימים').not.toMatch(/\b(filter|box-shadow|background|color)\s*:/);
+    expect(frames).toMatch(/opacity:/);
+    // ⛔ ו⛔ אין `filter` בקובץ הטוקנים כולו — השער היה נופל, וזו הסיבה שזה כתוב כאן.
+    expect(CSS_CODE, '⛔ אין `filter` בזירה').not.toMatch(/(^|[;{\s])filter\s*:/);
+  });
+
+  /**
+   * 🔴 **`globals.css` מאפס כל משך ל-`0.01ms`** ⇒ הכלל: FX שמשוחרר ב-`onAnimationEnd`
+   * ⇒ `display: none` · לולאה **מקשטת** ⇒ `animation: none` · צומת שנושא **מידע**
+   * ⇒ **קצה קפוא**. ההילה אומרת «אתה ברצף» ⇒ היא מידע, ⇒ היא חייבת להישאר **נראית**.
+   * ⛔ `animation: none` לבדה הייתה משאירה אותה על `opacity: 0` של ברירת המחדל —
+   * כלומר **מוחקת** דווקא ללומד שביקש פחות תנועה את המשוב שק1 קיימת בשבילו.
+   */
+  it('בתנועה מופחתת ההילה **נראית** — קצה קפוא, ⛔ ולא נמחקת', () => {
+    const blocks = [...CSS.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '');
+    const halo = blocks.find((b) => b.includes('data-arena-halo'));
+    expect(halo, 'להילה חייב להיות כלל בתנועה מופחתת').toBeTruthy();
+    expect(halo as string, '⛔ ⛔ ולא נעלמת').not.toMatch(/display:\s*none/);
+    expect(halo as string, 'האנימציה נכבית').toMatch(/animation:\s*none/);
+    const frozen = (halo as string).match(/opacity:\s*(0?\.\d+|[1-9]\d*)/);
+    expect(frozen, '⛔ `animation: none` לבדה משאירה אותה על `opacity: 0`').not.toBeNull();
+    expect(Number((frozen as RegExpMatchArray)[1])).toBeGreaterThan(0);
+  });
+
+  it('הלהב הלוהט הוא הצבה על משתנה קיים, ⛔ ולא כלל צבע על `[data-arena-part]`', () => {
+    // 🔬 `ArenaAvatar` מצייר את הנשק ב-`var(--arena-fig-blade, currentColor)` ⇒ הווריאבל
+    //    הוא הווו שכבר קיים. ⛔ סלקטור חדש על `[data-arena-part]` היה נכנס לערוץ תפוס.
+    expect(AVATAR).toContain('--arena-fig-blade');
+    expect(CSS_CODE).toMatch(
+      /\[data-arena-slot='hero'\]\[data-arena-hot='on'\]\s*\{[^}]*--arena-fig-blade:/,
+    );
+  });
+});
