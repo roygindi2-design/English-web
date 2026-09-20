@@ -1373,7 +1373,17 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           setPose('idle');
         }}
         onAnimationEnd={(e) => {
-          if (e.animationName.startsWith('arena-hitstop')) setImpact('off');
+          if (e.animationName.startsWith('arena-hitstop')) {
+            setImpact('off');
+            /* 🎭 **⟦20/09 · `C-0748` · `F-306`ⓐ⟧ מסלול שחרור שני לתנוחה — ⛔ ולא כפילות.**
+               🔬 **נמדד חי:** ברגע שהקיפאון באמת מקפיא את המעבר (`transition: none`
+               מנצח מ-`C-0748`), `transitionend` של `transform` ⛔ **אינו נורה כלל**
+               ⇒ `onTransitionEnd` למטה ⛔ אינו יכול לשחרר, ו-`F-305` היה נפתח מחדש.
+               ⇒ **הפגיעה** משתחררת על השעון, וה**התחמקות** — שבה ⛔ אין קיפאון —
+               ממשיכה להשתחרר על המעבר. ⛔ שני מסלולים לשני מצבים, ⛔ ולא שניים
+               לאותו מצב. ⛔ **ואפס `setTimeout` חדש** — זה אותו `animationend`. */
+            setPose('idle');
+          }
           // ⟦15/09⟧ הרעד משוחרר באותו מנגנון בדיוק — ⛔ אין כאן `setTimeout` חדש.
           if (e.animationName === 'arena-crit-shake') setCrit('off');
           // 🩸 `T-440` — הרתיעה משתחררת באותו מנגנון בדיוק. ⛔ אפס שעון.

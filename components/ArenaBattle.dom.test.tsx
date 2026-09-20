@@ -770,6 +770,31 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     fireEvent.pointerDown(node, { clientX: 10, clientY: 10, pointerId: 3 });
     fireEvent.pointerUp(node, { clientX: 10, clientY: 10, pointerId: 3 });
   };
+  /**
+   * ⛔ **שני חורים של jsdom, ושניהם נמדדו בטיק הזה — ⛔ ולא שוערו.**
+   *
+   * ⓐ **⛔ אין `AnimationEvent`**: `typeof AnimationEvent === 'undefined'` ⇒
+   * `fireEvent.animationEnd(node, { animationName })` בונה `Event` גנרי שבו
+   * `animationName` ⛔ **אינו קיים**, והמאזין ברכיב — שקורא
+   * `e.animationName.startsWith(...)` — **זורק** במקום למדוד.
+   *
+   * 🔴 ⓑ **ובגלל ⓐ, React ⛔ אינו מאזין לשם התקני.** ‏`getVendorPrefixedEventName`
+   * בודק `'AnimationEvent' in window`, ומשאין — ממפה את `onAnimationEnd` אל
+   * **`webkitAnimationEnd`**. 🔬 נמדד בגישוש ישיר: שיגור `animationend` הפעיל את
+   * המאזין **0** פעמים, ושיגור `webkitAnimationEnd` — **1**.
+   * ⚠️ **וזו בדיוק המחלקה של בדיקה שנשארת ירוקה על כלום:** טענה **שלילית**
+   * ⟨«אנימציה אחרת ⛔ אינה משחררת»⟩ עוברת באופן מושלם גם כשהאירוע ⛔ לעולם ⛔ אינו
+   * מגיע לרכיב. ⇒ **שני השמות משוגרים**, ⛔ ולא אחד: זה שאינו מאזין הוא בטל.
+   */
+  const endAnimation = (animationName: string): void => {
+    const area = document.querySelector('[data-arena-stage-area]') as Element;
+    for (const type of ['animationend', 'webkitAnimationEnd']) {
+      const event = new Event(type, { bubbles: true });
+      Object.defineProperty(event, 'animationName', { value: animationName });
+      fireEvent(area, event);
+    }
+  };
+
   const cardHe = (he: string): Element => {
     const hit = [...document.querySelectorAll('[data-arena-card]')]
       .find((n) => (n.textContent ?? '').includes(he));
@@ -787,6 +812,38 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     //    מה שמשחרר. ⛔ אפס שעון, ⛔ אפס שדה חדש בליבה.
     fireEvent.transitionEnd(figure(), { propertyName: 'transform' });
     await waitFor(() => { expect(phase(), 'התנוחה חוזרת').toBe('idle'); });
+  });
+
+  /**
+   * 🎭 **⟦20/09 · `C-0748` · `F-306`ⓐ⟧ המסלול השני — ו⛔ הוא ⛔ אינו כפילות.**
+   *
+   * 🔬 **נמדד בדפדפן חי, ⛔ ולא הוסק:** ברגע ש-`transition: none` של הקיפאון באמת
+   * מנצח, `getComputedStyle(figure).transitionDuration` הוא **`0s`**
+   * ו-`transitionend` של `transform` ⛔ **אינו נורה כלל**. ⇒ המסלול היחיד שהיה
+   * לתנוחה ⛔ לא היה מגיע, ו-`F-305` — «הטלה אחת והיריב עומד מוטה עד סוף הקרב» —
+   * היה **נפתח מחדש בדיוק על ידי התיקון**.
+   *
+   * ⇒ **הפגיעה** משתחררת על שעון הקיפאון; ה**התחמקות**, שבה ⛔ אין קיפאון, ממשיכה
+   * להשתחרר על המעבר. ⛔ שני מסלולים לשני מצבים, ⛔ ולא שניים לאותו מצב.
+   */
+  it('התנוחה חוזרת על שעון הקיפאון, ⛔ בלי ולו `transitionend` אחד', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(phase()).not.toBe('idle'); });
+    endAnimation('arena-hitstop-a');
+    await waitFor(() => { expect(phase(), 'התנוחה חוזרת על השעון').toBe('idle'); });
+  });
+
+  it('⛔ אנימציה אחרת שמבעבעת לאזור הבמה ⛔ אינה מאפסת את התנוחה', async () => {
+    // 🔬 אזור הבמה מקבל `animationend` של הרעד, הרתיעה והגלגול. שחרור בלי גדר
+    //    השם היה חותך את המכה באמצע על כל אחד מהם.
+    render(<ArenaBattle initialRound={ROUND} />);
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(phase()).not.toBe('idle'); });
+    endAnimation('arena-crit-shake');
+    expect(phase(), 'עדיין באמצע המכה').not.toBe('idle');
   });
 
   it('⛔ מעבר של צומת **אחר** ⛔ אינו מאפס את התנוחה באמצע המכה', async () => {

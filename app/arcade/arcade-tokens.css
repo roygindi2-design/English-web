@@ -381,8 +381,24 @@ body:has([data-arena-scope]) > div > main {
 [data-arena-stage-area][data-arena-impact='b'] [data-arena-idle='on'] {
   animation-play-state: paused;
 }
-[data-arena-stage-area][data-arena-impact='a'] [data-arena-figure],
-[data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] {
+/* 🔴 **⟦20/09 · `C-0748` · `F-306`ⓐ⟧ `[data-arena-scope]` — ⛔ ולא קישוט, וזה נמדד.**
+
+   🔬 **הכלל הזה היה **קוד מת** מרגע שנכתב.** הוא `(0,3,0)`, ו-`[data-arena-scope]
+   [data-arena-stage] [data-arena-figure] { transition: transform 200ms, rotate 200ms }`
+   הוא **אותה ספציפיות בדיוק** ו**מאוחר יותר בקובץ** ⇒ ניצח. נמדד חי
+   (‏`getComputedStyle(figure).transitionDuration` תחת `data-arena-impact='a'`
+   החזיר **`0.2s, 0.2s`**) ⇒ **הקיפאון ⛔ מעולם ⛔ לא הקפיא את מעבר התנוחה**, שזה
+   בדיוק מה שא1 קיימת כדי לעשות.
+   ⇒ ‏`[data-arena-scope]` מעלה ל-`(0,4,0)` ⇒ **מנצח ללא תלות בסדר הכתיבה** —
+   אותו תיקון בדיוק שכבר רשום בקובץ הזה עבור `[data-arena-part]`.
+
+   🔴 **⛔ והוא ⛔ אינו נשלח לבדו, כי המדידה הראתה מה הוא שובר:** עם הכלל חי,
+   ‏`transitionend` של `transform` ⛔ **לא נורה כלל** (נמדד: `0s`) ⇒ `setPose('idle')`,
+   שתלוי בו, ⛔ לעולם ⛔ לא נקרא ו-**`F-305` נפתח מחדש** — התנוחה נתקעת עד סוף הקרב.
+   ⇒ הרכיב משחרר את התנוחה **גם** על שעון הקיפאון, ⛔ ואינו תלוי עוד במעבר שהכלל
+   הזה מבטל בכוונה. */
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='a'] [data-arena-figure],
+[data-arena-scope] [data-arena-stage-area][data-arena-impact='b'] [data-arena-figure] {
   transition: none;
 }
 
