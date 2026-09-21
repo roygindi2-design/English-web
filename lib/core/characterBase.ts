@@ -414,10 +414,32 @@ const wandererFoot = (side: 1 | -1): string =>
  * ⛔ **ו⛔ אין כאן עוגן חדש** (`38 § 3`): `ANCHORS` ⛔ לא זז, ו-`CharacterSlot`
  * ⛔ לא קיבל שם שביעי. אלה **מרכזי סיבוב של צורות הנווד**, ⛔ ולא משבצות.
  */
+/**
+ * 🔵 **⟦21/09 · `C-0757`⟧ כיפת המפרק — ⛔ קישוט, ⛔ ולא: **בלעדיה המפרק נפער.**
+ *
+ * 🔬 **נמדד על הזירה החיה, ⛔ ולא שוער:** השוק מסתובב סביב **אמצע** הצלע שהוא
+ * חולק עם הירך ⇒ בזווית `70°` **פינות הצלע יוצאות מהמלבן של הירך** ונפער טריז
+ * של עד `shinHalf · sin(70°)` ≈ **7.5 יחידות** ⇒ הרגל נראתה **מנותקת**.
+ * ⇒ עיגול ברדיוס **חצי רוחב האיבר**, במרכז המפרק, מכסה בדיוק את כל טווח
+ * הסיבוב — ⛔ ולכן זו **גזירה**, ⛔ ולא מספר שנבחר.
+ */
+const halfEdge = (a: readonly [number, number], b: readonly [number, number]): number =>
+  Math.hypot(a[0] - b[0], a[1] - b[1]) / 2;
+
 const armPivotX = (WANDERER.armPts[0][0] + WANDERER.armPts[1][0]) / 2;
 const armPivotY = (WANDERER.armPts[0][1] + WANDERER.armPts[1][1]) / 2;
 
 const origin = (x: number, y: number): string => `${x}px ${y}px`;
+
+/** רדיוסי הכיפות — **חצי רוחב האיבר במפרק**, ⛔ ולא ערך שנבחר. */
+export const WANDERER_CAPS = Object.freeze({
+  knee: WANDERER.shinHalf,
+  arm: halfEdge(WANDERER.armPts[0], WANDERER.armPts[1]),
+  kneeX: WANDERER.kneeX,
+  kneeY: WANDERER.kneeY,
+  armX: armPivotX,
+  armY: armPivotY,
+});
 
 export const WANDERER_JOINTS = Object.freeze({
   /* 🦵 הברך — **נקודת הפיצול עצמה**, ⇒ הירך והשוק נפגשים בה בדיוק. */

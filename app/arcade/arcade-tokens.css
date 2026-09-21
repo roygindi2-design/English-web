@@ -1753,3 +1753,191 @@ body:has([data-arena-scope]) > div > main {
 [data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-landdust] {
   animation: arena-strike-dust var(--arena-strike-ms) linear 1;
 }
+
+/* 🦴 **⟦21/09 · `C-0757` · `T-444`ⓓ⟧ השלד זז — **ברך · גו · זרוע**, על שעון הבעיטה.
+
+   🔴 **⛔ ערוץ חמישי חדש, ⛔ ולא שישי:** הכול רוכב על `data-arena-strike` שכבר
+   קיים ⇒ ⛔ אפס מצב חדש ב-`ArenaBattle`, ⛔ אפס `setTimeout`, ו**הסנכרון מובטח
+   במבנה** ⛔ ולא בשני שעונים שצריך להאמין שהם שווים.
+
+   🔴 **והבידוד הוא הבורר, ⛔ ולא כוונה:** `[data-arena-rig='jointed']` יושב על
+   ה-`<svg>` של הנווד **בלבד** ⇒ שש הדמויות הקיימות ⛔ **אינן רואות את הכללים
+   האלה כלל**, ⛔ ולא «רואות אותן ונשארות במקרה ב-0°».
+
+   ⛔ **`rotate` ⛔ ולא `transform`, וזה נאכף בשלושה מקומות:** `COMPOSITOR_ONLY`
+   ‏(`check-motion.mjs:65`) · הבדיקה שאוסרת תכונת `transform` על שכבה · והבדיקה
+   שאוסרת אותה על מפרק. ⇒ ⛔ אפס הפרה חדשה, ⛔ ו-`motion-baseline.md` ⛔ לא נגע.
+
+   🔬 **ומרכז הסיבוב נמדד בדפדפן, ⛔ ולא הוסק:** ב-SVG עם `transform-box: view-box`
+   הערך ב-`transform-origin` הוא ב**קואורדינטות המשתמש**, ⛔ ולא היסט מפינת
+   ה-`viewBox`. ⇒ `32px 80px` מסובב **סביב הברך עצמה** — נמדד עם `getBoundingClientRect`
+   על שני מועמדים, ⛔ ורק אחד מהם צדק.
+
+   ⛔ **ו-`'a'⇄'b'` ⛔ אינו כפילות** — אותו נימוק בדיוק של `arena-strike`:
+   שם אנימציה **זהה** ⛔ אינו מפעיל מחדש ⇒ שתי תשובות נכונות רצופות היו
+   משאירות את הברך פרושה. */
+
+/* 🦵 **הברך — קיפול, ואז **שוט**.** 🔬 השיא של `arena-strike` הוא `37.7%`
+   ⟨‏92°, הגוף מקביל לרצפה⟩, ⇒ הברך **מתקפלת** עד `25.3%` ⟨78°⟩ ו**נפרשת ל-4°
+   בדיוק בשיא** — זה מה שהופך «גוף שמסתובב» ל**בעיטה**. ⛔ בלי הקיפול שלפניה
+   הפרישה ⛔ אינה נקראת, כי ⛔ אין ממה להיפרש.
+   🔴 **והכיוון ⛔ אינו טעם:** הגוף מסתובב `+92°` ⇒ הראש נוסע **ימינה**, הרגליים
+   נגררות **שמאלה**, ו**עקב אל הישבן** הוא סיבוב **חיובי** של השוק. */
+@keyframes arena-rig-knee-a {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: 18deg; }
+  18.8% { rotate: 62deg; }
+  25.3% { rotate: 78deg; }
+  31.9% { rotate: 70deg; }
+  37.7% { rotate: 4deg; }
+  43.6% { rotate: 30deg; }
+  50%   { rotate: 52deg; }
+  53.2% { rotate: 26deg; }
+  59.6% { rotate: 34deg; }
+  74.5% { rotate: 12deg; }
+  85.1% { rotate: -3deg; }
+  93.6% { rotate: 2deg; }
+  100%  { rotate: 0deg; }
+}
+@keyframes arena-rig-knee-b {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: 18deg; }
+  18.8% { rotate: 62deg; }
+  25.3% { rotate: 78deg; }
+  31.9% { rotate: 70deg; }
+  37.7% { rotate: 4deg; }
+  43.6% { rotate: 30deg; }
+  50%   { rotate: 52deg; }
+  53.2% { rotate: 26deg; }
+  59.6% { rotate: 34deg; }
+  74.5% { rotate: 12deg; }
+  85.1% { rotate: -3deg; }
+  93.6% { rotate: 2deg; }
+  100%  { rotate: 0deg; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='knee'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='knee'] {
+  animation: arena-rig-knee-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='knee'] {
+  animation-name: arena-rig-knee-b;
+}
+
+/* 🌀 **פיתול הגו — **שש שכבות אחיות, מרכז אחד**.**
+   🔴 **וזה שקול מתמטית לסיבוב של קבוצה, ⇒ ⛔ אפס שינוי מבני:** הגו מתפרש על
+   שכבות ש⛔ אי אפשר לעטוף ⟨`LAYER_ORDER` הוא חוק⟩, אבל סיבוב **זהה** של כולן
+   סביב **אותו** `transform-origin` נותן בדיוק את אותה תוצאה.
+   ⛔ **ו-`legs` ⛔ אינה ברשימה** — האגן נשאר, וזה מה שהופך את זה ל**פיתול**
+   ⛔ ולא להטיה של כל הדמות.
+   🔬 **המרכז מגיע מ-`--arena-rig-torso`** שהרכיב מוטבע מהמודול הטהור ⇒ המספר
+   ⛔ אינו חי בגיליון, ו⛔ אינו יכול לסטות מהצורה. */
+@keyframes arena-rig-torso-a {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: -6deg; }
+  18.8% { rotate: 9deg; }
+  25.3% { rotate: 14deg; }
+  31.9% { rotate: 16deg; }
+  37.7% { rotate: 18deg; }
+  43.6% { rotate: 10deg; }
+  50%   { rotate: -4deg; }
+  53.2% { rotate: -9deg; }
+  59.6% { rotate: -6deg; }
+  74.5% { rotate: 3deg; }
+  85.1% { rotate: -2deg; }
+  93.6% { rotate: 1deg; }
+  100%  { rotate: 0deg; }
+}
+@keyframes arena-rig-torso-b {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: -6deg; }
+  18.8% { rotate: 9deg; }
+  25.3% { rotate: 14deg; }
+  31.9% { rotate: 16deg; }
+  37.7% { rotate: 18deg; }
+  43.6% { rotate: 10deg; }
+  50%   { rotate: -4deg; }
+  53.2% { rotate: -9deg; }
+  59.6% { rotate: -6deg; }
+  74.5% { rotate: 3deg; }
+  85.1% { rotate: -2deg; }
+  93.6% { rotate: 1deg; }
+  100%  { rotate: 0deg; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='body'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='chest'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='belt'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='head'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='headgear'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='shoulders'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='mainHand'],
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='offHand'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='body'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='chest'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='belt'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='head'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='headgear'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='shoulders'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='mainHand'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='offHand'] {
+  transform-origin: var(--arena-rig-torso);
+  animation: arena-rig-torso-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='body'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='chest'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='belt'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='head'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='headgear'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='shoulders'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='mainHand'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='offHand'] {
+  animation-name: arena-rig-torso-b;
+}
+
+/* 💪 **הזרועות — **תנופה**, ⛔ ולא קישוט.** 🔬 שתיהן מקבלות את **אותו** סיבוב,
+   ⇒ הזרוע הימנית ⟨מורמת ימינה⟩ נזרקת **קדימה לכיוון הזינוק** והשמאלית נאספת
+   **פנימה** — אסימטריה שנוצרת מהצורה עצמה, ⛔ ולא משני קיפריימים שיסטו.
+   ⛔ **והן מקבלות גם את פיתול הגו** — הן שכבות של פלג הגוף העליון ⇒ הן זזות
+   **יותר** מהגו, וזו בדיוק הבקשה «שתנועת פלג הגוף העליון תורגש יותר». */
+@keyframes arena-rig-arm-a {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: -14deg; }
+  18.8% { rotate: 24deg; }
+  25.3% { rotate: 38deg; }
+  31.9% { rotate: 42deg; }
+  37.7% { rotate: 46deg; }
+  43.6% { rotate: 28deg; }
+  50%   { rotate: 6deg; }
+  53.2% { rotate: -18deg; }
+  59.6% { rotate: -12deg; }
+  74.5% { rotate: 5deg; }
+  85.1% { rotate: -3deg; }
+  93.6% { rotate: 1deg; }
+  100%  { rotate: 0deg; }
+}
+@keyframes arena-rig-arm-b {
+  0%    { rotate: 0deg; }
+  10.1% { rotate: -14deg; }
+  18.8% { rotate: 24deg; }
+  25.3% { rotate: 38deg; }
+  31.9% { rotate: 42deg; }
+  37.7% { rotate: 46deg; }
+  43.6% { rotate: 28deg; }
+  50%   { rotate: 6deg; }
+  53.2% { rotate: -18deg; }
+  59.6% { rotate: -12deg; }
+  74.5% { rotate: 5deg; }
+  85.1% { rotate: -3deg; }
+  93.6% { rotate: 1deg; }
+  100%  { rotate: 0deg; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='arm'],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='arm'] {
+  animation: arena-rig-arm-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='arm'] {
+  animation-name: arena-rig-arm-b;
+}
+/* חוקה שכבה א׳ א7 — ⛔ **ו⛔ אין כאן בלוק `prefers-reduced-motion` משלו**, וזה
+   ⛔ אינו השמטה: הבלוק הגלובלי (`app/globals.css:103`) מוריד כל משך ל-`0.01ms`
+   ⇒ המפרקים נחים. ⛔ **ו⛔ אין מה לשחרר** — ⛔ אף `animationend` כאן ⛔ אינו
+   מזין מצב ב-React ⟨השמות ⛔ אינם מתחילים ב-`arena-strike`⟩. */

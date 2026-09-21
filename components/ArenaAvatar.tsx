@@ -16,6 +16,7 @@ import {
   HEAD_RADIUS,
   LAYER_ORDER,
   WANDERER,
+  WANDERER_CAPS,
   WANDERER_JOINTS,
   WANDERER_PATHS,
   WARRIOR,
@@ -1095,6 +1096,10 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
           <Paint hue="duneShade">
             <path d={WANDERER_PATHS.thighRight} />
             <path d={WANDERER_PATHS.thighLeft} />
+            {/* 🔵 כיפת הברך — **סטטית ומחוץ למפרק**: בלעדיה הקיפול פוער טריז
+                והרגל נראית מנותקת. 🔬 נמדד על הזירה החיה, ⛔ ולא שוער. */}
+            <circle cx={WANDERER_CAPS.kneeX} cy={WANDERER_CAPS.kneeY} r={WANDERER_CAPS.knee} />
+            <circle cx={-WANDERER_CAPS.kneeX} cy={WANDERER_CAPS.kneeY} r={WANDERER_CAPS.knee} />
           </Paint>
           {/* 🦵 **השוק והכף רוכבים על הברך** — ⇒ קיפול הברך מזיז את שניהם
               כיחידה אחת, בדיוק כמו רגל. ⛔ הירך ⛔ אינה בפנים: היא זו שהברך
@@ -1172,6 +1177,10 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'offHand',
       shape: (
+        <>
+        <Paint hue="dune">
+          <circle cx={-WANDERER_CAPS.armX} cy={WANDERER_CAPS.armY} r={WANDERER_CAPS.arm} />
+        </Paint>
         <Joint at="armLeft" name="arm">
           <Paint hue="dune"><path d={WANDERER_PATHS.armLeft} /></Paint>
           <Paint hue="skin">
@@ -1188,11 +1197,16 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
             ))}
           </Paint>
         </Joint>
+        </>
       ),
     },
     {
       layer: 'mainHand',
       shape: (
+        <>
+        <Paint hue="dune">
+          <circle cx={WANDERER_CAPS.armX} cy={WANDERER_CAPS.armY} r={WANDERER_CAPS.arm} />
+        </Paint>
         <Joint at="armRight" name="arm">
           <Paint hue="dune"><path d={WANDERER_PATHS.armRight} /></Paint>
           <Paint hue="skin">
@@ -1209,6 +1223,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
             ))}
           </Paint>
         </Joint>
+        </>
       ),
     },
   ],

@@ -534,3 +534,67 @@ describe('C-0741 · T-440ⓑⓒ — הגלגול והלהב', () => {
     expect(blocks).toMatch(/\[data-arena-part='weapon'\][\s\S]{0,80}transition:\s*none/);
   });
 });
+
+/**
+ * 🦴 **⟦21/09 · `C-0757` · `T-444`ⓓ⟧ השלד זז — **והבידוד הוא בורר**.**
+ *
+ * 🔴 **הטענה הכבדה כאן ⛔ אינה «יש קיפריים» — היא ש**שש הדמויות הקיימות
+ * ⛔ אינן רואות אותו**.** צילום חי מוכיח זאת **היום**; הבדיקה הזאת מוכיחה
+ * שזה יישאר נכון אחרי שמישהו יערוך את הגיליון בעוד חודשיים.
+ */
+describe('C-0757 · T-444ⓓ — המפרקים זזים, ו⛔ רק על הנווד', () => {
+  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+
+  it('🔴 **כל** בורר שמפעיל `arena-rig-*` מגודר ל-`data-arena-rig` — ⛔ ואין חריג', () => {
+    // 🔬 הבוררים נחתכים על `{`, ⇒ כל קבוצת בוררים נמדדת **בשלמותה**.
+    const rules = TOKENS.split('}').filter((b) => /animation(-name)?:\s*arena-rig-/.test(b));
+    expect(rules.length, 'לפחות שלושה כללים — ברך · גו · זרוע').toBeGreaterThanOrEqual(3);
+    for (const rule of rules) {
+      const selectors = (rule.split('{')[0] ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+      expect(selectors.length).toBeGreaterThan(0);
+      for (const sel of selectors) {
+        expect(sel, `בורר בלי שלד: ${sel}`).toContain("[data-arena-rig='jointed']");
+        // ⛔ **ורק הגיבור** — היריב ⛔ אינו בועט.
+        expect(sel, `בורר בלי גיבור: ${sel}`).toContain("[data-arena-slot='hero']");
+      }
+    }
+  });
+
+  it('🔴 המפרקים מסתובבים ב-`rotate` בלבד — ⛔ ו⛔ אף `transform`', () => {
+    for (const name of ['knee', 'torso', 'arm']) {
+      for (const v of ['a', 'b']) {
+        const at = TOKENS.indexOf(`@keyframes arena-rig-${name}-${v} {`);
+        expect(at, `arena-rig-${name}-${v}`).toBeGreaterThan(-1);
+        const body = TOKENS.slice(at, TOKENS.indexOf('\n}', at));
+        expect(body, `arena-rig-${name}-${v}`).toMatch(/rotate:/);
+        // ⛔ `transform` על מפרק ⛔ אינו מורכב עם `transform` של ההורה.
+        expect(body, `arena-rig-${name}-${v}`).not.toMatch(/transform:/);
+      }
+    }
+  });
+
+  it("⛔ `'a'⇄'b'` — שם זהה ⛔ אינו מפעיל מחדש, ⇒ שתי תשובות רצופות ⛔ אינן נבלעות", () => {
+    for (const name of ['knee', 'torso', 'arm']) {
+      expect(TOKENS).toMatch(new RegExp(`animation-name:\\s*arena-rig-${name}-b`));
+    }
+  });
+
+  it('🌀 פיתול הגו ⛔ אינו נוגע ב-`legs` — אחרת זו **הטיה**, ⛔ ולא פיתול', () => {
+    const rules = TOKENS.split('}').filter((b) => /animation(-name)?:\s*arena-rig-torso-/.test(b));
+    expect(rules.length).toBe(2);
+    for (const rule of rules) {
+      expect(rule.split('{')[0], 'האגן נשאר').not.toMatch(/\[data-arena-layer='legs'\]/);
+      expect(rule.split('{')[0]).toMatch(/\[data-arena-layer='body'\]/);
+    }
+    // 🔬 המרכז מגיע מהמודול הטהור דרך משתנה, ⛔ ואינו מוקלד בגיליון.
+    expect(TOKENS).toMatch(/transform-origin:\s*var\(--arena-rig-torso\)/);
+  });
+
+  it('🔴 והמפרקים רוכבים על **שעון הבעיטה שכבר קיים** — ⛔ ולא על שעון שני', () => {
+    const rules = TOKENS.split('}').filter((b) => /animation:\s*arena-rig-/.test(b));
+    for (const rule of rules) {
+      expect(rule, 'כל מפרק על --arena-strike-ms').toMatch(/var\(--arena-strike-ms\)/);
+      expect(rule.split('{')[0]).toMatch(/\[data-arena-strike='[ab]'\]/);
+    }
+  });
+});
