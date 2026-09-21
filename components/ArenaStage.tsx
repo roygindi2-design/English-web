@@ -249,6 +249,14 @@ export default function ArenaStage({
             **גלש לשני הנתיבים השכנים** ונקרא כזרקור על הרצפה — כלומר התחרה בסימן
             הנתיב ובהגנה, שהם ה**מידע** שהרצפה נושאת. */}
         <span data-arena-halo aria-hidden className="pointer-events-none absolute bottom-[2%] h-[46%] w-[34%]" />
+        {/* 🥋 **⟦21/09 · `T-443`⟧ צומת ההטלה — **משלה, ⛔ ולא על הדמות.**
+            🔴 **וזה ⛔ אינו סגנון, זה `F-306` מילה במילה:** `[data-arena-figure]` כבר
+            נושא `animation: arena-impact-*` בפריים האימפקט (`arcade-tokens.css:440`),
+            ⇒ אנימציה שנייה על **אותה תכונה** באותו צומת ⛔ אינה «נערמת» — היא דורסת.
+            ⛔ **ו⛔ לא `[data-arena-idle]`** — שם רצות `arena-breath` ו-`arena-sway`
+            ב-`infinite`, אותה התנגשות בדיוק. ⇒ צומת ייעודי שכל תפקידו לשאת את
+            תמורת ההטלה, בדיוק כמו `[data-arena-hitstop]` שנושא את שעון הקיפאון. */}
+        <span data-arena-castrig className="relative inline-flex">
         <span data-arena-idle={idle ? 'on' : 'off'} className="relative inline-flex">
           {/* 🎭 **⟦19/09 · `C-0731` · `T-432` · `38 § 1א` · `D-269` ②⟧ בקרב — מגב.**
               ⛔ **והחריג הוא כאן, ⛔ ולא ב-`ArenaAvatar`:** ברירת המחדל של הדמות
@@ -257,6 +265,7 @@ export default function ArenaStage({
               🔬 **ו⛔ זה ⛔ אינו רק «הבקשה של רוי»:** ארבעת רנדרי הקרב
               (`kol-B-03` … `B-06`) מציירים גיבור **מגבו** מאז 23/08. */}
           <ArenaAvatar role="hero" items={items} character={character} facing="back" className={FIGURE_CLASS} />
+        </span>
         </span>
         {/* 💨 `C-0751` · א8 — האבק של ה**גיבור**, ודולק על `data-arena-hurt`:
             «הלומד **נפגע**». הכלל חי ב-`arcade-tokens.css`, ⛔ ולא כאן.

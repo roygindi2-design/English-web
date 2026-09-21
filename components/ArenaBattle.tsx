@@ -411,6 +411,21 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    */
   const [impact, setImpact] = useState<'off' | 'a' | 'b'>('off');
   /**
+   * 🥋 **⟦21/09 · `T-443`⟧ ערוץ ההטלה — **המופע החמישי של תבנית שכבר קיימת ארבע פעמים.**
+   *
+   * 🔬 **הפער שנמדד בקוד, ⛔ ולא הוערך:** `stagePhase` (`battle.ts:553`) נגזר
+   * מההטלה האחרונה ומחזיר `'hit'` **עד ההטלה הבאה** ⇒ הוא **מצב דביק, ⛔ ולא
+   * פעימה**, וערך זהה ⛔ אינו מפעיל אנימציה מחדש. ⇒ שתי תשובות נכונות רצופות היו
+   * נראות כאחת. ⛔ **וגם `impact` ⛔ אינו יכול לשאת אותה:** הוא משתחרר על שעון
+   * הקיפאון — `--arena-hitstop-ms` = **120ms** — ⇒ כל תנועה שרוכבת עליו נחתכת שם.
+   * ⇒ `'a'⇄'b'` משלו, שחרור משלו, ומשך משלו. ⛔ **ואפס `setTimeout`** — זה אותו
+   * `animationend` בדיוק שמשחרר את `impact`, את `crit`, את `hurt` ואת `roll`.
+   *
+   * ⚠️ **והשם `strike` ⛔ ולא `cast`, וזה נמדד:** `data-arena-cast` **כבר תפוס**
+   * על בלוק הטלגרף (`:1517`) ⇒ בורר `[data-arena-cast]` היה תופס את שניהם.
+   */
+  const [strike, setStrike] = useState<'off' | 'a' | 'b'>('off');
+  /**
    * ⟦NEW 15/09 · `C-0622` · `T-358`⟧ שתי תכונות שמתחלפות `a`⇄`b` בדיוק כמו `impact`,
    * ומאותה סיבה בדיוק: **החלפת שם האנימציה היא מה שמאתחל אותה בדפדפן**, וערך זהה
    * שחוזר ⛔ אינו מפעיל אותה שוב. ⇒ שתי פגיעות ברצף מקבלות שתי אנימציות, ⛔ ולא אחת.
@@ -581,6 +596,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     if (reducedMotion) return;
     if (stagePhase(battle) !== 'hit') return;
     setImpact((prev) => (prev === 'a' ? 'b' : 'a'));
+    // 🥋 `T-443` — אותה הטלה, אותו אפקט, ⛔ ולא אפקט שני על אותה תלות: שני מקורות
+    //    לאותו רגע הם שני רגעים, וזה כבר כתוב שורה אחת מתחת על הנזק והרעד.
+    setStrike((prev) => (prev === 'a' ? 'b' : 'a'));
     // ⟦15/09 · `T-358`⟧ הנזק והרעד נגזרים מ**אותה** הטלה, ⛔ ומאותו אפקט: אפקט שני
     // על אותה תלות היה יורה בסדר שאינו מובטח, ושני מקורות לאותו רגע הם שני רגעים.
     const last = battle.casts[battle.casts.length - 1];
@@ -1355,6 +1373,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         ref={stageAreaRef}
         data-arena-stage-area
         data-arena-impact={impact}
+        data-arena-strike={strike === 'off' ? undefined : strike}
         data-arena-crit={crit === 'off' ? undefined : crit}
         data-arena-hurt={hurt === 'off' ? undefined : hurt}
         data-arena-roll={roll === 'off' ? undefined : roll}
@@ -1386,6 +1405,8 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           }
           // ⟦15/09⟧ הרעד משוחרר באותו מנגנון בדיוק — ⛔ אין כאן `setTimeout` חדש.
           if (e.animationName === 'arena-crit-shake') setCrit('off');
+          // 🥋 `T-443` — ההטלה משתחררת על השעון של עצמה, ⛔ ולא על זה של הקיפאון.
+          if (e.animationName.startsWith('arena-strike')) setStrike('off');
           // 🩸 `T-440` — הרתיעה משתחררת באותו מנגנון בדיוק. ⛔ אפס שעון.
           if (e.animationName.startsWith('arena-hurt')) setHurt('off');
           if (e.animationName.startsWith('arena-roll')) setRoll('off');

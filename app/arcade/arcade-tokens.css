@@ -221,6 +221,12 @@
      ⛔ **וזה גם למה הקיפאון ⛔ אינו `setTimeout`:** האנימציה ה**נושאת** על אזור הבמה היא
      השעון, ‏`animationend` הוא מה שמשחרר אותה, והמשך ⛔ לעולם ⛔ אינו עובר דרך JS. */
   --arena-hitstop-ms: 120ms;
+  /* 🥋 **⟦21/09 · `T-443`⟧ משך ההטלה — ⛔ ואינו `--arena-hitstop-ms`.**
+     🔬 **נמדד:** הקיפאון הוא **120ms**, והוא משחרר את `pose` ואת `impact` ⇒ כל תנועה
+     שרוכבת עליהם נחתכת שם. הבעיטה המעופפת זקוקה לזמן אוויר: 95 כריעה · 205 שיגור
+     וסיבוב אל האופק · 54 פשיטה · 116 פתיחה והושטה · 30 מגע · 60 בליעה · 140 עמידה
+     נמוכה · 240 קימה. ⇒ **שעון משלה**, ⛔ והקיפאון ⛔ לא זז. */
+  --arena-strike-ms: 940ms;
   --arena-impact-ms: 66ms;
 
   /* T-216 · `37 § 11` א4 — **תנועת המשך**, ושלושת המספרים שהיא צריכה. ⛔ כולם
@@ -1637,3 +1643,67 @@ body:has([data-arena-scope]) > div > main {
     animation: none;
   }
 }
+
+/* ═══ 🥋 **⟦21/09 · `T-443`⟧ ההטלה — בעיטה מעופפת ונחיתה.** ═══
+
+   🔴 **הצומת הוא `[data-arena-castrig]`, ⛔ ולא הדמות, וזה `F-306` מילה במילה:**
+   ‏`[data-arena-figure]` כבר נושא `animation: arena-impact-*` בפריים האימפקט
+   (`:440` בקובץ הזה), ו-`[data-arena-idle]` נושא `arena-breath` ו-`arena-sway`
+   ב-`infinite`. ⇒ אנימציה שלישית על אחד מהם ⛔ אינה נערמת — היא **דורסת**.
+   ⛔ **צומת ייעודי**, בדיוק כמו `[data-arena-hitstop]` שנושא את שעון הקיפאון.
+
+   ⛔ **שלוש תכונות, וכולן ב-`COMPOSITOR_ONLY`** (`check-motion.mjs:65`):
+   `translate` · `rotate` · `scale`. ⛔ אפס `filter`, ⛔ אפס `width`, ⛔ אפס צבע.
+
+   🔬 **וההזזה ב-`%` ⛔ ולא ב-`px`, וזה ⛔ אינו סגנון:** אחוז ב-`translate` נמדד מול
+   **גודל הצומת עצמו** ⇒ הקפיצה נשארת אותה קפיצה בכל גובה במה, ⛔ ואינה מתכווצת
+   במסך קטן. `-46%` מגובה הדמות הוא השיא; `+13.8%` היא עומק הבליעה בנחיתה.
+
+   🔴 **והסיבוב מגיע ל-92°: הגוף **מקביל לרצפה**.** זו כל הקריאה — קפיצה שמסתובבת
+   ל-45° נראית כמעידה. ⛔ **והנחיתה ⛔ אינה עצירה:** אחרי המגע (53.2%) יש **בליעה**
+   עמוקה ואז **עמידה נמוכה מוחזקת** עד 74.5%, ורק אז קימה. ⛔ בלי ההחזקה הזאת זו
+   נפילה שנעצרה, ⛔ ולא נחיתה.
+
+   ⛔ **ו-`'a'⇄'b'` ⛔ אינו כפילות:** שם אנימציה **זהה** ⛔ אינו מפעיל מחדש, ⇒ שתי
+   תשובות נכונות רצופות היו נראות כאחת. אותה תבנית בדיוק של `impact` ו-`crit`. */
+@keyframes arena-strike-a {
+  0%    { translate: 0 0;        rotate: 0deg;  scale: 1 1; }
+  10.1% { translate: 0 7.7%;     rotate: 0deg;  scale: 1.12 0.84; }
+  18.8% { translate: 3% -17%;    rotate: 22deg; scale: 0.9 1.14; }
+  25.3% { translate: 7.7% -37%;  rotate: 60deg; }
+  31.9% { translate: 10.8% -46%; rotate: 88deg; scale: 1 1; }
+  37.7% { translate: 12.3% -47.7%; rotate: 92deg; }
+  43.6% { translate: 10.8% -38.5%; rotate: 40deg; }
+  50%   { translate: 7.7% -13.8%;  rotate: 8deg;  scale: 0.94 1.08; }
+  53.2% { translate: 6.2% 10.8%;   rotate: 0deg;  scale: 1.2 0.78; }
+  59.6% { translate: 4.6% 13.8%;   scale: 1.14 0.84; }
+  74.5% { translate: 2.3% 6.2%;    scale: 1.04 0.97; }
+  85.1% { translate: 0 -2.3%;      scale: 0.97 1.04; }
+  93.6% { translate: 0 0.8%;       scale: 1.01 0.99; }
+  100%  { translate: 0 0;          rotate: 0deg;  scale: 1 1; }
+}
+@keyframes arena-strike-b {
+  0%    { translate: 0 0;        rotate: 0deg;  scale: 1 1; }
+  10.1% { translate: 0 7.7%;     rotate: 0deg;  scale: 1.12 0.84; }
+  18.8% { translate: 3% -17%;    rotate: 22deg; scale: 0.9 1.14; }
+  25.3% { translate: 7.7% -37%;  rotate: 60deg; }
+  31.9% { translate: 10.8% -46%; rotate: 88deg; scale: 1 1; }
+  37.7% { translate: 12.3% -47.7%; rotate: 92deg; }
+  43.6% { translate: 10.8% -38.5%; rotate: 40deg; }
+  50%   { translate: 7.7% -13.8%;  rotate: 8deg;  scale: 0.94 1.08; }
+  53.2% { translate: 6.2% 10.8%;   rotate: 0deg;  scale: 1.2 0.78; }
+  59.6% { translate: 4.6% 13.8%;   scale: 1.14 0.84; }
+  74.5% { translate: 2.3% 6.2%;    scale: 1.04 0.97; }
+  85.1% { translate: 0 -2.3%;      scale: 0.97 1.04; }
+  93.6% { translate: 0 0.8%;       scale: 1.01 0.99; }
+  100%  { translate: 0 0;          rotate: 0deg;  scale: 1 1; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-castrig] {
+  animation: arena-strike-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-castrig] {
+  animation: arena-strike-b var(--arena-strike-ms) linear 1;
+}
+/* חוקה שכבה א׳ א7 — ⛔ **ו⛔ אינה `animation: none`:** הבלוק הגלובלי
+   (`app/globals.css:103`) מוריד את המשך ל-`0.01ms` ⇒ `animationend` **עדיין נורה**
+   והתכונה משתחררת. `none` היה משאיר את `data-arena-strike` דלוק לנצח. */

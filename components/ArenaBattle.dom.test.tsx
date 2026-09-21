@@ -875,6 +875,47 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     await waitFor(() => { expect(phase(), 'התנוחה חוזרת על השעון').toBe('idle'); });
   });
 
+  /**
+   * 🥋 **⟦21/09 · `T-443`⟧ ערוץ ההטלה — **שלוש טענות, וכל אחת מאדימה על משהו אחר.**
+   *
+   * ⓐ **הערוץ נדלק על הטלה נכונה.** ⓑ 🔴 **ומתהפך `'a'`⇄`'b'` על השנייה** — וזו
+   * הטענה שנושאת את כל השורה: שם אנימציה **זהה** ⛔ אינו מפעיל מחדש, ⇒ בלי ההיפוך
+   * שתי תשובות נכונות רצופות היו נראות כ**אחת**. ⓒ **והשחרור הוא של עצמו** —
+   * ‏`arena-hitstop` (120ms) ⛔ אינו מכבה אותו, אחרת הבעיטה הייתה נחתכת לשמינית.
+   */
+  it('ערוץ ההטלה נדלק, **מתהפך** על השנייה, ומשתחרר רק על השעון של עצמו', async () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    const area = (): Element => document.querySelector('[data-arena-stage-area]') as Element;
+    const strike = (): string | null => area().getAttribute('data-arena-strike');
+    expect(strike(), 'בפתיחה כבוי').toBeNull();
+    tap(cardHe('אפשרות 1'));
+    tap(cardHe('אפשרות 1'));
+    await waitFor(() => { expect(strike()).not.toBeNull(); });
+    const first = strike();
+    // 🔬 הקיפאון משחרר את התנוחה — ⛔ ולא את ההטלה.
+    endAnimation('arena-hitstop-a');
+    expect(strike(), '⛔ הקיפאון ⛔ אינו מכבה את ההטלה').toBe(first);
+    // 🔴 הטלה שנייה ⇒ **ערך אחר**, אחרת האנימציה ⛔ לא הייתה מופעלת מחדש.
+    tap(cardHe('אפשרות 2'));
+    tap(cardHe('אפשרות 2'));
+    await waitFor(() => { expect(strike(), 'מתהפך').not.toBe(first); });
+    endAnimation(`arena-strike-${strike()}`);
+    await waitFor(() => { expect(strike(), 'משתחרר על השעון של עצמו').toBeNull(); });
+  });
+
+  /**
+   * 🥋 `T-443` — ⛔ **והצומת הוא של ההטלה בלבד.** 🔬 `[data-arena-figure]` נושא
+   * ‏`animation: arena-impact-*` ו-`[data-arena-idle]` נושא `arena-breath` —
+   * ⇒ אנימציה שלישית על אחד מהם הייתה **דורסת**, וזה `F-306` מילה במילה.
+   */
+  it('להטלה יש צומת נושא משלה, ⛔ ולא הדמות ו⛔ לא צומת המנוחה', () => {
+    render(<ArenaBattle initialRound={ROUND} />);
+    const rig = document.querySelector('[data-arena-slot="hero"] [data-arena-castrig]');
+    expect(rig, 'הצומת קיים').toBeTruthy();
+    expect(rig?.querySelector('[data-arena-figure]'), 'הדמות בתוכו').toBeTruthy();
+    expect(rig?.hasAttribute('data-arena-idle'), '⛔ ואינו צומת המנוחה').toBe(false);
+  });
+
   it('⛔ אנימציה אחרת שמבעבעת לאזור הבמה ⛔ אינה מאפסת את התנוחה', async () => {
     // 🔬 אזור הבמה מקבל `animationend` של הרעד, הרתיעה והגלגול. שחרור בלי גדר
     //    השם היה חותך את המכה באמצע על כל אחד מהם.
