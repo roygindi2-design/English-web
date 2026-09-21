@@ -15,6 +15,8 @@ import {
   SHADE,
   HEAD_RADIUS,
   LAYER_ORDER,
+  WANDERER,
+  WANDERER_PATHS,
   WARRIOR,
   WARRIOR_PATHS,
   WIZARD,
@@ -209,6 +211,11 @@ const FIG = {
   tealDeep: 'text-[color:var(--arena-fig-teal-deep,currentColor)]',
   wisp: 'text-[color:var(--arena-fig-wisp,currentColor)]',
   wand: 'text-[color:var(--arena-fig-wand,currentColor)]',
+  /* 🥋 `C-0755` — שני טוקנים לנווד, ⛔ ולא שאילה מדמות אחרת: כל שישה הגוונים
+     שכבר כאן **תפוסים** ⇒ דמות שביעית שלובשת אחד מהם קוראת כמו השכנה שלה.
+     הניגודיות של שניהם על `--arena-card` רשומה ב-`arcade-tokens.css`. */
+  dune: 'text-[color:var(--arena-fig-dune,currentColor)]',
+  duneShade: 'text-[color:var(--arena-fig-dune-shade,currentColor)]',
 } as const;
 
 function Paint({ hue, children }: {
@@ -476,6 +483,9 @@ const CHARACTER_HIDES: Partial<Record<ArenaCharacter, readonly Layer[]>> = {
   hunter: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
   golem: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
   shade: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
+  /* 🥋 `C-0755` — הנווד מצייר את עצמו **במלואו**: גוף, רגליים, ראש וידיים.
+     ⛔ אף שכבה ⛔ לא נוספה ל-`LAYER_ORDER`. */
+  wanderer: ['legs', 'boots', 'body', 'chest', 'belt', 'shoulders', 'head', 'offHand', 'mainHand'],
 };
 
 /**
@@ -626,6 +636,23 @@ const HEADGEAR_ITEMS: readonly string[] = ['helmet'];
  * אנטומיה שבגללה `CHARACTER_HIDES` מסתיר לו את `legs` מלכתחילה.
  */
 const NO_BOOTS: readonly ArenaCharacter[] = ['shade'];
+
+/**
+ * 🥋 **⟦21/09 · `C-0755` · `T-444`⟧ הציוד על הנווד — **נסתר**, ⛔ ולא נמחק.**
+ *
+ * ⚠️ **הכרעת רוי, מילה במילה:** «**נסתרים עליה בלבד**». ⇒ חמשת פריטי
+ * `ARCADE_ITEMS` ממשיכים לעבוד **על שש האחרות**, ⛔ אמנות ⛔ אינה נזרקת,
+ * ⛔ אין מיגרציה ו⛔ אף מפתח ב-`unlocked_items` ⛔ אינו נשבר.
+ *
+ * 🔴 **ו-`CHARACTER_HIDES` לבדה ⛔ אינה עושה זאת, וזה נמדד ⛔ ולא הונח:** היא
+ * מסתירה **שכבות בסיס** בלבד, והציוד מצויר בענף נפרד (`equipped`). ⇒ בלי
+ * הרשימה הזאת הקסדה הייתה נוחתת על הכרבולת והמגפיים על שוק מכופף — בדיוק
+ * שתי ההתנגשויות ש-`C-0727` מדד על המסך.
+ *
+ * ⛔ **וזו ⛔ אינה רשימה שנוח להאריך:** `NO_BOOTS` מעליה היא **אנטומיה** (⛔ אין
+ * רגליים ⇒ ⛔ אין מגפיים); זו כאן היא **הכרעת בעלים**, והיא נושאת את ציטוטה.
+ */
+const NO_EQUIPMENT: readonly ArenaCharacter[] = ['wanderer'];
 
 
 /**
@@ -1015,6 +1042,136 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       ),
     },
   ],
+  /**
+   * 🥋 **`נווד` — **פסיעה**, ⛔ ולא עמידה.** שתי רגליים **נפרדות** בפסיעה רחבה,
+   * כרבולת **משולשת** מעל הראש, וכפות ידיים **פתוחות וריקות**. ⛔ אין בידיה נשק,
+   * ⛔ ואין עליה ציוד — וזה הערוץ שמבדיל אותה משש האחרות גם כשהצבע מוסר.
+   * 🦵 **והרגל מצוירת כ**ירך · שוק · כף**, שלושה נתיבים** — ⛔ ולא צורה אחת:
+   * `T-444` ג׳ עוטפת את השוק ואת הכף ב-`<g>` מקונן ⛔ בלי לצייר מחדש.
+   * ⛔ כל מספר ב-`WANDERER` שב-`characterBase.ts`.
+   */
+  wanderer: [
+    {
+      layer: 'legs',
+      shape: (
+        <>
+          <Paint hue="duneShade">
+            <path d={WANDERER_PATHS.thighRight} />
+            <path d={WANDERER_PATHS.thighLeft} />
+          </Paint>
+          <Paint hue="duneShade">
+            <path d={WANDERER_PATHS.shinRight} />
+            <path d={WANDERER_PATHS.shinLeft} />
+          </Paint>
+          <Paint hue="leather">
+            <path d={WANDERER_PATHS.footRight} />
+            <path d={WANDERER_PATHS.footLeft} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'body',
+      shape: (
+        <>
+          <Paint hue="dune"><path d={WANDERER_PATHS.wrap} /></Paint>
+          <Paint hue="duneShade"><path d={WANDERER_PATHS.wrapShade} /></Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'belt',
+      shape: (
+        <Paint hue="leather">
+          <rect
+            x={-WANDERER.sashHalfWidth}
+            y={WANDERER.sashTopY}
+            width={WANDERER.sashHalfWidth * 2}
+            height={WANDERER.sashH}
+            rx={WANDERER.sashR}
+          />
+        </Paint>
+      ),
+    },
+    /* 🎭 `T-432` — הגולגולת נשארת משני הצדדים; **הצעיף והעיניים** הם חזית. */
+    { layer: 'head', shape: <Paint hue="skin"><circle cx={0} cy={WANDERER.headY} r={WANDERER.headRadius} /></Paint> },
+    {
+      layer: 'head',
+      only: 'front',
+      shape: (
+        <>
+          <Paint hue="hair">
+            <rect
+              x={-WANDERER.scarfHalfWidth}
+              y={WANDERER.scarfTopY}
+              width={WANDERER.scarfHalfWidth * 2}
+              height={WANDERER.scarfH}
+              rx={WANDERER.scarfR}
+            />
+          </Paint>
+          <Paint hue="voidInk">
+            <circle data-arena-eye cx={-WANDERER.eyeX} cy={WANDERER.eyeY} r={WANDERER.eyeRadius} />
+            <circle data-arena-eye cx={WANDERER.eyeX} cy={WANDERER.eyeY} r={WANDERER.eyeRadius} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'headgear',
+      shape: (
+        <>
+          <Paint hue="dune"><path d={WANDERER_PATHS.crest} /></Paint>
+          <Paint hue="duneShade"><path d={WANDERER_PATHS.crestShade} /></Paint>
+          <Paint hue="duneShade">
+            <path d={WANDERER_PATHS.barbRight} />
+            <path d={WANDERER_PATHS.barbLeft} />
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'offHand',
+      shape: (
+        <>
+          <Paint hue="dune"><path d={WANDERER_PATHS.armLeft} /></Paint>
+          <Paint hue="skin">
+            <circle cx={-WANDERER.palmX} cy={WANDERER.palmY} r={WANDERER.palmRadius} />
+            {WANDERER.fingerX.map((fx) => (
+              <rect
+                key={fx}
+                x={-fx - WANDERER.fingerW}
+                y={WANDERER.fingerTopY}
+                width={WANDERER.fingerW}
+                height={WANDERER.fingerH}
+                rx={WANDERER.fingerR}
+              />
+            ))}
+          </Paint>
+        </>
+      ),
+    },
+    {
+      layer: 'mainHand',
+      shape: (
+        <>
+          <Paint hue="dune"><path d={WANDERER_PATHS.armRight} /></Paint>
+          <Paint hue="skin">
+            <circle cx={WANDERER.palmX} cy={WANDERER.palmY} r={WANDERER.palmRadius} />
+            {WANDERER.fingerX.map((fx) => (
+              <rect
+                key={fx}
+                x={fx}
+                y={WANDERER.fingerTopY}
+                width={WANDERER.fingerW}
+                height={WANDERER.fingerH}
+                rx={WANDERER.fingerR}
+              />
+            ))}
+          </Paint>
+        </>
+      ),
+    },
+  ],
 };
 
 export default function ArenaAvatar({
@@ -1027,7 +1184,12 @@ export default function ArenaAvatar({
   const back = facing === 'back';
   // הסינון עובר על הרשימה הקנונית ⛔ ולא על הקלט: כך הסדר קבוע, ושם שאינו ברשימה נופל
   // בשקט במקום לצייר שכבה ריקה.
-  const worn = ARCADE_ITEMS.filter((name) => items.includes(name));
+  /* 🥋 `C-0755` — **מסנן אחד**, ⇒ השם הנגיש ⛔ אינו מונה פריט שאיש ⛔ אינו רואה.
+     לומד שקורא מסך היה שומע «נווד, קסדה, גלימה» מול דמות ריקה מציוד. */
+  const worn = ARCADE_ITEMS.filter(
+    (name) => items.includes(name)
+      && !(character !== null && character !== undefined && NO_EQUIPMENT.includes(character)),
+  );
   const signature = character === undefined || character === null ? [] : CHARACTER_LAYERS[character];
   const who =
     character === undefined || character === null

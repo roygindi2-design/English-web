@@ -20,6 +20,16 @@ afterEach(cleanup);
 
 const ALL = [...ARCADE_ITEMS];
 
+/**
+ * 🥋 **⟦21/09 · `C-0755` · `T-444`⟧ מי **לובש** ציוד — רשימה מפורשת, ⛔ ולא נגזרת.**
+ *
+ * ⚠️ **הכרעת רוי על הנווד, מילה במילה:** «**נסתרים עליה בלבד**». ⇒ הנווד מצייר
+ * ⛔ **אפס** פריט, ושש האחרות ⛔ לא נגעו. ⛔ **וזו ⛔ אינה החרגה נוחה מבדיקה
+ * שהאדימה:** הבדיקה שמתחתיה היא זו שמוכיחה שהציוד ⛔ אינו מצויר עליה, ⇒ הטענה
+ * **התחלקה לשתיים**, ⛔ ולא נחלשה.
+ */
+const DRESSED = ARENA_CHARACTERS.filter((c) => c !== 'wanderer');
+
 function avatar(character: (typeof ARENA_CHARACTERS)[number], items: readonly string[]) {
   const { container } = render(<ArenaAvatar role="hero" items={items} character={character} />);
   const svg = container.querySelector('svg');
@@ -29,8 +39,8 @@ function avatar(character: (typeof ARENA_CHARACTERS)[number], items: readonly st
 
 const layer = (svg: SVGSVGElement, name: string) => svg.querySelector(`[data-arena-layer="${name}"]`);
 
-describe('C-0727 — הציוד על שש הדמויות', () => {
-  it('כל שש הדמויות מציירות עם כל חמשת הפריטים — ⛔ בלי זריקה ו⛔ בלי שכבה ריקה', () => {
+describe('C-0727 — הציוד על הדמויות', () => {
+  it('כל הדמויות מציירות עם כל חמשת הפריטים — ⛔ בלי זריקה ו⛔ בלי שכבה ריקה', () => {
     for (const c of ARENA_CHARACTERS) {
       const svg = avatar(c, ALL);
       // ⛔ שכבה ריקה ⛔ אינה מצוירת — כל `[data-arena-layer]` נושא צורה.
@@ -42,7 +52,7 @@ describe('C-0727 — הציוד על שש הדמויות', () => {
   });
 
   it('🎩 קסדה **מחליפה** את כיסוי הראש של הדמות — ⛔ ואינה נערמת עליו', () => {
-    for (const c of ARENA_CHARACTERS) {
+    for (const c of DRESSED) {
       const bare = avatar(c, []);
       const ownHeadgear = layer(bare, 'headgear')?.querySelector('[data-arena-character]') ?? null;
       cleanup();
@@ -69,7 +79,7 @@ describe('C-0727 — הציוד על שש הדמויות', () => {
   it('👻 ל`צל` ⛔ אין רגליים ⇒ ⛔ אין לו מגפיים, ולשאר **יש**', () => {
     expect(layer(avatar('shade', ['boots']), 'boots')).toBeNull();
     cleanup();
-    for (const c of ARENA_CHARACTERS.filter((x) => x !== 'shade')) {
+    for (const c of DRESSED.filter((x) => x !== 'shade')) {
       expect(layer(avatar(c, ['boots']), 'boots'), `${c}`).not.toBeNull();
       cleanup();
     }
@@ -95,6 +105,52 @@ describe('C-0727 — הציוד על שש הדמויות', () => {
     const svg = avatar('warrior', ALL);
     const label = svg.getAttribute('aria-label') ?? '';
     for (const item of ALL) expect(label).toContain(ITEM_LABELS_HE[item]);
+  });
+
+  /**
+   * 🥋 **⟦21/09 · `C-0755` · `T-444`⟧ החצי השני של הטענה שהתחלקה.**
+   *
+   * 🔴 **⛔ שתי טענות ו⛔ לא אחת, וזה בכוונה:** ⓐ שעל הנווד ⛔ אין ציוד, ⓑ שעל שש
+   * האחרות **יש** — כי בדיקה שרק מחריגה דמות ⛔ אינה מודדת דבר, והיא הייתה
+   * עוברת גם אילו הציוד היה נמחק מכולן.
+   */
+  it('🥋 על הנווד הציוד **נסתר** — ⛔ ועל שש האחרות הוא **מצויר**', () => {
+    const bare = avatar('wanderer', ALL);
+    expect(bare.querySelectorAll('[data-arena-equipment]').length).toBe(0);
+    // ⛔ **ו⛔ לא «דמות ריקה»:** החתימה שלה מצוירת במלואה.
+    expect(bare.querySelectorAll('[data-arena-character="wanderer"]').length).toBeGreaterThan(0);
+    cleanup();
+    for (const c of DRESSED) {
+      expect(avatar(c, ALL).querySelectorAll('[data-arena-equipment]').length, `${c}`)
+        .toBeGreaterThan(0);
+      cleanup();
+    }
+  });
+
+  /**
+   * 🔴 **והשם הנגיש הולך אחרי הציור, ⛔ ולא אחרי הקלט.** לומד שקורא מסך היה
+   * שומע «נווד, קסדה, גלימה, פנס, מגפיים, דגל» מול דמות ש⛔ אין עליה דבר.
+   */
+  /**
+   * 🦵 **⟦21/09 · `C-0755` · `T-444`⟧ הרגל מפוצלת בברך **כבר עכשיו**, ⛔ ולא בסבב הבא.**
+   *
+   * 🔴 **וזו ⛔ אינה בדיקה של ציור — זו בדיקה של **מבנה**:** `T-444` ג׳ עוטפת את
+   * השוק ואת הכף ב-`<g>` מקונן כדי שהברך תתקפל, ⇒ אם הרגל תצויר אי-פעם כצורה
+   * **אחת**, הסבב הבא ⛔ לא יוכל לעטוף דבר ואיש ⛔ לא יראה זאת עד שהאנימציה
+   * תישבר. ⛔ **ו⛔ אין כאן פיצול שכבה**: `legs` נשארה שכבה אחת ב-`LAYER_ORDER`.
+   */
+  it('🦵 רגל הנווד היא **ירך · שוק · כף** לכל צד — ⛔ ולא צורה אחת', () => {
+    const legs = layer(avatar('wanderer', []), 'legs');
+    expect(legs).not.toBeNull();
+    expect(legs?.querySelectorAll('path').length, 'שישה נתיבים — שלושה לכל צד').toBe(6);
+    // ⛔ **ו⛔ אין מפרק עדיין** — `T-444` ב׳ היא **מבנה סטטי** בלבד.
+    expect(legs?.querySelector('[data-arena-joint]')).toBeNull();
+  });
+
+  it('🥋 השם הנגיש של הנווד ⛔ אינו מונה פריט שאיש ⛔ אינו רואה', () => {
+    const label = avatar('wanderer', ALL).getAttribute('aria-label') ?? '';
+    for (const item of ALL) expect(label, item).not.toContain(ITEM_LABELS_HE[item]);
+    expect(label).toContain('נווד');
   });
 });
 

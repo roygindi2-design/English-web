@@ -24,8 +24,14 @@
  * ‏`jsonb default '{}'` — ⇒ מפתח קיים, ערך חדש. `characterFromParts` ממשיך להחזיר
  * ‏`null` על כל מה שאינו ברשימה, ⇒ שורה ישנה עם ערך לא מוכר ⛔ אינה זורקת.
  */
+/**
+ * 🥋 **⟦21/09 · `C-0755` · `T-444`⟧ שבע, ⛔ ולא שש — ושוב **בנוסף**, ⛔ ולא במקום.**
+ * רוי: «**דמות שביעית לצד הקיימות**». ⇒ שש הראשונות ⛔ לא זזו, ⛔ אף מספר שלהן
+ * ⛔ לא נגע, והסדר נשמר ⇒ בחירה שמורה ⛔ אינה מצביעה פתאום על דמות אחרת.
+ * ⛔ **ו⛔ אין מיגרציה**, מאותה סיבה בדיוק שרשומה למעלה.
+ */
 export const ARENA_CHARACTERS = Object.freeze([
-  'wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade',
+  'wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade', 'wanderer',
 ] as const);
 export type ArenaCharacter = (typeof ARENA_CHARACTERS)[number];
 
@@ -37,6 +43,7 @@ export const CHARACTER_LABELS_HE: Readonly<Record<ArenaCharacter, string>> = Obj
   hunter: 'צייד',
   golem: 'גולם',
   shade: 'צל',
+  wanderer: 'נווד',
 });
 
 /**
@@ -56,6 +63,11 @@ export const CHARACTER_BIAS_HE: Readonly<Record<ArenaCharacter, readonly string[
     hunter: Object.freeze(['קריטי קטלני', 'חיים בינוניים', 'נזק רגיל']),
     golem: Object.freeze(['חיים גבוהים מאוד', 'עור אבן', 'נזק רגיל']),
     shade: Object.freeze(['נזק גבוה מאוד', 'קריטי חזק', 'חיים בסיסיים']),
+    /* 🥋 `C-0755` — שלוש שורות ש**כולן מגובות במספר** ב-`CHARACTER_STATS`:
+       «חיים חסונים» ⇐ `learnerHp 16` · «צעד חמקני» ⇐ `swingPenalty 0` ·
+       «נזק רגיל» ⇐ `hitDamage 1`/`criticalDamage 2`. ⇒ ⛔ אפס שורה חדשה
+       ברשימת «⛔ טרם» של `§ 7`. */
+    wanderer: Object.freeze(['חיים חסונים', 'צעד חמקני', 'נזק רגיל']),
   });
 
 /**
@@ -93,6 +105,9 @@ export const CHARACTER_GUARD: Readonly<Record<ArenaCharacter, 'wall' | 'field' |
     golem: 'wall',
     hunter: 'stakes',
     shade: 'field',
+    /* 🥋 `C-0755` — הנווד **מציב**, ⛔ ואינו בונה: כפות ידיה פתוחות וריקות
+       (הצללית), ⇒ `stakes` — אותה הנמקה בדיוק שנתנה `stakes` לצייד. */
+    wanderer: 'stakes',
   });
 
 export function isArenaCharacter(value: unknown): value is ArenaCharacter {

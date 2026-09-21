@@ -324,6 +324,123 @@ export const SHADE = Object.freeze({
   sparkX: -62, sparkY: -84, sparkRadius: 5,
 });
 
+/**
+ * 🥋 **⟦21/09 · `C-0755` · `T-444`⟧ ה`נווד` — הדמות ה**שביעית**, ו⛔ היחידה שנבנית
+ * מראש **סביב מפרק**.**
+ *
+ * ⚠️ **⛔ אף מספר כאן ⛔ לא נמדד**, בדיוק כמו צייד/גולם/צל: `kol-B-03-battle.png`
+ * מצייר **קוסם ולוחם בלבד**. אלה **בחירות עיצוב** תחת החוזה של `38 § 3ב`.
+ *
+ * 🔴 **מה שכן נאכף — הצללית ב-64px.** שש הקיימות תפוסות: חרוט (קוסם) · פלדה
+ * (לוחם) · מצחייה (שריונאי) · **קשת** (צייד) · **מסה** (גולם) · **זנב קרוע** (צל).
+ * ⇒ הנווד הוא **עמידת פסיעה רחבה שבה שתי הרגליים נפרדות**, ומעליה **כרבולת
+ * משולשת** — ו⛔ **אין בידיה דבר**: כפות פתוחות וריקות, ⛔ בלי נשק ו⛔ בלי ציוד.
+ *
+ * 🦵 **והרגליים מפוצלות בברך **כבר כאן**, ⛔ ולא בסבב הבא:** ירך ושוק הם **שני
+ * נתיבים**, ⛔ ולא צורה אחת ⇒ `T-444` ג׳ עוטפת את השוק ב-`<g>` מקונן ⛔ בלי לצייר
+ * מחדש ו⛔ בלי לגעת ב-`LAYER_ORDER`, ב-`ANCHORS` או ב-`CharacterSlot`.
+ * ⛔ **והקרסול ⛔ אינו מספר שנבחר כאן** — הוא `ANCHORS.legs` עצמו, ⇒ הרגל של הנווד
+ * מסתיימת **בדיוק** על העוגן ששאר הדמויות מסתיימות עליו.
+ */
+export const WANDERER = Object.freeze({
+  /* 🦵 ירך ⇒ ברך ⇒ קרסול. הקרסול נגזר, ⛔ ואינו כתוב. */
+  hipX: 18, hipY: 48, thighHalf: 9,
+  kneeX: 32, kneeY: 80, shinHalf: 8,
+  footToe: 15, footHeel: 9, footH: 7,
+  /* 🧥 עטיפת המסע — כתפיים צרות, ו**זנב מונף לצד אחד**: אסימטריה שקוראת כתנועה
+     גם כשהדמות עומדת, ⛔ ושמשאירה את שתי הרגליים גלויות. */
+  wrapShoulderX: 37, wrapShoulderY: -26, wrapCorner: 13,
+  wrapWaistX: 25, wrapWaistY: 26, wrapHemX: 19, wrapHemY: 44,
+  wrapTailX: 46, wrapTailY: 34, wrapTailTipY: 58,
+  sashHalfWidth: 26, sashTopY: 22, sashH: 10, sashR: 4,
+  /* 🧣 גולגולת · צעיף על הפה · עיניים מעליו. */
+  headY: -58, headRadius: 24,
+  scarfHalfWidth: 23, scarfTopY: -50, scarfH: 16, scarfR: 7,
+  eyeX: 9, eyeY: -64, eyeRadius: 4.5,
+  /* 🔺 הכרבולת — **משולש צר אחד, ושתי לשוניות שנופלות לאורך הצדדים**.
+     🔬 **שתי גרסאות נפסלו על הצללית השטוחה, ⛔ ולא על הטעם:** לשוניות שכוונו
+     **מעלה** נקראו **כתר**; לשוניות שכוונו **החוצה** רחב הפכו את הכרבולת
+     ל**שוליים** ⇒ הצללית נקראה **חרוט**, כלומר ה**קוסם**. ⇒ הן יורדות
+     **לאורך הראש**, והמשולש נשאר צר משני הצדדים. */
+  crestApexY: -100, crestBaseHalf: 14, crestBaseY: -78,
+  barbPts: Object.freeze([[15, -74], [31, -40], [21, -66]] as const),
+  /* ✋ זרוע מורמת וכף **פתוחה** — הערוץ השני של הצללית, ו⛔ אין בה נשק. */
+  armPts: Object.freeze([[26, 4], [46, -4], [64, -42], [48, -50]] as const),
+  palmX: 60, palmY: -54, palmRadius: 10,
+  fingerX: Object.freeze([50, 57, 64] as const),
+  fingerTopY: -74, fingerW: 5, fingerH: 12, fingerR: 2,
+});
+
+/** נתיבי הנווד, **נבנים כאן** כמו כל השאר. ⛔ הקרסול מגיע מ-`ANCHORS.legs`. */
+const WANDERER_ANKLE = ANCHORS.legs;
+
+const wandererThigh = (side: 1 | -1): string =>
+  polygon([
+    [side * (WANDERER.hipX - WANDERER.thighHalf), WANDERER.hipY],
+    [side * (WANDERER.hipX + WANDERER.thighHalf), WANDERER.hipY],
+    [side * (WANDERER.kneeX + WANDERER.shinHalf), WANDERER.kneeY],
+    [side * (WANDERER.kneeX - WANDERER.shinHalf), WANDERER.kneeY],
+  ]);
+
+const wandererShin = (side: 1 | -1): string =>
+  polygon([
+    [side * (WANDERER.kneeX - WANDERER.shinHalf), WANDERER.kneeY],
+    [side * (WANDERER.kneeX + WANDERER.shinHalf), WANDERER.kneeY],
+    [side * (WANDERER_ANKLE.x + WANDERER.shinHalf), WANDERER_ANKLE.y],
+    [side * (WANDERER_ANKLE.x - WANDERER.shinHalf), WANDERER_ANKLE.y],
+  ]);
+
+const wandererFoot = (side: 1 | -1): string =>
+  polygon([
+    [side * (WANDERER_ANKLE.x - WANDERER.footHeel), WANDERER_ANKLE.y - WANDERER.footH],
+    [side * (WANDERER_ANKLE.x + WANDERER.footToe), WANDERER_ANKLE.y - WANDERER.footH],
+    [side * (WANDERER_ANKLE.x + WANDERER.footToe), WANDERER_ANKLE.y],
+    [side * (WANDERER_ANKLE.x - WANDERER.footHeel), WANDERER_ANKLE.y],
+  ]);
+
+export const WANDERER_PATHS = Object.freeze({
+  thighRight: wandererThigh(1),
+  thighLeft: wandererThigh(-1),
+  shinRight: wandererShin(1),
+  shinLeft: wandererShin(-1),
+  footRight: wandererFoot(1),
+  footLeft: wandererFoot(-1),
+  wrap: polygon([
+    [-WANDERER.wrapShoulderX, WANDERER.wrapShoulderY + WANDERER.wrapCorner],
+    [-WANDERER.wrapShoulderX + WANDERER.wrapCorner, WANDERER.wrapShoulderY],
+    [WANDERER.wrapShoulderX - WANDERER.wrapCorner, WANDERER.wrapShoulderY],
+    [WANDERER.wrapShoulderX, WANDERER.wrapShoulderY + WANDERER.wrapCorner],
+    [WANDERER.wrapWaistX, WANDERER.wrapWaistY],
+    [WANDERER.wrapTailX, WANDERER.wrapTailY],
+    [WANDERER.wrapHemX, WANDERER.wrapTailTipY],
+    [-WANDERER.wrapHemX, WANDERER.wrapHemY],
+    [-WANDERER.wrapWaistX, WANDERER.wrapWaistY],
+  ]),
+  wrapShade: polygon([
+    [0, WANDERER.wrapShoulderY],
+    [WANDERER.wrapShoulderX - WANDERER.wrapCorner, WANDERER.wrapShoulderY],
+    [WANDERER.wrapShoulderX, WANDERER.wrapShoulderY + WANDERER.wrapCorner],
+    [WANDERER.wrapWaistX, WANDERER.wrapWaistY],
+    [WANDERER.wrapTailX, WANDERER.wrapTailY],
+    [WANDERER.wrapHemX, WANDERER.wrapTailTipY],
+    [0, WANDERER.wrapHemY],
+  ]),
+  crest: polygon([
+    [0, WANDERER.crestApexY],
+    [WANDERER.crestBaseHalf, WANDERER.crestBaseY],
+    [-WANDERER.crestBaseHalf, WANDERER.crestBaseY],
+  ]),
+  crestShade: polygon([
+    [0, WANDERER.crestApexY],
+    [WANDERER.crestBaseHalf, WANDERER.crestBaseY],
+    [0, WANDERER.crestBaseY],
+  ]),
+  barbRight: polygon(WANDERER.barbPts),
+  barbLeft: polygon(WANDERER.barbPts.map(([x, y]) => [-x, y] as const)),
+  armRight: polygon(WANDERER.armPts),
+  armLeft: polygon(WANDERER.armPts.map(([x, y]) => [-x, y] as const)),
+});
+
 /** נתיבי שלוש החדשות, **נבנים כאן** כמו כל השאר. */
 export const NEW_PATHS = Object.freeze({
   hunterBow:

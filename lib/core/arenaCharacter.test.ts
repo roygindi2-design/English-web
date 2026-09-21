@@ -19,10 +19,13 @@ const SPEC = readFileSync(new URL('../../plan/37-arena-spec.md', import.meta.url
   .replace(/\*\*/g, '');
 
 describe('arenaCharacter — `37 § 7`', () => {
-  it('six characters, a closed set, in the order of the § 7 table', () => {
+  it('seven characters, a closed set, in the order of the § 7 table', () => {
     // 🆕 `C-0726` — שלוש נוספו **בסוף**, ⇒ הסדר של שלוש הראשונות ⛔ לא זז ובחירה
     //    שמורה ⛔ אינה מצביעה פתאום על דמות אחרת.
-    expect([...ARENA_CHARACTERS]).toEqual(['wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade']);
+    // 🥋 `C-0755` — ו**שביעית** נוספה בסוף, מאותה סיבה בדיוק. ⛔ הרשימה כאן היא
+    //    **הצהרה**, ⛔ ולא נגזרת: היא קיימת כדי ששורה ⛔ לא תתווסף בשקט.
+    expect([...ARENA_CHARACTERS]).toEqual(['wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade', 'wanderer']);
+    expect(ARENA_CHARACTERS.slice(0, 6)).toEqual(['wizard', 'warrior', 'armorer', 'hunter', 'golem', 'shade']);
     expect(ARENA_CHARACTERS.slice(0, 3)).toEqual(['wizard', 'warrior', 'armorer']);
     expect(Object.isFrozen(ARENA_CHARACTERS)).toBe(true);
   });

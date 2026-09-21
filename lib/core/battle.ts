@@ -92,6 +92,14 @@ export const CHARACTER_STATS: Readonly<Record<ArenaCharacter, CharacterBattleSta
     hunter: Object.freeze({ ...BASE_STATS, learnerHp: 14, criticalDamage: 4 }),
     golem: Object.freeze({ ...BASE_STATS, learnerHp: 24, swingPenalty: 0 }),
     shade: Object.freeze({ ...BASE_STATS, hitDamage: 3, criticalDamage: 4 }),
+    /**
+     * 🥋 `C-0755` · `T-444` — שורה שביעית מ-`37 § 7`, ועוברת את אותן שלוש גדרות:
+     * גדר 2 `16 >= 12` · גדר 3 `2 > 1` · גדר 1 ⛔ אפס מפתח חדש.
+     * 🔴 **ו-`hitDamage: 1` ⛔ אינו «חלש»:** `D-271` מדד ש-`ceil(ENEMY_HP / hitDamage)`
+     * הוא **מספר המילים שהלומד פוגש** ⇒ `1` ⇒ **20 מילים, הגבוה ברוסטר**.
+     * ⇒ ההטיה מזיזה **הישרדוּת וקצב**, ⛔ ולא למידה — בדיוק מה שגדר 1 מתירה.
+     */
+    wanderer: Object.freeze({ ...BASE_STATS, learnerHp: 16, swingPenalty: 0 }),
   });
 
 /** Moved from `ArenaBattle.tsx` (T-281, `RULES § 0.22` ⓑ). ⛔ One enemy for all three (fence 1). */
