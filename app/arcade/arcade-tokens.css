@@ -1707,3 +1707,44 @@ body:has([data-arena-scope]) > div > main {
 /* חוקה שכבה א׳ א7 — ⛔ **ו⛔ אינה `animation: none`:** הבלוק הגלובלי
    (`app/globals.css:103`) מוריד את המשך ל-`0.01ms` ⇒ `animationend` **עדיין נורה**
    והתכונה משתחררת. `none` היה משאיר את `data-arena-strike` דלוק לנצח. */
+
+/* 🔴 **⟦21/09 · `T-443`⟧ הצל — **ההוכחה שהגוף באוויר.**
+   ⛔ בלעדיו הבעיטה נקראת כ**שכיבה**: הגוף מסתובב ל-92° ו⛔ שום דבר ⛔ אינו אומר
+   שהוא עזב את הרצפה. ⇒ מתכווץ ל-**0.40** בשיא ומתפרש ל-**1.34** במגע.
+   ⛔ **ו-`opacity` יורדת איתו** — צל רחוק הוא גם צל **חלש**, ⛔ ולא רק קטן.
+   ⛔ `[data-arena-shadow]` ⛔ אינו נושא אנימציה אחרת (נסרק) ⇒ ⛔ אפס התנגשות. */
+@keyframes arena-strike-shadow {
+  0%    { scale: 1 1;       opacity: 0.55; }
+  10.1% { scale: 1.14 1;    opacity: 0.55; }
+  31.9% { scale: 0.42 0.42; opacity: 0.23; }
+  37.7% { scale: 0.4 0.4;   opacity: 0.22; }
+  50%   { scale: 0.78 0.74; opacity: 0.4; }
+  53.2% { scale: 1.34 1.16; opacity: 0.55; }
+  66%   { scale: 1.1 1.04;  opacity: 0.55; }
+  100%  { scale: 1 1;       opacity: 0.55; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-shadow],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-shadow] {
+  animation: arena-strike-shadow var(--arena-strike-ms) linear 1;
+}
+
+/* 💨 **⟦21/09 · `T-443`⟧ אבק הנחיתה — בלעדיו המגע ⛔ אינו נשמע.**
+   ⛔ **צומת משלו** ⇒ ⛔ אינו מתנגש עם `[data-arena-dust]` שדולק על `hurt`.
+   ⛔ **ו-`opacity`+`scale` בלבד** — הצורה עצמה היא שיפוע רדיאלי סטטי. */
+[data-arena-scope] [data-arena-landdust] {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--arena-ink) 0%, var(--arena-ink-dim) 55%, transparent 100%);
+  opacity: 0;
+}
+@keyframes arena-strike-dust {
+  0%    { opacity: 0;    scale: 0.3 0.4; translate: 0 0; }
+  52.1% { opacity: 0;    scale: 0.3 0.4; }
+  55.3% { opacity: 0.75; scale: 1 1; }
+  68.1% { opacity: 0.32; scale: 1.7 1.35; translate: 8% -18%; }
+  83%   { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
+  100%  { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-landdust],
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-landdust] {
+  animation: arena-strike-dust var(--arena-strike-ms) linear 1;
+}

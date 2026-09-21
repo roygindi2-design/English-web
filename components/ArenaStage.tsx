@@ -274,6 +274,11 @@ export default function ArenaStage({
             ⛔ **לא נראה דבר**. ⇒ אבק מתרומם **סביב** הרגליים ומול המבט, ⛔ ולא
             מאחוריהן — זה גם מה שאבק עושה במציאות. */}
         <span data-arena-dust aria-hidden className="pointer-events-none absolute bottom-[-3%] h-[26%] w-[44%]" />
+        {/* 🥋 **⟦21/09 · `T-443`⟧ אבק הנחיתה — **צומת משלו, ⛔ ולא `[data-arena-dust]`.**
+            🔬 `[data-arena-dust]` דולק על `data-arena-hurt` («הלומד נפגע»). לומד
+            יכול להיפגע ו**להטיל באותו פריים** ⇒ שתי אנימציות על אותה תכונה באותו
+            צומת, והמאוחרת דורסת. זה `F-306`, ⇒ צומת נפרד. */}
+        <span data-arena-landdust aria-hidden className="pointer-events-none absolute bottom-[-4%] h-[22%] w-[62%]" />
       </div>
     </div>
   );

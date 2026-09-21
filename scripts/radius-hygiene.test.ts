@@ -101,6 +101,17 @@ const DECLARED_SHAPES: readonly {
   },
   {
     file: 'app/arcade/arcade-tokens.css',
+    selector: '[data-arena-scope] [data-arena-landdust]',
+    value: '50%',
+    rule: 'T-443 · 37 § 13.5 — the landing dust of the flying kick: it spreads on the '
+      + 'SAME receding floor as the shadow, the impact dust and the streak halo, so it is '
+      + 'an ellipse for the identical reason. ⛔ And it is a SEPARATE node from '
+      + '[data-arena-dust], which fires on data-arena-hurt: a learner can be hit and cast '
+      + 'in the same frame, and two animations on one property of one node do ⛔ not stack '
+      + '— the later one overwrites. That is F-306.',
+  },
+  {
+    file: 'app/arcade/arcade-tokens.css',
     selector: '[data-arena-scope] [data-arena-halo]',
     value: '50%',
     rule: 'C-0750 · 37 § 8 ק1 · 37 § 13.5 — the streak halo: it lies around the figure '

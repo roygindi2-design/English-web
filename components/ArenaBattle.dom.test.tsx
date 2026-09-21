@@ -914,6 +914,13 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     expect(rig, 'הצומת קיים').toBeTruthy();
     expect(rig?.querySelector('[data-arena-figure]'), 'הדמות בתוכו').toBeTruthy();
     expect(rig?.hasAttribute('data-arena-idle'), '⛔ ואינו צומת המנוחה').toBe(false);
+    // 💨 ואבק הנחיתה גם הוא צומת משלו: `[data-arena-dust]` דולק על `hurt`, ולומד
+    //    יכול להיפגע ולהטיל באותו פריים ⇒ אותה תכונה, אותו צומת, והמאוחרת דורסת.
+    const slot = document.querySelector('[data-arena-slot="hero"]') as Element;
+    const land = slot.querySelector('[data-arena-landdust]');
+    expect(land, 'אבק נחיתה קיים').toBeTruthy();
+    expect(land?.hasAttribute('data-arena-dust'), '⛔ ואינו אבק הפגיעה').toBe(false);
+    expect(slot.querySelector('[data-arena-shadow]'), 'והצל — ההוכחה שהגוף באוויר').toBeTruthy();
   });
 
   it('⛔ אנימציה אחרת שמבעבעת לאזור הבמה ⛔ אינה מאפסת את התנוחה', async () => {
