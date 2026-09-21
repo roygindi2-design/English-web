@@ -398,6 +398,40 @@ const wandererFoot = (side: 1 | -1): string =>
     [side * (WANDERER_ANKLE.x - WANDERER.footHeel), WANDERER_ANKLE.y],
   ]);
 
+/**
+ * 🦴 **⟦21/09 · `C-0756` · `T-444`ⓒ⟧ המפרקים — **מרכזי סיבוב**, ⛔ ולא תנועה.**
+ *
+ * 🔴 **למה מחרוזת ו⛔ לא שני מספרים:** הרכיב ⛔ אינו רשאי להחזיק קואורדינטה
+ * (‏`ArenaAvatar.test.ts:74`), ו-`transform-origin` הוא **ערך CSS אחד**. ⇒ הוא
+ * נבנה **כאן**, מאותם מספרים שבנו את הנתיב עצמו ⇒ המפרק ⛔ אינו יכול לסטות
+ * מהצורה שהוא מסובב. 🔬 **וזה בדיוק הכשל שנמדד בסבב ה-Figma:** מרכז שנבחר
+ * בנפרד מהאיבר גורם לאיבר **להתנתק** ברגע שהוא מסתובב.
+ *
+ * ⚠️ **ו-`transform-box: fill-box` ⛔ אסור על מפרק — נמדד, ⛔ ולא שוער:** הוא
+ * לוקח את המרכז מתיבת המילוי של האיבר **עצמו** ⛔ ולא מה-`viewBox`, ⇒ כל
+ * איבר קופץ למקום אחר. ברירת המחדל ב-SVG היא `view-box`, וזו הנכונה.
+ *
+ * ⛔ **ו⛔ אין כאן עוגן חדש** (`38 § 3`): `ANCHORS` ⛔ לא זז, ו-`CharacterSlot`
+ * ⛔ לא קיבל שם שביעי. אלה **מרכזי סיבוב של צורות הנווד**, ⛔ ולא משבצות.
+ */
+const armPivotX = (WANDERER.armPts[0][0] + WANDERER.armPts[1][0]) / 2;
+const armPivotY = (WANDERER.armPts[0][1] + WANDERER.armPts[1][1]) / 2;
+
+const origin = (x: number, y: number): string => `${x}px ${y}px`;
+
+export const WANDERER_JOINTS = Object.freeze({
+  /* 🦵 הברך — **נקודת הפיצול עצמה**, ⇒ הירך והשוק נפגשים בה בדיוק. */
+  kneeRight: origin(WANDERER.kneeX, WANDERER.kneeY),
+  kneeLeft: origin(-WANDERER.kneeX, WANDERER.kneeY),
+  /* 💪 הכתף — **אמצע הצלע העליונה של הזרוע**, ⛔ ולא עוגן `shoulders`: הזרוע
+     של הנווד מורמת, ⇒ עוגן הכתפייה היה מסובב אותה סביב נקודה שמחוץ לה. */
+  armRight: origin(armPivotX, armPivotY),
+  armLeft: origin(-armPivotX, armPivotY),
+  /* 🌀 הגו — **המותן**, שהיא הקצה התחתון של העטיפה. פיתול סביבה מזיז כתפיים
+     וראש ⛔ ומשאיר את האגן במקומו, וזה מה שקורא כפיתול ⛔ ולא כהטיה. */
+  torso: origin(0, WANDERER.wrapWaistY),
+});
+
 export const WANDERER_PATHS = Object.freeze({
   thighRight: wandererThigh(1),
   thighLeft: wandererThigh(-1),

@@ -16,6 +16,7 @@ import {
   HEAD_RADIUS,
   LAYER_ORDER,
   WANDERER,
+  WANDERER_JOINTS,
   WANDERER_PATHS,
   WARRIOR,
   WARRIOR_PATHS,
@@ -217,6 +218,29 @@ const FIG = {
   dune: 'text-[color:var(--arena-fig-dune,currentColor)]',
   duneShade: 'text-[color:var(--arena-fig-dune-shade,currentColor)]',
 } as const;
+
+/**
+ * 🦴 **⟦21/09 · `C-0756` · `T-444`ⓒ⟧ מפרק — צומת **בתוך** שכבה, ⛔ ולא שכבה.**
+ *
+ * 🔴 **והגדר שמכתיבה את הצורה הזאת נמדדה, ⛔ ולא נבחרה:**
+ * ‏`ArenaAvatar.dom.test.tsx` דורש שכל `[data-arena-layer]` שנושא **תכונת
+ * `transform`** יהיה `mainHand` או `offHand`, ⛔ ואין שלישי. ⇒ המפרק ⛔ אינו
+ * יכול להיות שכבה, ו**התנועה עליו היא `rotate` ב-CSS ⛔ ולא `transform`**.
+ *
+ * ⛔ **ו-`transformOrigin` הוא הדבר היחיד שמוטבע כאן — כערך שהמודול הטהור
+ * בנה.** הרכיב ⛔ אינו יודע איפה הברך; הוא יודע **לאיזה מפתח** לפנות.
+ */
+function Joint({ at, name, children }: {
+  readonly at: keyof typeof WANDERER_JOINTS;
+  readonly name: string;
+  readonly children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <g data-arena-joint={name} style={{ transformOrigin: WANDERER_JOINTS[at] }}>
+      {children}
+    </g>
+  );
+}
 
 function Paint({ hue, children }: {
   readonly hue: keyof typeof FIG;
@@ -654,6 +678,19 @@ const NO_BOOTS: readonly ArenaCharacter[] = ['shade'];
  */
 const NO_EQUIPMENT: readonly ArenaCharacter[] = ['wanderer'];
 
+/**
+ * 🦴 **⟦21/09 · `C-0756` · `T-444`ⓒ⟧ מי נושא שלד — **רשימה מפורשת**, ⛔ ולא נגזרת.**
+ *
+ * 🔴 **וזו הגדר שמגנה על שש הדמויות הקיימות:** קיפריימים של ברך ושל גו
+ * מגודרים ב-CSS ל-`[data-arena-rig='jointed']` ⇒ דמות בלי התכונה הזאת
+ * ⛔ **אינה רואה אותם כלל**, ⛔ ולא «רואה אותם ונשארת במקרה במקום».
+ *
+ * 🌀 **ומרכז פיתול הגו נמסר כ**משתנה CSS**, ⛔ ולא נכתב בגיליון:** הגו מתפרש
+ * על **שש שכבות אחיות** ⇒ ⛔ אי אפשר לעטוף אותן, אבל **סיבוב זהה של כולן
+ * סביב אותו מרכז שקול לסיבוב של קבוצה**. ⇒ המספר נשאר במודול הטהור.
+ */
+const JOINTED: readonly ArenaCharacter[] = ['wanderer'];
+
 
 /**
  * T-217 — **שלוש צלליות על שלד אחד.** לכל דמות של `37 § 7` שכבת חתימה אחת, על שכבות
@@ -1059,14 +1096,17 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
             <path d={WANDERER_PATHS.thighRight} />
             <path d={WANDERER_PATHS.thighLeft} />
           </Paint>
-          <Paint hue="duneShade">
-            <path d={WANDERER_PATHS.shinRight} />
-            <path d={WANDERER_PATHS.shinLeft} />
-          </Paint>
-          <Paint hue="leather">
-            <path d={WANDERER_PATHS.footRight} />
-            <path d={WANDERER_PATHS.footLeft} />
-          </Paint>
+          {/* 🦵 **השוק והכף רוכבים על הברך** — ⇒ קיפול הברך מזיז את שניהם
+              כיחידה אחת, בדיוק כמו רגל. ⛔ הירך ⛔ אינה בפנים: היא זו שהברך
+              תלויה ממנה. */}
+          <Joint at="kneeRight" name="knee">
+            <Paint hue="duneShade"><path d={WANDERER_PATHS.shinRight} /></Paint>
+            <Paint hue="leather"><path d={WANDERER_PATHS.footRight} /></Paint>
+          </Joint>
+          <Joint at="kneeLeft" name="knee">
+            <Paint hue="duneShade"><path d={WANDERER_PATHS.shinLeft} /></Paint>
+            <Paint hue="leather"><path d={WANDERER_PATHS.footLeft} /></Paint>
+          </Joint>
         </>
       ),
     },
@@ -1132,7 +1172,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
     {
       layer: 'offHand',
       shape: (
-        <>
+        <Joint at="armLeft" name="arm">
           <Paint hue="dune"><path d={WANDERER_PATHS.armLeft} /></Paint>
           <Paint hue="skin">
             <circle cx={-WANDERER.palmX} cy={WANDERER.palmY} r={WANDERER.palmRadius} />
@@ -1147,13 +1187,13 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
               />
             ))}
           </Paint>
-        </>
+        </Joint>
       ),
     },
     {
       layer: 'mainHand',
       shape: (
-        <>
+        <Joint at="armRight" name="arm">
           <Paint hue="dune"><path d={WANDERER_PATHS.armRight} /></Paint>
           <Paint hue="skin">
             <circle cx={WANDERER.palmX} cy={WANDERER.palmY} r={WANDERER.palmRadius} />
@@ -1168,7 +1208,7 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
               />
             ))}
           </Paint>
-        </>
+        </Joint>
       ),
     },
   ],
@@ -1200,11 +1240,16 @@ export default function ArenaAvatar({
   /* 🔴 **חוקה § 1 — הכיוון ⛔ אינו צורה בלבד.** לומד שקורא מסך ⛔ אינו רואה שהדמות
      הסתובבה, ⇒ השם הנגיש אומר זאת. זו אותה גדר בדיוק שהפרידה בין שני התפקידים. */
   const label = back ? `${dressed}, ${FACING_HE.back}` : dressed;
+  /* 🦴 `C-0756` — התכונה **והמשתנה** נדלקים יחד: גיליון שמגודר לתכונה ⛔ אינו
+     יכול לרוץ בלי המרכז, ומרכז בלי תכונה ⛔ אינו מסובב דבר. */
+  const jointed = character !== null && character !== undefined && JOINTED.includes(character);
 
   return (
     <svg
       role="img"
       aria-label={label}
+      data-arena-rig={jointed ? 'jointed' : undefined}
+      style={jointed ? ({ '--arena-rig-torso': WANDERER_JOINTS.torso } as React.CSSProperties) : undefined}
       /* T-117 — הבמה מזיזה את הדמות דרך התכונה הזאת. ⛔ התנועה חיה ב-CSS. */
       data-arena-figure={role}
       viewBox={VIEW_BOX}

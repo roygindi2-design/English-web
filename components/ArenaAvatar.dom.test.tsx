@@ -143,8 +143,6 @@ describe('C-0727 — הציוד על הדמויות', () => {
     const legs = layer(avatar('wanderer', []), 'legs');
     expect(legs).not.toBeNull();
     expect(legs?.querySelectorAll('path').length, 'שישה נתיבים — שלושה לכל צד').toBe(6);
-    // ⛔ **ו⛔ אין מפרק עדיין** — `T-444` ב׳ היא **מבנה סטטי** בלבד.
-    expect(legs?.querySelector('[data-arena-joint]')).toBeNull();
   });
 
   it('🥋 השם הנגיש של הנווד ⛔ אינו מונה פריט שאיש ⛔ אינו רואה', () => {
@@ -257,5 +255,66 @@ describe('C-0731 · T-432 — הדמות מגבה', () => {
     ]) {
       expect(readFileSync(screen, 'utf8'), `${screen} — הציוד נבחן כאן`).not.toContain('facing="back"');
     }
+  });
+});
+
+/**
+ * 🦴 **⟦21/09 · `C-0756` · `T-444`ⓒ⟧ המפרקים — **מבנה שנבדק, ⛔ ואפס תנועה**.**
+ *
+ * 🔴 **מה שנמדד כאן ⛔ אינו «יש מפרק» — זה ⛔ אינו מודד דבר.** שלוש הטענות הן:
+ * ⓐ המפרק הוא צומת **בתוך** שכבה ⇒ ⛔ אינו נושא `transform` ו⛔ אינו
+ * `[data-arena-layer]`; ⓑ יש לו **מרכז סיבוב**, אחרת סיבוב ינתק את האיבר;
+ * ⓒ **שש הדמויות הקיימות ⛔ אינן רואות ממנו דבר** — ⛔ לא צומת ו⛔ לא תכונה.
+ */
+describe('C-0756 · T-444ⓒ — השלד של הנווד', () => {
+  const joints = (svg: SVGSVGElement) => [...svg.querySelectorAll('[data-arena-joint]')];
+
+  it('🦴 ארבעה מפרקים: ברך לכל רגל, וכתף לכל זרוע', () => {
+    const svg = avatar('wanderer', []);
+    expect(joints(svg).map((g) => g.getAttribute('data-arena-joint')).sort())
+      .toEqual(['arm', 'arm', 'knee', 'knee']);
+    // 🦵 הברך יושבת **בתוך** `legs`, והכתפיים בתוך משבצות היד.
+    expect(layer(svg, 'legs')?.querySelectorAll('[data-arena-joint="knee"]').length).toBe(2);
+    expect(layer(svg, 'mainHand')?.querySelector('[data-arena-joint="arm"]')).not.toBeNull();
+    expect(layer(svg, 'offHand')?.querySelector('[data-arena-joint="arm"]')).not.toBeNull();
+  });
+
+  it('🔴 ⛔ אף מפרק ⛔ אינו שכבה, ו⛔ אף אחד ⛔ אינו נושא `transform`', () => {
+    // 🔬 זו הגדר של `ArenaAvatar.dom.test.tsx` על משבצות היד, מיושמת על המפרק:
+    //    תנועה על מפרק היא **`rotate` ב-CSS**, ⛔ ולא תכונת `transform` ב-DOM.
+    for (const g of joints(avatar('wanderer', []))) {
+      expect(g.getAttribute('transform'), 'מפרק ⛔ אינו נושא transform').toBeNull();
+      expect(g.getAttribute('data-arena-layer'), 'מפרק ⛔ אינו שכבה').toBeNull();
+    }
+  });
+
+  it('🦴 לכל מפרק **מרכז סיבוב** — ⛔ אחרת האיבר מתנתק כשהוא מסתובב', () => {
+    for (const g of joints(avatar('wanderer', []))) {
+      const style = (g as SVGElement).style;
+      expect(style.transformOrigin, g.getAttribute('data-arena-joint') ?? '').not.toBe('');
+      // ⚠️ `transform-box: fill-box` ⛔ אסור — המרכז נמדד מתיבת המילוי של האיבר
+      //    עצמו ⛔ ולא מה-`viewBox` ⇒ **כל איבר קופץ**. ברירת המחדל היא הנכונה.
+      expect(style.transformBox, 'fill-box ⛔ אסור על מפרק').not.toBe('fill-box');
+    }
+  });
+
+  it('🔴 **הבידוד** — שש הדמויות הקיימות ⛔ אינן נושאות ⛔ מפרק ו⛔ לא שלד', () => {
+    for (const c of DRESSED) {
+      const svg = avatar(c, ALL);
+      expect(joints(svg).length, `${c} — ⛔ אפס מפרק`).toBe(0);
+      expect(svg.getAttribute('data-arena-rig'), `${c} — ⛔ אין שלד`).toBeNull();
+      cleanup();
+    }
+    // ⛔ וגם השלד עצמו — דמות `null` — ⛔ אינו נושא אותם.
+    const { container } = render(<ArenaAvatar role="hero" items={[]} />);
+    expect(container.querySelectorAll('[data-arena-joint]').length).toBe(0);
+  });
+
+  it('🌀 הנווד נושא `data-arena-rig` **ומרכז פיתול לגו** — שניהם, ⛔ ולא אחד', () => {
+    // 🔬 גיליון שמגודר לתכונה ⛔ אינו יכול לרוץ בלי המרכז, ומרכז בלי תכונה
+    //    ⛔ אינו מסובב דבר. ⇒ הטענה היא על **הצמד**.
+    const svg = avatar('wanderer', []);
+    expect(svg.getAttribute('data-arena-rig')).toBe('jointed');
+    expect(svg.style.getPropertyValue('--arena-rig-torso')).not.toBe('');
   });
 });
