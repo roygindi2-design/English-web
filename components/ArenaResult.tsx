@@ -94,15 +94,17 @@ export default function ArenaResult({
        הכרום לבדה (84) — **רשימת הפספוסים היא שגדלה עם הקרב**, ⇒ הגובה המדויק חייב
        לבוא **יחד** עם אזור גמיש, אחרת `overflow-hidden` היה **חותך** אותה בשקט.
 
-       ⚠️ **`pb-28` נשאר, ו⛔ זו ⛔ אינה סטייה מהתבנית — היא ההפרש בין שני המסכים:**
+       ⚠️ **ריפוד תחתון שמשלם על הרצועה נשאר (⟦`T-430`⟧: `9.5rem`, ⛔ לא עוד `pb-28`), ו⛔ זו ⛔ אינה סטייה מהתבנית — היא ההפרש בין שני המסכים:**
        ל-`ArenaBattle` ⛔ אין `<ActionBar>`, ולמסך הזה יש, והוא `fixed bottom-0`. ⇒ ריפוד
        של `max(0.5rem,…)` בלבד — כלשון `T-422` — היה מסתיר את סוף הרשימה **מתחת** לרצועה
        הקבועה. ⇒ הריפוד התחתון כאן משלם על הרצועה, בדיוק כפי שאמרה ההערה שהוא החליף. */
     /* 🎬 **⟦T-428 · `C-0773`⟧ אותה הכרעה כמו `ArenaSummary`:** `data-arena-scope` ⇒ מלוא
        הרוחב, `--arena-night`, והכרום יורד ⇒ `h-[100dvh]` ו-`pt-6` (⛔ לא 52: שער ≤48px של `F-011`, נמדד אדום).
-       ⛔ `pb-28` ו-`<ActionBar>` ⛔ לא נגעו — ה-80px שלהם הם `T-430`/`F-284`. הרצועה עצמה
-       מקבלת את צבעי הזירה ב-`arcade-tokens.css` (‏`[data-arena-scope] [data-action-bar]`). */
-    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-6 pb-28">
+       הרצועה עצמה מקבלת את צבעי הזירה ב-`arcade-tokens.css` (‏`[data-arena-scope] [data-action-bar]`).
+       👻 **⟦`T-430` · `C-0775`⟧ `pb-28` ⇒ `9.5rem` + אזור בטוח.** 🔬 נמדד ב-`check:mobile`: הרצועה
+       כאן היא **שני כפתורים בעמודה**, `h=147` ⟨`bar top 705` ב-852⟩ ⇒ `pb-28` (112) השאיר 35px של
+       הרשימה מתחתיה, ו-`9rem` (144) — **3px**. ‏`9.5rem` = 152. וה-80px של `body` יורדים ב-CSS. */
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))]">
       <h1 className="text-3xl font-bold leading-tight">{enemyDefeated ? WON_HE : OVER_HE}</h1>
 
       <div className="flex flex-row items-center gap-4">

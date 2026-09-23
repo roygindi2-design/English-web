@@ -348,6 +348,16 @@ body:has([data-arena-scope]) > div > main {
    `globals` שבסכימה בהירה הם **לבן** ⇒ רצועה לבנה מתחת למסך כחול־ליל. ⛔ הרכיב ⛔ לא
    נגע (עשרה מסכים משתמשים בו); הכלל חל **אך ורק** בתוך הסקופ. ⛔ ומיקומו, גובהו
    והריפוד שמשלם עליו ⛔ לא נגעו — אלה `T-430`. */
+/* 👻 **⟦23/09 · `C-0775` · `T-430` · סוגר את `F-284`⟧ ⛔ אפס גלילת-רפאים.**
+   🔬 **נמדד חי, ⛔ ולא הוסק:** `/dev/arcade/result` ⇒ `scrollHeight 932` מול `852`, ו-`body`
+   נושא `padding-bottom: 80px` — ‏`globals.css:88`, השמירה לרצועה **קבועה** על דף **שנגלל**.
+   במסך זירה השורש הוא `h-[100dvh]` ושומר את מקום הרצועה **בעצמו** ⇒ השמירה שולמה פעמיים.
+   ⛔ **`:has([data-arena-scope] [data-action-bar])`, ⛔ ולא `:has([data-arena-scope])`:** ספציפיות
+   `0,2,1` גוברת על שני כללי `globals` ⟨`0,1,1`⟩ בלי תלות בסדר הטעינה, והכלל חל **אך ורק**
+   על רצועה שיושבת בתוך הסקופ ⇒ ⛔ אף מסך שאינו זירה ⛔ אינו נוגע בו. */
+body:has([data-arena-scope] [data-action-bar]) {
+  padding-bottom: 0;
+}
 [data-arena-scope] [data-action-bar] {
   background: var(--arena-night);
   border-color: var(--arena-card-edge);

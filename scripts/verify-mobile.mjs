@@ -3701,9 +3701,14 @@ try {
   // 🔬 `C-0708` measured both `/dev/arcade/summary` and `/dev/arcade/result` at `left=24
   // w=345` with a TRANSPARENT section over the light page — the learner won in a dark room
   // and was handed the result on a white form. Both now carry `data-arena-scope`.
-  // ⛔ The 80px under `result`'s fixed `<ActionBar>` is `T-430`, ⛔ not claimed here.
+  // 👻 `T-430` (`C-0775`) · closes `F-284` — ⛔ no ghost scroll. 🔬 Measured: `body` carried
+  // `padding-bottom: 80px` from `globals.css:88` (the reservation for a FIXED `<ActionBar>` on a
+  // scrolling page) on top of a `100dvh` section that already reserves the bar itself ⇒ 932/852.
+  // ⇒ and the last row of the section must end ABOVE the bar, ⛔ not under it.
+  // 🧹 `T-431` (`C-0775`) — `home` and `character` join the same four claims: ⛔ no app header,
+  // full width, arena night — measured, ⛔ not assumed from the shared `:has()` rule.
   {
-    for (const route of ['/dev/arcade/summary', '/dev/arcade/result']) {
+    for (const route of ['/dev/arcade/home', '/dev/arcade/character', '/dev/arcade/summary', '/dev/arcade/result']) {
       for (const size of [{ width: 320, height: 568 }, { width: 393, height: 852 }]) {
         const ctx = await browser.newContext({ viewport: size });
         const page = await ctx.newPage();
@@ -3719,9 +3724,15 @@ try {
             client: document.documentElement.clientWidth,
             bg: sec ? getComputedStyle(sec).backgroundColor : '',
             header: Math.round(document.querySelector('body > div > header')?.getBoundingClientRect().height ?? 0),
+            scroll: document.documentElement.scrollHeight,
+            clientH: document.documentElement.clientHeight,
+            barTop: Math.round(document.querySelector('[data-action-bar]')?.getBoundingClientRect().top ?? Infinity),
+            contentBottom: sec
+              ? Math.round(sec.getBoundingClientRect().bottom - parseFloat(getComputedStyle(sec).paddingBottom))
+              : -1,
           };
         });
-        const at = `T-428 · ${route} @ ${size.width}×${size.height}`;
+        const at = `T-428 · T-430 · T-431 · ${route} @ ${size.width}×${size.height}`;
         check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
         check(m.scoped, `${at} · the root carries data-arena-scope`, 'no section[data-arena-scope]');
         check(
@@ -3731,6 +3742,12 @@ try {
         );
         check(m.bg === 'rgb(28, 38, 66)', `${at} · the arena night background`, `background ${m.bg}`);
         check(m.header === 0, `${at} · the app header is not on the arena route`, `header is ${m.header}px`);
+        check(m.scroll === m.clientH, `${at} · ⛔ no ghost scroll`, `scrollHeight ${m.scroll} vs clientHeight ${m.clientH}`);
+        check(
+          m.contentBottom <= m.barTop,
+          `${at} · the content ends above the action bar`,
+          `content bottom ${m.contentBottom} vs bar top ${m.barTop}`,
+        );
         await ctx.close();
       }
     }
