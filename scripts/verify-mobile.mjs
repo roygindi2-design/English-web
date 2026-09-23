@@ -3611,6 +3611,51 @@ try {
     }
   }
 
+  // ---- 2e. T-420 · the arena HOME screen fits the device, measured in a real browser ----
+  //
+  // 🔬 `C-0703` measured `scrollHeight − innerHeight` on `/dev/arcade/home` at **460px**
+  // (320×568) · **287** (375×667) · **102** (393×852) — the screen was nearly two screens on
+  // the smallest phone. The root is now an exact `h-[100dvh]` with the middle scrolling
+  // inside itself (`components/ArenaHome.tsx`, `SHELL_CLASS`/`BODY_CLASS`).
+  // ⛔ jsdom ⛔ cannot measure layout — the source guard in `ArenaHome.test.ts` proves the
+  // DECLARATION; this proves it survives, and that `התחל קרב` is on screen, not clipped.
+  {
+    for (const size of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 393, height: 852 },
+    ]) {
+      const ctx = await browser.newContext({ viewport: size });
+      const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
+      await page.goto(`${BASE}/dev/arcade/home`, { waitUntil: 'networkidle' });
+      await page.waitForSelector('[data-arena-scope]');
+      const m = await page.evaluate(() => {
+        const doc = document.documentElement;
+        const start = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('התחל קרב'));
+        const r = start?.getBoundingClientRect();
+        return {
+          client: doc.clientHeight,
+          scroll: doc.scrollHeight,
+          startTop: r ? Math.round(r.top) : -1,
+          startBottom: r ? Math.round(r.bottom) : 1e9,
+          startHit: r
+            ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('button') === start
+            : false,
+        };
+      });
+      const at = `T-420 · /dev/arcade/home @ ${size.width}×${size.height}`;
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+      check(m.scroll === m.client, `${at} · ⛔ nothing scrolls`, `scrollHeight ${m.scroll} vs clientHeight ${m.client}`);
+      check(
+        m.startTop >= 0 && m.startBottom <= m.client && m.startHit,
+        `${at} · \`התחל קרב\` is fully on screen and hit-testable`,
+        `top ${m.startTop} · bottom ${m.startBottom} · viewport ${m.client} · hit ${m.startHit}`,
+      );
+      await ctx.close();
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

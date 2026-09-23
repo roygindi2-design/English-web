@@ -80,7 +80,8 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
 
   it('הזירה מציירת משטח משלה — ⛔ אחרת הטקסט יושב על רקע העמוד (F-155)', () => {
     expect(CODE).toContain('data-arena-scope');
-    expect(CODE).toContain('min-h-[100dvh]');
+    // ⟦T-420⟧ גובה **מדויק** — `min-h-[100dvh]` היה הגלישה עצמה (+460px ב-320×568).
+    expect(CODE).toContain('h-[100dvh]');
     expect(CODE).not.toContain('h-screen');
   });
 
@@ -267,14 +268,17 @@ describe('ArenaHome — שלד הטעינה (T-398)', () => {
   });
 
   it('🔑 `התחל קרב` שומרת את מקומה — אותה קבוצה, אותו `mt-auto pt-4`', () => {
-    expect(LOADING).toContain('mt-auto flex flex-col gap-3 pt-4');
+    // ⟦T-420⟧ שני המצבים קוראים **לאותו קבוע**, ⇒ ⛔ אינם יכולים להיפרד בשקט.
+    expect(LOADING).toContain('className={ACTIONS_CLASS}');
+    expect(CODE.match(/className=\{ACTIONS_CLASS\}/g) ?? []).toHaveLength(2);
+    expect(CODE).toContain("const ACTIONS_CLASS = 'shrink-0 mt-auto flex flex-col gap-3 pt-4'");
   });
 
   it('🔑 המעטפת נושאת את `gap-5` של המסך המיוצב, ⛔ ולא `gap-6`', () => {
-    const shell = SRC.match(/className=\{`flex min-h-\[100dvh\] flex-col \$\{[^`]*`\}/)?.[0] ?? '';
+    const shell = SRC.match(/className=\{`\$\{SHELL_CLASS\} \$\{[^`]*`\}/)?.[0] ?? '';
     expect(shell).toContain("loading ? 'gap-5' : 'gap-6'");
     // המסך המיוצב עצמו — אותו מרווח בדיוק, וזו הטענה כולה.
-    expect(SRC).toContain('flex min-h-[100dvh] flex-col gap-5 pb-16');
+    expect(SRC).toContain('<section data-arena-scope className={`${SHELL_CLASS} gap-5`}>');
   });
 
   it('⛔ שלד, ⛔ ולא ספינר — ו-`aria-busy` יושב על המעטפת', () => {
@@ -287,5 +291,57 @@ describe('ArenaHome — שלד הטעינה (T-398)', () => {
     const fills = LOADING.match(/bg-\[color:var\(--[a-z-]+\)\]/g) ?? [];
     expect(fills.length).toBeGreaterThan(0);
     expect(new Set(fills)).toEqual(new Set(['bg-[color:var(--arena-card)]']));
+  });
+});
+
+/**
+ * 🏠 **T-420 · יעד ① של `arena` ⟨רוי: «אפס גלילה אנכית»⟩ — שומר-המקור.**
+ * 🔬 `C-0703`: ‏`scrollHeight − innerHeight` = 460 · 287 · 102 ב-320×568 · 375×667 · 393×852,
+ * משני שורשים (`:298` הטעינה · `:375` המסך). ⇒ הטענה היא על **כל** שורש-`<section>` בנפרד.
+ * ⛔ והמספר עצמו ⛔ אינו כאן — jsdom ⛔ אינו מבצע פריסה; הוא ב-`scripts/verify-mobile.mjs`.
+ */
+describe('ArenaHome — גובה מדויק, ⛔ ולא מינימום (T-420)', () => {
+  const sections = CODE.match(/<section[\s\S]*?>/g) ?? [];
+  const shell = CODE.match(/const SHELL_CLASS =\s*'([^']*)'/)?.[1] ?? '';
+
+  /** השורש מעוגן ל-`100dvh` מדויק · ⛔ `min-h` · ⛔ `pb-16` · ⛔ גולל. */
+  const exact = (cls: string): boolean =>
+    /(^|\s)h-\[100dvh\]/.test(cls) &&
+    !cls.includes('min-h-[100dvh]') &&
+    !/(^|\s)pb-(16|28)(\s|$)/.test(cls) &&
+    /(^|\s)overflow-hidden(\s|$)/.test(cls);
+
+  it('שני שורשים, ושניהם נושאים את המעטפת המשותפת', () => {
+    expect(sections).toHaveLength(2);
+    for (const s of sections) expect(s).toContain('${SHELL_CLASS}');
+  });
+
+  it('המעטפת: `h-[100dvh]` מדויק · `overflow-hidden` · ⛔ `min-h` · ⛔ `pb-16`', () => {
+    expect(exact(shell)).toBe(true);
+    expect(CODE).not.toContain('min-h-[100dvh]');
+  });
+
+  it('בקרה שלילית — המעטפת הישנה נופלת בשומר', () => {
+    expect(exact('flex min-h-[100dvh] flex-col gap-5 pb-16')).toBe(false);
+    expect(exact('flex h-[100dvh] flex-col gap-5 pb-16 overflow-hidden')).toBe(false);
+  });
+
+  it('בקרה שלילית — גובה מדויק ⛔ בלי `overflow-hidden` נופל', () => {
+    expect(exact('flex h-[100dvh] flex-col')).toBe(false);
+  });
+
+  it('האזור הגמיש: `min-h-0 flex-1`, והמסך המיוצב גולל **בתוכו**', () => {
+    expect(CODE).toContain("const BODY_CLASS = 'relative flex min-h-0 flex-1 flex-col gap-5 [&>*]:shrink-0'");
+    expect(CODE.match(/data-arena-home-body/g) ?? []).toHaveLength(2);
+    expect(CODE).toContain('${BODY_CLASS} overflow-y-auto');
+  });
+
+  it('הקרב האחרון והארון בתוך האזור הגמיש — ⛔ מתחת לפעולות הם היו נחתכים', () => {
+    const body = CODE.indexOf('${BODY_CLASS} overflow-y-auto');
+    const actions = CODE.lastIndexOf('className={ACTIONS_CLASS}');
+    expect(CODE.indexOf('data-arena-last-round')).toBeGreaterThan(body);
+    expect(CODE.indexOf('data-arena-last-round')).toBeLessThan(actions);
+    expect(CODE.indexOf('ref={drawerRef}')).toBeGreaterThan(body);
+    expect(CODE.indexOf('ref={drawerRef}')).toBeLessThan(actions);
   });
 });

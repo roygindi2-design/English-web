@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ArenaAvatar, { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
@@ -212,12 +212,39 @@ function slotLabel(slot: HomeSlot): string {
   return slot.item === null ? slot.label : labels[slot.item] ?? slot.label;
 }
 
+/**
+ * 🏠 **T-420 · יעד ① של `arena` ⟨רוי: «אפס גלילה אנכית»⟩ — גובה **מדויק**, ⛔ ולא מינימום.**
+ * 🔬 **נמדד `C-0703` ב-`next start`, ⛔ ולא שוער:** `min-h-[100dvh]` ועוד `pb-16` ⇒
+ * `scrollHeight − innerHeight` = **460** ב-320×568 · **287** ב-375×667 · **102** ב-393×852.
+ * ⇒ תבנית `ArenaBattle` / `ArenaCharacterChoice` בדיוק: `h-[100dvh]` — ⛔ ולא `calc(… − 5.25rem)`,
+ * כי `arcade-tokens.css` כבר מוריד את הכותרת ואת ריפוד ה-`<main>` בכל מסמך שנושא
+ * `data-arena-scope` (`T-423`ⓑ) · `overflow-hidden` · ריפוד תחתון של בטיחות המכשיר בלבד.
+ * ⚠️ **ו-460px ⛔ אינם נפתרים בגובה לבדו** — ב-320×568 התוכן ⛔ אינו נכנס. ⇒ ההכרעה (DEV,
+ * עיצוב מובייל מאושר-מראש): **הפעולות נשארות על המסך**, והאזור שביניהן לכותרת נגלל בתוך
+ * עצמו — כמו `T-422` ב-`ArenaSummary`.
+ */
+const SHELL_CLASS =
+  'flex h-[100dvh] flex-col overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]';
+/**
+ * ⛔ `[&>*]:shrink-0` — אחרת flex מכווץ כרטיס של 66px ל-40 במקום לגלול אותו.
+ * ⛔ `relative` — 🔬 נמדד בטיק הזה ב-320×568: בלעדיו ה-`sr-only` (‏`absolute`) של המשבצות
+ * והלוח ⛔ אינם נלכדים באזור הנגלל — הבלוק המכיל שלהם הוא המסמך, והם מתחו אותו ל-697.
+ */
+const BODY_CLASS = 'relative flex min-h-0 flex-1 flex-col gap-5 [&>*]:shrink-0';
+const ACTIONS_CLASS = 'shrink-0 mt-auto flex flex-col gap-3 pt-4';
+
 export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHomeProps): React.JSX.Element {
   const [state, setState] = useState<ArenaHomeState | null>(initialState ?? null);
   const [screen, setScreen] = useState<'loading' | 'ready' | 'session_expired' | 'error'>(
     initialState === undefined ? 'loading' : 'ready',
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
+  /** 🏠 T-420 — הארון נפתח בתחתית האזור הגמיש, ⇒ מתחת לקו הראייה. ⛔ `block: 'nearest'`
+   *  ⛔ ובלי `smooth`: קפיצה מיידית, ⇒ `prefers-reduced-motion` ⛔ אינו נפגע. */
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (drawerOpen) drawerRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [drawerOpen]);
 
   const load = useCallback(async () => {
     setScreen('loading');
@@ -295,7 +322,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
       <section
         data-arena-scope
         aria-busy={loading || undefined}
-        className={`flex min-h-[100dvh] flex-col ${loading ? 'gap-5' : 'gap-6'} pb-16`}
+        className={`${SHELL_CLASS} ${loading ? 'gap-5' : 'gap-6'}`}
       >
         {header}
         {loading ? (
@@ -303,6 +330,9 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
             <p className="sr-only" role="status">
               {LOADING_HE}
             </p>
+            {/* 🏠 T-420 — אותו אזור גמיש כמו במסך המיוצב, ⛔ ונגזר מאותו קבוע: שלד שגובהו
+                ⛔ אינו מוגבל היה דוחף את `התחל קרב` מתחת לקפל, בדיוק מה שהשלד קיים נגדו. */}
+            <div data-arena-home-body className={`${BODY_CLASS} overflow-hidden`}>
             {/* הדמות — ⛔ מרוכזת וברוחב רצועת האליפסות, ⛔ ולא כרטיס לרוחב המסך. */}
             <div className="flex justify-center">
               <div
@@ -332,8 +362,9 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
               data-arena-skeleton="gear"
               className="h-[162px] min-[375px]:h-[88px] rounded-2xl bg-[color:var(--arena-card)]"
             />
+            </div>
             {/* אותה קבוצה בדיוק כמו במסך המיוצב ⇒ `התחל קרב` שומרת את מקומה. */}
-            <div className="mt-auto flex flex-col gap-3 pt-4">
+            <div className={ACTIONS_CLASS}>
               <div
                 aria-hidden
                 data-arena-skeleton="start"
@@ -372,7 +403,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
     remaining === 1 ? `נותר ניצחון אחד עד ${BOSS_HE}` : `נותרו ${remaining} ניצחונות עד ${BOSS_HE}`;
 
   return (
-    <section data-arena-scope className="flex min-h-[100dvh] flex-col gap-5 pb-16">
+    <section data-arena-scope className={`${SHELL_CLASS} gap-5`}>
       {/* 📐 **T-342 — ⛔ אין כאן `px-6`, וזו מדידה מול הרנדר ⛔ ולא ניקיון.**
           `app/layout.tsx` נותן ל-`<main>` ‏`px-6` ⇒ 24px לכל צד, וה-`section` הזה הוסיף
           עליהם עוד `px-6` ⇒ **48px לכל צד**, וזה מה שנמדד חי (`ul` ב-`x=48`, כרטיס
@@ -384,6 +415,12 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           לבדה הייתה מייצרת 3+1 גם ב-375. ב-24 נותרים 327 ⇒ 288 נכנסים. ⇒ הגדר הכפולה
           הייתה **הסיבה**, ⛔ ולא תופעת לוואי. */}
       {header}
+
+      {/* 🏠 **T-420 — האזור הגמיש.** הכותרת למעלה ושלוש הפעולות למטה הם **עוגנים**;
+          כל מה שביניהם — הדמות · הרמה · מסלול הבוס · הציוד · הקרב האחרון · הארון — הוא
+          היחיד שנגלל, **בתוך עצמו**. ⇒ המסמך ⛔ אינו גולל ⛔ באף רוחב, ו`התחל קרב` על
+          המסך תמיד — גם ב-320×568, שבו המסך היה כמעט שניים (+460px, `C-0703`). */}
+      <div data-arena-home-body className={`${BODY_CLASS} overflow-y-auto overscroll-contain`}>
 
       {/* `:126-134` — הכן ושתי האליפסות תחתיו, והדמות ב-idle מעליהן.
           הנשימה: `bob = sin(t*1.5)*2.2` ⇒ משרעת **±2.2px** ומחזור **4.19s**
@@ -489,39 +526,6 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         </ul>
       </div>
 
-      {/* `:179-191` — שלוש הפעולות. */}
-      <div className="mt-auto flex flex-col gap-3 pt-4">
-        <button type="button" className={START_CLASS} onClick={() => onStart(state)}>
-          {START_HE}
-        </button>
-        {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון **כבר** בימין.
-
-            🔃 **T-344 · `D-245` · סוגר את `F-249` — `עיצוב דמות` הוא הילד הראשון.**
-            ⛔ **המדידה, גרופה מהרנדר ⛔ ולא מהעין:** `render_video_B.py:194-197` רץ על
-            `("ארון ציוד", "עיצוב דמות")` ומציב `x = 24 + i*(bw+10)` עם `bw=158.5`
-            ⇒ `ארון ציוד` ב-`x=24` (**שמאל**) ו-`עיצוב דמות` ב-`x=192.5` (**ימין**).
-            במסך החי נמדד ההפך (‏375px: `ארון ציוד`=193 · `עיצוב דמות`=48) ⇒ לומד שראה
-            את הרנדר הושיט אצבע לפעולה אחת וקיבל את השנייה.
-            🔴 ⛔ **והתיקון הוא סדר ה-DOM, ⛔ ולא `flex-row-reverse`:** `T-338` תיקן את
-            הציר עצמו, והחזרת ההיפוך הייתה מחליפה באג בשני באגים שמבטלים זה את זה.
-            ⚠️ `36 § 14.4` — **הסדר** הוא מה שנשאר מחייב מהרנדר; הרקע ⛔ אינו. */}
-        <div className="flex gap-[10px]" data-rtl-row="home-actions">
-          {/* T-217 · `37 § 7` — «ניתן לשינוי בכל רגע ממסך הבית»: פותח את מסך הבחירה
-              עם יציאה. ⛔ המעטפת מחליטה, ⛔ לא המסך. */}
-          <button type="button" className={SECONDARY_CLASS} onClick={() => onDesign(state)}>
-            {DESIGN_HE}
-          </button>
-          <button
-            type="button"
-            className={SECONDARY_CLASS}
-            aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen((open) => !open)}
-          >
-            {DRAWER_HE}
-          </button>
-        </div>
-      </div>
-
       {/* 🏁 **T-360 · `36 § 13.1` חותמת ⓒ — «מה שהלומד עשה נשמר ונראה בכניסה הבאה».**
           🔬 **מה שנמדד לפני שהלוח הזה נכתב:** הקרב **כבר נשמר** — `arcade_runs` נושאת
           `finished_at` · `words_seen` · `words_correct` · `enemy_defeated` מאז
@@ -538,7 +542,10 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           מסך שדוחף את הפעולה הראשית שלו מתחת לקפל בשביל מבט לאחור הפך סדר עדיפויות.
           ⇒ הלוח יורד **מתחת** לפעולות: הן ⛔ לא זזו ולו פיקסל אחד, והוא נשאר על המסך.
           ⛔ **ואין כאן פסק דין** (R-016 · `37 § 9` ח4): שתי עובדות, אותן שתיים בדיוק
-          שמסך הסיום כבר אומר, ⛔ ואין ביניהן מילת הפסד. */}
+          שמסך הסיום כבר אומר, ⛔ ואין ביניהן מילת הפסד.
+          🏠 **⟦T-420⟧ ובתוך האזור הגמיש, ⛔ ולא מתחת לפעולות — ⛔ וזו אותה הנמקה בדיוק.**
+          הפעולות מעוגנות לתחתית המסך עכשיו, ⇒ הלוח ⛔ אינו יכול עוד לדחוף אותן ולו פיקסל;
+          מתחתיהן הוא היה נחתך מחוץ למסך שגובהו מדויק. */}
       {state.lastRound != null && (
         <div className="flex flex-col gap-2" data-arena-last-round>
           <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
@@ -576,7 +583,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
       {/* `:194-201` — ארון הציוד. ⛔ **⛔ אינו הרשימה של `DRAWER_ITEMS`** (D-132): הוא
           מציג את מה שללומד **באמת** יש, דרך `ITEM_LABELS_HE`. */}
       {drawerOpen && (
-        <div className={`flex flex-col gap-3 p-4 ${CARD_CLASS}`}>
+        <div ref={drawerRef} className={`flex flex-col gap-3 p-4 ${CARD_CLASS}`}>
           {/* ⚠️ `flex` רגיל (`T-338`) — הכותרת היא הילד הראשון, ובמיכל RTL מקומה בימין. */}
           <div className="flex items-baseline justify-between" data-rtl-row="drawer-heading">
             <h2 className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
@@ -608,6 +615,40 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           </ul>
         </div>
       )}
+      </div>
+
+      {/* `:179-191` — שלוש הפעולות. */}
+      <div className={ACTIONS_CLASS}>
+        <button type="button" className={START_CLASS} onClick={() => onStart(state)}>
+          {START_HE}
+        </button>
+        {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון **כבר** בימין.
+
+            🔃 **T-344 · `D-245` · סוגר את `F-249` — `עיצוב דמות` הוא הילד הראשון.**
+            ⛔ **המדידה, גרופה מהרנדר ⛔ ולא מהעין:** `render_video_B.py:194-197` רץ על
+            `("ארון ציוד", "עיצוב דמות")` ומציב `x = 24 + i*(bw+10)` עם `bw=158.5`
+            ⇒ `ארון ציוד` ב-`x=24` (**שמאל**) ו-`עיצוב דמות` ב-`x=192.5` (**ימין**).
+            במסך החי נמדד ההפך (‏375px: `ארון ציוד`=193 · `עיצוב דמות`=48) ⇒ לומד שראה
+            את הרנדר הושיט אצבע לפעולה אחת וקיבל את השנייה.
+            🔴 ⛔ **והתיקון הוא סדר ה-DOM, ⛔ ולא `flex-row-reverse`:** `T-338` תיקן את
+            הציר עצמו, והחזרת ההיפוך הייתה מחליפה באג בשני באגים שמבטלים זה את זה.
+            ⚠️ `36 § 14.4` — **הסדר** הוא מה שנשאר מחייב מהרנדר; הרקע ⛔ אינו. */}
+        <div className="flex gap-[10px]" data-rtl-row="home-actions">
+          {/* T-217 · `37 § 7` — «ניתן לשינוי בכל רגע ממסך הבית»: פותח את מסך הבחירה
+              עם יציאה. ⛔ המעטפת מחליטה, ⛔ לא המסך. */}
+          <button type="button" className={SECONDARY_CLASS} onClick={() => onDesign(state)}>
+            {DESIGN_HE}
+          </button>
+          <button
+            type="button"
+            className={SECONDARY_CLASS}
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen((open) => !open)}
+          >
+            {DRAWER_HE}
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

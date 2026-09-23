@@ -86,7 +86,7 @@ describe('T-360 · לוח «הקרב האחרון» על מסך הבית', () =>
     expect(panel?.textContent).toContain('05.01');
   });
 
-  it('🔑 הלוח יושב **אחרי** שלוש הפעולות — ⛔ הוא ⛔ אינו דוחף אותן מתחת לקפל', () => {
+  it('🔑 הלוח בתוך האזור הגמיש והפעולות מעוגנות — ⛔ הוא ⛔ אינו דוחף אותן מתחת לקפל (T-420)', () => {
     mount({
       ...BASE,
       lastRound: {
@@ -100,10 +100,15 @@ describe('T-360 · לוח «הקרב האחרון» על מסך הבית', () =>
     const panel = document.querySelector('[data-arena-last-round]');
     expect(actions).not.toBeNull();
     expect(panel).not.toBeNull();
-    // `Node.DOCUMENT_POSITION_FOLLOWING` — הלוח בא **אחרי** שורת הפעולות במסמך.
     // ⛔ זו ⛔ אינה העדפה: 93px מעל הפעולות דחפו אותן מתחת לקפל ב-375×780 והאדימו
     // את `check:mobile` — ⛔ והשער צדק, מבט לאחור ⛔ אינו קודם לפעולה הראשית.
-    expect(actions!.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // 🏠 ⟦T-420⟧ **אותה טענה, בצורה שנשארת נכונה בגובה מדויק:** הלוח יושב **בתוך** האזור
+    // הגמיש (הנגלל), והפעולות **מחוצה לו**, מעוגנות — ⇒ הלוח ⛔ אינו יכול להזיז אותן.
+    // מתחת להן הוא היה נחתך מחוץ למסך שגובהו `100dvh` בדיוק.
+    const body = document.querySelector('[data-arena-home-body]');
+    expect(body).not.toBeNull();
+    expect(body!.contains(panel)).toBe(true);
+    expect(body!.contains(actions)).toBe(false);
   });
 
   it('⛔ הניקוד ⛔ אינו יעד מגע ו⛔ אינו כפתור — הלוח ⛔ אינו מוביל לשום מקום', () => {
