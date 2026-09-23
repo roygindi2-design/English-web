@@ -910,6 +910,9 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     tap(cardHe('אפשרות 1'));
     await waitFor(() => { expect(strike()).not.toBeNull(); });
     const first = strike();
+    const from = (): string | null => area().getAttribute('data-arena-strike-from');
+    // 🛬 `T-446` — הטלה ראשונה, הגוף על הקרקע ⇒ ⛔ מתחילה מההתחלה.
+    expect(from(), 'הטלה ראשונה ⛔ אינה נכנסת מהנחיתה').toBeNull();
     // 🔬 הקיפאון משחרר את התנוחה — ⛔ ולא את ההטלה.
     endAnimation('arena-hitstop-a');
     expect(strike(), '⛔ הקיפאון ⛔ אינו מכבה את ההטלה').toBe(first);
@@ -917,8 +920,11 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     tap(cardHe('אפשרות 2'));
     tap(cardHe('אפשרות 2'));
     await waitFor(() => { expect(strike(), 'מתהפך').not.toBe(first); });
+    // 🛬 `T-446` · `F-312` — השנייה הגיעה באמצע הבעיטה ⇒ נכנסת מ**הנחיתה**, ⛔ ולא מעמידה.
+    expect(from(), 'הטלה באמצע הבעיטה נכנסת מהנחיתה').toBe('land');
     endAnimation(`arena-strike-${strike()}`);
     await waitFor(() => { expect(strike(), 'משתחרר על השעון של עצמו').toBeNull(); });
+    expect(from(), 'השחרור מכבה גם את מקור הכניסה').toBeNull();
   });
 
   /**

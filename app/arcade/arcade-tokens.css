@@ -1728,7 +1728,7 @@ body:has([data-arena-scope]) > div > main {
    שהוא עזב את הרצפה. ⇒ מתכווץ ל-**0.40** בשיא ומתפרש ל-**1.34** במגע.
    ⛔ **ו-`opacity` יורדת איתו** — צל רחוק הוא גם צל **חלש**, ⛔ ולא רק קטן.
    ⛔ `[data-arena-shadow]` ⛔ אינו נושא אנימציה אחרת (נסרק) ⇒ ⛔ אפס התנגשות. */
-@keyframes arena-strike-shadow {
+@keyframes arena-strike-shadow-a {
   0%    { scale: 1 1;       opacity: 0.55; }
   10.1% { scale: 1.14 1;    opacity: 0.55; }
   31.9% { scale: 0.42 0.42; opacity: 0.23; }
@@ -1738,9 +1738,24 @@ body:has([data-arena-scope]) > div > main {
   66%   { scale: 1.1 1.04;  opacity: 0.55; }
   100%  { scale: 1 1;       opacity: 0.55; }
 }
-[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-shadow],
+@keyframes arena-strike-shadow-b {
+  0%    { scale: 1 1;       opacity: 0.55; }
+  10.1% { scale: 1.14 1;    opacity: 0.55; }
+  31.9% { scale: 0.42 0.42; opacity: 0.23; }
+  37.7% { scale: 0.4 0.4;   opacity: 0.22; }
+  50%   { scale: 0.78 0.74; opacity: 0.4; }
+  53.2% { scale: 1.34 1.16; opacity: 0.55; }
+  66%   { scale: 1.1 1.04;  opacity: 0.55; }
+  100%  { scale: 1 1;       opacity: 0.55; }
+}
+/* 🔴 **⟦`T-446` · `F-313`⟧ `-a`/`-b`, ⛔ ולא שם אחד לשניהם.** 🔬 נמדד: שם משותף
+   ⛔ אינו מתאפס כשהגוף מתהפך `'a'⇄'b'` ⇒ `currentTime` של הצל רץ **283 ⇒ 383 ⇒ 500**
+   בזמן שהגוף עמד ⇒ הצל אמר «באוויר» על גוף שעומד. */
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-shadow] {
+  animation: arena-strike-shadow-a var(--arena-strike-ms) linear 1;
+}
 [data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-shadow] {
-  animation: arena-strike-shadow var(--arena-strike-ms) linear 1;
+  animation: arena-strike-shadow-b var(--arena-strike-ms) linear 1;
 }
 
 /* 💨 **⟦21/09 · `T-443`⟧ אבק הנחיתה — בלעדיו המגע ⛔ אינו נשמע.**
@@ -1751,7 +1766,7 @@ body:has([data-arena-scope]) > div > main {
   background: radial-gradient(closest-side, var(--arena-ink) 0%, var(--arena-ink-dim) 55%, transparent 100%);
   opacity: 0;
 }
-@keyframes arena-strike-dust {
+@keyframes arena-strike-dust-a {
   0%    { opacity: 0;    scale: 0.3 0.4; translate: 0 0; }
   52.1% { opacity: 0;    scale: 0.3 0.4; }
   55.3% { opacity: 0.75; scale: 1 1; }
@@ -1759,9 +1774,19 @@ body:has([data-arena-scope]) > div > main {
   83%   { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
   100%  { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
 }
-[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-landdust],
+@keyframes arena-strike-dust-b {
+  0%    { opacity: 0;    scale: 0.3 0.4; translate: 0 0; }
+  52.1% { opacity: 0;    scale: 0.3 0.4; }
+  55.3% { opacity: 0.75; scale: 1 1; }
+  68.1% { opacity: 0.32; scale: 1.7 1.35; translate: 8% -18%; }
+  83%   { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
+  100%  { opacity: 0;    scale: 2.2 1.7;  translate: 14% -28%; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-landdust] {
+  animation: arena-strike-dust-a var(--arena-strike-ms) linear 1;
+}
 [data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-landdust] {
-  animation: arena-strike-dust var(--arena-strike-ms) linear 1;
+  animation: arena-strike-dust-b var(--arena-strike-ms) linear 1;
 }
 
 /* 🦴 **⟦21/09 · `C-0757` · `T-444`ⓓ⟧ השלד זז — **ברך · גו · זרוע**, על שעון הבעיטה.
@@ -1946,6 +1971,27 @@ body:has([data-arena-scope]) > div > main {
 }
 [data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='arm'] {
   animation-name: arena-rig-arm-b;
+}
+/* 🛬 **⟦23/09 · `T-446` · `D-277`ⓑ · `F-312`⟧ הטלה שנייה באמצע הבעיטה נכנסת מ**הנחיתה**.**
+   🔬 **נמדד חי:** הטלה שנייה 330ms לתוך הראשונה הקפיצה את הגוף מ-`rotate: 80.5deg`
+   ל-`none` בפריים אחד — `0%` של הקיפריימים הוא **עמידה**. ⇒ `data-arena-strike-from='land'`
+   מזיז את **שש** השכבות יחד ל-`50%` בהשהיה שלילית: ⛔ לא תור (מעכב משוב ללומד
+   המהיר), ⛔ לא קירור (מעניש למידה מהירה), ⛔ ואפס `setTimeout`.
+   ⛔ **שעון אחד לכולן** ⇒ הצל והאבק מתחילים מאותה נקודה כמו הגוף (`F-313`). */
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-castrig],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-shadow],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-landdust],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='knee'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-joint='arm'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='body'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='chest'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='belt'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='head'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='headgear'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='shoulders'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='mainHand'],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-rig='jointed'] [data-arena-layer='offHand'] {
+  animation-delay: calc(var(--arena-strike-ms) * -0.5);
 }
 /* חוקה שכבה א׳ א7 — ⛔ **ו⛔ אין כאן בלוק `prefers-reduced-motion` משלו**, וזה
    ⛔ אינו השמטה: הבלוק הגלובלי (`app/globals.css:103`) מוריד כל משך ל-`0.01ms`

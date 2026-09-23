@@ -436,6 +436,13 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    */
   const [strike, setStrike] = useState<'off' | 'a' | 'b'>('off');
   /**
+   * 🛬 **⟦23/09 · `T-446` · `D-277`ⓑ⟧ מאיפה ההטלה נכנסת.** הטלה שנייה בזמן שהראשונה
+   * עוד באוויר ⇒ `'land'`, והגיליון מזיז את כל שכבות הבעיטה יחד ל-`50%` (הנחיתה).
+   * 🔬 **`F-312`, נמדד חי:** בלי זה הגוף קפץ מ-`rotate: 80.5deg` לעמידה בפריים אחד —
+   * והלומד המהיר, שהזירה מתגמלת, הוא בדיוק מי שראה את זה. ⛔ אפס `setTimeout`.
+   */
+  const [strikeFrom, setStrikeFrom] = useState<'top' | 'land'>('top');
+  /**
    * ⟦NEW 15/09 · `C-0622` · `T-358`⟧ שתי תכונות שמתחלפות `a`⇄`b` בדיוק כמו `impact`,
    * ומאותה סיבה בדיוק: **החלפת שם האנימציה היא מה שמאתחל אותה בדפדפן**, וערך זהה
    * שחוזר ⛔ אינו מפעיל אותה שוב. ⇒ שתי פגיעות ברצף מקבלות שתי אנימציות, ⛔ ולא אחת.
@@ -608,6 +615,8 @@ export default function ArenaBattle({ initialRound, character = null, items = []
     setImpact((prev) => (prev === 'a' ? 'b' : 'a'));
     // 🥋 `T-443` — אותה הטלה, אותו אפקט, ⛔ ולא אפקט שני על אותה תלות: שני מקורות
     //    לאותו רגע הם שני רגעים, וזה כבר כתוב שורה אחת מתחת על הנזק והרעד.
+    // 🛬 `T-446` — `strike` כאן הוא ערך הרינדור האחרון ⇒ ⛔ `'off'` = הגוף על הקרקע.
+    setStrikeFrom(strike === 'off' ? 'top' : 'land');
     setStrike((prev) => (prev === 'a' ? 'b' : 'a'));
     // ⟦15/09 · `T-358`⟧ הנזק והרעד נגזרים מ**אותה** הטלה, ⛔ ומאותו אפקט: אפקט שני
     // על אותה תלות היה יורה בסדר שאינו מובטח, ושני מקורות לאותו רגע הם שני רגעים.
@@ -1384,6 +1393,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         data-arena-stage-area
         data-arena-impact={impact}
         data-arena-strike={strike === 'off' ? undefined : strike}
+        data-arena-strike-from={strike !== 'off' && strikeFrom === 'land' ? 'land' : undefined}
         data-arena-crit={crit === 'off' ? undefined : crit}
         data-arena-hurt={hurt === 'off' ? undefined : hurt}
         data-arena-roll={roll === 'off' ? undefined : roll}

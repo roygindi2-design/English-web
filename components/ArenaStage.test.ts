@@ -573,6 +573,43 @@ describe('C-0757 · T-444ⓓ — המפרקים זזים, ו⛔ רק על הנו
     }
   });
 
+  /**
+   * 🔴 **⟦23/09 · `T-446` · `F-313`⟧ המחלקה, ⛔ ולא שתי השורות:** כל כלל שנבחר על
+   * `[data-arena-strike='b']` נוקב בשם קיפריימים **שונה** מזה של `'a'` לאותו צומת.
+   * 🔬 הצל והאבק נשאו שם אחד לשניהם ⇒ ⛔ לא התאפסו, והצל אמר «באוויר» על גוף שעומד.
+   */
+  it("🔴 כל כלל על `[data-arena-strike='b']` נוקב בקיפריימים שונים מ-`'a'` — ⛔ אפס שם משותף", () => {
+    const names = (v: 'a' | 'b'): string[] => TOKENS.split('}')
+      .filter((b) => (b.split('{')[0] ?? '').includes(`[data-arena-strike='${v}']`))
+      .flatMap((b) => [...b.matchAll(/animation(?:-name)?:\s*([-\w]+)/g)].map((m) => m[1] ?? ''));
+    const a = new Set(names('a'));
+    const b = names('b');
+    expect(b.length).toBeGreaterThanOrEqual(6);
+    for (const n of b.filter((n) => n.startsWith('arena-strike') || n.startsWith('arena-rig-'))) {
+      if (n.endsWith('-b')) expect(a.has(n), n).toBe(false);
+    }
+    for (const node of ['castrig', 'shadow', 'landdust']) {
+      const rule = (v: string): string | undefined => TOKENS.split('}').find((blk) =>
+        (blk.split('{')[0] ?? '').trim().endsWith(`[data-arena-strike='${v}'] [data-arena-slot='hero'] [data-arena-${node}]`));
+      const nameOf = (v: string): string | undefined => rule(v)?.match(/animation:\s*([-\w]+)/)?.[1];
+      expect(nameOf('a'), node).toBeDefined();
+      expect(nameOf('b'), node).toBeDefined();
+      expect(nameOf('b'), `${node}: 'b' ⛔ חולק שם עם 'a'`).not.toBe(nameOf('a'));
+    }
+  });
+
+  it('🛬 `T-446` — כניסה מהנחיתה מזיזה את **כל** שכבות הבעיטה לאותה נקודה, ⛔ ולא רק את הגוף', () => {
+    const rule = TOKENS.split('}').find((b) => /animation-delay:\s*calc\(var\(--arena-strike-ms\)\s*\*\s*-0\.5\)/.test(b));
+    expect(rule, 'חוק הנחיתה קיים').toBeDefined();
+    const sel = (rule as string).split('{')[0] ?? '';
+    for (const n of ['[data-arena-castrig]', '[data-arena-shadow]', '[data-arena-landdust]',
+      "[data-arena-joint='knee']", "[data-arena-joint='arm']", "[data-arena-layer='body']", "[data-arena-layer='offHand']"]) {
+      expect(sel, n).toContain(n);
+    }
+    expect(sel, 'האגן ⛔ אינו מונפש ⇒ ⛔ אינו מוזז').not.toContain("[data-arena-layer='legs']");
+    expect(sel.match(/\[data-arena-strike-from='land'\]/g)?.length).toBe(13);
+  });
+
   it("⛔ `'a'⇄'b'` — שם זהה ⛔ אינו מפעיל מחדש, ⇒ שתי תשובות רצופות ⛔ אינן נבלעות", () => {
     for (const name of ['knee', 'torso', 'arm']) {
       expect(TOKENS).toMatch(new RegExp(`animation-name:\\s*arena-rig-${name}-b`));
