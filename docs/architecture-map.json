@@ -683,6 +683,11 @@
   "components/ArcadeEntry.tsx": [
     "lib/api/client.ts"
   ],
+  "components/ArenaAvatar.dom.test.tsx": [
+    "components/ArenaAvatar.tsx",
+    "lib/core/arcadeResult.ts",
+    "lib/core/arenaCharacter.ts"
+  ],
   "components/ArenaAvatar.test.ts": [],
   "components/ArenaAvatar.tsx": [
     "lib/core/arcadeResult.ts",
@@ -691,7 +696,9 @@
   ],
   "components/ArenaBattle.dom.test.tsx": [
     "components/ArenaBattle.tsx",
-    "lib/core/failure.ts"
+    "components/ArenaStage.tsx",
+    "lib/core/failure.ts",
+    "lib/testSource.ts"
   ],
   "components/ArenaBattle.test.ts": [
     "lib/core/characterBase.ts",
@@ -705,6 +712,7 @@
     "components/CloseIcon.tsx",
     "components/EnWord.tsx",
     "components/SpellCard.tsx",
+    "components/arenaAnchors.ts",
     "lib/api/client.ts",
     "lib/core/arcadeResult.ts",
     "lib/core/arcadeRound.ts",
@@ -749,6 +757,9 @@
   "components/ArenaScene.tsx": [
     "lib/core/arenaScene.ts"
   ],
+  "components/ArenaShell.dom.test.tsx": [
+    "components/ArenaShell.tsx"
+  ],
   "components/ArenaShell.test.ts": [],
   "components/ArenaShell.tsx": [
     "components/ArenaBattle.tsx",
@@ -757,6 +768,8 @@
     "lib/core/arenaCharacter.ts"
   ],
   "components/ArenaStage.test.ts": [
+    "components/ArenaScene.tsx",
+    "lib/core/battle.ts",
     "lib/testSource.ts"
   ],
   "components/ArenaStage.tsx": [
@@ -764,7 +777,8 @@
     "components/ArenaScene.tsx",
     "lib/core/arcadeLadder.ts",
     "lib/core/arenaCharacter.ts",
-    "lib/core/battle.ts"
+    "lib/core/battle.ts",
+    "lib/core/characterBase.ts"
   ],
   "components/ArenaSummary.test.ts": [],
   "components/ArenaSummary.tsx": [
@@ -979,6 +993,7 @@
     "lib/testSource.ts"
   ],
   "components/SpellCard.tsx": [
+    "components/arenaAnchors.ts",
     "lib/core/arenaGesture.ts",
     "lib/core/spring.ts"
   ],
@@ -1087,6 +1102,7 @@
   "components/amirnetTypeBar.ts": [
     "lib/core/amirnetPractice.ts"
   ],
+  "components/arenaAnchors.ts": [],
   "components/rtl-axis.test.ts": [],
   "lib/api/client.test.ts": [
     "lib/api/client.ts"
