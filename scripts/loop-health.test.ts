@@ -1357,7 +1357,7 @@ describe('scripts/loop-health.mjs', () => {
  */
 describe('🔒 בדיקה 21 — נעילה יתומה', () => {
   // ⛔ ריפו git אמיתי — בדיקה 21 מריצה `git log`; בדל ⛔ לא היה בודק דבר.
-  const gitRepoForLock = (subjects: string[], paths: string[]): string => {
+  const gitRepoForLock = (subjects: string[], paths: string[], author = 't'): string => {
     const root = healthy();
     const g = (...args: string[]) =>
       execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] });
@@ -1374,13 +1374,19 @@ describe('🔒 בדיקה 21 — נעילה יתומה', () => {
       mkdirSync(dirname(abs), { recursive: true });
       writeFileSync(abs, `${subject}\n`, 'utf8');
       g('add', '-A');
-      g('commit', '-q', '-m', subject);
+      g('-c', `user.name=${author}`, 'commit', '-q', '-m', subject);
     });
     g('update-ref', 'refs/remotes/origin/work/current', 'HEAD');
     return root;
   };
-  const withLock = (holder: string, lockAt: string, subjects: string[], paths: string[]): string => {
-    const root = gitRepoForLock(subjects, paths);
+  const withLock = (
+    holder: string,
+    lockAt: string,
+    subjects: string[],
+    paths: string[],
+    author = 't',
+  ): string => {
+    const root = gitRepoForLock(subjects, paths, author);
     const p = join(root, 'plan', '00-control.md');
     // ⛔ הפיקסצ׳ר הבריא ⛔ אינו נושא שדות נעילה כלל ⇒ `replace` בלבד היה no-op שקט,
     // והבדיקה האדומה הייתה עוברת מפני שהמחזיק ריק. ⇒ מוסיפים כשחסר, ⛔ לא מחליפים בעיוורון.
@@ -1425,6 +1431,34 @@ describe('🔒 בדיקה 21 — נעילה יתומה', () => {
       ]),
     );
     expect(failed(r.out, '21'), r.out).toBe(false);
+  });
+
+  // 🔒 ⟦23/09 · `F-310` · אישור רוי⟧ שני הכשלים שנמדדו על הלופ החי, כל אחד בבדיקה משלו.
+  it('ⓐ `ops-agent` נקרא **כולו** ⇒ הדוח נוקב `OPS`, ⛔ לא `ops`', () => {
+    const r = run(withLock('ops-agent', OLD, ['C-1 lock'], ['plan/00-control.md']));
+    expect(failed(r.out, '21'), r.out).toBe(true);
+    expect(r.out).toContain('OPS מחזיק');
+    expect(r.out).not.toMatch(/\bops מחזיק/);
+  });
+
+  it('ⓑ סשן ידני שדחף `C-XXXX` עבודה ⇒ **חי** — המחבר נספר, ⛔ לא רק הנושא', () => {
+    const r = run(
+      withLock('ops-agent', OLD, ['C-1 lock', 'C-2 real work'], [
+        'plan/00-control.md',
+        'lib/core/realGate.ts',
+      ], 'ops-agent'),
+    );
+    expect(failed(r.out, '21'), r.out).toBe(false);
+  });
+
+  it('⛔ עבודה של מחבר **אחר** ⛔ אינה סימן חיים לבעל הנעילה', () => {
+    const r = run(
+      withLock('ops-agent', OLD, ['C-1 lock', 'C-2 real work'], [
+        'plan/00-control.md',
+        'lib/core/realGate.ts',
+      ], 'dev-agent'),
+    );
+    expect(failed(r.out, '21'), r.out).toBe(true);
   });
 });
 

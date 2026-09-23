@@ -518,7 +518,12 @@ check('19', '`plan/05-departments.md` מתחת לתקרת 8KB — נטו, ⛔ ל
  */
 check('21', 'נעילה חיה, ⛔ או יתומה — ⛔ לא נעילה שאיש ⛔ אינו קורא', () => {
   const control = read(at('plan', '00-control.md'));
-  const holder = (control.match(/^LOCK_HELD_BY:\s*"?([A-Za-z]*)/m) || [])[1] || '';
+  // 🔒 ⟦23/09 · `F-310` ⓐ · אישור רוי⟧ **השדה כולו, ⛔ ולא עד המקף.** ‏`([A-Za-z]*)` קרא
+  // ‏`"ops-agent"` כ-`ops` — אותו באג ש-`pre-push` תיקן ב-11/09 (`F-214`), ⇒ שני השומרים
+  // ⛔ לא הסכימו על מי מחזיק. ⇒ אותו נרמול כמו ב-`pre-push`: סיפא `-agent` יורדת, רישיות אחידות.
+  const holderRaw = (control.match(/^LOCK_HELD_BY:\s*"?([^"\s#]*)/m) || [])[1] || '';
+  const upper = holderRaw.replace(/-agent$/i, '').toUpperCase();
+  const holder = upper === 'CRITIC' ? 'QA' : upper;
   if (holder === '') return { ok: true, detail: 'הנעילה ריקה' };
   const atRaw = (control.match(/^LOCK_AT:\s*"?([0-9T:\-]+Z)/m) || [])[1];
   if (!atRaw) {
@@ -547,14 +552,23 @@ check('21', 'נעילה חיה, ⛔ או יתומה — ⛔ לא נעילה שא
   // `LOCK_AT` ⇒ `--since` תמיד תופסת אותו, ובלי הסינון הזה כל נעילה יתומה הייתה
   // מדווחת «⇒ חי» ברגע שהיא חוצה את התקרה. ⇒ נספרים רק קומיטים שנגעו במשהו
   // **מלבד** `plan/00-control.md` — אותו מבחן שבדיקה 17 עושה, ומאותה סיבה.
-  const raw = git('log', '--since=' + atRaw, '--format=%x00%s', '--name-only', '-E', '--grep=' + grep, 'HEAD');
-  const moved = raw
-    .split('\x00')
-    .filter((c) => c.trim() !== '')
-    .filter((c) => {
-      const files = c.split('\n').slice(1).filter((f) => f.trim() !== '');
-      return files.some((f) => f !== 'plan/00-control.md');
-    }).length;
+  // 🔒 ⟦23/09 · `F-310` ⓑ · אישור רוי⟧ **וסימן החיים הוא גם מי דחף, ⛔ ולא רק איך ניסח.**
+  // סשן ידני (`ops-agent`) כותב `C-XXXX …`, ⛔ לא `loop(OPS)` ⇒ `--grep` לבדו ספר **0**
+  // מתוך 20 קומיטי עבודה חיים, ⇒ «יתומה» על נעילה חיה. ⇒ איחוד: נושא `loop(NAME)` **או**
+  // מחבר `<name>-agent` (`QA` ⇐ `critic-agent`, כמו `MINE` ב-`pre-push`).
+  const author = holder === 'QA' ? '^(critic|qa)-agent <' : '^' + holder.toLowerCase() + '-agent <';
+  const works = (raw) =>
+    raw
+      .split('\x00')
+      .filter((c) => c.trim() !== '')
+      .filter((c) => {
+        const files = c.split('\n').slice(1).filter((f) => f.trim() !== '');
+        return files.some((f) => f !== 'plan/00-control.md');
+      })
+      .map((c) => c.split('\n')[0].trim());
+  const bySubject = works(git('log', '--since=' + atRaw, '--format=%x00%H', '--name-only', '-E', '--grep=' + grep, 'HEAD'));
+  const byAuthor = works(git('log', '--since=' + atRaw, '--format=%x00%H', '--name-only', '-E', '--author=' + author, 'HEAD'));
+  const moved = new Set([...bySubject, ...byAuthor]).size;
   if (moved > 0) {
     return {
       ok: true,
