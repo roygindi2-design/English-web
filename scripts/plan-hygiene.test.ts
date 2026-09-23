@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { FINDING_STATUS_INDEX, classifyStatus, splitRow } from '../lib/core/planTable';
 
 /**
  * F-025 — protocol hygiene on the task register.
@@ -135,6 +136,43 @@ describe('plan/60-findings.md — the findings register', () => {
       .sort((a, b) => a - b);
     const expected = Array.from({ length: numbers.length }, (_, i) => i + 1);
     expect(numbers).toEqual(expected);
+  });
+
+  /**
+   * 🔒 **⟦23/09 · `C-0762` · הוראת רוי⟧ סגירה ⛔ אינה סגירה עד שעמודת הסטטוס אומרת זאת.**
+   *
+   * 🔬 **הפגם נמדד, ⛔ ולא שוער:** שלוש סגירות נכתבו לעמודת **`סבב`** ⟨תא 7⟩ ו⛔ לא
+   * לעמודת **הסטטוס** ⟨תא 6⟩ — `F-286` ⟨נסגר בקוד ב-`C-0714`, 18/09⟩, `F-251` ו-`F-252`
+   * ⟨`C-0615`, 14/09⟩. ⇒ השורה המשיכה להיספר **פתוחה** בכל מכונה שקוראת סטטוס, ו-`F-286`
+   * הוצג חמישה ימים כ«חוסם את הלופ» אחרי שכבר לא חסם דבר.
+   *
+   * ⛔ **ולמה כאן ⛔ ולא ב-`loop:health`:** ‏`loop:health` מייעץ בלבד. הקובץ הזה רץ ב-pre-push
+   * **בכל דחיפה** — גם בנתיב המהיר ו**גם תחת `SKIP_VERIFY`** ⇒ ⛔ אין דרך לדחוף סגירה חצויה.
+   *
+   * ⛔ **והכלל צר בכוונה:** תא `סבב` ש**פותח** ב-✅ ⟨לפני כל ⟨הערה⟩⟩, או שנושא «✅ **נסגר»,
+   * הוא הכרזת סגירה. ⇒ עמודת הסטטוס חייבת להיות ✅ או 🚫. ⛔ ✅ שיושב **בתוך** פרוזה
+   * ⟨«ⓐ ✅ נבנה, ⓑ פתוח»⟩ ⛔ אינו הכרזה, ו⛔ אינו נתפס.
+   */
+  it('🔒 a closure declared in the round column is also in the status column', () => {
+    const disagree: string[] = [];
+    let rows = 0;
+    for (const line of FINDINGS.split('\n')) {
+      const id = /^\|\s*(F-\d{3})\s*\|/.exec(line)?.[1];
+      if (id === undefined) continue;
+      rows += 1;
+      const cells = splitRow(line);
+      const round = (cells[FINDING_STATUS_INDEX + 1] ?? '').trim();
+      const declaresClosed = /^[^⟨]{0,40}✅/u.test(round) || /✅\s*\*\*נסגר/u.test(round);
+      if (!declaresClosed) continue;
+      const state = classifyStatus(cells[FINDING_STATUS_INDEX] ?? '');
+      if (state !== 'done' && state !== 'cancelled') disagree.push(`${id} (סטטוס: ${state})`);
+    }
+    // ⛔ guards the parser: a register the loop cannot split is not a register that agrees.
+    expect(rows).toBeGreaterThan(20);
+    expect(
+      disagree,
+      'עמודת «סבב» מכריזה ✅ ועמודת הסטטוס ⛔ לא — עדכנו את תא הסטטוס לאותה סגירה',
+    ).toEqual([]);
   });
 });
 
