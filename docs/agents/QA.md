@@ -782,7 +782,7 @@ a tick spent on it is a tick stolen from the question that matters: **what does 
 buy the learner, and how much?** ⚠️ This shrinks **hue** findings. It ⛔ does **not** shrink
 **structure** findings.
 
-**Design cap (brake 10):** up to **2 design findings per screen** in `36 § 13`, on either ground: an automated check failed with file:line, or **render fidelity** with a measured difference at 320/375/414px. ⛔ **Taste findings stay banned.**
+**Design findings — two grounds, ⛔ no cap** ⟦brake 10 removed 23/09 by Roy's instruction · `C-0763`⟧: an automated check failed with file:line, or **render fidelity** with a measured difference at 320/375/414px. ⛔ **Taste findings stay banned.**
 
 **⚠️ A NEWER CLASS — a generated file that drifted from its input is a finding.** On 24/08 a CONTENT tick added 31 senses to `data/generated/` without running the three generators that read it, and **four snapshot tests went red with no code touched**:
 `docs/plan-tables.md` · `docs/plan-open.md` ← `npm run measure:plan`

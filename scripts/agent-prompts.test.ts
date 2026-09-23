@@ -1683,11 +1683,11 @@ describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידו�
 
   it('הבלמים שהוא ⛔ אינו רשאי לעקוף מוזכרים במפורש', () => {
     expect(body, 'תקרת הפריסות החודשית').toContain('PROMOTIONS_THIS_MONTH');
-    // ⟦14/09 · הכרעת רוי על `F-234`ⓑ⟧ הבלם קוצר מ-24 ל-11 שעות. הטענה נועלת את
-    // המספר **החדש** ו⛔ מסרבת לישן — אחרת שינוי הבלם ⛔ לא היה מאדים דבר, ושני
-    // הנוסחים היו יכולים לחיות זה לצד זה בפרומפט.
-    expect(body, '⛔ לא יותר מאחת ב-11 שעות').toMatch(/one in 11 hours/);
-    expect(body, '⛔ הבלם הישן ⛔ אינו נשאר בנוסח').not.toMatch(/one in 24 hours/);
+    // ⟦23/09 · `C-0763` · הוראת רוי⟧ **מרווח המינימום בין קידומים הוסר**, ותקרת ה-30
+    // לחודש נשארה. הטענה נועלת את **ההסרה** — ⛔ אף נוסח של מרווח ⛔ אינו חוזר בשקט.
+    expect(body, 'תקרת ה-30 לחודש נשארת').toMatch(/up to 30 deploys a month/);
+    expect(body, '⛔ מרווח 11 השעות הוסר').not.toMatch(/one in 11 hours|last 11 hours/);
+    expect(body, '⛔ וגם הישן').not.toMatch(/one in 24 hours/);
     expect(body, 'תקרת 00-control').toContain('12,288');
     expect(body, 'תקרת ההכרעות').toMatch(/THREE decisions per run/);
   });
