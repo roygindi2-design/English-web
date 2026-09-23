@@ -50,6 +50,12 @@ function main() {
   const line = note.split('\n')[0].trim();
 
   // ⛔ `verify(fast)` נדחה **לפני** שנבדק exit 0: המסלול המהיר הוא הצהרה שהשאר ⛔ לא רץ.
+  // ⏱️ ⟦23/09 · `T-429`⟧ ו-`verify(3w)`/`verify(docs)` מאותה סיבה: ההוק הריץ check:mobile
+  // בשלושה רוחבים ⛔ ולא בשישה, או ⛔ לא הריץ build ⇒ QA מריצה את המלא.
+  if (/^verify\((3w|docs)\)/.test(line)) {
+    console.log(`verify:attested — החותמת היא ריצה חלקית של ההוק ⇒ הרץ verify המלא.  «${line}»`);
+    return 1;
+  }
   if (/^verify\(fast\)/.test(line)) {
     console.log(`verify:attested — החותמת היא המסלול המהיר ⇒ הרץ verify.  «${line}»`);
     return 1;

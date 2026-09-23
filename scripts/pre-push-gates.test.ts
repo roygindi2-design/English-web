@@ -114,7 +114,7 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
   });
 
   it('המסלול המהיר מריץ את שלוש הבדיקות שקוראות plan/ — ⛔ ואינו מריץ build או check:mobile', () => {
-    const fast = /REGISTER_ONLY" = "1"[\s\S]*?VERIFY_LABEL="verify"/.exec(HOOK)?.[0] ?? '';
+    const fast = /REGISTER_ONLY" = "1"[\s\S]*?VERIFY_LABEL="verify\(docs\)"/.exec(HOOK)?.[0] ?? '';
     expect(fast, 'הבלוק המהיר נמצא').not.toBe('');
     for (const cmd of ['check:motion', 'check:text-floor', 'check:rules', 'vitest run scripts/']) {
       expect(fast, `המסלול המהיר מריץ ${cmd}`).toContain(cmd);
@@ -123,21 +123,59 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
     expect(fast, '⛔ check:mobile ⛔ אינו במסלול המהיר').not.toMatch(/check:mobile/);
   });
 
+  // 📄 ⟦23/09 · אישור רוי⟧ נתיב המסמכים: ⛔ build ו⛔ check:mobile — אבל vitest **מלא**,
+  // כי בדיקות ב-app/ · lib/ · components/ קוראות docs/*.md.
+  it('נתיב המסמכים מריץ vitest מלא — ⛔ ואינו מריץ build או check:mobile', () => {
+    // ⛔ רק שורות שרצות — ⛔ לא הערות ו⛔ לא `echo`, שמותר להן לנקוב בשם של מה ש⛔ אינו רץ.
+    const docs = (/DOCS_ONLY" = "1"[\s\S]*?VERIFY_LABEL="verify\(3w\)"/.exec(HOOK)?.[0] ?? '')
+      .split('\n')
+      .filter((l) => !/^\s*(#|echo )/.test(l))
+      .join('\n');
+    expect(docs, 'הבלוק נמצא').not.toBe('');
+    expect(docs).toMatch(/npx vitest run;/);
+    expect(docs).toContain('check:rules');
+    expect(docs).not.toMatch(/npm run build/);
+    expect(docs).not.toMatch(/check:mobile|npm run verify/);
+    // ⛔ ו-DOCS_ONLY ⛔ אינו מרחיב את פטור הנעילה: docs/*.md מאפס את REGISTER_ONLY.
+    expect(HOOK).toMatch(/docs\/\*\.md\) REGISTER_ONLY=0 ;;/);
+  });
+
+  it('המסלול המלא מריץ check:mobile בשלושה רוחבים — ⛔ ו-verify-mobile יודע מה זה', () => {
+    expect(HOOK).toContain('MOBILE_WIDTHS=pre-push npm run verify');
+    const vm = readFileSync('scripts/verify-mobile.mjs', 'utf8');
+    expect(vm).toMatch(/process\.env\.MOBILE_WIDTHS === 'pre-push'/);
+    expect(vm).toContain("const PRE_PUSH_WIDTHS = ['320×780', '390×844', '430×932'];");
+    // ⛔ כל שלוש הרשומות קיימות ב-ALL_WIDTHS — אחרת הפילטר היה מחזיר פחות משלוש בשקט.
+    for (const [w, h] of [[320, 780], [390, 844], [430, 932]]) {
+      expect(vm).toMatch(new RegExp(`\\{ width: ${w}, height: ${h},`));
+    }
+  });
+
+  it('verify:attested דוחה verify(3w) ו-verify(docs) ⇒ QA מריצה את המלא', () => {
+    const va = readFileSync('scripts/verify-attested.mjs', 'utf8');
+    expect(va).toMatch(/\^verify\\\(\(3w\|docs\)\\\)/);
+  });
+
   /**
    * 🔴 **«⛔ לא ידענו מה השתנה» חייב להיפתר לאיטי.** שער שנופל למסלול המהיר כשהוא
    * ⛔ אינו יודע מה בדיף הוא בדיוק החור שהוא נבנה נגדו.
    */
   it('⛔ דיף שלא ניתן לקרוא ⇒ מסלול מלא — ספק נפתר לאיטי, ⛔ לא למהיר', () => {
     expect(HOOK).toMatch(/if \[ -z "\$CHANGED" \]; then\s*\n\s*REGISTER_ONLY=0/);
+    expect(HOOK).toMatch(/REGISTER_ONLY=0[^\n]*\n\s*DOCS_ONLY=0/);
   });
 
   /**
    * ⚠️ **החותמת חייבת לומר מה באמת רץ.** בדיקה 16 קוראת את ההערה הזאת; הערה שאומרת
    * `verify` על ריצה מהירה הופכת את הראיה לטענה — הדבר היחיד שהיא קיימת נגדו.
    */
-  it('החותמת מבדילה verify מ-verify(fast)', () => {
+  it('החותמת מבדילה verify(3w) · verify(docs) · verify(fast)', () => {
     expect(HOOK).toContain('VERIFY_LABEL="verify(fast)"');
-    expect(HOOK).toContain('VERIFY_LABEL="verify"');
+    expect(HOOK).toContain('VERIFY_LABEL="verify(docs)"');
+    expect(HOOK).toContain('VERIFY_LABEL="verify(3w)"');
+    // ⏱️ ⟦23/09 · `T-429`⟧ ההוק ⛔ אינו מריץ שש רשומות ⇒ ⛔ אסור לו לחתום `verify` נקי,
+    // אחרת `verify:attested` היה פוטר את QA מהריצה המלאה.
+    expect(HOOK).not.toContain('VERIFY_LABEL="verify"');
     expect(HOOK, 'ההערה נכתבת מהתווית, ⛔ לא ממחרוזת קבועה').toMatch(
       /git notes --ref=verify add -f -m "\$VERIFY_LABEL: exit 0/,
     );

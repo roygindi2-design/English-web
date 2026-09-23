@@ -75,8 +75,8 @@ than ⛔ not doing them.
 
 🆕 ⟦FIXED 11/09 · `F-213`⟧ **The skip is an EXIT CODE now, ⛔ not a rule to read.** It was
 prose here on 11/09 and the tick re-ran `verify` anyway, 183s, against a tip already stamped
-`verify: exit 0`. ‏`verify:attested` returns **1** on `verify(fast)`, on no note, on a stamp
-for another SHA — ⛔ doubt still resolves to RUN, and now ⛔ nobody has to remember that.
+`verify: exit 0`. ‏`verify:attested` returns **1** on `verify(fast|3w|docs)`, on no note, on a stamp
+for another SHA — ⛔ doubt still resolves to RUN, and now nobody has to remember that.
 ⚠️ `loop:health` (5) is ⛔ NEVER skipped. ⚠️ `npm install` still runs.
 
 ⛔ **WHAT A GATE TICK ⛔ MUST NOT DO — and each of these is ⛔ not a matter of budget:**
@@ -140,7 +140,7 @@ stood here before, grouped — ⛔ nothing was dropped; ① absorbed the smoke t
              lane carries: a note saying `verify: exit 0` on THIS tip means the
              full nine-command run already passed on this exact tree (measured:
              130 of 138 notes in history), ⇒ report «הראש אומת ב-<stamp>» and
-             ⛔ do ⛔ not re-run. `verify(fast)` · ⛔ no note · ⛔ any doubt ⇒ RUN IT.
+             ⛔ do ⛔ not re-run. `verify(fast)` · `verify(3w)` · `verify(docs)` · ⛔ no note · ⛔ any doubt ⇒ RUN IT.
              ⚠️ `loop:health` is ⛔ never skipped — ⛔ nothing attests it.
              ⚠️ And the walk (②) ⛔ does ⛔ not change the tree, so it ⛔ does ⛔ not
              invalidate an attestation taken before it.

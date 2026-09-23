@@ -110,14 +110,22 @@ CHANGED="$(git diff --name-only "$REMOTE/$(git rev-parse --abbrev-ref HEAD)"...H
 [ -z "$CHANGED" ] && CHANGED="$(git diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
 
 REGISTER_ONLY=1
+# 📄 ⟦23/09 · אישור רוי⟧ **נתיב שני, מסמכים:** דיף שכולו `plan/` · `docs/agents/` · `*.md`
+# תחת `docs/` ⇒ ⛔ אין build ו⛔ אין check:mobile — markdown ⛔ אינו מיובא לאף מסך
+# (🔬 `grep '\.md' app lib components` ⇒ 0). ⚠️ ⛔ **אבל `vitest` המלא כן רץ:** 🔬 בדיקות
+# ב-`app/`·`lib/`·`components/` קוראות `docs/api-contract.md` · `data-licenses.md` · `SETUP.md`.
+# ⛔ ו-`DOCS_ONLY` ⛔ אינו `REGISTER_ONLY` — שער הנעילה ממשיך לראות בו דיף של עבודה.
+DOCS_ONLY=1
 if [ -z "$CHANGED" ]; then
   REGISTER_ONLY=0                     # ⛔ ⛔ לא ידענו מה השתנה ⇒ מלא. ספק ⇒ איטי.
+  DOCS_ONLY=0
 else
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     case "$f" in
       plan/*|docs/plan-*.md|docs/agents/*) ;;
-      *) REGISTER_ONLY=0; break ;;
+      docs/*.md) REGISTER_ONLY=0 ;;
+      *) REGISTER_ONLY=0; DOCS_ONLY=0; break ;;
     esac
   done <<< "$CHANGED"
 fi
@@ -390,10 +398,22 @@ if [ "$REGISTER_ONLY" = "1" ]; then
     echo "⛔ ⛔ אל תעקוף. תקן, או הפוך את הכישלון לממצא ב-plan/60-findings.md."
     exit 1
   fi
+elif [ "$DOCS_ONLY" = "1" ]; then
+  VERIFY_LABEL="verify(docs)"
+  echo "📄 pre-push — הדיף מוגבל ל-plan/ · docs/**.md ⇒ ⛔ אין build ו⛔ אין check:mobile; vitest מלא כן."
+  if ! { npm run check:motion && npm run check:text-floor && npm run check:rules && npx vitest run; }; then
+    echo ""
+    echo "⛔ הדחיפה נחסמה: נתיב המסמכים יצא בקוד ⛔ לא-אפס."
+    echo "⛔ ⛔ אל תעקוף. תקן, או הפוך את הכישלון לממצא ב-plan/60-findings.md."
+    exit 1
+  fi
 else
-  VERIFY_LABEL="verify"
-  echo "🔒 pre-push — מריץ npm run verify לפני הדחיפה ל-$REMOTE …"
-  if ! npm run verify; then
+  # ⏱️ ⟦23/09 · `T-429` · אישור רוי⟧ **check:mobile בשלושה רוחבים כאן, בשישה ב-QA.**
+  # ⇒ החותמת היא `verify(3w)`, ⛔ לא `verify`: `verify:attested` מחזיר «הרץ», ו-QA מריצה
+  # את `npm run verify` המלא לפני המיזוג. ⛔ חותמת שמתהדרת בשש רשומות שלא רצו — אסורה.
+  VERIFY_LABEL="verify(3w)"
+  echo "🔒 pre-push — מריץ npm run verify (check:mobile ב-3 רוחבים) לפני הדחיפה ל-$REMOTE …"
+  if ! MOBILE_WIDTHS=pre-push npm run verify; then
     echo ""
     echo "⛔ הדחיפה נחסמה: 'npm run verify' יצא בקוד ⛔ לא-אפס."
     echo "⛔ ⛔ אל תעקוף. תקן, או קרא את הכישלון והפוך אותו לממצא ב-plan/60-findings.md."
@@ -418,7 +438,7 @@ git fetch -q "$REMOTE" "+refs/heads/notes-verify:refs/notes/verify" >/dev/null 2
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 NOTED=0
 for sha in "${TIPS[@]}"; do
-  # ⛔ `$VERIFY_LABEL` is `verify` or `verify(fast)` — ⛔ never a label for a run that did
+  # ⛔ `$VERIFY_LABEL` is `verify(3w)` · `verify(docs)` · `verify(fast)` — ⛔ never a label for a run that did
   # ⛔ not happen. Check 16 reads this note; a note that overstates what ran would make the
   # ⛔ attestation a claim instead of evidence, which is the one thing it exists against.
   if git notes --ref=verify add -f -m "$VERIFY_LABEL: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1; then

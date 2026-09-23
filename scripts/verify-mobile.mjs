@@ -52,7 +52,7 @@ const BASE = BASE_ARG || `http://localhost:${PORT}`;
 // של מספר שהוא שער (`RULES § 0.1 ז׳`): ⛔ לא 44px, ⛔ לא רצפת ה-12px, ⛔ לא תקציב הזוהר.
 // שלוש הרשומות החדשות נושאות את הגובה ה**אמיתי** של המכשיר, מפני ש«גולש אנכית» ⛔ אינה שאלה
 // שאפשר לשאול על רוחב לבדו.
-const WIDTHS = [
+const ALL_WIDTHS = [
   { width: 320, height: 780, device: 'legacy 320 · הרוחב הצר ביותר שהמוצר מבטיח' },
   { width: 375, height: 780, device: 'legacy 375 · אייפון SE/8' },
   { width: 414, height: 780, device: 'legacy 414 · אייפון 11/XR' },
@@ -60,6 +60,17 @@ const WIDTHS = [
   { width: 393, height: 852, device: 'אייפון 14 Pro · 15 · 16' },
   { width: 430, height: 932, device: 'אייפון 14 Pro Max · 15 Pro Max · 16 Plus' },
 ];
+// ⏱️ ⟦23/09 · `T-429` · אישור רוי⟧ **שלושה רוחבים ב-pre-push, שישה בריצה המלאה של QA.**
+// 🔬 שש הרשומות הכפילו את השער ⟨~143ש׳ ⇒ 281ש׳⟩ בכל דחיפה של כל סוכן, ו-`verify` כולו
+// התקרב לתקרת 10 הדקות של פקודה בודדת. ⇒ ההוק מעביר `MOBILE_WIDTHS=pre-push`, ונשארים
+// **הצר ביותר** ⟨320×780 — גם הגובה הנמוך ביותר⟩, **הנפוץ ביותר** ⟨390×844⟩ ו**הגדול ביותר** ⟨430×932⟩.
+// ⛔ **ו⛔ זה ⛔ אינו דילוג:** ההוק חותם `verify(3w)`, ⛔ לא `verify` ⇒ `verify:attested` מחזיר «הרץ»,
+// ו-QA מריצה את `npm run verify` המלא — שש רשומות — לפני כל מיזוג ל-`dev`.
+const PRE_PUSH_WIDTHS = ['320×780', '390×844', '430×932'];
+const WIDTHS =
+  process.env.MOBILE_WIDTHS === 'pre-push'
+    ? ALL_WIDTHS.filter((v) => PRE_PUSH_WIDTHS.includes(`${v.width}×${v.height}`))
+    : ALL_WIDTHS;
 const ROUTES = [
   '/',
   '/signup',
