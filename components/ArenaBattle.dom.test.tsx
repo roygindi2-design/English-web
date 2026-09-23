@@ -350,6 +350,24 @@ describe('T-403 — «בקרב הראשון בלבד»: שער אחד, ⛔ ול�
     });
     expect(hint.textContent).toContain('גרור קלף כלפי מעלה');
   });
+
+  it('🔵 T-425 — הקשה על קלף מחליפה את ההוראה לצעד השני, ⛔ ושתיהן ⛔ לעולם לא יחד', async () => {
+    window.localStorage.removeItem(ARENA_TAUGHT_KEY);
+    render(<ArenaBattle initialRound={ROUND} />);
+    const hint = await waitFor(() => {
+      const node = document.querySelector('[data-arena-hint]');
+      expect(node).not.toBeNull();
+      return node as Element;
+    });
+    expect(hint.textContent).not.toContain('היריב');
+    const card = document.querySelector('[data-arena-card]') as HTMLElement;
+    // הקשה = `pointerdown`+`pointerup` באותה נקודה (`SpellCard.tsx`), ⛔ ולא `click`.
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerUp(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    await waitFor(() =>
+      expect(document.querySelector('[data-arena-hint]')?.textContent).toBe('עכשיו הקש על היריב כדי להטיל'),
+    );
+  });
 });
 
 /**

@@ -3656,6 +3656,46 @@ try {
     }
   }
 
+  // ---- 2f. T-425 · one hint line, and the mana count clear of the edge ----
+  //
+  // 🔬 `C-0773`: the old hint («… · או הקש על קלף ואז על היריב») broke into **2 lines** at
+  // 320 and 375 — two competing instructions. It is now one instruction that follows the
+  // learner (`DRAG_HINT_HE` ⇄ `TAP_ENEMY_HINT_HE`). ⛔ jsdom ⛔ cannot count lines.
+  {
+    for (const size of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 393, height: 852 },
+    ]) {
+      const ctx = await browser.newContext({ viewport: size });
+      const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
+      await page.goto(`${BASE}/dev/arcade`, { waitUntil: 'networkidle' });
+      await page.evaluate(() => {
+        try { window.localStorage.removeItem('kol.arena.dragTaught'); } catch {}
+      });
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForSelector('[data-arena-hint]');
+      const m = await page.evaluate(() => {
+        const hint = document.querySelector('[data-arena-hint]');
+        const range = document.createRange();
+        range.selectNodeContents(hint);
+        const count = [...document.querySelectorAll('[data-arena-mana] *')].find(
+          (e) => e.children.length === 0 && /\d+\s*\/\s*\d+/.test(e.textContent ?? ''),
+        );
+        return {
+          lines: new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size,
+          countX: count ? Math.round(count.getBoundingClientRect().left) : -1,
+        };
+      });
+      const at = `T-425 · /dev/arcade @ ${size.width}×${size.height}`;
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+      check(m.lines === 1, `${at} · the hint is one line`, `hint wraps to ${m.lines} lines`);
+      check(m.countX >= 16, `${at} · the mana count sits ≥16px from the edge`, `count at x=${m.countX}`);
+      await ctx.close();
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

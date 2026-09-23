@@ -286,7 +286,17 @@ const FIRE_HE = 'שגר לחש';
 const FIRE_HINT_HE = 'בחר קלף לחש כדי לשגר';
 /** ⛔ זיכרון מכשיר, ⛔ ולא התקדמות למידה — ⛔ אינו נקודות, ⛔ אינו רצף, ⛔ אינו נוגע ב-`word_progress`. */
 export const ARENA_TAUGHT_KEY = 'kol.arena.dragTaught';
-const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל · או הקש על קלף ואז על היריב';
+/**
+ * 🔵 **T-425 · `36 § 8.0` ⑤ — הוראה **אחת** בכל רגע, ⛔ ולא שתיים בשורה אחת.**
+ * 🔬 נמדד `C-0773` ב-`next start`: המחרוזת הקודמת («… · או הקש על קלף ואז על היריב»)
+ * נשברה ל-**2 שורות** ב-320 וב-375 — ⇒ שתי הוראות מתחרות, ואף אחת ⛔ אינה נקראת.
+ * ⇒ השורה **עוקבת אחרי מה שהלומד עושה**: בלי קלף נבחר היא מלמדת את הגרירה (כלפי
+ * מעלה, `lib/core/arenaGesture.ts` — ⛔ ולא «אל היריב» של Figma, מחווה שאינה קיימת);
+ * הקיש על קלף — היא אומרת את הצעד השני של מסלול ההקשה (`37 § 5`). ⇒ ⛔ שום מסלול
+ * ⛔ אינו נעלם, ⛔ ואין `·`.
+ */
+const DRAG_HINT_HE = 'גרור קלף כלפי מעלה כדי להטיל';
+const TAP_ENEMY_HINT_HE = 'עכשיו הקש על היריב כדי להטיל';
 /**
  * 🔥 **T-401 · `render_video_B.py:378`** — `רצף {N}`. ⛔ המילה של הרנדר, ⛔ ולא נוסח חדש.
  * ⛔ **⛔ אינו תגמול ו⛔ אינו ניקוד** (`D-050`): הוא **מונה של מה שכבר קרה בקרב הזה**,
@@ -1840,7 +1850,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           רעש: היא ⛔ אינה מציירת דבר. */}
       <div data-arena-hintrow className="flex h-[28px] shrink-0 items-center justify-center">
       {showHint && (
-        <p data-arena-hint className="text-center text-xs text-[color:var(--arena-ink-dim)]">{DRAG_HINT_HE}</p>
+        <p data-arena-hint aria-live="polite" className="text-center text-xs text-[color:var(--arena-ink-dim)]">
+          {selected === null ? DRAG_HINT_HE : TAP_ENEMY_HINT_HE}
+        </p>
       )}
       {/* T-220 ⓓ · D-139 — the card comes back REVEALED: the Hebrew translation is shown at
           the moment of the error, then the learner is asked to produce it again at the tail

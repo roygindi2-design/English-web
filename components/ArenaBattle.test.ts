@@ -1072,6 +1072,19 @@ describe('T-403 — יד הרפאים: המחווה נראית בקרב הראש
     expect(CODE).toMatch(/DRAG_HINT_HE/);
   });
 
+  // 🔵 T-425 — ⛔ `·` הוא ההודאה ששתי הוראות נדחסו לשורה אחת.
+  it('T-425 — שורת הרמז: הוראה אחת בכל רגע, ⛔ בלי `·`, ⛔ ושני המסלולים נשארים', () => {
+    const drag = CODE.match(/const DRAG_HINT_HE = '([^']*)'/)?.[1] ?? '';
+    const tap = CODE.match(/const TAP_ENEMY_HINT_HE = '([^']*)'/)?.[1] ?? '';
+    expect(drag).toContain('כלפי מעלה'); // המחווה האמיתית — ⛔ «אל היריב»
+    expect(tap).toContain('היריב');
+    for (const s of [drag, tap]) {
+      expect(s).not.toContain('·');
+      expect(s.length).toBeLessThanOrEqual(30);
+    }
+    expect(CODE).toMatch(/\{selected === null \? DRAG_HINT_HE : TAP_ENEMY_HINT_HE\}/);
+  });
+
   it('⛔ אינו מזיז את פריסת היד — `fixed` בקצה העץ, ⛔ ולא ילד של `[data-arena-hand]`', () => {
     const hand = CODE.indexOf('data-arena-hand');
     expect(CODE.indexOf('data-arena-teach')).toBeGreaterThan(hand);
