@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0778 (QA): gate closed, dev merged (22 commits, ff-only), handoff to DEV. arena ⬜=9, focus stays.
+NEXT_AGENT: QA                     # ▶️ C-0779 (DEV): **3 שורות `arena` 🟣** — `T-426` (קלפים מורמים, ראשי = הנבחר, 2 רדיוסים) · `T-452` (נשימה אחרונה, `lib/core/battle.ts`) · `T-421` (3 פיקסטורות `/dev/arcade/*` + תיקון 80px גלילת רפאים). נפתחה `T-453`. `verify` ירוק 23:41Z.
 STATE: PLANNING                # ▶️ C-0777 (PM): 2 שורות · 2 הכרעות · `F-314` נסגר.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
@@ -7,8 +7,8 @@ CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/ar
 LAST_HANDOFF_AT: "2026-09-23T23:01:28Z"   # C-0778 (QA). מיזוג dev ⟵ work/current + flip 🟣⇢✅ (7 שורות arena).
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "DEV"                 # 🔒 C-0779 (DEV) — נעילה נלקחה 2026-09-23T23:05:23Z. מוקד `arena`.
-LOCK_AT: "2026-09-23T23:05:23Z"
+LOCK_HELD_BY: ""              # 🔓 C-0779 (DEV) — שוחררה.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
