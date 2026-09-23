@@ -2075,13 +2075,33 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         />
       )}
 
+      {/* 👻 **⟦23/09 · `T-449` · `37 § 11` א5⟧ שובל הרפאים — לפני הקלף בסדר ה-DOM ⇒ מתחתיו.**
+          ⛔ **והשחרור עבר לרפאים האחרון**, כי הוא מסיים `5 × 18ms` אחרי הקלף: שחרור על
+          הקלף היה חותך ארבעה עותקים באמצע הדרך, וזה **קפיצה**, ⛔ ולא שובל. */}
+      {throwFx !== null && [1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={`${throwFx.key}-${i}`}
+          data-arena-throw-ghost={i}
+          aria-hidden
+          onAnimationEnd={i === 5 ? () => setThrowFx(null) : undefined}
+          style={{
+            position: 'fixed',
+            left: `${throwFx.x}px`,
+            top: `${throwFx.y}px`,
+            width: `${throwFx.w}px`,
+            height: `${throwFx.h}px`,
+            ['--arena-throw-dx' as string]: `${throwFx.dx}px`,
+            ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
+            ['--arena-throw-ghost-i' as string]: i,
+          }}
+          className="pointer-events-none z-40 rounded-xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]"
+        />
+      ))}
       {throwFx !== null && (
         <div
           key={throwFx.key}
           data-arena-throw
           aria-hidden
-          onAnimationEnd={() => setThrowFx(null)}
-          onTransitionEnd={() => setThrowFx(null)}
           style={{
             position: 'fixed',
             left: `${throwFx.x}px`,

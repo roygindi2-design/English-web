@@ -893,6 +893,30 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
   });
 
   /**
+   * 🟡👻 **⟦23/09 · `C-0775` · `T-449` · `37 § 11` א3 · א5⟧** — הקלף **נזרק**, ⛔ ולא מתכווץ.
+   * ⓐ מתיחה `1.25×0.8` בשיגור, מחיצה `0.75×1.2` מתוך בסיס העומק `0.55` בפגיעה.
+   * ⓑ חמישה עותקים דוהים על **אותם** קיפריימים, `transform`+`opacity` בלבד.
+   * ⓒ השחרור על הרפאים **האחרון** — אחרת ארבעה עותקים נחתכים באמצע הדרך.
+   */
+  it('🟡👻 א3 מתיחה ומחיצה · א5 חמישה רפאים על אותו מסלול, ⛔ אפס filter', () => {
+    const fly = CSS.slice(CSS.indexOf('@keyframes arena-throw-fly'), CSS.indexOf('[data-arena-throw] {'));
+    expect(fly, 'מתיחה בשיגור').toMatch(/scale\(1\.25, 0\.8\)/);
+    expect(fly, 'מחיצה בפגיעה = 0.55 × (0.75, 1.2)').toMatch(/scale\(0\.4125, 0\.66\)/);
+    expect(fly, '⛔ אפס filter').not.toMatch(/filter/);
+    const ghost = CSS.slice(CSS.indexOf('[data-arena-throw-ghost] {'));
+    expect(ghost.slice(0, 400), 'אותם קיפריימים').toMatch(/animation: arena-throw-fly var\(--arena-throw-ms\)/);
+    expect(ghost.slice(0, 400), 'השהיה עולה').toMatch(/animation-delay: calc\(var\(--arena-throw-ghost-i, 1\) \* 18ms\)/);
+    expect(ghost.slice(0, 400), '⛔ ⛔ לא blur').not.toMatch(/filter/);
+    expect(CSS, 'תנועה מופחתת מסירה גם את הרפאים').toMatch(
+      /prefers-reduced-motion[\s\S]*\[data-arena-throw-ghost\] \{ display: none; \}/,
+    );
+    expect(CODE, 'חמישה, בדיוק').toMatch(/\[1, 2, 3, 4, 5\]\.map\(\(i\) =>/);
+    expect(CODE, 'השחרור על האחרון').toMatch(/onAnimationEnd=\{i === 5 \? \(\) => setThrowFx\(null\) : undefined\}/);
+    const ghostJsx = CODE.slice(CODE.indexOf('data-arena-throw-ghost'), CODE.indexOf('data-arena-throw\n'));
+    expect(ghostJsx, '⛔ הרפאים ⛔ אינם נושאים את המילה').not.toMatch(/throwFx\.label/);
+  });
+
+  /**
    * ⟦NEW 16/09 · `C-0665` · `T-364`⟧ **המספר עבר אל היריב.**
    * 🔬 שלוש הטענות של השורה נמדדות כאן אחת-אחת, ⛔ ולא כאחת: **מקום** (על היריב,
    * ⛔ לא על פס החיים) · **גודל וגוון** (גדול, אדום) · **התפרצות** (שלוש טבעות זהב).

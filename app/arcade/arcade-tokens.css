@@ -1067,15 +1067,40 @@ body:has([data-arena-scope]) > div > main {
    הרחוק (`ArenaStage` מקטין אותו ל-0.66 מאותה סיבה בדיוק), ⛔ ואינו מתאדה לאין.
    ⛔ **`ease-out` ⛔ ולא `ease-in`** (`animate` § 5): התנועה יוצאת מהאצבע, והרגע שבו
    הלומד מסתכל הוא ה**התחלה**. */
+/* 🟡 **⟦23/09 · `C-0775` · `T-449` · `37 § 11` א3⟧ מתיחה בשיגור, מחיצה בפגיעה.**
+   🔬 **הפער שנמדד:** ‏`scale(1) ⇒ scale(0.55)` בלבד ⇒ הקלף **התכווץ**, ⛔ ולא נזרק.
+   ⇒ `1.25×0.8` ב-`14%` ⟨השיגור — מהירות היא מתיחה⟩, ו-`0.75×1.2` **מתוך** בסיס העומק
+   ⟨`0.55` ⇒ `0.4125×0.66`⟩ ב-`86%`, כשהקלף כבר על היריב ⟨הפגיעה — עצירה היא מחיצה⟩.
+   ⛔ **והשקיפות נשארת גבוהה עד הפגיעה** — מחיצה שקורית בשקיפות 0 ⛔ אינה נראית.
+   ⚠️ `--arena-throw-alpha` = **1** לקלף עצמו; שובל הרפאים (א5, למטה) מוסר ערך נמוך יותר
+   לאותם קיפריימים בדיוק ⇒ ⛔ מסלול אחד, ⛔ ולא שניים שיכולים לסטות. */
 @keyframes arena-throw-fly {
-  from {
-    opacity: 1;
+  0% {
+    opacity: var(--arena-throw-alpha, 1);
     transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   }
-  to {
+  14% {
+    opacity: var(--arena-throw-alpha, 1);
+    transform:
+      translate3d(calc(var(--arena-throw-dx, 0px) * 0.14), calc(var(--arena-throw-dy, 0px) * 0.14), 0)
+      scale(1.25, 0.8) rotate(1deg);
+  }
+  78% {
+    opacity: calc(var(--arena-throw-alpha, 1) * 0.9);
+    transform:
+      translate3d(var(--arena-throw-dx, 0px), var(--arena-throw-dy, 0px), 0)
+      scale(0.55) rotate(7deg);
+  }
+  86% {
+    opacity: calc(var(--arena-throw-alpha, 1) * 0.8);
+    transform:
+      translate3d(var(--arena-throw-dx, 0px), var(--arena-throw-dy, 0px), 0)
+      scale(0.4125, 0.66) rotate(8deg);
+  }
+  100% {
     opacity: 0;
     transform:
-      translate3d(var(--arena-throw-dx, 0), var(--arena-throw-dy, 0), 0)
+      translate3d(var(--arena-throw-dx, 0px), var(--arena-throw-dy, 0px), 0)
       scale(0.55) rotate(8deg);
   }
 }
@@ -1089,8 +1114,22 @@ body:has([data-arena-scope]) > div > main {
    מהיד, והתוצאה נאמרת בפס החיים ובמספר. ⇒ תחת תנועה מופחתת הוא **תנועה טהורה**,
    ו-`animate` § 7 מסיר תנועה. ⛔ `display: none` ⛔ ולא `animation: none`: בלי
    האנימציה ⛔ אין `animationend`, והצומת היה נשאר על המסך **לנצח**. */
+/* 👻 **⟦23/09 · `C-0775` · `T-449` · `37 § 11` א5⟧ שובל רפאים — חמישה עותקים דוהים.**
+   🔬 **ולמה זה ⛔ אינו קישוט:** ההטלה היא **240ms** ⇒ הקלף חוצה את המסך מהר מכפי שהעין
+   עוקבת, והשובל הוא מה שהופך «הבהוב» ל**מסלול**.
+   ⛔ **אותם קיפריימים בדיוק** ⟨`arena-throw-fly`⟩, `animation-delay` עולה ב-`18ms`,
+   ו-`--arena-throw-alpha` יורד ⇒ ⛔ `transform`+`opacity` בלבד, ⛔ אפס `filter: blur`.
+   ⛔ **וריק מטקסט** — עותק שנושא את המילה היה קורא אותה חמש פעמים. */
+[data-arena-throw-ghost] {
+  animation: arena-throw-fly var(--arena-throw-ms) var(--arena-ease-out) 1 both;
+  animation-delay: calc(var(--arena-throw-ghost-i, 1) * 18ms);
+  --arena-throw-alpha: calc(0.6 - var(--arena-throw-ghost-i, 1) * 0.1);
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-arena-throw] { display: none; }
+  [data-arena-throw-ghost] { display: none; }
 }
 
 /* ═══ 🔥 **⟦19/09 · `C-0732` · `T-434` · `37 § 8` ק3 · `D-269`⟧ המתקפה הראשונה.**
