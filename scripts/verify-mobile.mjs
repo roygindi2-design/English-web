@@ -272,6 +272,12 @@ const ROUTES = [
   // הפיקסצ׳ר מרנדר את הרכיב ישירות ו⛔ אינו מבקש מהשרת דבר, ולכן ⛔ אין לו רשומה
   // ב-EXPECTED_CONSOLE — אותה הנמקה בדיוק של `/dev/arcade/result` שמעליו.
   '/dev/arcade/summary',
+  // 🧪 `T-421` (`C-0779`) · המשך של `T-416` — שלושת מסכי הקרב ש⛔ אף נתיב ⛔ לא רינדר בלי
+  // שרת: הטעינה (‏`/arcade` מחליף אותה מיד בכשל ה-503), «⛔ אין מספיק מילים ברמה» וסכמה
+  // חסרה. ‏`initialScreen` מוזרק והבקשה ⛔ אינה יוצאת ⇒ ⛔ אין להם רשומה ב-EXPECTED_CONSOLE.
+  '/dev/arcade/loading',
+  '/dev/arcade/too-small',
+  '/dev/arcade/schema-missing',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -3748,6 +3754,37 @@ try {
           `${at} · the content ends above the action bar`,
           `content bottom ${m.contentBottom} vs bar top ${m.barTop}`,
         );
+        await ctx.close();
+      }
+    }
+  }
+
+  // 🧪 `T-421` (`C-0779`) · המשך של `T-416`ⓑ — **הטענה החיה ש-`T-416` ⛔ לא יכלה לכתוב.**
+  // שומר-המקור ב-`ArenaBattle.test.ts` (‏`F-278`) מודד את ה**מחלקה**; זה מודד את ה**פיקסל**:
+  // קטע שיחזור ל-`min-h-[100dvh]`+`pb-28` בניסוח שהשומר ⛔ אינו מכיר ייתפס כאן.
+  {
+    const EXPECT = {
+      '/dev/arcade/loading': 'טוען את הזירה',
+      '/dev/arcade/too-small': 'ברמה הזאת עוד אין מספיק מילים לקרב',
+      '/dev/arcade/schema-missing': 'המאגר עדיין לא הוקם',
+    };
+    for (const [route, text] of Object.entries(EXPECT)) {
+      for (const size of [{ width: 320, height: 568 }, { width: 375, height: 780 }, { width: 414, height: 896 }]) {
+        const ctx = await browser.newContext({ viewport: size });
+        const page = await ctx.newPage();
+        const uncaught = watchUncaught(page);
+        await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
+        const m = await page.evaluate(() => ({
+          scroll: document.documentElement.scrollHeight,
+          clientH: document.documentElement.clientHeight,
+          text: document.body.textContent ?? '',
+          sections: document.querySelectorAll('main section, body section').length,
+        }));
+        const at = `T-421 · ${route} @ ${size.width}×${size.height}`;
+        check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+        check(m.sections > 0, `${at} · the battle's own section rendered`, 'no <section>');
+        check(m.text.includes(text), `${at} · the production string is on screen`, `missing «${text}»`);
+        check(m.scroll === m.clientH, `${at} · ⛔ nothing scrolls`, `scrollHeight ${m.scroll} vs clientHeight ${m.clientH}`);
         await ctx.close();
       }
     }

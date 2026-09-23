@@ -149,7 +149,20 @@ export interface ArenaBattleProps {
    * ⇒ הפרודקשן ⛔ לא זז, והפיקסטורה יכולה סוף־סוף להציג את מה שקיים. `F-287`.
    */
   readonly items?: readonly string[];
+  /**
+   * 🧪 ⟦`C-0779` · `T-421`⟧ **המסך שהקרב נפתח בו, לפיקסטורה בלבד.** שלושת המצבים ש⛔ אף
+   * נתיב ⛔ אינו מרנדר בלי שרת: טעינה, «⛔ אין מספיק מילים ברמה» וסכמה חסרה. ⛔ **אותו
+   * רכיב, אותן מחרוזות** — רק `screen` מוזרק, והבקשה לשרת ⛔ אינה יוצאת (אחרת הטעינה
+   * הייתה מתחלפת בכשל ה-503 של `next start`). ⛔ הייצור ⛔ אינו מעביר אותו לעולם.
+   */
+  readonly initialScreen?: ArenaFixtureScreen;
 }
+
+/** 🧪 `T-421` — שלושת המצבים שפיקסטורה רשאית לפתוח בהם. ⛔ `ready` מגיע רק מ-`initialRound`. */
+export type ArenaFixtureScreen =
+  | { readonly kind: 'loading' }
+  | { readonly kind: 'too_small'; readonly eligible: number | null; readonly required: number | null }
+  | { readonly kind: 'schema_missing' };
 
 /** ⚠️ **`no_level` הוסר — T-239 · D-052.** «רמת המשחק מתחילה ב-1 לכל לומד»: הנתיב
  *  ⛔ אינו שולח יותר מצב «טרם בחרת רמה», והמצב כאן היה בלתי-מושג מהרגע שנכתב. */
@@ -373,9 +386,11 @@ function wordsOf(questions: readonly ArcadeQuestion[]): readonly ArenaWord[] {
   });
 }
 
-export default function ArenaBattle({ initialRound, character = null, items = [] }: ArenaBattleProps = {}): React.JSX.Element {
+export default function ArenaBattle({
+  initialRound, character = null, items = [], initialScreen,
+}: ArenaBattleProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
-    initialRound === undefined ? { kind: 'loading' } : { kind: 'ready', level: initialRound.level },
+    initialScreen ?? (initialRound === undefined ? { kind: 'loading' } : { kind: 'ready', level: initialRound.level }),
   );
   const [questions, setQuestions] = useState<readonly ArcadeQuestion[]>(
     initialRound === undefined ? [] : initialRound.questions,
@@ -848,9 +863,10 @@ export default function ArenaBattle({ initialRound, character = null, items = []
   }, []);
 
   useEffect(() => {
-    if (initialRound !== undefined) return;
+    // 🧪 `T-421` — פיקסטורה שפותחת במצב מוזרק ⛔ אינה שואלת את השרת: התשובה הייתה דורסת אותו.
+    if (initialRound !== undefined || initialScreen !== undefined) return;
     void load();
-  }, [initialRound, load]);
+  }, [initialRound, initialScreen, load]);
 
   /**
    * ⛔ **הלולאה היחידה, והיא כאן ⛔ ולא בליבה** (D-126 § ג׳). היא ⛔ אינה מחשבת דבר:
@@ -1112,8 +1128,17 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         : screen.kind === 'schema_missing'
           ? SCHEMA_MISSING_HE
           : FAILURE_HE.load;
+    // 👻 ⟦`C-0779` · `T-421`⟧ **הרצועה הקבועה משולמת פעם אחת, ⛔ ולא פעמיים.**
+    // 🔬 נמדד חי ב-`/dev/arcade/too-small` ו-`/schema-missing`, ⛔ ולא הוסק: `scrollHeight`
+    // 648/860/976 מול 568/780/896 ⇒ **80px** בכל רוחב. העוטף של `app/layout.tsx` כבר
+    // `100dvh` מינימום, ו-`body:has([data-action-bar])` (`globals.css:88`) מוסיף 5rem **מתחתיו**
+    // ⇒ אותה מחלקה בדיוק של `T-430`/`F-284`. ⇒ ⓐ `data-arena-failure` מוריד את שמירת ה-`body`
+    // (`arcade-tokens.css`), ⓑ הקטע מנכה את הרצועה בעצמו ⇒ התוכן נגמר **מעליה**.
+    // ⛔ הטעינה ⛔ אינה נושאת רצועה ⇒ ⛔ לא נגעה (נמדד: 568/780/896, אפס גלילה).
     return (
-      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <section
+        data-arena-failure
+        className="flex h-[calc(100dvh-5.25rem-5rem-env(safe-area-inset-bottom))] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {topBar(CLOCK_HE)}
         <p className="text-lg leading-relaxed text-ink">{message}</p>
         {screen.kind === 'too_small' && (

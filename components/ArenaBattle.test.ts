@@ -609,8 +609,10 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
           /\bh-\[calc\(100dvh-5\.25rem\)\]/,
         );
       } else {
+        // 👻 `T-421` (`C-0779`) — שורש שנושא רצועה קבועה מנכה **גם** את שמירת ה-`body` לה
+        // (`5rem` + אזור בטוח), כי אחרת היא משולמת פעמיים: 80px נמדדו חי ב-`/dev/arcade/too-small`.
         expect(cls, `גובה מדויק שמנכה את הכרום: "${cls}"`).toMatch(
-          /\bh-\[calc\(100dvh-5\.25rem\)\]/,
+          /\bh-\[calc\(100dvh-5\.25rem(?:-5rem-env\(safe-area-inset-bottom\))?\)\]/,
         );
       }
       expect(cls, `גלילה ⛔ אינה אפשרות: "${cls}"`).toMatch(/\boverflow-hidden\b/);

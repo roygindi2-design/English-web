@@ -375,6 +375,13 @@ body:has([data-arena-scope]) > div > main {
 body:has([data-arena-scope] [data-action-bar]) {
   padding-bottom: 0;
 }
+/* 👻 ⟦`C-0779` · `T-421`⟧ **ומסכי הכשל של הקרב — אותו כלל, מאותה סיבה.** הם ⛔ אינם נושאים
+   `data-arena-scope` (הם יושבים מתחת לכותרת), ⇒ הכלל שמעל ⛔ לא חל עליהם, ו-80px של גלילת
+   רפאים נמדדו חי ב-`/dev/arcade/too-small` · `/dev/arcade/schema-missing` בשלושת הרוחבים.
+   הקטע מנכה את הרצועה בעצמו (`ArenaBattle.tsx`), ⇒ התוכן ⛔ אינו נגמר מתחתיה. */
+body:has([data-arena-failure] [data-action-bar]) {
+  padding-bottom: 0;
+}
 [data-arena-scope] [data-action-bar] {
   background: var(--arena-night);
   border-color: var(--arena-card-edge);

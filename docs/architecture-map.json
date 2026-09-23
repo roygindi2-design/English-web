@@ -332,6 +332,10 @@
     "components/ArenaHome.tsx"
   ],
   "app/dev/arcade/layout.tsx": [],
+  "app/dev/arcade/loading/page.tsx": [
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaBattle.tsx"
+  ],
   "app/dev/arcade/page.tsx": [
     "app/arcade/arcade-tokens.css",
     "components/ArenaBattle.tsx",
@@ -341,12 +345,20 @@
     "app/arcade/arcade-tokens.css",
     "components/ArenaResult.tsx"
   ],
+  "app/dev/arcade/schema-missing/page.tsx": [
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaBattle.tsx"
+  ],
   "app/dev/arcade/summary/page.tsx": [
     "app/arcade/arcade-tokens.css",
     "components/ArenaSummary.tsx",
     "lib/core/arenaSummary.ts",
     "lib/core/arenaWords.ts",
     "lib/core/battle.ts"
+  ],
+  "app/dev/arcade/too-small/page.tsx": [
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaBattle.tsx"
   ],
   "app/dev/card/choice/page.tsx": [
     "components/Flashcard.tsx",
