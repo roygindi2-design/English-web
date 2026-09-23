@@ -1686,6 +1686,9 @@ describe('docs/agents/PROMOTER.md — גבול הסמכות ושער הקידו�
     // ⟦23/09 · `C-0763` · הוראת רוי⟧ **מרווח המינימום בין קידומים הוסר**, ותקרת ה-30
     // לחודש נשארה. הטענה נועלת את **ההסרה** — ⛔ אף נוסח של מרווח ⛔ אינו חוזר בשקט.
     expect(body, 'תקרת ה-30 לחודש נשארת').toMatch(/up to 30 deploys a month/);
+    // ⟦23/09 · `C-0766` · אישור רוי⟧ המונה ⛔ מעולם ⛔ לא התאפס ⇒ PROMOTER היה נעצר לתמיד.
+    expect(body, 'איפוס חודשי').toMatch(/resets every calendar month/);
+    expect(body, '⛔ הנוסח הישן «never reset» ⛔ לא חוזר').not.toMatch(/never reset and/);
     expect(body, '⛔ מרווח 11 השעות הוסר').not.toMatch(/one in 11 hours|last 11 hours/);
     expect(body, '⛔ וגם הישן').not.toMatch(/one in 24 hours/);
     expect(body, 'תקרת 00-control').toContain('12,288');
