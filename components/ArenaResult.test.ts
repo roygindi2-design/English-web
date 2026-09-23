@@ -123,3 +123,27 @@ describe('<ArenaResult>', () => {
     expect(SRC).toContain('חזרה לעולם');
   });
 });
+
+/**
+ * 🎬 **T-428 · `36 § 8.0` ① — מסך הסיום נכנס לשפה הכהה של הזירה.**
+ * 🔬 `C-0708`: בלי `data-arena-scope` המקטע היה `left=24 w=345` ושקוף על גוף בהיר.
+ * ⛔ ושום טוקן `globals` שמתחלף לפי `prefers-color-scheme` ⛔ אינו נשאר: בסכימה בהירה
+ * `--ink` הוא דיו כהה, ועל `--arena-night` הוא ⛔ נקרא.
+ */
+describe('T-428 — הסקופ של הזירה, ⛔ וטוקנים שמתחלפים עם הסכימה', () => {
+  const T428_CODE = readFileSync(new URL('./ArenaResult.tsx', import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  it('השורש נושא `data-arena-scope` בגובה `100dvh` מלא', () => {
+    expect(T428_CODE).toMatch(/<section data-arena-scope className="flex h-\[100dvh\]/);
+  });
+  it('⛔ אף טוקן צבע של `globals` — רק שמות הזירה', () => {
+    const banned = /\b(?:text|bg|border)-(?:ink|ink-muted|brand|brand-surface|brand-on|danger|success|surface|surface-raised|border-subtle|border-strong)\b(?![-\w])/g;
+    expect(T428_CODE.match(banned) ?? []).toEqual([]);
+  });
+  it('בקרה שלילית — הביטוי תופס את הטוקן הישן', () => {
+    const banned = /\b(?:text|bg|border)-(?:ink|ink-muted|brand-surface)\b(?![-\w])/;
+    expect(banned.test('rounded-2xl bg-brand-surface px-5')).toBe(true);
+    expect(banned.test('text-[color:var(--arena-ink)]')).toBe(false);
+  });
+});

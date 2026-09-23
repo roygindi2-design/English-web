@@ -62,7 +62,7 @@ const FOOTER_HE = 'הזירה לא שינתה דבר בהתקדמות הלמיד
    ו-`14 / 16` ב-`x=252` ⇒ הלומד קרא את המספר לפני מה שהוא מודד. במיכל RTL `flex`
    **כבר** מניח את הילד הראשון בימין. */
 const ROW_CLASS =
-  'flex min-h-[44px] items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4';
+  'flex min-h-[44px] items-center justify-between rounded-xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4';
 /* ‏x=24 ⇒ הגדר של `<main>` ב-`app/layout.tsx:57` (‏`px-6`), ⛔ ולא גדר שנייה כאן;
    ‏LW-48=327 ⇒ הרוחב נגזר, ⛔ ולא נכתב. ⟦T-348 · `F-253`⟧ */
 const PANEL_CLASS = 'flex min-h-[66px] flex-col justify-center gap-1 rounded-2xl px-4 py-3';
@@ -83,7 +83,16 @@ export default function ArenaSummary({
        `<main>`. ⇒ הגלישה ⛔ אינה תלוית-תוכן, היא **בהגדרה**. ‏5.25rem = 52+32 = 84.
        ⛔ **וב-320 היא הייתה 113** — 84 של הכרום ועוד **29 של תוכן אמיתי**, ⇒ הגובה
        המדויק לבדו ⛔ אינו מספיק, וזו הסיבה לאזור הגמיש שמתחת. */
-    <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-6 overflow-hidden pt-10 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    /* 🎬 **⟦T-428 · `C-0773` · `36 § 8.0` ①⟧ הסיום נכנס לזירה — `data-arena-scope`.**
+       🔬 נמדד `C-0708`: ⛔ בלי הסקופ המקטע היה `left=24 w=345` ורקעו **שקוף** על גוף בהיר ⇒
+       הלומד ניצח בחדר כהה וקיבל את התוצאה בטופס לבן. הסקופ נותן את מלוא הרוחב ואת
+       `--arena-night`, **ומוריד את הכרום** (`arcade-tokens.css`, `T-423`ⓑ) ⇒ ה-84 ש-`5.25rem`
+       ניכה ⛔ אינם קיימים ⇒ `h-[100dvh]` מלא (אותו כלל ש-`F-278` אוכף על הקרב), ו-`pt-12`
+       (48) — ⛔ ולא 92 שהיו משמרים את מקום הכותרת: שער «כותרת מעוגנת לראש» (`check:mobile`,
+       ‏`F-011`, ‏≤48px) **קפוא**, ונמדד אדום על 92 בטיק הזה.
+       ⛔ **וכל טוקן `globals` הוחלף בזה של הזירה** — `--ink` מתחלף לפי `prefers-color-scheme`,
+       ובסכימה בהירה הוא דיו כהה על כחול־ליל. */
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
@@ -92,7 +101,7 @@ export default function ArenaSummary({
           {ending.kind === 'victory' ? WON_HE : wordsFromBossHe(ending.wordsFromBoss)}
         </h1>
         {ending.kind !== 'victory' && (
-          <p data-arena-ending className="text-center text-[12.5px] font-medium text-ink-muted">
+          <p data-arena-ending className="text-center text-[12.5px] font-medium text-[color:var(--arena-ink-dim)]">
             {ending.kind === 'outlasted' ? OUTLASTED_HE : SURVIVED_HE}
           </p>
         )}
@@ -108,19 +117,19 @@ export default function ArenaSummary({
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
       <ul data-arena-summary className="flex flex-col gap-2">
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
-          <span className="text-[13px] font-medium text-ink">{CORRECT_HE}</span>
-          <span dir="ltr" className="text-[15px] font-bold text-success">
+          <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{CORRECT_HE}</span>
+          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-gold-light)]">
             {summary.correct} / {summary.total}
           </span>
         </li>
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
-          <span className="text-[13px] font-medium text-ink">{MEAN_HE}</span>
-          <span dir="ltr" className="text-[15px] font-bold text-brand-surface">
+          <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{MEAN_HE}</span>
+          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-ink)]">
             {meanSecondsHe(summary.meanResponseMs)}
           </span>
         </li>
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
-          <span className="text-[13px] font-medium text-ink">{STREAK_HE}</span>
+          <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{STREAK_HE}</span>
           <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-gold-light)]">
             {summary.bestStreak}
           </span>
@@ -130,11 +139,11 @@ export default function ArenaSummary({
       {/* לוח ה«איטיות» — y=486 · h=66 · r=16 · DANGER (`:622-629`). ⛔ מוצג אך ורק כשיש
           מה להציג: לוח ריק הוא רעש, ⛔ לא מידע. */}
       {summary.slow.length > 0 && (
-        <div data-arena-slow className={`${PANEL_CLASS} border border-danger bg-danger/15`}>
-          <p className="text-end text-[14px] font-bold text-danger">
+        <div data-arena-slow className={`${PANEL_CLASS} border border-[color:var(--arena-damage)] bg-[color:var(--arena-card)]`}>
+          <p className="text-end text-[14px] font-bold text-[color:var(--arena-damage)]">
             {summary.slow.length} {SLOW_HE}
           </p>
-          <p className="text-end text-[11.5px] leading-relaxed text-ink">
+          <p className="text-end text-[11.5px] leading-relaxed text-[color:var(--arena-ink)]">
             {summary.slow.map((c, i) => (
               <span key={c.wordId}>
                 {i > 0 && ' · '}
@@ -153,11 +162,11 @@ export default function ArenaSummary({
           המילוי הוא `bg-brand-surface/15` ⛔ ולא גוון ישיר של `--brand` (α38 ברנדר) — שומר F-036
           (`lib/core/palette.test.ts`) אוסר את `brand` הבסיסי כמילוי בכל מסך; הכרעה הפיכה `RULES § 0.22`. */}
       {summary.firstMet.length > 0 && (
-        <div data-arena-first-met className={`${PANEL_CLASS} border border-brand bg-brand-surface/15`}>
-          <p className="text-end text-[14px] font-bold text-ink">
+        <div data-arena-first-met className={`${PANEL_CLASS} border border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]`}>
+          <p className="text-end text-[14px] font-bold text-[color:var(--arena-ink)]">
             {firstMetHe(summary.firstMet.length)}
           </p>
-          <p className="text-end text-[12px] leading-relaxed text-ink">
+          <p className="text-end text-[12px] leading-relaxed text-[color:var(--arena-ink)]">
             {summary.firstMet.map((c, i) => (
               <span key={c.wordId}>
                 {i > 0 && ' · '}
@@ -175,7 +184,7 @@ export default function ArenaSummary({
         type="button"
         data-arena-summary-back
         data-primary-action="true"
-        className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-brand-surface px-5 text-[15.5px] font-bold text-brand-on active:opacity-90"
+        className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] px-5 text-[15.5px] font-black text-[color:var(--arena-night)] active:opacity-90"
         onClick={onBack}
       >
         {BACK_HE}
@@ -183,7 +192,7 @@ export default function ArenaSummary({
 
       {/* ‏y=730 · 11 Regular · INK_MUTED (`:645-646`) — **הוא** אינווריאנט `37 § 13.1`
           אמור בקול, ולכן הוא נשלח מילה במילה. */}
-      <p className="text-center text-[11px] leading-relaxed text-ink-muted">{FOOTER_HE}</p>
+      <p className="text-center text-[11px] leading-relaxed text-[color:var(--arena-ink-dim)]">{FOOTER_HE}</p>
     </section>
   );
 }

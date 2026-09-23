@@ -3696,6 +3696,46 @@ try {
     }
   }
 
+  // ---- 2g. T-428 · the two end screens are inside the arena, measured in a real browser ----
+  //
+  // 🔬 `C-0708` measured both `/dev/arcade/summary` and `/dev/arcade/result` at `left=24
+  // w=345` with a TRANSPARENT section over the light page — the learner won in a dark room
+  // and was handed the result on a white form. Both now carry `data-arena-scope`.
+  // ⛔ The 80px under `result`'s fixed `<ActionBar>` is `T-430`, ⛔ not claimed here.
+  {
+    for (const route of ['/dev/arcade/summary', '/dev/arcade/result']) {
+      for (const size of [{ width: 320, height: 568 }, { width: 393, height: 852 }]) {
+        const ctx = await browser.newContext({ viewport: size });
+        const page = await ctx.newPage();
+        const uncaught = watchUncaught(page);
+        await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
+        const m = await page.evaluate(() => {
+          const sec = document.querySelector('section[data-arena-scope]');
+          const r = sec?.getBoundingClientRect();
+          return {
+            scoped: sec !== null,
+            left: r ? Math.round(r.left) : -1,
+            width: r ? Math.round(r.width) : -1,
+            client: document.documentElement.clientWidth,
+            bg: sec ? getComputedStyle(sec).backgroundColor : '',
+            header: Math.round(document.querySelector('body > div > header')?.getBoundingClientRect().height ?? 0),
+          };
+        });
+        const at = `T-428 · ${route} @ ${size.width}×${size.height}`;
+        check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+        check(m.scoped, `${at} · the root carries data-arena-scope`, 'no section[data-arena-scope]');
+        check(
+          m.left === 0 && m.width === m.client,
+          `${at} · full width`,
+          `left ${m.left} · width ${m.width} vs clientWidth ${m.client}`,
+        );
+        check(m.bg === 'rgb(28, 38, 66)', `${at} · the arena night background`, `background ${m.bg}`);
+        check(m.header === 0, `${at} · the app header is not on the arena route`, `header is ${m.header}px`);
+        await ctx.close();
+      }
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

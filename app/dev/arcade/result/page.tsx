@@ -1,6 +1,9 @@
 'use client';
 
 import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
+// ⟦T-428⟧ ⛔ פיקסטורה שנבדלת מהייצור היא חור: `/arcade` טוען את הקובץ הזה (`app/arcade/page.tsx:2`),
+// ⇒ בלעדיו `data-arena-scope` כאן ⛔ אינו מצייר דבר ו-`check:mobile` היה מודד מסך שאינו קיים.
+import '../../../arcade/arcade-tokens.css';
 
 /**
  * Layout fixture for `check:mobile` — T-096, plan `2026-08-19-arcade-screens.md` § 2.

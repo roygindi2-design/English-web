@@ -343,6 +343,16 @@ body:has([data-arena-scope]) > div > main {
    ⛔ זו ⛔ אינה דריסה של `--ink`: זו הצהרה על **רכיב אחד בתוך הסקופ**, ולכן שאר
    המסכים (טעינה · כשל · סיום), שאינם נושאים `data-arena-scope`, ⛔ לא נגעו.
    ‏`--arena-ink` על `--arena-night` = **14.59:1**. */
+/* 🎬 **⟦T-428 · `C-0773`⟧ רצועת הפעולה של מסך הסיום נכנסת לזירה.** ‏`<ActionBar>`
+   (‏`components/ActionBar.tsx`) מצייר `bg-surface` + `border-border-subtle` — טוקנים של
+   `globals` שבסכימה בהירה הם **לבן** ⇒ רצועה לבנה מתחת למסך כחול־ליל. ⛔ הרכיב ⛔ לא
+   נגע (עשרה מסכים משתמשים בו); הכלל חל **אך ורק** בתוך הסקופ. ⛔ ומיקומו, גובהו
+   והריפוד שמשלם עליו ⛔ לא נגעו — אלה `T-430`. */
+[data-arena-scope] [data-action-bar] {
+  background: var(--arena-night);
+  border-color: var(--arena-card-edge);
+}
+
 [data-arena-scope] [data-arena-close] {
   color: var(--arena-ink);
 }

@@ -720,15 +720,16 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
 
     for (const file of NEIGHBOURS) {
       const code = withoutComments(readFileSync(file, 'utf8'));
-      const roots = [...code.matchAll(/<section\b[^>]*>/g)].map((tag) => {
-        const cls = tag[0].match(/className="([^"]*)"/);
-        return cls === null ? '' : cls[1];
-      });
+      const roots = [...code.matchAll(/<section\b[^>]*>/g)].map((tag) => ({
+        scoped: /data-arena-scope/.test(tag[0]),
+        cls: tag[0].match(/className="([^"]*)"/)?.[1] ?? '',
+      }));
       expect(roots.length, `${file} — שורש אחד לפחות`).toBeGreaterThanOrEqual(1);
 
-      for (const cls of roots) {
+      for (const { scoped, cls } of roots) {
+        // ⟦T-428⟧ אותו כלל של `F-278`: שורש בסקופ ⇒ הכרום ירד ⇒ `100dvh` מלא; אחרת ניכוי 84.
         expect(cls, `${file} — גובה מדויק, ⛔ לא מינימום: "${cls}"`).toMatch(
-          /\bh-\[calc\(100dvh-5\.25rem\)\]/,
+          scoped ? /\bh-\[100dvh\]/ : /\bh-\[calc\(100dvh-5\.25rem\)\]/,
         );
         expect(cls, `${file} — גלילת עמוד ⛔ אינה אפשרות: "${cls}"`).toMatch(/\boverflow-hidden\b/);
         expect(cls, `${file} — ⛔ מינימום ⛔ אינו גובה: "${cls}"`).not.toMatch(/\bmin-h-\[100dvh\]/);

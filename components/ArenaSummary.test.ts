@@ -41,7 +41,9 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
   it('⛔ אפס hex, ⛔ אפס h-screen, גובה **מדויק** ⛔ ולא מינימום, ⛔ אפס רדיוס מחוץ לסולם', () => {
     expect(CODE).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(CODE).not.toMatch(/\bh-screen\b/);
-    expect(CODE).toMatch(/h-\[calc\(100dvh-5\.25rem\)\]/);
+    // ⟦T-428⟧ בתוך הסקופ הכרום יורד ⇒ `100dvh` **מלא**, ⛔ ולא ניכוי של 84 שאינם קיימים.
+    expect(CODE).toMatch(/data-arena-scope className="flex h-\[100dvh\]/);
+    expect(CODE).not.toMatch(/h-\[calc\(100dvh-5\.25rem\)\]/);
     expect(CODE, '⛔ המינימום הוא מה שגלש').not.toMatch(/min-h-\[100dvh\]/);
     expect(CODE).not.toMatch(/rounded-\[\d/);
   });
@@ -88,5 +90,29 @@ describe('ArenaSummary — ציר ה-RTL (T-338)', () => {
 
   it('שלוש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת בדפדפן', () => {
     expect(SRC_RTL.match(/data-rtl-row="summary-stat"/g)).toHaveLength(3);
+  });
+});
+
+/**
+ * 🎬 **T-428 · `36 § 8.0` ① — מסך הסיום נכנס לשפה הכהה של הזירה.**
+ * 🔬 `C-0708`: בלי `data-arena-scope` המקטע היה `left=24 w=345` ושקוף על גוף בהיר.
+ * ⛔ ושום טוקן `globals` שמתחלף לפי `prefers-color-scheme` ⛔ אינו נשאר: בסכימה בהירה
+ * `--ink` הוא דיו כהה, ועל `--arena-night` הוא ⛔ נקרא.
+ */
+describe('T-428 — הסקופ של הזירה, ⛔ וטוקנים שמתחלפים עם הסכימה', () => {
+  const T428_CODE = readFileSync(new URL('./ArenaSummary.tsx', import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  it('השורש נושא `data-arena-scope` בגובה `100dvh` מלא', () => {
+    expect(T428_CODE).toMatch(/<section data-arena-scope className="flex h-\[100dvh\]/);
+  });
+  it('⛔ אף טוקן צבע של `globals` — רק שמות הזירה', () => {
+    const banned = /\b(?:text|bg|border)-(?:ink|ink-muted|brand|brand-surface|brand-on|danger|success|surface|surface-raised|border-subtle|border-strong)\b(?![-\w])/g;
+    expect(T428_CODE.match(banned) ?? []).toEqual([]);
+  });
+  it('בקרה שלילית — הביטוי תופס את הטוקן הישן', () => {
+    const banned = /\b(?:text|bg|border)-(?:ink|ink-muted|brand-surface)\b(?![-\w])/;
+    expect(banned.test('rounded-2xl bg-brand-surface px-5')).toBe(true);
+    expect(banned.test('text-[color:var(--arena-ink)]')).toBe(false);
   });
 });

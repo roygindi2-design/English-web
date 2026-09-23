@@ -61,13 +61,13 @@ const AGAIN_HE = 'עוד קרב';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 
 const PRIMARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center justify-between rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90';
+  'inline-flex w-full min-h-touch items-center justify-between rounded-full border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] px-5 py-3 text-lg font-black text-[color:var(--arena-night)] active:opacity-90';
 
 const SECONDARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center justify-between rounded-lg border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';
+  'inline-flex w-full min-h-touch items-center justify-between rounded-lg border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-5 py-3 text-lg text-[color:var(--arena-ink)] active:opacity-90';
 
 const MISSED_ROW_CLASS =
-  'flex flex-col gap-1 rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3';
+  'flex flex-col gap-1 rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4 py-3';
 
 function labelOf(item: string | null): string | null {
   if (item === null) return null;
@@ -98,13 +98,17 @@ export default function ArenaResult({
        ל-`ArenaBattle` ⛔ אין `<ActionBar>`, ולמסך הזה יש, והוא `fixed bottom-0`. ⇒ ריפוד
        של `max(0.5rem,…)` בלבד — כלשון `T-422` — היה מסתיר את סוף הרשימה **מתחת** לרצועה
        הקבועה. ⇒ הריפוד התחתון כאן משלם על הרצועה, בדיוק כפי שאמרה ההערה שהוא החליף. */
-    <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-6 overflow-hidden pb-28">
+    /* 🎬 **⟦T-428 · `C-0773`⟧ אותה הכרעה כמו `ArenaSummary`:** `data-arena-scope` ⇒ מלוא
+       הרוחב, `--arena-night`, והכרום יורד ⇒ `h-[100dvh]` ו-`pt-6` (⛔ לא 52: שער ≤48px של `F-011`, נמדד אדום).
+       ⛔ `pb-28` ו-`<ActionBar>` ⛔ לא נגעו — ה-80px שלהם הם `T-430`/`F-284`. הרצועה עצמה
+       מקבלת את צבעי הזירה ב-`arcade-tokens.css` (‏`[data-arena-scope] [data-action-bar]`). */
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-6 pb-28">
       <h1 className="text-3xl font-bold leading-tight">{enemyDefeated ? WON_HE : OVER_HE}</h1>
 
       <div className="flex flex-row items-center gap-4">
         <ArenaAvatar role="hero" items={items} />
         {unlockedLabel !== null && (
-          <p className="flex flex-col gap-1 text-lg leading-relaxed text-ink">
+          <p className="flex flex-col gap-1 text-lg leading-relaxed text-[color:var(--arena-ink)]">
             <span>{UNLOCKED_HE}</span>
             <span className="font-semibold">{unlockedLabel}</span>
           </p>
@@ -118,17 +122,17 @@ export default function ArenaResult({
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         <h2 className="text-xl font-semibold leading-tight">{MISSED_HEADING_HE}</h2>
         {missed.length === 0 ? (
-          <p className="text-lg leading-relaxed text-ink-muted">{NOTHING_MISSED_HE}</p>
+          <p className="text-lg leading-relaxed text-[color:var(--arena-ink-dim)]">{NOTHING_MISSED_HE}</p>
         ) : (
           <ul data-arena-missed className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
             {rows.map((row) => (
               <li key={row.wordId} className={MISSED_ROW_CLASS}>
                 <EnWord className="text-xl font-bold">{row.headword}</EnWord>
                 {/* כל צד נושא תווית עברית — צבע ⛔ לעולם אינו הערוץ היחיד (חוקה § 1). */}
-                <span className="text-base text-ink">
+                <span className="text-base text-[color:var(--arena-ink)]">
                   {ANSWER_HE}: {row.answer}
                 </span>
-                <span className="text-base text-ink-muted">
+                <span className="text-base text-[color:var(--arena-ink-dim)]">
                   {CHOSEN_HE}: {row.chosen}
                 </span>
               </li>

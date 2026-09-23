@@ -4,6 +4,9 @@ import ArenaSummary from '@/components/ArenaSummary';
 import { summarize } from '@/lib/core/arenaSummary';
 import type { ArenaWordKind } from '@/lib/core/arenaWords';
 import { CRITICAL_MS, type BattleCast } from '@/lib/core/battle';
+// ⟦T-428⟧ ⛔ פיקסטורה שנבדלת מהייצור היא חור: `/arcade` טוען את הקובץ הזה (`app/arcade/page.tsx:2`),
+// ⇒ בלעדיו `data-arena-scope` כאן ⛔ אינו מצייר דבר ו-`check:mobile` היה מודד מסך שאינו קיים.
+import '../../../arcade/arcade-tokens.css';
 
 /**
  * Layout fixture for `check:mobile` and for the STEP 6.5 walk — T-180, plan

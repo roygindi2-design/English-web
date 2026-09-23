@@ -338,9 +338,11 @@
     "lib/core/arcadeRound.ts"
   ],
   "app/dev/arcade/result/page.tsx": [
+    "app/arcade/arcade-tokens.css",
     "components/ArenaResult.tsx"
   ],
   "app/dev/arcade/summary/page.tsx": [
+    "app/arcade/arcade-tokens.css",
     "components/ArenaSummary.tsx",
     "lib/core/arenaSummary.ts",
     "lib/core/arenaWords.ts",
