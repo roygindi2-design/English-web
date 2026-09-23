@@ -78,7 +78,7 @@ if (!existsSync(ngslPath)) {
   fail(
     `${ngslPath} is missing, so there is nothing to measure coverage OF.\n` +
       `  This is T-043 — a human action. See data/README.md.\n` +
-      `  ⛔ Do not download it: TD-17 blocks the domain and R-004 forbids mirrors.`,
+      `  ⛔ Only from newgeneralservicelist.com — R-004 forbids mirrors. The exact command is in data/README.md.`,
   );
 }
 

@@ -5,6 +5,23 @@ environment. Measured C-0016, measured again C-0019. **No agent may work around
 this** — ⛔ no mirrors, ⛔ no archives (R-004). The files below arrive through the
 repo, by Roy. This is T-043.
 
+✅ **⟦23/09 · `C-0768` · Roy's approval⟧ `ngsl-1.2.csv` is in the repo.** The official
+domain answers again from the session environment (200), so it was fetched from
+`newgeneralservicelist.com` **only** — ⛔ no mirror. Exactly what was run:
+
+```
+curl -sSL -o NGSL_12_stats.csv https://www.newgeneralservicelist.com/s/NGSL_12_stats.csv
+# sha256 2098bab8955a120a9766c6282a51d7d578c6cb0a7d946600d2ffb73ba25a0b44 · 2,809 rows · CRLF
+# header «Lemma,SFI Rank,SFI,Adjusted Frequency per Million (U)» ⇒ «rank,headword,sfi,u_per_million»
+# the only value change: «TRUE»/«FALSE» ⇒ «true»/«false» (a spreadsheet boolean artefact;
+#   the site's own NGSL_12_alphabetized_description.txt lists them lowercase)
+# line endings CRLF ⇒ LF
+```
+🔬 Checked against the site's alphabetized list: **2,809 = 2,809**, identical sets after the
+two-word fix · ranks 1…2809, unique, in order. Licence on the site: **CC BY-SA 4.0**
+(Browne, Culligan & Phillips) — already attributed in `lib/core/dataSources.ts`.
+⚠️ The other four files below are **still T-043**.
+
 `npm run measure:coverage` reports `unavailable` for any file that is absent.
 It never reports `0%` for a missing file — those mean opposite things.
 
