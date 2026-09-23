@@ -68,8 +68,8 @@ describe('פני הקלף עבריים — ⛔ ולא אנגלית', () => {
 describe('36 § 14.4 — גימור הרנדר מחייב, ⛔ ולא רק המבנה', () => {
   it('קו־השיער הפנימי קיים (`render_video_B.py:267`), ברדיוס מהסולם', () => {
     expect(CODE).toContain('inset-[3px]');
-    // ⛔ הרנדר נוקב ב-9; שכבה ב׳ מתירה חמישה ⇒ `lg` = 8. הסטייה מוצהרת בהערה.
-    expect(CODE).toMatch(/inset-\[3px\][^"]*rounded-lg/);
+    // ⟦`T-426`ⓑ⟧ המסך נושא שני רדיוסים בלבד ⇒ הקו הפנימי לוקח את רדיוס הקלף.
+    expect(CODE).toMatch(/inset-\[3px\][^"]*rounded-2xl/);
   });
 
   it('המעוין בראש הקלף הוא SVG, ⛔ ולא אמוג׳י (שכבה א׳)', () => {
@@ -111,5 +111,43 @@ describe('F-149ⓐ · שכבה א׳ — המילוי מהרנדר, הדיו scop
   it('הדיו של הקלף הוא טוקן זירה — שני הערכים, ⛔ ולא אחד', () => {
     expect(CODE).toContain('text-[color:var(--arena-ink)]');
     expect(CODE).toContain('text-[color:var(--arena-ink-dim)]');
+  });
+});
+
+/**
+ * ⟦`T-426` · `D-280` · `36 § 8.0` ⑥⑧⟧ **ראשי = הנבחר; לפני בחירה ארבעתם משניים וזהים;
+ * ושני רדיוסים על המסך, ⛔ ולא ארבעה.**
+ * 🔬 הפער שנמדד: `grep rounded-` על שני הקבצים החזיר `lg` · `xl` · `2xl` · `full` מעורבים,
+ * וארבעת הקלפים נשאו אותה מסגרת שטוחה ⇒ כולם קראו «⛔ לא זמין».
+ */
+describe('T-426 · הקלף מורם, הנבחר ראשי, ושני רדיוסים', () => {
+  const radii = (code: string): string[] =>
+    [...new Set(code.match(/\brounded-[a-z0-9]+/g) ?? [])].sort();
+
+  it('קבוצת הרדיוסים על `SpellCard` ו-`ArenaBattle` היא בת שניים: `2xl` · `full`', () => {
+    const battle = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+    expect(radii(CODE + '\n' + battle)).toEqual(['rounded-2xl', 'rounded-full']);
+  });
+
+  it('קלף נבחר וקלף לא-נבחר ⛔ אינם נושאים את אותה מחרוזת מחלקות, והנבחר לבדו מקבל את הצל הראשי', () => {
+    const pair = CODE.match(/selected\s*\?\s*'([^']*)'\s*:\s*'([^']*)'/);
+    expect(pair).not.toBeNull();
+    expect(pair?.[1]).not.toBe(pair?.[2]);
+    const tokens = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+    expect(tokens).toMatch(/\[data-arena-card\]\[aria-pressed='true'\]:not\(\[data-arena-lift='ready'\]\)\s*\{\s*box-shadow: var\(--arena-card-shadow-primary\)/);
+    expect(tokens).toMatch(/\[data-arena-card\]:not\(\[data-arena-lift='ready'\]\)\s*\{\s*box-shadow: var\(--arena-card-shadow-secondary\)/);
+  });
+
+  it('⛔ אין מצב «מושבת» לקלף — ארבעתם ארבע תשובות (`D-280`)', () => {
+    expect(CODE).not.toMatch(/\bdisabled\b|aria-disabled|opacity-(?:[1-6]0)\b/);
+  });
+
+  it('הברק והצללים הם טוקני זירה, ⛔ ולא זוהר בגוון המותג (תקציב ב3)', () => {
+    const tokens = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+    for (const name of ['--arena-card-sheen', '--arena-card-shadow-secondary', '--arena-card-shadow-primary']) {
+      expect(tokens).toMatch(new RegExp(`${name}:`));
+    }
+    const shadows = tokens.slice(tokens.indexOf('--arena-card-shadow-secondary:'), tokens.indexOf('--arena-card-shadow-primary:') + 200);
+    expect(shadows).not.toContain('--brand');
   });
 });

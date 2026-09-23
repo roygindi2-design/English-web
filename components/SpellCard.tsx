@@ -124,7 +124,13 @@ export default function SpellCard({
         // בני 100px עדיין חרגו ב-24px. ⛔ `min-h-touch` (44px) ⛔ לא זז — 76px הם
         // הרבה מעליו, ⇒ יעד המגע ⛔ לא רוכך ולו בפיקסל.
         'relative flex min-h-touch h-[76px] w-full flex-col items-center justify-center gap-1 min-[375px]:h-[100px]',
-        'rounded-xl border-2 px-1 py-4 text-sm font-bold active:opacity-90',
+        // ⟦`T-426`ⓑ · `36 § 8.0` ⑧⟧ **16px לקלף** (Figma `3319:17`) — אחד משני הרדיוסים
+        // של המסך; השני הוא הגלולה של הפסים והשבבים.
+        'rounded-2xl border-2 px-1 py-4 text-sm font-bold active:opacity-90',
+        // ⟦`T-426`ⓐ · `D-280`⟧ **הקלף מורם, ⛔ ולא שטוח** — ברק עליון עדין ומדף צל
+        // מתחת. 🔬 הפער שנמדד: ארבעה קלפים באותה מסגרת דהויה על אותו רקע קראו
+        // «⛔ לא זמין», ו⛔ אף אחד מהם ⛔ אינו מושבת — ארבעתם ארבע תשובות.
+        'bg-[image:var(--arena-card-sheen)]',
         // F-149ⓐ — המילוי הוא הרנדר עצמו: `render_video_B.py:265` ממלא `(24, 33, 56)`.
         // ⛔ `--arena-stone-dark` (`#34323f`) היה אפור־אבן במקום כחול־ליל — פער גוון,
         // ⛔ ולא ניואנס. ⚠️ הטוקן ⛔ אינו נכנס ל-`palette.ts` (אינווריאנט `37 § 13.5`).
@@ -136,6 +142,11 @@ export default function SpellCard({
         // ⛔ אינו מוגה — F-156 מדד שהוא מצייר מסגרות אחרות בזירה — ולכן הקלף לוקח
         // `--arena-card-edge`: **7.36:1** מול המילוי, **6.88:1** מול הבמה.
         // ⚠️ הנבחר ⛔ לא נגע: `--arena-gold` על המילוי הוא **7.29:1**.
+        // ⟦`T-426`ⓐ · `D-280`⟧ **ראשי = הנבחר, ⛔ ולא אף קלף אחר.** לפני בחירה ארבעתם
+        // **משניים וזהים** — קלף בולט בלי בחירה היה מסמן תשובה, טענה פדגוגית.
+        // ⛔ הצל ⛔ אינו הערוץ היחיד (שכבה א׳): `aria-pressed` + השורה «נבחר» הם הראשון.
+        // ⚠️ **הצללים ב-`arcade-tokens.css` על `[aria-pressed]`, ⛔ ולא כאן:** נמדד בבנייה —
+        // מחלקת צל שרירותית עם משתנה נקראת ב-Tailwind 3 כ**צבע** צל, ו-`box-shadow` יצא `none`.
         selected
           ? 'border-[color:var(--arena-gold)] text-[color:var(--arena-gold)]'
           : 'border-[color:var(--arena-card-edge)] text-[color:var(--arena-card-edge)]',
@@ -196,11 +207,11 @@ export default function SpellCard({
     >
       {/* ⛔ **גימור הרנדר, ⛔ ולא קישוט** (`36 § 14.4`): `render_video_B.py:267` מצייר
           קו־שיער פנימי — `rr(pad+3, pad+3, W-6, H-6, r=9, לבן 28%, 1px)`.
-          ⚠️ **רדיוס 9 ⛔ אינו אחד מחמשת הערכים** של שכבה ב׳ (6·8·12·16·מלא) ⇒ נלקח
-          `lg` = **8**, הקרוב בסולם. סטייה של פיקסל אחד, ⛔ מוצהרת ⛔ ולא שקטה. */}
+          ⟦`T-426`ⓑ⟧ **המסך נושא שני רדיוסים בלבד** (16 · גלולה) ⇒ הקו הפנימי לוקח את
+          רדיוס הקלף, `2xl`. הקונצנטרי המדויק היה 13 (16 − 3), ⛔ שאינו בסולם. */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-[3px] rounded-lg border border-white/25"
+        className="pointer-events-none absolute inset-[3px] rounded-2xl border border-white/25"
       />
       {/* `render_video_B.py:268-270` — מעוין בראש הקלף, חצי־גובה 5px, ממורכז ב-`pad+10`.
           ⛔ SVG ⛔ ולא אמוג׳י (שכבה א׳). ⛔ הצבע הוא צבע המסגרת — צבע היסוד (`ELEM_COL`)

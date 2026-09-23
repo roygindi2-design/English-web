@@ -329,7 +329,7 @@ const MISSING_NUMBER_HE = '—';
 const PRIMARY_ACTION_CLASS =
   'inline-flex w-full min-h-touch items-center rounded-full bg-brand-surface px-5 py-3 text-center text-lg font-semibold text-brand-on active:opacity-90';
 const CLOSE_CLASS =
-  'inline-grid min-h-touch min-w-touch place-items-center rounded-lg text-ink active:opacity-90';
+  'inline-grid min-h-touch min-w-touch place-items-center rounded-full text-ink active:opacity-90';
 
 /** `m:ss`, בדיוק כפי שהרנדר מצייר (`clock_hud`: `f"{m}:{s:02d}"`). */
 function clockHe(remainingMs: number): string {
@@ -1080,9 +1080,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           <p className="sr-only" role="status">
             {LOADING_HE}
           </p>
-          <div aria-hidden className="h-8 rounded-lg bg-surface-raised" />
-          <div aria-hidden className="h-20 w-2/3 rounded-lg bg-surface-raised" />
-          <div aria-hidden className="h-32 rounded-lg bg-surface-raised" />
+          <div aria-hidden className="h-8 rounded-2xl bg-surface-raised" />
+          <div aria-hidden className="h-20 w-2/3 rounded-2xl bg-surface-raised" />
+          <div aria-hidden className="h-32 rounded-2xl bg-surface-raised" />
         </div>
       </section>
     );
@@ -1578,7 +1578,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
               if (from !== null) launchThrow(selected, from);
               fire(selected);
             }}
-            className="min-h-touch w-full rounded-lg text-start disabled:opacity-60"
+            className="min-h-touch w-full rounded-2xl text-start disabled:opacity-60"
           >
             <span className="sr-only">{selected === null ? FIRE_HINT_HE : `${FIRE_HE} ${selected}`}</span>
             <div
@@ -1947,8 +1947,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           📐 **הגאומטריה מ-`render_video_B.py:308-322` ב-grep, ⛔ ולא מה-PNG:** שלושה
           כפתורים `92×44` ברדיוס 14, מרווח 14 ביניהם (`x = LW-62-i*106`, רוחב 92),
           ו-`ABILITIES` מצייר את `כפול` **הימנית** ⇒ `flex` רגיל ב-RTL נותן בדיוק את
-          הסדר הזה (`T-338`). ⛔ **רדיוס 14 ⛔ אינו בסולם החמישה** ⇒ `rounded-xl` (12),
-          אותה סטייה מדודה בדיוק שנרשמה ב-`ArenaHome` (D-036).
+          הסדר הזה (`T-338`). ⟦`T-426`ⓑ · `36 § 8.0` ⑧⟧ **גלולה** (`rounded-full`) —
+          Figma `3319:34` מצייר את `ability-N` `h=44` כגלולה, והמסך נושא **שני** רדיוסים
+          בלבד: 16 לקלפים, גלולה לפסים ולשבבים. ⛔ ה-`rounded-xl` (12) של הרנדר הישן יצא.
           ⛔ **הרוחב ⛔ אינו 92 קבוע:** ב-320px נותרים 272 פנויים ו-`3×92 + 2×14 = 304`
           ⇒ גלילה אופקית, שהיא שער (`check:mobile`). `flex-1` נותן את הרנדר ב-375
           ומתכווץ מתחתיו — הרנדר מחייב **פריסה**, והשער גובר על מספר יחיד.
@@ -1992,7 +1993,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
                 disabled={!ready}
                 onClick={() => spend(key)}
                 className={
-                  'flex min-h-touch flex-1 flex-row items-center justify-center gap-2 rounded-xl ' +
+                  'flex min-h-touch h-11 flex-1 flex-row items-center justify-center gap-2 rounded-full ' +
                   'border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] ' +
                   'text-[color:var(--arena-ink)] ' +
                   'data-[ready=true]:border-[color:var(--arena-mana)] ' +
@@ -2094,7 +2095,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
             ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
             ['--arena-throw-ghost-i' as string]: i,
           }}
-          className="pointer-events-none z-40 rounded-xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]"
+          className="pointer-events-none z-40 rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]"
         />
       ))}
       {throwFx !== null && (
@@ -2114,7 +2115,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
             ['--arena-throw-dx' as string]: `${throwFx.dx}px`,
             ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
           }}
-          className="pointer-events-none z-50 flex items-center justify-center rounded-xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)] text-sm font-bold text-[color:var(--arena-ink)]"
+          className="pointer-events-none z-50 flex items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)] text-sm font-bold text-[color:var(--arena-ink)]"
         >
           {throwFx.label}
         </div>

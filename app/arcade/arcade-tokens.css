@@ -110,6 +110,23 @@
      `--arena-night` הוא **1.06:1** ⇒ ⛔ המילוי ⛔ אינו יכול לשאת את הגבול. */
   --arena-card-edge: #a8b0c4;
 
+  /* 🃏 ⟦`T-426`ⓐ · `D-280` · `36 § 8.0` ⑥⟧ **הקלף מורם — ⛔ ולא כבוי.**
+     🔬 הפער שנמדד: ארבעה קלפים באותה מסגרת דהויה, שטוחים על אותו רקע, קראו «⛔ לא זמין»,
+     ⛔ ואף אחד מהם ⛔ אינו מושבת. ⇒ **ברק עליון** (7% מהדיו על המילוי, דוהה עד חצי
+     הקלף) **ומדף צל** מתחת: חפץ שאפשר להרים. ⛔ **שני הצללים ⛔ אינם זוהר** — הם בגוון
+     המסלול הכהה ⛔ ולא ב-`--brand`, ⇒ תקציב ב3 ⛔ לא נגע.
+     ⚠️ **הניגודיות נמדדה על הנקודה הבהירה ביותר של הברק**, ⛔ ולא על המילוי: הדיו
+     **12.83:1** · הדיו העמום והגבול **6.05:1** · הזהב הנבחר **5.99:1** — מעל הרצפות (4.5 · 3).
+     ⛔ **ראשי = הנבחר בלבד** (`D-280`): לפני בחירה ארבעתם נושאים את הצל המשני, זהים. */
+  --arena-card-sheen: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--arena-ink) 7%, var(--arena-card)) 0%,
+    var(--arena-card) 55%
+  );
+  --arena-card-shadow-secondary: 0 3px 0 0 var(--arena-hp-track);
+  --arena-card-shadow-primary: 0 3px 0 0 var(--arena-hp-track),
+    0 10px 18px -4px color-mix(in srgb, var(--arena-hp-track) 85%, transparent);
+
   /* 🎭 **⟦19/09 · `C-0724`⟧ פלטת הדמויות — **פילוח צבע** של `kol-B-03-battle.png`,
      ⛔ ולא בחירה.** עד היום שתי הדמויות נצבעו ב-`currentColor` **אחד** לכל הגוף,
      ולכן הן היו **צלליות חד-גוניות** — וזה מה שרוי קרא לו «נראה גרוע». ברנדר יש
@@ -920,6 +937,17 @@ body:has([data-arena-scope] [data-action-bar]) {
 [data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='dragging'],
 [data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='ready'] {
   transition: none;
+}
+
+/* 🃏 ⟦`T-426`ⓐ · `D-280`⟧ **מדף הצל — משני לכולם, ראשי לנבחר בלבד.**
+   ⛔ `:not([data-arena-lift='ready'])`: ההילה של הגרירה (`globals.css`) והטבעת שלה תחת
+   `reduced-motion` הן **הצהרת החצייה**, ⇒ הצל ⛔ אינו דורס אותן. ⛔ אין כאן `transition`
+   של `box-shadow` — צבע ומיקום בלבד, והמעבר של הקלף הוא `transform` שמעל. */
+[data-arena-scope] [data-arena-hand] [data-arena-card]:not([data-arena-lift='ready']) {
+  box-shadow: var(--arena-card-shadow-secondary);
+}
+[data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true']:not([data-arena-lift='ready']) {
+  box-shadow: var(--arena-card-shadow-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
