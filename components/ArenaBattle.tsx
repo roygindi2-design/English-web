@@ -30,7 +30,7 @@ import {
   isFrozen,
   spendAbility,
   isRage,
-  manaAt,
+  manaOf,
   returnedSpell,
   stagePhase,
   startBattle,
@@ -201,10 +201,25 @@ const GUARD_BTN_HE = `הצבת הגנה בנתיב שלך · ${String(GUARD_COST
 const LEARNER_HE = 'את/ה';
 const LEARNER_HP_HE = 'החיים שלך';
 const MANA_HE = 'מאנה';
+/** 🫁 `T-452` · `37 § 8` ק5 — ⛔ המצב נאמר במילים, ⛔ ולא בצבע בלבד (שכבה א׳ א2). */
+const LAST_BREATH_HE = 'נשימה אחרונה · מאנה כפולה';
 
 /** ⓔ `T-397` — צבע מקטע מאנה מלא. ⛔ טוקן, ⛔ ולא hex: `--arena-mana` הוא
  *  ‏`#5684e2` == ה-`(86,132,226)` של `render_video_B.py:300`, ו-`--arena-cast-warn`
  *  הוא צבע ה-`RAGE` שאותה פונקציה מחליפה אליו. */
+/**
+ * 🫁 `T-452` — **תווית אחת לקצב הכפול.** ‏`זמן זעם` גובר בתווית כשהוא פעיל: שניהם ×2,
+ * ⛔ אינם נערמים (`D-279`), והזעם הוא מצב **של הקרב כולו** ⛔ ולא של הלומד.
+ * ⚠️ **הדיו, ⛔ ולא `--brand`, וזה שער ⛔ ולא טעם:** השורה ביקשה `--brand` ⛔ ולא
+ * `--arena-damage`. ‏`--brand` בסכימה הבהירה על `--arena-night` נמדד **3.38:1** — מתחת
+ * לרצפת 4.5:1 לטקסט (אותו מספר ש-`ArenaHome.tsx:39` רשם). ⇒ התווית ב-`--arena-ink`
+ * (‏14.59:1), והמקטעים נשארים `--arena-mana` הכחול — צבע הלומד, ⛔ ולא `danger`.
+ */
+function manaLabelHe(raging: boolean, lastBreath: boolean): string {
+  if (raging) return RAGE_HE;
+  return lastBreath ? LAST_BREATH_HE : MANA_HE;
+}
+
 function manaSegColor(raging: boolean): string {
   return raging ? 'var(--arena-cast-warn)' : 'var(--arena-mana)';
 }
@@ -913,7 +928,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
       // ⓔ מד המאנה — נגזר מ-`elapsedRef` + `battleRef`, נכתב רק כשהערך השלם השתנה.
       const currentBattle = battleRef.current;
       if (currentBattle !== null) {
-        const mana = manaAt(next, currentBattle.manaSpent);
+        const mana = manaOf(currentBattle, next);
         // ⚡ T-363 — ההקפאה נגמרת **מעצמה עם השעון**, ⛔ בלי שהמאנה תזוז ו⛔ בלי רינדור
         // ⇒ שני טריגרים, ⛔ ולא אחד. בלי השני, כפתור `הקפאה` היה נשאר מושבת אחרי שהיריב
         // כבר הפשיר.
@@ -928,7 +943,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           paintManaSegments(manaSegRefs.current, mana, nowRaging);
           const manaWrap = manaMeterWrapRef.current;
           if (manaWrap !== null) {
-            manaWrap.setAttribute('aria-label', `${nowRaging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`);
+            manaWrap.setAttribute('aria-label', `${manaLabelHe(nowRaging, currentBattle.lastBreathFromMs !== null)} ${mana} מתוך ${MANA_CAP}`);
           }
         }
       }
@@ -1053,7 +1068,9 @@ export default function ArenaBattle({ initialRound, character = null, items = []
    * כמו `cast`). ⛔ אינו `useMemo` על `elapsedMs` — אין יותר state כזה; העדכון הרציף
    * בין רינדורים חי בכתיבת ה-ref שבלולאת ה-rAF (`manaTextRef` / `manaSegRefs`).
    */
-  const mana = battle === null ? 0 : manaAt(elapsedRef.current, battle.manaSpent);
+  const mana = battle === null ? 0 : manaOf(battle, elapsedRef.current);
+  /** 🫁 `T-452` — ננעל ב-`tick` ברגע החצייה, ⇒ מעבר **בדיד** שכבר מרנדר (החיים זזו). */
+  const lastBreath = battle !== null && battle.lastBreathFromMs !== null;
 
   /**
    * ⚡ T-363 — **נגזר, ⛔ ולא שדה.** שלושת האפקטים כבר נקראים מהמצב (`pendingDouble` ·
@@ -1802,12 +1819,16 @@ export default function ArenaBattle({ initialRound, character = null, items = []
           **פער מוצהר**, ⛔ ולא השמטה. */}
       {/* ⟦17/09 · `C-0709` · `T-423`ⓑ⟧ `mana` — **44px מוצהרים** (`3319:2`): תווית
           ‏y=2 h=16, המד y=22 h=10. שלנו 16 + `gap-1` + `h-4` = 36 ⇒ `justify-center`. */}
-      <div className="flex h-[44px] shrink-0 flex-col justify-center gap-1" data-arena-mana>
+      <div
+        className="flex h-[44px] shrink-0 flex-col justify-center gap-1"
+        data-arena-mana
+        data-arena-last-breath={lastBreath && !raging ? 'true' : undefined}
+      >
         <div className="flex flex-row items-baseline justify-between gap-2">
           <span
-            className={`text-sm font-semibold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink-dim)]'}`}
+            className={`text-sm font-semibold ${raging ? 'text-[color:var(--arena-cast-warn)]' : lastBreath ? 'text-[color:var(--arena-ink)]' : 'text-[color:var(--arena-ink-dim)]'}`}
           >
-            {raging ? RAGE_HE : MANA_HE}
+            {manaLabelHe(raging, lastBreath)}
           </span>
           {/* T-231 ⓔ — ref פנימי בתוך `<EnWord>` (T-009: העטיפה עצמה לא מעבירה ref). */}
           <span className={`text-sm font-bold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink)]'}`}>
@@ -1827,7 +1848,7 @@ export default function ArenaBattle({ initialRound, character = null, items = []
         <div
           ref={manaMeterWrapRef}
           role="img"
-          aria-label={`${raging ? RAGE_HE : MANA_HE} ${mana} מתוך ${MANA_CAP}`}
+          aria-label={`${manaLabelHe(raging, lastBreath)} ${mana} מתוך ${MANA_CAP}`}
           className="flex h-4 w-full flex-row gap-[3px] overflow-hidden rounded-full border border-[color:var(--arena-stone)] bg-[color:var(--arena-stone-dark)] p-[2px]"
         >
           {Array.from({ length: MANA_CAP }, (_, k) => (

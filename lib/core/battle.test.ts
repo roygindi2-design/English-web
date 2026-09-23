@@ -41,6 +41,10 @@ import {
   GUARD_COST,
   canPlaceGuard,
   placeGuard,
+  LAST_BREATH_SHARE,
+  isBelowLastBreath,
+  manaOf,
+  RAGE_FROM_MS,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
 
@@ -849,5 +853,56 @@ describe('T-438 · D-270 ① — ההגנה המוצבת', () => {
   it('⛔ `tick` ⛔ לא נשבר — אותה הפניה כשאף מכה לא זזה', () => {
     const guarded = placeGuard(FRESH, RICH_MS);
     expect(tick(guarded, 10)).toBe(guarded);
+  });
+});
+
+/**
+ * 🫁 **`T-452` · `37 § 8` ק5 «נשימה אחרונה» · `D-279`** — מתחת ל-25% חיים המאנה כפולה.
+ * ⛔ אינה נערמת על `זמן זעם` (תקרה ×2) · ננעלת בחצייה · ⛔ לא רטרואקטיבית.
+ */
+describe('T-452 · 37 § 8 ק5 — נשימה אחרונה', () => {
+  it('הסף הוא `learnerHp < 0.25 × learnerHpMax`, ⛔ ומת ⛔ אינו נושם', () => {
+    expect(LAST_BREATH_SHARE).toBe(0.25);
+    expect(isBelowLastBreath(3, 12)).toBe(false);   // 25% בדיוק ⛔ אינו «מתחת»
+    expect(isBelowLastBreath(2, 12)).toBe(true);
+    expect(isBelowLastBreath(0, 12)).toBe(false);
+    expect(isBelowLastBreath(5, 24)).toBe(true);    // חלק מהמקסימום, ⛔ ולא מספר חיים
+  });
+
+  it('⛔ לא רטרואקטיבי: רגע לפני ורגע אחרי החצייה המפלס **שווה**, ו-4 שניות אחרי +4', () => {
+    const at = 20_000;
+    expect(manaAt(at, 0, at)).toBe(manaAt(at, 0, null));
+    expect(manaAt(at - 1, 0, at)).toBe(manaAt(at - 1, 0, null));
+    expect(manaAt(at + 4_000, 5, at) - manaAt(at, 5, at)).toBe(4);   // ⛔ ולא +2
+    expect(manaAt(at + 4_000, 5, null) - manaAt(at, 5, null)).toBe(2);
+  });
+
+  it('⛔ אינה נערמת על `זמן זעם`: מתחת ל-25% בזעם הקצב ×2 ⛔ ולא ×4', () => {
+    const rage = RAGE_FROM_MS;
+    expect(manaAt(rage + 4_000, 60, 10_000) - manaAt(rage, 60, 10_000)).toBe(4);   // 5 ⇢ 9, מתחת לתקרה
+    // חצייה **בתוך** הזעם ⛔ אינה משנה דבר — הקצב כבר כפול.
+    expect(manaAt(rage + 8_000, 40, rage + 2_000)).toBe(manaAt(rage + 8_000, 40, null));
+  });
+
+  it('פיקסטורה 2/12 מההתחלה ⇒ המאנה 0⇢2 ב-2 שניות, ⛔ ולא ב-4', () => {
+    const low = { ...FRESH, learnerHp: 2, lastBreathFromMs: 0 };
+    expect(manaOf(low, 0)).toBe(0);
+    expect(manaOf(low, 2_000)).toBe(2);
+    expect(manaOf(FRESH, 2_000)).toBe(1);
+  });
+
+  it('`tick` נועל את רגע החצייה פעם אחת, ⛔ ואינו כותב אותו מעליו', () => {
+    // 12 חיים, מכה = 1 ⇒ אחרי 10 מכות נותרו 2 < 3.
+    let s = FRESH;
+    for (let ms = 0; ms <= 10 * ENEMY_SWING_MS; ms += 1_000) s = tick(s, ms);
+    expect(s.learnerHp).toBe(2);
+    expect(s.lastBreathFromMs).toBe(10 * ENEMY_SWING_MS);
+    const later = tick(s, 11 * ENEMY_SWING_MS);
+    expect(later.lastBreathFromMs).toBe(10 * ENEMY_SWING_MS);
+    expect(FRESH.lastBreathFromMs).toBeNull();
+  });
+
+  it('⛔ מעל הסף ⛔ אין שינוי: `tick` שאינו חוצה משאיר `null`', () => {
+    expect(tick(FRESH, ENEMY_SWING_MS).lastBreathFromMs).toBeNull();
   });
 });

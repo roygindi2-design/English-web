@@ -799,7 +799,8 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
   it('T-397 ⓑ · הערוץ הנגיש ⛔ לא זז — `aria-label` עדיין «N מתוך 10», והמספר עדיין על המסך', () => {
     // ⛔ זו הגדר של השורה: השינוי הוא **חזותי בלבד**. קורא מסך שקרא «3 מתוך 10»
     // לפני השינוי קורא בדיוק אותו דבר אחריו.
-    expect(CODE).toMatch(/aria-label=\{`\$\{raging \? RAGE_HE : MANA_HE\} \$\{mana\} מתוך \$\{MANA_CAP\}`\}/);
+    // T-452 — the label now names the doubled rate too (`manaLabelHe`); «N מתוך 10» ⛔ unchanged.
+    expect(CODE).toMatch(/aria-label=\{`\$\{manaLabelHe\(raging, lastBreath\)\} \$\{mana\} מתוך \$\{MANA_CAP\}`\}/);
     expect(CODE, 'המספר הנראה נשאר').toMatch(/manaTextRef[\s\S]{0,120}\$\{mana\} \/ \$\{MANA_CAP\}/);
     // ⛔ **ו⛔ אין כאן מצב שמקודד בצבע בלבד** (שכבה א׳ א2): שלושה ערוצים —
     // כמה מקטעים מלאים (מיקום), המספר `N / 10` (טקסט), ו-`aria-label`.
@@ -1353,5 +1354,21 @@ describe('C-0751 · `§ 11` א8 — הזירה מגיבה, ⛔ ואינה מרצ
     expect(set, 'לסט חייב להיות כלל בתנועה מופחתת').toBeTruthy();
     expect(set as string).toMatch(/animation:\s*none/);
     expect(set as string).toContain('data-arena-crowd');
+  });
+});
+
+/** 🫁 `T-452` · `37 § 8` ק5 — הרצועה נושאת את המצב, במילים ובתכונה, ⛔ ולא בצבע בלבד. */
+describe('T-452 · נשימה אחרונה על רצועת המאנה', () => {
+  const SRC_452 = readFileSync('components/ArenaBattle.tsx', 'utf8');
+  it('המפלס נגזר מ-`manaOf` (רגע החצייה שבמצב), ⛔ ולא מ-`manaAt` בלי החיים', () => {
+    expect(SRC_452).toContain('manaOf(currentBattle, next)');
+    expect(SRC_452).toContain('manaOf(battle, elapsedRef.current)');
+    expect(SRC_452).not.toMatch(/manaAt\(/);
+  });
+  it('תכונה נראית + תווית עברית, ⛔ ו⛔ לא `--arena-damage` (שמור ליריב)', () => {
+    expect(SRC_452).toContain('data-arena-last-breath');
+    expect(SRC_452).toContain("'נשימה אחרונה · מאנה כפולה'");
+    const label = SRC_452.slice(SRC_452.indexOf('data-arena-last-breath'), SRC_452.indexOf('data-arena-last-breath') + 900);
+    expect(label).not.toContain('--arena-damage');
   });
 });

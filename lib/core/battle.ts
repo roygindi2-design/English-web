@@ -35,6 +35,11 @@ export const ENEMY_SWING_MS = 8_000;
 export const MANA_MS = 2_000;
 /** `37 § 4` — תקרה 10. */
 export const MANA_CAP = 10;
+/**
+ * 🫁 **`37 § 8` ק5 «נשימה אחרונה» · `D-279` — מתחת ל-25% חיים המאנה כפולה.**
+ * הסף הוא **חלק מהמקסימום**, ⛔ ולא מספר חיים: ארבע הדמויות נושאות 12–24 (`§ 7`).
+ */
+export const LAST_BREATH_SHARE = 0.25;
 /** `37 § 5` — מתחת ל-1.5 שניות: קריטי. */
 export const CRITICAL_MS = 1_500;
 
@@ -193,6 +198,13 @@ export interface BattleState {
    * `tick` **חייב להחזיר את אותה הפניה** כשאף מכה לא זזה, וזו בדיקה נעולה.
    */
   readonly guardLane: Lane | null;
+  /**
+   * 🫁 **`T-452` · `D-279` — הרגע שבו החיים ירדו מתחת ל-25%, או `null`.**
+   * ⛔ **ננעל בחצייה**: נכתב פעם אחת ו⛔ לעולם ⛔ אינו חוזר ל-`null` (⛔ אין ריפוי שמעלה
+   * חיים היום, ⇒ גם אילו היה — הקצב ⛔ אינו מהבהב סביב הסף). ⛔ **ולא רטרואקטיבי**:
+   * `manaAt` מכפילה רק את הזמן **שאחריו** — ההיסטוריה ⛔ אינה מוכפלת.
+   */
+  readonly lastBreathFromMs: number | null;
   readonly casts: readonly BattleCast[];
   /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
   readonly stats: CharacterBattleStats;
@@ -224,6 +236,7 @@ export function startBattle(
     immuneBy: null,
     heroLane: null,
     guardLane: null,
+    lastBreathFromMs: null,
     casts: [],
     stats,
   };
@@ -233,12 +246,29 @@ export function startBattle(
  * `37 § 4` — 1 ל-2 שניות, תקרה 10, ו**כפול ב`זמן זעם`**.
  * ⛔ **מענה ⛔ אינו מעלה מאנה אף פעם** — הלמידה ⛔ אינה נחסמת מאחורי משאב, ולכן
  * הפונקציה תלויה בשעון ובהוצאה בלבד ו⛔ אינה מכירה תשובות.
+ *
+ * 🫁 **`T-452` · `D-279` — ו**כפול מרגע `נשימה אחרונה`** (`37 § 8` ק5).** הכפלה מתחילה
+ * ב**מוקדם** מבין השניים — `זמן זעם` או החצייה — ⇒ ⛔ **אין ×4**: שני הגורמים
+ * ⛔ אינם נערמים, התקרה היא ×2. ⛔ ולא רטרואקטיבי: הזמן שלפני החצייה נספר ×1, ⇒
+ * ברגע החצייה המפלס ⛔ אינו קופץ.
  */
-export function manaAt(elapsedMs: number, spent: number): number {
-  const calm = Math.min(Math.max(0, elapsedMs), RAGE_FROM_MS);
-  const raging = Math.max(0, elapsedMs - RAGE_FROM_MS);
-  const earned = Math.floor(calm / MANA_MS) + Math.floor(raging / MANA_MS) * 2;
+export function manaAt(elapsedMs: number, spent: number, lastBreathFromMs: number | null = null): number {
+  const doubledFrom =
+    lastBreathFromMs === null ? RAGE_FROM_MS : Math.min(RAGE_FROM_MS, Math.max(0, lastBreathFromMs));
+  const calm = Math.min(Math.max(0, elapsedMs), doubledFrom);
+  const doubled = Math.max(0, elapsedMs - doubledFrom);
+  const earned = Math.floor(calm / MANA_MS) + Math.floor(doubled / MANA_MS) * 2;
   return Math.max(0, Math.min(MANA_CAP, earned - spent));
+}
+
+/** 🫁 `T-452` — המפלס של **הקרב הזה**: אותה `manaAt`, עם רגע החצייה שהמצב נושא. */
+export function manaOf(state: BattleState, elapsedMs: number): number {
+  return manaAt(elapsedMs, state.manaSpent, state.lastBreathFromMs);
+}
+
+/** 🫁 `T-452` — האם החיים מתחת לסף (`learnerHp < 0.25 × learnerHpMax`). ⛔ מת ⇒ ⛔ לא. */
+export function isBelowLastBreath(learnerHp: number, learnerHpMax: number): boolean {
+  return learnerHp > 0 && learnerHp < LAST_BREATH_SHARE * learnerHpMax;
 }
 
 export function isRage(elapsedMs: number): boolean {
@@ -380,9 +410,15 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   // ⛔ והמכה שנמנעה לוקחת איתה את העונש שהיה תלוי בה — הוא חל על **המכה הבאה**, וזו
   // ⛔ לא הגיעה.
   const damage = landed === 0 ? 0 : landed * SWING_DAMAGE + state.pendingPenalty;
+  const learnerHp = state.learnerHp - damage;
   return {
     ...state,
-    learnerHp: state.learnerHp - damage,
+    learnerHp,
+    // 🫁 `T-452` — נכתב **פעם אחת**, ברגע החצייה, ⛔ ולא נמחק לעולם (`D-279`: ננעל).
+    lastBreathFromMs:
+      state.lastBreathFromMs === null && isBelowLastBreath(learnerHp, state.learnerHpMax)
+        ? elapsedMs
+        : state.lastBreathFromMs,
     lastSwingMs: elapsedMs,
     pendingPenalty: 0,
     dodgedSwing: immune ? null : state.dodgedSwing,
@@ -532,7 +568,7 @@ export const GUARD_COST = 4;
  * הגנה על המגרש** — אחרת הצבה שנייה הייתה גובה מאנה ו⛔ לא משנה דבר.
  */
 export function canPlaceGuard(state: BattleState, elapsedMs: number): boolean {
-  return state.guardLane === null && manaAt(elapsedMs, state.manaSpent) >= GUARD_COST;
+  return state.guardLane === null && manaOf(state, elapsedMs) >= GUARD_COST;
 }
 
 /**
@@ -643,7 +679,7 @@ export const ABILITY_COST: Readonly<Record<AbilityKey, number>> = Object.freeze(
  * ⛔ אינו יכול לראות מראש ⛔ ולא לבטל.
  */
 export function canUseAbility(state: BattleState, key: AbilityKey, elapsedMs: number): boolean {
-  if (manaAt(elapsedMs, state.manaSpent) < ABILITY_COST[key]) return false;
+  if (manaOf(state, elapsedMs) < ABILITY_COST[key]) return false;
   if (key === 'double') return !state.pendingDouble;
   if (key === 'shield') return state.dodgedSwing !== telegraphAt(elapsedMs).swingIndex;
   return !isFrozen(state, elapsedMs);
