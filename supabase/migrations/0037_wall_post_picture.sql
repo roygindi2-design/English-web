@@ -1,10 +1,14 @@
--- 0039 — a wall question may carry a picture (T-485 · D-291 · `39 § 5`).
+-- 0037 — a wall question may carry a picture (T-485 · D-291 · `39 § 5`).
 --
 -- «ואופציונלית תמונה שהמורה שואל עליה» (`39 § 5`) ⇒ a KEY into a closed gallery of eight
 -- drawn scenes (`lib/core/wallFeed.ts` `WALL_PICTURE_KEYS`, drawn by
 -- `components/WallPicture.tsx`). ⛔ No upload, ⛔ no URL, ⛔ no storage bucket (D-291).
 --
--- ⚠️ The number: 0037/0038 are reserved for T-476/T-477 (blocked on for-roy 144) ⇒ 0039.
+-- ⚠️ The number: the row reserved 0037/0038 for T-476/T-477, but those are ⛔ (for-roy 144)
+--    and `scripts/migration-hygiene.test.ts` refuses a gap ⇒ this file is 0037, and T-476/T-477
+--    take the next free numbers when they land. Applied C-0815 through MCP `apply_migration`
+--    under the history name `0039_wall_post_picture` (before the gap test caught the file
+--    name) — same SQL, byte for byte from `alter table` to the `grant`.
 -- ⚠️ The row wrote `class_wall_posts`; the table 0034 created is `class_posts` — this
 --    migration uses the real name.
 --

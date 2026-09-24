@@ -86,7 +86,7 @@ const WALL_LEVEL = 'B2' as const;
  * 403 `only_class_opener`.
  * T-485 · D-291: an optional `pictureKey` from the closed gallery (`WALL_PICTURE_KEYS`) —
  * a key outside it ⇒ 400 `invalid_picture` ⛔ BEFORE the question is written; a valid one is
- * set through `set_post_picture()` (0039) right after. That second call failing ⛔ does not
+ * set through `set_post_picture()` (0037) right after. That second call failing ⛔ does not
  * unwrite the question ⇒ the answer is still `ok`, with `pictureKey: null`, so the client
  * ⛔ never retries a question that already landed.
  */
