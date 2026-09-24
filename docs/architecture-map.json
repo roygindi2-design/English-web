@@ -1544,6 +1544,7 @@
     "lib/core/arenaHome.ts"
   ],
   "lib/core/arenaHome.ts": [
+    "lib/core/arcadeLadder.ts",
     "lib/core/arcadeResult.ts",
     "lib/core/characterBase.ts"
   ],

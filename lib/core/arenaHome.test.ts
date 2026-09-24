@@ -6,6 +6,7 @@ import {
   ITEM_SLOTS,
   SLOT_LABELS_HE,
   bossTrack,
+  closetTiles,
   homeSlots,
   winsToBoss,
 } from './arenaHome';
@@ -109,5 +110,55 @@ describe('המשבצות — `38 § 2` ו-D-135, ⛔ ולא שמות פריטי�
       ARCADE_ITEMS.map((item) => ITEM_SLOTS[item]).filter((slot) => slot !== null),
     );
     for (const slot of HOME_SLOTS) expect(fillable.has(slot)).toBe(true);
+  });
+});
+
+describe('closetTiles — `T-487` · `D-292`: הארון אומר מה יבוא ומתי', () => {
+  it('⛔ אריח לכל פריט ב-`ARCADE_ITEMS`, בסדר שלהם — כולל `banner`', () => {
+    expect(closetTiles([], 1).map((t) => t.item)).toEqual([...ARCADE_ITEMS]);
+  });
+
+  it('פיקסטורת `/dev/arcade/home` (רמה 7 · helmet·lantern·banner) ⇒ cape=8 · boots=9', () => {
+    expect(closetTiles(['helmet', 'lantern', 'banner'], 7)).toEqual([
+      { item: 'helmet', held: true, unlockLevel: null },
+      { item: 'cape', held: false, unlockLevel: 8 },
+      { item: 'lantern', held: true, unlockLevel: null },
+      { item: 'boots', held: false, unlockLevel: 9 },
+      { item: 'banner', held: true, unlockLevel: null },
+    ]);
+  });
+
+  it('⛔ תרחיש הכישלון: הסדר הוא הסדר של `arcadeResult` — ⛔ לא הפוך', () => {
+    // arcadeResult.ts:140 מעניק את הפריט הראשון שאינו מוחזק בכל עליית רמה.
+    const tiles = closetTiles(['helmet'], 3);
+    expect(tiles.find((t) => t.item === 'cape')?.unlockLevel).toBe(4);
+    expect(tiles.find((t) => t.item === 'lantern')?.unlockLevel).toBe(5);
+    expect(tiles.find((t) => t.item === 'boots')?.unlockLevel).toBe(6);
+    expect(tiles.find((t) => t.item === 'banner')?.unlockLevel).toBe(7);
+  });
+
+  it('הכול מוחזק ⇒ 0 נעולים', () => {
+    const tiles = closetTiles([...ARCADE_ITEMS], 9);
+    expect(tiles.filter((t) => !t.held)).toHaveLength(0);
+    expect(tiles.every((t) => t.unlockLevel === null)).toBe(true);
+  });
+
+  it('`NaN` / שלילי ⇒ רמה 1 כבסיס', () => {
+    for (const bad of [Number.NaN, -3, 0]) {
+      expect(closetTiles([], bad)[0]).toEqual({ item: 'helmet', held: false, unlockLevel: 2 });
+    }
+  });
+
+  it('⛔ שם מחוץ ל-`ARCADE_ITEMS` מדולג בשקט (כמו `homeSlots`)', () => {
+    expect(closetTiles(['sword', 'helmet'], 7)).toEqual(closetTiles(['helmet'], 7));
+  });
+
+  it('⛔ רמה שהסולם ⛔ אינו מגיע אליה ⛔ אינה מובטחת: מעבר ל-`MAX_GAME_LEVEL` ⇒ `null`', () => {
+    // רמה 11, שני פריטים חסרים: הראשון נפתח ב-12, השני ⛔ לעולם לא (applyWin נעצר ב-12).
+    const locked = closetTiles(['helmet', 'cape', 'lantern'], 11).filter((t) => !t.held);
+    expect(locked).toEqual([
+      { item: 'boots', held: false, unlockLevel: 12 },
+      { item: 'banner', held: false, unlockLevel: null },
+    ]);
   });
 });

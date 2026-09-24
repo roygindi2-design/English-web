@@ -1,3 +1,4 @@
+import { MAX_GAME_LEVEL } from '@/lib/core/arcadeLadder';
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
 import type { CharacterSlot } from '@/lib/core/characterBase';
 
@@ -115,5 +116,33 @@ export function homeSlots(unlocked: readonly string[]): readonly HomeSlot[] {
       label: SLOT_LABELS_HE[slot],
       item: ARCADE_ITEMS.find((i) => held.has(i) && ITEM_SLOTS[i] === slot) ?? null,
     })),
+  );
+}
+
+/** `T-487` · `D-292` — אריח אחד בארון הציוד. `unlockLevel` ⇒ `null` כשהפריט מוחזק. */
+export interface ClosetTile {
+  readonly item: ArcadeItem;
+  readonly held: boolean;
+  readonly unlockLevel: number | null;
+}
+
+/**
+ * `T-487` · `D-292` — **הארון מציג פריטים, ⛔ לא משבצות:** אריח לכל פריט ב-`ARCADE_ITEMS`,
+ * בסדר שלהם. ‏`unlockLevel` **נגזר ⛔ ולא נבחר** — `arcadeResult.ts` מעניק בכל עליית רמה
+ * את הפריט הראשון שאינו מוחזק (D-061) ⇒ הלא-מוחזק ה-k נפתח ב-`arcadeLevel + k`.
+ * ⛔ רמה מעבר ל-`MAX_GAME_LEVEL` ⛔ אינה מגיעה לעולם (`applyWin` נעצר שם) ⇒ `null`,
+ * כדי שהארון ⛔ לא יבטיח תנאי שהקוד ⛔ אינו מקיים.
+ */
+export function closetTiles(unlocked: readonly string[], arcadeLevel: number): readonly ClosetTile[] {
+  const held = new Set(unlocked.filter(isArcadeItem));
+  const base = Number.isFinite(arcadeLevel) && arcadeLevel >= 1 ? Math.floor(arcadeLevel) : 1;
+  let k = 0;
+  return Object.freeze(
+    ARCADE_ITEMS.map((item): ClosetTile => {
+      if (held.has(item)) return { item, held: true, unlockLevel: null };
+      k += 1;
+      const level = base + k;
+      return { item, held: false, unlockLevel: level <= MAX_GAME_LEVEL ? level : null };
+    }),
   );
 }
