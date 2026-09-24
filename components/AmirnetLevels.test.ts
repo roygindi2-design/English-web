@@ -73,4 +73,9 @@ describe('AmirnetLevels — T-307, render_video_D.py screen_levels (:195-235)', 
   it('the English name of the exam is ⛔ not printed raw — this screen is Hebrew end to end', () => {
     expect(CODE).not.toMatch(/[A-Za-z]{4,}<\/(p|h1|h2|h3|span)>/);
   });
+
+  it('⟦T-491ⓒ⟧ the open state sits BESIDE the description, as the render draws it — ⛔ a row of its own', () => {
+    // Measured C-0819: that row was 32px a card and the whole +126px of /dev/amirnet/levels.
+    expect(CODE).toMatch(/<div className="mt-1 flex items-baseline justify-between gap-3">\s*<p className="text-sm text-ink-muted">\{row\.descHe\}<\/p>\s*<p className="shrink-0[^"]*">\{OPEN_LABEL_HE\}<\/p>/);
+  });
 });

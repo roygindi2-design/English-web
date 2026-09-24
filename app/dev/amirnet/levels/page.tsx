@@ -9,7 +9,7 @@ import AmirnetLevels from '@/components/AmirnetLevels';
  */
 export default function DevAmirnetLevelsPage() {
   return (
-    <main className="mx-auto w-full max-w-md py-6">
+    <main className="mx-auto w-full max-w-md">
       <AmirnetLevels unlockedThrough={3} />
     </main>
   );

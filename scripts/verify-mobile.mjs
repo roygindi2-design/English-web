@@ -3830,6 +3830,12 @@ try {
       // T-490 — שורת הסיבה מעל הסרגל, ⛔ לא מתחת לקיפול.
       { route: '/dev/amirnet/practice', text: 'בחר רמת קושי כדי להתחיל', tabBar: true,
         sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
+      // T-491 — כרטיס החולשה, הדבר היחיד שאומר מה לעשות מחר, נראה בלי לגלול.
+      { route: '/dev/amirnet/result', text: 'לתרגול ממוקד בסוג הזה', tabBar: false,
+        sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
+      // T-491ⓒ — אותה גלישה, רכיב אחר (`AmirnetLevels`): הרמה הנעולה האחרונה בתוך המסך.
+      { route: '/dev/amirnet/levels', text: 'עבור רמה 3 כדי לפתוח', tabBar: false,
+        sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
     ];
     for (const { route, text, tabBar, sizes } of FIT) {
       for (const size of sizes) {

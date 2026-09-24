@@ -98,27 +98,31 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
 
   return (
     <section>
-      <h1 className="pt-2 text-center text-xl font-bold text-ink">{RESULT_TITLE_HE}</h1>
+      <h1 className="text-center text-xl font-bold text-ink">{RESULT_TITLE_HE}</h1>
 
       {/* T-304 · D-218 — ABOVE the numbers, ⛔ never below them: a disclaimer a learner reads
           after «18 מתוך 23» arrives after the inference it exists to prevent (41 § 6.1 items 4-5). */}
       <AmirnetEstimateNotice />
 
-      {/* ⛔ ONE card, ⛔ not a grid of tiles inside it (skill § 15) — three measured facts. */}
-      <dl className="mt-5 space-y-3 rounded-2xl border border-border-subtle bg-surface-raised p-4">
-        <div className="flex items-baseline justify-between gap-3">
+      {/* ⛔ ONE card, ⛔ not a grid of tiles inside it (skill § 15) — three measured facts.
+          ⟦T-491⟧ Side by side, ⛔ not stacked: stacked, the card was 142px and pushed the
+          weakness card — the one thing here that says what to do tomorrow — below the fold
+          (measured C-0819: +126px at 393×852). The render spends this band on the score dial,
+          which is ⛔ not built (41 § 9-2) and ⛔ not replaced by anything new here. */}
+      <dl className="mt-3 grid grid-cols-3 gap-2 rounded-2xl border border-border-subtle bg-surface-raised p-3 text-center">
+        <div className="flex flex-col justify-between">
           <dt className="text-sm text-ink-muted">{MEASURED_CORRECT_LABEL_HE}</dt>
-          <dd className="text-lg font-bold tabular-nums text-ink">
+          <dd className="mt-0.5 text-base font-bold tabular-nums text-ink">
             {runCorrectShortHe(outcomes)}
           </dd>
         </div>
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex flex-col justify-between">
           <dt className="text-sm text-ink-muted">{MEASURED_TIME_LABEL_HE}</dt>
-          <dd className="text-lg font-bold tabular-nums text-ink">{runTimeHe(outcomes)}</dd>
+          <dd className="mt-0.5 text-base font-bold tabular-nums text-ink">{runTimeHe(outcomes)}</dd>
         </div>
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex flex-col justify-between">
           <dt className="text-sm text-ink-muted">{CHAPTERS_LABEL_HE}</dt>
-          <dd className="text-lg font-bold tabular-nums text-ink">
+          <dd className="mt-0.5 text-base font-bold tabular-nums text-ink">
             {chaptersDoneShortHe(outcomes)}
           </dd>
         </div>
@@ -127,12 +131,12 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
       {/* ⓓ — an interrupted run says so in a SENTENCE, ⛔ and is never padded with empty rows. */}
       {notice === '' ? null : <p className="mt-4 text-sm text-ink-muted">{notice}</p>}
 
-      <h2 className="mt-6 text-base font-semibold text-ink">{CHAPTER_BREAKDOWN_HE}</h2>
+      <h2 className="mt-3 text-base font-semibold text-ink">{CHAPTER_BREAKDOWN_HE}</h2>
 
       {rows.length === 0 ? (
         <p className="mt-3 text-sm text-ink">{EMPTY_RUN_HE}</p>
       ) : (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-2 space-y-1.5">
           {rows.map((row) => (
             <li
               key={row.chapterIndex}
@@ -161,7 +165,7 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
         and then the way on is the practice menu itself — ⛔ not a type picked for the learner.
       */}
       {weakness === null ? (
-        <div className="mt-6">
+        <div className="mt-4">
           <p className="text-sm text-ink-muted">{NO_WEAKNESS_HE}</p>
           <Link
             href={AMIRNET_TAB_HREF.practice}
@@ -173,7 +177,7 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
       ) : (
         <Link
           href={`${AMIRNET_TAB_HREF.practice}?type=${weakness.type}`}
-          className="mt-6 flex min-h-touch flex-col justify-center rounded-xl border border-danger bg-surface-raised px-4 py-3 text-right text-danger"
+          className="mt-3 flex min-h-touch flex-col justify-center rounded-xl border border-danger bg-surface-raised px-4 py-2.5 text-right text-danger"
         >
           <span className="block text-base font-bold">{weakness.titleHe}</span>
           <span className="mt-0.5 block text-sm">{weakness.adviceHe}</span>
@@ -182,7 +186,7 @@ export default function AmirnetResult({ outcomes }: AmirnetResultProps) {
 
       <Link
         href={AMIRNET_TAB_HREF.dashboard}
-        className="mt-3 flex min-h-touch items-center justify-center text-sm font-bold text-ink"
+        className="flex min-h-touch items-center justify-center text-sm font-bold text-ink"
       >
         {BACK_TO_DASHBOARD_HE}
       </Link>

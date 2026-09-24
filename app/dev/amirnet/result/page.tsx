@@ -8,7 +8,7 @@ import { RESULT_FIXTURE_RUN } from './result-fixture';
  */
 export default function DevAmirnetResultPage() {
   return (
-    <main className="mx-auto w-full max-w-md py-6">
+    <main className="mx-auto w-full max-w-md">
       <AmirnetResult outcomes={RESULT_FIXTURE_RUN} />
     </main>
   );

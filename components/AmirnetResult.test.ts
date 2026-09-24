@@ -138,4 +138,10 @@ describe('AmirnetResult — T-298, render kol-D-07-result.png', () => {
     expect(CODE).not.toContain('role="tablist"');
     expect(CODE).toContain("from '@/components/AmirnetTabs'");
   });
+
+  it('⟦T-491⟧ the three facts sit side by side — ⛔ stacked, they pushed the weakness card below the fold', () => {
+    // Measured C-0819: +126px at 393×852. check:mobile measures the pixels; this guards the shape.
+    expect(CODE).toMatch(/<dl className="[^"]*\bgrid grid-cols-3\b/);
+    expect(CODE).not.toMatch(/<dl className="[^"]*\bspace-y-3\b/);
+  });
 });

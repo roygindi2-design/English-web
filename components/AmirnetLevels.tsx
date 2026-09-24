@@ -125,16 +125,24 @@ function LevelCardBody({ row, unlocked }: { readonly row: AmirnetLevelRow; reado
         </span>
       </div>
 
-      <p className="mt-1 text-sm text-ink-muted">{row.descHe}</p>
-
+      {/* ⟦T-491ⓒ⟧ The render writes the state BESIDE the description (:220 desc right · :231
+          state left, one band), ⛔ not on a row of its own under it — the extra row was 32px a
+          card and the source of `/dev/amirnet/levels`' +126px at 393×852 (C-0819). The locked
+          reason is longer and keeps its own line, tightened. */}
       {unlocked ? (
-        <p className="mt-3 flex justify-end text-sm font-semibold text-brand-surface">{OPEN_LABEL_HE}</p>
+        <div className="mt-1 flex items-baseline justify-between gap-3">
+          <p className="text-sm text-ink-muted">{row.descHe}</p>
+          <p className="shrink-0 text-sm font-semibold text-brand-surface">{OPEN_LABEL_HE}</p>
+        </div>
       ) : (
-        <p className="mt-3 flex items-center justify-end gap-2 text-sm text-ink-muted">
-          <LockIcon />
-          <span className="font-semibold">{LOCKED_LABEL_HE}</span>
-          <span>{lockedReasonHe(row.level)}</span>
-        </p>
+        <>
+          <p className="mt-1 text-sm text-ink-muted">{row.descHe}</p>
+          <p className="mt-1.5 flex items-center justify-end gap-2 text-sm text-ink-muted">
+            <LockIcon />
+            <span className="font-semibold">{LOCKED_LABEL_HE}</span>
+            <span>{lockedReasonHe(row.level)}</span>
+          </p>
+        </>
       )}
     </>
   );
@@ -149,12 +157,12 @@ export default function AmirnetLevels({ unlockedThrough, onStart, busy = false }
         <AmirnetTabs active="simulation" built={AMIRNET_BUILT_TABS} />
       </header>
 
-      <div className="mt-6 rounded-xl border border-border-subtle bg-surface-raised p-4">
+      <div className="mt-4 rounded-xl border border-border-subtle bg-surface-raised p-3">
         <p className="text-base font-bold text-ink">{SUMMARY_HE}</p>
         <p className="mt-1 text-sm text-ink-muted">{ADAPTIVE_NOTICE_HE}</p>
       </div>
 
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-3 space-y-2.5">
         {AMIRNET_LEVEL_ROWS.map((row) => {
           const unlocked = row.level <= unlockedThrough;
           return (
