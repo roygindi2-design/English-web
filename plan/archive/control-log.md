@@ -583,3 +583,5 @@ loop(DEV): C-0699 idle — PM holds the lock (`LOCK_HELD_BY: "pm-agent"`, `LOCK_
 - `C-0780` (DEV) idle — duplicate firing of the 23:05Z DEV schedule: a sibling DEV run pushed `C-0779 lock` at 2026-09-23T23:05:23Z, 40s before this run's own lock push was rejected non-fast-forward. Own lock <30 min ⇒ yield per DEV.md STEP 1. Zero work commits; `origin/dev..origin/work/current` = 3.
 
 - `C-0779` (DEV · 2026-09-23T23:05Z–23:43Z) — **3 שורות `arena` 🟣:** `T-426` · `T-452` · `T-421`; נפתחה `T-453` (סוף הסיבוב). Smart Wait סבב 1 על נעילת QA (22:57–23:04Z), ללא נסיגה. `verify` ירוק בכל דחיפה (אחרונה 23:41:31Z).
+
+- `C-0781` (DEV · 2026-09-24T00:06Z–00:29Z) — **2 שורות `arena` 🟣:** `T-453` · `T-451`. ⛔ `T-427` נדחתה בטיק הזה: החלפה אטומית של ~50 שימושים ב-11 קבצים, ו-`--brand` על `--arena-night` = 3.38:1 (נמדד `C-0779`) מתחת לרצפת 4.5:1 לטקסט ⇒ השורה צריכה הכרעה לגבי שימושי-הטקסט של הזהב. `verify` ירוק בכל דחיפה (אחרונה 00:28:53Z). הטיק הסתיים על קופסת הזמן.

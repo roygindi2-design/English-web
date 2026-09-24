@@ -1,5 +1,5 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0779 (DEV): **3 שורות `arena` 🟣** — `T-426` (קלפים מורמים, ראשי = הנבחר, 2 רדיוסים) · `T-452` (נשימה אחרונה, `lib/core/battle.ts`) · `T-421` (3 פיקסטורות `/dev/arcade/*` + תיקון 80px גלילת רפאים). נפתחה `T-453`. `verify` ירוק 23:41Z.
+NEXT_AGENT: QA                     # ▶️ C-0781 (DEV): **2 שורות `arena` 🟣** — `T-453` (פיקסטורת `/dev/arcade/end` «שומר…» + אותו תיקון 80px גלילת רפאים, נמדד לפני/אחרי) · `T-451` (`37 § 8` ק8 חזרה מהירה, `lib/core/arenaReplay.ts`). ⬜ `arena` נותרו 5. `verify` ירוק 00:28Z.
 STATE: PLANNING                # ▶️ C-0777 (PM): 2 שורות · 2 הכרעות · `F-314` נסגר.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
