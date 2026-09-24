@@ -67,7 +67,9 @@ describe('T-468 — the class routes', () => {
   });
 
   it('classRow: only code · name · members leave; no row ⇒ null', () => {
-    expect(classRow([{ code: 'K7Q2MZ', name: 'ז׳3', members: 2, user_id: 'x' }])).toEqual({ code: 'K7Q2MZ', name: 'ז׳3', members: 2 });
+    expect(classRow([{ code: 'K7Q2MZ', name: 'ז׳3', members: 2, user_id: 'x' }])).toEqual({ id: null, code: 'K7Q2MZ', name: 'ז׳3', members: 2 });
+    // T-473 · 0035 — `my_class()` carries the id the wall routes are addressed by.
+    expect(classRow([{ id: 'c-1', code: 'K7Q2MZ', name: 'ז׳3', members: 2 }])?.id).toBe('c-1');
     expect(classRow([])).toBeNull();
     expect(classRow(null)).toBeNull();
   });

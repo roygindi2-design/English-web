@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import ClassWall, { FEED_EMPTY_HE } from '@/components/ClassWall';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { CLASS_CODE_ALPHABET, CLASS_CODE_LENGTH, isClassCode, normalizeClassCode } from '@/lib/core/classCode';
 import { RETRY_HE } from '@/lib/core/failure';
@@ -37,12 +38,14 @@ export const BACK_HE = 'חזרה';
 export const SHARE_LABEL_HE = 'הקוד לשיתוף';
 export const COPY_HE = 'העתקה';
 export const COPIED_HE = 'הועתק';
-export const FEED_EMPTY_HE = 'הקיר מתמלא כשיש פוסט ראשון';
+export { FEED_EMPTY_HE };
 export const CLASSES_CLOSED_HE = 'הכיתות עוד לא פתוחות';
 export const NOT_FOUND_HE = 'לא מצאנו כיתה עם הקוד הזה. בדוק אותו והקלד מחדש.';
 export const INVALID_NAME_HE = 'שם הכיתה צריך להיות באורך 1 עד 60 תווים.';
 
 export interface ClassInfo {
+  /** From `my_class()` (0035) — the wall routes are addressed by it. create/join ⛔ do not return it. */
+  readonly id?: string | null;
   readonly code: string;
   readonly name: string;
   readonly members: number | null;
@@ -122,9 +125,11 @@ export interface ClassJoinViewProps {
   readonly onRetry?: () => void;
   /** The starting mode, for the dev fixture; the live screen always starts on `choose`. */
   readonly initialMode?: 'choose' | 'create' | 'join';
+  /** T-473 — what sits under the class panel; the live screen mounts `<ClassWall>` here. */
+  readonly wall?: ReactNode;
 }
 
-export function ClassJoinView({ state, busy = false, formError = null, onCreate = () => {}, onJoin = () => {}, onRetry = () => {}, initialMode = 'choose' }: ClassJoinViewProps) {
+export function ClassJoinView({ state, busy = false, formError = null, onCreate = () => {}, onJoin = () => {}, onRetry = () => {}, initialMode = 'choose', wall }: ClassJoinViewProps) {
   const [mode, setMode] = useState(initialMode);
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -175,7 +180,7 @@ export function ClassJoinView({ state, busy = false, formError = null, onCreate 
             </button>
           </div>
         </section>
-        <p data-wall-empty className="mt-6 text-center text-sm text-ink-muted">{FEED_EMPTY_HE}</p>
+        {wall ?? <p data-wall-empty className="mt-6 text-center text-sm text-ink-muted">{FEED_EMPTY_HE}</p>}
       </div>
     );
   }
@@ -264,6 +269,9 @@ export default function ClassJoin({ onState }: { readonly onState?: (s: ClassPan
         return;
       }
       setState({ kind: 'in_class', cls: { code: body.code, name: body.name, members: body.members ?? fallbackMembers } });
+      // create/join ⛔ return no id; `…/mine` does (0035) — the wall needs it.
+      const mine = await apiGet<MineBody>('/api/world/classes/mine');
+      if (mine.ok && mine.class) setState({ kind: 'in_class', cls: mine.class });
     } catch {
       setFormError(RETRY_HE);
     } finally {
@@ -271,9 +279,11 @@ export default function ClassJoin({ onState }: { readonly onState?: (s: ClassPan
     }
   }, [fromFailure, setState]);
 
+  const classId = state.kind === 'in_class' ? state.cls.id ?? null : null;
   return (
     <ClassJoinView
       state={state}
+      wall={classId ? <ClassWall classId={classId} /> : undefined}
       busy={busy}
       formError={formError}
       onCreate={(name) => { void submit('/api/world/classes', { name }, 1); }}

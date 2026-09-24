@@ -35,9 +35,18 @@ export function classFailure(where: string, error: { message: string; code?: str
   return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 }
 
-/** The one row a class function returns, or null. ⛔ Only code · name · members ever leave. */
-export function classRow(data: unknown): { code: string; name: string; members: number | null } | null {
-  const row = (Array.isArray(data) ? data[0] : data) as { code?: unknown; name?: unknown; members?: unknown } | null;
+/**
+ * The one row a class function returns, or null. ⛔ Only id · code · name · members ever
+ * leave. `id` comes from `my_class()` (0035) — the wall routes are addressed by it; the
+ * create/join functions do not return it, and the client re-reads `…/mine` after either.
+ */
+export function classRow(data: unknown): { id: string | null; code: string; name: string; members: number | null } | null {
+  const row = (Array.isArray(data) ? data[0] : data) as { id?: unknown; code?: unknown; name?: unknown; members?: unknown } | null;
   if (!row || typeof row.code !== 'string' || typeof row.name !== 'string') return null;
-  return { code: row.code.trim(), name: row.name, members: typeof row.members === 'number' ? row.members : null };
+  return {
+    id: typeof row.id === 'string' ? row.id : null,
+    code: row.code.trim(),
+    name: row.name,
+    members: typeof row.members === 'number' ? row.members : null,
+  };
 }

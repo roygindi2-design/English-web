@@ -514,8 +514,13 @@
     "components/InboxList.tsx",
     "lib/core/messages.ts"
   ],
+  "app/dev/messages/wall-fixture.ts": [
+    "lib/core/wallFeed.ts"
+  ],
   "app/dev/messages/wall/page.tsx": [
+    "app/dev/messages/wall-fixture.ts",
     "components/ClassJoin.tsx",
+    "components/ClassWall.tsx",
     "components/InboxList.tsx"
   ],
   "app/dev/onboarding/layout.tsx": [],
@@ -988,10 +993,22 @@
     "components/InboxList.tsx"
   ],
   "components/ClassJoin.tsx": [
+    "components/ClassWall.tsx",
     "lib/api/client.ts",
     "lib/core/classCode.ts",
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
+  ],
+  "components/ClassWall.dom.test.tsx": [
+    "app/dev/messages/wall-fixture.ts",
+    "components/ClassWall.tsx"
+  ],
+  "components/ClassWall.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/failure.ts",
+    "lib/core/onboarding.ts",
+    "lib/core/wallFeed.ts"
   ],
   "components/CloseIcon.test.ts": [
     "lib/testSource.ts"
