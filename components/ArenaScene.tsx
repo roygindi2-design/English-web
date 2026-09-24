@@ -126,6 +126,26 @@ const DEBRIS: readonly { readonly x: number; readonly y: number; readonly r: num
 /** צלליות הקהל — מלבנים בגבהים משתנים, ⛔ ולא דמויות: הן **מעל** החומה ורחוקות. */
 const CROWD: readonly number[] = [4, 7, 5, 8, 6, 9, 5, 7, 4, 8, 6, 5, 9, 6, 7, 5];
 
+/**
+ * 🪨 **⟦24/09 · `C-0782` · `F-316`⟧ הרצפה היא **עפר עם סדקים וגחלים**, ⛔ ולא גרדיאנט חלק.**
+ * 🔬 **נקרא ב-`diff:render` מול `kol-B-03-battle.png` (QA, `C-0771`):** הרנדר מצייר על
+ * הרצפה ⓐ **טבעת זימון מוארת** — אליפסות קונצנטריות בזהב חם סביב רגלי היריב, רחבה
+ * כמעט כמו הרצפה; ⓑ **סדקים** — קווים קצרים ונטויים; ⓒ **גחלים** — נקודות כתומות
+ * קטנות. החי צייר רק את הגרדיאנט ⇒ במה שטוחה.
+ * ⛔ **טבלאות קבועות, ⛔ ולא `Math.random`** — אותו נימוק של `DEBRIS` למעלה.
+ * ⛔ **וסטטי:** ⛔ אף אחד מהשלושה ⛔ אינו זז (`T-041`) — הם תפאורה, ⛔ ולא תגובה.
+ */
+const CRACKS: readonly { readonly x: number; readonly y: number; readonly dx: number; readonly dy: number }[] = [
+  { x: 14, y: 62, dx: 4, dy: -2.2 }, { x: 82, y: 60, dx: -3.4, dy: 1.6 },
+  { x: 26, y: 90, dx: 5, dy: -1.4 }, { x: 70, y: 84, dx: 4.6, dy: 2 },
+  { x: 92, y: 74, dx: -2.8, dy: -1.8 },
+];
+const EMBERS: readonly { readonly x: number; readonly y: number }[] = [
+  { x: 11, y: 66 }, { x: 25, y: 60 }, { x: 64, y: 56 }, { x: 84, y: 51 },
+  { x: 18, y: 78 }, { x: 40, y: 72 }, { x: 88, y: 79 }, { x: 58, y: 92 },
+  { x: 6, y: 94 }, { x: 94, y: 90 },
+];
+
 export default function ArenaScene({ className = '' }: ArenaSceneProps): React.JSX.Element {
   return (
     <svg
@@ -147,6 +167,17 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           <stop offset="0%" stopColor="var(--arena-stone)" />
           <stop offset="100%" stopColor="var(--arena-stone-dark)" />
         </linearGradient>
+        {/* 🪨 `F-316`ⓐ — טבעת הזימון: **טבעות**, ⛔ ולא כתם. עצירות לסירוגין בהיר/שקוף הן
+            מה שהרנדר מצייר כאליפסות קונצנטריות; המרכז חם ומתכהה החוצה. */}
+        <radialGradient id="arena-ring">
+          <stop offset="0%" stopColor="var(--arena-gold-light)" stopOpacity="0.34" />
+          <stop offset="18%" stopColor="var(--arena-gold)" stopOpacity="0.26" />
+          <stop offset="30%" stopColor="var(--arena-gold)" stopOpacity="0.12" />
+          <stop offset="42%" stopColor="var(--arena-gold)" stopOpacity="0.22" />
+          <stop offset="56%" stopColor="var(--arena-gold)" stopOpacity="0.08" />
+          <stop offset="70%" stopColor="var(--arena-gold)" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="var(--arena-gold)" stopOpacity="0" />
+        </radialGradient>
         {/* הילת הלפיד — ⛔ רדיאלית, ⛔ ולא עיגול אטום: לפיד הוא **אור**, ⛔ ולא נורה. */}
         <radialGradient id="arena-torch">
           <stop offset="0%" stopColor="var(--arena-gold-light)" stopOpacity="0.85" />
@@ -230,6 +261,24 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
         fill="url(#arena-floor)"
       />
 
+      {/* 🪨 `F-316`ⓐ — טבעת הזימון סביב רגלי היריב (החריץ שלו נגמר על האופק). */}
+      <ellipse data-arena-ring cx={VANISHING_X} cy={HORIZON + 7} rx="38" ry="8" fill="url(#arena-ring)" />
+
+      {/* 🪨 `F-316`ⓑ — סדקים: קצרים, נטויים, כהים. */}
+      {CRACKS.map((c) => (
+        <line
+          key={`crack-${String(c.x)}-${String(c.y)}`}
+          data-arena-crack
+          x1={c.x}
+          y1={c.y}
+          x2={c.x + c.dx}
+          y2={c.y + c.dy}
+          stroke="var(--arena-night)"
+          strokeWidth="0.35"
+          opacity="0.5"
+        />
+      ))}
+
       {/* ⓕ קווי הרצפה — ⛔ מתכנסים אל המגוז. זה החיווי שהופך משטח למישור.
 
           🔴 **⟦19/09 · `C-0730` · `T-433`ⓑ⟧ ארבעה קווים, ⛔ ולא חמישה — והמספר
@@ -264,6 +313,19 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           ry={d.r * 0.45}
           fill="var(--arena-night)"
           opacity="0.38"
+        />
+      ))}
+
+      {/* 🪨 `F-316`ⓒ — גחלים: נקודות זהב קטנות, ⛔ ולא חלקיקים שזזים. */}
+      {EMBERS.map((e) => (
+        <circle
+          key={`ember-${String(e.x)}-${String(e.y)}`}
+          data-arena-ember
+          cx={e.x}
+          cy={e.y}
+          r="0.55"
+          fill="var(--arena-gold)"
+          opacity="0.6"
         />
       ))}
     </svg>

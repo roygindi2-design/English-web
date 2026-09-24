@@ -173,6 +173,10 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
   it('⛔ הסט **סטטי** — ⛔ אפס ריצוד, ⛔ אפס הבהוב (T-041)', () => {
     // 🔴 תקציב התנועה הולך למה שהלומד **עשה**, ⛔ ולא לרקע שמנצנץ בזמן שהוא חושב.
     expect(SCENE_CODE, '⛔ ⛔ אין אנימציה בסט').not.toMatch(/animation|@keyframes|transition/);
+    // F-316 (C-0782): the render's floor carries a lit summoning ring, cracks and embers.
+    expect(SCENE_CODE, 'טבעת זימון על הרצפה').toMatch(/<ellipse data-arena-ring[^>]*fill="url\(#arena-ring\)"/);
+    expect(SCENE_CODE, 'סדקים מטבלה קבועה').toMatch(/CRACKS\.map/);
+    expect(SCENE_CODE, 'גחלים מטבלה קבועה').toMatch(/EMBERS\.map/);
     expect(SCENE_CODE, '⛔ ו⛔ אין שעון').not.toMatch(/useState|useEffect|requestAnimationFrame|setTimeout/);
     // ⛔ ואין צבע גולמי — הכול טוקן של הזירה (`37 § 13.5`). ⛔ מזהי גרדיאנט
     // (`url(#arena-sky)`) ⛔ אינם צבע, ⇒ הדפוס דורש ספרות-הקס בלבד.
