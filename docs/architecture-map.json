@@ -327,6 +327,10 @@
     "app/arcade/arcade-tokens.css",
     "components/ArenaCharacterChoice.tsx"
   ],
+  "app/dev/arcade/end/page.tsx": [
+    "app/arcade/arcade-tokens.css",
+    "components/ArenaBattle.tsx"
+  ],
   "app/dev/arcade/home/page.tsx": [
     "app/arcade/arcade-tokens.css",
     "components/ArenaHome.tsx"

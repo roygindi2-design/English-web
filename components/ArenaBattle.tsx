@@ -156,6 +156,14 @@ export interface ArenaBattleProps {
    * הייתה מתחלפת בכשל ה-503 של `next start`). ⛔ הייצור ⛔ אינו מעביר אותו לעולם.
    */
   readonly initialScreen?: ArenaFixtureScreen;
+  /**
+   * 🧪 ⟦`C-0781` · `T-453`⟧ **הסיבוב כבר נגמר והתוצאה עוד ⛔ לא חזרה — לפיקסטורה בלבד.**
+   * סוף הסיבוב ⛔ אינו `screen`: הוא נגזר מ-`endingOf(battle, …)` ⇒ `initialScreen` ⛔ אינו
+   * מגיע אליו. ⇒ `timeUp` נפתח דלוק (אותו ענף ייצור של סיום על השעון) ו-`submitted` נפתח
+   * דלוק ⇒ `POST /api/arcade/result` ⛔ אינו יוצא, והמסך נשאר על «שומר…». ⛔ דורש
+   * `initialRound`. ⛔ הייצור ⛔ אינו מעביר אותו לעולם.
+   */
+  readonly initialEnded?: boolean;
 }
 
 /** 🧪 `T-421` — שלושת המצבים שפיקסטורה רשאית לפתוח בהם. ⛔ `ready` מגיע רק מ-`initialRound`. */
@@ -387,7 +395,7 @@ function wordsOf(questions: readonly ArcadeQuestion[]): readonly ArenaWord[] {
 }
 
 export default function ArenaBattle({
-  initialRound, character = null, items = [], initialScreen,
+  initialRound, character = null, items = [], initialScreen, initialEnded = false,
 }: ArenaBattleProps = {}): React.JSX.Element {
   const [screen, setScreen] = useState<ScreenState>(
     initialScreen ?? (initialRound === undefined ? { kind: 'loading' } : { kind: 'ready', level: initialRound.level }),
@@ -411,7 +419,7 @@ export default function ArenaBattle({
   const elapsedRef = useRef(0);
   const [telegraphPhase, setTelegraphPhase] = useState<TelegraphPhase>('quiet');
   const [raging, setRaging] = useState(false);
-  const [timeUp, setTimeUp] = useState(false);
+  const [timeUp, setTimeUp] = useState(initialEnded);
   const clockRef = useRef<HTMLParagraphElement>(null);
   const clockTextRef = useRef<HTMLSpanElement>(null);
   const castMeterWrapRef = useRef<HTMLDivElement>(null);
@@ -430,7 +438,7 @@ export default function ArenaBattle({
   const [outcome, setOutcome] = useState<ResultBody | null>(null);
   const [pendingResult, setPendingResult] = useState<ResultPayload | null>(null);
   const [sendError, setSendError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(initialEnded);
   const originRef = useRef<number | null>(null);
   /** ⛔ נקודת ההתחלה של מחוות הבמה. ⛔ ref ו⛔ לא state — היא ⛔ אינה משנה פיקסל. */
   const stageFrom = useRef<{ x: number; y: number } | null>(null);
@@ -1203,8 +1211,12 @@ export default function ArenaBattle({
         </>
       );
     }
+    // 👻 ⟦`C-0781` · `T-453`⟧ אותה רצועה קבועה, ⇒ אותו תיקון של `T-421`: `data-arena-failure`
+    // מוריד את שמירת ה-`body` והקטע מנכה את הרצועה בעצמו. נמדד חי ב-`/dev/arcade/end`.
     return (
-      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <section
+        data-arena-failure
+        className="flex h-[calc(100dvh-5.25rem-5rem-env(safe-area-inset-bottom))] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {topBar(outcome === null && sendError === '' ? SAVING_HE : FINISHED_HE)}
         {sendError !== '' && (
           <p role="status" className="text-base text-danger">

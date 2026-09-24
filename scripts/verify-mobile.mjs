@@ -278,6 +278,9 @@ const ROUTES = [
   '/dev/arcade/loading',
   '/dev/arcade/too-small',
   '/dev/arcade/schema-missing',
+  // 🧪 `T-453` (`C-0781`) — סוף הסיבוב, «שומר…». ‏`initialEnded` ⇒ ‏`POST /api/arcade/result`
+  // ⛔ אינו יוצא ⇒ ⛔ אין לו רשומה ב-EXPECTED_CONSOLE, אותה הנמקה של שלושת שמעליו.
+  '/dev/arcade/end',
   '/does-not-exist',
 ];
 const MIN_TAP = 44;
@@ -3767,6 +3770,8 @@ try {
       '/dev/arcade/loading': 'טוען את הזירה',
       '/dev/arcade/too-small': 'ברמה הזאת עוד אין מספיק מילים לקרב',
       '/dev/arcade/schema-missing': 'המאגר עדיין לא הוקם',
+      // 🧪 `T-453` (`C-0781`) — אותה תבנית קטע + רצועה ⇒ אותה טענה.
+      '/dev/arcade/end': 'שומר את הקרב',
     };
     for (const [route, text] of Object.entries(EXPECT)) {
       for (const size of [{ width: 320, height: 568 }, { width: 375, height: 780 }, { width: 414, height: 896 }]) {
