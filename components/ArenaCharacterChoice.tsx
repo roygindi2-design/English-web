@@ -82,8 +82,8 @@ const CARD_CLASS =
 /** `:180-183` — הפעולה הראשית. גובה 58 ורדיוס 18 של הרנדר, ⛔ ללא שינוי. */
 const START_CLASS =
   'flex h-[58px] w-full items-center justify-center rounded-2xl border-2 ' +
-  'border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] ' +
-  'text-[17px] font-black text-[color:var(--arena-night)] active:opacity-90';
+  'border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] ' +
+  'text-[17px] font-black text-[color:var(--brand-on)] active:opacity-90';
 
 /** `:185-191` — פעולה משנית. ⚠️ **42 של הרנדר עלה ל-44** (שכבה א׳ ⓐ). */
 const SECONDARY_CLASS =
@@ -143,6 +143,7 @@ export default function ArenaCharacterChoice({
   return (
     <section
       data-arena-scope
+      data-surface="dark"
       /**
        * 🔴 **⟦17/09 · `C-0672` · `T-402`⟧ עמודה **מדויקת**, ⛔ ולא מינימום — והמעבר
        *     הזה הוא **מדידה שהפריכה את הניסיון הראשון**, ⛔ ולא בחירה בין שתי דעות.
@@ -199,7 +200,7 @@ export default function ArenaCharacterChoice({
                 className={[
                   'flex w-full items-center gap-4 px-4 py-3 text-right',
                   CARD_CLASS,
-                  selected ? 'border-2 border-[color:var(--arena-gold)]' : '',
+                  selected ? 'border-2 border-[color:var(--brand)]' : '',
                 ].join(' ')}
               >
                 {/* `:126-134` — הדמות נושמת מעל הכן: `sin(t*1.5)*2.2` ⇒ ±2.2px · 4.19s. */}
@@ -228,7 +229,7 @@ export default function ArenaCharacterChoice({
                       {CHARACTER_LABELS_HE[character]}
                     </span>
                     {selected && (
-                      <span className="flex items-center gap-1 text-xs font-semibold leading-none text-[color:var(--arena-gold-light)]">
+                      <span className="flex items-center gap-1 text-xs font-semibold leading-none text-[color:var(--brand-surface)]">
                         <CheckGlyph />
                         {SELECTED_HE}
                       </span>

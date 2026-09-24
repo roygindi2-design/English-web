@@ -51,6 +51,12 @@ describe('globals.css stays in sync with the table', () => {
     for (const t of COLOR_TOKENS) expect(dark).toContain(`${t.cssVar}: ${t.dark};`);
   });
 
+  it('declares every token with the dark value on a dark surface, in both schemes (D-282)', () => {
+    const surface = block('/* tokens:dark-surface */');
+    expect(css).toMatch(/\[data-surface='dark'\]\s*\{/);
+    for (const t of COLOR_TOKENS) expect(surface).toContain(`${t.cssVar}: ${t.dark};`);
+  });
+
   it('opts the document into both schemes, so form controls follow', () => {
     expect(css).toMatch(/color-scheme:\s*light dark/);
   });

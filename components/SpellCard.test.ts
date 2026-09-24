@@ -79,7 +79,7 @@ describe('36 § 14.4 — גימור הרנדר מחייב, ⛔ ולא רק המ�
 
   it('⛔ צבע המסגרת וצבע הסימן ⛔ אינם נפרדים — `currentColor` ממקום אחד', () => {
     expect(CODE).toContain('currentColor');
-    expect(CODE).toMatch(/border-\[color:var\(--arena-gold\)\] text-\[color:var\(--arena-gold\)\]/);
+    expect(CODE).toMatch(/border-\[color:var\(--brand-surface\)\] text-\[color:var\(--brand-surface\)\]/);
   });
 });
 

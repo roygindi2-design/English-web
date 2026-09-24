@@ -217,19 +217,19 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
         {/* 🪨 `F-316`ⓐ — טבעת הזימון: **טבעות**, ⛔ ולא כתם. עצירות לסירוגין בהיר/שקוף הן
             מה שהרנדר מצייר כאליפסות קונצנטריות; המרכז חם ומתכהה החוצה. */}
         <radialGradient id="arena-ring">
-          <stop offset="0%" stopColor="var(--arena-gold-light)" stopOpacity="0.34" />
-          <stop offset="18%" stopColor="var(--arena-gold)" stopOpacity="0.26" />
-          <stop offset="30%" stopColor="var(--arena-gold)" stopOpacity="0.12" />
-          <stop offset="42%" stopColor="var(--arena-gold)" stopOpacity="0.22" />
-          <stop offset="56%" stopColor="var(--arena-gold)" stopOpacity="0.08" />
-          <stop offset="70%" stopColor="var(--arena-gold)" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="var(--arena-gold)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--brand-surface)" stopOpacity="0.34" />
+          <stop offset="18%" stopColor="var(--brand)" stopOpacity="0.26" />
+          <stop offset="30%" stopColor="var(--brand)" stopOpacity="0.12" />
+          <stop offset="42%" stopColor="var(--brand)" stopOpacity="0.22" />
+          <stop offset="56%" stopColor="var(--brand)" stopOpacity="0.08" />
+          <stop offset="70%" stopColor="var(--brand)" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="var(--brand)" stopOpacity="0" />
         </radialGradient>
         {/* הילת הלפיד — ⛔ רדיאלית, ⛔ ולא עיגול אטום: לפיד הוא **אור**, ⛔ ולא נורה. */}
         <radialGradient id="arena-torch">
-          <stop offset="0%" stopColor="var(--arena-gold-light)" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="var(--arena-gold)" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="var(--arena-gold)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--brand-surface)" stopOpacity="0.85" />
+          <stop offset="55%" stopColor="var(--brand)" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="var(--brand)" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -277,7 +277,7 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
             key={`flag-${String(x)}`}
             data-arena-crowd
             points={`${String(x + 0.25)},21 ${String(x + 6)},22.6 ${String(x + 0.25)},24.4`}
-            fill="var(--arena-gold)"
+            fill="var(--brand)"
             opacity="0.85"
           />
         ))}
@@ -291,7 +291,7 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
         <g key={`fire-${String(f.x)}-${String(f.y)}`}>
           <circle data-arena-torch cx={f.x} cy={f.y - f.r * 0.3} r={f.r} fill="url(#arena-torch)" />
           <rect x={f.x - f.r * 0.32} y={f.y - f.r * 0.08} width={f.r * 0.64} height={f.r * 0.14} rx="0.3" fill="var(--arena-fig-wand)" />
-          <ellipse cx={f.x} cy={f.y - f.r * 0.3} rx={f.r * 0.16} ry={f.r * 0.26} fill="var(--arena-gold-light)" />
+          <ellipse cx={f.x} cy={f.y - f.r * 0.3} rx={f.r * 0.16} ry={f.r * 0.26} fill="var(--brand-surface)" />
         </g>
       ))}
 
@@ -375,7 +375,7 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           cx={e.x}
           cy={e.y}
           r="0.55"
-          fill="var(--arena-gold)"
+          fill="var(--brand)"
           opacity="0.6"
         />
       ))}

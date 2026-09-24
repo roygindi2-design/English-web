@@ -599,12 +599,12 @@ describe('C-0733 · T-436 — פס חיי הלומד', () => {
     expect(bar?.getAttribute('aria-label')).toContain('100');
   });
 
-  it('⛔ שני הפסים נבדלים ב**צבע** — זהב שלי, אדום שלו (`T-427`)', () => {
+  it('⛔ שני הפסים נבדלים ב**צבע** — מבטא שלי, אדום שלו (`T-427`)', () => {
     // 🔬 צבע זהה לשניהם אומר «שני מדים», ⛔ ולא «שלי מול שלו».
     render(<ArenaBattle initialRound={ROUND} />);
     const mine = document.querySelector('[data-arena-learner] [data-arena-hp-fill]');
     const his = document.querySelector('[data-arena-enemy] [data-arena-hp-fill]');
-    expect(mine?.className).toContain('--arena-gold');
+    expect(mine?.className).toContain('--brand');
     expect(his?.className).toContain('--arena-hp');
     expect(mine?.className).not.toBe(his?.className);
   });

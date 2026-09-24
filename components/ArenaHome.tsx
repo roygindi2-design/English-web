@@ -38,8 +38,8 @@ import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
  *   ⓒ צבעי מסלול הבוס — הרנדר מצייר «נוצח» ב-`SUCCESS` ואת הנוכחי ב-`BRAND`, ושניהם
  *      **נמדדו על כחול־הליל בסכימה הבהירה**: `--success` = **2.72:1** ו-`--brand` = **3.38:1**,
  *      מתחת לרצפה. ⇒ שלושת המצבים נצבעים בטוקני הזירה, שאינם מתחלפים עם הסכימה:
- *      `--arena-dodge` **10.72:1** · `--arena-ink` **14.59:1** · `--arena-ink-dim` **6.88:1**,
- *      וזהב הבוס נשאר בדיוק זהב הרנדר (`--arena-gold-light`, **10.56:1**).
+ *      ⟦T-427 · `D-282`⟧ «נוצח» `--brand-surface` (dark, **6.44:1**) · `--arena-ink` **14.59:1** ·
+ *      `--arena-ink-dim` **6.88:1**, והבוס — היריב — `--danger` (dark, **5.40:1**).
  *      ⛔ **והצבע ⛔ אינו הערוץ היחיד ממילא** — לכל מצב **צורה** (וי · נקודה · גולגולת)
  *      ו**שם נגיש** בעברית.
  *
@@ -126,8 +126,8 @@ const CARD_CLASS =
 /** `:180-183` — הפעולה הראשית. גובה 58 ורדיוס 18 של הרנדר, ⛔ ללא שינוי. */
 const START_CLASS =
   'flex h-[58px] w-full items-center justify-center rounded-2xl border-2 ' +
-  'border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] ' +
-  'text-[17px] font-black text-[color:var(--arena-night)] active:opacity-90';
+  'border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] ' +
+  'text-[17px] font-black text-[color:var(--brand-on)] active:opacity-90';
 
 /**
  * `:185-191` — שתי הפעולות המשניות. ⚠️ **הגובה 42 של הרנדר עלה ל-44** (שכבה א׳ ⓐ);
@@ -197,8 +197,8 @@ function ItemGlyph() {
 }
 
 function bossNodeInk(node: BossNode): string {
-  if (node.isBoss) return 'text-[color:var(--arena-gold-light)]';
-  if (node.state === 'done') return 'text-[color:var(--arena-dodge)]';
+  if (node.isBoss) return 'text-[color:var(--danger)]';
+  if (node.state === 'done') return 'text-[color:var(--brand-surface)]';
   if (node.state === 'current') return 'text-[color:var(--arena-ink)]';
   return 'text-[color:var(--arena-ink-dim)]';
 }
@@ -321,6 +321,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
     return (
       <section
         data-arena-scope
+        data-surface="dark"
         aria-busy={loading || undefined}
         className={`${SHELL_CLASS} ${loading ? 'gap-5' : 'gap-6'}`}
       >
@@ -403,7 +404,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
     remaining === 1 ? `נותר ניצחון אחד עד ${BOSS_HE}` : `נותרו ${remaining} ניצחונות עד ${BOSS_HE}`;
 
   return (
-    <section data-arena-scope className={`${SHELL_CLASS} gap-5`}>
+    <section data-arena-scope className={`${SHELL_CLASS} gap-5`} data-surface="dark">
       {/* 📐 **T-342 — ⛔ אין כאן `px-6`, וזו מדידה מול הרנדר ⛔ ולא ניקיון.**
           `app/layout.tsx` נותן ל-`<main>` ‏`px-6` ⇒ 24px לכל צד, וה-`section` הזה הוסיף
           עליהם עוד `px-6` ⇒ **48px לכל צד**, וזה מה שנמדד חי (`ul` ב-`x=48`, כרטיס
@@ -450,7 +451,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
 
       {/* `:145-151` — מסלול הבוס. חמש צמתים, `r=13` ו-`r=16` לבוס. */}
       <div className="flex flex-col gap-3">
-        <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
+        <p className="text-[12.5px] font-semibold leading-none text-[color:var(--brand-surface)]">
           {bossCaption}
         </p>
         {/* ⚠️ `flex` רגיל (`T-338`): במיכל RTL הילד הראשון **כבר** בימין, ו-`flex-row-reverse`
@@ -511,7 +512,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
                 SLOT_CLASS,
                 slot.item === null
                   ? 'border border-[color:var(--arena-card-edge)] text-[color:var(--arena-ink-dim)]'
-                  : 'border-[1.6px] border-[color:var(--arena-gold)] text-[color:var(--arena-gold-light)]',
+                  : 'border-[1.6px] border-[color:var(--brand)] text-[color:var(--brand-surface)]',
               ].join(' ')}
             >
               {slot.item === null ? <LockIcon /> : <ItemGlyph />}
@@ -548,7 +549,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           מתחתיהן הוא היה נחתך מחוץ למסך שגובהו מדויק. */}
       {state.lastRound != null && (
         <div className="flex flex-col gap-2" data-arena-last-round>
-          <p className="text-[12.5px] font-semibold leading-none text-[color:var(--arena-gold-light)]">
+          <p className="text-[12.5px] font-semibold leading-none text-[color:var(--brand-surface)]">
             {LAST_ROUND_HEADING_HE}
           </p>
           {/* ⚠️ `flex` רגיל (`T-338`) — במיכל RTL הילד הראשון כבר בימין, והתווית
@@ -567,7 +568,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
               <span
                 dir="ltr"
                 data-arena-last-round-score
-                className="text-[15px] font-black leading-none text-[color:var(--arena-gold-light)]"
+                className="text-[15px] font-black leading-none text-[color:var(--brand-surface)]"
               >
                 {lastRoundScoreHe(state.lastRound)}
               </span>
@@ -589,7 +590,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
             <h2 className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
               {DRAWER_HE}
             </h2>
-            <p className="text-xs leading-none text-[color:var(--arena-gold-light)]">{DRAWER_NOTE_HE}</p>
+            <p className="text-xs leading-none text-[color:var(--brand-surface)]">{DRAWER_NOTE_HE}</p>
           </div>
           {/* ⚠️ `flex` רגיל (`T-338`) — אותם ארבעה תאים כמו למעלה, אותו ציר.
               📐 **T-342 — ו⛔ אותה נוסחת עטיפה בדיוק.** `D-244`ⓐ נוקבת בשתי הרצועות
@@ -603,7 +604,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
                   SLOT_CLASS,
                   slot.item === null
                     ? 'border border-[color:var(--arena-card-edge)] text-[color:var(--arena-ink-dim)]'
-                    : 'border-[1.6px] border-[color:var(--arena-gold)] text-[color:var(--arena-gold-light)]',
+                    : 'border-[1.6px] border-[color:var(--brand)] text-[color:var(--brand-surface)]',
                 ].join(' ')}
               >
                 {slot.item === null ? <LockIcon /> : <ItemGlyph />}

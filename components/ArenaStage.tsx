@@ -235,14 +235,14 @@ export default function ArenaStage({
           }
         >
           {attack === 'shockwave' ? (
-            <span data-arena-announce-part className="h-16 w-40 rounded-full border-2 border-[color:var(--arena-cast-warn)]" />
+            <span data-arena-announce-part className="h-16 w-40 rounded-full border-2 border-[color:var(--danger)]" />
           ) : (
             Array.from({ length: attack === 'volley' ? 2 : 1 }, (_, i) => (
               <span
                 key={i}
                 data-arena-announce-part
                 style={{ '--arena-announce-i': i } as React.CSSProperties}
-                className="h-4 w-4 rounded-full bg-[color:var(--arena-cast)]"
+                className="h-4 w-4 rounded-full bg-[color:var(--danger)]"
               />
             ))
           )}

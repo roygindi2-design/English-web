@@ -278,7 +278,7 @@ describe('ArenaHome — שלד הטעינה (T-398)', () => {
     const shell = SRC.match(/className=\{`\$\{SHELL_CLASS\} \$\{[^`]*`\}/)?.[0] ?? '';
     expect(shell).toContain("loading ? 'gap-5' : 'gap-6'");
     // המסך המיוצב עצמו — אותו מרווח בדיוק, וזו הטענה כולה.
-    expect(SRC).toContain('<section data-arena-scope className={`${SHELL_CLASS} gap-5`}>');
+    expect(SRC).toContain('<section data-arena-scope className={`${SHELL_CLASS} gap-5`} data-surface="dark">');
   });
 
   it('⛔ שלד, ⛔ ולא ספינר — ו-`aria-busy` יושב על המעטפת', () => {

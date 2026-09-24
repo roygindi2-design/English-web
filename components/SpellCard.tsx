@@ -141,14 +141,14 @@ export default function SpellCard({
         // על `--arena-card`), מתחת לרצפת 3:1 של שכבה א׳ לגבול משמעותי. ⛔ `--arena-stone`
         // ⛔ אינו מוגה — F-156 מדד שהוא מצייר מסגרות אחרות בזירה — ולכן הקלף לוקח
         // `--arena-card-edge`: **7.36:1** מול המילוי, **6.88:1** מול הבמה.
-        // ⚠️ הנבחר ⛔ לא נגע: `--arena-gold` על המילוי הוא **7.29:1**.
+        // ⟦T-427⟧ הנבחר: מסגרת וסימן `--brand-surface` (dark) — **6.89:1** על המילוי.
         // ⟦`T-426`ⓐ · `D-280`⟧ **ראשי = הנבחר, ⛔ ולא אף קלף אחר.** לפני בחירה ארבעתם
         // **משניים וזהים** — קלף בולט בלי בחירה היה מסמן תשובה, טענה פדגוגית.
         // ⛔ הצל ⛔ אינו הערוץ היחיד (שכבה א׳): `aria-pressed` + השורה «נבחר» הם הראשון.
         // ⚠️ **הצללים ב-`arcade-tokens.css` על `[aria-pressed]`, ⛔ ולא כאן:** נמדד בבנייה —
         // מחלקת צל שרירותית עם משתנה נקראת ב-Tailwind 3 כ**צבע** צל, ו-`box-shadow` יצא `none`.
         selected
-          ? 'border-[color:var(--arena-gold)] text-[color:var(--arena-gold)]'
+          ? 'border-[color:var(--brand-surface)] text-[color:var(--brand-surface)]'
           : 'border-[color:var(--arena-card-edge)] text-[color:var(--arena-card-edge)]',
       ].join(' ')}
       onPointerDown={(e) => {
@@ -237,7 +237,7 @@ export default function SpellCard({
         </span>
       )}
       {/* ⛔ הבחירה ⛔ אינה צבע בלבד (א2): `aria-pressed` למקריא־מסך, והשורה הזאת לעין. */}
-      {selected && <span className="text-xs font-normal text-[color:var(--arena-gold-light)]">{SELECTED_HE}</span>}
+      {selected && <span className="text-xs font-normal text-[color:var(--brand-surface)]">{SELECTED_HE}</span>}
     </button>
   );
 }

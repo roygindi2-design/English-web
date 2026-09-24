@@ -817,7 +817,7 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(CODE, '⛔ ⛔ לא hex ברכיב').not.toMatch(/#5684e2/i);
     // ⛔ ובזמן זעם המקטעים מתחלפים לצבע ה-RAGE, בדיוק כמו ב-`mana_bar(rage=True)`.
     expect(CODE, 'זמן זעם מחליף את צבע המקטע').toMatch(
-      /raging \? 'var\(--arena-cast-warn\)' : 'var\(--arena-mana\)'/,
+      /raging \? 'var\(--danger\)' : 'var\(--arena-mana\)'/,
     );
   });
 
@@ -941,8 +941,8 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(STAGE, 'והיריב באמת שם').toMatch(/data-arena-slot="enemy"[^>]*bottom-\[46%\]/);
     // ⛔ ② גודל וגוון — שניהם ערכי רנדר, ⛔ ולא טעם.
     expect(CODE, 'אדום הרנדר').toMatch(/data-arena-damage[\s\S]{0,400}--arena-damage/);
-    expect(CODE, '⛔ ⛔ לא זהב יותר').not.toMatch(
-      /data-arena-damage[\s\S]{0,400}--arena-gold-light/,
+    expect(CODE, '⛔ ⛔ לא מבטא הלומד').not.toMatch(
+      /data-arena-damage[\s\S]{0,400}--brand-surface/,
     );
     expect(CSS, 'הגוון הוא של הרנדר').toMatch(/--arena-damage:\s*#ff8282/);
     // ⛔ ③ ההתפרצות — שלוש טבעות, ⛔ ואין בה נכס חדש.
@@ -1119,8 +1119,9 @@ describe('T-403 — יד הרפאים: המחווה נראית בקרב הראש
   });
 
   it('⛔ אינווריאנט `37 § 13.5` — אפס ערך חדש שדלף, והצבעים הם טוקנים קיימים', () => {
-    expect(chip()).toMatch(/var\(--arena-gold-light\)/);
-    expect(chip()).toMatch(/var\(--arena-gold\)/);
+    // ⟦T-427 · `D-282`⟧ מבטא הלומד מ-`palette.ts` — ⛔ ולא זהב הזירה.
+    expect(chip()).toMatch(/var\(--brand-surface\)/);
+    expect(chip()).toMatch(/var\(--brand\)/);
     expect(chip()).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 });
@@ -1372,5 +1373,23 @@ describe('T-452 · נשימה אחרונה על רצועת המאנה', () => {
     expect(SRC_452).toContain("'נשימה אחרונה · מאנה כפולה'");
     const label = SRC_452.slice(SRC_452.indexOf('data-arena-last-breath'), SRC_452.indexOf('data-arena-last-breath') + 900);
     expect(label).not.toContain('--arena-damage');
+  });
+});
+
+describe('⟦T-427 · `D-282`⟧ every arena root wears the dark surface', () => {
+  // 🔬 Without `data-surface='dark'` the root inherits `:root`'s LIGHT tokens on a stage
+  // that is dark in both schemes: --danger 2.31:1 · --brand-surface 2.23:1 (F-319).
+  const ROOTS = ['ArenaBattle', 'ArenaHome', 'ArenaSummary', 'ArenaResult', 'ArenaCharacterChoice'];
+  it.each(ROOTS)('%s — one `data-surface="dark"` per `data-arena-scope` root', (name) => {
+    const src = readFileSync(`components/${name}.tsx`, 'utf8');
+    const roots = src.match(/^\s*(<section )?data-arena-scope\b(?!`)/gm) ?? [];
+    expect(roots.length).toBeGreaterThan(0);
+    expect(src.match(/data-surface="dark"/g)?.length).toBe(roots.length);
+  });
+  it('⛔ the six retired accent tokens are gone from components/', () => {
+    for (const name of ROOTS.concat(['SpellCard', 'ArenaScene', 'ArenaStage', 'ArenaAvatar'])) {
+      const src = readFileSync(`components/${name}.tsx`, 'utf8');
+      expect(src, name).not.toMatch(/--arena-(gold|gold-light|cast|cast-edge|cast-warn|dodge)\b(?!-)/);
+    }
   });
 });

@@ -232,8 +232,8 @@ const MANA_HE = 'מאנה';
 const LAST_BREATH_HE = 'נשימה אחרונה · מאנה כפולה';
 
 /** ⓔ `T-397` — צבע מקטע מאנה מלא. ⛔ טוקן, ⛔ ולא hex: `--arena-mana` הוא
- *  ‏`#5684e2` == ה-`(86,132,226)` של `render_video_B.py:300`, ו-`--arena-cast-warn`
- *  הוא צבע ה-`RAGE` שאותה פונקציה מחליפה אליו. */
+ *  ‏`#5684e2` == ה-`(86,132,226)` של `render_video_B.py:300`, ו-`--danger`
+ *  ‏(⟦T-427⟧) הוא צבע ה-`RAGE` — צבע היריב היחיד. */
 /**
  * 🫁 `T-452` — **תווית אחת לקצב הכפול.** ‏`זמן זעם` גובר בתווית כשהוא פעיל: שניהם ×2,
  * ⛔ אינם נערמים (`D-279`), והזעם הוא מצב **של הקרב כולו** ⛔ ולא של הלומד.
@@ -248,7 +248,7 @@ function manaLabelHe(raging: boolean, lastBreath: boolean): string {
 }
 
 function manaSegColor(raging: boolean): string {
-  return raging ? 'var(--arena-cast-warn)' : 'var(--arena-mana)';
+  return raging ? 'var(--danger)' : 'var(--arena-mana)';
 }
 
 /** ⓔ `T-397` — צובע את עשרת המקטעים מתוך לולאת ה-rAF, ⛔ בלי רינדור חוזר.
@@ -1375,6 +1375,7 @@ export default function ArenaBattle({
   return (
     <section
       data-arena-scope
+      data-surface="dark"
       /* 🔴 **⟦NEW 15/09 · `C-0622` · `F-260`⟧ הקרב **נכנס למסך**, ⛔ ואינו נגלל.
          זו התקלה שמאחורי הדיווח של רוי, ⛔ והיא חמורה מהתסמין שהוא תיאר.**
 
@@ -1454,7 +1455,7 @@ export default function ArenaBattle({
           את שניהם זה ביחס לזה. ⇒ **מרכוז אנכי בחוץ, קו בסיס בפנים.** */}
       <div className="relative flex h-[56px] shrink-0 flex-row items-center justify-center" data-arena-clock>
         <div className="flex flex-row items-baseline justify-center gap-2">
-        <p className="text-sm font-bold text-[color:var(--arena-gold)]">{CLOCK_HE}</p>
+        <p className="text-sm font-bold text-[color:var(--brand-surface)]">{CLOCK_HE}</p>
         {/* T-231 ⓐ — הטקסט וה-`aria-label` נכתבים מהלולאה דרך `clockRef`/`clockTextRef`;
             ⛔ ה-ref יושב על `<span>` **בתוך** `<EnWord>`, ⛔ ולא על העטיפה עצמה — `EnWord`
             אינו מעביר `ref` הלאה, וזו הדרך היחידה לכתוב טקסט בלי לפרק את שלוש תכונות
@@ -1502,7 +1503,7 @@ export default function ArenaBattle({
                  ‏`check:text-floor` האדים על 11.5 בטיק הזה — ⇒ נמדד, ⛔ לא נזכר. */
               'rounded-full border px-3 text-xs font-bold leading-none',
               streak >= STREAK_HOT
-                ? 'border-[color:var(--arena-gold-light)] bg-[color:var(--arena-streak-hot)] text-[color:var(--arena-gold-light)]'
+                ? 'border-[color:var(--brand)] bg-[color:var(--arena-streak-hot)] text-[color:var(--arena-ink)]'
                 : 'border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] text-[color:var(--arena-ink-dim)]',
             ].join(' ')}
           >
@@ -1537,9 +1538,9 @@ export default function ArenaBattle({
       >
         <div
           data-arena-banner
-          className="flex h-[44px] w-[200px] max-w-full items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-stone-dark)] px-4 text-center"
+          className="flex h-[44px] w-[200px] max-w-full items-center justify-center rounded-2xl border-2 border-[color:var(--brand)] bg-[color:var(--arena-stone-dark)] px-4 text-center"
         >
-          <EnWord className="text-3xl font-black leading-none tracking-wide text-[color:var(--arena-gold-light)]">
+          <EnWord className="text-3xl font-black leading-none tracking-wide text-[color:var(--brand-surface)]">
             {word?.headword ?? ''}
           </EnWord>
         </div>
@@ -1691,7 +1692,7 @@ export default function ArenaBattle({
       {/* ⓒ היריב — שם **וגם** פס חיים עם המספר בתוכו. ⛔ שכבה א׳ א2: הצבע הוא הערוץ
             השני, ⛔ ולעולם לא היחיד, ולכן `N/M` ⛔ אינו «ניקוי» שמותר להסיר. */}
         <div className="flex flex-col gap-1" data-arena-enemy>
-          <p className="text-end text-base font-bold text-[color:var(--arena-gold-light)]">
+          <p className="text-end text-base font-bold text-[color:var(--danger)]">
             {ENEMY_HE}
           </p>
           {/* ⓒ1 מד ההטלה — `37 § 6`. ⚠️ **שכבה א׳ גוברת על הרנדר:** השלב מוכרז ב**מילה**
@@ -1701,7 +1702,7 @@ export default function ArenaBattle({
           {telegraphPhase !== 'quiet' && (
             <div className="flex flex-col items-center gap-1" data-arena-cast data-arena-cast-phase={telegraphPhase}>
               {telegraphPhase !== 'charging' && (
-                <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
+                <p className="text-xs font-black text-[color:var(--danger)]" role="status" aria-live="polite">
                   {CASTING_HE}
                   {/* ⚔️ `T-435` — ⛔ לא צבע בלבד (א2): **שם** המתקפה נאמר גם לקורא מסך. */}
                   <span data-arena-attack-name> · {ATTACK_HE[attackAt(aimSwing)]}</span>
@@ -1714,7 +1715,7 @@ export default function ArenaBattle({
                 ref={castMeterWrapRef}
                 role="img"
                 aria-label={`${CASTING_METER_HE} ${Math.round(telegraphFrac * 100)} אחוז`}
-                className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--arena-cast-edge)] bg-[color:var(--arena-night)]"
+                className="h-[9px] w-[70px] max-w-full overflow-hidden rounded-full border border-[color:var(--danger)] bg-[color:var(--arena-night)]"
               >
                 {/* T-231 ⓑ — `left center`, ⛔ ולא `right`: `width` פיזי על `<span>` לא
                     ממוקם (⛔ לא `absolute`) תמיד מתחיל בקצה **הפיזי השמאלי** של המכיל,
@@ -1723,7 +1724,7 @@ export default function ArenaBattle({
                 <span
                   ref={castMeterFillRef}
                   aria-hidden
-                  className={`block h-full w-full ${telegraphPhase === 'charging' ? 'bg-[color:var(--arena-cast)]' : 'bg-[color:var(--arena-cast-warn)]'}`}
+                  className={`block h-full w-full bg-[color:var(--danger)] ${telegraphPhase === 'charging' ? 'opacity-60' : ''}`}
                   style={{ transform: `scaleX(${telegraphFrac})`, transformOrigin: 'left center', willChange: 'transform' }}
                 />
               </div>
@@ -1748,7 +1749,7 @@ export default function ArenaBattle({
             <div
               role="img"
               aria-label={`${ENEMY_HP_HE} ${enemyPct} מתוך 100`}
-              className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
+              className="relative h-6 w-full overflow-hidden rounded-full border border-[color:var(--danger)] bg-[color:var(--arena-hp-track)]"
             >
               {/* T-214 · ⛔ `bg-danger` יצא: `--danger` מתחלף ב-`globals` לפי הסכימה
                   (`#b91c1c` בהירה · `#f87171` כהה) ⇒ בסכימה כהה המספר הלבן ישב עליו
@@ -1799,7 +1800,7 @@ export default function ArenaBattle({
         <div className="pointer-events-none absolute inset-x-2 top-1 z-10 flex flex-col items-end gap-0.5">
           <div className="w-[40%] max-w-[160px]" data-arena-learner>
             <div className="flex items-baseline justify-between gap-1">
-              <p className="text-sm font-bold text-[color:var(--arena-gold-light)]">{LEARNER_HE}</p>
+              <p className="text-sm font-bold text-[color:var(--brand-surface)]">{LEARNER_HE}</p>
               <p className="text-xs font-bold text-[color:var(--arena-ink)]">
                 <EnWord>{`${learnerPct}/100`}</EnWord>
               </p>
@@ -1807,7 +1808,7 @@ export default function ArenaBattle({
             <div
               role="img"
               aria-label={`${LEARNER_HP_HE} ${learnerPct} מתוך 100`}
-              className="relative h-3 w-full overflow-hidden rounded-full border border-[color:var(--arena-gold)] bg-[color:var(--arena-hp-track)]"
+              className="relative h-3 w-full overflow-hidden rounded-full border border-[color:var(--brand)] bg-[color:var(--arena-hp-track)]"
             >
               {/* ⛔ `scaleX` ⛔ ולא `width` (‏`apple-design § 11`), ו-`data-arena-hp-fill`
                   ⇒ הוא יורש את **אותה** ריקון בת 260ms ואת עצירתה תחת תנועה מופחתת.
@@ -1816,7 +1817,7 @@ export default function ArenaBattle({
               <span
                 aria-hidden
                 data-arena-hp-fill
-                className="absolute inset-y-0 start-0 w-full bg-[color:var(--arena-gold)]"
+                className="absolute inset-y-0 start-0 w-full bg-[color:var(--brand)]"
                 style={{ transform: `scaleX(${learnerPct / 100})`, transformOrigin: 'left center' }}
               />
             </div>
@@ -1938,7 +1939,7 @@ export default function ArenaBattle({
             </span>
             {/* ⛔ `text-3xl` ⛔ ולא `text-base`: הרנדר מצייר את המספר ב-20px **ועוד**
                 `scale` של 1.55 בשיא (`:344-345`) ⇒ **גדול**, וזה מה ש«גדול, אדום» אומר.
-                ⛔ ו-`--arena-damage` ⛔ ולא `--arena-gold-light` — הרנדר נוקב `(255,130,130)`.
+                ⛔ ו-`--arena-damage` ⛔ ולא מבטא הלומד — הרנדר נוקב `(255,130,130)`.
                 ⛔ `drop-shadow` הוא צל המספר ברנדר (`:350` — `(50, 8, 8)` ב-60% אלפא),
                 ⛔ ולא הילה: תקציב הזוהר של שכבה ב׳ נוגע ל-`--brand` בלבד. */}
             <span
@@ -1959,7 +1960,7 @@ export default function ArenaBattle({
           {battle.guardLane === null ? '' : GUARD_ON_HE}
         </p>
         {battle.dodgedSwing !== null && (
-          <p className="mt-2 text-center text-sm font-black text-[color:var(--arena-dodge)]" role="status" aria-live="polite">
+          <p className="mt-2 text-center text-sm font-black text-[color:var(--brand-surface)]" role="status" aria-live="polite">
             {battle.immuneBy === 'shield' ? SHIELDED_HE : DODGED_HE}
           </p>
         )}
@@ -1979,12 +1980,12 @@ export default function ArenaBattle({
       >
         <div className="flex flex-row items-baseline justify-between gap-2">
           <span
-            className={`text-sm font-semibold ${raging ? 'text-[color:var(--arena-cast-warn)]' : lastBreath ? 'text-[color:var(--arena-ink)]' : 'text-[color:var(--arena-ink-dim)]'}`}
+            className={`text-sm font-semibold ${raging ? 'text-[color:var(--danger)]' : lastBreath ? 'text-[color:var(--arena-ink)]' : 'text-[color:var(--arena-ink-dim)]'}`}
           >
             {manaLabelHe(raging, lastBreath)}
           </span>
           {/* T-231 ⓔ — ref פנימי בתוך `<EnWord>` (T-009: העטיפה עצמה לא מעבירה ref). */}
-          <span className={`text-sm font-bold ${raging ? 'text-[color:var(--arena-cast-warn)]' : 'text-[color:var(--arena-ink)]'}`}>
+          <span className={`text-sm font-bold ${raging ? 'text-[color:var(--danger)]' : 'text-[color:var(--arena-ink)]'}`}>
             <EnWord>
               <span ref={manaTextRef}>{`${mana} / ${MANA_CAP}`}</span>
             </EnWord>
@@ -2146,7 +2147,7 @@ export default function ArenaBattle({
               data-arena-ability-on
               role="status"
               aria-live="polite"
-              className="truncate text-xs font-bold text-[color:var(--arena-gold-light)]"
+              className="truncate text-xs font-bold text-[color:var(--brand-surface)]"
             >
               {activeAbilities.map((key) => ABILITY_ON_HE[key]).join(' · ')}
             </p>
@@ -2246,7 +2247,7 @@ export default function ArenaBattle({
             ['--arena-teach-dx' as string]: `${teach.dx}px`,
             ['--arena-teach-dy' as string]: `${teach.dy}px`,
           }}
-          className="pointer-events-none z-40 rounded-full border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)]"
+          className="pointer-events-none z-40 rounded-full border-2 border-[color:var(--brand-surface)] bg-[color:var(--brand)]"
         />
       )}
 
@@ -2269,7 +2270,7 @@ export default function ArenaBattle({
             ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
             ['--arena-throw-ghost-i' as string]: i,
           }}
-          className="pointer-events-none z-40 rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]"
+          className="pointer-events-none z-40 rounded-2xl border-2 border-[color:var(--brand)] bg-[color:var(--arena-card)]"
         />
       ))}
       {throwFx !== null && (
@@ -2289,7 +2290,7 @@ export default function ArenaBattle({
             ['--arena-throw-dx' as string]: `${throwFx.dx}px`,
             ['--arena-throw-dy' as string]: `${throwFx.dy}px`,
           }}
-          className="pointer-events-none z-50 flex items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold)] bg-[color:var(--arena-card)] text-sm font-bold text-[color:var(--arena-ink)]"
+          className="pointer-events-none z-50 flex items-center justify-center rounded-2xl border-2 border-[color:var(--brand)] bg-[color:var(--arena-card)] text-sm font-bold text-[color:var(--arena-ink)]"
         >
           {throwFx.label}
         </div>
@@ -2315,7 +2316,7 @@ export default function ArenaBattle({
             ['--arena-bolt-dx' as string]: `${boltFx.dx}px`,
             ['--arena-bolt-dy' as string]: `${boltFx.dy}px`,
           }}
-          className="pointer-events-none z-50 rounded-full bg-[color:var(--arena-cast-warn)]"
+          className="pointer-events-none z-50 rounded-full bg-[color:var(--danger)]"
         />
       )}
     </section>

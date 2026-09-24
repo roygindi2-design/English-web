@@ -71,20 +71,16 @@
      ו-`app/arcade/page.test.ts` סורק אותו **גולמי**. */
   color: var(--arena-ink);
 
-  /* זהב — מסגרת, כותרת השעון, מבטא. */
-  --arena-gold: #d4a94a;
-  --arena-gold-light: #f5d684;
+  /* 🎨 **⟦T-427 · `36 § 8.0` ⑦ · `D-282`⟧ ⛔ אין כאן עוד מבטא של הזירה.** זהב · סגול ·
+     אדום-הטלה · תכלת-התחמקות — שש משפחות שנראו **בו-זמנית** ⇒ הצבע היה קישוט, ⛔ ולא
+     מידע. ⇒ **הלומד = `--brand` (סימן) / `--brand-surface` (טקסט) · היריב = `--danger`**,
+     שלושתם מ-`palette.ts`, בעמודת ה-dark, כי השורש נושא `data-surface='dark'`
+     (`globals.css` · `tokens:dark-surface`). ⛔ אף hex של `palette.ts` ⛔ אינו נכתב כאן. */
   /* אפורי הזירה — מסגרות וקלפים כבויים. */
   --arena-stone: #4a4858;
   --arena-stone-dark: #34323f;
   /* כחול הליל — רקע הבמה. */
   --arena-night: #1c2642;
-  /* T-179 · `37 § 6` — מד ההטלה של היריב ותווית ההתחמקות.
-     `render_video_B.py` (`cast_meter`) — ⛔ הערכים של הרנדר, מומרים ⛔ ולא נבחרים. */
-  --arena-cast: #c482ff;
-  --arena-cast-edge: #b478f0;
-  --arena-cast-warn: #ff7878;
-  --arena-dodge: #96e6ff;
   /* T-364 · `37 § 13.5` — **הנזק וההתפרצות, שני ערכי רנדר ⛔ ולא שני ערכים שנבחרו.**
      🔬 נמדד ב-`render_video_B.py`, ⛔ ולא באומדן מהתמונה: `dmg_number(... (255, 130, 130))`
      ‏(`:564`) ⇒ `#ff8282`, וטבעות ההתפרצות `(255, 236, 190)` (`:546`) ⇒ `#ffecbe`.
@@ -153,6 +149,12 @@
   --arena-fig-slate: #656f9b;       /* רגליים — רנדר `(50,55,77)` הואר ⇒ 3.27:1 */
   --arena-fig-belt: #bd3f59;        /* רנדר `(117,38,55)` ⇒ 1.59:1 · הואר ⇒ 3.06:1 */
   --arena-fig-blade: #cedcf4;       /* רנדר · 11.55:1 */
+  /* ⟦T-427⟧ צבעי **תלבושת** מקומיים (`38 § 3`), ⛔ ולא מבטא תפקיד: עיטור הזהב של
+     השריון והדגל, וגלימת הקוסם. ⛔ הם ⛔ אינם אומרים «שלי»/«של היריב» — זה `currentColor`
+     של הדמות (למטה). הערכים הם ערכי הרנדר שישבו כאן קודם תחת שם המבטא. */
+  --arena-fig-trim: #d4a94a;        /* עיטור · 7.29:1 על הכרטיס */
+  --arena-fig-trim-lit: #f5d684;    /* עיטור מואר */
+  --arena-fig-robe: #c482ff;        /* גלימת הקוסם, הצד המואר של החרוט */
   --arena-fig-cast-shade: #825cc6;  /* צד מוצל של החרוט — רנדר `(104,62,178)` הואר ⇒ 3.27:1 */
   --arena-fig-void: #241436;        /* פני הקוסם — פנימי, 3.50:1 על הצד המוצל */
   --arena-fig-eye: #ff78eb;         /* רנדר · 7.44:1 על הפנים */
@@ -195,8 +197,8 @@
 
   /* 🔥 **T-401 · `render_video_B.py:375` — מילוי שבב הרצף מ-`streak >= 3`.**
      הרנדר נוקב ב-`(120, 70, 20)` ⇒ `#784614`, **הערך שלו מומר ⛔ ולא נבחר.**
-     ⚠️ **שכבה א׳ נמדדה, ⛔ ולא הונחה:** `--arena-gold-light` (`#f5d684`) על `#784614`
-     = **5.52:1** — מעל רצפת 4.5:1 לטקסט קטן, ⇒ הזהב של הרנדר נשאר הזהב של הרנדר.
+     ⚠️ **שכבה א׳ נמדדה, ⛔ ולא הונחה:** ⟦T-427⟧ הטקסט על המילוי הוא `--arena-ink`
+     = **7.64:1** (‏`--brand-surface` היה נותן 3.37:1 ⇒ ⛔ לא נבחר); המסגרת `--brand`.
      ⛔ **ומתחת ל-3 ⛔ אין כאן צבע חדש בכלל:** הרנדר מצייר שם `RAISED`/`BORDER_SUB`,
      שהם `--arena-card`/`--arena-card-edge` שכבר קיימים (7.36:1 עם `--arena-ink-dim`).
      ⛔ **וזו פלטה מתוחמת** (`37 § 13.5`) — ⛔ אינה נכנסת ל-`lib/core/palette.ts`. */
@@ -530,11 +532,11 @@ body:has([data-arena-failure] [data-action-bar]) {
    **1.02:1** — כלומר יריב ולוח שאיש ⛔ אינו רואה. ⛔ **הערכים עצמם ⛔ אינם נכתבים כאן**:
    ‏`app/arcade/page.test.ts` סורק את הקובץ הזה **גולמי** וכל hex בו נספר כטוקן זירה
    (אותה סיבה בדיוק שבגללה T-214 ⛔ לא כתב כאן את הערך של `--ink`). הערכים כאן:
-   ‏`--arena-gold-light` = **10.66:1** · `--arena-ink-dim` = **6.92:1** · והקו של הציוד
-   ‏`--arena-night` = **10.66:1** מול הזהב. שלושתם מעל רצפת שכבה א׳ בשתי הסכימות, כי
+   ⟦T-427⟧ ‏`--brand-surface` (dark) = **6.44:1** · `--arena-ink-dim` = **6.92:1** · והקו של
+   הציוד ‏`--arena-night` = **6.44:1** מול המבטא. שלושתם מעל רצפת שכבה א׳ בשתי הסכימות, כי
    ⛔ אף אחד מהם ⛔ אינו מתחלף עם `prefers-color-scheme`.
    ⛔ **התפקיד ⛔ אינו מקודד בצבע בלבד** — `aria-label` נושא `הדמות שלך` / `היריב`. */
-[data-arena-scope] [data-arena-figure='hero'] { color: var(--arena-gold-light); }
+[data-arena-scope] [data-arena-figure='hero'] { color: var(--brand-surface); }
 [data-arena-scope] [data-arena-figure='enemy'] { color: var(--arena-ink-dim); }
 [data-arena-scope] [data-arena-figure] [data-arena-equipment] { color: var(--arena-night); }
 
@@ -884,9 +886,9 @@ body:has([data-arena-failure] [data-action-bar]) {
 [data-arena-scope] [data-arena-sigil] {
   border-radius: 50%;
   background:
-    radial-gradient(closest-side, transparent 58%, var(--arena-cast) 60%, transparent 66%),
-    radial-gradient(closest-side, transparent 74%, var(--arena-cast-edge) 76%, transparent 82%),
-    radial-gradient(closest-side, var(--arena-cast) 0%, transparent 72%);
+    radial-gradient(closest-side, transparent 58%, var(--danger) 60%, transparent 66%),
+    radial-gradient(closest-side, transparent 74%, var(--danger) 76%, transparent 82%),
+    radial-gradient(closest-side, var(--danger) 0%, transparent 72%);
   opacity: 0.3;
 }
 
@@ -907,10 +909,10 @@ body:has([data-arena-failure] [data-action-bar]) {
    `text-brand`), ושתי דמויות באותה משפחת אפור-כחול הן שני אייקונים, ⛔ ולא יריבים.
    ⛔ **וזה צבע, ⛔ ולא שכבה:** `38 § 5` אוסר להמציא שכבות ו⛔ לא נוספה ולו אחת —
    `currentColor` של אותן שכבות בדיוק קיבל את הגוון שהזירה כבר הצהירה עליו
-   (`--arena-cast`, `37 § 13.5`). ⛔ **וההבחנה ⛔ אינה בצבע בלבד** (שכבה א׳ א2):
+   (⟦T-427⟧ היום `--danger` — צבע היריב היחיד, `36 § 8.0` ⑦). ⛔ **וההבחנה ⛔ אינה בצבע בלבד** (שכבה א׳ א2):
    ה-`aria-label` («היריב» מול «הדמות שלך») ⛔ לא נגע, והוא עדיין נושא אותה. */
 [data-arena-scope] [data-arena-figure='enemy'] {
-  color: var(--arena-cast);
+  color: var(--danger);
 }
 
 /* ═══ הקלפים — עומק, ⛔ ולא מלבנים.
@@ -1205,9 +1207,9 @@ body:has([data-arena-failure] [data-action-bar]) {
   bottom: 2%;
   width: 22%;
   height: 7%;
-  background: var(--arena-cast-warn);
+  background: var(--danger);
   opacity: 0.42;
-  outline: 2px solid var(--arena-cast-warn);
+  outline: 2px solid var(--danger);
   outline-offset: 2px;
 }
 /* 🔬 **שלושת המספרים נגזרים, ⛔ ואינם מכוונים בעין:** מרכזי הנתיבים הם
@@ -1266,7 +1268,7 @@ body:has([data-arena-failure] [data-action-bar]) {
      ⛔ **ועדיין צרה משליש הבמה** (‏33.3%) ⇒ ⛔ אינה גולשת לנתיב השכן. */
   width: 32%;
   height: 13%;
-  color: var(--arena-dodge);
+  color: var(--brand-surface);
   opacity: 0.95;
 }
 [data-arena-scope] [data-arena-guard='left'] { left: 7.9815%; }
@@ -1290,7 +1292,7 @@ body:has([data-arena-failure] [data-action-bar]) {
 }
 [data-arena-scope] [data-arena-guard-btn]:focus-visible {
   opacity: 1;
-  outline: 3px solid var(--arena-gold-light);
+  outline: 3px solid var(--brand-surface);
 }
 [data-arena-scope] [data-arena-guard-btn][data-arena-lane='left'] { translate: calc(var(--arena-lane-shift) * -1); }
 [data-arena-scope] [data-arena-guard-btn][data-arena-lane='centre'] { translate: 0; }

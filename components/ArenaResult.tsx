@@ -61,7 +61,7 @@ const AGAIN_HE = 'עוד קרב';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 
 const PRIMARY_ACTION_CLASS =
-  'inline-flex w-full min-h-touch items-center justify-between rounded-full border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] px-5 py-3 text-lg font-black text-[color:var(--arena-night)] active:opacity-90';
+  'inline-flex w-full min-h-touch items-center justify-between rounded-full border-2 border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] px-5 py-3 text-lg font-black text-[color:var(--brand-on)] active:opacity-90';
 
 const SECONDARY_ACTION_CLASS =
   'inline-flex w-full min-h-touch items-center justify-between rounded-lg border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-5 py-3 text-lg text-[color:var(--arena-ink)] active:opacity-90';
@@ -104,7 +104,7 @@ export default function ArenaResult({
        👻 **⟦`T-430` · `C-0775`⟧ `pb-28` ⇒ `9.5rem` + אזור בטוח.** 🔬 נמדד ב-`check:mobile`: הרצועה
        כאן היא **שני כפתורים בעמודה**, `h=147` ⟨`bar top 705` ב-852⟩ ⇒ `pb-28` (112) השאיר 35px של
        הרשימה מתחתיה, ו-`9rem` (144) — **3px**. ‏`9.5rem` = 152. וה-80px של `body` יורדים ב-CSS. */
-    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))]">
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))]" data-surface="dark">
       <h1 className="text-3xl font-bold leading-tight">{enemyDefeated ? WON_HE : OVER_HE}</h1>
 
       <div className="flex flex-row items-center gap-4">

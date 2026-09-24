@@ -102,12 +102,12 @@ export default function ArenaSummary({
        ‏`F-011`, ‏≤48px) **קפוא**, ונמדד אדום על 92 בטיק הזה.
        ⛔ **וכל טוקן `globals` הוחלף בזה של הזירה** — `--ink` מתחלף לפי `prefers-color-scheme`,
        ובסכימה בהירה הוא דיו כהה על כחול־ליל. */
-    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[max(0.5rem,env(safe-area-inset-bottom))]" data-surface="dark">
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
       <header className="flex flex-col items-center gap-0.5">
-        <h1 className="text-center text-[34px] font-black leading-tight text-[color:var(--arena-gold-light)]">
+        <h1 className="text-center text-[34px] font-black leading-tight text-[color:var(--brand-surface)]">
           {ending.kind === 'victory' ? WON_HE : wordsFromBossHe(ending.wordsFromBoss)}
         </h1>
         {ending.kind !== 'victory' && (
@@ -128,7 +128,7 @@ export default function ArenaSummary({
       <ul data-arena-summary className="flex flex-col gap-2">
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{CORRECT_HE}</span>
-          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-gold-light)]">
+          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--brand-surface)]">
             {summary.correct} / {summary.total}
           </span>
         </li>
@@ -140,7 +140,7 @@ export default function ArenaSummary({
         </li>
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{STREAK_HE}</span>
-          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--arena-gold-light)]">
+          <span dir="ltr" className="text-[15px] font-bold text-[color:var(--brand-surface)]">
             {summary.bestStreak}
           </span>
         </li>
@@ -180,7 +180,7 @@ export default function ArenaSummary({
           המילוי הוא `bg-brand-surface/15` ⛔ ולא גוון ישיר של `--brand` (α38 ברנדר) — שומר F-036
           (`lib/core/palette.test.ts`) אוסר את `brand` הבסיסי כמילוי בכל מסך; הכרעה הפיכה `RULES § 0.22`. */}
       {summary.firstMet.length > 0 && (
-        <div data-arena-first-met className={`${PANEL_CLASS} border border-[color:var(--arena-gold)] bg-[color:var(--arena-card)]`}>
+        <div data-arena-first-met className={`${PANEL_CLASS} border border-[color:var(--brand)] bg-[color:var(--arena-card)]`}>
           <p className="text-end text-[14px] font-bold text-[color:var(--arena-ink)]">
             {firstMetHe(summary.firstMet.length)}
           </p>
@@ -202,7 +202,7 @@ export default function ArenaSummary({
         type="button"
         data-arena-summary-back
         data-primary-action="true"
-        className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border-2 border-[color:var(--arena-gold-light)] bg-[color:var(--arena-gold)] px-5 text-[15.5px] font-black text-[color:var(--arena-night)] active:opacity-90"
+        className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border-2 border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] px-5 text-[15.5px] font-black text-[color:var(--brand-on)] active:opacity-90"
         onClick={onBack}
       >
         {BACK_HE}
