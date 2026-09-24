@@ -1,0 +1,24 @@
+{
+  "batch_file": "batch-2026-09-24-4.jsonl",
+  "batch_date": "2026-09-24",
+  "batch_number": 4,
+  "model": "claude-sonnet-5",
+  "prompt_version": "CONTENT.md 2026-09-24 (scheduled tick, 45 3,9,15,21 * * * UTC, C-0821)",
+  "requested": 20,
+  "accepted": 20,
+  "rejected": 0,
+  "low_confidence": 0,
+  "headwords": [
+    "center", "sink", "situation", "society", "software", "solution", "somebody",
+    "sound", "source", "space", "speed", "stamp", "statement", "steal", "stranger",
+    "strength", "structure", "style", "success", "suit"
+  ],
+  "provenance": "All content written for this project; not consulted against R-010 (מאל\"ו), R-013 (AnkiWeb), or any NC-licensed dictionary.",
+  "source": "data/amirnet-vocab.csv (Tier 1, A2), full apparatus (2 examples · 3 leveled items · 4 tagged distractors) per row.",
+  "t353_regression_still_open": "🔴 T-353 (plan/50-tasks.md: ✅ C-0800) landed word-only-row SUPPORT in the schema/gate/batchRecord, but the previous CONTENT tick today (C-0811, see manifest-2026-09-24-3.json) found and reported that npm run verify still fails on a word-only row: scripts/measure-gate.test.ts ('gates two example sentences per row — D-022') and scripts/build-ingest-sql.test.ts assume a flat 2-examples-per-row multiplier (`SOURCE_ROWS * 2`) that a sentence-less row breaks. This tick re-verified the regression is still live before writing anything (git log shows no DEV commit touching either test file since C-0811's eb301ce3..be0542b1), so it wrote full-apparatus rows again rather than repeat the discarded word-only draft. CONTENT does not touch code (RULES) and cannot fix the two tests itself. Recommend DEV update both to sum each row's actual example/item count instead of assuming a flat per-row multiplier, so Roy's 14/09 volume instruction (word-only rows) becomes usable.",
+  "selection_rule": "STEP 4: Tier 1 (A2) first. npm run measure:amirnet-coverage was run before selection (1108/3382 existing). The 253 Tier-1 headwords still missing from the bank were computed directly (data/amirnet-vocab.csv tier=1 minus every headword already present across data/generated/batch-*.jsonl). Of those 253, this batch took 20 straightforward, concrete A2 nouns/verbs/one pronoun that support clean, allowed-vocabulary example sentences without difficulty. The remaining ~233 (including all British/American spelling-variant CSV rows, which the coverage script matches by the CSV's exact slash-joined string and so will keep reading as \"missing\" no matter which single spelling is written) are left for a future tick, ideally once T-353's verify regression is fixed so word-only rows can close the gap at real volume.",
+  "gate_method": "gateSense (lib/core/contentSchema.ts) run directly against every row with the production allowed-words set (data/generated/allowed-words-2026-08-07.txt), the same file scripts/measure-gate.mjs loads — not just measure:gate after the fact. First draft had 8 words fail on level drift (fountain/vase/mall on 'center'; kindness on 'society'; clever on 'solution'; icy on 'speed'; thief/candy/bicycle on 'steal'; fierce on 'structure'; bold on 'style'; risky on 'success') — every one substituted with a plain, common alternative and re-gated: 0/20 rejected on the second pass. npm run measure:gate (all 50 batch files now) confirmed 0 rejected afterward.",
+  "distractor_review_note": "Every distractor was checked by hand against the near-synonym trap (lesson-file §A1 rule 2): dropped 'noise' for sound (too close a synonym), 'origin' for source, 'answer' for solution, 'power' for strength, 'rob' for steal, and 'victory' for success — all replaced with related-but-distinct words (e.g. silence/music for sound; river/cause for source; problem/method for solution; energy/weakness for strength; borrow/hide for steal; effort/failure for success) before finalizing.",
+  "translation_confidence_note": "20/20 rows are translation_confidence:\"high\" — every headword is a concrete, unambiguous A2 word, and its example pair pins the sense the translation carries (e.g. 'space' as room-to-move, not outer space).",
+  "batch_size_note": "20 rows, full apparatus, all Tier 1 (A2). Sized to what could be hand-authored, checked word-by-word against the production allowed-words set with the real gateSense function (not assumed), and pushed through the full verify gate. Well under the 1,200-row-per-file ceiling."
+}
