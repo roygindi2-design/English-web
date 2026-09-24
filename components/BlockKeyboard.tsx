@@ -50,7 +50,9 @@ function PosBlock({ block, onPick }: { readonly block: Block; readonly onPick: (
       <span className="text-sm font-semibold leading-5">
         <EnWord>{block.word}</EnWord>
       </span>
-      <span className="text-xs leading-4 text-ink-muted">{labelOf(block.pos)}</span>
+      <span data-pos-legend className="text-xs leading-4 text-ink-muted">
+        {labelOf(block.pos)}
+      </span>
     </button>
   );
 }
@@ -88,9 +90,17 @@ export function ComposeBar({
             <span
               key={`${i}-${b.word}`}
               data-pos={colourOf(b.pos) ?? 'none'}
-              className="rounded-lg border border-border-strong px-2 py-0.5 text-sm font-semibold"
+              className="flex flex-col items-center rounded-lg border border-border-strong px-2 py-0.5"
             >
-              <EnWord>{b.word}</EnWord>
+              <span className="text-sm font-semibold leading-5">
+                <EnWord>{b.word}</EnWord>
+              </span>
+              {/* T-201 · D-112: a chosen block is tinted by its category ⇒ it prints the
+                  category too. `msgs_ui.py:163` draws the chip without it; the accessibility
+                  gate (colour never the only channel) overrides the render here. */}
+              <span data-pos-legend className="text-xs leading-4 text-ink-muted">
+                {labelOf(b.pos)}
+              </span>
             </span>
           ))}
           <span aria-hidden="true" className="h-6 w-0.5 rounded-full bg-brand-surface" />

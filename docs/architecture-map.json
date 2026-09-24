@@ -845,6 +845,12 @@
     "lib/core/auth.ts",
     "lib/core/failure.ts"
   ],
+  "components/BlockKeyboard.legend.test.tsx": [
+    "components/BlockKeyboard.tsx",
+    "lib/core/blockKeyboard.ts",
+    "lib/core/contentSchema.ts",
+    "lib/core/continuations.ts"
+  ],
   "components/BlockKeyboard.test.ts": [],
   "components/BlockKeyboard.tsx": [
     "components/EnWord.tsx",
