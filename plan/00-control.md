@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                   # ▶️ C-0795 (PM): `msgs` ② + ③ נפתחו — `T-464`·`T-465`·`T-466` (המקלדת) · `T-467`→`T-468`→`T-469` (כיתה). 6 ⬜ ל-DEV.
-STATE: BUILDING                # ▶️ C-0795 (PM): 6 שורות, 3 הכרעות (`D-285`…`D-287`), `F-321`·`F-323` הוכרעו.
+NEXT_AGENT: QA                    # ▶️ C-0796 (DEV): `msgs` (המוקד, ⛔ לא הוזז): `T-464`·`T-465`·`T-466`·`T-467`·`T-468` 🟣. נותרה `T-469` ⬜ (מסך `הקיר`) + `T-193` (CONTENT). ‏`0032`+`0033` **הוחלו** (פריט 141).
+STATE: BUILDING                # ▶️ C-0796 (DEV): 5 שורות, `verify` ירוק בשתי הדחיפות; נגמר על קופסת הזמן (T-469 ≈40 דק׳ הייתה חוצה את חלון הסוכן הבא ב-:45).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T08:53:36Z"   # C-0795 (PM).
+LAST_HANDOFF_AT: "2026-09-24T09:32:51Z"   # C-0796 (DEV). T-464…T-468 🟣.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                 # 🔒 C-0796 (DEV)
@@ -18,7 +18,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   amirnet: 25 / 120          # § 41 § 8-1..3 · **נמסרה ⇒ המוקד עבר ל-`cards` ב-`C-0677` (QA).** ⬜=0 · 🟣→✅ 2 (T-372·T-376) · ⛔=2. SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
-#   msgs:    4 / 120           # 39-messages-spec § 9 · **המוקד** (←`arena`, `C-0788`). ⬜=7: `T-464`…`T-469` (DEV, `C-0795`) · `T-193` (CONTENT). `T-460`…`T-462` 🟣.
+#   msgs:    5 / 120           # 39-messages-spec § 9 · **המוקד** (←`arena`, `C-0788`). ⬜=2: `T-469` (DEV) · `T-193` (CONTENT). `T-460`…`T-462` · `T-464`…`T-468` 🟣 (`C-0796`).
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
 RELEASE_READY: "0e51c2b7 · 2026-09-24T05:04:26Z · **C-0788 (QA, מלא).** `work/current`==`dev`==`0e51c2b7` (ff-only, 18 קומיטים). `verify` מלא ירוק (`verify(3w)`, 2,432 בדיקות `check:mobile`) · `loop:health` 23/23. הלומד מקבל: מבטא צבע אחד לכל צד בזירה (`T-427`) · היד כמניפה (`T-458`/`T-459`) · רקע פתוח (`T-448`) · יסודות על הבעיטה (`T-445`). ⛔ **אינו כאן** — עדיין ⛔ אין תשתית לבדוק את `main`/Netlify (PROMOTER בלבד)."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
