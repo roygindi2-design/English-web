@@ -140,6 +140,16 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
     expect(HOOK).toMatch(/docs\/\*\.md\) REGISTER_ONLY=0 ;;/);
   });
 
+  // ⏱️ ⟦24/09⟧ נמדד על `C-0788`: QA רשמה את ריצת ההוק (3 רוחבים) כ«verify מלא». ⇒ דחיפה
+  // ל-dev/main מריצה את המלא **בהוק**, ⛔ ולא תלויה בכך שהסוכן יזכור.
+  it('דחיפה ל-dev או main מדליקה את שער שש הרשומות — ⛔ לפני כל נתיב מהיר', () => {
+    expect(HOOK).toMatch(/case "\$ref" in refs\/heads\/dev\|refs\/heads\/main\) PUSHING_GATE=1 ;; esac/);
+    const gate = HOOK.indexOf('if [ "$PUSHING_GATE" = "1" ]; then');
+    const fast = HOOK.indexOf('elif [ "$REGISTER_ONLY" = "1" ]; then');
+    expect(gate, 'ענף השער קיים').toBeGreaterThan(-1);
+    expect(fast, 'הנתיב המהיר הוא elif אחריו').toBeGreaterThan(gate);
+  });
+
   it('המסלול המלא מריץ check:mobile בשלושה רוחבים — ⛔ ו-verify-mobile יודע מה זה', () => {
     expect(HOOK).toContain('MOBILE_WIDTHS=pre-push npm run verify');
     const vm = readFileSync('scripts/verify-mobile.mjs', 'utf8');
@@ -173,9 +183,12 @@ describe('scripts/hooks/pre-push — המסלול המהיר', () => {
     expect(HOOK).toContain('VERIFY_LABEL="verify(fast)"');
     expect(HOOK).toContain('VERIFY_LABEL="verify(docs)"');
     expect(HOOK).toContain('VERIFY_LABEL="verify(3w)"');
-    // ⏱️ ⟦23/09 · `T-429`⟧ ההוק ⛔ אינו מריץ שש רשומות ⇒ ⛔ אסור לו לחתום `verify` נקי,
-    // אחרת `verify:attested` היה פוטר את QA מהריצה המלאה.
-    expect(HOOK).not.toContain('VERIFY_LABEL="verify"');
+    // ⏱️ ⟦23/09 · `T-429`⟧ `verify` נקי ⛔ רק בענף של דחיפה ל-dev/main — שם רצות שש רשומות.
+    const clean = HOOK.split('VERIFY_LABEL="verify"').length - 1;
+    expect(clean, 'חותמת `verify` נקייה אחת בלבד').toBe(1);
+    const gateBranch = /PUSHING_GATE" = "1" \]; then\s*\n\s*VERIFY_LABEL="verify"\s*\n[\s\S]*?if ! npm run verify; then/.exec(HOOK)?.[0] ?? '';
+    expect(gateBranch, 'הענף של dev/main').not.toBe('');
+    expect(gateBranch, '⛔ בלי MOBILE_WIDTHS — כל שש הרשומות').not.toContain('MOBILE_WIDTHS');
     expect(HOOK, 'ההערה נכתבת מהתווית, ⛔ לא ממחרוזת קבועה').toMatch(
       /git notes --ref=verify add -f -m "\$VERIFY_LABEL: exit 0/,
     );

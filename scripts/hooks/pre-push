@@ -63,8 +63,14 @@ cd "$ROOT" || exit 1
 WHOAMI="$(git config user.name 2>/dev/null || echo '')"
 # ⛔ האם הדחיפה הזאת מכוונת ל-`work/current`. שער הנעילה למטה תלוי בזה.
 PUSHING_WORK=0
+# ⏱️ ⟦24/09 · נמדד על `C-0788`⟧ **דחיפה ל-`dev`/`main` היא שער המיזוג ⇒ תמיד 6 רוחבים.**
+# 🔬 QA רשמה ב-`RELEASE_READY` «`verify` מלא ירוק (`verify(3w)`, 2,432 בדיקות)» — כלומר
+# הריצה של **ההוק** על דחיפת המיזוג שלה נחשבה «המלאה», ושש הרשומות ⛔ לא רצו לפני `dev`.
+# ⇒ ⛔ לא הוראה נוספת לסוכן — ההוק עצמו מריץ את המלא כשהיעד הוא `dev` או `main`.
+PUSHING_GATE=0
 for ref in "${REFS[@]}"; do
   [ "$ref" = "refs/heads/work/current" ] && PUSHING_WORK=1
+  case "$ref" in refs/heads/dev|refs/heads/main) PUSHING_GATE=1 ;; esac
   case "$ref" in
     refs/heads/main)
       # 🧑‍⚖️ ⟦09/09⟧ **`ops-agent` נוסף, ⛔ ולא כדי לרכך את השער — כדי שיהיה לו מסלול
@@ -388,7 +394,16 @@ fi
 # ⚠️ The attestation says `verify(fast)`, ⛔ never `verify` — check 16 must ⛔ never tell a
 # different story from what actually ran.
 # ═══════════════════════════════════════════════════════════════════════════════
-if [ "$REGISTER_ONLY" = "1" ]; then
+if [ "$PUSHING_GATE" = "1" ]; then
+  VERIFY_LABEL="verify"
+  echo "🔒 pre-push — דחיפה ל-dev/main ⇒ npm run verify המלא, check:mobile בכל 6 הרוחבים …"
+  if ! npm run verify; then
+    echo ""
+    echo "⛔ הדחיפה נחסמה: 'npm run verify' (6 רוחבים) יצא בקוד ⛔ לא-אפס."
+    echo "⛔ ⛔ אל תעקוף. תקן, או הפוך את הכישלון לממצא ב-plan/60-findings.md."
+    exit 1
+  fi
+elif [ "$REGISTER_ONLY" = "1" ]; then
   VERIFY_LABEL="verify(fast)"
   echo "⚡ pre-push — הדיף מוגבל ל-plan/ · docs/plan-* · docs/agents/ ⇒ מסלול מהיר."
   echo "⛔ ⛔ זה ⛔ אינו דילוג: רץ כל מה שדיף כזה יכול לשבור, ו⛔ לא רץ מה שהוא ⛔ אינו יכול."
@@ -438,7 +453,7 @@ git fetch -q "$REMOTE" "+refs/heads/notes-verify:refs/notes/verify" >/dev/null 2
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 NOTED=0
 for sha in "${TIPS[@]}"; do
-  # ⛔ `$VERIFY_LABEL` is `verify(3w)` · `verify(docs)` · `verify(fast)` — ⛔ never a label for a run that did
+  # ⛔ `$VERIFY_LABEL` is `verify` (dev/main) · `verify(3w)` · `verify(docs)` · `verify(fast)` — ⛔ never a label for a run that did
   # ⛔ not happen. Check 16 reads this note; a note that overstates what ran would make the
   # ⛔ attestation a claim instead of evidence, which is the one thing it exists against.
   if git notes --ref=verify add -f -m "$VERIFY_LABEL: exit 0 · $STAMP · $(git rev-parse --short "$sha")" "$sha" >/dev/null 2>&1; then
