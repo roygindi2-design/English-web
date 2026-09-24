@@ -49,8 +49,14 @@
 /**
  * A JSX comment, on ⛔ one line's worth of separation: `{`, optional spaces/tabs,
  * `/*` … `*​/`, optional spaces/tabs, `}`. ⛔ No newline — that is the fence.
+ *
+ * `F-303` — and the body ⛔ may not contain `*​/`. A lazy `[\s\S]*?` still let a
+ * `{ /* … *​/` that is ⛔ not followed by `}` run on to a LATER comment that is, and
+ * swallow the object between them (2,549 chars of `ArenaAvatar.tsx`, `<svg>` included).
+ * Measured over all 182 `.tsx` files in `app/` + `components/` on 24/09: 327 matches
+ * before and after, ⛔ zero files stripped differently ⇒ no guard changes meaning.
  */
-const JSX_COMMENT = /\{[ \t]*\/\*[\s\S]*?\*\/[ \t]*\}/g;
+const JSX_COMMENT = /\{[ \t]*\/\*(?:(?!\*\/)[\s\S])*\*\/[ \t]*\}/g;
 
 /** A block comment, JSDoc included. */
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//g;

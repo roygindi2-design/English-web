@@ -70,6 +70,19 @@ describe('🧪 T-302 — withoutComments deletes comments, ⛔ not code', () => 
     expect(withoutComments(src)).toBe('<a>KEEP_ME</a>');
   });
 
+  /**
+   * `F-303` — the body ⛔ may not cross its own `*\/`. With `[\s\S]*?` a `{ /* a *\/`
+   * that is ⛔ not closed by `}` let the lazy body run on to the NEXT `*\/ }` — across
+   * lines — and the object between the two went with it.
+   */
+  it('⛔ never runs past its own closing `*/` to reach a later one (F-303)', () => {
+    const src = 'const o = { /* a */ x: 1,\n  y: apiGet<T>(),\n  z: { /* b */ } };';
+    const out = withoutComments(src);
+    expect(out).toContain('apiGet<T>()');
+    expect(out).toContain('x: 1');
+    expect(out).toBe('const o = {  x: 1,\n  y: apiGet<T>(),\n  z:  };');
+  });
+
   it('removes a whole-line `//` comment and ⛔ not a URL', () => {
     // ⚠️ The blank line stays: the pass removes the COMMENT, ⛔ not the line it sat on —
     // deleting lines would move every `file:line` a guard reports.
