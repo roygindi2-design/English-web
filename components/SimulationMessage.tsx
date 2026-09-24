@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import BlockKeyboard from '@/components/BlockKeyboard';
 import EnWord, { EnText, type EnTextSegment } from '@/components/EnWord';
 import RequiredWordChips from '@/components/RequiredWordChips';
 import { apiGet, apiPatch } from '@/lib/api/client';
@@ -33,11 +34,11 @@ import { requiredWordsHe, requiredWordsProgress, type RequiredWordsProgress } fr
  * ⛔ **Draws only.** Counts, the meta line, the time label and the chips all arrive
  * computed from `lib/core/`. One write in the whole screen: the PATCH that turns the blue
  * dot off (row ⓔ) — ⛔ nothing here touches the arena or the learner's word progress.
- * ⛔ **⛔ No keyboard sheet at all** (`39 § 9` item 2 · R-026), and the compose strip is
- * shown disabled with its condition NAMED (D-046 · D-096) rather than removed.
+ * ⌨️ **T-461:** the compose strip is now the live block keyboard (`<BlockKeyboard>`,
+ * `39 § 3` · D-283), passed in as a slot so this view stays a painter; every block the
+ * learner picks feeds `requiredWordsProgress`, which lights the chips (row ⓔ).
  */
 export const KICKER_HE = 'תיבת הסימולציות';
-const COMPOSE_CONDITION_HE = 'ההרכבה תיפתח עם מקלדת הבלוקים';
 const BACK_HE = 'חזרה לתיבה';
 const BACK_HREF = '/world/messages';
 const NOT_FOUND_HE = 'ההודעה הזאת לא נמצאה.';
@@ -95,9 +96,12 @@ function Exit({ code }: { readonly code: 'session_expired' | 'schema_missing' })
 export function SimulationMessageView({
   state,
   onRetry = () => {},
+  keyboard = null,
 }: {
   readonly state: MessageScreenState;
   readonly onRetry?: () => void;
+  /** The block keyboard — present only on a ready message. */
+  readonly keyboard?: ReactNode;
 }) {
   return (
     <section dir="rtl" className="flex flex-1 flex-col text-ink">
@@ -158,32 +162,8 @@ export function SimulationMessageView({
       {state.kind === 'session_expired' ? <Exit code="session_expired" /> : null}
       {state.kind === 'schema_missing' ? <Exit code="schema_missing" /> : null}
 
-      {/*
-        ⛔ The compose strip is PRESENT and disabled with its condition named (D-046 ·
-        D-096 · row ⓓ) — ⛔ removing it would tell the learner that replying is ⛔ not part
-        of this screen, which is false: it is R-026, and R-026 ends.
-      */}
       <div className="mt-auto pt-6">
-        <div
-          data-compose-strip
-          aria-disabled="true"
-          className="flex min-h-touch items-center gap-2 rounded-xl border border-border-subtle bg-surface px-3 text-xs text-ink-muted"
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-4 w-4 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="7" width="18" height="12" rx="2" />
-            <path d="M7 11h.01M11 11h.01M15 11h.01M8 15h8" />
-          </svg>
-          {COMPOSE_CONDITION_HE}
-        </div>
+        {state.kind === 'ready' ? keyboard : null}
         <Link
           href={BACK_HREF}
           className="mt-3 inline-flex min-h-touch items-center font-semibold text-brand-surface underline"
@@ -198,6 +178,12 @@ export function SimulationMessageView({
 export default function SimulationMessage({ id }: { readonly id: string }): React.JSX.Element {
   const [state, setState] = useState<MessageScreenState>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const [nowIso] = useState(() => new Date().toISOString());
+  const onChosen = useCallback(
+    (words: readonly string[]) =>
+      setState((s) => (s.kind === 'ready' ? readyState(s.item, words, nowIso) : s)),
+    [nowIso],
+  );
 
   useEffect(() => {
     let alive = true;
@@ -224,9 +210,8 @@ export default function SimulationMessage({ id }: { readonly id: string }): Reac
           setState({ kind: 'not_found' });
           return;
         }
-        // ⛔ No used tokens yet: the block keyboard that produces them is R-026, so every
-        // chip starts unlit and the counter reads `0 מתוך 3 מילות חובה`.
-        setState(readyState(item, [], new Date().toISOString()));
+        // Every chip starts unlit; `<BlockKeyboard>` lights them as blocks are picked.
+        setState(readyState(item, [], nowIso));
         // ⛔ Fire-and-forget, and deliberately so: the dot is bookkeeping, and a failed
         // PATCH must ⛔ never turn a readable message into a failure screen.
         if (item.readAt === null) {
@@ -241,7 +226,13 @@ export default function SimulationMessage({ id }: { readonly id: string }): Reac
     return () => {
       alive = false;
     };
-  }, [id, attempt]);
+  }, [id, attempt, nowIso]);
 
-  return <SimulationMessageView state={state} onRetry={() => setAttempt((n) => n + 1)} />;
+  return (
+    <SimulationMessageView
+      state={state}
+      onRetry={() => setAttempt((n) => n + 1)}
+      keyboard={state.kind === 'ready' ? <BlockKeyboard level={state.item.level} onChosen={onChosen} /> : null}
+    />
+  );
 }

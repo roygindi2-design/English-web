@@ -1,0 +1,30 @@
+/* T-461 · `39 § 3` — the part-of-speech palette, SCOPED to the block keyboard.
+
+   ⛔ These five values ⛔ never enter `lib/core/palette.ts` (`39 § 3`, and the
+   `app/arcade/arcade-tokens.css` precedent): a scoped palette that leaks into the
+   shared file becomes a second visual language.
+   ⛔ Verbs are ⛔ never red — red is `--danger`, «a mistake».
+   A colour is ⛔ never the only channel: every block also prints its category in words. */
+[data-block-keyboard] {
+  --pos-verb: #f2b544;
+  --pos-noun: #5b9bf5;
+  --pos-adjective: #2ec5c5;
+  --pos-conjunction: #8b95ab;
+  --pos-pronoun: #d178e8;
+}
+
+[data-block-keyboard] [data-pos='verb'] { --pos: var(--pos-verb); }
+[data-block-keyboard] [data-pos='noun'] { --pos: var(--pos-noun); }
+[data-block-keyboard] [data-pos='adjective'] { --pos: var(--pos-adjective); }
+[data-block-keyboard] [data-pos='conjunction'] { --pos: var(--pos-conjunction); }
+[data-block-keyboard] [data-pos='pronoun'] { --pos: var(--pos-pronoun); }
+
+/* A coloured block: tinted fill + coloured outline + the solid bar. The word stays in
+   `--ink`, so the text contrast is the product's own and ⛔ not the category colour's. */
+[data-block-keyboard] [data-pos]:not([data-pos='none']) {
+  background: color-mix(in srgb, var(--pos) 16%, transparent);
+  border-color: var(--pos);
+}
+[data-block-keyboard] [data-pos-bar] {
+  background: var(--pos);
+}

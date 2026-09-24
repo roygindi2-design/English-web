@@ -225,6 +225,12 @@
   "app/api/world/lexicalClassOnly.test.ts": [
     "lib/testSource.ts"
   ],
+  "app/api/world/messages/continuations/route.test.ts": [
+    "app/api/world/messages/continuations/route.ts"
+  ],
+  "app/api/world/messages/continuations/route.ts": [
+    "lib/core/continuations.ts"
+  ],
   "app/api/world/messages/route.test.ts": [],
   "app/api/world/messages/route.ts": [
     "lib/core/levelSummary.ts",
@@ -417,6 +423,9 @@
   "app/dev/lesson/page.tsx": [
     "components/LessonScreen.tsx"
   ],
+  "app/dev/messages/keyboard/page.tsx": [
+    "components/BlockKeyboard.tsx"
+  ],
   "app/dev/messages/messages-fixture.test.ts": [
     "app/dev/messages/messages-fixture.ts",
     "lib/core/messages.ts"
@@ -426,7 +435,10 @@
   ],
   "app/dev/messages/open/page.tsx": [
     "app/dev/messages/messages-fixture.ts",
+    "components/BlockKeyboard.tsx",
     "components/SimulationMessage.tsx",
+    "lib/core/blockKeyboard.ts",
+    "lib/core/continuations.ts",
     "lib/core/messages.ts"
   ],
   "app/dev/messages/page.tsx": [
@@ -823,6 +835,15 @@
     "lib/core/auth.ts",
     "lib/core/failure.ts"
   ],
+  "components/BlockKeyboard.test.ts": [],
+  "components/BlockKeyboard.tsx": [
+    "components/EnWord.tsx",
+    "components/block-keyboard-tokens.css",
+    "lib/api/client.ts",
+    "lib/core/blockKeyboard.ts",
+    "lib/core/continuations.ts",
+    "lib/core/failure.ts"
+  ],
   "components/CardDeck.dom.test.tsx": [
     "components/CardDeck.tsx",
     "lib/core/deck.ts"
@@ -1013,6 +1034,7 @@
   "components/ServiceWorkerRegistrar.tsx": [],
   "components/SimulationMessage.test.ts": [],
   "components/SimulationMessage.tsx": [
+    "components/BlockKeyboard.tsx",
     "components/EnWord.tsx",
     "components/RequiredWordChips.tsx",
     "lib/api/client.ts",
@@ -1140,6 +1162,7 @@
     "lib/core/amirnetPractice.ts"
   ],
   "components/arenaAnchors.ts": [],
+  "components/block-keyboard-tokens.css": [],
   "components/rtl-axis.test.ts": [],
   "lib/api/client.test.ts": [
     "lib/api/client.ts"
@@ -1307,6 +1330,14 @@
   "lib/core/battle.ts": [
     "lib/core/arenaCharacter.ts",
     "lib/core/arenaWords.ts"
+  ],
+  "lib/core/blockKeyboard.test.ts": [
+    "lib/core/blockKeyboard.ts",
+    "lib/core/continuations.ts"
+  ],
+  "lib/core/blockKeyboard.ts": [
+    "lib/core/contentSchema.ts",
+    "lib/core/continuations.ts"
   ],
   "lib/core/cefrLevels.test.ts": [
     "lib/core/cefrLevels.ts"

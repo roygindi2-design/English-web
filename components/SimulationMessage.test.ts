@@ -5,7 +5,7 @@ const CODE = readFileSync('components/SimulationMessage.tsx', 'utf8');
 
 describe('SimulationMessage — T-192, render kol-C-14-mail-open.png', () => {
   it('the binding strings', () => {
-    for (const s of ['תיבת הסימולציות', 'ההרכבה תיפתח עם מקלדת הבלוקים']) expect(CODE, s).toContain(s);
+    expect(CODE).toContain('תיבת הסימולציות');
   });
 
   it('body through <EnText>, sender through <EnWord>', () => {
@@ -13,9 +13,10 @@ describe('SimulationMessage — T-192, render kol-C-14-mail-open.png', () => {
     expect(CODE).toMatch(/<EnWord>/);
   });
 
-  it('the compose strip is present and disabled — ⛔ not hidden (D-046 · D-096 · row ⓓ)', () => {
-    expect(CODE).toMatch(/data-compose-strip/);
-    expect(CODE).toMatch(/aria-disabled/);
+  it('T-461: the disabled strip became the live block keyboard, and it feeds the chips (ⓔ)', () => {
+    expect(CODE).toMatch(/<BlockKeyboard level=\{state\.item\.level\}/);
+    expect(CODE).toMatch(/onChosen/);
+    expect(CODE).toMatch(/readyState\(s\.item, words/);
     expect(CODE).not.toMatch(/\bhidden\b(?!=)/);
   });
 

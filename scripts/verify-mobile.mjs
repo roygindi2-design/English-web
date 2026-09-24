@@ -223,9 +223,14 @@ const ROUTES = [
   // EXPECTED_CONSOLE. Task 6 (T-191) turns this route into the inbox list itself.
   '/dev/messages',
   // C-0522 (T-192) — the open message fixture: the body bubble, the three required-word
-  // chips, the disabled compose strip and ⛔ no tab bar. It is handed its item as a prop
-  // and asks the server for nothing ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  // chips, the block keyboard (T-461, as `screen_mail` draws it) and ⛔ no tab bar. It is
+  // handed its item and its block set as props and asks the server for nothing ⇒ ⛔ no
+  // EXPECTED_CONSOLE entry.
   '/dev/messages/open',
+  // C-0791 (T-461) — the LIVE keyboard: `GET /api/world/messages/continuations` needs ⛔ no
+  // session and ⛔ no Supabase, so the ~1,149-block opening set is really on screen at
+  // 320/375/414 — every block measured against 44px, the sheet measured for h-scroll.
+  '/dev/messages/keyboard',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no
