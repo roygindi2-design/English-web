@@ -26,7 +26,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 ⛔ החלטה שנשענת על התקציר בלבד היא החלטה על מידע חסר. קרא את השורה המלאה של המשימה
 שבחרת **לפני** שאתה נוגע בקוד.
 
-נוצר מ-`plan/50-tasks.md` (482 שורות, 58 פתוחות) ו-`plan/60-findings.md` (328 שורות, 44 פתוחים).
+נוצר מ-`plan/50-tasks.md` (482 שורות, 58 פתוחות) ו-`plan/60-findings.md` (331 שורות, 47 פתוחים).
 
 ## ⬜ פנויות ל-Dev (10)
 
@@ -139,7 +139,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `T-455` | M2 · arena ·… | 💥 ** — «לא התחמקת — נזק, **הרצף מתאפס**» (נכתב **פעמיים**, ו-) — ⇒ מ-0 פגיעות… |
 | `T-454` | M2 · arena ·… | 🪨 **רצפת הזירה נושאת את מה שהרנדר מצייר עליה — ⇒ מ-0 מתוך 3 רכיבי רצפה של… |
 
-## ממצאים פתוחים (44)
+## ממצאים פתוחים (47)
 
 | id | חומרה | קובץ | הממצא (תקציר) | סטטוס |
 |---|---|---|---|---|
@@ -187,6 +187,9 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-324` | 🟡 MEDIUM | `data/generated/continuations.json` · `lib/cor…` | **`T-464` סדר השכיחות מביא את `We` לפתיחה (168 ⇒ 6) — ⛔ אבל ⛔ לא את `Yesterday` ל-30 הראשונים (270 ⇒ 110)** · נפתח על ידי DEV (`C-0796`) | ⬜ |
 | `F-325` | ⚪ LOW · **הליכ… | `scripts/lib/walk-expected.mjs` · `app/dev/tab…` | 🔬 **נמדד בהליכה חיה בטיק הזה (`next start`, `npm run walk:screens`):** `/dev/tabs/cards` מדפיס 6 שגיאות קונסול ו-`/dev/tabs/studies` מדפיסה 2 — שתיהן … | 🟣 **נסגר C-0808 (DEV)** — שתי רשומות ב-`…` |
 | `F-326` | ⚪ LOW · **`arc…` | `scripts/archive-departments.mjs:90,94` | 🔬 **נמדד בטיק הזה:** `npm run archive` מדפיס «`8180 בתים מתוך 4096`» עבור `plan/05-departments.md`, בזמן ש-`scripts/loop-health.mjs:491` (בדיקה 19) או… | 🟣 **נסגר C-0808 (DEV)** — `DEPARTMENTS_C…` |
+| `F-328` | 🟠 HIGH · **ren… | `39-messages-spec.md § 5` · `lib/core/wallFeed…` | 🔬 **נמדד ב-`npm run diff:render /dev/messages/wall docs/design/kol-C-10-wall-feed.png` + קריאה בעיניים של הצילום המלא (`next start`, 375×780).** `39 §…` | ⬜ פתוח → **PM** ⟨החלטת עדיפות/היקף — אופ… |
+| `F-329` | 🟠 HIGH · **mot… | `components/ClassJoin.tsx:83-84,175` | 🔬 **נמדד ב-`review-animations` על ה-diff, ואומת ב-`grep -rn 'active:scale' components/ app/`:** שלוש הכפתורים היחידים בכל הריפו עם `active:scale-[…]` … | ⬜ פתוח → **DEV** |
+| `F-330` | 🟡 MEDIUM | `components/WallReplySheet.tsx` · `lib/core/co…` | 🔬 **נמדד ב-Playwright חי על `/dev/messages/wall/reply` (`next start`, 375×780, ⛔ לא שוער):** גיליון התגובה הפתוח נושא **2,281 `<button>`** ב-DOM בו-זמ… | ⬜ פתוח → **DEV** |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 
