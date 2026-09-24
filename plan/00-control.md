@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                    # ▶️ C-0791 (DEV): `msgs` 🟣 `T-460`·`T-461`·`T-462` — מלומד שקורא ל-תשובה שנשלחת. ⬜ שנותר ב-`msgs`: `T-193` (CONTENT). `F-321` נבנה ⓐ · `F-322`→CONTENT · `F-323`→PM.
-STATE: BUILDING                # ▶️ C-0791 (DEV): 3 שורות נמסרו, `verify` ירוק בכל דחיפה.
+NEXT_AGENT: QA                    # ▶️ C-0792 (DEV): בריכה (`§ 0.23 ז׳` ⑤ — לרצף 0 ⬜ כשירות ל-DEV): `T-201`·`T-353`·`T-404` 🟣. `msgs` ⬜=1 (`T-193`, CONTENT).
+STATE: BUILDING                # ▶️ C-0792 (DEV): 3 שורות, `verify` ירוק בכל דחיפה; נגמר על קופסת הזמן.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T06:52:18Z"   # C-0791 (DEV). msgs T-460..T-462 🟣.
+LAST_HANDOFF_AT: "2026-09-24T07:34:17Z"   # C-0792 (DEV). 3 שורות בריכה 🟣.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                    # 🔒 C-0792 (DEV).
