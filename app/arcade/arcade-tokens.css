@@ -1216,6 +1216,32 @@ body:has([data-arena-failure] [data-action-bar]) {
 [data-arena-scope] [data-arena-aim='centre'] { left: 39%; }
 [data-arena-scope] [data-arena-aim='right'] { left: 65.5185%; }
 
+/* ⚔️ **⟦24/09 · `C-0783` · `T-435` · `37 § 8` ק3⟧ שלוש הכרזות, ⛔ ולא אחת.**
+   🔴 **קישוט** — המידע הוא הסימנים שמעל (⛔ אפס אנימציה) ושם המתקפה. ⇒ תחת תנועה
+   מופחתת `display: none` ⛔ ולא `animation: none`: הצומת ⛔ אינו נושא ביט מידע.
+   ① כדור אש — כדור אחד נטען · ② מטח — **שניים**, בהפרש `60ms` (`animate` — stagger
+   30–80ms) · ③ גל הלם — **טבעת** שמתרחבת מרגלי היריב ונמוגה.
+   ⛔ `transform`+`opacity` בלבד · `--arena-ease-out` הקיים · 240/300ms — מתחת לתקרה. */
+[data-arena-scope] [data-arena-announce-part] {
+  animation: arena-announce-orb 240ms var(--arena-ease-out) both;
+  animation-delay: calc(var(--arena-announce-i, 0) * 60ms);
+  will-change: transform, opacity;
+}
+[data-arena-scope] [data-arena-announce='shockwave'] [data-arena-announce-part] {
+  animation: arena-announce-ring 300ms var(--arena-ease-out) both;
+}
+@keyframes arena-announce-orb {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 0.9; }
+}
+@keyframes arena-announce-ring {
+  from { transform: scale(0.95); opacity: 0.8; }
+  to { transform: scale(1.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-announce] { display: none; }
+}
+
 /* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270`⟧ ההגנה המוצבת — **מצב**, ⛔ ולא אנימציה.**
 
    🔴 **⛔ אפס `animation` ו⛔ אפס `transition`, וזה ⛔ אינו חיסכון:** ההגנה היא

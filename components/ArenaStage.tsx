@@ -2,7 +2,7 @@ import ArenaAvatar from '@/components/ArenaAvatar';
 import ArenaScene from '@/components/ArenaScene';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
-import { CENTRE, LANE_NAMES, type Lane, type StagePhase } from '@/lib/core/battle';
+import { CENTRE, LANE_NAMES, type AttackKind, type Lane, type StagePhase } from '@/lib/core/battle';
 import { CHARACTER_GUARD } from '@/lib/core/arenaCharacter';
 import { GUARD_PATHS, GUARD_VIEW } from '@/lib/core/characterBase';
 
@@ -71,6 +71,13 @@ export interface ArenaStageProps {
    */
   readonly aim?: Lane | null;
   /**
+   * ⚔️ **⟦`C-0783` · `T-435`⟧ כל הנתיבים שהמכה פוגעת בהם** (`strikeLanesAt`) — כדור אש
+   * אחד, מטח שניים, גל הלם שלושה. ⛔ **נגזר בליבה, ⛔ ולא כאן.** חסר ⇒ `[aim]`, כמו קודם.
+   */
+  readonly strike?: readonly Lane[] | null;
+  /** ⚔️ `T-435` — איזו מתקפה; נושא רק את **כניסת** הסימנים (קישוט, ⛔ ולא מידע). */
+  readonly attack?: AttackKind | null;
+  /**
    * 🛡️ **`T-438` · `D-270` ① — הנתיב שההגנה המוצבת יושבת בו, או `null`.**
    *
    * 🔴 **והיא **מידע**, ⛔ ולא קישוט** — בדיוק כמו סימן הרצפה: צומת **שקיים
@@ -133,12 +140,20 @@ export default function ArenaStage({
   character = null,
   lane = null,
   aim = null,
+  strike = null,
+  attack = null,
   guard = null,
   telegraph = 'quiet',
   hot = false,
 }: ArenaStageProps): React.JSX.Element {
   return (
-    <div data-arena-stage data-arena-phase={phase} data-arena-telegraph={telegraph} className={STAGE_CLASS}>
+    <div
+      data-arena-stage
+      data-arena-phase={phase}
+      data-arena-telegraph={telegraph}
+      data-arena-attack={attack ?? undefined}
+      className={STAGE_CLASS}
+    >
       {/* ⓐ הסט. ⛔ ראשון ⇒ מאחור, ⛔ בלי `z-index` ובלי מיקום מוחלט על האחרים. */}
       <ArenaScene />
 
@@ -202,7 +217,43 @@ export default function ArenaStage({
           ⛔ **ו⛔ אין לו `aria-live`:** «מטיל!» כבר מודיע שהמתקפה באה, וקורא מסך
           ש⛔ אינו רואה את הרצפה ⛔ אינו זקוק להכרזה שנייה על **מיקום** שהוא ממילא
           ⛔ אינו יכול לנצל בזמן שנותר. */}
-      {aim !== null && <span data-arena-aim={LANE_NAMES[aim]} aria-hidden />}
+      {/* ⚔️ **⟦`C-0783` · `T-435` · `37 § 8` ק3⟧ ההכרזה — «אנימציית הכרזה שונה לכל אחת».**
+          🔴 **קישוט, ⛔ ולא מידע** — בדיוק החלוקה של `T-434`: המידע הוא סימני הרצפה
+          (למטה, ⛔ אפס אנימציה) ושם המתקפה ליד «מטיל!». ⇒ תחת תנועה מופחתת הצומת הזה
+          **נעלם כולו**, ⛔ ושום ביט ⛔ אינו נעלם איתו. ⛔ גוונים קיימים בלבד (`T-427`). */}
+      {attack !== null && (
+        <span
+          key={attack}
+          data-arena-announce={attack}
+          aria-hidden
+          className={
+            attack === 'shockwave'
+              ? 'pointer-events-none absolute inset-x-0 bottom-[46%] flex translate-y-1/2 justify-center'
+              : 'pointer-events-none absolute inset-x-0 bottom-[46%] flex -translate-y-10 justify-center gap-2'
+          }
+        >
+          {attack === 'shockwave' ? (
+            <span data-arena-announce-part className="h-16 w-40 rounded-full border-2 border-[color:var(--arena-cast-warn)]" />
+          ) : (
+            Array.from({ length: attack === 'volley' ? 2 : 1 }, (_, i) => (
+              <span
+                key={i}
+                data-arena-announce-part
+                style={{ '--arena-announce-i': i } as React.CSSProperties}
+                className="h-4 w-4 rounded-full bg-[color:var(--arena-cast)]"
+              />
+            ))
+          )}
+        </span>
+      )}
+      {(strike ?? (aim !== null ? [aim] : [])).map((l, i) => (
+        <span
+          key={LANE_NAMES[l]}
+          data-arena-aim={LANE_NAMES[l]}
+          aria-hidden
+          style={{ '--arena-aim-i': i } as React.CSSProperties}
+        />
+      ))}
 
       {/* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270` ②⟧ ההגנה המוצבת.**
           ⛔ **אח של שני החריצים**, מאותה סיבה בדיוק של סימן הרצפה: היא יושבת

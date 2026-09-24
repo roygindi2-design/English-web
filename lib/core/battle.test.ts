@@ -45,6 +45,9 @@ import {
   isBelowLastBreath,
   manaOf,
   RAGE_FROM_MS,
+  ATTACK_CYCLE,
+  attackAt,
+  strikeLanesAt,
   type BattleState,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
@@ -604,6 +607,76 @@ describe('T-455 · `37 § 6` — מכה נוחתת מאפסת את הרצף', ()
     const s = threeRight();
     expect(tick(s, 4_000)).toBe(s);
     expect(streakAt(tick(s, 4_000))).toBe(3);
+  });
+});
+
+/**
+ * ⚔️ **T-435 · `37 § 8` ק3 — «3 התקפות ליריב».** ① כדור אש ⟨נתיב אחד⟩ · ② מטח ⟨שניים —
+ * חפש את הכבוי⟩ · ③ גל הלם ⟨הכול — ⛔ לא תנועה, אלא `מגן`⟩. הבחירה נגזרת מ-`swingIndex`.
+ */
+describe('T-435 · שלוש מתקפות, נגזרות מ-`swingIndex`', () => {
+  const at = (lane: -1 | 0 | 1) => ({ ...FRESH, heroLane: lane });
+
+  it('המחזור קפוא, מתחיל בכדור אש, ומכיל את שלוש המתקפות', () => {
+    expect(Object.isFrozen(ATTACK_CYCLE)).toBe(true);
+    expect(attackAt(1)).toBe('fireball');
+    expect(new Set(ATTACK_CYCLE)).toEqual(new Set(['fireball', 'volley', 'shockwave']));
+  });
+
+  it('⛔ לא אקראי — אותו `swingIndex` ⇒ אותה מתקפה, בכל קריאה', () => {
+    for (let i = 1; i <= 12; i += 1) expect(attackAt(i)).toBe(attackAt(i));
+    expect(attackAt(1 + ATTACK_CYCLE.length)).toBe(attackAt(1));
+  });
+
+  it('מספר הנתיבים הדולקים: 1 · 2 · 3', () => {
+    const s = at(1);
+    const count = (kind: string) => {
+      const i = ATTACK_CYCLE.indexOf(kind as never) + 1;
+      return strikeLanesAt(s, i).length;
+    };
+    expect(count('fireball')).toBe(1);
+    expect(count('volley')).toBe(2);
+    expect(count('shockwave')).toBe(3);
+  });
+
+  it('כדור אש = בדיוק הנתיב של `aimLaneAt` (⛔ מה שהיה, ⛔ לא זז)', () => {
+    const i = ATTACK_CYCLE.indexOf('fireball') + 1;
+    expect(strikeLanesAt(at(-1), i)).toEqual([aimLaneAt(at(-1), i)]);
+  });
+
+  it('מטח: הנתיב הכבוי בטוח, ושני הדולקים פוגעים', () => {
+    const i = ATTACK_CYCLE.indexOf('volley') + 1;
+    const lit = strikeLanesAt(at(0), i);
+    const gap = ([-1, 0, 1] as const).find((l) => !lit.includes(l));
+    expect(gap).toBeDefined();
+    const t = i * ENEMY_SWING_MS;
+    const safe = { ...at(gap as -1 | 0 | 1), lastSwingMs: t - ENEMY_SWING_MS };
+    expect(tick(safe, t).learnerHp).toBe(safe.learnerHp);
+    const hit = { ...at(lit[0] as -1 | 0 | 1), lastSwingMs: t - ENEMY_SWING_MS };
+    expect(tick(hit, t).learnerHp).toBeLessThan(hit.learnerHp);
+  });
+
+  it('גל הלם: ⛔ אין נתיב בטוח — ⛔ רק `מגן` (או גלגול) מציל', () => {
+    const i = ATTACK_CYCLE.indexOf('shockwave') + 1;
+    const t = i * ENEMY_SWING_MS;
+    for (const lane of [-1, 0, 1] as const) {
+      const s = { ...at(lane), lastSwingMs: t - ENEMY_SWING_MS };
+      expect(tick(s, t).learnerHp, `נתיב ${lane}`).toBeLessThan(s.learnerHp);
+    }
+    const rich = { ...at(1), lastSwingMs: t - ENEMY_SWING_MS };
+    const shielded = spendAbility(rich, 'shield', t - 1_000);
+    expect(shielded.immuneBy).toBe('shield');
+    expect(tick(shielded, t).learnerHp).toBe(shielded.learnerHp);
+  });
+
+  it('🔴 לומד שלא זז ⛔ אף פעם — נפגע מכל מכה, כמו קודם (`§ 6`)', () => {
+    let s = FRESH;
+    for (let i = 1; i <= 8; i += 1) {
+      expect(strikeLanesAt(FRESH, i)).toContain(CENTRE);
+      const next = tick(s, i * ENEMY_SWING_MS);
+      expect(next.learnerHp).toBeLessThan(s.learnerHp);
+      s = next;
+    }
   });
 });
 

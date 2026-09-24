@@ -412,9 +412,11 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
   //    שתי מכות שהתאחדו בפריים אחד ⛔ אינן נבלעות שתיהן בקיר אחד.
   let guardBroken = false;
   for (let i = applied + 1; i <= due; i += 1) {
-    if (laneOf(state) !== aimLaneAt(state, i)) continue;
+    // ⚔️ `T-435` — ⛔ «הנתיב שהמכה מכוונת אליו» הפך ל«הנתיבים שהמכה פוגעת בהם». לכדור אש
+    //    זה אותו נתיב בדיוק ⇒ המסלול הישן ⛔ לא זז. ההגנה נשברת רק ב**נתיב של הלומד**.
+    if (!strikeLanesAt(state, i).includes(laneOf(state))) continue;
     if (state.dodgedSwing === i) { spent = true; continue; }
-    if (!guardBroken && state.guardLane === aimLaneAt(state, i)) { guardBroken = true; continue; }
+    if (!guardBroken && state.guardLane === laneOf(state)) { guardBroken = true; continue; }
     landed += 1;
   }
   const immune = spent;
@@ -535,6 +537,41 @@ export function aimLaneAt(state: BattleState, swingIndex: number): Lane {
   return AIM_CYCLE[(i - 1) % AIM_CYCLE.length] as Lane;
 }
 
+/**
+ * ⚔️ **⟦`C-0783` · `T-435` · `37 § 8` ק3⟧ «3 התקפות ליריב» — ⛔ והמספר ⛔ אינו נבחר כאן.**
+ * ① `fireball` — נתיב **אחד** נדלק (`aimLaneAt`, בדיוק מה שהיה) ⇒ עמוד באחר.
+ * ② `volley` — **שניים** נדלקים ⇒ חפש את ה**כבוי**.
+ * ③ `shockwave` — **הכול** נדלק ⇒ ⛔ לא תנועה, אלא `מגן` (או גלגול בחלון): זה הרגע שבו
+ *    `מגן` הוא הדבר הנכון היחיד — ⛔ מכניקה חדשה ⛔ אין כאן.
+ * ⛔ **מחזור קפוא, ⛔ ולא אקראי** — כמו `AIM_CYCLE`, ומאותה סיבה: טלגרף הוגן ובדיק.
+ * ⚠️ המכה הראשונה היא כדור אש ⇒ כל הבדיקות הנעולות שבנויות על מכה 1 ⛔ לא זזו.
+ * ⛔ הכרעה הפיכה (`RULES § 0.22`): PM מחליף את המערך בקומיט אחד.
+ */
+export type AttackKind = 'fireball' | 'volley' | 'shockwave';
+export const ATTACK_CYCLE: readonly AttackKind[] = Object.freeze(['fireball', 'volley', 'fireball', 'shockwave'] as const);
+
+export function attackAt(swingIndex: number): AttackKind {
+  const i = Math.max(1, Math.floor(Number.isFinite(swingIndex) ? swingIndex : 1));
+  return ATTACK_CYCLE[(i - 1) % ATTACK_CYCLE.length] as AttackKind;
+}
+
+const LANES: readonly Lane[] = Object.freeze([-1, 0, 1] as const);
+
+/**
+ * הנתיבים ש**נפגעים** במכה `swingIndex`. ⛔ **טהורה ונגזרת** — `tick`, `isSafeLane` והבמה
+ * קוראים את אותה פונקציה ⇒ ⛔ אין סימן רצפה שמראה נתיב אחד בזמן שהמכה פוגעת בשניים.
+ * 🛣️ **המטח:** הכבוי הוא הנתיב שנמצא «שני צעדים» מהכוונה במחזור `[-1, 0, 1]` ⇒ כשהלומד
+ * ⛔ טרם זז (`CENTRE`) הכבוי הוא שמאל ⇒ **המרכז תמיד דולק** למי שלא זז (`§ 6`).
+ */
+export function strikeLanesAt(state: BattleState, swingIndex: number): readonly Lane[] {
+  const aim = aimLaneAt(state, swingIndex);
+  const kind = attackAt(swingIndex);
+  if (kind === 'fireball') return [aim];
+  if (kind === 'shockwave') return LANES;
+  const gap = LANES[(LANES.indexOf(aim) + 2) % LANES.length];
+  return LANES.filter((l) => l !== gap);
+}
+
 /** איפה הלומד עומד בפועל. ⛔ `null` הוא «טרם בחר», ⛔ ולא «אין מקום». */
 export function laneOf(state: BattleState): Lane {
   return state.heroLane ?? CENTRE;
@@ -543,7 +580,7 @@ export function laneOf(state: BattleState): Lane {
 /** האם הנתיב שבו הוא עומד **בטוח** מול המכה הקרובה. נגזר, ⇒ ⛔ אינו יכול לסטות. */
 export function isSafeLane(state: BattleState, elapsedMs: number): boolean {
   const telegraph = telegraphAt(elapsedMs);
-  return laneOf(state) !== aimLaneAt(state, telegraph.swingIndex);
+  return !strikeLanesAt(state, telegraph.swingIndex).includes(laneOf(state));
 }
 
 /**

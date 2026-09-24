@@ -671,3 +671,34 @@ describe('T-456 · רגלי היריב על הרצפה, מתחת לקו החומ
     expect(TOKENS_SRC).toMatch(/\[data-arena-slot='enemy'\] \{ transform-origin: bottom center; \}/);
   });
 });
+
+/**
+ * ⚔️ **T-435 · `37 § 8` ק3 — שלוש הכרזות נבדלות, והבחירה נגזרת מ-`swingIndex`.**
+ */
+describe('T-435 · שלוש מתקפות על הבמה', () => {
+  const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+  const BATTLE_SRC = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+
+  it('הבמה מקבלת את **כל** הנתיבים הדולקים ואת סוג המתקפה — מהליבה, ⛔ לא מחושב ברכיב', () => {
+    expect(BATTLE_SRC).toMatch(/strike=\{aimed \? strikeLanesAt\(battle, aimSwing\) : null\}/);
+    expect(BATTLE_SRC).toMatch(/attack=\{aimed \? attackAt\(aimSwing\) : null\}/);
+  });
+
+  it('שלוש הכרזות נבדלות: כדור · שני כדורים · טבעת', () => {
+    expect(TOKENS_SRC).toMatch(/@keyframes arena-announce-orb/);
+    expect(TOKENS_SRC).toMatch(/@keyframes arena-announce-ring/);
+    expect(TOKENS_SRC).toMatch(/\[data-arena-announce='shockwave'\] \[data-arena-announce-part\]\s*\{\s*animation: arena-announce-ring/);
+    expect(CODE).toMatch(/attack === 'volley' \? 2 : 1/);
+  });
+
+  it('🔴 תנועה מופחתת — ההכרזה נעלמת (`display: none`), וסימני הרצפה נשארים', () => {
+    const blocks = [...TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+      .map((m) => m[1] ?? '').join('\n');
+    expect(blocks).toMatch(/\[data-arena-announce\]\s*\{\s*display:\s*none/);
+    expect(blocks).not.toContain('[data-arena-aim]');
+  });
+
+  it('⛔ לא צבע בלבד — שם המתקפה נאמר לצד «מטיל!»', () => {
+    expect(BATTLE_SRC).toMatch(/data-arena-attack-name[\s\S]{0,80}ATTACK_HE\[attackAt\(aimSwing\)\]/);
+  });
+});

@@ -24,6 +24,9 @@ import {
   MANA_CAP,
   canUseAbility,
   aimLaneAt,
+  attackAt,
+  strikeLanesAt,
+  type AttackKind,
   canPlaceGuard,
   cast,
   placeGuard,
@@ -317,6 +320,15 @@ export const ARENA_ISOLATION_HE = 'זירת הקרב מבודדת · אין הש
  */
 /** `37 § 6` — הרנדר מצייר «מטיל!» מעל המד (`cast_meter`), וזה גם ערוץ שאינו צבע (שכבה א׳ א2). */
 const CASTING_HE = 'מטיל!';
+/**
+ * ⚔️ **`T-435` · `37 § 8` ק3** — שם לכל אחת משלוש המתקפות. ⛔ «מטיל!» של הרנדר ⛔ לא הוחלף:
+ * השם נוסף **לצידו**, כי הרנדר מצייר מתקפה אחת בלבד.
+ */
+const ATTACK_HE: Readonly<Record<AttackKind, string>> = Object.freeze({
+  fireball: 'כדור אש',
+  volley: 'מטח',
+  shockwave: 'גל הלם',
+});
 /** 🔥 `T-434` — קוטר הכדור בפיקסלים. ⛔ צומת `fixed` חייב מידה, ⛔ והוא ⛔ אינו יורש אחת. */
 const BOLT_SIZE = 26;
 const CASTING_METER_HE = 'היריב מטיל';
@@ -1691,6 +1703,8 @@ export default function ArenaBattle({
               {telegraphPhase !== 'charging' && (
                 <p className="text-xs font-black text-[color:var(--arena-cast-warn)]" role="status" aria-live="polite">
                   {CASTING_HE}
+                  {/* ⚔️ `T-435` — ⛔ לא צבע בלבד (א2): **שם** המתקפה נאמר גם לקורא מסך. */}
+                  <span data-arena-attack-name> · {ATTACK_HE[attackAt(aimSwing)]}</span>
                 </p>
               )}
               {/* T-231 ⓑ — `scaleX`, ⛔ ולא `width`: apple-design § 11 («animate only
@@ -1838,6 +1852,9 @@ export default function ArenaBattle({
           character={character}
           lane={battle.heroLane}
           aim={aimed ? aimLaneAt(battle, aimSwing) : null}
+          /* ⚔️ `T-435` — אותה פונקציה ש-`tick` קורא ⇒ הסימן ⛔ אינו יכול לשקר על המכה. */
+          strike={aimed ? strikeLanesAt(battle, aimSwing) : null}
+          attack={aimed ? attackAt(aimSwing) : null}
           guard={battle.guardLane}
           telegraph={telegraphPhase}
           /* 🔥 `C-0750` · `37 § 8` ק1 — **אותו `streak` ואותו `STREAK_HOT` בדיוק
