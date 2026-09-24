@@ -100,7 +100,7 @@ describe('GET /api/world/classes/[id]/story (T-478)', () => {
 
   it('myTurn follows the LAST line: someone else’s ⇒ true, mine ⇒ false', async () => {
     expect((await (await get(CLASS_A)).json()).myTurn).toBe(true);
-    tables.class_story_lines.push(line('d', ME, 4));
+    tables.class_story_lines?.push(line('d', ME, 4));
     expect((await (await get(CLASS_A)).json()).myTurn).toBe(false);
   });
 

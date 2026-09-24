@@ -5,7 +5,7 @@ const CODE = readFileSync('components/InboxList.tsx', 'utf8');
 
 describe('InboxList — T-191, render kol-C-13-inbox.png', () => {
   it('the binding strings, verbatim (39 § 1 · row ⓔ · D-109)', () => {
-    for (const s of ['הודעות · סימולציות', 'תיבת הסימולציות', 'הקיר', 'סיפור', 'תיבה', 'כל התכתובת מול דמויות', 'אין כאן משתמשים אחרים', 'סיפור עוד לא פתוח']) {
+    for (const s of ['הודעות · סימולציות', 'תיבת הסימולציות', 'הקיר', 'סיפור', 'תיבה', 'כל התכתובת מול דמויות', 'אין כאן משתמשים אחרים']) {
       expect(CODE, s).toContain(s);
     }
   });

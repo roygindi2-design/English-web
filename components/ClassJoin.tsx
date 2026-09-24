@@ -235,7 +235,11 @@ function failHe(code: FailCode): string | null {
 }
 
 /** Live: reads `GET /api/world/classes/mine`, writes through the two class routes (T-468). */
-export default function ClassJoin({ onState }: { readonly onState?: (s: ClassPanelState) => void }): React.JSX.Element {
+export default function ClassJoin({ onState, body = (id) => <ClassWall classId={id} /> }: {
+  readonly onState?: (s: ClassPanelState) => void;
+  /** T-479 — what the class id opens under the panel: the wall (default) or the story. */
+  readonly body?: (classId: string) => ReactNode;
+}): React.JSX.Element {
   const [state, setStateRaw] = useState<ClassPanelState>({ kind: 'loading' });
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -283,7 +287,7 @@ export default function ClassJoin({ onState }: { readonly onState?: (s: ClassPan
   return (
     <ClassJoinView
       state={state}
-      wall={classId ? <ClassWall classId={classId} /> : undefined}
+      wall={classId ? body(classId) : undefined}
       busy={busy}
       formError={formError}
       onCreate={(name) => { void submit('/api/world/classes', { name }, 1); }}

@@ -22,7 +22,7 @@ afterEach(cleanup);
  * ⛔ there is nowhere to type it. These are renders, ⛔ not a source scan.
  */
 describe('the הקיר tab opens (T-469)', () => {
-  it('הקיר is a live tab that switches; סיפור stays disabled with its condition in words', () => {
+  it('הקיר is a live tab that switches; T-479 — סיפור is live too, and the old condition line is gone', () => {
     const onTab = vi.fn();
     render(<InboxListView state={{ kind: 'loading' }} onTab={onTab} />);
     const wall = screen.getByRole('tab', { name: 'הקיר' });
@@ -30,8 +30,20 @@ describe('the הקיר tab opens (T-469)', () => {
     expect(wall.getAttribute('aria-disabled')).toBeNull();
     fireEvent.click(wall);
     expect(onTab).toHaveBeenCalledWith('wall');
-    expect(screen.getByRole('tab', { name: 'סיפור' }).getAttribute('aria-disabled')).toBe('true');
-    expect(screen.getByText('סיפור עוד לא פתוח')).toBeTruthy();
+    const story = screen.getByRole('tab', { name: 'סיפור' });
+    expect(story.tagName).toBe('BUTTON');
+    expect(story.getAttribute('aria-disabled')).toBeNull();
+    fireEvent.click(story);
+    expect(onTab).toHaveBeenCalledWith('story');
+    expect(screen.queryByText('סיפור עוד לא פתוח')).toBeNull();
+  });
+
+  it('T-479 — on the story tab: `סיפור בהמשכים`, the class kicker, and the story body', () => {
+    render(<InboxListView state={{ kind: 'loading' }} tab="story" wallKickerHe="הודעות · כיתה ז׳3" story={<p>chain</p>} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('סיפור בהמשכים');
+    expect(screen.getByText('הודעות · כיתה ז׳3')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'סיפור' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByText('chain')).toBeTruthy();
   });
 
   it('on the wall tab: the render heading, the class kicker, and ⛔ no isolation card', () => {

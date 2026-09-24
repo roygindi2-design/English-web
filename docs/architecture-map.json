@@ -526,6 +526,15 @@
     "components/InboxList.tsx",
     "lib/core/messages.ts"
   ],
+  "app/dev/messages/story-fixture.ts": [
+    "lib/core/storyChain.ts"
+  ],
+  "app/dev/messages/story/page.tsx": [
+    "app/dev/messages/story-fixture.ts",
+    "components/ClassJoin.tsx",
+    "components/ClassStory.tsx",
+    "components/InboxList.tsx"
+  ],
   "app/dev/messages/wall-fixture.ts": [
     "lib/core/wallFeed.ts"
   ],
@@ -1016,6 +1025,22 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
+  "components/ClassStory.dom.test.tsx": [
+    "app/dev/messages/story-fixture.ts",
+    "components/ClassStory.tsx",
+    "lib/core/blockKeyboard.ts"
+  ],
+  "components/ClassStory.tsx": [
+    "components/ClassWall.tsx",
+    "components/EnWord.tsx",
+    "components/WallReplySheet.tsx",
+    "components/block-keyboard-tokens.css",
+    "lib/api/client.ts",
+    "lib/core/blockKeyboard.ts",
+    "lib/core/failure.ts",
+    "lib/core/storyChain.ts",
+    "lib/core/wallFeed.ts"
+  ],
   "components/ClassWall.dom.test.tsx": [
     "app/dev/messages/wall-fixture.ts",
     "components/ClassWall.tsx"
@@ -1094,6 +1119,7 @@
   "components/InboxList.test.ts": [],
   "components/InboxList.tsx": [
     "components/ClassJoin.tsx",
+    "components/ClassStory.tsx",
     "components/EnWord.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",

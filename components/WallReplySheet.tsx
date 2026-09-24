@@ -20,8 +20,15 @@ import { RETRY_HE } from '@/lib/core/failure';
  */
 export const REPLY_TITLE_HE = 'תגובה מהבלוקים';
 export const QUESTION_TITLE_HE = 'שאלה חדשה';
+/** T-479 — the same sheet for the class story: the last line of the chain rides in its head. */
+export const STORY_TITLE_HE = 'המשפט הבא בסיפור';
 export const NOT_SENT_HE = `לא נשלח — ${RETRY_HE}`;
 export const CLOSE_HE = 'סגירה';
+
+function titleOf(kind: 'reply' | 'question' | 'story'): string {
+  if (kind === 'story') return STORY_TITLE_HE;
+  return kind === 'reply' ? REPLY_TITLE_HE : QUESTION_TITLE_HE;
+}
 
 export function WallReplySheet({
   open,
@@ -36,7 +43,7 @@ export function WallReplySheet({
   readonly open: boolean;
   /** Sending: kept mounted (the draft lives in the keyboard) but ⛔ not shown. */
   readonly hidden?: boolean;
-  readonly kind: 'reply' | 'question';
+  readonly kind: 'reply' | 'question' | 'story';
   readonly questionEn?: string;
   readonly failed?: boolean;
   readonly onSend: (words: readonly string[]) => void;
@@ -50,7 +57,7 @@ export function WallReplySheet({
       data-wall-sheet
       role="dialog"
       aria-modal="false"
-      aria-label={kind === 'reply' ? REPLY_TITLE_HE : QUESTION_TITLE_HE}
+      aria-label={titleOf(kind)}
       hidden={hidden}
       className="fixed inset-x-0 bottom-0 z-30 rounded-t-2xl border-t border-surface-raised bg-surface px-4 pb-4 pt-2 shadow-lg"
     >
@@ -60,7 +67,7 @@ export function WallReplySheet({
       */}
       <div className="mx-auto flex max-h-[62dvh] w-full max-w-md flex-col">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-bold text-ink">{kind === 'reply' ? REPLY_TITLE_HE : QUESTION_TITLE_HE}</span>
+        <span className="text-sm font-bold text-ink">{titleOf(kind)}</span>
         <button type="button" onClick={onClose} className="inline-flex min-h-touch items-center px-2 text-sm font-semibold text-ink-muted">
           {CLOSE_HE}
         </button>

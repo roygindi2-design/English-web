@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import ClassStory, { STORY_HEADING_HE } from '@/components/ClassStory';
 import ClassJoin, { WALL_HEADING_HE, WALL_KICKER_NO_CLASS_HE, wallKickerHe, type ClassPanelState } from '@/components/ClassJoin';
 import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
@@ -25,14 +26,13 @@ import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
  */
 export const KICKER_HE = 'הודעות · סימולציות';
 export const HEADING_HE = 'תיבת הסימולציות';
-// T-469 · `39 § 9`-5 — `הקיר` opened with the classes; `סיפור` stays off, and says so in words.
-export type MessagesTab = 'wall' | 'inbox';
+// T-469 · `הקיר` opened with the classes; T-479 · `39 § 9`-5 — `סיפור` opened with the story chain.
+export type MessagesTab = 'wall' | 'story' | 'inbox';
 const TABS: readonly { readonly he: string; readonly key: MessagesTab | null }[] = [
   { he: 'הקיר', key: 'wall' },
-  { he: 'סיפור', key: null },
+  { he: 'סיפור', key: 'story' },
   { he: 'תיבה', key: 'inbox' },
 ];
-const TABS_CONDITION_HE = 'סיפור עוד לא פתוח';
 const CARD_TITLE_HE = 'כל התכתובת מול דמויות';
 const CARD_SUB_HE = 'אין כאן משתמשים אחרים';
 const NO_LEVEL_HE = 'כדי לקרוא הודעות ברמה שלך, בחר קודם רמה.';
@@ -86,7 +86,6 @@ function Header({ tab, onTab, kickerHe, headingHe }: { readonly tab: MessagesTab
           );
         })}
       </div>
-      <p className="mt-1 text-xs text-ink-muted">{TABS_CONDITION_HE}</p>
     </header>
   );
 }
@@ -179,9 +178,19 @@ export interface InboxListViewProps {
   /** The `הקיר` tab's body and its kicker (`הודעות · <שם הכיתה>`, kol-C-10). */
   readonly wall?: ReactNode;
   readonly wallKickerHe?: string;
+  /** T-479 — the `סיפור` tab's body; the kicker is the wall's (`הודעות · <שם הכיתה>`). */
+  readonly story?: ReactNode;
 }
 
-export function InboxListView({ state, onRetry = () => {}, tab = 'inbox', onTab = () => {}, wall = null, wallKickerHe: wallKicker = WALL_KICKER_NO_CLASS_HE }: InboxListViewProps) {
+export function InboxListView({ state, onRetry = () => {}, tab = 'inbox', onTab = () => {}, wall = null, wallKickerHe: wallKicker = WALL_KICKER_NO_CLASS_HE, story = null }: InboxListViewProps) {
+  if (tab === 'story') {
+    return (
+      <section dir="rtl" className="mx-auto w-full max-w-md pb-6 text-ink">
+        <Header tab="story" onTab={onTab} kickerHe={wallKicker} headingHe={STORY_HEADING_HE} />
+        <div role="tabpanel">{story}</div>
+      </section>
+    );
+  }
   if (tab === 'wall') {
     // ⛔ No IsolationCard here: it says «אין כאן משתמשים אחרים», and on the wall there are.
     return (
@@ -247,6 +256,7 @@ export default function InboxList(): React.JSX.Element {
       tab={tab}
       onTab={setTab}
       wall={tab === 'wall' ? <ClassJoin onState={onClassState} /> : null}
+      story={tab === 'story' ? <ClassJoin onState={onClassState} body={(id) => <ClassStory classId={id} />} /> : null}
       wallKickerHe={wallKicker}
     />
   );

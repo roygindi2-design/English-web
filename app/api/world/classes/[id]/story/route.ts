@@ -16,15 +16,19 @@ const STORY_LEVEL = 'B2' as const;
 
 const NOT_FOUND = () => NextResponse.json({ ok: false, code: 'class_not_found' }, { status: 404 });
 
-async function session() {
+type Session =
+  | { readonly fail: NextResponse }
+  | { readonly supabase: ReturnType<typeof createRouteClient>; readonly user: { readonly id: string } };
+
+async function session(): Promise<Session> {
   const env = readSupabaseEnv();
-  if (!env) return { fail: NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 }) } as const;
+  if (!env) return { fail: NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 }) };
   const supabase = createRouteClient(env, await cookies());
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fail: NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 }) } as const;
-  return { supabase, user } as const;
+  if (!user) return { fail: NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 }) };
+  return { supabase, user };
 }
 
 /**
@@ -34,7 +38,7 @@ async function session() {
  * its beginning — ⛔ the reverse of the wall), and `myTurn`: the last line is ⛔ not the
  * learner's. Read under RLS (0038): ⛔ a non-member gets 404, ⛔ not 403. ⛔ No author id leaves.
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   const s = await session();
   if ('fail' in s) return s.fail;
   const { supabase, user } = s;
@@ -69,7 +73,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  * 🔴 `myTurn: false` in the answer is ⛔ not a guess: the line just saved IS the last line,
  * so the turn has passed — ⛔ never computed from a read taken before the insert.
  */
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   const s = await session();
   if ('fail' in s) return s.fail;
   const { supabase } = s;
