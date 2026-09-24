@@ -125,8 +125,22 @@ describe('classifyStatus', () => {
          הוא `⛔` שיושב ב**פרוזה**, ⇒ שורה **בעבודה** דווחה `blocked`. */
       ['🔵 **חצי ⓐ נמסר** — ⛔ החצי השני עדיין פתוח', 'open'],
       ['prose with no glyph', 'unknown'],
+      // `T-457` · `F-309`ⓐ · `D-281`.
+      ['📋 **נרשם ב-03-for-roy**', 'done'],
+      ['⏳ **הקוד נסגר · ⛔ הרוטציה פתוחה → רוי**', 'open'],
+      ['▶️ **הצעד הבא** — ⛔ טרם נבנה', 'open'],
     ];
     for (const [cell, expected] of cases) expect(classifyStatus(cell)).toBe(expected);
+  });
+
+  it('T-457 · a LEADING `V` is a decided finding — and only a leading one', () => {
+    expect(classifyStatus('V **הוכרע D-260**')).toBe('done');
+    expect(classifyStatus(' V **הוכרע `D-281` (PM, C-0782)** — ⓐ ⛔ …')).toBe('done');
+    // ⛔ a Latin word that starts with V is prose, ⛔ not a verdict.
+    expect(classifyStatus('Validate ⛔ first')).not.toBe('done');
+    expect(classifyStatus('Validate ⛔ first')).toBe('blocked');
+    // ⛔ a `V` in the middle of the cell decides nothing.
+    expect(classifyStatus('⛔ blocked on the V shape')).toBe('blocked');
   });
 });
 

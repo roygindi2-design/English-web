@@ -158,7 +158,26 @@ const STATE_GLYPHS: ReadonlyArray<readonly [string, TaskState]> = [
   ['🔵', 'open'],
   ['⛔', 'blocked'],
   ['🚫', 'cancelled'],
+  /**
+   * `T-457` · `F-309`ⓐ · `D-281` — three glyphs the registers use and this table ⛔ did not
+   * know. 🔬 Counted on the live findings register: ⓑ `📋` opens a cell recorded as filed
+   * and done; ⓒ `⏳` («waiting») and `▶️` («next step») open cells that are still live work
+   * ⇒ `open`, ⛔ not a sixth state (the reasoning of `🔵` above).
+   * ⚠️ The fourth, `V`, is ⛔ here: it is a Latin letter and would match inside any English
+   * word in the prose ⇒ it is read as a LEADING glyph only, in `classifyStatus` below.
+   */
+  ['📋', 'done'],
+  ['⏳', 'open'],
+  ['▶️', 'open'],
 ];
+
+/**
+ * `T-457` · `F-309`ⓐ · `D-281` — «V **הוכרע D-xxx**»: a finding PM has decided. 🔬 Measured
+ * on the live register: **28** cells open with it, and since `V` was unknown the FIRST
+ * `⛔` of their prose won ⇒ decided findings were reported as blocked. ⇒ `V` counts only as
+ * the cell's first visible character, followed by a space or `*`; `Validate ⛔ …` ⛔ is not it.
+ */
+const LEADING_DECIDED = /^\s*V(?=[\s*])/;
 
 /**
  * The FIRST glyph in the cell decides. Measured: `T-050` opens `✅` and then carries a `⛔`
@@ -168,6 +187,7 @@ const STATE_GLYPHS: ReadonlyArray<readonly [string, TaskState]> = [
  * them, because the register states its verdict before its caveats.
  */
 export function classifyStatus(cell: string): TaskState {
+  if (LEADING_DECIDED.test(cell)) return 'done';
   let best: TaskState = 'unknown';
   let bestAt = Number.POSITIVE_INFINITY;
   for (const [glyph, state] of STATE_GLYPHS) {
