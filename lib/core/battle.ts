@@ -205,6 +205,13 @@ export interface BattleState {
    * `manaAt` מכפילה רק את הזמן **שאחריו** — ההיסטוריה ⛔ אינה מוכפלת.
    */
   readonly lastBreathFromMs: number | null;
+  /**
+   * 💥 **`T-455` · `37 § 6` — «לא התחמקת — נזק, הרצף מתאפס».** האינדקס ב-`casts`
+   * שממנו `streakAt` סופר. ⛔ **נכתב רק ב-`tick`, ורק כשמכה נוחתת** (`landed > 0`) —
+   * מכה שנבלעה בגלגול, ב`מגן`, בנתיב בטוח או בחומה ⛔ אינה נוגעת בו.
+   * ⛔ «רצף מרבי» (`arenaSummary.ts`, `37 § 10`) ⛔ אינו קורא אותו: שם נספרת נכונות בלבד.
+   */
+  readonly streakFrom: number;
   readonly casts: readonly BattleCast[];
   /** T-281 — the `37 § 7` row `startBattle` was given. `cast` reads damage and penalty from here. */
   readonly stats: CharacterBattleStats;
@@ -237,6 +244,7 @@ export function startBattle(
     heroLane: null,
     guardLane: null,
     lastBreathFromMs: null,
+    streakFrom: 0,
     casts: [],
     stats,
   };
@@ -420,6 +428,9 @@ export function tick(state: BattleState, elapsedMs: number): BattleState {
         ? elapsedMs
         : state.lastBreathFromMs,
     lastSwingMs: elapsedMs,
+    // 💥 `T-455` — ⛔ רק מכה ש**נחתה** מאפסת. «אותה הפניה» למעלה ⛔ אינה נפגעת: הענף ההוא
+    //    חוזר לפני שורה זו, כשאף מכה ⛔ לא זזה.
+    streakFrom: landed > 0 ? state.casts.length : state.streakFrom,
     pendingPenalty: 0,
     dodgedSwing: immune ? null : state.dodgedSwing,
     /* 🛡️ **⟦`T-438`⟧ ⛔ **ההגנה ⛔ אינה נכנסת ל-`immuneBy`, וזה נשקל ונדחה.**
@@ -613,13 +624,15 @@ export function stagePhase(state: BattleState): StagePhase {
  *
  * ⛔ **טהורה ונגזרת** (`DEV.md` — `/lib/core/` הוא PURE): היא קוראת את `state.casts`,
  * המבנה שכבר קיים, ⇒ ⛔ אפס שדה חדש ב-`BattleState` ו⛔ אפס דרך שהמספר יסטה מהקרב.
+ * ⟦`T-455`⟧ ‏ועוד `streakFrom` — הגבול שמכת יריב שנחתה מציבה (`37 § 6`). ⛔ עדיין נגזר.
  *
  * ⛔ **ומה ש⛔ אינו כאן, ומוצהר:** מכפיל הנזק 1.5 והחרב הלוהטת של `§ 8` ק1 — שניהם
  * משנים את האריתמטיקה של `cast()` ⇒ שורה נפרדת, ⛔ ולא תוספת שקטה כאן.
  */
 export function streakAt(state: BattleState): number {
   let streak = 0;
-  for (let i = state.casts.length - 1; i >= 0; i -= 1) {
+  // 💥 `T-455` — ⛔ לא מעבר ל-`streakFrom`: מכת יריב שנחתה היא גבול, בדיוק כמו הטלה שגויה.
+  for (let i = state.casts.length - 1; i >= state.streakFrom; i -= 1) {
     const done = state.casts[i];
     if (done === undefined || !done.correct) break;
     streak += 1;

@@ -45,6 +45,7 @@ import {
   isBelowLastBreath,
   manaOf,
   RAGE_FROM_MS,
+  type BattleState,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
 
@@ -554,6 +555,55 @@ describe('T-401 · streakAt — הרצף הנוכחי בסרגל העליון', 
     const before = JSON.stringify(s);
     expect(streakAt(s)).toBe(streakAt(s));
     expect(JSON.stringify(s)).toBe(before);
+  });
+});
+
+/**
+ * 💥 **T-455 · `37 § 6` — «לא התחמקת — נזק, הרצף מתאפס».** מכה ש**נוחתת** מאפסת את
+ * הרצף הנוכחי; מכה שנבלעה (`מגן`, גלגול, נתיב בטוח, חומה) ⛔ אינה נוגעת בו.
+ * ⛔ «רצף מרבי» של `arenaSummary.ts` ⛔ אינו חלק מזה (`37 § 10` סופר נכונות בלבד).
+ */
+describe('T-455 · `37 § 6` — מכה נוחתת מאפסת את הרצף', () => {
+  const threeRight = (): BattleState => {
+    let s = FRESH;
+    s = cast(s, 'אפשרות 1', 1_000);
+    s = cast(s, 'אפשרות 2', 2_000);
+    s = cast(s, 'אפשרות 3', 3_000);
+    return s;
+  };
+
+  it('3 נכונות ⇒ מכה נוחתת ⇒ `streakAt === 0`', () => {
+    const s = threeRight();
+    expect(streakAt(s)).toBe(3);
+    const hit = tick(s, ENEMY_SWING_MS);
+    expect(hit.learnerHp).toBeLessThan(s.learnerHp);
+    expect(streakAt(hit)).toBe(0);
+  });
+
+  it('3 נכונות ⇒ מכה נחסמת ב`מגן` ⇒ `streakAt === 3`', () => {
+    const shielded = spendAbility(threeRight(), 'shield', 6_000);
+    expect(shielded.immuneBy).toBe('shield');
+    const blocked = tick(shielded, ENEMY_SWING_MS);
+    expect(blocked.learnerHp).toBe(shielded.learnerHp);
+    expect(streakAt(blocked)).toBe(3);
+  });
+
+  it('3 נכונות ⇒ גלגול בחלון ⇒ הרצף נשמר', () => {
+    const rolled = dodge(threeRight(), ENEMY_SWING_MS - 500);
+    expect(rolled.immuneBy).toBe('dodge');
+    expect(streakAt(tick(rolled, ENEMY_SWING_MS))).toBe(3);
+  });
+
+  it('אחרי הפגיעה הרצף נבנה מחדש מאפס, ⛔ ואינו זוכר את מה שהיה לפניה', () => {
+    let s = tick(threeRight(), ENEMY_SWING_MS);
+    s = cast(s, 'אפשרות 4', ENEMY_SWING_MS + 1_000);
+    expect(streakAt(s)).toBe(1);
+  });
+
+  it('⛔ פריים בלי מכה ⇒ אותה הפניה, והרצף ⛔ אינו זז', () => {
+    const s = threeRight();
+    expect(tick(s, 4_000)).toBe(s);
+    expect(streakAt(tick(s, 4_000))).toBe(3);
   });
 });
 
