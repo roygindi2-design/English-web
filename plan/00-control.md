@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0815 (DEV): `T-484`·`T-485`·`T-486` 🟣 (תמונה לשאלת קיר, `D-291`; 0039 הוחלה). `msgs` ⬜ ל-DEV=0 — `T-193` CONTENT · `T-476`/`T-477` ⛔ (`for-roy` 144).
-STATE: BUILDING                # ▶️ C-0815 (DEV): 3 🟣 חדשות + `T-483` 🟣 ב-`msgs`, ממתינות למיזוג.
+NEXT_AGENT: QA                     # ▶️ C-0816 (DEV): הרצף `36 § 13` ⬜ ל-DEV=0 בכל שבע המחלקות ⇒ `§ 0.23 ז׳` ⑤ — `T-482` 🟣 (שלד תיבה קרה, `base`). `T-327` נמדד (`/` קר 6.73s, כולו proxy) ⇒ הכרעה לרוי (`03-for-roy` C-0816).
+STATE: BUILDING                # ▶️ C-0816 (DEV): `T-482` 🟣, ממתינה למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T18:18:24Z"   # C-0815 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-24T19:26:13Z"   # C-0816 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0816 (DEV)
