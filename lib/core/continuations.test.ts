@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  END_BLOCK, buildContinuationIndex, isSendable, nextBlocks, reachableWithin, sentenceTokens, wordLexicon,
+  END_BLOCK, buildContinuationIndex, isSendable, keyboardNorm, nextBlocks, sendableSentences, reachableWithin, sentenceTokens, wordLexicon,
   type ContinuationIndex,
 } from './continuations';
 import { buildLevelMap, parseCefrCsv } from './cefrLevels';
@@ -179,5 +179,43 @@ describe('isSendable — T-462: a reply is sent only where an observed sentence 
 
   it('an empty reply is never sendable', () => {
     expect(isSendable(idx, [], 'B2')).toBe(false);
+  });
+});
+
+describe('sendableSentences — T-475: the closed set the database fence loads', () => {
+  const idx = index(['I like tea.', 'I like tea.', 'I go.', 'I like coffee.', 'I recommend the beach.']);
+  const all = [...sendableSentences(idx)].map((w) => w.join(' '));
+
+  it('yields every sendable path exactly once, duplicates collapsed', () => {
+    expect(all.sort()).toEqual(['i go', 'i like coffee', 'i like tea', 'i recommend the beach']);
+  });
+
+  it('every yielded path is sendable at the top level, and no proper prefix is', () => {
+    for (const s of all) expect(isSendable(idx, s.split(' '), 'B2')).toBe(true);
+    expect(all).not.toContain('i like');
+    expect(all).not.toContain('i');
+  });
+
+  it('a path cut at maxDepth still ends where its recorded endLevel says', () => {
+    const cut = index(['I like tea.', 'I like the beach.'], 2);
+    const paths = [...sendableSentences(cut)].map((w) => w.join(' '));
+    for (const s of paths) expect(isSendable(cut, s.split(' '), 'B2')).toBe(true);
+    expect(paths).toContain('i like tea');
+  });
+});
+
+describe('keyboardNorm — T-475: one fingerprint for every rendering of a sentence', () => {
+  it('drops the capital and the end mark wallSentence adds', () => {
+    expect(keyboardNorm('I like tea?')).toBe('i like tea');
+    expect(keyboardNorm('I like tea.')).toBe(keyboardNorm('i like tea'));
+  });
+
+  it("keeps the apostrophe — i'm is not im", () => {
+    expect(keyboardNorm("I'm here.")).toBe("i'm here");
+    expect(keyboardNorm("I'm here.")).not.toBe(keyboardNorm('Im here.'));
+  });
+
+  it('collapses every run of spacing or punctuation to one space', () => {
+    expect(keyboardNorm('  I ,  like\ttea!! ')).toBe('i like tea');
   });
 });

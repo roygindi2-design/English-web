@@ -279,3 +279,39 @@ export function isSendable(index: ContinuationIndex, words: readonly string[], l
   if (words.length === 0) return false;
   return nextBlocks(index, words, level).blocks.some((b) => b.word === END_BLOCK.word);
 }
+
+/**
+ * T-475 · D-289 — the ONE normalisation the database fence hashes. `keyboard_norm` in
+ * `supabase/migrations/0036_keyboard_sentences.sql` is this, letter for letter:
+ * lower-case · every run of anything but `a-z` and `'` becomes one space · trimmed.
+ * ⇒ `wallSentence`'s capital and its `?`/`.` ⛔ never change the fingerprint, and the
+ * apostrophe ⛔ is kept (`i'm` ≠ `im`).
+ */
+export function keyboardNorm(text: string): string {
+  return text.toLowerCase().replace(/[^a-z']+/g, ' ').trim();
+}
+
+/**
+ * T-475 — every word path `isSendable` accepts at the top level, each exactly once:
+ * the closed set the database fence loads (`keyboard_sentences`). The same walk as
+ * `nextBlocks` — a node whose endLevel is not -1 ends a sentence, and a bare-number
+ * child past `maxDepth` ends one when its recorded endLevel is not -1.
+ */
+export function* sendableSentences(index: ContinuationIndex): Generator<string[]> {
+  const top = CONTINUATION_LEVELS.length - 1;
+  function* walk(node: Node | number, path: string[]): Generator<string[]> {
+    if (typeof node === 'number') {
+      if (node !== -1 && node <= top) yield path;
+      return;
+    }
+    const end = node[0] as number;
+    if (path.length > 0 && end !== -1 && end <= top) yield path;
+    for (let i = 1; i < node.length; i += 3) {
+      if ((node[i + 1] as number) > top) continue;
+      const child = node[i + 2];
+      if (child === undefined) continue;
+      yield* walk(child, [...path, index.words[node[i] as number] ?? '']);
+    }
+  }
+  yield* walk(index.root, []);
+}
