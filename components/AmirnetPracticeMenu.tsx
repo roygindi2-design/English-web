@@ -78,10 +78,10 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
         <AmirnetTabs active="practice" built={AMIRNET_BUILT_TABS} />
       </header>
 
-      <h2 className="mt-6 text-base font-semibold text-ink">{CHOOSE_TYPE_HE}</h2>
+      <h2 className="mt-4 text-base font-semibold text-ink">{CHOOSE_TYPE_HE}</h2>
       <p className="mt-1 text-sm text-ink-muted">{NO_ADAPTIVITY_HE}</p>
 
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-3 space-y-2">
         {cards.map((card) => {
           const chosen = card.type === type;
           const ready = practiceReady(card.type, level);
@@ -90,8 +90,8 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
               key={card.type}
               className={
                 chosen
-                  ? 'rounded-2xl border-2 border-brand bg-surface-raised p-4'
-                  : 'rounded-2xl border border-border-subtle bg-surface-raised p-4'
+                  ? 'rounded-2xl border-2 border-brand bg-surface-raised px-4 py-2.5'
+                  : 'rounded-2xl border border-border-subtle bg-surface-raised px-4 py-2.5'
               }
             >
               <div className="flex items-start justify-between gap-3">
@@ -109,16 +109,11 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
                 </div>
               </div>
 
-              {card.successPct === null ? null : (
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-border-subtle">
-                  <div
-                    className={`h-full rounded-full ${TYPE_BAR_CLASS[card.type]}`}
-                    style={{ width: `${card.successPct}%` }}
-                  />
-                </div>
-              )}
-
-              <div className="mt-3 flex justify-start">
+              {/* ⟦T-490⟧ The `תרגל` button shares the bar's row — ⛔ not a row of its own under it.
+                  The render stacks them (:118 bar · :121 button, 24px tall); built at 44px the
+                  stack cost 52px a card and pushed the level chips below the fold at 393×852.
+                  The button keeps the render's side (start, right in RTL); the bar fills the rest. */}
+              <div className="mt-1.5 flex items-center gap-3">
                 <button
                   type="button"
                   aria-disabled={!ready}
@@ -131,20 +126,28 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
                      yet», ⛔ not «does nothing». */
                   className={
                     ready
-                      ? 'min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90'
-                      : 'min-h-touch min-w-touch rounded-xl border border-border-strong px-5 text-sm font-bold text-ink-muted active:opacity-90'
+                      ? 'min-h-touch min-w-touch shrink-0 rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90'
+                      : 'min-h-touch min-w-touch shrink-0 rounded-xl border border-border-strong px-5 text-sm font-bold text-ink-muted active:opacity-90'
                   }
                 >
                   {PRACTISE_HE}
                 </button>
+                {card.successPct === null ? null : (
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-border-subtle">
+                    <div
+                      className={`h-full rounded-full ${TYPE_BAR_CLASS[card.type]}`}
+                      style={{ width: `${card.successPct}%` }}
+                    />
+                  </div>
+                )}
               </div>
             </li>
           );
         })}
       </ul>
 
-      <h2 className="mt-6 text-base font-semibold text-ink">{LEVEL_HEADING_HE}</h2>
-      <div role="group" aria-label={LEVEL_HEADING_HE} className="mt-3 grid grid-cols-4 gap-2">
+      <h2 className="mt-3 text-base font-semibold text-ink">{LEVEL_HEADING_HE}</h2>
+      <div role="group" aria-label={LEVEL_HEADING_HE} className="mt-2 grid grid-cols-4 gap-2">
         {AMIRNET_LEVELS.map((l) => {
           const on = l === level;
           return (
@@ -165,7 +168,7 @@ export default function AmirnetPracticeMenu({ cards, initialType = null, onStart
         })}
       </div>
 
-      {level === null && <p className="mt-3 text-sm text-ink-muted">{PICK_LEVEL_FIRST_HE}</p>}
+      {level === null && <p className="mt-2 text-sm text-ink-muted">{PICK_LEVEL_FIRST_HE}</p>}
     </section>
   );
 }

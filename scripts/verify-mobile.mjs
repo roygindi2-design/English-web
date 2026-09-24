@@ -3820,6 +3820,43 @@ try {
     }
   }
 
+  // 🧪 `T-490`…`T-492` (`C-0820`) — **אמירנט נכנסת במסך אחד.** מדידת `C-0819` (`next start`):
+  // התרגול +98 · הסיום/הרמות +126 · הדשבורד +22 ב-393×852. כל שורה בטבלה: נתיב · גדלים ·
+  // המחרוזת שחייבת להיראות בטעינה · וכמה מקום להשאיר בתחתית (`tabBar` — 73px של `TabBar`,
+  // שהנתיב הייצורי מצייר ⛔ ושנתיב ה-`/dev` ⛔ אינו מצייר).
+  {
+    const TAB_BAR = 73;
+    const FIT = [
+      // T-490 — שורת הסיבה מעל הסרגל, ⛔ לא מתחת לקיפול.
+      { route: '/dev/amirnet/practice', text: 'בחר רמת קושי כדי להתחיל', tabBar: true,
+        sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
+    ];
+    for (const { route, text, tabBar, sizes } of FIT) {
+      for (const size of sizes) {
+        const ctx = await browser.newContext({ viewport: size });
+        const page = await ctx.newPage();
+        const uncaught = watchUncaught(page);
+        await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
+        const m = await page.evaluate((needle) => {
+          const hit = [...document.querySelectorAll('main *')].find(
+            (e) => e.children.length === 0 && (e.textContent ?? '').includes(needle),
+          );
+          return {
+            scroll: document.documentElement.scrollHeight,
+            clientH: document.documentElement.clientHeight,
+            bottom: hit ? Math.round(hit.getBoundingClientRect().bottom) : null,
+          };
+        }, text);
+        const at = `T-490…T-492 · ${route} @ ${size.width}×${size.height}`;
+        const floor = m.clientH - (tabBar ? TAB_BAR : 0);
+        check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+        check(m.scroll <= m.clientH, `${at} · ⛔ nothing scrolls`, `scrollHeight ${m.scroll} vs clientHeight ${m.clientH}`);
+        check(m.bottom !== null && m.bottom <= floor, `${at} · «${text}» visible on load`, `bottom ${m.bottom} vs ${floor}`);
+        await ctx.close();
+      }
+    }
+  }
+
   // ---- 3. install offer timing (UX plan T-001) ----------------------------
   {
     const context = await browser.newContext({

@@ -83,4 +83,12 @@ describe('AmirnetPracticeMenu — T-286, render kol-D-03-practice-menu.png', () 
   it('⛔ adds no second gutter — the layout already owns the product one (T-285ⓓ · D-206)', () => {
     expect(CODE).not.toMatch(/className="[^"]*\bpx-4\b[^"]*"/);
   });
+
+  it('⟦T-490⟧ the start shares the bar row — ⛔ no row of its own, or the chips fall below the fold', () => {
+    // Measured C-0819: a 44px `תרגל` on its own row made each card 156px and put the reason
+    // line at top=874 on a 852px screen. check:mobile measures the pixels; this guards the shape.
+    expect(CODE).not.toMatch(/flex justify-start/);
+    expect(CODE).toMatch(/className="mt-1\.5 flex items-center gap-3"/);
+    expect(CODE).toMatch(/h-2 flex-1 overflow-hidden rounded-full/);
+  });
 });
