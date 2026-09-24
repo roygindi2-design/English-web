@@ -38,13 +38,36 @@ export interface SpellCardProps {
    * ⛔ זהו קריאה בלבד (`getBoundingClientRect`) — הקלף עדיין ⛔ אינו יודע דבר על היריב
    * ו⛔ אינו נוגע בקרב. */
   readonly onCast: (from: DOMRect) => void;
+  /** 🃏 ⟦`T-458` · `37 § 11` א9⟧ מקומו של הקלף ביד — ⛔ לפי אינדקס, ⛔ ולא `nth-child`:
+   *  היד נבנית מחדש בכל שאלה, ⇒ המניפה נגזרת ממה שמוצג עכשיו. ⛔ חסר ⇒ קלף ישר. */
+  readonly fanIndex?: number;
+  readonly fanCount?: number;
+}
+
+/**
+ * 🃏 ⟦`T-458` · `37 § 11` א9 · `kol-B-03-battle.png`⟧ **המניפה — פריסה, ⛔ ולא תנועה.**
+ * 🔬 **הערכים מהרנדר, ⛔ ולא נבחרו:** `render_video_B.py:529` — `rot=lerp(-4, 4, i / 3)`
+ * על ארבעה קלפים משמאל לימין (PIL: חיובי = נגד כיוון השעון) ⇒ בצילום הקלף **השמאלי**
+ * נוטה נגד השעון והימני עם השעון — כלומר החוצה. ב-CSS חיובי = עם השעון ⇒ ‏`-4°…+4°`.
+ * ⚠️ **היד ב-RTL:** אינדקס 0 הוא הקלף **הימני** ⇒ המיקום החזותי משמאל הוא `n-1-i`.
+ * ⓐ `rot` — הנטייה במניפה. ⓑ `y` — הקיצוניים יושבים 3px נמוך יותר (קשת, ⛔ ולא שורה).
+ * ⓒ `lean` — «הרמה עם סיבוב 6 מעלות» של א9 (‏`:507` `rot=lerp(0, 6, p)`), **לכיוון המרכז**,
+ * ורק בזמן גרירה.
+ */
+export function fanPose(index: number, count: number): { rot: number; y: number; lean: number } {
+  if (count < 2 || index < 0 || index >= count) return { rot: 0, y: 0, lean: 0 };
+  const fromLeft = count - 1 - index;
+  const t = fromLeft / (count - 1); // 0 = שמאל · 1 = ימין
+  const rot = Math.round((-4 + 8 * t) * 100) / 100;
+  const edge = fromLeft === 0 || fromLeft === count - 1;
+  return { rot, y: edge ? 3 : 0, lean: rot === 0 ? 0 : rot > 0 ? -6 : 6 };
 }
 
 const UNKNOWN_SPELL_HE = 'לחש לא מזוהה';
 const SELECTED_HE = 'נבחר';
 
 export default function SpellCard({
-  label, unknown, selected, reducedMotion, onSelect, onCast,
+  label, unknown, selected, reducedMotion, onSelect, onCast, fanIndex = 0, fanCount = 0,
 }: SpellCardProps): React.JSX.Element {
   // ⛔ ref ו⛔ לא state: נקודת ההתחלה ⛔ אינה משנה פיקסל על המסך. אותו נימוק בדיוק
   // שנרשם ב-`components/Flashcard.tsx:55-61`.
@@ -72,9 +95,14 @@ export default function SpellCard({
      ⛔ No clock here (`SpellCard.test.ts:23`): the curve is a STRING, the duration a NUMBER,
      both computed once at `pointerup`. Unsupported `linear()` ⇒ the properties are not
      written and the CSS defaults (200ms ease-out) stand. */
+  const pose = fanPose(fanIndex, fanCount);
   const style: CSSProperties &
     Record<'--kol-release-ms' | '--kol-release-ease', string | undefined> &
-    Record<'--arena-card-y' | '--arena-card-x', string> = {
+    Record<'--arena-card-y' | '--arena-card-x' | '--arena-fan-rot' | '--arena-fan-y' | '--arena-fan-lean', string> = {
+    /* 🃏 `T-458` — על הקלף עצמו, ⛔ ולא משתנה על ההורה (`animate` § 4). */
+    '--arena-fan-rot': `${pose.rot}deg`,
+    '--arena-fan-y': `${pose.y}px`,
+    '--arena-fan-lean': `${pose.lean}deg`,
     /* 🔴 **⟦15/09 · `C-0623` · `T-361`⟧ הטרנספורם נמסר כ**משתנה**, ⛔ ולא כערך סופי.**
        🔬 **נמדד:** הקלף נושא `transform` **מוטבע**, ו-`style` מוטבע גובר על כל כלל CSS.
        ⇒ נטיית העומק שקובץ הטוקנים מוסיף לקלף הייתה **נדרסת בשקט** בכל רינדור, וכל

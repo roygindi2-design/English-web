@@ -2075,7 +2075,7 @@ export default function ArenaBattle({
         data-arena-hand
         className="grid h-[196px] shrink-0 grid-cols-4 content-start gap-2 pt-2 [@media(max-height:700px)]:h-[140px]"
       >
-        {hand.map((option) => (
+        {hand.map((option, i) => (
           <li key={option.he}>
             {/* T-220 ⓐ · D-143 § ד׳ — `?` is the OPTION SOURCE'S property (`ArcadeOption.kind`,
                 filled by `buildRound`), ⛔ not a card slot: `unseen` = pulled from a word with
@@ -2085,6 +2085,8 @@ export default function ArenaBattle({
               unknown={option.kind === 'unseen'}
               selected={selected === option.he}
               reducedMotion={reducedMotion}
+              fanIndex={i}
+              fanCount={hand.length}
               /* 🔴 **⟦NEW 15/09 · `C-0622` · `F-259` · Roy reported it⟧ A SECOND TAP ON THE
                  SAME CARD CASTS IT. It used to DESELECT.**
 

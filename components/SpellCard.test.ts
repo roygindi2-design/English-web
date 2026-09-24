@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { withoutComments } from '@/lib/testSource';
+import { fanPose } from './SpellCard';
 
 const SRC = readFileSync('components/SpellCard.tsx', 'utf8');
 const CODE = withoutComments(SRC);
@@ -149,5 +150,30 @@ describe('T-426 · הקלף מורם, הנבחר ראשי, ושני רדיוסי
     }
     const shadows = tokens.slice(tokens.indexOf('--arena-card-shadow-secondary:'), tokens.indexOf('--arena-card-shadow-primary:') + 200);
     expect(shadows).not.toContain('--brand');
+  });
+});
+
+describe('🃏 T-458 · `37 § 11` א9 — the hand is a fan', () => {
+  it('four cards take the render\'s −4°…+4°, outward, visual-left first (RTL: index 0 is right)', () => {
+    const rots = [0, 1, 2, 3].map((i) => fanPose(i, 4).rot);
+    expect(rots).toEqual([4, 1.33, -1.33, -4]);
+    expect(new Set(rots).size).toBe(4);
+  });
+  it('the outer cards sit lower; the lean on drag points to the centre', () => {
+    expect([0, 1, 2, 3].map((i) => fanPose(i, 4).y)).toEqual([3, 0, 0, 3]);
+    expect(fanPose(0, 4).lean).toBe(-6);
+    expect(fanPose(3, 4).lean).toBe(6);
+  });
+  it('⛔ no hand, no fan — a lone or out-of-range card stays straight', () => {
+    expect(fanPose(0, 1)).toEqual({ rot: 0, y: 0, lean: 0 });
+    expect(fanPose(5, 4)).toEqual({ rot: 0, y: 0, lean: 0 });
+  });
+  it('the CSS composes the fan, keeps it under reduced motion', () => {
+    const css = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+    expect(css).toMatch(/rotateZ\(var\(--arena-fan-rot, 0deg\)\) rotateX\(9deg\)/);
+    // ⛔ ⓒ removed: a hand that breathes is a tap target that never rests (check:mobile).
+    expect(css).not.toMatch(/@keyframes arena-hand-breathe/);
+    const reduced = css.slice(css.indexOf('⟦`T-458`ⓓ⟧'));
+    expect(reduced.slice(0, 900)).toMatch(/rotateZ\(var\(--arena-fan-rot, 0deg\)\)/);
   });
 });

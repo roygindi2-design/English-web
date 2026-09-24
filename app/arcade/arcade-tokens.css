@@ -932,7 +932,11 @@ body:has([data-arena-failure] [data-action-bar]) {
   /* ⛔ **שני המקורות מורכבים כאן**, ⛔ ולא נלחמים: `--arena-card-y` הוא האצבע
      (‏`SpellCard` כותב אותו בכל `pointermove`), והנטייה היא העומק. ⛔ ברירת מחדל 0px
      כדי שקלף שמעולם לא נגרר ⛔ יקבל `translateY()` ריק. */
-  transform: translate(var(--arena-card-x, 0px), var(--arena-card-y, 0px)) rotateX(9deg);
+  /* 🃏 ⟦`T-458` · `37 § 11` א9⟧ **המניפה** — `--arena-fan-rot`/`--arena-fan-y` נכתבים על
+     הקלף עצמו (`SpellCard` · `fanPose`, ערכי `render_video_B.py:529`). ⛔ ברירת מחדל 0 ⇒
+     קלף מחוץ ליד נשאר ישר. */
+  transform: translate(var(--arena-card-x, 0px), calc(var(--arena-card-y, 0px) + var(--arena-fan-y, 0px)))
+    rotateZ(var(--arena-fan-rot, 0deg)) rotateX(9deg);
   transition: transform 160ms var(--arena-ease-out);
   transform-style: preserve-3d;
 }
@@ -941,6 +945,23 @@ body:has([data-arena-failure] [data-action-bar]) {
 [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
   transform: translate(var(--arena-card-x, 0px), calc(var(--arena-card-y, 0px) - 6px)) rotateX(0deg) translateZ(26px);
 }
+/* 🃏 ⟦`T-458`ⓑ⟧ **בזמן גרירה — «הרמה עם סיבוב 6 מעלות»** (א9), לכיוון המרכז
+   (`--arena-fan-lean`). ⛔ הנבחר ⛔ נושא אותה רק כשהוא נגרר: במנוחה הוא ישר (ⓑ «מתיישר»). */
+[data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='dragging'],
+[data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='ready'] {
+  transform: translate(var(--arena-card-x, 0px), var(--arena-card-y, 0px)) rotateZ(var(--arena-fan-lean, 0deg)) rotateX(9deg);
+}
+[data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'][data-arena-lift='dragging'],
+[data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'][data-arena-lift='ready'] {
+  transform: translate(var(--arena-card-x, 0px), calc(var(--arena-card-y, 0px) - 6px)) rotateZ(var(--arena-fan-lean, 0deg)) rotateX(0deg) translateZ(26px);
+}
+
+/* 🃏 ⟦`T-458`ⓒ⟧ ⛔ **⛔ אין ריחוף ליד — הוסר באותו טיק, ובמדידה.** נשימה של ‎−2px/2.8s
+   על `[data-arena-hand]` הפילה את `check:mobile` (‏`verify-mobile.mjs:4066`): ‏`click` על
+   קלף המתין 30s ל«element is not stable» ⇒ **מטרת הקשה שלעולם ⛔ אינה נחה**. ⛔ וזו גם
+   גדר של החוקה — לולאת ההמתנה (≤2px) מותרת **על הבמה בלבד**, והיד ⛔ אינה הבמה.
+   ⇒ ממצא ל-PM (`plan/60-findings.md`), ⛔ ולא סטייה שקטה. */
+
 /* ⛔ **ובזמן גרירה ⛔ אין מעבר** — אחרת יש פיגור בין האצבע לקלף. זה בדיוק מה
    ש-`Flashcard` כבר למד, ומאותה סיבה. */
 [data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='dragging'],
@@ -960,8 +981,17 @@ body:has([data-arena-failure] [data-action-bar]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* 🃏 ⟦`T-458`ⓓ⟧ **המניפה נשארת** — היא פריסה, ⛔ ולא תנועה. יוצאים: ה-6° והעומק. */
   [data-arena-scope] [data-arena-hand] [data-arena-card],
-  [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'] {
+  [data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='dragging'],
+  [data-arena-scope] [data-arena-hand] [data-arena-card][data-arena-lift='ready'] {
+    transform: translate(var(--arena-card-x, 0px), calc(var(--arena-card-y, 0px) + var(--arena-fan-y, 0px)))
+      rotateZ(var(--arena-fan-rot, 0deg));
+    transition: none;
+  }
+  [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'],
+  [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'][data-arena-lift='dragging'],
+  [data-arena-scope] [data-arena-hand] [data-arena-card][aria-pressed='true'][data-arena-lift='ready'] {
     transform: translate(var(--arena-card-x, 0px), var(--arena-card-y, 0px));
     transition: none;
   }

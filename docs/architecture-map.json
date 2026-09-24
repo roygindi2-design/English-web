@@ -1011,6 +1011,7 @@
     "lib/core/licenceFooter.ts"
   ],
   "components/SpellCard.test.ts": [
+    "components/SpellCard.tsx",
     "lib/testSource.ts"
   ],
   "components/SpellCard.tsx": [
