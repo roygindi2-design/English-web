@@ -3521,7 +3521,7 @@ try {
       { mark: '[data-arena-enemy-block]', px: 110, band: 'enemy-block' },
       { mark: '[data-arena-mana]', px: 44, band: 'mana' },
       { mark: '[data-arena-hintrow]', px: 28, band: 'hint' },
-      { mark: '[data-arena-hand]', px: 196, band: 'deck' },
+      { mark: '[data-arena-hand]', px: 120, band: 'deck' }, // T-459 — 196 left ~97px empty under 100px cards
       { mark: '[data-arena-abilities]', px: 68, band: 'abilities' },
       { mark: '[data-arena-isolation]', px: 20, band: 'bottom' },
     ];

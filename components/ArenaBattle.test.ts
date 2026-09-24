@@ -651,7 +651,7 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
       { mark: 'data-arena-enemy-block', px: 110, node: '3316:8' },
       { mark: 'data-arena-mana', px: 44, node: '3319:2' },
       { mark: 'data-arena-hintrow', px: 28, node: '3319:15' },
-      { mark: 'data-arena-hand', px: 196, node: '3319:16' },
+      { mark: 'data-arena-hand', px: 120, node: 'T-459 · 100px cards, not Figma 132' },
       { mark: 'data-arena-abilities', px: 68, node: '3319:33' },
       { mark: 'data-arena-isolation', px: 20, node: '832→852' },
     ] as const;
@@ -669,8 +669,9 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
 
     // 🔢 **הסכום עצמו, ⛔ ולא שבע טענות נפרדות:** שבע הרצועות ועוד הבמה = 852.
     const declared = BANDS.reduce((sum, b) => sum + b.px, 0);
-    expect(declared, 'שבע הרצועות שאינן הבמה').toBe(522);
-    expect(declared + 330, '‏`36 § 8.0` ② — הסכום ב-393×852').toBe(852);
+    // 📏 ⟦`T-459`⟧ ‏deck 196 ⇒ 120: 76px עוברים לבמה (330 ⇒ 406), הסכום ⛔ לא זז.
+    expect(declared, 'שבע הרצועות שאינן הבמה').toBe(446);
+    expect(declared + 406, '‏`36 § 8.0` ② — הסכום ב-393×852').toBe(852);
 
     // ⛔ **ואפס `gap` על השורש** — זה מה שמאפשר לסכום להסתכם.
     const root = battle.slice(0, battle.indexOf('>'));
