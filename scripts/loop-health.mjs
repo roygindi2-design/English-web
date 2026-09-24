@@ -25,6 +25,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { hookState } from './install-hooks.mjs';
+import { strandedFiles } from './lib/stranded-work.mjs';
 
 /**
  * ⛔ Every path resolves through ROOT, and that is not decoration: without it the
@@ -1666,15 +1667,30 @@ check(
       };
     }
     const stranded = [];
+    let copied = 0;
     for (const ref of refs) {
       const n = Number((git('rev-list', '--count', `origin/work/current..${ref}`) ?? '').trim());
       if (Number.isFinite(n) && n > 0) {
+        // 🧪 T-463 · `F-256`: ⛔ ancestry alone convicts a branch that was COPY-merged.
+        // The question is whether its CONTENT is home — ⇒ `strandedFiles`.
+        const files = strandedFiles(git, 'origin/work/current', ref);
+        if (files !== null && files.length === 0) {
+          copied += 1;
+          continue;
+        }
         const tip = (git('log', '-1', '--format=%h %cI %s', ref) ?? '').trim().slice(0, 120);
-        stranded.push(`${ref.replace('pf-outcome/', 'claude/')} — ${n} קומיטים ⛔ שאינם ב-work/current · ${tip}`);
+        const what =
+          files === null
+            ? '⛔ התוכן ⛔ לא נמדד'
+            : `${files.length} קבצים ⛔ שתוכנם ⛔ לא הגיע: ${files.slice(0, 3).join(' · ')}${files.length > 3 ? ' …' : ''}`;
+        stranded.push(`${ref.replace('pf-outcome/', 'claude/')} — ${n} קומיטים · ${what} · ${tip}`);
       }
     }
     return stranded.length === 0
-      ? { ok: true, detail: `${refs.length} ענפי \`claude/*\` — כולם מוכלים ב-work/current · 0 תקועים` }
+      ? {
+          ok: true,
+          detail: `${refs.length} ענפי \`claude/*\` — כולם ב-work/current (${copied} מהם בהעתקה, נמדד על התוכן) · 0 תקועים`,
+        }
       : {
           ok: false,
           detail: `⛔ ${stranded.length} מתוך ${refs.length} ענפי \`claude/*\` נושאים עבודה ש-work/current ⛔ אינו מכיר`,
