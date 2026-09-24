@@ -5,12 +5,29 @@
    shared file becomes a second visual language.
    ⛔ Verbs are ⛔ never red — red is `--danger`, «a mistake».
    A colour is ⛔ never the only channel: every block also prints its category in words. */
+/* T-466 · D-286 ⓐ · F-323 — the LIGHT scheme (the product's own surface) takes darker
+   values for the same five roles. Measured with `validate_palette` (C-0796) on #ffffff
+   and #f8fafc: every value ≥3:1 (lowest amber 4.80:1), and the smallest pair ΔE76 is
+   28.4 across normal · protan · deutan (floor 20). The `39 § 3` values were drawn
+   against the dark render: on white, teal was 2.12:1 and orchid 2.78:1, and blue↔orchid
+   collapsed for protan (ΔE 5.9). Hues stay in their families; the verb stays amber. */
 [data-block-keyboard] {
-  --pos-verb: #f2b544;
-  --pos-noun: #5b9bf5;
-  --pos-adjective: #2ec5c5;
-  --pos-conjunction: #8b95ab;
-  --pos-pronoun: #d178e8;
+  --pos-verb: #b45309;
+  --pos-noun: #0284c7;
+  --pos-adjective: #0d9488;
+  --pos-conjunction: #334155;
+  --pos-pronoun: #9333ea;
+}
+
+/* The DARK scheme keeps `39 § 3` exactly — ⛔ no change to the spec. */
+@media (prefers-color-scheme: dark) {
+  [data-block-keyboard] {
+    --pos-verb: #f2b544;
+    --pos-noun: #5b9bf5;
+    --pos-adjective: #2ec5c5;
+    --pos-conjunction: #8b95ab;
+    --pos-pronoun: #d178e8;
+  }
 }
 
 [data-block-keyboard] [data-pos='verb'] { --pos: var(--pos-verb); }

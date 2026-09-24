@@ -96,6 +96,13 @@ describe('T-201 — every block prints its category in words', () => {
   it('⛔ the scoped token file never hides, shrinks away or colours out a legend', () => {
     const css = readFileSync('components/block-keyboard-tokens.css', 'utf8');
     expect(css).not.toMatch(/data-pos-legend/);
-    expect(css).not.toMatch(/@media|@container|display:\s*none|visibility:\s*hidden/);
+    expect(css).not.toMatch(/@media(?!\s*\(prefers-color-scheme: dark\))|@container|display:\s*none|visibility:\s*hidden/);
+    // T-466: the one permitted @media swaps the five `--pos-*` values for the dark scheme —
+    // and ⛔ nothing else may ride inside it.
+    const scheme = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+    const decls = scheme.match(/^\s*--?[a-z-]+\s*:/gim) ?? [];
+    expect(decls.map((d) => d.trim().replace(/:$/, '').trim())).toEqual([
+      '--pos-verb', '--pos-noun', '--pos-adjective', '--pos-conjunction', '--pos-pronoun',
+    ]);
   });
 });

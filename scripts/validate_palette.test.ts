@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CATEGORICAL_MIN_DELTA_E, CVD_TYPES } from '@/lib/core/colorVision';
 import { CONTRAST_FLOORS } from '@/lib/core/palette';
@@ -52,5 +53,37 @@ describe('scripts/validate_palette.mjs — הקובץ ש-RULES § 0.9 מחייב
   it('⛔ אינו טוען שבדק טריטן', () => {
     const r = run(['--colors', '#ffffff,#000000', '--surface', '#808080']);
     expect(r.out).toContain('טריטן ⛔ לא נבדק');
+  });
+});
+
+describe('T-466 · D-286 ⓐ — the part-of-speech palette on the LIGHT surface', () => {
+  // The values are read from the token file itself: a fixture copy of them would be a hole.
+  const css = readFileSync('components/block-keyboard-tokens.css', 'utf8');
+  const light = css.slice(0, css.indexOf('@media (prefers-color-scheme: dark)'));
+  const dark = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+  const POS = ['verb', 'noun', 'adjective', 'conjunction', 'pronoun'] as const;
+  const valueOf = (block: string, pos: string): string =>
+    new RegExp(`--pos-${pos}:\\s*(#[0-9a-f]{6})`, 'i').exec(block)?.[1] ?? 'missing';
+
+  it('the five light values pass validate_palette — ≥3:1 on #ffffff and on #f8fafc, 0 pairs under the ΔE floor', () => {
+    const colors = POS.map((p) => valueOf(light, p));
+    expect(colors).not.toContain('missing');
+    for (const surface of ['#ffffff', '#f8fafc']) {
+      const r = run(['--colors', colors.join(','), '--surface', surface]);
+      expect(r.out, surface).not.toContain('FAIL');
+      expect(r.code, surface).toBe(0);
+    }
+  });
+
+  it('the dark scheme keeps the 39 § 3 values unchanged — ⛔ no change to the spec', () => {
+    expect(POS.map((p) => valueOf(dark, p))).toEqual(['#f2b544', '#5b9bf5', '#2ec5c5', '#8b95ab', '#d178e8']);
+  });
+
+  it('⛔ a verb is never red (39 § 3), and no --pos value enters palette.ts', () => {
+    const verb = valueOf(light, 'verb');
+    const r = parseInt(verb.slice(1, 3), 16);
+    const g = parseInt(verb.slice(3, 5), 16);
+    expect(g / r).toBeGreaterThan(0.3); // amber/brown, ⛔ not a red (#b91c1c ⇒ 0.14)
+    expect(readFileSync('lib/core/palette.ts', 'utf8')).not.toMatch(/--pos-/);
   });
 });
