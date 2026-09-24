@@ -51,6 +51,7 @@
     "verify:fast": "npm run typecheck && npm run check:core && npm run check:motion && npm run check:text-floor && npm run check:rules && npm run check:titles && npm test",
     "check:plan": "node scripts/check-plan-shape.mjs",
     "loop:health": "node scripts/loop-health.mjs",
+    "loop:heartbeat": "node scripts/loop-heartbeat.mjs",
     "hooks:install": "node scripts/install-hooks.mjs",
     "generate-map": "node scripts/generate-map.mjs",
     "prepare": "node scripts/install-hooks.mjs",
