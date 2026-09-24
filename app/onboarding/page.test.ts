@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-122 · TD-25 — המנעול השני, כשומר מקור.
@@ -9,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * ב-`lib/core/entryRoute.test.ts`.
  */
 const SRC = readFileSync('app/onboarding/page.tsx', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('מסך ה-onboarding בודק בעצמו', () => {
   it('קורא onboarded_at ⛔ ולא רק session', () => {

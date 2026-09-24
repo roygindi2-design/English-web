@@ -84,7 +84,9 @@
   "app/api/amirnet/simulation/runs/route.ts": [
     "lib/supabase/auth.ts"
   ],
-  "app/api/arcade/character/route.test.ts": [],
+  "app/api/arcade/character/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/arcade/character/route.ts": [
     "lib/core/arenaCharacter.ts",
     "lib/supabase/auth.ts"
@@ -96,7 +98,9 @@
     "lib/core/arcadeCollection.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/arcade/home/route.test.ts": [],
+  "app/api/arcade/home/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/arcade/home/route.ts": [
     "lib/core/arenaCharacter.ts",
     "lib/core/arenaLastRound.ts",
@@ -120,20 +124,26 @@
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/auth/login/route.test.ts": [],
+  "app/api/auth/login/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/auth/login/route.ts": [
     "lib/core/auth.ts",
     "lib/supabase/auth.ts",
     "lib/supabase/authRateLimit.ts"
   ],
-  "app/api/auth/signup/route.test.ts": [],
+  "app/api/auth/signup/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/auth/signup/route.ts": [
     "lib/core/auth.ts",
     "lib/core/profile.ts",
     "lib/supabase/auth.ts",
     "lib/supabase/authRateLimit.ts"
   ],
-  "app/api/dev/session/route.test.ts": [],
+  "app/api/dev/session/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/dev/session/route.ts": [
     "lib/supabase/auth.ts",
     "lib/supabase/devUser.ts"
@@ -184,7 +194,8 @@
     "lib/supabase/auth.ts"
   ],
   "app/api/review/context/route.test.ts": [
-    "app/api/review/context/route.ts"
+    "app/api/review/context/route.ts",
+    "lib/testSource.ts"
   ],
   "app/api/review/context/route.ts": [
     "lib/core/contextTapRequest.ts",
@@ -216,7 +227,9 @@
     "lib/core/sentenceItem.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/world/bank/route.test.ts": [],
+  "app/api/world/bank/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/world/bank/route.ts": [
     "lib/core/world.ts",
     "lib/supabase/auth.ts",
@@ -251,7 +264,9 @@
   "app/api/world/messages/state/route.ts": [
     "lib/supabase/auth.ts"
   ],
-  "app/api/world/posts/route.test.ts": [],
+  "app/api/world/posts/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/world/posts/route.ts": [
     "lib/core/world.ts",
     "lib/supabase/auth.ts"
@@ -263,7 +278,9 @@
     "lib/core/worldRecall.ts",
     "lib/supabase/auth.ts"
   ],
-  "app/api/world/status/route.test.ts": [],
+  "app/api/world/status/route.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/api/world/status/route.ts": [
     "lib/core/levelSummary.ts",
     "lib/core/storyGate.ts",
@@ -524,18 +541,24 @@
     "components/WorldRing.tsx",
     "lib/core/worldRing.ts"
   ],
-  "app/error.test.ts": [],
+  "app/error.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/error.tsx": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
-  "app/global-error.test.ts": [],
+  "app/global-error.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/global-error.tsx": [
     "app/globals.css",
     "lib/core/failure.ts"
   ],
   "app/globals.css": [],
-  "app/globals.test.ts": [],
+  "app/globals.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/layout.test.ts": [],
   "app/layout.tsx": [
     "app/globals.css",
@@ -561,7 +584,9 @@
   "app/offline/page.tsx": [
     "lib/core/failure.ts"
   ],
-  "app/onboarding/page.test.ts": [],
+  "app/onboarding/page.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/onboarding/page.tsx": [
     "components/OnboardingForm.tsx",
     "components/RegisteredAddress.tsx",
@@ -603,10 +628,13 @@
   "app/world/messages/[id]/page.tsx": [
     "components/SimulationMessage.tsx"
   ],
-  "components/ActionBar.test.ts": [],
+  "components/ActionBar.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ActionBar.tsx": [],
   "components/AmirnetDashboard.test.ts": [
-    "components/AmirnetDashboard.tsx"
+    "components/AmirnetDashboard.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetDashboard.tsx": [
     "components/AmirnetEstimateNotice.tsx",
@@ -617,7 +645,8 @@
   ],
   "components/AmirnetDashboardLive.test.ts": [
     "components/AmirnetDashboardLive.tsx",
-    "lib/core/failure.ts"
+    "lib/core/failure.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetDashboardLive.tsx": [
     "components/AmirnetDashboard.tsx",
@@ -626,14 +655,16 @@
     "lib/core/failure.ts"
   ],
   "components/AmirnetEstimateNotice.test.ts": [
-    "components/AmirnetEstimateNotice.tsx"
+    "components/AmirnetEstimateNotice.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetEstimateNotice.tsx": [],
   "components/AmirnetLevels.dom.test.tsx": [
     "components/AmirnetLevels.tsx"
   ],
   "components/AmirnetLevels.test.ts": [
-    "components/AmirnetLevels.tsx"
+    "components/AmirnetLevels.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetLevels.tsx": [
     "components/AmirnetTabs.tsx",
@@ -642,7 +673,8 @@
   "components/AmirnetPracticeFlow.dom.test.tsx": [
     "components/AmirnetPracticeFlow.tsx",
     "components/AmirnetPracticeMenu.tsx",
-    "lib/core/amirnetPractice.ts"
+    "lib/core/amirnetPractice.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetPracticeFlow.tsx": [
     "components/AmirnetPracticeMenu.tsx",
@@ -654,7 +686,8 @@
     "lib/core/failure.ts"
   ],
   "components/AmirnetPracticeMenu.test.ts": [
-    "components/AmirnetPracticeMenu.tsx"
+    "components/AmirnetPracticeMenu.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetPracticeMenu.tsx": [
     "components/AmirnetTabs.tsx",
@@ -664,7 +697,8 @@
   ],
   "components/AmirnetQuestion.test.ts": [
     "components/AmirnetQuestion.tsx",
-    "lib/core/amirnetQuestion.ts"
+    "lib/core/amirnetQuestion.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetQuestion.tsx": [
     "components/AmirnetTabs.tsx",
@@ -674,7 +708,8 @@
   ],
   "components/AmirnetResult.test.ts": [
     "components/AmirnetResult.tsx",
-    "lib/core/amirnetResult.ts"
+    "lib/core/amirnetResult.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetResult.tsx": [
     "components/AmirnetEstimateNotice.tsx",
@@ -683,7 +718,8 @@
     "lib/core/amirnetSimulation.ts"
   ],
   "components/AmirnetSectionBreak.test.ts": [
-    "lib/core/amirnetSimulation.ts"
+    "lib/core/amirnetSimulation.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetSectionBreak.tsx": [
     "lib/core/amirnetPractice.ts",
@@ -691,7 +727,8 @@
   ],
   "components/AmirnetSimulation.test.ts": [
     "components/AmirnetSimulation.tsx",
-    "lib/core/amirnetSimulation.ts"
+    "lib/core/amirnetSimulation.ts",
+    "lib/testSource.ts"
   ],
   "components/AmirnetSimulation.tsx": [
     "components/AmirnetSectionBreak.tsx",
@@ -703,7 +740,8 @@
     "lib/core/amirnetSimulation.ts"
   ],
   "components/AmirnetSimulationEntry.test.ts": [
-    "components/AmirnetSimulationEntry.tsx"
+    "components/AmirnetSimulationEntry.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetSimulationEntry.tsx": [
     "components/AmirnetLevels.tsx",
@@ -717,26 +755,34 @@
     "components/AmirnetTabs.tsx"
   ],
   "components/AmirnetTabs.test.ts": [
-    "components/AmirnetTabs.tsx"
+    "components/AmirnetTabs.tsx",
+    "lib/testSource.ts"
   ],
   "components/AmirnetTabs.tsx": [],
-  "components/AppGrid.test.ts": [],
+  "components/AppGrid.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/AppGrid.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
     "lib/core/arcadeCollection.ts",
     "lib/core/worldApps.ts"
   ],
-  "components/ArcadeEntry.test.ts": [],
+  "components/ArcadeEntry.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArcadeEntry.tsx": [
     "lib/api/client.ts"
   ],
   "components/ArenaAvatar.dom.test.tsx": [
     "components/ArenaAvatar.tsx",
     "lib/core/arcadeResult.ts",
-    "lib/core/arenaCharacter.ts"
+    "lib/core/arenaCharacter.ts",
+    "lib/testSource.ts"
   ],
-  "components/ArenaAvatar.test.ts": [],
+  "components/ArenaAvatar.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaAvatar.tsx": [
     "lib/core/arcadeResult.ts",
     "lib/core/arenaCharacter.ts",
@@ -773,7 +819,9 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
-  "components/ArenaCharacterChoice.test.ts": [],
+  "components/ArenaCharacterChoice.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaCharacterChoice.tsx": [
     "components/ArenaAvatar.tsx",
     "lib/api/client.ts",
@@ -785,7 +833,9 @@
     "components/ArenaHome.tsx",
     "lib/core/arenaLastRound.ts"
   ],
-  "components/ArenaHome.test.ts": [],
+  "components/ArenaHome.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaHome.tsx": [
     "components/ArenaAvatar.tsx",
     "components/LockIcon.tsx",
@@ -796,7 +846,9 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
-  "components/ArenaResult.test.ts": [],
+  "components/ArenaResult.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaResult.tsx": [
     "components/ActionBar.tsx",
     "components/ArenaAvatar.tsx",
@@ -829,7 +881,9 @@
     "lib/core/battle.ts",
     "lib/core/characterBase.ts"
   ],
-  "components/ArenaSummary.test.ts": [],
+  "components/ArenaSummary.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ArenaSummary.tsx": [
     "components/EnWord.tsx",
     "lib/core/arenaReplay.ts",
@@ -879,7 +933,9 @@
     "lib/testSource.ts"
   ],
   "components/CardSkeleton.tsx": [],
-  "components/CloseIcon.test.ts": [],
+  "components/CloseIcon.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/CloseIcon.tsx": [],
   "components/CollectedWords.test.ts": [
     "lib/testSource.ts"
@@ -891,7 +947,9 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
-  "components/ComposeDraft.test.ts": [],
+  "components/ComposeDraft.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/ComposeDraft.tsx": [
     "components/ActionBar.tsx",
     "components/EnWord.tsx",
@@ -914,14 +972,20 @@
     "lib/api/client.ts",
     "lib/core/deckTiles.ts"
   ],
-  "components/EnWord.test.ts": [],
+  "components/EnWord.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/EnWord.tsx": [],
-  "components/FilterBar.test.ts": [],
+  "components/FilterBar.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/FilterBar.tsx": [
     "components/UnknownMarkIcon.tsx",
     "lib/core/filterProgress.ts"
   ],
-  "components/Flashcard.test.ts": [],
+  "components/Flashcard.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/Flashcard.tsx": [
     "components/EnWord.tsx",
     "lib/core/decay.ts",
@@ -993,7 +1057,9 @@
     "lib/core/levelScan.ts",
     "lib/core/levelSummary.ts"
   ],
-  "components/LockIcon.test.ts": [],
+  "components/LockIcon.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/LockIcon.tsx": [],
   "components/MeExamDateUpdate.test.ts": [
     "lib/testSource.ts"
@@ -1022,7 +1088,9 @@
     "lib/core/failure.ts"
   ],
   "components/MeWordsLearnedSkeleton.tsx": [],
-  "components/OnboardingForm.test.ts": [],
+  "components/OnboardingForm.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/OnboardingForm.tsx": [
     "components/ActionBar.tsx",
     "components/LatinField.tsx",
@@ -1030,7 +1098,9 @@
     "lib/core/failure.ts",
     "lib/core/onboarding.ts"
   ],
-  "components/RecallCard.test.ts": [],
+  "components/RecallCard.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/RecallCard.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -1127,7 +1197,9 @@
     "lib/core/studyTracks.ts"
   ],
   "components/StudyEmptyState.tsx": [],
-  "components/TabBar.test.ts": [],
+  "components/TabBar.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/TabBar.tsx": [
     "components/GlobeIcon.tsx"
   ],
@@ -1139,7 +1211,9 @@
     "components/EnWord.tsx"
   ],
   "components/UnknownMarkIcon.tsx": [],
-  "components/WordBank.test.ts": [],
+  "components/WordBank.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/WordBank.tsx": [
     "components/EnWord.tsx"
   ],
@@ -1150,7 +1224,9 @@
     "components/EnWord.tsx",
     "lib/core/failure.ts"
   ],
-  "components/WorldFeed.test.ts": [],
+  "components/WorldFeed.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/WorldFeed.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -1158,7 +1234,9 @@
     "lib/core/failureExit.ts",
     "lib/core/world.ts"
   ],
-  "components/WorldRing.test.ts": [],
+  "components/WorldRing.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/WorldRing.tsx": [
     "components/LockIcon.tsx",
     "lib/api/client.ts",
@@ -1167,7 +1245,9 @@
     "lib/core/worldApps.ts",
     "lib/core/worldRing.ts"
   ],
-  "components/WritingChain.test.ts": [],
+  "components/WritingChain.test.ts": [
+    "lib/testSource.ts"
+  ],
   "components/WritingChain.tsx": [
     "components/EnWord.tsx",
     "lib/api/client.ts",
@@ -1210,7 +1290,8 @@
     "lib/core/amirnetQuestion.ts"
   ],
   "lib/core/amirnetLevels.test.ts": [
-    "lib/core/amirnetLevels.ts"
+    "lib/core/amirnetLevels.ts",
+    "lib/testSource.ts"
   ],
   "lib/core/amirnetLevels.ts": [
     "lib/core/amirnetPractice.ts"
@@ -1341,7 +1422,8 @@
   "lib/core/battle.test.ts": [
     "lib/core/arenaCharacter.ts",
     "lib/core/arenaWords.ts",
-    "lib/core/battle.ts"
+    "lib/core/battle.ts",
+    "lib/testSource.ts"
   ],
   "lib/core/battle.ts": [
     "lib/core/arenaCharacter.ts",
@@ -1409,7 +1491,8 @@
   "lib/core/decay.ts": [],
   "lib/core/deck.test.ts": [
     "lib/core/deck.ts",
-    "lib/core/levelSummary.ts"
+    "lib/core/levelSummary.ts",
+    "lib/testSource.ts"
   ],
   "lib/core/deck.ts": [
     "lib/core/flashcard.ts",
@@ -1429,12 +1512,14 @@
   ],
   "lib/core/entryRoute.ts": [],
   "lib/core/failure.test.ts": [
-    "lib/core/failure.ts"
+    "lib/core/failure.ts",
+    "lib/testSource.ts"
   ],
   "lib/core/failure.ts": [],
   "lib/core/failureExit.test.ts": [
     "lib/core/failure.ts",
-    "lib/core/failureExit.ts"
+    "lib/core/failureExit.ts",
+    "lib/testSource.ts"
   ],
   "lib/core/failureExit.ts": [],
   "lib/core/filterProgress.test.ts": [
@@ -1832,7 +1917,9 @@
   ],
   "lib/supabase/layer2.test.ts": [],
   "lib/supabase/learnerLevel.test.ts": [],
-  "lib/supabase/lexicalClassBackfill.test.ts": [],
+  "lib/supabase/lexicalClassBackfill.test.ts": [
+    "lib/testSource.ts"
+  ],
   "lib/supabase/messageSimulations.test.ts": [],
   "lib/supabase/onboarding.test.ts": [
     "lib/core/onboarding.ts"

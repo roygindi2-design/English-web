@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<ArcadeEntry>` — הכניסה לזירה מתוך בלוק «דרכים לתרגל» של מפת הרמה
@@ -27,9 +28,7 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/ArcadeEntry.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0072: שומר שהערה יכולה לספק אינו שומר על דבר. */
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /**
  * מחלקות של תגית, כולל קבועים שהיא מפנה אליהם — `ArenaResult.test.ts:15-30`.
@@ -126,7 +125,7 @@ describe('<ArcadeEntry>', () => {
  */
 describe('הזירה נגישה מ`העולם` בלבד (T-156)', () => {
   const strip = (source: string): string =>
-    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    withoutComments(source);
 
   it('מוטציה: מסך הכרטיסיות ⛔ אינו נושא כניסה לזירה', () => {
     const cards = strip(readFileSync('components/LevelMapScreen.tsx', 'utf8'));

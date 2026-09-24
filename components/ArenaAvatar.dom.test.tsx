@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import ArenaAvatar, { FACING_HE, ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import { ARCADE_ITEMS } from '@/lib/core/arcadeResult';
 import { ARENA_CHARACTERS } from '@/lib/core/arenaCharacter';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * 🎒 **⟦19/09 · `C-0727`⟧ שתי התנגשויות שנמדדו **על המסך**, ⛔ ולא נחשדו בקוד.**
@@ -244,7 +245,7 @@ describe('C-0731 · T-432 — הדמות מגבה', () => {
   });
 
   it('הקרב מצייר מגב — ⛔ ושלושת מסכי הציוד ⛔ לא', () => {
-    const stage = readFileSync('components/ArenaStage.tsx', 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    const stage = withoutComments(readFileSync('components/ArenaStage.tsx', 'utf8'));
     expect(stage).toMatch(/role="hero"[^/]*facing="back"/);
     // ⛔ **היריב נשאר חזיתי** — הוא זה שהלומד מסתכל עליו.
     expect(stage).not.toMatch(/role="enemy"[^/]*facing="back"/);

@@ -2,20 +2,17 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { FAILURE_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { failureHe, NOT_A_ZERO_HE, SESSION_EXPIRED_HE } from './AmirnetDashboardLive';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped first — the `AmirnetQuestion.test.ts` reasoning, for the same reason. */
-const CODE = readFileSync('components/AmirnetDashboardLive.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetDashboardLive.tsx', 'utf8'));
 
 /**
  * ⚠️ Comments stripped here too, and it is ⛔ not a loophole: the page's header DOCUMENTS the
  * removal of `zeroStats()` by name, and convicting it for saying so is how a guard starts
  * deleting the explanation in order to please itself (`lib/core/failure.test.ts` `markupOnly`).
  */
-const PAGE = readFileSync('app/(tabs)/world/amirnet/page.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const PAGE = withoutComments(readFileSync('app/(tabs)/world/amirnet/page.tsx', 'utf8'));
 
 describe('AmirnetDashboardLive — T-372ⓓ', () => {
   it('🔴 the page no longer feeds the dashboard a CONSTANT', () => {

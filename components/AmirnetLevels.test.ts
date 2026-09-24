@@ -9,11 +9,10 @@ import {
   SUMMARY_HE,
   lockedReasonHe,
 } from './AmirnetLevels';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetLevels.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetLevels.tsx', 'utf8'));
 
 describe('AmirnetLevels — T-307, render_video_D.py screen_levels (:195-235)', () => {
   it('the four levels are 41 § 4 exactly — band, classification and characteristic', () => {

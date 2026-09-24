@@ -88,9 +88,7 @@ describe('חוקת העיצוב', () => {
  * הזה: הבדיקה עברה על `<LevelMapScreen>` שכבר ⛔ לא רינדר אותו כלל.
  */
 describe('הרכיב אינו יתום — הבית שלו הוא `הגדרות` (T-211)', () => {
-  const SETTINGS = readFileSync('app/(tabs)/settings/page.tsx', 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  const SETTINGS = withoutComments(readFileSync('app/(tabs)/settings/page.tsx', 'utf8'));
 
   it('‏`הגדרות` מרנדר אותו', () => {
     expect(SETTINGS).toContain('<LevelPath');
@@ -102,9 +100,7 @@ describe('הרכיב אינו יתום — הבית שלו הוא `הגדרות`
   });
 
   it('מוטציה: מסך הכרטיסיות ⛔ אינו מרנדר אותו עוד (36 § 5 · D-123)', () => {
-    const cards = readFileSync('components/LevelMapScreen.tsx', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    const cards = withoutComments(readFileSync('components/LevelMapScreen.tsx', 'utf8'));
     expect(cards).not.toContain('<LevelPath');
   });
 });

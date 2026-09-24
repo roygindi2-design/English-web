@@ -2,15 +2,14 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CORRECT_HE, INCORRECT_HE, NO_MORE_ITEMS_HE } from '@/lib/core/amirnetQuestion';
 import { HEADING_HE } from './AmirnetQuestion';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * ⚠️ Comments are stripped first, and that is ⛔ not a loophole — the same reasoning as
  * `AmirnetTabs.test.ts`: these rules are about what a LEARNER is shown, and a doc comment that
  * names a banned word in order to explain the ban is the opposite of the defect.
  */
-const CODE = readFileSync('components/AmirnetQuestion.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetQuestion.tsx', 'utf8'));
 
 describe('AmirnetQuestion — T-287, renders kol-D-04 · kol-D-05', () => {
   it('draws only — ⛔ no fetch and ⛔ no database, ever (RULES: a component never touches the DB)', () => {

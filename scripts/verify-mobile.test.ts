@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * F-007 regression guard. The mobile harness measures every promise this
@@ -439,7 +440,7 @@ describe('the harness measures the tab shell (T-051 · D-027 · D-028)', () => {
  * survives untouched.
  */
 function markupOnly(src: string): string {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  return withoutComments(src);
 }
 
 describe('page containers are anchored to the top, never centred (F-011 · F-016)', () => {
@@ -693,10 +694,8 @@ describe('the world screens are measured and not assumed (T-063 task 9)', () => 
   /** The entries of a top-level array literal, with comment lines stripped first. */
   function entriesOf(name: string): readonly string[] {
     const body = code.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n?\\];`))?.[1] ?? '';
-    const withoutComments = body
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-    return [...withoutComments.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
+    const stripped = withoutComments(body);
+    return [...stripped.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
   }
 
   it('walks the real world routes, so their failure state is measured like every other screen', () => {
@@ -759,21 +758,15 @@ describe('every flow screen declares where its primary action leads (T-067)', ()
   const code = readFileSync('scripts/verify-mobile.mjs', 'utf8');
 
   function block(name: string): string {
-    return (
-      code
-        .match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n\\};`))?.[1]
-        ?.replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^[ \t]*\/\/[^\n]*$/gm, '') ?? ''
-    );
+    const body = code.match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n\\};`))?.[1];
+    return body === undefined ? '' : withoutComments(body);
   }
 
   /** The entries of a top-level array literal, comments stripped. */
   function entriesOf(name: string): readonly string[] {
     const body = code.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\n?\\];`))?.[1] ?? '';
-    const withoutComments = body
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
-    return [...withoutComments.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
+    const stripped = withoutComments(body);
+    return [...stripped.matchAll(/'([^']*)'/g)].map((m) => m[1] ?? '');
   }
 
   /** Route keys of the FLOW_ARRIVAL object — the keys only, never a value. */

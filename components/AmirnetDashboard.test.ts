@@ -9,11 +9,10 @@ import {
   PRACTICE_HREF,
   TO_PRACTICE_HE,
 } from './AmirnetDashboard';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetDashboard.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetDashboard.tsx', 'utf8'));
 
 describe('AmirnetDashboard — T-291, render kol-D-02-dashboard.png', () => {
   it('the binding strings, verbatim from the render (render_video_D.py:22, :63, :67)', () => {

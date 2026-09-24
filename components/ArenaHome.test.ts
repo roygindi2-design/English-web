@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync(new URL('./ArenaHome.tsx', import.meta.url), 'utf8');
 /**
@@ -7,7 +8,7 @@ const SRC = readFileSync(new URL('./ArenaHome.tsx', import.meta.url), 'utf8');
  * (‏F-039 · F-064 · F-065): הקובץ **מתעד בהערה** את מה שאסור בו, ומדידה גולמית הייתה
  * מפילה קובץ ⛔ שאין בו ולו הפרה אחת. ⛔ מחרוזות שהלומד רואה נמדדות על **המקור**.
  */
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', () => {
   it('הכותרת ותת-הכותרת, מילה במילה מ-`37 § 12`', () => {
@@ -149,10 +150,7 @@ describe('ArenaHome — `37 § 12` ומול `docs/design/kol-B-01-home.png`', ()
  * הילד הראשון מימין לאחרון, ב-320/375/414). זו הרצפה המהירה שלה.
  */
 describe('ArenaHome — ציר ה-RTL (T-338)', () => {
-  const SRC_RTL = readFileSync('components/ArenaHome.tsx', 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
+  const SRC_RTL = withoutComments(readFileSync('components/ArenaHome.tsx', 'utf8'));
 
   it('⛔ ⛔ אין `flex-row-reverse` — במיכל RTL הוא הופך את הציר פעם שנייה', () => {
     expect(SRC_RTL).not.toContain('flex-row-reverse');
@@ -244,7 +242,7 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
  */
 describe('ArenaHome — שלד הטעינה (T-398)', () => {
   const LOADING =
-    SRC.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').match(
+    withoutComments(SRC).match(
       /\{loading \? \([\s\S]*?\n {8}\) : \(/,
     )?.[0] ?? '';
 

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import proxy, { isProtectedPath } from './proxy';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * F-003 — the session guard must fail closed.
@@ -113,7 +114,7 @@ describe('the tab routes are behind the session wall (T-051 · § 4.2ב)', () =>
  */
 describe('T-122: הלומד החוזר ⛔ אינו נזרק לטופס', () => {
   const SRC = readFileSync('proxy.ts', 'utf8');
-  const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  const CODE = withoutComments(SRC);
 
   it('ההחלטה מואצלת ל-lib/core ⛔ ואינה משוכפלת כאן', () => {
     expect(CODE).toContain('signedInRedirect');

@@ -1,15 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutSqlComments } from '@/lib/testSource';
 
 /** F-039 · F-065 · F-087 — הלבנת הערות לפני כל טענה על המקור. אותו עיקרון בדיוק
  *  כמו `withoutComments` ב-`lib/testSource.ts`, בגרסת SQL:
  *  הערת הכותרת של 0016 מסבירה למה המילוי ⛔ אינו `case when … else 'content'`,
  *  ולכן היא מכילה את המחרוזת `'content'` בעצמה. בלי ההלבנה `SQL.split(';')`
  *  מחזיר את בלוק ההערה כ"פקודה" הראשונה שמכילה `'content'`, והבדיקה מודדת
- *  תיעוד במקום SQL. ⛔ הפתרון הוא ההלבנה ⛔ ולא מחיקת ההערה. */
-function withoutSqlComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/--[^\n]*/g, '');
-}
+ *  תיעוד במקום SQL. ⛔ הפתרון הוא ההלבנה ⛔ ולא מחיקת ההערה.
+ *  T-341: המפשיט עצמו חי ב-`lib/testSource.ts` — ⛔ לא עותק מקומי. */
 
 const SQL = withoutSqlComments(
   readFileSync('supabase/migrations/0016_lexical_class_backfill.sql', 'utf8'),

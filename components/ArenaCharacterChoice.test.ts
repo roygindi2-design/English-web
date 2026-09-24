@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync(new URL('./ArenaCharacterChoice.tsx', import.meta.url), 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('ArenaCharacterChoice — `37 § 7` on the geometry of `docs/design/kol-B-01-home.png`', () => {
   it('title, the one description line, and the confirm — Hebrew, from the spec', () => {

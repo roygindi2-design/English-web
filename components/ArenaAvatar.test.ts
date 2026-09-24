@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync('components/ArenaAvatar.tsx', 'utf8');
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /**
  * התבנית של `ComposeDraft.test.ts:1-31` — הלבנת הערות לפני כל טענה, כדי שהערה שמזכירה

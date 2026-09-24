@@ -8,6 +8,7 @@ import {
   SESSION_EXPIRED_HE,
   UNREACHABLE_HE,
 } from '@/lib/core/failure';
+import { withoutComments } from '@/lib/testSource';
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -27,7 +28,7 @@ const SCREENS = [...walk('app'), ...walk('components')];
  * documentation to please itself.
  */
 function markupOnly(src: string): string {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  return withoutComments(src);
 }
 
 /**

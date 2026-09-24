@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync('app/api/world/posts/route.ts', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /** The balanced-brace region opened by `open`, `open` included — the C-0100 lesson reused:
  *  a character-distance regex convicts correct code the moment an unrelated line moves. */

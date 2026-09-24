@@ -6,11 +6,10 @@ import {
   NO_ADAPTIVITY_HE,
   PICK_LEVEL_FIRST_HE,
 } from './AmirnetPracticeMenu';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetPracticeMenu.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetPracticeMenu.tsx', 'utf8'));
 
 describe('AmirnetPracticeMenu — T-286, render kol-D-03-practice-menu.png', () => {
   it('the binding strings, verbatim from the render (render_video_D.py:104-105, :128, :125)', () => {

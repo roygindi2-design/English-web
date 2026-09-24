@@ -8,17 +8,12 @@ import {
   chapterBudgetHe,
   chapterHeadingHe,
 } from '@/lib/core/amirnetSimulation';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetSectionBreak.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetSectionBreak.tsx', 'utf8'));
 
-const RUN = readFileSync('components/AmirnetSimulation.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const RUN = withoutComments(readFileSync('components/AmirnetSimulation.tsx', 'utf8'));
 
 describe('AmirnetSectionBreak — T-316, the moment between two chapters', () => {
   it('answers the three things the row names: which chapter, what kind, how long', () => {

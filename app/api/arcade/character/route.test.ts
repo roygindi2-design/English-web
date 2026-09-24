@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync(new URL('./route.ts', import.meta.url), 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('PATCH /api/arcade/character — T-217 · D-152', () => {
   it('exports PATCH and nothing else — ⛔ no GET, no DELETE', () => {

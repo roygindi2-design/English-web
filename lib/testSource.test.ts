@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { withoutComments } from './testSource';
+import { withoutComments, withoutCssComments, withoutSqlComments } from './testSource';
 
 /**
  * 🧪 T-302 — the stripper deletes comments and ⛔ nothing else.
@@ -92,5 +92,23 @@ describe('🧪 T-302 — withoutComments deletes comments, ⛔ not code', () => 
     for (const kept of ['goal: LearnerGoal', 'apiGet<', 'primaryStudyTrack('])
       expect(out, `⛔ "${kept}" was stripped out of MeScreen.tsx`).toContain(kept);
     expect(out.length).toBeLessThan(src.length);
+  });
+});
+
+describe('🧪 T-341 — the two non-TS strippers', () => {
+  it('withoutCssComments removes a CSS block comment and ⛔ keeps a url with //', () => {
+    const css = '/* token */\n.a { color: red; /* inline */ background: url(https://x/y.png); }\n';
+    const out = withoutCssComments(css);
+    expect(out).not.toContain('token');
+    expect(out).not.toContain('inline');
+    expect(out).toContain('url(https://x/y.png)');
+    expect(out).toContain('color: red;');
+  });
+
+  it('withoutSqlComments removes block and `--` comments and ⛔ nothing else', () => {
+    const sql = '/* header */\nupdate words set x = 1; -- why\n-- whole line\nselect 2;\n';
+    const out = withoutSqlComments(sql);
+    for (const gone of ['header', 'why', 'whole line']) expect(out).not.toContain(gone);
+    for (const kept of ['update words set x = 1;', 'select 2;']) expect(out).toContain(kept);
   });
 });

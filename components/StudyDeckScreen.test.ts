@@ -290,10 +290,7 @@ describe('T-124 · D-065 — schema_missing ⛔ אינו מציע «נסה שו�
  * מרנדר את ה-`loading` state ומגיע לאסרציה של ⛔ ⛔ נכון. הקריאה על המקור
  * מודדת את מה שהקומפיילר יעביר ל-DOM, בלי לדרוש רינדור.
  */
-const T087_SRC = readFileSync('components/StudyDeckScreen.tsx', 'utf8')
-  .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const T087_SRC = withoutComments(readFileSync('components/StudyDeckScreen.tsx', 'utf8'));
 
 /** הבלוק של ענף `state.kind === 'cards'` — סוגריים נספרים, ⛔ regex עצל. */
 function cardsBranch(src: string): string {

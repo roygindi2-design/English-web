@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * C-0032/C-0034 lesson, re-measured here: over RAW text, the comment that
@@ -15,7 +16,7 @@ import { describe, expect, it } from 'vitest';
  * violation here.
  */
 const stripComments = (source: string): string =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[^\S\n]*\/\/.*$/gm, '');
+  withoutComments(source);
 
 const bar = stripComments(readFileSync('components/ActionBar.tsx', 'utf8'));
 const css = stripComments(readFileSync('app/globals.css', 'utf8'));

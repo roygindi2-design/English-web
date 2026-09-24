@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { withoutComments } from '@/lib/testSource';
+import { withoutComments, withoutCssComments } from '@/lib/testSource';
 import { LANE_SHIFT_PCT, laneEdgeAtHorizon } from '@/components/ArenaScene';
 import { TELEGRAPH_MS, WINDOW_END_MS } from '@/lib/core/battle';
 
@@ -12,7 +12,7 @@ const CSS = readFileSync('app/globals.css', 'utf8');
  * `app/api/arcade/result/route.test.ts`: הרכיב **מתעד בהערה** שאין בו `setTimeout`,
  * ומדידה גולמית הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת. ⛔ מחיקת ההערה אינה הפתרון.
  */
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /**
  * הבלוק של הבמה ב-CSS. ⛔ `indexOf` לבדו מחזיר `-1` על סמן חסר, ו-`slice(-1)`
@@ -25,7 +25,7 @@ const STAGE_AT = CSS.indexOf(STAGE_MARKER);
  * ומדידה גולמית הייתה מפילה בלוק ⛔ שאין בו ולו לולאה אחת. הכלל אחד: **מודדים קוד,
  * ⛔ לא תיעוד.** ⛔ המיקום נלקח מהמקור הגולמי (הסמן **הוא** הערה) והלבנתו באה אחריו.
  */
-const STAGE_CSS = (STAGE_AT === -1 ? '' : CSS.slice(STAGE_AT)).replace(/\/\*[\s\S]*?\*\//g, '');
+const STAGE_CSS = withoutCssComments(STAGE_AT === -1 ? '' : CSS.slice(STAGE_AT));
 
 describe('<ArenaStage> — D-060 · חוקה § 5', () => {
   it('שתי דמויות, גיבור ויריב', () => {
@@ -196,7 +196,7 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
 describe('C-0624 — הדמויות חיות', () => {
   const STAGE = readFileSync('components/ArenaStage.tsx', 'utf8');
   const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
-  const TOKENS_CODE = TOKENS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS_CODE = withoutCssComments(TOKENS);
 
   it('⛔ **שתי** הדמויות נושמות, ⛔ ולא אחת', () => {
     // ⓐ הגיבור — המנגנון הקיים, ⛔ שלא נגעתי בו.
@@ -286,7 +286,7 @@ describe('C-0624 — הדמויות חיות', () => {
  */
 describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
   const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
-  const TOKENS = TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS = withoutCssComments(TOKENS_SRC);
   const SCENE = withoutComments(readFileSync('components/ArenaScene.tsx', 'utf8'));
 
   it('הנתיב מגיע כ-prop ⛔ ואינו state — ונכתב כ**תכונה** על החריץ', () => {
@@ -357,7 +357,7 @@ describe('C-0730 · T-433ⓑ — הנתיב על המסך', () => {
  */
 describe('C-0732 · T-434 — המתקפה הראשונה', () => {
   const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
-  const TOKENS = TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS = withoutCssComments(TOKENS_SRC);
   const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
 
   const reduced = () =>
@@ -436,7 +436,7 @@ describe('C-0732 · T-434 — המתקפה הראשונה', () => {
  *    על ההטלה של הלומד**. ⇒ המכה של ה**יריב** נוחתת, וה**גוף ⛔ אינו מגיב**.
  */
 describe('C-0739 · T-440 — הדמויות זזות במתקפה', () => {
-  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS = withoutCssComments(readFileSync('app/arcade/arcade-tokens.css', 'utf8'));
   const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
 
   it('🙌 הידיים עולות ב**הכרזה** — ⛔ ולא בטעינה', () => {
@@ -496,7 +496,7 @@ describe('C-0739 · T-440 — הדמויות זזות במתקפה', () => {
  * «ההטלה האחרונה הייתה **שגויה**» — שני דברים שונים בשם אחד.
  */
 describe('C-0741 · T-440ⓑⓒ — הגלגול והלהב', () => {
-  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS = withoutCssComments(readFileSync('app/arcade/arcade-tokens.css', 'utf8'));
   const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
 
   it('🔴 **הקפיצה האנכית** — זו הטענה שמבדילה התחמקות מהחלקה', () => {
@@ -549,7 +549,7 @@ describe('C-0741 · T-440ⓑⓒ — הגלגול והלהב', () => {
  * שזה יישאר נכון אחרי שמישהו יערוך את הגיליון בעוד חודשיים.
  */
 describe('C-0757 · T-444ⓓ — המפרקים זזים, ו⛔ רק על הנווד', () => {
-  const TOKENS = readFileSync('app/arcade/arcade-tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const TOKENS = withoutCssComments(readFileSync('app/arcade/arcade-tokens.css', 'utf8'));
 
   it('🔴 **כל** בורר שמפעיל `arena-rig-*` מגודר ל-`data-arena-rig` — ⛔ ואין חריג', () => {
     // 🔬 הבוררים נחתכים על `{`, ⇒ כל קבוצת בוררים נמדדת **בשלמותה**.
@@ -692,7 +692,7 @@ describe('T-435 · שלוש מתקפות על הבמה', () => {
   });
 
   it('🔴 תנועה מופחתת — ההכרזה נעלמת (`display: none`), וסימני הרצפה נשארים', () => {
-    const blocks = [...TOKENS_SRC.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
+    const blocks = [...withoutCssComments(TOKENS_SRC).matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g)]
       .map((m) => m[1] ?? '').join('\n');
     expect(blocks).toMatch(/\[data-arena-announce\]\s*\{\s*display:\s*none/);
     expect(blocks).not.toContain('[data-arena-aim]');

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * A source guard and not a render test: the environment is node and jsdom is
@@ -10,10 +11,7 @@ const SRC = readFileSync('components/OnboardingForm.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0076: a guard a comment can satisfy guards nothing. */
 function markupOnly(source: string): string {
-  return source
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  return withoutComments(source);
 }
 
 const CODE = markupOnly(SRC);

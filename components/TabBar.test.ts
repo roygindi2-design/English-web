@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * Comments are stripped before the scan — the same guard `ActionBar.test.ts` carries, and
@@ -15,7 +16,7 @@ import { describe, expect, it } from 'vitest';
  * the comments were still in the string.
  */
 const stripComments = (source: string): string =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[^\S\n]*\/\/.*$/gm, '');
+  withoutComments(source);
 
 const src = stripComments(readFileSync('components/TabBar.tsx', 'utf8'));
 const settings = stripComments(readFileSync('app/(tabs)/settings/page.tsx', 'utf8'));

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutCssComments } from '@/lib/testSource';
 
 /**
  * T-069 · constitution § 1 · § 6 · RULES § 0.1 ז׳.
@@ -14,12 +15,12 @@ const CSS = readFileSync('app/globals.css', 'utf8');
 
 /** The declaration block of a selector, comments stripped. */
 function ruleFor(selector: string): string {
-  const withoutComments = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const at = withoutComments.indexOf(selector);
+  const stripped = withoutCssComments(CSS);
+  const at = stripped.indexOf(selector);
   if (at === -1) return '';
-  const open = withoutComments.indexOf('{', at);
-  const close = withoutComments.indexOf('}', open);
-  return open === -1 || close === -1 ? '' : withoutComments.slice(open + 1, close);
+  const open = stripped.indexOf('{', at);
+  const close = stripped.indexOf('}', open);
+  return open === -1 || close === -1 ? '' : stripped.slice(open + 1, close);
 }
 
 /**
@@ -28,21 +29,21 @@ function ruleFor(selector: string): string {
  * naive `indexOf('}')` would truncate on.
  */
 function blockFor(marker: string): string {
-  const withoutComments = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const at = withoutComments.indexOf(marker);
+  const stripped = withoutCssComments(CSS);
+  const at = stripped.indexOf(marker);
   if (at === -1) return '';
-  const open = withoutComments.indexOf('{', at);
+  const open = stripped.indexOf('{', at);
   if (open === -1) return '';
   let depth = 0;
   let i = open;
-  for (; i < withoutComments.length; i += 1) {
-    if (withoutComments[i] === '{') depth += 1;
-    else if (withoutComments[i] === '}') {
+  for (; i < stripped.length; i += 1) {
+    if (stripped[i] === '{') depth += 1;
+    else if (stripped[i] === '}') {
       depth -= 1;
       if (depth === 0) break;
     }
   }
-  return withoutComments.slice(open + 1, i);
+  return stripped.slice(open + 1, i);
 }
 
 describe('the global focus ring (T-069)', () => {
@@ -63,14 +64,14 @@ describe('the global focus ring (T-069)', () => {
   it('never removes an outline anywhere in the sheet', () => {
     // `outline: none` is how a focus ring dies quietly: the rule above still exists and
     // still passes every test that only looks for it.
-    expect(CSS.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/outline:\s*(none|0)\b/);
+    expect(withoutCssComments(CSS)).not.toMatch(/outline:\s*(none|0)\b/);
   });
 
   it('rings only keyboard focus — a bare :focus would ring a mouse tap too', () => {
-    const withoutComments = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+    const stripped = withoutCssComments(CSS);
     // `:focus-visible` contains the substring `:focus`, so the bare selector has to be
     // matched as a whole token: `:focus` followed by anything that is not `-`.
-    expect(withoutComments).not.toMatch(/:focus(?![-\w])/);
+    expect(stripped).not.toMatch(/:focus(?![-\w])/);
   });
 });
 

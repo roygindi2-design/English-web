@@ -51,6 +51,7 @@ import {
   type BattleState,
 } from './battle';
 import { ARENA_CHARACTERS, CHARACTER_BIAS_HE } from './arenaCharacter';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * ⚠️ **הפיקסצ׳ר, ⛔ ולא TODO** (התוכנית, § 6 צעד 4): `startBattle` על ארבע `ArenaWord`.
@@ -178,8 +179,7 @@ describe('battle', () => {
   });
 
   it('⛔ אין בקובץ שעון נסתר — הזמן הוא קלט (D-126 § ג׳)', () => {
-    const code = readFileSync('lib/core/battle.ts', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    const code = withoutComments(readFileSync('lib/core/battle.ts', 'utf8'));
     for (const banned of [/\bsetTimeout\b/, /\bsetInterval\b/, /\bDate\.now\b/, /\brequestAnimationFrame\b/]) {
       expect(code, `${banned} אסור — D-126 § ג׳`).not.toMatch(banned);
     }
@@ -394,8 +394,7 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
     expect(Object.keys(BASE_STATS).sort()).toEqual(keys);
     for (const c of ARENA_CHARACTERS) expect(Object.keys(CHARACTER_STATS[c]).sort()).toEqual(keys);
     // The engine reads the row through `state.stats.<key>` only — measured on the source.
-    const code = readFileSync('lib/core/battle.ts', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    const code = withoutComments(readFileSync('lib/core/battle.ts', 'utf8'));
     const reads = [...code.matchAll(/stats\.(\w+)/g)].map((m) => m[1]);
     expect(reads.length).toBeGreaterThan(0);
     for (const r of reads) expect(keys).toContain(r);
@@ -458,8 +457,7 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
   it('ⓓ — שורות ה«⛔ טרם» נשארות מילים על המסך, ⛔ ואין להן מנגנון', () => {
     for (const line of ['מאנה מהירה יותר', 'חיים נמוכים']) expect(CHARACTER_BIAS_HE.wizard).toContain(line);
     for (const line of ['יכולות מתקררות מהר', 'ירי מטווח']) expect(CHARACTER_BIAS_HE.armorer).toContain(line);
-    const code = readFileSync('lib/core/battle.ts', 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+    const code = withoutComments(readFileSync('lib/core/battle.ts', 'utf8'));
     // 🔴 **צומצם ב-T-363, ⛔ ולא הורפה.** שתי שורות «⛔ טרם» מדברות על **הטיה** —
     // «יכולות מתקררות מהר» (‏`cooldown`) ו«ירי מטווח» (‏`ranged`) — והן עדיין ⛔ אינן
     // בנויות. מה שנבנה ב-T-363 הוא `§ 4` עצמו: `מגן` ו-`הקפאה` **זהים לשלוש הדמויות**

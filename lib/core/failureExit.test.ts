@@ -10,6 +10,7 @@ import {
   worstFailure,
   type FailureCode,
 } from './failureExit';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-124 · D-065 — הכלל הבינארי, כטבלה אחת.
@@ -120,7 +121,7 @@ function walkSources(dir: string, out: string[] = []): string[] {
 
 /** Comments are prose, ⛔ not a second wording — same stripping as `failure.test.ts`. */
 function markupOnly(src: string): string {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  return withoutComments(src);
 }
 
 const SCREEN_SOURCES = [...walkSources('app'), ...walkSources('components')];

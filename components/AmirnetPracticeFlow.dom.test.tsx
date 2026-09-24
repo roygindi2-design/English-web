@@ -8,6 +8,7 @@ import AmirnetPracticeFlow, {
 } from '@/components/AmirnetPracticeFlow';
 import { PRACTISE_HE } from '@/components/AmirnetPracticeMenu';
 import { STATS_UNKNOWN_HE, LEVEL_CHIP_HE } from '@/lib/core/amirnetPractice';
+import { withoutComments } from '@/lib/testSource';
 
 afterEach(cleanup);
 
@@ -160,9 +161,7 @@ describe('AmirnetPracticeFlow — the production door (T-376)', () => {
  * green test and ⛔ nothing measured the wire between them.
  */
 describe('the production route is the one that opens the door (T-376)', () => {
-  const PAGE = readFileSync('app/(tabs)/world/amirnet/practice/page.tsx', 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
+  const PAGE = withoutComments(readFileSync('app/(tabs)/world/amirnet/practice/page.tsx', 'utf8'));
 
   it('🔴 the page no longer feeds the menu a CONSTANT, and no longer drops the press', () => {
     expect(PAGE).not.toMatch(/zeroStats/);

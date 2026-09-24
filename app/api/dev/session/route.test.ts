@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * D-057 · T-113 — שומר מקור, באותה צורה ובאותן מגבלות כמו
@@ -11,8 +12,7 @@ const SRC = readFileSync('app/api/dev/session/route.ts', 'utf8');
 // ⚠️ הייבואים מוסרים, וזו הטענה שנושאת את הקובץ — הלקח של C-0160: עם בלוק
 // הייבוא במקומו, `indexOf('readDevUserGate')` מוצא את ה-**ייבוא**, שהוא מעל כל
 // פקודה בהגדרה, ולכן מבחן הסדר עובר גם אחרי שהשער הועבר מתחת להתחברות.
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
+const CODE = withoutComments(SRC)
   .replace(/^import[\s\S]*?;$/gm, '');
 
 describe('GET /api/dev/session — the gate', () => {

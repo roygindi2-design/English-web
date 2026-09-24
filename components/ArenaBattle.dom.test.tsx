@@ -768,7 +768,7 @@ describe('C-0737 · T-438 — ההגנה על המסך', () => {
   });
 
   it('⛔ אפס קואורדינטה ברכיב — הצורה מגיעה מהמודול הטהור', () => {
-    const src = readFileSync('components/ArenaStage.tsx', 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    const src = withoutComments(readFileSync('components/ArenaStage.tsx', 'utf8'));
     expect(src).toContain('GUARD_PATHS');
     expect(src).not.toMatch(/d="M-?\d/);
   });

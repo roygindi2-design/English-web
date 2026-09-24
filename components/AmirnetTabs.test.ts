@@ -1,15 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AMIRNET_BUILT_TABS, AMIRNET_TAB_HREF, AMIRNET_TABS, NOT_YET_HE } from './AmirnetTabs';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * ⚠️ Comments are stripped first, and that is ⛔ not a loophole: these rules are about what a
  * LEARNER is shown. A doc comment that names the banned word in order to explain the ban is
  * the opposite of the defect — scanning it would make documenting the rule fail the rule.
  */
-const CODE = readFileSync('components/AmirnetTabs.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetTabs.tsx', 'utf8'));
 
 describe('AmirnetTabs — T-286ⓐ, render kol-D-03-practice-menu.png', () => {
   it('carries the three tabs in the render RTL order (render_video_D.py:19)', () => {

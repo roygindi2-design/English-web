@@ -70,3 +70,17 @@ export function withoutComments(source: string): string {
     .replace(BLOCK_COMMENT, '')
     .replace(LINE_COMMENT, '');
 }
+
+/**
+ * 🧪 T-341 — a stylesheet's comments, and ⛔ nothing else. CSS has ⛔ no `//` comment and
+ * ⛔ no JSX, so the two other passes would be wrong here, ⛔ not merely redundant: a
+ * whole-line `//` is not a comment in CSS, and `url(https://…)` must survive.
+ */
+export function withoutCssComments(source: string): string {
+  return source.replace(BLOCK_COMMENT, '');
+}
+
+/** 🧪 T-341 — a SQL migration's comments: block and `--`, ⛔ nothing else. */
+export function withoutSqlComments(source: string): string {
+  return source.replace(BLOCK_COMMENT, '').replace(/--[^\n]*/g, '');
+}

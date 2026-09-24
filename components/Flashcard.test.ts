@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-045 · D-024 guard — the "טרם אומת" marker on the back of the card.
@@ -69,7 +70,7 @@ function divBlockContaining(src: string, marker: string): string | null {
  * can be satisfied by prose is not a scan.
  */
 function stripComments(text: string): string {
-  return text.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  return withoutComments(text);
 }
 
 const src = stripComments(readFileSync(FLASHCARD, 'utf8'));

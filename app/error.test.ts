@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * שומר מקור ל-`app/error.tsx` — T-124 · D-065.
@@ -8,9 +9,7 @@ import { describe, expect, it } from 'vitest';
  * לכאן. מה שנמדד כאן הוא בדיוק הטענה שהמשימה נוקבת בה: לענף הכשל יש יציאה.
  */
 const SRC = readFileSync('app/error.tsx', 'utf8');
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('T-124 · D-065 — גבול השגיאה נושא יציאה', () => {
   it('⛔ אין רק reset() — יש גם ניווט החוצה', () => {

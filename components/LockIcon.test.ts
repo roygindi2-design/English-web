@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-078 — the shared lock mark.
@@ -13,7 +14,7 @@ import { describe, expect, it } from 'vitest';
  */
 const SRC = readFileSync('components/LockIcon.tsx', 'utf8');
 
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('<LockIcon> — the shared lock mark (T-078 · constitution § 6)', () => {
   it('is an inline SVG, ⛔ never a character or an emoji', () => {

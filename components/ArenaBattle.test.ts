@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LAYER_ORDER } from '@/lib/core/characterBase';
-import { withoutComments } from '@/lib/testSource';
+import { withoutComments, withoutCssComments } from '@/lib/testSource';
 
 const SRC = readFileSync('components/ArenaBattle.tsx', 'utf8');
 const CODE = withoutComments(SRC);
 const CSS = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
-const CSS_CODE = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+const CSS_CODE = withoutCssComments(CSS);
 const AVATAR = withoutComments(readFileSync('components/ArenaAvatar.tsx', 'utf8'));
 
 /** פריים אחד. ⛔ ⛔ אינו נבחר: `docs/design/render_video_A.py:16` מצהיר `FPS = 30`. */

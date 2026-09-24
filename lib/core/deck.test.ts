@@ -6,6 +6,7 @@ import {
   sortQueue, toQueueCardInput, type QueueRow,
 } from '@/lib/core/deck';
 import { classifyProgress } from '@/lib/core/levelSummary';
+import { withoutComments } from '@/lib/testSource';
 
 const row = (over: Partial<QueueRow>): QueueRow => ({
   wordId: '00000000-0000-4000-8000-000000000001',
@@ -305,7 +306,7 @@ describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)',
    * את הסכנה. מה שנמדד כאן הוא **קוד חי**. אותו דפוס בדיוק ב-`Flashcard.test.ts`.
    */
   const stripComments = (source: string): string =>
-    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    withoutComments(source).replace(/\/\/[^\n]*/g, '');
   const QUEUE_ROUTE_CODE = stripComments(QUEUE_ROUTE_SRC);
 
   it('מקבל `level` כשם חפיסה', () => {
@@ -376,7 +377,7 @@ describe('חפיסת «סינון מילים» — deck=level (T-155 · D-089)',
  */
 describe('T-199ⓐ — one gate, parseDeckName (D-169)', () => {
   const stripped = (path: string) =>
-    readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    withoutComments(readFileSync(path, 'utf8')).replace(/\/\/[^\n]*/g, '');
   const DECK_SOURCE = stripped('lib/core/deck.ts');
 
   it('⛔ parseFlashcardDeckName ⛔ אינו קיים עוד — T-199ⓐ · D-169', () => {

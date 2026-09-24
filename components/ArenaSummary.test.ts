@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-180 · `37 § 10` — סריקת מקור על התבנית של `components/ArenaStage.test.ts:1-25`.
@@ -7,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת (F-039 · F-065).
  */
 const SRC = readFileSync('components/ArenaSummary.tsx', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
   it('שלוש שורות הסיכום, בשמן מהרנדר', () => {
@@ -79,10 +80,7 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
  * הגובה והפסיעה ואז הפך את הציר. המדידה בפיקסלים יושבת ב-`verify-mobile.mjs`.
  */
 describe('ArenaSummary — ציר ה-RTL (T-338)', () => {
-  const SRC_RTL = readFileSync('components/ArenaSummary.tsx', 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
+  const SRC_RTL = withoutComments(readFileSync('components/ArenaSummary.tsx', 'utf8'));
 
   it('⛔ ⛔ אין `flex-row-reverse` בשורת הסטטיסטיקה', () => {
     expect(SRC_RTL).not.toContain('flex-row-reverse');
@@ -101,9 +99,7 @@ describe('ArenaSummary — ציר ה-RTL (T-338)', () => {
  * `--ink` הוא דיו כהה, ועל `--arena-night` הוא ⛔ נקרא.
  */
 describe('T-428 — הסקופ של הזירה, ⛔ וטוקנים שמתחלפים עם הסכימה', () => {
-  const T428_CODE = readFileSync(new URL('./ArenaSummary.tsx', import.meta.url), 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  const T428_CODE = withoutComments(readFileSync(new URL('./ArenaSummary.tsx', import.meta.url), 'utf8'));
   it('השורש נושא `data-arena-scope` בגובה `100dvh` מלא', () => {
     expect(T428_CODE).toMatch(/<section data-arena-scope className="flex h-\[100dvh\]/);
   });

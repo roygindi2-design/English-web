@@ -65,6 +65,36 @@ const EXEMPT = new Set(['lib/testSource.test.ts', 'lib/testSource.scan.test.ts']
 const DECLARES =
   /^[ \t]*(?:export[ \t]+)?(?:function[ \t]+withoutComments[ \t]*\(|(?:const|let|var)[ \t]+withoutComments[ \t]*(?::[^=]*)?=[ \t]*(?:\(|function\b|async\b))/;
 
+/**
+ * 🧪 **T-341 — the anonymous copy.** `DECLARES` asks for the NAME; the copy that carries
+ * ⛔ no name — `SRC.replace(/\/\*[\s\S]*?\*\//g, '')` — walked straight past it (`F-247`,
+ * 54 files). ⇒ this matches the EXPRESSION: a comment regex literal (block, or the
+ * `{…}` JSX form) whose replacement is the empty string.
+ *
+ * ⚠️ ⛔ **An empty replacement, and only that.** A test that MASKS comments to keep line
+ * numbers (`components/rtl-axis.test.ts` · `T-339`, and `scripts/radius-hygiene.test.ts`
+ * with `' '`) replaces with something ⇒ ⛔ not a stripper, ⛔ not matched.
+ */
+const INLINES = /\[\\s\\S\]\*\?\\\*\\\/(?:\\s\*|\[ \\t\]\*)?(?:\\\})?\/g,\s*(?:''|"")/;
+
+function inlineCopies(): readonly Occurrence[] {
+  const seen = new Set<string>();
+  const found: Occurrence[] = [];
+  for (const root of ROOTS) {
+    for (const file of testFiles(root)) {
+      if (seen.has(file)) continue;
+      seen.add(file);
+      if (EXEMPT.has(file)) continue;
+      readFileSync(file, 'utf8')
+        .split('\n')
+        .forEach((text, i) => {
+          if (INLINES.test(text)) found.push({ file, line: i + 1, text: text.trim() });
+        });
+    }
+  }
+  return found;
+}
+
 function testFiles(dir: string): readonly string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -155,5 +185,35 @@ describe('🧪 T-284 — one comment stripper, ⛔ and ⛔ not one per test file
     expect(broken, `⛔ uses \`withoutComments\` without importing it:\n  ${broken.join('\n  ')}`).toHaveLength(
       0,
     );
+  });
+});
+
+describe('🧪 T-341 — ⛔ and ⛔ not an anonymous copy either', () => {
+  it('⛔ no test file inlines a comment-stripping regex', () => {
+    const hits = inlineCopies();
+    const report = hits.map((h) => `  ${h.file}:${h.line}  ${h.text}`).join('\n');
+    expect(
+      hits,
+      `⛔ ${hits.length} inline strippers — import withoutComments / withoutCssComments / withoutSqlComments from '@/lib/testSource':\n${report}`,
+    ).toHaveLength(0);
+  });
+
+  it('the detector matches every inline shape that was in the tree, and ⛔ no mask', () => {
+    const matches = [
+      "const CODE = SRC.replace(/\\/\\*[\\s\\S]*?\\*\\//g, '').replace(/^[ \\t]*\\/\\/[^\\n]*$/gm, '');",
+      "const CODE = SRC.replace(/\\{\\s*\\/\\*[\\s\\S]*?\\*\\/\\s*\\}/g, '')",
+      "  .replace(/\\{\\/\\*[\\s\\S]*?\\*\\/\\}/g, '')",
+      "  const withoutComments = CSS.replace(/\\/\\*[\\s\\S]*?\\*\\//g, '');",
+      "  return source.replace(/\\/\\*[\\s\\S]*?\\*\\//g, '').replace(/--[^\\n]*/g, '');",
+    ];
+    for (const line of matches) expect(INLINES.test(line), `⛔ missed: ${line}`).toBe(true);
+
+    const misses = [
+      "import { withoutComments } from '@/lib/testSource';",
+      '    .replace(/\\/\\*[\\s\\S]*?\\*\\//g, keepNewlines)',
+      "  const src = source.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');",
+      'const CODE = withoutComments(SRC);',
+    ];
+    for (const line of misses) expect(INLINES.test(line), `⛔ false positive: ${line}`).toBe(false);
   });
 });

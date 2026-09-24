@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * A source guard, same shape and same limits as app/api/world/status/route.test.ts: the
@@ -9,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * does ⛔ not fail the request.
  */
 const SRC = readFileSync('app/api/world/bank/route.ts', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('GET /api/world/bank', () => {
   it('checks ENV, then the session, and only then queries — the C-0032 order', () => {

@@ -11,12 +11,10 @@ import {
   runWeakness,
   type AmirnetChapterOutcome,
 } from '@/lib/core/amirnetResult';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetResult.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetResult.tsx', 'utf8'));
 
 /** The render's own run, transcribed from `render_video_D.py:325-326`, minus its last chapter. */
 const FIVE_CHAPTER_RUN: readonly AmirnetChapterOutcome[] = [

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * שומר מקור ל-`app/global-error.tsx` — תבנית `app/error.test.ts` (T-124 · D-065),
@@ -10,9 +11,7 @@ import { describe, expect, it } from 'vitest';
  * ב-root layout עצמו) שותק בדיוק כמו הגבול הרגיל.
  */
 const SRC = readFileSync('app/global-error.tsx', 'utf8');
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('T-267 — הגבול האחרון גם הוא חייב לתעד את השגיאה', () => {
   it('הפרמטר `error` נקרא ⛔ ולא מדולג בפירוק', () => {

@@ -8,10 +8,9 @@ import {
   UNAVAILABLE_HE,
   failureHe,
 } from './AmirnetSimulationEntry';
+import { withoutComments } from '@/lib/testSource';
 
-const CODE = readFileSync('components/AmirnetSimulationEntry.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetSimulationEntry.tsx', 'utf8'));
 
 describe('AmirnetSimulationEntry — T-308ⓒ, the press that starts the engine', () => {
   it('⛔ «cannot fill a run yet» and «something is broken» are ⛔ not the same sentence', () => {

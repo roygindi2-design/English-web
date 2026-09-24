@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * 🔴 **T-337 — ציר ה-RTL של פס הסינון.** המשך של `F-236`, קובץ אחר.
@@ -13,9 +14,7 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/FilterBar.tsx', 'utf8');
 
 /** ההערות מופשטות: הכלל הוא על מה שמצויר, ⛔ ולא על הפרוזה שמסבירה אותו. */
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('FilterBar — ציר ה-RTL של המסילה (T-337)', () => {
   it('⛔ ⛔ אין `flex-row-reverse` במסילה — במיכל RTL הוא הופך את הציר פעם שנייה', () => {

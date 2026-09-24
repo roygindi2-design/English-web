@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync('components/ArenaResult.tsx', 'utf8');
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /**
  * הלבנה לפני כל טענה — `ComposeDraft.test.ts:1-31` (F-041 · F-065).
@@ -131,9 +130,7 @@ describe('<ArenaResult>', () => {
  * `--ink` הוא דיו כהה, ועל `--arena-night` הוא ⛔ נקרא.
  */
 describe('T-428 — הסקופ של הזירה, ⛔ וטוקנים שמתחלפים עם הסכימה', () => {
-  const T428_CODE = readFileSync(new URL('./ArenaResult.tsx', import.meta.url), 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+  const T428_CODE = withoutComments(readFileSync(new URL('./ArenaResult.tsx', import.meta.url), 'utf8'));
   it('השורש נושא `data-arena-scope` בגובה `100dvh` מלא', () => {
     expect(T428_CODE).toMatch(/<section data-arena-scope className="flex h-\[100dvh\]/);
   });

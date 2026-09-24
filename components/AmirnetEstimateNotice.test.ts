@@ -1,12 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ESTIMATE_NOTICE_HE } from './AmirnetEstimateNotice';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — every rule below is about what a LEARNER is shown, ⛔ not about the prose. */
 const strip = (path: string): string =>
-  readFileSync(path, 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
+  withoutComments(readFileSync(path, 'utf8'));
 
 const CODE = strip('components/AmirnetEstimateNotice.tsx');
 const RESULT = strip('components/AmirnetResult.tsx');

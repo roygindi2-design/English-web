@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { handleContextTap } from './route';
+import { withoutComments } from '@/lib/testSource';
 
 const SRC = readFileSync('app/api/review/context/route.ts', 'utf8');
-const BODY = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+const BODY = withoutComments(SRC);
 
 /** D-084 · T-149ⓐ · T-187ⓕ — the six names, and the scan fails BY NAME. */
 const BANNED = [

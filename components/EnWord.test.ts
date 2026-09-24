@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { withoutCssComments } from '@/lib/testSource';
 
 /**
  * T-009 guard. This file does not render React — the Vitest environment is
@@ -136,7 +137,7 @@ describe('every English string in the product goes through <EnWord> (T-009)', ()
     // turned the test red on a no-op change, and (b) deleting the rule but
     // leaving a comment mentioning it passed — the exact dead-class-name
     // regression this test exists to catch.
-    const css = readFileSync(join('app', 'globals.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const css = withoutCssComments(readFileSync(join('app', 'globals.css'), 'utf8'));
     expect(css, '.ltr-inline is missing from app/globals.css').toMatch(
       /\.ltr-inline\s*\{[^}]*unicode-bidi:\s*isolate/,
     );

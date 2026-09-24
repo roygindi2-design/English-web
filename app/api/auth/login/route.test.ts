@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * A source guard, same shape and same limits as app/api/world/status/route.test.ts:
@@ -9,8 +10,7 @@ import { describe, expect, it } from 'vitest';
  * whole security property of F-008ⓑ.
  */
 const SRC = readFileSync('app/api/auth/login/route.ts', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
+const CODE = withoutComments(SRC)
   // ⚠️ Imports are stripped, and this is the assertion that carries the file.
   // Measured C-0160: with the import block left in, `indexOf('checkAuthRateLimit')`
   // finds the IMPORT — which is above every statement by definition — so the order

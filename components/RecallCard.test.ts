@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<RecallCard>` — הכרטיס «מה שכתבת אתמול» בראש `/world` (T-105 · § 4.2יב · D-051 ·
@@ -29,9 +30,7 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/RecallCard.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0072 · F-065: שומר שהערה יכולה לספק אינו שומר על דבר. */
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('<RecallCard>', () => {
   it('הוא רכיב לקוח וקורא לנקודת הקצה שבחוזה ⛔ ולא לשם שהומצא', () => {

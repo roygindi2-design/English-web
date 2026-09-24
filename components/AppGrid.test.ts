@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * `<AppGrid>` — רשת האפליקציות של `העולם` (T-098 · § 4.2יא · D-046 ·
@@ -28,9 +29,7 @@ import { describe, expect, it } from 'vitest';
 const SRC = readFileSync('components/AppGrid.tsx', 'utf8');
 
 /** C-0032/C-0071/C-0072 · F-065: שומר שהערה יכולה לספק אינו שומר על דבר. */
-const CODE = SRC.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 describe('<AppGrid>', () => {
   it('הוא רכיב לקוח וקורא לסיבוב הזירה ⛔ ולא לנקודת קצה שאינה קיימת', () => {

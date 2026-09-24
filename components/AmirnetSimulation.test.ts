@@ -13,12 +13,10 @@ import {
   NEXT_CHAPTER_HE,
   NEXT_QUESTION_HE,
 } from '@/lib/core/amirnetSimulation';
+import { withoutComments } from '@/lib/testSource';
 
 /** Comments stripped — these rules are about what a LEARNER is shown, ⛔ not about the prose. */
-const CODE = readFileSync('components/AmirnetSimulation.tsx', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('components/AmirnetSimulation.tsx', 'utf8'));
 
 describe('AmirnetSimulation — T-296, render kol-D-06-simulation.png', () => {
   it('the binding strings, verbatim from the render (render_video_D.py:22, :288, :290)', () => {

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * Comments are stripped before the scan, the same guard `TabBar.test.ts` carries:
@@ -7,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * over raw text would then be proven green by prose.
  */
 const stripComments = (source: string): string =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[^\S\n]*\/\/.*$/gm, '');
+  withoutComments(source);
 
 const src = stripComments(readFileSync('components/WorldRing.tsx', 'utf8'));
 const page = stripComments(readFileSync('app/(tabs)/world/page.tsx', 'utf8'));

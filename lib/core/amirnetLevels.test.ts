@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL, highestUnlocked, type AmirnetSimulationRun } from './amirnetLevels';
+import { withoutComments } from '@/lib/testSource';
 
-const CODE = readFileSync('lib/core/amirnetLevels.ts', 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
+const CODE = withoutComments(readFileSync('lib/core/amirnetLevels.ts', 'utf8'));
 
 describe('amirnetLevels — T-309ⓑ, the unlock derived from the learner’s own completions', () => {
   it('a learner who finished level 3 keeps level 4 open after a reload — ⛔ and level 1 is always open', () => {

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * A source guard, same shape and same limits as app/api/study/queue/route.test.ts: the
@@ -8,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * the guard order, the dedupe, and that the unlock is COMPUTED.
  */
 const SRC = readFileSync('app/api/world/status/route.ts', 'utf8');
-const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/[^\n]*$/gm, '');
+const CODE = withoutComments(SRC);
 
 /**
  * ⚠️ **סטייה מוצהרת מנוסח התוכנית, ⛔ ולא ריכוך — ונמדדה.** התוכנית כתבה את שני

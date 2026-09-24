@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { withoutComments } from '@/lib/testSource';
 
 /**
  * T-068 · T-168 · constitution v2 layer B § ב2 · D-036 (the mapping) · D-102.
@@ -157,10 +158,7 @@ const CSS_FILES = FILES.filter((f) => f.endsWith('.css'));
  * fails on the documentation that justifies it.
  */
 function code(file: string): string {
-  return readFileSync(file, 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/[^\n]*$/gm, '')
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+  return withoutComments(readFileSync(file, 'utf8'));
 }
 
 /**
