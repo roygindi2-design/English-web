@@ -169,3 +169,52 @@ describe('T-488 · ארון הציוד כגיליון', () => {
     expect(document.querySelector('[data-arena-closet]')).toBeNull();
   });
 });
+
+/**
+ * T-489 · `D-292` — **הגיליון נסגר כמו שנפתח, בשלוש דרכים, והפוקוס חוזר לכפתור.**
+ * תרחיש הכישלון: הידית מבטיחה גרירה, והמסך ⛔ אינו מקיים אותה.
+ * ⚠️ jsdom ⛔ אינו נושא `matchMedia` ⇒ הרכיב מתייחס אליו כ-`prefers-reduced-motion`,
+ * ⇒ הסגירה מיידית, בדיוק כמו אצל לומד שביקש פחות תנועה.
+ */
+describe('T-489 · שלוש דרכי סגירה', () => {
+  const FIXTURE: ArenaHomeState = { ...BASE, unlockedItems: ['helmet'] };
+  function open(): HTMLElement {
+    mount(FIXTURE);
+    const button = screen.getByRole('button', { name: 'ארון ציוד' });
+    fireEvent.click(button);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    return button;
+  }
+
+  it('`Escape` ⇒ נסגר, `aria-expanded=false`, והפוקוס חוזר לכפתור', () => {
+    const button = open();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(document.querySelector('[data-arena-closet]')).toBeNull();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('הקשה על הרקע ⇒ הפוקוס חוזר לכפתור', () => {
+    const button = open();
+    fireEvent.click(screen.getByRole('button', { name: 'סגירת ארון הציוד' }));
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('גרירת הידית למטה ושחרור ⇒ נסגר', () => {
+    open();
+    const handle = document.querySelector('[data-arena-closet-handle]') as HTMLElement;
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 400 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 600 });
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 600 });
+    expect(document.querySelector('[data-arena-closet]')).toBeNull();
+  });
+
+  it('⛔ אצבע שנייה ⛔ אינה חוטפת את הגרירה', () => {
+    open();
+    const handle = document.querySelector('[data-arena-closet-handle]') as HTMLElement;
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 400 });
+    fireEvent.pointerDown(handle, { pointerId: 2, clientY: 100 });
+    fireEvent.pointerUp(handle, { pointerId: 2, clientY: 700 });
+    expect(document.querySelector('[data-arena-closet]')).not.toBeNull();
+  });
+});

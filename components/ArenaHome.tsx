@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ArenaAvatar, { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
@@ -254,6 +254,15 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
   /** 🗄️ T-488 — ⛔ **אין עוד `scrollIntoView`:** הארון הוא גיליון `fixed` מעל האזור הגמיש,
    *  ⇒ ⛔ דבר אינו נגלל, והדמות נשארת במקומה מעליו. */
   const [drawerOpen, setDrawerOpen] = useState(false);
+  /** T-489 — הגיליון נשאר בעץ עד שתנועת הסגירה נגמרת; ⇒ `drawerOpen` הוא הכוונה,
+   *  ⛔ ולא הנוכחות. והפוקוס חוזר לכפתור שפתח אותו (`aria-expanded` מתעדכן איתו). */
+  const [closetMounted, setClosetMounted] = useState(false);
+  const drawerButtonRef = useRef<HTMLButtonElement>(null);
+  const closeCloset = useCallback(() => setDrawerOpen(false), []);
+  const closetExited = useCallback(() => {
+    setClosetMounted(false);
+    drawerButtonRef.current?.focus();
+  }, []);
 
   const load = useCallback(async () => {
     setScreen('loading');
@@ -617,22 +626,45 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           <button
             type="button"
             className={SECONDARY_CLASS}
+            ref={drawerButtonRef}
             aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen((open) => !open)}
+            onClick={() => {
+              setClosetMounted(true);
+              setDrawerOpen((open) => !open);
+            }}
           >
             {DRAWER_HE}
           </button>
         </div>
       </div>
 
-      {drawerOpen && (
+      {closetMounted && (
         <GearClosetSheet
+          open={drawerOpen}
           tiles={closetTiles(state.unlockedItems, state.arcadeLevel)}
-          onClose={() => setDrawerOpen(false)}
+          onClose={closeCloset}
+          onExited={closetExited}
         />
       )}
     </section>
   );
+}
+
+/** T-489 — משך הסגירה; רשת הביטחון מחכה לו ועוד מעט. */
+const CLOSET_EXIT_MS = 220;
+/** T-489 ⓑ — סגירה בשחרור: מעבר ל-⅓ מהגובה, **או** הטלה מהירה (`emil-design-eng`:
+ *  מהירות מספיקה גם בלי מרחק). 0.5px/ms = 500px/s. */
+const CLOSET_DISMISS_FRACTION = 1 / 3;
+const CLOSET_FLICK_PX_PER_MS = 0.5;
+
+/** `apple-design` § 9 — ⛔ בלי `matchMedia` (jsdom) ⇒ מתייחסים כמופחת: ⛔ אין מעבר להמתין לו. */
+function prefersReducedMotion(): boolean {
+  return typeof window.matchMedia !== 'function' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** `apple-design` § 9 — ככל שנגררים רחוק יותר מעבר לקצה, כך הגיליון זז פחות. */
+function rubberband(overshoot: number, dimension: number, constant = 0.55): number {
+  return (overshoot * dimension * constant) / (dimension + constant * overshoot);
 }
 
 /** `:209` — אריח מוחזק: מסגרת זהב + גליף. נעול: מסגרת עמומה + מנעול (⛔ צבע ⛔ אינו הערוץ היחיד). */
@@ -658,12 +690,86 @@ function closetTileLabel(tile: ClosetTile): string {
  * ⛔ **ואין בחירת פריט ללבישה** (`D-292`): האריח **מציג**; ⛔ אינו כפתור.
  */
 function GearClosetSheet({
+  open,
   tiles,
   onClose,
+  onExited,
 }: {
+  readonly open: boolean;
   readonly tiles: readonly ClosetTile[];
   readonly onClose: () => void;
+  readonly onExited: () => void;
 }): React.JSX.Element {
+  /** T-489 — `shown` מתחיל `false` ⇒ הפריים הראשון מצויר מחוץ למסך, והמעבר רץ ממנו. */
+  const [shown, setShown] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ id: number; y0: number; samples: { y: number; t: number }[] } | null>(null);
+  const exitedRef = useRef(onExited);
+  exitedRef.current = onExited;
+
+  useEffect(() => {
+    if (open) {
+      const id = requestAnimationFrame(() => {
+        setShown(true);
+        sheetRef.current?.focus({ preventScroll: true });
+      });
+      return () => cancelAnimationFrame(id);
+    }
+    setShown(false);
+    // ⛔ `prefers-reduced-motion` ⇒ ⛔ אין מעבר, ⇒ ⛔ אין `transitionend` לחכות לו.
+    if (prefersReducedMotion()) {
+      exitedRef.current();
+      return undefined;
+    }
+    // רשת ביטחון: `transitionend` ⛔ אינו מובטח (לשונית ברקע, מעבר שבוטל).
+    const t = window.setTimeout(() => exitedRef.current(), CLOSET_EXIT_MS + 120);
+    return () => window.clearTimeout(t);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  /** `apple-design` § 2 — הגיליון דבוק לאצבע 1:1, ⛔ בלי מעבר, מנקודת האחיזה. */
+  function onHandleDown(e: React.PointerEvent<HTMLDivElement>) {
+    const el = sheetRef.current;
+    // אצבע שנייה אינה חוטפת את הגרירה.
+    if (drag.current || !el || !open) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    drag.current = { id: e.pointerId, y0: e.clientY, samples: [{ y: e.clientY, t: e.timeStamp }] };
+    el.style.transition = 'none';
+  }
+  function onHandleMove(e: React.PointerEvent<HTMLDivElement>) {
+    const d = drag.current;
+    const el = sheetRef.current;
+    if (!d || !el || e.pointerId !== d.id) return;
+    const dy = e.clientY - d.y0;
+    // § 9 — למעלה מעבר לקצה: התנגדות הולכת וגדלה, ⛔ ולא קיר.
+    el.style.transform = `translateY(${dy >= 0 ? dy : -rubberband(-dy, el.offsetHeight)}px)`;
+    d.samples.push({ y: e.clientY, t: e.timeStamp });
+    if (d.samples.length > 5) d.samples.shift();
+  }
+  function onHandleUp(e: React.PointerEvent<HTMLDivElement>) {
+    const d = drag.current;
+    const el = sheetRef.current;
+    if (!d || !el || e.pointerId !== d.id) return;
+    drag.current = null;
+    const dy = e.clientY - d.y0;
+    const first = d.samples[0] ?? { y: d.y0, t: e.timeStamp };
+    const dt = e.timeStamp - first.t;
+    // px/ms, חיובי = למטה.
+    const velocity = dt > 0 ? (e.clientY - first.y) / dt : 0;
+    // ⛔ הסגנון המוטבע מתנקה **באותו אירוע** שבו המצב מתחלף ⇒ המעבר יוצא מהמקום הנוכחי.
+    el.style.transition = '';
+    el.style.transform = '';
+    if (dy > el.offsetHeight * CLOSET_DISMISS_FRACTION || velocity > CLOSET_FLICK_PX_PER_MS) onClose();
+  }
+
   return (
     <>
       {/* `:197` — `fill=(6, 10, 20, 150)` ⇒ ~60%. הקשה על הרקע סוגרת (⛔ שולח את האצבע
@@ -672,7 +778,12 @@ function GearClosetSheet({
         type="button"
         aria-label={CLOSET_CLOSE_HE}
         data-arena-closet-backdrop
-        className="fixed inset-0 z-40 bg-[color:color-mix(in_srgb,var(--arena-hp-track)_60%,transparent)]"
+        tabIndex={-1}
+        className={[
+          'fixed inset-0 z-40 bg-[color:color-mix(in_srgb,var(--arena-hp-track)_60%,transparent)]',
+          'transition-opacity motion-reduce:transition-none',
+          shown ? 'opacity-100 duration-[280ms]' : 'pointer-events-none opacity-0 duration-[220ms]',
+        ].join(' ')}
         onClick={onClose}
       />
       <div
@@ -680,20 +791,39 @@ function GearClosetSheet({
         aria-modal="false"
         aria-labelledby="arena-closet-heading"
         data-arena-closet
-        className={
+        data-state={shown ? 'open' : 'closed'}
+        ref={sheetRef}
+        tabIndex={-1}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && e.propertyName === 'transform' && !open) onExited();
+        }}
+        className={[
           'fixed inset-x-0 bottom-0 z-50 flex h-[min(55dvh,446px)] flex-col rounded-t-2xl ' +
-          'border-t border-[color:var(--brand)] bg-[color:var(--arena-card)] px-6 pt-3 ' +
-          'pb-[max(1rem,env(safe-area-inset-bottom))]'
-        }
+            'border-t border-[color:var(--brand)] bg-[color:var(--arena-card)] px-6 pt-0 ' +
+            'pb-[max(1rem,env(safe-area-inset-bottom))] outline-none',
+          // T-489 · `35 § 4` — `transform` בלבד · 280ms פתיחה / 220ms סגירה (יציאה מהירה
+          // מכניסה) · עקומת מגירה `(0.32, 0.72, 0, 1)`. ⛔ `transition` ⛔ ולא `@keyframes`:
+          // מעבר מתהפך מהערך הנוכחי ⇒ פתיחה באמצע סגירה ⛔ אינה קופצת.
+          'transition-transform ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
+          shown ? 'translate-y-0 duration-[280ms]' : 'translate-y-full duration-[220ms]',
+        ].join(' ')}
       >
         <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col">
+          {/* `:200` — הידית 44×5; **אזור האחיזה** הוא כל הרוחב בגובה 44 (שכבה א׳).
+              ⛔ `touch-none` — אחרת הדפדפן לוקח את הגרירה לגלילה. */}
           <div
             aria-hidden
             data-arena-closet-handle
-            className="mx-auto h-[5px] w-11 shrink-0 rounded-full bg-[color:var(--arena-card-edge)]"
-          />
+            className="flex h-11 w-full shrink-0 cursor-grab touch-none items-center justify-center"
+            onPointerDown={onHandleDown}
+            onPointerMove={onHandleMove}
+            onPointerUp={onHandleUp}
+            onPointerCancel={onHandleUp}
+          >
+            <span className="h-[5px] w-11 rounded-full bg-[color:var(--arena-card-edge)]" />
+          </div>
           {/* ⚠️ `flex` רגיל (`T-338`) — הכותרת היא הילד הראשון, ובמיכל RTL מקומה בימין. */}
-          <div className="mt-5 flex shrink-0 items-baseline justify-between" data-rtl-row="drawer-heading">
+          <div className="mt-2 flex shrink-0 items-baseline justify-between" data-rtl-row="drawer-heading">
             <h2 id="arena-closet-heading" className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
               {DRAWER_HE}
             </h2>
