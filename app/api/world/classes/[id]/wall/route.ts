@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { buildWallFeed, wallSentence, type WallLikeRow, type WallPostRow, type WallReplyRow } from '@/lib/core/wallFeed';
+import { buildWallFeed, toWallPictureKey, wallSentence, type WallLikeRow, type WallPostRow, type WallReplyRow } from '@/lib/core/wallFeed';
 import { classFailure } from '@/lib/server/classFailure';
 import { fromKeyboard, parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
@@ -43,7 +43,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const posts = await supabase
     .from('class_posts')
-    .select('id, author_id, body_en, created_at')
+    .select('id, author_id, body_en, created_at, picture_key')
     .eq('class_id', id)
     .order('created_at', { ascending: false })
     .limit(WALL_POSTS_MAX);
@@ -84,6 +84,11 @@ const WALL_LEVEL = 'B2' as const;
  * as `…/messages/[id]/answer` (`lib/server/keyboardSentence.ts`).
  * Written only through `post_question()` (0034): a member who did not open the class ⇒
  * 403 `only_class_opener`.
+ * T-485 · D-291: an optional `pictureKey` from the closed gallery (`WALL_PICTURE_KEYS`) —
+ * a key outside it ⇒ 400 `invalid_picture` ⛔ BEFORE the question is written; a valid one is
+ * set through `set_post_picture()` (0039) right after. That second call failing ⛔ does not
+ * unwrite the question ⇒ the answer is still `ok`, with `pictureKey: null`, so the client
+ * ⛔ never retries a question that already landed.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const env = readSupabaseEnv();
@@ -97,13 +102,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   if (!UUID.test(id)) return NOT_FOUND();
-  const words = parseWords(await request.json().catch(() => null));
+  const raw = (await request.json().catch(() => null)) as { pictureKey?: unknown } | null;
+  const words = parseWords(raw);
   if (words === null || !fromKeyboard(words, WALL_LEVEL)) {
     return NextResponse.json({ ok: false, code: 'not_from_keyboard' }, { status: 422 });
+  }
+  const askedPicture = raw?.pictureKey ?? null;
+  const pictureKey = toWallPictureKey(askedPicture);
+  if (askedPicture !== null && !pictureKey) {
+    return NextResponse.json({ ok: false, code: 'invalid_picture' }, { status: 400 });
   }
 
   const posted = await supabase.rpc('post_question', { p_class_id: id, p_body: wallSentence(words, 'question') });
   if (posted.error) return classFailure('post', posted.error);
   const row = (Array.isArray(posted.data) ? posted.data[0] : posted.data) as { id?: string; created_at?: string } | null;
-  return NextResponse.json({ ok: true, id: row?.id ?? null, createdAt: row?.created_at ?? null, bodyEn: wallSentence(words, 'question') });
+  let pictured: string | null = null;
+  if (pictureKey && row?.id) {
+    const set = await supabase.rpc('set_post_picture', { p_post_id: row.id, p_key: pictureKey });
+    if (set.error) console.error('[api/world/classes] picture failed:', set.error.message);
+    else pictured = pictureKey;
+  }
+  return NextResponse.json({ ok: true, id: row?.id ?? null, createdAt: row?.created_at ?? null, bodyEn: wallSentence(words, 'question'), pictureKey: pictured });
 }

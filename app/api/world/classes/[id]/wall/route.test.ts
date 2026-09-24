@@ -199,3 +199,40 @@ describe('the source', () => {
     expect(SRC).not.toMatch(/\.insert\(|\.update\(|\.delete\(|\.upsert\(/);
   });
 });
+
+describe('the picture of a question (T-485 · D-291)', () => {
+  const words = keyboardSentence();
+  const ask = (body: unknown) => postQuestion(jsonReq(body), { params: Promise.resolve({ id: CLASS_A }) });
+
+  it('failure scenario: a key outside the gallery ⇒ 400 invalid_picture, and ⛔ the question is ⛔ not written', async () => {
+    for (const pictureKey of ['volcano', 42, '']) {
+      const r = await ask({ words, pictureKey });
+      expect(r.status).toBe(400);
+      expect(await r.json()).toEqual({ ok: false, code: 'invalid_picture' });
+    }
+    expect(rpcCalls).toEqual([]);
+  });
+
+  it('a gallery key ⇒ post_question, THEN set_post_picture on the new post', async () => {
+    const body = await (await ask({ words, pictureKey: 'beach' })).json();
+    expect(body).toMatchObject({ ok: true, id: 'new', pictureKey: 'beach' });
+    expect(rpcCalls.map((c) => c.fn)).toEqual(['post_question', 'set_post_picture']);
+    expect(rpcCalls[1]?.args).toEqual({ p_post_id: 'new', p_key: 'beach' });
+  });
+
+  it('no key ⇒ ⛔ no second call', async () => {
+    const body = await (await ask({ words })).json();
+    expect(body.pictureKey).toBeNull();
+    expect(rpcCalls.map((c) => c.fn)).toEqual(['post_question']);
+  });
+
+  it('the feed carries pictureKey; an unknown stored key ⛔ never leaves', async () => {
+    tables.class_posts = [
+      { id: POST, class_id: CLASS_A, author_id: OPENER, body_en: 'Q?', created_at: '2026-09-24T05:15:00Z', picture_key: 'mountains' },
+      { id: 'p2', class_id: CLASS_A, author_id: OPENER, body_en: 'Q2?', created_at: '2026-09-24T04:15:00Z', picture_key: 'volcano' },
+    ];
+    const body = await (await call(CLASS_A)).json();
+    expect(body.posts[0].pictureKey).toBe('mountains');
+    expect('pictureKey' in body.posts[1]).toBe(false);
+  });
+});

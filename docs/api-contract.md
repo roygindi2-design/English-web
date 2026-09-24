@@ -1195,8 +1195,9 @@ B1 ‏6⇢19 · B2 ‏13⇢13).
 
 הקיר של הכיתה (T-471 · `39 § 5` · D-288). נקרא תחת ה-RLS של `0034` — לומד רואה רק כיתה שהוא חבר בה.
 
-**גוף מוצלח:** `{ "ok": true, "amOpener": false, "posts": [ { "id", "bodyEn", "createdAt", "byOpener", "mine", "likes", "likedByMe", "replyCount", "top": [ { "id", "bodyEn", "createdAt", "likes", "likedByMe", "mine" } ] } ] }`
+**גוף מוצלח:** `{ "ok": true, "amOpener": false, "posts": [ { "id", "bodyEn", "createdAt", "byOpener", "mine", "pictureKey"?, "likes", "likedByMe", "replyCount", "top": [ { "id", "bodyEn", "createdAt", "likes", "likedByMe", "mine" } ] } ] }`
 — החדש למעלה, עד 20 פוסטים; `top` = **שתי** התגובות המובילות לפי לייקים (שוויון ⇒ המוקדמת), ⛔ לא כל התגובות.
+`pictureKey` (T-485 · D-291) = מפתח מהגלריה הסגורה (`mountains` · `beach` · `classroom` · `market` · `park` · `kitchen` · `city` · `rain`); ⛔ חסר כשאין תמונה, ומפתח לא מוכר ⛔ אינו יוצא.
 `byOpener` = הפוסט של פותח הכיתה («המורה», D-288); `amOpener` = הלומד הוא הפותח (T-474: `שאלה חדשה`). ⛔ אף מזהה משתמש ⛔ אינו יוצא.
 
 ## GET /api/world/classes/[id]/wall/[postId]/replies
@@ -1220,7 +1221,9 @@ B1 ‏6⇢19 · B2 ‏13⇢13).
 על כל העץ A1–B2 (לכיתה ⛔ אין רמה). הגוף נשמר כמשפט: אות ראשונה גדולה, `i` בודד ⇒ `I`, ו-`?` לשאלה / `.` לתגובה.
 שאלה — דרך `post_question()` בלבד; תגובה — דרך `add_reply()`. ⛔ אין מגבלת תגובה אחת לפוסט.
 
-**גוף מוצלח:** `{ "ok": true, "id": "…", "createdAt": "…", "bodyEn": "How was your weekend?" }`
+**שאלה בלבד — `pictureKey` אופציונלי** (T-485 · D-291): מפתח מהגלריה הסגורה ⇒ נשמר דרך `set_post_picture()` (‏`0039`, פותח הכיתה בלבד) **אחרי** `post_question`; מפתח מחוץ לגלריה ⇒ **400 `invalid_picture` ⛔ לפני** שהשאלה נכתבת.
+
+**גוף מוצלח:** `{ "ok": true, "id": "…", "createdAt": "…", "bodyEn": "How was your weekend?" }` — ולשאלה גם `"pictureKey": "beach" | null` (`null` ⇒ ⛔ לא נשמרה תמונה, גם אם השאלה נכתבה).
 
 ## GET /api/world/classes/[id]/story · POST /api/world/classes/[id]/story
 
