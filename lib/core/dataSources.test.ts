@@ -23,12 +23,14 @@ describe('the data source registry', () => {
   it('lists every source the coverage measurement reads, and nothing else', () => {
     // Exactly the seven rows of data/README.md plus the two level-label files.
     // A row added here without a licence row in docs/ is how attribution rots.
+    // + Tatoeba (T-460 · D-283): the block keyboard's observed continuation tree.
     expect([...DATA_SOURCES].map((s) => s.id).sort()).toEqual([
       'cefrj',
       'hebrew-wordnet',
       'kaikki',
       'ngsl',
       'octanove',
+      'tatoeba',
       'wiktionary-en-he',
       'word2word',
       'wordnet',

@@ -22,7 +22,8 @@ export type SourceId =
   | 'wiktionary-en-he'
   | 'kaikki'
   | 'word2word'
-  | 'wordnet';
+  | 'wordnet'
+  | 'tatoeba';
 
 export interface DataSource {
   readonly id: SourceId;
@@ -134,6 +135,17 @@ export const DATA_SOURCES: readonly DataSource[] = Object.freeze([
       '"WordNet 3.0 Copyright 2006 by Princeton University. All rights reserved." — ' +
       'הודעת הזכויות הנדרשת ברישיון, כלשונה.',
     usedFor: 'מספר החישה (sense_number) ותדירות תיוג הקורפוס (tag_count) לכל synset',
+  }),
+  Object.freeze({
+    id: 'tatoeba',
+    name: 'Tatoeba',
+    licence: 'CC BY 2.0 FR',
+    shareAlike: false,
+    commercialUse: 'allowed',
+    url: 'https://downloads.tatoeba.org/exports/per_language/eng/',
+    host: 'downloads.tatoeba.org',
+    attributionHe: 'משפטי אנגלית מתוך מאגר Tatoeba (tatoeba.org), ברישיון CC BY 2.0 FR.',
+    usedFor: 'ההמשכים שמקלדת הבלוקים מציעה — רק רצפי מילים שנכתבו במשפט אמיתי',
   }),
 ]);
 

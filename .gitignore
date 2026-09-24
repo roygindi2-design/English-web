@@ -44,3 +44,6 @@ __pycache__/
 # באמצע הטיק ו-`-A` ⛔ אינו מבחין. הצילומים הם ראיה לטיק ⛔ ואינם נכס של המאגר —
 # המדידה שנגזרה מהם חיה בשורה, ⛔ לא בקובץ.
 walk-shots*/
+
+# T-460 — Tatoeba download cache for scripts/build-continuations.mjs (input, not product).
+data/tatoeba/

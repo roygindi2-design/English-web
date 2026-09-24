@@ -1333,6 +1333,18 @@
   ],
   "lib/core/contentSchema.ts": [],
   "lib/core/contextTapRequest.ts": [],
+  "lib/core/continuations.generated.test.ts": [
+    "lib/core/continuations.ts"
+  ],
+  "lib/core/continuations.test.ts": [
+    "lib/core/cefrLevels.ts",
+    "lib/core/continuations.ts"
+  ],
+  "lib/core/continuations.ts": [
+    "lib/core/cefrLevels.ts",
+    "lib/core/contentSchema.ts",
+    "lib/core/storyGate.ts"
+  ],
   "lib/core/coverage.test.ts": [
     "lib/core/coverage.ts"
   ],
