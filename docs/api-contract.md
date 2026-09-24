@@ -1222,6 +1222,27 @@ B1 ‏6⇢19 · B2 ‏13⇢13).
 
 **גוף מוצלח:** `{ "ok": true, "id": "…", "createdAt": "…", "bodyEn": "How was your weekend?" }`
 
+## GET /api/world/classes/[id]/story · POST /api/world/classes/[id]/story
+
+סיפור בהמשכים של הכיתה (T-478 · `39 § 6` · D-290). שרשור **אחד** לכיתה; נקרא תחת ה-RLS של `0038` (`class_story_lines`).
+**כלל התור:** חבר רשאי להוסיף משפט כשהמשפט האחרון ⛔ אינו שלו — ⛔ שניים רצופים לאותו מחבר, ⛔ ואין סבב קבוע.
+
+**GET — גוף מוצלח:** `{ "ok": true, "amOpener": false, "lines": [ { "id", "bodyEn", "createdAt", "mine", "byOpener", "seat" } ], "myTurn": true }`
+— **הישן למעלה** (סיפור נקרא מההתחלה, ⛔ הפוך מהקיר), עד 200 המשפטים **האחרונים**. `seat` = סדר ההופעה הראשונה של המחבר בשרשור (1, 2, …) — ⛔ אף מזהה משתמש ⛔ אינו יוצא.
+`myTurn` = המשפט האחרון ⛔ אינו של הלומד (שרשור ריק ⇒ `true`).
+
+**POST — גוף הבקשה:** `{ "words": [...] }` — אותו מפענח ואותו עץ כמו הקיר (A1–B2). נשמר כמשפט עם `.` בסופו, דרך `add_story_line()` בלבד.
+**גוף מוצלח:** `{ "ok": true, "id": "…", "createdAt": "…", "bodyEn": "A girl opened the door.", "myTurn": false }` — `myTurn` הוא `false` כי המשפט שנשמר **הוא** האחרון.
+
+| `code` | HTTP | מתי |
+|---|---|---|
+| `session_expired` | 401 | ⛔ אין סשן. |
+| `not_from_keyboard` | 422 | `words` ⛔ אינו משפט שהמקלדת יכולה לשלוח (בנתיב, או בגדר של המסד — D-289). |
+| `not_your_turn` | 409 | המשפט האחרון בשרשור כבר של הלומד. |
+| `class_not_found` | 404 | הלומד ⛔ אינו חבר בכיתה, או מזהה פגום — ⛔ 404 ולא 403. |
+| `classes_unavailable` | 503 | `class_story_lines` / `add_story_line()` חסרים (`0038`, T-477, ⛔ טרם הוחלה ב-C-0810). |
+| `unavailable` | 503 | ⛔ אין ENV, או כישלון אחר. |
+
 ## POST /api/world/classes/wall/like
 
 **גוף הבקשה:** `{ "postId": "…" }` **או** `{ "replyId": "…" }` — אחד בדיוק. הופך את הלייק של הלומד דרך `toggle_like()`.

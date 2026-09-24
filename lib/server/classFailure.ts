@@ -11,6 +11,8 @@ import { NextResponse } from 'next/server';
  *   42501  `only_class_opener` · `own_content` ⇒ 403 by that name (0034 · D-288)
  *   22023  `invalid_body` · `invalid_target` ⇒ 400 `invalid_body` (0034)
  *   22023  `invalid_name`          ⇒ 400
+ *   42501  `not_your_turn`         ⇒ 409 (0038 · D-290 — the last story line is already theirs)
+ *   22023  `not_from_keyboard`     ⇒ 422 (D-289 — the body is ⛔ a sentence the keyboard can send)
  *   28000  `not_authenticated`     ⇒ 401 `session_expired`
  *   anything else                  ⇒ 503 `unavailable`
  */
@@ -23,6 +25,12 @@ export function classFailure(where: string, error: { message: string; code?: str
   if (error.code === 'P0002') {
     const code = named('post_not_found') || named('reply_not_found') ? 'post_not_found' : 'class_not_found';
     return NextResponse.json({ ok: false, code }, { status: 404 });
+  }
+  if (error.code === '42501' && named('not_your_turn')) {
+    return NextResponse.json({ ok: false, code: 'not_your_turn' }, { status: 409 });
+  }
+  if (error.code === '22023' && named('not_from_keyboard')) {
+    return NextResponse.json({ ok: false, code: 'not_from_keyboard' }, { status: 422 });
   }
   if (error.code === '42501' && (named('only_class_opener') || named('own_content'))) {
     return NextResponse.json({ ok: false, code: named('own_content') ? 'own_content' : 'only_class_opener' }, { status: 403 });
