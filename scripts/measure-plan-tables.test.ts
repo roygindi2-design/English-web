@@ -330,6 +330,53 @@ describe('scripts/measure-plan-tables.mjs', () => {
   });
 
   /**
+   * 🔴 **`T-419` — המחלקה הפעילה האמיתית מוצתה ⇒ רשימת המועמדים נפלטת גם כאן.**
+   * 🔬 **נמדד ב-`C-0698`:** `studies` ⬜=0 ו-`grep 'מועמדים'` על הפלט ⇒ **0**, ⇒ `§ 0.23 ז׳` ④
+   * («הרשימה כבר מחושבת ⇒ ⛔ אל תגזור בעצמך») ⛔ לא הייתה בת-ביצוע.
+   */
+  it('T-419 · an exhausted REAL focus prints the ordered candidate list too', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-exhausted-'));
+    const fixtureTasks = join(tmp, '50-tasks.md');
+    // ⛔ `studies` מבוימת ריקה ו-`story` מבוימת מלאה — ⛔ ולא נשענות על הרגיסטר החי (`C-0646`).
+    const live = readFileSync(join('plan', '50-tasks.md'), 'utf8')
+      .split('\n')
+      .map((l) => (/^\| T-\d{3} \| M\d · studies ·/.test(l) ? l.replace(/\| ⬜ \|/, '| ✅ |') : l))
+      .join('\n');
+    writeFileSync(
+      fixtureTasks,
+      `${live}\n| T-992 | M0 · story · תשתית | שורה מבוימת — פתוחה, כדי שהגלגול ינחת עליה | — | ⬜ | 0 | — | — |\n`,
+      'utf8',
+    );
+    const fixtureControl = join(tmp, '00-control.md');
+    writeFileSync(
+      fixtureControl,
+      readFileSync(join('plan', '00-control.md'), 'utf8').replace(
+        /^ACTIVE_WORKSTREAM: \S+/m,
+        'ACTIVE_WORKSTREAM: studies',
+      ),
+      'utf8',
+    );
+    const fixtureOpenOut = join(tmp, 'plan-open.md');
+    execFileSync('node', ['scripts/measure-plan-tables.mjs'], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAN_TABLES_OUT: join(tmp, 'plan-tables.md'),
+        PLAN_OPEN_OUT: fixtureOpenOut,
+        PLAN_TASKS_FILE: fixtureTasks,
+        PLAN_CONTROL_FILE: fixtureControl,
+      },
+    });
+    const open = readFileSync(fixtureOpenOut, 'utf8');
+    expect(open).toContain('הזרימה הפעילה מוצתה — `studies`');
+    expect(open, 'ⓐ הרשימה נפלטת').toContain('מועמדים לפי הסדר');
+    // ⓑ ⛔ אותה רשימה, נימוק אחר — ⛔ ולא נוסח חדר ההמתנה.
+    expect(open).toContain('**המחלקה הפעילה שמוצתה**');
+    expect(open).not.toContain('בזמן שיש עבודה ברצף');
+    expect(open).toMatch(/מועמדים לפי הסדר[^\n]*`story` \(\d+ ⬜\)/);
+  });
+
+  /**
    * 🔴 **`F-261` — וזה המתקן שמשחזר את הלכידה עצמה, ⛔ ולא את קצה הענף.**
    *
    * 🔬 **הצורה החיה, נמדדת ⛔ ולא מומצאת:** `general` **⛔ אינה ריקה** (‏PM פותח לתוכה) **ו**
@@ -403,7 +450,9 @@ describe('scripts/measure-plan-tables.mjs', () => {
     expect(open, 'הענף הישן חי').toContain('המוקד החוצה-מערכת מוצה');
     expect(open, 'ומנותב לרוי, ⛔ ולא לסוכן').toContain('הכרעה לרוי');
     // ⛔ ו⛔ אינו מציע מועמדים — ⛔ אין אף אחד.
-    expect(open, '⛔ ⛔ אין רשימת מועמדים').not.toContain('מועמדים לפי הסדר');
+    // ⚠️ ⟦`C-0789`⟧ the EMITTED form, bold and followed by its parenthesis — ⛔ not the bare
+    // phrase, which any register row may quote in prose (T-419's own did, and turned this red).
+    expect(open, '⛔ ⛔ אין רשימת מועמדים').not.toContain('**מועמדים לפי הסדר** (');
   });
 
   it('holds every cancelled-in-prose task cell to a status cell that was actually flipped (T-229 · F-125)', () => {
