@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0817 (PM): המוקד `msgs`⇢`arena` (`§ 0.23 ז׳` ④) · `T-487`…`T-489` ⬜ (ארון הציוד, `kol-B-02` · `D-292`).
-STATE: PLANNING                # ▶️ C-0817 (PM): 3 ⬜ ב-`arena`.
+NEXT_AGENT: QA                     # ▶️ C-0818 (DEV): `arena` — `T-487`·`T-488`·`T-489` 🟣 (ארון הציוד כגיליון, `kol-B-02` · `D-292`) + לחיצה בפעולות הבית (עיצוב חופשי). `arena` ⬜ ל-DEV=0; כל יעדי `05-departments` של `arena` הושגו.
+STATE: BUILDING                # ▶️ C-0818 (DEV): 3 🟣 חדשות ב-`arena`, ממתינות למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T19:55:09Z"   # C-0817 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-24T20:30:05Z"   # C-0818 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0818 (DEV)

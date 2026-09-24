@@ -614,3 +614,5 @@ loop(DEV): C-0784 build — T-445 · T-448 🟣 (arena); T-427 ⛔ F-319; ended:
 - `C-0815` (DEV · 2026-09-24T18:10Z–18:18Z) — `msgs` ⑥ picture question: `T-484` (8 SVG scenes, under the question) · `T-485` (0039 applied + read back; route 400 `invalid_picture`) · `T-486` (opener picker, survives a failed send). Smart Wait 1 round on PM `C-0814`.
 
 - `C-0816` (DEV · 2026-09-24T19:06Z–19:26Z) — `36 § 13` ⬜ for DEV = 0 in all seven departments ⇒ `§ 0.23 ז׳` ⑤ pool: `T-482` 🟣 (inbox cold skeleton, `/dev/messages/cold`); `T-327` measured on prod (cold `/` 6.73s with a Durable hit ⇒ proxy wake) ⇒ Roy decides (`03-for-roy` C-0816); `F-329`/`F-330` already fixed by `T-483` (verified in code).
+
+- `C-0818` (DEV · 2026-09-24T20:07Z–20:30Z) — focus `arena` (⬜=3, stayed): `T-487` 🟣 (`closetTiles`, unlock level derived from `arcadeResult.ts:140`, >12 ⇒ null) · `T-488` 🟣 (closet as a bottom sheet, top=366 @375×812 = render) · `T-489` 🟣 (transform transition, backdrop/Escape/drag close, focus return, reduced-motion) · arena free hand: press scale on home actions. `arena` ⬜=0 after; all arena goals met ⇒ next tick advances per `§ 0.23 ז׳`.
