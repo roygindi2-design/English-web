@@ -80,8 +80,8 @@ export function wallKickerHe(state: ClassPanelState): string {
   return state.kind === 'in_class' ? `הודעות · ${state.cls.name}` : WALL_KICKER_NO_CLASS_HE;
 }
 
-const PRIMARY = 'flex min-h-touch w-full items-center justify-center rounded-xl bg-brand-surface px-4 text-sm font-bold text-brand-on active:scale-[0.98] disabled:opacity-50';
-const SECONDARY = 'flex min-h-touch w-full items-center justify-center rounded-xl border border-brand px-4 text-sm font-bold text-brand-surface active:scale-[0.98]';
+const PRIMARY = 'flex min-h-touch w-full items-center justify-center rounded-xl bg-brand-surface px-4 text-sm font-bold text-brand-on active:scale-[0.98] motion-reduce:transform-none disabled:opacity-50';
+const SECONDARY = 'flex min-h-touch w-full items-center justify-center rounded-xl border border-brand px-4 text-sm font-bold text-brand-surface active:scale-[0.98] motion-reduce:transform-none';
 const QUIET = 'inline-flex min-h-touch items-center px-2 text-sm font-semibold text-ink-muted';
 
 function CodeCells({ value, onChange }: { readonly value: string; readonly onChange: (v: string) => void }) {
@@ -172,7 +172,7 @@ export function ClassJoinView({ state, busy = false, formError = null, onCreate 
           <p className="mt-3 text-xs text-ink-muted">{SHARE_LABEL_HE}</p>
           <div className="mt-1 flex items-center justify-between gap-3">
             <span dir="ltr" data-class-code className="font-mono text-3xl font-bold tracking-[0.2em] text-ink">{cls.code}</span>
-            <button type="button" onClick={copy} className="inline-flex min-h-touch min-w-touch items-center gap-1.5 rounded-xl border border-brand px-3 text-sm font-bold text-brand-surface active:scale-[0.98]">
+            <button type="button" onClick={copy} className="inline-flex min-h-touch min-w-touch items-center gap-1.5 rounded-xl border border-brand px-3 text-sm font-bold text-brand-surface active:scale-[0.98] motion-reduce:transform-none">
               <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 {copied ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>}
               </svg>

@@ -167,6 +167,9 @@ export function ComposeBar({
   );
 }
 
+/** F-330 — how many blocks one page of the set draws before the next is appended. */
+export const BLOCK_PAGE = 60;
+
 export function BlockKeyboardView({
   chosen,
   view,
@@ -188,6 +191,27 @@ export function BlockKeyboardView({
   const [filter, setFilter] = useState<PosColour | null>(null);
   useEffect(() => setFilter(null), [view]);
   const shown = view ? filterBlocks(view.blocks, filter) : [];
+  // F-330: an open set is ~1,149 blocks, and all of them were in the DOM at once (2,281
+  // buttons measured in the reply sheet) while ~30 fit the box. ⇒ draw BLOCK_PAGE, most
+  // frequent first (`T-464`), and append the next page when the sentinel nears the end of
+  // the scroll box. ⛔ No entry animation: this keyboard is used 100+ times a day.
+  const [limit, setLimit] = useState(BLOCK_PAGE);
+  useEffect(() => setLimit(BLOCK_PAGE), [view, filter]);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const more = shown.length > limit;
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!more || !el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      (entries) => { if (entries.some((e) => e.isIntersecting)) setLimit((n) => n + BLOCK_PAGE); },
+      { root: boxRef.current, rootMargin: '0px 0px 200px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [more, limit]);
+  // ⚠️ Without IntersectionObserver (jsdom, very old engines) the whole set is drawn, as before.
+  const drawn = typeof IntersectionObserver === 'undefined' ? shown : shown.slice(0, limit);
   return (
     <div className="flex flex-col gap-3">
       <ComposeBar chosen={chosen} canSend={view?.canSend ?? false} onSend={onSend} />
@@ -235,10 +259,11 @@ export function BlockKeyboardView({
           </button>
         ) : null}
         {status === 'ready' && view ? (
-          <div data-testid="block-set" className="mt-3 flex max-h-[40dvh] flex-wrap gap-2 overflow-y-auto">
-            {shown.map((b) => (
+          <div ref={boxRef} data-testid="block-set" className="mt-3 flex max-h-[40dvh] flex-wrap gap-2 overflow-y-auto">
+            {drawn.map((b) => (
               <PosBlock key={b.word} block={b} onPick={() => onPick(b)} />
             ))}
+            {drawn.length < shown.length ? <div ref={sentinelRef} aria-hidden="true" data-block-sentinel className="h-px w-full" /> : null}
           </div>
         ) : null}
         <p className="mt-3 text-center text-xs text-ink-muted">{FOOTER_HE}</p>
