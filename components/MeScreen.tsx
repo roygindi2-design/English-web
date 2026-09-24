@@ -62,12 +62,20 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import MeExamDateUpdate from '@/components/MeExamDateUpdate';
 import MeWordsLearned from '@/components/MeWordsLearned';
 import MeWordsLearnedSkeleton from '@/components/MeWordsLearnedSkeleton';
 import { apiGet } from '@/lib/api/client';
 import type { CefrBand } from '@/lib/core/cefrLevels';
 import type { LevelSummary } from '@/lib/core/levelSummary';
-import { LEARNER_TIME_ZONE, daysUntilExam, daysUntilExamHe, toIsoDateInZone } from '@/lib/core/onboarding';
+import {
+  LEARNER_TIME_ZONE,
+  daysUntilExam,
+  daysUntilExamHe,
+  isDailyMinutes,
+  toIsoDateInZone,
+  type DailyMinutes,
+} from '@/lib/core/onboarding';
 import { primaryStudyTrack, trackLabelHe } from '@/lib/core/studyTracks';
 
 const HEADING_HE = 'אני';
@@ -108,7 +116,13 @@ type LevelsResponse =
 
 /** The body of `GET /api/profile` — see `docs/api-contract.md`. */
 type ProfileResponse =
-  | { readonly ok: true; readonly goal: LearnerGoal; readonly wordsLearned: number | null }
+  | {
+      readonly ok: true;
+      readonly goal: LearnerGoal;
+      readonly wordsLearned: number | null;
+      /** T-352 — what `POST /api/profile` needs back to rewrite the exam date alone. */
+      readonly dailyMinutes?: number | null;
+    }
   | { readonly ok: false; readonly code: string };
 
 /**
@@ -128,7 +142,12 @@ type ProfileResponse =
  */
 type ProfileState =
   | { readonly status: 'loading' }
-  | { readonly status: 'ready'; readonly goal: LearnerGoal; readonly wordsLearned: number | null };
+  | {
+      readonly status: 'ready';
+      readonly goal: LearnerGoal;
+      readonly wordsLearned: number | null;
+      readonly dailyMinutes: DailyMinutes | null;
+    };
 
 /**
  * § 4.2ד, the failed-read shape: three `null`s, which renders as **no goal block at
@@ -142,6 +161,7 @@ export default function MeScreen({
   fixtureWordsLearned,
   fixtureLevels,
   fixtureLevel,
+  fixtureDailyMinutes,
 }: {
   /**
    * Harness-only override, exactly `fixtureLevels`' contract below (T-210):
@@ -165,6 +185,8 @@ export default function MeScreen({
    */
   readonly fixtureLevels?: readonly LevelSummary[];
   readonly fixtureLevel?: CefrBand | null;
+  /** Harness-only, as above — T-352: the past-date branch renders its update form only with it. */
+  readonly fixtureDailyMinutes?: DailyMinutes | null;
 } = {}): React.JSX.Element {
   const fixtureLevelsGiven = fixtureLevels !== undefined;
   const fixtureProfileGiven = fixtureGoal !== undefined;
@@ -173,7 +195,12 @@ export default function MeScreen({
   const [profile, setProfile] = useState<ProfileState>(
     fixtureGoal === undefined
       ? { status: 'loading' }
-      : { status: 'ready', goal: fixtureGoal, wordsLearned: fixtureWordsLearned ?? null },
+      : {
+          status: 'ready',
+          goal: fixtureGoal,
+          wordsLearned: fixtureWordsLearned ?? null,
+          dailyMinutes: fixtureDailyMinutes ?? null,
+        },
   );
 
   useEffect(() => {
@@ -222,11 +249,16 @@ export default function MeScreen({
         if (cancelled) return;
         setProfile(
           body.ok
-            ? { status: 'ready', goal: body.goal, wordsLearned: body.wordsLearned }
-            : { status: 'ready', goal: EMPTY_GOAL, wordsLearned: null },
+            ? {
+                status: 'ready',
+                goal: body.goal,
+                wordsLearned: body.wordsLearned,
+                dailyMinutes: isDailyMinutes(body.dailyMinutes) ? body.dailyMinutes : null,
+              }
+            : { status: 'ready', goal: EMPTY_GOAL, wordsLearned: null, dailyMinutes: null },
         );
       } catch {
-        if (!cancelled) setProfile({ status: 'ready', goal: EMPTY_GOAL, wordsLearned: null });
+        if (!cancelled) setProfile({ status: 'ready', goal: EMPTY_GOAL, wordsLearned: null, dailyMinutes: null });
       }
     })();
     return () => {
@@ -260,10 +292,16 @@ export default function MeScreen({
    * ⛔ **`examDate === null` ⇒ `null`, ⛔ ולא `0`** — «⛔ לא נענה» ⛔ אינו «המבחן
    * היום», וזו אותה הבחנה ש-`wordsLearned` כבר שומר עליה למעלה.
    */
+  const today = toIsoDateInZone(new Date(), LEARNER_TIME_ZONE);
   const examDays =
     goal.examDate === null
       ? null
       : daysUntilExam(goal.examDate, toIsoDateInZone(new Date(), LEARNER_TIME_ZONE));
+  const dailyMinutes = profile.status === 'ready' ? profile.dailyMinutes : null;
+  const onExamDateSaved = (examDate: string): void =>
+    setProfile((current) =>
+      current.status === 'ready' ? { ...current, goal: { ...current.goal, examDate } } : current,
+    );
 
   const primaryTrack = levels === null ? null : primaryStudyTrack(levels);
   const activeSummary =
@@ -370,6 +408,18 @@ export default function MeScreen({
               <p className="text-sm text-ink-muted">
                 {GOAL_DATE_LABEL_HE}: {goal.examDate}
               </p>
+              {/* T-352 — the past branch's one update path, under the stale date it
+                  replaces. ⛔ Only with the daily-minutes answer in hand: without it
+                  `POST /api/profile` rejects the body, and a button that can only fail
+                  is worse than none. */}
+              {examDays !== null && examDays < 0 && dailyMinutes !== null && (
+                <MeExamDateUpdate
+                  dailyMinutes={dailyMinutes}
+                  targetScore={goal.targetScore}
+                  today={today}
+                  onSaved={onExamDateSaved}
+                />
+              )}
             </div>
           )}
         </section>

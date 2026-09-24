@@ -289,6 +289,16 @@ describe('T-145 — «אני» מקבלת פעולה אמיתית (D-079 · § 4
     expect(SRC).toContain("const EXAM_PASSED_HE = 'תאריך המבחן שרשום כאן כבר עבר.'");
   });
 
+  it('T-352 · the past branch carries one update path, through the existing POST', () => {
+    expect(CODE).toContain("import MeExamDateUpdate from '@/components/MeExamDateUpdate'");
+    // ⓑ only on the past branch, and ⛔ only when the POST body can be valid.
+    expect(CODE).toMatch(/examDays !== null && examDays < 0 && dailyMinutes !== null && \(\s*<MeExamDateUpdate/);
+    // ⛔ the stale date is replaced on screen after a save, ⛔ not by a reload.
+    expect(CODE).toMatch(/goal: \{ \.\.\.current\.goal, examDate \}/);
+    // ⛔ the value comes from the read, and anything that is not 5/10/20 is `null`.
+    expect(CODE).toContain('isDailyMinutes(body.dailyMinutes) ? body.dailyMinutes : null');
+  });
+
   it('⛔ neither fetch runs when the fixture is given (TD-13 · F-027 cause 1)', () => {
     const effects = CODE.match(/useEffect\(\(\) => \{[\s\S]*?\n  \}, \[[^\]]*\]\);/g) ?? [];
     expect(effects.length, 'expected one useEffect per fetch').toBeGreaterThanOrEqual(2);

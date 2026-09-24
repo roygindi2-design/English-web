@@ -61,7 +61,7 @@ export async function GET() {
   const [{ data: profile, error: profileError }, { count, error: countError }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('institution, target_score, exam_date')
+      .select('institution, target_score, exam_date, daily_minutes')
       .eq('id', user.id)
       .maybeSingle(),
     supabase
@@ -96,6 +96,9 @@ export async function GET() {
       examDate: profile?.exam_date ?? null,
     },
     wordsLearned: countError ? null : (count ?? 0),
+    // T-352 — ⛔ not part of `goal` (nothing on the tab displays it): it travels so the
+    // exam-date update can rebuild a body `checkOnboarding` accepts, which requires it.
+    dailyMinutes: profile?.daily_minutes ?? null,
   });
 }
 

@@ -79,12 +79,16 @@ export default function DevTabsMePage() {
           live, failing profile read — i.e. measuring the FAILURE state and calling it
           the screen. ⛔ `wordsLearnedSlot` and `goal` are gone with the server read
           (T-301's reason for the slot went with it); these are the same fixed values
-          under the harness-only names. */}
+          under the harness-only names.
+          T-352 — a fifth: `fixtureDailyMinutes`, without which the past-date branch
+          hides its update form and `check:mobile` would measure a screen with ⛔ no
+          way to fix the date — the very state the row closes. */}
       <MeScreen
         fixtureGoal={SAMPLE_GOAL}
         fixtureWordsLearned={SAMPLE_WORDS_LEARNED}
         fixtureLevels={FIXTURE_LEVELS}
         fixtureLevel="A1"
+        fixtureDailyMinutes={10}
       />
       <TabBar />
     </>

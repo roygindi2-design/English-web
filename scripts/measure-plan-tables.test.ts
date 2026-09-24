@@ -339,8 +339,19 @@ describe('scripts/measure-plan-tables.mjs', () => {
   it('flags the trap in its LIVE shape — `general` NOT empty, sequence full (F-261)', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'plan-tables-trap-'));
     const fixtureTasks = join(tmp, '50-tasks.md');
-    // ⛔ הרגיסטר החי, ⛔ בלי שינוי: היום הוא כבר נושא `general` ⬜>0 ורצף מלא.
-    writeFileSync(fixtureTasks, readFileSync(join('plan', '50-tasks.md'), 'utf8'), 'utf8');
+    // ⛔ הרגיסטר החי — **ועוד שתי שורות מתקן** שמקבעות את הצורה: `general` ⬜>0 ורצף
+    // שיש בו עבודה. ⟦`C-0789`⟧ עד היום המתקן היה הרגיסטר החי ⛔ בלי שינוי, ו-`T-352` —
+    // השורה ה-⬜ האחרונה ב-`general` — נמסרה ⇒ הבדיקה האדימה על **מסירת עבודה**, ⛔ ולא על
+    // רגרסיה. ⇒ הצורה נכתבת כאן במפורש, ⛔ ולא נשענת על מה ש-PM פתח השבוע.
+    const shape =
+      '\n| T-990 | M0 · general · נוחות | fixture — the waiting room is ⛔ not empty | — | ⬜ | 0 | — | — |' +
+      '\n| T-991 | M0 · story · נוחות | fixture — the sequence holds work | — | ⬜ | 0 | — | — |\n';
+    const live = readFileSync(join('plan', '50-tasks.md'), 'utf8');
+    const lastRow = live.lastIndexOf('\n| T-');
+    // the last row may also be the file's last line, with ⛔ no newline after it.
+    const found = live.indexOf('\n', lastRow + 1);
+    const rowEnd = found === -1 ? live.length : found;
+    writeFileSync(fixtureTasks, live.slice(0, rowEnd) + shape + live.slice(rowEnd + 1), 'utf8');
     const fixtureControl = join(tmp, '00-control.md');
     writeFileSync(fixtureControl, 'ACTIVE_WORKSTREAM: general\nPREV_WORKSTREAM: "msgs"\n', 'utf8');
     const fixtureOpenOut = join(tmp, 'plan-open.md');

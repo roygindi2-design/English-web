@@ -155,6 +155,17 @@ describe('GET /api/profile — the goal and the count (T-334)', () => {
   });
 
   /**
+   * T-352 — the exam-date update on the אני tab posts back to `POST /api/profile`,
+   * which validates all three answers together and requires `dailyMinutes`. ⇒ the
+   * read returns it, top-level and ⛔ not inside `goal` (the tab displays nothing from it).
+   */
+  it('T-352 · returns dailyMinutes so the client can rebuild a valid POST body', () => {
+    const selectArg = CODE.match(/from\('profiles'\)[\s\S]{0,200}?\.select\(([^)]*)\)/)?.[1] ?? '';
+    expect(selectArg).toContain('daily_minutes');
+    expect(CODE).toMatch(/dailyMinutes: profile\?\.daily_minutes \?\? null/);
+  });
+
+  /**
    * ⛔ Moved from `me/page.test.ts` — "reads the progress number from
    * word_progress and does not compute one". Mastery is the definition of
    * "learned" (D-010 · `lib/core/progress.ts`); counting every `word_progress`

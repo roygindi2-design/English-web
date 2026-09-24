@@ -951,10 +951,18 @@
   ],
   "components/LockIcon.test.ts": [],
   "components/LockIcon.tsx": [],
+  "components/MeExamDateUpdate.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "components/MeExamDateUpdate.tsx": [
+    "lib/api/client.ts",
+    "lib/core/onboarding.ts"
+  ],
   "components/MeScreen.test.ts": [
     "lib/testSource.ts"
   ],
   "components/MeScreen.tsx": [
+    "components/MeExamDateUpdate.tsx",
     "components/MeWordsLearned.tsx",
     "components/MeWordsLearnedSkeleton.tsx",
     "lib/api/client.ts",
