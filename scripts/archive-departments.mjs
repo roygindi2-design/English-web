@@ -34,6 +34,9 @@ const DRY = process.argv.includes('--dry');
 const at = (...p) => join(ROOT, ...p);
 
 const LIVE = at('plan', '05-departments.md');
+
+/** The ceiling check 19 enforces (`loop-health.mjs`) — ⛔ one constant, ⛔ not two (`F-326`). */
+export const DEPARTMENTS_CEILING = 8192;
 const ARCHIVE = at('plan', 'archive', 'departments-archive.md');
 
 /** סימני יעד פתוח. ⛔ כל אחד מהם לבדו מספיק כדי ש**⛔ לא** נארכב. */
@@ -87,11 +90,11 @@ function main() {
   const before = Buffer.byteLength(text, 'utf8');
   const { keep, archived } = splitDepartments(text);
   if (archived.length === 0) {
-    console.log(`departments: 0 נסגרו · ${before} בתים מתוך 4096`);
+    console.log(`departments: 0 נסגרו · ${before} בתים מתוך ${DEPARTMENTS_CEILING}`);
     return 0;
   }
   const after = Buffer.byteLength(keep, 'utf8');
-  console.log(`departments: ${archived.length} אורכבו · ${before} ⇢ ${after} בתים מתוך 4096`);
+  console.log(`departments: ${archived.length} אורכבו · ${before} ⇢ ${after} בתים מתוך ${DEPARTMENTS_CEILING}`);
   for (const row of archived) console.log(`  ⇢ ${goalsCellOf(row).slice(0, 60)}`);
   if (DRY) return 0;
   mkdirSync(dirname(ARCHIVE), { recursive: true });
@@ -99,7 +102,7 @@ function main() {
     ? readFileSync(ARCHIVE, 'utf8')
     : '# ארכיון המחלקות — מחלקות שנסגרו, בנוסחן המלא\n\n' +
       '> ⛔ **הקובץ החי הוא `plan/05-departments.md`** והוא נטו. כאן יושב הנוסח\n' +
-      '> המלא של כל מחלקה שנחתמה, מילה במילה, כדי שהתקרה של 4KB תישמר ⛔ בלי\n' +
+      '> המלא של כל מחלקה שנחתמה, מילה במילה, כדי שהתקרה של 8KB תישמר ⛔ בלי\n' +
       '> לחסום פתיחת מחלקה חדשה — הראיה חיה גם ב-`git log`.\n\n' +
       '| מחלקה | מה הלומד מקבל שם | המצב בעת החתימה |\n|---|---|---|\n';
   writeFileSync(ARCHIVE, `${head.replace(/\n+$/, '')}\n${archived.join('\n')}\n`, 'utf8');

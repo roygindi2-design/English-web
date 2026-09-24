@@ -24,6 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DEPARTMENTS_CEILING } from './archive-departments.mjs';
 import { hookState } from './install-hooks.mjs';
 import { strandedFiles } from './lib/stranded-work.mjs';
 
@@ -488,7 +489,7 @@ check('19', '`plan/05-departments.md` מתחת לתקרת 8KB — נטו, ⛔ ל
     return { ok: false, notMeasured: true, detail: '⛔ לא נמדד — הקובץ ⛔ אינו בקלון' };
   }
   const bytes = Buffer.byteLength(text, 'utf8');
-  const CEILING = 8192;
+  const CEILING = DEPARTMENTS_CEILING;
   return {
     ok: bytes <= CEILING,
     detail: `${bytes} בתים מתוך ${CEILING}`,

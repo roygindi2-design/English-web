@@ -14,3 +14,6 @@ export declare function goalsCellOf(line: string): string;
 
 /** הקובץ החי אחרי ההוצאה, והשורות שיצאו — מילה במילה. */
 export declare function splitDepartments(text: string): { keep: string; archived: string[] };
+
+/** The byte ceiling of `plan/05-departments.md` — shared with check 19 (`F-326`). */
+export declare const DEPARTMENTS_CEILING: number;

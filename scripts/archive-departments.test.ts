@@ -80,3 +80,23 @@ describe('11/09 — ארכוב מחלקות סגורות ⛔ אינו נוגע �
     }
   });
 });
+
+/**
+ * `F-326` — **one ceiling, ⛔ not two.** `archive-departments.mjs` printed «מתוך 4096»
+ * while check 19 enforced 8192 (raised 15/09) ⇒ an agent reading `npm run archive`
+ * concluded the file had crossed a ceiling that no longer existed.
+ */
+describe('F-326 — the departments ceiling is shared with check 19', () => {
+  it('archive-departments and loop-health read the same constant', async () => {
+    const { DEPARTMENTS_CEILING } = await import('./archive-departments.mjs');
+    expect(DEPARTMENTS_CEILING).toBe(8192);
+    const health = readFileSync('scripts/loop-health.mjs', 'utf8');
+    expect(health).toMatch(/import \{[^}]*DEPARTMENTS_CEILING[^}]*\} from '\.\/archive-departments\.mjs'/);
+    expect(health).not.toMatch(/const CEILING = 8192/);
+  });
+
+  it('⛔ no literal ceiling is left in the archive script', () => {
+    const src = readFileSync('scripts/archive-departments.mjs', 'utf8');
+    expect(src).not.toMatch(/מתוך 4096/);
+  });
+});
