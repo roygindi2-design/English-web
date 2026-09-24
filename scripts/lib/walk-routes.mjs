@@ -43,6 +43,10 @@
  * **מצבי-ביניים של אותו כרטיס** שהלומד עובר דרכם ו⛔ אינו נוחת עליהם — אותו שיקול בדיוק
  * שהשאיר כאן את `/dev/card/choice` לבדו ואת שלושת מצבי-הביניים של `amirnet` בחוץ.
  *
+ * ⟦הורחב C-0789 · `T-415` · `F-282`⟧ `/dev/deck/level-done` · `/dev/deck/returns` נכנסו — סוף
+ * הרמה (`T-412`) והחפיסה שנפתחה ממודול (`T-408`). ⛔ אלה ⛔ אינם מצבי-ביניים: הלומד **נוחת**
+ * עליהם, וכל אחד נושא את הפעולה הראשית היחידה של המסך — ⇒ אותו שיקול כמו `/dev/deck/done`.
+ *
  * ⟦הורחב C-0670 · `T-396`⟧ `/dev/arcade` · `/dev/arcade/result` · `/dev/arcade/character`
  * נכנסו — **שלושה, ⛔ ולא אחד ו⛔ לא כל מסכי הזירה**. 🔬 **נמדד `C-0664` בהליכה חיה
  * (`next start`, 375×780), ו⛔ לא שוער:** הרשימה הזאת הכריזה **16** כתובות, ומהן
@@ -60,6 +64,8 @@ export const DEFAULT_ROUTES = [
   '/dev/card/choice',
   '/dev/deck',
   '/dev/deck/done',
+  '/dev/deck/level-done',
+  '/dev/deck/returns',
   '/dev/tabs/studies',
   '/dev/story',
   '/dev/story/live',

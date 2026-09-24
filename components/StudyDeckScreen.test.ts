@@ -462,3 +462,29 @@ describe('T-412 — קצה הרמה נפרד מ«אין כרטיסיות», ונ
     expect(line).toContain('הרמה');
   });
 });
+
+/**
+ * `T-415` · `F-282` — the harness-only `fixtureState`. Two states the server or the URL alone
+ * decide (`level_done` · `T-412`, and `returnTo` · `T-408`) now have `/dev` routes — and the
+ * prop that makes that possible must ⛔ never reach a product route or read the network.
+ */
+describe('StudyDeckScreen — fixtureState (T-415 · F-282)', () => {
+  const src = readFileSync('components/StudyDeckScreen.tsx', 'utf8');
+  const page = readFileSync('app/study/page.tsx', 'utf8');
+
+  it('skips the queue read when a fixture state is given', () => {
+    expect(src).toMatch(/if \(fixtureState !== undefined\) return;\s*void load\(\);/);
+  });
+
+  it('⛔ the product route never passes it', () => {
+    expect(page).not.toContain('fixtureState');
+  });
+
+  it('the two fixture routes render the SAME screen, with the production return builder', () => {
+    const done = readFileSync('app/dev/deck/level-done/page.tsx', 'utf8');
+    const back = readFileSync('app/dev/deck/returns/page.tsx', 'utf8');
+    expect(done).toContain('<StudyDeckScreen deck="level" band="A1" fixtureState="level_done" />');
+    expect(back).toContain("moduleReturnDestination(moduleAnchorId('vocabulary', 'A2'))");
+    expect(back).toContain('fixtureState="empty"');
+  });
+});

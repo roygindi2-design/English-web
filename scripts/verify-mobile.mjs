@@ -119,6 +119,13 @@ const ROUTES = [
   // fold at 320/375/414, and that a 314-word Hebrew line does not scroll sideways at 320.
   // ⛔ It asks the server for nothing ⇒ ⛔ no EXPECTED_CONSOLE entry.
   '/dev/deck/level',
+  // `T-415` · `F-282` — the two states `T-412` and `T-408` built and ⛔ no gate had seen:
+  // the end of a level (its one action, «from the start»), and a deck opened from a study
+  // module whose way out returns there. Both are decided by the server or the URL alone, so
+  // neither is reachable from a route above them — the `/dev/deck/done` reasoning again.
+  // ⛔ Neither asks the server for anything ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/deck/level-done',
+  '/dev/deck/returns',
   // T-089 · § 4.2ט — אנטומיית מסך השיעור. ⛔ אין עדיין מסלול מוצר: T-090 (התוכן)
   // חסומה ב-R-018, ולכן `<LessonScreen>` ⛔ אינו מרונדר בשום מקום שהארנס מגיע
   // אליו, וכל טענה על 320/375/414 עליו הייתה הצהרה. שתי שורות ו⛔ לא אחת, מאותו

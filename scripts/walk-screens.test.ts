@@ -115,12 +115,13 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     }
   });
 
-  it('🔴 המספר שהשורה מודדת: 19 מסכים, ⛔ ולא 10', () => {
+  it('🔴 המספר שהשורה מודדת: 21 מסכים, ⛔ ולא 10', () => {
     // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`.
     // ⟦עודכן `T-395`⟧ 14 ⇢ 16 עם `/dev/deck` ו-`/dev/deck/done`. ⛔ המספר ⛔ אינו «נתון
     // שמתעדכן» — הוא ננעל כדי שהוספה תהיה **החלטה**, ולכן כל שינוי שלו נושא שורה.
     // ⟦עודכן C-0670 · `T-396`⟧ 16 ⇢ 19 עם `/dev/arcade` · `result` · `character`.
-    expect(DEFAULT_ROUTES).toHaveLength(19);
+    // ⟦עודכן C-0789 · `T-415`⟧ 19 ⇢ 21 עם `/dev/deck/level-done` · `/dev/deck/returns`.
+    expect(DEFAULT_ROUTES).toHaveLength(21);
     expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
   });
 
@@ -154,10 +155,13 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
    * עבודות `cards` רצופות (`T-325` · `F-269` · `T-392`) נמדדו על מסך שההליכה ⛔ מעולם
    * ⛔ לא צילמה. ⛔ התקדים הוא `T-371` מילה במילה.
    */
-  it('🔑 `T-395` — שני מסכי החפיסה שהלומד נוחת עליהם ברשימה המוצהרת', () => {
+  it('🔑 `T-395` · `T-415` — ארבעת מסכי החפיסה שהלומד נוחת עליהם ברשימה המוצהרת', () => {
     expect(DEFAULT_ROUTES).toContain('/dev/deck');
     expect(DEFAULT_ROUTES).toContain('/dev/deck/done');
-    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/deck'))).toHaveLength(2);
+    // `T-415` · `F-282` — סוף הרמה, והחפיסה שנפתחה ממודול. ⛔ `/dev/deck/skeleton` נשאר בחוץ.
+    expect(DEFAULT_ROUTES).toContain('/dev/deck/level-done');
+    expect(DEFAULT_ROUTES).toContain('/dev/deck/returns');
+    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/deck'))).toHaveLength(4);
   });
 
   it('⛔ ולא חמישה — שלושת מצבי-הביניים של הכרטיס ⛔ אינם ברשימה, וזו הצהרה', () => {

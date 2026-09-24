@@ -212,12 +212,23 @@ export default function StudyDeckScreen({
   deck,
   band,
   returnTo,
+  fixtureState,
 }: {
   readonly deck: DeckName;
   readonly band?: string;
   readonly returnTo?: TrackDestination;
+  /**
+   * `T-415` · `F-282` — harness-only, exactly `<MeScreen>`'s `fixture*` contract: ⛔ no product
+   * route passes it (`app/study/page.tsx` does not), and when it is given the queue is ⛔ never
+   * read, so `/dev/deck/level-done` and `/dev/deck/returns` hold a state the server alone can
+   * decide — without Supabase env and without a network call. ⛔ It changes nothing else: the
+   * markup of each state is the one the live screen renders.
+   */
+  readonly fixtureState?: 'level_done' | 'empty';
 }) {
-  const [state, setState] = useState<ScreenState>({ kind: 'loading' });
+  const [state, setState] = useState<ScreenState>(
+    fixtureState === undefined ? { kind: 'loading' } : { kind: fixtureState },
+  );
   const [gradeError, setGradeError] = useState('');
   const shownAt = useRef(0);
 
@@ -266,8 +277,9 @@ export default function StudyDeckScreen({
   }, [deck, band]);
 
   useEffect(() => {
+    if (fixtureState !== undefined) return;
     void load();
-  }, [load]);
+  }, [load, fixtureState]);
 
   /**
    * `T-412` · `F-277` — the ONE way forward from the end of the level: put the bookmark back

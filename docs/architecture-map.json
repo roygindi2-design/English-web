@@ -389,6 +389,9 @@
     "components/CardDeck.tsx"
   ],
   "app/dev/deck/layout.tsx": [],
+  "app/dev/deck/level-done/page.tsx": [
+    "components/StudyDeckScreen.tsx"
+  ],
   "app/dev/deck/level/page.tsx": [
     "components/CardDeck.tsx",
     "lib/core/deck.ts"
@@ -396,6 +399,10 @@
   "app/dev/deck/page.tsx": [
     "components/CardDeck.tsx",
     "lib/core/deck.ts"
+  ],
+  "app/dev/deck/returns/page.tsx": [
+    "components/StudyDeckScreen.tsx",
+    "lib/core/studyTracks.ts"
   ],
   "app/dev/deck/skeleton/page.tsx": [
     "components/CardSkeleton.tsx"
