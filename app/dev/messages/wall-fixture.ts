@@ -17,7 +17,7 @@ export const FIXTURE_WALL_NOW = W_NOW;
 export const FIXTURE_WALL: readonly WallPost[] = buildWallFeed(
   [
     { id: 'wp1', author_id: W_OPENER, body_en: 'How was your weekend?', created_at: '2026-09-24T05:15:00Z' },
-    { id: 'wp2', author_id: W_OPENER, body_en: 'What can you see in this picture?', created_at: '2026-09-23T14:40:00Z' },
+    { id: 'wp2', author_id: W_OPENER, body_en: 'What can you see in this picture?', created_at: '2026-09-23T14:40:00Z', picture_key: 'mountains' },
     { id: 'wp3', author_id: W_OPENER, body_en: 'Write one thing you like about school.', created_at: '2026-09-20T06:00:00Z' },
   ],
   [

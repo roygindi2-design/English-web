@@ -986,6 +986,11 @@
     "lib/core/contentSchema.ts",
     "lib/core/continuations.ts"
   ],
+  "components/BlockKeyboard.paging.dom.test.tsx": [
+    "components/BlockKeyboard.tsx",
+    "lib/core/blockKeyboard.ts",
+    "lib/core/continuations.ts"
+  ],
   "components/BlockKeyboard.test.ts": [],
   "components/BlockKeyboard.tsx": [
     "components/EnWord.tsx",
@@ -1043,10 +1048,13 @@
   ],
   "components/ClassWall.dom.test.tsx": [
     "app/dev/messages/wall-fixture.ts",
-    "components/ClassWall.tsx"
+    "components/ClassWall.tsx",
+    "components/WallPicture.tsx",
+    "lib/core/wallFeed.ts"
   ],
   "components/ClassWall.tsx": [
     "components/EnWord.tsx",
+    "components/WallPicture.tsx",
     "components/WallReplySheet.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",
@@ -1339,6 +1347,9 @@
     "components/EnWord.tsx"
   ],
   "components/UnknownMarkIcon.tsx": [],
+  "components/WallPicture.tsx": [
+    "lib/core/wallFeed.ts"
+  ],
   "components/WallReplySheet.dom.test.tsx": [
     "app/dev/messages/wall-fixture.ts",
     "components/ClassWall.tsx",

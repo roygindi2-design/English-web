@@ -3,6 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ANSWER_HINT_EN, ClassWallView, FEED_EMPTY_HE, OPENER_HE, showAllHe } from '@/components/ClassWall';
 import { FIXTURE_WALL, FIXTURE_WALL_NOW } from '@/app/dev/messages/wall-fixture';
+import { WALL_PICTURE_KEYS, WALL_PICTURE_LABEL_HE } from '@/components/WallPicture';
+import { buildWallFeed } from '@/lib/core/wallFeed';
 
 afterEach(cleanup);
 
@@ -53,5 +55,41 @@ describe('ClassWall — the post cards of kol-C-10 (T-473)', () => {
     const { container } = render(<ClassWallView state={{ kind: 'loading' }} nowIso={FIXTURE_WALL_NOW} />);
     expect(container.querySelector('[data-wall-skeleton]')).toBeTruthy();
     expect(container.querySelector('[class*="animate-spin"]')).toBeNull();
+  });
+
+  it('T-484: the picture question draws its scene UNDER the question, with a Hebrew name', () => {
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts: FIXTURE_WALL }} nowIso={FIXTURE_WALL_NOW} />);
+    const posts = container.querySelectorAll('[data-wall-post]');
+    expect(posts[0]?.querySelector('[data-wall-picture]')).toBeNull();
+    const second = posts[1] as HTMLElement;
+    const pic = second.querySelector('[data-wall-picture="mountains"]') as HTMLElement;
+    expect(pic.getAttribute('role')).toBe('img');
+    expect(pic.getAttribute('aria-label')).toBe('נוף הרים');
+    expect(pic.style.aspectRatio).not.toBe('');
+    const q = [...second.querySelectorAll('p')].find((p) => p.textContent?.includes('What can you see'));
+    expect(q && (q.compareDocumentPosition(pic) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+  });
+
+  it('failure scenario: pictureKey «volcano» (not in the gallery) ⇒ ⛔ no frame at all', () => {
+    const posts = buildWallFeed(
+      [{ id: 'p', author_id: 'o', body_en: 'What can you see in this picture?', created_at: FIXTURE_WALL_NOW, picture_key: 'volcano' }],
+      [], [], 'me', 'o',
+    );
+    expect(posts[0]?.pictureKey).toBeUndefined();
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
+    expect(container.querySelector('[data-wall-picture]')).toBeNull();
+    expect(container.querySelector('[role="img"]')).toBeNull();
+  });
+
+  it('every scene in the closed gallery of eight has a drawing and a Hebrew name', () => {
+    expect(WALL_PICTURE_KEYS.length).toBe(8);
+    for (const key of WALL_PICTURE_KEYS) {
+      const posts = buildWallFeed([{ id: key, author_id: 'o', body_en: 'Q?', created_at: FIXTURE_WALL_NOW, picture_key: key }], [], [], 'me', 'o');
+      const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
+      const pic = container.querySelector(`[data-wall-picture="${key}"]`);
+      expect(pic?.querySelector('svg')?.childElementCount).toBeGreaterThan(0);
+      expect(WALL_PICTURE_LABEL_HE[key]).toMatch(/[\u0590-\u05FF]/);
+      cleanup();
+    }
   });
 });

@@ -12,11 +12,25 @@ import { whenOf } from '@/lib/core/messages';
 
 export const TOP_REPLIES = 2;
 
+/**
+ * T-484 · D-291 — the closed gallery a wall question may carry a picture from. ⛔ No upload,
+ * ⛔ no URL: the key is the whole of it, and the drawing lives in `components/WallPicture.tsx`.
+ */
+export const WALL_PICTURE_KEYS = ['mountains', 'beach', 'classroom', 'market', 'park', 'kitchen', 'city', 'rain'] as const;
+export type WallPictureKey = (typeof WALL_PICTURE_KEYS)[number];
+
+/** A key outside the gallery ⇒ `undefined` — ⛔ never an empty frame. */
+export function toWallPictureKey(v: unknown): WallPictureKey | undefined {
+  return typeof v === 'string' && (WALL_PICTURE_KEYS as readonly string[]).includes(v) ? (v as WallPictureKey) : undefined;
+}
+
 export interface WallPostRow {
   readonly id: string;
   readonly author_id: string;
   readonly body_en: string;
   readonly created_at: string;
+  /** D-291 — only a post carries it; absent until the column exists (T-485). */
+  readonly picture_key?: string | null;
 }
 export interface WallReplyRow extends WallPostRow {
   readonly post_id: string;
@@ -42,6 +56,8 @@ export interface WallPost {
   /** D-288 — «<שם> · המורה» belongs to the class opener; a role in the class, ⛔ not an account type. */
   readonly byOpener: boolean;
   readonly mine: boolean;
+  /** T-484 · D-291 — a scene from `WALL_PICTURE_KEYS`; an unknown key never reaches here. */
+  readonly pictureKey?: WallPictureKey;
   readonly likes: number;
   readonly likedByMe: boolean;
   readonly replyCount: number;
@@ -129,12 +145,14 @@ export function buildWallFeed(
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
     .map((p) => {
       const rs = byPost.get(p.id) ?? [];
+      const pictureKey = toWallPictureKey(p.picture_key);
       return {
         id: p.id,
         bodyEn: p.body_en,
         createdAt: p.created_at,
         byOpener: p.author_id === openerId,
         mine: p.author_id === me,
+        ...(pictureKey ? { pictureKey } : {}),
         likes: idx.count(`p:${p.id}`),
         likedByMe: idx.mine(`p:${p.id}`),
         replyCount: rs.length,

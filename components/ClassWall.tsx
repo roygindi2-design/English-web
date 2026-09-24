@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
+import WallPicture from '@/components/WallPicture';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { RETRY_HE } from '@/lib/core/failure';
@@ -121,6 +122,8 @@ function PostCard({ post, nowIso, all, onShowAll, onLike, onReply }: {
         </span>
       </header>
       <p className="mt-3 text-lg font-bold text-ink"><EnWord>{post.bodyEn}</EnWord></p>
+      {/* T-484 — msgs_ui.py `photo`: under the question, card-width less 10px a side (p-4 ⇒ -mx-1.5) */}
+      <WallPicture pictureKey={post.pictureKey} className="-mx-1.5 mt-2" />
       <p className="mt-1 text-sm text-ink-muted"><EnWord>{ANSWER_HINT_EN}</EnWord></p>
       <div className="mt-3 flex items-center justify-between border-t border-ink-muted/20 pt-3">
         <span className="text-sm font-semibold text-ink-muted">{repliesHe(post.replyCount)}</span>
