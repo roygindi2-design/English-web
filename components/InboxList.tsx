@@ -18,8 +18,7 @@ import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
  * ⛔ Draws only: rows arrive precomputed from lib/core/messages.ts (`toInboxRows`). ⛔ No
  * filter/reduce/sort here. ⛔ No write anywhere: apiGet alone.
  * Layer A gaps, declared: chip 9.5→12px · time 10.5→12px · card sub-line 11→12px; radii
- * 17→16 (rows) · 14→16 (card) · 10→12 (active segment). The sliding pill is motion and is
- * ⛔ not built (D-148: no שכבה ב׳ on this row).
+ * 17→16 (rows) · 14→16 (card) · 10→12 (active segment). The sliding pill is T-480's (שכבה ב׳).
  *
  * ⚠️ ⛔ No horizontal padding of its own (T-285ⓓ · D-206): `app/layout.tsx`'s `<main>`
  * already carries the product's single gutter, and a `px-4` here would make a third one.
@@ -58,12 +57,27 @@ function Header({ tab, onTab, kickerHe, headingHe }: { readonly tab: MessagesTab
     <header className="pt-2">
       <p className="text-xs text-ink-muted">{kickerHe}</p>
       <h1 className="mt-1 text-2xl font-bold text-ink">{headingHe}</h1>
-      <div role="tablist" aria-label="הודעות" className="mt-3 grid grid-cols-3 rounded-xl border border-surface-raised bg-surface-raised p-0.5">
+      <div role="tablist" aria-label="הודעות" className="relative mt-3 grid grid-cols-3 rounded-xl border border-surface-raised bg-surface-raised p-0.5">
+        {/*
+          T-480 · `39 § 4` — ONE active background under the three buttons, sliding to the
+          selected tab (`render_video_C.py:201`). `transform` only; in RTL the first tab
+          (`הקיר`) sits on the RIGHT, so the pill starts at `right` and moves by a NEGATIVE
+          percentage of its own width — one tab per step of its width. A transition, ⛔ not keyframes: a
+          tap mid-slide retargets from where the pill IS. 250ms, ⛔ the render's 400: the
+          interface ceiling is 300 (`35 § ב6`). Reduced motion ⇒ it appears in place.
+        */}
+        <span aria-hidden className="pointer-events-none absolute inset-0.5">
+          <span
+            data-tab-indicator
+            style={{ transform: `translateX(${-100 * Math.max(0, TABS.findIndex((t) => t.key === tab))}%)` }}
+            className="absolute inset-y-0 right-0 w-1/3 rounded-xl border border-brand bg-brand-surface/25 transition-transform duration-[250ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
+          />
+        </span>
         {TABS.map((t) => {
           const selected = t.key === tab;
           if (t.key === null) {
             return (
-              <span key={t.he} role="tab" aria-selected={false} aria-disabled className="flex min-h-touch items-center justify-center text-sm text-ink-muted">
+              <span key={t.he} role="tab" aria-selected={false} aria-disabled className="relative flex min-h-touch items-center justify-center text-sm text-ink-muted">
                 {t.he}
               </span>
             );
@@ -78,8 +92,8 @@ function Header({ tab, onTab, kickerHe, headingHe }: { readonly tab: MessagesTab
               data-messages-tab={key}
               onClick={() => onTab(key)}
               className={selected
-                ? 'flex min-h-touch items-center justify-center rounded-xl border border-brand bg-brand-surface/25 text-sm font-bold text-brand-surface'
-                : 'flex min-h-touch items-center justify-center rounded-xl text-sm font-medium text-ink'}
+                ? 'relative flex min-h-touch items-center justify-center rounded-xl text-sm font-bold text-brand-surface'
+                : 'relative flex min-h-touch items-center justify-center rounded-xl text-sm font-medium text-ink'}
             >
               {t.he}
             </button>
