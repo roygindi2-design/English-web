@@ -222,6 +222,9 @@ const ROUTES = [
   // same pure functions the route uses and asks the server for nothing ⇒ ⛔ no entry in
   // EXPECTED_CONSOLE. Task 6 (T-191) turns this route into the inbox list itself.
   '/dev/messages',
+  // C-0816 (T-482) — the same inbox while the API is cold: three skeleton rows. Props only
+  // ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/messages/cold',
   // C-0522 (T-192) — the open message fixture: the body bubble, the three required-word
   // chips, the block keyboard (T-461, as `screen_mail` draws it) and ⛔ no tab bar. It is
   // handed its item and its block set as props and asks the server for nothing ⇒ ⛔ no

@@ -108,6 +108,52 @@ function Header({ tab, onTab, kickerHe, headingHe }: { readonly tab: MessagesTab
 /** T-462ⓑ — the second indicator's word. */
 export const ANSWERED_HE = 'נענה';
 
+/**
+ * T-482 — the row's box and avatar, shared with the skeleton below so the two ⛔ cannot
+ * drift apart: a skeleton 12px taller than a real row makes the whole list jump up under
+ * the learner's finger the moment the inbox arrives.
+ */
+const ROW_SHELL = 'flex min-h-touch gap-3 rounded-2xl border p-3';
+const AVATAR = 'h-10 w-10 shrink-0 rounded-full';
+
+/** How many placeholder rows the cold inbox shows — the fixture's three characters. */
+export const INBOX_SKELETON_ROWS = 3;
+
+/**
+ * T-482 · `STEP 5.6` — a cold `/api/world/messages` costs seconds (C-0794: middleware
+ * 2.08s + function start ≈5.4s). ⇒ the learner sees the SHAPE of the inbox, ⛔ not a lone
+ * 12px «טוען…». Each bar sits in a line box of the real text's height (`text-sm` 20px ·
+ * `text-xs` 16px), so the skeleton row is the real row's height, line for line.
+ * Bars wear `border-subtle`, the `app/loading.tsx` token — `surface-raised` on a `surface` card
+ * measured near-invisible in the light theme (C-0816 walk).
+ * ⛔ No spinner, ⛔ no shimmer: it is seen on every cold open, and a static shape reads as
+ * «almost here» without asking for attention (emil-design-eng · «should this animate at all»).
+ */
+function InboxSkeleton() {
+  return (
+    <div data-inbox-skeleton aria-busy="true" aria-live="polite">
+      <span className="sr-only">טוען</span>
+      <div aria-hidden className="mt-3 flex h-4 items-center"><span className="h-2.5 w-28 rounded-md bg-border-subtle" /></div>
+      <ul aria-hidden className="mt-2 space-y-3">
+        {Array.from({ length: INBOX_SKELETON_ROWS }, (_, i) => (
+          <li key={i} data-inbox-skeleton-row className={`${ROW_SHELL} border-surface-raised bg-surface`}>
+            <span className={`block ${AVATAR} bg-border-subtle`} />
+            <span className="min-w-0 flex-1">
+              <span className="flex h-5 items-center gap-2">
+                <span className="h-3 w-20 rounded-md bg-border-subtle" />
+                <span className="h-3 w-12 rounded-lg bg-border-subtle" />
+              </span>
+              <span className="mt-1 flex h-5 items-center"><span className="h-3 w-3/4 rounded-md bg-border-subtle" /></span>
+              <span className="mt-1 flex h-4 items-center"><span className="h-2.5 w-1/2 rounded-md bg-border-subtle" /></span>
+            </span>
+            <span className="flex h-4 shrink-0 items-center"><span className="h-2.5 w-8 rounded-md bg-border-subtle" /></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Row({ row }: { readonly row: InboxRow }) {
   return (
     <li>
@@ -120,9 +166,9 @@ function Row({ row }: { readonly row: InboxRow }) {
       <Link
         href={row.href}
         data-inbox-context={row.context}
-        className={`flex min-h-touch gap-3 rounded-2xl border p-3 ${row.unread ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
+        className={`${ROW_SHELL} ${row.unread ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
       >
-        <span aria-hidden data-ctx-avatar className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold">
+        <span aria-hidden data-ctx-avatar className={`flex ${AVATAR} items-center justify-center text-base font-bold`}>
           {row.initial}
         </span>
         <span className="min-w-0 flex-1">
@@ -220,7 +266,7 @@ export function InboxListView({ state, onRetry = () => {}, tab = 'inbox', onTab 
   return (
     <section dir="rtl" className="mx-auto w-full max-w-md pb-6 text-ink">
       <Header tab="inbox" onTab={onTab} kickerHe={KICKER_HE} headingHe={HEADING_HE} />
-      {state.kind === 'loading' ? <p className="mt-4 text-xs text-ink-muted">טוען…</p> : null}
+      {state.kind === 'loading' ? <InboxSkeleton /> : null}
       {state.kind === 'ready' ? (
         <>
           <p data-inbox-unread className="mt-3 text-xs text-ink-muted">{state.countsHe}</p>

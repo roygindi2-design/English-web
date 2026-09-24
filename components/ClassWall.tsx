@@ -169,9 +169,11 @@ export function ClassWallView({ state, nowIso, expanded = {}, onShowAll = () => 
   if (state.kind === 'loading') {
     // `STEP 5.6` — a skeleton in the card's shape, ⛔ not a spinner.
     return (
-      <div data-wall-skeleton aria-busy className="mt-4 space-y-3">
+      <div data-wall-skeleton aria-busy="true" aria-live="polite" className="mt-4 space-y-3">
+        {/* T-482ⓓ — the shape was already here; the word for a screen reader was ⛔ not. */}
+        <span className="sr-only">טוען</span>
         {[0, 1].map((i) => (
-          <div key={i} className="rounded-2xl bg-surface-raised p-4">
+          <div key={i} aria-hidden className="rounded-2xl bg-surface-raised p-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-surface" />
               <div className="h-3 w-24 rounded-md bg-surface" />

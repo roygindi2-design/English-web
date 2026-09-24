@@ -503,6 +503,9 @@
   "app/dev/lesson/page.tsx": [
     "components/LessonScreen.tsx"
   ],
+  "app/dev/messages/cold/page.tsx": [
+    "components/InboxList.tsx"
+  ],
   "app/dev/messages/keyboard/page.tsx": [
     "components/BlockKeyboard.tsx"
   ],

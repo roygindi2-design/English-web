@@ -78,3 +78,43 @@ describe('every character in the inbox looks like itself (T-481)', () => {
     for (const hex of ['#b45309', '#0369a1', '#7e22ce', '#0f766e']) expect(palette).not.toContain(hex);
   });
 });
+
+import { INBOX_SKELETON_ROWS } from '@/components/InboxList';
+
+/** T-482 · `STEP 5.6` — a cold inbox shows its shape, ⛔ not a lone «טוען…». */
+describe('a cold inbox shows the shape of the inbox (T-482)', () => {
+  const loading = () => render(<InboxListView state={{ kind: 'loading' }} />).container;
+
+  it('three skeleton rows, ⛔ and the old 12px «טוען…» line is gone', () => {
+    const c = loading();
+    expect(c.querySelectorAll('[data-inbox-skeleton-row]').length).toBe(INBOX_SKELETON_ROWS);
+    expect(INBOX_SKELETON_ROWS).toBe(3);
+    expect(c.textContent).not.toContain('טוען…');
+  });
+
+  it('busy for assistive tech: aria-busy plus a spoken «טוען», the placeholders hidden', () => {
+    const box = loading().querySelector('[data-inbox-skeleton]') as HTMLElement;
+    expect(box.getAttribute('aria-busy')).toBe('true');
+    expect(box.querySelector('.sr-only')?.textContent).toBe('טוען');
+    for (const ul of box.querySelectorAll('ul')) expect(ul.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('failure scenario: a skeleton row taller than a real row ⇒ the list jumps. Same shell, same avatar, same line boxes', () => {
+    const items = mergeInbox(FIXTURE_SIMULATIONS, FIXTURE_STATES);
+    const ready = render(<InboxListView state={{ kind: 'ready', rows: toInboxRows(items, FIXTURE_NOW, 'Asia/Jerusalem'), countsHe: inboxCountsHe(inboxCounts(items)) }} />).container;
+    const realRow = ready.querySelector('[data-inbox-context]') as HTMLElement;
+    const skelRow = loading().querySelector('[data-inbox-skeleton-row]') as HTMLElement;
+    const shell = (el: HTMLElement) => el.className.split(' ').filter((k) => /^(flex|min-h-touch|gap-3|rounded-2xl|border|p-3)$/.test(k)).sort();
+    expect(shell(skelRow)).toEqual(shell(realRow));
+    const avatarCls = (el: Element) => el.className.split(' ').filter((k) => /^(h-10|w-10|shrink-0|rounded-full)$/.test(k)).sort();
+    expect(avatarCls(skelRow.firstElementChild as Element)).toEqual(avatarCls(realRow.querySelector('[data-ctx-avatar]') as Element));
+    // the text column: text-sm (h-5) · mt-1 text-sm (h-5) · mt-1 text-xs (h-4)
+    const lines = [...(skelRow.children[1] as HTMLElement).children].map((l) => (l as HTMLElement).className.match(/\b(mt-1 )?flex h-[45]\b/)?.[0]);
+    expect(lines).toEqual(['flex h-5', 'mt-1 flex h-5', 'mt-1 flex h-4']);
+  });
+
+  it('⛔ no spinner and ⛔ no shimmer — it is seen on every cold open', () => {
+    const html = loading().innerHTML;
+    expect(html).not.toMatch(/animate-(spin|pulse)|progressbar/);
+  });
+});
