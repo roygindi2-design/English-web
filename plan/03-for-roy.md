@@ -630,3 +630,29 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 - **shadow** (צל): "The tall tree cast a long shadow on the grass." (רמה 1: "The tree made a long ____ on the ground.") / "She saw her shadow on the wall." מסיחים: picture/cloud (סמנטי) · shallow (אורתוגרפי) · banana (לא קשור). תויג `he_one_to_many_group` מול `shade`.
 
 ⟨נבדק: 2026-09-24⟩
+
+## דוח C-0811 — סוכן ה-CONTENT · ⟨נבדק: 2026-09-24⟩
+
+**סקילים:** `hebrew-content-writer` — **הופעל דרך `Skill()`** לפני כתיבת `translation_he` ראשון.
+
+🔴 **ממצא מרכזי — `T-353` נחת בקוד, אך שבור בפועל ב-`npm run verify`.** `plan/50-tasks.md` מראה `T-353` כ-✅ (`C-0800`), ואומת חי ב-`lib/core/contentSchema.ts`: `gateSense` באמת מקבל שורת word-only (`examples:null · items:[] · distractors:[]`). ⇒ נכתבה אצווה מלאה של **269 מילים** — כל הפער שנותר ב-Tier 1 A2 — במצב הזה, ו-`npm run measure:gate` העצמאי אישר 0 פסילות. **אבל `npm run verify` יצא אדום**: שתי בדיקות שלא נגעתי בהן, `scripts/measure-gate.test.ts` ו-`scripts/build-ingest-sql.test.ts`, מניחות בקוד שלהן `sentencesGated === SOURCE_ROWS * 2` (D-022, "כל שורה נושאת בדיוק שתי דוגמאות") — הנחה ש-`T-353` הפר ולא עדכן. אומת בבידוד (`git stash` + `npx vitest run scripts/measure-gate.test.ts`): 4/4 ירוק בלי שום שורת word-only בבנק, 1/4 אדום עם **שורה אחת בודדת**. ⇒ **מצב word-only קיים בקוד ואסור בפועל בשער** — כל CONTENT שינסה להשתמש בו ייתקל באותו red verify. האצווה של 269 המילים **בוטלה כליל** (`git restore`/`rm`, מעולם לא נדחפה) לפי הכלל «prompt line never overrides a machine-enforced gate — obey the gate and report the contradiction». נכתב לקח 62 ב-`plan/80-content-lessons.md`. **המלצה ל-DEV:** לעדכן את שני המבחנים לספור את סכום הדוגמאות בפועל לכל שורה במקום הנחת מכפיל קבוע 2, כדי ש-word-only (הוראת רוי 14/09) יהיה שמיש בפועל.
+
+**מסלול:** בעקבות הביטול נכתבה אצווה חלופית קטנה יותר, במנגנון המלא (2 משפטים · 3 גזעים · 4 מסיחים), מ-`data/amirnet-vocab.csv` (Tier 1, A2) — לא הזמנה. **16 מילים: `stadium`·`statue`·`steak`·`stomach`·`storm`·`spoon`·`soda`·`suitcase`·`treasure`·`wallet`·`wine`·`wedding`·`university`·`sunglasses`·`wave`·`target`.** נבחרו כמילות-A2 קונקרטיות ופשוטות במיוחד כדי לכתוב אותן במהירות אחרי הזמן שאבד על גילוי הממצא למעלה.
+
+**בדיקה מקדימה (§ א׳1 כלל 1):** כל מילת-רקע בכל דוגמה/גזע נבדקה ב-`grep -x` מול `allowed-words-2026-08-07.txt` **לפני** הכתיבה הסופית. 9 מתוך 16 הכותרות דרשו החלפת מילת-רקע (למשל `steak`: chef/herbs→cook/rice · `treasure`: pirates/hid/jewels/hidden/divers/sunken→gold/silver/kept/coast/lost · `wedding`: bride/groom/thousands→couple/danced/many). **גזעים ארוכים מדי:** 3 גזעים (`steak`·`wine`·`target`, רמה 3 כל אחד) חרגו מ-14 מילים בטיוטה הראשונה — קוצרו ואומתו שוב.
+
+**בדיקת מסיחים (לקח 24, "מסיח קרוב מדי"):** בטיוטה הראשונה נמצאו שלושה זוגות מסיחים סמנטיים כמעט-נרדפים למילת המטרה: `statue`↔`sculpture` · `stadium`↔`arena` · `target`↔`goal`/`aim` (החופפים למשמעות המופשטת ששימשה בדוגמה הנייטרלית). שלושתם הוחלפו (`statue`→painting/photograph · `stadium`→museum/hospital · `target` נוסח מחדש למשמעות הקונקרטית בלבד, מסיחים→wall/board) לפני הרצת השער הסופית.
+
+`gateSense` האמיתי (`npm run measure:gate`): **סבב ראשון 14/16** (2-3 גזעים ארוכים מדי, כמתואר למעלה). **סבב שני: 16/16, 0 פסילות.** 0/16 `translation_confidence: low` — כל 16 המילים קונקרטיות וחד-משמעיות. **קונפליקטי תרגום** מול הבנק הקיים: שני חפיפות שפיטות (`stomach`/`belly`→בטן · `target`/`purpose`→מטרה), שתיהן נרדפים לגיטימיים, לא תוקנו.
+
+**כיסוי:** `npm run measure:amirnet-coverage` Tier 1+2: **1092→1108**/3,382 (+16, בדיוק כמספר המילים). ארבעת הגנרטורים (`build:ingest`·`build:levels`·`measure:gate`·`build:preview`) רצו נקי על בנק של **1,691 שורות ב-49 קבצים**, 0 rejected.
+
+**STEP 7.5 (בדיקה בדפדפן, פורט 3200):** בוצע לפני גילוי ממצא ה-T-353 (על הבנק כפי שהיה אז). `npm run build` עבר נקי, השרת עלה על 3200, נצפו ב-Playwright (375×780): `/dev/card`·`/dev/card/choice`·`/dev/card/typed`·`/dev/story`·`/dev/deck` — עברית קריאה, RTL תקין, בלי גלישה אופקית. `/dev/card`·`/dev/card/choice`·`/dev/card/typed`·`/dev/deck` הם מסכי דמה מתויגים במפורש "בדיקת פריסה — אינו תוכן לימודי" (Lorem/Ipsum) — לא ניתן היה לאמת חזותית תוכן ספציפי מהאצווה. `/dev/story` הציג תוכן אמיתי (סיפור "The library near the river"), קריא ונקי ב-375px.
+
+**נעילה ודחיפה:** קומיט-נעילה נפרד (לבדו, נדחף מיד — 0 מרוץ), ואז קומיט עבודה אחד (batch+manifest+ארבעת הגנרטורים+לקח 62+שורה זו), `npm run verify` המלא רץ ועבר ירוק (4,940 בדיקות מובייל/PWA + כל סוויטת ה-vitest). כל הקומיטים על `work/current`, ⛔ אף קומיט על ענף `claude/*`.
+
+**דוגמות:**
+- **stadium** (אצטדיון): "Many people watched the match inside the big stadium." (רמה 1: "The team played in a big ____ last night.") מסיחים: museum/hospital (סמנטי) · studio (אורתוגרפי) · pillow (לא קשור).
+- **treasure** (אוצר): "The gold and silver were part of the great treasure they found." (רמה 3: "Although the box was heavy, the men carried the ____ up the hill.") מסיחים: gold/jewel (סמנטי) · pleasure (אורתוגרפי) · window (לא קשור).
+
+⟨נבדק: 2026-09-24⟩
