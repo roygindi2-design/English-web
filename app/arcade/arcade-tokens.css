@@ -1652,13 +1652,24 @@ body:has([data-arena-failure] [data-action-bar]) {
    ⛔ **והמרחק זעיר, `1.6` יחידות מתוך `viewBox` של 100** ⇒ פחות מ-2% מגובה הסט.
    קהל שמזנק היה **גונב את העין** מהדמויות, וזה בדיוק מה ש-`T-041` אוסר.
    ⛔ `translate` ⛔ ולא `y`: `y` ⛔ אינו ערוץ קומפוזיטור, והשער היה נופל. */
+/* 🚩 **⟦24/09 · `C-0784` · `T-448` · `D-277`ⓒ⟧ הקהל הפך לדגלים — ⇒ «קם» הפך ל«מתנופף».**
+   ⛔ **השם נשאר `crowd-rise`** — הוא הערוץ של `§ 11` א8, ושלוש בדיקות קוראות אותו בשמו.
+   הדגל נתלה מה**תורן** ⇒ `transform-origin` בקצה השמאלי, ⇒ `scale` על ציר X הוא הבד
+   שמתקפל ונפרש, ו-`rotate` קטן הוא הרוח. ⛔ **ועדיין זעיר** (`T-041`): ‏6° ו-22% כיווץ,
+   פעם אחת, ⛔ אף פעם `infinite`. */
+[data-arena-scope] [data-arena-crowd] {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+}
 @keyframes arena-crowd-rise-a {
-  0%, 100% { translate: 0 0; }
-  35% { translate: 0 -1.6px; }
+  0%, 100% { scale: 1 1;    rotate: 0deg; }
+  35%      { scale: 0.78 1; rotate: -6deg; }
+  65%      { scale: 1.06 1; rotate: 3deg; }
 }
 @keyframes arena-crowd-rise-b {
-  0%, 100% { translate: 0 0; }
-  35% { translate: 0 -1.6px; }
+  0%, 100% { scale: 1 1;    rotate: 0deg; }
+  35%      { scale: 0.78 1; rotate: -6deg; }
+  65%      { scale: 1.06 1; rotate: 3deg; }
 }
 [data-arena-scope] [data-arena-impact='a'] [data-arena-crowd] {
   animation: arena-crowd-rise-a var(--arena-crowd-ms) var(--arena-ease-out) 1;

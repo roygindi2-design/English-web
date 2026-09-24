@@ -123,8 +123,50 @@ const DEBRIS: readonly { readonly x: number; readonly y: number; readonly r: num
   { x: 90, y: 88, r: 1.4 }, { x: 8, y: 82, r: 1.1 },
 ];
 
-/** צלליות הקהל — מלבנים בגבהים משתנים, ⛔ ולא דמויות: הן **מעל** החומה ורחוקות. */
-const CROWD: readonly number[] = [4, 7, 5, 8, 6, 9, 5, 7, 4, 8, 6, 5, 9, 6, 7, 5];
+/**
+ * 🏛️ **⟦24/09 · `C-0784` · `T-448` · `D-277`ⓒ⟧ מקדש פתוח — ⛔ ולא מרתף.**
+ * 🎨 **הגאומטריה נקראה מ-Figma, ⛔ ולא נבחרה:** `get_metadata` על `53:5` ⟨«הזירה — רקע
+ * פתוח», `kZcjKncSFidYBAyuf9tOpm` עמוד 07⟩ — מסגרת 345×330 שהאופק שלה ב-`y=152`, כלומר
+ * **46%**, ⇒ `HORIZON` של הקובץ הזה ⛔ לא זז, ו⛔ אף טרפז ⛔ לא זז. כל ערך למטה הוא ה-`y`
+ * או ה-`x` של Figma חלקי 330 או 345:
+ * ```
+ * temple/lintel   y 96  h 14   ⇒ 29.1 · 4.2        temple/col-N  w 32 ⇒ 9.3 · y 116..152 ⇒ 35.2..46
+ * temple/cap-N    y 108 h 10   ⇒ 32.7 · 3.0        col-shade     w 9  ⇒ 2.6, בצד ימין
+ * cols x          12·84·156·228·300 ⇒ 3.5 · 24.3 · 45.2 · 66.1 · 87
+ * hills/far·near  y 122·132    ⇒ 37 · 40           ground/grass  y 152 ⇒ 46 (מתחת לאופק כולו)
+ * ```
+ * 🔴 **והדשא ⛔ אינו מתחת לדמות — זו מגבלת העיצוב עצמו, ⛔ ולא שלי:** הכותונת `fig-teal`
+ * והדשא `fig-leaf` ⇒ שני ירוקים ⇒ הדמות עומדת **תמיד על אבן** ⟨הטרפז⟩, והדשא גדל
+ * **מחוצה לו** בלבד. ⛔ **אפס טוקן צבע חדש** — `fig-leaf` · `fig-leaf-shade` · `fig-stone` ·
+ * `fig-stone-shade`, ארבעתם כבר נמדדו לדמויות.
+ */
+const COLUMNS: readonly number[] = [3.5, 24.3, 45.2, 66.1, 87];
+
+/**
+ * 🚩 `D-277`ⓒ — **דגלים על הווו של הקהל.** אחד על כל עמוד, ⇒ «הקהל קם» הופך ל«הדגלים
+ * מתנופפים» ⛔ בלי ששום כלל ב-CSS ⛔ ושום בדיקה ⛔ יאבדו את הווו. ⛔ **ו⛔ לא נגעתי במפתח**:
+ * `data-arena-crowd` נשאר השם, כי הוא **הערוץ** (`§ 11` א8), ⛔ ולא הציור.
+ */
+const FLAGS: readonly number[] = COLUMNS.map((x) => x + 4.65);
+
+/**
+ * 🔥 `D-277`ⓒ — **מדורות על הווו של הלפידים**, על הדשא משני צדי השביל.
+ * 🔬 **והמיקום נגזר מהטרפז, ⛔ ולא נבחר בעין:** חצי-רוחב השביל ב-`y` הוא
+ * `26 + 24·(y−46)/54` ⇒ ב-`y=56` השביל נגמר ב-`19.6`/`80.4`, וב-`y=74` ב-`12.4`/`87.6`
+ * ⇒ המדורות יושבות ב-`9`/`91` וב-`4`/`96` — **על דשא**, ⛔ אף אחת ⛔ לא בנתיב.
+ * ⛔ **ארבע, כמו הלפידים** ⇒ `:nth-child` ו-`check:mobile` רואים את אותו מספר.
+ */
+const FIRES: readonly { readonly x: number; readonly y: number; readonly r: number }[] = [
+  { x: 9, y: 56, r: 5.5 }, { x: 91, y: 56, r: 5.5 }, { x: 4, y: 74, r: 7 }, { x: 96, y: 74, r: 7 },
+];
+
+/** 🌿 קני הדשא לאורך שפת השביל — מחושבים מאותה נוסחת טרפז, ⇒ ⛔ אף אחד ⛔ לא חוצה אותו. */
+const TUFTS: readonly { readonly x: number; readonly y: number; readonly s: number }[] = [48, 52, 57, 63, 70, 78, 87, 96]
+  .flatMap((y) => {
+    const half = FLOOR_HALF_FAR + ((FLOOR_HALF_NEAR - FLOOR_HALF_FAR) * (y - HORIZON)) / (100 - HORIZON);
+    const s = 0.8 + (y - HORIZON) / 30;
+    return [{ x: VANISHING_X - half - 1.2 - s, y, s }, { x: VANISHING_X + half + 1.2, y, s }];
+  });
 
 /**
  * 🪨 **⟦24/09 · `C-0782` · `F-316`⟧ הרצפה היא **עפר עם סדקים וגחלים**, ⛔ ולא גרדיאנט חלק.**
@@ -167,6 +209,11 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           <stop offset="0%" stopColor="var(--arena-stone)" />
           <stop offset="100%" stopColor="var(--arena-stone-dark)" />
         </linearGradient>
+        {/* 🌿 `T-448` — הדשא כהה באופק ומתבהר קדימה, ⛔ אותו כיוון מבט כמו הרצפה. */}
+        <linearGradient id="arena-grass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--arena-fig-leaf-shade)" />
+          <stop offset="100%" stopColor="var(--arena-fig-leaf)" stopOpacity="0.7" />
+        </linearGradient>
         {/* 🪨 `F-316`ⓐ — טבעת הזימון: **טבעות**, ⛔ ולא כתם. עצירות לסירוגין בהיר/שקוף הן
             מה שהרנדר מצייר כאליפסות קונצנטריות; המרכז חם ומתכהה החוצה. */}
         <radialGradient id="arena-ring">
@@ -196,61 +243,55 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
         <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="var(--arena-ink)" opacity="0.55" />
       ))}
 
-      {/* ⓑ הקהל — מעל החומה, ⛔ בלי פרצופים. אטימות נמוכה = מרחק.
-          🏟️ **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ `data-arena-crowd` — וו, ⛔ ולא תנועה.**
-          ⛔ **הרכיב עדיין ⛔ אינו מנפיש דבר** ו⛔ אינו מחשב: כל הכלל חי ב-`arcade-tokens.css`
-          ותלוי ב-`data-arena-impact` של אזור הבמה. ⇒ המדור «והסט **סטטי**» בראש הקובץ
-          **נשאר נכון מילה במילה** — הקהל ⛔ אינו זז בזמן שהלומד חושב, אלא **אך ורק**
-          ברגע שהוא פגע. ⛔ זה ⛔ אינו ריצוד רקע; זו **תגובה**.
-          ↩️ **והקבוצה ⛔ אינה קישוט מבני:** היא קיימת כדי שה**השהיה המדורגת** תיכתב
-          ב-CSS כ-`:nth-child`, ⛔ ולא כ-`style={{ animationDelay }}` ברכיב. 🔬 נמדד:
-          הניסיון הראשון כתב את ההשהיה כאן, ו-`ArenaStage.test.ts` האדים בדין —
-          «⛔ אין אנימציה בסט». ⇒ השער תפס אותי, ⛔ והוא צודק: הרכיב **מצייר**. */}
+      {/* ⓑ גבעות — רחוקה ואז קרובה, ⛔ מתחת לאופק בקצת: הן מה שנראה **בין** העמודים. */}
+      <polygon points={`0,${String(HORIZON)} 0,39 18,37 38,39.5 60,37.5 82,39 100,37.5 100,${String(HORIZON)}`} fill="var(--arena-fig-leaf-shade)" opacity="0.45" />
+      <polygon points={`0,${String(HORIZON)} 0,41.5 22,40 45,42 70,40 100,41.5 100,${String(HORIZON)}`} fill="var(--arena-fig-leaf-shade)" opacity="0.8" />
+
+      {/* ⓒ הדשא — כל מה שמתחת לאופק. הטרפז של השביל נצבע **מעליו** (ⓔ), ⇒ הדשא נשאר
+          בקצוות בלבד, בדיוק כמו ב-`53:10`/`53:11`. */}
+      <rect x="0" y={HORIZON} width="100" height={100 - HORIZON} fill="url(#arena-grass)" />
+
+      {/* ⓓ הקולונדה — משקוף, ראשי עמודים, עמודים וצד מוצל. ⛔ **ו⛔ אין קיר:** השמיים
+          נראים בין העמודים, וזה כל ההבדל בין מקדש פתוח למרתף. */}
+      <rect x="0" y="29.1" width="100" height="4.2" fill="var(--arena-fig-stone)" />
+      <rect x="0" y="32.1" width="100" height="1.5" fill="var(--arena-fig-stone-shade)" />
+      {COLUMNS.map((x) => (
+        <g key={`col-${String(x)}`}>
+          <rect x={x - 0.9} y="32.7" width="11" height="3" fill="var(--arena-fig-stone)" />
+          <rect x={x} y="35.2" width="9.3" height={HORIZON - 35.2} fill="var(--arena-fig-stone)" />
+          <rect x={x + 6.7} y="35.2" width="2.6" height={HORIZON - 35.2} fill="var(--arena-fig-stone-shade)" />
+        </g>
+      ))}
+
+      {/* 🚩 הדגלים — על המשקוף. 🏟️ **⟦`C-0751` · `§ 11` א8⟧ `data-arena-crowd` — וו, ⛔ ולא תנועה.**
+          ⛔ **הרכיב עדיין ⛔ אינו מנפיש דבר**: הכלל חי ב-`arcade-tokens.css` ותלוי
+          ב-`data-arena-impact` ⇒ הדגלים ⛔ אינם זזים בזמן שהלומד חושב, **אך ורק** ברגע
+          שהוא פגע. ↩️ **והקבוצה ⛔ אינה קישוט מבני:** היא קיימת כדי שההשהיה המדורגת
+          תיכתב ב-CSS כ-`:nth-child` ⛔ ולא ברכיב (`ArenaStage.test.ts` — «⛔ אין אנימציה בסט»). */}
+      {FLAGS.map((x) => (
+        <rect key={`pole-${String(x)}`} x={x - 0.25} y="21" width="0.5" height="8.1" fill="var(--arena-fig-stone-shade)" />
+      ))}
       <g data-arena-crowd-row>
-        {CROWD.map((h, i) => (
-          <rect
-            key={`crowd-${String(i)}`}
+        {FLAGS.map((x) => (
+          <polygon
+            key={`flag-${String(x)}`}
             data-arena-crowd
-            x={i * 6.25 + 0.6}
-            y={HORIZON - 12 - h * 0.45}
-            width="5"
-            height={h * 0.45 + 12}
-            rx="1.6"
-            fill="var(--arena-stone-dark)"
-            opacity="0.75"
+            points={`${String(x + 0.25)},21 ${String(x + 6)},22.6 ${String(x + 0.25)},24.4`}
+            fill="var(--arena-gold)"
+            opacity="0.85"
           />
         ))}
       </g>
 
-      {/* ⓒ חומת האבן — שלוש שורות לבנים בהיסט לסירוגין, כמו כל חומה אמיתית. */}
-      <rect x="0" y={HORIZON - 14} width="100" height="14" fill="var(--arena-stone-dark)" />
-      {[0, 1, 2].map((row) =>
-        Array.from({ length: 8 }, (_, col) => (
-          <rect
-            key={`brick-${String(row)}-${String(col)}`}
-            x={col * 13 - (row % 2 === 0 ? 0 : 6.5)}
-            y={HORIZON - 14 + row * 4.7}
-            width="12"
-            height="3.9"
-            rx="0.6"
-            fill="var(--arena-stone)"
-            opacity="0.55"
-          />
-        )),
-      )}
-
-      {/* ⓓ לפידים — הילה, ואז הלהבה עצמה. ⛔ ארבעה, במרווחים שווים, כמו ברנדר. */}
-      {[12, 37, 63, 88].map((x) => (
-        <g key={`torch-${String(x)}`}>
-          {/* 🔥 **⟦20/09 · `C-0751` · `T-441` · `§ 11` א8⟧ «לפידים מתלקחים».**
-              ⛔ **על ההילה, ⛔ ולא על הלהבה:** לפיד ש**מתלקח** שופך יותר **אור**;
-              הגדלת הפתיל עצמו הייתה קוראת כנורה שגדלה. ⇒ הווו יושב על
-              `<circle>` של השיפוע הרדיאלי, שהוא **האור**.
-              ⛔ **ו-`transform-box: fill-box` חי ב-CSS** — בלעדיו `scale` על צומת
-              SVG מתייחס לראשית ה-`viewBox` ⇒ ההילה הייתה **נעה** במקום לגדול. */}
-          <circle data-arena-torch cx={x} cy={HORIZON - 7} r="7" fill="url(#arena-torch)" />
-          <rect x={x - 0.5} y={HORIZON - 6} width="1" height="5" rx="0.4" fill="var(--arena-stone-dark)" />
-          <ellipse cx={x} cy={HORIZON - 7.4} rx="1.1" ry="1.7" fill="var(--arena-gold-light)" />
+      {/* 🔥 המדורות — הילה, בולי עץ, להבה. 🔥 **⟦`C-0751` · `§ 11` א8⟧ «לפידים מתלקחים».**
+          ⛔ **על ההילה, ⛔ ולא על הלהבה:** מדורה ש**מתלקחת** שופכת יותר **אור**. ⇒ הווו
+          יושב על `<circle>` של השיפוע הרדיאלי. ⛔ **ו-`transform-box: fill-box` חי ב-CSS** —
+          בלעדיו `scale` על צומת SVG מתייחס לראשית ה-`viewBox` ⇒ ההילה הייתה **נעה**. */}
+      {FIRES.map((f) => (
+        <g key={`fire-${String(f.x)}-${String(f.y)}`}>
+          <circle data-arena-torch cx={f.x} cy={f.y - f.r * 0.3} r={f.r} fill="url(#arena-torch)" />
+          <rect x={f.x - f.r * 0.32} y={f.y - f.r * 0.08} width={f.r * 0.64} height={f.r * 0.14} rx="0.3" fill="var(--arena-fig-wand)" />
+          <ellipse cx={f.x} cy={f.y - f.r * 0.3} rx={f.r * 0.16} ry={f.r * 0.26} fill="var(--arena-gold-light)" />
         </g>
       ))}
 
@@ -300,6 +341,16 @@ export default function ArenaScene({ className = '' }: ArenaSceneProps): React.J
           stroke="var(--arena-ink)"
           strokeWidth="0.18"
           opacity="0.07"
+        />
+      ))}
+
+      {/* 🌿 קני דשא על שפת השביל — ⛔ מחוץ לטרפז (`TUFTS`), ⇒ הדמות עדיין על אבן. */}
+      {TUFTS.map((t) => (
+        <polygon
+          key={`tuft-${String(t.x)}-${String(t.y)}`}
+          points={`${String(t.x)},${String(t.y)} ${String(t.x + t.s * 0.5)},${String(t.y - t.s * 1.2)} ${String(t.x + t.s)},${String(t.y)}`}
+          fill="var(--arena-fig-leaf)"
+          opacity="0.8"
         />
       ))}
 
