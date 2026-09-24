@@ -14,17 +14,25 @@ describe('SimulationMessage — T-192, render kol-C-14-mail-open.png', () => {
   });
 
   it('T-461: the disabled strip became the live block keyboard, and it feeds the chips (ⓔ)', () => {
-    expect(CODE).toMatch(/<BlockKeyboard level=\{state\.item\.level\}/);
+    expect(CODE).toMatch(/<BlockKeyboard\s+level=\{state\.item\.level\}/);
     expect(CODE).toMatch(/onChosen/);
     expect(CODE).toMatch(/readyState\(s\.item, words/);
     expect(CODE).not.toMatch(/\bhidden\b(?!=)/);
   });
 
-  it('⛔ draws only — the chips come from the pure layer; one PATCH, no other write', () => {
+  it('⛔ draws only — the chips come from the pure layer; two writes: the read PATCH and the answer POST', () => {
     expect(CODE).toMatch(/RequiredWordChips/);
     expect(CODE).not.toMatch(/\.filter\(|\.reduce\(|\.sort\(/);
     expect(CODE).toMatch(/apiPatch</);
-    expect(CODE).not.toMatch(/apiPost|fetch\(|word_progress|arcade_/);
+    expect((CODE.match(/apiPost</g) ?? []).length).toBe(1);
+    expect(CODE).toMatch(/\/api\/world\/messages\/\$\{id\}\/answer/);
+    expect(CODE).not.toMatch(/fetch\(|word_progress|arcade_/);
+  });
+
+  it('T-462ⓒ: after a send «נשלח»; a reload of an answered message says so; a failed send keeps the blocks', () => {
+    expect(CODE).toContain("SENT_HE = 'נשלח'");
+    expect(CODE).toMatch(/state\.item\.answeredAt !== null \?/);
+    expect(CODE).toMatch(/role="alert"/);
   });
 
   it('⛔ no tab bar import (D-028: the route is outside (tabs))', () => {

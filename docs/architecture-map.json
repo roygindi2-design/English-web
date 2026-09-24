@@ -225,11 +225,21 @@
   "app/api/world/lexicalClassOnly.test.ts": [
     "lib/testSource.ts"
   ],
+  "app/api/world/messages/[id]/answer/route.test.ts": [
+    "app/api/world/messages/[id]/answer/route.ts"
+  ],
+  "app/api/world/messages/[id]/answer/route.ts": [
+    "lib/core/continuations.ts",
+    "lib/core/messages.ts",
+    "lib/server/continuationsTree.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/messages/continuations/route.test.ts": [
     "app/api/world/messages/continuations/route.ts"
   ],
   "app/api/world/messages/continuations/route.ts": [
-    "lib/core/continuations.ts"
+    "lib/core/continuations.ts",
+    "lib/server/continuationsTree.ts"
   ],
   "app/api/world/messages/route.test.ts": [],
   "app/api/world/messages/route.ts": [
@@ -1790,6 +1800,9 @@
   "lib/core/worldRing.ts": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
+  ],
+  "lib/server/continuationsTree.ts": [
+    "lib/core/continuations.ts"
   ],
   "lib/supabase/arcade.test.ts": [],
   "lib/supabase/arcadeDecoupling.test.ts": [],

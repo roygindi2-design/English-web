@@ -11,8 +11,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
  *
  * Opening a message turns the blue dot off (T-192ⓔ): the learner's own
  * `message_simulation_state` row gets `read_at` if it has none yet. ⛔ The «answered»
- * column is ⛔ never written here — the block keyboard that would earn it is blocked by
- * R-026, and a state the learner cannot reach is a state ⛔ nothing may set.
+ * column is ⛔ never written here — only `POST …/[id]/answer` (T-462) writes it, after
+ * checking the reply against the continuation tree.
  *
  * ⚠️ **A write is a HARD call, ⛔ unlike the soft GET beside it:** a missing ENV or a
  * failed write answers 503. The GET is soft because a failed READ still leaves the ring

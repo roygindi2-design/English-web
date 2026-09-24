@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  END_BLOCK, buildContinuationIndex, nextBlocks, reachableWithin, sentenceTokens, wordLexicon,
+  END_BLOCK, buildContinuationIndex, isSendable, nextBlocks, reachableWithin, sentenceTokens, wordLexicon,
   type ContinuationIndex,
 } from './continuations';
 import { buildLevelMap, parseCefrCsv } from './cefrLevels';
@@ -153,5 +153,20 @@ describe('reachableWithin — can a required word be typed at all?', () => {
 
   it('an absent word is simply unreachable', () => {
     expect(reachableWithin(idx, 'coffee', 4, 'B2')).toBe(false);
+  });
+});
+
+describe('isSendable — T-462: a reply is sent only where an observed sentence ended', () => {
+  const idx = index(['I like tea.', 'I go.', 'I recommend the beach.']);
+
+  it('true exactly at an observed end, at the level', () => {
+    expect(isSendable(idx, ['I', 'like', 'tea'], 'A1')).toBe(true);
+    expect(isSendable(idx, ['i', 'like'], 'A1')).toBe(false);
+    expect(isSendable(idx, ['i', 'recommend', 'the', 'beach'], 'A1')).toBe(false);
+    expect(isSendable(idx, ['i', 'recommend', 'the', 'beach'], 'B1')).toBe(true);
+  });
+
+  it('an empty reply is never sendable', () => {
+    expect(isSendable(idx, [], 'B2')).toBe(false);
   });
 });

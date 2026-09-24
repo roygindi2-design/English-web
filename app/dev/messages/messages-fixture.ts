@@ -49,7 +49,15 @@ export const FIXTURE_SIMULATIONS: readonly Simulation[] = [
   },
 ];
 
-/** Mr. Levi’s row is read (the render draws it without the dot); the other two are pending. */
+/**
+ * Mr. Levi’s row is read (the render draws it without the dot); the other two are pending.
+ * T-462ⓑ — and ANSWERED, so the walk sees «נענה» as its own indicator next to a row with
+ * ⛔ no dot. The render (kol-C-13) predates the keyboard and draws ⛔ no answered state.
+ */
 export const FIXTURE_STATES: readonly RawStateRow[] = [
-  { simulation_id: '33333333-3333-4333-8333-333333333333', read_at: '2026-09-01T12:00:00+03:00', answered_at: null },
+  {
+    simulation_id: '33333333-3333-4333-8333-333333333333',
+    read_at: '2026-09-01T12:00:00+03:00',
+    answered_at: '2026-09-01T12:05:00+03:00',
+  },
 ];

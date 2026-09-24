@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CONTEXT_HE, MESSAGE_CONTEXTS, REQUIRED_WORDS_PER_MESSAGE,
-  inboxCounts, inboxCountsHe, initialOf, mergeInbox, previewEn, toInboxRows, toSimulation,
+  answered, inboxCounts, inboxCountsHe, initialOf, mergeInbox, previewEn, toInboxRows, toSimulation,
   toSimulations, unread, whenHeaderHe, whenListHe, whenOf,
   type RawSimulationRow, type Simulation,
 } from './messages';
@@ -140,5 +140,16 @@ describe('toInboxRows — everything the component draws, precomputed', () => {
     const rows = toInboxRows(items, NOW, TZ);
     expect(rows[0]).toMatchObject({ id: 'a', href: '/world/messages/a', initial: 'T', contextHe: 'תייר', whenHe: '09:20', unread: true });
     expect(rows[0]!.previewEn.endsWith('…')).toBe(true);
+  });
+
+  it('T-462ⓑ: «answered» is its OWN flag — ⛔ never a recycling of the unread dot', () => {
+    const items = mergeInbox(
+      [sim('a', '2026-09-07T09:20:00+03:00'), sim('b', '2026-09-07T09:20:00+03:00')],
+      [{ simulation_id: 'a', read_at: '2026-09-07T09:30:00+03:00', answered_at: '2026-09-07T09:31:00+03:00' }],
+    );
+    const [a, b] = toInboxRows(items, NOW, TZ);
+    expect(a).toMatchObject({ unread: false, answered: true });
+    expect(b).toMatchObject({ unread: true, answered: false });
+    expect(answered(items[0]!)).toBe(true);
   });
 });

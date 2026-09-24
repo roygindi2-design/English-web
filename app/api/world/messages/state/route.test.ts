@@ -14,7 +14,7 @@ describe('T-192ⓔ — PATCH /api/world/messages/state writes the learner’s ow
     expect(SRC).toMatch(/\[0-9a-f\]\{8\}/i);
   });
 
-  it('⛔ never writes answered_at (R-026) and ⛔ never touches word_progress', () => {
+  it("⛔ never writes answered_at (that is POST …/answer, T-462) and ⛔ never touches word_progress", () => {
     expect(SRC).not.toMatch(/answered_at/);
     expect(SRC).not.toMatch(/word_progress|arcade_/);
   });

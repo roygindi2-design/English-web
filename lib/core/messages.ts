@@ -114,6 +114,15 @@ export function unread(item: InboxItem): boolean {
   return item.readAt === null && item.answeredAt === null;
 }
 
+/**
+ * T-462ⓑ — the SECOND indicator R-026 promised. `answered_at` now has a writer
+ * (`POST /api/world/messages/[id]/answer`), and «נענה» is its own flag: ⛔ it never
+ * relights or reuses the dot, and `unread` above keeps counting reading only.
+ */
+export function answered(item: InboxItem): boolean {
+  return item.answeredAt !== null;
+}
+
 export interface InboxCounts {
   readonly total: number;
   readonly unread: number;
@@ -205,6 +214,7 @@ export interface InboxRow {
   readonly previewEn: string;
   readonly whenHe: string;
   readonly unread: boolean;
+  readonly answered: boolean;
 }
 
 export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZone: string): readonly InboxRow[] {
@@ -218,5 +228,6 @@ export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZon
     previewEn: previewEn(it.bodyEn),
     whenHe: whenListHe(whenOf(it.createdAt, nowIso, timeZone)),
     unread: unread(it),
+    answered: answered(it),
   }));
 }

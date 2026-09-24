@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { NextResponse } from 'next/server';
 import {
   CONTINUATION_LEVELS,
@@ -8,6 +6,7 @@ import {
   type ContinuationIndex,
   type ContinuationLevel,
 } from '@/lib/core/continuations';
+import { continuationsTree } from '@/lib/server/continuationsTree';
 
 /**
  * GET /api/world/messages/continuations?level=A1&prefix=i+like — see docs/api-contract.md
@@ -19,14 +18,6 @@ import {
  * ⛔ No session and ⛔ no database: the tree is public, generated data (Tatoeba ·
  * CEFR-J) and the answer is a pure function of the query ⇒ cacheable.
  */
-let cached: ContinuationIndex | null = null;
-function index(): ContinuationIndex {
-  cached ??= JSON.parse(
-    readFileSync(join(process.cwd(), 'data', 'generated', 'continuations.json'), 'utf8'),
-  ) as ContinuationIndex;
-  return cached;
-}
-
 const WORD = /^[a-z']+$/i;
 
 export function parseQuery(
@@ -45,7 +36,7 @@ export async function GET(request: Request) {
   if (query === null) return NextResponse.json({ ok: false, code: 'bad_request' }, { status: 400 });
   let tree: ContinuationIndex;
   try {
-    tree = index();
+    tree = continuationsTree();
   } catch (error) {
     console.error('[api/world/messages/continuations] tree read failed:', (error as Error).message);
     return NextResponse.json({ ok: false, code: 'unavailable' });

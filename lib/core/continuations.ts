@@ -267,3 +267,9 @@ export function reachableWithin(
   }
   return false;
 }
+
+/** T-462 — the server's check before `answered_at` is written: ⛔ an empty or unfinished reply is not an answer. */
+export function isSendable(index: ContinuationIndex, words: readonly string[], level: ContinuationLevel): boolean {
+  if (words.length === 0) return false;
+  return nextBlocks(index, words, level).blocks.some((b) => b.word === END_BLOCK.word);
+}
