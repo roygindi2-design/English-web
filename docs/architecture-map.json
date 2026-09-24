@@ -1453,6 +1453,10 @@
     "lib/core/characterBase.ts"
   ],
   "lib/core/characterBase.ts": [],
+  "lib/core/classCode.test.ts": [
+    "lib/core/classCode.ts"
+  ],
+  "lib/core/classCode.ts": [],
   "lib/core/colorVision.test.ts": [
     "lib/core/colorVision.ts"
   ],
