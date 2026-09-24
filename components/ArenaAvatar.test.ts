@@ -142,3 +142,24 @@ describe('<ArenaAvatar>', () => {
     expect(SRC).toContain('CHARACTER_LABELS_HE[character]');
   });
 });
+
+/**
+ * `F-311` — a held object carries a follow-through hook, on every figure that holds one.
+ * Measured live before this: the enemy slot carried ⛔ zero `[data-arena-part]` nodes, so
+ * `arena-follow-hit` never reached it and the wand stayed pinned while the body recoiled.
+ */
+describe('F-311 — the held item is hooked, per figure', () => {
+  it('the wand and its orb sit inside ONE weapon hook', () => {
+    const at = CODE.indexOf('<g data-arena-part="weapon">');
+    expect(at).toBeGreaterThan(-1);
+    const hook = CODE.slice(at, CODE.indexOf('</g>\n          </>', at));
+    expect(hook).toContain('WIZARD_PATHS.wand');
+    expect(hook).toContain('WIZARD.orbX');
+  });
+
+  it("the armorer's gun lags, ⛔ but is ⛔ not `weapon` — the blade swing must not reach it", () => {
+    const at = CODE.indexOf('<g data-arena-part="barrel">');
+    expect(at).toBeGreaterThan(-1);
+    expect(CODE.slice(at, at + 400)).toContain('ARMORER.barrelBackX');
+  });
+});

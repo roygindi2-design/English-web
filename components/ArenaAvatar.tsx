@@ -733,15 +733,19 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
               המסגרת** — ⇒ היא הונמכה, ⛔ ולא הוקטנה ו⛔ לא נמחקה.
               ⛔ **והזוהר הוא שיפוע, ⛔ ולא שלושה עיגולים**: עיגולים בשקיפויות
               שונות מייצרים **טבעת**, ונמדד על המסך שהיא נראית כמו זכוכית מגדלת. */}
-          <Paint hue="wand"><path d={WIZARD_PATHS.wand} /></Paint>
-          <Paint hue="orb">
-            <radialGradient id={ORB_GLOW_ID}>
-              <stop offset="0.35" stopColor="currentColor" stopOpacity="0.55" />
-              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-            </radialGradient>
-            <circle cx={WIZARD.orbX} cy={WIZARD.orbY} r={WIZARD.orbGlowRadius} fill={`url(#${ORB_GLOW_ID})`} />
-            <circle cx={WIZARD.orbX} cy={WIZARD.orbY} r={WIZARD.orbRadius} />
-          </Paint>
+          {/* `F-311` — the wand and its orb are ONE held object ⇒ one hook. Marking the
+              wand alone would leave the orb floating while the rod lags. */}
+          <g data-arena-part="weapon">
+            <Paint hue="wand"><path d={WIZARD_PATHS.wand} /></Paint>
+            <Paint hue="orb">
+              <radialGradient id={ORB_GLOW_ID}>
+                <stop offset="0.35" stopColor="currentColor" stopOpacity="0.55" />
+                <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+              </radialGradient>
+              <circle cx={WIZARD.orbX} cy={WIZARD.orbY} r={WIZARD.orbGlowRadius} fill={`url(#${ORB_GLOW_ID})`} />
+              <circle cx={WIZARD.orbX} cy={WIZARD.orbY} r={WIZARD.orbRadius} />
+            </Paint>
+          </g>
         </>
       ),
     },
@@ -869,24 +873,29 @@ const CHARACTER_LAYERS: Record<ArenaCharacter, readonly ItemLayer[]> = {
       layer: 'mainHand',
       shape: (
         <>
-          <Paint hue="steelLit">
-            <rect
-              x={MAIN_HAND.x + ARMORER.barrelBackX}
-              y={MAIN_HAND.y + ARMORER.barrelTopY}
-              width={ARMORER.barrelW}
-              height={ARMORER.barrelH}
-              rx={ARMORER.barrelR}
-            />
-          </Paint>
-          <Paint hue="gold">
-            <rect
-              x={MAIN_HAND.x + ARMORER.gripX}
-              y={MAIN_HAND.y + ARMORER.gripY}
-              width={ARMORER.gripW}
-              height={ARMORER.gripH}
-              rx={ARMORER.gripR}
-            />
-          </Paint>
+          {/* `F-311` — the gun lags with the body (`[data-arena-part]`), ⛔ but it is
+              ⛔ `weapon` on purpose: the hero's −38° swing is a blade's arc, and a
+              barrel that swings upward reads as a misfire, ⛔ not a shot. */}
+          <g data-arena-part="barrel">
+            <Paint hue="steelLit">
+              <rect
+                x={MAIN_HAND.x + ARMORER.barrelBackX}
+                y={MAIN_HAND.y + ARMORER.barrelTopY}
+                width={ARMORER.barrelW}
+                height={ARMORER.barrelH}
+                rx={ARMORER.barrelR}
+              />
+            </Paint>
+            <Paint hue="gold">
+              <rect
+                x={MAIN_HAND.x + ARMORER.gripX}
+                y={MAIN_HAND.y + ARMORER.gripY}
+                width={ARMORER.gripW}
+                height={ARMORER.gripH}
+                rx={ARMORER.gripR}
+              />
+            </Paint>
+          </g>
         </>
       ),
     },
