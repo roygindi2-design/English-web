@@ -231,6 +231,10 @@ const ROUTES = [
   // session and ⛔ no Supabase, so the ~1,149-block opening set is really on screen at
   // 320/375/414 — every block measured against 44px, the sheet measured for h-scroll.
   '/dev/messages/keyboard',
+  // C-0803 (T-469) — the `הקיר` tab: the six code cells (one input over six boxes, so the
+  // target is the whole strip at 320) and the in-class panel. Props only ⇒ ⛔ no
+  // EXPECTED_CONSOLE entry.
+  '/dev/messages/wall',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no

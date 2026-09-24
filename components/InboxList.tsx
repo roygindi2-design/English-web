@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import ClassJoin, { WALL_HEADING_HE, WALL_KICKER_NO_CLASS_HE, wallKickerHe, type ClassPanelState } from '@/components/ClassJoin';
 import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
 import { RETRY_HE } from '@/lib/core/failure';
@@ -24,8 +25,14 @@ import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
  */
 export const KICKER_HE = 'הודעות · סימולציות';
 export const HEADING_HE = 'תיבת הסימולציות';
-const TABS_HE = ['הקיר', 'סיפור', 'תיבה'] as const;
-const TABS_CONDITION_HE = 'הקיר וסיפור נפתחים עם הכיתות';
+// T-469 · `39 § 9`-5 — `הקיר` opened with the classes; `סיפור` stays off, and says so in words.
+export type MessagesTab = 'wall' | 'inbox';
+const TABS: readonly { readonly he: string; readonly key: MessagesTab | null }[] = [
+  { he: 'הקיר', key: 'wall' },
+  { he: 'סיפור', key: null },
+  { he: 'תיבה', key: 'inbox' },
+];
+const TABS_CONDITION_HE = 'סיפור עוד לא פתוח';
 const CARD_TITLE_HE = 'כל התכתובת מול דמויות';
 const CARD_SUB_HE = 'אין כאן משתמשים אחרים';
 const NO_LEVEL_HE = 'כדי לקרוא הודעות ברמה שלך, בחר קודם רמה.';
@@ -46,26 +53,36 @@ type MessagesBody =
   | { ok: true; items: readonly InboxItem[]; counts: InboxCounts }
   | { ok: false; code: 'no_level' | 'no_simulations' | 'schema_missing' | 'unavailable' | 'session_expired' };
 
-function Header() {
+function Header({ tab, onTab, kickerHe, headingHe }: { readonly tab: MessagesTab; readonly onTab: (t: MessagesTab) => void; readonly kickerHe: string; readonly headingHe: string }) {
   return (
     <header className="pt-2">
-      <p className="text-xs text-ink-muted">{KICKER_HE}</p>
-      <h1 className="mt-1 text-2xl font-bold text-ink">{HEADING_HE}</h1>
-      <div role="tablist" aria-label="הודעות" className="mt-3 grid h-11 grid-cols-3 rounded-xl border border-surface-raised bg-surface-raised p-0.5">
-        {TABS_HE.map((t) => {
-          const live = t === 'תיבה';
+      <p className="text-xs text-ink-muted">{kickerHe}</p>
+      <h1 className="mt-1 text-2xl font-bold text-ink">{headingHe}</h1>
+      <div role="tablist" aria-label="הודעות" className="mt-3 grid grid-cols-3 rounded-xl border border-surface-raised bg-surface-raised p-0.5">
+        {TABS.map((t) => {
+          const selected = t.key === tab;
+          if (t.key === null) {
+            return (
+              <span key={t.he} role="tab" aria-selected={false} aria-disabled className="flex min-h-touch items-center justify-center text-sm text-ink-muted">
+                {t.he}
+              </span>
+            );
+          }
+          const key = t.key;
           return (
-            <span
-              key={t}
+            <button
+              key={t.he}
+              type="button"
               role="tab"
-              aria-selected={live}
-              aria-disabled={!live}
-              className={live
-                ? 'flex items-center justify-center rounded-xl border border-brand bg-brand-surface/25 text-sm font-bold text-brand-surface'
-                : 'flex items-center justify-center text-sm text-ink-muted'}
+              aria-selected={selected}
+              data-messages-tab={key}
+              onClick={() => onTab(key)}
+              className={selected
+                ? 'flex min-h-touch items-center justify-center rounded-xl border border-brand bg-brand-surface/25 text-sm font-bold text-brand-surface'
+                : 'flex min-h-touch items-center justify-center rounded-xl text-sm font-medium text-ink'}
             >
-              {t}
-            </span>
+              {t.he}
+            </button>
           );
         })}
       </div>
@@ -153,10 +170,30 @@ function Exit({ code, onRetry }: { readonly code: 'session_expired' | 'schema_mi
   return <Link href={exit.href} className="mt-4 inline-flex min-h-touch items-center rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{code === 'session_expired' ? SIGN_IN_AGAIN_HE : exit.labelHe}</Link>;
 }
 
-export function InboxListView({ state, onRetry = () => {} }: { readonly state: InboxScreenState; readonly onRetry?: () => void }) {
+export interface InboxListViewProps {
+  readonly state: InboxScreenState;
+  readonly onRetry?: () => void;
+  /** T-469 — which tab is showing. The inbox is the default, as before. */
+  readonly tab?: MessagesTab;
+  readonly onTab?: (t: MessagesTab) => void;
+  /** The `הקיר` tab's body and its kicker (`הודעות · <שם הכיתה>`, kol-C-10). */
+  readonly wall?: ReactNode;
+  readonly wallKickerHe?: string;
+}
+
+export function InboxListView({ state, onRetry = () => {}, tab = 'inbox', onTab = () => {}, wall = null, wallKickerHe: wallKicker = WALL_KICKER_NO_CLASS_HE }: InboxListViewProps) {
+  if (tab === 'wall') {
+    // ⛔ No IsolationCard here: it says «אין כאן משתמשים אחרים», and on the wall there are.
+    return (
+      <section dir="rtl" className="mx-auto w-full max-w-md pb-6 text-ink">
+        <Header tab="wall" onTab={onTab} kickerHe={wallKicker} headingHe={WALL_HEADING_HE} />
+        <div role="tabpanel">{wall}</div>
+      </section>
+    );
+  }
   return (
     <section dir="rtl" className="mx-auto w-full max-w-md pb-6 text-ink">
-      <Header />
+      <Header tab="inbox" onTab={onTab} kickerHe={KICKER_HE} headingHe={HEADING_HE} />
       {state.kind === 'loading' ? <p className="mt-4 text-xs text-ink-muted">טוען…</p> : null}
       {state.kind === 'ready' ? (
         <>
@@ -176,6 +213,9 @@ export function InboxListView({ state, onRetry = () => {} }: { readonly state: I
 
 export default function InboxList(): React.JSX.Element {
   const [state, setState] = useState<InboxScreenState>({ kind: 'loading' });
+  const [tab, setTab] = useState<MessagesTab>('inbox');
+  const [wallKicker, setWallKicker] = useState(wallKickerHe({ kind: 'loading' }));
+  const onClassState = useCallback((s: ClassPanelState) => setWallKicker(wallKickerHe(s)), []);
   const load = useCallback(async () => {
     setState({ kind: 'loading' });
     try {
@@ -200,5 +240,14 @@ export default function InboxList(): React.JSX.Element {
     }
   }, []);
   useEffect(() => { void load(); }, [load]);
-  return <InboxListView state={state} onRetry={() => { void load(); }} />;
+  return (
+    <InboxListView
+      state={state}
+      onRetry={() => { void load(); }}
+      tab={tab}
+      onTab={setTab}
+      wall={tab === 'wall' ? <ClassJoin onState={onClassState} /> : null}
+      wallKickerHe={wallKicker}
+    />
+  );
 }

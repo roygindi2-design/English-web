@@ -490,6 +490,10 @@
     "components/InboxList.tsx",
     "lib/core/messages.ts"
   ],
+  "app/dev/messages/wall/page.tsx": [
+    "components/ClassJoin.tsx",
+    "components/InboxList.tsx"
+  ],
   "app/dev/onboarding/layout.tsx": [],
   "app/dev/onboarding/page.tsx": [
     "components/OnboardingForm.tsx",
@@ -955,6 +959,16 @@
     "lib/testSource.ts"
   ],
   "components/CardSkeleton.tsx": [],
+  "components/ClassJoin.dom.test.tsx": [
+    "components/ClassJoin.tsx",
+    "components/InboxList.tsx"
+  ],
+  "components/ClassJoin.tsx": [
+    "lib/api/client.ts",
+    "lib/core/classCode.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
+  ],
   "components/CloseIcon.test.ts": [
     "lib/testSource.ts"
   ],
@@ -1020,6 +1034,7 @@
   "components/GlobeIcon.tsx": [],
   "components/InboxList.test.ts": [],
   "components/InboxList.tsx": [
+    "components/ClassJoin.tsx",
     "components/EnWord.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",
