@@ -235,6 +235,20 @@
     "lib/supabase/auth.ts",
     "lib/supabase/postgrest.ts"
   ],
+  "app/api/world/classes/[id]/wall/[postId]/replies/route.ts": [
+    "lib/core/wallFeed.ts",
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
+  "app/api/world/classes/[id]/wall/route.test.ts": [
+    "app/api/world/classes/[id]/wall/[postId]/replies/route.ts",
+    "app/api/world/classes/[id]/wall/route.ts"
+  ],
+  "app/api/world/classes/[id]/wall/route.ts": [
+    "lib/core/wallFeed.ts",
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/classes/join/route.ts": [
     "lib/core/classCode.ts",
     "lib/server/classFailure.ts",
@@ -1892,6 +1906,12 @@
   "lib/core/translationConfidence.ts": [
     "lib/core/lexicon.ts",
     "lib/core/senseGold.ts"
+  ],
+  "lib/core/wallFeed.test.ts": [
+    "lib/core/wallFeed.ts"
+  ],
+  "lib/core/wallFeed.ts": [
+    "lib/core/messages.ts"
   ],
   "lib/core/wordLevel.test.ts": [
     "lib/core/cefrLevels.ts",
