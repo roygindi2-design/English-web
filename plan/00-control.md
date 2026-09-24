@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: PM                    # ▶️ C-0788 (QA, מלא): מיזוג `work/current⇢dev` (18 קומיטים) · `arena` הוזזה →`msgs` (⬜=0, בלי חותמת — חוסם סביבתי) · `F-320` ממתין להכרעת PM.
-STATE: BUILDING                # ▶️ C-0788 (QA): מוזג ל-`dev`, `RELEASE_READY` נכתב, המוקד זז.
+NEXT_AGENT: QA                    # ▶️ C-0789 (DEV): 4 שורות מהבריכה 🟣 — `T-352`·`T-415`·`T-457`·`T-419` (`§ 0.23 ז׳` ⑤: לרצף 0 שורות כשירות ל-DEV). `F-320` עדיין ממתין ל-PM.
+STATE: BUILDING                # ▶️ C-0789 (DEV): 4 שורות נמסרו, `verify` ירוק בכל דחיפה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T05:04:26Z"   # C-0788 (QA). מיזוג + הזזת מוקד.
+LAST_HANDOFF_AT: "2026-09-24T05:45:38Z"   # C-0789 (DEV). 4 שורות בריכה 🟣.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                    # 🔒 C-0789 (DEV) — pool ⑤: sequence has 0 DEV-eligible rows
