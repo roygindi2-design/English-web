@@ -1,6 +1,7 @@
 'use client';
 
 import EnWord from '@/components/EnWord';
+import { replayTallyHe } from '@/lib/core/arenaReplay';
 import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
 
 /**
@@ -37,9 +38,17 @@ export interface ArenaSummaryProps {
   readonly headwords: Readonly<Record<string, string>>;
   /** «חזור לזירה». ⛔ אינה הכרעת ניווט — הקורא הוא שמחזיק את היעד. */
   readonly onBack: () => void;
+  /**
+   * 🔁 `T-451` · `37 § 8` ק8 — כמה מילות «חזרה מהירה» תוקנו מתוך כמה שנענו.
+   * ⛔ `null` ⇔ לא הייתה חזרה (אפס טעויות, או דילוג לפני תשובה ראשונה) ⇒ ⛔ אין שורה.
+   * ⛔ אינו נוגע ב-`summary`: החזרה ⛔ אינה `cast`, ⇒ `נכונות` נשאר זהה בתו.
+   */
+  readonly replay?: { readonly fixed: number; readonly total: number } | null;
 }
 
 const WON_HE = 'היריב נוצח';
+/** 🔁 `T-451` — אותה תווית של השלב עצמו (`ArenaBattle.tsx`). */
+const REPLAY_HE = 'חזרה מהירה';
 // T-283 · `37 § 9` ח4 · R-016 — two FACTS, ⛔ not verdicts, each true in every state of its
 // kind (`battle.ts:187-194`): `outlasted` ⇔ alive at the clock with the higher share;
 // `survived` ⇔ the enemy still has HP. ⛔ No word for «loss» exists in this file.
@@ -72,6 +81,7 @@ export default function ArenaSummary({
   summary,
   headwords,
   onBack,
+  replay = null,
 }: ArenaSummaryProps): React.JSX.Element {
   return (
     /* 🥊 **⟦17/09 · `C-0707` · `T-422`⟧ גובה **מדויק**, ⛔ ולא מינימום — תבנית
@@ -134,6 +144,14 @@ export default function ArenaSummary({
             {summary.bestStreak}
           </span>
         </li>
+        {replay !== null && (
+          <li className={ROW_CLASS} data-rtl-row="summary-stat" data-arena-replay-tally>
+            <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{REPLAY_HE}</span>
+            <span className="text-[15px] font-bold text-[color:var(--arena-ink)]">
+              {replayTallyHe(replay.fixed, replay.total)}
+            </span>
+          </li>
+        )}
       </ul>
 
       {/* לוח ה«איטיות» — y=486 · h=66 · r=16 · DANGER (`:622-629`). ⛔ מוצג אך ורק כשיש

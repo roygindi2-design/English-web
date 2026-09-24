@@ -15,6 +15,7 @@ import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { mixArenaWords, type ArenaWord, type ArenaWordKind } from '@/lib/core/arenaWords';
 import { resolveGesture } from '@/lib/core/arenaGesture';
 import { endingOf, summarize } from '@/lib/core/arenaSummary';
+import { replayWordIds } from '@/lib/core/arenaReplay';
 import {
   ABILITY_COST,
   ABILITY_ORDER,
@@ -350,6 +351,19 @@ const RETURNED_HE = 'הלחש חוזר אליך';
 const SAVING_HE = 'שומר את הקרב…';
 const FINISHED_HE = 'הקרב נגמר';
 /**
+ * 🔁 `T-451` · `37 § 8` ק8 — «חזרה מהירה»: עד שלוש המילים שהוחטאו, אחרי השעון ולפני
+ * הסיכום, ⛔ בלי שעון, ⛔ בלי חיים, ⛔ בלי מאנה, וניסיון אחד לכל אחת.
+ */
+const REPLAY_HE = 'חזרה מהירה';
+const REPLAY_RIGHT_HE = 'נכון';
+const REPLAY_ANSWER_HE = 'התרגום';
+const REPLAY_NEXT_HE = 'הבא';
+const REPLAY_SKIP_HE = 'דלג';
+const REPLAY_OPTION_CLASS =
+  'inline-flex w-full min-h-touch items-center justify-center rounded-2xl border border-border-strong px-4 py-3 text-lg text-ink active:opacity-90 disabled:active:opacity-100';
+const SECONDARY_ACTION_CLASS =
+  'inline-flex w-full min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-lg text-ink active:opacity-90';
+/**
  * T-253ⓐ · D-186 — היציאה היחידה ממסך «הקרב נגמר» (שגיאת שמירה) חוזרת לטבעת,
  * ⛔ לא ל-`/cards`: הכניסה לזירה עברה בטבעת, והיציאה חייבת לחזור אליה — אותה
  * תווית ששני צמתי הטבעת האחרים כבר נושאים (`ComposeDraft.tsx` · `StoryScreen.tsx`).
@@ -439,6 +453,15 @@ export default function ArenaBattle({
   const [pendingResult, setPendingResult] = useState<ResultPayload | null>(null);
   const [sendError, setSendError] = useState('');
   const [submitted, setSubmitted] = useState(initialEnded);
+  /**
+   * 🔁 `T-451` — מצב החזרה **נפרד** מ-`battle`: ניסיון חזרה ⛔ אינו `cast`, ⇒ ⛔ אינו נכנס
+   * ל-`battle.casts` ⇒ `summarize`, `endingOf` והמטען לשרת ⛔ אינם רואים אותו.
+   */
+  const [replayAt, setReplayAt] = useState(0);
+  const [replayPick, setReplayPick] = useState<string | null>(null);
+  const [replayFixed, setReplayFixed] = useState(0);
+  const [replayAnswered, setReplayAnswered] = useState(0);
+  const [replaySkipped, setReplaySkipped] = useState(false);
   const originRef = useRef<number | null>(null);
   /** ⛔ נקודת ההתחלה של מחוות הבמה. ⛔ ref ו⛔ לא state — היא ⛔ אינה משנה פיקסל. */
   const stageFrom = useRef<{ x: number; y: number } | null>(null);
@@ -1053,6 +1076,11 @@ export default function ArenaBattle({
   }, [pendingResult, send]);
 
   const again = useCallback(() => {
+    setReplayAt(0);
+    setReplayPick(null);
+    setReplayFixed(0);
+    setReplayAnswered(0);
+    setReplaySkipped(false);
     setOutcome(null);
     setPendingResult(null);
     setSendError('');
@@ -1179,6 +1207,64 @@ export default function ArenaBattle({
   }
 
   if (finished) {
+    const replayIds = replayWordIds(battle.casts);
+    const replayQ = replaySkipped ? undefined : byWordId.get(replayIds[replayAt] ?? '');
+    if (replayQ !== undefined) {
+      const picked = replayPick;
+      const pick = (he: string) => {
+        if (picked !== null) return;
+        setReplayPick(he);
+        setReplayAnswered((n) => n + 1);
+        if (he === replayQ.answer) setReplayFixed((n) => n + 1);
+      };
+      const next = () => {
+        setReplayPick(null);
+        setReplayAt((i) => i + 1);
+      };
+      return (
+        <section
+          data-arena-replay
+          data-arena-failure
+          className="flex h-[calc(100dvh-5.25rem-5rem-env(safe-area-inset-bottom))] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {topBar(REPLAY_HE)}
+          <p className="text-base text-ink-muted">{`${replayAt + 1} מתוך ${replayIds.length}`}</p>
+          <p className="text-center">
+            <EnWord className="text-3xl font-black leading-none">{replayQ.headword}</EnWord>
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {replayQ.options.map((o) => (
+              <button
+                key={o.he}
+                type="button"
+                data-arena-replay-option
+                aria-pressed={picked === o.he}
+                disabled={picked !== null}
+                onClick={() => pick(o.he)}
+                className={`${REPLAY_OPTION_CLASS}${picked === o.he ? ' border-2 font-semibold' : ''}`}>
+                {o.he}
+              </button>
+            ))}
+          </div>
+          {picked !== null && (
+            <p role="status" className="text-lg text-ink">
+              {picked === replayQ.answer ? REPLAY_RIGHT_HE : `${REPLAY_ANSWER_HE}: ${replayQ.answer}`}
+            </p>
+          )}
+          <ActionBar>
+            <div className="flex flex-col gap-3">
+              {picked !== null && (
+                <button type="button" data-primary-action="true" className={PRIMARY_ACTION_CLASS} onClick={next}>
+                  {REPLAY_NEXT_HE}
+                </button>
+              )}
+              <button type="button" className={SECONDARY_ACTION_CLASS} onClick={() => setReplaySkipped(true)}>
+                {REPLAY_SKIP_HE}
+              </button>
+            </div>
+          </ActionBar>
+        </section>
+      );
+    }
     if (outcome !== null && outcome.ok) {
       const headwords = new Map<string, string>(
         battle.words.map((w) => [w.wordId, w.headword] as const),
@@ -1199,6 +1285,7 @@ export default function ArenaBattle({
             ending={ending}
             summary={summarize(battle.casts)}
             headwords={Object.fromEntries(headwords)}
+            replay={replayAnswered === 0 ? null : { fixed: replayFixed, total: replayAnswered }}
             onBack={again}
           />
           <ArenaResult

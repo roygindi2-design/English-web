@@ -88,8 +88,9 @@ describe('ArenaSummary — ציר ה-RTL (T-338)', () => {
     expect(SRC_RTL).not.toContain('flex-row-reverse');
   });
 
-  it('שלוש השורות נושאות `data-rtl-row` ⇒ השער מודד כל אחת בדפדפן', () => {
-    expect(SRC_RTL.match(/data-rtl-row="summary-stat"/g)).toHaveLength(3);
+  // 🔁 `T-451` (`C-0781`) — שורה רביעית, מותנית: «חזרה מהירה · תיקנת N מתוך M» (`37 § 8` ק8).
+  it('ארבע השורות (השלוש + שורת החזרה המותנית) נושאות `data-rtl-row` ⇒ השער מודד כל אחת בדפדפן', () => {
+    expect(SRC_RTL.match(/data-rtl-row="summary-stat"/g)).toHaveLength(4);
   });
 });
 

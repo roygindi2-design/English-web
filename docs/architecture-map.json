@@ -736,6 +736,7 @@
     "lib/core/arcadeRound.ts",
     "lib/core/arenaCharacter.ts",
     "lib/core/arenaGesture.ts",
+    "lib/core/arenaReplay.ts",
     "lib/core/arenaSummary.ts",
     "lib/core/arenaWords.ts",
     "lib/core/battle.ts",
@@ -801,6 +802,7 @@
   "components/ArenaSummary.test.ts": [],
   "components/ArenaSummary.tsx": [
     "components/EnWord.tsx",
+    "lib/core/arenaReplay.ts",
     "lib/core/arenaSummary.ts"
   ],
   "components/AuthForm.test.ts": [
@@ -1249,6 +1251,13 @@
     "lib/core/arenaLastRound.ts"
   ],
   "lib/core/arenaLastRound.ts": [],
+  "lib/core/arenaReplay.test.ts": [
+    "lib/core/arenaReplay.ts",
+    "lib/core/battle.ts"
+  ],
+  "lib/core/arenaReplay.ts": [
+    "lib/core/battle.ts"
+  ],
   "lib/core/arenaScene.ts": [],
   "lib/core/arenaSummary.test.ts": [
     "lib/core/arenaSummary.ts",

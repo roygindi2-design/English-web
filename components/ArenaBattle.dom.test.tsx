@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ArenaBattle, { ARENA_TAUGHT_KEY } from '@/components/ArenaBattle';
 import { readFileSync } from 'node:fs';
@@ -979,5 +979,115 @@ describe('C-0738 · T-439 — התנוחה חוזרת', () => {
     await waitFor(() => { expect(phase()).not.toBe('idle'); });
     fireEvent.transitionEnd(figure(), { propertyName: 'rotate' });
     expect(phase()).not.toBe('idle');
+  });
+});
+
+/**
+ * 🔁 **`T-451` · `37 § 8` ק8 — «חזרה מהירה», נמדדת על עץ מורכב.**
+ * הראיה שהשורה דורשת: שתי טעויות ⇒ שני קלפי חזרה **אחרי** השעון, ⛔ אפס שעון על המסך,
+ * והמטען ל-`/api/arcade/result` **זהה** לריצה בלי החזרה — ⇒ הוא נשלח פעם אחת, ברגע
+ * הסיום, ומספר התשובות בו הוא מספר ההטלות בתוך השעון בלבד.
+ * ⛔ `requestAnimationFrame` מוזרק: הפריים הראשון קובע את המקור, והבא קופץ מעבר ל-90 שניות.
+ */
+describe('T-451 — חזרה מהירה אחרי השעון', () => {
+  const question = (n: number) => ({
+    wordId: `w${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    options: [
+      { he: `אפשרות ${n}`, kind: 'met' as const },
+      { he: `מסיח ${n}א`, kind: 'met' as const },
+      { he: `מסיח ${n}ב`, kind: 'met' as const },
+      { he: `מסיח ${n}ג`, kind: 'met' as const },
+    ],
+    kind: 'base' as const,
+  });
+  const ROUND = { level: 'A1', questions: [1, 2, 3, 4, 5].map(question) };
+  const tap = (node: Element): void => {
+    fireEvent.pointerDown(node, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerUp(node, { clientX: 10, clientY: 10, pointerId: 1 });
+  };
+  const castHe = (he: string): void => {
+    const card = Array.from(document.querySelectorAll('[data-arena-card]')).find(
+      (node) => (node.textContent ?? '').includes(he),
+    );
+    expect(card, `קלף «${he}»`).toBeTruthy();
+    tap(card as Element);
+    tap(card as Element);
+  };
+
+  it('שתי טעויות ⇒ שני קלפי חזרה, ⛔ בלי שעון, והמטען ⛔ אינו זז', async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    const posts: string[] = [];
+    vi.stubGlobal('fetch', vi.fn((_url: string, init?: RequestInit) => {
+      posts.push(String(init?.body ?? ''));
+      return new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 });
+    }));
+    const flush = (now: number) => {
+      const due = frames.splice(0);
+      act(() => due.forEach((cb) => cb(now)));
+    };
+
+    render(<ArenaBattle initialRound={ROUND} />);
+    flush(0);
+    castHe('מסיח 1א');
+    castHe('אפשרות 2');
+    castHe('מסיח 3א');
+    flush(91_000);
+
+    await waitFor(() => expect(document.querySelector('[data-arena-replay]')).not.toBeNull());
+    expect(document.querySelector('[data-arena-clock]'), '⛔ אין שעון בחזרה').toBeNull();
+    expect(screen.getByText('1 מתוך 2')).toBeTruthy();
+    expect(document.querySelectorAll('[data-arena-replay-option]')).toHaveLength(4);
+    await waitFor(() => expect(posts).toHaveLength(1));
+    const sent = posts[0];
+    expect((JSON.parse(sent ?? '') as { answers: unknown[] }).answers).toHaveLength(3);
+
+    // המילה הראשונה בסדר הטעות — w1. תשובה נכונה.
+    fireEvent.click(screen.getByRole('button', { name: 'אפשרות 1' }));
+    expect(screen.getByRole('status').textContent).toBe('נכון');
+    fireEvent.click(screen.getByRole('button', { name: 'הבא' }));
+    // w3 — טעות ⇒ התרגום מוצג.
+    expect(screen.getByText('2 מתוך 2')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'מסיח 3ב' }));
+    expect(screen.getByRole('status').textContent).toBe('התרגום: אפשרות 3');
+    fireEvent.click(screen.getByRole('button', { name: 'הבא' }));
+
+    await waitFor(() => expect(document.querySelector('[data-arena-replay]')).toBeNull());
+    expect(posts, '⛔ החזרה ⛔ אינה שולחת דבר').toHaveLength(1);
+    expect(posts[0]).toBe(sent);
+  });
+
+  it('`דלג` זמין מהרגע הראשון ומדלג על השלב כולו', async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    stubFetch(() => new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 }));
+    const flush = (now: number) => {
+      const due = frames.splice(0);
+      act(() => due.forEach((cb) => cb(now)));
+    };
+    render(<ArenaBattle initialRound={ROUND} />);
+    flush(0);
+    castHe('מסיח 1א');
+    flush(91_000);
+    await waitFor(() => expect(document.querySelector('[data-arena-replay]')).not.toBeNull());
+    fireEvent.click(screen.getByRole('button', { name: 'דלג' }));
+    expect(document.querySelector('[data-arena-replay]')).toBeNull();
+  });
+
+  it('⛔ אפס טעויות ⇒ השלב ⛔ אינו מופיע כלל', async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    stubFetch(() => new Response(JSON.stringify({ ok: false, code: 'unavailable' }), { status: 503 }));
+    render(<ArenaBattle initialRound={ROUND} />);
+    act(() => frames.splice(0).forEach((cb) => cb(0)));
+    castHe('אפשרות 1');
+    act(() => frames.splice(0).forEach((cb) => cb(91_000)));
+    await waitFor(() => expect(document.querySelector('[data-arena-clock]')).toBeNull());
+    expect(document.querySelector('[data-arena-replay]')).toBeNull();
   });
 });
