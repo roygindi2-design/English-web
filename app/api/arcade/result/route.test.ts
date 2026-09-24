@@ -141,9 +141,19 @@ describe('D-059 — ⛔ המילה «הפסדת» אינה קיימת במוצר
 });
 
 describe('T-116 — הסף הוא קבוע שרת, ⛔ ולא שדה בגוף הבקשה', () => {
-  it('⛔ `enemyHp` ⛔ אינו נקרא מהגוף', () => {
+  /**
+   * ⟦**כוונה מחדש ב-`T-450` · `D-278`ⓐ, ⛔ ולא נמחקה.**⟧ עד `D-278` הנעילה אמרה «`enemyHp`
+   * ⛔ אינו נקרא כלל». ‏`D-278` הכריעה שהלקוח **כן** שולח את חיי היריב הסופיים, כי
+   * הניצחון נקבע לפי החיים (`D-273`). ⇒ מה שנשאר נעול הוא הכוונה המקורית: הערך ⛔ אינו
+   * נקרא **ישירות** מהגוף, ⛔ ואינו מוחלט — הוא עובר `parseBattle` (טיפוס + טווח) ואז
+   * `isEngineVictory`, שבודקת מולו רצפה לפי מספר הנכונות.
+   */
+  it('⛔ `enemyHp` ⛔ אינו נקרא ישירות מהגוף — רק דרך `parseBattle`, ומול רצפה', () => {
     expect(CODE).not.toContain('body.enemyHp');
-    expect(CODE).not.toContain('enemyHp');
+    expect(CODE).toContain('parseBattle(body.battle)');
+    expect(CODE).toMatch(/b\.enemyHp > ENEMY_HP/);
+    const core = readFileSync('lib/core/arcadeResult.ts', 'utf8');
+    expect(core).toMatch(/const won = isEngineVictory\(input\.battle, correct\)/);
   });
 
   it('הנתיב מחזיר `outcome` ו-`leveledUp`', () => {
@@ -165,6 +175,8 @@ describe('T-116 — הסף הוא קבוע שרת, ⛔ ולא שדה בגוף ה
     expect(section).toContain('leveledUp');
     expect(section).toContain('requiredHits');
     expect(section).toContain('ARCADE_AMMO');
+    // ⟦`T-450`⟧ ומקור הניצחון היום — תוצאת המנוע מול רצפה.
+    expect(section).toContain('isEngineVictory');
   });
 });
 

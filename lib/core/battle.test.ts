@@ -422,13 +422,13 @@ describe('T-281 · 37 § 7 — ההטיה כמספרים', () => {
     }
   });
 
-  it('קוסם — «נזק לחש גבוה»: 2 באיטית, 3 בקריטית; 7 קריטיות מפילות 20', () => {
+  it('קוסם — «נזק לחש גבוה»: 2 באיטית, 3 בקריטית; 4 קריטיות מפילות 10 (`D-278`ⓑ)', () => {
     const w = startBattle([word(1), word(2)], 'wizard');
     const slow = cast({ ...w, shownAtMs: 0 }, 'אפשרות 1', 5_000);
     const fast = cast({ ...w, shownAtMs: 0 }, 'אפשרות 1', 1_000);
     expect(ENEMY_HP - slow.enemyHp).toBe(2);
     expect(ENEMY_HP - fast.enemyHp).toBe(3);
-    expect(Math.ceil(ENEMY_HP / CHARACTER_STATS.wizard.criticalDamage)).toBe(7);
+    expect(Math.ceil(ENEMY_HP / CHARACTER_STATS.wizard.criticalDamage)).toBe(4);
     expect(w.learnerHp).toBe(BASE_STATS.learnerHp);              // «חיים נמוכים» stays a word (fence 2)
   });
 

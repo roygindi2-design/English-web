@@ -10,13 +10,45 @@
  * ניקוד g=0.340 מול בלי ניקוד g=0.840, p=0.013) · ⛔ «המילים שהפילו אותך» הוא
  * ערך מוחזר לתצוגה ⛔ ואינו שורה שנכתבת (D-047).
  */
-import { ARCADE_AMMO, applyWin, isVictory } from './arcadeLadder';
+import { applyWin } from './arcadeLadder';
+import { ENEMY_HP, UNFILTERED_BONUS_DAMAGE, statsFor } from './battle';
 
 export interface ArcadeAnswer {
   readonly wordId: string;
   readonly correct: boolean;
   readonly chosen: string;
   readonly answer: string;
+}
+
+/**
+ * 🏆 **T-450 · `D-273` · `D-278`ⓐ — מה שהמנוע הכריז על המסך, כפי שהלקוח מוסר אותו.**
+ * ⛔ **אינו** «הצהרת ניצחון» שהשרת מאמין לה: `isEngineVictory` בודקת רצפה מולו.
+ */
+export interface ArcadeBattleReport {
+  readonly outcome: 'victory' | 'survived' | 'outlasted';
+  readonly enemyHp: number;
+  readonly learnerHp: number;
+  /** `ArenaCharacter` או `null`; ערך לא מוכר ⇒ שורת הבסיס (`statsFor`, גדר 4). */
+  readonly character: string | null;
+}
+
+/**
+ * הנזק המרבי שהטלה נכונה **אחת** יכולה לגרום לדמות הזאת: קריטית (`37 § 5`) + בונוס
+ * מילה לא-מסוננת (`§ 2`), כפול `כפול` (`§ 4`). ⛔ נגזר מ-`battle.ts`, ⛔ ולא מועתק.
+ */
+export function maxCastDamage(character: unknown): number {
+  const stats = statsFor(character);
+  return (stats.criticalDamage + UNFILTERED_BONUS_DAMAGE) * 2;
+}
+
+/**
+ * `D-278`ⓐ — ניצחון **רק** כשהמנוע אמר `victory`, היריב על 0, ומספר הנכונות מסוגל
+ * בכלל להפיל `ENEMY_HP` בנזק המרבי של הדמות. ⛔ «היריב שרד» ו«שרדת את השעון» ⛔ אינם
+ * ניצחון — המסך ⛔ אינו מכריז אותם כך, ⇒ גם השרת ⛔ לא.
+ */
+export function isEngineVictory(report: ArcadeBattleReport | null | undefined, correct: number): boolean {
+  if (report == null || report.outcome !== 'victory' || report.enemyHp !== 0) return false;
+  return ENEMY_HP - report.enemyHp <= correct * maxCastDamage(report.character);
 }
 
 export type ArcadeWriteTable = 'arcade_progress' | 'arcade_runs' | 'arcade_collected_words';
@@ -87,15 +119,18 @@ export function planArcadeWrites(input: {
    * אוסף ואין `times_correct` שעולה. כך `typecheck` נשאר ירוק בתוך הצעד עצמו.
    */
   readonly collectedBefore?: readonly CollectedBefore[];
+  /**
+   * 🏆 `T-450` — תוצאת המנוע. ⛔ **חסר ⇒ ⛔ אין ניצחון**: השרת ⛔ אינו גוזר ניצחון
+   * מספירת נכונות (`D-273`). הנתיב דורש אותו (422), ⇒ `undefined` נשאר רק לבדיקות.
+   */
+  readonly battle?: ArcadeBattleReport | null;
   readonly finishedAt: string;
 }): ArcadeWritePlan {
   const correct = input.answers.filter((a) => a.correct).length;
-  // ⛔ מספר השאלות ⛔ אינו מגיע מהגוף (D-059 · D-067ⓑ): לקוח ששלח «שלחו לי שאלה אחת»
-  // היה מנצח בתשובה אחת. `Math.max` מול התחמושת חוסם **בדיוק** את זה, ועדיין מתיר
-  // סיום מוקדם (10 תשובות ⇒ הסף נשאר 10) וגם סיבוב עתידי ארוך מ-15.
-  // ⛔ הכיוון היחיד שהלקוח יכול להזיז בו את הסף הוא **למעלה**, וזה ⛔ אינו רווח לו.
-  const served = Math.max(input.answers.length, ARCADE_AMMO);
-  const won = isVictory(correct, served);
+  // 🏆 `T-450` · `D-273` — ⛔ ספירת הנכונות ⛔ אינה מכריעה עוד; היא רק ה**רצפה** שמולה
+  //    נבדקת תוצאת המנוע. ⛔ `requiredHits` (`D-067ⓑ`) יצא מהנתיב הזה: לומד מהיר שהפיל
+  //    את היריב ב-4 קריטיות היה מקבל «ניצחון» במסך ו«שרד» בשרת — אותו פער, מהכיוון השני.
+  const won = isEngineVictory(input.battle, correct);
   const after = won
     ? applyWin({ level: input.before.gameLevel, wins: input.before.wins })
     : { level: input.before.gameLevel, wins: input.before.wins, leveledUp: false };

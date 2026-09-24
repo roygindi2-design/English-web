@@ -1606,7 +1606,8 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
   "answers": [
     { "wordId": "…", "correct": true,  "chosen": "שולחן", "answer": "שולחן" },
     { "wordId": "…", "correct": false, "chosen": "מדף",   "answer": "כיסא" }
-  ]
+  ],
+  "battle": { "outcome": "victory", "enemyHp": 0, "learnerHp": 7, "character": "wizard" }
 }
 ```
 
@@ -1616,11 +1617,16 @@ T-097 נשען על שני המספרים כדי להציג «נדרשות 12 מ
 |---|---|
 | `answers` | 1–64 תשובות. כל שדה נבדק **בטיפוסו** ⛔ ואין cast עיוור על הגוף |
 | `runId` | **חובה.** `uuid` בייצוג קנוני. מפתח האידמפוטנטיות של הקרב — ⛔ אינו מזהה השורה ו⛔ אינו מזהה הלומד |
+| `battle` | **חובה** (`T-450` · `D-278`ⓐ). מה שהמנוע הכריז על המסך: `outcome` ∈ `victory` · `survived` · `outlasted` · `enemyHp` שלם ב-`[0, ENEMY_HP]` · `learnerHp` שלם · `character` מחרוזת או `null`. חסר או פגום ⇒ **422** `fieldErrors.battle` |
 
-⛔ **הגוף נושא `answers` ⛔ ובלבד.** הסף ⛔ אינו שדה בבקשה ו⛔ אינו קבוע: השרת גוזר
-אותו ב-`requiredHits(max(answers.length, ARCADE_AMMO))` (`lib/core/arcadeLadder.ts` ·
-D-067ⓑ) ⇒ `ceil(q · 2/3)`, כלומר **67% בכל אורך סיבוב**. לקוח ששולח תשובה אחת ⛔ אינו
-מנצח — הרצפה היא התחמושת. השדה `enemyHp` **הוסר מהלקוח ב-T-126**.
+🏆 **⟦`T-450` · `D-273` · `D-278`⟧ הניצחון נקבע לפי ה**חיים**, ⛔ ולא לפי ספירת נכונות.**
+עד `T-450` השרת גזר ניצחון ב-`requiredHits(max(answers.length, ARCADE_AMMO))`
+(D-067ⓑ · `ARCADE_AMMO`) — ו⇒ לומד שענה 15 נכון לאט ראה «היית 5 מילים מהבוס» ו**באותו
+מסך** קיבל ניצחון ופריט. היום: ניצחון ⇔ `battle.outcome === 'victory'` **וגם**
+`battle.enemyHp === 0` **וגם** הרצפה `ENEMY_HP ≤ correct × maxCastDamage(character)`
+(`isEngineVictory`, `lib/core/arcadeResult.ts`; `maxCastDamage` = (קריטית + בונוס מילה
+לא-מסוננת) × 2 בגלל `כפול`). ⇒ לקוח ששולח `victory` עם תשובה נכונה אחת ⛔ אינו מנצח.
+`ENEMY_HP = 10` (`D-278`ⓑ). ⛔ `outlasted` ⛔ אינו ניצחון — המסך ⛔ אינו מכריז אותו כך.
 
 **200 — הקרב נשמר:**
 
@@ -1632,7 +1638,7 @@ D-067ⓑ) ⇒ `ceil(q · 2/3)`, כלומר **67% בכל אורך סיבוב**. �
 
 | השדה | ההגדרה |
 |---|---|
-| `enemyDefeated` | `correct ≥ requiredHits(q)` — 10 מתוך 15 (D-067ⓑ). ניצחון מעלה את מונה הניצחונות; **שלושה** מעלים `arcade_level` ב-1, מאפסים את המונה ופותחים **פריט אחד** (D-061) |
+| `enemyDefeated` | `isEngineVictory(battle, correct)` (`T-450`, ⛔ ולא עוד `requiredHits` של D-067ⓑ). ניצחון מעלה את מונה הניצחונות; **שלושה** מעלים `arcade_level` ב-1, מאפסים את המונה ופותחים **פריט אחד** (D-061) |
 | `outcome` | `'victory'` או `'survived'`. ⛔ שני מוצאים בלבד, ⛔ ואין שלישי (D-059) |
 | `leveledUp` | `boolean`. `true` רק בניצחון השלישי, ו⛔ לא בכל ניצחון |
 | `unlocked` | שם הפריט שנפתח, או `null`. פריט נפתח **בעליית רמה בלבד** ⇒ `leveledUp: false` ⇒ תמיד `null` |

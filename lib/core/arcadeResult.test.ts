@@ -3,12 +3,17 @@ import {
   ARCADE_MISSED_LIMIT,
   ARCADE_WRITE_TABLES,
   planArcadeWrites,
+  isEngineVictory,
+  maxCastDamage,
   type ArcadeAnswer,
+  type ArcadeBattleReport,
   type ArcadeWritePlan,
 } from './arcadeResult';
 
 const FINISHED_AT = '2026-08-19T01:00:00.000Z';
 const BEFORE = { gameLevel: 1, wins: 0, unlockedItems: [] as string[] };
+/** `T-450` · `D-278` — מה שהמנוע הכריז על המסך. ⛔ בלעדיו ⛔ אין ניצחון. */
+const WON: ArcadeBattleReport = { outcome: 'victory', enemyHp: 0, learnerHp: 5, character: null };
 
 function answers(pattern: readonly boolean[]): ArcadeAnswer[] {
   return pattern.map((correct, i) => ({
@@ -123,6 +128,7 @@ describe('D-061 — ניצחון מקדם מונה, ⛔ ולא רמה', () => {
       userId: 'u-1', runId: 'run-test',
       answers: wonAnswers(correct),
       before: { ...before, unlockedItems: [] },
+      battle: WON,
       finishedAt: FINISHED_AT,
     });
 
@@ -204,40 +210,60 @@ describe('«המילים שהפילו אותך» (D-047) — תצוגה בלבד
   });
 });
 
-describe('D-067ⓑ — הסף נגזר, ⛔ והלקוח ⛔ אינו יכול להנמיך אותו', () => {
+/**
+ * 🏆 **T-450 · `D-273` · `D-278` — הניצחון נקבע לפי ה**חיים**, ⛔ ולא לפי ספירת נכונות.**
+ * ⓐ הלקוח שולח את תוצאת המנוע ואת החיים הסופיים; השרת מעניק ניצחון **רק** על `victory`
+ * עם `enemyHp === 0`, ובודק **רצפה**: `ENEMY_HP ≤ correct × maxCastDamage(character)`.
+ * ⇒ **אותו קרב** מוכרז כניצחון במסך ⇔ נספר כניצחון בשרת.
+ * ⟦מחליף את `D-067ⓑ` — «10 נכונות מתוך 15 ⇒ ניצחון» הוא בדיוק הפער ש-`D-273` סגר.⟧
+ */
+describe('T-450 — ניצחון נגזר מתוצאת המנוע, והשרת בודק רצפה', () => {
   const answer = (correct: boolean, i: number) => ({
     wordId: `w-${i}`, correct, chosen: 'א', answer: correct ? 'א' : 'ב',
   });
   const before = { gameLevel: 1, wins: 0, unlockedItems: [] as string[] };
+  const run = (correct: number, total: number, battle: ArcadeBattleReport | null) =>
+    planArcadeWrites({
+      userId: 'u', runId: 'run-test', finishedAt: '2026-01-01T00:00:00.000Z', before, battle,
+      answers: Array.from({ length: total }, (_, i) => answer(i < correct, i)),
+    });
 
-  it('קרב מלא: 10 נכונות מתוך 15 ⇒ ניצחון · 9 ⇒ היריב שרד', () => {
-    const win = planArcadeWrites({
-      userId: 'u', runId: 'run-test', finishedAt: '2026-01-01T00:00:00.000Z', before,
-      answers: Array.from({ length: 15 }, (_, i) => answer(i < 10, i)),
-    });
-    expect(win.outcome).toBe('victory');
-    const lose = planArcadeWrites({
-      userId: 'u', runId: 'run-test', finishedAt: '2026-01-01T00:00:00.000Z', before,
-      answers: Array.from({ length: 15 }, (_, i) => answer(i < 9, i)),
-    });
-    expect(lose.outcome).toBe('survived');
+  it('המנוע הכריז ניצחון, 10 נכונות ⇒ ניצחון, פריט-מונה עולה', () => {
+    const p = run(10, 15, WON);
+    expect(p.outcome).toBe('victory');
+    expect(p.enemyDefeated).toBe(true);
+    expect(p.rows.find((r) => r.table === 'arcade_progress')?.values).toMatchObject({ wins: 1 });
   });
 
-  it('⛔ תשובה אחת נכונה ⛔ אינה ניצחון — הרצפה היא התחמושת', () => {
-    const plan = planArcadeWrites({
-      userId: 'u', runId: 'run-test', finishedAt: '2026-01-01T00:00:00.000Z', before,
-      answers: [answer(true, 0)],
-    });
-    expect(plan.enemyDefeated).toBe(false);
-    expect(plan.outcome).toBe('survived');
+  it('🔴 תרחיש `D-273`: 15 נכונות לאט, והמנוע אמר «היריב שרד» ⇒ ⛔ אין ניצחון ו⛔ אין מונה', () => {
+    const p = run(15, 15, { outcome: 'survived', enemyHp: 4, learnerHp: 0, character: null });
+    expect(p.outcome).toBe('survived');
+    expect(p.enemyDefeated).toBe(false);
+    expect(p.rows.find((r) => r.table === 'arcade_progress')?.values).toMatchObject({ wins: 0 });
   });
 
-  it('סיום מוקדם: 10 תשובות שכולן נכונות ⛔ עדיין ניצחון', () => {
-    const plan = planArcadeWrites({
-      userId: 'u', runId: 'run-test', finishedAt: '2026-01-01T00:00:00.000Z', before,
-      answers: Array.from({ length: 10 }, (_, i) => answer(true, i)),
-    });
-    expect(plan.outcome).toBe('victory');
+  it('⛔ «שרדת את השעון» (`outlasted`) ⛔ אינו ניצחון — המסך ⛔ אינו מכריז כך', () => {
+    expect(run(12, 15, { outcome: 'outlasted', enemyHp: 2, learnerHp: 6, character: null }).outcome).toBe('survived');
+  });
+
+  it('⛔ `victory` עם חיי יריב מעל 0 ⇒ ⛔ אין ניצחון — המנוע ⛔ אינו מסוגל להכריז כך', () => {
+    expect(run(12, 15, { ...WON, enemyHp: 3 }).outcome).toBe('survived');
+  });
+
+  it('⛔ בלי דוח מנוע ⇒ ⛔ אין ניצחון — השרת ⛔ אינו מנחש מספירה', () => {
+    expect(run(15, 15, null).outcome).toBe('survived');
+  });
+
+  it('⛔ רצפה: תשובה נכונה אחת ⛔ אינה מפילה 10 חיים בבסיס ⇒ `victory` מזויף נדחה', () => {
+    expect(maxCastDamage(null)).toBe(6);
+    expect(isEngineVictory(WON, 1)).toBe(false);
+    expect(run(1, 1, WON).enemyDefeated).toBe(false);
+  });
+
+  it('הרצפה היא של ה**דמות**: 2 נכונות מספיקות לבסיס (12 ≥ 10), ⛔ ואחת לא', () => {
+    expect(isEngineVictory(WON, 2)).toBe(true);
+    expect(isEngineVictory({ ...WON, character: 'shade' }, 1)).toBe(true);
+    expect(isEngineVictory({ ...WON, character: 'armorer' }, 1)).toBe(false);
   });
 });
 

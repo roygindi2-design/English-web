@@ -88,8 +88,8 @@ describe('endingOf — T-283 · 37 § 9 ח4 · 37 § 3', () => {
   });
 
   it('השעון נגמר, אחוז חיים גבוה יותר ⇒ outlasted, והפער עדיין נקוב', () => {
-    const s = { ...fresh(), learnerHp: 10, enemyHp: 15 };     // 10/12 > 15/20
-    expect(endingOf(s, BATTLE_MS)).toEqual({ kind: 'outlasted', wordsFromBoss: 15 });
+    const s = { ...fresh(), learnerHp: 10, enemyHp: 5 };      // 10/12 > 5/10 (`D-278`ⓑ: `ENEMY_HP = 10`)
+    expect(endingOf(s, BATTLE_MS)).toEqual({ kind: 'outlasted', wordsFromBoss: 5 });
   });
 
   it('השעון נגמר, תיקו באחוזים ⇒ survived (§ 3: «מנצח אחוז החיים הגבוה», ⛔ לא השווה)', () => {

@@ -48,7 +48,7 @@ import {
   type StagePhase,
   type TelegraphPhase,
 } from '@/lib/core/battle';
-import type { ArcadeAnswer } from '@/lib/core/arcadeResult';
+import type { ArcadeAnswer, ArcadeBattleReport } from '@/lib/core/arcadeResult';
 import type { ArcadeQuestion } from '@/lib/core/arcadeRound';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
@@ -117,6 +117,8 @@ type ResultPayload = {
   // F-092 · מפתח האידמפוטנטיות — נוצר פעם אחת, ברגע השליחה, ו⛔ לא בתוך `send`.
   readonly runId: string;
   readonly answers: readonly ArcadeAnswer[];
+  /** 🏆 `T-450` · `D-278`ⓐ — מה שהמנוע הכריז, ⛔ ולא ספירה: השרת גוזר ממנו את הניצחון. */
+  readonly battle: ArcadeBattleReport;
 };
 
 export interface ArenaRound {
@@ -1063,8 +1065,15 @@ export default function ArenaBattle({
       // להוסיף מילה חוזרת לזנב ⇒ `words[i]` ⛔ אינו עוד המילה שנוצקה בהטלה ה-i.
       answer: byWordId.get(c.wordId)?.answer ?? '',
     }));
-    void send({ runId: crypto.randomUUID(), answers });
-  }, [battle, finished, submitted, chosenSoFar, send, byWordId]);
+    // 🏆 `T-450` — **אותה** הכרעה שהמסך מצייר (`ending`), ⛔ ולא חישוב שני.
+    const report: ArcadeBattleReport = {
+      outcome: ending?.kind ?? 'survived',
+      enemyHp: battle.enemyHp,
+      learnerHp: battle.learnerHp,
+      character,
+    };
+    void send({ runId: crypto.randomUUID(), answers, battle: report });
+  }, [battle, finished, submitted, chosenSoFar, send, byWordId, ending?.kind, character]);
 
   useEffect(() => {
     if (pendingResult === null) return;

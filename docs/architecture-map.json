@@ -107,6 +107,7 @@
   ],
   "app/api/arcade/result/route.ts": [
     "lib/core/arcadeResult.ts",
+    "lib/core/battle.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/arcade/round/route.test.ts": [
@@ -1215,7 +1216,8 @@
     "lib/core/arcadeResult.ts"
   ],
   "lib/core/arcadeResult.ts": [
-    "lib/core/arcadeLadder.ts"
+    "lib/core/arcadeLadder.ts",
+    "lib/core/battle.ts"
   ],
   "lib/core/arcadeRound.test.ts": [
     "lib/core/arcadeDistractors.ts",

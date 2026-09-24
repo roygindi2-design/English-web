@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { planArcadeWrites, type ArcadeAnswer } from '@/lib/core/arcadeResult';
+import { planArcadeWrites, type ArcadeAnswer, type ArcadeBattleReport } from '@/lib/core/arcadeResult';
+import { ENEMY_HP } from '@/lib/core/battle';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -40,6 +41,22 @@ function parseAnswers(value: unknown): ArcadeAnswer[] | null {
  * יקבל בדיוק סוג ערך אחד, ולא יתפוצץ ב-`22P02` (invalid input syntax for uuid)
  * שהיה מוחזר ללומד כ-503 במקום כ-422.
  */
+/**
+ * 🏆 **T-450 · `D-278`ⓐ — תוצאת המנוע, נבדקת בטיפוסה.** ⛔ אין cast עיוור: כל שדה נבדק,
+ * ו-`enemyHp` מחוץ ל-`[0, ENEMY_HP]` הוא גוף פגום. ⛔ **והערך ⛔ אינו מוחלט:**
+ * `isEngineVictory` (`lib/core/arcadeResult.ts`) בודקת מולו רצפה לפי מספר הנכונות.
+ */
+function parseBattle(value: unknown): ArcadeBattleReport | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  const b = value as Record<string, unknown>;
+  if (b.outcome !== 'victory' && b.outcome !== 'survived' && b.outcome !== 'outlasted') return null;
+  if (typeof b.enemyHp !== 'number' || !Number.isInteger(b.enemyHp)) return null;
+  if (b.enemyHp < 0 || b.enemyHp > ENEMY_HP) return null;
+  if (typeof b.learnerHp !== 'number' || !Number.isInteger(b.learnerHp)) return null;
+  if (b.character !== null && (typeof b.character !== 'string' || b.character.length > 32)) return null;
+  return { outcome: b.outcome, enemyHp: b.enemyHp, learnerHp: b.learnerHp, character: b.character };
+}
+
 const RUN_ID_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function parseRunId(value: unknown): string | null {
   return typeof value === 'string' && RUN_ID_UUID_RE.test(value) ? value : null;
@@ -73,6 +90,14 @@ export async function POST(request: Request) {
   if (answers === null) {
     return NextResponse.json(
       { ok: false, fieldErrors: { answers: 'הקרב לא נשמר. נסה שוב.' } },
+      { status: 422 },
+    );
+  }
+
+  const battle = parseBattle(body.battle);
+  if (battle === null) {
+    return NextResponse.json(
+      { ok: false, fieldErrors: { battle: 'הקרב לא נשמר. נסה שוב.' } },
       { status: 422 },
     );
   }
@@ -139,6 +164,7 @@ export async function POST(request: Request) {
       unlockedItems: row?.unlocked_items ?? [],
     },
     collectedBefore,
+    battle,
     finishedAt: new Date().toISOString(),
   });
 

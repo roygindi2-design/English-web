@@ -101,14 +101,18 @@ export const CHARACTER_STATS: Readonly<Record<ArenaCharacter, CharacterBattleSta
      * 🥋 `C-0755` · `T-444` — שורה שביעית מ-`37 § 7`, ועוברת את אותן שלוש גדרות:
      * גדר 2 `16 >= 12` · גדר 3 `2 > 1` · גדר 1 ⛔ אפס מפתח חדש.
      * 🔴 **ו-`hitDamage: 1` ⛔ אינו «חלש»:** `D-271` מדד ש-`ceil(ENEMY_HP / hitDamage)`
-     * הוא **מספר המילים שהלומד פוגש** ⇒ `1` ⇒ **20 מילים, הגבוה ברוסטר**.
+     * הוא **מספר המילים שהלומד פוגש** ⇒ `1` ⇒ **10 מילים** (`D-278`ⓑ; היה 20), הגבוה ברוסטר.
      * ⇒ ההטיה מזיזה **הישרדוּת וקצב**, ⛔ ולא למידה — בדיוק מה שגדר 1 מתירה.
      */
     wanderer: Object.freeze({ ...BASE_STATS, learnerHp: 16, swingPenalty: 0 }),
   });
 
-/** Moved from `ArenaBattle.tsx` (T-281, `RULES § 0.22` ⓑ). ⛔ One enemy for all three (fence 1). */
-export const ENEMY_HP = 20;
+/**
+ * Moved from `ArenaBattle.tsx` (T-281, `RULES § 0.22` ⓑ). ⛔ One enemy for all three (fence 1).
+ * ⟦`T-450` · `D-278`ⓑ⟧ **20 ⇒ 10**: עשר נכונות **בקצב רגיל** מפילות את היריב, וקריטיות,
+ * התחמקויות ויכולות מכריעות **מעבר** לזה. ⇒ שש משבע הדמויות יכולות לנצח בלי קריטיות.
+ */
+export const ENEMY_HP = 10;
 
 /** Fence 4 — ⛔ never throws: `null`, `undefined`, `'Wizard'`, `7`, `{}` ⇒ `BASE_STATS`. */
 export function statsFor(character: unknown): CharacterBattleStats {
