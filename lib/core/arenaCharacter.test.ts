@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   ARENA_CHARACTERS,
+  ARENA_ELEMENTS,
+  CHARACTER_ELEMENT,
   CHARACTER_BIAS_HE,
   CHARACTER_INTRO_HE,
   CHARACTER_LABELS_HE,
@@ -90,5 +92,25 @@ describe('arenaCharacter — `37 § 7`', () => {
     });
     expect(withCharacter(null, 'wizard')).toEqual({ character: 'wizard' });
     expect(withCharacter('garbage', 'wizard')).toEqual({ character: 'wizard' });
+  });
+});
+
+describe('`T-445` · `D-277`ⓐ — היסוד של הדמות', () => {
+  it('לכל דמות יסוד אחד מתוך הארבעה, ⛔ ואין דמות בלי יסוד', () => {
+    for (const c of ARENA_CHARACTERS) {
+      expect(ARENA_ELEMENTS, c).toContain(CHARACTER_ELEMENT[c]);
+    }
+    expect(Object.keys(CHARACTER_ELEMENT).sort()).toEqual([...ARENA_CHARACTERS].sort());
+  });
+
+  it('כל ארבעת היסודות מופיעים — ⛔ אף אחד ⛔ אינו מת', () => {
+    expect(new Set(Object.values(CHARACTER_ELEMENT))).toEqual(new Set(ARENA_ELEMENTS));
+  });
+
+  it('⛔ גדר 1 של `37 § 7` — ⛔ אף קובץ ליבה ⛔ אינו קורא את היסוד (מראה בלבד)', () => {
+    for (const f of ['battle.ts', 'arcadeResult.ts', 'arenaReplay.ts', 'arenaSummary.ts']) {
+      const src = readFileSync(new URL(`./${f}`, import.meta.url), 'utf8');
+      expect(src, f).not.toMatch(/CHARACTER_ELEMENT/);
+    }
   });
 });

@@ -110,6 +110,30 @@ export const CHARACTER_GUARD: Readonly<Record<ArenaCharacter, 'wall' | 'field' |
     wanderer: 'stakes',
   });
 
+/**
+ * 🔥💧🪨💨 **⟦24/09 · `C-0784` · `T-445` · `D-277`ⓐ⟧ היסוד של כל דמות — ⛔ מראה בלבד.**
+ *
+ * ⚠️ **הכרעת PM:** היסוד שייך ל**דמות**, ⛔ ולא לקלף — יסוד לקלף היה שדה על `words`,
+ * כלומר טענה על מילה ש⛔ אין לה מקור. ⇒ המפה כאן, לצד `CHARACTER_GUARD`, מאותה סיבה.
+ * ⛔ **גדר 1 של `37 § 7`:** היסוד מזיז **מראה** — ⛔ לא נזק, ⛔ לא שעון ו⛔ לא תמהיל
+ * מילים. ⇒ ⛔ אף פונקציה ב-`lib/core` ⛔ אינה קוראת אותו; רק הבמה מציירת אותו.
+ * 🎨 **השיוך הוא בחירת DEV (`RULES § 0.22`, הפיך בקומיט אחד), לפי הצללית:**
+ * קוסם ושריונר — אש (כדור הזוהר · הכור) · לוחם וגולם — אדמה (לבנים · סלע) ·
+ * צייד וצל — אוויר (חץ · ריחוף) · נווד — מים (כפות פתוחות, זרימה).
+ */
+export const ARENA_ELEMENTS = Object.freeze(['fire', 'water', 'earth', 'air'] as const);
+export type ArenaElement = (typeof ARENA_ELEMENTS)[number];
+
+export const CHARACTER_ELEMENT: Readonly<Record<ArenaCharacter, ArenaElement>> = Object.freeze({
+  wizard: 'fire',
+  armorer: 'fire',
+  warrior: 'earth',
+  golem: 'earth',
+  hunter: 'air',
+  shade: 'air',
+  wanderer: 'water',
+});
+
 export function isArenaCharacter(value: unknown): value is ArenaCharacter {
   return typeof value === 'string' && (ARENA_CHARACTERS as readonly string[]).includes(value);
 }

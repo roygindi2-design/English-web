@@ -2108,3 +2108,158 @@ body:has([data-arena-failure] [data-action-bar]) {
    ⛔ אינו השמטה: הבלוק הגלובלי (`app/globals.css:103`) מוריד כל משך ל-`0.01ms`
    ⇒ המפרקים נחים. ⛔ **ו⛔ אין מה לשחרר** — ⛔ אף `animationend` כאן ⛔ אינו
    מזין מצב ב-React ⟨השמות ⛔ אינם מתחילים ב-`arena-strike`⟩. */
+
+
+/* 🔥💧🪨💨 **⟦24/09 · `C-0784` · `T-445` · `D-277`ⓐ · `37 § 11` א3·א5⟧ היסוד — מה שהבעיטה משחררת.**
+
+   🔬 **הפער, נמדד בגרפ ⛔ ולא שוער:** ⛔ אפס אפקט יסוד בקוד הזירה — מה שעף היה הקלף
+   ⟨`arena-throw-fly`⟩ וכדור היריב ⟨`arena-bolt-fly`⟩. ⇒ **הלומד ⛔ מעולם ⛔ לא ראה חומר.**
+
+   🎬 **התזמון נגזר מ-Figma, ⛔ ולא נבחר:** `get_motion_context` על `22:678` ⟨«בעיטת כדור
+   אש», `kZcjKncSFidYBAyuf9tOpm` עמוד 05⟩ מחזיר ציר של **2000ms**, ו**940ms הראשונים שלו
+   הם בדיוק `arena-strike-*`** ⟨`0.0475`⇢`10.1%` · `0.25`⇢`53.2%` — מחולק ב-`0.47`⟩.
+   ⇒ אותו מחלק על היסוד: `fire/body` נדלק ב-`0.23..0.25` ⇒ **48.9%..53.2%**, טס עד `0.40`
+   ⇒ **85.1%**, ו-`fire/impact` פורח ב-`0.385..0.405..0.43` ⇒ **81.9% · 86.2% · 91.5%**.
+   ⇒ **הכול בתוך `--arena-strike-ms`**, ⛔ ולא ב-2000ms של Figma (אילוץ ⓒ של השורה).
+
+   ⚠️ **שלושת האילוצים של השורה:**
+   ⓐ `COMPOSITOR_ONLY` — `translate`/`scale`/`rotate`/`opacity` בלבד, ⛔ אפס `filter`,
+      ⛔ אפס צבע מונפש. ה-`x`/`y` של motion.dev הפכו ל-`translate` ⇒ ⛔ לא דורס `transform`.
+   ⓑ **כלל הצללית** — בגובה הגוף הקליע **מחוץ** לגוף: הוא נולד ב-`12%` הצידה, ורק
+      בגובה `-22%` ⟨מעל הראש⟩ הוא נכנס למסלול אל היריב.
+   ⓒ **940ms** — כנ״ל.
+
+   🏃 **והיעד הוא היריב, ⛔ ולא ישר קדימה:** החריץ זז בין נתיבים ⟨`--arena-lane-shift`⟩,
+   ⇒ `--arena-el-home` מחזיר את ההיסט הזה בסוף המעוף ⇒ הקליע נוחת במרכז, על היריב,
+   מכל נתיב. ‏`-78%` = רגלי היריב ב-`46%` מהבמה + חצי גוף, פחות נקודת הלידה ⟨`34%`⟩,
+   ביחידות של החריץ ⟨`42%` מהבמה⟩.
+
+   🎨 **⛔ אפס hex חדש** — ארבעת היסודות לוקחים טוקנים שכבר נמדדו ⟨`--arena-fig-*`⟩,
+   ⇒ `ARENA_HEXES` ב-`app/arcade/page.test.ts` ⛔ לא זז. ⛔ **ו⛔ אין זוהר** — שיפוע
+   רדיאלי שדוהה ל-`transparent`, בדפוס של `[data-arena-halo]`; תקציב ב3 ⛔ לא נגע.
+
+   ⛔ **השמות ⛔ אינם מתחילים ב-`arena-strike`** — `onAnimationEnd` ב-`ArenaBattle`
+   משחרר את ההטלה על הקידומת הזאת, וקליע שמסתיים ב-91.5% היה מכבה את הבעיטה באמצע. */
+[data-arena-scope] [data-arena-element] { --arena-el-home: 0%; opacity: 1; }
+[data-arena-slot='hero'][data-arena-lane='left'] [data-arena-element] { --arena-el-home: var(--arena-lane-shift); }
+[data-arena-slot='hero'][data-arena-lane='right'] [data-arena-element] { --arena-el-home: calc(var(--arena-lane-shift) * -1); }
+[data-arena-scope] [data-arena-element-core],
+[data-arena-scope] [data-arena-element-trail] { opacity: 0; }
+[data-arena-scope] [data-arena-element-trail] { transform-origin: 50% 0; }
+
+[data-arena-scope] [data-arena-element='fire'] [data-arena-element-core] {
+  background: radial-gradient(closest-side, var(--arena-fig-core-lit) 0%, var(--arena-fig-core) 55%, transparent 100%);
+}
+[data-arena-scope] [data-arena-element='fire'] [data-arena-element-trail] {
+  background: linear-gradient(to bottom, var(--arena-fig-core), transparent);
+}
+[data-arena-scope] [data-arena-element='water'] [data-arena-element-core] {
+  background: radial-gradient(closest-side, var(--arena-fig-wisp) 0%, var(--arena-fig-teal) 55%, transparent 100%);
+}
+[data-arena-scope] [data-arena-element='water'] [data-arena-element-trail] {
+  background: linear-gradient(to bottom, var(--arena-fig-teal), transparent);
+}
+/* 🪨 **אדמה — ⛔ ולא עיגול:** סלע הוא הצורה היחידה שהסיבוב נראה עליה, ⇒ `rotate`
+   בקיפריימים המשותפים עובד כאן, ו⛔ נעלם על שלושת העגולים. רדיוס `md` מסולם החמישה ⟨`rounded-md` ברכיב — ⛔ `border-radius` גולמי נאסר כאן⟩. */
+[data-arena-scope] [data-arena-element='earth'] [data-arena-element-core] {
+  background: linear-gradient(135deg, var(--arena-fig-leather) 0%, var(--arena-fig-wand) 100%);
+}
+[data-arena-scope] [data-arena-element='earth'] [data-arena-element-trail] {
+  background: linear-gradient(to bottom, var(--arena-ink-dim), transparent);
+}
+/* 💨 **אוויר — טבעת, ⛔ ולא גוש:** משב ⛔ אין לו חומר, ⇒ קו ⛔ ולא מילוי. */
+[data-arena-scope] [data-arena-element='air'] [data-arena-element-core] {
+  border: 3px solid var(--arena-fig-string);
+  background: radial-gradient(closest-side, transparent 55%, var(--arena-ink-dim) 80%, transparent 100%);
+}
+[data-arena-scope] [data-arena-element='air'] [data-arena-element-trail] {
+  background: linear-gradient(to bottom, var(--arena-fig-string), transparent);
+}
+
+/* `'a'⇄'b'` — ⛔ ואינו כפילות: שם זהה ⛔ אינו מפעיל מחדש (`F-313`). */
+@keyframes arena-element-fly-a {
+  0%    { translate: 12% 0; }
+  48.9% { translate: 12% 0; }
+  53.2% { translate: 10% -4%; }
+  59.6% { translate: 6% -22%; }
+  72%   { translate: calc(var(--arena-el-home) * 0.5) -50%; }
+  85.1% { translate: var(--arena-el-home) -78%; }
+  100%  { translate: var(--arena-el-home) -78%; }
+}
+@keyframes arena-element-fly-b {
+  0%    { translate: 12% 0; }
+  48.9% { translate: 12% 0; }
+  53.2% { translate: 10% -4%; }
+  59.6% { translate: 6% -22%; }
+  72%   { translate: calc(var(--arena-el-home) * 0.5) -50%; }
+  85.1% { translate: var(--arena-el-home) -78%; }
+  100%  { translate: var(--arena-el-home) -78%; }
+}
+@keyframes arena-element-core-a {
+  0%    { opacity: 0;    scale: 0.2 0.2;  rotate: 0deg; }
+  48.9% { opacity: 0;    scale: 0.2 0.2;  rotate: 0deg; }
+  53.2% { opacity: 0.95; scale: 1.1 0.9;  rotate: 40deg; }
+  59.6% { opacity: 1;    scale: 0.95 1.1; rotate: 140deg; }
+  72%   { opacity: 1;    scale: 0.85 0.85; rotate: 300deg; }
+  81.9% { opacity: 1;    scale: 0.7 0.7;  rotate: 440deg; }
+  86.2% { opacity: 1;    scale: 1.4 1.4;  rotate: 480deg; }
+  91.5% { opacity: 0;    scale: 2 2;      rotate: 500deg; }
+  100%  { opacity: 0;    scale: 2 2;      rotate: 500deg; }
+}
+@keyframes arena-element-core-b {
+  0%    { opacity: 0;    scale: 0.2 0.2;  rotate: 0deg; }
+  48.9% { opacity: 0;    scale: 0.2 0.2;  rotate: 0deg; }
+  53.2% { opacity: 0.95; scale: 1.1 0.9;  rotate: 40deg; }
+  59.6% { opacity: 1;    scale: 0.95 1.1; rotate: 140deg; }
+  72%   { opacity: 1;    scale: 0.85 0.85; rotate: 300deg; }
+  81.9% { opacity: 1;    scale: 0.7 0.7;  rotate: 440deg; }
+  86.2% { opacity: 1;    scale: 1.4 1.4;  rotate: 480deg; }
+  91.5% { opacity: 0;    scale: 2 2;      rotate: 500deg; }
+  100%  { opacity: 0;    scale: 2 2;      rotate: 500deg; }
+}
+@keyframes arena-element-trail-a {
+  0%    { opacity: 0;    scale: 0.6 0.2; }
+  53.2% { opacity: 0;    scale: 0.6 0.2; }
+  59.6% { opacity: 0.55; scale: 0.8 1.8; }
+  72%   { opacity: 0.4;  scale: 0.6 1.5; }
+  81.9% { opacity: 0;    scale: 0.4 0.8; }
+  100%  { opacity: 0;    scale: 0.4 0.8; }
+}
+@keyframes arena-element-trail-b {
+  0%    { opacity: 0;    scale: 0.6 0.2; }
+  53.2% { opacity: 0;    scale: 0.6 0.2; }
+  59.6% { opacity: 0.55; scale: 0.8 1.8; }
+  72%   { opacity: 0.4;  scale: 0.6 1.5; }
+  81.9% { opacity: 0;    scale: 0.4 0.8; }
+  100%  { opacity: 0;    scale: 0.4 0.8; }
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-element] {
+  animation: arena-element-fly-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-element] {
+  animation: arena-element-fly-b var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-element-core] {
+  animation: arena-element-core-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-element-core] {
+  animation: arena-element-core-b var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='a'] [data-arena-slot='hero'] [data-arena-element-trail] {
+  animation: arena-element-trail-a var(--arena-strike-ms) linear 1;
+}
+[data-arena-stage-area][data-arena-strike='b'] [data-arena-slot='hero'] [data-arena-element-trail] {
+  animation: arena-element-trail-b var(--arena-strike-ms) linear 1;
+}
+/* `D-277`ⓑ — הטלה שנייה באמצע הבעיטה מתחילה מ**הנחיתה**: שעון אחד עם הגוף. */
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-element],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-element-core],
+[data-arena-stage-area][data-arena-strike-from='land'] [data-arena-slot='hero'] [data-arena-element-trail] {
+  animation-delay: calc(var(--arena-strike-ms) * -0.5);
+}
+/* חוקה שכבה א׳ א7 — **היסוד הוא קישוט, ⇒ תחת תנועה מופחתת הוא ⛔ אינו מצויר כלל.**
+   ⛔ שום ביט ⛔ אינו הולך איתו: «פגיעה» והמספר על היריב נושאים את המידע. ⛔ ו⛔ אין
+   מה לשחרר — ⛔ אף `animationend` שלו ⛔ אינו מזין מצב ב-React. */
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-element] { display: none; }
+}

@@ -3,7 +3,7 @@ import ArenaScene from '@/components/ArenaScene';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
 import { ARENA_IDLE_LOOP } from '@/lib/core/arcadeLadder';
 import { CENTRE, LANE_NAMES, type AttackKind, type Lane, type StagePhase } from '@/lib/core/battle';
-import { CHARACTER_GUARD } from '@/lib/core/arenaCharacter';
+import { CHARACTER_ELEMENT, CHARACTER_GUARD } from '@/lib/core/arenaCharacter';
 import { GUARD_PATHS, GUARD_VIEW } from '@/lib/core/characterBase';
 
 /**
@@ -146,6 +146,8 @@ export default function ArenaStage({
   telegraph = 'quiet',
   hot = false,
 }: ArenaStageProps): React.JSX.Element {
+  // 🔥 `T-445` — ⛔ `null` ⇒ הקוסם, אותה ברירת מחדל שהגנה `null` ⇒ `wall` נותנת לשלד הבסיס.
+  const element = CHARACTER_ELEMENT[character ?? 'wizard'];
   return (
     <div
       data-arena-stage
@@ -334,6 +336,26 @@ export default function ArenaStage({
             יכול להיפגע ו**להטיל באותו פריים** ⇒ שתי אנימציות על אותה תכונה באותו
             צומת, והמאוחרת דורסת. זה `F-306`, ⇒ צומת נפרד. */}
         <span data-arena-landdust aria-hidden className="pointer-events-none absolute bottom-[-4%] h-[22%] w-[62%]" />
+        {/* 🔥💧🪨💨 **⟦24/09 · `C-0784` · `T-445` · `37 § 11` א3·א5⟧ היסוד — מה שהבעיטה משחררת.**
+            🔬 עד היום `grep -i 'fire\|water\|earth'` על קוד הזירה החזיר **אפס** אפקט ⇒
+            הלומד ⛔ מעולם ⛔ לא ראה חומר יוצא מהמכה. ⇒ **צומת משלו**, ⛔ ולא על הגוף
+            (`F-306`: אנימציה שנייה על אותה תכונה דורסת), ⛔ ורוכב על `data-arena-strike`
+            שכבר קיים ⇒ ⛔ אפס מצב חדש, ⛔ אפס `setTimeout`, ושעון אחד עם הבעיטה.
+            ⛔ **מראה בלבד** (`D-277`ⓐ · `37 § 7` גדר 1) · ⛔ `aria-hidden`: קורא מסך כבר
+            שומע «פגיעה», ויסוד ⛔ אינו מידע. ⛔ **ו-`inset-0`** — ההיסט באחוזים הוא של
+            החריץ עצמו, ⇒ המרחק ליריב נכון בכל גובה במה. */}
+        <span
+          data-arena-element={element}
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+        >
+          <span data-arena-element-trail className="absolute bottom-[34%] left-[calc(50%-0.5rem)] h-10 w-4 rounded-full" />
+          {/* 🪨 סלע ⇒ `md` · שלושת האחרים ⇒ `full`. ⛔ הרדיוס כאן ⛔ ולא ב-CSS (`radius-hygiene`). */}
+          <span
+            data-arena-element-core
+            className={`absolute bottom-[34%] left-[calc(50%-1.25rem)] h-10 w-10 ${element === 'earth' ? 'rounded-md' : 'rounded-full'}`}
+          />
+        </span>
       </div>
     </div>
   );
