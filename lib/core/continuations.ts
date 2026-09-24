@@ -14,7 +14,9 @@
  * Node shape, chosen for gzip size (the file ships to a phone):
  *   Node = [endLevel, w1, l1, n1, w2, l2, n2, …]
  *     endLevel  lowest level of a sentence that ENDS here, or -1
- *     wN        index into `words`
+ *     wN        index into `words` — children in the order people took them (T-464):
+ *               most sentences through that child first, ties by word id. ⇒ the file
+ *               carries the order, ⛔ not a count field.
  *     lN        lowest level of any sentence through that child
  *     nN        the child Node — or, one level past `maxDepth`, a bare number when
  *               that child had continuations the cut dropped: its endLevel, alone.
@@ -127,13 +129,16 @@ interface MutableNode {
   end: number;
   /** A sentence ran on past this node and the cut dropped the rest. */
   cut: boolean;
+  /** How many sentences pass through this node — the T-464 sort key, ⛔ never serialised. */
+  seen: number;
   children: Map<number, { level: number; node: MutableNode }>;
 }
 
 function freeze(node: MutableNode): Node | number {
   if (node.cut) return node.end;
   const out: (number | Node)[] = [node.end];
-  const kids = [...node.children].sort(([a], [b]) => a - b);
+  // T-464: the keyboard opens on what people say ⇒ most-taken first; ties by word id.
+  const kids = [...node.children].sort(([a, x], [b, y]) => y.node.seen - x.node.seen || a - b);
   for (const [word, child] of kids) out.push(word, child.level, freeze(child.node));
   return out;
 }
@@ -147,7 +152,7 @@ export function buildContinuationIndex(
   const pos: (Pos | null)[] = [];
   const wordId = new Map<string, number>();
   const lemmas = lemmaSetOf(lexicon);
-  const root: MutableNode = { end: -1, cut: false, children: new Map() };
+  const root: MutableNode = { end: -1, cut: false, seen: 0, children: new Map() };
   let kept = 0;
 
   for (const text of sentences) {
@@ -169,10 +174,11 @@ export function buildContinuationIndex(
       }
       let child = node.children.get(id);
       if (!child) {
-        child = { level, node: { end: -1, cut: false, children: new Map() } };
+        child = { level, node: { end: -1, cut: false, seen: 0, children: new Map() } };
         node.children.set(id, child);
       } else if (level < child.level) child.level = level;
       node = child.node;
+      node.seen += 1;
     }
     if (hit.tokens.length > stored) node.cut = true;
     else if (node.end === -1 || level < node.end) node.end = level;
@@ -196,8 +202,9 @@ function display(word: string): string {
 }
 
 /**
- * The blocks that may follow `prefix` at `level` or below, sorted by word, with
- * `END_BLOCK` last when a sentence ended there. An unseen prefix is `count: 0` —
+ * The blocks that may follow `prefix` at `level` or below, in the tree's own order —
+ * most-taken first (T-464), ⛔ never re-sorted here — with `END_BLOCK` last when a
+ * sentence ended there. An unseen prefix is `count: 0` —
  * ⛔ never a throw and ⛔ never a guess.
  */
 export function nextBlocks(
@@ -231,7 +238,6 @@ export function nextBlocks(
     const w = node[i] as number;
     blocks.push({ word: display(index.words[w] ?? ''), pos: index.pos[w] ?? null });
   }
-  blocks.sort((a, b) => a.word.localeCompare(b.word));
   const end = node[0] as number;
   if (end !== -1 && end <= max) blocks.push(END_BLOCK);
   return { blocks, count: blocks.length };

@@ -24,7 +24,8 @@ import './block-keyboard-tokens.css';
  * ⚠️ **Categories come from CEFR-J (D-283), ⛔ not from the render's labels** — the
  * render tags `the`/`a` as «חיבור»; CEFR-J says determiner, so they are neutral blocks.
  * ⚠️ **Every continuation is shown** — the sheet scrolls — because the counter must equal
- * the displayed set (T-461 walk) and the tree is ⛔ ranked by nothing we could defend.
+ * the displayed set (T-461 walk). T-464: the set arrives most-taken first (the tree's own
+ * order, counted over Tatoeba) and is shown ⛔ exactly as it comes — ⛔ never re-sorted here.
  */
 export const COMPOSE_PLACEHOLDER_HE = 'הרכב משפט מהבלוקים';
 export const NOW_HE = 'מה יכול לבוא עכשיו';

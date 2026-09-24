@@ -34,6 +34,16 @@ describe('data/generated/continuations.json — T-460 failure scenarios on the r
     }
   });
 
+  it('T-464: the keyboard opens on what people say — `We` among the first 12 blocks (was 168th)', () => {
+    const first = nextBlocks(index, [], 'A1').blocks.map((b) => b.word.toLowerCase());
+    expect(first.slice(0, 12)).toContain('we');
+    expect(first[0]).toBe('i');
+    // ⚠️ Measured C-0796: frequency alone puts `yesterday` 110th (was 270th), ⛔ not inside
+    // the row's 30 — recorded as a finding, ⛔ not closed by hand-ranking the tree.
+    // This line pins the improvement so a regression to word order shows.
+    expect(first.indexOf('yesterday')).toBeLessThan(150);
+  });
+
   it('is cut at the depth the row allows and carries A1–A2 only', () => {
     expect(index.maxDepth).toBe(6);
     expect(index.source).toContain('A1–A2');

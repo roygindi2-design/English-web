@@ -17,6 +17,7 @@ const CSV = [
   'the,determiner,A1',
   'beach,noun,A1',
   'love,verb,A1',
+  'we,pronoun,A1',
 ].join('\n');
 
 const lexicon = wordLexicon(parseCefrCsv(CSV).entries);
@@ -70,7 +71,8 @@ describe('nextBlocks — only continuations a real sentence took', () => {
 
   it('offers exactly the observed next words, with the profile pos', () => {
     const r = nextBlocks(idx, ['i', 'like'], 'A1');
-    expect(r.blocks).toEqual([{ word: 'coffee', pos: 'noun' }, { word: 'tea', pos: 'noun' }]);
+    // One sentence each ⇒ the tie breaks on word id (first seen first): `tea` before `coffee`.
+    expect(r.blocks).toEqual([{ word: 'tea', pos: 'noun' }, { word: 'coffee', pos: 'noun' }]);
     expect(r.count).toBe(2);
   });
 
@@ -80,8 +82,17 @@ describe('nextBlocks — only continuations a real sentence took', () => {
   });
 
   it('a continuation above the simulation level is hidden', () => {
-    expect(nextBlocks(idx, ['i'], 'A1').blocks.map((b) => b.word)).toEqual(['go', 'like']);
-    expect(nextBlocks(idx, ['i'], 'B1').blocks.map((b) => b.word)).toEqual(['go', 'like', 'recommend']);
+    expect(nextBlocks(idx, ['i'], 'A1').blocks.map((b) => b.word)).toEqual(['like', 'go']);
+    expect(nextBlocks(idx, ['i'], 'B1').blocks.map((b) => b.word)).toEqual(['like', 'go', 'recommend']);
+  });
+
+  it('T-464: blocks come in the order people actually took them — most sentences first, ⛔ not by word', () => {
+    const idx2 = index(['I go.', 'We like tea.', 'We go.', 'We like coffee.', 'I like tea.', 'We go.']);
+    // `we` opens 4 sentences, `i` 2 ⇒ `we` first although `I` was seen first.
+    expect(nextBlocks(idx2, [], 'A1').blocks.map((b) => b.word)).toEqual(['we', 'I']);
+    // after «we»: `go` ×2 and `like` ×2 tie ⇒ word id (`go` seen first); `<END>` stays last.
+    expect(nextBlocks(idx2, ['we'], 'A1').blocks.map((b) => b.word)).toEqual(['go', 'like']);
+    expect(nextBlocks(idx2, ['we', 'like'], 'A1').blocks.map((b) => b.word)).toEqual(['tea', 'coffee']);
   });
 
   it('an unseen prefix is count 0 and does not throw', () => {
