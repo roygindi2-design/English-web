@@ -136,11 +136,19 @@ const BOSS_HE = 'קרב הבוס';
 const CARD_CLASS =
   'rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]';
 
+/**
+ * זירה — עיצוב חופשי (C-0818): הפעולות **נלחצות**, ⛔ ולא רק מתעמעמות. `scale(0.97)` על
+ * `:active`, ‏`transform` בלבד, 150ms — באותה נוסחה של `ArenaBattle` (`motion-safe:`),
+ * ⇒ `prefers-reduced-motion` ⇒ ⛔ אין תנועה, העמעום נשאר ערוץ המשוב.
+ */
+const PRESS_CLASS = 'transition-transform duration-150 ease-out motion-safe:active:scale-[0.97]';
+
 /** `:180-183` — הפעולה הראשית. גובה 58 ורדיוס 18 של הרנדר, ⛔ ללא שינוי. */
 const START_CLASS =
   'flex h-[58px] w-full items-center justify-center rounded-2xl border-2 ' +
   'border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] ' +
-  'text-[17px] font-black text-[color:var(--brand-on)] active:opacity-90';
+  'text-[17px] font-black text-[color:var(--brand-on)] active:opacity-90 ' +
+  PRESS_CLASS;
 
 /**
  * `:185-191` — שתי הפעולות המשניות. ⚠️ **הגובה 42 של הרנדר עלה ל-44** (שכבה א׳ ⓐ);
@@ -150,6 +158,7 @@ const SECONDARY_CLASS =
   'flex min-h-touch flex-1 items-center justify-center rounded-xl ' +
   'border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] ' +
   'text-[12.5px] font-semibold text-[color:var(--arena-ink-dim)] active:opacity-90 ' +
+  PRESS_CLASS + ' ' +
   'disabled:opacity-100';
 
 const SLOT_CLASS =
