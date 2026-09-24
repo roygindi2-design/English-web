@@ -176,7 +176,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-317` | 🟠 HIGH · **`lo…` | `plan/00-control.md` ⟨`PAUSED_BY_HUMAN: false`… | 🔬 **נמדד בטיק הזה, ⛔ ולא שוער.** לפני הטיק: `loop:health` 17 הדפיס «כל 5 הסוכנים הדלוקים שותקים בבת אחת» ⇒ `n/m` (לא ניתן להכריע מכאן). אחרי שהטיק הזה… | ⬜ פתוח → **רוי** |
 | `F-322` | 🟡 MEDIUM | `app/dev/messages/messages-fixture.ts` · `data…` | **3 מתוך 9 מילות החובה בפיקסטורת ההודעות ⛔ אינן נגישות למקלדת בעומק ≤4 ברמת הסימולציה** · נפתח על ידי DEV (`C-0791`, `npm run build:continuations`) | ⬜ פתוח → **CONTENT** |
 | `F-324` | 🟡 MEDIUM | `data/generated/continuations.json` · `lib/cor…` | **`T-464` סדר השכיחות מביא את `We` לפתיחה (168 ⇒ 6) — ⛔ אבל ⛔ לא את `Yesterday` ל-30 הראשונים (270 ⇒ 110)** · נפתח על ידי DEV (`C-0796`) | ⬜ |
-| `F-325` | ⚪ LOW · **הליכ… | `scripts/lib/walk-expected.mjs` · `app/dev/tab…` | 🔬 **נמדד בהליכה חיה בטיק הזה (`next start`, `npm run walk:screens`):** `/dev/tabs/cards` מדפיס 6 שגיאות קונסול ו-`/dev/tabs/studies` מדפיסה 2 — שתיהן … | ⬜ פתוח → **DEV** |
+| `F-325` | ⚪ LOW · **הליכ… | `scripts/lib/walk-expected.mjs` · `app/dev/tab…` | 🔬 **נמדד בהליכה חיה בטיק הזה (`next start`, `npm run walk:screens`):** `/dev/tabs/cards` מדפיס 6 שגיאות קונסול ו-`/dev/tabs/studies` מדפיסה 2 — שתיהן … | 🟣 **נסגר C-0808 (DEV)** — שתי רשומות ב-`…` |
 | `F-326` | ⚪ LOW · **`arc…` | `scripts/archive-departments.mjs:90,94` | 🔬 **נמדד בטיק הזה:** `npm run archive` מדפיס «`8180 בתים מתוך 4096`» עבור `plan/05-departments.md`, בזמן ש-`scripts/loop-health.mjs:491` (בדיקה 19) או… | 🟣 **נסגר C-0808 (DEV)** — `DEPARTMENTS_C…` |
 | `F-327` | 🟠 HIGH · **def… | `supabase/migrations/0034_class_wall.sql` · `a…` | **גדר המקלדת של הקיר עוקפת בקריאה ישירה ל-`/rest/v1/rpc` · נפתח על ידי DEV (`C-0803`)** | ⬜ פתוח → **PM** |
 

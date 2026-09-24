@@ -23,6 +23,16 @@ export const EXPECTED_CONSOLE = {
     // לסטטוס. ⛔ «Failed to load resource» בלי 503 ⛔ אינו מוחרג.
     /^Failed to load resource: the server responded with a status of 503 /,
   ],
+  // `F-325` — `<DeckSelector>` reads the real queue; no Supabase env ⇒ 503 by contract.
+  '/dev/tabs/cards': [
+    /^HTTP 503 ⇐ \S*\/api\/study\/queue/,
+    /^Failed to load resource: the server responded with a status of 503 /,
+  ],
+  // `F-325` — `<StudiesScreen>` reads the real placement; same contract.
+  '/dev/tabs/studies': [
+    /^HTTP 503 ⇐ \S*\/api\/study\/place/,
+    /^Failed to load resource: the server responded with a status of 503 /,
+  ],
 };
 
 /**

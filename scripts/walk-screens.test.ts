@@ -233,3 +233,44 @@ describe('📜 T-380 — שגיאת קונסול שהיא החוזה, ⛔ ולא
     expect(splitExpected('/', [BROWSER_503]).errors).toEqual([BROWSER_503]);
   });
 });
+
+/**
+ * `F-325` — the same `T-380` contract, on the two fixtures that also talk to the real
+ * API: `/dev/tabs/cards` (`<DeckSelector>` ⇒ `GET /api/study/queue`) and
+ * `/dev/tabs/studies` (`<StudiesScreen>` ⇒ `GET /api/study/place`). A clone with no
+ * Supabase env answers 503 by contract ⇒ the walk read «6 + 2 defects» on two healthy
+ * screens. Narrow on the same three axes: route · path · status.
+ */
+describe('📜 F-325 — the 503 contract on /dev/tabs/cards and /dev/tabs/studies', () => {
+  const BROWSER_503 =
+    'Failed to load resource: the server responded with a status of 503 (Service Unavailable)';
+  const QUEUE_503 = 'HTTP 503 ⇐ http://127.0.0.1:3000/api/study/queue?deck=due&limit=1';
+  const PLACE_503 = 'HTTP 503 ⇐ http://127.0.0.1:3000/api/study/place';
+
+  it('cards: the queue 503s are declared ⇒ ⛔ not counted', () => {
+    const split = splitExpected('/dev/tabs/cards', [QUEUE_503, BROWSER_503, QUEUE_503]);
+    expect(split.errors).toHaveLength(0);
+    expect(split.expected).toHaveLength(3);
+  });
+
+  it('studies: the place 503s are declared ⇒ ⛔ not counted', () => {
+    const split = splitExpected('/dev/tabs/studies', [PLACE_503, BROWSER_503]);
+    expect(split.errors).toHaveLength(0);
+    expect(split.expected).toHaveLength(2);
+  });
+
+  it('🔴 narrow on path: the other screen’s endpoint is ⛔ not excused', () => {
+    expect(splitExpected('/dev/tabs/cards', [PLACE_503]).errors).toEqual([PLACE_503]);
+    expect(splitExpected('/dev/tabs/studies', [QUEUE_503]).errors).toEqual([QUEUE_503]);
+  });
+
+  it('🔴 narrow on status: 500 on the same path is ⛔ not excused', () => {
+    const line = 'HTTP 500 ⇐ http://127.0.0.1:3000/api/study/queue?deck=due&limit=1';
+    expect(splitExpected('/dev/tabs/cards', [line]).errors).toEqual([line]);
+  });
+
+  it('🔴 narrow on route: the live `/cards` is ⛔ not excused', () => {
+    expect(EXPECTED_CONSOLE['/cards']).toBeUndefined();
+    expect(splitExpected('/cards', [QUEUE_503]).errors).toEqual([QUEUE_503]);
+  });
+});
