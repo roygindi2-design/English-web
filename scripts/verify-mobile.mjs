@@ -235,6 +235,9 @@ const ROUTES = [
   // target is the whole strip at 320) and the in-class panel. Props only ⇒ ⛔ no
   // EXPECTED_CONSOLE entry.
   '/dev/messages/wall',
+  // C-0803 (T-474) — the reply sheet open over the wall (kol-C-12), with the LIVE keyboard:
+  // `GET /api/world/messages/continuations` needs ⛔ no session ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/messages/wall/reply',
   // ...and the fixture, because that same 503 means the BANK — the chips, the draft, the
   // punctuation row, the publish bar — is never once on screen on either route above. It
   // is handed its bank as a prop and asks the server for nothing, which is why it needs no

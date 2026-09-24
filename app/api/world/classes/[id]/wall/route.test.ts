@@ -123,7 +123,7 @@ describe('GET /api/world/classes/[id]/wall (T-471)', () => {
 
   it('an empty wall is an empty list, ⛔ not an error', async () => {
     tables.class_posts = [];
-    expect(await (await call(CLASS_A)).json()).toEqual({ ok: true, posts: [] });
+    expect(await (await call(CLASS_A)).json()).toEqual({ ok: true, amOpener: false, posts: [] });
   });
 });
 

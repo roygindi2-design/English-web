@@ -50,7 +50,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (posts.error) return classFailure('wall', posts.error);
   const postRows = (posts.data ?? []) as WallPostRow[];
   const postIds = postRows.map((p) => p.id);
-  if (postIds.length === 0) return NextResponse.json({ ok: true, posts: [] });
+  const amOpener = openerId === user.id;
+  if (postIds.length === 0) return NextResponse.json({ ok: true, amOpener, posts: [] });
 
   const replies = await supabase.from('class_replies').select('id, post_id, author_id, body_en, created_at').in('post_id', postIds);
   if (replies.error) return classFailure('wall', replies.error);
@@ -65,7 +66,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (replyLikes.error) return classFailure('wall', replyLikes.error);
 
   const likes = [...(postLikes.data ?? []), ...(replyLikes.data ?? [])] as WallLikeRow[];
-  return NextResponse.json({ ok: true, posts: buildWallFeed(postRows, replyRows, likes, user.id, openerId) });
+  return NextResponse.json({ ok: true, amOpener, posts: buildWallFeed(postRows, replyRows, likes, user.id, openerId) });
 }
 
 /**

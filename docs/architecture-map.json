@@ -523,6 +523,11 @@
     "components/ClassWall.tsx",
     "components/InboxList.tsx"
   ],
+  "app/dev/messages/wall/reply/page.tsx": [
+    "app/dev/messages/wall-fixture.ts",
+    "components/ClassWall.tsx",
+    "components/WallReplySheet.tsx"
+  ],
   "app/dev/onboarding/layout.tsx": [],
   "app/dev/onboarding/page.tsx": [
     "components/OnboardingForm.tsx",
@@ -1005,6 +1010,7 @@
   ],
   "components/ClassWall.tsx": [
     "components/EnWord.tsx",
+    "components/WallReplySheet.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",
     "lib/core/onboarding.ts",
@@ -1289,6 +1295,16 @@
     "components/EnWord.tsx"
   ],
   "components/UnknownMarkIcon.tsx": [],
+  "components/WallReplySheet.dom.test.tsx": [
+    "app/dev/messages/wall-fixture.ts",
+    "components/ClassWall.tsx",
+    "components/WallReplySheet.tsx"
+  ],
+  "components/WallReplySheet.tsx": [
+    "components/BlockKeyboard.tsx",
+    "components/EnWord.tsx",
+    "lib/core/failure.ts"
+  ],
   "components/WordBank.test.ts": [
     "lib/testSource.ts"
   ],

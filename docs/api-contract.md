@@ -1195,9 +1195,9 @@ B1 ‏6⇢19 · B2 ‏13⇢13).
 
 הקיר של הכיתה (T-471 · `39 § 5` · D-288). נקרא תחת ה-RLS של `0034` — לומד רואה רק כיתה שהוא חבר בה.
 
-**גוף מוצלח:** `{ "ok": true, "posts": [ { "id", "bodyEn", "createdAt", "byOpener", "mine", "likes", "likedByMe", "replyCount", "top": [ { "id", "bodyEn", "createdAt", "likes", "likedByMe", "mine" } ] } ] }`
+**גוף מוצלח:** `{ "ok": true, "amOpener": false, "posts": [ { "id", "bodyEn", "createdAt", "byOpener", "mine", "likes", "likedByMe", "replyCount", "top": [ { "id", "bodyEn", "createdAt", "likes", "likedByMe", "mine" } ] } ] }`
 — החדש למעלה, עד 20 פוסטים; `top` = **שתי** התגובות המובילות לפי לייקים (שוויון ⇒ המוקדמת), ⛔ לא כל התגובות.
-`byOpener` = הפוסט של פותח הכיתה («המורה», D-288). ⛔ אף מזהה משתמש ⛔ אינו יוצא.
+`byOpener` = הפוסט של פותח הכיתה («המורה», D-288); `amOpener` = הלומד הוא הפותח (T-474: `שאלה חדשה`). ⛔ אף מזהה משתמש ⛔ אינו יוצא.
 
 ## GET /api/world/classes/[id]/wall/[postId]/replies
 
