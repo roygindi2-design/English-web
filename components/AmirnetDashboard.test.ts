@@ -91,4 +91,10 @@ describe('AmirnetDashboard — T-291, render kol-D-02-dashboard.png', () => {
   it('the English type name travels inside <EnWord> — ⛔ never a bare English run (T-009)', () => {
     expect(CODE).toMatch(/<EnWord>\{card\.nameEn\}<\/EnWord>/);
   });
+
+  it('⟦T-492⟧ the type cards are py-3 with a 10px gap — ⛔ p-4, which cut the weakness card at 375×812', () => {
+    // Measured C-0819: +62px at 375×812. check:mobile measures the pixels; this guards the shape.
+    expect(CODE).toMatch(/className="rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3"/);
+    expect(CODE).toMatch(/<ul className="mt-3 space-y-2\.5">/);
+  });
 });

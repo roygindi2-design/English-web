@@ -12,7 +12,7 @@ import { SIMULATION_FIXTURE_ITEMS } from './simulation-fixture';
  */
 export default function DevAmirnetSimulationPage() {
   return (
-    <main className="mx-auto w-full max-w-md py-6">
+    <main className="mx-auto w-full max-w-md">
       <AmirnetSimulation items={servableItems(SIMULATION_FIXTURE_ITEMS)} />
     </main>
   );

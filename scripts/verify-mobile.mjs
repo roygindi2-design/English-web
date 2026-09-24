@@ -3836,6 +3836,14 @@ try {
       // T-491ⓒ — אותה גלישה, רכיב אחר (`AmirnetLevels`): הרמה הנעולה האחרונה בתוך המסך.
       { route: '/dev/amirnet/levels', text: 'עבור רמה 3 כדי לפתוח', tabBar: false,
         sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
+      // T-492 — ההמלצה היחידה בדשבורד, וקישור המקורות שמתחתיה.
+      { route: '/dev/amirnet/dashboard', text: 'לתרגול ממוקד בסוג הזה', tabBar: false,
+        sizes: [{ width: 375, height: 812 }, { width: 393, height: 852 }] },
+      { route: '/dev/amirnet/dashboard', text: 'מקורות הנתונים והרישיונות', tabBar: false,
+        sizes: [{ width: 375, height: 812 }, { width: 393, height: 852 }] },
+      // T-492 — מסך הסימולציה: שורת השעון-לפרק האחרונה במסך.
+      { route: '/dev/amirnet/simulation', text: 'אי אפשר להעביר זמן שנותר', tabBar: false,
+        sizes: [{ width: 375, height: 812 }, { width: 393, height: 852 }] },
     ];
     for (const { route, text, tabBar, sizes } of FIT) {
       for (const size of sizes) {
@@ -3844,7 +3852,7 @@ try {
         const uncaught = watchUncaught(page);
         await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
         const m = await page.evaluate((needle) => {
-          const hit = [...document.querySelectorAll('main *')].find(
+          const hit = [...document.querySelectorAll('body *')].find(
             (e) => e.children.length === 0 && (e.textContent ?? '').includes(needle),
           );
           return {

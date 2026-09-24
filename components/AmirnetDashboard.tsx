@@ -114,13 +114,16 @@ export default function AmirnetDashboard({ cards, weakness, hasAnswers }: Amirne
               ⛔ Not in the empty branch: there is no number there to qualify. */}
           <AmirnetEstimateNotice />
 
-          <h2 className="mt-6 text-base font-semibold text-ink">{PERFORMANCE_HEADING_HE}</h2>
+          <h2 className="mt-5 text-base font-semibold text-ink">{PERFORMANCE_HEADING_HE}</h2>
 
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-3 space-y-2.5">
             {cards.map((card) => (
+              /* ⟦T-492⟧ py-3, ⛔ not p-4, and a 10px gap: measured C-0819 the page ran +62px at
+                 375×812 and the weakness card — the only recommendation here — was cut at the
+                 bottom. Nothing is removed; the render's score dial is still ⛔ not built (41 § 9-2). */
               <li
                 key={card.type}
-                className="rounded-2xl border border-border-subtle bg-surface-raised p-4"
+                className="rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
