@@ -934,11 +934,11 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
     expect(CODE, 'אחרי הבמה ⇒ על היריב').toMatch(
       /<ArenaStage[\s\S]{0,3000}data-arena-damage/,
     );
-    // ⛔ `top-[16%]` הוא בדיוק המיקום של `[data-arena-slot="enemy"]` ב-`ArenaStage`,
-    // ⛔ ולא מספר שנבחר — `STAGE_CLASS` הוא `h-full w-full` ⇒ אותה מערכת קואורדינטות.
-    expect(CODE, 'על קואורדינטת היריב').toMatch(/top-\[16%\][^"]*/);
+    // ⛔ `bottom-[46%]` הוא בדיוק המיקום של `[data-arena-slot="enemy"]` ב-`ArenaStage`
+    // (⟦`T-456`⟧ — הרגליים), ⛔ ולא מספר שנבחר — `STAGE_CLASS` הוא `h-full w-full` ⇒ אותה מערכת.
+    expect(CODE, 'על קואורדינטת היריב').toMatch(/bottom-\[46%\][^"]*/);
     const STAGE = readFileSync('components/ArenaStage.tsx', 'utf8');
-    expect(STAGE, 'והיריב באמת שם').toMatch(/data-arena-slot="enemy"[^>]*top-\[16%\]/);
+    expect(STAGE, 'והיריב באמת שם').toMatch(/data-arena-slot="enemy"[^>]*bottom-\[46%\]/);
     // ⛔ ② גודל וגוון — שניהם ערכי רנדר, ⛔ ולא טעם.
     expect(CODE, 'אדום הרנדר').toMatch(/data-arena-damage[\s\S]{0,400}--arena-damage/);
     expect(CODE, '⛔ ⛔ לא זהב יותר').not.toMatch(

@@ -1896,7 +1896,10 @@ export default function ArenaBattle({
                ב-375×780 הראה את `−2` מכסה את `90/100`, כלומר אפקט שמוחק **מידע**.
                ⛔ 48px מורידים אותו אל **גוף** הדמות, שם הרנדר מצייר אותו
                (`wx`/`wy` הם היריב עצמו), והפס חוזר להיקרא במלואו. */
-            className="pointer-events-none absolute inset-x-0 top-[16%] z-20 grid translate-y-12 place-items-center"
+            /* 🧍 **⟦`C-0783` · `T-456`⟧ אותו עוגן כמו החריץ — `bottom-[46%]`, הרגליים.**
+               ‏`-translate-y-4` מרים את מרכז המספר (~36px) אל **גוף** הדמות (64px אחרי
+               הסקאלה), ⇒ ⛔ לא על הרגליים ו⛔ לא על פס החיים. */
+            className="pointer-events-none absolute inset-x-0 bottom-[46%] z-20 grid -translate-y-4 place-items-center"
           >
             {/* ⛔ שלוש הטבעות — `render_video_B.py:543-548`. ⛔ הן ⛔ אינן נושאות מידע
                 (הן חוזרות על מה שהמספר כבר אומר) ⇒ הן, ⛔ ולא המספר, מה שנעלם תחת

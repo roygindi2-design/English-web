@@ -982,7 +982,8 @@ body:has([data-arena-failure] [data-action-bar]) {
     transform: scale(0.76);
   }
   [data-arena-scope] [data-arena-slot='hero'] { transform-origin: bottom center; }
-  [data-arena-scope] [data-arena-slot='enemy'] { transform-origin: top center; }
+  /* `T-456` — הרגליים הן העוגן ⇒ הכיווץ לכיוונן, ⛔ ולא מרים אותן אל החומה. */
+  [data-arena-scope] [data-arena-slot='enemy'] { transform-origin: bottom center; }
 }
 
 

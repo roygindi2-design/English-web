@@ -139,8 +139,10 @@ describe('C-0623 — הבמה בתלת-ממד', () => {
        ושלושת חיווי העומק נמדדים על **הקוד**, שהוא מה שהדפדפן רואה. */
     // ① סקאלה — היריב מוקטן, ⛔ והגיבור לא.
     expect(STAGE_CODE, 'היריב מוקטן').toMatch(/data-arena-depth="far"[^>]*scale-\[0\.\d+\]/);
-    // ② גובה — היריב מעוגן למעלה, הגיבור למטה. ⛔ שניהם על אותו קו = ⛔ אין עומק.
-    expect(STAGE_CODE, 'היריב למעלה').toMatch(/data-arena-slot="enemy"[\s\S]{0,200}top-\[/);
+    // ② גובה — היריב רחוק (רגליו גבוה), הגיבור קרוב. ⛔ שניהם על אותו קו = ⛔ אין עומק.
+    //    ⟦`T-456`⟧ שניהם מעוגנים ברגליים ⇒ העומק הוא ש-`bottom` של היריב גבוה בהרבה.
+    const enemyBottom = Number(/data-arena-slot="enemy"[^>]*bottom-\[(\d+)%\]/.exec(STAGE_CODE)?.[1]);
+    expect(enemyBottom, 'היריב למעלה').toBeGreaterThan(30);
     expect(STAGE_CODE, 'הגיבור למטה').toMatch(/data-arena-slot="hero"[\s\S]{0,300}bottom-\[/);
     // ③ צל — לשתיהן. ⛔ בלי צל דמות **מרחפת** על רקע, ⛔ ואינה עומדת על רצפה.
     expect((STAGE_CODE.match(/data-arena-shadow/g) ?? []).length, 'צל לשתי הדמויות').toBe(2);
@@ -637,5 +639,35 @@ describe('C-0757 · T-444ⓓ — המפרקים זזים, ו⛔ רק על הנו
       expect(rule, 'כל מפרק על --arena-strike-ms').toMatch(/var\(--arena-strike-ms\)/);
       expect(rule.split('{')[0]).toMatch(/\[data-arena-strike='[ab]'\]/);
     }
+  });
+});
+
+/**
+ * 🧍 **T-456 · `kol-B-03-battle.png` — היריב עומד **על הרצפה**, ⛔ ולא בתוך החומה.**
+ * 🔬 נמדד `C-0783` ב-`next start`: ב-393×852 רגלי היריב ישבו ב-45% מגובה הבמה, מעל
+ * `HORIZON = 46` ⇒ על שורת הלבנים. הסיבה: `top-[16%]` מעגן את **ראש** החריץ, וגובה החריץ
+ * קבוע (96px) ⇒ ככל שהבמה גבוהה יותר הרגליים עולות. ⇒ מעגנים את ה**רגליים**: `bottom-[N%]`.
+ */
+describe('T-456 · רגלי היריב על הרצפה, מתחת לקו החומה', () => {
+  const SCENE_SRC = readFileSync('components/ArenaScene.tsx', 'utf8');
+  const horizon = Number(/const HORIZON = (\d+)/.exec(SCENE_SRC)?.[1]);
+  const slot = /data-arena-slot="enemy"[^>]*className="([^"]*)"/.exec(CODE)?.[1] ?? '';
+
+  it('החריץ מעוגן ב**רגליים** (`bottom-[N%]`), ⛔ ולא בראש', () => {
+    expect(slot).toMatch(/\bbottom-\[\d+%\]/);
+    expect(slot).not.toMatch(/\btop-\[/);
+  });
+
+  it('הרגליים מתחת ל-`HORIZON` ובתוך טבעת הזימון (`HORIZON + 7`), ⛔ לא עמוק ברצפה', () => {
+    const bottom = Number(/\bbottom-\[(\d+)%\]/.exec(slot)?.[1]);
+    const feet = 100 - bottom;
+    expect(Number.isFinite(horizon)).toBe(true);
+    expect(feet).toBeGreaterThan(horizon);
+    expect(feet).toBeLessThanOrEqual(horizon + 10);
+  });
+
+  it('במסך נמוך הסקאלה מכווצת לכיוון הרגליים — ⛔ לא מרימה אותן חזרה אל החומה', () => {
+    const TOKENS_SRC = readFileSync('app/arcade/arcade-tokens.css', 'utf8');
+    expect(TOKENS_SRC).toMatch(/\[data-arena-slot='enemy'\] \{ transform-origin: bottom center; \}/);
   });
 });
