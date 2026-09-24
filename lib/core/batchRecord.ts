@@ -102,9 +102,11 @@ function boolean(raw: Row, name: string): boolean {
   return value;
 }
 
-function examples(raw: Row): { readonly supportive: string; readonly neutral: string } {
-  const value = field(raw, 'examples');
-  if (typeof value !== 'object' || value === null) throw new RangeError('examples is not an object');
+/** T-353: absent or `null` ⇒ a word-only row (`GeneratedSense.examples`). Present ⇒ both keys. */
+function examples(raw: Row): { readonly supportive: string; readonly neutral: string } | null {
+  const value = raw.examples;
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'object' || Array.isArray(value)) throw new RangeError('examples is not an object');
   const obj = value as Row;
   return { supportive: text(obj, 'supportive'), neutral: text(obj, 'neutral') };
 }
@@ -117,7 +119,8 @@ function examples(raw: Row): { readonly supportive: string; readonly neutral: st
  * `npm run build:ingest` over them must never throw or drop them.
  */
 function items(raw: Row): readonly GeneratedItem[] {
-  const value = field(raw, 'items');
+  // T-353: absent ⇒ none. `null` or a non-array is still a malformed row.
+  const value = raw.items === undefined ? [] : raw.items;
   if (!Array.isArray(value)) throw new RangeError('items is not an array');
   return value.map((entry, i) => {
     if (typeof entry === 'string') return { stem: entry, level: null, levelRationale: null };
@@ -143,7 +146,7 @@ function items(raw: Row): readonly GeneratedItem[] {
 }
 
 function distractors(raw: Row): readonly { readonly word: string; readonly relationType: RelationType }[] {
-  const value = field(raw, 'distractors');
+  const value = raw.distractors === undefined ? [] : raw.distractors;
   if (!Array.isArray(value)) throw new RangeError('distractors is not an array');
   return value.map((entry, i) => {
     if (typeof entry !== 'object' || entry === null) {

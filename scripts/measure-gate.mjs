@@ -62,7 +62,7 @@ for (const file of batchFiles) {
   records.forEach((record, i) => {
     // Counted from the record itself, ⛔ never as records.length × 2: D-022 fixes two
     // examples per sense, and a count that assumes the rule cannot detect it breaking.
-    sentencesGated += Object.keys(record.sense.examples).length;
+    sentencesGated += Object.keys(record.sense.examples ?? {}).length; // T-353: null = word-only
     itemStemsGated += record.sense.items.length;
     const result = gateSense(record.sense, { allowedWords });
     outcomes.push({

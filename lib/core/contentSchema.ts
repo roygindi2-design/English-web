@@ -57,7 +57,15 @@ export interface GeneratedSense {
   readonly pos: Pos;
   readonly translationHe: string;
   readonly definitionEn: string;
-  readonly examples: { readonly supportive: string; readonly neutral: string };
+  /**
+   * T-353 · Roy 14/09 («more words, drop the sentences; exercises come later for specific
+   * words»): a word with a correct `translationHe` and ⛔ no sentences TEACHES; a word
+   * that was never written teaches nothing. ⇒ `null` = the row carries no example pair.
+   * `items` and `distractors` are both empty on such a row — they come TOGETHER or not at
+   * all, because an item with no distractors is an exercise with no options.
+   * ⛔ `translationHe` stays mandatory: it is the whole of what a word-only row teaches.
+   */
+  readonly examples: { readonly supportive: string; readonly neutral: string } | null;
   readonly items: readonly GeneratedItem[];
   readonly distractors: readonly { readonly word: string; readonly relationType: RelationType }[];
 }
@@ -436,12 +444,19 @@ export function gateSense(input: GeneratedSense, opts: GateOptions): GateResult 
     if (drift.length > 0) reasons.push(`${label}: level drift on ${drift.map((w) => `"${w}"`).join(', ')}`);
   };
 
-  // --- examples ---
-  for (const kind of ['supportive', 'neutral'] as const) {
-    const text = input.examples[kind];
-    if (!containsHeadword(text, forms)) reasons.push(`example ${kind}: headword missing`);
-    checkSentence(`example ${kind}`, text, maxWords);
+  // --- examples --- (T-353: optional as a PAIR; present ⇒ both are gated in full)
+  if (input.examples !== null) {
+    for (const kind of ['supportive', 'neutral'] as const) {
+      const text = input.examples[kind];
+      if (!containsHeadword(text, forms)) reasons.push(`example ${kind}: headword missing`);
+      checkSentence(`example ${kind}`, text, maxWords);
+    }
   }
+
+  // T-353: a word-only row carries ⛔ no items and ⛔ no distractors. Either one alone is
+  // half an exercise ⇒ rejected, and once either is present the full floors apply.
+  const wordOnly = input.items.length === 0 && input.distractors.length === 0;
+  if (wordOnly) return { ok: reasons.length === 0, reasons };
 
   // --- items ---
   if (input.items.length < 3) reasons.push('items: fewer than 3');

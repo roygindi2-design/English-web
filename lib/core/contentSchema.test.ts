@@ -499,3 +499,36 @@ describe('locateTarget bounds what it dares call "the target word" (review C-001
     expect(at('Turn the small light off.', 'turn off')).toBe('Turn the small light off');
   });
 });
+
+describe('T-353 — a word with no sentences is a legal row; a word with no translation is not', () => {
+  const wordOnly = { ...ok, examples: null, items: [], distractors: [] };
+
+  it('accepts a word-only sense — ⓔ, the row that passes', () => {
+    expect(gateSense(wordOnly, opts)).toEqual({ ok: true, reasons: [] });
+  });
+
+  it('⛔ still rejects a word-only sense whose translation is not Hebrew — ⓔ, the row that still fails', () => {
+    for (const translationHe of ['', 'deliberate', 'מְכֻוָּן']) {
+      const r = gateSense({ ...wordOnly, translationHe }, opts);
+      expect(r.ok, translationHe).toBe(false);
+      expect(r.reasons.some((x) => x.startsWith('translation:')), translationHe).toBe(true);
+    }
+  });
+
+  it('⛔ still rejects a word-only sense with no definition or no headword', () => {
+    expect(gateSense({ ...wordOnly, definitionEn: ' ' }, opts).reasons).toContain('definition: empty');
+    expect(gateSense({ ...wordOnly, headword: '' }, opts).reasons).toContain('headword: empty');
+  });
+
+  it('an example pair that IS present is gated in full, even with no items', () => {
+    const r = gateSense({ ...wordOnly, examples: { ...ok.examples, neutral: 'Her answer was quick.' } }, opts);
+    expect(r.reasons).toContain('example neutral: headword missing');
+  });
+
+  it('⛔ items without distractors, or distractors without items, is half an exercise ⇒ rejected', () => {
+    expect(gateSense({ ...wordOnly, items: ok.items }, opts).reasons).toContain(
+      'distractors: fewer than 4 scorable (near_synonym does not count)',
+    );
+    expect(gateSense({ ...wordOnly, distractors: ok.distractors }, opts).reasons).toContain('items: fewer than 3');
+  });
+});

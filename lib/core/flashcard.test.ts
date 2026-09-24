@@ -13,7 +13,10 @@ import type { GeneratedSense } from './contentSchema';
 // GeneratedSense plus the one field CardSense adds. Typed as the intersection rather
 // than as CardSense so the fixture still fails typecheck if a required field of the
 // stored shape is dropped — the reason it was pinned to GeneratedSense in the first place.
-const sense: GeneratedSense & { readonly needsHumanReview: boolean } = {
+const sense: GeneratedSense & {
+  readonly needsHumanReview: boolean;
+  readonly examples: NonNullable<GeneratedSense['examples']>;
+} = {
   headword: 'deliberate',
   pos: 'adjective',
   translationHe: 'מכוון',
@@ -109,6 +112,17 @@ describe('buildCard — which example', () => {
     expect(buildCard(s, 'recognition', { isFirstEncounter: true }).back.example).toBe(
       sense.examples.neutral,
     );
+  });
+
+  it('T-353 ⓓ: a word-only sense (examples null) is a card with no example — ⛔ never a throw, ⛔ never "undefined"', () => {
+    const s = { ...sense, examples: null };
+    for (const d of BOTH) {
+      for (const ctx of [later, { isFirstEncounter: true }]) {
+        const c = buildCard(s, d, ctx);
+        expect(c.back.example).toBeNull();
+        expect(JSON.stringify(c)).not.toContain('undefined');
+      }
+    }
   });
 
   it('renders no example rather than an empty one when both sentences are missing', () => {

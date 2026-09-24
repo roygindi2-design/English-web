@@ -153,3 +153,11 @@ describe('the gate is the caller’s job — R-014', () => {
     expect(rows.examples.filter((row) => row.headword === 'always')).toHaveLength(2);
   });
 });
+
+describe('T-353 — a word-only record emits ⛔ no scoring rows, never blank ones', () => {
+  it('examples null · items [] · distractors [] ⇒ 0 · 0 · 0, next to a full record untouched', () => {
+    const rows = scoringRowsFor([record({ examples: null, items: [], distractors: [] }), record({ headword: 'often' })]);
+    expect(scoringCounts(rows)).toEqual({ examples: 2, items: 2, distractors: 2 });
+    for (const r of [...rows.examples, ...rows.items, ...rows.distractors]) expect(r.headword).toBe('often');
+  });
+});

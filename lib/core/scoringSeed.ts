@@ -60,8 +60,10 @@ export function scoringRowsFor(records: readonly BatchRecord[]): ScoringRows {
     const senseIndex = record.senseIndex;
     const identity = { headword, pos, senseIndex };
 
-    for (const kind of EXAMPLE_KINDS) {
-      examples.push({ ...identity, kind, textEn: record.sense.examples[kind] });
+    // T-353: a word-only row has ⛔ no example pair ⇒ ⛔ no `sense_examples` row, never a blank one.
+    const pair = record.sense.examples;
+    if (pair !== null) {
+      for (const kind of EXAMPLE_KINDS) examples.push({ ...identity, kind, textEn: pair[kind] });
     }
 
     record.sense.items.forEach((item, itemIndex) => {

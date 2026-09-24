@@ -122,3 +122,31 @@ describe('parseBatchRecord', () => {
     expect(parseBatchFile(`${JSON.stringify(ROW)}\n`)).toHaveLength(1);
   });
 });
+
+describe('T-353 — a word-only batch row', () => {
+  const { examples: _e, items: _i, distractors: _d, ...WORD_ONLY } = ROW;
+
+  it('parses with examples null and no items or distractors', () => {
+    const r = parseBatchRecord(WORD_ONLY);
+    expect(r.sense.examples).toBeNull();
+    expect(r.sense.items).toEqual([]);
+    expect(r.sense.distractors).toEqual([]);
+    expect(r.sense.translationHe).toBe('מעטים');
+  });
+
+  it('`examples: null` is the same declared absence', () => {
+    expect(parseBatchRecord({ ...WORD_ONLY, examples: null }).sense.examples).toBeNull();
+  });
+
+  it('⛔ translation_he is still required', () => {
+    const { translation_he: _t, ...noHebrew } = WORD_ONLY;
+    expect(() => parseBatchRecord(noHebrew)).toThrow(/translation_he/);
+  });
+
+  it('⛔ a malformed value is still malformed — only ABSENCE is legal', () => {
+    expect(() => parseBatchRecord({ ...WORD_ONLY, items: null })).toThrow(/items is not an array/);
+    expect(() => parseBatchRecord({ ...WORD_ONLY, distractors: 'x' })).toThrow(/distractors is not an array/);
+    expect(() => parseBatchRecord({ ...WORD_ONLY, examples: [] })).toThrow(/examples is not an object/);
+    expect(() => parseBatchRecord({ ...WORD_ONLY, examples: { supportive: 'a' } })).toThrow(/neutral/);
+  });
+});
