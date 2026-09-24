@@ -10,7 +10,8 @@ describe('BlockKeyboard — T-461, renders kol-C-14 … kol-C-17', () => {
     for (const s of ['מה יכול לבוא עכשיו', 'כל בחירה מחליפה את הסט הבא', 'הרכב משפט מהבלוקים']) {
       expect(CODE, s).toContain(s);
     }
-    expect(CODE).toMatch(/countHe\(view\.count\)/);
+    // T-465ⓑ: the counter shows the set as filtered by the category row.
+    expect(CODE).toMatch(/countHe\(shown\.length\)/);
   });
 
   it('`39 § 3` palette lives in the scoped token file, ⛔ never in palette.ts, and verbs are ⛔ not red', () => {

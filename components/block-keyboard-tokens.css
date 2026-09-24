@@ -30,11 +30,12 @@
   }
 }
 
-[data-block-keyboard] [data-pos='verb'] { --pos: var(--pos-verb); }
-[data-block-keyboard] [data-pos='noun'] { --pos: var(--pos-noun); }
-[data-block-keyboard] [data-pos='adjective'] { --pos: var(--pos-adjective); }
-[data-block-keyboard] [data-pos='conjunction'] { --pos: var(--pos-conjunction); }
-[data-block-keyboard] [data-pos='pronoun'] { --pos: var(--pos-pronoun); }
+/* T-465: the category chips wear the same five values (`data-chip`, ⛔ not a block). */
+[data-block-keyboard] [data-pos='verb'], [data-block-keyboard] [data-chip='verb'] { --pos: var(--pos-verb); }
+[data-block-keyboard] [data-pos='noun'], [data-block-keyboard] [data-chip='noun'] { --pos: var(--pos-noun); }
+[data-block-keyboard] [data-pos='adjective'], [data-block-keyboard] [data-chip='adjective'] { --pos: var(--pos-adjective); }
+[data-block-keyboard] [data-pos='conjunction'], [data-block-keyboard] [data-chip='conjunction'] { --pos: var(--pos-conjunction); }
+[data-block-keyboard] [data-pos='pronoun'], [data-block-keyboard] [data-chip='pronoun'] { --pos: var(--pos-pronoun); }
 
 /* A coloured block: tinted fill + coloured outline + the solid bar. The word stays in
    `--ink`, so the text contrast is the product's own and ⛔ not the category colour's. */
@@ -42,6 +43,13 @@
   background: color-mix(in srgb, var(--pos) 16%, transparent);
   border-color: var(--pos);
 }
-[data-block-keyboard] [data-pos-bar] {
+[data-block-keyboard] [data-chip] {
+  border-color: var(--pos);
+}
+[data-block-keyboard] [data-chip][aria-pressed='true'] {
+  background: color-mix(in srgb, var(--pos) 16%, transparent);
+}
+[data-block-keyboard] [data-pos-bar],
+[data-block-keyboard] [data-chip-dot] {
   background: var(--pos);
 }

@@ -3,7 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet } from '@/lib/api/client';
-import { colourOf, countHe, keyboardView, labelOf, type KeyboardView } from '@/lib/core/blockKeyboard';
+import {
+  chipsFor,
+  colourOf,
+  countHe,
+  filterBlocks,
+  keyboardView,
+  labelOf,
+  type KeyboardView,
+  type PosColour,
+} from '@/lib/core/blockKeyboard';
 import type { Block, ContinuationLevel, NextBlocks } from '@/lib/core/continuations';
 import { RETRY_HE } from '@/lib/core/failure';
 import './block-keyboard-tokens.css';
@@ -33,6 +42,7 @@ export const FOOTER_HE = 'כל בחירה מחליפה את הסט הבא';
 const SEND_HE = 'שליחה';
 const BACK_HE = 'מחיקת הבלוק האחרון';
 const LOADING_HE = 'טוען המשכים…';
+export const CHIPS_HE = 'סינון לפי קטגוריה';
 
 export type KeyboardStatus = 'loading' | 'ready' | 'error';
 
@@ -55,6 +65,52 @@ function PosBlock({ block, onPick }: { readonly block: Block; readonly onPick: (
         {labelOf(block.pos)}
       </span>
     </button>
+  );
+}
+
+/**
+ * T-465 · `39 § 3` — the category row under `מה יכול לבוא עכשיו`. A chip narrows the set
+ * to one pos; a second tap clears it. Pressed state is `aria-pressed` + a check glyph + a
+ * heavier outline, ⛔ never the tint alone. `data-chip` (⛔ not `data-pos`): a chip is ⛔ not
+ * a block, so it prints its category name and ⛔ not a legend (`BlockKeyboard.legend.test`).
+ * One line that scrolls sideways inside itself at 320px — ⛔ never the page.
+ */
+function CategoryRow({
+  blocks,
+  active,
+  onToggle,
+}: {
+  readonly blocks: readonly Block[];
+  readonly active: PosColour | null;
+  readonly onToggle: (colour: PosColour) => void;
+}) {
+  const chips = chipsFor(blocks);
+  if (chips.length === 0) return null;
+  return (
+    <div role="group" aria-label={CHIPS_HE} className="-mx-3 mt-2 flex gap-2 overflow-x-auto px-3 pb-1">
+      {chips.map((c) => {
+        const on = active === c.colour;
+        return (
+          <button
+            key={c.colour}
+            type="button"
+            data-chip={c.colour}
+            aria-pressed={on}
+            onClick={() => onToggle(c.colour)}
+            className={`flex min-h-touch shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-sm font-semibold text-ink transition-transform duration-150 active:scale-[0.97] motion-reduce:transition-none ${on ? 'border-2' : 'border'}`}
+          >
+            {on ? (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+            ) : (
+              <span aria-hidden="true" data-chip-dot className="h-2 w-2 rounded-full" />
+            )}
+            {c.he}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -128,6 +184,10 @@ export function BlockKeyboardView({
   readonly onRetry?: () => void;
   readonly onSend?: () => void;
 }) {
+  // T-465: the filter belongs to ONE set — a new set (a pick, back, a retry) clears it.
+  const [filter, setFilter] = useState<PosColour | null>(null);
+  useEffect(() => setFilter(null), [view]);
+  const shown = view ? filterBlocks(view.blocks, filter) : [];
   return (
     <div className="flex flex-col gap-3">
       <ComposeBar chosen={chosen} canSend={view?.canSend ?? false} onSend={onSend} />
@@ -136,7 +196,7 @@ export function BlockKeyboardView({
         <div className="relative flex min-h-[20px] items-center">
           <span aria-hidden="true" className="mx-auto block h-1 w-10 rounded-full bg-border-strong" />
           <p dir="ltr" className="absolute left-0 text-xs text-ink-muted" aria-live="polite">
-            <span dir="rtl">{view ? countHe(view.count) : ''}</span>
+            <span dir="rtl">{view ? countHe(shown.length) : ''}</span>
           </p>
         </div>
         {/* Row 2 (`:129-135`): label + category chip on the right. ⚠️ Declared: the back
@@ -161,6 +221,9 @@ export function BlockKeyboardView({
             </svg>
           </button>
         </div>
+        {status === 'ready' && view ? (
+          <CategoryRow blocks={view.blocks} active={filter} onToggle={(c) => setFilter((f) => (f === c ? null : c))} />
+        ) : null}
         {status === 'loading' ? <p className="mt-3 text-xs text-ink-muted">{LOADING_HE}</p> : null}
         {status === 'error' ? (
           <button
@@ -172,8 +235,8 @@ export function BlockKeyboardView({
           </button>
         ) : null}
         {status === 'ready' && view ? (
-          <div className="mt-3 flex max-h-[40dvh] flex-wrap gap-2 overflow-y-auto">
-            {view.blocks.map((b) => (
+          <div data-testid="block-set" className="mt-3 flex max-h-[40dvh] flex-wrap gap-2 overflow-y-auto">
+            {shown.map((b) => (
               <PosBlock key={b.word} block={b} onPick={() => onPick(b)} />
             ))}
           </div>

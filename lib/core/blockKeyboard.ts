@@ -70,3 +70,29 @@ export function countHe(n: number): string {
   if (n === 1) return 'המשך אפשרי אחד';
   return `${n} המשכים אפשריים`;
 }
+
+/**
+ * T-465 · `39 § 3` — the category row: «שורת קטגוריות לעיון: `פתיחה` · `פעלים` ·
+ * `שמות עצם` · `תארים` · `חיבור`». Spec order and spec strings.
+ * ⚠️ `פתיחה` is ⛔ not a pos; the render paints it in the pronoun colour
+ * (`docs/design/msgs_ui.py:119-120`, `"פתיחה": "P"`) ⇒ it narrows to pronouns, which is
+ * what the opening set is made of (T-464: `I · he · she · you · … · we · they`).
+ * ⛔ No chip for determiner/preposition/adverb, and `pos: null` sits in ⛔ no chip.
+ */
+export const CATEGORY_CHIPS: readonly { readonly colour: PosColour; readonly he: string }[] = Object.freeze([
+  { colour: 'pronoun', he: OPENING_HE },
+  { colour: 'verb', he: 'פעלים' },
+  { colour: 'noun', he: 'שמות עצם' },
+  { colour: 'adjective', he: 'תארים' },
+  { colour: 'conjunction', he: 'חיבור' },
+]);
+
+/** The set narrowed to one colour, in the order it came (T-464) — `null` is no filter. */
+export function filterBlocks(blocks: readonly Block[], colour: PosColour | null): readonly Block[] {
+  return colour === null ? blocks : blocks.filter((b) => b.pos === colour);
+}
+
+/** The chips worth offering for this set — ⛔ a chip that would empty the sheet is dropped. */
+export function chipsFor(blocks: readonly Block[]): { colour: PosColour; he: string; count: number }[] {
+  return CATEGORY_CHIPS.map((c) => ({ ...c, count: filterBlocks(blocks, c.colour).length })).filter((c) => c.count > 0);
+}
