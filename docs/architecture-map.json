@@ -235,6 +235,23 @@
     "lib/supabase/auth.ts",
     "lib/supabase/postgrest.ts"
   ],
+  "app/api/world/classes/join/route.ts": [
+    "lib/core/classCode.ts",
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
+  "app/api/world/classes/mine/route.ts": [
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
+  "app/api/world/classes/route.test.ts": [
+    "app/api/world/classes/route.ts",
+    "lib/server/classFailure.ts"
+  ],
+  "app/api/world/classes/route.ts": [
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/lexicalClassOnly.test.ts": [
     "lib/testSource.ts"
   ],
@@ -1901,6 +1918,7 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
+  "lib/server/classFailure.ts": [],
   "lib/server/continuationsTree.ts": [
     "lib/core/continuations.ts"
   ],
