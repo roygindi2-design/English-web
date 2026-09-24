@@ -538,8 +538,13 @@
   "app/dev/messages/wall-fixture.ts": [
     "lib/core/wallFeed.ts"
   ],
+  "app/dev/messages/wall/PickerDemo.tsx": [
+    "components/WallPicture.tsx",
+    "lib/core/wallFeed.ts"
+  ],
   "app/dev/messages/wall/page.tsx": [
     "app/dev/messages/wall-fixture.ts",
+    "app/dev/messages/wall/PickerDemo.tsx",
     "components/ClassJoin.tsx",
     "components/ClassWall.tsx",
     "components/InboxList.tsx"
@@ -1051,6 +1056,10 @@
     "components/ClassWall.tsx",
     "components/WallPicture.tsx",
     "lib/core/wallFeed.ts"
+  ],
+  "components/ClassWall.picture.dom.test.tsx": [
+    "components/ClassWall.tsx",
+    "components/WallPicture.tsx"
   ],
   "components/ClassWall.tsx": [
     "components/EnWord.tsx",

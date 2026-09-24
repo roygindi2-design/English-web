@@ -39,6 +39,7 @@ export function WallReplySheet({
   onSend,
   onClose,
   keyboard,
+  picture,
 }: {
   readonly open: boolean;
   /** Sending: kept mounted (the draft lives in the keyboard) but ⛔ not shown. */
@@ -50,6 +51,8 @@ export function WallReplySheet({
   readonly onClose: () => void;
   /** Tests and the dev fixture inject a keyboard; the live screen uses `<BlockKeyboard>`. */
   readonly keyboard?: ReactNode;
+  /** T-486 — the question sheet only: the opener's picture picker, above the keyboard. */
+  readonly picture?: ReactNode;
 }) {
   if (!open) return null;
   return (
@@ -73,6 +76,7 @@ export function WallReplySheet({
         </button>
       </div>
       {questionEn ? <p className="truncate text-sm text-ink-muted"><EnWord>{questionEn}</EnWord></p> : null}
+      {picture ? <div className="mt-2 shrink-0">{picture}</div> : null}
       {failed ? <p role="alert" className="mt-1 text-sm font-semibold text-danger">{NOT_SENT_HE}</p> : null}
       <div className="mt-2 min-h-0 flex-1 overflow-y-auto">
         {keyboard ?? <BlockKeyboard level="B2" onSend={(w) => onSend(w)} />}

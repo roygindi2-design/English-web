@@ -2,6 +2,7 @@ import { ClassJoinView } from '@/components/ClassJoin';
 import { ClassWallView } from '@/components/ClassWall';
 import { InboxListView } from '@/components/InboxList';
 import { FIXTURE_WALL, FIXTURE_WALL_NOW } from '../wall-fixture';
+import PickerDemo from './PickerDemo';
 
 /**
  * T-469 — the `הקיר` tab at 320/375/414: the join form with its six cells, then a learner
@@ -24,6 +25,7 @@ export default function DevMessagesWallPage() {
           />
         }
       />
+      <PickerDemo />
     </main>
   );
 }

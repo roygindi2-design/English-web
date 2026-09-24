@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
-import WallPicture from '@/components/WallPicture';
+import WallPicture, { WallPicturePicker } from '@/components/WallPicture';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { RETRY_HE } from '@/lib/core/failure';
-import { wallSentence, wallTimeLabel, type WallPost, type WallReply } from '@/lib/core/wallFeed';
+import { toWallPictureKey, wallSentence, wallTimeLabel, type WallPictureKey, type WallPost, type WallReply } from '@/lib/core/wallFeed';
 import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
 
 /**
@@ -207,7 +207,7 @@ export function ClassWallView({ state, nowIso, expanded = {}, onShowAll = () => 
 type FeedBody = { ok: true; amOpener?: boolean; posts: readonly WallPost[] } | { ok: false; code: string };
 type RepliesBody = { ok: true; replies: readonly WallReply[] } | { ok: false; code: string };
 type LikeBody = { ok: true; liked: boolean; likes: number } | { ok: false; code: string };
-type WriteBody = { ok: true; id: string | null; createdAt: string | null; bodyEn: string } | { ok: false; code: string };
+type WriteBody = { ok: true; id: string | null; createdAt: string | null; bodyEn: string; pictureKey?: string | null } | { ok: false; code: string };
 
 /** Flip one like in the feed, locally. `to` = the server's answer; absent = the optimistic flip. */
 export function applyLike(posts: readonly WallPost[], t: LikeTarget, to?: { liked: boolean; likes: number }): readonly WallPost[] {
@@ -224,6 +224,8 @@ interface Sheet {
   readonly postId: string | null;
   readonly sending: boolean;
   readonly failed: boolean;
+  /** T-486 — the question's picture. Lives in the SHEET's state ⇒ a failed send keeps it. */
+  readonly pictureKey?: WallPictureKey;
 }
 
 /** Live: `GET /api/world/classes/[id]/wall`; «show all» reads `…/[postId]/replies` and opens IN PLACE. */
@@ -295,12 +297,18 @@ export default function ClassWall({ classId }: { readonly classId: string }): Re
       }
       return;
     }
-    const mine: WallPost = { id: temp, bodyEn: text, createdAt, byOpener: true, mine: true, likes: 0, likedByMe: false, replyCount: 0, top: [] };
+    const pictureKey = sheet.pictureKey;
+    const mine: WallPost = { id: temp, bodyEn: text, createdAt, byOpener: true, mine: true, ...(pictureKey ? { pictureKey } : {}), likes: 0, likedByMe: false, replyCount: 0, top: [] };
     setPosts((ps) => [mine, ...ps]);
     try {
-      const body = await apiPost<WriteBody>(`/api/world/classes/${classId}/wall`, { words });
+      const body = await apiPost<WriteBody>(`/api/world/classes/${classId}/wall`, pictureKey ? { words, pictureKey } : { words });
       if (!body.ok) throw new Error(body.code);
-      setPosts((ps) => ps.map((p) => (p.id === temp ? { ...p, id: body.id ?? temp, bodyEn: body.bodyEn } : p)));
+      const stored = toWallPictureKey(body.pictureKey);
+      setPosts((ps) => ps.map((p) => {
+        if (p.id !== temp) return p;
+        const { pictureKey: _drop, ...rest } = p;
+        return { ...rest, id: body.id ?? temp, bodyEn: body.bodyEn, ...(stored ? { pictureKey: stored } : {}) };
+      }));
       setSheet(null);
     } catch {
       setPosts((ps) => ps.filter((p) => p.id !== temp));
@@ -327,6 +335,9 @@ export default function ClassWall({ classId }: { readonly classId: string }): Re
         kind={sheet?.kind ?? 'reply'}
         questionEn={questionEn}
         failed={sheet?.failed ?? false}
+        picture={sheet?.kind === 'question' ? (
+          <WallPicturePicker value={sheet.pictureKey} onChange={(k) => setSheet((s) => (s ? { ...s, pictureKey: k } : s))} />
+        ) : undefined}
         onSend={(w) => { void send(w); }}
         onClose={() => setSheet(null)}
       />

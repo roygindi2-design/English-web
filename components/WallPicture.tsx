@@ -138,10 +138,18 @@ const SCENES: Readonly<Record<WallPictureKey, (id: string) => ReactNode>> = {
   ),
 };
 
+/** The bare drawing, cropped to fill whatever box it is put in (`slice`). */
+function SceneSvg({ pictureKey }: { readonly pictureKey: WallPictureKey }) {
+  return (
+    <svg aria-hidden viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="block h-full w-full">
+      {SCENES[pictureKey](`wall-sky-${pictureKey}`)}
+    </svg>
+  );
+}
+
 /** Draws the scene, or ⛔ nothing at all when the key is not in the gallery. */
 export default function WallPicture({ pictureKey, className = '' }: { readonly pictureKey: WallPictureKey | undefined; readonly className?: string }) {
   if (!pictureKey || !(pictureKey in SCENES)) return null;
-  const id = `wall-sky-${pictureKey}`;
   return (
     <div
       data-wall-picture={pictureKey}
@@ -150,9 +158,52 @@ export default function WallPicture({ pictureKey, className = '' }: { readonly p
       className={`overflow-hidden rounded-xl border border-ink-muted/20 ${className}`}
       style={{ aspectRatio: `${W} / ${H}` }}
     >
-      <svg aria-hidden viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="block h-full w-full">
-        {SCENES[pictureKey](id)}
-      </svg>
+      <SceneSvg pictureKey={pictureKey} />
+    </div>
+  );
+}
+
+export const NO_PICTURE_HE = 'בלי תמונה';
+export const PICTURE_PICKER_HE = 'תמונה לשאלה';
+
+/**
+ * T-486 · D-291 — the opener picks the picture for a new question: one horizontally
+ * scrolling row of nine tiles, `בלי תמונה` first (on the right, RTL) and then the eight
+ * scenes. Every tile ≥ 44×44; the chosen one carries a `--brand` ring AND `aria-pressed`
+ * AND a check mark — ⛔ never the ring (colour) alone. The row scrolls inside itself, ⛔ the
+ * page never scrolls sideways. Picking animates nothing but the press (emil-design-eng:
+ * a choice the finger makes ⇒ feedback, ⛔ no entrance); the preview is the card's own size.
+ */
+export function WallPicturePicker({ value, onChange }: { readonly value: WallPictureKey | undefined; readonly onChange: (k: WallPictureKey | undefined) => void }) {
+  const tiles: readonly (WallPictureKey | undefined)[] = [undefined, ...WALL_PICTURE_KEYS];
+  return (
+    <div data-wall-picture-picker>
+      <p className="text-xs font-semibold text-ink-muted">{PICTURE_PICKER_HE}</p>
+      <div role="group" aria-label={PICTURE_PICKER_HE} className="-mx-1 mt-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {tiles.map((k) => {
+          const on = k === value;
+          const label = k ? WALL_PICTURE_LABEL_HE[k] : NO_PICTURE_HE;
+          return (
+            <button
+              key={k ?? 'none'}
+              type="button"
+              data-wall-picture-tile={k ?? 'none'}
+              aria-pressed={on}
+              aria-label={label}
+              onClick={() => onChange(k)}
+              className={`relative flex h-12 min-h-touch w-16 min-w-touch shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-surface-raised text-center text-xs font-semibold leading-tight text-ink-muted transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none ${on ? 'border-transparent ring-2 ring-brand' : 'border-ink-muted/25'}`}
+            >
+              {k ? <SceneSvg pictureKey={k} /> : <span aria-hidden>{NO_PICTURE_HE}</span>}
+              {on ? (
+                <span aria-hidden className="absolute bottom-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-surface text-brand-on">
+                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      <WallPicture pictureKey={value} className="mt-2" />
     </div>
   );
 }
