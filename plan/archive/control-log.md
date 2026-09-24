@@ -620,3 +620,41 @@ loop(DEV): C-0784 build — T-445 · T-448 🟣 (arena); T-427 ⛔ F-319; ended:
 - `C-0820` (DEV · 2026-09-24T21:06Z–21:19Z) — focus `amirnet` (⬜=3, stayed): `T-490` 🟣 (practice: `תרגל` on the bar row, 950⇒852/812, reason line above the tab bar) · `T-491` 🟣 (result facts side by side + levels state beside its description, 978⇒852/812 both) · `T-492` 🟣 (dashboard cards py-3, 874⇒812; simulation 823⇒812 was the `/dev` wrapper's py-6 alone). `amirnet` ⬜ for DEV = 0 ⇒ NEXT_AGENT=QA.
 
 - `C-0823` (DEV · 2026-09-24T23:06Z–23:21Z) — loop(DEV): C-0823 idle — QA lock `C-0822` from 22:47Z (34 min, under 90) held through ~14 min of Smart Wait; yielded, zero work commits. `origin/dev..origin/work/current` = 0. Queue measured: `36 § 13` ⬜ for DEV = 0 (`msgs` holds only `T-193`, CONTENT); `F-329` already fixed in code (`ClassJoin.tsx:83-84,175` carry `motion-reduce:transform-none`) — register row is stale. Arena free-hand finish (summary panels/values/title + boss-track nodes to `render_video_B.py`) was built and `verify:fast` green but NOT pushed under the foreign lock — next DEV tick redoes it.
+
+### SEALS · amirnet — נמדדו C-0822 (QA, מלא) לפני הזזת המוקד → msgs
+
+```
+# --- SEALS · amirnet (36 § 13.1 · § 41 § 8-1..4) · נמדד C-0822, 24/09 ---
+# ⬜=0. T-490…T-492 מוזגו בטיק הזה ⇒ dev (ff-only, cbf56539). ⓑ נמדדה חי: 393×852/375×812,
+# overflow 0 בארבעת מסכי האמירנט (Playwright חי + npm run verify, 5030 בדיקות check:mobile ירוקות).
+#   ⓐ הגעה — נמדדה חי היום מול ה-**פרודקשן** (Kernel, ⛔ לא /dev/*): בית ללא חשבון = "בואו נתחיל"/"התחברות"
+#     בלבד ⇒ ⛔ אין מסלול הקשות לאמירנט בלי חשבון — זהה למדידת C-0677, ⛔ לא השתנה. `/world/amirnet`
+#     בכתובת מוקלדת עונה 200 ומצייר מסך session_expired תקין (⛔ לא תקוע, ⛔ לא 503).
+#   ⓑ פעילות — כמו C-0677: אימות קוד+בדיקות (20/20 amirnetPractice/Attempts; POST מאמת session,
+#     ⛔ upsert). ⛔ עדיין לא על session אמיתי — אותו חסם env (`03-for-roy` 73/77, QA חסר נתיב session
+#     בטיק מתוזמן). 🆕 נמדד חי היום: מסך session_expired של הדשבורד (`AmirnetDashboardLive.tsx:145`)
+#     ⛔ אינו מציג קישור "התחברות מחדש" בגוף המסך (בניגוד ל-`lib/core/failureExit.ts` שאר המסכים
+#     משתמשים בו) — ⛔ אינו מבוי סתום: לחיצה על "אני" בסרגל התחתון (`/me`) מפנה חי ל-`/login?expired=1`
+#     עם מסך התחברות תקין. ⇒ ממצא קטן, ⛔ לא חוסם (F- ראו plan/60-findings.md, פתוח → DEV).
+#   ⓒ שמירה — לא אומתה חי (אותו חסם env). קוד: `amirnet_practice_attempts` INSERT מוגן RLS, נקרא
+#     בחזרה ב-GET, מוזן לדשבורד.
+# ⇒ (D-116) amirnet = **נמסרה**. ⓐ מלאה (ללא חשבון: לא נגיש — תואם שאר המוצר) · ⓑⓒ קוד+בדיקות
+#   בלבד, אותו פער בכלי הבדיקה של QA שנמדד ב-C-0677 — ⛔ לא פגם במוצר. יעד ② (מסכים לא גולשים)
+#   הושג ואומת חי היום. ⛔ נותר פתוח: T-312 (חסומה ב-T-309) · T-324 (חסומה ב-F-262/`for-roy` 126,
+#   מפתח Supabase של רוי). ⇒ plan/61-deferred.md.
+```
+
+### 🧹 C-0822 (QA) — 32 שורות 🟣 שהיו כבר ב-`dev` מזמן, ותוקנו לאחור
+
+🔬 **נמדד, ⛔ לא שוער:** לפני שערך הגלגול הזה, `plan/50-tasks.md` נשא **33** שורות מסומנות 🟣
+(«בנוי, מחכה למיזוג»). בדיקת `git merge-base --is-ancestor` על הקומיט המצוטט בכל שורה מול
+`origin/dev` הראתה **32 מתוכן כבר קדמונים של `dev`** — חלקן מאז `C-0729`/`C-0731`…`C-0751`
+(מסכי הקרב, ספטמבר), חלקן `C-0803`…`C-0820` (הקיר · הסיפור · האינבוקס · ארון הציוד · אמירנט).
+`T-288` אף נמדדה ב**`main`** (`22c3cd7`, סשן התפעול 11/09). ⛔ **אף אחת לא הייתה שקר על המוצר** —
+הלומד כבר קיבל את כולן; **הרגיסטר** הוא ששיקר, וזה בדיוק הדפוס של `F-126`. הוחזרו ל-✅ בטיק הזה
+(סקריפט שדק כל שורה בנפרד לפי שדה הסטטוס, ⛔ לא ניחוש), ואז `npm run archive` כיווץ 31 מהן
+(329.7KB⇒261.9KB, 67.7KB נחסכו, ⛔ אפס מחיקה — הנוסח המלא ב-`plan/archive/tasks-archive.md`).
+`T-144` נשארה 🟣 בכוונה — שדה הסטטוס שלה אינו מתחיל ב-🟣 (מבנה שורה חריג, ⛔ לא נבדק כאן) ⇒
+⛔ לא נגעתי בה. **הסיבה שזה נצבר:** ⛔ לא נמדדה כאן — ייתכן שכמה טיקי QA מלאים מיזגו בלי להריץ
+את שלב "flip 🟣 to ✅ in bulk" (STEP אחרי המיזוג ב-`QA.md`). ⇒ פריט ל-PM/רוי: לבדוק אם השלב הזה
+נדלג בטיקים קודמים ולמה.
