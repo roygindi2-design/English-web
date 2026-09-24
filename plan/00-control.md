@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                     # ▶️ C-0819 (PM): `amirnet` — `T-490`·`T-491`·`T-492` ⬜ (המסכים נכנסים במסך אחד, `kol-D-02/03/07`). `arena` 🟣 T-487…T-489 ממתינות ל-QA.
-STATE: BUILDING                # ▶️ C-0819 (PM): 3 ⬜ חדשות ב-`amirnet`.
+NEXT_AGENT: QA                     # ▶️ C-0820 (DEV): `amirnet` — `T-490`·`T-491`·`T-492` 🟣 (ארבעת המסכים נכנסים במסך אחד ב-393×852 וב-375×812, טענות ב-`check:mobile`). `amirnet` ⬜ ל-DEV=0; יעד ② של `05-departments` הושג על נתיבי ה-`/dev`.
+STATE: BUILDING                # ▶️ C-0820 (DEV): 3 🟣 חדשות ב-`amirnet`, ממתינות למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T20:53:08Z"   # C-0819 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-24T21:18:49Z"   # C-0820 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0820 (DEV) — amirnet T-490…T-492.
@@ -15,7 +15,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   cards:  21 / 120           # § 13-3 · **⛔ אינה המוקד.** ⬜=**0** — `T-413` 🟣 ב-`C-0705` (חריג ה-🔴 של `F-277`, החצי השני שלו) ⇒ ⛔ **⛔ לא הזזת מוקד**: הריקון קרה בזרימה שאינה המוקד. 🟣=2 · ⛔=1 (`T-237`). חוב ⇒ `plan/61-deferred.md`
 #   arena:  40 / 120          # § 13-4 · **המוקד** (←`msgs`, `C-0817` PM). ⬜=3 (`T-487`…`T-489`, ארון הציוד) · 🟣=11 · ⛔=4.
 #   studies: 10 / 120         # § 13-5 · **⛔ אינה המוקד** (→`arena`, `C-0698`). ⬜=**0** · 🟣=2 · ✅=5 · ⛔=1 (`C-0701` QA: T-409·T-410·T-414 🟣⇢✅). חוב ⇒ `plan/61-deferred.md`
-#   amirnet: 25 / 120          # § 41 § 8-1..3 · **נמסרה ⇒ המוקד עבר ל-`cards` ב-`C-0677` (QA).** ⬜=0 · 🟣→✅ 2 (T-372·T-376) · ⛔=2. SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
+#   amirnet: 26 / 120          # § 41 § 8-1..3 · **המוקד** (←`arena`, `C-0819` PM). ⬜=0 · 🟣=3 (`T-490`…`T-492`, `C-0820`) · ⛔=2 (`T-312`·`T-324`). SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    8 / 120           # 39 § 9 · ⛔ **אינה המוקד** (→`arena`, `C-0817` PM). ⬜=1 (`T-193` CONTENT) · 🟣=14 · ⛔=3 (`T-475`…`T-477`, `for-roy` 144). ⇒ `plan/61-deferred.md`
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: amirnet         # ▶️ **הוזז `C-0819` (PM · `§ 0.23 ז׳` ④).** `arena`: 0 יעדים פתוחים ב-`05` (①–⑥ הושגו, ⬜=0, 🟣=14). גלגול: `studies` ⛔ יעד · `msgs` 0 כשירות (`for-roy` 144) ⇒ `amirnet`: 3 מסכים גולשים ב-393×852 (+98·+126·+22px) ⇒ `T-490`…`T-492`. ⛔ אינה חתימה ⇒ `61-deferred`.
 PREV_WORKSTREAM: "arena"     # `C-0819` (PM) — 0 יעדים פתוחים. ⛔ אינה חתומה — נשארת ברוטציה.
-WORKSTREAM_ENDING: amirnet · 3 ⬜ נותרו · 2026-09-24T20:53:08Z · C-0819
+WORKSTREAM_ENDING: amirnet · 0 ⬜ נותרו · 2026-09-24T21:18:49Z · C-0820
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0677 (QA) לפני הזזת המוקד → cards. ⇒ `plan/archive/control-log.md`.)
