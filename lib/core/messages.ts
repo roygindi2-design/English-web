@@ -209,6 +209,8 @@ export interface InboxRow {
   readonly href: string;
   readonly initial: string;
   readonly senderEn: string;
+  /** T-481 — the colour key: a colour belongs to the CONTEXT (`39 § 7`), ⛔ never to a name. */
+  readonly context: MessageContext;
   readonly contextHe: string;
   readonly subjectEn: string;
   readonly previewEn: string;
@@ -223,6 +225,7 @@ export function toInboxRows(items: readonly InboxItem[], nowIso: string, timeZon
     href: `/world/messages/${it.id}`,
     initial: initialOf(it.senderEn),
     senderEn: it.senderEn,
+    context: it.context,
     contextHe: CONTEXT_HE[it.context],
     subjectEn: it.subjectEn,
     previewEn: previewEn(it.bodyEn),

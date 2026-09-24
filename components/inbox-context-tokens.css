@@ -1,0 +1,37 @@
+/* T-481 · `39 § 7` · kol-C-13 — one colour per CONTEXT of the simulation inbox, SCOPED here.
+
+   ⛔ These values ⛔ never enter `lib/core/palette.ts` (the `39 § 3` precedent,
+   `block-keyboard-tokens.css`): a per-context hue is a bounded exception, ⛔ not a second
+   visual language. A colour belongs to the context, ⛔ not to a name — a new character in
+   the same context inherits it.
+   The render's families (Tom amber · Sarah blue · Mr. Levi orchid) take their darker
+   steps on the LIGHT surface — the T-466 pattern. Measured C-0810 (WCAG, text grade):
+     light, on #ffffff / #f8fafc        amber 5.02/4.80 · blue 5.93/5.67 · orchid 6.98/6.67 · teal 5.47/5.23
+     white initial on the avatar fill   5.02 · 5.93 · 6.98 · 5.47
+     dark, on #0f172a / #1e293b         9.75/7.99 · 6.33/5.19 · 6.43/5.27 · 8.42/6.90
+   ⇒ every chip text clears 4.5:1, above the 3:1 the row asked for.
+   ⛔ The colour encodes ⛔ no state: the context is written in words on the chip. */
+[data-inbox-context] {
+  --ctx-on: #ffffff;
+}
+[data-inbox-context='tourist'] { --ctx: #b45309; }
+[data-inbox-context='restaurant'] { --ctx: #0369a1; }
+[data-inbox-context='teacher'] { --ctx: #7e22ce; }
+[data-inbox-context='hotel'] { --ctx: #0f766e; }
+
+@media (prefers-color-scheme: dark) {
+  [data-inbox-context] { --ctx-on: #0f172a; }
+  [data-inbox-context='tourist'] { --ctx: #f2b544; }
+  [data-inbox-context='restaurant'] { --ctx: #5b9bf5; }
+  [data-inbox-context='teacher'] { --ctx: #d178e8; }
+  [data-inbox-context='hotel'] { --ctx: #2ec5c5; }
+}
+
+[data-inbox-context] [data-ctx-avatar] {
+  background: var(--ctx);
+  color: var(--ctx-on);
+}
+[data-inbox-context] [data-ctx-chip] {
+  border-color: var(--ctx);
+  color: var(--ctx);
+}

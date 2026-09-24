@@ -1117,13 +1117,16 @@
   ],
   "components/GlobeIcon.tsx": [],
   "components/InboxList.dom.test.tsx": [
-    "components/InboxList.tsx"
+    "app/dev/messages/messages-fixture.ts",
+    "components/InboxList.tsx",
+    "lib/core/messages.ts"
   ],
   "components/InboxList.test.ts": [],
   "components/InboxList.tsx": [
     "components/ClassJoin.tsx",
     "components/ClassStory.tsx",
     "components/EnWord.tsx",
+    "components/inbox-context-tokens.css",
     "lib/api/client.ts",
     "lib/core/failure.ts",
     "lib/core/failureExit.ts",
@@ -1394,6 +1397,7 @@
   ],
   "components/arenaAnchors.ts": [],
   "components/block-keyboard-tokens.css": [],
+  "components/inbox-context-tokens.css": [],
   "components/rtl-axis.test.ts": [],
   "lib/api/client.test.ts": [
     "lib/api/client.ts"

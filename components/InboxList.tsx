@@ -10,6 +10,7 @@ import { RETRY_HE } from '@/lib/core/failure';
 import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { inboxCountsHe, toInboxRows, type InboxCounts, type InboxItem, type InboxRow } from '@/lib/core/messages';
 import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
+import './inbox-context-tokens.css';
 
 /**
  * תיבת הסימולציות — the list (T-191 · 39 § 7 · D-109). 🎯 Render: docs/design/kol-C-13-inbox.png,
@@ -118,9 +119,10 @@ function Row({ row }: { readonly row: InboxRow }) {
       */}
       <Link
         href={row.href}
+        data-inbox-context={row.context}
         className={`flex min-h-touch gap-3 rounded-2xl border p-3 ${row.unread ? 'border-brand bg-surface-raised' : 'border-surface-raised bg-surface'}`}
       >
-        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-surface text-base font-bold text-brand-on">
+        <span aria-hidden data-ctx-avatar className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold">
           {row.initial}
         </span>
         <span className="min-w-0 flex-1">
@@ -132,8 +134,9 @@ function Row({ row }: { readonly row: InboxRow }) {
               per-sender colour is ⛔ not a `palette.ts` token (D-102, one visual language).
               A `bg-surface-raised` fill made the chip **invisible** on an unread row, whose
               background is that same token — one channel lost. The outline reads on both.
+              T-481 — the outline and the word now wear the CONTEXT's hue (`inbox-context-tokens.css`).
             */}
-            <span className="rounded-lg border border-ink-muted/40 px-2 text-xs font-medium text-ink-muted">{row.contextHe}</span>
+            <span data-ctx-chip className="rounded-lg border px-2 text-xs font-semibold">{row.contextHe}</span>
           </span>
           <span className={`mt-1 block text-sm ${row.unread ? 'font-bold text-ink' : 'text-ink-muted'}`}><EnWord>{row.subjectEn}</EnWord></span>
           <span className="mt-1 block text-xs text-ink-muted"><EnWord>{row.previewEn}</EnWord></span>
