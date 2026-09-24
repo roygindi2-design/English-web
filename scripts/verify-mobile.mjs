@@ -3837,7 +3837,7 @@ try {
       { route: '/dev/amirnet/levels', text: 'עבור רמה 3 כדי לפתוח', tabBar: false,
         sizes: [{ width: 393, height: 852 }, { width: 375, height: 812 }] },
       // T-492 — ההמלצה היחידה בדשבורד, וקישור המקורות שמתחתיה.
-      { route: '/dev/amirnet/dashboard', text: 'לתרגול ממוקד בסוג הזה', tabBar: false,
+      { route: '/dev/amirnet/dashboard', text: 'מומלץ להתחיל שם', tabBar: false,
         sizes: [{ width: 375, height: 812 }, { width: 393, height: 852 }] },
       { route: '/dev/amirnet/dashboard', text: 'מקורות הנתונים והרישיונות', tabBar: false,
         sizes: [{ width: 375, height: 812 }, { width: 393, height: 852 }] },
