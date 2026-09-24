@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import ArenaHome, { type ArenaHomeState } from '@/components/ArenaHome';
 import { LAST_ROUND_SURVIVED_HE, LAST_ROUND_WON_HE } from '@/lib/core/arenaLastRound';
@@ -125,5 +125,47 @@ describe('T-360 · לוח «הקרב האחרון» על מסך הבית', () =>
     expect(panel.querySelectorAll('button, a, [role="button"]').length).toBe(0);
     // ⛔ ולא שבר את שלוש הפעולות של `37 § 12` שכן נלחצות.
     expect(screen.getByText('התחל קרב')).toBeTruthy();
+  });
+});
+
+/**
+ * 🗄️ T-488 · `D-292` — **הארון אומר מה יבוא ומתי, ⛔ ואינו חוזר על שורת «ציוד».**
+ * תרחיש הכישלון שנמדד `C-0817`: הארון הציג את **אותן 4 משבצות** שכבר מעליו.
+ */
+describe('T-488 · ארון הציוד כגיליון', () => {
+  const FIXTURE: ArenaHomeState = { ...BASE, unlockedItems: ['helmet', 'lantern', 'banner'] };
+  function open(): HTMLElement {
+    mount(FIXTURE);
+    fireEvent.click(screen.getByRole('button', { name: 'ארון ציוד' }));
+    return screen.getByRole('dialog', { name: 'ארון ציוד' });
+  }
+
+  it('סגור ⇒ ⛔ אין גיליון', () => {
+    mount(FIXTURE);
+    expect(document.querySelector('[data-arena-closet]')).toBeNull();
+  });
+
+  it('5 אריחים — פריטים, ⛔ לא משבצות — ו-0 תאים כפולים משורת «ציוד»', () => {
+    const sheet = open();
+    const tiles = sheet.querySelectorAll('[data-arena-closet-tile]');
+    expect(tiles).toHaveLength(5);
+    expect(sheet.querySelectorAll('[data-arena-closet-tile="held"]')).toHaveLength(3);
+    for (const slot of ['רגליים', 'גוף']) expect(sheet.textContent).not.toContain(slot);
+  });
+
+  it('⛔ תרחיש הכישלון של T-487: גלימה ב-8, מגפיים ב-9 — ⛔ לא הפוך', () => {
+    const sheet = open();
+    const text = (item: string) =>
+      [...sheet.querySelectorAll('[data-arena-closet-tile] .sr-only')].find((n) => n.textContent?.startsWith(item))?.textContent;
+    expect(text('גלימה')).toBe('גלימה, נעול, נפתח ברמת זירה 8');
+    expect(text('מגפיים')).toBe('מגפיים, נעול, נפתח ברמת זירה 9');
+    expect(text('קסדה')).toBe('קסדה, ברשותך');
+    expect(sheet.textContent).not.toContain('ניצחון בקרב');
+  });
+
+  it('הקשה על הרקע ⇒ הגיליון נסגר', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'סגירת ארון הציוד' }));
+    expect(document.querySelector('[data-arena-closet]')).toBeNull();
   });
 });

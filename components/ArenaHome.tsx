@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ArenaAvatar, { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
@@ -13,7 +13,15 @@ import {
   type ArenaLastRound,
 } from '@/lib/core/arenaLastRound';
 import type { ArenaCharacter } from '@/lib/core/arenaCharacter';
-import { bossTrack, homeSlots, winsToBoss, type BossNode, type HomeSlot } from '@/lib/core/arenaHome';
+import {
+  bossTrack,
+  closetTiles,
+  homeSlots,
+  winsToBoss,
+  type BossNode,
+  type ClosetTile,
+  type HomeSlot,
+} from '@/lib/core/arenaHome';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
@@ -109,6 +117,11 @@ const DRAWER_NOTE_HE = 'פריטים מקרבות בלבד';
 const CORRECT_SR_HE = 'נכונות';
 const FINISHED_SR_HE = 'הסתיים בתאריך';
 const EMPTY_SLOT_HE = 'ריקה';
+/** T-488 · `D-292` — ⛔ **`רמת זירה N`, ⛔ ולא `ניצחון בקרב 12` של הרנדר:** פריט נפתח בעליית
+    **רמה** (`D-061`), ⇒ המחרוזת אומרת את התנאי שהקוד באמת מקיים. */
+const CLOSET_HELD_HE = 'ברשותך';
+const CLOSET_LOCKED_HE = 'נעול';
+const CLOSET_CLOSE_HE = 'סגירת ארון הציוד';
 const LOADING_HE = 'טוען את הזירה';
 
 /** שמות המצבים, בעברית — ⛔ **המצב ⛔ לעולם אינו בצבע בלבד** (חוקה שכבה א׳ א2). */
@@ -238,13 +251,9 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
   const [screen, setScreen] = useState<'loading' | 'ready' | 'session_expired' | 'error'>(
     initialState === undefined ? 'loading' : 'ready',
   );
+  /** 🗄️ T-488 — ⛔ **אין עוד `scrollIntoView`:** הארון הוא גיליון `fixed` מעל האזור הגמיש,
+   *  ⇒ ⛔ דבר אינו נגלל, והדמות נשארת במקומה מעליו. */
   const [drawerOpen, setDrawerOpen] = useState(false);
-  /** 🏠 T-420 — הארון נפתח בתחתית האזור הגמיש, ⇒ מתחת לקו הראייה. ⛔ `block: 'nearest'`
-   *  ⛔ ובלי `smooth`: קפיצה מיידית, ⇒ `prefers-reduced-motion` ⛔ אינו נפגע. */
-  const drawerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (drawerOpen) drawerRef.current?.scrollIntoView?.({ block: 'nearest' });
-  }, [drawerOpen]);
 
   const load = useCallback(async () => {
     setScreen('loading');
@@ -581,41 +590,6 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
         </div>
       )}
 
-      {/* `:194-201` — ארון הציוד. ⛔ **⛔ אינו הרשימה של `DRAWER_ITEMS`** (D-132): הוא
-          מציג את מה שללומד **באמת** יש, דרך `ITEM_LABELS_HE`. */}
-      {drawerOpen && (
-        <div ref={drawerRef} className={`flex flex-col gap-3 p-4 ${CARD_CLASS}`}>
-          {/* ⚠️ `flex` רגיל (`T-338`) — הכותרת היא הילד הראשון, ובמיכל RTL מקומה בימין. */}
-          <div className="flex items-baseline justify-between" data-rtl-row="drawer-heading">
-            <h2 className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
-              {DRAWER_HE}
-            </h2>
-            <p className="text-xs leading-none text-[color:var(--brand-surface)]">{DRAWER_NOTE_HE}</p>
-          </div>
-          {/* ⚠️ `flex` רגיל (`T-338`) — אותם ארבעה תאים כמו למעלה, אותו ציר.
-              📐 **T-342 — ו⛔ אותה נוסחת עטיפה בדיוק.** `D-244`ⓐ נוקבת בשתי הרצועות
-              בשמן: אותם ארבעה תאים ב-66px, ולכן אותה תקרה. ⛔ רצועה אחת שתוקנה והשנייה
-              לא הייתה משאירה את אותו פגם במסך אחד למטה. */}
-          <ul className="flex flex-wrap gap-2 max-w-[140px] min-[375px]:max-w-none" data-rtl-row="drawer-slots">
-            {slots.map((slot) => (
-              <li
-                key={slot.slot}
-                className={[
-                  SLOT_CLASS,
-                  slot.item === null
-                    ? 'border border-[color:var(--arena-card-edge)] text-[color:var(--arena-ink-dim)]'
-                    : 'border-[1.6px] border-[color:var(--brand)] text-[color:var(--brand-surface)]',
-                ].join(' ')}
-              >
-                {slot.item === null ? <LockIcon /> : <ItemGlyph />}
-                <span className="text-xs leading-none text-[color:var(--arena-ink-dim)]">
-                  {slotLabel(slot)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
       </div>
 
       {/* `:179-191` — שלוש הפעולות. */}
@@ -650,6 +624,115 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           </button>
         </div>
       </div>
+
+      {drawerOpen && (
+        <GearClosetSheet
+          tiles={closetTiles(state.unlockedItems, state.arcadeLevel)}
+          onClose={() => setDrawerOpen(false)}
+        />
+      )}
     </section>
+  );
+}
+
+/** `:209` — אריח מוחזק: מסגרת זהב + גליף. נעול: מסגרת עמומה + מנעול (⛔ צבע ⛔ אינו הערוץ היחיד). */
+function closetTileLabel(tile: ClosetTile): string {
+  const name = ITEM_LABELS_HE[tile.item];
+  if (tile.held) return `${name}, ${CLOSET_HELD_HE}`;
+  return tile.unlockLevel === null
+    ? `${name}, ${CLOSET_LOCKED_HE}`
+    : `${name}, ${CLOSET_LOCKED_HE}, נפתח ב${LEVEL_HE} ${tile.unlockLevel}`;
+}
+
+/**
+ * 🗄️ **T-488 · `D-292` · `kol-B-02-gear.png` — ארון הציוד כגיליון תחתון.**
+ * 🎯 `render_video_B.py:193-225` (`screen_home`, `drawer=1`), ⛔ נגרף ולא נאמד:
+ *   ⓐ קצה עליון ב-`top = 366` מתוך `LH = 812` ⇒ גובה **446** ⇒ `h-[min(55dvh,446px)]`
+ *      (446 / 812 = 54.9%) — הדמות והכותרת נשארות גלויות מעליו.
+ *   ⓑ ידית `44×5` ב-`top + 12` · כותרת `ארון ציוד` 17 Bold מימין ב-`top + 44` ·
+ *      `פריטים מקרבות בלבד` 11 מזהב משמאל.
+ *   ⓒ רשת **4 עמודות**, מרווח **10**, `iw = (LW − 48 − 30) / 4` ⇒ ב-`grid-cols-4` התא
+ *      נגזר מהרוחב ⇒ **60.5px ב-320**, ⛔ ולא גולש (`F-246`: הגלישה ישבה בתוך המיכל).
+ *   ⓓ רדיוס עליון `26` ⇒ `rounded-t-2xl` (16, הגדול בסולם החמישה) · התא `12` ⇒ `rounded-xl`.
+ * ⚠️ **שכבה א׳ גוברת:** תווית השם `9.5` ושורת התנאי `8` של הרנדר עולות ל-`text-xs` (`D-137`).
+ * ⛔ **ואין בחירת פריט ללבישה** (`D-292`): האריח **מציג**; ⛔ אינו כפתור.
+ */
+function GearClosetSheet({
+  tiles,
+  onClose,
+}: {
+  readonly tiles: readonly ClosetTile[];
+  readonly onClose: () => void;
+}): React.JSX.Element {
+  return (
+    <>
+      {/* `:197` — `fill=(6, 10, 20, 150)` ⇒ ~60%. הקשה על הרקע סוגרת (⛔ שולח את האצבע
+          לשום מקום אחר: המסך שמתחתיו מכוסה). */}
+      <button
+        type="button"
+        aria-label={CLOSET_CLOSE_HE}
+        data-arena-closet-backdrop
+        className="fixed inset-0 z-40 bg-[color:color-mix(in_srgb,var(--arena-hp-track)_60%,transparent)]"
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="arena-closet-heading"
+        data-arena-closet
+        className={
+          'fixed inset-x-0 bottom-0 z-50 flex h-[min(55dvh,446px)] flex-col rounded-t-2xl ' +
+          'border-t border-[color:var(--brand)] bg-[color:var(--arena-card)] px-6 pt-3 ' +
+          'pb-[max(1rem,env(safe-area-inset-bottom))]'
+        }
+      >
+        <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col">
+          <div
+            aria-hidden
+            data-arena-closet-handle
+            className="mx-auto h-[5px] w-11 shrink-0 rounded-full bg-[color:var(--arena-card-edge)]"
+          />
+          {/* ⚠️ `flex` רגיל (`T-338`) — הכותרת היא הילד הראשון, ובמיכל RTL מקומה בימין. */}
+          <div className="mt-5 flex shrink-0 items-baseline justify-between" data-rtl-row="drawer-heading">
+            <h2 id="arena-closet-heading" className="text-[17px] font-bold leading-none text-[color:var(--arena-ink)]">
+              {DRAWER_HE}
+            </h2>
+            <p className="text-xs leading-none text-[color:var(--brand-surface)]">{DRAWER_NOTE_HE}</p>
+          </div>
+          {/* ⚠️ `grid` ⛔ ולא `flex-wrap`: 4 עמודות שוות **מתוך** הרוחב ⇒ ⛔ אין רוחב תוכן
+              שיכול לעלות על רוחב המיכל, ⇒ `ul.scrollWidth == ul.clientWidth` בכל רוחב.
+              ⚠️ ב-RTL עמודה 1 היא הימנית — כמו `x = LW - 24 - iw - col*(iw+10)` ברנדר. */}
+          <ul
+            className="mt-5 grid min-h-0 grid-cols-4 gap-x-[10px] gap-y-3 overflow-y-auto overscroll-contain"
+            data-rtl-row="drawer-slots"
+          >
+            {tiles.map((tile) => (
+              <li key={tile.item} data-arena-closet-tile={tile.held ? 'held' : 'locked'} className="flex min-w-0 flex-col items-center gap-1">
+                <span
+                  aria-hidden
+                  className={[
+                    'flex aspect-square w-full min-w-touch items-center justify-center rounded-xl [&>svg]:h-6 [&>svg]:w-6',
+                    tile.held
+                      ? 'border-[1.4px] border-[color:var(--brand)] bg-[color:var(--arena-card)] text-[color:var(--brand-surface)]'
+                      : 'border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-hp-track)] text-[color:var(--arena-ink-dim)]',
+                  ].join(' ')}
+                >
+                  {tile.held ? <ItemGlyph /> : <LockIcon />}
+                </span>
+                <span aria-hidden className="text-xs leading-tight text-[color:var(--arena-ink-dim)]">
+                  {ITEM_LABELS_HE[tile.item]}
+                </span>
+                {!tile.held && tile.unlockLevel !== null && (
+                  <span aria-hidden className="text-xs leading-tight text-[color:var(--brand-surface)]">
+                    {LEVEL_HE} {tile.unlockLevel}
+                  </span>
+                )}
+                <span className="sr-only">{closetTileLabel(tile)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
   );
 }

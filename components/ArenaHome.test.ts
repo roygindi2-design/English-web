@@ -214,9 +214,9 @@ describe('ArenaHome — ציר ה-RTL (T-338)', () => {
    * כלומר 2×2 מתחת ל-375 ⇒ שורה אחת של ארבעה מ-375 ומעלה, שם `min-[375px]:max-w-none`
    * משחרר את התקרה.
    */
-  it('T-342 — שתי רצועות התאים עוטפות, ושתיהן באותה נוסחה', () => {
-    const rows = SRC_RTL.match(/className="[^"]*" data-rtl-row="(?:gear|drawer)-slots"/g) ?? [];
-    expect(rows).toHaveLength(2);
+  it('T-342 — רצועת המשבצות עוטפת (⟦T-488⟧ הארון הוא רשת, ⛔ ולא רצועה שנייה)', () => {
+    const rows = SRC_RTL.match(/className="[^"]*" data-rtl-row="gear-slots"/g) ?? [];
+    expect(rows).toHaveLength(1);
     for (const row of rows) {
       expect(row).toContain('flex-wrap');
       expect(row).toContain('max-w-[140px]');
@@ -339,7 +339,15 @@ describe('ArenaHome — גובה מדויק, ⛔ ולא מינימום (T-420)',
     const actions = CODE.lastIndexOf('className={ACTIONS_CLASS}');
     expect(CODE.indexOf('data-arena-last-round')).toBeGreaterThan(body);
     expect(CODE.indexOf('data-arena-last-round')).toBeLessThan(actions);
-    expect(CODE.indexOf('ref={drawerRef}')).toBeGreaterThan(body);
-    expect(CODE.indexOf('ref={drawerRef}')).toBeLessThan(actions);
+  });
+
+  /** 🗄️ T-488 · `D-292` — הארון יצא מהאזור הגמיש: גיליון `fixed`, ⇒ ⛔ אינו נגלל ⛔ ואינו גולל. */
+  it('T-488 — הארון הוא גיליון מעל המסך, ⛔ בלי `scrollIntoView`, ורשת של 4 עמודות', () => {
+    expect(CODE).not.toContain('scrollIntoView');
+    expect(CODE.indexOf('<GearClosetSheet')).toBeGreaterThan(CODE.lastIndexOf('className={ACTIONS_CLASS}'));
+    expect(CODE).toContain("'fixed inset-x-0 bottom-0 z-50 flex h-[min(55dvh,446px)]");
+    const grid = CODE.match(/className="[^"]*"\s*data-rtl-row="drawer-slots"/)?.[0] ?? '';
+    expect(grid).toContain('grid-cols-4');
+    expect(grid).not.toContain('flex-wrap');
   });
 });
