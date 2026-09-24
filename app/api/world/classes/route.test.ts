@@ -27,6 +27,18 @@ describe('T-468 — the class routes', () => {
     expect(classFailure('t', { message: 'x' }).status).not.toBe(500);
   });
 
+  it('T-470 — the wall functions of 0034 answer by name', async () => {
+    expect(await classFailure('t', { message: 'post_not_found', code: 'P0002' }).json()).toEqual({ ok: false, code: 'post_not_found' });
+    expect(await classFailure('t', { message: 'reply_not_found', code: 'P0002' }).json()).toEqual({ ok: false, code: 'post_not_found' });
+    const opener = classFailure('t', { message: 'only_class_opener', code: '42501' });
+    expect(opener.status).toBe(403);
+    expect(await opener.json()).toEqual({ ok: false, code: 'only_class_opener' });
+    expect(await classFailure('t', { message: 'own_content', code: '42501' }).json()).toEqual({ ok: false, code: 'own_content' });
+    expect(classFailure('t', { message: 'permission denied for table class_posts', code: '42501' }).status).toBe(503);
+    expect(await classFailure('t', { message: 'invalid_body', code: '22023' }).json()).toEqual({ ok: false, code: 'invalid_body' });
+    expect(await classFailure('t', { message: 'invalid_name', code: '22023' }).json()).toEqual({ ok: false, code: 'invalid_name' });
+  });
+
   it('every route answers a Supabase error through classFailure — all three', () => {
     for (const [name, src] of Object.entries(ROUTES)) expect(src, name).toMatch(/return classFailure\(/);
   });
