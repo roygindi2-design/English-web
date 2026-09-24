@@ -1,14 +1,14 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { isSendable, MAX_SENTENCE_WORDS, type ContinuationLevel } from '@/lib/core/continuations';
+import { isSendable, type ContinuationLevel } from '@/lib/core/continuations';
 import { MESSAGE_LEVELS } from '@/lib/core/messages';
 import { continuationsTree } from '@/lib/server/continuationsTree';
+import { parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const WORD = /^[a-z']+$/i;
 
 /**
  * POST /api/world/messages/[id]/answer — see docs/api-contract.md
@@ -35,12 +35,8 @@ function failure(where: string, error: { message: string; code?: string }) {
   return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 }
 
-export function parseWords(body: unknown): string[] | null {
-  const words = (body as { words?: unknown } | null)?.words;
-  if (!Array.isArray(words) || words.length === 0 || words.length > MAX_SENTENCE_WORDS) return null;
-  if (!words.every((w): w is string => typeof w === 'string' && WORD.test(w))) return null;
-  return words;
-}
+// T-472 — the parser moved to `lib/server/keyboardSentence.ts`, shared with the class wall.
+export { parseWords };
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const env = readSupabaseEnv();

@@ -142,3 +142,13 @@ export function buildWallFeed(
       };
     });
 }
+
+/**
+ * T-472 — the stored form of a keyboard sentence: the words as sent, the first letter
+ * capitalised, a lone `i` as `I`, and one closing mark — `?` on a question (the opener's
+ * post, `39 § 5`), `.` on a reply. ⛔ Nothing is added between the words.
+ */
+export function wallSentence(words: readonly string[], kind: 'question' | 'reply'): string {
+  const body = words.map((w) => (w.toLowerCase() === 'i' ? 'I' : w)).join(' ');
+  return `${body.charAt(0).toUpperCase()}${body.slice(1)}${kind === 'question' ? '?' : '.'}`;
+}

@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { buildWallFeed, type WallLikeRow, type WallPostRow, type WallReplyRow } from '@/lib/core/wallFeed';
+import { buildWallFeed, wallSentence, type WallLikeRow, type WallPostRow, type WallReplyRow } from '@/lib/core/wallFeed';
 import { classFailure } from '@/lib/server/classFailure';
+import { fromKeyboard, parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -65,4 +66,43 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const likes = [...(postLikes.data ?? []), ...(replyLikes.data ?? [])] as WallLikeRow[];
   return NextResponse.json({ ok: true, posts: buildWallFeed(postRows, replyRows, likes, user.id, openerId) });
+}
+
+/**
+ * The keyboard's reach on the wall. A class carries ⛔ no level, so the whole tree
+ * (A1–B2) is the fence: what matters here is that the sentence came FROM the keyboard.
+ */
+const WALL_LEVEL = 'B2' as const;
+
+/**
+ * POST /api/world/classes/[id]/wall — see docs/api-contract.md
+ *
+ * T-472 · `39 § 1` · D-288: the class opener posts a question. 🔴 The body is ⛔ not free
+ * text: `{words}` must be a path the block keyboard can compose that ends where an
+ * observed sentence ended ⇒ otherwise 422 `not_from_keyboard`. The same parser and tree
+ * as `…/messages/[id]/answer` (`lib/server/keyboardSentence.ts`).
+ * Written only through `post_question()` (0034): a member who did not open the class ⇒
+ * 403 `only_class_opener`.
+ */
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const env = readSupabaseEnv();
+  if (!env) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
+
+  const supabase = createRouteClient(env, await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ ok: false, code: 'session_expired' }, { status: 401 });
+
+  const { id } = await params;
+  if (!UUID.test(id)) return NOT_FOUND();
+  const words = parseWords(await request.json().catch(() => null));
+  if (words === null || !fromKeyboard(words, WALL_LEVEL)) {
+    return NextResponse.json({ ok: false, code: 'not_from_keyboard' }, { status: 422 });
+  }
+
+  const posted = await supabase.rpc('post_question', { p_class_id: id, p_body: wallSentence(words, 'question') });
+  if (posted.error) return classFailure('post', posted.error);
+  const row = (Array.isArray(posted.data) ? posted.data[0] : posted.data) as { id?: string; created_at?: string } | null;
+  return NextResponse.json({ ok: true, id: row?.id ?? null, createdAt: row?.created_at ?? null, bodyEn: wallSentence(words, 'question') });
 }

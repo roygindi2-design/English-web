@@ -61,3 +61,11 @@ describe('buildWallFeed', () => {
     expect(json).not.toMatch(/author_id|u-teacher|u-me/);
   });
 });
+
+describe('wallSentence (T-472)', () => {
+  it('capitalises, fixes a lone i, and closes with ? or .', async () => {
+    const { wallSentence } = await import('@/lib/core/wallFeed');
+    expect(wallSentence(['i', 'went', 'to', 'the', 'beach'], 'reply')).toBe('I went to the beach.');
+    expect(wallSentence(['how', 'was', 'your', 'weekend'], 'question')).toBe('How was your weekend?');
+  });
+});

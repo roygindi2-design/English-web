@@ -238,15 +238,20 @@
   "app/api/world/classes/[id]/wall/[postId]/replies/route.ts": [
     "lib/core/wallFeed.ts",
     "lib/server/classFailure.ts",
+    "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/world/classes/[id]/wall/route.test.ts": [
     "app/api/world/classes/[id]/wall/[postId]/replies/route.ts",
-    "app/api/world/classes/[id]/wall/route.ts"
+    "app/api/world/classes/[id]/wall/route.ts",
+    "app/api/world/classes/wall/like/route.ts",
+    "lib/core/continuations.ts",
+    "lib/server/continuationsTree.ts"
   ],
   "app/api/world/classes/[id]/wall/route.ts": [
     "lib/core/wallFeed.ts",
     "lib/server/classFailure.ts",
+    "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/world/classes/join/route.ts": [
@@ -266,6 +271,10 @@
     "lib/server/classFailure.ts",
     "lib/supabase/auth.ts"
   ],
+  "app/api/world/classes/wall/like/route.ts": [
+    "lib/server/classFailure.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/lexicalClassOnly.test.ts": [
     "lib/testSource.ts"
   ],
@@ -276,6 +285,7 @@
     "lib/core/continuations.ts",
     "lib/core/messages.ts",
     "lib/server/continuationsTree.ts",
+    "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/world/messages/continuations/route.test.ts": [
@@ -1956,6 +1966,10 @@
   "lib/server/classFailure.ts": [],
   "lib/server/continuationsTree.ts": [
     "lib/core/continuations.ts"
+  ],
+  "lib/server/keyboardSentence.ts": [
+    "lib/core/continuations.ts",
+    "lib/server/continuationsTree.ts"
   ],
   "lib/supabase/arcade.test.ts": [],
   "lib/supabase/arcadeDecoupling.test.ts": [],

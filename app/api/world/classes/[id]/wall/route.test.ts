@@ -15,6 +15,8 @@ type Row = Record<string, unknown>;
 let tables: Record<string, Row[]>;
 let user: { id: string } | null;
 let failOn: string | null;
+let rpcCalls: { fn: string; args: Record<string, unknown> }[];
+let rpcAnswer: { data: unknown; error: { message: string; code: string } | null };
 
 function builder(table: string) {
   let rows = [...(tables[table] ?? [])];
@@ -45,17 +47,37 @@ vi.mock('@/lib/supabase/auth', () => ({
   createRouteClient: () => ({
     auth: { getUser: async () => ({ data: { user } }) },
     from: (t: string) => builder(t),
+    rpc: async (fn: string, args: Record<string, unknown>) => { rpcCalls.push({ fn, args }); return rpcAnswer; },
   }),
 }));
 
-const { GET: wall } = await import('./route');
-const { GET: allReplies } = await import('./[postId]/replies/route');
+const { GET: wall, POST: postQuestion } = await import('./route');
+const { GET: allReplies, POST: postReply } = await import('./[postId]/replies/route');
+const { POST: like, parseTarget } = await import('../../wall/like/route');
+const { nextBlocks, END_BLOCK } = await import('@/lib/core/continuations');
+const { continuationsTree } = await import('@/lib/server/continuationsTree');
+
+/** A sentence the keyboard CAN compose: follow the first block until the tree says END. */
+function keyboardSentence(): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < 12; i++) {
+    const { blocks } = nextBlocks(continuationsTree(), out, 'B2');
+    if (blocks.some((b) => b.word === END_BLOCK.word) && out.length > 0) return out;
+    const next = blocks.find((b) => b.word !== END_BLOCK.word);
+    if (!next) break;
+    out.push(next.word);
+  }
+  throw new Error('no sendable path found');
+}
+const jsonReq = (body: unknown) => new Request('http://x', { method: 'POST', body: JSON.stringify(body) });
 
 const call = (id: string) => wall(new Request('http://x'), { params: Promise.resolve({ id }) });
 
 beforeEach(() => {
   user = { id: ME };
   failOn = null;
+  rpcCalls = [];
+  rpcAnswer = { data: [{ id: 'new', created_at: '2026-09-24T10:00:00Z' }], error: null };
   // RLS, simulated: the learner is in class A only ⇒ only A's rows are visible at all.
   tables = {
     classes: [{ id: CLASS_A, created_by: OPENER }],
@@ -119,6 +141,54 @@ describe('GET …/wall/[postId]/replies (T-471)', () => {
     const r = await get(CLASS_B, POST);
     expect(r.status).toBe(404);
     expect(await r.json()).toEqual({ ok: false, code: 'post_not_found' });
+  });
+});
+
+describe('the wall writes (T-472)', () => {
+  const words = keyboardSentence();
+
+  it('failure scenario: free text is refused with 422 not_from_keyboard, and ⛔ nothing reaches the database', async () => {
+    for (const body of [{ body_en: 'anything I want' }, { words: ['anything', 'zzqx', 'want'] }, { words: [] }]) {
+      const r = await postReply(jsonReq(body), { params: Promise.resolve({ id: CLASS_A, postId: POST }) });
+      expect(r.status).toBe(422);
+      expect(await r.json()).toEqual({ ok: false, code: 'not_from_keyboard' });
+      const q = await postQuestion(jsonReq(body), { params: Promise.resolve({ id: CLASS_A }) });
+      expect(q.status).toBe(422);
+    }
+    expect(rpcCalls).toEqual([]);
+  });
+
+  it('a keyboard sentence is stored through add_reply, as a sentence', async () => {
+    const r = await postReply(jsonReq({ words }), { params: Promise.resolve({ id: CLASS_A, postId: POST }) });
+    expect(r.status).toBe(200);
+    expect(rpcCalls[0]?.fn).toBe('add_reply');
+    expect(String(rpcCalls[0]?.args.p_body)).toMatch(/^[A-Z].*\.$/);
+  });
+
+  it('a reply to a post of another class ⇒ 404 before any write', async () => {
+    const r = await postReply(jsonReq({ words }), { params: Promise.resolve({ id: CLASS_B, postId: POST }) });
+    expect(r.status).toBe(404);
+    expect(rpcCalls).toEqual([]);
+  });
+
+  it('a member who did not open the class ⇒ 403 only_class_opener', async () => {
+    rpcAnswer = { data: null, error: { message: 'only_class_opener', code: '42501' } };
+    const r = await postQuestion(jsonReq({ words }), { params: Promise.resolve({ id: CLASS_A }) });
+    expect(r.status).toBe(403);
+    expect(await r.json()).toEqual({ ok: false, code: 'only_class_opener' });
+    expect(String(rpcCalls[0]?.args.p_body)).toMatch(/\?$/);
+  });
+
+  it('like: one target, the new state and count; own content ⇒ 403', async () => {
+    expect(parseTarget({ postId: POST })).toEqual({ p_post_id: POST, p_reply_id: null });
+    expect(parseTarget({ postId: POST, replyId: POST })).toBeNull();
+    expect(parseTarget({})).toBeNull();
+    rpcAnswer = { data: [{ liked: true, likes: 32 }], error: null };
+    expect(await (await like(jsonReq({ postId: POST }))).json()).toEqual({ ok: true, liked: true, likes: 32 });
+    rpcAnswer = { data: null, error: { message: 'own_content', code: '42501' } };
+    const r = await like(jsonReq({ replyId: POST }));
+    expect(r.status).toBe(403);
+    expect(await r.json()).toEqual({ ok: false, code: 'own_content' });
   });
 });
 
