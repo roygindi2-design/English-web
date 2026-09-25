@@ -1359,7 +1359,8 @@
   "components/StoryScreen.dom.test.tsx": [
     "app/dev/story/story-fixture.ts",
     "components/StoryScreen.tsx",
-    "lib/core/failure.ts"
+    "lib/core/failure.ts",
+    "lib/core/storyTapTargets.ts"
   ],
   "components/StoryScreen.test.ts": [],
   "components/StoryScreen.tsx": [
@@ -1370,6 +1371,7 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts",
     "lib/core/storyIntro.ts",
+    "lib/core/storyParagraphs.ts",
     "lib/core/storyQuestion.ts",
     "lib/core/storyRecallBatch.ts",
     "lib/core/storyTapTargets.ts",
@@ -2063,6 +2065,11 @@
   "lib/core/storyOverlap.ts": [
     "lib/core/storyTapTargets.ts"
   ],
+  "lib/core/storyParagraphs.test.ts": [
+    "lib/core/storyParagraphs.ts",
+    "lib/core/storyTapTargets.ts"
+  ],
+  "lib/core/storyParagraphs.ts": [],
   "lib/core/storyPick.test.ts": [
     "lib/core/storyPick.ts"
   ],

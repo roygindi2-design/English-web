@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StoryScreenView, type StoryPayload } from '@/components/StoryScreen';
 import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
+import { buildStorySegments } from '@/lib/core/storyTapTargets';
 import {
   FIXTURE_BODY_EN,
   FIXTURE_COUNTS,
@@ -1239,5 +1240,29 @@ describe('T-495ⓒ — מילה ⛔ לא-ידועה שהוקשה בסיפור נ
     clickWord(bodyWord('library'));
     await waitFor(() => expect(console.error).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: 'הוסף לכרטיסיות' })).toBeTruthy();
+  });
+});
+
+describe('T-508 — הסיפור נקרא בשלוש פסקאות, ⛔ ואף מילת יעד ⛔ לא אבדה', () => {
+  it('the body is three <p>, and it carries every tap target the segments carry', () => {
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const body = container.querySelector('[data-story-body]');
+    expect(body).not.toBeNull();
+    const paragraphs = body!.querySelectorAll('p');
+    expect(paragraphs).toHaveLength(3);
+    // The count BEFORE the split is what `buildStorySegments` produces for this body.
+    const expected = buildStorySegments(
+      FIXTURE_BODY_EN,
+      new Map(Object.entries(FIXTURE_GLOSSES)),
+      new Set(FIXTURE_KNOWN_LEMMAS),
+    ).filter((s) => s.isTarget).length;
+    expect(expected).toBeGreaterThan(0);
+    expect(body!.querySelectorAll('[data-story-word]')).toHaveLength(expected);
+    // ⛔ Not one character of the story went missing across the three.
+    const text = Array.from(paragraphs).map((p) => p.textContent ?? '').join('');
+    expect(text.replace(/\s+/g, ' ').trim()).toBe(FIXTURE_BODY_EN.replace(/\s+/g, ' ').trim());
+    for (const p of Array.from(paragraphs)) {
+      expect(p.classList.contains('text-left')).toBe(true);
+    }
   });
 });

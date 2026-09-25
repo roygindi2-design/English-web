@@ -20,6 +20,7 @@ import {
   type StoryGloss,
   type StoryWordBox,
 } from '@/lib/core/storyTapTargets';
+import { storyParagraphs } from '@/lib/core/storyParagraphs';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
 /**
@@ -396,6 +397,7 @@ function StoryReady({
     () => buildStorySegments(payload.story.bodyEn, glosses, known),
     [payload.story.bodyEn, glosses, known],
   );
+  const paragraphs = useMemo(() => storyParagraphs(segments), [segments]);
   /**
    * 🔴 **T-240 — הכותרת עוברת באותו מסלול פילוח בדיוק, ⛔ ולא בשני.** אותו
    * `buildStorySegments`, אותה מפת גלוסות, אותו תנאי 1 של `36 § 3` ⇒ מילה שאין לה
@@ -971,64 +973,73 @@ function StoryReady({
             **היישור של הבלוק**, ו-`<EnWord>` הוא `<span>` שורתי ⇒ ⛔ אינו יכול לקבוע אותו.
             ⛔ **ולכן היישור בלבד** — ⛔ אין כאן `dir` ו⛔ אין `lang` בכתב יד:
             `components/EnWord.test.ts` מפיל כל קובץ שכותב אותם בעצמו (‏`T-009`). */}
-            <p
-              className="text-ink-muted text-left"
-              inert={openLemma !== null && openSurface === 'body'}
-            >
-              <EnWord>
-                {segments.map((segment, i) => {
-                  if (!segment.isTarget || segment.lemma === null) {
-                    return <span key={i}>{segment.text}</span>;
-                  }
-                  const lemma = segment.lemma;
-                  const gloss = payload.glosses[lemma];
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      data-story-word
-                      data-story-translation={gloss?.translationHe ?? ''}
-                      // 🔴 **T-378 ⓒⓘ — הערוץ שאינו ויזואלי, ו⛔ עד היום הוא החזיר `null`.**
-                      // ⛔ `aria-expanded` יושב על **כל** מילת יעד, ⛔ ולא רק על הפתוחה:
-                      // `false` הוא מה שמצהיר שיש כאן מה לפתוח, ובלעדיו קורא-מסך שומע
-                      // «כפתור» ו⛔ אינו יודע שנפתחה חלונית כשהיא נפתחה.
-                      aria-expanded={openLemma === lemma && openSurface === 'body'}
-                      onClick={(e) => onWordClick(e, lemma)}
-                      className={[
-                        // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
-                        // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
-                        // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
-                        'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
-                        // 🔴 **T-378 ⓒⓘ — שבב המצב `open`, והוא **הרנדר**.**
-                        // `render_video_A.py:1026-1028` מצייר את המילה ה**פעילה** כשבב
-                        // מלא (`fill=BRAND`, טקסט `BRAND_ON`, רדיוס 7 → `rounded-md`),
-                        // וההערה שם אומרת מפורשות שזה ⛔ **אינו** סימון מוקדם של `F-123`:
-                        // «it is the tap itself … The screen's equivalent is the popover,
-                        // and it opens on exactly the same event».
-                        // ⛔ **⛔ ואין כאן שינוי מטרי** — רקע וצבע בלבד, ⛔ לא משקל ו⛔ לא
-                        // מרווח ⇒ הפסקה ⛔ אינה זזה ולו פיקסל כשהחלונית נפתחת, וזו בדיוק
-                        // האינווריאנטה של `T-290`.
-                        // ⛔ **ו⛔ אין כאן «צבע בלבד»** (חוקה שכבה A): השבב הוא ערוץ אחד,
-                        // `aria-expanded` הוא השני, וזנב החלונית הוא השלישי.
-                        openLemma === lemma && openSurface === 'body'
-                          ? 'rounded-md bg-brand-surface text-brand-on'
-                          : '',
-                        // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
-                        // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
-                        // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא
-                        // (F-123) ⛔ ולא נסגר כאן בהמצאה. הסימון היחיד הוא «ידועה», והוא נושא
-                        // **מקרא כתוב** — צבע לעולם אינו הערוץ היחיד (חוקה שכבה A).
-                        segment.isKnown
-                          ? 'font-semibold text-ink underline decoration-success decoration-2 underline-offset-4'
-                          : '',
-                      ].join(' ')}
-                    >
-                      {segment.text}
-                    </button>
-                  );
-                })}
-              </EnWord>
-            </p>
+            {/* 📄 **T-508 · `D-297`ⓐ — three paragraphs, ⛔ not one block.** The groups come
+            from `storyParagraphs`, which only regroups the segments above: every tap target
+            still renders exactly once, in order. Each `<p>` keeps the same `inert`,
+            `text-left` and `<EnWord>` as the single one did (`T-319`ⓒ · `T-374` · `T-009`). */}
+            <div className="space-y-4">
+              {paragraphs.map((paragraph, p) => (
+                <p
+                  key={p}
+                  className="text-ink-muted text-left"
+                  inert={openLemma !== null && openSurface === 'body'}
+                >
+                  <EnWord>
+                    {paragraph.map((segment, i) => {
+                      if (!segment.isTarget || segment.lemma === null) {
+                        return <span key={i}>{segment.text}</span>;
+                      }
+                      const lemma = segment.lemma;
+                      const gloss = payload.glosses[lemma];
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          data-story-word
+                          data-story-translation={gloss?.translationHe ?? ''}
+                          // 🔴 **T-378 ⓒⓘ — הערוץ שאינו ויזואלי, ו⛔ עד היום הוא החזיר `null`.**
+                          // ⛔ `aria-expanded` יושב על **כל** מילת יעד, ⛔ ולא רק על הפתוחה:
+                          // `false` הוא מה שמצהיר שיש כאן מה לפתוח, ובלעדיו קורא-מסך שומע
+                          // «כפתור» ו⛔ אינו יודע שנפתחה חלונית כשהיא נפתחה.
+                          aria-expanded={openLemma === lemma && openSurface === 'body'}
+                          onClick={(e) => onWordClick(e, lemma)}
+                          className={[
+                            // `36 § 3.2/3.3`: 8px מרווח הקשה אנכי בכל צד, אזור אופקי ≥32px ממורכז
+                            // על המילה, **והמרווח מוחזר כשוליים שליליים שווים** — אחרת אזור ההקשה
+                            // מזיז את הפסקה, ו-`auditStoryBody` מפיל `layout-shifted`.
+                            'inline cursor-pointer px-2 py-2 -mx-2 -my-2',
+                            // 🔴 **T-378 ⓒⓘ — שבב המצב `open`, והוא **הרנדר**.**
+                            // `render_video_A.py:1026-1028` מצייר את המילה ה**פעילה** כשבב
+                            // מלא (`fill=BRAND`, טקסט `BRAND_ON`, רדיוס 7 → `rounded-md`),
+                            // וההערה שם אומרת מפורשות שזה ⛔ **אינו** סימון מוקדם של `F-123`:
+                            // «it is the tap itself … The screen's equivalent is the popover,
+                            // and it opens on exactly the same event».
+                            // ⛔ **⛔ ואין כאן שינוי מטרי** — רקע וצבע בלבד, ⛔ לא משקל ו⛔ לא
+                            // מרווח ⇒ הפסקה ⛔ אינה זזה ולו פיקסל כשהחלונית נפתחת, וזו בדיוק
+                            // האינווריאנטה של `T-290`.
+                            // ⛔ **ו⛔ אין כאן «צבע בלבד»** (חוקה שכבה A): השבב הוא ערוץ אחד,
+                            // `aria-expanded` הוא השני, וזנב החלונית הוא השלישי.
+                            openLemma === lemma && openSurface === 'body'
+                              ? 'rounded-md bg-brand-surface text-brand-on'
+                              : '',
+                            // ⛔ **מילה חדשה ⛔ אינה נושאת סימון — § 4.2יג-ב ⓑ ו-D-108 «⛔ New words
+                            // carry NOTHING», ו⛔ שניהם ⛔ לא בוטלו.** הרנדר מצייר שבב מותג מאחורי
+                            // מילה חדשה, ו-`36 § 1` קובע ש-36 גובר בכל סתירה. ⇒ הפער נרשם כממצא
+                            // (F-123) ⛔ ולא נסגר כאן בהמצאה. הסימון היחיד הוא «ידועה», והוא נושא
+                            // **מקרא כתוב** — צבע לעולם אינו הערוץ היחיד (חוקה שכבה A).
+                            segment.isKnown
+                              ? 'font-semibold text-ink underline decoration-success decoration-2 underline-offset-4'
+                              : '',
+                          ].join(' ')}
+                        >
+                          {segment.text}
+                        </button>
+                      );
+                    })}
+                  </EnWord>
+                </p>
+              ))}
+            </div>
 
             {/* ⛔ **T-290 — הפופאובר יושב בתוך הכרטיס, ⛔ ולא אחריו.** `absolute` בתוך
                 `relative` ⇒ הוא יוצא מהזרימה, ולכן פתיחתו ⛔ אינה דוחפת ולו פסקה אחת. */}
