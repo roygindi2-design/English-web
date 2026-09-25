@@ -11,6 +11,8 @@ import {
   trackModules,
   vocabularyMetric,
   MODULE_RETURN_LABEL_HE,
+  MODULE_SKELETON_COUNT,
+  moduleSkeletonCount,
   moduleAnchorId,
   moduleItemHref,
   moduleReturnDestination,
@@ -381,5 +383,28 @@ describe('T-408 — הפריט נפתח מהנתיב, וחוזר אליו', () =
       trackId: 'vocabulary',
       moduleId: 'B2',
     });
+  });
+});
+
+describe('T-513 — טעינה ⛔ אינה כשל', () => {
+  it('אוצר מילים בזמן טעינה ⇒ `loading`, ⛔ ולא `unreachable`', () => {
+    expect(trackMetric('vocabulary', null, true).kind).toBe('loading');
+    // ⛔ `null` בלי טעינה נשאר «⛔ לא הצלחנו» (D-046/D-082).
+    expect(trackMetric('vocabulary', null).kind).toBe('unreachable');
+    expect(trackMetric('vocabulary', null, false).kind).toBe('unreachable');
+  });
+
+  it('⛔ שלושת המסלולים בלי קריאת רשת ⛔ אינם «נטענים» לעולם', () => {
+    for (const id of ['grammar', 'writing', 'reading'] as const) {
+      expect(trackMetric(id, null, true).kind).not.toBe('loading');
+      expect(moduleSkeletonCount(id, true)).toBe(0);
+    }
+  });
+
+  it('שלדי המודול: בדיוק MODULE_SKELETON_COUNT בזמן טעינה, ⛔ אפס אחריה', () => {
+    expect(MODULE_SKELETON_COUNT).toBe(4);
+    expect(moduleSkeletonCount('vocabulary', true)).toBe(4);
+    expect(moduleSkeletonCount('vocabulary', false)).toBe(0);
+    expect(trackModules('vocabulary', null, true)).toEqual([]);
   });
 });

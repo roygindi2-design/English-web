@@ -42,6 +42,7 @@ import {
   trackLabelHe,
   trackMetric,
   trackModules,
+  moduleSkeletonCount,
   moduleAnchorId,
   moduleItemHref,
   parseModuleAnchor,
@@ -53,6 +54,13 @@ const TITLE_HE = 'לימודים';
 const SUBTITLE_HE = 'בחר מסלול · לכל מסלול מדד התקדמות משלו';
 /** ⛔ «—», ⛔ לא ריק: קריאה שנכשלה חייבת להיראות אחרת ממסלול ריק באמת (D-046/D-082). */
 const UNREACHABLE_HE = '— לא הצלחנו לטעון את ההתקדמות כרגע';
+/** `T-513` · נאמר לקורא-מסך בלבד — השלד עצמו `aria-hidden` (התקדים: `CardSkeleton`). */
+const LOADING_HE = 'טוען את ההתקדמות…';
+/**
+ * `T-513` · פעימה **אחת**, ⛔ לא לולאה: השלד אומר «זה מה שבא», ⛔ ולא «משהו קורה»
+ * (`CardSkeleton`). ‏`motion-safe` ⇒ תחת `prefers-reduced-motion` השלד סטטי.
+ */
+const SKELETON_PULSE = 'motion-safe:animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_1]';
 /**
  * T-351 · המסלול שאין לו יעד בנוי אומר זאת, ⛔ ולא נשאר כרטיס בלי דרך החוצה.
  * ⛔ ⛔ ולא קישור שמוביל למסך שאינו קיים: מבוי סתום גרוע מהיעדר כפתור.
@@ -210,7 +218,7 @@ export default function StudiesScreen({
    * T-406 · ⛔ הענפים עברו ל-`lib/core/studyTracks.ts` (`trackMetric`) — הם היו
    * כאן, ⇒ כל שינוי במדד של מסלול נגע בשני קבצים ו⛔ לא היה נבדק בלי DOM.
    */
-  const metric = trackMetric(active, loading ? null : levels);
+  const metric = trackMetric(active, levels, loading);
   /**
    * T-351 · ⛔ **⛔ לא נגזר מ-`metric`, ובכוונה.** הדרך קדימה היא תכונה של
    * המסלול, ⛔ לא של קריאת ההתקדמות ⇒ `metric.kind === 'unreachable'`
@@ -227,7 +235,9 @@ export default function StudiesScreen({
    * `trackModules`. רשימה ריקה היא מצב תקין: שלושת המסלולים בלי תוכן מציגים
    * את המבנה הריק המוצהר של `T-406` במקומה.
    */
-  const modules = trackModules(active, loading ? null : levels);
+  const modules = trackModules(active, levels, loading);
+  /** `T-513` · שמירת המקום של הנתיב בזמן טעינה — ⛔ אפס מחוץ ל`אוצר מילים`. */
+  const skeletons = moduleSkeletonCount(active, loading);
 
   /**
    * T-410 — ⛔ הבורר ⛔ אינו גולש עוד, ⛔ בשום רוחב. ‏`T-330` פתר את הגלישה
@@ -490,7 +500,20 @@ export default function StudiesScreen({
         aria-live="polite"
       >
         <h2 className="text-base font-semibold text-ink">{trackLabelHe(active)}</h2>
-        {metric.kind === 'unreachable' ? (
+        {metric.kind === 'loading' ? (
+          /*
+            `T-513` — שורת המדד בזמן טעינה: פס בגובה שורת `text-sm` (20px), ⛔ ולא
+            הודעת הכשל. ⛔ `role="status"` ⛔ אינו נחוץ — הפאנל כולו כבר `aria-live`.
+          */
+          <>
+            <p className="sr-only">{LOADING_HE}</p>
+            <span
+              aria-hidden="true"
+              data-skeleton="metric"
+              className={`block h-5 w-3/5 rounded-lg bg-border-subtle ${SKELETON_PULSE}`}
+            />
+          </>
+        ) : metric.kind === 'unreachable' ? (
           <p className="text-sm text-ink-muted">{UNREACHABLE_HE}</p>
         ) : (
           <p className="text-sm text-ink-muted">{metric.summaryHe}</p>
@@ -554,6 +577,30 @@ export default function StudiesScreen({
         «בתהליך» כאן **נגזר מנתונים** ⇒ ⛔ אי-אפשר לחסום אותו בשניים. ⇒ הערוץ
         שמסמן את הפעיל הוא המסגרת, האייקון והתווית.
       */}
+      {/*
+        `T-513` · **שלדי הנתיב** — אותה גאומטריה כמו המודול החי: נקודה 30px על עמוד
+        השדרה, כרטיס `rounded-2xl`, ו-`gap-6` בין כרטיסים ⇒ כשהמודולים נכנסים, הדף
+        ⛔ אינו זז. 🔬 **הגבהים נמדדו על `/dev/tabs/studies` ב-375px, ⛔ ולא מהרנדר:**
+        כרטיס בלי פס 68.5px, כרטיס `'current'` עם הפס 84.5px ⇒ הראשון נושא פס (הרמה
+        שהלומד באמצעה), השאר בלעדיו.
+      */}
+      {skeletons > 0 && (
+        <ol aria-hidden="true" data-track-skeletons={active} className="relative flex flex-col gap-6">
+          <span className="pointer-events-none absolute inset-y-3 start-[15px] w-0.5 -translate-x-1/2 bg-border-subtle" />
+          {Array.from({ length: skeletons }, (_, i) => (
+            <li key={i} data-skeleton="module" className="flex items-start gap-3">
+              <span className="relative z-10 h-[30px] w-[30px] shrink-0 rounded-full border-2 border-border-subtle bg-surface" />
+              <span
+                className={`flex ${i === 0 ? 'h-[84.5px]' : 'h-[68.5px]'} flex-1 flex-col justify-center gap-2 rounded-2xl border border-border-subtle bg-surface-raised px-4 ${SKELETON_PULSE}`}
+              >
+                <span className="block h-4 w-1/3 rounded-md bg-border-subtle" />
+                <span className="block h-3 w-2/3 rounded-md bg-border-subtle" />
+                {i === 0 && <span className="block h-1.5 w-[90px] rounded-full bg-border-subtle" />}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
       {modules.length > 0 && (
         <ol data-track-modules={active} className="relative flex flex-col gap-6">
           {/*

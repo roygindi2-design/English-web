@@ -63,6 +63,12 @@ export type TrackMetricState =
    * ספירה, במקום להמציא אחת.
    */
   | { readonly kind: 'declared'; readonly summaryHe: string }
+  /**
+   * `T-513` · `F-334` ⇒ `D-299` · **הקריאה עוד בדרך** — ⛔ וזה ⛔ אינו `'unreachable'`.
+   * עד היום המסך העביר `null` בזמן טעינה, ו-`null` ממופה ל«⛔ לא הצלחנו» ⇒ בפתיחה
+   * קרה (‏`F-255`: 3,745ms) הלומד קרא הודעת כשל שקרית על המסלול היחיד שיש בו תוכן.
+   */
+  | { readonly kind: 'loading' }
   | { readonly kind: 'unreachable' };
 
 /**
@@ -133,12 +139,15 @@ export function readingTrackMetric(): Extract<TrackMetricState, { kind: 'declare
  *
  * ‏`levels === null` פירושו «⛔ לא הצלחנו לטעון», ⛔ ולא «ריק» — וזה חל **רק** על
  * `אוצר מילים`, המסלול היחיד שיש לו קריאת רשת מאחוריו.
+ * ‏`loading` (`T-513`) גובר על `levels`: בזמן שהקריאה בדרך ⛔ עוד אין מה לומר עליה.
  */
 export function trackMetric(
   id: StudyTrackId,
   levels: readonly LevelSummary[] | null,
+  loading = false,
 ): TrackMetricState {
   if (id === 'vocabulary') {
+    if (loading) return { kind: 'loading' };
     return levels === null ? { kind: 'unreachable' } : vocabularyMetric(levels);
   }
   if (id === 'reading') return readingTrackMetric();
@@ -296,8 +305,9 @@ function vocabularyModuleState(level: LevelSummary): StudyModuleState {
 export function trackModules(
   id: StudyTrackId,
   levels: readonly LevelSummary[] | null,
+  loading = false,
 ): readonly StudyModule[] {
-  if (id !== 'vocabulary' || levels === null) return [];
+  if (id !== 'vocabulary' || levels === null || loading) return [];
   const ordered = [...levels].sort(
     (a, b) => BAND_ORDER.indexOf(a.level) - BAND_ORDER.indexOf(b.level),
   );
@@ -315,6 +325,18 @@ export function trackModules(
       progress: state === 'current' ? level.known / level.totalInLevel : null,
     };
   });
+}
+
+/**
+ * `T-513` · **כמה שלדי מודול מצוירים בחלון הטעינה.** ‏`ui-ux-pro-max` · `ux` ·
+ * Layout / **Content Jumping** (Severity High): «Reserve appropriate space» ⇒ עד היום
+ * הנתיב היה ריק בזמן טעינה, ואחרי ~3 שניות ארבעה כרטיסים דחפו את הדף מתחת לאצבע.
+ * ⛔ **ו⛔ אינו מבטיח מספר מודולים** — זו שמירת מקום, ⛔ לא ספירה: מה שנמסר נכנס במקומה.
+ */
+export const MODULE_SKELETON_COUNT = 4;
+
+export function moduleSkeletonCount(id: StudyTrackId, loading: boolean): number {
+  return id === 'vocabulary' && loading ? MODULE_SKELETON_COUNT : 0;
 }
 
 /**

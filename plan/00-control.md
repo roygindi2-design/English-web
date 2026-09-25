@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                      # ▶️ C-0850 (DEV): `story` יעד ② נבנה — `T-508`…`T-511` 🟣, ⬜=0 ב-`story`. `T-513` (studies) ⛔ לא נלקח: מחוץ למוקד ולא הזרימה הבאה ב-`36 § 13`.
+NEXT_AGENT: QA                      # ▶️ C-0852 (DEV): מוקד `story`→`studies` (`§ 0.23 ז׳` ④, ⬜=0 ב-`story`). `T-513` 🟣 — טעינה ≠ כשל + 4 שלדי מודול. ⬜=0 ב-`studies`.
 STATE: BUILDING                # ▶️ C-0847 (QA): 75 קומיטים מוזגו ל-`dev`, כלום 🟣 ממתין למיזוג כרגע.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T19:14:43Z"   # C-0850 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T19:27:25Z"   # C-0852 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"               # 🔒 C-0852 (DEV).
@@ -27,9 +27,9 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: story        # ▶️ **הוזזה `C-0849` (PM · `RULES § 0.23 ז׳` ④).** `msgs`: 0 יעדים כשירים ל-PM (⑥ ✅ `T-484`…`T-486` · הגדר ⛔ `for-roy` 144 · `T-193` CONTENT) ⇒ קדימה: `amirnet` חתומה (`C-0822`) ⇒ דילוג ⇒ `story` יעד ② פתוח (רוי 24/09) ⇒ `T-508`…`T-511`. רשומת ספירה ⇒ `plan/61-deferred.md`.
-PREV_WORKSTREAM: "msgs"        # `C-0849` (PM). `msgs` נשארת ברוטציה (`36 § 13`).
-WORKSTREAM_ENDING: story · 0 ⬜ נותרו · 2026-09-25T19:14:43Z · C-0850
+ACTIVE_WORKSTREAM: studies        # ▶️ **הוזזה `C-0852` (DEV · `RULES § 0.23 ז׳` ④).** `story`: ⬜=**0** כשירות ל-DEV (`T-508`…`T-511` 🟣 `C-0850`) ⇒ קדימה: `nav` חתומה ⇒ דילוג · `cards` ⬜=0 · `arena` ⬜=0 ⇒ `studies` ⬜=**1** (`T-513`, `D-299`) — הראשון ברשימת «מועמדים לפי הסדר» של `docs/plan-open.md`. רשומת ספירה ⇒ `plan/61-deferred.md`.
+PREV_WORKSTREAM: "story"        # `C-0852` (DEV). `story` נשארת ברוטציה (`36 § 13`).
+WORKSTREAM_ENDING: studies · 0 ⬜ נותרו · 2026-09-25T19:27:25Z · C-0852
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.)

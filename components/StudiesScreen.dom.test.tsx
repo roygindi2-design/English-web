@@ -23,6 +23,8 @@ import type { LevelSummary } from '@/lib/core/levelSummary';
 const api = vi.hoisted(() => ({
   places: [] as unknown[],
   placesFail: false,
+  /** `T-513` · ‏`/api/levels/summary` ⛔ לא חוזרת ⇒ המסך נשאר בחלון הטעינה. */
+  summaryPending: false,
   posted: [] as { path: string; body: unknown }[],
 }));
 
@@ -32,6 +34,7 @@ vi.mock('@/lib/api/client', () => ({
       if (api.placesFail) throw new Error('503');
       return { ok: true, places: api.places };
     }
+    if (api.summaryPending) return new Promise(() => {});
     return { ok: true, level: 'A1', levels: LEVELS };
   }),
   apiPost: vi.fn(async (path: string, body: unknown) => {
@@ -55,6 +58,7 @@ afterEach(() => {
   cleanup();
   api.places = [];
   api.placesFail = false;
+  api.summaryPending = false;
   api.posted = [];
   vi.clearAllMocks();
 });
@@ -150,5 +154,30 @@ describe('ⓐ המקום נכתב כשהפריט מתחיל — ⛔ ולא על 
     const card = await screen.findByText('רמה A1');
     fireEvent.click(card);
     expect(api.posted).toEqual([]);
+  });
+});
+
+describe('T-513 — חלון הטעינה ⛔ אינו מצב הכשל, והמודולים ⛔ אינם קופצים פנימה', () => {
+  it('בזמן טעינה ⛔ אין `UNREACHABLE_HE` ב-DOM, ויש בדיוק 4 שלדי מודול', async () => {
+    api.summaryPending = true;
+    const { container } = render(<StudiesScreen />);
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4));
+    expect(screen.queryByText(/לא הצלחנו לטעון את ההתקדמות/)).toBeNull();
+    expect(container.querySelectorAll('[data-skeleton="module"]')).toHaveLength(4);
+    expect(container.querySelector('[data-skeleton="metric"]')).not.toBeNull();
+  });
+
+  it('הטעינה נגמרה ⇒ השלדים יוצאים והמודולים האמיתיים נכנסים במקומם', async () => {
+    const { container } = render(<StudiesScreen />);
+    await screen.findByText('רמה A1');
+    expect(container.querySelectorAll('[data-skeleton]')).toHaveLength(0);
+  });
+
+  it('⛔ השלד שייך ל`אוצר מילים` בלבד — מסלול בלי קריאת רשת ⛔ אינו «נטען»', async () => {
+    api.summaryPending = true;
+    const { container } = render(<StudiesScreen />);
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4));
+    fireEvent.click(screen.getByRole('tab', { name: /דקדוק/ }));
+    expect(container.querySelectorAll('[data-skeleton]')).toHaveLength(0);
   });
 });
