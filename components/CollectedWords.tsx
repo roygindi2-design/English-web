@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
 import { apiGet, apiPatch } from '@/lib/api/client';
-import { encountersHe, viewCollection, type CollectedWord } from '@/lib/core/arcadeCollection';
+import {
+  collectedSourceHe,
+  encountersHe,
+  viewCollection,
+  type CollectedWord,
+} from '@/lib/core/arcadeCollection';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
@@ -32,10 +37,11 @@ import { SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
  */
 
 const HEADING_HE = 'המילים שאספתי';
-const SUBHEADING_HE = 'מילים שהפילו אותך בקרבות';
+// 🏷️ T-496ⓒ — שני ערוצי קליטה (`T-495`), ⇒ הכותרת ⛔ כבר ⛔ אינה אומרת «בקרבות» בלבד.
+const SUBHEADING_HE = 'מילים שעצרו אותך בעולם';
 const COLLECTED_COUNT_HE = 'מילים באוסף';
 const UNKNOWN_COUNT_HE = '—';
-const EMPTY_HE = 'עוד לא אספת מילים. כל מילה שתפיל אותך בקרב תגיע לכאן.';
+const EMPTY_HE = 'כל מילה שתפיל אותך בקרב, או שתקיש עליה בסיפור, תגיע לכאן.';
 const ALL_HIDDEN_HE = 'הסתרת את כל המילים באוסף.';
 const PLAY_HE = 'לזירה';
 const HIDE_HE = 'הסתר';
@@ -144,7 +150,20 @@ export default function CollectedWords(): React.JSX.Element {
                   <EnWord>{word.headword}</EnWord>
                 </p>
                 <p className="text-lg leading-relaxed text-ink">{word.translationHe}</p>
-                <p className="text-base text-ink-muted">{encountersHe(word.timesMissed)}</p>
+                {/* 🏷️ T-496ⓑ — השבב אומר **במילה** מאיפה המילה הגיעה; ⛔ צבע ⛔ אינו הערוץ.
+                    ⚠️ ומילה מסיפור נושאת `times_missed = 0` (‏`T-495` ⛔ אינו מקדם מונים) ⇒
+                    «נפגשת 0 פעמים» היה משפט שבור ⇒ השורה מופיעה ⛔ רק כשיש מה לספור. */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    data-collected-source={word.source}
+                    className="inline-flex items-center rounded-full border border-border-strong px-2.5 py-0.5 text-sm text-ink-muted"
+                  >
+                    {collectedSourceHe(word.source)}
+                  </span>
+                  {word.timesMissed > 0 ? (
+                    <span className="text-base text-ink-muted">{encountersHe(word.timesMissed)}</span>
+                  ) : null}
+                </div>
               </div>
               <button
                 type="button"

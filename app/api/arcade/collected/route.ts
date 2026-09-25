@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { latestCollected, type CollectedWord } from '@/lib/core/arcadeCollection';
+import { latestCollected, toCollectedSource, type CollectedWord } from '@/lib/core/arcadeCollection';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +25,7 @@ const MAX_COLLECTED_ROWS = 200;
 
 /** העמודות שהמסך מציג, ⛔ ותו לא. `select('*')` היה שולח למסך שדות שאינם עניינו. */
 const COLLECTED_SELECT =
-  'word_id, times_missed, first_seen_at, words!inner(headword, senses!inner(translation_he))';
+  'word_id, times_missed, first_seen_at, source, words!inner(headword, senses!inner(translation_he))';
 
 function isSchemaMissing(code: string | undefined): boolean {
   return code === '42P01' || code === 'PGRST205' || code === '42703' || code === 'PGRST204';
@@ -79,7 +79,7 @@ export async function GET() {
 
   const words: CollectedWord[] = (data ?? []).map((row) => {
     const r = row as unknown as {
-      word_id: string; times_missed: number | null; first_seen_at: string;
+      word_id: string; times_missed: number | null; first_seen_at: string; source?: unknown;
       words: { headword: string | null; senses: { translation_he: string | null }[] | null } | null;
     };
     const sense = (r.words?.senses ?? [])[0];
@@ -89,6 +89,7 @@ export async function GET() {
       translationHe: sense?.translation_he ?? '',
       timesMissed: r.times_missed ?? 0,
       firstSeenAt: r.first_seen_at,
+      source: toCollectedSource(r.source),
     };
   });
 

@@ -76,3 +76,20 @@ describe('§ 4.2יב · T-110 — רשימה, ⛔ ולא מנוע', () => {
     expect(CODE).not.toContain('m-auto');
   });
 });
+
+describe('T-496 — המקור של כל מילה, והכותרת שמפסיקה לומר «בקרבות»', () => {
+  it('ⓑ שבב מקור בכל שורה, דרך collectedSourceHe — מילה, ⛔ ולא צבע בלבד', () => {
+    expect(CODE).toContain('collectedSourceHe(word.source)');
+    expect(CODE).toContain('data-collected-source');
+  });
+
+  it('ⓒ הכותרת והמצב הריק מדברים על שני הערוצים', () => {
+    expect(SRC).toContain("'מילים שעצרו אותך בעולם'");
+    expect(SRC).toContain("'כל מילה שתפיל אותך בקרב, או שתקיש עליה בסיפור, תגיע לכאן.'");
+    expect(CODE).not.toContain('בקרבות');
+  });
+
+  it('⛔ «נפגשת 0 פעמים» ⛔ לעולם אינו מוצג — מילה מסיפור נושאת 0', () => {
+    expect(CODE).toMatch(/word\.timesMissed > 0 \?/);
+  });
+});

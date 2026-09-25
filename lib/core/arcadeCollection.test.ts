@@ -5,11 +5,13 @@ import {
   latestCollected,
   viewCollection,
   type CollectedWord,
+  collectedSourceHe,
+  toCollectedSource,
 } from './arcadeCollection';
 
 const word = (id: string): CollectedWord => ({
   wordId: id, headword: 'ability', translationHe: 'יכולת',
-  timesMissed: 3, firstSeenAt: '2026-08-19T00:00:00.000Z',
+  timesMissed: 3, firstSeenAt: '2026-08-19T00:00:00.000Z', source: 'arena',
 });
 
 describe('§ 4.2יב — שני מצבים ריקים **שונים**, ⛔ ולא אחד', () => {
@@ -50,7 +52,7 @@ describe('⛔ מדד ⓐ — ⛔ אפס שדה לימודי בשכבה הזאת'
 
 describe('D-071ⓑ · T-133 — «המילה שאספת אתמול» היא הפריט האחרון, ⛔ ולא חלון זמן', () => {
   const at = (id: string, headword: string, firstSeenAt: string): CollectedWord => ({
-    wordId: id, headword, translationHe: 'יכולת', timesMissed: 0, firstSeenAt,
+    wordId: id, headword, translationHe: 'יכולת', timesMissed: 0, firstSeenAt, source: 'arena',
   });
 
   it('יש פריט גלוי ⇒ הראשון ברשימה (`first_seen_at desc`) הוא הפִּין', () => {
@@ -83,5 +85,26 @@ describe('D-071ⓑ · T-133 — «המילה שאספת אתמול» היא הפ
   it('⛔ אין תגמול, ⛔ אין מונה ו⛔ אין רצף בשדה (D-071ⓑ)', () => {
     const latest = latestCollected([at('w1', 'cat', '2026-08-20T10:00:00.000Z')]);
     expect(Object.keys(latest ?? {}).sort()).toEqual(['collectedAt', 'enText']);
+  });
+});
+
+describe('T-496 — מקור המילה באוסף', () => {
+  it("ⓐ ערך שאינו 'story' ⇒ 'arena' — ברירת המחדל של העמודה, ⛔ אין ערך שלישי", () => {
+    expect(toCollectedSource('story')).toBe('story');
+    expect(toCollectedSource('arena')).toBe('arena');
+    expect(toCollectedSource(undefined)).toBe('arena');
+    expect(toCollectedSource('quiz')).toBe('arena');
+  });
+
+  it('ⓑ השבב הוא מילה, ⛔ ולא צבע', () => {
+    expect(collectedSourceHe('arena')).toBe('מהזירה');
+    expect(collectedSourceHe('story')).toBe('מסיפור');
+  });
+
+  it('ⓓ viewCollection נשארת המקום היחיד שמכריע בין שני המצבים הריקים — ⛔ המקור ⛔ אינו משנה אותה', () => {
+    const story: CollectedWord = { ...word('s'), source: 'story', timesMissed: 0 };
+    expect(viewCollection({ visible: [story], hiddenCount: 0 })).toEqual({ kind: 'list', words: [story] });
+    expect(viewCollection({ visible: [], hiddenCount: 1 })).toEqual({ kind: 'all_hidden' });
+    expect(viewCollection({ visible: [], hiddenCount: 0 })).toEqual({ kind: 'empty' });
   });
 });

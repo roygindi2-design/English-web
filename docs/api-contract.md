@@ -1912,7 +1912,7 @@ F-004): `{ "ok": false, "code": "unavailable" }`
 ```json
 { "ok": true,
   "words": [ { "wordId": "…", "headword": "ability", "translationHe": "יכולת",
-               "timesMissed": 3, "firstSeenAt": "2026-08-19T00:00:00.000Z" } ],
+               "timesMissed": 3, "firstSeenAt": "2026-08-19T00:00:00.000Z", "source": "arena" } ],
   "hiddenCount": 4,
   "latest": { "enText": "ability", "collectedAt": "2026-08-19T00:00:00.000Z" } }
 ```
@@ -1923,6 +1923,7 @@ F-004): `{ "ok": false, "code": "unavailable" }`
 | `hiddenCount` | מספר השורות שהלומד הסתיר. ⛔ **זה מה שמפריד «עוד לא אספת» מ«הסתרת את כולן»** — שני מצבים ריקים **שונים** (§ 4.2יב), ובלי הספירה הם קורסים לאחד |
 | `latest?` | `{enText, collectedAt}` — «המילה שאספת אתמול» של הפִּין ברשת הבית (D-071ⓑ · T-133). **חסר ⇒ «אין פריט אחרון גלוי»**, ⛔ ולא `null`. ⛔ **אין חלון זמן:** `enText` הוא ה-`headword` של השורה בעלת `first_seen_at` המקסימלי תחת `hidden_by_learner=false` — כלומר `words[0]`, ⛔ ולא «מה שנאסף ב-24 השעות האחרונות». ⇒ מה שמופיע בפִּין ⛔ תמיד נמצא גם ב-`words` |
 | `timesMissed` | כמה פעמים המילה הפילה בקרב. המסך מציג «נפגשת N פעמים» ⛔ ואינו מחשב אותו |
+| `source` | ⟦**T-496 · `D-293`ⓒ**⟧ `arena` \| `story` — מאיפה המילה נכנסה לאוסף **לראשונה** (`0039_collected_source.sql`). המסך מציג שבב במילה (`מהזירה`/`מסיפור`). מילה מסיפור נושאת `timesMissed: 0` ⇒ «נפגשת N פעמים» מוצג ⛔ רק כש-N>0. |
 
 ⚠️ **תקרת 200 השורות היא ביטוח ⛔ ולא מגבלת מוצר, ו⛔ אינה מוצגת ללומד** — אותו נוסח
 כמו `MAX_FEED_ROWS` ב-`GET /api/world/posts`.

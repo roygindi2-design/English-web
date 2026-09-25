@@ -16,6 +16,27 @@ export interface CollectedWord {
   readonly translationHe: string;
   readonly timesMissed: number;
   readonly firstSeenAt: string;
+  /** 🏷️ T-496 · `D-293`ⓒ — מאיפה המילה נכנסה לאוסף **לראשונה**. ⛔ נקבע בשרת, ⛔ לא כאן. */
+  readonly source: CollectedSource;
+}
+
+/** 🏷️ T-495/T-496 — שני ערוצי הקליטה לאוסף, בדיוק ה-`check` של `0039_collected_source.sql`. */
+export type CollectedSource = 'arena' | 'story';
+
+/**
+ * ⛔ ערך שאינו `story` ⇒ `arena`: זו ברירת המחדל של העמודה, וכל שורה שקדמה ל-`0039` היא
+ * של הזירה. ⛔ ⛔ אין כאן ערך שלישי שמומצא במסך.
+ */
+export function toCollectedSource(value: unknown): CollectedSource {
+  return value === 'story' ? 'story' : 'arena';
+}
+
+/**
+ * 🏷️ T-496ⓑ — השבב **במילה**, ⛔ ולא בצבע בלבד (חוקה § 1 · `check:mobile`).
+ * ⛔ «מסיפור» ⛔ אינו «מהסיפור»: הלומד ⛔ אינו יודע לאיזה סיפור הכוונה, ואנחנו ⛔ לא שומרים.
+ */
+export function collectedSourceHe(source: CollectedSource): string {
+  return source === 'story' ? 'מסיפור' : 'מהזירה';
 }
 
 /** שלושת המצבים של המסך. */
