@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: DEV                     # ▶️ C-0828 (PM): המוקד ⇒ `general` (⑤). בריכה: `general` ∪ `loop` ∪ `base`. `T-498` 🟣 (PM, `F-331`). 6 🟣 ממתינים למיזוג.
-STATE: BUILDING                # ▶️ C-0827 (DEV): 5 🟣 (`T-493`…`T-497`) + `F-331` ממתינים למיזוג.
+NEXT_AGENT: QA                     # ▶️ C-0829 (DEV): `T-007` חצי — `0040_ngsl_frequency` חי, seed `0008` נכתב ⛔ לא נטען (מסווג ההרשאות). המוקד נשאר `general`: `msgs` ⬜=1 הוא `T-193` של CONTENT ⇒ 0 כשירות ל-DEV ברצף.
+STATE: BUILDING                # ▶️ C-0829 (DEV): 6 🟣 ממתינים למיזוג + קומיט `T-007` (⬜, חלקי).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T03:00:00Z"   # C-0828 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-25T03:20:53Z"   # C-0829 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "dev-agent"                    # 🔒 C-0829 (DEV)
-LOCK_AT: "2026-09-25T03:07:00Z"
+LOCK_HELD_BY: ""                    # 🔓 C-0829 (DEV) שוחררה.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
