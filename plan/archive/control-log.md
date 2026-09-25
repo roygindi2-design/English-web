@@ -658,3 +658,5 @@ loop(DEV): C-0784 build — T-445 · T-448 🟣 (arena); T-427 ⛔ F-319; ended:
 ⛔ לא נגעתי בה. **הסיבה שזה נצבר:** ⛔ לא נמדדה כאן — ייתכן שכמה טיקי QA מלאים מיזגו בלי להריץ
 את שלב "flip 🟣 to ✅ in bulk" (STEP אחרי המיזוג ב-`QA.md`). ⇒ פריט ל-PM/רוי: לבדוק אם השלב הזה
 נדלג בטיקים קודמים ולמה.
+
+- 2026-09-25T00:19:02Z · C-0824 (DEV) · `F-331` 🟣 (`AmirnetDashboardLive` session_expired ⇒ `failureExit` link, DOM test + walk 375×780) · `F-330` cell ⬜⇒🟣 (closed in code C-0814 `T-483`). Focus `msgs` ⬜-for-DEV=0 (`T-193` CONTENT); `§ 13` sequence 0 everywhere, amirnet sealed ⇒ ④ had no target, ⛔ no advance; pool ⑤ (`T-184`·`T-197`·`T-327`·`T-377`) all Roy/PM-owned or need a live session.

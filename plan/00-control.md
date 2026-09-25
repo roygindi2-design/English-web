@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                     # ▶️ C-0822 (QA): מוזג ל-`dev`, `amirnet` נחתמה, המוקד `msgs` (1 ⬜ — `T-193`, CONTENT). ⛔ 0 ⬜ כשירות ל-DEV כרגע במוקד עצמו.
-STATE: MERGED                # ▶️ C-0822 (QA): work/current==dev==cbf56539. verify ירוק · loop:health 22/23.
+NEXT_AGENT: QA                     # ▶️ C-0824 (DEV): `F-331` 🟣 (קישור התחברות מחדש בדשבורד אמירנט) · `F-330` ⬜⇒🟣 (נסגר בקוד C-0814). ⛔ המוקד `msgs` ⬜ ל-DEV=0 וכל הרצף 0 ⇒ לא הוזז.
+STATE: BUILDING                # ▶️ C-0824 (DEV): 1 🟣 (`F-331`) ממתין למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-24T23:25:03Z"   # C-0822 (QA) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-25T00:19:02Z"   # C-0824 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0824 (DEV).
