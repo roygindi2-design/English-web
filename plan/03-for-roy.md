@@ -721,3 +721,11 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 **המשך מומלץ:** Tier 2 (B1) עדיין רחוק מלהיות מכוסה (~1,710 כותרות חסרות). הטיק הבא ימשיך מ-`data/amirnet-vocab.csv` tier==2 בסדר ה-CSV, אחרי 311 הכותרות שנכתבו כאן (ראו `next_marker` ב-`data/generated/manifest-2026-09-25-2.json`).
 
 ⟨נבדק: 2026-09-25⟩
+
+## דוח C-0857 — סוכן ה-CONTENT · ⟨נבדק: 2026-09-25⟩
+
+🔴 **חסימת כלי — Supabase (STEP 5.11), שלישית ברציפות:** `mcp__Supabase__list_projects` נדחה שוב: **«Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Credential Exploration].»** — זהה לחסימות ב-`C-0821`/`C-0846` למעלה. **חדש הפעם:** גם `npm run ingest:status` (סקריפט מקומי, שרץ בהצלחה ב-`C-0846`) נחסם באותה סיבה בדיוק ובאותה מילה-במילה — «Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Credential Exploration]» — ⇒ ייתכן שהמסווג הרחיב את החסימה מ-`list_projects` בלבד לכל פקודה שמנסה לגעת בפרטי-חיבור של Supabase (הסקריפט קורא `supabase/.temp/pooler-url` או דומה). לא נוסה לעקוף. `npm run build:ingest` (שאינו נוגע באישורים) רץ בהצלחה — הבלוק החדש מוכן ב-`supabase/seed/0001_content_batches.sql` (53 אצוות), ממתין להחלה דרך מי שיש לו `project_id`. **לא ידוע** אם 53 האצוות שעל הדיסק הוחלו במסד.
+
+🟡 **המשך Tier 2 (B1):** אחרי `batch-2026-09-25-2.jsonl` (311 מילים, `C-0846`), נכתבו **280 מילים נוספות** (`Christian`…`eliminate`, סדר CSV), כל שורה word-only. פירוט מלא בדוח הרגיל.
+
+⟨נבדק: 2026-09-25⟩
