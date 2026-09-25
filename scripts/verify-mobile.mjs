@@ -783,7 +783,10 @@ const EXPECTED_CONSOLE = {
     // env, exactly like the pre-existing `deck=due$` line above it. Keyed to the
     // one URL and the one status: a 400 (the route rejecting `deck=level`) or any
     // other status still fails this check.
-    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=level$/,
+    // 🎚️ `T-515` · `D-300`: the level deck now names its round size — `limit=20` is the
+    // default a fresh harness browser (empty storage) sends. Still keyed to the one URL and
+    // the one status; a size other than the three, or a `limit` on `due`, fails it.
+    /status of 503[\s\S]*@\S*\/api\/study\/queue\?deck=level&limit=20$/,
   ],
   // C-0127 (task 7): `<TabBar>` now asks the server whether the world tab is unlocked, so
   // EVERY tab fixture makes this one request and the harness — which runs with no Supabase

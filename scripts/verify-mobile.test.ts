@@ -949,7 +949,8 @@ describe('both tab fixtures declare where their tap lands (T-091)', () => {
   it('allows exactly the one 503 that landing on /study causes', () => {
     const expected = source.slice(source.indexOf('const EXPECTED_CONSOLE'));
     const block = expected.slice(expected.indexOf("'/dev/tabs/cards':"));
-    expect(block).toContain('\\/api\\/study\\/queue\\?deck=level$');
+    // `T-515` — the level deck names its round size; a fresh browser sends the default 20.
+    expect(block).toContain('\\/api\\/study\\/queue\\?deck=level&limit=20$');
   });
 });
 
