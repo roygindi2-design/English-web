@@ -1,22 +1,22 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0832 (PM): 0 שורות — הרצף יבש ל-PM; 🔴 QA-מלא: פתיחה מחדש של `nav` ל-`kol-E` (0/6) היא היציאה היחידה מ-`general`. `verify` אדום (`measure-continuations`, סדר 2 = 9.0%) ⇒ `for-roy` 148.
+NEXT_AGENT: PM                     # ▶️ C-0833 (QA): `nav` נפתחה מחדש (חתומה מ-`C-0316`) ⇒ `ACTIVE_WORKSTREAM` = `nav`, יעד ① `kol-E` (0/6). PM: כתוב שורות T- לשש המסכים. `verify` עדיין אדום (`measure-continuations`, סדר 2 = 9.0%, `for-roy` 148) — לא שלי לתקן, מחכה למילה של רוי.
 STATE: BUILDING                # ▶️ C-0829 (DEV): 6 🟣 ממתינים למיזוג + קומיט `T-007` (⬜, חלקי).
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T08:53:00Z"   # C-0832 (PM) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T11:05:00Z"   # C-0833 (QA) ⇒ PM.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "QA"
 LOCK_AT: "2026-09-25T10:46:23Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
-#   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
+#   nav:     3 / 120           # § 13-2 · **המוקד — נפתחה מחדש `C-0833` (QA), חתומה מ-`C-0316`.** יעד ① `kol-E-02`…`07` (0/6 בנויים, רוי 17/09) ⬜=1 (טרם נכתבה שורת T-, PM הבא). פירוט הסגירה המקורית ⇒ `plan/archive/control-log.md` (הוצא C-0418).
 #   cards:  21 / 120           # § 13-3 · **⛔ אינה המוקד.** ⬜=**0** — `T-413` 🟣 ב-`C-0705` (חריג ה-🔴 של `F-277`, החצי השני שלו) ⇒ ⛔ **⛔ לא הזזת מוקד**: הריקון קרה בזרימה שאינה המוקד. 🟣=2 · ⛔=1 (`T-237`). חוב ⇒ `plan/61-deferred.md`
 #   arena:  40 / 120          # § 13-4 · **המוקד** (←`msgs`, `C-0817` PM). ⬜=3 (`T-487`…`T-489`, ארון הציוד) · 🟣=11 · ⛔=4.
 #   studies: 10 / 120         # § 13-5 · **⛔ אינה המוקד** (→`arena`, `C-0698`). ⬜=**0** · 🟣=2 · ✅=5 · ⛔=1 (`C-0701` QA: T-409·T-410·T-414 🟣⇢✅). חוב ⇒ `plan/61-deferred.md`
 #   amirnet: 26 / 120          # § 41 § 8-1..3 · **נחתמה `C-0822` (QA) → `msgs`.** ⬜=0 · ✅=3 (`T-490`…`T-492`, מוזגו) · ⛔=2 (`T-312`·`T-324`). SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
-#   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. הנרטיב ⇒ `plan/archive/control-log.md`
+#   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. **⛔ אינה המוקד עוד** (→`nav`, `C-0833` QA). הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
 #   msgs:    8 / 120           # 39 § 9 · **המוקד** (←`amirnet`, `C-0822` QA, גלגול — הרצף הגיע לסופו). ⬜=1 (`T-193` CONTENT) · 🟣=14 · ⛔=3 (`T-475`…`T-477`, `for-roy` 144). ⇒ `plan/61-deferred.md`
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
@@ -27,14 +27,14 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: general        # ▶️ **הוזז `C-0828` (PM · `§ 0.23 ז׳` ⑤).** `story`: 0 יעדים פתוחים (① נבנה, `T-493`…`T-496` 🟣) ⇒ גלגול: `nav`/`amirnet` חתומות · `cards`/`arena`/`studies` 0 יעדים · `msgs` 0 כשירים ⇒ חדר ההמתנה. ⛔ נבחן מחדש בכל טיק. רישום ⇒ `61-deferred.md`.
-PREV_WORKSTREAM: "story"        # `C-0828` (PM) — הזזה, ⛔ לא חתימה.
+ACTIVE_WORKSTREAM: nav        # ▶️ **נפתחה מחדש `C-0833` (QA · `RULES § 0.23 ז׳` ⓪, `F-261`).** `general` היא חדר המתנה, ⛔ ולא מחלקה, והרצף `36 § 13` החזיק עבודה (`docs/plan-open.md` 🔴 «מועמדים לפי הסדר»: `msgs` 1⬜) ⇒ המוקד חייב לחזור. נספר: `msgs` ⬜=1 שייכת ל-CONTENT בלבד (`T-193`) — ⛔ אין בה שורה ל-PM/DEV, בדיוק כפי ש-PM מדד ב-`C-0828`/`C-0832`. **המנוף האמיתי היחיד** הוא `nav` — חתומה מ-`C-0316`, אך נושאת יעד ① פתוח לגמרי (`kol-E-02`…`07`, 0/6 רנדרים בנויים, הוראת רוי מ-17/09) שרשום כ"פתיחה מחדש של QA בלבד" (`36 § 13.1`) ומחכה 8 ימים. ⇒ פתיחה מחדש עכשיו, ⛔ לא דילוג נוסף. PM: כתוב שורות T- ל-6 המסכים.
+PREV_WORKSTREAM: "general"        # `C-0833` (QA) — פתיחה מחדש, ⛔ לא חתימה חדשה על `general` (מעולם ⛔ אינה נחתמת).
 WORKSTREAM_ENDING: ""
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
-MERGE_BLOCKERS: ""                # 🟢 רוקן `C-0714` — `F-286` נסגר באישור רוי (טענת יחס). `verify` exit 0, 288/288.
+MERGE_BLOCKERS: "verify אדום — `scripts/measure-continuations.test.ts:87` (סדר 2 = 9.0% < רצפת 10%). ⛔ קוד לא נגע בזה: כשל נמדד זהה לזה שדיווח PM ב-`C-0832` ⇒ `for-roy` 148 (ⓑ עוברת פי 90, ⓐ הרצפה נופלת — סף שרק רוי רשאי להזיז). QA לא ממזג עד תשובה. ⛔ אין F- חדש נפתח."
 PROMOTION_BLOCKERS: "C-0772 (PROMOTER, 13:45 tick): `git merge --ff-only origin/dev` on `main` refused by the Claude Code auto mode classifier — exact text: «Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Production Deploy].» ⛔ Not a red `verify` (verify was green, exit 0, 5282/5282). ⛔ Not worked around, not rephrased, not retried — per `docs/agents/PROMOTER.md` STEP E, a refusal is final. `auto_mode_allow: []` on the scheduled Routine (item 135, `plan/03-for-roy.md`) is the same root cause already blocking Supabase migrations — it now also blocks the promoter's own merge. Gate was otherwise all-green: `verify` 9/9 · `loop:health` 21/23 (2 known non-blocking) · 21 commits `main..dev`, real ff. ⇐ PROMOTER בלבד כותב."
 DEPLOY_BRANCH: main               # Netlify בונה אך ורק את זה. 🆕 06/09: **רק PROMOTER מקדם לכאן** (`RULES § 0.29`, `5 0 * * *` UTC — ⚠️ הוזז ב-07/09 בבקשה מפורשת של רוי: `0 23` ⇢ `21 23` ⇢ `5 0`, כי `23:21` השאיר 11 דקות בלבד מטיק DEV של 36 דקות). רוי גובר תמיד.
 LAST_PROMOTED_AT: "2026-09-18T13:19:30Z"  # 🚢 **C-0711 (OPS) — ידני, הוראת רוי, הלופ כבוי.** `3b401b2e..0441f8f5` · **90 קומיטים** · ff-only. עשן מלא עבר: נתיב חדש-בלבד 200 · בקרה שלילית 404 · `/api/health` 3/3 `ok:true`.
@@ -52,8 +52,8 @@ PROMOTIONS_THIS_MONTH: 21         # 21 (➕ 18/09, C-0711). 🔄 מתאפס בכ
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0828 | PM | DEV | 03:00Z | `story` 0 יעדים פתוחים (4 🟣) ⇒ `§ 0.23 ז׳` ⑤: 5 מחלקות נספרו (0 כשירות), 2 חתומות ⇒ `general`. הליכה 21 מסכים @375: 0 פגמים. | `T-498` 🟣 (`F-331`) |
 | C-0832 | PM | QA | 08:53Z | `§ 0.23 ז׳` ⓪→④ נספר מחדש: `cards`/`arena`/`studies` 0 יעדים · `msgs` 0 כשירים (`T-193` CONTENT, `T-475`…`T-477` ⛔ 144) · `nav`/`amirnet` חתומות ⇒ נשאר `general`. 🔴 **היציאה היחידה: QA-מלא פותח מחדש את `nav` ל-`kol-E` (0/6 בנויים, רוי 17/09).** `verify` אדום ⇒ `for-roy` 148. | 0 שורות · `for-roy` 148 |
+| C-0833 | QA | PM | 11:05Z | `STEP 5.8`: המוקד `general` ⛔ אינה מחלקה, והרצף מחזיק עבודה (`msgs` 1⬜, `T-193` CONTENT בלבד — ⛔ אין שורה ל-PM/DEV) ⇒ **פתיחה מחדש של `nav`** (חתומה `C-0316`, יעד ① `kol-E` 0/6 ממתין 8 ימים). `verify` נותר אדום (`for-roy` 148, לא נגעתי). `SKIP_VERIFY=1` פעמיים (נעילה + הרגיסטרים; שתיהן דווחו). הליכה 4 מסכים @375: 0 פגמים, `diff:render` על `kol-C-13`: תואם. | `ACTIVE_WORKSTREAM`=`nav` · `61-deferred.md` |
 
 
 
