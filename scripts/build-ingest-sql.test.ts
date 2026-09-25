@@ -51,7 +51,7 @@ const RECORDS = SOURCE.flatMap((f) =>
   readFileSync(join(DATA, f), 'utf8')
     .split('\n')
     .filter(Boolean)
-    .map((line) => JSON.parse(line) as { translation_confidence?: string }),
+    .map((line) => JSON.parse(line) as { translation_confidence?: string; examples?: unknown }),
 );
 const SOURCE_LOW = RECORDS.filter((r) => r.translation_confidence === 'low').length;
 /** Measured 2026-08-13 (C-0079). A drop below either is a regression. */
@@ -271,7 +271,7 @@ describe('supabase/seed/0003_scoring_material.sql', () => {
     expect(sql).toContain('insert into public.sense_items (sense_id, stem, item_index, level, level_rationale)');
   });
 
-  it('emits exactly two examples per PASSING sense — D-022, measured against 0001, ⛔ not a literal', () => {
+  it('emits exactly two examples per PASSING sense that carries a pair — D-022 · T-353, measured against 0001, ⛔ not a literal', () => {
     const sql = fresh();
     // 0001 states "N of M rows pass the gate" per batch. Summing N is the passing count,
     // measured from the sibling output — ⛔ never restated here, where a content tick
@@ -279,7 +279,12 @@ describe('supabase/seed/0003_scoring_material.sql', () => {
     const passing = [...readFileSync(FRESH, 'utf8').matchAll(/— (\d+) of \d+ rows pass the gate/g)]
       .reduce((total, m) => total + Number(m[1]), 0);
     expect(passing).toBeGreaterThanOrEqual(ROWS_FLOOR);
-    expect(Number(/(\d+) examples/.exec(sql)?.[1] ?? -1)).toBe(passing * 2);
+    // T-353: a word-only row (examples absent or null) is legal and carries ⛔ no pair.
+    // The generator exits 1 on any rejected row, so reaching here means passing = every
+    // source row ⇒ the rows without a pair are measured from the source, ⛔ not assumed.
+    expect(passing).toBe(RECORDS.length);
+    const wordOnly = RECORDS.filter((r) => r.examples === undefined || r.examples === null).length;
+    expect(Number(/(\d+) examples/.exec(sql)?.[1] ?? -1)).toBe((passing - wordOnly) * 2);
   });
 
   it('joins on (headword, pos, sense_index) and ⛔ invents no id', () => {
