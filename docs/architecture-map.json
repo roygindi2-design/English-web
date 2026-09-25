@@ -1902,6 +1902,14 @@
   "lib/core/ringEdit.ts": [
     "lib/core/worldRing.ts"
   ],
+  "lib/core/ringMode.test.ts": [
+    "lib/core/ringMode.ts",
+    "lib/core/worldRing.ts"
+  ],
+  "lib/core/ringMode.ts": [
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
+  ],
   "lib/core/roundSummary.test.ts": [
     "lib/core/roundSummary.ts"
   ],
