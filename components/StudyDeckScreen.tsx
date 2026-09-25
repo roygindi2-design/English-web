@@ -88,6 +88,12 @@ const LEVEL_DONE_HE = 'סיננת את כל מילות הרמה הזאת. אפש
 /** ⛔ פעולה אחת, ⛔ ולא שתיים (`taste-skill § 4.5`: ⛔ אין שתי כוונות CTA על מסך אחד). */
 const LEVEL_RESTART_HE = 'להתחיל את הרמה מחדש';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+/**
+ * `T-516` · `kol-A-03-card` — the deck header's title. On `level` it is the screen's name,
+ * «כרטיסיות», exactly as `render_video_A.py:330` draws it beside the level chip; the other
+ * three decks keep their own name from `HEADINGS`, which is what the learner tapped.
+ */
+const CARDS_TITLE_HE = 'כרטיסיות';
 /** `T-514` · `T-515` — «עוד N מילים», N being the round size the learner chose. */
 const moreWordsHe = (n: number): string => `עוד ${n} מילים`;
 
@@ -130,6 +136,8 @@ type ScreenState =
       readonly cards: readonly DeckCard[];
       /** `T-400` — carried beside the cards because it arrived in the SAME answer. */
       readonly unseenInLevel?: number;
+      /** `T-516` — the band the server served (`T-502`), for the level chip. */
+      readonly band?: string;
     }
   | { readonly kind: 'empty' }
   /**
@@ -294,6 +302,7 @@ export default function StudyDeckScreen({
               kind: 'cards',
               cards: list,
               ...(typeof body.unseen === 'number' ? { unseenInLevel: body.unseen } : {}),
+              ...(typeof body.band === 'string' ? { band: body.band } : {}),
             },
       );
     } catch {
@@ -408,6 +417,8 @@ export default function StudyDeckScreen({
           // down with the queue this screen already asked for (`§ 4.2ז` forbids the second
           // `/api/levels/summary` read, and `<LevelMapScreen>` is a DIFFERENT screen).
           unseenInLevel={state.unseenInLevel}
+          titleHe={deck === 'level' ? CARDS_TITLE_HE : HEADINGS[deck]}
+          {...(deck === 'level' && state.band !== undefined ? { levelBand: state.band } : {})}
           {...(deck === 'level' ? { onMore: nextRound, moreLabelHe: moreWordsHe(roundSize) } : {})}
         />
       </section>

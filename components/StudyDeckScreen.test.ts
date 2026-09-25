@@ -530,3 +530,22 @@ describe('🎚️ T-515 — `limit` בשאילתה של `level` ⛔ ולא של 
     expect(CODE).toContain('`עוד ${n} מילים`');
   });
 });
+
+describe('🃏 T-516 — the deck header names the screen and the level (`kol-A-03-card`)', () => {
+  const cards = braceRegion(CODE, "if (state.kind === 'cards') {");
+
+  it('«כרטיסיות» on `level`, the deck\'s own heading on the other three', () => {
+    expect(CODE).toContain("const CARDS_TITLE_HE = 'כרטיסיות';");
+    expect(cards).toContain("titleHe={deck === 'level' ? CARDS_TITLE_HE : HEADINGS[deck]}");
+  });
+
+  it('the chip carries the band the SERVER served, on `level` alone — ⛔ never a default', () => {
+    expect(CODE).toMatch(/typeof body\.band === 'string' \? \{ band: body\.band \} : \{\}/);
+    expect(cards).toContain("deck === 'level' && state.band !== undefined ? { levelBand: state.band } : {}");
+    expect(cards).not.toMatch(/levelBand[^}]*'A1'/);
+  });
+
+  it('⛔ the exit is still handed down — demoting it ⛔ never removes the only way out', () => {
+    expect(cards).toContain("exit={returnTo ?? { href: '/cards', labelHe: BACK_TO_CARDS_HE }}");
+  });
+});

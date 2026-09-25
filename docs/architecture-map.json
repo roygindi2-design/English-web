@@ -1110,6 +1110,7 @@
     "lib/testSource.ts"
   ],
   "components/CardDeck.tsx": [
+    "components/EnWord.tsx",
     "components/Flashcard.tsx",
     "lib/core/deck.ts",
     "lib/core/flashcard.ts",

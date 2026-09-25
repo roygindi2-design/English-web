@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import EnWord from '@/components/EnWord';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Flashcard from '@/components/Flashcard';
 import { deckCardKey, isSentenceCard, type DeckCard, type DeckName } from '@/lib/core/deck';
@@ -84,6 +85,8 @@ export default function CardDeck({
   unseenInLevel,
   onMore,
   moreLabelHe = MORE_WORDS_HE,
+  titleHe,
+  levelBand,
 }: {
   readonly deck: DeckName;
   /**
@@ -141,6 +144,20 @@ export default function CardDeck({
   readonly onMore?: () => void;
   /** `T-514` — the button's label; `T-515` makes the number the learner's chosen round size. */
   readonly moreLabelHe?: string;
+  /**
+   * 🃏 **`T-516` · `kol-A-03-card` — the screen's NAME, as the header's first row.**
+   * `render_video_A.py:330` draws «כרטיסיות» at 25px Bold where the live screen showed only
+   * the underlined way out ⇒ the loudest thing on top was how to LEAVE. `<StudyDeckScreen>`
+   * passes «כרטיסיות» on `level` and the deck's own name on the other three.
+   * ⛔ Optional: the finish-state fixtures carry no title, and the row then reads as before.
+   */
+  readonly titleHe?: string;
+  /**
+   * `T-516` — the level chip beside the title (`render_video_A.py:331-335`, «A1» 12px Bold
+   * in a brand-tinted pill). ⛔ Only the band the SERVER said it served (`T-502`): the
+   * other three decks are not defined by a level, and a chip there would be a claim.
+   */
+  readonly levelBand?: string;
 }) {
   const [graded, setGraded] = useState<readonly string[]>([]);
   // T-276 — the round's own grades, in order. `graded` holds WHICH cards left; this holds
@@ -435,25 +452,51 @@ export default function CardDeck({
       data-card-deck={deck}
     >
       <header className="flex flex-none flex-col gap-1 border-b border-border-subtle bg-surface py-2 text-sm text-ink-muted">
-        {/* T-268 — the written exit is the header's own first row, ⛔ never an overlay: the
-            top-start corner it used to float over IS this row. `-ms-2` folds the link's tap
-            padding back into the gutter so the label aligns with the notice below it.
-            ⛔ No `data-primary-action`: `/study` is a FLOW_ROUTE and `check:mobile` counts
-            exactly one per screen (F-027). */}
-        {exit !== undefined && (
-          <Link
-            href={exit.href}
-            data-deck-exit
-            className="-ms-2 flex min-h-touch min-w-touch items-center self-start rounded-lg px-2 text-base text-ink underline active:opacity-90"
-          >
-            {exit.labelHe}
-          </Link>
+        {/* 🃏 `T-516` — the header's first row is WHERE the learner is: the screen's name and
+            the level chip (`kol-A-03-card`), and the written way out steps down to a quiet
+            secondary link at the row's far end. ⛔ It is ⛔ not removed: it is the only exit
+            from the round (T-268), still a 44px target (`min-h-touch`), still in this header
+            and above the card viewport (`check:mobile`), and still ⛔ no
+            `data-primary-action` (`/study` is a FLOW_ROUTE, F-027). The chip sits beside the
+            title and ⛔ not at the far edge as the render draws it, because the render has
+            no exit and that edge is the exit's. */}
+        {(titleHe !== undefined || exit !== undefined) && (
+          <div className="flex items-center justify-between gap-3">
+            {titleHe !== undefined && (
+              <div className="flex min-w-0 items-center gap-2">
+                <h1 data-deck-title className="text-2xl font-bold leading-tight text-ink">
+                  {titleHe}
+                </h1>
+                {levelBand !== undefined && (
+                  // ⛔ The letters are never alone for a screen reader: «רמה» is spoken before
+                  // them. The chip is text, so colour is ⛔ not its only channel.
+                  <span
+                    data-level-chip={levelBand}
+                    className="flex-none rounded-full border border-brand/60 bg-brand-surface/15 px-3 py-0.5 text-xs font-bold text-brand-surface"
+                  >
+                    <span className="sr-only">רמה </span>
+                    <EnWord>{levelBand}</EnWord>
+                  </span>
+                )}
+              </div>
+            )}
+            {exit !== undefined && (
+              <Link
+                href={exit.href}
+                data-deck-exit
+                className={`${titleHe === undefined ? '-ms-2' : '-me-2'} flex min-h-touch min-w-touch flex-none items-center rounded-lg px-2 text-sm text-ink-muted underline active:opacity-90`}
+              >
+                {exit.labelHe}
+              </Link>
+            )}
+          </div>
         )}
         <div className="flex items-center justify-between gap-3">
           {/* T-155 — התווית הקבועה חלה על **כל** חפיסה שדירוגה עובר ב-`/api/practice`,
               ⛔ ולא על `unknown` בלבד: ההבטחה היא על מה שהכפתורים ⛔ אינם עושים, והיא חייבת
               להיות נכונה על הכרטיס שהלומד מסתכל בו (D-033). */}
-          {deck === 'due' && <span>מנת היום</span>}
+          {/* `T-516` — ⛔ not twice: when the title row already reads «מנת היום», this one yields. */}
+          {deck === 'due' && titleHe === undefined && <span>מנת היום</span>}
           {deck !== 'due' && (
             <span data-practice-notice>תרגול — לא משנה את מועד החזרה</span>
           )}
@@ -465,7 +508,7 @@ export default function CardDeck({
               ממנו — ⇒ ⛔ אפס קריאות, ⛔ אפס מצב ו⛔ אפס מיגרציה.
               ⛔ **ו«נותרו» נשאר:** הוא נמדד ב-`data-remaining` ע"י הרתמה מאז `C-0104`,
               ושתי המחרוזות אומרות שני דברים — כמה **נשאר** וכמה **מתוך כמה**. */}
-          <span className="flex items-baseline gap-2">
+          <span className="ms-auto flex flex-none items-baseline gap-2 whitespace-nowrap">
             <span data-deck-position={position}>
               {position} מתוך {roundTotal}
             </span>

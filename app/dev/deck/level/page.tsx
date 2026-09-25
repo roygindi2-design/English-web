@@ -98,6 +98,10 @@ export default function DevDeckLevelPage() {
       onGraded={() => Promise.resolve()}
       exit={{ href: '/cards', labelHe: 'חזרה לכרטיסיות' }}
       unseenInLevel={314}
+      // `T-516` — what `<StudyDeckScreen>` passes on `level`: the screen's name and the band
+      // the server said it served. «A1» is the band `kol-A-03-card` itself draws.
+      titleHe="כרטיסיות"
+      levelBand="A1"
     />
   );
 }

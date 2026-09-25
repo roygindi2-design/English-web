@@ -672,8 +672,14 @@ export default function Flashcard({
         </div>
       )}
 
-      {/* Actions live in the lower half for thumb reach (MF-5). */}
-      <div className="mt-auto flex flex-col gap-3">
+      {/* Actions live in the lower half for thumb reach (MF-5).
+          🃏 `T-516`ⓒ — ⛔ no box inside a box. In `<CardDeck>` the next card peeks from
+          behind this one (`data-deck-peek`, `top-2 bottom-8`), and its frame ran on past
+          this card's face ⇒ the hint and the two grade buttons sat INSIDE a card frame that
+          is not theirs. ⇒ this block, and the `gap-6` above it (`before:`), paint the page
+          surface, so the peek shows only as the 8px strip above the face it was drawn for.
+          Outside the deck the surface is the page's own ⇒ ⛔ no visible change. */}
+      <div className="relative mt-auto flex flex-col gap-3 bg-surface before:pointer-events-none before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-surface before:content-['']">
         {/* T-066 · D-156 ⓑ — the three options ARE the action on a `choice` card: native
             `<button>`s (Enter/Space/`:focus-visible` for free), `min-h-touch` each, in ONE
             column. § 0.22: the render's two-button row (`render_video_A.py:381-392`) holds

@@ -146,6 +146,9 @@ export default function DevDeckPage() {
       // the overlay that broke the real screen was invisible to every run (§ 5 lesson:
       // a fixture that differs from production in any dimension is a hole, not a test).
       exit={{ href: '/cards', labelHe: 'חזרה לכרטיסיות' }}
+      // `T-516` — the title the real study screen passes on `due` (its own deck name); ⛔ no
+      // level chip, because production sends none for a deck that is not a level.
+      titleHe="מנת היום"
     />
   );
 }

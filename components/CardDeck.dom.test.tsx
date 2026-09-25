@@ -203,3 +203,68 @@ describe('🔁 T-514 — «עוד 20 מילים» בסוף הסבב', () => {
     expect(primary[0]?.textContent).toBe('חזרה לכרטיסיות');
   });
 });
+
+/**
+ * 🃏 `T-516` · `kol-A-03-card` — the header says WHERE the learner is before it says how to
+ * leave. **Failure scenario:** mid-round the learner cannot tell which screen or level they
+ * are on, and the loudest thing on top is the exit; or the chip lands and the exit is lost,
+ * leaving the round with ⛔ no way out.
+ */
+describe('🃏 T-516 — title row: screen name · level chip · a secondary exit', () => {
+  const EXIT = { href: '/cards', labelHe: 'חזרה לכרטיסיות' } as const;
+
+  it('🔑 renders «כרטיסיות» as the heading and the served band in the chip, with the exit kept', () => {
+    const { container } = render(
+      <CardDeck
+        deck="level"
+        cards={deckOf(5)}
+        onGraded={noop}
+        exit={EXIT}
+        titleHe="כרטיסיות"
+        levelBand="A1"
+      />,
+    );
+    const title = container.querySelector('h1[data-deck-title]');
+    expect(title?.textContent).toBe('כרטיסיות');
+    const chip = container.querySelector('[data-level-chip]');
+    expect(chip?.getAttribute('data-level-chip')).toBe('A1');
+    // ⛔ colour is not the only channel: the band is text, spoken with «רמה» before it,
+    // and it is English inside `<EnWord>` (English language tag, left-to-right).
+    expect(chip?.textContent).toBe('רמה A1');
+    const band = chip?.querySelector('[dir="ltr"]');
+    expect(band?.getAttribute('lang')).toMatch(/^en$/);
+    expect(band?.textContent).toBe('A1');
+    // The chip shares the title's row — the render draws them on one line.
+    expect(chip?.parentElement).toBe(title?.parentElement);
+    // ⛔ The exit is demoted, ⛔ never removed: exactly one, written, a 44px class.
+    const exits = container.querySelectorAll('[data-deck-exit]');
+    expect(exits).toHaveLength(1);
+    expect(exits[0]?.textContent).toBe('חזרה לכרטיסיות');
+    expect(exits[0]?.className).toContain('min-h-touch');
+    expect(exits[0]?.className).not.toContain('text-base');
+    expect(exits[0]?.hasAttribute('data-primary-action')).toBe(false);
+  });
+
+  it('⛔ no band ⇒ ⛔ no chip — a level nobody served is ⛔ not drawn', () => {
+    const { container } = render(
+      <CardDeck deck="unknown" cards={deckOf(3)} onGraded={noop} exit={EXIT} titleHe="לא ידעתי" />,
+    );
+    expect(container.querySelector('h1[data-deck-title]')?.textContent).toBe('לא ידעתי');
+    expect(container.querySelector('[data-level-chip]')).toBeNull();
+    expect(container.querySelectorAll('[data-deck-exit]')).toHaveLength(1);
+  });
+
+  it('⛔ «מנת היום» is ⛔ not printed twice when it is already the title', () => {
+    const { container } = render(
+      <CardDeck deck="due" cards={deckOf(3)} onGraded={noop} exit={EXIT} titleHe="מנת היום" />,
+    );
+    expect((container.textContent?.match(/מנת היום/g) ?? []).length).toBe(1);
+  });
+
+  it('no title ⇒ the header reads as before — the exit alone on its row, ⛔ no heading', () => {
+    const { container } = render(<CardDeck deck="due" cards={deckOf(3)} onGraded={noop} exit={EXIT} />);
+    expect(container.querySelector('h1')).toBeNull();
+    expect(container.querySelectorAll('[data-deck-exit]')).toHaveLength(1);
+    expect((container.textContent?.match(/מנת היום/g) ?? []).length).toBe(1);
+  });
+});

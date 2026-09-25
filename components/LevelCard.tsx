@@ -55,7 +55,8 @@ export default function LevelCard({ level }: { readonly level: CefrBand }): Reac
         {/* ⛔ האות לעולם אינה לבדה — `נקבעה במבחן הרמה` מתחתיה היא התווית העברית
             שחוקה § 1 דורשת, ו-`<EnWord>` נושא את ה-bidi. */}
         <EnWord className="text-4xl font-black leading-none text-brand-surface">{level}</EnWord>
-        <span className="text-xs text-ink-muted">{SOURCE_HE}</span>
+        {/* `T-516`ⓓ — one line at 375, as `kol-A-02-deck` draws it; ⛔ never below 12px. */}
+        <span className="whitespace-nowrap text-xs text-ink-muted">{SOURCE_HE}</span>
       </div>
 
       {/* ⛔ `rounded-full` — שבב, לפי סולם חמשת הרדיוסים של שכבה ב׳ ולפי הרנדר
