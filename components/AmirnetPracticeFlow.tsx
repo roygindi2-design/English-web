@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AmirnetPracticeMenu, { HEADING_HE, KICKER_HE } from '@/components/AmirnetPracticeMenu';
 import AmirnetQuestion, { type AmirnetAnswered } from '@/components/AmirnetQuestion';
@@ -15,6 +16,7 @@ import {
 } from '@/lib/core/amirnetPractice';
 import { BACK_TO_MENU_HE, NO_MORE_ITEMS_HE, type AmirnetServedItem } from '@/lib/core/amirnetQuestion';
 import { FAILURE_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * `T-376` — **the door**, and it is the whole row. **המשך של: T-372**.
@@ -209,13 +211,25 @@ export default function AmirnetPracticeFlow({ initialType = null }: AmirnetPract
       {phase.kind === 'blocked' ? (
         <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-raised p-4">
           <p className="text-sm text-ink">{failureHe(phase.code)}</p>
-          <button
-            type="button"
-            onClick={() => void loadStats()}
-            className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
-          >
-            {BACK_TO_MENU_HE}
-          </button>
+          {/* T-498 · F-331: «חזרה לתפריט» reloads the stats, and with a dead session that fetch
+              answers `session_expired` again ⇒ a button that leads back to this same box. The
+              learner fixes this failure themselves ⇒ the one exit `failureExit` gives it (D-065). */}
+          {phase.code === 'session_expired' ? (
+            <Link
+              href={failureExit('session_expired').href}
+              className="mt-4 inline-flex min-h-touch min-w-touch items-center rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
+            >
+              {SIGN_IN_AGAIN_HE}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void loadStats()}
+              className="mt-4 min-h-touch min-w-touch rounded-xl bg-brand-surface px-5 text-sm font-bold text-brand-on active:opacity-90"
+            >
+              {BACK_TO_MENU_HE}
+            </button>
+          )}
         </div>
       ) : (
         <>

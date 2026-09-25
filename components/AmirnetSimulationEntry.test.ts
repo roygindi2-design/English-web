@@ -82,4 +82,11 @@ describe('AmirnetSimulationEntry — T-308ⓒ, the press that starts the engine'
     // ⛔ «still checking» is ⛔ not «could not check» — the sentence is ⛔ not shown while asking.
     expect(CODE).toMatch(/'checking'/);
   });
+
+  it('T-498 · F-331 — session_expired ⇒ the `failureExit` sign-in link, ⛔ not «back to levels» that loops', () => {
+    expect(CODE).toMatch(/phase\.code === 'session_expired' \?/);
+    expect(CODE).toMatch(/href=\{failureExit\('session_expired'\)\.href\}/);
+    expect(CODE).toMatch(/\{SIGN_IN_AGAIN_HE\}/);
+    expect(CODE).toMatch(/BACK_TO_LEVELS_HE/);
+  });
 });

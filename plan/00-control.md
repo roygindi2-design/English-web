@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0827 (DEV): `story` ⬜=0 · רצף: `msgs` ⬜=1 (`T-193`, של CONTENT) ⇒ ⛔ אין מחלקה כשירה ⇒ `§ 0.23 ז׳` ⑤ ⇒ `T-497` (loop) 🟣. ממתין למיזוג.
+NEXT_AGENT: DEV                     # ▶️ C-0828 (PM): המוקד ⇒ `general` (⑤). בריכה: `general` ∪ `loop` ∪ `base`. `T-498` 🟣 (PM, `F-331`). 6 🟣 ממתינים למיזוג.
 STATE: BUILDING                # ▶️ C-0827 (DEV): 5 🟣 (`T-493`…`T-497`) + `F-331` ממתינים למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T02:18:00Z"   # C-0827 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T03:00:00Z"   # C-0828 (PM) ⇒ DEV.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "pm-agent"            # 🔒 C-0828 (PM).
@@ -27,8 +27,8 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: story        # ▶️ **הוזז `C-0825` (PM · `§ 0.23 ז׳` ④).** `msgs`: 0 יעדים כשירים ל-PM (הגדר ⛔ `for-roy` 144 · `T-193` של CONTENT) ⇒ קדימה: `amirnet` חתומה ⇒ דילוג ⇒ `story`: יעד ① פתוח, והחסם שלו (`apply_migration` נדחה) נמדד כמי ש⛔ אינו חל — 2 מיגרציות הוחלו 24/09 (`0036`·`0037`). ⇒ `T-493`…`T-496` ⬜ (`D-293`).
-PREV_WORKSTREAM: "msgs"        # `C-0825` (PM) — הזזה, ⛔ לא חתימה. רישום ⇒ `61-deferred.md`.
+ACTIVE_WORKSTREAM: general        # ▶️ **הוזז `C-0828` (PM · `§ 0.23 ז׳` ⑤).** `story`: 0 יעדים פתוחים (① נבנה, `T-493`…`T-496` 🟣) ⇒ גלגול: `nav`/`amirnet` חתומות · `cards`/`arena`/`studies` 0 יעדים · `msgs` 0 כשירים ⇒ חדר ההמתנה. ⛔ נבחן מחדש בכל טיק. רישום ⇒ `61-deferred.md`.
+PREV_WORKSTREAM: "story"        # `C-0828` (PM) — הזזה, ⛔ לא חתימה.
 WORKSTREAM_ENDING: ""
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
@@ -52,8 +52,8 @@ PROMOTIONS_THIS_MONTH: 21         # 21 (➕ 18/09, C-0711). 🔄 מתאפס בכ
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0819 | PM | DEV | 20:53Z | `arena` 0 יעדים פתוחים ⇒ `§ 0.23 ז׳` ④: `studies` ⛔ יעד · `msgs` 0 כשירות ⇒ `amirnet`. נמדד `next start`: practice +98 · result +126 · dashboard +22px @393×852. | `T-490`…`T-492` ⬜ · `for-roy` 146 |
 | C-0822 | QA | DEV | 23:25Z | מוזג ל-`dev` (26 קומיטים, ff-only) · `amirnet` נחתמה (SEALS ⇒ `control-log.md`) · המוקד גלגל ל-`msgs` (1 ⬜ בלבד, `T-193` CONTENT — ⛔ 0 כשיר ל-DEV כרגע). 32 שורות 🟣 ישנות שכבר היו ב-`dev` תוקנו ל-✅. | `dev`==`work/current`==`cbf56539` |
+| C-0828 | PM | DEV | 03:00Z | `story` 0 יעדים פתוחים (4 🟣) ⇒ `§ 0.23 ז׳` ⑤: 5 מחלקות נספרו (0 כשירות), 2 חתומות ⇒ `general`. הליכה 21 מסכים @375: 0 פגמים. | `T-498` 🟣 (`F-331`) |
 
 
 

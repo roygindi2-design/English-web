@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import AmirnetLevels from '@/components/AmirnetLevels';
 import AmirnetSimulation from '@/components/AmirnetSimulation';
@@ -7,6 +8,7 @@ import { apiGet, apiPost } from '@/lib/api/client';
 import { highestUnlocked, type AmirnetSimulationRun } from '@/lib/core/amirnetLevels';
 import type { AmirnetLevel } from '@/lib/core/amirnetPractice';
 import type { AmirnetServedItem } from '@/lib/core/amirnetQuestion';
+import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * `T-308` — the door. The learner presses `סימולציה` in the tab bar, lands on the four levels
@@ -196,13 +198,24 @@ export default function AmirnetSimulationEntry() {
       {phase.kind === 'blocked' && (
         <div role="status" className="mt-4 rounded-xl border border-border-subtle bg-surface-raised p-4">
           <p className="text-sm text-ink">{failureHe(phase.code)}</p>
-          <button
-            type="button"
-            onClick={() => setPhase({ kind: 'levels' })}
-            className="mt-3 min-h-touch w-full rounded-xl border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface active:opacity-90"
-          >
-            {BACK_TO_LEVELS_HE}
-          </button>
+          {/* T-498 · F-331: «חזרה לרמות» returns to a level whose start answers `session_expired`
+              again ⇒ a loop. The learner fixes this failure themselves ⇒ the `failureExit` exit (D-065). */}
+          {phase.code === 'session_expired' ? (
+            <Link
+              href={failureExit('session_expired').href}
+              className="mt-3 flex min-h-touch w-full items-center justify-center rounded-xl bg-brand-surface text-sm font-bold text-brand-on active:opacity-90"
+            >
+              {SIGN_IN_AGAIN_HE}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPhase({ kind: 'levels' })}
+              className="mt-3 min-h-touch w-full rounded-xl border border-brand bg-brand-surface/15 text-sm font-bold text-brand-surface active:opacity-90"
+            >
+              {BACK_TO_LEVELS_HE}
+            </button>
+          )}
         </div>
       )}
     </>

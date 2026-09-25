@@ -9,6 +9,8 @@ import AmirnetPracticeFlow, {
 import { PRACTISE_HE } from '@/components/AmirnetPracticeMenu';
 import { STATS_UNKNOWN_HE, LEVEL_CHIP_HE } from '@/lib/core/amirnetPractice';
 import { withoutComments } from '@/lib/testSource';
+import { BACK_TO_MENU_HE } from '@/lib/core/amirnetQuestion';
+import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 afterEach(cleanup);
 
@@ -174,5 +176,30 @@ describe('the production route is the one that opens the door (T-376)', () => {
 
   it('`?type=` is still dropped when it names no known type', () => {
     expect(PAGE).toMatch(/AMIRNET_TYPES\.find/);
+  });
+});
+
+describe('AmirnetPracticeFlow — T-498 · F-331, a dead session has a way out', () => {
+  const blockedWith = async (code: string) => {
+    mockFetch((url) =>
+      url.startsWith('/api/amirnet/practice/result') ? STATS_OK : { ok: false, code },
+    );
+    render(<AmirnetPracticeFlow />);
+    await waitFor(() => expect(screen.getByText(LEVEL_CHIP_HE(2))).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: LEVEL_CHIP_HE(2) }));
+    fireEvent.click(at(screen.getAllByRole('button', { name: PRACTISE_HE }), 0));
+  };
+
+  it('session_expired ⇒ the sign-in link to /login, ⛔ and ⛔ not «back to menu» that loops', async () => {
+    await blockedWith('session_expired');
+    const link = await screen.findByRole('link', { name: SIGN_IN_AGAIN_HE });
+    expect(link.getAttribute('href')).toBe(failureExit('session_expired').href);
+    expect(screen.queryByRole('button', { name: BACK_TO_MENU_HE })).toBeNull();
+  });
+
+  it('any other failure keeps «back to menu», ⛔ and ⛔ no sign-in link for a signed-in learner', async () => {
+    await blockedWith('unavailable');
+    await screen.findByRole('button', { name: BACK_TO_MENU_HE });
+    expect(screen.queryByRole('link', { name: SIGN_IN_AGAIN_HE })).toBeNull();
   });
 });
