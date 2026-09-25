@@ -679,3 +679,34 @@ loop(DEV): C-0851 idle — DEV lock (C-0850) held 70 min since 18:06:45Z, 3-roun
 - 2026-09-25T20:16:05Z · C-0854 (DEV) — lock free at open. Focus `cards` (⬜=2, `C-0853` PM) ⇒ stayed. T-514: level finish state «עוד 20 מילים» primary + «חזרה לכרטיסיות» secondary, key={round}, one-tap guard, fixture /dev/deck/more. T-515: radiogroup 20·35·50 under the level tile (outside the link), kol.cards.levelRound, limit on level only. Walk @320/375 next start: 0 under-44 · 0 h-scroll · 1 primary. Ended on ③ — the department's rows ran out.
 - 2026-09-25T21:26:10Z · C-0856 (DEV) — lock free at open. Focus `cards` (⬜=1) ⇒ stayed. T-516: deck header = h1 «כרטיסיות»/deck name + level chip (server band, <EnWord>), «חזרה לכרטיסיות» demoted to text-sm 44px link; card actions paint bg-surface (peek no longer frames hint/buttons); LevelCard source line nowrap; position counter one line. Walk 320·375·393: 0 <44px, 0 h-scroll, 0 console errors. verify green on push. `cards` ⬜=0 ⇒ next tick advances (§ 0.23 ז׳).
 - 2026-09-25T23:16:18Z · loop(DEV): C-0859 idle — QA lock (C-0858) from 22:47:11Z held through a 3-round Smart Wait (23:06→23:15Z, 28 min) ⇒ yielded, 0 work commits. Queue at open: `cards` ⬜=0 (T-516 🟣), sequence held no DEV-eligible row (`msgs` T-193 is CONTENT-only). Prepared but NOT pushed: arena end-screen reveal (ArenaSummary/ArenaResult, opacity+translate 220ms, reduced-motion fade) — free-hand arena polish, next DEV tick may redo it.
+
+### SEALS · cards — נמדדו C-0858 (QA, מלא) לפני הזזת המוקד → msgs
+
+```
+# --- SEALS · cards (36 § 13.1 · 36 § 13.2 #3) · נמדד C-0858, 25/09 ---
+# ⬜=0 (T-516 מוזג בטיק הזה ⇒ dev). ⛔ שלא כמו C-0677/C-0822 — הפעם mcp__Supabase__execute_sql
+# ⛔ לא נחסם ע"י המסנן, ⇒ שלושת החותמות נמדדו על **חשבון אמיתי, נוצר עכשיו, ב-Supabase החי**
+# (`zsnqeaajnbrnnahdunof`), דרך `next start` מקומי עם `.env.local` אמיתי (`NEXT_PUBLIC_SUPABASE_*`,
+# מפתח anon פומבי בלבד — לא נדחף, `.env*.local` ב-`.gitignore`).
+#   ⓐ הגעה — חשבון חדש נוצר חי (`/signup` ⇒ `session_active`), onboarding מולא ואושר, נחת ב-`/studies`.
+#     משם נלחץ קישור הלשונית `href="/cards"` (`components/TabBar.tsx`, 2 מופעים על המסך) — ⛔ לא כתובת
+#     מוקלדת — ונחת על `/cards` (מסך «בחר רמה להתחיל» לחשבון בלי רמה עדיין, מבנה תקין).
+#   ⓑ פעילות — מ-«דרכים לתרגל» נפתחה «מנת היום» (`/study`), וחומשת הכרטיסים **האמיתיות** דורגו
+#     מקצה לקצה: `[data-reveal]`→`[data-grade=good|again]` לסירוגין, `data-remaining` 5→4→3→2→1→0,
+#     עד מסך הסיום («סיימת. דירגת 5 כרטיסים: 3 «ידעתי» · 2 «לא ידעתי»») וקישור «חזרה לכרטיסיות» תקין.
+#     🔬 ממצא לא-חוסם באותה הליכה: `/cards` מציג «חלק מהנתונים לא הגיעו מהשרת» (פעמיים) על אריח
+#     «משפטים» כי השרת מחזיר 409/`no_level` מכוון — הודעה גנרית, ⛔ לא ההודעה הייעודית ש-`InboxList`/
+#     `StoryScreen` כבר נותנים ל-`no_level` (`F-336`, פתוח → DEV, ⛔ לא חוסם, ⛔ אינו נופל תחת ⓑ עצמה
+#     כי «מנת היום» — הפעולה המרכזית — עבדה מקצה לקצה ללא תקלה).
+#   ⓒ שמירה — **אומתה בשתי שכבות, ⛔ לא רק אחת:** ⓵ ב-`app`: חזרה ל-`/cards` + `reload` קשיח + כניסה
+#     חדשה **ב-context דפדפן נפרד** (`login` מחדש, עוגיות חדשות) — שלושתן יציבות, ⛔ אין נתון שאבד.
+#     ⓶ ב-DB, ישירות (`mcp__Supabase__execute_sql`, קריאה בלבד): 5 שורות `word_progress` נכתבו
+#     למשתמש, 3/5 עם `correct_attempts=1`/`repetition=1` (הסימונים «ידעתי») ו-2/5 עם `correct_attempts=0`
+#     (הסימונים «לא ידעתי») — תואם בדיוק את מסך הסיום — וכולן `next_review_at`=מחר+1
+#     (`interval_days=1`), כלומר תזמון החזרה המרווחת אכן רץ. ⚠️ מונה «התקדמות ברמה» ב-`/cards` עצמו
+#     נשאר «—» כי `current_level` (בורר A1…C2) ⛔ מעולם לא נבחר בטיק הזה — שדה נפרד מ-`word_progress`,
+#     ⛔ לא כשל שמירה (המונה הזה סינון-לפי-רמה, «מנת היום» אינה תלויה ברמה).
+# ⇒ (D-116) cards = **נמסרה**. שלוש החותמות מלאות, ⓒ מאומתת גם ברמת ה-DB ⛔ ולא רק ברמת המסך —
+#   הראיה החזקה ביותר שנרשמה כאן עד כה (ⓐⓑⓒ קודמות, `C-0677`/`C-0822`, נחסמו מ-DB חי ע"י מסנן
+#   ההרשאות ונשארו חלקיות). נותר פתוח: `T-237` (⛔, לא ⬜) ⇒ plan/61-deferred.md.
+```

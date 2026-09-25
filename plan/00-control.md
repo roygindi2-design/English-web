@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                      # ▶️ C-0856 (DEV): `cards` יעד ④ נבנה — `T-516` (כותרת «כרטיסיות» + שבב רמה, יציאה משנית) 🟣. ⬜=0 ב-`cards`.
-STATE: BUILDING                # ▶️ C-0847 (QA): 75 קומיטים מוזגו ל-`dev`, כלום 🟣 ממתין למיזוג כרגע.
+NEXT_AGENT: DEV                      # ▶️ C-0858 (QA): `cards` נמסרה וחתומה, מוזגה ל-`dev`. המוקד ⇒ `msgs` (1⬜, CONTENT בלעדית) — ⛔ אין שורה כשירה ל-DEV/PM כרגע, ראה `§ 0.23 ז׳` ⑤.
+STATE: BUILDING                # ▶️ C-0858 (QA): T-516 מוזג ל-`dev` (ff-only). כלום 🟣 ממתין למיזוג כרגע.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T21:26:10Z"   # C-0856 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T23:26:00Z"   # C-0858 (QA) ⇒ DEV.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "QA"                # 🔒 C-0858 (QA, מלא) — נעילה.
@@ -12,13 +12,13 @@ LOCK_AT: "2026-09-25T22:47:11Z"
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  22 / 120           # § 13-1 · **המוקד** (←`msgs`, `C-0849` PM). ⬜=0 · 🟣=4 (`T-508`…`T-511`, יעד ②, `C-0850` DEV) · ⛔=2 (`T-266`·`T-269`). ③ ⇒ `for-roy` 150
 #   nav:     7 / 120           # § 13-2 · **⛔ אינה המוקד** (→`msgs`, `C-0847` QA). יעד ① `kol-E` נמסר: ⬜=0 · ✅=8 (`T-499`…`T-501`·`T-503`…`T-507`, מוזגו). חוב+חותמות ⇒ `plan/61-deferred.md`
-#   cards:  23 / 120           # § 13-3 · **המוקד** (←`studies`, `C-0853` PM). יעד ③ נבנה · 🟣=2 (`T-514`·`T-515`, `C-0854` DEV) · יעד ④ ⇒ ⬜=**1** (`T-516`, `C-0855` PM) · ⛔=1 (`T-237`). חוב ⇒ `plan/61-deferred.md`
+#   cards:  24 / 120           # § 13-3 · **⛔ אינה המוקד** (→`msgs`, `C-0858` QA). **נמסרה וחתומה** — T-516 (`C-0856` DEV) מוזג, ⬜=0, שלוש חותמות נמדדו מקצה לקצה (SEALS · control-log.md). ⛔=1 (`T-237`). חוב+חותמות ⇒ `plan/61-deferred.md`
 #   arena:  40 / 120          # § 13-4 · **המוקד** (←`msgs`, `C-0817` PM). ⬜=3 (`T-487`…`T-489`, ארון הציוד) · 🟣=11 · ⛔=4.
 #   studies: 10 / 120         # § 13-5 · **⛔ אינה המוקד** (→`arena`, `C-0698`). ⬜=**0** · 🟣=2 · ✅=5 · ⛔=1 (`C-0701` QA: T-409·T-410·T-414 🟣⇢✅). חוב ⇒ `plan/61-deferred.md`
 #   amirnet: 26 / 120          # § 41 § 8-1..3 · **נחתמה `C-0822` (QA) → `msgs`.** ⬜=0 · ✅=3 (`T-490`…`T-492`, מוזגו) · ⛔=2 (`T-312`·`T-324`). SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. **⛔ אינה המוקד עוד** (→`nav`, `C-0833` QA). הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
-#   msgs:    8 / 120           # 39 § 9 · **⛔ אינה המוקד** (→`story`, `C-0849` PM). ⬜=1 (`T-193` CONTENT בלעדית) · ⛔=3 (`T-475`…`T-477`, `for-roy` 144) ⇒ `plan/61-deferred.md`
+#   msgs:    9 / 120           # 39 § 9 · **המוקד** (←`cards`, `C-0858` QA). ⬜=1 (`T-193` CONTENT בלעדית — ⛔ אין שורה ל-PM/DEV) · ⛔=3 (`T-475`…`T-477`, `for-roy` 144) ⇒ `plan/61-deferred.md`
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
 RELEASE_READY: "e1e25727 · 2026-09-25T17:25:42Z · **C-0847 (QA, מלא).** `work/current`==`dev`==`e1e25727` (ff-only, 75 קומיטים מאז `cbf56539`). `verify` מלא ירוק (nine-command gate, 5,324 בדיקות `check:mobile`, 3,466 בדיקות יחידה, exit 0) · `loop:health` 22/23 (18 🔴 ידועה — ענף `claude/blissful-tesla-0q2hup` נושא פאץ' PM תקוע, `F-334`, ⬜→PM). הלומד מקבל: **«מרכז האפליקציות»** — בוחר אילו אפליקציות יושבות בטבעת שלו, עד 10 (`T-503`) · **טבעת אישית** — הצמתים והמוקד («קול») משקפים מה שהלומד התקין, ⛔ לא סדר קבוע (`T-504`) · **מיקום אפליקציה** בגרירה/הקשה עם באנר הצלחה (`T-505`) · **מצב עריכה** — לחיצה ארוכה, גרירה מזיזה, ✕ מסיר (`T-506`…`T-507`) · **סיפור שנקרא לא חוזר מחר** ו**«לסיפור הבא»** בהקשה אחת (`T-493`·`T-494`) · **מילה שהוקשה בסיפור נכנסת לאוסף**, עם תג מקור (`T-495`·`T-496`). ⚠️ **פערים נמדדו בטיק הזה, לא נסתרים:** `F-332` (מרכז אפליקציות — checkbox גנרי במקום תג-קטגוריה+אייקון מול הרנדר) · `F-333` (מרכז הטבעת במצב עריכה — `סיום`✓ מול `קול`🌐 ברנדר) — שתיהן ⬜ פתוח → PM, ⛔ אינן חוסמות. 🧹 **ותיקון רגיסטר:** 15 שורות T ו-2 ממצאים 🟣 ישנים (`nav` יעד ①, `F-330`·`F-331`) שכבר היו ב-`dev` תוקנו ל-✅ בטיק הזה. **`nav` יעד ① נמסר** — שלוש חותמות נמדדו (`plan/61-deferred.md`), המוקד גלגל ל-`msgs` (`§ 0.23 ז׳` ⓪)."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
@@ -27,12 +27,13 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: cards          # ▶️ **הוזזה `C-0853` (PM · `RULES § 0.23 ז׳` ④).** `studies`: ⛔ יעד פתוח ב-`05-departments` ⇒ קדימה: `msgs` (CONTENT בלבד) · `amirnet` חתומה · `story` (② 🟣, ③ `for-roy` 150) · `nav` חתומה ⇒ `cards` ③ פתוח, 0 שורות ⇒ `T-514`·`T-515`. רשומת ספירה ⇒ `plan/61-deferred.md`.
-PREV_WORKSTREAM: "studies"        # `C-0853` (PM). `studies` נשארת ברוטציה (`36 § 13`).
-WORKSTREAM_ENDING: cards · 1 ⬜ נותרו · 2026-09-25T20:52:21Z · C-0855
+ACTIVE_WORKSTREAM: msgs          # ▶️ **הוזזה `C-0858` (QA, מלא · `RULES § 0.23 ז׳` ④).** `cards` ⬜=0 ⇒ **נמסרה וחתומה** (שלוש חותמות, ⓒ אומתה גם ברמת ה-DB) ⇒ `arena`/`studies`/`amirnet` כולן מוצתות/חתומות, כבר נרשמו כחוב ⇒ המועמד היחיד: `msgs` (1 ⬜, `T-193` CONTENT בלעדית). רשומת ספירה + חתימה ⇒ `plan/61-deferred.md`.
+PREV_WORKSTREAM: "cards"        # `C-0858` (QA). `cards` נשארת ברוטציה (`36 § 13`) — חתימה ⛔ אינה מוציאה מהרצף, רק סוגרת פרק.
+WORKSTREAM_ENDING: ""   # ⛔ נוקה — היה מוצג על `cards`, שכעת חתומה ונחתמה בטיק הזה (C-0858).
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
-#  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.)
+#  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.
+#  SEALS · cards — נמדדו C-0858 (QA, מלא) לפני הזזת המוקד → msgs, כולל אימות ⓒ ברמת ה-DB. ⇒ `plan/archive/control-log.md`.)
 IMPROVE_TARGET: ""              # 🩺 D-146 · **ריק = המצב כבוי.** ▶️ **C-0412: נוסה ו⛔ לא ניתן להדליק — נמדד.** `story` ⇒ בדיקה 14 FAIL (3 ⬜ מראש, תקרה 2) · `nav` ⇒ ⛔ אין לה דבר ב-`61-deferred` · `cards`/`arena` ⛔ אינן חתומות. פירוט ⇒ `D-184`.
 MERGE_BLOCKERS: ""   # 🔬 C-0847 (QA): `scripts/measure-continuations.test.ts` נבדק שוב בבידוד (9/9 ירוק) וכחלק מ-`npm run verify` המלא הטרי (3,466/3,466 + 5,324 בדיקות `check:mobile`, exit 0) — ⛔ אדום. השדה הישן (מ-`C-0841`) היה תיאור של רגע חולף בסדר-ריצה; `for-roy` 148 כבר סומן סגור ע"י `D-294` (`C-0839` OPS). נמחק, ⛔ לא F- חדש.
 PROMOTION_BLOCKERS: "C-0772 (PROMOTER, 13:45 tick): `git merge --ff-only origin/dev` on `main` refused by the Claude Code auto mode classifier — exact text: «Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Production Deploy].» ⛔ Not a red `verify` (verify was green, exit 0, 5282/5282). ⛔ Not worked around, not rephrased, not retried — per `docs/agents/PROMOTER.md` STEP E, a refusal is final. `auto_mode_allow: []` on the scheduled Routine (item 135, `plan/03-for-roy.md`) is the same root cause already blocking Supabase migrations — it now also blocks the promoter's own merge. Gate was otherwise all-green: `verify` 9/9 · `loop:health` 21/23 (2 known non-blocking) · 21 commits `main..dev`, real ff. ⇐ PROMOTER בלבד כותב."
@@ -53,7 +54,7 @@ PROMOTIONS_THIS_MONTH: 21         # 21 (➕ 18/09, C-0711). 🔄 מתאפס בכ
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
 | C-0855 | PM | DEV | 20:52Z | `cards` ③ נבנה ⇒ ⬜=0; הליכה 375px מול `kol-A-03` ⇒ יעד ④: כותרת «כרטיסיות»+שבב רמה, רמז מחוץ לערימה. ⛔ לא זזה (יעד פתוח). | `T-516` ⬜ |
-| C-0853 | PM | DEV | 19:54Z | `studies` ⛔ יעד פתוח ⇒ `§ 0.23 ז׳` ⓪④ ⇒ `cards` ③ (רוי 24/09): «עוד N» בסוף סבב + גודל סבב 20·35·50. `D-300`. | `T-514`·`T-515` ⬜ |
+| C-0858 | QA | DEV | 23:26Z | `cards` ⬜=0 ⇒ **נמסרה וחתומה** (שלוש חותמות, ⓒ אומתה ב-DB חי) ⇒ המוקד ל-`msgs` (1⬜, CONTENT). `T-516` מוזג ל-`dev`. | ✅ merge · SEALS · F-335/336 |
 
 
 
