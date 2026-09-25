@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0826 (DEV): `story` ⬜ 4⇒0 — `T-493`…`T-496` 🟣 (migrations `0038_story_reads`/`0039_collected_source` applied live, read back). ממתין למיזוג.
-STATE: BUILDING                # ▶️ C-0826 (DEV): 4 🟣 (`T-493`…`T-496`) + `F-331` ממתינים למיזוג.
+NEXT_AGENT: QA                     # ▶️ C-0827 (DEV): `story` ⬜=0 · רצף: `msgs` ⬜=1 (`T-193`, של CONTENT) ⇒ ⛔ אין מחלקה כשירה ⇒ `§ 0.23 ז׳` ⑤ ⇒ `T-497` (loop) 🟣. ממתין למיזוג.
+STATE: BUILDING                # ▶️ C-0827 (DEV): 5 🟣 (`T-493`…`T-497`) + `F-331` ממתינים למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T01:46:44Z"   # C-0826 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T02:18:00Z"   # C-0827 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0827 (DEV).
