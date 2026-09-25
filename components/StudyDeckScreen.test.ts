@@ -448,8 +448,21 @@ describe('T-412 — קצה הרמה נפרד מ«אין כרטיסיות», ונ
   });
 
   it('⛔ הרמה ⛔ אינה מומצאת — בלי `band` ⛔ אין איפוס', () => {
-    expect(CODE).toMatch(/restartLevel[\s\S]{0,300}band === undefined[\s\S]{0,60}return/);
-    expect(CODE).toContain("apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band })");
+    expect(CODE).toMatch(/restartLevel[\s\S]{0,400}target === undefined[\s\S]{0,60}return/);
+    expect(CODE).toContain(
+      "apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band: target })",
+    );
+  });
+
+  // `T-502` — the tile `/study?deck=level` carries ⛔ no `band`, so the prop alone left the one
+  // button of this state dead for every learner who came in from `/cards`. ⇒ the band is the
+  // one the server SAYS it served, carried on the state — ⛔ never a client-side default.
+  it('`T-502` — the band the server served rides on `level_done`, and the button uses it', () => {
+    expect(CODE).toContain("readonly kind: 'level_done'; readonly band?: string");
+    expect(CODE).toMatch(/kind: 'level_done'[\s\S]{0,120}typeof body\.band === 'string'/);
+    expect(CODE).toContain('const target = band ?? servedBand');
+    expect(CODE).toContain('restartLevel(state.band)');
+    expect(CODE).not.toContain("?? 'A1'");
   });
 
   it('⛔ הנוסח ⛔ אינו טוען מוכנות לרמה הבאה — `R-017`', () => {

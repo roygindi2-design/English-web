@@ -585,3 +585,29 @@ describe('T-412 — קצה הרמה, ⛔ ולא רשימה ריקה שנראית
     expect(CONTRACT).toContain('POST /api/study/queue');
   });
 });
+
+/**
+ * `T-502` — the tile «סינון מילים» opens `/study?deck=level` with ⛔ no `band`, and the GET
+ * falls back to `profiles.current_level`. ⇒ the answer must SAY which band it read, or the one
+ * action at the end of the level (`POST`, where `band` is required) has nothing to send.
+ */
+describe('T-502 — the level answer names the band it served', () => {
+  const levelBranch = CODE.slice(
+    CODE.indexOf("if (deck === 'level')"),
+    CODE.indexOf('let query = supabase'),
+  );
+
+  it('`band` travels on the level answer — the one the rows were read from', () => {
+    const reply = levelBranch.slice(levelBranch.indexOf('return NextResponse.json({'));
+    expect(reply).toMatch(/deck,\s*band,/);
+  });
+
+  it('⛔ the POST still demands it — the fix is in what the GET says, ⛔ not a fall-back', () => {
+    const post = CODE.slice(CODE.indexOf('export async function POST'));
+    expect(post).not.toContain('readCurrentLevel');
+  });
+
+  it('the contract says so in the same commit', () => {
+    expect(CONTRACT).toContain('T-502');
+  });
+});

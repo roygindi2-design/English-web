@@ -865,6 +865,10 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       deck,
+      // `T-502` — **the band these rows were read from**, whether the URL named it or
+      // `profiles.current_level` did. ⛔ Without it the one action at the end of the level had
+      // nothing to send: `POST` requires `band`, and the tile «סינון מילים» names none.
+      band,
       // `T-411` — `total` is still "counted before the cut", ⛔ but the population it counts is
       // now **what is left from the learner's place**, ⛔ not the whole band. That is the number
       // `<DeckSelector>` needs in order to stop promising a level it has already served.

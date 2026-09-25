@@ -110,6 +110,11 @@ type QueueResponse =
        * קריאה שלו כברירת מחדל.
        */
       readonly atEnd?: boolean;
+      /**
+       * `T-502` — the band the `level` deck was read from, named by the URL or by
+       * `profiles.current_level`. ⛔ Optional: the other three decks are not a level.
+       */
+      readonly band?: string;
     }
   | { readonly ok: false; readonly code: string };
 
@@ -128,7 +133,7 @@ type ScreenState =
    * `T-412` · `F-277` — ⛔ מצב נפרד מ-`empty`, וזה כל העניין: `empty` אומר «⛔ אין כרטיסיות»
    * ו⛔ אין ממנו דרך קדימה ברמה הזאת; זה אומר «סיימת את הרמה» ונושא **פעולה אחת**.
    */
-  | { readonly kind: 'level_done' }
+  | { readonly kind: 'level_done'; readonly band?: string }
   | { readonly kind: 'schema_missing' }
   | { readonly kind: 'session_expired' }
   | { readonly kind: 'error' };
@@ -254,7 +259,11 @@ export default function StudyDeckScreen({
       // `T-412` — ⛔ נבדק **לפני** ריקנות הרשימה, כי שני המצבים מגיעים כרשימה ריקה והשרת הוא
       // היחיד שיודע להבדיל ביניהם. ⛔ `=== true` ו⛔ לא אמת-ערכית: שדה נעדר ⛔ אינו «כן».
       if (body.atEnd === true) {
-        setState({ kind: 'level_done' });
+        // `T-502` — the band the server SAYS it served, ⛔ never guessed here.
+        setState({
+          kind: 'level_done',
+          ...(typeof body.band === 'string' ? { band: body.band } : {}),
+        });
         return;
       }
       setState(
@@ -290,11 +299,15 @@ export default function StudyDeckScreen({
    * fall-back to `profiles.current_level` would reset a band the learner never named — which
    * is exactly the reason the route demands it too.
    */
-  const restartLevel = useCallback(async () => {
-    if (band === undefined) return;
+  const restartLevel = useCallback(async (servedBand?: string) => {
+    // `T-502` — the tile `/study?deck=level` names ⛔ no band, so the prop alone left this
+    // button dead for every learner who came in from `/cards`. The fall-back is the band the
+    // server reported serving — the level the learner just finished — ⛔ never a default.
+    const target = band ?? servedBand;
+    if (target === undefined) return;
     setState({ kind: 'loading' });
     try {
-      await apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band });
+      await apiPost<{ readonly ok: boolean }>('/api/study/queue', { deck: 'level', band: target });
     } catch {
       // ⛔ The reload below is ⛔ not skipped on failure: the bookmark may or may not have
       // moved, and the honest next screen is whatever the server actually answers now.
@@ -437,7 +450,7 @@ export default function StudyDeckScreen({
           // שתתחרה בה (`taste-skill § 4.5`).
           <button
             type="button"
-            onClick={() => void restartLevel()}
+            onClick={() => void restartLevel(state.band)}
             data-primary-action="true"
             className="flex w-full min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-base font-semibold text-brand-on active:opacity-90"
           >
