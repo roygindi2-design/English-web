@@ -6,6 +6,12 @@ import LockIcon from '@/components/LockIcon';
 import UnknownMarkIcon from '@/components/UnknownMarkIcon';
 import { apiGet } from '@/lib/api/client';
 import {
+  LEVEL_ROUND_SIZES,
+  readLevelRound,
+  writeLevelRound,
+  type LevelRoundSize,
+} from '@/lib/levelRound';
+import {
   DECK_ALL_EMPTY_ACTION_HE,
   DECK_ALL_EMPTY_BODY_HE,
   DECK_ALL_EMPTY_HREF,
@@ -69,6 +75,9 @@ import {
  * requires. ⛔ A page refresh is ⛔ not a way out: it is not a control, and a learner who
  * does not know something failed has no reason to perform it.
  */
+
+/** 🎚️ `T-515` — the label of the round-size chips under «סינון מילים». */
+const LEVEL_ROUND_LABEL_HE = 'בכל סבב:';
 
 /** ⛔ Not `0`. A count we do not have is not a count of zero. */
 const UNKNOWN_COUNT_HE = '—';
@@ -387,6 +396,14 @@ export default function DeckSelector({
    * so nothing unmounts and nothing shifts.
    */
   const [attempt, setAttempt] = useState(0);
+  /**
+   * 🎚️ `T-515` — the round size of «סינון מילים». Starts at 20 on the server render and
+   * reads the device's choice after mount, so the first paint ⛔ never disagrees with it.
+   */
+  const [levelRound, setLevelRound] = useState<LevelRoundSize>(LEVEL_ROUND_SIZES[0]);
+  useEffect(() => {
+    setLevelRound(readLevelRound());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -732,6 +749,43 @@ export default function DeckSelector({
                 >
                   {body}
                 </button>
+              )}
+              {/* 🎚️ `T-515` ⓐ — in the tile's `<li>` and ⛔ inside its `<Link>`: a control in
+                  a link is two destinations for one tap. Text + frame mark the chosen chip,
+                  ⛔ never colour alone; every chip is a full 44px target. */}
+              {entry.key === 'level' && (
+                <div
+                  role="radiogroup"
+                  aria-label={LEVEL_ROUND_LABEL_HE}
+                  data-level-round
+                  className="mt-2 flex items-center gap-2 ps-1"
+                >
+                  <span aria-hidden="true" className="text-sm text-ink-muted">
+                    {LEVEL_ROUND_LABEL_HE}
+                  </span>
+                  {LEVEL_ROUND_SIZES.map((size) => {
+                    const checked = size === levelRound;
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        role="radio"
+                        aria-checked={checked}
+                        onClick={() => {
+                          setLevelRound(size);
+                          writeLevelRound(size);
+                        }}
+                        className={`min-h-touch min-w-touch rounded-full px-3 text-base tabular-nums active:opacity-90 ${
+                          checked
+                            ? 'border-2 border-brand font-bold text-ink'
+                            : 'border border-border-subtle text-ink-muted'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </li>
           );

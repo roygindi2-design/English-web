@@ -1204,7 +1204,8 @@
     "components/LockIcon.tsx",
     "components/UnknownMarkIcon.tsx",
     "lib/api/client.ts",
-    "lib/core/deckTiles.ts"
+    "lib/core/deckTiles.ts",
+    "lib/levelRound.ts"
   ],
   "components/EnWord.test.ts": [
     "lib/testSource.ts"
@@ -1453,7 +1454,8 @@
     "lib/core/flashcard.ts",
     "lib/core/reviewRequest.ts",
     "lib/core/sentenceItem.ts",
-    "lib/core/studyTracks.ts"
+    "lib/core/studyTracks.ts",
+    "lib/levelRound.ts"
   ],
   "components/StudyEmptyState.tsx": [],
   "components/TabBar.test.ts": [
@@ -2227,6 +2229,9 @@
   "lib/core/worldRing.ts": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
+  ],
+  "lib/levelRound.ts": [
+    "lib/core/deck.ts"
   ],
   "lib/ringStore.ts": [
     "lib/core/appCentre.ts",

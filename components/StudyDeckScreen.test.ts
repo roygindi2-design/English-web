@@ -506,12 +506,27 @@ describe('StudyDeckScreen — fixtureState (T-415 · F-282)', () => {
  */
 describe('🔁 T-514 — «עוד» בסוף סבב «סינון מילים» בלבד', () => {
   it('`onMore` מועבר ל-`<CardDeck>` רק כש-`deck === \'level\'`', () => {
-    expect(CODE).toContain("{...(deck === 'level' ? { onMore: nextRound } : {})}");
+    expect(CODE).toContain("{...(deck === 'level' ? { onMore: nextRound, moreLabelHe: moreWordsHe(roundSize) } : {})}");
     expect(CODE.match(/onMore/g)).toHaveLength(1);
   });
 
   it('הסבב הבא מחליף את הקודם — `key={round}` על `<CardDeck>`, והמונה עולה לפני הטעינה', () => {
     expect(CODE).toMatch(/<CardDeck\s+key=\{round\}/);
     expect(CODE).toMatch(/setRound\(\(current\) => current \+ 1\);\s*void load\(\);/);
+  });
+});
+
+/** 🎚️ **`T-515` · `D-300`** — the chosen round size travels as `limit`, on `level` alone. */
+describe('🎚️ T-515 — `limit` בשאילתה של `level` ⛔ ולא של `due`', () => {
+  it('`limit` נקבע בתוך ענף `deck === \'level\'` בלבד, מהאחסון של המכשיר', () => {
+    const branch = braceRegion(CODE, "if (deck === 'level') {");
+    expect(branch).toContain('readLevelRound()');
+    expect(branch).toContain("query.set('limit', String(size))");
+    expect(CODE.match(/query\.set\('limit'/g)).toHaveLength(1);
+  });
+
+  it('תווית «עוד» נושאת את הגודל שנבחר', () => {
+    expect(CODE).toContain('moreLabelHe: moreWordsHe(roundSize)');
+    expect(CODE).toContain('`עוד ${n} מילים`');
   });
 });

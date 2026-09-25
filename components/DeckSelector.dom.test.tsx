@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import DeckSelector from '@/components/DeckSelector';
 import FilterBar from '@/components/FilterBar';
@@ -265,5 +265,47 @@ describe('T-392 — מצב ההמתנה ⛔ אינו לובש את גליף הכ
     const list = document.querySelector('[data-deck-selector]') as HTMLElement;
     expect(list.textContent).toContain('314');
     expect(list.textContent).toContain('12');
+  });
+});
+
+/**
+ * 🎚️ **`T-515` · `D-300`** — the round size of «סינון מילים»: three chips, one checked by
+ * text+frame, and the choice lands in `kol.cards.levelRound`. Measured in the DOM because
+ * the claim is what the learner can press and what the device then remembers.
+ */
+describe('🎚️ T-515 — גודל סבב «סינון מילים»: 20 · 35 · 50', () => {
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  const radios = () => screen.getAllByRole('radio');
+  const checkedLabels = () =>
+    radios()
+      .filter((radio) => radio.getAttribute('aria-checked') === 'true')
+      .map((radio) => radio.textContent);
+
+  it('שלושה שבבים בקבוצת רדיו אחת, ⛔ לא בתוך הקישור של האריח', () => {
+    render(<DeckSelector unseen={RENDER_SUMMARY.unseen} />);
+    expect(screen.getAllByRole('radiogroup')).toHaveLength(1);
+    expect(radios().map((radio) => radio.textContent)).toEqual(['20', '35', '50']);
+    for (const radio of radios()) expect(radio.closest('a')).toBeNull();
+    expect(checkedLabels()).toEqual(['20']);
+  });
+
+  it('הקשה על «50» כותבת 50 ומסמנת את השבב הזה בלבד', () => {
+    render(<DeckSelector unseen={RENDER_SUMMARY.unseen} />);
+    fireEvent.click(screen.getByRole('radio', { name: '50' }));
+    expect(window.localStorage.getItem('kol.cards.levelRound')).toBe('50');
+    expect(checkedLabels()).toEqual(['50']);
+  });
+
+  it('הבחירה נזכרת בפתיחה הבאה — וערך שבור באחסון ⇒ «20»', async () => {
+    window.localStorage.setItem('kol.cards.levelRound', '35');
+    render(<DeckSelector unseen={RENDER_SUMMARY.unseen} />);
+    await waitFor(() => expect(checkedLabels()).toEqual(['35']));
+    cleanup();
+    window.localStorage.setItem('kol.cards.levelRound', '9999');
+    render(<DeckSelector unseen={RENDER_SUMMARY.unseen} />);
+    await waitFor(() => expect(checkedLabels()).toEqual(['20']));
   });
 });

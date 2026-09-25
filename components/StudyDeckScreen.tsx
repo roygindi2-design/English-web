@@ -8,12 +8,13 @@ import CardDeck from '@/components/CardDeck';
 import CardSkeleton from '@/components/CardSkeleton';
 import StudyEmptyState from '@/components/StudyEmptyState';
 import { ApiUnreachableError, apiGet, apiPost } from '@/lib/api/client';
-import { isSentenceCard, type DeckCard, type DeckName, type QueueCardInput } from '@/lib/core/deck';
+import { DEFAULT_QUEUE_LIMIT, isSentenceCard, type DeckCard, type DeckName, type QueueCardInput } from '@/lib/core/deck';
 import { FAILURE_HE, RETRY_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
 import { SIGN_IN_AGAIN_HE, failureExit, isRetryable } from '@/lib/core/failureExit';
 import type { CardGrade } from '@/lib/core/flashcard';
 import { MAX_ELAPSED_MS } from '@/lib/core/reviewRequest';
 import type { SentenceItem } from '@/lib/core/sentenceItem';
+import { readLevelRound } from '@/lib/levelRound';
 
 /**
  * The screen that owns the network for `/study` — T-065 part ב׳, plan
@@ -87,6 +88,8 @@ const LEVEL_DONE_HE = 'סיננת את כל מילות הרמה הזאת. אפש
 /** ⛔ פעולה אחת, ⛔ ולא שתיים (`taste-skill § 4.5`: ⛔ אין שתי כוונות CTA על מסך אחד). */
 const LEVEL_RESTART_HE = 'להתחיל את הרמה מחדש';
 const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+/** `T-514` · `T-515` — «עוד N מילים», N being the round size the learner chose. */
+const moreWordsHe = (n: number): string => `עוד ${n} מילים`;
 
 type QueueResponse =
   | {
@@ -241,6 +244,8 @@ export default function StudyDeckScreen({
    * the spent «more» tap) starts fresh instead of reopening on «סיימת» with zero cards.
    */
   const [round, setRound] = useState(0);
+  /** `T-515` — the size the current `level` round was asked for; names the «עוד N» button. */
+  const [roundSize, setRoundSize] = useState<number>(DEFAULT_QUEUE_LIMIT);
   const shownAt = useRef(0);
 
   const load = useCallback(async () => {
@@ -250,6 +255,13 @@ export default function StudyDeckScreen({
       // מקודד, ⛔ ולא כמות שהוא. השרת בודק אותו בכל מקרה (`parseLevel`).
       const query = new URLSearchParams({ deck });
       if (band !== undefined) query.set('band', band);
+      // 🎚️ `T-515` ⓒ — the learner's round size, on `level` ALONE: ⛔ never on `due`, whose
+      // portion `planDailyQueue` caps on purpose. Read per load, so «עוד» follows a change.
+      if (deck === 'level') {
+        const size = readLevelRound();
+        setRoundSize(size);
+        query.set('limit', String(size));
+      }
       const body = await apiGet<QueueResponse>(`/api/study/queue?${query.toString()}`);
       shownAt.current = Date.now();
       if (!body.ok) {
@@ -396,7 +408,7 @@ export default function StudyDeckScreen({
           // down with the queue this screen already asked for (`§ 4.2ז` forbids the second
           // `/api/levels/summary` read, and `<LevelMapScreen>` is a DIFFERENT screen).
           unseenInLevel={state.unseenInLevel}
-          {...(deck === 'level' ? { onMore: nextRound } : {})}
+          {...(deck === 'level' ? { onMore: nextRound, moreLabelHe: moreWordsHe(roundSize) } : {})}
         />
       </section>
     );
