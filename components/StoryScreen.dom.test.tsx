@@ -224,7 +224,17 @@ function clickWord(el: Element): void {
 }
 
 function stubFetch(impl: () => Promise<Response> | Response): void {
-  vi.stubGlobal('fetch', vi.fn(impl));
+  // ⚠️ `T-495`: פתיחת פופאובר על מילה ⛔ לא-ידועה כותבת גם ל-`/api/world/collected`.
+  // ⛔ זה ⛔ אינו המדד של הבדיקות שמשתמשות בעוזר הזה — הן מודדות את כתיבת החזרה — ⇒ הנתיב
+  // הזה נענה כאן, ⛔ ואינו נספר ב-`impl`. ‏`T-495` נבדק בנפרד, למטה.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) =>
+      String(url).includes('/api/world/collected')
+        ? Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+        : impl(),
+    ),
+  );
 }
 
 function openPopoverOnLibrary(): void {
@@ -1181,5 +1191,53 @@ describe('T-494 — «לסיפור הבא» במסך הסיום, ⛔ רק אחר
     );
     expect(screen.queryByRole('button', { name: 'לסיפור הבא' })).toBeNull();
     expect(screen.queryByText('קראת את כל הסיפורים ברמה שלך')).toBeNull();
+  });
+});
+
+describe('T-495ⓒ — מילה ⛔ לא-ידועה שהוקשה בסיפור נכנסת לאוסף, פעם אחת', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function collectedPosts(calls: readonly (readonly unknown[])[]): unknown[] {
+    return calls
+      .filter(([url]) => String(url).includes('/api/world/collected'))
+      .map(([, init]) => JSON.parse(String((init as RequestInit | undefined)?.body ?? '{}')));
+  }
+
+  it('הקשה על מילה לא-ידועה ⇒ POST אחד עם ה-wordId; הקשה חוזרת ⇒ ⛔ אין שנייה', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    clickWord(bodyWord('library'));
+    await waitFor(() => expect(collectedPosts(fetchMock.mock.calls)).toHaveLength(1));
+    expect(collectedPosts(fetchMock.mock.calls)[0]).toEqual({
+      wordId: PAYLOAD.glosses.library!.wordId,
+    });
+  });
+
+  it('⛔ מילה ידועה (`river`) ⛔ אינה נכנסת לאוסף', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('river'));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(collectedPosts(fetchMock.mock.calls)).toHaveLength(0);
+  });
+
+  it('⛔ כישלון ⛔ אינו משנה את הפופאובר', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 503 })));
+    const { container } = render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    layoutStoryWords(container);
+    clickWord(bodyWord('library'));
+    await waitFor(() => expect(console.error).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'הוסף לכרטיסיות' })).toBeTruthy();
   });
 });

@@ -512,9 +512,25 @@ function StoryReady({
    * של `36 § 3`. ⇒ הקשה בכותרת היא אותה שליפה מוצהרת בדיוק, וההחרגה שלה הייתה
    * הופכת «מה שהלומד שלף» למשהו שתלוי **היכן** המילה מודפסת.
    */
+  /**
+   * 🧺 **T-495 · `D-293`ⓒ — מילה שהיית צריך להקיש עליה כדי להבין נכנסת לאוסף.**
+   * ⛔ רק מילה **שאינה** ב-`knownLemmas` · ⛔ פעם אחת למילה לכל סיפור (ה-ref מתאפס עם
+   * `StoryReady`, שמפורק בכל סיפור) · ⛔ כישלון ⛔ אינו משנה את הפופאובר — לוג בלבד.
+   * ⛔ אין כאן `word_progress` ו⛔ אין חזרה: זו רשימה, ⛔ לא מנוע (D-053).
+   */
+  const collectedRef = useRef<Set<string>>(new Set());
   const recordTap = useCallback((lemma: string) => {
     setTapOrder((prev) => (prev.includes(lemma) ? prev : [...prev, lemma]));
-  }, []);
+    if (known.has(lemma) || collectedRef.current.has(lemma)) return;
+    const wordId = payload.glosses[lemma]?.wordId;
+    if (wordId === undefined) return;
+    collectedRef.current.add(lemma);
+    void apiPost<{ ok: boolean }>('/api/world/collected', { wordId })
+      .then((res) => {
+        if (!res.ok) console.error('[story] word not collected');
+      })
+      .catch(() => console.error('[story] word not collected'));
+  }, [known, payload.glosses]);
 
   /**
    * 🔴 **T-232ⓑ — שכבת המלבנים: נקראת פעם אחת לפריסה, ⛔ ולא בכל הקשה.**

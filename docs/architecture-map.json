@@ -287,6 +287,12 @@
     "lib/server/classFailure.ts",
     "lib/supabase/auth.ts"
   ],
+  "app/api/world/collected/route.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/api/world/collected/route.ts": [
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/lexicalClassOnly.test.ts": [
     "lib/testSource.ts"
   ],
