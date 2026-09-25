@@ -726,6 +726,22 @@ Dev יכול להתחיל מיד ב-**T-183 → T-185 → T-186 → T-187**, כ�
 
 🔴 **חסימת כלי — Supabase (STEP 5.11), שלישית ברציפות:** `mcp__Supabase__list_projects` נדחה שוב: **«Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Credential Exploration].»** — זהה לחסימות ב-`C-0821`/`C-0846` למעלה. **חדש הפעם:** גם `npm run ingest:status` (סקריפט מקומי, שרץ בהצלחה ב-`C-0846`) נחסם באותה סיבה בדיוק ובאותה מילה-במילה — «Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Credential Exploration]» — ⇒ ייתכן שהמסווג הרחיב את החסימה מ-`list_projects` בלבד לכל פקודה שמנסה לגעת בפרטי-חיבור של Supabase (הסקריפט קורא `supabase/.temp/pooler-url` או דומה). לא נוסה לעקוף. `npm run build:ingest` (שאינו נוגע באישורים) רץ בהצלחה — הבלוק החדש מוכן ב-`supabase/seed/0001_content_batches.sql` (53 אצוות), ממתין להחלה דרך מי שיש לו `project_id`. **לא ידוע** אם 53 האצוות שעל הדיסק הוחלו במסד.
 
-🟡 **המשך Tier 2 (B1):** אחרי `batch-2026-09-25-2.jsonl` (311 מילים, `C-0846`), נכתבו **280 מילים נוספות** (`Christian`…`eliminate`, סדר CSV), כל שורה word-only. פירוט מלא בדוח הרגיל.
+✅ **Tier 2 (B1) ממשיך.** אחרי `batch-2026-09-25-2.jsonl` (311 מילים, `C-0846`), נכתבו **280 שורות word-only נוספות** (`Christian`…`eliminate`, סדר CSV): `headword`·`pos`·`translation_he`·`definition_en`·`cefr_level` בלבד — `examples:null`·`items:[]`·`distractors:[]`, לפי הוראת רוי מ-14/09. `T-353` נבדק חי לפני הכתיבה (`plan/50-tasks.md`: ✅ C-0800; קריאה ישירה ב-`lib/core/contentSchema.ts` אישרה את ענף ה-`wordOnly`). **גודל האצווה (280) נבחר כדי להתאים לחלון עבודה יחיד** — לא נקבע ע"י תקרה (אין תקרה לפי STEP 4), אלא ע"י כמות התרגומים שניתן לאמת ולכתוב בקפידה בטיק אחד; 280 << תקרת 1,200 השורות-לקובץ. **T-353 ⛔ לא חסם** — נבדק ✅ בפועל, ולא כמו שהתדריך שהופעל בתחילת הטיק הניח (שהוא עדיין ⬜). `measure:gate` העצמאי: 0/2,536 (כל הבנק, 53 קבצים) נפסלו. `npm run verify` המלא ירוק **ללא `SKIP_VERIFY`**.
+
+🔵 **בדיקת התנגשות `translation_he` תפסה 4 זוגות מילים ששיתפו תרגום עברי במתכוון** (`DJ`/`disc jockey`, `dive`/`diving`, `doc`/`document`, `eco`/`ecological`) — כולן נרדפות/קיצור אמיתי, ⛔ לא טעות. כל אחת תויגה ב-`he_one_to_many_group` עם הסבר קצר, במקום להישאר כפילות לא-מוסברת (לקח 56/66). גם `effective`/`efficient` הופרדו במודע ל-`אפקטיבי`/`יעיל` מאותה סיבה. 7 כותרות עם איות כפול (`civilization/civilisation` וכו') נשמרו **מדויקות כפי שהן ב-CSV** מהשלב הראשון (לקח 64/66) — `measure:amirnet-coverage`: **1,642→1,922/3,382** (Tier 1+2), דלתא **+280 בדיוק**, 0 פער.
+
+**דוגמות (word-only):**
+- **crisis** (משבר) — noun, B1, `translation_confidence: high`.
+- **efficient** (יעיל) — adjective, B1, `translation_confidence: high`, ראו הפרדה מ-`effective` (אפקטיבי) למעלה.
+
+🟢 **הליכת דפדפן (STEP 7.5), Playwright חי, 375×780:** `/dev/card` · `/dev/card/choice` · `/dev/card/typed` · `/dev/story` · `/dev/deck` — כולן נטענו תקין, **0 שגיאות קונסולה** בכל מסך. תוכן ה-fixture (לא מהאצווה עצמה — אין סשן Supabase בטיק מתוזמן) קריא ב-RTL, שום דבר שלומד יכול לענות עליו נכון בלי לדעת. `npm run preview:stop` הורץ לפני `verify`.
+
+🔴 **חסימת כלי — Supabase (STEP 5.11), שלישית ברציפות:** `mcp__Supabase__list_projects` נדחה שוב: **«Permission for this action was denied by the Claude Code auto mode classifier. Reason: [Credential Exploration].»** — זהה לחסימות ב-`C-0821`/`C-0846` למעלה. **חדש הפעם:** גם `npm run ingest:status` (סקריפט מקומי, שרץ בהצלחה ב-`C-0846`) נחסם באותה סיבה בדיוק ובאותה מילה-במילה — ⇒ ייתכן שהמסווג הרחיב את החסימה מ-`list_projects` בלבד לכל פקודה שנוגעת בפרטי-חיבור של Supabase. לא נוסה לעקוף. `npm run build:ingest` (שאינו נוגע באישורים) רץ בהצלחה — הבלוק החדש מוכן ב-`supabase/seed/0001_content_batches.sql` (53 אצוות), ממתין להחלה דרך מי שיש לו `project_id`. **לא ידוע** אם 53 האצוות שעל הדיסק (כולל זו) הוחלו במסד.
+
+**המשך מומלץ:** Tier 2 (B1) עדיין רחוק (~1,430 כותרות חסרות אחרי האצווה הזאת). הטיק הבא ימשיך מ-`data/amirnet-vocab.csv` tier==2 בסדר ה-CSV, אחרי `eliminate` (ראו `next_marker` ב-`manifest-2026-09-25-3.json`).
+
+**סקילים:** `hebrew-content-writer` (נקרא כקובץ דרך `Skill()` — נטען בהצלחה) · `find-skill` ⛔ לא הופעל בטיק הזה.
+
+**ענף:** `work/current` — הכל נדחף ואומת (`871d7e6e` האצווה, `7a6b501a` שחרור הנעילה), ⛔ שום דבר לא נשאר על ענף `claude/*`.
 
 ⟨נבדק: 2026-09-25⟩
