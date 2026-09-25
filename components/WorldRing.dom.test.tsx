@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { APP_CENTRE_HREF, WorldRingView } from '@/components/WorldRing';
+import { APP_CENTRE_HREF, LONG_PRESS_MS, LONG_PRESS_SLOP_PX, WorldRingView } from '@/components/WorldRing';
 import { nodeRadius, slotPoint } from '@/lib/core/ringEdit';
 import { placingFrom } from '@/lib/ringStore';
 import { ringScreen, type RingInputs, type RingNodeId } from '@/lib/core/worldRing';
@@ -136,5 +136,102 @@ describe('placingFrom — what ?place= starts from (T-505ⓐ)', () => {
     expect(placingFrom(['arena'], 'leaders')).toEqual({ ring: ['arena'], placing: null });
     expect(placingFrom(['arena'], '__proto__')).toEqual({ ring: ['arena'], placing: null });
     expect(placingFrom(['arena'], null)).toEqual({ ring: ['arena'], placing: null });
+  });
+});
+
+describe('edit mode (T-506 · kol-E-05 · D-296ⓑ)', () => {
+  const seven: RingNodeId[] = ['arena', 'msgs', 'amirnet', 'stories', 'compose', 'sentences', 'vocab'];
+
+  it('a 500ms hold opens edit mode, and the release that ends it ⛔ does not navigate', () => {
+    vi.useFakeTimers();
+    const onLongPress = vi.fn();
+    const onPick = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} onLongPress={onLongPress} onPick={onPick} />,
+    );
+    const node = container.querySelector('[data-ring-node="stories"]') as HTMLElement;
+    fireEvent.pointerDown(node, { clientX: 100, clientY: 100 });
+    vi.advanceTimersByTime(LONG_PRESS_MS - 1);
+    expect(onLongPress).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onLongPress).toHaveBeenCalledWith('stories');
+    fireEvent.pointerUp(node);
+    fireEvent.click(node);
+    expect(onPick).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('a release before 500ms is a normal tap', () => {
+    vi.useFakeTimers();
+    const onLongPress = vi.fn();
+    const onPick = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} onLongPress={onLongPress} onPick={onPick} />,
+    );
+    const node = container.querySelector('[data-ring-node="stories"]') as HTMLElement;
+    fireEvent.pointerDown(node, { clientX: 100, clientY: 100 });
+    vi.advanceTimersByTime(300);
+    fireEvent.pointerUp(node);
+    fireEvent.click(node);
+    vi.advanceTimersByTime(500);
+    expect(onLongPress).not.toHaveBeenCalled();
+    expect(onPick).toHaveBeenCalledWith('stories');
+    vi.useRealTimers();
+  });
+
+  it('⛔ FAILURE SCENARIO: a thumb that moves more than 8px is a scroll ⇒ ⛔ no edit mode', () => {
+    vi.useFakeTimers();
+    const onLongPress = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} onLongPress={onLongPress} />,
+    );
+    const node = container.querySelector('[data-ring-node="stories"]') as HTMLElement;
+    fireEvent.pointerDown(node, { clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(node, { clientX: 100, clientY: 100 + LONG_PRESS_SLOP_PX + 1 });
+    vi.advanceTimersByTime(1000);
+    expect(onLongPress).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('the context menu (Shift+F10) opens the same mode — the keyboard\'s door', () => {
+    const onLongPress = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} onLongPress={onLongPress} />,
+    );
+    fireEvent.contextMenu(container.querySelector('[data-ring-node="stories"]') as HTMLElement);
+    expect(onLongPress).toHaveBeenCalledWith('stories');
+  });
+
+  it('editing: a ✕ on every node, the hub reads «סיום», nodes ⛔ do not navigate, the banner is the render\'s', () => {
+    const onRemove = vi.fn();
+    const onDone = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} editing onRemove={onRemove} onDone={onDone} />,
+    );
+    expect(container.querySelectorAll('[data-ring-remove]')).toHaveLength(7);
+    expect(container.querySelectorAll('a[data-ring-node]')).toHaveLength(0);
+    const hub = container.querySelector('[data-ring-focus="done"]') as HTMLElement;
+    expect(hub.textContent).toContain('סיום');
+    expect(container.querySelector('[data-ring-banner]')?.textContent).toContain('מצב עריכה · גרירה מחליפה מיקום');
+    fireEvent.click(container.querySelector('[data-ring-remove="msgs"]') as HTMLElement);
+    expect(onRemove).toHaveBeenCalledWith('msgs');
+    fireEvent.click(hub);
+    expect(onDone).toHaveBeenCalled();
+  });
+
+  it('after ✕ the banner says nothing was deleted, ⛔ without a confirm dialog', () => {
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven.slice(1)} editing notice={{ kind: 'removed', id: 'arena' }} />,
+    );
+    const banner = container.querySelector('[data-ring-banner]');
+    expect(banner?.getAttribute('data-ring-banner')).toBe('success');
+    expect(banner?.textContent).toContain('ההתקדמות נשמרה במלואה');
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('⛔ FAILURE SCENARIO: ✕ on the last node ⇒ an empty ring with the hub only, ⛔ no crash', () => {
+    const { container } = render(<WorldRingView screen={screen} lastNode={null} ring={[]} editing />);
+    expect(container.querySelector('[data-ring-focus="done"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-ring-node-editing]')).toHaveLength(0);
   });
 });

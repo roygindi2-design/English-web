@@ -60,6 +60,12 @@ export const APP_CENTRE_HREF = '/world/apps';
 const APP_CENTRE_LABEL_HE = 'מרכז האפליקציות';
 /** T-505ⓒ — the tap path, so placing ⛔ never needs a drag (a switch user has none). */
 const MOVE_GAP_HE = 'הזז את המקום הפנוי לכאן';
+/** T-506 — the hub while editing (`kol-E-05`), and the ✕'s spoken name. */
+const DONE_HE = 'סיום';
+const REMOVE_HE = 'הסר';
+/** D-296ⓑ — `render_video_E.py` `scene_edit` `hold = .5`, and the thumb's slack before it is a scroll. */
+export const LONG_PRESS_MS = 500;
+export const LONG_PRESS_SLOP_PX = 8;
 const placeHereHe = (labelHe: string): string => `הנח את «${labelHe}» כאן`;
 const LOADING_HE = 'טוען את העולם…';
 const HERE_YOU_WERE_HE = 'כאן היית';
@@ -246,9 +252,12 @@ function NodeCircle({
   node,
   wasHere,
   size,
+  onRemove,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
+  /** T-506ⓑ — edit mode: the ✕ in the corner (`kol-E-05`), and the lock steps aside for it. */
+  readonly onRemove?: () => void;
   /** T-504ⓐ — `2 × nodeRadius(n)`: the nodes shrink as the ring fills (56 at the smallest, ⛔ never under 44). */
   readonly size: number;
 }): React.JSX.Element {
@@ -261,7 +270,24 @@ function NodeCircle({
       } ${wasHere ? 'ring-2 ring-brand ring-offset-2 ring-offset-surface' : ''}`}
     >
       <RingIcon id={node.id} />
-      {shut ? (
+      {onRemove !== undefined ? (
+        // T-506ⓑ — a 24px `danger` disc on the frame (3341:152), inside a 44×44 target
+        // (constitution A4): the padding is the hit area, ⛔ not the drawing.
+        <button
+          type="button"
+          data-ring-remove={node.id}
+          aria-label={`${REMOVE_HE} את ${node.labelHe}`}
+          onClick={onRemove}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute -right-5 -top-5 z-10 flex h-12 w-12 items-center justify-center"
+        >
+          <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-danger text-surface-raised">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </span>
+        </button>
+      ) : shut ? (
         // ⛔ המנעול הוא **הערוץ השני**, ⛔ ולא קישוט: עמעום לבדו הוא מצב בצבע בלבד.
         // ⛔ `-start` ו⛔ לא `-end`: ב-RTL זו הפינה הימנית־עליונה, וזה בדיוק המקום
         // שבו `kol-world-ring.png` מצייר את המנעול על `מובילים` ועל `חברים`.
@@ -281,6 +307,8 @@ function RingNodeItem({
   n,
   slide = null,
   onSlotTap,
+  onLongPress,
+  onRemove,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
@@ -292,7 +320,12 @@ function RingNodeItem({
   readonly slide?: string | null;
   /** T-505ⓒ — while placing, a tap on a resting node moves the free slot to it. */
   readonly onSlotTap?: () => void;
+  /** T-506ⓐ — browse: a 500ms hold (or the context menu) opens edit mode. */
+  readonly onLongPress?: () => void;
+  /** T-506ⓑ — edit mode: the node ⛔ does not navigate, and carries a ✕. */
+  readonly onRemove?: () => void;
 }): React.JSX.Element {
+  const { fired, ...press } = useLongPress(onLongPress);
   const { x, y } = slotPoint(slot, n);
   // ⚠️ התווית **מחוץ לעיגול** כמו ברנדר, ומעליו בחצי העליון ומתחתיו בחצי התחתון
   // — בדיוק כפי ש-`kol-D-01-world.png` מצייר את תשעת הצמתים (`D-182`).
@@ -314,11 +347,23 @@ function RingNodeItem({
   const inner = (
     <>
       {labelAbove ? label : null}
-      <NodeCircle node={node} wasHere={wasHere} size={nodeRadius(n) * 2} />
+      <NodeCircle node={node} wasHere={wasHere} size={nodeRadius(n) * 2} onRemove={onRemove} />
       {labelAbove ? null : label}
     </>
   );
   const shell = NODE_BASE;
+
+  if (onRemove !== undefined) {
+    return (
+      <div
+        data-ring-node-editing={node.id}
+        className={`${shell} ${NODE_OPEN}`}
+        style={style}
+      >
+        {inner}
+      </div>
+    );
+  }
 
   if (onSlotTap !== undefined) {
     return (
@@ -343,7 +388,15 @@ function RingNodeItem({
         href={href}
         data-ring-node={node.id}
         aria-label={wasHere ? `${node.labelHe} · ${HERE_YOU_WERE_HE}` : node.labelHe}
-        onClick={() => onPick(node.id)}
+        {...press}
+        onClick={(e) => {
+          // the hold already opened edit mode ⇒ this release is ⛔ not a navigation
+          if (fired()) {
+            e.preventDefault();
+            return;
+          }
+          onPick(node.id);
+        }}
         className={`${shell} ${NODE_OPEN}`}
         style={style}
       >
@@ -358,6 +411,7 @@ function RingNodeItem({
       type="button"
       aria-disabled="true"
       data-ring-node-blocked={node.id}
+      {...press}
       aria-label={note === null ? node.labelHe : `${node.labelHe} · ${note}`}
       className={`${shell} ${NODE_SHUT}`}
       style={style}
@@ -365,6 +419,64 @@ function RingNodeItem({
       {inner}
     </button>
   );
+}
+
+/**
+ * T-506ⓐⓔ — a hold of `LONG_PRESS_MS` without moving more than `LONG_PRESS_SLOP_PX`
+ * (so a thumb that scrolls ⛔ never lands in edit mode), or the context menu — which is
+ * also what Shift+F10 and a long press on touch fire, so the keyboard has the same door.
+ * `fired()` lets the release that ends a hold swallow its click.
+ */
+function useLongPress(onLongPress?: () => void): {
+  readonly onPointerDown?: (e: React.PointerEvent) => void;
+  readonly onPointerMove?: (e: React.PointerEvent) => void;
+  readonly onPointerUp?: () => void;
+  readonly onPointerCancel?: () => void;
+  readonly onContextMenu?: (e: React.MouseEvent) => void;
+  readonly fired: () => boolean;
+} {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const origin = useRef<{ x: number; y: number } | null>(null);
+  const done = useRef(false);
+  useEffect(() => () => {
+    if (timer.current !== null) clearTimeout(timer.current);
+  }, []);
+  if (onLongPress === undefined) return { fired: () => false };
+  const clear = (): void => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = null;
+    origin.current = null;
+  };
+  return {
+    onPointerDown: (e) => {
+      done.current = false;
+      origin.current = { x: e.clientX, y: e.clientY };
+      if (timer.current !== null) clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        done.current = true;
+        onLongPress();
+      }, LONG_PRESS_MS);
+    },
+    onPointerMove: (e) => {
+      const o = origin.current;
+      if (o !== null && Math.hypot(e.clientX - o.x, e.clientY - o.y) > LONG_PRESS_SLOP_PX) clear();
+    },
+    onPointerUp: clear,
+    onPointerCancel: clear,
+    onContextMenu: (e) => {
+      e.preventDefault();
+      clear();
+      if (done.current) return;
+      done.current = true;
+      onLongPress();
+    },
+    fired: () => {
+      const was = done.current;
+      done.current = false;
+      return was;
+    },
+  };
 }
 
 /** `prefers-reduced-motion` ⇒ the nodes jump (T-505ⓓ · constitution layer A). */
@@ -551,6 +663,10 @@ export function WorldRingView({
   placing = null,
   onPlace,
   notice = null,
+  editing = false,
+  onLongPress,
+  onRemove,
+  onDone,
 }: {
   readonly screen: RingScreen;
   readonly lastNode: RingNodeId | null;
@@ -562,6 +678,11 @@ export function WorldRingView({
   readonly onPlace?: (id: RingNodeId, slot: number) => void;
   /** T-505ⓑ — what the last step did, for the success banner (`kol-E-04`). */
   readonly notice?: RingNotice | null;
+  /** T-506 — edit mode (`kol-E-05`/`07`). */
+  readonly editing?: boolean;
+  readonly onLongPress?: (id: RingNodeId) => void;
+  readonly onRemove?: (id: RingNodeId) => void;
+  readonly onDone?: () => void;
 }): React.JSX.Element {
   const pick = onPick ?? (() => undefined);
   const reduced = useReducedMotion();
@@ -577,7 +698,12 @@ export function WorldRingView({
       : null;
   const state: RingState = {
     ring: drawn.map((node) => node.id),
-    mode: floatNode === null ? { kind: 'browse' } : { kind: 'placing', id: floatNode.id },
+    mode:
+      floatNode !== null
+        ? { kind: 'placing', id: floatNode.id }
+        : editing
+          ? { kind: 'editing' }
+          : { kind: 'browse' },
     notice,
   };
   const banner = ringBannerHe(state);
@@ -616,7 +742,19 @@ export function WorldRingView({
           />
           {/* המוקד `קול` — העיגול המוגבה שבמרכז. הזוהר הוא **אחד משניים** שהמסך
               מרשה לעצמו (חוקה ב3), והשני הוא העיגול המרכזי בסרגל. */}
-          {floatNode === null || layout === null ? (
+          {editing && floatNode === null ? (
+            <button
+              type="button"
+              data-ring-focus="done"
+              onClick={onDone}
+              className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-brand bg-surface-raised text-success active:opacity-90"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m5 12.5 4.5 4.5L19 7" />
+              </svg>
+              <span className="text-[15px] font-bold">{DONE_HE}</span>
+            </button>
+          ) : floatNode === null || layout === null ? (
           <Link
             href={APP_CENTRE_HREF}
             aria-label={APP_CENTRE_LABEL_HE}
@@ -638,6 +776,8 @@ export function WorldRingView({
                   slot={i}
                   n={drawn.length}
                   slide={slide}
+                  onLongPress={editing || onLongPress === undefined ? undefined : () => onLongPress(node.id)}
+                  onRemove={editing ? () => onRemove?.(node.id) : undefined}
                 />
               ))
             : drawn.map((node, i) => (
@@ -735,6 +875,7 @@ export default function WorldRing(): React.JSX.Element {
   const [ring, setRing] = useState<readonly RingNodeId[]>(DEFAULT_RING);
   const [placing, setPlacing] = useState<RingNodeId | null>(null);
   const [notice, setNotice] = useState<RingNotice | null>(null);
+  const [editing, setEditing] = useState(false);
 
   // ⛔ **⛔ אין כאן ניווט** (T-206ⓓ): הקריאה מסמנת צומת אחד, ⛔ ואינה מזיזה איש.
   // T-504 — and the learner's own ring (D-296) is read in the same mount, from this device.
@@ -843,6 +984,24 @@ export default function WorldRing(): React.JSX.Element {
       placing={placing}
       onPlace={onPlace}
       notice={notice}
+      editing={editing}
+      onLongPress={(id) => {
+        const step = ringStep(startRing(ring), { type: 'longPress', id });
+        if (step.state.mode.kind !== 'editing') return;
+        setNotice(null);
+        setEditing(true);
+      }}
+      onRemove={(id) => {
+        const step = ringStep({ ring, mode: { kind: 'editing' }, notice: null }, { type: 'remove', id });
+        if (step.state.ring === ring) return;
+        writeRing(step.state.ring);
+        setRing(step.state.ring);
+        setNotice(step.state.notice);
+      }}
+      onDone={() => {
+        setEditing(false);
+        setNotice(null);
+      }}
     />
   );
 }

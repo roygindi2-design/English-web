@@ -646,6 +646,11 @@
     "components/RecallCard.tsx",
     "lib/core/worldRecall.ts"
   ],
+  "app/dev/world/ring/edit/page.tsx": [
+    "components/WorldRing.tsx",
+    "lib/core/ringMode.ts",
+    "lib/core/worldRing.ts"
+  ],
   "app/dev/world/ring/expired/page.tsx": [
     "components/WorldRing.tsx",
     "lib/core/worldRing.ts"
