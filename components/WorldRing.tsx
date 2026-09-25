@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LockIcon from '@/components/LockIcon';
 import { apiGet } from '@/lib/api/client';
 import { toFailureCode, worstFailure, type FailureCode } from '@/lib/core/failureExit';
 import { LAST_NODE_KEY, parseLastNode } from '@/lib/core/lastNode';
 import { levelTooSmallNoteHe, libraryTile, type StoriesStatus } from '@/lib/core/worldApps';
-import { DEFAULT_RING, nodeRadius, slotPoint } from '@/lib/core/ringEdit';
-import { ringBannerHe, startRing } from '@/lib/core/ringMode';
-import { readRing } from '@/lib/ringStore';
+import { DEFAULT_RING, nodeRadius, slotFromPoint, slotPoint } from '@/lib/core/ringEdit';
+import { ringBannerHe, ringLayout, ringStep, startRing, type RingNotice, type RingState } from '@/lib/core/ringMode';
+import { releaseCurve } from '@/lib/core/spring';
+import { placingFrom, readRing, writeRing } from '@/lib/ringStore';
 import {
   RING_RADIUS,
   ringScreen,
@@ -57,6 +58,9 @@ const FOCUS_HE = 'קול';
 /** T-504ⓑ — the focus is the way into `kol-E-02`. */
 export const APP_CENTRE_HREF = '/world/apps';
 const APP_CENTRE_LABEL_HE = 'מרכז האפליקציות';
+/** T-505ⓒ — the tap path, so placing ⛔ never needs a drag (a switch user has none). */
+const MOVE_GAP_HE = 'הזז את המקום הפנוי לכאן';
+const placeHereHe = (labelHe: string): string => `הנח את «${labelHe}» כאן`;
 const LOADING_HE = 'טוען את העולם…';
 const HERE_YOU_WERE_HE = 'כאן היית';
 const RETRY_HREF = '/world';
@@ -275,6 +279,8 @@ function RingNodeItem({
   onPick,
   slot,
   n,
+  slide = null,
+  onSlotTap,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
@@ -282,12 +288,23 @@ function RingNodeItem({
   /** T-504ⓐ — the node's place in the LEARNER's ring, ⛔ not a fixed angle per app. */
   readonly slot: number;
   readonly n: number;
+  /** T-505ⓓ — the spring the nodes slide on when the ring realigns; `null` = jump. */
+  readonly slide?: string | null;
+  /** T-505ⓒ — while placing, a tap on a resting node moves the free slot to it. */
+  readonly onSlotTap?: () => void;
 }): React.JSX.Element {
   const { x, y } = slotPoint(slot, n);
   // ⚠️ התווית **מחוץ לעיגול** כמו ברנדר, ומעליו בחצי העליון ומתחתיו בחצי התחתון
   // — בדיוק כפי ש-`kol-D-01-world.png` מצייר את תשעת הצמתים (`D-182`).
   const labelAbove = y <= 0;
-  const style = { left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)` } as const;
+  // T-505ⓓ — the offset rides the `translate` property (compositor-only, `check:motion`),
+  // on top of the `-translate-*-1/2` centring in `transform`, so a realign can glide.
+  const style = {
+    left: '50%',
+    top: '50%',
+    translate: `${x}px ${y}px`,
+    transition: slide === null ? undefined : `translate ${slide}`,
+  } as const;
   const note = noteOf(node.state);
   const label = (
     <span className="pointer-events-none whitespace-nowrap text-[11.5px] font-semibold text-ink-muted">
@@ -302,6 +319,22 @@ function RingNodeItem({
     </>
   );
   const shell = NODE_BASE;
+
+  if (onSlotTap !== undefined) {
+    return (
+      <button
+        type="button"
+        data-ring-slot={slot}
+        data-ring-node-resting={node.id}
+        aria-label={`${node.labelHe} · ${MOVE_GAP_HE}`}
+        onClick={onSlotTap}
+        className={`${shell} ${NODE_OPEN}`}
+        style={style}
+      >
+        {inner}
+      </button>
+    );
+  }
 
   if (node.state.kind === 'open') {
     const { href } = node.state;
@@ -331,6 +364,152 @@ function RingNodeItem({
     >
       {inner}
     </button>
+  );
+}
+
+/** `prefers-reduced-motion` ⇒ the nodes jump (T-505ⓓ · constitution layer A). */
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(query.matches);
+    const on = (e: MediaQueryListEvent): void => setReduced(e.matches);
+    query.addEventListener('change', on);
+    return () => query.removeEventListener('change', on);
+  }, []);
+  return reduced;
+}
+
+/**
+ * T-505ⓓ — the ring realigns on `spring.ts`'s critical spring (response 0.3s), sampled into
+ * `linear()` so the compositor runs it. ⛔ No second curve: this is the codebase's spring.
+ */
+function springSlide(): string | null {
+  const curve = releaseCurve({ from: 0, velocity: 0, target: 1, reducedMotion: false });
+  return curve.ms === 0 ? null : `${curve.ms}ms ${curve.easing}`;
+}
+
+/**
+ * T-505 — the node being placed (`kol-E-03`): a dashed free slot on the ring, and the node
+ * floating just outside it with a 2px `brand` ring. Drag it and the free slot follows the
+ * finger (`slotFromPoint`); let go ⇒ drop. ⛔ Not drag-only (ⓒ): a tap on the node or on
+ * the free slot drops it where the slot is, and a tap on a resting node moves the slot.
+ * `pointercancel` (an incoming call) ⇒ back to rest, ⛔ nothing written.
+ */
+function PlacingNode({
+  node,
+  slot,
+  n,
+  slide,
+  onHover,
+  onDrop,
+}: {
+  readonly node: RingNode;
+  readonly slot: number;
+  readonly n: number;
+  readonly slide: string | null;
+  readonly onHover: (slot: number) => void;
+  readonly onDrop: (slot: number) => void;
+}): React.JSX.Element {
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
+  const centre = useRef<{ x: number; y: number } | null>(null);
+  const moved = useRef(false);
+  const current = useRef(slot);
+  current.current = slot;
+
+  const gap = slotPoint(slot, n);
+  const size = nodeRadius(n) * 2;
+  // floats a little outward from its slot, as the frame draws it (3341:92/93)
+  const len = Math.hypot(gap.x, gap.y) || 1;
+  const rest = { x: gap.x + (gap.x / len) * 14, y: gap.y + (gap.y / len) * 14 };
+  const at = drag ?? rest;
+  // outside the circle, above it in the upper half — the resting nodes' rule (`D-182`), so
+  // the label ⛔ never lands on the dashed free slot next to it
+  const floatLabel = (
+    <span className="pointer-events-none whitespace-nowrap text-[11.5px] font-semibold text-ink-muted">
+      {node.labelHe}
+    </span>
+  );
+
+  const toRing = (e: React.PointerEvent): { x: number; y: number } | null => {
+    const c = centre.current;
+    return c === null ? null : { x: e.clientX - c.x, y: e.clientY - c.y };
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        data-ring-gap={slot}
+        aria-label={placeHereHe(node.labelHe)}
+        onClick={() => onDrop(slot)}
+        className="absolute left-1/2 top-1/2 flex min-h-touch min-w-touch -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+        style={{
+          translate: `${gap.x}px ${gap.y}px`,
+          transition: slide === null ? undefined : `translate ${slide}`,
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className="rounded-full border-2 border-dashed border-brand"
+          style={{ height: `${size}px`, width: `${size}px` }}
+        />
+      </button>
+      <button
+        type="button"
+        data-ring-floating={node.id}
+        aria-label={placeHereHe(node.labelHe)}
+        onPointerDown={(e) => {
+          const ringEl = (e.currentTarget as HTMLElement).closest('[data-ring]');
+          const r = ringEl?.getBoundingClientRect();
+          centre.current = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+          moved.current = false;
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          if (centre.current === null) return;
+          const p = toRing(e);
+          if (p === null) return;
+          if (!moved.current && Math.hypot(p.x - rest.x, p.y - rest.y) < 8) return;
+          moved.current = true;
+          setDrag(p);
+          onHover(slotFromPoint(p, n));
+        }}
+        onPointerUp={() => {
+          centre.current = null;
+          moved.current = false;
+          setDrag(null);
+          // a drag drops where the free slot followed the finger; a tap drops at the slot
+          onDrop(current.current);
+        }}
+        onClick={(e) => {
+          // keyboard activation (`detail === 0`) — a pointer already dropped on pointerup
+          if (e.detail === 0) onDrop(current.current);
+        }}
+        onPointerCancel={() => {
+          centre.current = null;
+          moved.current = false;
+          setDrag(null);
+        }}
+        className="absolute left-1/2 top-1/2 flex min-h-touch min-w-touch -translate-x-1/2 -translate-y-1/2 touch-none flex-col items-center gap-1 text-ink"
+        style={{
+          translate: `${at.x}px ${at.y}px`,
+          transition: slide === null || drag !== null ? undefined : `translate ${slide}`,
+        }}
+      >
+        {at.y <= 0 ? floatLabel : null}
+        <span
+          className={`relative flex items-center justify-center rounded-full border-2 border-brand bg-surface-raised ${
+            drag === null ? '' : 'scale-[1.15] shadow-lg'
+          }`}
+          style={{ height: `${size + 6}px`, width: `${size + 6}px` }}
+        >
+          <RingIcon id={node.id} />
+        </span>
+        {at.y <= 0 ? null : floatLabel}
+      </button>
+    </>
   );
 }
 
@@ -369,21 +548,43 @@ export function WorldRingView({
   lastNode,
   onPick,
   ring = DEFAULT_RING,
+  placing = null,
+  onPlace,
+  notice = null,
 }: {
   readonly screen: RingScreen;
   readonly lastNode: RingNodeId | null;
   readonly onPick?: (id: RingNodeId) => void;
   /** T-504 — the learner's ring (`kol.ring.v1`, D-296): which nodes, in which order. */
   readonly ring?: readonly RingNodeId[];
+  /** T-505 — the app just installed and not yet placed (`kol-E-03`). */
+  readonly placing?: RingNodeId | null;
+  readonly onPlace?: (id: RingNodeId, slot: number) => void;
+  /** T-505ⓑ — what the last step did, for the success banner (`kol-E-04`). */
+  readonly notice?: RingNotice | null;
 }): React.JSX.Element {
   const pick = onPick ?? (() => undefined);
+  const reduced = useReducedMotion();
   // ⛔ The screen still decides each node's STATE (`ringScreen`); the ring decides only
   // which of them are drawn and where. An id the screen has no node for is skipped.
   const drawn =
     screen.kind === 'ring'
       ? ring.flatMap((id) => screen.nodes.filter((node) => node.id === id))
       : [];
-  const banner = ringBannerHe(startRing(drawn.map((node) => node.id)));
+  const floatNode =
+    placing !== null && screen.kind === 'ring'
+      ? (screen.nodes.find((node) => node.id === placing) ?? null)
+      : null;
+  const state: RingState = {
+    ring: drawn.map((node) => node.id),
+    mode: floatNode === null ? { kind: 'browse' } : { kind: 'placing', id: floatNode.id },
+    notice,
+  };
+  const banner = ringBannerHe(state);
+  // T-505 — the free slot. Starts at the end of the ring (where «התקן» would have put it).
+  const [hoverSlot, setHoverSlot] = useState<number>(state.ring.length);
+  const layout = floatNode === null ? null : ringLayout(state, hoverSlot);
+  const slide = reduced ? null : springSlide();
   return (
     <section data-world-ring className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -415,6 +616,7 @@ export function WorldRingView({
           />
           {/* המוקד `קול` — העיגול המוגבה שבמרכז. הזוהר הוא **אחד משניים** שהמסך
               מרשה לעצמו (חוקה ב3), והשני הוא העיגול המרכזי בסרגל. */}
+          {floatNode === null || layout === null ? (
           <Link
             href={APP_CENTRE_HREF}
             aria-label={APP_CENTRE_LABEL_HE}
@@ -425,16 +627,41 @@ export function WorldRingView({
             <GlobeIcon />
             <span className="text-[13px] font-bold text-ink">{FOCUS_HE}</span>
           </Link>
-          {drawn.map((node, i) => (
-            <RingNodeItem
-              key={node.id}
-              node={node}
-              wasHere={node.id === lastNode}
-              onPick={pick}
-              slot={i}
-              n={drawn.length}
+          ) : null}
+          {layout === null || floatNode === null
+            ? drawn.map((node, i) => (
+                <RingNodeItem
+                  key={node.id}
+                  node={node}
+                  wasHere={node.id === lastNode}
+                  onPick={pick}
+                  slot={i}
+                  n={drawn.length}
+                  slide={slide}
+                />
+              ))
+            : drawn.map((node, i) => (
+                <RingNodeItem
+                  key={node.id}
+                  node={node}
+                  wasHere={false}
+                  onPick={pick}
+                  slot={layout.slots[i] ?? i}
+                  n={layout.n}
+                  slide={slide}
+                  onSlotTap={() => setHoverSlot(layout.slots[i] ?? i)}
+                />
+              ))}
+          {layout !== null && floatNode !== null ? (
+            <PlacingNode
+              node={floatNode}
+              slot={hoverSlot}
+              n={layout.n}
+              slide={slide}
+              onHover={setHoverSlot}
+              onDrop={(slot) => onPlace?.(floatNode.id, slot)}
             />
-          ))}
+          ) : null}
         </div>
       )}
 
@@ -506,13 +733,40 @@ export default function WorldRing(): React.JSX.Element {
   const [failure, setFailure] = useState<FailureCode>('unavailable');
   const [lastNode, setLastNode] = useState<RingNodeId | null>(null);
   const [ring, setRing] = useState<readonly RingNodeId[]>(DEFAULT_RING);
+  const [placing, setPlacing] = useState<RingNodeId | null>(null);
+  const [notice, setNotice] = useState<RingNotice | null>(null);
 
   // ⛔ **⛔ אין כאן ניווט** (T-206ⓓ): הקריאה מסמנת צומת אחד, ⛔ ואינה מזיזה איש.
   // T-504 — and the learner's own ring (D-296) is read in the same mount, from this device.
+  // T-505ⓐ — `?place=<id>` (from «התקן») opens the ring in placing mode.
   useEffect(() => {
     setLastNode(readLastNode());
-    setRing(readRing());
+    let raw: string | null = null;
+    try {
+      raw = new URLSearchParams(window.location.search).get('place');
+    } catch {
+      raw = null;
+    }
+    const start = placingFrom(readRing(), raw);
+    setRing(start.ring);
+    setPlacing(start.placing);
   }, []);
+
+  const onPlace = (id: RingNodeId, slot: number): void => {
+    const step = ringStep({ ring, mode: { kind: 'placing', id }, notice: null }, { type: 'drop', id, slot });
+    if (step.state.mode.kind !== 'browse') return;
+    writeRing(step.state.ring);
+    setRing(step.state.ring);
+    setPlacing(null);
+    setNotice(step.state.notice);
+    // ⛔ not a navigation (T-206ⓓ): the page stays, only `?place=` leaves the address, so a
+    // refresh after the drop ⛔ does not open placing again.
+    try {
+      window.history.replaceState(window.history.state, '', '/world');
+    } catch {
+      // ⛔ a history that refuses is ⛔ not a learner error — the ring is already written
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -586,6 +840,9 @@ export default function WorldRing(): React.JSX.Element {
       lastNode={lastNode}
       onPick={onPick}
       ring={ring}
+      placing={placing}
+      onPlace={onPlace}
+      notice={notice}
     />
   );
 }

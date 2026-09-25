@@ -654,6 +654,11 @@
     "components/WorldRing.tsx",
     "lib/core/worldRing.ts"
   ],
+  "app/dev/world/ring/place/page.tsx": [
+    "components/WorldRing.tsx",
+    "lib/core/ringMode.ts",
+    "lib/core/worldRing.ts"
+  ],
   "app/error.test.ts": [
     "lib/testSource.ts"
   ],
@@ -1448,7 +1453,8 @@
   "components/WorldRing.dom.test.tsx": [
     "components/WorldRing.tsx",
     "lib/core/ringEdit.ts",
-    "lib/core/worldRing.ts"
+    "lib/core/worldRing.ts",
+    "lib/ringStore.ts"
   ],
   "components/WorldRing.test.ts": [
     "lib/testSource.ts"
@@ -1460,6 +1466,7 @@
     "lib/core/lastNode.ts",
     "lib/core/ringEdit.ts",
     "lib/core/ringMode.ts",
+    "lib/core/spring.ts",
     "lib/core/worldApps.ts",
     "lib/core/worldRing.ts",
     "lib/ringStore.ts"
@@ -2152,6 +2159,7 @@
     "lib/core/failureExit.ts"
   ],
   "lib/ringStore.ts": [
+    "lib/core/appCentre.ts",
     "lib/core/ringEdit.ts",
     "lib/core/worldRing.ts"
   ],

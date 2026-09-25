@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { APP_CENTRE_HREF, WorldRingView } from '@/components/WorldRing';
 import { nodeRadius, slotPoint } from '@/lib/core/ringEdit';
+import { placingFrom } from '@/lib/ringStore';
 import { ringScreen, type RingInputs, type RingNodeId } from '@/lib/core/worldRing';
 
 afterEach(cleanup);
@@ -63,5 +64,77 @@ describe('the World ring is the learner\'s ring (T-504)', () => {
     expect(banner?.getAttribute('data-ring-banner')).toBe('brand');
     expect(banner?.textContent).toContain('9 מתוך 10 אפליקציות בטבעת');
     expect(banner?.textContent).toContain('הקש על קול לניהול · לחיצה ארוכה על אפליקציה לעריכה');
+  });
+});
+
+describe('placing a new app (T-505 · kol-E-03)', () => {
+  const six: RingNodeId[] = ['arena', 'msgs', 'stories', 'compose', 'sentences', 'vocab'];
+
+  it('hides the focus, floats the node, shows the brand banner word for word', () => {
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={six} placing="amirnet" />,
+    );
+    expect(container.querySelector('[data-ring-focus]')).toBeNull();
+    expect(container.querySelector('[data-ring-floating="amirnet"]')).not.toBeNull();
+    const banner = container.querySelector('[data-ring-banner]');
+    expect(banner?.getAttribute('data-ring-banner')).toBe('brand');
+    expect(banner?.textContent).toContain('גרור את «אמירנט» למקום בטבעת');
+  });
+
+  it('⛔ not drag-only: a tap on the free slot drops there, and a tap on a resting node moves the slot', () => {
+    const onPlace = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={six} placing="amirnet" onPlace={onPlace} />,
+    );
+    // the free slot starts at the end
+    expect(container.querySelector('[data-ring-gap]')?.getAttribute('data-ring-gap')).toBe('6');
+    fireEvent.click(container.querySelector('[data-ring-node-resting="msgs"]') as HTMLElement);
+    const gap = container.querySelector('[data-ring-gap]') as HTMLElement;
+    expect(gap.getAttribute('data-ring-gap')).toBe('1');
+    fireEvent.click(gap);
+    expect(onPlace).toHaveBeenCalledWith('amirnet', 1);
+  });
+
+  it('⛔ FAILURE SCENARIO: pointercancel (an incoming call) ⇒ back to rest, ⛔ no drop', () => {
+    const onPlace = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={six} placing="amirnet" onPlace={onPlace} />,
+    );
+    const node = container.querySelector('[data-ring-floating]') as HTMLElement;
+    fireEvent.pointerDown(node, { clientX: 0, clientY: 0, pointerId: 1 });
+    fireEvent.pointerCancel(node, { pointerId: 1 });
+    expect(onPlace).not.toHaveBeenCalled();
+  });
+
+  it('after the drop the banner is the success one («נוספה לטבעת»)', () => {
+    const { container } = render(
+      <WorldRingView
+        screen={screen}
+        lastNode={null}
+        ring={[...six, 'amirnet']}
+        notice={{ kind: 'added', id: 'amirnet' }}
+      />,
+    );
+    const banner = container.querySelector('[data-ring-banner]');
+    expect(banner?.getAttribute('data-ring-banner')).toBe('success');
+    expect(banner?.textContent).toContain('«אמירנט» נוספה לטבעת');
+    expect(banner?.textContent).toContain('7 מתוך 10 · הצמתים התיישרו מחדש');
+  });
+});
+
+describe('placingFrom — what ?place= starts from (T-505ⓐ)', () => {
+  it('the app «התקן» already appended is taken out to be placed', () => {
+    expect(placingFrom(['arena', 'vocab', 'amirnet'], 'amirnet')).toEqual({ ring: ['arena', 'vocab'], placing: 'amirnet' });
+  });
+  it('⛔ FAILURE SCENARIO: a refresh mid-placing starts the same placing ⇒ ⛔ never installed twice', () => {
+    const once = placingFrom(['arena', 'amirnet'], 'amirnet');
+    const again = placingFrom(['arena', 'amirnet'], 'amirnet');
+    expect(again).toEqual(once);
+    expect(once.ring.filter((x) => x === 'amirnet')).toHaveLength(0);
+  });
+  it('⛔ FAILURE SCENARIO: ?place=leaders (locked) or an unknown id ⇒ browse, ring untouched', () => {
+    expect(placingFrom(['arena'], 'leaders')).toEqual({ ring: ['arena'], placing: null });
+    expect(placingFrom(['arena'], '__proto__')).toEqual({ ring: ['arena'], placing: null });
+    expect(placingFrom(['arena'], null)).toEqual({ ring: ['arena'], placing: null });
   });
 });
