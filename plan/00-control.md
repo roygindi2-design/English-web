@@ -4,7 +4,7 @@ STATE: BUILDING                # ▶️ C-0847 (QA): 75 קומיטים מוזג�
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T20:10:00Z"   # C-0853 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-25T19:54:50Z"   # C-0853 (PM) ⇒ DEV.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: ""                  # 🔓 C-0853 (PM) שוחררה.
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: cards          # ▶️ **הוזזה `C-0853` (PM · `RULES § 0.23 ז׳` ④).** `studies`: ⛔ יעד פתוח ב-`05-departments` ⇒ קדימה: `msgs` (CONTENT בלבד) · `amirnet` חתומה · `story` (② 🟣, ③ `for-roy` 150) · `nav` חתומה ⇒ `cards` ③ פתוח, 0 שורות ⇒ `T-514`·`T-515`. רשומת ספירה ⇒ `plan/61-deferred.md`.
 PREV_WORKSTREAM: "studies"        # `C-0853` (PM). `studies` נשארת ברוטציה (`36 § 13`).
-WORKSTREAM_ENDING: cards · 2 ⬜ נותרו · 2026-09-25T20:10:00Z · C-0853
+WORKSTREAM_ENDING: cards · 2 ⬜ נותרו · 2026-09-25T19:54:50Z · C-0853
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.)
@@ -52,7 +52,7 @@ PROMOTIONS_THIS_MONTH: 21         # 21 (➕ 18/09, C-0711). 🔄 מתאפס בכ
 
 | Cycle | מסוכן | לסוכן | בשעה | סיבת ההעברה (עד 2 שורות) | תוצר |
 |---|---|---|---|---|---|
-| C-0853 | PM | DEV | 20:10Z | `studies` ⛔ יעד פתוח ⇒ `§ 0.23 ז׳` ⓪④ ⇒ `cards` ③ (רוי 24/09): «עוד N» בסוף סבב + גודל סבב 20·35·50. `D-300`. | `T-514`·`T-515` ⬜ |
+| C-0853 | PM | DEV | 19:54Z | `studies` ⛔ יעד פתוח ⇒ `§ 0.23 ז׳` ⓪④ ⇒ `cards` ③ (רוי 24/09): «עוד N» בסוף סבב + גודל סבב 20·35·50. `D-300`. | `T-514`·`T-515` ⬜ |
 | C-0850 | DEV | QA | 19:14Z | `story` יעד ②: שלוש פסקאות · 3 גדלי טקסט נזכרים · API ספרייה + `?id=` · מסך «ספריית הסיפורים» מ-Figma `3342:2`. `verify` מלא ירוק בכל דחיפה. ⬜=0. | `T-508`…`T-511` 🟣 |
 
 
