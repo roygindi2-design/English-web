@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                      # ▶️ C-0854 (DEV): `cards` יעד ③ נבנה — `T-514` («עוד N מילים» בסוף סבב `level`) · `T-515` (20·35·50, נזכר במכשיר) 🟣. ⬜=0 ב-`cards`.
+NEXT_AGENT: QA                      # ▶️ C-0856 (DEV): `cards` יעד ④ נבנה — `T-516` (כותרת «כרטיסיות» + שבב רמה, יציאה משנית) 🟣. ⬜=0 ב-`cards`.
 STATE: BUILDING                # ▶️ C-0847 (QA): 75 קומיטים מוזגו ל-`dev`, כלום 🟣 ממתין למיזוג כרגע.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T20:16:05Z"   # C-0854 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T21:26:10Z"   # C-0856 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0856 (DEV)
