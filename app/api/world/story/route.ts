@@ -4,7 +4,7 @@ import { parseLevel } from '@/lib/core/levelSummary';
 import { LEARNER_TIME_ZONE, toIsoDateInZone } from '@/lib/core/onboarding';
 import { STORIES_PER_LEVEL, storyLemma } from '@/lib/core/storyGate';
 import { ANSWERS_PER_QUESTION } from '@/lib/core/storyQuestionGate';
-import { dayIndexFromIsoDate, pickStory } from '@/lib/core/storyPick';
+import { dayIndexFromIsoDate, orderStories, pickStory, type StoryPick } from '@/lib/core/storyPick';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 import {
   MAX_GLOSS_ROWS,
@@ -50,7 +50,20 @@ function schemaAwareFailure(where: string, error: { message: string; code?: stri
   return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 }
 
-export async function GET() {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * 📚 T-510ⓒ — `?id=<uuid>` asks for ONE story (the library, `T-511`). ⛔ It is a CHOICE,
+ * ⛔ never a skip list: what the learner has read still comes only from `story_reads`.
+ * A malformed or unknown id is ⛔ not a 404 — the route falls back to the day's pick.
+ */
+function requestedStoryId(request: Request | undefined): string | null {
+  if (request === undefined) return null;
+  const id = new URL(request.url).searchParams.get('id');
+  return id !== null && UUID_RE.test(id) ? id : null;
+}
+
+export async function GET(request?: Request) {
   const env = readSupabaseEnv();
   if (!env) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 
@@ -72,10 +85,28 @@ export async function GET() {
   const level = parseLevel((profile.data as { current_level?: unknown } | null)?.current_level);
   if (level === null) return NextResponse.json({ ok: false, code: 'no_level' });
 
+  // 📚 T-510ⓒ — a requested story may sit at another level (the library lets the learner
+  // read up or down) ⇒ its OWN level decides the pool, the index and the gloss band.
+  // ⚠️ A soft read: a failure here opens the day's story, ⛔ never a 503.
+  const requestedId = requestedStoryId(request);
+  let storyLevel = level;
+  if (requestedId !== null) {
+    const found = await supabase
+      .from('stories')
+      .select('id, cefr_level')
+      .eq('id', requestedId)
+      .maybeSingle();
+    if (found.error) console.error('[api/world/story] requested story read failed:', found.error.message);
+    const foundLevel = parseLevel(
+      (found.error === null ? (found.data as { cefr_level?: unknown } | null) : null)?.cefr_level,
+    );
+    if (foundLevel !== null) storyLevel = foundLevel;
+  }
+
   const rows = await supabase
     .from('stories')
     .select('id, title_en, body_en, created_at')
-    .eq('cefr_level', level)
+    .eq('cefr_level', storyLevel)
     .order('created_at', { ascending: true })
     .limit(MAX_LEVEL_STORIES);
   if (rows.error) return schemaAwareFailure('stories', rows.error);
@@ -97,7 +128,7 @@ export async function GET() {
       .filter((id): id is string => typeof id === 'string'),
   );
   const dayIndex = dayIndexFromIsoDate(toIsoDateInZone(new Date(), LEARNER_TIME_ZONE));
-  const picked = pickStory({ stories, dayIndex, readStoryIds });
+  const picked = requestedPick(stories, requestedId) ?? pickStory({ stories, dayIndex, readStoryIds });
 
   // ⛔ 200, ⛔ not 503 — F-040 / C-0255. An empty level is a screen state, ⛔ not an outage:
   // `<TabBar>` locks the world tab on any answer that is not ok:true, and a 503 here would
@@ -111,7 +142,7 @@ export async function GET() {
   }
 
   const [glossResult, progressResult, questionResult] = await Promise.all([
-    supabase.from('words').select(GLOSS_SELECT).eq('cefr_profile_band', level).limit(MAX_GLOSS_ROWS),
+    supabase.from('words').select(GLOSS_SELECT).eq('cefr_profile_band', storyLevel).limit(MAX_GLOSS_ROWS),
     supabase
       .from('word_progress')
       .select('words!inner(headword)')
@@ -165,7 +196,7 @@ export async function GET() {
     story: { id: picked.story.id, titleEn: picked.story.titleEn, bodyEn: picked.story.bodyEn },
     index: picked.index,
     total: picked.total,
-    level,
+    level: storyLevel,
     glosses,
     knownLemmas: [...knownLemmas].sort(),
     counts: { newWords, alreadyKnown },
@@ -179,6 +210,18 @@ export async function GET() {
     // ⛔ cannot infer «all read» from the pick itself: `0` ⇒ ⛔ no «לסיפור הבא».
     nextUnread: stories.filter((s) => s.id !== picked.story.id && !readStoryIds.has(s.id)).length,
   });
+}
+
+/** The requested story, indexed in the same order `pickStory` uses, or `null`. */
+function requestedPick(
+  stories: Parameters<typeof orderStories>[0],
+  requestedId: string | null,
+): StoryPick | null {
+  if (requestedId === null) return null;
+  const ordered = orderStories(stories);
+  const at = ordered.findIndex((s) => s.id === requestedId);
+  const story = ordered[at];
+  return story === undefined ? null : { story, index: at + 1, total: ordered.length };
 }
 
 /** ⛔ שורה פגומה היא `null`, ⛔ ולא שאלה חלקית: שלוש תשובות ואינדקס שמצביע לתוכן. */

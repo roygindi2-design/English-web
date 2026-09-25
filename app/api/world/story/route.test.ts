@@ -33,7 +33,9 @@ describe('T-493ⓒ — the skip list is story_reads, ⛔ never a query parameter
   });
 
   it('⛔ no ?read= — a value the client controls is not a source of truth', () => {
-    expect(CODE).not.toMatch(/searchParams/);
+    // T-510ⓒ — the ONE query parameter is `id`, a choice of story, ⛔ never a skip list.
+    const reads = CODE.match(/searchParams\.get\('([^']+)'\)/g) ?? [];
+    expect(reads).toEqual(["searchParams.get('id')"]);
     expect(CODE).not.toMatch(/get\('read'\)/);
   });
 });

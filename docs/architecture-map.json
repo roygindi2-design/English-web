@@ -350,11 +350,25 @@
     "lib/supabase/auth.ts",
     "lib/supabase/postgrest.ts"
   ],
+  "app/api/world/story/library/route.test.ts": [
+    "app/api/world/story/library/route.ts"
+  ],
+  "app/api/world/story/library/route.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/core/onboarding.ts",
+    "lib/core/storyLibrary.ts",
+    "lib/core/storyPick.ts",
+    "lib/supabase/auth.ts",
+    "lib/supabase/stories.ts"
+  ],
   "app/api/world/story/read/route.test.ts": [
     "lib/testSource.ts"
   ],
   "app/api/world/story/read/route.ts": [
     "lib/supabase/auth.ts"
+  ],
+  "app/api/world/story/route.id.test.ts": [
+    "app/api/world/story/route.ts"
   ],
   "app/api/world/story/route.test.ts": [],
   "app/api/world/story/route.ts": [
@@ -2064,6 +2078,13 @@
     "lib/core/storyIntro.ts"
   ],
   "lib/core/storyIntro.ts": [],
+  "lib/core/storyLibrary.test.ts": [
+    "lib/core/storyLibrary.ts"
+  ],
+  "lib/core/storyLibrary.ts": [
+    "lib/core/cefrLevels.ts",
+    "lib/core/storyPick.ts"
+  ],
   "lib/core/storyOverlap.test.ts": [
     "lib/core/storyOverlap.ts"
   ],
