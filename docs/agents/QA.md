@@ -425,6 +425,10 @@ a. What can the learner **DO** here? b. Is there a **dead end**? c. Could a lear
 
 **What one minute of this caught on 23/08, that 2,403 green tests never saw:** `/dev/lesson` → **`taps=1`** on a 593-character screen. `/dev/tabs/studies` → **116 characters**, unchanged from 21/08. **39 console errors** (T-170).
 
+🎨 **⟦25/09 · `D-295` · Roy's instruction⟧ A row that names `🎨 Figma <nodeId>` is judged against that frame,**
+⛔ not against a `kol-*` PNG: `get_screenshot` on the frame, then the screen at 393×852 — side by side.
+A new screen that shipped **without** a frame ⇒ a finding on the row, ⛔ not a silent ✅.
+
 ## ⭐ STEP 4.5 — RENDER FIDELITY, AS SEVEN NUMBERED ITEMS  ⟦NEW 24/08 · P4-3⟧
 
 ⛔ **Why numbered and not a sentence.** Every one of the five open-ended channels found

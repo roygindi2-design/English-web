@@ -2380,3 +2380,42 @@ describe('🧭 חובת ההעברה — חמשת הקבצים, ⛔ ולא של�
     });
   }
 });
+
+/**
+ * 🎨 **⟦25/09 · `D-295` · הוראת רוי⟧ מסך חדש מעוצב ב-Figma על ידי PM, לפני ש-DEV בונה אותו.**
+ * רוי: «אני מאשר שה-PM יעצב ב-Figma כל מסך חדש לפני». 🔬 נמדד 25/09: 2 מתוך ~250 קומיטים
+ * מאז 23/09 נגעו ב-Figma. ⇒ ארבעת הקבצים נושאים את אותו חוזה, וכל אחד את החלק שלו.
+ */
+describe('🎨 D-295 — מסך חדש נולד כמסגרת Figma של PM', () => {
+  const read = (name: string) => readFileSync(join(DIR, `${name}.md`), 'utf8');
+
+  it('PM: ⛔ אין שורת מסך חדש בלי מסגרת — מצייר, קורא בחזרה, ונוקב nodeId', () => {
+    const pm = read('PM');
+    expect(pm).toMatch(/STEP 5\.2 — ⛔ NO NEW SCREEN WITHOUT A FIGMA FRAME/);
+    expect(pm).toContain('`D-295`');
+    expect(pm).toContain('use_figma');
+    expect(pm).toContain('get_screenshot');
+    expect(pm).toContain('v216k02v3L0azhfOw3y2ur');
+    expect(pm).toContain('🎨 Figma <nodeId>');
+    expect(pm, '⛔ לא לצייר מחדש רנדר קיים').toMatch(/never redraw an existing render/);
+  });
+
+  it('DEV: בונה מהמסגרת, ⛔ ולא ממציא עיצוב למסך חדש בלי מסגרת', () => {
+    const dev = read('DEV');
+    expect(dev).toContain('`D-295`');
+    expect(dev).toContain('get_design_context');
+    expect(dev).toContain('⛔ חסם: מסגרת Figma של PM (D-295)');
+  });
+
+  it('QA: שופטת מול המסגרת, ומסך חדש בלי מסגרת הוא ממצא', () => {
+    const qa = read('QA');
+    expect(qa).toContain('`D-295`');
+    expect(qa).toMatch(/judged against that frame/);
+  });
+
+  it('TOOLS § 4: PM הוא הכותב, DEV/QA קוראים רק לפי nodeId', () => {
+    const tools = read('TOOLS');
+    expect(tools).toMatch(/🎨 \*\*PM:\*\* מצייר מסגרת לכל \*\*מסך חדש\*\*/);
+    expect(tools).toContain('`D-295`');
+  });
+});

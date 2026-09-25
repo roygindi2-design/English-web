@@ -879,6 +879,27 @@ belong to **one component and one failure scenario**, ⛔ never to reach a row q
 Never edit 30-architecture, 01-vision, or code. You may only edit 60-findings.md strictly to update the status cell (e.g., to V or ✅) for a finding that has already been resolved in a decision. Do not write new findings or alter their text.
 Research findings are **table rows, not prose**. `00-control.md` is state only, hard cap **12KB**. New id: `node scripts/next-cycle-id.mjs` — fetches **all three** of `origin/dev`, `origin/work/current` **and** `origin/main`, and takes the max across all of them, ⛔ never one branch alone. Three pairs of ticks collided on the same id — `C-0284` (24/08), `C-0426` (04/09, `bf4c785`/`e94a4ae`) and `C-0546` (12/09) — the first two running max+1 against one branch each (`T-254`), the third because PROMOTER pushes to ⛔ neither of the two the counter read: it promotes to `main` (`T-317` · `D-227` · `F-231`). 🔴 **ודחיפת הנעילה נדחתה ⇒ `rebase` ⇒ חשב את המזהה מחדש, ⛔ אל תשמור אותו** — הדחייה אומרת שסוכן אחר כבר נחת על הענף, ⇒ המספר שחישבת לפניה הוא כעת שלו.
 
+## 🎨 STEP 5.2 — ⛔ NO NEW SCREEN WITHOUT A FIGMA FRAME. YOU DESIGN IT, BEFORE DEV BUILDS IT.  ⟦NEW 25/09 · `D-295` · Roy's explicit instruction⟧
+
+רוי: «אני מאשר שה-PM יעצב ב-Figma כל מסך חדש לפני».
+🔬 **Why, measured 25/09:** of ~250 commits since 23/09, **2** used Figma (both arena). Every other
+screen — the wall, the class story, the gear closet, the amirnet dashboard — was built from frozen PNGs
+or from DEV's own judgment. ⇒ Roy had ⛔ nothing he could open, look at and change **before** code existed.
+
+**The rule.** A row that builds a **new screen**, or a **new visual state** of an existing one (sheet ·
+modal · empty · error · loading), ⛔ is ⛔ not written as ⬜ until it names a frame you drew:
+1. `get_figma_skill` ⇒ load `figma-use` **once, in this tick** (`TOOLS.md § 4`), then `use_figma`.
+2. Draw it in Roy's file `v216k02v3L0azhfOw3y2ur`, on the page **`PM · מסכים`** (create it if missing):
+   **393×852**, RTL Hebrew, colours from `lib/core/palette.ts`, text ≥ 12px, targets ≥ 44px,
+   **the real Hebrew strings of the spec** — ⛔ never lorem ipsum, ⛔ never invented learning content (STEP 4).
+3. **Read it back** — `get_screenshot` on the new frame. ⛔ A frame you did not look at is ⛔ not designed.
+4. The row carries it twice: in the text (`🎨 Figma <nodeId>`) and in the `סקיל · כלי` cell
+   (`Figma: get_design_context <nodeId>`). ⇒ DEV builds **from the frame**, QA judges **against the frame**.
+⚠️ **Roy may edit the frame at any time.** DEV reads it at build time ⇒ **his edit wins**, ⛔ with no new row.
+⛔ **Not a new screen ⇒ ⛔ no frame:** a fix to a screen that already matches its `kol-*` render or an
+existing frame (overflow, a colour, a bug) keeps its source. ⛔ And ⛔ never redraw an existing render
+«to have it in Figma» — that is supply you owe DEV, ⛔ not decoration.
+
 ## STEP 5.4 — 🔁 A SLICE THAT IS ⛔ NOT MOVING MAY BE SWAPPED  ⟦NEW 14/09 · Roy's explicit instruction⟧
 
 ⛔ **Until today a slice you opened was a slice you were stuck with.** `§ 0.23 ז׳` moves the
