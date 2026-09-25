@@ -33,6 +33,7 @@ export default function DevWorldRingEditPage() {
       onLongPress={(id) => step({ type: 'longPress', id })}
       onRemove={(id) => step({ type: 'remove', id })}
       onDone={() => step({ type: 'hubTap' })}
+      onMove={(id, slot) => step({ type: 'drop', id, slot })}
     />
   );
 }

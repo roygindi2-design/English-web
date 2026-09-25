@@ -235,3 +235,53 @@ describe('edit mode (T-506 · kol-E-05 · D-296ⓑ)', () => {
     expect(container.querySelectorAll('[data-ring-node-editing]')).toHaveLength(0);
   });
 });
+
+describe('reordering by drag in edit mode (T-507 · kol-E-06)', () => {
+  const seven: RingNodeId[] = ['arena', 'msgs', 'amirnet', 'stories', 'compose', 'sentences', 'vocab'];
+  // jsdom lays nothing out ⇒ the ring's centre is (0,0) and client coords ARE ring coords
+  const dragArena = (to: { x: number; y: number }, end: 'up' | 'cancel' = 'up') => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <WorldRingView screen={screen} lastNode={null} ring={seven} editing onMove={onMove} />,
+    );
+    const node = container.querySelector('[data-ring-node-editing="arena"]') as HTMLElement;
+    const from = slotPoint(0, 7);
+    fireEvent.pointerDown(node, { clientX: from.x, clientY: from.y, pointerId: 1 });
+    fireEvent.pointerMove(node, { clientX: to.x, clientY: to.y, pointerId: 1 });
+    const lifted = node.getAttribute('data-dragging');
+    if (end === 'up') fireEvent.pointerUp(node, { pointerId: 1 });
+    else fireEvent.pointerCancel(node, { pointerId: 1 });
+    return { onMove, lifted, container };
+  };
+
+  it('slot 0 → slot 3 moves the node there', () => {
+    const { onMove, lifted } = dragArena(slotPoint(3, 7));
+    expect(lifted).toBe('true');
+    expect(onMove).toHaveBeenCalledWith('arena', 3);
+  });
+
+  it('⛔ FAILURE SCENARIO: a drag that ends on its own slot ⇒ ⛔ no write', () => {
+    const p = slotPoint(0, 7);
+    const { onMove } = dragArena({ x: p.x + 20, y: p.y });
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('⛔ FAILURE SCENARIO: released outside the ring ⇒ back home, ⛔ unchanged', () => {
+    const { onMove } = dragArena({ x: 0, y: 400 });
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('⛔ FAILURE SCENARIO: pointercancel (an incoming call) ⇒ back home, ⛔ unchanged', () => {
+    const { onMove, container } = dragArena(slotPoint(3, 7), 'cancel');
+    expect(onMove).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-dragging]')).toBeNull();
+  });
+
+  it('touch-action is suspended on the ring ⛔ only while editing (the page keeps its scroll)', () => {
+    const { container } = render(<WorldRingView screen={screen} lastNode={null} ring={seven} />);
+    expect(container.querySelector('[data-ring]')?.className).not.toContain('touch-none');
+    cleanup();
+    const edit = render(<WorldRingView screen={screen} lastNode={null} ring={seven} editing />);
+    expect(edit.container.querySelector('[data-ring]')?.className).toContain('touch-none');
+  });
+});

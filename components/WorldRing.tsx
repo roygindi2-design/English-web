@@ -309,6 +309,8 @@ function RingNodeItem({
   onSlotTap,
   onLongPress,
   onRemove,
+  drag,
+  lifted = null,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
@@ -324,9 +326,13 @@ function RingNodeItem({
   readonly onLongPress?: () => void;
   /** T-506ⓑ — edit mode: the node ⛔ does not navigate, and carries a ✕. */
   readonly onRemove?: () => void;
+  /** T-507ⓐ — edit mode: the pointer handlers that drag this node. */
+  readonly drag?: DragHandlers;
+  /** T-507ⓐ — while dragged, the node sits under the finger (ring-centred px). */
+  readonly lifted?: { readonly x: number; readonly y: number } | null;
 }): React.JSX.Element {
   const { fired, ...press } = useLongPress(onLongPress);
-  const { x, y } = slotPoint(slot, n);
+  const { x, y } = lifted ?? slotPoint(slot, n);
   // ⚠️ התווית **מחוץ לעיגול** כמו ברנדר, ומעליו בחצי העליון ומתחתיו בחצי התחתון
   // — בדיוק כפי ש-`kol-D-01-world.png` מצייר את תשעת הצמתים (`D-182`).
   const labelAbove = y <= 0;
@@ -336,7 +342,8 @@ function RingNodeItem({
     left: '50%',
     top: '50%',
     translate: `${x}px ${y}px`,
-    transition: slide === null ? undefined : `translate ${slide}`,
+    // under the finger it tracks 1:1 — ⛔ no curve between the finger and the node
+    transition: slide === null || lifted !== null ? undefined : `translate ${slide}`,
   } as const;
   const note = noteOf(node.state);
   const label = (
@@ -357,7 +364,9 @@ function RingNodeItem({
     return (
       <div
         data-ring-node-editing={node.id}
-        className={`${shell} ${NODE_OPEN}`}
+        data-dragging={lifted === null ? undefined : 'true'}
+        {...drag}
+        className={`${shell} ${NODE_OPEN} touch-none select-none ${lifted === null ? '' : 'z-20 scale-[1.15] drop-shadow-lg'}`}
         style={style}
       >
         {inner}
@@ -420,6 +429,16 @@ function RingNodeItem({
     </button>
   );
 }
+
+interface DragHandlers {
+  readonly onPointerDown: (e: React.PointerEvent) => void;
+  readonly onPointerMove: (e: React.PointerEvent) => void;
+  readonly onPointerUp: (e: React.PointerEvent) => void;
+  readonly onPointerCancel: () => void;
+}
+
+/** T-507ⓑ — a release this far past the ring's radius is «outside»: back home, ⛔ no change. */
+const OUTSIDE_RING_PX = RING_RADIUS + 70;
 
 /**
  * T-506ⓐⓔ — a hold of `LONG_PRESS_MS` without moving more than `LONG_PRESS_SLOP_PX`
@@ -667,6 +686,7 @@ export function WorldRingView({
   onLongPress,
   onRemove,
   onDone,
+  onMove,
 }: {
   readonly screen: RingScreen;
   readonly lastNode: RingNodeId | null;
@@ -683,6 +703,8 @@ export function WorldRingView({
   readonly onLongPress?: (id: RingNodeId) => void;
   readonly onRemove?: (id: RingNodeId) => void;
   readonly onDone?: () => void;
+  /** T-507 — edit mode: a node dropped on another slot. */
+  readonly onMove?: (id: RingNodeId, slot: number) => void;
 }): React.JSX.Element {
   const pick = onPick ?? (() => undefined);
   const reduced = useReducedMotion();
@@ -711,6 +733,61 @@ export function WorldRingView({
   const [hoverSlot, setHoverSlot] = useState<number>(state.ring.length);
   const layout = floatNode === null ? null : ringLayout(state, hoverSlot);
   const slide = reduced ? null : springSlide();
+
+  // T-507 — the node under the finger in edit mode. The others take `ringLayout(state,
+  // hoverSlot, id)`, which opens a free slot where the finger is.
+  const [dragging, setDragging] = useState<{
+    readonly id: RingNodeId;
+    readonly from: number;
+    readonly at: { readonly x: number; readonly y: number };
+    readonly slot: number;
+  } | null>(null);
+  const grab = useRef<{
+    readonly id: RingNodeId;
+    readonly from: number;
+    readonly centre: { readonly x: number; readonly y: number };
+    readonly start: { readonly x: number; readonly y: number };
+  } | null>(null);
+  const editLayout = editing && dragging !== null ? ringLayout(state, dragging.slot, dragging.id) : null;
+  /** Where a resting node sits: its own index, or — while another is dragged — `ringLayout`'s slot. */
+  const restingSlot = (id: RingNodeId, i: number): number => {
+    if (editLayout === null) return i;
+    const k = editLayout.nodes.indexOf(id);
+    return k < 0 ? i : (editLayout.slots[k] ?? i);
+  };
+  const dragFor = (id: RingNodeId, from: number): DragHandlers => ({
+    onPointerDown: (e) => {
+      const r = (e.currentTarget as HTMLElement).closest('[data-ring]')?.getBoundingClientRect();
+      if (r === undefined) return;
+      grab.current = {
+        id,
+        from,
+        centre: { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+        start: { x: e.clientX, y: e.clientY },
+      };
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    },
+    onPointerMove: (e) => {
+      const g = grab.current;
+      if (g === null) return;
+      if (dragging === null && Math.hypot(e.clientX - g.start.x, e.clientY - g.start.y) <= LONG_PRESS_SLOP_PX) return;
+      const at = { x: e.clientX - g.centre.x, y: e.clientY - g.centre.y };
+      setDragging({ id: g.id, from: g.from, at, slot: slotFromPoint(at, state.ring.length) });
+    },
+    onPointerUp: () => {
+      const d = dragging;
+      grab.current = null;
+      setDragging(null);
+      if (d === null) return;
+      // ⓑ outside the ring ⇒ home, and ⛔ a drop on its own slot writes nothing
+      if (Math.hypot(d.at.x, d.at.y) > OUTSIDE_RING_PX || d.slot === d.from) return;
+      onMove?.(d.id, d.slot);
+    },
+    onPointerCancel: () => {
+      grab.current = null;
+      setDragging(null);
+    },
+  });
   return (
     <section data-world-ring className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -727,7 +804,8 @@ export function WorldRingView({
       ) : (
         <div
           data-ring
-          className="relative mx-auto h-[300px] w-full max-w-[300px]"
+          data-ring-mode={state.mode.kind}
+          className={`relative mx-auto h-[300px] w-full max-w-[300px] ${editing ? 'touch-none' : ''}`}
         >
           {/* שתי טבעות המתאר של הרנדר — r ו-r+26. ⛔ קישוט, ⛔ ולא מצב. */}
           <span
@@ -773,11 +851,13 @@ export function WorldRingView({
                   node={node}
                   wasHere={node.id === lastNode}
                   onPick={pick}
-                  slot={i}
-                  n={drawn.length}
+                  slot={restingSlot(node.id, i)}
+                  n={editLayout?.n ?? drawn.length}
                   slide={slide}
                   onLongPress={editing || onLongPress === undefined ? undefined : () => onLongPress(node.id)}
                   onRemove={editing ? () => onRemove?.(node.id) : undefined}
+                  drag={editing ? dragFor(node.id, i) : undefined}
+                  lifted={dragging?.id === node.id ? dragging.at : null}
                 />
               ))
             : drawn.map((node, i) => (
@@ -1000,6 +1080,13 @@ export default function WorldRing(): React.JSX.Element {
       }}
       onDone={() => {
         setEditing(false);
+        setNotice(null);
+      }}
+      onMove={(id, slot) => {
+        const step = ringStep({ ring, mode: { kind: 'editing' }, notice: null }, { type: 'drop', id, slot });
+        if (step.state.ring === ring) return;
+        writeRing(step.state.ring);
+        setRing(step.state.ring);
         setNotice(null);
       }}
     />
