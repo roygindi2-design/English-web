@@ -46,6 +46,7 @@
     "build:amirnet-vocab": "node scripts/build-amirnet-vocab.mjs",
     "build:continuations": "node scripts/build-continuations.mjs",
     "build:amirnet-vocab-sql": "node scripts/build-amirnet-vocab-sql.mjs",
+    "build:ngsl-sql": "node scripts/build-ngsl-sql.mjs",
     "fetch:wordnet": "node scripts/fetch-wordnet.mjs",
     "verify": "npm run typecheck && npm run check:core && npm run check:motion && npm run check:text-floor && npm run check:rules && npm run check:titles && npm test && npm run build && npm run check:mobile",
     "verify:fast": "npm run typecheck && npm run check:core && npm run check:motion && npm run check:text-floor && npm run check:rules && npm run check:titles && npm test",
