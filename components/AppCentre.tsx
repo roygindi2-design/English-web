@@ -6,6 +6,7 @@ import { appCentre, type AppCard } from '@/lib/core/appCentre';
 import { MAX_RING_APPS, installApp, removeApp } from '@/lib/core/ringEdit';
 import type { RingNodeId } from '@/lib/core/worldRing';
 import { readRing, writeRing } from '@/lib/ringStore';
+import { RingIcon } from './WorldRing';
 
 /**
  * T-503 — «מרכז האפליקציות» (`kol-E-02`). 🎨 **Figma `3341:3`** (393×852, light) — every
@@ -107,17 +108,30 @@ function AppCardRow({
       data-state={card.state}
       className="flex min-h-[76px] items-center gap-3 rounded-2xl border border-border-subtle bg-surface-raised px-3 py-3"
     >
+      {/* `F-332` (QA, C-0847) · `kol-E-02-centre.png`: every row carries the app's own glyph —
+          the same `RingIcon` the ring draws, so the learner recognises the node they will get —
+          and its category as a tag beside the name. The square that sat here was the icon
+          placeholder of Figma `3341:3`, built literally; it read as a checkbox. */}
       <span
         aria-hidden="true"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface"
+        data-app-icon={card.id}
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${
+          card.state === 'locked' ? 'border-border-subtle text-ink-muted' : 'border-brand text-brand'
+        }`}
       >
-        <span className="h-4 w-4 rounded-md border border-ink-muted" />
+        <RingIcon id={card.id} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[17px] font-bold text-ink">{card.nameHe}</span>
-        <span className="text-[13px] text-ink-muted">
-          {card.categoryHe} · {card.descHe}
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="text-[17px] font-bold text-ink">{card.nameHe}</span>
+          <span
+            data-app-category
+            className="rounded-full border border-brand px-2 py-0.5 text-xs font-medium text-brand-surface"
+          >
+            {card.categoryHe}
+          </span>
         </span>
+        <span className="text-[13px] text-ink-muted">{card.descHe}</span>
       </span>
       {card.state === 'installed' && (
         <button

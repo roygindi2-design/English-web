@@ -198,7 +198,7 @@ const ICON_PATHS: Readonly<Record<RingNodeId, React.JSX.Element>> = {
   ),
 };
 
-function RingIcon({ id }: { readonly id: RingNodeId }): React.JSX.Element {
+export function RingIcon({ id }: { readonly id: RingNodeId }): React.JSX.Element {
   return (
     <svg
       aria-hidden="true"

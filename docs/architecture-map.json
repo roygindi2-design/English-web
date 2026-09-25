@@ -898,6 +898,7 @@
     "lib/ringStore.ts"
   ],
   "components/AppCentre.tsx": [
+    "components/WorldRing.tsx",
     "lib/core/appCentre.ts",
     "lib/core/ringEdit.ts",
     "lib/core/worldRing.ts",

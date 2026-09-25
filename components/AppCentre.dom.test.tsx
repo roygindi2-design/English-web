@@ -61,6 +61,19 @@ describe('AppCentreView (T-503 · Figma 3341:3)', () => {
     expect(container.querySelector('[data-app-card="friends"] button')).toBeNull();
   });
 
+  it('F-332 · kol-E-02: every row carries its own glyph and a category tag — ⛔ not a placeholder square', () => {
+    const { container } = render(<AppCentreView ring={SIX} />);
+    const cards = container.querySelectorAll('[data-app-card]');
+    expect(cards.length).toBe(9);
+    for (const card of cards) {
+      const id = card.getAttribute('data-app-card');
+      // ⛔ FAILURE SCENARIO: the icon slot is an empty bordered box ⇒ it reads as a checkbox
+      expect(card.querySelector(`[data-app-icon="${id}"] svg`)).not.toBeNull();
+      expect(card.querySelector('[data-app-category]')?.textContent?.length).toBeGreaterThan(0);
+    }
+    expect(container.querySelector('[data-app-card="amirnet"] [data-app-category]')?.textContent).toBe('תרגול');
+  });
+
   it('⛔ FAILURE SCENARIO: every app installed ⇒ ⛔ no «התקן» to press at all', () => {
     // ⚠️ Measured, ⛔ not assumed: the catalogue holds 9 apps and `MAX_RING_APPS` is 10, and
     // `parseRing` drops duplicates ⇒ a ring can ⛔ never reach «full» today. The guard that
