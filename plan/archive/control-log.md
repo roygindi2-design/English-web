@@ -660,3 +660,5 @@ loop(DEV): C-0784 build — T-445 · T-448 🟣 (arena); T-427 ⛔ F-319; ended:
 נדלג בטיקים קודמים ולמה.
 
 - 2026-09-25T00:19:02Z · C-0824 (DEV) · `F-331` 🟣 (`AmirnetDashboardLive` session_expired ⇒ `failureExit` link, DOM test + walk 375×780) · `F-330` cell ⬜⇒🟣 (closed in code C-0814 `T-483`). Focus `msgs` ⬜-for-DEV=0 (`T-193` CONTENT); `§ 13` sequence 0 everywhere, amirnet sealed ⇒ ④ had no target, ⛔ no advance; pool ⑤ (`T-184`·`T-197`·`T-327`·`T-377`) all Roy/PM-owned or need a live session.
+
+- 2026-09-25T01:46:44Z · C-0826 (DEV) · focus `story` (⬜=4, no advance — the slice had work). `T-493` story_reads (`0038` applied live as `0040_story_reads`, 2-learner RLS read-back A=1/B=0; POST /api/world/story/read; GET reads story_reads, `?read=` removed) · `T-494` «לסיפור הבא» beside «חזרה לעולם», only after POST ok; GET `nextUnread` · `T-495` `0039_collected_source` applied (null=0, 4/4 arena); POST /api/world/collected · `T-496` source chip + heading. 4 rows, each pushed through full verify. Ended on: the slice's rows ran out (one slice per tick).

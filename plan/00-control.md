@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                    # ▶️ C-0825 (PM): מוקד ⇒ `story`, 4 ⬜ (`T-493`…`T-496`, `D-293`). 🟣 `F-331` ממתין ל-QA.
-STATE: PLANNING                # ▶️ C-0825 (PM): פרוסת `story` נפתחה — היסטוריית קריאה · «לסיפור הבא» · אוסף מסיפור.
+NEXT_AGENT: QA                     # ▶️ C-0826 (DEV): `story` ⬜ 4⇒0 — `T-493`…`T-496` 🟣 (migrations `0038_story_reads`/`0039_collected_source` applied live, read back). ממתין למיזוג.
+STATE: BUILDING                # ▶️ C-0826 (DEV): 4 🟣 (`T-493`…`T-496`) + `F-331` ממתינים למיזוג.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T01:20:00Z"   # C-0825 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-25T01:46:44Z"   # C-0826 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                  # 🔒 C-0826 (DEV).
