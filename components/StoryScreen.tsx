@@ -21,6 +21,13 @@ import {
   type StoryWordBox,
 } from '@/lib/core/storyTapTargets';
 import { storyParagraphs } from '@/lib/core/storyParagraphs';
+import {
+  DEFAULT_STORY_TEXT_SIZE,
+  STORY_TEXT_SIZES,
+  readTextSize,
+  writeTextSize,
+  type StoryTextSize,
+} from '@/lib/storyTextSize';
 import { LEVEL_SCAN_HREF } from '@/lib/core/worldApps';
 
 /**
@@ -223,7 +230,37 @@ export interface StoryScreenViewProps {
    * קורה במוצר ⛔ רק אחרי POST שחזר `ok`, ו-`/dev/story/end` ⛔ אינו מבקש מהשרת דבר.
    */
   readonly initialReadSaved?: boolean;
+  /**
+   * ⛔ **פיקסטורות בלבד (T-509ⓓ)**: גודל הטקסט ההתחלתי, ⛔ וגובר על `localStorage` — כדי
+   * ש-`check:mobile` ימדוד את «גדול» ב-320 בלי לכתוב לאחסון. מסלול המוצר ⛔ אינו מעביר אותו.
+   */
+  readonly initialTextSize?: StoryTextSize;
 }
+
+/**
+ * 🔠 **T-509 · `D-297`ⓑ — three reading sizes, and the leading moves WITH the size.**
+ * 15.5/34 is the size the screen always had; 17.5/38 and 20/42 keep `36 § 3.2`'s ≥34px
+ * line and its 8px tap padding each side, and the ratio falls as the size grows
+ * (2.19 · 2.17 · 2.10) — `apple-design § 15`, «leading tracks size inversely».
+ */
+const STORY_TEXT_CLASS: Readonly<Record<StoryTextSize, string>> = {
+  sm: 'text-[15.5px] leading-[34px]',
+  md: 'text-[17.5px] leading-[38px]',
+  lg: 'text-[20px] leading-[42px]',
+};
+
+/** The size each `א` is drawn at, so the three buttons show what they do. */
+const STORY_TEXT_SWATCH: Readonly<Record<StoryTextSize, string>> = {
+  sm: 'text-[15px]',
+  md: 'text-[19px]',
+  lg: 'text-[24px]',
+};
+
+const STORY_TEXT_LABEL_HE: Readonly<Record<StoryTextSize, string>> = {
+  sm: 'גודל טקסט: קטן',
+  md: 'גודל טקסט: בינוני',
+  lg: 'גודל טקסט: גדול',
+};
 
 export default function StoryScreen(): React.JSX.Element {
   const [state, setState] = useState<ScreenState>({ kind: 'loading' });
@@ -272,6 +309,7 @@ export function StoryScreenView({
   initialPhase,
   onNextStory,
   initialReadSaved,
+  initialTextSize,
 }: StoryScreenViewProps): React.JSX.Element {
   return (
     /* 🎯 `T-318` · `D-228`ⓐ · סוגר את `F-131`. **הקצב האנכי מתהדק ⛔ רק במצב השאלה**,
@@ -292,6 +330,7 @@ export function StoryScreenView({
           initialPhase={initialPhase}
           onNextStory={onNextStory}
           initialReadSaved={initialReadSaved}
+          initialTextSize={initialTextSize}
         />
       ) : (
         <>
@@ -376,11 +415,13 @@ function StoryReady({
   initialPhase,
   onNextStory,
   initialReadSaved,
+  initialTextSize,
 }: {
   payload: StoryPayload;
   initialPhase?: StoryPhase;
   onNextStory?: () => void;
   initialReadSaved?: boolean;
+  initialTextSize?: StoryTextSize;
 }) {
   const known = useMemo(() => new Set(payload.knownLemmas), [payload.knownLemmas]);
   const glosses = useMemo(
@@ -463,6 +504,18 @@ function StoryReady({
    * ⛔ אינו זז, והמילה שהוקשה ⛔ אינה יוצאת מהתצוגה.
    */
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  // 🔠 T-509 — the server render and the first client paint both use the default; the
+  // stored size lands right after mount, so hydration ⛔ never mismatches.
+  const [textSize, setTextSize] = useState<StoryTextSize>(
+    initialTextSize ?? DEFAULT_STORY_TEXT_SIZE,
+  );
+  useEffect(() => {
+    if (initialTextSize === undefined) setTextSize(readTextSize());
+  }, [initialTextSize]);
+  const chooseTextSize = useCallback((size: StoryTextSize) => {
+    setTextSize(size);
+    writeTextSize(size);
+  }, []);
   /**
    * T-319 — **המילה שהוקשה, כאלמנט ⛔ ולא כשם.** `Escape` מחזיר את המיקוד **אליה**,
    * ⛔ ולא לראש הדף: לומד מקלדת שסגר חלונית חייב להמשיך מ-`Tab` הבא אחרי אותה מילה.
@@ -570,7 +623,7 @@ function StoryReady({
   // אחד שבו המסך מצויר והמטמון עדיין ריק.
   useLayoutEffect(() => {
     measureWords();
-  }, [measureWords, segments, phase]);
+  }, [measureWords, segments, phase, textSize]);
 
   useEffect(() => {
     const onResize = () => measureWords();
@@ -950,11 +1003,44 @@ function StoryReady({
           הפסקה דרכו ומעביר אותה ל-`auditStoryBody`. ⛔ אין להסיר אותו.
           ⚠️ `leading-[34px]` הוא `36 § 3.2` — ⛔ ולא `ST_LINE = 32` של הרנדר.
           ⚠️ `data-story-ambiguity="chip"` מצהיר על תנאי 4, והמימוש הוא `onWordClick`. */}
+          {/* 🔠 **T-509ⓑ — the size choice sits right above what it changes.** A radio
+              group, ⛔ not three toggles: exactly one is on. The chosen one carries a
+              heavier border AND `aria-checked`, ⛔ never colour alone (layer A). */}
+          <div
+            role="radiogroup"
+            aria-label="גודל טקסט"
+            data-story-text-sizes
+            className="flex items-center justify-end gap-2"
+          >
+            {STORY_TEXT_SIZES.map((size) => {
+              const on = size === textSize;
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={STORY_TEXT_LABEL_HE[size]}
+                  onClick={() => chooseTextSize(size)}
+                  className={[
+                    'inline-flex h-11 w-11 items-center justify-center rounded-lg font-bold leading-none',
+                    STORY_TEXT_SWATCH[size],
+                    on
+                      ? 'border-2 border-brand bg-brand-surface text-brand-on'
+                      : 'border border-border-strong text-ink',
+                  ].join(' ')}
+                >
+                  א
+                </button>
+              );
+            })}
+          </div>
           <div
             ref={bodyRef}
             data-story-body
             data-story-ambiguity="chip"
-            className="relative rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 text-[15.5px] leading-[34px]"
+            data-story-text-size={textSize}
+            className={`relative rounded-2xl border border-border-subtle bg-surface-raised px-5 py-5 ${STORY_TEXT_CLASS[textSize]}`}
           >
             {/* ⛔ **הפסקה עוברת דרך `<EnWord>` ⛔ ולא דרך `dir`, `lang` ומחלקת הבידוד בכתב יד**
             (T-009): שלושת המאפיינים חייבים לנסוע יחד, ופיזורם ביד הוא בדיוק איך שאחד

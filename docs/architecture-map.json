@@ -592,6 +592,10 @@
   "app/dev/story/end/page.tsx": [
     "app/dev/story/story-end-fixture.tsx"
   ],
+  "app/dev/story/large/page.tsx": [
+    "app/dev/story/story-fixture.ts",
+    "components/StoryScreen.tsx"
+  ],
   "app/dev/story/live/page.tsx": [
     "components/StoryScreen.tsx"
   ],
@@ -1375,7 +1379,8 @@
     "lib/core/storyQuestion.ts",
     "lib/core/storyRecallBatch.ts",
     "lib/core/storyTapTargets.ts",
-    "lib/core/worldApps.ts"
+    "lib/core/worldApps.ts",
+    "lib/storyTextSize.ts"
   ],
   "components/StudiesScreen.dom.test.tsx": [
     "components/StudiesScreen.tsx",
@@ -2184,6 +2189,7 @@
     "lib/core/continuations.ts",
     "lib/server/continuationsTree.ts"
   ],
+  "lib/storyTextSize.ts": [],
   "lib/supabase/arcade.test.ts": [],
   "lib/supabase/arcadeDecoupling.test.ts": [],
   "lib/supabase/arcadeRunId.test.ts": [],

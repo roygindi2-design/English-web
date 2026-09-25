@@ -210,6 +210,10 @@ const ROUTES = [
   // מקבלת את הסיפור כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה ב-EXPECTED_CONSOLE,
   // והשקט הזה הוא מה שמוכיח שהמדידה אינה על מסך הכשל.
   '/dev/story',
+  // C-0850 (T-509ⓓ) — the same reading screen at the LARGEST text size (20/42px): the
+  // horizontal-scroll check and the `36 § 3` tap audit at 320, where a long word is most
+  // likely to push the card wide. Props only ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/story/large',
   // C-0299 (T-188) — מסך הסיום, ואותו נימוק בדיוק כמו `/dev/deck/done` מול `/dev/deck`:
   // הוא נפתח רק **אחרי** קריאת סיפור שלמה, ולכן ⛔ אינו נגיש מהמסלול שמעליו בהרצה הזאת.
   // הפיקסטורה מקבלת את השאלה כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה

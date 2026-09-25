@@ -1266,3 +1266,59 @@ describe('T-508 — הסיפור נקרא בשלוש פסקאות, ⛔ ואף מ
     }
   });
 });
+
+describe('T-509 — הלומד בוחר גודל טקסט, והבחירה נזכרת', () => {
+  afterEach(() => window.localStorage.clear());
+
+  it('three radios, each ≥44px by class, the default `md` is checked', () => {
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const group = screen.getByRole('radiogroup', { name: 'גודל טקסט' });
+    const radios = Array.from(group.querySelectorAll('[role="radio"]'));
+    expect(radios).toHaveLength(3);
+    for (const r of radios) expect(r.className).toContain('h-11 w-11');
+    expect(screen.getByRole('radio', { name: 'גודל טקסט: בינוני' }).getAttribute('aria-checked')).toBe('true');
+    expect(document.querySelector('[data-story-body]')!.className).toContain('leading-[38px]');
+  });
+
+  it('a choice swaps the body class, writes storage, and ⛔ state is not colour alone', () => {
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const large = screen.getByRole('radio', { name: 'גודל טקסט: גדול' });
+    fireEvent.click(large);
+    const body = document.querySelector('[data-story-body]')!;
+    expect(body.className).toContain('text-[20px]');
+    expect(body.className).toContain('leading-[42px]');
+    expect(body.getAttribute('data-story-text-size')).toBe('lg');
+    expect(window.localStorage.getItem('kol.story.textSize.v1')).toBe('lg');
+    expect(large.getAttribute('aria-checked')).toBe('true');
+    expect(large.className).toContain('border-2');
+    expect(screen.getByRole('radio', { name: 'גודל טקסט: בינוני' }).getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('the stored size is what the next story opens at', async () => {
+    window.localStorage.setItem('kol.story.textSize.v1', 'sm');
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    await waitFor(() =>
+      expect(document.querySelector('[data-story-body]')!.getAttribute('data-story-text-size')).toBe('sm'),
+    );
+    expect(document.querySelector('[data-story-body]')!.className).toContain('leading-[34px]');
+  });
+
+  it('a garbage stored value falls back to `md`', async () => {
+    window.localStorage.setItem('kol.story.textSize.v1', 'huge');
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    await waitFor(() =>
+      expect(document.querySelector('[data-story-body]')!.getAttribute('data-story-text-size')).toBe('md'),
+    );
+  });
+
+  it('every size keeps the line at ≥34px (`36 § 3.2`)', () => {
+    for (const size of ['sm', 'md', 'lg'] as const) {
+      const { unmount } = render(
+        <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialTextSize={size} />,
+      );
+      const m = /leading-\[(\d+)px\]/.exec(document.querySelector('[data-story-body]')!.className);
+      expect(Number(m?.[1])).toBeGreaterThanOrEqual(34);
+      unmount();
+    }
+  });
+});
