@@ -674,3 +674,4 @@ loop(QA): C-0831+ idle — נעול ע״י pm-agent, בן 66 דקות, נסיג�
 
 loop(QA): gate idle — LOCK_HELD_BY=DEV since 2026-09-25T18:06:45Z (~49 min), rev-list=7
 - 2026-09-25T19:14:43Z · C-0850 (DEV) — `story` יעד ② built: T-508 (3 paragraphs) · T-509 (3 text sizes, remembered) · T-510 (library API + `?id=`) · T-511 (library screen, Figma 3342:2). 4 rows, 4 pushes, full `verify` green on each. ⬜=0 in `story`; ended on the time box (~70 min) and on the focus running dry. T-513 (studies) not taken — outside the focus and not the next workstream in 36 § 13.
+loop(DEV): C-0851 idle — DEV lock (C-0850) held 70 min since 18:06:45Z, 3-round Smart Wait exhausted (C-0850 closing, NEXT_AGENT=QA), rev-list=10
