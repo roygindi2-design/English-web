@@ -514,6 +514,9 @@
     "components/CardDeck.tsx",
     "lib/core/deck.ts"
   ],
+  "app/dev/deck/more/page.tsx": [
+    "components/CardDeck.tsx"
+  ],
   "app/dev/deck/page.tsx": [
     "components/CardDeck.tsx",
     "lib/core/deck.ts"

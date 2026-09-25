@@ -235,6 +235,12 @@ export default function StudyDeckScreen({
     fixtureState === undefined ? { kind: 'loading' } : { kind: fixtureState },
   );
   const [gradeError, setGradeError] = useState('');
+  /**
+   * `T-514` ⓒ — which round of the `level` deck this is. It keys `<CardDeck>`, so «עוד 20
+   * מילים» REPLACES the finished round: the deck's own state (what was graded, the tally,
+   * the spent «more» tap) starts fresh instead of reopening on «סיימת» with zero cards.
+   */
+  const [round, setRound] = useState(0);
   const shownAt = useRef(0);
 
   const load = useCallback(async () => {
@@ -315,6 +321,17 @@ export default function StudyDeckScreen({
     await load();
   }, [band, load]);
 
+  /**
+   * `T-514` ⓑ — the next round of «סינון מילים»: the server's cursor already moved with every
+   * grade (`advanceLevelCursor`), so the same query answers the NEXT words. ⛔ `level` only:
+   * `due` is the day's portion `planDailyQueue` caps on purpose, and `unknown`/`sentences`
+   * move no cursor ⇒ «more» there would serve the same round again.
+   */
+  const nextRound = useCallback(() => {
+    setRound((current) => current + 1);
+    void load();
+  }, [load]);
+
   const onGraded = useCallback(
     async (wordId: string, grade: CardGrade) => {
       if (state.kind !== 'cards') return;
@@ -370,6 +387,7 @@ export default function StudyDeckScreen({
             directly on top of the two grade buttons — the only controls this screen exists
             for. The way forward here IS grading. */}
         <CardDeck
+          key={round}
           deck={deck}
           cards={state.cards}
           onGraded={onGraded}
@@ -378,6 +396,7 @@ export default function StudyDeckScreen({
           // down with the queue this screen already asked for (`§ 4.2ז` forbids the second
           // `/api/levels/summary` read, and `<LevelMapScreen>` is a DIFFERENT screen).
           unseenInLevel={state.unseenInLevel}
+          {...(deck === 'level' ? { onMore: nextRound } : {})}
         />
       </section>
     );

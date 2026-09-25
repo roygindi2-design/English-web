@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CardDeck from '@/components/CardDeck';
 import type { QueueCardInput } from '@/lib/core/deck';
@@ -156,5 +156,50 @@ describe('📍 T-400 — שורת הכף־רגל נושאת את «נשארו N 
     expect(container.querySelector('[data-level-unseen]')?.textContent).toBe(
       'נשארו 314 מילים ברמה',
     );
+  });
+});
+
+/**
+ * 🔁 **`T-514` · `D-300` — «עוד 20 מילים» בסוף סבב «סינון מילים».** Measured in the DOM,
+ * ⛔ not in the source: the claim is what the finish state RENDERS — exactly one primary
+ * action, and a tap that reaches `onMore` once however many times the finger lands.
+ */
+describe('🔁 T-514 — «עוד 20 מילים» בסוף הסבב', () => {
+  it('🔑 עם `onMore` — פעולה ראשית אחת בדיוק, והיא «עוד», ו«חזרה» משנית', () => {
+    const onMore = vi.fn();
+    const { container } = render(
+      <CardDeck deck="level" cards={[]} onGraded={noop} onMore={onMore} />,
+    );
+    const primary = container.querySelectorAll('[data-primary-action]');
+    expect(primary).toHaveLength(1);
+    expect(primary[0]?.textContent).toBe('עוד 20 מילים');
+    const back = screen.getByRole('link', { name: 'חזרה לכרטיסיות' });
+    expect(back.hasAttribute('data-primary-action')).toBe(false);
+    expect(back.getAttribute('href')).toBe('/cards');
+  });
+
+  it('הקשה קוראת ל-`onMore` פעם אחת — ⛔ והקשה שנייה ⛔ אינה שולחת בקשה שנייה (ⓓ)', () => {
+    const onMore = vi.fn();
+    render(<CardDeck deck="level" cards={[]} onGraded={noop} onMore={onMore} />);
+    const more = screen.getByRole('button', { name: 'עוד 20 מילים' });
+    fireEvent.click(more);
+    fireEvent.click(more);
+    expect(onMore).toHaveBeenCalledTimes(1);
+    expect(more.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('`moreLabelHe` מחליף את התווית (`T-515`)', () => {
+    render(
+      <CardDeck deck="level" cards={[]} onGraded={noop} onMore={vi.fn()} moreLabelHe="עוד 35 מילים" />,
+    );
+    expect(screen.getByRole('button', { name: 'עוד 35 מילים' })).toBeTruthy();
+  });
+
+  it('⛔ בלי `onMore` — ⛔ אין כפתור «עוד», ו«חזרה» היא הפעולה הראשית כמו היום', () => {
+    const { container } = render(<CardDeck deck="level" cards={[]} onGraded={noop} />);
+    expect(container.querySelector('[data-deck-more]')).toBeNull();
+    const primary = container.querySelectorAll('[data-primary-action]');
+    expect(primary).toHaveLength(1);
+    expect(primary[0]?.textContent).toBe('חזרה לכרטיסיות');
   });
 });

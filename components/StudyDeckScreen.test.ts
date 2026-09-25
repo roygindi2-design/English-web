@@ -498,3 +498,20 @@ describe('StudyDeckScreen — fixtureState (T-415 · F-282)', () => {
     expect(back).toContain('fixtureState="empty"');
   });
 });
+
+/**
+ * 🔁 **`T-514` · `D-300`** — «עוד 20 מילים» belongs to `level` alone: `due` is the day's
+ * capped portion and `unknown`/`sentences` move no cursor. And the next round REPLACES the
+ * last one — `key={round}` — or `<CardDeck>` keeps its graded set and reopens on «סיימת».
+ */
+describe('🔁 T-514 — «עוד» בסוף סבב «סינון מילים» בלבד', () => {
+  it('`onMore` מועבר ל-`<CardDeck>` רק כש-`deck === \'level\'`', () => {
+    expect(CODE).toContain("{...(deck === 'level' ? { onMore: nextRound } : {})}");
+    expect(CODE.match(/onMore/g)).toHaveLength(1);
+  });
+
+  it('הסבב הבא מחליף את הקודם — `key={round}` על `<CardDeck>`, והמונה עולה לפני הטעינה', () => {
+    expect(CODE).toMatch(/<CardDeck\s+key=\{round\}/);
+    expect(CODE).toMatch(/setRound\(\(current\) => current \+ 1\);\s*void load\(\);/);
+  });
+});

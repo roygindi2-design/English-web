@@ -9,6 +9,10 @@ import { buildSentenceCard } from '@/lib/core/sentenceCard';
 import { describeRound, tallyGrades } from '@/lib/core/roundSummary';
 import { SPRING_MAX_SETTLE_MS } from '@/lib/core/spring';
 
+/** `T-514` — the default label of the «more» action (a round is 20 unless `T-515` says otherwise). */
+const MORE_WORDS_HE = 'עוד 20 מילים';
+const BACK_TO_CARDS_HE = 'חזרה לכרטיסיות';
+
 /**
  * The card deck — T-065 part א׳ (§ 4.2ו), plan `2026-08-13-study-queue.md` task 5.
  *
@@ -78,6 +82,8 @@ export default function CardDeck({
   initialGrades = [],
   exit,
   unseenInLevel,
+  onMore,
+  moreLabelHe = MORE_WORDS_HE,
 }: {
   readonly deck: DeckName;
   /**
@@ -125,11 +131,25 @@ export default function CardDeck({
    * ⛔ **⛔ ואינו ניקוד, ⛔ לא רצף ו⛔ לא XP (`D-050`)** — זהו **כמה נותר ללמוד**, ⛔ ולא תגמול.
    */
   readonly unseenInLevel?: number;
+  /**
+   * 🔁 **`T-514` · `D-300` — «עוד 20 מילים» בסוף סבב «סינון מילים».** Given ⇒ the finish
+   * state's ONE primary action is this button, and «חזרה לכרטיסיות» steps down to a
+   * secondary, outlined link under it (F-027: exactly one `data-primary-action`).
+   * ⛔ Absent ⇒ the finish state is byte-for-byte what it was. Only `<StudyDeckScreen>`
+   * passes it, and only for `deck === 'level'` — the one deck whose cursor moves.
+   */
+  readonly onMore?: () => void;
+  /** `T-514` — the button's label; `T-515` makes the number the learner's chosen round size. */
+  readonly moreLabelHe?: string;
 }) {
   const [graded, setGraded] = useState<readonly string[]>([]);
   // T-276 — the round's own grades, in order. `graded` holds WHICH cards left; this holds
   // WHAT the learner marked on them, and it is the only source the finish state counts.
   const [grades, setGrades] = useState<readonly CardGrade[]>(initialGrades);
+  // T-514 ⓓ — the «more» tap is spent; reset only by a remount (`key={round}` above).
+  // A ref beside the state: two taps inside one frame both see the stale `false` state.
+  const [moreRequested, setMoreRequested] = useState(false);
+  const moreSpent = useRef(false);
   /**
    * ⟦הורחב 15/09 · `C-0619` · `F-258`⟧ המפתחות שהדירוג שלהם **באוויר** — קבוצה, ⛔ ולא
    * מפתח יחיד. 🔬 **נמדד בקוד:** משהחפיסה מתקדמת מיד (אופטימי), שני דירוגים יכולים
@@ -353,13 +373,42 @@ export default function CardDeck({
             ))}
           </div>
         )}
-        <Link
-          href="/cards"
-          data-primary-action="true"
-          className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
-        >
-          חזרה לכרטיסיות
-        </Link>
+        {/* T-514 ⓐ — with `onMore` the next round is the primary action and the way out is
+            secondary (outline, ⛔ fill); ⓓ one tap only — `moreRequested` disables it until
+            the screen above swaps the deck, so a double tap ⛔ sends two requests. */}
+        {onMore !== undefined && (
+          <button
+            type="button"
+            data-primary-action="true"
+            data-deck-more
+            aria-disabled={moreRequested}
+            onClick={() => {
+              if (moreSpent.current) return;
+              moreSpent.current = true;
+              setMoreRequested(true);
+              onMore();
+            }}
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on transition-transform duration-150 ease-out active:scale-[0.97] aria-disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100"
+          >
+            {moreLabelHe}
+          </button>
+        )}
+        {onMore !== undefined ? (
+          <Link
+            href="/cards"
+            className="flex min-h-touch items-center justify-center rounded-full border border-border-strong px-5 py-3 text-base font-semibold text-ink active:opacity-90"
+          >
+            {BACK_TO_CARDS_HE}
+          </Link>
+        ) : (
+          <Link
+            href="/cards"
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            {BACK_TO_CARDS_HE}
+          </Link>
+        )}
       </section>
     );
   }

@@ -270,7 +270,12 @@ describe('<CardDeck> — the scrolling deck (T-065 · § 4.2ו)', () => {
 
     // ⓒ Exactly one way out, and it goes to the בורר (§ 4.2ו q6).
     expect(done).toContain('href="/cards"');
-    expect(done.match(/data-primary-action/g)?.length, 'exactly one primary action').toBe(1);
+    // ⟦`T-514` · `D-300`⟧ two literals, ONE rendered: the «עוד» button exists only when
+    //    `onMore` is given, and the `/cards` link carries the mark only in the `else` branch
+    //    of that same condition. `CardDeck.dom.test.tsx` counts the RENDERED marks (=1) on
+    //    both paths — that is the F-027 claim; the source can only bound it.
+    expect(done.match(/data-primary-action/g)?.length, 'one primary action per branch').toBe(2);
+    expect(done).toContain('{onMore !== undefined ? (');
 
     // ⓓ ⛔ Still nothing the PM did not decide. T-055: «אין מספרים חדשים ואין הבטחה».
     for (const invented of ['רצף', 'ניקוד', 'מוכנות', 'כל הכבוד', '%']) {

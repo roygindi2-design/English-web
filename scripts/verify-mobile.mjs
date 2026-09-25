@@ -107,6 +107,10 @@ const ROUTES = [
   // so this fixture seeds a finished `due` round. Same reasoning as `/dev/deck` vs
   // `/dev/deck/done`: a branch unreachable from the route above it gets its own route.
   '/dev/deck/done/due',
+  // `T-514` · `D-300` — the `level` finish state with «עוד 20 מילים» as its one primary
+  // action and «חזרה לכרטיסיות» as a secondary link; `/dev/deck/done` is `unknown` and
+  // ⛔ never carries it. ⛔ Asks the server for nothing ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/deck/more',
   // T-054 · חוקה § 5 — «טעינה: שלד בצורת הכרטיס, ⛔ לא ספינר». `/study` renders
   // `schema_missing` here (no Supabase env), so the loading state has never been measured.
   '/dev/deck/skeleton',
