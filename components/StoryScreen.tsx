@@ -118,6 +118,10 @@ const DONE_READING_HE = 'סיימתי לקרוא';
  */
 const BACK_TO_QUESTION_HE = 'חזרה לשאלה';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
+/** ➡️ T-494ⓐ — `D-293`ⓑ. */
+const NEXT_STORY_HE = 'לסיפור הבא';
+/** ➡️ T-494ⓒ — כל הסיפורים ברמה נקראו ⇒ ⛔ אין כפתור, ושורה אחת שאומרת זאת. */
+const ALL_READ_HE = 'קראת את כל הסיפורים ברמה שלך';
 /**
  * 🔑 **T-208 · `D-254`ⓑ — התקרה ⛔ אינה נבחרת כאן, היא **נגזרת**, והיא ⛔ לא הומצאה.**
  * ```
@@ -164,6 +168,12 @@ export interface StoryPayload {
    * נקודת קצה ו⛔ אין עמודה חדשה. `null` פירושו «⛔ אין מצב שני», ⛔ ולא «אין שאלה».
    */
   readonly question: StoryQuestion | null;
+  /**
+   * ➡️ **T-494 · `D-293`ⓑ** — כמה סיפורים ברמה ⛔ טרם נקראו, **מלבד זה**. ‏`0` ⇒ ⛔ אין
+   * «לסיפור הבא», ושורה שאומרת שכולם נקראו. ⛔ חסר (תשובה ישנה) ⇒ ⛔ לא יודעים ⇒ ⛔ לא
+   * מציעים דבר — ⛔ לא ניחוש.
+   */
+  readonly nextUnread?: number;
 }
 
 /**
@@ -205,6 +215,13 @@ export interface StoryScreenViewProps {
    * של רכיב בבידוד היא בדיוק מה שאיפשר ל-F-124 לעבור 1,119 בדיקות ירוקות.
    */
   readonly initialPhase?: StoryPhase;
+  /** ➡️ T-494ⓑ — «לסיפור הבא»: טעינה טרייה של `GET /api/world/story`. ⛔ חסר ⇒ ⛔ אין כפתור. */
+  readonly onNextStory?: () => void;
+  /**
+   * ⛔ **פיקסטורות בלבד (T-494ⓓ)**, באותו נימוק בדיוק כמו `initialPhase`: «הקריאה נשמרה»
+   * קורה במוצר ⛔ רק אחרי POST שחזר `ok`, ו-`/dev/story/end` ⛔ אינו מבקש מהשרת דבר.
+   */
+  readonly initialReadSaved?: boolean;
 }
 
 export default function StoryScreen(): React.JSX.Element {
@@ -238,13 +255,22 @@ export default function StoryScreen(): React.JSX.Element {
     void load();
   }, [load]);
 
-  return <StoryScreenView state={state} onRetry={() => void load()} />;
+  // ➡️ T-494ⓑ — טעינה טרייה ⇒ `loading` מפרק את `StoryReady` ⇒ הפאזה, הפופאובר וההקשות
+  // מתאפסים מעצמם; הגלילה חוזרת לראש הסיפור החדש.
+  const nextStory = useCallback(() => {
+    window.scrollTo({ top: 0 });
+    void load();
+  }, [load]);
+
+  return <StoryScreenView state={state} onRetry={() => void load()} onNextStory={nextStory} />;
 }
 
 export function StoryScreenView({
   state,
   onRetry,
   initialPhase,
+  onNextStory,
+  initialReadSaved,
 }: StoryScreenViewProps): React.JSX.Element {
   return (
     /* 🎯 `T-318` · `D-228`ⓐ · סוגר את `F-131`. **הקצב האנכי מתהדק ⛔ רק במצב השאלה**,
@@ -259,7 +285,13 @@ export function StoryScreenView({
       className="flex min-h-[100dvh] flex-col gap-5 pb-8 has-[[data-story-question]]:gap-3"
     >
       {state.kind === 'ready' ? (
-        <StoryReady payload={state.payload} initialPhase={initialPhase} />
+        <StoryReady
+          key={state.payload.story.id}
+          payload={state.payload}
+          initialPhase={initialPhase}
+          onNextStory={onNextStory}
+          initialReadSaved={initialReadSaved}
+        />
       ) : (
         <>
           {/* ⏳ **T-382ⓐ — הכותרת היא הצורה הראשונה שנוחתת, ⇒ היא הצורה הראשונה בשלד.**
@@ -341,9 +373,13 @@ function StatusRow({ level, index, total }: { level: string; index: number; tota
 function StoryReady({
   payload,
   initialPhase,
+  onNextStory,
+  initialReadSaved,
 }: {
   payload: StoryPayload;
   initialPhase?: StoryPhase;
+  onNextStory?: () => void;
+  initialReadSaved?: boolean;
 }) {
   const known = useMemo(() => new Set(payload.knownLemmas), [payload.knownLemmas]);
   const glosses = useMemo(
@@ -402,13 +438,19 @@ function StoryReady({
    * ⛔ **כישלון ⛔ אינו חוסם דבר** — מסך הסיום נפתח בכל מקרה, והכישלון יורד ללוג בלבד:
    * הקריאה עצמה כבר קרתה, ו⛔ אין סיבה לעצור לומד על כתיבה שלנו.
    */
-  const readMarked = useRef(false);
+  const readMarked = useRef(initialReadSaved === true);
+  /**
+   * ➡️ **T-494ⓑ — «לסיפור הבא» מופיע ⛔ רק אחרי שה-POST חזר `ok`.** הקשה לפני שהקריאה
+   * נחתה הייתה מחזירה מה-GET את **אותו** סיפור ⇒ הלומד קורא אותו פעמיים.
+   */
+  const [readSaved, setReadSaved] = useState(initialReadSaved === true);
   const markRead = useCallback(() => {
     if (readMarked.current) return;
     readMarked.current = true;
     void apiPost<{ ok: boolean }>('/api/world/story/read', { storyId: payload.story.id })
       .then((res) => {
-        if (!res.ok) console.error('[story] read not saved');
+        if (res.ok) setReadSaved(true);
+        else console.error('[story] read not saved');
       })
       .catch(() => console.error('[story] read not saved'));
   }, [payload.story.id]);
@@ -1040,7 +1082,32 @@ function StoryReady({
       {/* ⛔ **הפעולה הראשית מצוירת פעם אחת, מחוץ להחלפה** — כך היא ברנדר, וכך כאן.
           ⛔ **היציאה חיה בשני המצבים** (`§ 4.2יג` סעיף 3: «⛔ אין טעות בקריאה, ולכן
           ⛔ אין עונש») — ⛔ אין יציאה מנוטרלת ו⛔ אין חלונית שחוסמת. */}
-      {inQuestion || question === null ? (
+      {inQuestion && readSaved && payload.nextUnread === 0 ? (
+        <p data-story-all-read className="text-center text-base text-ink-muted">
+          {ALL_READ_HE}
+        </p>
+      ) : null}
+      {inQuestion && readSaved && onNextStory !== undefined && (payload.nextUnread ?? 0) > 0 ? (
+        /* ➡️ **T-494ⓐ — «לסיפור הבא» **לצד** «חזרה לעולם», ⛔ לא במקומה ⛔ ולא מעליה.**
+           🔬 **ולצד ⛔ ולא מעל, וזה נמדד:** ב-`/dev/story/done` היציאה צריכה לצבוע עד
+           `top ≤ 736` על מסך של 780 (`D-228`ⓐ) — כפתור נוסף **מעליה** היה דוחף אותה
+           ~56px מטה ⇒ מחוץ למסך. בשורה אחת הגובה ⛔ אינו זז. ב-RTL הראשון יושב מימין. */
+        <div data-story-next-row className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={onNextStory}
+            className={`${PRIMARY_ACTION_CLASS} transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100`}
+          >
+            {NEXT_STORY_HE}
+          </button>
+          <Link
+            href={WORLD_HREF}
+            className="inline-flex min-h-touch w-full items-center justify-center rounded-2xl border border-border-strong px-4 py-4 text-lg text-ink active:opacity-90"
+          >
+            {BACK_TO_WORLD_HE}
+          </Link>
+        </div>
+      ) : inQuestion || question === null ? (
         <Link
           href={WORLD_HREF}
           onClick={question === null ? markRead : undefined}

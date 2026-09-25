@@ -1121,3 +1121,65 @@ describe('T-493ⓓ — «סיימתי לקרוא» נשמר בשרת, ⛔ וכי
     expect(document.querySelector('[data-story-question]')).not.toBeNull();
   });
 });
+
+describe('T-494 — «לסיפור הבא» במסך הסיום, ⛔ רק אחרי שהקריאה נשמרה', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  const WITH_NEXT: StoryPayload = { ...PAYLOAD, nextUnread: 3 };
+
+  it('ⓑ הכפתור מופיע ⛔ רק אחרי ש-POST חזר ok — ולצדו «חזרה לעולם»', async () => {
+    let release: (r: Response) => void = () => undefined;
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((res) => { release = res; })));
+    const onNext = vi.fn();
+    render(<StoryScreenView state={{ kind: 'ready', payload: WITH_NEXT }} onNextStory={onNext} />);
+    fireEvent.click(screen.getByRole('button', { name: 'סיימתי לקרוא' }));
+    // ⛔ הקשה מהירה לפני שה-POST נחת ⇒ ⛔ אין כפתור ללחוץ עליו.
+    expect(screen.queryByRole('button', { name: 'לסיפור הבא' })).toBeNull();
+    release(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    const next = await screen.findByRole('button', { name: 'לסיפור הבא' });
+    expect(screen.getByRole('link', { name: 'חזרה לעולם' })).toBeTruthy();
+    fireEvent.click(next);
+    expect(onNext).toHaveBeenCalledTimes(1);
+  });
+
+  it('ⓑ POST שנכשל ⇒ ⛔ אין כפתור, והיציאה נשארת', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 503 })));
+    render(<StoryScreenView state={{ kind: 'ready', payload: WITH_NEXT }} onNextStory={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: 'סיימתי לקרוא' }));
+    await waitFor(() => expect(console.error).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: 'לסיפור הבא' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'חזרה לעולם' })).toBeTruthy();
+  });
+
+  it('ⓒ הכול נקרא ⇒ ⛔ אין כפתור, ושורה אחת שאומרת זאת', () => {
+    render(
+      <StoryScreenView
+        initialPhase="question"
+        initialReadSaved
+        onNextStory={() => undefined}
+        state={{ kind: 'ready', payload: { ...PAYLOAD, nextUnread: 0 } }}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'לסיפור הבא' })).toBeNull();
+    expect(screen.getByText('קראת את כל הסיפורים ברמה שלך')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'חזרה לעולם' })).toBeTruthy();
+  });
+
+  it('⛔ `nextUnread` חסר ⇒ ⛔ לא מנחשים: ⛔ כפתור ו⛔ שורה', () => {
+    render(
+      <StoryScreenView
+        initialPhase="question"
+        initialReadSaved
+        onNextStory={() => undefined}
+        state={{ kind: 'ready', payload: PAYLOAD }}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'לסיפור הבא' })).toBeNull();
+    expect(screen.queryByText('קראת את כל הסיפורים ברמה שלך')).toBeNull();
+  });
+});

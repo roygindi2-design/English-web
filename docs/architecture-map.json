@@ -577,10 +577,20 @@
     "app/dev/story/story-fixture.ts",
     "components/StoryScreen.tsx"
   ],
+  "app/dev/story/end/all/page.tsx": [
+    "app/dev/story/story-end-fixture.tsx"
+  ],
+  "app/dev/story/end/page.tsx": [
+    "app/dev/story/story-end-fixture.tsx"
+  ],
   "app/dev/story/live/page.tsx": [
     "components/StoryScreen.tsx"
   ],
   "app/dev/story/page.tsx": [
+    "app/dev/story/story-fixture.ts",
+    "components/StoryScreen.tsx"
+  ],
+  "app/dev/story/story-end-fixture.tsx": [
     "app/dev/story/story-fixture.ts",
     "components/StoryScreen.tsx"
   ],

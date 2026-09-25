@@ -1026,8 +1026,14 @@ B1 ‏6⇢19 · B2 ‏13⇢13).
   "counts": { "newWords": 5, "alreadyKnown": 2 },
   "question": { "questionEn": "Who wrote the letter that was in the book?",
                 "answersHe": ["אם", "אנשים", "חבר"], "correctIndex": 2 },
-  "stories": { "atLevel": 12, "required": 3 } }
+  "stories": { "atLevel": 12, "required": 3 },
+  "nextUnread": 9 }
 ```
+
+➡️ **`nextUnread` ⟦T-494 · `D-293`ⓑ⟧** — כמה סיפורים ברמה ⛔ טרם נקראו (`story_reads`), **מלבד
+הסיפור שהוחזר**. ‏`pickStory` מחזיר את סיפור היום שוב כשהכול נקרא ⇒ המסך ⛔ אינו יכול לגזור
+«הכול נקרא» מהבחירה עצמה. ‏`0` ⇒ במסך הסיום ⛔ אין «לסיפור הבא», ושורה אחת:
+`קראת את כל הסיפורים ברמה שלך`.
 
 ⚠️ **`question` — שאלת ההבנה (T-188 · D-108א), ו⛔ קריאה רכה.** ‏`0019_story_questions.sql`
 היא טבלה חדשה, וסיפור בלי שאלה חייב להישאר **קריא** ⇒ כישלון הקריאה יורד ללוג בלבד

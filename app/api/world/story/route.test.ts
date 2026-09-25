@@ -37,3 +37,9 @@ describe('T-493ⓒ — the skip list is story_reads, ⛔ never a query parameter
     expect(CODE).not.toMatch(/get\('read'\)/);
   });
 });
+
+describe('T-494 — nextUnread counts unread stories, ⛔ not counting the one returned', () => {
+  it('excludes the picked story and every read one', () => {
+    expect(SRC).toMatch(/nextUnread:\s*stories\.filter\(\(s\) => s\.id !== picked\.story\.id && !readStoryIds\.has\(s\.id\)\)\.length/);
+  });
+});

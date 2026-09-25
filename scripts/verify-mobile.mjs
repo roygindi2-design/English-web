@@ -216,6 +216,11 @@ const ROUTES = [
   // ב-EXPECTED_CONSOLE. ⚠️ שורות התשובה הן שורות **רשימה**, ולכן החרגת `36 § 3`
   // ⛔ אינה חלה עליהן והן נמדדות מול 44px מלאים ככל כפתור אחר.
   '/dev/story/done',
+  // C-0826 (T-494ⓓ) — the same end screen AFTER the read was saved: «לסיפור הבא» beside
+  // «חזרה לעולם», and the all-read state with its one line instead of the button. Props only
+  // (`initialReadSaved`) ⇒ ⛔ no EXPECTED_CONSOLE entry.
+  '/dev/story/end',
+  '/dev/story/end/all',
   // C-0518 (T-190ⓔ) — the messages fixture data sheet. Without Supabase env
   // `GET /api/world/messages` answers `unavailable` (200) in its own contract, so the
   // product route would measure a failure state. The sheet renders the fixture through the
@@ -1684,7 +1689,7 @@ try {
       // ⚠️ The selector is the destination, not a test hook: the exit is the only
       // link to `/world` on this screen, and a marker would have been one more thing
       // the layout could lose without the measurement noticing.
-      if (route === '/dev/story/done') {
+      if (route === '/dev/story/done' || route.startsWith('/dev/story/end')) {
         const exitTop = await page.evaluate(() => {
           window.scrollTo(0, 0);
           const el = [...document.querySelectorAll('main a[href="/world"]')].pop();

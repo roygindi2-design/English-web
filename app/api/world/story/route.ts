@@ -174,6 +174,10 @@ export async function GET() {
     // «אין שאלה»: סיפור בלי שאלה נשאר סיפור קריא.
     question: toQuestion(questionResult.error === null ? questionResult.data : null),
     stories: { atLevel: stories.length, required: STORIES_PER_LEVEL },
+    // ➡️ T-494 · `D-293`ⓑ — unread stories at this level, ⛔ not counting this one.
+    // `pickStory` hands the day's story back once everything is read, so the screen
+    // ⛔ cannot infer «all read» from the pick itself: `0` ⇒ ⛔ no «לסיפור הבא».
+    nextUnread: stories.filter((s) => s.id !== picked.story.id && !readStoryIds.has(s.id)).length,
   });
 }
 
