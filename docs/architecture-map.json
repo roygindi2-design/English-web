@@ -46,6 +46,9 @@
   "app/(tabs)/world/amirnet/simulation/page.tsx": [
     "components/AmirnetSimulationEntry.tsx"
   ],
+  "app/(tabs)/world/apps/page.tsx": [
+    "components/AppCentre.tsx"
+  ],
   "app/(tabs)/world/chain/page.tsx": [
     "components/WritingChain.tsx"
   ],
@@ -631,6 +634,10 @@
     "lib/core/levelSummary.ts",
     "lib/core/studyPlace.ts"
   ],
+  "app/dev/world/apps/page.tsx": [
+    "components/AppCentre.tsx",
+    "lib/core/worldRing.ts"
+  ],
   "app/dev/world/layout.tsx": [],
   "app/dev/world/page.tsx": [
     "components/ComposeDraft.tsx"
@@ -874,6 +881,18 @@
     "lib/testSource.ts"
   ],
   "components/AmirnetTabs.tsx": [],
+  "components/AppCentre.dom.test.tsx": [
+    "components/AppCentre.tsx",
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts",
+    "lib/ringStore.ts"
+  ],
+  "components/AppCentre.tsx": [
+    "lib/core/appCentre.ts",
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts",
+    "lib/ringStore.ts"
+  ],
   "components/AppGrid.test.ts": [
     "lib/testSource.ts"
   ],
@@ -2123,6 +2142,10 @@
   "lib/core/worldRing.ts": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
+  ],
+  "lib/ringStore.ts": [
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
   ],
   "lib/server/classFailure.ts": [],
   "lib/server/continuationsTree.ts": [
