@@ -396,6 +396,22 @@ function StoryReady({
     setPhase('reading');
     setReturnedToReading(true);
   }, []);
+  /**
+   * 📚 **T-493 · `D-293`ⓐ — «סיימתי לקרוא» נשמר בשרת, פעם אחת לסיפור.** ‏`GET` קורא את
+   * `story_reads` כרשימת הדילוג של `pickStory` ⇒ סיפור שנקרא ⛔ אינו חוזר מחר.
+   * ⛔ **כישלון ⛔ אינו חוסם דבר** — מסך הסיום נפתח בכל מקרה, והכישלון יורד ללוג בלבד:
+   * הקריאה עצמה כבר קרתה, ו⛔ אין סיבה לעצור לומד על כתיבה שלנו.
+   */
+  const readMarked = useRef(false);
+  const markRead = useCallback(() => {
+    if (readMarked.current) return;
+    readMarked.current = true;
+    void apiPost<{ ok: boolean }>('/api/world/story/read', { storyId: payload.story.id })
+      .then((res) => {
+        if (!res.ok) console.error('[story] read not saved');
+      })
+      .catch(() => console.error('[story] read not saved'));
+  }, [payload.story.id]);
   const [openLemma, setOpenLemma] = useState<string | null>(null);
   /**
    * T-290 — **העיגון נמדד ברגע ההקשה, ⛔ ולא נגזר משם הרכיב.** הוא נשמר **יחסית
@@ -1025,11 +1041,22 @@ function StoryReady({
           ⛔ **היציאה חיה בשני המצבים** (`§ 4.2יג` סעיף 3: «⛔ אין טעות בקריאה, ולכן
           ⛔ אין עונש») — ⛔ אין יציאה מנוטרלת ו⛔ אין חלונית שחוסמת. */}
       {inQuestion || question === null ? (
-        <Link href={WORLD_HREF} className={PRIMARY_ACTION_CLASS}>
+        <Link
+          href={WORLD_HREF}
+          onClick={question === null ? markRead : undefined}
+          className={PRIMARY_ACTION_CLASS}
+        >
           {BACK_TO_WORLD_HE}
         </Link>
       ) : (
-        <button type="button" onClick={() => setPhase('question')} className={PRIMARY_ACTION_CLASS}>
+        <button
+          type="button"
+          onClick={() => {
+            markRead();
+            setPhase('question');
+          }}
+          className={PRIMARY_ACTION_CLASS}
+        >
           {returnedToReading ? BACK_TO_QUESTION_HE : DONE_READING_HE}
         </button>
       )}

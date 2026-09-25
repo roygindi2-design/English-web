@@ -50,7 +50,7 @@ function schemaAwareFailure(where: string, error: { message: string; code?: stri
   return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const env = readSupabaseEnv();
   if (!env) return NextResponse.json({ ok: false, code: 'unavailable' }, { status: 503 });
 
@@ -81,8 +81,20 @@ export async function GET(request: Request) {
   if (rows.error) return schemaAwareFailure('stories', rows.error);
 
   const stories = toStoryCandidates((rows.data ?? []) as unknown as readonly StoryRowShape[]);
+  // 📚 T-493 · `D-293`ⓐ — the skip list is the learner's own `story_reads` (0038), ⛔ never
+  // a query parameter: a value the client controls is ⛔ not a source of truth.
+  // ⚠️ A soft read, like `story_questions` below: a history that failed to load leaves the
+  // day's story readable (it may repeat), ⛔ it does not blank the world tab with a 503.
+  const reads = await supabase
+    .from('story_reads')
+    .select('story_id')
+    .eq('user_id', user.id)
+    .limit(MAX_LEVEL_STORIES * 8);
+  if (reads.error) console.error('[api/world/story] reads read failed:', reads.error.message);
   const readStoryIds = new Set(
-    (new URL(request.url).searchParams.get('read') ?? '').split(',').filter(Boolean),
+    ((reads.error === null ? reads.data : null) ?? [])
+      .map((row) => (row as { story_id?: unknown }).story_id)
+      .filter((id): id is string => typeof id === 'string'),
   );
   const dayIndex = dayIndexFromIsoDate(toIsoDateInZone(new Date(), LEARNER_TIME_ZONE));
   const picked = pickStory({ stories, dayIndex, readStoryIds });

@@ -341,6 +341,12 @@
     "lib/supabase/auth.ts",
     "lib/supabase/postgrest.ts"
   ],
+  "app/api/world/story/read/route.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/api/world/story/read/route.ts": [
+    "lib/supabase/auth.ts"
+  ],
   "app/api/world/story/route.test.ts": [],
   "app/api/world/story/route.ts": [
     "lib/core/levelSummary.ts",

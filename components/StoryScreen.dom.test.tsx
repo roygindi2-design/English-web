@@ -988,8 +988,11 @@ describe('T-208 · D-254 — «הוסף N מילים לחזרה» בסוף הס�
     stubFetch(() => Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })));
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (_url: string, init?: RequestInit) => {
-        seen.push(String((JSON.parse(String(init?.body ?? '{}')) as { wordId?: string }).wordId));
+      vi.fn(async (url: string, init?: RequestInit) => {
+        // ⚠️ `T-493`: «סיימתי לקרוא» כותב גם ל-`/api/world/story/read` — ⛔ אינו חלק מהמדד.
+        if (String(url).includes('/api/review/context')) {
+          seen.push(String((JSON.parse(String(init?.body ?? '{}')) as { wordId?: string }).wordId));
+        }
         return new Response(JSON.stringify({ ok: true, attempts: 1 }), { status: 200 });
       }),
     );
@@ -1084,5 +1087,37 @@ describe('T-208 · D-254 — «הוסף N מילים לחזרה» בסוף הס�
     fireEvent.click(screen.getByRole('button', { name: 'חזרה לשאלה' }));
     expect(screen.getByText('מילה אחת נוספה לחזרה')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^הוסף \d|^הוסף מילה/ })).toBeNull();
+  });
+});
+
+describe('T-493ⓓ — «סיימתי לקרוא» נשמר בשרת, ⛔ וכישלון ⛔ אינו חוסם', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function readPosts(calls: readonly (readonly unknown[])[]): unknown[] {
+    return calls
+      .filter(([url]) => String(url).includes('/api/world/story/read'))
+      .map(([, init]) => JSON.parse(String((init as RequestInit | undefined)?.body ?? '{}')));
+  }
+
+  it('הלחיצה שולחת את מזהה הסיפור, בקריאה אחת', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'סיימתי לקרוא' }));
+    await waitFor(() => expect(readPosts(fetchMock.mock.calls)).toHaveLength(1));
+    expect(readPosts(fetchMock.mock.calls)[0]).toEqual({ storyId: FIXTURE_STORY_ID });
+  });
+
+  it('POST שנכשל ⇒ מסך השאלה נפתח בכל זאת', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 503 })));
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'סיימתי לקרוא' }));
+    expect(screen.queryByRole('button', { name: 'סיימתי לקרוא' })).toBeNull();
+    expect(document.querySelector('[data-story-question]')).not.toBeNull();
   });
 });

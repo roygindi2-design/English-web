@@ -24,3 +24,16 @@ describe('T-185ⓒ — a soft read, ⛔ never a 503 over "no stories"', () => {
     expect(SRC).not.toContain('Math.random');
   });
 });
+
+describe('T-493ⓒ — the skip list is story_reads, ⛔ never a query parameter', () => {
+  const CODE = SRC.replace(/\/\/[^\n]*/g, '');
+  it('reads the learner’s own story_reads', () => {
+    expect(CODE).toContain("from('story_reads')");
+    expect(CODE).toMatch(/from\('story_reads'\)[\s\S]{0,80}\.eq\('user_id', user\.id\)/);
+  });
+
+  it('⛔ no ?read= — a value the client controls is not a source of truth', () => {
+    expect(CODE).not.toMatch(/searchParams/);
+    expect(CODE).not.toMatch(/get\('read'\)/);
+  });
+});
