@@ -23,11 +23,11 @@
 | `/world/amirnet` | `התחברות מחדש` · `לתפריט התרגול` | `/dev/amirnet` · `components/AmirnetTabs.tsx` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/AmirnetDashboardLive` |
 | `/world/amirnet/practice` | `התחברות מחדש` · `חזרה לתפריט התרגול` · `תרגל` … +1 | `/world/amirnet/simulation` · `components/AmirnetTabs.tsx` · `lib/core/licenceFooter.ts` | ⛔ — | ✅ | `components/AmirnetPracticeFlow` |
 | `/world/amirnet/simulation` | `התחברות מחדש` · `חזרה לרמות` | `/world/amirnet` · `components/AmirnetTabs.tsx` · `lib/core/licenceFooter.ts` | ⛔ — | ✅ | `components/AmirnetSimulationEntry` |
-| `/world/apps` | `הסר` · `התקן` | ⛔ — | `/world` | ✅ | `components/AppCentre` |
+| `/world/apps` | `הסר` · `התקן` | `components/WorldRing.tsx` | `/world` | ✅ | `components/AppCentre` |
 | `/world/chain` | `כתוב את המשפט הראשון שלך` · `נסה שוב` | `/world/collected` · `components/RecallCard.tsx` | `/login` | ✅ | `components/WritingChain` |
 | `/world/collected` | `הסתר` · `לזירה` · `נסה שוב` | `/world/story` · `/dev/world/ring` · `components/WorldRing.tsx` … +1 | `/login` | ✅ | `components/CollectedWords` |
 | `/world/messages` | `נסה שוב` · `לבחירת רמה` · `התור שלך` … +6 | `components/SimulationMessage.tsx` · `lib/core/licenceFooter.ts` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/InboxList` |
-| `/world` | `חברים חברים` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +9 | ⛔ — | ✅ | `components/WorldRing` |
+| `/world` | `חברים חברים` · `קול` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/expired` … +9 | ⛔ — | ✅ | `components/WorldRing` |
 | `/world/story` | `לסיפור הבא` · `חזרה לעולם` · `חזרה לשאלה` … +7 | `/world/messages` · `/dev/story/live` · `/dev/story` … +6 | ⛔ — | ✅ | `components/StoryScreen` |
 | `/arcade` | `סגור` · `בחירת רמה` · `הבא` … +6 | `/dev/arcade/end` · `/dev/arcade/home` · `/dev/arcade/loading` … +12 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
 | `/login` | `להתחברות` | `/me` · `/studies` · `/` … +15 | ⛔ — | ⛔ | `components/AuthForm` |
@@ -99,12 +99,11 @@
 | `/dev/world/apps` | `הסר` · `התקן` | ⛔ — | `/world` | ✅ | `—` |
 | `/dev/world` | `חזרה לעולם` · `מפרסם…` · `ביטול` | `/dev/arcade` · `/dev/arcade/result` · `app/dev/world/layout.tsx` … +3 | `/login` | ✅ | `—` |
 | `/dev/world/recall` | `שרשרת הכתיבה` · `כתוב את המשפט הראשון שלך` · `כתוב עוד משפט` | `components/Flashcard.tsx` · `lib/core/licenceFooter.ts` | `/login` | ✅ | `—` |
-| `/dev/world/ring/expired` | `חברים חברים` | ⛔ — | ⛔ — | ✅ | `—` |
-| `/dev/world/ring` | `חברים חברים` | `/dev/world/ring/expired` | ⛔ — | ✅ | `—` |
+| `/dev/world/ring/expired` | `חברים חברים` · `קול` | ⛔ — | ⛔ — | ✅ | `—` |
+| `/dev/world/ring` | `חברים חברים` · `קול` | `/dev/world/ring/expired` | ⛔ — | ✅ | `—` |
 
-### דגלים — 7
+### דגלים — 6
 
-- ⚠️ `/world/apps` — ⛔ אף מסך ⛔ אינו מקשר אליו ⇒ ⛔ אינו נגיש בהקשות
 - ⚠️ `/login` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/offline` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/onboarding` — ⛔ אין מצב ריק כתוב

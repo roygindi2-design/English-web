@@ -7,9 +7,11 @@ import { apiGet } from '@/lib/api/client';
 import { toFailureCode, worstFailure, type FailureCode } from '@/lib/core/failureExit';
 import { LAST_NODE_KEY, parseLastNode } from '@/lib/core/lastNode';
 import { levelTooSmallNoteHe, libraryTile, type StoriesStatus } from '@/lib/core/worldApps';
+import { DEFAULT_RING, nodeRadius, slotPoint } from '@/lib/core/ringEdit';
+import { ringBannerHe, startRing } from '@/lib/core/ringMode';
+import { readRing } from '@/lib/ringStore';
 import {
   RING_RADIUS,
-  ringPoint,
   ringScreen,
   type RingInputs,
   type RingNode,
@@ -52,6 +54,9 @@ const SUBHEADING_HE = 'מרחב פתוח · לא נספר להתקדמות הל�
 const ISOLATION_TITLE_HE = 'בידוד מלא מהלמידה';
 const ISOLATION_BODY_HE = 'ניצחון או הפסד לא נוגעים ב-word_progress';
 const FOCUS_HE = 'קול';
+/** T-504ⓑ — the focus is the way into `kol-E-02`. */
+export const APP_CENTRE_HREF = '/world/apps';
+const APP_CENTRE_LABEL_HE = 'מרכז האפליקציות';
 const LOADING_HE = 'טוען את העולם…';
 const HERE_YOU_WERE_HE = 'כאן היית';
 const RETRY_HREF = '/world';
@@ -236,14 +241,18 @@ function noteOf(state: RingNodeState): string | null {
 function NodeCircle({
   node,
   wasHere,
+  size,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
+  /** T-504ⓐ — `2 × nodeRadius(n)`: the nodes shrink as the ring fills (56 at the smallest, ⛔ never under 44). */
+  readonly size: number;
 }): React.JSX.Element {
   const shut = node.state.kind !== 'open';
   return (
     <span
-      className={`relative flex h-[60px] w-[60px] items-center justify-center rounded-full border bg-surface-raised ${
+      style={{ height: `${size}px`, width: `${size}px` }}
+      className={`relative flex items-center justify-center rounded-full border bg-surface-raised ${
         shut ? 'border-border-subtle' : 'border-border-strong'
       } ${wasHere ? 'ring-2 ring-brand ring-offset-2 ring-offset-surface' : ''}`}
     >
@@ -264,12 +273,17 @@ function RingNodeItem({
   node,
   wasHere,
   onPick,
+  slot,
+  n,
 }: {
   readonly node: RingNode;
   readonly wasHere: boolean;
   readonly onPick: (id: RingNodeId) => void;
+  /** T-504ⓐ — the node's place in the LEARNER's ring, ⛔ not a fixed angle per app. */
+  readonly slot: number;
+  readonly n: number;
 }): React.JSX.Element {
-  const { x, y } = ringPoint(node.id);
+  const { x, y } = slotPoint(slot, n);
   // ⚠️ התווית **מחוץ לעיגול** כמו ברנדר, ומעליו בחצי העליון ומתחתיו בחצי התחתון
   // — בדיוק כפי ש-`kol-D-01-world.png` מצייר את תשעת הצמתים (`D-182`).
   const labelAbove = y <= 0;
@@ -283,7 +297,7 @@ function RingNodeItem({
   const inner = (
     <>
       {labelAbove ? label : null}
-      <NodeCircle node={node} wasHere={wasHere} />
+      <NodeCircle node={node} wasHere={wasHere} size={nodeRadius(n) * 2} />
       {labelAbove ? null : label}
     </>
   );
@@ -354,12 +368,22 @@ export function WorldRingView({
   screen,
   lastNode,
   onPick,
+  ring = DEFAULT_RING,
 }: {
   readonly screen: RingScreen;
   readonly lastNode: RingNodeId | null;
   readonly onPick?: (id: RingNodeId) => void;
+  /** T-504 — the learner's ring (`kol.ring.v1`, D-296): which nodes, in which order. */
+  readonly ring?: readonly RingNodeId[];
 }): React.JSX.Element {
   const pick = onPick ?? (() => undefined);
+  // ⛔ The screen still decides each node's STATE (`ringScreen`); the ring decides only
+  // which of them are drawn and where. An id the screen has no node for is skipped.
+  const drawn =
+    screen.kind === 'ring'
+      ? ring.flatMap((id) => screen.nodes.filter((node) => node.id === id))
+      : [];
+  const banner = ringBannerHe(startRing(drawn.map((node) => node.id)));
   return (
     <section data-world-ring className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -391,24 +415,42 @@ export function WorldRingView({
           />
           {/* המוקד `קול` — העיגול המוגבה שבמרכז. הזוהר הוא **אחד משניים** שהמסך
               מרשה לעצמו (חוקה ב3), והשני הוא העיגול המרכזי בסרגל. */}
-          <span
+          <Link
+            href={APP_CENTRE_HREF}
+            aria-label={APP_CENTRE_LABEL_HE}
             data-ring-focus
             data-glow="true"
-            className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-brand bg-surface-raised text-brand"
+            className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-brand bg-surface-raised text-brand active:opacity-90"
           >
             <GlobeIcon />
             <span className="text-[13px] font-bold text-ink">{FOCUS_HE}</span>
-          </span>
-          {screen.nodes.map((node) => (
+          </Link>
+          {drawn.map((node, i) => (
             <RingNodeItem
               key={node.id}
               node={node}
               wasHere={node.id === lastNode}
               onPick={pick}
+              slot={i}
+              n={drawn.length}
             />
           ))}
         </div>
       )}
+
+      {screen.kind === 'ring' ? (
+        <div
+          data-ring-banner={banner.tone}
+          className={`flex flex-col gap-1 rounded-2xl border bg-surface-raised px-4 py-3 ${
+            banner.tone === 'success' ? 'border-success' : 'border-brand'
+          }`}
+        >
+          <span className={`text-base font-bold ${banner.tone === 'success' ? 'text-success' : 'text-ink'}`}>
+            {banner.title}
+          </span>
+          <span className="text-[13px] text-ink-muted">{banner.sub}</span>
+        </div>
+      ) : null}
 
       <div className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-raised px-5 py-4">
         <svg
@@ -463,10 +505,13 @@ export default function WorldRing(): React.JSX.Element {
   const [stories, setStories] = useState<RingNodeState>({ kind: 'unknown' });
   const [failure, setFailure] = useState<FailureCode>('unavailable');
   const [lastNode, setLastNode] = useState<RingNodeId | null>(null);
+  const [ring, setRing] = useState<readonly RingNodeId[]>(DEFAULT_RING);
 
   // ⛔ **⛔ אין כאן ניווט** (T-206ⓓ): הקריאה מסמנת צומת אחד, ⛔ ואינה מזיזה איש.
+  // T-504 — and the learner's own ring (D-296) is read in the same mount, from this device.
   useEffect(() => {
     setLastNode(readLastNode());
+    setRing(readRing());
   }, []);
 
   useEffect(() => {
@@ -540,6 +585,7 @@ export default function WorldRing(): React.JSX.Element {
       screen={ringScreen(inputs, RETRY_HREF, failure)}
       lastNode={lastNode}
       onPick={onPick}
+      ring={ring}
     />
   );
 }

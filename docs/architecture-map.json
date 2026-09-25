@@ -1445,6 +1445,11 @@
     "lib/core/failureExit.ts",
     "lib/core/world.ts"
   ],
+  "components/WorldRing.dom.test.tsx": [
+    "components/WorldRing.tsx",
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
+  ],
   "components/WorldRing.test.ts": [
     "lib/testSource.ts"
   ],
@@ -1453,8 +1458,11 @@
     "lib/api/client.ts",
     "lib/core/failureExit.ts",
     "lib/core/lastNode.ts",
+    "lib/core/ringEdit.ts",
+    "lib/core/ringMode.ts",
     "lib/core/worldApps.ts",
-    "lib/core/worldRing.ts"
+    "lib/core/worldRing.ts",
+    "lib/ringStore.ts"
   ],
   "components/WritingChain.test.ts": [
     "lib/testSource.ts"

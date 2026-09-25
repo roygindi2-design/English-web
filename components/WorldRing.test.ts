@@ -80,7 +80,12 @@ describe('the world ring shell (T-205 · T-206 · D-117 · D-118)', () => {
   it('the order, the labels and the geometry all come from `lib/core/worldRing`', () => {
     expect(src).toContain("from '@/lib/core/worldRing'");
     expect(src).toContain('ringScreen(');
-    expect(src).toContain('ringPoint(');
+    // ⟦T-504ⓐ⟧ the geometry moved from a fixed angle per app (`ringPoint`) to the
+    // learner's slot (`slotPoint` + `nodeRadius`, `lib/core/ringEdit.ts`) — still ⛔ computed
+    // in core, ⛔ never in JSX.
+    expect(src).toContain('slotPoint(');
+    expect(src).toContain('nodeRadius(');
+    expect(src).not.toContain('Math.cos');
     // ⛔ the shell may ⛔ not hold its own copy of the eight labels
     expect(src).not.toContain('זירת קרב');
     expect(src).not.toContain('אוצר מילים');
