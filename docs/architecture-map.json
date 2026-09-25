@@ -785,6 +785,8 @@
     "components/AmirnetPracticeFlow.tsx",
     "components/AmirnetPracticeMenu.tsx",
     "lib/core/amirnetPractice.ts",
+    "lib/core/amirnetQuestion.ts",
+    "lib/core/failureExit.ts",
     "lib/testSource.ts"
   ],
   "components/AmirnetPracticeFlow.tsx": [
@@ -794,7 +796,8 @@
     "lib/api/client.ts",
     "lib/core/amirnetPractice.ts",
     "lib/core/amirnetQuestion.ts",
-    "lib/core/failure.ts"
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
   ],
   "components/AmirnetPracticeMenu.test.ts": [
     "components/AmirnetPracticeMenu.tsx",
@@ -860,7 +863,8 @@
     "lib/api/client.ts",
     "lib/core/amirnetLevels.ts",
     "lib/core/amirnetPractice.ts",
-    "lib/core/amirnetQuestion.ts"
+    "lib/core/amirnetQuestion.ts",
+    "lib/core/failureExit.ts"
   ],
   "components/AmirnetTabs.dom.test.tsx": [
     "components/AmirnetTabs.tsx"
@@ -1881,6 +1885,13 @@
   ],
   "lib/core/reviewRequest.ts": [
     "lib/core/flashcard.ts"
+  ],
+  "lib/core/ringEdit.test.ts": [
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
+  ],
+  "lib/core/ringEdit.ts": [
+    "lib/core/worldRing.ts"
   ],
   "lib/core/roundSummary.test.ts": [
     "lib/core/roundSummary.ts"
