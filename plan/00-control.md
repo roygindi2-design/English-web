@@ -1,14 +1,14 @@
 <!--
-NEXT_AGENT: QA                     # ▶️ C-0824 (DEV): `F-331` 🟣 (קישור התחברות מחדש בדשבורד אמירנט) · `F-330` ⬜⇒🟣 (נסגר בקוד C-0814). ⛔ המוקד `msgs` ⬜ ל-DEV=0 וכל הרצף 0 ⇒ לא הוזז.
-STATE: BUILDING                # ▶️ C-0824 (DEV): 1 🟣 (`F-331`) ממתין למיזוג.
+NEXT_AGENT: DEV                    # ▶️ C-0825 (PM): מוקד ⇒ `story`, 4 ⬜ (`T-493`…`T-496`, `D-293`). 🟣 `F-331` ממתין ל-QA.
+STATE: PLANNING                # ▶️ C-0825 (PM): פרוסת `story` נפתחה — היסטוריית קריאה · «לסיפור הבא» · אוסף מסיפור.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-25T00:19:02Z"   # C-0824 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-25T01:20:00Z"   # C-0825 (PM) ⇒ DEV.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
-LOCK_HELD_BY: "pm-agent"            # 🔒 C-0825 (PM).
-LOCK_AT: "2026-09-25T00:46:30Z"
+LOCK_HELD_BY: ""                    # 🔓 C-0825 (PM) שוחררה.
+LOCK_AT: ""
 WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): סופר **טיקי עבודה בלבד** — טיק שהסתיים בקומיט. ⛔ טיק שקט/נסיגה/שורה-אחת אינו נספר. תקרה **120 לכל פריט** ב-36-video-spec § 13, ⛔ לא לחזון כולו.
 #   story:  21 / 120           # § 13-1 · **המוקד**. ⬜=0 · 🟣=9 · ⛔=2 (נמדד ב-`docs/plan-open.md` אחרי C-0646). הנרטיב ⇒ `plan/archive/control-log.md`
 #   nav:     3 / 120           # § 13-2 · **⬜=0 · חתומה · המוקד הוזז→`cards` ב-C-0316 (QA).** פירוט מלא ⇒ `plan/archive/control-log.md` (הוצא C-0418).
@@ -27,8 +27,8 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: msgs         # ▶️ **הוזז `C-0822` (QA · `§ 0.23 ז׳` ④, גלגול — `amirnet` האחרונה ברצף מוצתה).** `docs/plan-open.md` 🔴: הבא ברצף עם עבודה פנויה = `msgs` (1 ⬜, `T-193`). `amirnet` **נחתמה** באותו טיק (SEALS ⇒ `control-log.md`).
-PREV_WORKSTREAM: "amirnet"     # `C-0822` (QA) — נחתמה. ⛔ יוצאת מהרוטציה (חתימה, ⛔ לא הזזה בלבד).
+ACTIVE_WORKSTREAM: story        # ▶️ **הוזז `C-0825` (PM · `§ 0.23 ז׳` ④).** `msgs`: 0 יעדים כשירים ל-PM (הגדר ⛔ `for-roy` 144 · `T-193` של CONTENT) ⇒ קדימה: `amirnet` חתומה ⇒ דילוג ⇒ `story`: יעד ① פתוח, והחסם שלו (`apply_migration` נדחה) נמדד כמי ש⛔ אינו חל — 2 מיגרציות הוחלו 24/09 (`0036`·`0037`). ⇒ `T-493`…`T-496` ⬜ (`D-293`).
+PREV_WORKSTREAM: "msgs"        # `C-0825` (PM) — הזזה, ⛔ לא חתימה. רישום ⇒ `61-deferred.md`.
 WORKSTREAM_ENDING: ""
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
