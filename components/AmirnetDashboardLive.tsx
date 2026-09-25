@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import AmirnetDashboard, { HEADING_HE, KICKER_HE } from '@/components/AmirnetDashboard';
 import AmirnetTabs, { AMIRNET_BUILT_TABS } from '@/components/AmirnetTabs';
 import type { AmirnetTypeStat } from '@/lib/core/amirnetPractice';
 import { hasAnyAnswers, toTypeCards, weakestCard } from '@/lib/core/amirnetPractice';
 import { FAILURE_HE, SCHEMA_MISSING_HE } from '@/lib/core/failure';
+import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 
 /**
  * `T-372`ⓓ — the dashboard's first real reader. **המשך של: T-291**.
@@ -145,6 +147,17 @@ export default function AmirnetDashboardLive() {
         <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-raised p-4">
           <p className="text-sm text-ink">{failureHe(phase.code)}</p>
           <p className="mt-2 text-sm text-ink-muted">{NOT_A_ZERO_HE}</p>
+          {/* F-331: an expired session is the one failure the learner fixes themselves ⇒ the
+              exit every other `session_expired` screen draws, from `failureExit` (D-065).
+              ⛔ Not for the other codes: that learner is signed in, and the tabs stay above. */}
+          {phase.code === 'session_expired' ? (
+            <Link
+              href={failureExit('session_expired').href}
+              className="mt-4 inline-flex min-h-touch items-center rounded-xl bg-brand-surface px-4 font-semibold text-brand-on"
+            >
+              {SIGN_IN_AGAIN_HE}
+            </Link>
+          ) : null}
         </div>
       )}
     </section>

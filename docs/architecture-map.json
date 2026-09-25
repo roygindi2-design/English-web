@@ -727,6 +727,10 @@
     "components/amirnetTypeBar.ts",
     "lib/core/amirnetPractice.ts"
   ],
+  "components/AmirnetDashboardLive.dom.test.tsx": [
+    "components/AmirnetDashboardLive.tsx",
+    "lib/core/failureExit.ts"
+  ],
   "components/AmirnetDashboardLive.test.ts": [
     "components/AmirnetDashboardLive.tsx",
     "lib/core/failure.ts",
@@ -736,7 +740,8 @@
     "components/AmirnetDashboard.tsx",
     "components/AmirnetTabs.tsx",
     "lib/core/amirnetPractice.ts",
-    "lib/core/failure.ts"
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts"
   ],
   "components/AmirnetEstimateNotice.test.ts": [
     "components/AmirnetEstimateNotice.tsx",

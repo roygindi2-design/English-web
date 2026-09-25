@@ -165,8 +165,8 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-324` | 🟡 MEDIUM | `data/generated/continuations.json` · `lib/cor…` | **`T-464` סדר השכיחות מביא את `We` לפתיחה (168 ⇒ 6) — ⛔ אבל ⛔ לא את `Yesterday` ל-30 הראשונים (270 ⇒ 110)** · נפתח על ידי DEV (`C-0796`) | ⬜ |
 | `F-325` | ⚪ LOW · **הליכ… | `scripts/lib/walk-expected.mjs` · `app/dev/tab…` | 🔬 **נמדד בהליכה חיה בטיק הזה (`next start`, `npm run walk:screens`):** `/dev/tabs/cards` מדפיס 6 שגיאות קונסול ו-`/dev/tabs/studies` מדפיסה 2 — שתיהן … | 🟣 **נסגר C-0808 (DEV)** — שתי רשומות ב-`…` |
 | `F-326` | ⚪ LOW · **`arc…` | `scripts/archive-departments.mjs:90,94` | 🔬 **נמדד בטיק הזה:** `npm run archive` מדפיס «`8180 בתים מתוך 4096`» עבור `plan/05-departments.md`, בזמן ש-`scripts/loop-health.mjs:491` (בדיקה 19) או… | 🟣 **נסגר C-0808 (DEV)** — `DEPARTMENTS_C…` |
-| `F-330` | 🟡 MEDIUM | `components/WallReplySheet.tsx` · `lib/core/co…` | 🔬 **נמדד ב-Playwright חי על `/dev/messages/wall/reply` (`next start`, 375×780, ⛔ לא שוער):** גיליון התגובה הפתוח נושא **2,281 `<button>`** ב-DOM בו-זמ… | ⬜ פתוח → **DEV** |
-| `F-331` | 🟡 MEDIUM · **d… | `components/AmirnetDashboardLive.tsx:145` · `l…` | 🔬 **נמדד חי מול הפרודקשן (Kernel, `https://silly-medovik-b304e5.netlify.app/world/amirnet`), ⛔ לא שוער:** ללומד עם session שפג מוצג "ההתחברות פגה. יש … | ⬜ פתוח → **DEV** |
+| `F-330` | 🟡 MEDIUM | `components/WallReplySheet.tsx` · `lib/core/co…` | 🔬 **נמדד ב-Playwright חי על `/dev/messages/wall/reply` (`next start`, 375×780, ⛔ לא שוער):** גיליון התגובה הפתוח נושא **2,281 `<button>`** ב-DOM בו-זמ… | 🟣 **נסגר בקוד C-0814 (PM · `T-483`) — הת… |
+| `F-331` | 🟡 MEDIUM · **d… | `components/AmirnetDashboardLive.tsx:145` · `l…` | 🔬 **נמדד חי מול הפרודקשן (Kernel, `https://silly-medovik-b304e5.netlify.app/world/amirnet`), ⛔ לא שוער:** ללומד עם session שפג מוצג "ההתחברות פגה. יש … | 🟣 **נסגר C-0824 (DEV)** — `AmirnetDashbo…` |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 
