@@ -1520,6 +1520,15 @@
     "lib/core/apkg.ts"
   ],
   "lib/core/apkg.ts": [],
+  "lib/core/appCentre.test.ts": [
+    "lib/core/appCentre.ts",
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
+  ],
+  "lib/core/appCentre.ts": [
+    "lib/core/ringEdit.ts",
+    "lib/core/worldRing.ts"
+  ],
   "lib/core/arcadeCollection.test.ts": [
     "lib/core/arcadeCollection.ts"
   ],
