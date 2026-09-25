@@ -11,7 +11,9 @@
  * `read` beats `today` (the day's story, once read, is a read story).
  */
 import type { CefrBand } from './cefrLevels';
+import { storyParagraphs } from './storyParagraphs';
 import { orderStories, type StoryCandidate } from './storyPick';
+import { buildStorySegments } from './storyTapTargets';
 
 /** The four levels the story bank is written for (`0018_stories.sql`), in order. */
 export const STORY_LIBRARY_LEVELS: readonly CefrBand[] = ['A1', 'A2', 'B1', 'B2'];
@@ -26,6 +28,8 @@ export interface StoryLibraryItem {
   readonly id: string;
   readonly titleEn: string;
   readonly words: number;
+  /** How many paragraphs the reading screen will draw (`T-508`) — «3 פסקאות» on the card. */
+  readonly paragraphs: number;
   readonly status: StoryLibraryStatus;
 }
 
@@ -47,6 +51,14 @@ export function storyWordCount(bodyEn: string): number {
   return trimmed === '' ? 0 : trimmed.split(/\s+/).length;
 }
 
+const NO_GLOSSES = new Map();
+const NO_KNOWN = new Set<string>();
+
+/** The paragraph count the reading screen draws, from the SAME split it uses. */
+export function storyParagraphCount(bodyEn: string): number {
+  return storyParagraphs(buildStorySegments(bodyEn, NO_GLOSSES, NO_KNOWN)).length;
+}
+
 /**
  * Every level of `STORY_LIBRARY_LEVELS` is present, in order, even when it has ⛔ no
  * stories — «אין עדיין סיפורים ברמה הזו» is a state the screen draws, ⛔ not a missing
@@ -63,6 +75,7 @@ export function storyLibrary({
       id: s.id,
       titleEn: s.titleEn,
       words: storyWordCount(s.bodyEn),
+      paragraphs: storyParagraphCount(s.bodyEn),
       status: readStoryIds.has(s.id) ? 'read' : s.id === todayId ? 'today' : 'new',
     })),
   }));

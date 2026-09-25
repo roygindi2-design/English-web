@@ -214,6 +214,12 @@ const ROUTES = [
   // horizontal-scroll check and the `36 § 3` tap audit at 320, where a long word is most
   // likely to push the card wide. Props only ⇒ ⛔ no EXPECTED_CONSOLE entry.
   '/dev/story/large',
+  // C-0850 (T-511ⓔ) — «ספריית הסיפורים» (Figma `3342:2`): four level chips and the story
+  // cards. `/world/story/library` without Supabase env measures `session_expired` only; the
+  // fixture runs the real stories through `storyLibrary` and asks the server for nothing ⇒
+  // ⛔ no EXPECTED_CONSOLE entry.
+  '/world/story/library',
+  '/dev/story/library',
   // C-0299 (T-188) — מסך הסיום, ואותו נימוק בדיוק כמו `/dev/deck/done` מול `/dev/deck`:
   // הוא נפתח רק **אחרי** קריאת סיפור שלמה, ולכן ⛔ אינו נגיש מהמסלול שמעליו בהרצה הזאת.
   // הפיקסטורה מקבלת את השאלה כ-prop ואינה מבקשת מהשרת דבר ⇒ ⛔ אין לה רשומה
@@ -849,6 +855,12 @@ const EXPECTED_CONSOLE = {
   // הזה מודדות. כתובת אחת וסטטוס אחד לכל רשומה: 401 או 500 על אותה כתובת עדיין מפילים.
   '/world/story': [
     /status of 503[\s\S]*@\S*\/api\/world\/story/,
+    /status of 503[\s\S]*@\S*\/api\/world\/status/,
+  ],
+  // C-0850 (T-511): the library, in `(tabs)` too ⇒ the same two requests, each 503 by its
+  // own contract without Supabase env. Keyed to the two URLs and the one status.
+  '/world/story/library': [
+    /status of 503[\s\S]*@\S*\/api\/world\/story\/library/,
     /status of 503[\s\S]*@\S*\/api\/world\/status/,
   ],
   // C-0185 (T-095): the real arena route. Same situation and same narrowness as the two

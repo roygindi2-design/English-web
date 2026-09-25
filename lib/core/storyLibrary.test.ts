@@ -47,8 +47,17 @@ describe('T-510 — storyLibrary', () => {
   it('carries the title and the word count, ⛔ not the body', () => {
     const out = storyLibrary({ stories: STORIES, readStoryIds: new Set(), todayId: null });
     const first = out[0]!.items[0]!;
-    expect(first).toEqual({ id: 'a', titleEn: 'Title a', words: 8, status: 'new' });
+    expect(first).toEqual({ id: 'a', titleEn: 'Title a', words: 8, paragraphs: 1, status: 'new' });
     expect(Object.keys(first)).not.toContain('bodyEn');
+  });
+
+  it('paragraphs = the reading screen’s own split', () => {
+    const out = storyLibrary({
+      stories: [story('p', 'B1', '2026-08-21T00:00:01Z', 'A b. C d. E f. G h.')],
+      readStoryIds: new Set(),
+      todayId: null,
+    });
+    expect(out[2]!.items[0]!.paragraphs).toBe(3);
   });
 
   it('storyWordCount', () => {

@@ -21,6 +21,7 @@ import {
   type StoryWordBox,
 } from '@/lib/core/storyTapTargets';
 import { storyParagraphs } from '@/lib/core/storyParagraphs';
+import { STORY_LIBRARY_HREF } from '@/components/StoryLibrary';
 import {
   DEFAULT_STORY_TEXT_SIZE,
   STORY_TEXT_SIZES,
@@ -128,6 +129,8 @@ const BACK_TO_QUESTION_HE = 'חזרה לשאלה';
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 /** ➡️ T-494ⓐ — `D-293`ⓑ. */
 const NEXT_STORY_HE = 'לסיפור הבא';
+/** 📚 T-511ⓒ — the entry to the library, in the header and on the end screen. */
+const ALL_STORIES_HE = 'כל הסיפורים';
 /** ➡️ T-494ⓒ — כל הסיפורים ברמה נקראו ⇒ ⛔ אין כפתור, ושורה אחת שאומרת זאת. */
 const ALL_READ_HE = 'קראת את כל הסיפורים ברמה שלך';
 /**
@@ -262,13 +265,19 @@ const STORY_TEXT_LABEL_HE: Readonly<Record<StoryTextSize, string>> = {
   lg: 'גודל טקסט: גדול',
 };
 
-export default function StoryScreen(): React.JSX.Element {
+/**
+ * 📚 T-511ⓑ — `storyId` is the story chosen in the library (`/world/story?id=`), and it is
+ * asked for on the FIRST load only: «לסיפור הבא» after it goes back to the day's pick.
+ */
+export default function StoryScreen({ storyId }: { storyId?: string } = {}): React.JSX.Element {
   const [state, setState] = useState<ScreenState>({ kind: 'loading' });
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (id?: string) => {
     setState({ kind: 'loading' });
     try {
-      const body = await apiGet<StoryBody>('/api/world/story');
+      const body = await apiGet<StoryBody>(
+        id === undefined ? '/api/world/story' : `/api/world/story?id=${encodeURIComponent(id)}`,
+      );
       if (!body.ok) {
         if (body.code === 'session_expired') setState({ kind: 'session_expired' });
         else if (body.code === 'schema_missing') setState({ kind: 'schema_missing' });
@@ -290,8 +299,8 @@ export default function StoryScreen(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void load(storyId);
+  }, [load, storyId]);
 
   // ➡️ T-494ⓑ — טעינה טרייה ⇒ `loading` מפרק את `StoryReady` ⇒ הפאזה, הפופאובר וההקשות
   // מתאפסים מעצמם; הגלילה חוזרת לראש הסיפור החדש.
@@ -300,7 +309,7 @@ export default function StoryScreen(): React.JSX.Element {
     void load();
   }, [load]);
 
-  return <StoryScreenView state={state} onRetry={() => void load()} onNextStory={nextStory} />;
+  return <StoryScreenView state={state} onRetry={() => void load(storyId)} onNextStory={nextStory} />;
 }
 
 export function StoryScreenView({
@@ -368,7 +377,20 @@ export function StoryScreenView({
 function StoryHeader({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <header className="flex flex-col gap-1 text-right">
-      <p className="text-sm text-ink-muted">{KICKER_HE}</p>
+      {/* 📚 T-511ⓒ — the way into «ספריית הסיפורים», beside the kicker it belongs to.
+          ⚠️ `-my-3` gives back the 24px the 44px target adds over the 20px kicker line:
+          measured, without it the header grew and pushed «חזרה לעולם» on
+          `/dev/story/end/all` to top=754 (`D-228`ⓐ: ≤736). The hit area stays 44px. */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-ink-muted">{KICKER_HE}</p>
+        <Link
+          href={STORY_LIBRARY_HREF}
+          data-story-library-link
+          className="-my-3 inline-flex min-h-touch items-center text-sm font-bold text-ink underline decoration-border-strong underline-offset-4 active:opacity-70"
+        >
+          {ALL_STORIES_HE}
+        </Link>
+      </div>
       {/* ⛔ **`text-left` על ה-`<h1>` בלבד, ⛔ ולא על ה-`<header>` — `T-375`ⓐ.**
       `T-240` קבעה שהכותרת **נשארת אנגלית**, אבל `render_video_A.py:989` מצייר שם
       כותרת **עברית** ב-`anchor="rm"` ⇒ היישור לימין שנלקח מהרנדר נכון ⛔ רק לעברית,
@@ -1240,6 +1262,18 @@ function StoryReady({
           {returnedToReading ? BACK_TO_QUESTION_HE : DONE_READING_HE}
         </button>
       )}
+      {/* 📚 T-511ⓒ — beside «לסיפור הבא»: once the read is saved, the library is where the
+          learner picks what comes next (or reads one again). Below the actions, so the exit
+          ⛔ does not move (`D-228`ⓐ). */}
+      {inQuestion && readSaved ? (
+        <Link
+          href={STORY_LIBRARY_HREF}
+          data-story-end-library-link
+          className="inline-flex min-h-touch items-center justify-center text-base font-bold text-ink underline decoration-border-strong underline-offset-4 active:opacity-70"
+        >
+          {ALL_STORIES_HE}
+        </Link>
+      ) : null}
     </>
   );
 }

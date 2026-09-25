@@ -1322,3 +1322,29 @@ describe('T-509 — הלומד בוחר גודל טקסט, והבחירה נזכ
     }
   });
 });
+
+describe('T-511ⓒ — the way into «ספריית הסיפורים»', () => {
+  it('the header carries «כל הסיפורים» ⇒ /world/story/library', () => {
+    render(<StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} />);
+    const link = document.querySelector('[data-story-library-link]')!;
+    expect(link.textContent).toBe('כל הסיפורים');
+    expect(link.getAttribute('href')).toBe('/world/story/library');
+  });
+
+  it('the end screen carries it once the read is saved, and ⛔ not before', () => {
+    const { unmount } = render(
+      <StoryScreenView state={{ kind: 'ready', payload: PAYLOAD }} initialPhase="question" />,
+    );
+    expect(document.querySelector('[data-story-end-library-link]')).toBeNull();
+    unmount();
+    render(
+      <StoryScreenView
+        state={{ kind: 'ready', payload: { ...PAYLOAD, nextUnread: 4 } }}
+        initialPhase="question"
+        initialReadSaved
+        onNextStory={() => {}}
+      />,
+    );
+    expect(document.querySelector('[data-story-end-library-link]')!.getAttribute('href')).toBe('/world/story/library');
+  });
+});

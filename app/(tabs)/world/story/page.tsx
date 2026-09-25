@@ -23,6 +23,13 @@ export const metadata = { title: 'העולם · סיפורים' };
  * המסלול יושב בתוך `(tabs)` ⇒ הוא כבר נושא את סרגל הלשוניות כמו ברנדר, ולכן ⛔ אין
  * תחתיו `<ActionBar>` (D-028: סרגל אחד למסך).
  */
-export default function WorldStoryPage() {
-  return <StoryScreen />;
+export default async function WorldStoryPage({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // 📚 T-511ⓑ — a card in «ספריית הסיפורים» opens `?id=<uuid>`. Only a string is passed
+  // on; the route validates it and falls back to the day's pick (`T-510`ⓒ).
+  const { id } = await searchParams;
+  return <StoryScreen storyId={typeof id === 'string' ? id : undefined} />;
 }

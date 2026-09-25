@@ -62,6 +62,9 @@
   "app/(tabs)/world/page.tsx": [
     "components/WorldRing.tsx"
   ],
+  "app/(tabs)/world/story/library/page.tsx": [
+    "components/StoryLibrary.tsx"
+  ],
   "app/(tabs)/world/story/page.tsx": [
     "components/StoryScreen.tsx"
   ],
@@ -609,6 +612,15 @@
   "app/dev/story/large/page.tsx": [
     "app/dev/story/story-fixture.ts",
     "components/StoryScreen.tsx"
+  ],
+  "app/dev/story/library/library-fixture.ts": [
+    "lib/core/levelSummary.ts",
+    "lib/core/storyLibrary.ts"
+  ],
+  "app/dev/story/library/page.tsx": [
+    "app/dev/story/library/library-fixture.ts",
+    "components/StoryLibrary.tsx",
+    "lib/core/storyLibrary.ts"
   ],
   "app/dev/story/live/page.tsx": [
     "components/StoryScreen.tsx"
@@ -1374,6 +1386,19 @@
     "lib/core/failure.ts",
     "lib/core/storyQuestion.ts"
   ],
+  "components/StoryLibrary.dom.test.tsx": [
+    "app/dev/story/library/library-fixture.ts",
+    "components/StoryLibrary.tsx",
+    "lib/core/failure.ts"
+  ],
+  "components/StoryLibrary.tsx": [
+    "components/EnWord.tsx",
+    "lib/api/client.ts",
+    "lib/core/cefrLevels.ts",
+    "lib/core/failure.ts",
+    "lib/core/failureExit.ts",
+    "lib/core/storyLibrary.ts"
+  ],
   "components/StoryScreen.dom.test.tsx": [
     "app/dev/story/story-fixture.ts",
     "components/StoryScreen.tsx",
@@ -1384,6 +1409,7 @@
   "components/StoryScreen.tsx": [
     "components/EnWord.tsx",
     "components/StoryEndScreen.tsx",
+    "components/StoryLibrary.tsx",
     "components/WordPopover.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",
@@ -2083,7 +2109,9 @@
   ],
   "lib/core/storyLibrary.ts": [
     "lib/core/cefrLevels.ts",
-    "lib/core/storyPick.ts"
+    "lib/core/storyParagraphs.ts",
+    "lib/core/storyPick.ts",
+    "lib/core/storyTapTargets.ts"
   ],
   "lib/core/storyOverlap.test.ts": [
     "lib/core/storyOverlap.ts"
