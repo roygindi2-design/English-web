@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ANSWER_HINT_EN, ClassWallView, FEED_EMPTY_HE, OPENER_HE, showAllHe } from '@/components/ClassWall';
+import { ANSWER_HINT_EN, ClassWallView, FEED_EMPTY_HE, OPENER_HE, showAllHe, TODAY_QUESTION_HE } from '@/components/ClassWall';
 import { FIXTURE_WALL, FIXTURE_WALL_NOW } from '@/app/dev/messages/wall-fixture';
 import { WALL_PICTURE_KEYS, WALL_PICTURE_LABEL_HE } from '@/components/WallPicture';
 import { buildWallFeed } from '@/lib/core/wallFeed';
@@ -91,5 +91,51 @@ describe('ClassWall — the post cards of kol-C-10 (T-473)', () => {
       expect(WALL_PICTURE_LABEL_HE[key]).toMatch(/[\u0590-\u05FF]/);
       cleanup();
     }
+  });
+});
+
+/** T-521 · D-303 — the wall draws the CLASS seat, as the story does. */
+describe('ClassWall — seats and `שאלת היום` (T-521)', () => {
+  it('failure scenario: every reply carries a seat number, and two replies by different members ⛔ are not identical', () => {
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts: FIXTURE_WALL }} nowIso={FIXTURE_WALL_NOW} />);
+    const replies = [...container.querySelectorAll('[data-wall-post]')[0]!.querySelectorAll('[data-wall-reply]')] as HTMLElement[];
+    expect(replies).toHaveLength(2);
+    const seats = replies.map((r) => r.querySelector('[data-seat]')?.getAttribute('data-seat'));
+    expect(seats.every((s) => s && Number(s) >= 1)).toBe(true);
+    expect(new Set(seats).size).toBe(2);
+    // the number is WRITTEN — ⛔ never colour alone
+    for (const r of replies) expect(r.querySelector('[data-seat]')?.textContent).toMatch(/^\d+$/);
+    expect(replies[0]!.textContent).not.toBe(replies[1]!.textContent);
+  });
+
+  it('the opener’s post carries the opener’s seat, and ⛔ the person glyph is gone', () => {
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts: FIXTURE_WALL }} nowIso={FIXTURE_WALL_NOW} />);
+    const heads = [...container.querySelectorAll('[data-wall-post] header [data-seat]')].map((a) => a.textContent);
+    expect(new Set(heads)).toEqual(new Set(['1']));
+    expect(container.querySelector('[data-wall-post] header svg')).toBeNull();
+  });
+
+  it('`היום 08:15 · שאלת היום` on today’s opener post only; another day ⇒ ⛔ no suffix', () => {
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts: FIXTURE_WALL }} nowIso={FIXTURE_WALL_NOW} />);
+    const times = [...container.querySelectorAll('[data-wall-time]')].map((t) => t.textContent);
+    expect(times[0]).toBe(`היום 08:15 · ${TODAY_QUESTION_HE}`);
+    expect(times.slice(1).some((t) => t?.includes(TODAY_QUESTION_HE))).toBe(false);
+  });
+
+  it('a member’s post written today ⛔ is not «the question of the day»', () => {
+    const posts = buildWallFeed([{ id: 'p', author_id: 'x', body_en: 'Q?', created_at: FIXTURE_WALL_NOW }], [], [], 'me', 'o', new Map([['x', 4]]));
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
+    expect(container.querySelector('[data-wall-time]')?.textContent).not.toContain(TODAY_QUESTION_HE);
+    expect(container.querySelector('[data-seat]')?.textContent).toBe('4');
+  });
+
+  it('the learner’s own reply is the brand fill, ⛔ not a seat colour; seat 0 (not yet known) ⇒ an empty circle', () => {
+    const own = { id: 'r', bodyEn: 'Hi.', createdAt: FIXTURE_WALL_NOW, likes: 0, likedByMe: false, mine: true, seat: 0 };
+    const posts = FIXTURE_WALL.slice(0, 1).map((p) => ({ ...p, top: [own] }));
+    const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
+    const avatar = container.querySelector('[data-wall-reply] > span[aria-hidden]') as HTMLElement;
+    expect(avatar.hasAttribute('data-seat-hue')).toBe(false);
+    expect(avatar.className).toContain('bg-brand-surface');
+    expect(avatar.textContent).toBe('');
   });
 });

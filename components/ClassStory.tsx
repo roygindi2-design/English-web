@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import EnWord from '@/components/EnWord';
+import SeatAvatar from '@/components/SeatAvatar';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { CATEGORY_CHIPS } from '@/lib/core/blockKeyboard';
@@ -24,7 +25,8 @@ import './block-keyboard-tokens.css';
  *   · after the chain (`:219-221`): the learner's avatar + `התור שלך`
  * ⚠️ Declared gaps: ⛔ no table holds a display name (the same gap as the wall,
  * `ClassWall.tsx`) ⇒ the author line is the ROLE, and the avatar carries the author's
- * `seat` — a number, stable per author — where the render draws a letter. The render's
+ * CLASS `seat` (T-520/T-521 · D-303) — a number, stable per author and the SAME on the
+ * wall — where the render draws a letter; `<SeatAvatar>` is shared with the wall. The render's
  * glow on `התור שלך` is layer B and ⛔ not built on this row.
  * 🔴 The draft survives a failure AND a lost turn: the sheet is hidden while sending and
  * ⛔ never unmounted (the `WallReplySheet` pattern), so its six picks come back with it.
@@ -48,17 +50,6 @@ function authorHe(l: StoryLine): string {
   return l.byOpener ? OPENER_HE : MEMBER_HE;
 }
 
-function Avatar({ seat, mine }: { readonly seat: number | null; readonly mine: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${mine ? 'bg-brand-surface text-brand-on' : 'bg-surface-raised text-ink'}`}
-    >
-      {seat ?? ''}
-    </span>
-  );
-}
-
 /** `:203-209` — the five categories, above the chain. Words and colour both: ⛔ never colour alone. */
 function Legend() {
   return (
@@ -77,7 +68,7 @@ function Line({ line }: { readonly line: StoryLine }) {
   return (
     <li data-story-line className="relative flex gap-3 pb-2">
       <span aria-hidden className="absolute bottom-0 right-4 top-0 w-0.5 bg-surface-raised" />
-      <Avatar seat={line.seat} mine={line.mine} />
+      <SeatAvatar seat={line.seat} mine={line.mine} className="relative z-10" />
       <div className="min-w-0 flex-1 rounded-2xl border border-surface-raised bg-surface px-4 py-2.5">
         <p className="text-xs font-semibold text-ink-muted">{authorHe(line)}</p>
         <p className="mt-1 text-base leading-6 text-ink"><EnWord>{line.bodyEn}</EnWord></p>
@@ -126,7 +117,7 @@ export function ClassStoryView({ state, onTurn = () => {}, onRetry = () => {}, n
       )}
       {notice ? <p role="status" className="mt-2 text-sm font-semibold text-ink">{notice}</p> : null}
       <div className="mt-2 flex items-center gap-3">
-        {myTurn ? <Avatar seat={null} mine /> : null}
+        {myTurn ? <SeatAvatar seat={null} mine /> : null}
         {myTurn ? (
           <button
             type="button"

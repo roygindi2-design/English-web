@@ -1,0 +1,37 @@
+/* T-521 · D-303 — the eight seat colours, SCOPED to the class avatar (`<SeatAvatar>`).
+
+   ⛔ Never into `lib/core/palette.ts` (the `block-keyboard-tokens.css` precedent): a scoped
+   palette that leaks into the shared file becomes a second visual language.
+   ⛔ Not red (`--danger`, «a mistake») and ⛔ none of the five part-of-speech colours
+   (`39 § 3`, scoped to the keyboard).
+   🔴 The colour is ⛔ never the channel: the seat NUMBER is written inside the ring, in
+   `--ink`, so the text contrast is the product's own. The colour is a ring, ⛔ not a fill.
+   Measured with `validate_palette` (C-0874): every ring ≥3:1 on #ffffff · #f8fafc (light,
+   lowest lime 4.99:1) and on #1e293b (dark, lowest indigo 4.90:1). Eight categorical hues
+   ⛔ cannot all clear ΔE 20 for protan/deutan — 9 light pairs and 7 dark pairs do not —
+   so the ORDER is chosen so that ⛔ no two CONSECUTIVE seats (cyclic) are a failing pair:
+   the numbers that sit next to each other in a class are the ones that differ most. */
+[data-seat-avatar] { --seat: var(--border-strong); }
+[data-seat-avatar][data-seat-hue='0'] { --seat: #4f46e5; }
+[data-seat-avatar][data-seat-hue='1'] { --seat: #15803d; }
+[data-seat-avatar][data-seat-hue='2'] { --seat: #a21caf; }
+[data-seat-avatar][data-seat-hue='3'] { --seat: #854d0e; }
+[data-seat-avatar][data-seat-hue='4'] { --seat: #be185d; }
+[data-seat-avatar][data-seat-hue='5'] { --seat: #4d7c0f; }
+[data-seat-avatar][data-seat-hue='6'] { --seat: #0e7490; }
+[data-seat-avatar][data-seat-hue='7'] { --seat: #57534e; }
+
+@media (prefers-color-scheme: dark) {
+  [data-seat-avatar][data-seat-hue='0'] { --seat: #818cf8; }
+  [data-seat-avatar][data-seat-hue='1'] { --seat: #6ee7b7; }
+  [data-seat-avatar][data-seat-hue='2'] { --seat: #e879f9; }
+  [data-seat-avatar][data-seat-hue='3'] { --seat: #facc15; }
+  [data-seat-avatar][data-seat-hue='4'] { --seat: #f472b6; }
+  [data-seat-avatar][data-seat-hue='5'] { --seat: #a3e635; }
+  [data-seat-avatar][data-seat-hue='6'] { --seat: #22d3ee; }
+  [data-seat-avatar][data-seat-hue='7'] { --seat: #a8a29e; }
+}
+
+[data-seat-avatar] {
+  box-shadow: inset 0 0 0 2px var(--seat);
+}

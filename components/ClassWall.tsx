@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
+import SeatAvatar from '@/components/SeatAvatar';
 import WallPicture, { WallPicturePicker } from '@/components/WallPicture';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { RETRY_HE } from '@/lib/core/failure';
 import { toWallPictureKey, wallSentence, wallTimeLabel, type WallPictureKey, type WallPost, type WallReply } from '@/lib/core/wallFeed';
+import { whenOf } from '@/lib/core/messages';
 import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
 
 /**
@@ -16,9 +18,11 @@ import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
  * heart + number on the left · the two top replies as small cards · `הצג את כל N התגובות`.
  *
  * ⚠️ Declared gap, ⛔ not a design choice: ⛔ no table holds a display name (`profiles` has no
- * name column, measured C-0803) ⇒ the author line is the ROLE — `המורה` for the opener
- * (D-288), `אתה` for the learner's own, `חבר בכיתה` otherwise — and the avatar is a glyph,
- * ⛔ not a letter. A name source is a PM row, ⛔ not something to invent here.
+ * name column, measured C-0803; `for-roy` 145) ⇒ the author line is the ROLE — `המורה` for
+ * the opener (D-288), `אתה` for the learner's own, `חבר בכיתה` otherwise — and the avatar is
+ * the author's SEAT (T-521 · D-303): the same numbered, seat-coloured `<SeatAvatar>` the
+ * story draws, so `3` here is the `3` of the story. Today's opener post reads
+ * `היום 08:15 · שאלת היום`, as in the render.
  * T-474 — a heart is a toggle (optimistic, reverted on failure) and ⛔ off on your own
  * content; `הוסף תגובה מהבלוקים` opens `<WallReplySheet>`; the opener gets `שאלה חדשה`.
  * ⛔ Draws only: the feed arrives shaped by `lib/core/wallFeed.ts` (`buildWallFeed`).
@@ -31,6 +35,14 @@ export const FEED_EMPTY_HE = 'הקיר מתמלא כשיש פוסט ראשון';
 export const ADD_REPLY_HE = 'הוסף תגובה מהבלוקים';
 export const NEW_QUESTION_HE = 'שאלה חדשה';
 export const OWN_LIKE_HE = 'אי אפשר לסמן לייק על תוכן שלך';
+/** T-521 · `kol-C-10`: `היום 08:15 · שאלת היום` — the opener's post of TODAY only. */
+export const TODAY_QUESTION_HE = 'שאלת היום';
+
+/** The post's time line; the opener's post written today gets `· שאלת היום` (the render). */
+export function postTimeHe(post: { readonly createdAt: string; readonly byOpener: boolean }, nowIso: string): string {
+  const label = wallTimeLabel(post.createdAt, nowIso, LEARNER_TIME_ZONE);
+  return post.byOpener && whenOf(post.createdAt, nowIso, LEARNER_TIME_ZONE).kind === 'today' ? `${label} · ${TODAY_QUESTION_HE}` : label;
+}
 
 export type LikeTarget = { readonly postId: string } | { readonly replyId: string };
 
@@ -45,18 +57,6 @@ export type ClassWallState =
 function authorHe(p: { readonly byOpener?: boolean; readonly mine: boolean }): string {
   if (p.byOpener) return OPENER_HE;
   return p.mine ? ME_HE : MEMBER_HE;
-}
-
-function Avatar({ size }: { readonly size: 'lg' | 'sm' }) {
-  const box = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
-  return (
-    <span aria-hidden className={`flex ${box} shrink-0 items-center justify-center rounded-full bg-brand-surface/20 text-brand-surface`}>
-      <svg viewBox="0 0 24 24" className="h-1/2 w-1/2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-      </svg>
-    </span>
-  );
 }
 
 /**
@@ -92,7 +92,7 @@ function Likes({ n, mine, own = false, onLike }: { readonly n: number; readonly 
 function ReplyCard({ r, onLike }: { readonly r: WallReply; readonly onLike?: (t: LikeTarget) => void }) {
   return (
     <li data-wall-reply className="flex items-center gap-3 rounded-2xl border border-surface-raised bg-surface p-3">
-      <Avatar size="sm" />
+      <SeatAvatar seat={r.seat} mine={r.mine} size="sm" />
       <span className="min-w-0 flex-1">
         <span className="block text-xs font-semibold text-ink-muted">{authorHe(r)}</span>
         <span className="block text-sm text-ink"><EnWord>{r.bodyEn}</EnWord></span>
@@ -115,10 +115,10 @@ function PostCard({ post, nowIso, all, onShowAll, onLike, onReply }: {
   return (
     <article data-wall-post className="rounded-2xl bg-surface-raised p-4 shadow-sm">
       <header className="flex items-center gap-3">
-        <Avatar size="lg" />
+        <SeatAvatar seat={post.seat} mine={post.mine} size="lg" />
         <span>
           <span className="block text-sm font-bold text-ink">{authorHe(post)}</span>
-          <span className="block text-xs text-ink-muted">{wallTimeLabel(post.createdAt, nowIso, LEARNER_TIME_ZONE)}</span>
+          <span data-wall-time className="block text-xs text-ink-muted">{postTimeHe(post, nowIso)}</span>
         </span>
       </header>
       <p className="mt-3 text-lg font-bold text-ink"><EnWord>{post.bodyEn}</EnWord></p>

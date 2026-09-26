@@ -1141,6 +1141,7 @@
   "components/ClassStory.tsx": [
     "components/ClassWall.tsx",
     "components/EnWord.tsx",
+    "components/SeatAvatar.tsx",
     "components/WallReplySheet.tsx",
     "components/block-keyboard-tokens.css",
     "lib/api/client.ts",
@@ -1161,10 +1162,12 @@
   ],
   "components/ClassWall.tsx": [
     "components/EnWord.tsx",
+    "components/SeatAvatar.tsx",
     "components/WallPicture.tsx",
     "components/WallReplySheet.tsx",
     "lib/api/client.ts",
     "lib/core/failure.ts",
+    "lib/core/messages.ts",
     "lib/core/onboarding.ts",
     "lib/core/wallFeed.ts"
   ],
@@ -1361,6 +1364,9 @@
     "components/EnWord.tsx",
     "lib/core/requiredWords.ts"
   ],
+  "components/SeatAvatar.tsx": [
+    "components/seat-tokens.css"
+  ],
   "components/ServiceWorkerRegistrar.tsx": [],
   "components/SimulationMessage.test.ts": [],
   "components/SimulationMessage.tsx": [
@@ -1546,6 +1552,7 @@
   "components/block-keyboard-tokens.css": [],
   "components/inbox-context-tokens.css": [],
   "components/rtl-axis.test.ts": [],
+  "components/seat-tokens.css": [],
   "lib/api/client.test.ts": [
     "lib/api/client.ts"
   ],
