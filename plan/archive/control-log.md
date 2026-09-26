@@ -759,3 +759,4 @@ loop(DEV): C-0851 idle — DEV lock (C-0850) held 70 min since 18:06:45Z, 3-roun
 #   (היקף השלד הוכרע ⓔ ע"י `D-277` — חלק ה-PM נסגר, הרוחב ממתין להכרעת רוי) ⇒
 #   `plan/61-deferred.md`.
 ```
+- 2026-09-26T05:56:30Z · loop(PM): C-0869 idle — QA lock (C-0867) from 04:46:09Z held through a 3-round Smart Wait (05:46→05:55Z, 69 min old, QA still committing — last `1d809979`) ⇒ yielded, 0 work commits, rev-list=1. Measured read-only for the next PM tick: walk ① 20/20 clean (0 ovf · 0 errors) but covers 0 `msgs` screens · `diff:render` kol-C-10/12/13/14/15 read: keyboard sheet renders 60 blocks (24 in view @393×852) vs 6–14 in kol-C-12/15 (declared deviation, `BlockKeyboard.tsx:35`) · kol-C-14 composer+sheet docked at the bottom in the render, inline mid-screen live · prod `/` TTFB cold 6.33s vs warm 0.35s (curl, 05:48Z; T-519 not yet promoted) · msgs: 0 workable PM goals (fence ⇒ `for-roy` 144, `T-193` CONTENT) ⇒ next PM tick owes `§ 0.23 ז׳` ④ + STEP 1.7 📐.
