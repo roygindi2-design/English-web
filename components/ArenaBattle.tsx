@@ -250,6 +250,12 @@ function manaSegColor(raging: boolean): string {
   return raging ? 'var(--danger)' : 'var(--arena-mana)';
 }
 
+/** 🎨 C-0863 · זירה — עיצוב חופשי. מקטע **ריק** נושא גוון חלש של `--arena-mana`,
+ *  ⛔ ולא `transparent`: ב-0 מאנה המסילה נקראה כפס רציף אחד, והרנדר (`kol-B-03`) מראה
+ *  עשרה חריצים גם כשהם ריקים ⇒ הלומד רואה מראש **כמה** יש למלא. ⛔ אינו ערוץ מצב:
+ *  המספר `N / 10` וה-`aria-label` נשארים הערוץ, והמלא/ריק נבדלים גם בבהירות. */
+const MANA_SEG_EMPTY = 'color-mix(in srgb, var(--arena-mana) 16%, transparent)';
+
 /** ⓔ `T-397` — צובע את עשרת המקטעים מתוך לולאת ה-rAF, ⛔ בלי רינדור חוזר.
  *  ⛔ **פונקציה טהורה מעל ה-DOM שנמסר לה** — היא ⛔ אינה קוראת ל-`document` ו⛔ אינה
  *  מחזיקה מצב, ⇒ הבדיקה מריצה אותה על מערך מזויף בלי דפדפן. */
@@ -263,7 +269,7 @@ function paintManaSegments(
     if (el === null || el === undefined) continue;
     const full = k < mana;
     el.dataset.full = full ? 'true' : 'false';
-    el.style.backgroundColor = full ? manaSegColor(raging) : 'transparent';
+    el.style.backgroundColor = full ? manaSegColor(raging) : MANA_SEG_EMPTY;
   }
 }
 const RAGE_HE = 'זמן זעם · מאנה כפולה';
@@ -2007,7 +2013,7 @@ export default function ArenaBattle({
               data-arena-mana-seg
               data-full={k < mana ? 'true' : 'false'}
               className="block h-full flex-1 rounded-full"
-              style={{ backgroundColor: k < mana ? manaSegColor(raging) : 'transparent' }}
+              style={{ backgroundColor: k < mana ? manaSegColor(raging) : MANA_SEG_EMPTY }}
             />
           ))}
         </div>
