@@ -30,11 +30,15 @@ ZERO=0000000000000000000000000000000000000000
 
 TIPS=()
 REFS=()
-while read -r _localref localsha remoteref _remotesha; do
+WORK_BASE=""   # ⛔ the remote tip of work/current, as git reports it — the ceiling gate compares against it
+while read -r _localref localsha remoteref remotesha; do
   [ -z "${localsha:-}" ] && continue
   [ "$localsha" = "$ZERO" ] && continue   # ⛔ a branch deletion carries no tree to verify
   TIPS+=("$localsha")
   REFS+=("${remoteref:-}")
+  if [ "${remoteref:-}" = "refs/heads/work/current" ] && [ "${remotesha:-$ZERO}" != "$ZERO" ]; then
+    WORK_BASE="$remotesha"
+  fi
 done
 if [ "${#TIPS[@]}" -eq 0 ]; then exit 0; fi
 
@@ -302,6 +306,44 @@ if [ "$PUSHING_WORK" = "1" ] && [ -n "$LOCK" ] && [ "$LOCK" != "$MINE" ] && [ "$
   echo "⇒ הדיף הזה נוגע גם בקוד ⇒ נסוג, כתוב את שורת היומן (§ 0.29 ו׳), וצא."
   echo "⛔ ו-SKIP_VERIFY ⛔ אינו פותח את זה — הוא מדלג על verify, ⛔ לא על הנעילה."
   exit 1
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📏 THE `00-control.md` CEILING — ⛔ ENFORCED AT PUSH, ⛔ NOT ONLY MEASURED.  ⟦NEW 26/09 · `T-523` · יעד `loop` ②⟧
+#
+# 🔬 **The sixth recurrence** (`F-182` · `F-211` · `F-245` · `T-340` · `F-263`): `RULES § 0.2 ב׳`
+# sets 12KB, `loop:health` check 9 MEASURES it — and ⛔ nothing refused a push over it.
+# DEV writes ~1.4KB across 20 ticks a day, PM trims 9 times ⇒ the cleaner ran at 45% of the
+# producer's rate, and the file sat over the line for hours at a time.
+#
+# ⇒ **the rule:** a push to `work/current` whose `plan/00-control.md` is OVER 12,288 bytes
+# **and** larger than on the remote tip is refused. Three fences, each one load-bearing:
+#   ① ⛔ **a push that SHRINKS (or keeps) an over-ceiling file PASSES** — otherwise the gate
+#      would block the very trim that fixes it.
+#   ② ⛔ **`work/current` only** — check 9 says in its own words that an oversized register
+#      «must not block a merge»; `dev`/`main` pushes carry commits that already passed here.
+#   ③ **it runs BEFORE `SKIP_VERIFY`**, like the lock: a broken `verify` is ⛔ never a reason
+#      to grow the file every agent reads every tick.
+# ⚠️ The base is the remote tip git hands the hook, else `origin/work/current`, else 0 bytes.
+# ═══════════════════════════════════════════════════════════════════════════════
+CONTROL_CEILING=12288   # ⛔ == `CONTROL_CEILING` in scripts/loop-health.mjs (check 9) — a test pins both
+if [ "$PUSHING_WORK" = "1" ] && [ -f plan/00-control.md ]; then
+  CONTROL_NOW=$(wc -c < plan/00-control.md | tr -d ' ')
+  if [ "$CONTROL_NOW" -gt "$CONTROL_CEILING" ]; then
+    CONTROL_BASE_REF="$WORK_BASE"
+    [ -z "$CONTROL_BASE_REF" ] && CONTROL_BASE_REF="$(git rev-parse -q --verify "$REMOTE/work/current" 2>/dev/null || true)"
+    CONTROL_WAS=0
+    if [ -n "$CONTROL_BASE_REF" ]; then
+      CONTROL_WAS=$(git cat-file -s "$CONTROL_BASE_REF:plan/00-control.md" 2>/dev/null || echo 0)
+    fi
+    if [ "$CONTROL_NOW" -gt "$CONTROL_WAS" ]; then
+      echo "⛔ הדחיפה נחסמה: תקרת plan/00-control.md — $CONTROL_NOW בתים מתוך $CONTROL_CEILING (בבסיס: $CONTROL_WAS)."
+      echo "⛔ RULES § 0.2 ב׳ · T-523 — דחיפה ש⛔ מגדילה את הקובץ מעל התקרה ⛔ אינה יוצאת."
+      echo "⇒ קצר את מה שכתבת (תא «סיבת ההעברה» ≤2 שורות), או העבר את שורת היומן הישנה ל-plan/archive/handoff-log.md."
+      echo "⇒ דחיפה שמקטינה את הקובץ עוברת תמיד. ⛔ ו-SKIP_VERIFY ⛔ אינו פותח את זה."
+      exit 1
+    fi
+  fi
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════

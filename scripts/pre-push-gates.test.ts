@@ -612,3 +612,80 @@ describe('scripts/hooks/pre-push — מי רשאי לדחוף ל-main אחרי 0
     expect(r.out).toMatch(/הדחיפה ל-main נחסמה/);
   });
 });
+
+describe('scripts/hooks/pre-push — תקרת 00-control.md נאכפת בדחיפה (T-523 · יעד loop ②)', () => {
+  /**
+   * 🔬 ההישנות השישית (`F-182`·`F-211`·`F-245`·`T-340`·`F-263`): בדיקה 9 של `loop:health`
+   * **מודדת** את התקרה, ⛔ אבל ⛔ אינה חוסמת — ⇒ היצרן כותב מעליה, והמנקה רודף אחריו.
+   * ⇒ השער: דחיפה ל-`work/current` שבה הקובץ **מעל** 12,288 **ו**גדל מול הבסיס — נדחית.
+   * ⛔ דחיפה שמקטינה (או משאירה) קובץ שכבר מעל — עוברת: ⛔ אסור שהשער יחסום את הגיזום.
+   */
+  const CEILING = 12 * 1024;
+
+  const controlRepo = (baseBytes: number, tipBytes: number): { root: string; base: string } => {
+    const root = repo('dev-agent');
+    const g = (...args: string[]) =>
+      execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    mkdirSync(join(root, 'plan'), { recursive: true });
+    const body = (n: number) => `LOCK_HELD_BY: ""\n${'x'.repeat(Math.max(0, n - 17))}`;
+    writeFileSync(join(root, 'plan', '00-control.md'), body(baseBytes), 'utf8');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'base');
+    const base = g('rev-parse', 'HEAD').trim();
+    writeFileSync(join(root, 'plan', '00-control.md'), body(tipBytes), 'utf8');
+    g('commit', '-q', '-am', 'tip');
+    return { root, base };
+  };
+
+  const push = (root: string, remoteSha: string, ref = 'refs/heads/work/current') => {
+    const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+    try {
+      const out = execFileSync('bash', ['.git/hooks/pre-push', 'origin', 'git@example:x.git'], {
+        cwd: root,
+        encoding: 'utf8',
+        input: `refs/heads/local ${sha} ${ref} ${remoteSha}\n`,
+        env: { ...process.env, SKIP_VERIFY: '1' },
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      return { code: 0, out };
+    } catch (e) {
+      const err = e as { status?: number; stdout?: string; stderr?: string };
+      return { code: err.status ?? -1, out: `${err.stdout ?? ''}${err.stderr ?? ''}` };
+    }
+  };
+
+  it('⛔ דחיפה שחוצה את התקרה נדחית — ⛔ גם תחת SKIP_VERIFY', () => {
+    const { root, base } = controlRepo(CEILING - 100, CEILING + 50);
+    const r = push(root, base);
+    expect(r.code, '⛔ הדחיפה חייבת להיכשל').not.toBe(0);
+    expect(r.out).toMatch(/תקרת plan\/00-control\.md/);
+    expect(r.out, 'המספרים נקובים').toContain(String(CEILING + 50));
+  });
+
+  it('⛔ דחיפה שמגדילה קובץ שכבר מעל התקרה נדחית', () => {
+    const { root, base } = controlRepo(CEILING + 10, CEILING + 40);
+    expect(push(root, base).code).not.toBe(0);
+  });
+
+  it('✅ דחיפה שמקטינה קובץ שמעל התקרה עוברת — ⛔ השער ⛔ אינו חוסם את הגיזום', () => {
+    const { root, base } = controlRepo(CEILING + 400, CEILING + 100);
+    const r = push(root, base);
+    expect(r.code, r.out).toBe(0);
+  });
+
+  it('✅ דחיפה מתחת לתקרה עוברת', () => {
+    const { root, base } = controlRepo(CEILING - 400, CEILING - 100);
+    expect(push(root, base).code).toBe(0);
+  });
+
+  it('✅ ⛔ חל רק על work/current — מיזוג ל-dev ⛔ אינו נחסם כאן (בדיקה 9: «⛔ must not block a merge»)', () => {
+    const root = controlRepo(CEILING - 100, CEILING + 50).root;
+    const r = push(root, '0'.repeat(40), 'refs/heads/dev');
+    expect(r.out).not.toMatch(/תקרת plan\/00-control\.md/);
+  });
+
+  it('התקרה בהוק זהה לתקרה של בדיקה 9 — ⛔ שני מספרים שונים הם שני כללים', () => {
+    expect(HOOK).toMatch(/CONTROL_CEILING=12288\b/);
+    expect(readFileSync('scripts/loop-health.mjs', 'utf8')).toMatch(/const CONTROL_CEILING = 12 \* 1024;/);
+  });
+});
