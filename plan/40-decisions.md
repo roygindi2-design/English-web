@@ -3752,3 +3752,12 @@ their final size, so nothing shifts when the numbers land». ⇒ שלד כאן �
 > ⚠️ **Figma (`STEP 5.2`):** ⛔ no new screen and ⛔ no new visual state — the avatar already ships on the story tab; the wall adopts it.
 > **Rows:** `T-520` (seats in `lib/core` + both routes) · `T-521` (the wall draws them · `שאלת היום`).
 > **Reversal line:** Roy answers 145 «yes» ⇒ one row adds the name to the seat; ⛔ the seat is not removed.
+
+### D-304 — **`base` ①: the daily open and the guest's first screen stop paying the proxy's cold start — two UX calls, ⛔ no lock moved**  *(PM, 26/09 · C-0884 · source: `T-327`ⓐ / `for-roy` C-0816 · `T-377`ⓐ `C-0794` · `C-0878` `/` 6.16s cold · measured this tick: `/login` 4.26s cold / 0.31s warm, `/` 2.57s / 0.46s, production, `curl` 14:49Z · `public/sw.js:22` · `manifest:5`)*
+
+> **Why this is a UX call and ⛔ not Roy's (`RULES § 0.31`):** C-0816 asked Roy to choose between ⓐ public pages leave the proxy · ⓑ scheduled warming · ⓒ leave it. ⓐ is a transition trade-off (a signed-in learner who types `/` sees the landing for a moment) — ⛔ not a key, an account, a licence or money. ⓑ needs an external service ⇒ **stays Roy's, alone.**
+> **Decision 1 — the installed app's daily open lands on a screen the service worker may paint** ⇒ `T-524`. Measured in code: `start_url` is `/`, and `/` is the ONE route `T-519` refuses to paint early (`SESSION_ROUTED`) ⇒ the learner's most frequent open gets none of `T-519`.
+> **Decision 2 — `/` · `/login` · `/signup` · `/sources` leave the `matcher`; the signed-in redirect runs client-side with the same `signedInRedirect`** ⇒ `T-525`. ⛔ `PROTECTED_SCREENS` is unchanged; none of the four is protected today ⇒ ⛔ no lock is removed (`F-003`).
+> **Six questions (`45`):** who — a guest (first impression, `F-012`) and every learner opening from the home screen · before — 2.6–6.2s of blank · after — a stored or CDN page in <1s · failure — signed-out / not-onboarded paths keep landing where they land today (listed in both rows) · exit — unchanged.
+> ⚠️ **Figma (`STEP 5.2`):** ⛔ no new screen; `T-525`'s neutral in-between state reuses the landing's own layout.
+> **Reversal line:** if the signed-in flash on `/` is measured as confusing (a QA walk or Roy), `/` alone returns to the `matcher`; `/login` · `/signup` · `/sources` stay out. Roy answers ⓑ «yes» ⇒ a warming row is added, ⛔ neither row here is undone.

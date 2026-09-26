@@ -26,7 +26,7 @@
 | `/world/apps` | `הסר` · `התקן` | `components/WorldRing.tsx` | `/world` | ✅ | `components/AppCentre` |
 | `/world/chain` | `כתוב את המשפט הראשון שלך` · `נסה שוב` | `/world/collected` · `components/RecallCard.tsx` | `/login` | ✅ | `components/WritingChain` |
 | `/world/collected` | `הסתר` · `לזירה` · `נסה שוב` | `/world/story` · `/dev/world/ring/edit` · `/dev/world/ring` … +3 | `/login` | ✅ | `components/CollectedWords` |
-| `/world/messages` | `נסה שוב` · `לבחירת רמה` · `התור שלך` … +6 | `components/SimulationMessage.tsx` · `lib/core/licenceFooter.ts` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/InboxList` |
+| `/world/messages` | `לבחירת רמה` · `התור שלך` · `התחברות מחדש` … +5 | `components/SimulationMessage.tsx` · `lib/core/licenceFooter.ts` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/InboxList` |
 | `/world` | `חברים חברים` · `סיום` · `קול` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/edit` … +11 | ⛔ — | ✅ | `components/WorldRing` |
 | `/world/story/library` | `נסה שוב` | `/dev/story/library` · `components/StoryLibrary.tsx` | ⛔ — | ✅ | `components/StoryLibrary` |
 | `/world/story` | `כל הסיפורים` · `א` · `לסיפור הבא` … +9 | `/world/messages` · `/world/story/library` · `/dev/story/live` … +10 | ⛔ — | ✅ | `components/StoryScreen` |
