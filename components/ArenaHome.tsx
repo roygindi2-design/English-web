@@ -486,7 +486,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
             ב-`x=52`, האחרונה ב-`x=291`. */}
         <ol className="flex items-center justify-between px-1" data-rtl-row="boss-track">
           {track.map((node, i) => (
-            <li key={i} className="flex items-center">
+            <li key={i} className={['flex items-center', i < track.length - 1 ? 'flex-1' : ''].join(' ')}>
               <span
                 role="img"
                 aria-label={bossNodeLabel(node)}
@@ -504,6 +504,21 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
                   <DotGlyph />
                 ) : null}
               </span>
+              {/* 🎨 C-0863 · זירה — עיצוב חופשי: המסילה בין הצמתים (`kol-B-01`). ‏`dir="rtl"`
+                  מציב אותה משמאל לצומת ⇒ היא מובילה לצומת הבא. קטע שהסתיים (הצומת שלפניו
+                  הושג) בגוון הלומד; השאר עמום. ⛔ דקורטיבי בלבד — המצב נישא בסמל ובתווית. */}
+              {i < track.length - 1 ? (
+                <span
+                  aria-hidden
+                  data-boss-track-rail
+                  className={[
+                    'mx-1 block h-[2px] flex-1 rounded-full',
+                    node.state === 'done'
+                      ? 'bg-[color:var(--brand-surface)] opacity-60'
+                      : 'bg-[color:var(--arena-stone)]',
+                  ].join(' ')}
+                />
+              ) : null}
             </li>
           ))}
         </ol>
