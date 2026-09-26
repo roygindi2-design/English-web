@@ -464,10 +464,6 @@
     "components/ArenaBattle.tsx",
     "lib/core/arcadeRound.ts"
   ],
-  "app/dev/arcade/result/page.tsx": [
-    "app/arcade/arcade-tokens.css",
-    "components/ArenaResult.tsx"
-  ],
   "app/dev/arcade/schema-missing/page.tsx": [
     "app/arcade/arcade-tokens.css",
     "components/ArenaBattle.tsx"
@@ -1023,15 +1019,6 @@
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
   ],
-  "components/ArenaResult.test.ts": [
-    "lib/testSource.ts"
-  ],
-  "components/ArenaResult.tsx": [
-    "components/ActionBar.tsx",
-    "components/ArenaAvatar.tsx",
-    "components/EnWord.tsx",
-    "lib/core/arcadeResult.ts"
-  ],
   "components/ArenaScene.tsx": [
     "lib/core/arenaScene.ts"
   ],
@@ -1059,11 +1046,16 @@
     "lib/core/characterBase.ts"
   ],
   "components/ArenaSummary.test.ts": [
+    "components/ArenaSummary.tsx",
+    "lib/core/arcadeResult.ts",
+    "lib/core/arenaSummary.ts",
     "lib/testSource.ts"
   ],
   "components/ArenaSummary.tsx": [
     "components/ActionBar.tsx",
+    "components/ArenaAvatar.tsx",
     "components/EnWord.tsx",
+    "lib/core/arcadeResult.ts",
     "lib/core/arenaReplay.ts",
     "lib/core/arenaSummary.ts"
   ],

@@ -1,6 +1,6 @@
 'use client';
 
-import ArenaSummary from '@/components/ArenaSummary';
+import ArenaSummary, { type ArenaMissed } from '@/components/ArenaSummary';
 import { summarize } from '@/lib/core/arenaSummary';
 import type { ArenaWordKind } from '@/lib/core/arenaWords';
 import { CRITICAL_MS, type BattleCast } from '@/lib/core/battle';
@@ -17,14 +17,14 @@ import '../../../arcade/arcade-tokens.css';
  * after a full 90-second battle **and** a 200 from `POST /api/arcade/result`, and
  * `check:mobile` runs `next start` with no Supabase env — so on `/arcade` that endpoint
  * answers 503 by its own contract and this screen would never once be rendered at
- * 320/375/414. Same reasoning as `/dev/arcade/result` (T-096) and `/dev/arcade` (C-0185).
+ * 320/375/414. Same reasoning as `/dev/arcade` (C-0185).
  *
  * ⛔ **This page renders the component and NOTHING else** — no heading, no note line
  * (C-0104: one line of chrome the real screen does not have pushes the content down, and
  * the harness then measures the fixture instead of the component).
  *
  * ⛔ **The strings are not learning content** (R-010 · R-013): the headwords are the same
- * non-content placeholders `app/dev/arcade/result/page.tsx` uses, chosen for LENGTH.
+ * non-content placeholders the retired `/dev/arcade/result` fixture used, chosen for LENGTH.
  *
  * ⚠️ **The fixture reproduces the render's own numbers so the walk compares like with
  * like — with ONE measured exception, and it is a finding, ⛔ not a choice.**
@@ -73,12 +73,22 @@ const HEADWORDS: Readonly<Record<string, string>> = {
   w15: 'Lorem15',
 };
 
+/* 📖 ⟦`T-518`⟧ **what `ArenaBattle` renders at the end of a battle**, ⛔ not half of it: six
+   misses (one past `ARCADE_MISSED_LIMIT`, so the cap is exercised) + an unlocked item.
+   ⛔ Not learning content — placeholders chosen for LENGTH. */
+function missed(n: number): ArenaMissed {
+  return { wordId: `m${n}`, headword: `Lorem${n}`, answer: `אפשרות ${n}`, chosen: `מסיח ${n}א` };
+}
+const MISSED: readonly ArenaMissed[] = [1, 2, 3, 4, 5, 6].map(missed);
+
 export default function DevArcadeSummaryPage() {
   return (
     <ArenaSummary
       ending={{ kind: 'victory', wordsFromBoss: 0 }}
       summary={summarize(FIXTURE)}
       headwords={HEADWORDS}
+      missed={MISSED}
+      unlocked="helmet"
       onAgain={() => {}}
     />
   );

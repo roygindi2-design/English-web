@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import ArenaSummary, { type ArenaMissed } from '@/components/ArenaSummary';
+import { ARCADE_MISSED_LIMIT } from '@/lib/core/arcadeResult';
+import { summarize } from '@/lib/core/arenaSummary';
 import { withoutComments } from '@/lib/testSource';
 
 /**
@@ -144,5 +149,109 @@ describe('T-517 — מסך סיום אחד', () => {
   it('⛔ `ArenaBattle` ⛔ אינו מרנדר מסך סיום שני', () => {
     expect(BATTLE).not.toMatch(/<ArenaResult\b/);
     expect(BATTLE.match(/<ArenaSummary\b/g)).toHaveLength(1);
+  });
+});
+
+/**
+ * 📖 **T-518 · `D-302`ⓒ — «המילים שהפילו אותך» על המסך הראשון, והפריט שנפתח איתן.**
+ * ⚠️ **מרונדר, ⛔ ולא סריקת מקור** — «קיים ⇔ יש החטאה» הוא התנהגות, ו-`renderToStaticMarkup`
+ * מודד אותה בלי דפדפן. הפיקסלים (`bottom ≤ innerHeight`) ב-`verify-mobile.mjs`.
+ * ⚠️ **שש החטאות ⇒ חמש שורות, ⛔ ולא שש:** `ARCADE_MISSED_LIMIT` = 5 בשרת (`arcadeResult.ts`),
+ * ⇒ פיקסטורה של שש שמציגה שש הייתה מודדת מסך שהייצור ⛔ לעולם ⛔ אינו מצייר.
+ */
+describe('T-518 — הרשימה והפריט במסך האחד', () => {
+  const miss = (n: number): ArenaMissed => ({
+    wordId: `m${n}`,
+    headword: `Lorem${n}`,
+    answer: `אפשרות ${n}`,
+    chosen: `מסיח ${n}א`,
+  });
+  const render = (missed: readonly ArenaMissed[], unlocked: string | null): string =>
+    renderToStaticMarkup(
+      createElement(ArenaSummary, {
+        ending: { kind: 'victory', wordsFromBoss: 0 },
+        summary: summarize([]),
+        headwords: {},
+        onAgain: () => {},
+        missed,
+        unlocked,
+      }),
+    );
+
+  it('שש החטאות ⇒ `[data-arena-missed]` קיים, עד הגבול של השרת, עם התשובה ומה שנבחר', () => {
+    const html = render([1, 2, 3, 4, 5, 6].map(miss), null);
+    const list = html.match(/<ul data-arena-missed[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? '';
+    expect(list.match(/<li\b/g)).toHaveLength(ARCADE_MISSED_LIMIT);
+    expect(html).toContain('המילים שהפילו אותך');
+    expect(html).toContain('התשובה: אפשרות 1');
+    expect(html).toContain('בחרת: מסיח 1א');
+    expect(html).not.toContain('Lorem6');
+  });
+
+  it('אפס החטאות ⇒ ⛔ אין רשימה ו⛔ אין כותרת', () => {
+    const html = render([], null);
+    expect(html).not.toContain('data-arena-missed');
+    expect(html).not.toContain('המילים שהפילו אותך');
+  });
+
+  it('פריט שנפתח ⇒ שורה אחת עם שמו; `null` ⇒ ⛔ אין שורה', () => {
+    expect(render([], 'helmet')).toMatch(/data-arena-unlocked[\s\S]*נפתח לך פריט חדש[\s\S]*קסדה/);
+    expect(render([], null)).not.toContain('data-arena-unlocked');
+  });
+
+  it('עדיין `h1` אחד ושתי פעולות, גם עם רשימה מלאה ופריט', () => {
+    const html = render([1, 2, 3, 4, 5, 6].map(miss), 'helmet');
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    expect(html.match(/data-arena-again/g)).toHaveLength(1);
+    expect(html.match(/data-arena-back/g)).toHaveLength(1);
+  });
+
+  it('הרשימה בתוך האזור הגמיש — ⛔ העמוד ⛔ אינו נגלל', () => {
+    const region = CODE.indexOf('min-h-0 flex-1 flex-col gap-6 overflow-y-auto');
+    expect(region).toBeGreaterThan(-1);
+    expect(CODE.indexOf('data-arena-missed')).toBeGreaterThan(region);
+    expect(CODE.indexOf('data-arena-missed')).toBeLessThan(CODE.indexOf('<ActionBar'));
+  });
+
+  it('אנגלית רק בתוך `<EnWord>`', () => {
+    expect(CODE).toMatch(/<EnWord[^>]*>\{row\.headword\}/);
+  });
+});
+
+/**
+ * 🧳 **הועבר מ-`ArenaResult.test.ts` (נמחק ב-`T-518`)** — הגדרות שהמסך השני נשא, ⛔ ושאין
+ * סיבה שייעלמו עם הקובץ: המסך האחד ⛔ אינו כותב, ⛔ אינו מנקד, ⛔ אינו משבח, ⛔ ואינו מתזמן.
+ */
+describe('הגדרות מסך הסיום (D-044 · D-047 · D-050 · R-016 · D-045)', () => {
+  it('⛔ אפס מנוע חזרות', () => {
+    for (const banned of [/easiness/, /repetition/, /next_review_at/, /supabase|\.from\(/]) {
+      expect(CODE, `${banned} אסור`).not.toMatch(banned);
+    }
+    expect(CODE).not.toContain('הוסף לרשימת החזרה');
+  });
+
+  it('⛔ אפס ניקוד, מטבע, XP ולוח תוצאות', () => {
+    for (const banned of [/\bxp\b/i, /\bscore\b/i, /\bpoints\b/i, /\bcoin\b/i, /\bleaderboard\b/i]) {
+      expect(CODE, `${banned} אסור`).not.toMatch(banned);
+    }
+    for (const word of ['ניקוד', 'מטבע', 'לוח תוצאות', 'רצף יומי']) {
+      expect(CODE, `«${word}» אסורה`).not.toContain(word);
+    }
+  });
+
+  it('⛔ אין שבח ואין נזיפה', () => {
+    for (const word of ['כל הכבוד', 'נהדר', 'מצוין', 'טעית', 'נכשלת', 'הפסדת']) {
+      expect(CODE, `«${word}» אסורה`).not.toContain(word);
+    }
+  });
+
+  it('⛔ אין שעון', () => {
+    for (const banned of [/\bsetTimeout\b/, /\bsetInterval\b/, /\brequestAnimationFrame\b/, /\bcountdown\b/i, /\bDate\.now\b/]) {
+      expect(CODE, `${banned} אסור`).not.toMatch(banned);
+    }
+  });
+
+  it('`data-arena-back` חוזר ל-`/world`, ⛔ לא ל-`/cards`', () => {
+    expect(CODE).toContain('data-arena-back href="/world"');
   });
 });

@@ -317,15 +317,12 @@ const ROUTES = [
   // מחזיר `character: null`, ⇒ בלי env של Supabase המסך ⛔ מעולם לא נמדד דרך `/arcade`.
   // הפיקסצ׳ר מרנדר את הרכיב ישירות עם `save` ריק ⇒ ⛔ אין לו רשומה ב-EXPECTED_CONSOLE.
   '/dev/arcade/character',
-  // T-096 · § 4.2י. מסך הסיום ⛔ אינו נגיש דרך `/arcade` בלי סשן: הוא נפתח רק אחרי
-  // ‏`POST /api/arcade/result` שעונה 200, וכאן אין env של Supabase ⇒ הנתיב האמיתי עוצר
-  // ב-503 והמסך הזה מעולם לא נמדד. הפיקסטורה מרנדרת אותו ישירות ואינה מבקשת מהשרת דבר,
-  // ולכן ⛔ אין לה רשומה ב-EXPECTED_CONSOLE.
-  '/dev/arcade/result',
+  // ⟦`T-518` · `D-302`⟧ `/dev/arcade/result` (T-096) retired with `<ArenaResult>` — the battle
+  // ends on ONE screen, and its fixture is `/dev/arcade/summary` below.
   // T-180 · `37 § 10`. מסך התוצאות נפתח **אך ורק** אחרי קרב מלא ו-200 מ-
   // ‏`POST /api/arcade/result`, ⇒ בלי env של Supabase הוא ⛔ מעולם לא נמדד ב-320/375/414.
   // הפיקסצ׳ר מרנדר את הרכיב ישירות ו⛔ אינו מבקש מהשרת דבר, ולכן ⛔ אין לו רשומה
-  // ב-EXPECTED_CONSOLE — אותה הנמקה בדיוק של `/dev/arcade/result` שמעליו.
+  // ב-EXPECTED_CONSOLE.
   '/dev/arcade/summary',
   // 🧪 `T-421` (`C-0779`) · המשך של `T-416` — שלושת מסכי הקרב ש⛔ אף נתיב ⛔ לא רינדר בלי
   // שרת: הטעינה (‏`/arcade` מחליף אותה מיד בכשל ה-503), «⛔ אין מספיק מילים ברמה» וסכמה
@@ -3781,7 +3778,7 @@ try {
   // 🧹 `T-431` (`C-0775`) — `home` and `character` join the same four claims: ⛔ no app header,
   // full width, arena night — measured, ⛔ not assumed from the shared `:has()` rule.
   {
-    for (const route of ['/dev/arcade/home', '/dev/arcade/character', '/dev/arcade/summary', '/dev/arcade/result']) {
+    for (const route of ['/dev/arcade/home', '/dev/arcade/character', '/dev/arcade/summary']) {
       for (const size of [{ width: 320, height: 568 }, { width: 393, height: 852 }]) {
         const ctx = await browser.newContext({ viewport: size });
         const page = await ctx.newPage();
@@ -3826,7 +3823,7 @@ try {
     }
   }
 
-  // ---- 2h. 🏁 T-517 · `D-302` — a battle ends on ONE screen: one heading, two actions ----
+  // ---- 2h. 🏁 T-517 · T-518 · `D-302` — a battle ends on ONE screen: one heading, two actions, the missed words ----
   //
   // 🔬 Measured in code `C-0861`: `ArenaBattle.tsx` returned `<ArenaSummary>` AND `<ArenaResult>`
   // as siblings, both `h-[100dvh]` ⇒ two stacked end screens, two `h1` («היריב נוצח» twice), and
@@ -3852,6 +3849,10 @@ try {
           h1: document.querySelectorAll('h1').length,
           actions,
           sections: document.querySelectorAll('section[data-arena-scope]').length,
+          missedCount: document.querySelectorAll('[data-arena-missed] li').length,
+          firstMissedBottom: document.querySelector('[data-arena-missed] li')?.getBoundingClientRect().bottom ?? Infinity,
+          unlocked: document.querySelector('[data-arena-unlocked]') !== null,
+          barTop: document.querySelector('[data-action-bar]')?.getBoundingClientRect().top ?? -1,
           oldBack: document.body.innerText.includes('חזרה לזירה'),
           scroll: document.documentElement.scrollHeight,
           clientH: document.documentElement.clientHeight,
@@ -3873,6 +3874,17 @@ try {
       }
       check(!m.oldBack, `${at} · ⛔ «חזרה לזירה» is gone`, 'the old third action is still drawn');
       check(m.scroll === m.clientH, `${at} · ⛔ the page does not scroll`, `scrollHeight ${m.scroll} vs clientHeight ${m.clientH}`);
+      // 📖 T-518 · `D-302`ⓒ — the missed words are ON the one screen (six in, `ARCADE_MISSED_LIMIT`
+      // = 5 out), and the unlocked item travels with them.
+      check(m.missedCount === 5, `${at} · T-518 the missed list is drawn (5 of 6, the server cap)`, `${m.missedCount} rows`);
+      check(m.unlocked, `${at} · T-518 the unlocked item line is drawn`, 'no [data-arena-unlocked]');
+      if (size.width === 393) {
+        check(
+          m.firstMissedBottom <= m.innerH && m.firstMissedBottom <= m.barTop,
+          `${at} · T-518 the first missed word is visible without scrolling`,
+          `first row bottom ${Math.round(m.firstMissedBottom)} vs bar top ${Math.round(m.barTop)} / innerHeight ${m.innerH}`,
+        );
+      }
       await ctx.close();
     }
   }

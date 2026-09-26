@@ -71,7 +71,6 @@ export const DEFAULT_ROUTES = [
   '/dev/story/live',
   '/dev/arcade/home',
   '/dev/arcade',
-  '/dev/arcade/result',
   '/dev/arcade/character',
   '/dev/arcade/summary',
   '/dev/amirnet/dashboard',

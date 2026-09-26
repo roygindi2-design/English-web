@@ -115,13 +115,13 @@ describe('D-059 — ⛔ המילה «הפסדת» אינה קיימת במוצר
     // «הפסד» ל**מצב** (`outcomeAt` מחזיר `survived`), ⛔ אך המילה «הפסדת» ⛔ עדיין אינה
     // מופיעה על המסך אף פעם — `37 § 9` ח4 קובע מסגור «היית 2 מילים מהבוס».
     // ⇒ **המצב קיים, הנוסח ⛔ לא**, והשומר הזה הוא בדיוק מה שמודד את זה.
-    'components/ArenaBattle.tsx', 'components/ArenaResult.tsx', 'components/ArenaAvatar.tsx',
+    'components/ArenaBattle.tsx', 'components/ArenaSummary.tsx', 'components/ArenaAvatar.tsx',
     'components/ArcadeEntry.tsx', 'lib/core/battle.ts', 'lib/core/arcadeResult.ts',
   ];
 
   /**
    * ⚠️ **הלבנה גם כאן, ⛔ ולא `readFileSync` גולמי כפי שהתוכנית כתבה** (F-039 · F-065):
-   * `components/ArenaResult.tsx` מתעד בהערה «קרב שלא נוצח ⛔ אינו «הפסדת»», והמדידה
+   * `components/ArenaSummary.tsx` מתעד בהערה «קרב שלא נוצח ⛔ אינו «הפסדת»», והמדידה
    * הגולמית הייתה מפילה קובץ ⛔ שאין בו ולו הפרה אחת. ⛔ מחיקת ההערה אינה הפתרון.
    */
   it.each(files)('⛔ %s אינו מכיל «הפסדת» בקוד', (file) => {

@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import ActionBar from '@/components/ActionBar';
+import { ITEM_LABELS_HE } from '@/components/ArenaAvatar';
 import EnWord from '@/components/EnWord';
+import { ARCADE_MISSED_LIMIT } from '@/lib/core/arcadeResult';
 import { replayTallyHe } from '@/lib/core/arenaReplay';
 import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
 
@@ -34,6 +36,18 @@ import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type Aren
  * בדיוק כמו `F-144`. ⛔ לא נצפתה — נמדדה.
  */
 
+/**
+ * 📖 ⟦`T-518` · `D-302`ⓒ⟧ שורה ב«המילים שהפילו אותך» — ⛔ ערך מוחזר לתצוגה, ⛔ ולא שורה
+ * שנכתבת (D-047). הגיע מ-`<ArenaResult>` (נמחק). ⚠️ `headword` ⛔ אינו מגיע מהשרת:
+ * `POST /api/arcade/result` מחזיר `{wordId, answer, chosen}`, והקרב מצליב את `wordId`.
+ */
+export interface ArenaMissed {
+  readonly wordId: string;
+  readonly headword: string;
+  readonly answer: string;
+  readonly chosen: string;
+}
+
 export interface ArenaSummaryProps {
   /** T-283 — three endings, ⛔ not a boolean. Computed by `endingOf` in `lib/core`. */
   readonly ending: ArenaEnding;
@@ -48,6 +62,10 @@ export interface ArenaSummaryProps {
    * ⛔ אינו נוגע ב-`summary`: החזרה ⛔ אינה `cast`, ⇒ `נכונות` נשאר זהה בתו.
    */
   readonly replay?: { readonly fixed: number; readonly total: number } | null;
+  /** 📖 `T-518` — המילים שהקרב הפיל בהן את הלומד; `[]` ⇒ ⛔ אין רשימה. */
+  readonly missed?: readonly ArenaMissed[];
+  /** 📖 `T-518` — הפריט שהקרב פתח, ⛔ `null` ⇔ לא נפתח דבר ⇒ ⛔ אין שורה. */
+  readonly unlocked?: string | null;
 }
 
 const WON_HE = 'היריב נוצח';
@@ -67,6 +85,16 @@ const AGAIN_HE = 'עוד קרב';
 /** T-253ⓐ · D-186 — היציאה חוזרת לטבעת, אותה תווית שצמתי הטבעת האחרים נושאים. */
 const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const FOOTER_HE = 'הזירה לא שינתה דבר בהתקדמות הלמידה';
+const UNLOCKED_HE = 'נפתח לך פריט חדש';
+const MISSED_HEADING_HE = 'המילים שהפילו אותך';
+const ANSWER_HE = 'התשובה';
+const CHOSEN_HE = 'בחרת';
+
+function labelOf(item: string | null): string | null {
+  if (item === null) return null;
+  const labels: Readonly<Record<string, string>> = ITEM_LABELS_HE;
+  return labels[item] ?? null;
+}
 
 /* ‏y=318 · 370 · 422 ⇒ פסיעה 52 על גובה 44 ⇒ מרווח 8px = `gap-2`.
    ⚠️ **`flex` רגיל, ⛔ ולא `flex-row-reverse`** (`T-338`, המשך של `F-236`): הרכיב גזר
@@ -91,7 +119,12 @@ export default function ArenaSummary({
   headwords,
   onAgain,
   replay = null,
+  missed = [],
+  unlocked = null,
 }: ArenaSummaryProps): React.JSX.Element {
+  const unlockedLabel = labelOf(unlocked);
+  // עד חמש שורות, והמספר מגיע מהקבוע ⛔ ולא כמספר בקוד (`arcadeResult.ts`).
+  const missedRows = missed.slice(0, ARCADE_MISSED_LIMIT);
   return (
     /* 🥊 **⟦17/09 · `C-0707` · `T-422`⟧ גובה **מדויק**, ⛔ ולא מינימום — תבנית
        `ArenaBattle.tsx` (`T-416` · `C-0623`), מילה במילה.
@@ -127,6 +160,15 @@ export default function ArenaSummary({
           </p>
         )}
       </header>
+
+      {/* 📖 ⟦`T-518`⟧ הפריט שנפתח — **שורה אחת**, מעל האזור הגמיש, ⛔ רק כשנפתח דבר.
+          ⛔ אין ניקוד ואין מספר מופשט (D-050): הפרס הוא שם הפריט. */}
+      {unlockedLabel !== null && (
+        <p data-arena-unlocked className={`${ROW_CLASS} text-[14px]`}>
+          <span className="font-medium text-[color:var(--arena-ink)]">{UNLOCKED_HE}</span>
+          <span className="font-bold text-[color:var(--brand-surface)]">{unlockedLabel}</span>
+        </p>
+      )}
 
       {/* 🥊 **`T-422` — האזור הגמיש, ו⛔ הוא ⛔ אינו «גלילה שהוחזרה מהדלת האחורית».**
           הכותרת למעלה וכפתור החזרה למטה הם **עוגנים**: הם ⛔ אינם זזים ו⛔ אינם נגללים.
@@ -203,6 +245,30 @@ export default function ArenaSummary({
               </span>
             ))}
           </p>
+        </div>
+      )}
+
+      {/* 📖 ⟦`T-518` · `D-302`ⓒ · `36 § 12.3`⟧ **«המילים שהפילו אותך» עולות למסך הראשון.** עד
+          היום הן ישבו במסך השני, מ-`y ≥ 100dvh` — החלק היחיד בסוף הקרב **שמלמד** היה החלק
+          שהלומד רואה אחרון, אם בכלל. ⛔ העמוד ⛔ אינו נגלל: הרשימה בתוך האזור הגמיש.
+          ⛔ **קריאה בלבד** — ⛔ אין `הוסף לכרטיסיות` (`for-roy` 152). כל צד נושא תווית עברית —
+          צבע ⛔ לעולם אינו הערוץ היחיד. ⛔ מוצג רק כשיש החטאה: לוח ריק הוא רעש. */}
+      {missedRows.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-start text-[14px] font-bold text-[color:var(--arena-ink)]">{MISSED_HEADING_HE}</h2>
+          <ul data-arena-missed className="flex flex-col gap-2">
+            {missedRows.map((row) => (
+              <li key={row.wordId} className="flex flex-col gap-0.5 rounded-xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4 py-2.5">
+                <EnWord className="self-start text-[16px] font-bold text-[color:var(--arena-ink)]">{row.headword}</EnWord>
+                <span className="text-[13px] text-[color:var(--arena-ink)]">
+                  {ANSWER_HE}: {row.answer}
+                </span>
+                <span className="text-[13px] text-[color:var(--arena-ink-dim)]">
+                  {CHOSEN_HE}: {row.chosen}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

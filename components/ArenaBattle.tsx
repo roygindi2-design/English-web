@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
 import ArenaStage from '@/components/ArenaStage';
-import ArenaSummary from '@/components/ArenaSummary';
+import ArenaSummary, { type ArenaMissed } from '@/components/ArenaSummary';
 import SpellCard from '@/components/SpellCard';
 import { foeRect, heroRect } from '@/components/arenaAnchors';
 import CloseIcon from '@/components/CloseIcon';
@@ -1289,6 +1289,12 @@ export default function ArenaBattle({
       const headwords = new Map<string, string>(
         battle.words.map((w) => [w.wordId, w.headword] as const),
       );
+      const missed: readonly ArenaMissed[] = outcome.missed.map((row) => ({
+        wordId: row.wordId,
+        headword: headwords.get(row.wordId) ?? row.wordId,
+        answer: row.answer,
+        chosen: row.chosen,
+      }));
       return (
         /* T-180 · `37 § 10` — הסיכום המדוד של הקרב. ⛔ הסיכום ⛔ אינו מחשב כאן —
            `summarize` הוא `lib/core` טהור. 🏁 ⟦`T-517` · `D-302`⟧ **מסך סיום אחד**: עד היום
@@ -1299,6 +1305,8 @@ export default function ArenaBattle({
           summary={summarize(battle.casts)}
           headwords={Object.fromEntries(headwords)}
           replay={replayAnswered === 0 ? null : { fixed: replayFixed, total: replayAnswered }}
+          missed={missed}
+          unlocked={outcome.unlocked}
           onAgain={again}
         />
       );

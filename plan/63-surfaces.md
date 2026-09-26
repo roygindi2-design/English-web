@@ -7,7 +7,7 @@
 > ⇒ **מסך בלי שורה כאן = מסך שאינו קיים ב-`app/`**, ⛔ ולא מסך שמישהו שכח לתאר.
 > ⚠️ **מודד חיווט, ⛔ לא איכות.** מסך יכול לעבור כאן במלואו ולא ללמד דבר.
 
-**24 מסכי מוצר · 58 מסכי פיקסצ׳ר (`/dev/*`)**
+**25 מסכי מוצר · 60 מסכי פיקסצ׳ר (`/dev/*`)**
 > ⛔ **⛔ אין חותמת תאריך בקובץ הזה, ובכוונה:** תאריך ריצה היה משנה את הפלט בכל יום
 > ⇒ דיף בכל טיק ⇒ «הקובץ הזה תמיד משתנה» ⇒ איש ⛔ אינו קורא אותו. הפלט הוא **פונקציה
 > של הקוד בלבד**, ולכן דיף כאן פירושו **המשטחים זזו**, ⛔ ולא שהשעון התקדם.
@@ -16,7 +16,7 @@
 
 | מסך | פעולות בהקשה (מהמרקאפ) | מאיפה מגיעים | לאן יוצאים | מצב ריק | הרכיב |
 |---|---|---|---|---|---|
-| `/cards` | `נסה שוב` · `טעינה מחדש` · `שינוי רמה · הגדרות` … +1 | `/studies` · `/dev/deck/level` · `/dev/deck` … +16 | `/settings` | ✅ | `components/LevelMapScreen` |
+| `/cards` | `נסה שוב` · `טעינה מחדש` · `לבחירת הרמה` … +2 | `/studies` · `/dev/deck/level` · `/dev/deck` … +15 | `/settings` | ✅ | `components/LevelMapScreen` |
 | `/me` | `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` … +1 | `app/(tabs)/me/loading.tsx` · `/settings` · `app/api/profile/route.ts` … +5 | `/studies` · `/sources` | ✅ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `/studies` · `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
 | `/studies` | `כניסה לסיפורים` | `app/(tabs)/layout.tsx` · `/me` · `app/(tabs)/studies/loading.tsx` … +8 | ⛔ — | ✅ | `components/StudiesScreen` |
@@ -28,8 +28,9 @@
 | `/world/collected` | `הסתר` · `לזירה` · `נסה שוב` | `/world/story` · `/dev/world/ring/edit` · `/dev/world/ring` … +3 | `/login` | ✅ | `components/CollectedWords` |
 | `/world/messages` | `נסה שוב` · `לבחירת רמה` · `התור שלך` … +6 | `components/SimulationMessage.tsx` · `lib/core/licenceFooter.ts` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/InboxList` |
 | `/world` | `חברים חברים` · `סיום` · `קול` | `/world/chain` · `/dev/world/recall` · `/dev/world/ring/edit` … +11 | ⛔ — | ✅ | `components/WorldRing` |
-| `/world/story` | `לסיפור הבא` · `חזרה לעולם` · `חזרה לשאלה` … +7 | `/world/messages` · `/dev/story/live` · `/dev/story` … +8 | ⛔ — | ✅ | `components/StoryScreen` |
-| `/arcade` | `סגור` · `בחירת רמה` · `הבא` … +6 | `/dev/arcade/end` · `/dev/arcade/home` · `/dev/arcade/loading` … +14 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
+| `/world/story/library` | `נסה שוב` | `/dev/story/library` · `components/StoryLibrary.tsx` | ⛔ — | ✅ | `components/StoryLibrary` |
+| `/world/story` | `כל הסיפורים` · `א` · `לסיפור הבא` … +9 | `/world/messages` · `/world/story/library` · `/dev/story/live` … +10 | ⛔ — | ✅ | `components/StoryScreen` |
+| `/arcade` | `סגור` · `בחירת רמה` · `הבא` … +6 | `/dev/arcade/end` · `/dev/arcade/home` · `/dev/arcade/loading` … +13 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
 | `/login` | `להתחברות` | `/me` · `/studies` · `/` … +15 | ⛔ — | ⛔ | `components/AuthForm` |
 | `/offline` | `נסה שוב` | `lib/core/licenceFooter.ts` · `service worker` | `/` | ⛔ | `—` |
 | `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +8 | ⛔ — | ⛔ | `components/RegisteredAddress` |
@@ -57,20 +58,20 @@
 | `/dev/arcade/character` | `התחברות מחדש` · `חזרה למסך הבית` | `lib/core/arenaCharacter.ts` | `/login` | ✅ | `components/ArenaCharacterChoice` |
 | `/dev/arcade/end` | `סגור` · `בחירת רמה` · `הבא` … +2 | `components/ArenaBattle.tsx` | `/cards` · `/login` · `/world` | ✅ | `—` |
 | `/dev/arcade/home` | `התחברות מחדש` · `נסה שוב` · `התחל קרב` … +2 | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
-| `/dev/arcade/loading` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +6 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
-| `/dev/arcade` | `סגור` · `בחירת רמה` · `הבא` … +2 | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/result` … +5 | `/cards` · `/login` · `/world` | ✅ | `—` |
-| `/dev/arcade/result` | `עוד קרב` · `חזרה לעולם` | `/dev/arcade/summary` | `/world` | ✅ | `—` |
-| `/dev/arcade/schema-missing` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +6 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
-| `/dev/arcade/summary` | `חזרה לזירה` | ⛔ — | ⛔ — | ✅ | `components/ArenaSummary` |
-| `/dev/arcade/too-small` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +6 | `components/ArenaBattle.tsx` | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
+| `/dev/arcade/loading` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
+| `/dev/arcade` | `סגור` · `בחירת רמה` · `הבא` … +2 | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/summary` … +4 | `/cards` · `/login` · `/world` | ✅ | `—` |
+| `/dev/arcade/schema-missing` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
+| `/dev/arcade/summary` | `עוד קרב` · `חזרה לעולם` | ⛔ — | `/world` | ✅ | `—` |
+| `/dev/arcade/too-small` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | `components/ArenaBattle.tsx` | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
 | `/dev/card/choice` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | `/dev/card/typed` · `/dev/deck` · `/dev/deck/skeleton` … +2 | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/swap` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | ⛔ — | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/card/typed` | `המשך` · `בדיקה` · `✓ ידעתי` … +1 | `/dev/card/choice` | ⛔ — | ✅ | `components/Flashcard` |
 | `/dev/deck/done/due` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/amirnet/result/short` | `/cards` | ✅ | `components/CardDeck` |
-| `/dev/deck/done` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/amirnet/result/short` · `/dev/arcade/result` · `/dev/deck/done/due` … +5 | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck/done` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/amirnet/result/short` · `/dev/deck/done/due` · `/dev/deck/level` … +5 | `/cards` | ✅ | `components/CardDeck` |
 | `/dev/deck/level-done` | `התחברות מחדש` · `להתחיל את הרמה מחדש` · `נסה שוב` … +2 | `components/StudyDeckScreen.tsx` | `/cards` | ✅ | `components/StudyDeckScreen` |
 | `/dev/deck/level` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | ⛔ — | `/cards` | ✅ | `components/CardDeck` |
+| `/dev/deck/more` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | ⛔ — | `/cards` | ✅ | `components/CardDeck` |
 | `/dev/deck` | `חזרה לכרטיסיות` · `המשך` · `בדיקה` … +2 | `/dev/arcade/home` · `/dev/arcade` · `/dev/deck/done/due` … +13 | `/cards` | ✅ | `components/CardDeck` |
 | `/dev/deck/returns` | `התחברות מחדש` · `להתחיל את הרמה מחדש` · `נסה שוב` … +2 | `components/StudyDeckScreen.tsx` | `/cards` | ✅ | `components/StudyDeckScreen` |
 | `/dev/deck/skeleton` | ⛔ — | `/dev/deck/level` · `components/StudyDeckScreen.tsx` | ⛔ — | ⛔ | `components/CardSkeleton` |
@@ -86,18 +87,20 @@
 | `/dev/messages/wall/reply` | `הוסף תגובה מהבלוקים` · `שאלה חדשה` · `סגירה` | ⛔ — | ⛔ — | ✅ | `—` |
 | `/dev/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `/onboarding` | ⛔ — | ⛔ | `components/RegisteredAddress` |
 | `/dev/scan` | `למפת הרמה` · `נסה שוב` · `המשך` … +1 | `components/LevelScan.tsx` · `lib/core/licenceFooter.ts` | ⛔ — | ✅ | `components/LevelScan` |
-| `/dev/story/done` | `לסיפור הבא` · `חזרה לעולם` · `חזרה לשאלה` … +1 | `app/dev/story/story-end-fixture.tsx` · `app/dev/story/story-fixture.ts` · `components/StoryEndScreen.tsx` … +1 | ⛔ — | ✅ | `—` |
-| `/dev/story/end/all` | ⛔ — | `app/dev/story/story-end-fixture.tsx` | ⛔ — | ⛔ | `—` |
+| `/dev/story/done` | `כל הסיפורים` · `א` · `לסיפור הבא` … +3 | `app/dev/story/story-end-fixture.tsx` · `app/dev/story/story-fixture.ts` · `components/StoryEndScreen.tsx` … +1 | ⛔ — | ✅ | `—` |
+| `/dev/story/end/all` | ⛔ — | `app/dev/story/story-end-fixture.tsx` · `components/StoryScreen.tsx` | ⛔ — | ⛔ | `—` |
 | `/dev/story/end` | ⛔ — | `components/StoryScreen.tsx` | ⛔ — | ⛔ | `—` |
-| `/dev/story/live` | `לסיפור הבא` · `חזרה לעולם` · `חזרה לשאלה` … +7 | ⛔ — | ⛔ — | ✅ | `components/StoryScreen` |
-| `/dev/story` | `לסיפור הבא` · `חזרה לעולם` · `חזרה לשאלה` … +1 | `/dev/messages/open` · `/dev/story/live` · `app/dev/story/story-fixture.ts` … +1 | ⛔ — | ✅ | `—` |
-| `/dev/tabs/cards` | `נסה שוב` · `טעינה מחדש` · `שינוי רמה · הגדרות` … +1 | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +2 | `/settings` | ✅ | `components/LevelMapScreen` |
+| `/dev/story/large` | `כל הסיפורים` · `א` · `לסיפור הבא` … +3 | ⛔ — | ⛔ — | ✅ | `—` |
+| `/dev/story/library` | ⛔ — | ⛔ — | ⛔ — | ✅ | `—` |
+| `/dev/story/live` | `כל הסיפורים` · `א` · `לסיפור הבא` … +9 | ⛔ — | ⛔ — | ✅ | `components/StoryScreen` |
+| `/dev/story` | `כל הסיפורים` · `א` · `לסיפור הבא` … +3 | `/dev/messages/open` · `/dev/story/live` · `app/dev/story/story-fixture.ts` … +1 | ⛔ — | ✅ | `—` |
+| `/dev/tabs/cards` | `נסה שוב` · `טעינה מחדש` · `לבחירת הרמה` … +2 | `/cards` · `/dev/tabs/probe` · `components/DeckSelector.tsx` … +2 | `/settings` | ✅ | `components/LevelMapScreen` |
 | `/dev/tabs/me` | `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` … +1 | `/me` · `components/MeScreen.tsx` | `/studies` · `/sources` · `/me` | ✅ | `components/MeScreen` |
-| `/dev/tabs/probe` | `טעינה מחדש` · `פתיחת הכרטיסיות` | `components/DeckSelector.tsx` | ⛔ — | ✅ | `components/DeckSelector` |
+| `/dev/tabs/probe` | `טעינה מחדש` · `לבחירת הרמה` · `פתיחת הכרטיסיות` | `components/DeckSelector.tsx` | ⛔ — | ✅ | `components/DeckSelector` |
 | `/dev/tabs/studies` | `כניסה לסיפורים` | `/studies` · `/dev/tabs/me` · `/dev/tabs/studies/place` … +1 | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/dev/tabs/studies/place` | `כניסה לסיפורים` | `components/StudiesScreen.tsx` | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/dev/world/apps` | `הסר` · `התקן` | ⛔ — | `/world` | ✅ | `—` |
-| `/dev/world` | `חזרה לעולם` · `מפרסם…` · `ביטול` | `/dev/arcade` · `/dev/arcade/result` · `app/dev/world/layout.tsx` … +3 | `/login` | ✅ | `—` |
+| `/dev/world` | `חזרה לעולם` · `מפרסם…` · `ביטול` | `/dev/arcade` · `app/dev/world/layout.tsx` · `/dev/world/recall` … +2 | `/login` | ✅ | `—` |
 | `/dev/world/recall` | `שרשרת הכתיבה` · `כתוב את המשפט הראשון שלך` · `כתוב עוד משפט` | `components/Flashcard.tsx` · `lib/core/licenceFooter.ts` | `/login` | ✅ | `—` |
 | `/dev/world/ring/edit` | `חברים חברים` · `סיום` · `קול` | ⛔ — | ⛔ — | ✅ | `—` |
 | `/dev/world/ring/expired` | `חברים חברים` · `סיום` · `קול` | ⛔ — | ⛔ — | ✅ | `—` |

@@ -59,7 +59,7 @@ describe('🧹 T-326 — the licence footer hides inside a task and nowhere else
   });
 
   it('covers the children of a task family without listing each one', () => {
-    for (const route of ['/dev/card/typed', '/dev/card/choice', '/dev/deck/done', '/dev/story/done', '/dev/arcade/result'])
+    for (const route of ['/dev/card/typed', '/dev/card/choice', '/dev/deck/done', '/dev/story/done', '/dev/arcade/summary'])
       expect(isTaskRoute(route), `${route} is inside a task family`).toBe(true);
   });
 

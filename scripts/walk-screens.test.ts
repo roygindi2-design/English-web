@@ -115,13 +115,13 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     }
   });
 
-  it('🔴 המספר שהשורה מודדת: 21 מסכים, ⛔ ולא 10', () => {
+  it('🔴 המספר שהשורה מודדת: 20 מסכים, ⛔ ולא 10', () => {
     // ⟦עודכן C-0646 · `T-380`⟧ 13 ⇢ 14 עם `/dev/story/live`.
     // ⟦עודכן `T-395`⟧ 14 ⇢ 16 עם `/dev/deck` ו-`/dev/deck/done`. ⛔ המספר ⛔ אינו «נתון
     // שמתעדכן» — הוא ננעל כדי שהוספה תהיה **החלטה**, ולכן כל שינוי שלו נושא שורה.
     // ⟦עודכן C-0670 · `T-396`⟧ 16 ⇢ 19 עם `/dev/arcade` · `result` · `character`.
     // ⟦עודכן C-0789 · `T-415`⟧ 19 ⇢ 21 עם `/dev/deck/level-done` · `/dev/deck/returns`.
-    expect(DEFAULT_ROUTES).toHaveLength(21);
+    expect(DEFAULT_ROUTES).toHaveLength(20); // ⟦`T-518`⟧ 21 − `/dev/arcade/result` (retired with `ArenaResult`).
     expect(DEFAULT_ROUTES.filter((r: string) => r.includes('amirnet'))).toHaveLength(3);
   });
 
@@ -138,13 +138,13 @@ describe('🔭 T-371 — רשימת ההליכה רואה את amirnet', () => {
     for (const arena of [
       '/dev/arcade',
       '/dev/arcade/home',
-      '/dev/arcade/result',
       '/dev/arcade/character',
       '/dev/arcade/summary',
     ]) {
       expect(DEFAULT_ROUTES).toContain(arena);
     }
-    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/arcade'))).toHaveLength(5);
+    // ⟦`T-518`⟧ `/dev/arcade/result` retired with `ArenaResult` — one end screen ⇒ four.
+    expect(DEFAULT_ROUTES.filter((r: string) => r.startsWith('/dev/arcade'))).toHaveLength(4);
   });
 
   /**

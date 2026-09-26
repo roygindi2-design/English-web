@@ -719,7 +719,8 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * `<ActionBar>` קבוע ולו יש, ⇒ הריפוד שם משלם על הרצועה במקום לשרוד ממסך אחר.
    */
   it('T-422 · `ArenaSummary` ו-`ArenaResult` על תבנית הקרב — גובה מדויק ואזור גמיש', () => {
-    const NEIGHBOURS = ['components/ArenaSummary.tsx', 'components/ArenaResult.tsx'] as const;
+    // ⟦`T-518`⟧ `ArenaResult.tsx` נמחק — מסך הסיום הוא `ArenaSummary` לבדו.
+    const NEIGHBOURS = ['components/ArenaSummary.tsx'] as const;
 
     for (const file of NEIGHBOURS) {
       const code = withoutComments(readFileSync(file, 'utf8'));
@@ -1380,7 +1381,7 @@ describe('T-452 · נשימה אחרונה על רצועת המאנה', () => {
 describe('⟦T-427 · `D-282`⟧ every arena root wears the dark surface', () => {
   // 🔬 Without `data-surface='dark'` the root inherits `:root`'s LIGHT tokens on a stage
   // that is dark in both schemes: --danger 2.31:1 · --brand-surface 2.23:1 (F-319).
-  const ROOTS = ['ArenaBattle', 'ArenaHome', 'ArenaSummary', 'ArenaResult', 'ArenaCharacterChoice'];
+  const ROOTS = ['ArenaBattle', 'ArenaHome', 'ArenaSummary', 'ArenaCharacterChoice'];
   it.each(ROOTS)('%s — one `data-surface="dark"` per `data-arena-scope` root', (name) => {
     const src = readFileSync(`components/${name}.tsx`, 'utf8');
     const roots = src.match(/^\s*(<section )?data-arena-scope\b(?!`)/gm) ?? [];
