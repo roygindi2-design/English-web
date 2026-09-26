@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import {
   ONBOARDING_PATH,
   SIGNED_IN_HINT_COOKIE,
+  appOpenRedirect,
+  isAppOpen,
   onboardedFromRow,
   signedInRedirect,
 } from '@/lib/core/entryRoute';
@@ -82,7 +84,12 @@ export default async function proxy(request: NextRequest) {
     // נזרק לטופס שמילא לפני שבוע. הקריאה למאגר מתבצעת אך ורק בנתיבים
     // שההחלטה נוגעת בהם — ⛔ לא בכל בקשה. `proxy` רץ על כל ניווט, ושאילתה
     // קבועה בכל בקשה היא מס על מוצר שלם עבור החלטה שנוגעת לארבעה נתיבים.
-    const needsOnboardingState = isAuthScreen || pathname === '/' || pathname === ONBOARDING_PATH;
+    // T-524 — and the installed app's open (`APP_START_URL`), ⛔ not `/studies` as
+    // such: a learner who never finished onboarding must land where `/` used to
+    // send them, and the mark keeps that read to the one navigation that needs it.
+    const appOpen = isAppOpen(pathname, request.nextUrl.searchParams);
+    const needsOnboardingState =
+      isAuthScreen || pathname === '/' || pathname === ONBOARDING_PATH || appOpen;
     if (!needsOnboardingState) return response;
 
     const { data } = await supabase
@@ -92,7 +99,8 @@ export default async function proxy(request: NextRequest) {
       .maybeSingle();
 
     // `data` הוא `unknown` מבחינתנו — `onboardedFromRow` הוא שמחליט, ⛔ לא cast.
-    const target = signedInRedirect(pathname, onboardedFromRow(data));
+    const onboarded = onboardedFromRow(data);
+    const target = appOpen ? appOpenRedirect(onboarded) : signedInRedirect(pathname, onboarded);
     if (target === null) return response;
     return redirectPreservingCookies(request, response, target);
   }

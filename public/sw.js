@@ -14,12 +14,34 @@ const PRECACHE = ['/', OFFLINE_ROUTE, OFFLINE_FALLBACK];
 // Offline navigation to these paths gets the real Hebrew offline screen.
 const NEVER_CACHE = ['/signup', '/login', '/logout', '/onboarding'];
 
-// Routes the proxy answers per session: a signed-in learner opening `/` (the
-// manifest start_url) is redirected on (lib/core/entryRoute.ts ENTRY_PATHS).
-// Redirects are never stored, so a stored `/` is always the signed-out landing —
-// painting it early would strand a learner there on every cold open. Stored
-// copies still serve as the offline fallback.
+// Routes answered per session: a signed-in learner opening `/` is sent on
+// (lib/core/entryRoute.ts ENTRY_PATHS). Redirects are never stored, so a stored `/`
+// is always the signed-out landing — painting it early would strand a learner
+// there. Stored copies still serve as the offline fallback. (T-524: the installed
+// app no longer opens here — manifest start_url is the home screen.)
 const SESSION_ROUTED = ['/'];
+
+// T-524 — a stored copy was painted, and the late network answer turned out to be a
+// redirect (signed out ⇒ /login · never onboarded ⇒ /onboarding). The copy is
+// dropped, so it can never be painted for this URL again, and the page that is
+// showing it is told to reload — which now goes to the network and follows the
+// redirect. ⛔ Without this a learner could sit on a stored screen that the server
+// would not have given them. Heard by components/ServiceWorkerRegistrar.tsx.
+const STALE_NAVIGATION = 'kol-stale-navigation';
+
+function isRedirect(res) {
+  return res.redirected || res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400);
+}
+
+async function notifyStale(event, url) {
+  const id = event && (event.resultingClientId || event.clientId);
+  let client = id ? await self.clients.get(id) : undefined;
+  if (!client) {
+    const all = await self.clients.matchAll({ type: 'window' });
+    client = all.find((c) => c.url === url);
+  }
+  if (client) client.postMessage({ type: STALE_NAVIGATION });
+}
 
 function isPrivateRoute(pathname) {
   return NEVER_CACHE.some((p) => pathname === p || pathname.startsWith(p + '/'));
@@ -99,8 +121,14 @@ async function handleNavigation(request, event) {
   }
 
   const cache = await caches.open(CACHE);
-  const network = fetch(request).then((fresh) => {
-    if (isStorable(fresh)) cache.put(request, fresh.clone()).catch(() => {});
+  let painted = false;
+  const network = fetch(request).then(async (fresh) => {
+    if (isStorable(fresh)) {
+      cache.put(request, fresh.clone()).catch(() => {});
+    } else if (isRedirect(fresh)) {
+      await cache.delete(request).catch(() => false);
+      if (painted) await notifyStale(event, request.url).catch(() => {});
+    }
     return fresh;
   });
   // Exact URL only: /world/story?id=1 must never paint for ?id=2.
@@ -119,7 +147,10 @@ async function handleNavigation(request, event) {
   if (event) event.waitUntil(network.catch(() => {}));
   let timer;
   const deadline = new Promise((resolve) => {
-    timer = setTimeout(() => resolve(stored), NAV_CACHE_WINDOW_MS);
+    timer = setTimeout(() => {
+      painted = true;
+      resolve(stored);
+    }, NAV_CACHE_WINDOW_MS);
   });
   return Promise.race([network.catch(() => stored), deadline]).finally(() => clearTimeout(timer));
 }

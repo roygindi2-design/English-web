@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { APP_START_URL } from '../lib/core/entryRoute';
 
 /**
  * T-519 — `public/sw.js` runs in a ServiceWorkerGlobalScope, which vitest's node
@@ -22,6 +23,7 @@ type Store = Map<string, Response>;
 type SwEvent = {
   request?: { url: string; method: string; mode: string };
   respondWith?: (p: Promise<Response>) => unknown;
+  resultingClientId?: string;
   waitUntil: (p: Promise<unknown>) => unknown;
 };
 
@@ -49,6 +51,9 @@ function makeCaches() {
         store.set(keyOf(req), res);
       },
       async add() {},
+      async delete(req: string | { url: string }) {
+        return store.delete(keyOf(req));
+      },
     };
   };
   return {
@@ -76,12 +81,23 @@ function makeCaches() {
 function loadWorker(fetchImpl: (req: { url: string }) => Promise<Response>) {
   const listeners: Partial<Record<string, (event: SwEvent) => void>> = {};
   const caches = makeCaches();
+  /** T-524 — every message the worker posted, by the client id it was posted to. */
+  const messages: Array<{ client: string; data: unknown }> = [];
+  const client = (id: string) => ({
+    id,
+    url: '',
+    postMessage: (data: unknown) => messages.push({ client: id, data }),
+  });
   const context = {
     self: {
       location: { origin: ORIGIN },
       addEventListener: (type: string, fn: (event: SwEvent) => void) => (listeners[type] = fn),
       skipWaiting: () => Promise.resolve(),
-      clients: { claim: () => Promise.resolve() },
+      clients: {
+        claim: () => Promise.resolve(),
+        get: async (id: string) => client(id),
+        matchAll: async () => [],
+      },
     },
     caches: caches.api,
     fetch: (req: { url: string }) => fetchImpl(req),
@@ -105,6 +121,7 @@ function loadWorker(fetchImpl: (req: { url: string }) => Promise<Response>) {
     let responded: Promise<Response> | undefined;
     listeners.fetch!({
       request: { url: new URL(path, ORIGIN).href, method: 'GET', mode: 'navigate' },
+      resultingClientId: 'page-1',
       respondWith: (p: Promise<Response>) => (responded = p),
       waitUntil: (p: Promise<unknown>) => background.push(p),
     });
@@ -112,7 +129,7 @@ function loadWorker(fetchImpl: (req: { url: string }) => Promise<Response>) {
     return { response: responded, background };
   }
 
-  return { caches, listeners, navigate, context };
+  return { caches, listeners, navigate, context, messages };
 }
 
 /** A network that answers after `ms` with `body`. */
@@ -265,8 +282,8 @@ describe('public/sw.js — navigation (T-519)', () => {
   });
 
   it('/ is ⛔ never painted from the cache — the proxy sends a signed-in learner on from it', async () => {
-    // manifest `start_url` is `/`, and `proxy.ts` redirects a signed-in learner from
-    // `/` to `/studies` (`lib/core/entryRoute.ts` ENTRY_PATHS). A redirect is never
+    // `/` sends a signed-in learner on to `/studies` (`lib/core/entryRoute.ts`
+    // ENTRY_PATHS; since T-524 the app itself opens `APP_START_URL`). A redirect is never
     // stored, so a stored `/` would paint the signed-out landing on EVERY cold open.
     const w = loadWorker(slowNetwork(3000, () => page('whatever the proxy decided')));
     w.caches.seed('english-web-v4', '/', 'the signed-out landing');
@@ -291,5 +308,63 @@ describe('public/sw.js — navigation (T-519)', () => {
     expect(got.value).toBeUndefined();
     await vi.advanceTimersByTimeAsync(2100);
     expect(await got.value!.text()).toBe('story-2');
+  });
+
+  it('T-524: the installed app opens the home screen, and a stored copy paints it in under 800ms', async () => {
+    const manifest = JSON.parse(readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'));
+    expect(manifest.start_url).toBe(APP_START_URL);
+    const w = loadWorker(slowNetwork(3000, () => page('studies-fresh')));
+    w.caches.seed('english-web-v4', APP_START_URL, 'studies-stored');
+    const got = timed(w.navigate(APP_START_URL).response);
+    await vi.advanceTimersByTimeAsync(800);
+    expect(got.at!).toBeLessThanOrEqual(800);
+    expect(await got.value!.text()).toBe('studies-stored');
+  });
+
+  it('T-524 ⓐ·ⓑ: a painted copy whose late answer is a redirect is dropped, and the page is told to reload', async () => {
+    const redirect = () => {
+      const res = new Response(null, { status: 200 });
+      Object.defineProperty(res, 'type', { value: 'opaqueredirect' });
+      Object.defineProperty(res, 'ok', { value: false });
+      return res;
+    };
+    const w = loadWorker(slowNetwork(3000, redirect));
+    w.caches.seed('english-web-v4', APP_START_URL, 'studies-stored');
+    const nav = w.navigate(APP_START_URL);
+    await vi.advanceTimersByTimeAsync(800);
+    expect(await (await nav.response).text()).toBe('studies-stored');
+    expect(w.messages).toEqual([]);
+
+    await vi.advanceTimersByTimeAsync(2300);
+    await Promise.all(nav.background);
+    expect(w.messages).toEqual([{ client: 'page-1', data: { type: 'kol-stale-navigation' } }]);
+    // ⛔ never painted again: the reload goes to the network and follows the redirect
+    expect(await w.caches.api.match(`${ORIGIN}${APP_START_URL}`)).toBeUndefined();
+  });
+
+  it('T-524: a redirect that wins the race is followed as today — ⛔ no reload message', async () => {
+    const w = loadWorker(slowNetwork(100, () => {
+      const res = page('the login screen');
+      Object.defineProperty(res, 'redirected', { value: true });
+      return res;
+    }));
+    w.caches.seed('english-web-v4', APP_START_URL, 'studies-stored');
+    const nav = w.navigate(APP_START_URL);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(await (await nav.response).text()).toBe('the login screen');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(w.messages).toEqual([]);
+    expect(await w.caches.api.match(`${ORIGIN}${APP_START_URL}`)).toBeUndefined();
+  });
+});
+
+describe('T-524 — the page that hears the worker', () => {
+  it('ServiceWorkerRegistrar listens for the exact message the worker posts', () => {
+    const registrar = readFileSync(new URL('../components/ServiceWorkerRegistrar.tsx', import.meta.url), 'utf8');
+    const name = /const STALE_NAVIGATION = '([^']+)'/.exec(SOURCE)?.[1];
+    expect(name).toBe('kol-stale-navigation');
+    expect(registrar).toContain(`const STALE_NAVIGATION = '${name}'`);
+    expect(registrar).toMatch(/serviceWorker\.addEventListener\('message'/);
+    expect(registrar).toMatch(/location\.reload\(\)/);
   });
 });

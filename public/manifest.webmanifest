@@ -2,7 +2,7 @@
   "name": "English Web — אנגלית לאמיר״ם",
   "short_name": "English Web",
   "description": "תרגול אנגלית יומי קצר לדוברי עברית. מסלול ראשון: אמיר״ם.",
-  "start_url": "/",
+  "start_url": "/studies?from=app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

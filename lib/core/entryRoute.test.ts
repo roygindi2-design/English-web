@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  APP_START_URL,
   HOME_PATH,
+  appOpenRedirect,
+  isAppOpen,
   SIGNED_IN_HINT_COOKIE,
   hasSignedInHint,
   isEntryPath,
@@ -111,5 +114,28 @@ describe('T-525 — the entry screens outside the proxy', () => {
     expect(hasSignedInHint(`${SIGNED_IN_HINT_COOKIE}=0`)).toBe(false);
     expect(hasSignedInHint(`x-${SIGNED_IN_HINT_COOKIE}=1`)).toBe(false);
     expect(hasSignedInHint(`${SIGNED_IN_HINT_COOKIE}=10`)).toBe(false);
+  });
+});
+
+describe('T-524 — the installed app opens the home screen', () => {
+  it('APP_START_URL is the home screen, marked', () => {
+    expect(APP_START_URL).toBe('/studies?from=app');
+  });
+
+  it('isAppOpen needs both the path and the mark', () => {
+    expect(isAppOpen('/studies', new URLSearchParams('from=app'))).toBe(true);
+    expect(isAppOpen('/studies', new URLSearchParams(''))).toBe(false);
+    expect(isAppOpen('/cards', new URLSearchParams('from=app'))).toBe(false);
+    expect(isAppOpen('/studies', new URLSearchParams('from=web'))).toBe(false);
+  });
+
+  it('ⓑ a learner who never finished onboarding goes there — exactly where / sent them', () => {
+    expect(appOpenRedirect(false)).toBe(ONBOARDING_PATH);
+    expect(appOpenRedirect(false)).toBe(signedInRedirect('/', false));
+  });
+
+  it('an onboarded learner, or an unknown read, stays on the home screen', () => {
+    expect(appOpenRedirect(true)).toBeNull();
+    expect(appOpenRedirect('unknown')).toBeNull();
   });
 });

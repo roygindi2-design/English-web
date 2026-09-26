@@ -86,3 +86,29 @@ export function hasSignedInHint(cookieHeader: string): boolean {
 /** Set on `<html>` while an entry screen waits for `GET /api/auth/entry`. */
 export const ENTRY_PENDING_ATTR = 'data-entry-pending';
 
+
+/**
+ * T-524 · D-304 — the installed app's daily open. `start_url` used to be `/`, and `/`
+ * was the one route the service worker refused to paint early (`SESSION_ROUTED`) ⇒
+ * the learner's most frequent open got ⛔ none of `T-519`. It now opens the home
+ * screen directly, marked so the proxy can still send a learner who never finished
+ * onboarding where `/` would have sent them. The mark is what keeps that check to
+ * the app open alone: `/studies` itself stays ⛔ free of a database read per visit.
+ */
+export const APP_OPEN_PARAM = 'from';
+export const APP_OPEN_VALUE = 'app';
+export const APP_START_URL = `${HOME_PATH}?${APP_OPEN_PARAM}=${APP_OPEN_VALUE}`;
+
+export function isAppOpen(pathname: string, params: URLSearchParams): boolean {
+  return pathname === HOME_PATH && params.get(APP_OPEN_PARAM) === APP_OPEN_VALUE;
+}
+
+/**
+ * Where an app open goes, for a signed-in learner. The same rule `/` applied —
+ * `signedInRedirect('/')` — minus the move to the home screen, which the app open
+ * already is. ⛔ `'unknown'` stays (`null`), exactly as it did there.
+ */
+export function appOpenRedirect(onboarded: OnboardedState): string | null {
+  const target = signedInRedirect('/', onboarded);
+  return target === HOME_PATH ? null : target;
+}
