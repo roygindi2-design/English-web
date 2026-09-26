@@ -187,7 +187,8 @@ export default function ArenaCharacterChoice({
       {/* ⛔ **`flex-1 min-h-0 overflow-y-auto` — הכרטיסים הם מה שגולל, ⛔ לא הכפתור.**
           ⛔ `min-h-0` ⛔ אינו קישוט: בלעדיו פריט flex ⛔ אינו יכול להתכווץ מתחת לגובה
           התוכן שלו, ⇒ הרשימה הייתה דוחפת את הפעולות מטה בדיוק כמו קודם. */}
-      <ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      {/* 🌫️ ⟦`C-0872`⟧ הכרטיס הרביעי חוצה את הקצה ב-375×780 ⇒ קצה דהוי, ⛔ לא חיתוך. */}
+      <ul data-arena-choice-list data-arena-scroll-edge className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {ARENA_CHARACTERS.map((character) => {
           const selected = chosen === character;
           return (

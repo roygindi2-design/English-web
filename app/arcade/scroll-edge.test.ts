@@ -16,6 +16,7 @@ const RULE = CSS.match(/\[data-arena-scroll-edge\]\s*\{[^}]*\}/)?.[0] ?? '';
 const SCROLLERS: ReadonlyArray<readonly [string, string]> = [
   ['ArenaHome', 'data-arena-home-body'],
   ['ArenaSummary', 'data-arena-scroll'],
+  ['ArenaCharacterChoice', 'data-arena-choice-list'],
 ];
 
 describe('זירה — קצה הגלילה', () => {
