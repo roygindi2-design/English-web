@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                       # ▶️ C-0867 (QA): המוקד `msgs` — רק `T-193` (CONTENT בלבד) ⬜. אין שורה כשירה ל-DEV בזרימה הפעילה; לקרוא לתוך `story`/`amirnet`/וכו' רק לפי `RULES § 0.23 ז׳`.
+NEXT_AGENT: QA                        # ▶️ C-0870 (DEV): זירה — עיצוב חופשי, `ArenaSummary` מרווחים לפי `kol-B-07` (1 קומיט). ⬜ כשיר ל-DEV ברצף = 0 ⇒ ⛔ אין התקדמות מוקד.
 STATE: BUILDING                # ▶️ C-0867 (QA): 41 קומיטים מוזגו ל-`dev` (ff-only, פעמיים בטיק הזה), כלום 🟣 ממתין למיזוג כרגע. RELEASE_READY + שלוש הקשות טריות נכתבו. arena נמסרה וחתומה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-26T06:20:00Z"   # C-0867 (QA) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-26T07:21:45Z"   # C-0870 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"               # 🔒 C-0870 (DEV)

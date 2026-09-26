@@ -3835,6 +3835,10 @@ try {
       { width: 375, height: 667 },
       { width: 414, height: 896 },
       { width: 393, height: 852 },
+      // 📏 `C-0870` — the claim below was measured at ONE device and held there by 4px, while
+      // 390×844 (every iPhone 12–15) clipped the first missed word by 4px. Two more sizes.
+      { width: 390, height: 844 },
+      { width: 375, height: 780 },
     ]) {
       const ctx = await browser.newContext({ viewport: size });
       const page = await ctx.newPage();
@@ -3851,6 +3855,7 @@ try {
           sections: document.querySelectorAll('section[data-arena-scope]').length,
           missedCount: document.querySelectorAll('[data-arena-missed] li').length,
           firstMissedBottom: document.querySelector('[data-arena-missed] li')?.getBoundingClientRect().bottom ?? Infinity,
+          scrollAreaBottom: document.querySelector('[data-arena-scroll]')?.getBoundingClientRect().bottom ?? -1,
           unlocked: document.querySelector('[data-arena-unlocked]') !== null,
           barTop: document.querySelector('[data-action-bar]')?.getBoundingClientRect().top ?? -1,
           oldBack: document.body.innerText.includes('חזרה לזירה'),
@@ -3878,11 +3883,13 @@ try {
       // = 5 out), and the unlocked item travels with them.
       check(m.missedCount === 5, `${at} · T-518 the missed list is drawn (5 of 6, the server cap)`, `${m.missedCount} rows`);
       check(m.unlocked, `${at} · T-518 the unlocked item line is drawn`, 'no [data-arena-unlocked]');
-      if (size.width === 393) {
+      // 📏 `C-0870` — measured against the bottom of the scrolling region, ⛔ not the bar: a row
+      // that ends under the footer line is clipped by the region long before it reaches the bar.
+      if (size.height >= 780) {
         check(
-          m.firstMissedBottom <= m.innerH && m.firstMissedBottom <= m.barTop,
+          m.firstMissedBottom <= m.innerH && m.firstMissedBottom <= m.barTop && m.firstMissedBottom <= m.scrollAreaBottom,
           `${at} · T-518 the first missed word is visible without scrolling`,
-          `first row bottom ${Math.round(m.firstMissedBottom)} vs bar top ${Math.round(m.barTop)} / innerHeight ${m.innerH}`,
+          `first row bottom ${Math.round(m.firstMissedBottom)} vs region bottom ${Math.round(m.scrollAreaBottom)} / bar top ${Math.round(m.barTop)} / innerHeight ${m.innerH}`,
         );
       }
       await ctx.close();

@@ -146,7 +146,7 @@ export default function ArenaSummary({
        ובסכימה בהירה הוא דיו כהה על כחול־ליל. */
     /* 🏁 **⟦`T-517` · `D-302`⟧ ריפוד תחתון שמשלם על הרצועה הקבועה** — אותו `9.5rem` ש-`T-430`
        מדד על `<ArenaResult>` (רצועה של שני כפתורים בעמודה, `h=147`). */
-    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[calc(9.5rem+env(safe-area-inset-bottom))]" data-surface="dark">
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-3 overflow-hidden pt-12 pb-[calc(9.5rem+env(safe-area-inset-bottom))]" data-surface="dark">
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
@@ -175,7 +175,10 @@ export default function ArenaSummary({
           מה שביניהם — שלוש שורות הסיכום ושני הלוחות המותנים — הוא היחיד שאורכו תלוי
           בקרב, ⇒ הוא היחיד שמקבל `min-h-0 flex-1` ו-`overflow-y-auto`.
           ⇒ **הלומד רואה תמיד את «חזרה»**, גם כשהקרב ייצר שני לוחות מלאים ב-320px. */}
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
+      {/* 📏 ⟦`C-0870` · זירה — עיצוב חופשי⟧ ‏`gap-3` (12) ⛔ ולא `gap-6` (24): הרנדר מרווח את הלוחות
+          ‏~10px (`kol-B-07`, נמדד ב-3×), ו-24 דחפו את «המילים שהפילו אותך» מתחת לקצה האזור
+          ב-390×844 (‏653 מול 649) — מה ש-`D-302`ⓒ הבטיח שיהיה גלוי. */}
+      <div data-arena-scroll className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
       {/* שלוש שורות הסיכום. כל שורה נושאת **תווית עברית כתובה** — הצבע הוא הערוץ
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
       <ul data-arena-summary className="flex flex-col gap-2">
@@ -254,11 +257,11 @@ export default function ArenaSummary({
           ⛔ **קריאה בלבד** — ⛔ אין `הוסף לכרטיסיות` (`for-roy` 152). כל צד נושא תווית עברית —
           צבע ⛔ לעולם אינו הערוץ היחיד. ⛔ מוצג רק כשיש החטאה: לוח ריק הוא רעש. */}
       {missedRows.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <h2 className="text-start text-[14px] font-bold text-[color:var(--arena-ink)]">{MISSED_HEADING_HE}</h2>
           <ul data-arena-missed className="flex flex-col gap-2">
             {missedRows.map((row) => (
-              <li key={row.wordId} className="flex flex-col gap-0.5 rounded-xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4 py-2.5">
+              <li key={row.wordId} className="flex flex-col gap-0.5 rounded-xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4 py-2">
                 <EnWord className="self-start text-[16px] font-bold text-[color:var(--arena-ink)]">{row.headword}</EnWord>
                 <span className="text-[13px] text-[color:var(--arena-ink)]">
                   {ANSWER_HE}: {row.answer}

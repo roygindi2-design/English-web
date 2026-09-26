@@ -207,7 +207,7 @@ describe('T-518 — הרשימה והפריט במסך האחד', () => {
   });
 
   it('הרשימה בתוך האזור הגמיש — ⛔ העמוד ⛔ אינו נגלל', () => {
-    const region = CODE.indexOf('min-h-0 flex-1 flex-col gap-6 overflow-y-auto');
+    const region = CODE.indexOf('min-h-0 flex-1 flex-col gap-3 overflow-y-auto');
     expect(region).toBeGreaterThan(-1);
     expect(CODE.indexOf('data-arena-missed')).toBeGreaterThan(region);
     expect(CODE.indexOf('data-arena-missed')).toBeLessThan(CODE.indexOf('<ActionBar'));
