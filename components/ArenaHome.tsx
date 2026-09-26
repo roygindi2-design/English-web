@@ -453,7 +453,18 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
       {/* `:126-134` — הכן ושתי האליפסות תחתיו, והדמות ב-idle מעליהן.
           הנשימה: `bob = sin(t*1.5)*2.2` ⇒ משרעת **±2.2px** ומחזור **4.19s**
           (`2π / 1.5`). ⛔ CSS בלבד, והשמות חיים ב-`arcade-tokens.css`. */}
-      <div className="relative flex flex-col items-center">
+      <div className="relative isolate flex flex-col items-center">
+        {/* 🎨 ⟦`C-0863` · זירה — עיצוב חופשי⟧ **אור הרצפה סביב הכן** (`render_video_B.py:125-128`):
+            שבע אליפסות 180×44 סביב מרכז הכן, `(90,130,200)` באלפא שגדלה פנימה ⇒ כאן גרדיאנט
+            רדיאלי אחד באותה מעטפת, ב-`--brand` ⛔ ולא hex. ‏`data-glow` ⇒ נספר בתקציב הזוהר
+            (ב3, ≤2 למסך) של `check:mobile`; ⛔ אין זוהר אחר במסך הבית. ‏`-z-10` בתוך `isolate` ⇒
+            מתחת לדמות ולכן, ⛔ ומעל רקע הבמה. */}
+        <span
+          aria-hidden
+          data-glow
+          data-arena-floor-glow
+          className="pointer-events-none absolute bottom-[-2px] left-1/2 -z-10 h-11 w-[180px] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--brand)_32%,transparent),transparent)]"
+        />
         <div
           data-arena-idle="on"
           className="animate-[arena-idle-bob_4.19s_ease-in-out_infinite] motion-reduce:animate-none"
