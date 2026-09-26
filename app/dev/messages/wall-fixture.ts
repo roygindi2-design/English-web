@@ -1,3 +1,4 @@
+import { classSeats } from '@/lib/core/classSeats';
 import { buildWallFeed, type WallPost } from '@/lib/core/wallFeed';
 
 // ⚠️ A file of its own, ⛔ not `messages-fixture.ts`: `scripts/build-continuations.mjs` imports
@@ -14,20 +15,24 @@ const W_REPLIES_1 = [
   'I went to the beach with my family.', 'We played football in the park.', 'I went to the beach.',
 ];
 export const FIXTURE_WALL_NOW = W_NOW;
+const W_POSTS = [
+  { id: 'wp1', author_id: W_OPENER, body_en: 'How was your weekend?', created_at: '2026-09-24T05:15:00Z' },
+  { id: 'wp2', author_id: W_OPENER, body_en: 'What can you see in this picture?', created_at: '2026-09-23T14:40:00Z', picture_key: 'mountains' },
+  { id: 'wp3', author_id: W_OPENER, body_en: 'Write one thing you like about school.', created_at: '2026-09-20T06:00:00Z' },
+];
+const W_REPLIES = [
+  ...Array.from({ length: 24 }, (_, i) => ({
+    id: `wr${i}`, post_id: 'wp1', author_id: i === 2 ? W_ME : `u${i}`,
+    body_en: W_REPLIES_1[i % W_REPLIES_1.length] ?? '', created_at: `2026-09-24T06:${String(i).padStart(2, '0')}:00Z`,
+  })),
+  ...Array.from({ length: 11 }, (_, i) => ({ id: `wq${i}`, post_id: 'wp2', author_id: `v${i}`, body_en: 'I can see a green hill and the sea.', created_at: `2026-09-23T15:${String(i).padStart(2, '0')}:00Z` })),
+  { id: 'wz0', post_id: 'wp3', author_id: 'x1', body_en: 'I like the art lessons.', created_at: '2026-09-20T07:00:00Z' },
+];
+/** T-520 — the class seats over the whole fixture history, as the route computes them. */
+export const FIXTURE_WALL_SEATS = classSeats([...W_POSTS, ...W_REPLIES]);
 export const FIXTURE_WALL: readonly WallPost[] = buildWallFeed(
-  [
-    { id: 'wp1', author_id: W_OPENER, body_en: 'How was your weekend?', created_at: '2026-09-24T05:15:00Z' },
-    { id: 'wp2', author_id: W_OPENER, body_en: 'What can you see in this picture?', created_at: '2026-09-23T14:40:00Z', picture_key: 'mountains' },
-    { id: 'wp3', author_id: W_OPENER, body_en: 'Write one thing you like about school.', created_at: '2026-09-20T06:00:00Z' },
-  ],
-  [
-    ...Array.from({ length: 24 }, (_, i) => ({
-      id: `wr${i}`, post_id: 'wp1', author_id: i === 2 ? W_ME : `u${i}`,
-      body_en: W_REPLIES_1[i % W_REPLIES_1.length] ?? '', created_at: `2026-09-24T06:${String(i).padStart(2, '0')}:00Z`,
-    })),
-    ...Array.from({ length: 11 }, (_, i) => ({ id: `wq${i}`, post_id: 'wp2', author_id: `v${i}`, body_en: 'I can see a green hill and the sea.', created_at: `2026-09-23T15:${String(i).padStart(2, '0')}:00Z` })),
-    { id: 'wz0', post_id: 'wp3', author_id: 'x1', body_en: 'I like the art lessons.', created_at: '2026-09-20T07:00:00Z' },
-  ],
+  W_POSTS,
+  W_REPLIES,
   [
     ...Array.from({ length: 12 }, (_, i) => ({ user_id: `l${i}`, post_id: null, reply_id: 'wr0' })),
     { user_id: W_ME, post_id: null, reply_id: 'wr0' },
@@ -38,4 +43,5 @@ export const FIXTURE_WALL: readonly WallPost[] = buildWallFeed(
   ],
   W_ME,
   W_OPENER,
+  FIXTURE_WALL_SEATS,
 );

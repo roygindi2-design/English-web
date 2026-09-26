@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { classSeats } from '@/lib/core/classSeats';
 import { buildWallFeed, topReplies, wallTimeLabel, type WallLikeRow, type WallReplyRow } from '@/lib/core/wallFeed';
 
 const TZ = 'Asia/Jerusalem';
@@ -46,18 +47,18 @@ describe('buildWallFeed', () => {
   ];
 
   it('failure scenario: a post with 24 replies carries 2, ⛔ not 24 — and says 24', () => {
-    const [p1] = buildWallFeed(posts, replies, likes, me, opener);
+    const [p1] = buildWallFeed(posts, replies, likes, me, opener, classSeats([...posts, ...replies]));
     expect(p1?.replyCount).toBe(24);
     expect(p1?.top.map((r) => [r.id, r.likes])).toEqual([['r7', 12], ['r3', 9]]);
   });
   it('newest first; counts, likedByMe, byOpener, mine', () => {
-    const feed = buildWallFeed(posts, replies, likes, me, opener);
+    const feed = buildWallFeed(posts, replies, likes, me, opener, classSeats([...posts, ...replies]));
     expect(feed.map((p) => p.id)).toEqual(['p1', 'p0']);
     expect(feed[0]).toMatchObject({ likes: 2, likedByMe: true, byOpener: true, mine: false });
     expect(feed[1]).toMatchObject({ likes: 0, likedByMe: false, replyCount: 0, top: [] });
   });
   it('⛔ no author id leaves the feed', () => {
-    const json = JSON.stringify(buildWallFeed(posts, replies, likes, me, opener));
+    const json = JSON.stringify(buildWallFeed(posts, replies, likes, me, opener, classSeats([...posts, ...replies])));
     expect(json).not.toMatch(/author_id|u-teacher|u-me/);
   });
 });

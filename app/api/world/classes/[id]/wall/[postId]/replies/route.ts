@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { topReplies, toWallReplies, wallSentence, type WallLikeRow, type WallReplyRow } from '@/lib/core/wallFeed';
 import { classFailure } from '@/lib/server/classFailure';
+import { readClassSeats } from '@/lib/server/classSeats';
 import { fromKeyboard, parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -43,8 +44,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     ? await supabase.from('class_likes').select('user_id, post_id, reply_id').in('reply_id', ids)
     : { data: [], error: null };
   if (likes.error) return classFailure('replies', likes.error);
+  // T-520 — «show all» carries the same class seats as the feed, ⛔ or a reply would change number when opened.
+  const seats = await readClassSeats(supabase, id);
+  if ('error' in seats) return classFailure('replies', seats.error);
 
-  return NextResponse.json({ ok: true, replies: topReplies(toWallReplies(rows, (likes.data ?? []) as WallLikeRow[], user.id)) });
+  return NextResponse.json({ ok: true, replies: topReplies(toWallReplies(rows, (likes.data ?? []) as WallLikeRow[], user.id, seats.seats)) });
 }
 
 /** Same fence as the question: the whole tree, A1–B2 (a class carries ⛔ no level). */

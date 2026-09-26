@@ -25,6 +25,7 @@ function builder(table: string) {
   const b = {
     select: () => b,
     eq: (col: string, v: unknown) => { rows = rows.filter((r) => r[col] === v); return b; },
+    in: (col: string, vs: unknown[]) => { rows = rows.filter((r) => vs.includes(r[col])); return b; },
     order: (col: string, o: { ascending: boolean }) => {
       rows.sort((x, y) => (String(x[col]) < String(y[col]) ? -1 : 1) * (o.ascending ? 1 : -1));
       return b;
@@ -111,6 +112,20 @@ describe('GET /api/world/classes/[id]/story (T-478)', () => {
     expect(body.lines).toHaveLength(STORY_LINES_MAX);
     expect(body.lines.at(-1).id).toBe(`l${String(STORY_LINES_MAX + 4).padStart(3, '0')}`);
     expect(body.myTurn).toBe(true);
+  });
+
+  it('T-520: a seat is the CLASS seat — first on the wall ⇒ `1` here, and the window ⛔ never moves it', async () => {
+    tables.class_posts = [{ id: 'p1', class_id: CLASS_A, author_id: OTHER, body_en: 'Q?', created_at: '2026-09-24T09:00:00Z' }];
+    expect((await (await get(CLASS_A)).json()).lines.map((l: { seat: number }) => l.seat)).toEqual([2, 3, 1]);
+    // the oldest line falls out of the window: OPENER keeps seat 2, ME keeps 3
+    tables.class_story_lines = [
+      line('a', OPENER, 1),
+      ...Array.from({ length: STORY_LINES_MAX }, (_, i) => ({ ...line(`m${String(i).padStart(3, '0')}`, i % 2 ? ME : OTHER, 2), created_at: new Date(Date.UTC(2026, 8, 24, 10, 2, i)).toISOString() })),
+    ];
+    const body = await (await get(CLASS_A)).json();
+    expect(body.lines.some((l: { byOpener: boolean }) => l.byOpener)).toBe(false);
+    expect(new Set(body.lines.filter((l: { mine: boolean }) => l.mine).map((l: { seat: number }) => l.seat))).toEqual(new Set([3]));
+    expect(new Set(body.lines.filter((l: { mine: boolean }) => !l.mine).map((l: { seat: number }) => l.seat))).toEqual(new Set([1]));
   });
 
   it('an empty chain ⇒ empty list and it is my turn', async () => {

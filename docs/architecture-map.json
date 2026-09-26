@@ -250,12 +250,14 @@
     "lib/core/storyChain.ts",
     "lib/core/wallFeed.ts",
     "lib/server/classFailure.ts",
+    "lib/server/classSeats.ts",
     "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
   "app/api/world/classes/[id]/wall/[postId]/replies/route.ts": [
     "lib/core/wallFeed.ts",
     "lib/server/classFailure.ts",
+    "lib/server/classSeats.ts",
     "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
@@ -269,6 +271,7 @@
   "app/api/world/classes/[id]/wall/route.ts": [
     "lib/core/wallFeed.ts",
     "lib/server/classFailure.ts",
+    "lib/server/classSeats.ts",
     "lib/server/keyboardSentence.ts",
     "lib/supabase/auth.ts"
   ],
@@ -564,6 +567,7 @@
     "lib/core/messages.ts"
   ],
   "app/dev/messages/story-fixture.ts": [
+    "lib/core/classSeats.ts",
     "lib/core/storyChain.ts"
   ],
   "app/dev/messages/story/page.tsx": [
@@ -573,6 +577,7 @@
     "components/InboxList.tsx"
   ],
   "app/dev/messages/wall-fixture.ts": [
+    "lib/core/classSeats.ts",
     "lib/core/wallFeed.ts"
   ],
   "app/dev/messages/wall/PickerDemo.tsx": [
@@ -1743,6 +1748,12 @@
     "lib/core/classCode.ts"
   ],
   "lib/core/classCode.ts": [],
+  "lib/core/classSeats.test.ts": [
+    "lib/core/classSeats.ts",
+    "lib/core/storyChain.ts",
+    "lib/core/wallFeed.ts"
+  ],
+  "lib/core/classSeats.ts": [],
   "lib/core/colorVision.test.ts": [
     "lib/core/colorVision.ts"
   ],
@@ -2087,9 +2098,12 @@
   ],
   "lib/core/spring.ts": [],
   "lib/core/storyChain.test.ts": [
+    "lib/core/classSeats.ts",
     "lib/core/storyChain.ts"
   ],
-  "lib/core/storyChain.ts": [],
+  "lib/core/storyChain.ts": [
+    "lib/core/classSeats.ts"
+  ],
   "lib/core/storyChainProbe.test.ts": [
     "lib/core/storyChainProbe.ts"
   ],
@@ -2181,9 +2195,11 @@
     "lib/core/senseGold.ts"
   ],
   "lib/core/wallFeed.test.ts": [
+    "lib/core/classSeats.ts",
     "lib/core/wallFeed.ts"
   ],
   "lib/core/wallFeed.ts": [
+    "lib/core/classSeats.ts",
     "lib/core/messages.ts"
   ],
   "lib/core/wordLevel.test.ts": [
@@ -2235,6 +2251,10 @@
     "lib/core/worldRing.ts"
   ],
   "lib/server/classFailure.ts": [],
+  "lib/server/classSeats.ts": [
+    "lib/core/classSeats.ts",
+    "lib/supabase/auth.ts"
+  ],
   "lib/server/continuationsTree.ts": [
     "lib/core/continuations.ts"
   ],

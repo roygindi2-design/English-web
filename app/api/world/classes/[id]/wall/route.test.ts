@@ -121,9 +121,23 @@ describe('GET /api/world/classes/[id]/wall (T-471)', () => {
     expect(await r.json()).toEqual({ ok: false, code: 'classes_unavailable' });
   });
 
+  it('T-520: a reply carries its author’s CLASS seat — counted over the story too — and ⛔ no author id', async () => {
+    // u5 wrote the class's first story line, before anyone posted ⇒ seat 1 everywhere.
+    tables.class_story_lines = [{ id: 's1', class_id: CLASS_A, author_id: 'u5', body_en: 'One morning.', created_at: '2026-09-24T04:00:00Z' }];
+    const body = await (await call(CLASS_A)).json();
+    expect(body.mySeat).toBe(3); // u5 · OPENER (post) · ME (first reply)
+    expect(body.posts[0].seat).toBe(2);
+    const all = await (await allReplies(new Request('http://x'), { params: Promise.resolve({ id: CLASS_A, postId: POST }) })).json();
+    const seatOf = (id: string) => all.replies.find((r: { id: string }) => r.id === id)?.seat;
+    expect(seatOf('r05')).toBe(1);
+    expect(seatOf('r00')).toBe(3);
+    expect(new Set(all.replies.map((r: { seat: number }) => r.seat)).size).toBe(24);
+    expect(JSON.stringify(body) + JSON.stringify(all)).not.toMatch(/author_id|u5"|22222222/);
+  });
+
   it('an empty wall is an empty list, ⛔ not an error', async () => {
     tables.class_posts = [];
-    expect(await (await call(CLASS_A)).json()).toEqual({ ok: true, amOpener: false, posts: [] });
+    expect(await (await call(CLASS_A)).json()).toEqual({ ok: true, amOpener: false, mySeat: null, posts: [] });
   });
 });
 

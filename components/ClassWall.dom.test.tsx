@@ -42,7 +42,7 @@ describe('ClassWall — the post cards of kol-C-10 (T-473)', () => {
   });
 
   it('expanded ⇒ every reply is drawn and the button is gone', () => {
-    const all = Array.from({ length: 24 }, (_, i) => ({ id: `a${i}`, bodyEn: 'x', createdAt: FIXTURE_WALL_NOW, likes: 0, likedByMe: false, mine: false }));
+    const all = Array.from({ length: 24 }, (_, i) => ({ id: `a${i}`, bodyEn: 'x', createdAt: FIXTURE_WALL_NOW, likes: 0, likedByMe: false, mine: false, seat: i + 2 }));
     const { container } = render(<ClassWallView state={{ kind: 'ready', posts: FIXTURE_WALL }} nowIso={FIXTURE_WALL_NOW} expanded={{ wp1: all }} />);
     expect(container.querySelectorAll('[data-wall-post]')[0]?.querySelectorAll('[data-wall-reply]').length).toBe(24);
     expect(screen.queryByRole('button', { name: showAllHe(24) })).toBeNull();
@@ -73,7 +73,7 @@ describe('ClassWall — the post cards of kol-C-10 (T-473)', () => {
   it('failure scenario: pictureKey «volcano» (not in the gallery) ⇒ ⛔ no frame at all', () => {
     const posts = buildWallFeed(
       [{ id: 'p', author_id: 'o', body_en: 'What can you see in this picture?', created_at: FIXTURE_WALL_NOW, picture_key: 'volcano' }],
-      [], [], 'me', 'o',
+      [], [], 'me', 'o', new Map(),
     );
     expect(posts[0]?.pictureKey).toBeUndefined();
     const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
@@ -84,7 +84,7 @@ describe('ClassWall — the post cards of kol-C-10 (T-473)', () => {
   it('every scene in the closed gallery of eight has a drawing and a Hebrew name', () => {
     expect(WALL_PICTURE_KEYS.length).toBe(8);
     for (const key of WALL_PICTURE_KEYS) {
-      const posts = buildWallFeed([{ id: key, author_id: 'o', body_en: 'Q?', created_at: FIXTURE_WALL_NOW, picture_key: key }], [], [], 'me', 'o');
+      const posts = buildWallFeed([{ id: key, author_id: 'o', body_en: 'Q?', created_at: FIXTURE_WALL_NOW, picture_key: key }], [], [], 'me', 'o', new Map());
       const { container } = render(<ClassWallView state={{ kind: 'ready', posts }} nowIso={FIXTURE_WALL_NOW} />);
       const pic = container.querySelector(`[data-wall-picture="${key}"]`);
       expect(pic?.querySelector('svg')?.childElementCount).toBeGreaterThan(0);

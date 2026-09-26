@@ -8,6 +8,7 @@
  * `39 § 5`: «מוצגות רק התגובות המובילות לפי לייקים» and ⛔ no infinite loading of every
  * reply ⇒ a feed post carries `top` (at most two) and `replyCount`, ⛔ never the rest.
  */
+import { seatReader, type ClassSeats } from '@/lib/core/classSeats';
 import { whenOf } from '@/lib/core/messages';
 
 export const TOP_REPLIES = 2;
@@ -48,6 +49,8 @@ export interface WallReply {
   readonly likes: number;
   readonly likedByMe: boolean;
   readonly mine: boolean;
+  /** T-520 · D-303 — the author's class seat, the same number the story draws. ⛔ Never an id. */
+  readonly seat: number;
 }
 export interface WallPost {
   readonly id: string;
@@ -56,6 +59,8 @@ export interface WallPost {
   /** D-288 — «<שם> · המורה» belongs to the class opener; a role in the class, ⛔ not an account type. */
   readonly byOpener: boolean;
   readonly mine: boolean;
+  /** T-520 · D-303 — the author's class seat, the same number the story draws. ⛔ Never an id. */
+  readonly seat: number;
   /** T-484 · D-291 — a scene from `WALL_PICTURE_KEYS`; an unknown key never reaches here. */
   readonly pictureKey?: WallPictureKey;
   readonly likes: number;
@@ -113,7 +118,12 @@ function likeIndex(likes: readonly WallLikeRow[], me: string) {
   return { count: (k: string) => count.get(k) ?? 0, mine: (k: string) => mineSet.has(k) };
 }
 
-export function toWallReplies(replies: readonly WallReplyRow[], likes: readonly WallLikeRow[], me: string): readonly WallReply[] {
+export function toWallReplies(replies: readonly WallReplyRow[], likes: readonly WallLikeRow[], me: string, seats: ClassSeats): readonly WallReply[] {
+  return shapeReplies(replies, likes, me, seatReader(seats));
+}
+
+/** One seat reader per answer, so a late author gets ONE seat on a post and on its replies. */
+function shapeReplies(replies: readonly WallReplyRow[], likes: readonly WallLikeRow[], me: string, seat: (authorId: string) => number): readonly WallReply[] {
   const idx = likeIndex(likes, me);
   return replies.map((r) => ({
     id: r.id,
@@ -122,6 +132,7 @@ export function toWallReplies(replies: readonly WallReplyRow[], likes: readonly 
     likes: idx.count(`r:${r.id}`),
     likedByMe: idx.mine(`r:${r.id}`),
     mine: r.author_id === me,
+    seat: seat(r.author_id),
   }));
 }
 
@@ -132,9 +143,11 @@ export function buildWallFeed(
   likes: readonly WallLikeRow[],
   me: string,
   openerId: string,
+  seats: ClassSeats,
 ): readonly WallPost[] {
   const idx = likeIndex(likes, me);
-  const shaped = toWallReplies(replies, likes, me);
+  const seat = seatReader(seats);
+  const shaped = shapeReplies(replies, likes, me, seat);
   const byPost = new Map<string, WallReply[]>();
   replies.forEach((r, i) => {
     const list = byPost.get(r.post_id) ?? [];
@@ -152,6 +165,7 @@ export function buildWallFeed(
         createdAt: p.created_at,
         byOpener: p.author_id === openerId,
         mine: p.author_id === me,
+        seat: seat(p.author_id),
         ...(pictureKey ? { pictureKey } : {}),
         likes: idx.count(`p:${p.id}`),
         likedByMe: idx.mine(`p:${p.id}`),

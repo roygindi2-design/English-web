@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { buildWallFeed, toWallPictureKey, wallSentence, type WallLikeRow, type WallPostRow, type WallReplyRow } from '@/lib/core/wallFeed';
 import { classFailure } from '@/lib/server/classFailure';
+import { readClassSeats } from '@/lib/server/classSeats';
 import { fromKeyboard, parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -21,6 +22,8 @@ const NOT_FOUND = () => NextResponse.json({ ok: false, code: 'class_not_found' }
  * Read under the RLS of 0034: a learner sees only a class they are in.
  * ⛔ A non-member gets 404, ⛔ not 403 — the route ⛔ does not confirm the class exists.
  * ⛔ No author id leaves: `byOpener` (D-288 «המורה») and `mine` are all the client needs.
+ * T-520 · D-303: every post and reply carries `seat` — the author's CLASS seat, the same
+ * number the story draws — and `mySeat` is the learner's own (`null` until they write).
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const env = readSupabaseEnv();
@@ -51,7 +54,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const postRows = (posts.data ?? []) as WallPostRow[];
   const postIds = postRows.map((p) => p.id);
   const amOpener = openerId === user.id;
-  if (postIds.length === 0) return NextResponse.json({ ok: true, amOpener, posts: [] });
+  // T-520 — the seats come from the WHOLE class history (story ∪ posts ∪ replies), ⛔ not these 20 posts.
+  const seats = await readClassSeats(supabase, id);
+  if ('error' in seats) return classFailure('wall', seats.error);
+  const mySeat = seats.seats.get(user.id) ?? null;
+  if (postIds.length === 0) return NextResponse.json({ ok: true, amOpener, mySeat, posts: [] });
 
   const replies = await supabase.from('class_replies').select('id, post_id, author_id, body_en, created_at').in('post_id', postIds);
   if (replies.error) return classFailure('wall', replies.error);
@@ -66,7 +73,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (replyLikes.error) return classFailure('wall', replyLikes.error);
 
   const likes = [...(postLikes.data ?? []), ...(replyLikes.data ?? [])] as WallLikeRow[];
-  return NextResponse.json({ ok: true, amOpener, posts: buildWallFeed(postRows, replyRows, likes, user.id, openerId) });
+  return NextResponse.json({
+    ok: true,
+    amOpener,
+    mySeat,
+    posts: buildWallFeed(postRows, replyRows, likes, user.id, openerId, seats.seats),
+  });
 }
 
 /**

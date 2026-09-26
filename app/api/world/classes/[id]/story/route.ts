@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { buildStoryChain, type StoryLineRow } from '@/lib/core/storyChain';
 import { wallSentence } from '@/lib/core/wallFeed';
 import { classFailure } from '@/lib/server/classFailure';
+import { readClassSeats } from '@/lib/server/classSeats';
 import { fromKeyboard, parseWords } from '@/lib/server/keyboardSentence';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
@@ -37,6 +38,7 @@ async function session(): Promise<Session> {
  * T-478 · `39 § 6` · D-290: the class's story chain, OLDEST first (a story is read from
  * its beginning — ⛔ the reverse of the wall), and `myTurn`: the last line is ⛔ not the
  * learner's. Read under RLS (0038): ⛔ a non-member gets 404, ⛔ not 403. ⛔ No author id leaves.
+ * T-520 · D-303: each line's `seat` is the author's CLASS seat — the same number the wall draws.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   const s = await session();
@@ -58,8 +60,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     .order('created_at', { ascending: false })
     .limit(STORY_LINES_MAX);
   if (rows.error) return classFailure('story', rows.error);
+  // T-520 — the seats come from the WHOLE class history, ⛔ not from the window above.
+  const seats = await readClassSeats(supabase, id);
+  if ('error' in seats) return classFailure('story', seats.error);
 
-  const chain = buildStoryChain((rows.data ?? []) as StoryLineRow[], user.id, openerId);
+  const chain = buildStoryChain((rows.data ?? []) as StoryLineRow[], user.id, openerId, seats.seats);
   return NextResponse.json({ ok: true, amOpener: openerId === user.id, lines: chain.lines, myTurn: chain.myTurn });
 }
 

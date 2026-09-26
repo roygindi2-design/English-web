@@ -206,7 +206,7 @@ export function ClassWallView({ state, nowIso, expanded = {}, onShowAll = () => 
   );
 }
 
-type FeedBody = { ok: true; amOpener?: boolean; posts: readonly WallPost[] } | { ok: false; code: string };
+type FeedBody = { ok: true; amOpener?: boolean; mySeat?: number | null; posts: readonly WallPost[] } | { ok: false; code: string };
 type RepliesBody = { ok: true; replies: readonly WallReply[] } | { ok: false; code: string };
 type LikeBody = { ok: true; liked: boolean; likes: number } | { ok: false; code: string };
 type WriteBody = { ok: true; id: string | null; createdAt: string | null; bodyEn: string; pictureKey?: string | null } | { ok: false; code: string };
@@ -234,13 +234,18 @@ interface Sheet {
 export default function ClassWall({ classId }: { readonly classId: string }): React.JSX.Element {
   const [state, setState] = useState<ClassWallState>({ kind: 'loading' });
   const [amOpener, setAmOpener] = useState(false);
+  /** T-520 — the learner's own class seat, for what they write before the feed reloads. `0` = none yet. */
+  const [mySeat, setMySeat] = useState(0);
   const [expanded, setExpanded] = useState<Record<string, readonly WallReply[] | 'loading'>>({});
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const load = useCallback(async () => {
     setState({ kind: 'loading' });
     try {
       const body = await apiGet<FeedBody>(`/api/world/classes/${classId}/wall`);
-      if (body.ok) setAmOpener(body.amOpener === true);
+      if (body.ok) {
+        setAmOpener(body.amOpener === true);
+        setMySeat(body.mySeat ?? 0);
+      }
       setState(body.ok ? { kind: 'ready', posts: body.posts } : { kind: 'error' });
     } catch {
       setState({ kind: 'error' });
@@ -286,7 +291,7 @@ export default function ClassWall({ classId }: { readonly classId: string }): Re
     setSheet({ ...sheet, sending: true, failed: false });
     if (sheet.kind === 'reply' && sheet.postId) {
       const postId = sheet.postId;
-      const mineReply: WallReply = { id: temp, bodyEn: text, createdAt, likes: 0, likedByMe: false, mine: true };
+      const mineReply: WallReply = { id: temp, bodyEn: text, createdAt, likes: 0, likedByMe: false, mine: true, seat: mySeat };
       setPosts((ps) => ps.map((p) => (p.id === postId ? { ...p, replyCount: p.replyCount + 1, top: [...p.top, mineReply] } : p)));
       try {
         const body = await apiPost<WriteBody>(`/api/world/classes/${classId}/wall/${postId}/replies`, { words });
@@ -300,7 +305,7 @@ export default function ClassWall({ classId }: { readonly classId: string }): Re
       return;
     }
     const pictureKey = sheet.pictureKey;
-    const mine: WallPost = { id: temp, bodyEn: text, createdAt, byOpener: true, mine: true, ...(pictureKey ? { pictureKey } : {}), likes: 0, likedByMe: false, replyCount: 0, top: [] };
+    const mine: WallPost = { id: temp, bodyEn: text, createdAt, byOpener: true, mine: true, seat: mySeat, ...(pictureKey ? { pictureKey } : {}), likes: 0, likedByMe: false, replyCount: 0, top: [] };
     setPosts((ps) => [mine, ...ps]);
     try {
       const body = await apiPost<WriteBody>(`/api/world/classes/${classId}/wall`, pictureKey ? { words, pictureKey } : { words });
@@ -316,7 +321,7 @@ export default function ClassWall({ classId }: { readonly classId: string }): Re
       setPosts((ps) => ps.filter((p) => p.id !== temp));
       setSheet((s) => (s ? { ...s, sending: false, failed: true } : s));
     }
-  }, [classId, sheet, setPosts]);
+  }, [classId, sheet, setPosts, mySeat]);
 
   const questionEn = sheet?.postId && state.kind === 'ready' ? state.posts.find((p) => p.id === sheet.postId)?.bodyEn : undefined;
   return (

@@ -8,10 +8,12 @@
  * the screen shows, so `התור שלך` appears exactly when the insert would pass.
  *
  * ⛔ No author id leaves: a line carries `mine` · `byOpener` · `seat`, where `seat` is the
- * author's order of first appearance in the chain — enough for the screen to tell two
- * members apart (`render_video_C.py:211`, one avatar per author) ⛔ without a name, which
- * no table holds (the same declared gap as the wall, `components/ClassWall.tsx`).
+ * author's CLASS seat (`lib/core/classSeats.ts` · T-520 · D-303) — first appearance across
+ * the whole class history, handed in by the route, ⛔ never counted here from the window —
+ * enough for the screen to tell two members apart (`render_video_C.py:211`, one avatar per
+ * author) ⛔ without a name, which no table holds (`for-roy` 145).
  */
+import { seatReader, type ClassSeats } from '@/lib/core/classSeats';
 
 export interface StoryLineRow {
   readonly id: string;
@@ -26,7 +28,7 @@ export interface StoryLine {
   readonly createdAt: string;
   readonly mine: boolean;
   readonly byOpener: boolean;
-  /** 1-based, by first appearance. The same author ⇒ the same seat on every line. */
+  /** The class seat (T-520): the same author ⇒ the same number here and on the wall. */
   readonly seat: number;
 }
 
@@ -36,21 +38,20 @@ export function myTurn(lines: readonly { readonly authorId: string }[], me: stri
 }
 
 /** Oldest first — a story is read from its beginning (⛔ the reverse of the wall). */
-export function buildStoryChain(rows: readonly StoryLineRow[], me: string, openerId: string): {
+export function buildStoryChain(rows: readonly StoryLineRow[], me: string, openerId: string, seats: ClassSeats): {
   readonly lines: readonly StoryLine[];
   readonly myTurn: boolean;
 } {
   const sorted = [...rows].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || (a.id < b.id ? -1 : 1));
-  const seats = new Map<string, number>();
+  const seat = seatReader(seats);
   const lines = sorted.map((r) => {
-    if (!seats.has(r.author_id)) seats.set(r.author_id, seats.size + 1);
     return {
       id: r.id,
       bodyEn: r.body_en,
       createdAt: r.created_at,
       mine: r.author_id === me,
       byOpener: r.author_id === openerId,
-      seat: seats.get(r.author_id) as number,
+      seat: seat(r.author_id),
     };
   });
   return { lines, myTurn: myTurn(sorted.map((r) => ({ authorId: r.author_id })), me) };

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildStoryChain, myTurn } from './storyChain';
+import { classSeats } from './classSeats';
+import { buildStoryChain as build, myTurn, type StoryLineRow } from './storyChain';
+
+/** T-520 — the route hands in the class seats; here the class history IS these rows. */
+const buildStoryChain = (rows: StoryLineRow[], me: string, opener: string) => build(rows, me, opener, classSeats(rows));
 
 const row = (id: string, author: string, minute: number) => ({
   id, author_id: author, body_en: `line ${id}.`, created_at: `2026-09-24T10:${String(minute).padStart(2, '0')}:00Z`,
