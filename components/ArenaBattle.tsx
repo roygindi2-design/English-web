@@ -1169,15 +1169,27 @@ export default function ArenaBattle({
 
   if (screen.kind === 'loading') {
     return (
-      <section className="flex h-[calc(100dvh-5.25rem)] flex-col gap-6 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      /* 🎨 ⟦`C-0870` · זירה — עיצוב חופשי⟧ **הטעינה יושבת על הבמה הכהה**, כמו «שומר את הקרב…»
+         (`C-0863`). 🔬 נמדד חי ב-`/dev/arcade/loading` (375×780): ⛔ בלי `data-arena-scope` ⇒ דף
+         **בהיר** עם כותרת המוצר, ושלד `bg-surface-raised` על `--surface` בהיר — כמעט בלתי-נראה ⇒
+         הלומד ראה הבזק לבן ריק לפני הקרב הכהה. השלד מצויר בצורת הקרב עצמו — באנר המילה · הבמה ·
+         יד של ארבעה קלפים — בטוקן `--arena-card`, ⛔ ובלי תנועה. */
+      <section
+        data-arena-scope
+        data-surface="dark"
+        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-11 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {topBar(null)}
-        <div className="flex flex-col gap-3" data-skeleton>
+        <div className="flex min-h-0 flex-1 flex-col gap-4" data-skeleton>
           <p className="sr-only" role="status">
             {LOADING_HE}
           </p>
-          <div aria-hidden className="h-8 rounded-2xl bg-surface-raised" />
-          <div aria-hidden className="h-20 w-2/3 rounded-2xl bg-surface-raised" />
-          <div aria-hidden className="h-32 rounded-2xl bg-surface-raised" />
+          <div aria-hidden className="mx-auto h-14 w-2/3 shrink-0 rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]" />
+          <div aria-hidden className="min-h-0 flex-1 rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]" />
+          <div aria-hidden className="grid shrink-0 grid-cols-4 gap-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-24 rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)]" />
+            ))}
+          </div>
         </div>
       </section>
     );
