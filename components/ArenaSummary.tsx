@@ -178,7 +178,8 @@ export default function ArenaSummary({
       {/* 📏 ⟦`C-0870` · זירה — עיצוב חופשי⟧ ‏`gap-3` (12) ⛔ ולא `gap-6` (24): הרנדר מרווח את הלוחות
           ‏~10px (`kol-B-07`, נמדד ב-3×), ו-24 דחפו את «המילים שהפילו אותך» מתחת לקצה האזור
           ב-390×844 (‏653 מול 649) — מה ש-`D-302`ⓒ הבטיח שיהיה גלוי. */}
-      <div data-arena-scroll className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      {/* 🌫️ ⟦`C-0872`⟧ `data-arena-scroll-edge` — הרשימה נמשכת מתחת לקצה ⇒ קצה דהוי, ⛔ לא חיתוך. */}
+      <div data-arena-scroll data-arena-scroll-edge className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
       {/* שלוש שורות הסיכום. כל שורה נושאת **תווית עברית כתובה** — הצבע הוא הערוץ
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
       <ul data-arena-summary className="flex flex-col gap-2">

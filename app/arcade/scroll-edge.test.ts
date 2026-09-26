@@ -13,7 +13,10 @@ const RULE = CSS.match(/\[data-arena-scroll-edge\]\s*\{[^}]*\}/)?.[0] ?? '';
 
 /** כל רכיב, והסמן של האזור הגמיש שלו. ⛔ לא כל `overflow-y-auto`: רשת הארון היא גיליון,
  *  ⛔ ולא אזור מעל פעולות מעוגנות. */
-const SCROLLERS: ReadonlyArray<readonly [string, string]> = [['ArenaHome', 'data-arena-home-body']];
+const SCROLLERS: ReadonlyArray<readonly [string, string]> = [
+  ['ArenaHome', 'data-arena-home-body'],
+  ['ArenaSummary', 'data-arena-scroll'],
+];
 
 describe('זירה — קצה הגלילה', () => {
   it('הכלל קיים: מסכה וריפוד על אותו `--arena-scroll-fade`', () => {
