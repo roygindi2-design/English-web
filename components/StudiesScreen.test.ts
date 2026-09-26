@@ -411,3 +411,19 @@ describe('T-409 — המיקום במסלול נשמר ונראה בכניסה �
     expect(MOBILE).toContain('T-409 · המסך נפתח על המסלול השמור');
   });
 });
+
+/**
+ * 🟡 `F-337` (QA · `C-0858`) — the skeleton pulsed ONCE (`_1`) and then froze while the read
+ * was still in flight. Measured cold TTFB for this screen is ~3.7s (`F-255`) against a 2s
+ * pulse ⇒ ~1.7s of a static grey block that reads as «stuck», ⛔ not «loading».
+ * The skeleton is unmounted the moment `loading` ends ⇒ `infinite` never outlives it.
+ */
+describe('F-337 — שלד הטעינה פועם כל עוד הוא על המסך', () => {
+  it('⛔ מונה חזרות 1 — הפעימה ⛔ נעצרת לפני שהנתון מגיע', () => {
+    expect(CODE).not.toMatch(/animate-\[pulse_[^\]]*_1\]/);
+  });
+
+  it('`infinite`, ⛔ ורק תחת `motion-safe` (reduced-motion ⇒ שלד סטטי)', () => {
+    expect(CODE).toMatch(/'motion-safe:animate-\[pulse_2s_cubic-bezier\(0\.4,0,0\.6,1\)_infinite\]'/);
+  });
+});
