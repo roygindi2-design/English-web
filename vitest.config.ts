@@ -31,7 +31,7 @@ export default defineConfig({
     // the brace above documents, one directory over.
     include: [
       'lib/**/*.test.ts',
-      'proxy.test.ts',
+      'proxy.test.ts', 'proxy.claims.test.ts',
       'scripts/**/*.test.ts',
       'components/**/*.test.{ts,tsx}',
       'app/**/*.test.{ts,tsx}',

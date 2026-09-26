@@ -57,11 +57,16 @@ export default async function proxy(request: NextRequest) {
   }
 
   const supabase = createProxyClient(env, request, response);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // T-377ⓑ — `getClaims()`, ⛔ not `getUser()`. The project signs with ES256,
+  // so the signature is verified here against a cached JWKS instead of a
+  // round-trip to Supabase Auth on every navigation (measured 26/09: signed-in
+  // `/cards` 0.33–0.48s warm vs 0.12–0.18s anonymous). It still refreshes an
+  // expired session (job 1), and falls back to the network by itself for a
+  // symmetric token. No verified claims ⇒ anonymous: this fails closed.
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  const userId = claimsError ? undefined : claimsData?.claims?.sub;
 
-  if (user) {
+  if (userId) {
     // ⚠️ TD-25 · T-122: קודם כאן ישב `/onboarding` ללא תנאי, וכל לומד חוזר
     // נזרק לטופס שמילא לפני שבוע. הקריאה למאגר מתבצעת אך ורק בנתיבים
     // שההחלטה נוגעת בהם — ⛔ לא בכל בקשה. `proxy` רץ על כל ניווט, ושאילתה
@@ -72,7 +77,7 @@ export default async function proxy(request: NextRequest) {
     const { data } = await supabase
       .from('profiles')
       .select('onboarded_at')
-      .eq('id', user.id)
+      .eq('id', userId)
       .maybeSingle();
 
     // `data` הוא `unknown` מבחינתנו — `onboardedFromRow` הוא שמחליט, ⛔ לא cast.
