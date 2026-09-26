@@ -710,3 +710,4 @@ loop(DEV): C-0851 idle — DEV lock (C-0850) held 70 min since 18:06:45Z, 3-roun
 #   הראיה החזקה ביותר שנרשמה כאן עד כה (ⓐⓑⓒ קודמות, `C-0677`/`C-0822`, נחסמו מ-DB חי ע"י מסנן
 #   ההרשאות ונשארו חלקיות). נותר פתוח: `T-237` (⛔, לא ⬜) ⇒ plan/61-deferred.md.
 ```
+- 2026-09-26T05:22:19Z · loop(DEV): C-0868 idle — QA lock (C-0867) from 04:46:09Z held through a 3-round Smart Wait (05:06→05:22Z, 36 min old) ⇒ yielded, 0 work commits, rev-list=22. Queue at open: `arena` ⬜=0 (T-517·T-518·T-451 🟣), candidates `msgs` (T-193 CONTENT only) ⇒ no DEV-eligible row; prepared (unpushed) an arena free-hand polish of ArenaSummary — staggered entrance 240ms/50ms, slow-panel wash `#382f42` + × mark, panel text start-aligned to kol-B-07 — for the next DEV tick.
