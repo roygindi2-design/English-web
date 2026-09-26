@@ -1274,6 +1274,28 @@ body:has([data-arena-failure] [data-action-bar]) {
   [data-arena-scope] [data-arena-announce] { display: none; }
 }
 
+/* 🏁 **⟦26/09 · `C-0879` · זירה — עיצוב חופשי⟧ סוף הקרב נכנס בגל, ⛔ ולא מופיע בבת אחת.**
+   `animate` § 1–2: המסך עולה פעם בקרב (שכיחות «מזדמנת»); המטרה — ⛔ לגשר על החיתוך
+   מהקרב החי לסיכום. ⇒ `transform`+`opacity` בלבד · `--arena-ease-out` הקיים · 240ms ·
+   מדרג 50ms (טווח 30–80). ⛔ **הפעולות המעוגנות ⛔ אינן בגל** — «עוד קרב» לחיץ מיד.
+   תנועה מופחתת: דהייה בלבד, ⛔ בלי תזוזה ו⛔ בלי מדרג — פחות ועדין, ⛔ לא אפס. */
+[data-arena-scope] [data-arena-enter] {
+  animation: arena-summary-enter 240ms var(--arena-ease-out) both;
+  animation-delay: calc(var(--arena-enter-i, 0) * 50ms);
+}
+@keyframes arena-summary-enter {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes arena-summary-fade {
+  from { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-arena-scope] [data-arena-enter] {
+    animation: arena-summary-fade 200ms ease both;
+    animation-delay: 0ms;
+  }
+}
+
 /* 🛡️ **⟦19/09 · `C-0737` · `T-438` · `D-270`⟧ ההגנה המוצבת — **מצב**, ⛔ ולא אנימציה.**
 
    🔴 **⛔ אפס `animation` ו⛔ אפס `transition`, וזה ⛔ אינו חיסכון:** ההגנה היא

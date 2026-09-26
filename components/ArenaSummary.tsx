@@ -125,6 +125,13 @@ export default function ArenaSummary({
   const unlockedLabel = labelOf(unlocked);
   // עד חמש שורות, והמספר מגיע מהקבוע ⛔ ולא כמספר בקוד (`arcadeResult.ts`).
   const missedRows = missed.slice(0, ARCADE_MISSED_LIMIT);
+  // 🏁 ⟦`C-0879`⟧ הגל של הכניסה (`arcade-tokens.css`, `data-arena-enter`): כל בלוק **שמוצג**
+  // לוקח את המדרגה הבאה ⇒ ⛔ אין חור בגל כשלוח מותנה חסר. ⛔ הפעולות המעוגנות מחוץ לגל.
+  let enterStep = 0;
+  const enter = () => ({
+    'data-arena-enter': true,
+    style: { '--arena-enter-i': enterStep++ } as React.CSSProperties,
+  });
   return (
     /* 🥊 **⟦17/09 · `C-0707` · `T-422`⟧ גובה **מדויק**, ⛔ ולא מינימום — תבנית
        `ArenaBattle.tsx` (`T-416` · `C-0623`), מילה במילה.
@@ -150,7 +157,7 @@ export default function ArenaSummary({
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
-      <header className="flex flex-col items-center gap-0.5">
+      <header className="flex flex-col items-center gap-0.5" {...enter()}>
         <h1 className="text-center text-[34px] font-black leading-tight text-[color:var(--brand-surface)]">
           {ending.kind === 'victory' ? WON_HE : wordsFromBossHe(ending.wordsFromBoss)}
         </h1>
@@ -164,7 +171,7 @@ export default function ArenaSummary({
       {/* 📖 ⟦`T-518`⟧ הפריט שנפתח — **שורה אחת**, מעל האזור הגמיש, ⛔ רק כשנפתח דבר.
           ⛔ אין ניקוד ואין מספר מופשט (D-050): הפרס הוא שם הפריט. */}
       {unlockedLabel !== null && (
-        <p data-arena-unlocked className={`${ROW_CLASS} text-[14px]`}>
+        <p data-arena-unlocked className={`${ROW_CLASS} text-[14px]`} {...enter()}>
           <span className="font-medium text-[color:var(--arena-ink)]">{UNLOCKED_HE}</span>
           <span className="font-bold text-[color:var(--brand-surface)]">{unlockedLabel}</span>
         </p>
@@ -182,7 +189,7 @@ export default function ArenaSummary({
       <div data-arena-scroll data-arena-scroll-edge className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
       {/* שלוש שורות הסיכום. כל שורה נושאת **תווית עברית כתובה** — הצבע הוא הערוץ
           השני, ⛔ ולעולם לא היחיד (חוקה שכבה א׳). */}
-      <ul data-arena-summary className="flex flex-col gap-2">
+      <ul data-arena-summary className="flex flex-col gap-2" {...enter()}>
         <li className={ROW_CLASS} data-rtl-row="summary-stat">
           <span className="text-[13px] font-medium text-[color:var(--arena-ink)]">{CORRECT_HE}</span>
           <span dir="ltr" className="text-[15px] font-bold text-[color:var(--brand-surface)]">
@@ -214,7 +221,7 @@ export default function ArenaSummary({
       {/* לוח ה«איטיות» — y=486 · h=66 · r=16 · DANGER (`:622-629`). ⛔ מוצג אך ורק כשיש
           מה להציג: לוח ריק הוא רעש, ⛔ לא מידע. */}
       {summary.slow.length > 0 && (
-        <div data-arena-slow className={`${PANEL_CLASS} border border-[color:var(--arena-damage)] bg-[color:var(--arena-card)]`}>
+        <div data-arena-slow className={`${PANEL_CLASS} border border-[color:var(--arena-damage)] bg-[color:var(--arena-card)]`} {...enter()}>
           <p className="text-end text-[14px] font-bold text-[color:var(--arena-damage)]">
             {summary.slow.length} {SLOW_HE}
           </p>
@@ -237,7 +244,7 @@ export default function ArenaSummary({
           המילוי הוא `bg-brand-surface/15` ⛔ ולא גוון ישיר של `--brand` (α38 ברנדר) — שומר F-036
           (`lib/core/palette.test.ts`) אוסר את `brand` הבסיסי כמילוי בכל מסך; הכרעה הפיכה `RULES § 0.22`. */}
       {summary.firstMet.length > 0 && (
-        <div data-arena-first-met className={`${PANEL_CLASS} border border-[color:var(--brand)] bg-[color:var(--arena-card)]`}>
+        <div data-arena-first-met className={`${PANEL_CLASS} border border-[color:var(--brand)] bg-[color:var(--arena-card)]`} {...enter()}>
           <p className="text-end text-[14px] font-bold text-[color:var(--arena-ink)]">
             {firstMetHe(summary.firstMet.length)}
           </p>
@@ -258,7 +265,7 @@ export default function ArenaSummary({
           ⛔ **קריאה בלבד** — ⛔ אין `הוסף לכרטיסיות` (`for-roy` 152). כל צד נושא תווית עברית —
           צבע ⛔ לעולם אינו הערוץ היחיד. ⛔ מוצג רק כשיש החטאה: לוח ריק הוא רעש. */}
       {missedRows.length > 0 && (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5" {...enter()}>
           <h2 className="text-start text-[14px] font-bold text-[color:var(--arena-ink)]">{MISSED_HEADING_HE}</h2>
           <ul data-arena-missed className="flex flex-col gap-2">
             {missedRows.map((row) => (
