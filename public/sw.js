@@ -2,7 +2,7 @@
 //
 // Precache is deliberately tiny: the landing screen and the offline screen.
 // API responses are never cached — stale learning data is worse than no data.
-const CACHE = 'english-web-v3';
+const CACHE = 'english-web-v4';
 const OFFLINE_ROUTE = '/offline';
 const OFFLINE_FALLBACK = '/offline.html';
 const PRECACHE = ['/', OFFLINE_ROUTE, OFFLINE_FALLBACK];
@@ -52,23 +52,68 @@ async function offlineResponse() {
   );
 }
 
-// Network-first for navigations: the learner should always get the live screen
-// when online, and a real Hebrew offline screen — never a browser error — when not.
-async function handleNavigation(request) {
-  const isPrivate = isPrivateRoute(new URL(request.url).pathname);
-  try {
-    const fresh = await fetch(request);
-    if (!isPrivate) {
-      const cache = await caches.open(CACHE);
-      cache.put(request, fresh.clone()).catch(() => {});
+// T-519 — how long a navigation waits for the network before a stored copy is
+// painted instead. 800ms: a warm function answers in ~170ms (C-0794) and a warm
+// /cards in ~305ms (F-255), so a healthy network still wins with room to spare;
+// a cold start is 2–6s, so past 800ms the learner is waiting on a server that is
+// waking up, not on a slow page. Anything longer is a white screen they can see.
+const NAV_CACHE_WINDOW_MS = 800;
+
+// A redirect is never stored: /cards answered by a redirect to /login must not be
+// saved (or later painted) as /cards.
+function isStorable(res) {
+  return res.ok && !res.redirected && res.type !== 'opaqueredirect';
+}
+
+// Only a screen the server built for everyone may be painted before the network
+// answers. A page rendered per learner says no-store/private, and sign-out does
+// not clear this cache — on a shared phone that copy is someone else's screen.
+// Those copies still serve as the offline fallback, exactly as before.
+function isSharedScreen(res) {
+  if (!isStorable(res)) return false;
+  const cc = (res.headers.get('cache-control') || '').toLowerCase();
+  return !cc.includes('no-store') && !cc.includes('private');
+}
+
+// Navigations race the network against a stored copy of the same URL:
+// - the network answers inside NAV_CACHE_WINDOW_MS ⇒ it is served, as always;
+// - it does not ⇒ the stored copy is painted, and the request keeps running in the
+//   background and refreshes the cache for the next open;
+// - nothing stored ⇒ network, then the real Hebrew offline screen — never a
+//   browser error. API responses are not handled here at all (see the listener).
+async function handleNavigation(request, event) {
+  if (isPrivateRoute(new URL(request.url).pathname)) {
+    try {
+      return await fetch(request);
+    } catch {
+      return offlineResponse();
     }
-    return fresh;
-  } catch {
-    if (isPrivate) return offlineResponse();
-    const cache = await caches.open(CACHE);
-    const hit = await cache.match(request, { ignoreSearch: true });
-    return hit || offlineResponse();
   }
+
+  const cache = await caches.open(CACHE);
+  const network = fetch(request).then((fresh) => {
+    if (isStorable(fresh)) cache.put(request, fresh.clone()).catch(() => {});
+    return fresh;
+  });
+  // Exact URL only: /world/story?id=1 must never paint for ?id=2.
+  const stored = await cache.match(request);
+
+  if (!stored || !isSharedScreen(stored)) {
+    try {
+      return await network;
+    } catch {
+      const hit = stored || (await cache.match(request, { ignoreSearch: true }));
+      return hit || offlineResponse();
+    }
+  }
+
+  // Keep the worker alive until the late answer has been written.
+  if (event) event.waitUntil(network.catch(() => {}));
+  let timer;
+  const deadline = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(stored), NAV_CACHE_WINDOW_MS);
+  });
+  return Promise.race([network.catch(() => stored), deadline]).finally(() => clearTimeout(timer));
 }
 
 self.addEventListener('fetch', (event) => {
@@ -80,7 +125,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) return; // never cache API responses
 
   if (request.mode === 'navigate') {
-    event.respondWith(handleNavigation(request));
+    event.respondWith(handleNavigation(request, event));
     return;
   }
 
