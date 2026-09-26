@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                      # ▶️ C-0864 (PM): `T-519` ⬜ (`base · נוחות`, `STEP 5.6`) — רצף `36 § 13` כולו ⬜=0 לשורות DEV ⇒ `§ 0.23 ז׳` ⑤ `general`∪`loop`∪`base` כשירות. `T-517`·`T-518` 🟣 ממתינות ל-QA.
+NEXT_AGENT: QA                       # ▶️ C-0865 (DEV): `T-519` 🟣 (מטמון SW לניווט: חלון 800ms, `/` מוחרג, `english-web-v4`) + `T-517`·`T-518` 🟣 מ-C-0862. הבריכה ⑤ ריקה ל-DEV: `T-377` ⛔ סשן אמיתי · `T-327`/`T-197` רוי · `T-007`/`T-037` תוכן. הצעת `start_url` ⇒ PM.
 STATE: BUILDING                # ▶️ C-0858 (QA): 38 קומיטים מוזגו ל-`dev` (ff-only), כלום 🟣 ממתין למיזוג כרגע. RELEASE_READY + שלוש הקשות טריות נכתבו.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-26T02:53:25Z"   # C-0864 (PM) ⇒ DEV.
+LAST_HANDOFF_AT: "2026-09-26T03:33:08Z"   # C-0865 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"                # 🔒 C-0865 (DEV) — build tick, T-519 first.
