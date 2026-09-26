@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { ANSWER_HINT_EN, ClassWallView, FEED_EMPTY_HE, OPENER_HE, showAllHe, TODAY_QUESTION_HE } from '@/components/ClassWall';
 import { FIXTURE_WALL, FIXTURE_WALL_NOW } from '@/app/dev/messages/wall-fixture';
 import { WALL_PICTURE_KEYS, WALL_PICTURE_LABEL_HE } from '@/components/WallPicture';
@@ -137,5 +138,20 @@ describe('ClassWall — seats and `שאלת היום` (T-521)', () => {
     expect(avatar.hasAttribute('data-seat-hue')).toBe(false);
     expect(avatar.className).toContain('bg-brand-surface');
     expect(avatar.textContent).toBe('');
+  });
+});
+
+/** T-522 — a failed read says what failed, ⛔ not a lone button. */
+describe('ClassWall — the failure state has a sentence (T-522)', () => {
+  it('error ⇒ `FAILURE_HE.load` (aria-live) AND `RETRY_HE` under it, and the retry still calls back', () => {
+    const onRetry = vi.fn();
+    const { container } = render(<ClassWallView state={{ kind: 'error' }} nowIso={FIXTURE_WALL_NOW} onRetry={onRetry} />);
+    const line = [...container.querySelectorAll('p')].find((p) => p.textContent === FAILURE_HE.load);
+    expect(line?.getAttribute('aria-live')).toBe('polite');
+    const btn = [...container.querySelectorAll('button')].find((b) => b.textContent === RETRY_HE) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(line!.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(btn);
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import ClassStory, { STORY_HEADING_HE } from '@/components/ClassStory';
 import ClassJoin, { WALL_HEADING_HE, WALL_KICKER_NO_CLASS_HE, wallKickerHe, type ClassPanelState } from '@/components/ClassJoin';
 import EnWord from '@/components/EnWord';
+import LoadFailure from '@/components/LoadFailure';
 import { apiGet } from '@/lib/api/client';
-import { RETRY_HE } from '@/lib/core/failure';
 import { failureExit, SIGN_IN_AGAIN_HE } from '@/lib/core/failureExit';
 import { inboxCountsHe, toInboxRows, type InboxCounts, type InboxItem, type InboxRow } from '@/lib/core/messages';
 import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
@@ -38,7 +38,7 @@ const CARD_SUB_HE = 'אין כאן משתמשים אחרים';
 const NO_LEVEL_HE = 'כדי לקרוא הודעות ברמה שלך, בחר קודם רמה.';
 const NO_LEVEL_HREF = '/study/scan';
 const NO_SIMS_HE = 'עדיין אין כאן הודעות ברמה שלך.';
-// ⛔ `RETRY_HE` is imported and ⛔ never restated — `lib/core/failure.test.ts` measures it.
+// ⛔ `RETRY_HE` is ⛔ never restated — the failure state is `<LoadFailure>` (T-522), and `lib/core/failure.test.ts` measures it.
 
 export type InboxScreenState =
   | { readonly kind: 'loading' }
@@ -226,7 +226,7 @@ function IsolationCard() {
 
 function Exit({ code, onRetry }: { readonly code: 'session_expired' | 'schema_missing' | 'unavailable'; readonly onRetry: () => void }) {
   if (code === 'unavailable') {
-    return <button type="button" onClick={onRetry} className="mt-4 min-h-touch rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{RETRY_HE}</button>;
+    return <LoadFailure onRetry={onRetry} />;
   }
   const exit = failureExit(code);
   return <Link href={exit.href} className="mt-4 inline-flex min-h-touch items-center rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{code === 'session_expired' ? SIGN_IN_AGAIN_HE : exit.labelHe}</Link>;

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import { InboxListView, type MessagesTab } from '@/components/InboxList';
 
 afterEach(cleanup);
@@ -116,5 +117,20 @@ describe('a cold inbox shows the shape of the inbox (T-482)', () => {
   it('⛔ no spinner and ⛔ no shimmer — it is seen on every cold open', () => {
     const html = loading().innerHTML;
     expect(html).not.toMatch(/animate-(spin|pulse)|progressbar/);
+  });
+});
+
+/** T-522 — a failed read says what failed, ⛔ not a lone button. */
+describe('InboxList — the failure state has a sentence (T-522)', () => {
+  it('error ⇒ `FAILURE_HE.load` (aria-live) AND `RETRY_HE` under it, and the retry still calls back', () => {
+    const onRetry = vi.fn();
+    const { container } = render(<InboxListView state={{ kind: 'error' }} onRetry={onRetry} />);
+    const line = [...container.querySelectorAll('p')].find((p) => p.textContent === FAILURE_HE.load);
+    expect(line?.getAttribute('aria-live')).toBe('polite');
+    const btn = [...container.querySelectorAll('button')].find((b) => b.textContent === RETRY_HE) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(line!.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(btn);
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });

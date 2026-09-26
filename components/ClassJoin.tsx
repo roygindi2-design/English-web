@@ -1,5 +1,6 @@
 'use client';
 
+import LoadFailure from '@/components/LoadFailure';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import ClassWall, { FEED_EMPTY_HE } from '@/components/ClassWall';
@@ -153,7 +154,7 @@ export function ClassJoinView({ state, busy = false, formError = null, onCreate 
     return <Link href={exit.href} className="mt-4 inline-flex min-h-touch items-center rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{SIGN_IN_AGAIN_HE}</Link>;
   }
   if (state.kind === 'error') {
-    return <button type="button" onClick={onRetry} className="mt-4 min-h-touch rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{RETRY_HE}</button>;
+    return <LoadFailure onRetry={onRetry} />;
   }
 
   if (state.kind === 'in_class') {

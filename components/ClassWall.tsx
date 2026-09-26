@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import EnWord from '@/components/EnWord';
+import LoadFailure from '@/components/LoadFailure';
 import SeatAvatar from '@/components/SeatAvatar';
 import WallPicture, { WallPicturePicker } from '@/components/WallPicture';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
-import { RETRY_HE } from '@/lib/core/failure';
 import { toWallPictureKey, wallSentence, wallTimeLabel, type WallPictureKey, type WallPost, type WallReply } from '@/lib/core/wallFeed';
 import { whenOf } from '@/lib/core/messages';
 import { LEARNER_TIME_ZONE } from '@/lib/core/onboarding';
@@ -186,7 +186,7 @@ export function ClassWallView({ state, nowIso, expanded = {}, onShowAll = () => 
     );
   }
   if (state.kind === 'error') {
-    return <button type="button" onClick={onRetry} className="mt-4 min-h-touch rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{RETRY_HE}</button>;
+    return <LoadFailure onRetry={onRetry} />;
   }
   const ask = onAsk ? (
     <button type="button" data-wall-ask onClick={onAsk} className="mt-4 flex min-h-touch w-full items-center justify-center rounded-xl bg-brand-surface text-sm font-bold text-brand-on active:scale-[0.98] motion-reduce:transform-none">

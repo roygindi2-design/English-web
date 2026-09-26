@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import ClassStory, { ClassStoryView, STORY_EMPTY_HE, TURN_TAKEN_HE, WAITING_HE, YOUR_TURN_HE } from '@/components/ClassStory';
 import { CATEGORY_CHIPS } from '@/lib/core/blockKeyboard';
 import { FIXTURE_STORY } from '@/app/dev/messages/story-fixture';
@@ -81,5 +82,20 @@ describe('ClassStory live — failure scenario: the turn is taken while composin
     expect(container.textContent).toContain('Then a girl opened the door.');
     expect(await screen.findByText(WAITING_HE)).toBeTruthy();
     expect(screen.queryByRole('button', { name: YOUR_TURN_HE })).toBeNull();
+  });
+});
+
+/** T-522 — a failed read says what failed, ⛔ not a lone button. */
+describe('ClassStory — the failure state has a sentence (T-522)', () => {
+  it('error ⇒ `FAILURE_HE.load` (aria-live) AND `RETRY_HE` under it, and the retry still calls back', () => {
+    const onRetry = vi.fn();
+    const { container } = render(<ClassStoryView state={{ kind: 'error' }} onRetry={onRetry} />);
+    const line = [...container.querySelectorAll('p')].find((p) => p.textContent === FAILURE_HE.load);
+    expect(line?.getAttribute('aria-live')).toBe('polite');
+    const btn = [...container.querySelectorAll('button')].find((b) => b.textContent === RETRY_HE) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(line!.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(btn);
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });

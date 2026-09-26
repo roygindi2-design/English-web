@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import EnWord from '@/components/EnWord';
+import LoadFailure from '@/components/LoadFailure';
 import SeatAvatar from '@/components/SeatAvatar';
 import WallReplySheet from '@/components/WallReplySheet';
 import { apiGet, apiPost } from '@/lib/api/client';
 import { CATEGORY_CHIPS } from '@/lib/core/blockKeyboard';
-import { RETRY_HE } from '@/lib/core/failure';
 import type { StoryLine } from '@/lib/core/storyChain';
 import { wallSentence } from '@/lib/core/wallFeed';
 import { ME_HE, MEMBER_HE, OPENER_HE } from '@/components/ClassWall';
@@ -102,7 +102,7 @@ export function ClassStoryView({ state, onTurn = () => {}, onRetry = () => {}, n
     return <p data-story-closed className="mt-4 rounded-2xl bg-surface-raised p-4 text-sm text-ink-muted">{STORY_CLOSED_HE}</p>;
   }
   if (state.kind === 'error') {
-    return <button type="button" onClick={onRetry} className="mt-4 min-h-touch rounded-xl bg-brand-surface px-4 font-semibold text-brand-on">{RETRY_HE}</button>;
+    return <LoadFailure onRetry={onRetry} />;
   }
   const { lines, myTurn } = state;
   return (

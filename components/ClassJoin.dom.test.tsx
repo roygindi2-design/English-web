@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FAILURE_HE, RETRY_HE } from '@/lib/core/failure';
 import {
   ClassJoinView,
   CLASSES_CLOSED_HE,
@@ -106,5 +107,20 @@ describe('the הקיר tab opens (T-469)', () => {
     render(<ClassJoinView state={{ kind: 'classes_unavailable' }} />);
     expect(screen.getByText(CLASSES_CLOSED_HE)).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
+  });
+});
+
+/** T-522 — a failed read says what failed, ⛔ not a lone button. */
+describe('ClassJoin — the failure state has a sentence (T-522)', () => {
+  it('error ⇒ `FAILURE_HE.load` (aria-live) AND `RETRY_HE` under it, and the retry still calls back', () => {
+    const onRetry = vi.fn();
+    const { container } = render(<ClassJoinView state={{ kind: 'error' }} onRetry={onRetry} />);
+    const line = [...container.querySelectorAll('p')].find((p) => p.textContent === FAILURE_HE.load);
+    expect(line?.getAttribute('aria-live')).toBe('polite');
+    const btn = [...container.querySelectorAll('button')].find((b) => b.textContent === RETRY_HE) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(line!.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(btn);
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });

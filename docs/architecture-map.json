@@ -1124,10 +1124,12 @@
   "components/CardSkeleton.tsx": [],
   "components/ClassJoin.dom.test.tsx": [
     "components/ClassJoin.tsx",
-    "components/InboxList.tsx"
+    "components/InboxList.tsx",
+    "lib/core/failure.ts"
   ],
   "components/ClassJoin.tsx": [
     "components/ClassWall.tsx",
+    "components/LoadFailure.tsx",
     "lib/api/client.ts",
     "lib/core/classCode.ts",
     "lib/core/failure.ts",
@@ -1136,17 +1138,18 @@
   "components/ClassStory.dom.test.tsx": [
     "app/dev/messages/story-fixture.ts",
     "components/ClassStory.tsx",
-    "lib/core/blockKeyboard.ts"
+    "lib/core/blockKeyboard.ts",
+    "lib/core/failure.ts"
   ],
   "components/ClassStory.tsx": [
     "components/ClassWall.tsx",
     "components/EnWord.tsx",
+    "components/LoadFailure.tsx",
     "components/SeatAvatar.tsx",
     "components/WallReplySheet.tsx",
     "components/block-keyboard-tokens.css",
     "lib/api/client.ts",
     "lib/core/blockKeyboard.ts",
-    "lib/core/failure.ts",
     "lib/core/storyChain.ts",
     "lib/core/wallFeed.ts"
   ],
@@ -1154,6 +1157,7 @@
     "app/dev/messages/wall-fixture.ts",
     "components/ClassWall.tsx",
     "components/WallPicture.tsx",
+    "lib/core/failure.ts",
     "lib/core/wallFeed.ts"
   ],
   "components/ClassWall.picture.dom.test.tsx": [
@@ -1162,11 +1166,11 @@
   ],
   "components/ClassWall.tsx": [
     "components/EnWord.tsx",
+    "components/LoadFailure.tsx",
     "components/SeatAvatar.tsx",
     "components/WallPicture.tsx",
     "components/WallReplySheet.tsx",
     "lib/api/client.ts",
-    "lib/core/failure.ts",
     "lib/core/messages.ts",
     "lib/core/onboarding.ts",
     "lib/core/wallFeed.ts"
@@ -1238,6 +1242,7 @@
   "components/InboxList.dom.test.tsx": [
     "app/dev/messages/messages-fixture.ts",
     "components/InboxList.tsx",
+    "lib/core/failure.ts",
     "lib/core/messages.ts"
   ],
   "components/InboxList.test.ts": [],
@@ -1245,9 +1250,9 @@
     "components/ClassJoin.tsx",
     "components/ClassStory.tsx",
     "components/EnWord.tsx",
+    "components/LoadFailure.tsx",
     "components/inbox-context-tokens.css",
     "lib/api/client.ts",
-    "lib/core/failure.ts",
     "lib/core/failureExit.ts",
     "lib/core/messages.ts",
     "lib/core/onboarding.ts"
@@ -1303,6 +1308,9 @@
     "lib/core/failureExit.ts",
     "lib/core/levelScan.ts",
     "lib/core/levelSummary.ts"
+  ],
+  "components/LoadFailure.tsx": [
+    "lib/core/failure.ts"
   ],
   "components/LockIcon.test.ts": [
     "lib/testSource.ts"
