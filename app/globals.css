@@ -424,3 +424,11 @@ body:has([data-action-bar='stacked']) { padding-bottom: calc(9rem + env(safe-are
 [data-decay='due'] { opacity: 0.9; }
 [data-decay='late'] { opacity: 0.75; }
 [data-decay='stale'] { opacity: 0.6; }
+
+/* T-525 · D-304 — an entry screen (`/` · `/login` · `/signup`) served without the
+   proxy holds its primary action back while `GET /api/auth/entry` decides whether a
+   probably-signed-in learner belongs somewhere else. Set by the inline script in
+   `app/layout.tsx` (`lib/entryPendingScript.ts`) BEFORE the first paint, so the action is never drawn
+   and then taken away. `visibility`, ⛔ not `display`: the layout does not move when
+   it is released, and a hidden control cannot take focus. */
+html[data-entry-pending] [data-entry-hold] { visibility: hidden; }

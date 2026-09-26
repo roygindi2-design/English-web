@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ActionBar from '@/components/ActionBar';
 import EnWord from '@/components/EnWord';
+import EntryCheck from '@/components/EntryCheck';
 import InstallPrompt from '@/components/InstallPrompt';
 import {
   LANDING_HEADLINE,
@@ -33,8 +34,12 @@ export const metadata = { title: `${LANDING_HEADLINE} · English Web` };
  * guard stays: it is what keeps this screen renderable if the bank is ever
  * emptied.
  *
- * A learner with a live session never reaches this screen — proxy.ts sends them
- * to /onboarding first, which is what keeps this page static.
+ * A learner with a live session does not stay on this screen: since T-525 it is
+ * served without the proxy, and `<EntryCheck>` sends them on (`/studies`, or
+ * `/onboarding` if they never finished it) — which is what keeps this page static.
+ * While that answer is out for a learner whose hint says «signed in», the two
+ * actions are held back (`data-entry-hold`) and the rest of the landing stands as
+ * the neutral in-between state D-304 decided.
  */
 export default function HomePage() {
   const preview = landingPreviewCard();
@@ -106,27 +111,33 @@ export default function HomePage() {
       ) : null}
 
       {/* D-028 · F-027: the primary action is anchored to the window. The
-          secondary link stays in normal flow — one action per bar. */}
-      <ActionBar>
-        <Link
-          href="/signup"
-          data-primary-action="true"
-          className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
-        >
-          בואו נתחיל
-        </Link>
-      </ActionBar>
+          secondary link stays in normal flow — one action per bar.
+          T-525: `contents` keeps both wrappers out of the layout entirely. */}
+      <div data-entry-hold className="contents">
+        <ActionBar>
+          <Link
+            href="/signup"
+            data-primary-action="true"
+            className="flex min-h-touch items-center justify-center rounded-full bg-brand-surface px-5 py-3 text-lg font-semibold text-brand-on active:opacity-90"
+          >
+            בואו נתחיל
+          </Link>
+        </ActionBar>
 
-      <div className="mt-auto flex flex-col gap-2">
-        <Link
-          href="/login"
-          className="flex min-h-touch items-center justify-center text-base text-ink-muted underline underline-offset-4 active:text-ink"
-        >
-          כבר יש לך חשבון? התחברות
-        </Link>
+        <div className="mt-auto flex flex-col gap-2">
+          <Link
+            href="/login"
+            className="flex min-h-touch items-center justify-center text-base text-ink-muted underline underline-offset-4 active:text-ink"
+          >
+            כבר יש לך חשבון? התחברות
+          </Link>
+        </div>
       </div>
 
       <InstallPrompt />
+
+      {/* T-525 — served without the proxy; the signed-in redirect comes from here. */}
+      <EntryCheck path="/" />
     </>
   );
 }

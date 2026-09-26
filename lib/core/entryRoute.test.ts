@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   HOME_PATH,
+  SIGNED_IN_HINT_COOKIE,
+  hasSignedInHint,
+  isEntryPath,
   ONBOARDING_PATH,
   onboardedFromRow,
   signedInRedirect,
@@ -91,5 +94,22 @@ describe('onboardedFromRow — התשובה מ-PostgREST אינה בשליטתנ
     expect(onboardedFromRow('2026-08-01')).toBe('unknown');
     expect(onboardedFromRow({})).toBe('unknown');
     expect(onboardedFromRow({ onboarded_at: 42 })).toBe('unknown');
+  });
+});
+
+describe('T-525 — the entry screens outside the proxy', () => {
+  it('isEntryPath accepts exactly the three entry screens', () => {
+    for (const p of ['/', '/login', '/signup']) expect(isEntryPath(p)).toBe(true);
+    for (const p of ['/studies', '/login-help', '/onboarding', '/sources', '', '//evil.example'])
+      expect(isEntryPath(p)).toBe(false);
+  });
+
+  it('hasSignedInHint reads the exact cookie, ⛔ not a lookalike or another value', () => {
+    expect(hasSignedInHint(`${SIGNED_IN_HINT_COOKIE}=1`)).toBe(true);
+    expect(hasSignedInHint(`a=b; ${SIGNED_IN_HINT_COOKIE}=1; c=d`)).toBe(true);
+    expect(hasSignedInHint('')).toBe(false);
+    expect(hasSignedInHint(`${SIGNED_IN_HINT_COOKIE}=0`)).toBe(false);
+    expect(hasSignedInHint(`x-${SIGNED_IN_HINT_COOKIE}=1`)).toBe(false);
+    expect(hasSignedInHint(`${SIGNED_IN_HINT_COOKIE}=10`)).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import SourcesFooter from '@/components/SourcesFooter';
+import { entryPendingScript } from '@/lib/entryPendingScript';
 
 /**
  * T-264 / D-193 — `title.template` is the ONE product-name suffix for the whole
@@ -47,6 +48,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl">
+      <head>
+        {/* T-525 · D-304 — runs while the HTML is still parsing, before the body
+            paints: a learner whose hint cookie says «probably signed in» never sees
+            an entry screen's primary action drawn and then taken away
+            (`[data-entry-hold]`, globals.css). Released by `<EntryCheck>`, or by its
+            own timer. A guest (no hint) is untouched. */}
+        <script dangerouslySetInnerHTML={{ __html: entryPendingScript() }} />
+      </head>
       <body className="bg-surface text-ink antialiased">
         <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
           <header className="flex items-center px-6 py-4">

@@ -34,6 +34,18 @@ export const SESSION_COOKIE_OPTIONS = {
   path: '/',
 } as const satisfies CookieOptions;
 
+/**
+ * T-525 — `SIGNED_IN_HINT_COOKIE` (`lib/core/entryRoute.ts`). Readable by script on
+ * purpose: it carries `1` and nothing else, and it only tells an entry screen to hold
+ * its primary action back until `GET /api/auth/entry` answers. Every other option is
+ * the session cookie's own.
+ */
+export const SIGNED_IN_HINT_OPTIONS = {
+  ...SESSION_COOKIE_OPTIONS,
+  httpOnly: false,
+  maxAge: 60 * 60 * 24 * 400,
+} as const satisfies CookieOptions;
+
 /** Reads env at request time, never at module load: a missing key must produce a
  *  Hebrew "we could not connect" at runtime, not a failed production build. */
 export function readSupabaseEnv(): SupabaseEnv | null {

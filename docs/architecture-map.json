@@ -130,6 +130,13 @@
     "lib/core/levelSummary.ts",
     "lib/supabase/auth.ts"
   ],
+  "app/api/auth/entry/route.test.ts": [
+    "lib/testSource.ts"
+  ],
+  "app/api/auth/entry/route.ts": [
+    "lib/core/entryRoute.ts",
+    "lib/supabase/auth.ts"
+  ],
   "app/api/auth/login/route.test.ts": [
     "lib/testSource.ts"
   ],
@@ -723,17 +730,20 @@
   "app/layout.tsx": [
     "app/globals.css",
     "components/ServiceWorkerRegistrar.tsx",
-    "components/SourcesFooter.tsx"
+    "components/SourcesFooter.tsx",
+    "lib/entryPendingScript.ts"
   ],
   "app/loading.test.ts": [
     "lib/testSource.ts"
   ],
   "app/loading.tsx": [],
   "app/login/page.tsx": [
-    "components/AuthForm.tsx"
+    "components/AuthForm.tsx",
+    "components/EntryCheck.tsx"
   ],
   "app/logout/route.ts": [
     "lib/core/auth.ts",
+    "lib/core/entryRoute.ts",
     "lib/supabase/auth.ts"
   ],
   "app/not-found.test.ts": [],
@@ -760,11 +770,13 @@
   "app/page.tsx": [
     "components/ActionBar.tsx",
     "components/EnWord.tsx",
+    "components/EntryCheck.tsx",
     "components/InstallPrompt.tsx",
     "lib/core/landing.ts"
   ],
   "app/signup/page.tsx": [
-    "components/AuthForm.tsx"
+    "components/AuthForm.tsx",
+    "components/EntryCheck.tsx"
   ],
   "app/sources/page.tsx": [
     "components/EnWord.tsx",
@@ -1219,6 +1231,10 @@
     "lib/testSource.ts"
   ],
   "components/EnWord.tsx": [],
+  "components/EntryCheck.tsx": [
+    "lib/api/client.ts",
+    "lib/core/entryRoute.ts"
+  ],
   "components/FilterBar.test.ts": [
     "lib/testSource.ts"
   ],
@@ -2256,6 +2272,13 @@
   "lib/core/worldRing.ts": [
     "lib/core/failure.ts",
     "lib/core/failureExit.ts"
+  ],
+  "lib/entryPendingScript.test.ts": [
+    "lib/core/entryRoute.ts",
+    "lib/entryPendingScript.ts"
+  ],
+  "lib/entryPendingScript.ts": [
+    "lib/core/entryRoute.ts"
   ],
   "lib/levelRound.ts": [
     "lib/core/deck.ts"

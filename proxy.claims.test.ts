@@ -20,6 +20,7 @@ const eq = vi.fn();
 
 vi.mock('@/lib/supabase/auth', () => ({
   readSupabaseEnv: () => ({ url: 'https://x.supabase.co', anonKey: 'k' }),
+  SIGNED_IN_HINT_OPTIONS: { path: '/' },
   createProxyClient: () => ({
     auth: { getClaims, getUser },
     from: () => ({ select: () => ({ eq: (...args: unknown[]) => { eq(...args); return { maybeSingle: async () => ({ data: { onboarded_at: '2026-09-01T00:00:00Z' } }) }; } }) }),

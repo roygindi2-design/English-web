@@ -19,7 +19,7 @@
 | `/cards` | `נסה שוב` · `טעינה מחדש` · `לבחירת הרמה` … +2 | `/studies` · `/dev/deck/level` · `/dev/deck` … +15 | `/settings` | ✅ | `components/LevelMapScreen` |
 | `/me` | `המשך למידה {primaryTrack !== null && }` · `מקורות הנתונים והרישיונות` · `יציאה מהחשבון` … +1 | `app/(tabs)/me/loading.tsx` · `/settings` · `app/api/profile/route.ts` … +5 | `/studies` · `/sources` | ✅ | `components/MeScreen` |
 | `/settings` | `סריקת רמה לסמן מה שאתה כבר יודע` | `/studies` · `components/LevelCard.tsx` · `components/TabBar.tsx` | ⛔ — | ✅ | `components/LevelPath` |
-| `/studies` | `כניסה לסיפורים` | `app/(tabs)/layout.tsx` · `/me` · `app/(tabs)/studies/loading.tsx` … +8 | ⛔ — | ✅ | `components/StudiesScreen` |
+| `/studies` | `כניסה לסיפורים` | `app/(tabs)/layout.tsx` · `/me` · `app/(tabs)/studies/loading.tsx` … +9 | ⛔ — | ✅ | `components/StudiesScreen` |
 | `/world/amirnet` | `התחברות מחדש` · `לתפריט התרגול` | `/dev/amirnet` · `components/AmirnetTabs.tsx` · `lib/core/worldRing.ts` | ⛔ — | ✅ | `components/AmirnetDashboardLive` |
 | `/world/amirnet/practice` | `התחברות מחדש` · `חזרה לתפריט התרגול` · `תרגל` … +1 | `/world/amirnet/simulation` · `components/AmirnetTabs.tsx` · `lib/core/licenceFooter.ts` | ⛔ — | ✅ | `components/AmirnetPracticeFlow` |
 | `/world/amirnet/simulation` | `התחברות מחדש` · `חזרה לרמות` | `/world/amirnet` · `components/AmirnetTabs.tsx` · `lib/core/licenceFooter.ts` | ⛔ — | ✅ | `components/AmirnetSimulationEntry` |
@@ -31,11 +31,11 @@
 | `/world/story/library` | `נסה שוב` | `/dev/story/library` · `components/StoryLibrary.tsx` | ⛔ — | ✅ | `components/StoryLibrary` |
 | `/world/story` | `כל הסיפורים` · `א` · `לסיפור הבא` … +9 | `/world/messages` · `/world/story/library` · `/dev/story/live` … +10 | ⛔ — | ✅ | `components/StoryScreen` |
 | `/arcade` | `סגור` · `בחירת רמה` · `הבא` … +6 | `/dev/arcade/end` · `/dev/arcade/home` · `/dev/arcade/loading` … +13 | `/cards` · `/login` · `/world` | ✅ | `components/ArenaShell` |
-| `/login` | `להתחברות` | `/me` · `/studies` · `/` … +15 | ⛔ — | ⛔ | `components/AuthForm` |
+| `/login` | ⛔ — | `/me` · `/studies` · `app/api/auth/entry/route.ts` … +17 | ⛔ — | ⛔ | `components/EntryGate` |
 | `/offline` | `נסה שוב` | `lib/core/licenceFooter.ts` · `service worker` | `/` | ⛔ | `—` |
-| `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +8 | ⛔ — | ⛔ | `components/RegisteredAddress` |
+| `/onboarding` | `יציאה מהחשבון` · `לא הכתובת שלי — להירשם מחדש` | `app/api/auth/login/route.ts` · `/dev/identity` · `/dev/onboarding` … +9 | ⛔ — | ⛔ | `components/RegisteredAddress` |
 | `/` | `בואו נתחיל` · `כבר יש לך חשבון? התחברות` | `app/not-found.tsx` · `/offline` · `/sources` … +1 | `/signup` · `/login` | ⛔ | `components/EnWord` |
-| `/signup` | `להתחברות` | `/` · `lib/core/auth.ts` · `lib/core/entryRoute.ts` … +2 | ⛔ — | ⛔ | `components/AuthForm` |
+| `/signup` | ⛔ — | `app/api/auth/entry/route.ts` · `/` · `components/EntryGate.tsx` … +4 | ⛔ — | ⛔ | `components/EntryGate` |
 | `/sources` | `לעמוד המקור` · `חזרה למסך הבית` | `components/ActionBar.tsx` · `components/MeScreen.tsx` · `components/SourcesFooter.tsx` … +2 | `/` | ⛔ | `components/EnWord` |
 | `/study` | `התחברות מחדש` · `להתחיל את הרמה מחדש` · `נסה שוב` … +2 | `app/api/profile/route.ts` · `/dev/deck` · `/dev/deck/skeleton` … +6 | `/cards` | ✅ | `components/StudyDeckScreen` |
 | `/study/scan` | `למפת הרמה` · `נסה שוב` · `המשך` … +1 | `/settings` · `components/InboxList.tsx` · `lib/core/licenceFooter.ts` … +1 | ⛔ — | ✅ | `components/LevelScan` |
@@ -107,8 +107,10 @@
 | `/dev/world/ring` | `חברים חברים` · `סיום` · `קול` | `/dev/world/ring/expired` | ⛔ — | ✅ | `—` |
 | `/dev/world/ring/place` | `חברים חברים` · `סיום` · `קול` | ⛔ — | ⛔ — | ✅ | `—` |
 
-### דגלים — 6
+### דגלים — 8
 
+- ⚠️ `/login` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
+- ⚠️ `/signup` — ⛔ אף פעולה בהקשה ⛔ לא נמדדה במרקאפ
 - ⚠️ `/login` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/offline` — ⛔ אין מצב ריק כתוב
 - ⚠️ `/onboarding` — ⛔ אין מצב ריק כתוב

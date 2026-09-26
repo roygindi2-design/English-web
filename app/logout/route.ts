@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { LOGOUT_DESTINATION_FIELD, logoutRedirectPath } from '@/lib/core/auth';
+import { SIGNED_IN_HINT_COOKIE } from '@/lib/core/entryRoute';
 import { createRouteClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,11 @@ export async function POST(request: Request) {
     await supabase.auth.signOut().catch(() => undefined);
   }
 
-  return NextResponse.redirect(new URL(logoutRedirectPath(destination, email), request.url), {
+  const response = NextResponse.redirect(new URL(logoutRedirectPath(destination, email), request.url), {
     status: 303,
   });
+  // T-525 — the landing must not hold its primary action back for someone who
+  // just signed out on this phone.
+  response.cookies.delete(SIGNED_IN_HINT_COOKIE);
+  return response;
 }

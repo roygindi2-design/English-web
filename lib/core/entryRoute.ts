@@ -54,3 +54,35 @@ export function onboardedFromRow(row: unknown): OnboardedState {
   if (typeof value !== 'string') return 'unknown';
   return value.trim() !== '';
 }
+
+/**
+ * T-525 · D-304 — the entry screens (`/` · `/login` · `/signup`) left the proxy's
+ * `matcher`, so the signed-in redirect above runs client-side for them, through
+ * `GET /api/auth/entry`. This is the ONE list that endpoint accepts: anything else
+ * answers `target: null`, so the endpoint can never become a redirect oracle for a
+ * path nobody meant it to judge.
+ */
+export function isEntryPath(pathname: string): boolean {
+  return ENTRY_PATHS.includes(pathname);
+}
+
+/**
+ * The session cookies are httpOnly (F-002), so a script cannot tell a guest from a
+ * learner. This cookie is the readable HINT that a session probably exists — ⛔ never
+ * proof of one, and ⛔ never a secret: its value is `1`, and all it decides is
+ * whether an entry screen holds its primary action back until the server answers.
+ * A stale hint costs one wait; a missing hint costs a moment of the landing — the
+ * server's answer is what redirects, in both cases.
+ */
+export const SIGNED_IN_HINT_COOKIE = 'kol-signed-in';
+
+/** Reads the hint out of a raw `document.cookie` string. Exact name, ⛔ not a prefix. */
+export function hasSignedInHint(cookieHeader: string): boolean {
+  return cookieHeader
+    .split(';')
+    .some((part) => part.trim() === `${SIGNED_IN_HINT_COOKIE}=1`);
+}
+
+/** Set on `<html>` while an entry screen waits for `GET /api/auth/entry`. */
+export const ENTRY_PENDING_ATTR = 'data-entry-pending';
+

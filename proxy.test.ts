@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import proxy, { isProtectedPath } from './proxy';
+import proxy, { config, isProtectedPath } from './proxy';
+import { createRequire } from 'node:module';
 import { withoutComments } from '@/lib/testSource';
 
 /**
@@ -135,5 +136,38 @@ describe('T-122: הלומד החוזר ⛔ אינו נזרק לטופס', () => 
     const query = CODE.indexOf(".from('profiles')");
     expect(guard).toBeGreaterThan(-1);
     expect(query).toBeGreaterThan(guard);
+  });
+});
+
+/**
+ * T-525 · D-304 — the four public entry screens leave the `matcher`, measured with
+ * Next's OWN matcher compiler (the function the build uses to turn `config.matcher`
+ * into the regexp the edge runs), ⛔ not a regexp re-typed here.
+ */
+describe('T-525: the proxy no longer wakes for the public entry screens', () => {
+  // Untyped internal module (no `.d.ts` ships for it) ⇒ required, with the one
+  // shape this test reads written out.
+  const { getMiddlewareMatchers } = createRequire(import.meta.url)(
+    'next/dist/build/analysis/get-page-static-info',
+  ) as { getMiddlewareMatchers: (m: string[], c: object) => { regexp: string }[] };
+  const matchers = getMiddlewareMatchers(config.matcher, {});
+  const runs = (pathname: string) => matchers.some((m) => new RegExp(m.regexp).test(pathname));
+
+  it('/ · /login · /signup · /sources are served without the proxy', () => {
+    for (const p of ['/', '/login', '/login/', '/signup', '/sources']) expect(runs(p)).toBe(false);
+  });
+
+  it('every protected screen still passes through it — ⛔ no lock moved', () => {
+    for (const p of ['/onboarding', '/studies', '/cards', '/cards/review', '/me', '/settings'])
+      expect(runs(p)).toBe(true);
+  });
+
+  it('the boundary is exact: a lookalike of an entry screen is still matched', () => {
+    for (const p of ['/login-help', '/signup-x', '/sourcesx', '/world/story', '/logout'])
+      expect(runs(p)).toBe(true);
+  });
+
+  it('none of the four left the matcher while being protected', () => {
+    for (const p of ['/', '/login', '/signup', '/sources']) expect(isProtectedPath(p)).toBe(false);
   });
 });

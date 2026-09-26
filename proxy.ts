@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ONBOARDING_PATH, onboardedFromRow, signedInRedirect } from '@/lib/core/entryRoute';
-import { createProxyClient, readSupabaseEnv } from '@/lib/supabase/auth';
+import {
+  ONBOARDING_PATH,
+  SIGNED_IN_HINT_COOKIE,
+  onboardedFromRow,
+  signedInRedirect,
+} from '@/lib/core/entryRoute';
+import { SIGNED_IN_HINT_OPTIONS, createProxyClient, readSupabaseEnv } from '@/lib/supabase/auth';
 
 /**
  * Session refresh + route guarding — T-002.
@@ -67,6 +72,12 @@ export default async function proxy(request: NextRequest) {
   const userId = claimsError ? undefined : claimsData?.claims?.sub;
 
   if (userId) {
+    // T-525 — the entry screens no longer pass through here, so a learner who
+    // signed in before that change carries ⛔ no hint yet. Any signed-in navigation
+    // (the next `/studies` open) writes it; ⛔ it is never proof of a session.
+    if (!request.cookies.has(SIGNED_IN_HINT_COOKIE)) {
+      response.cookies.set(SIGNED_IN_HINT_COOKIE, '1', SIGNED_IN_HINT_OPTIONS);
+    }
     // ⚠️ TD-25 · T-122: קודם כאן ישב `/onboarding` ללא תנאי, וכל לומד חוזר
     // נזרק לטופס שמילא לפני שבוע. הקריאה למאגר מתבצעת אך ורק בנתיבים
     // שההחלטה נוגעת בהם — ⛔ לא בכל בקשה. `proxy` רץ על כל ניווט, ושאילתה
@@ -115,5 +126,15 @@ function redirectPreservingCookies(
 export const config = {
   // Everything except API routes, static assets and the PWA files. The service
   // worker and manifest must be reachable without a session.
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|icons|sw.js|manifest.webmanifest|offline.html).*)'],
+  //
+  // T-525 · D-304 — and ⛔ not the four public entry screens: `/` · `/login` ·
+  // `/signup` · `/sources`. Each is prerendered and sits in the CDN cache, and
+  // measured 26/09 in production `/login` still took 4.26s cold — ALL of it this
+  // function waking up. `(?:/|$)` keeps the boundary exact (`/login-help` is still
+  // matched), and the bare `$` is `/` itself. None of the four is in
+  // `PROTECTED_SCREENS` ⇒ ⛔ no lock moved; the signed-in redirect they used to get
+  // here comes from `GET /api/auth/entry` with the same `signedInRedirect`.
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|icons|sw.js|manifest.webmanifest|offline.html|(?:login|signup|sources)(?:/|$)|$).*)',
+  ],
 };
