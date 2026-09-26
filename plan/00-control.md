@@ -27,7 +27,7 @@ LAST_REVIEWED_COMMIT: "0441f8f5"  # ⛔ השדה עוקב אחרי מה שקוד
 # --- כלכלת פריסה: קרדיטים, לא דקות. 15 קרדיטים לפריסה. ראה RULES § 0.1 ---
 WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · שלב 2.** DEV ו-CONTENT דוחפים לכאן בלבד. ⛔ שם קבוע, ⛔ לעולם לא שם חדש.
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
-ACTIVE_WORKSTREAM: msgs          # ▶️ **הוזזה `C-0867` (QA, מלא · `§ 0.23 ז׳` ④).** `arena` ⬜=0, `T-517`·`T-518`·`T-451` מוזגים בטיק הזה, שלוש חותמות מלאות **כולל אימות DB חי** (SEALS ⇒ `control-log.md`) — ⛔ בניגוד לשני המעברים הקודמים (`C-0367`/`C-0514`) שנחסמו מ-DB ונשארו חלקיים. גלגול: `story`/`nav`/`cards`/`studies`/`amirnet` כולן מוצתות (חלקן חתומות, חלקן כבר רשומות כחוב) ⇒ המועמד היחיד עם עבודה: `msgs` (1 ⬜ — `T-193`, CONTENT בלבד).
+ACTIVE_WORKSTREAM: msgs          # ▶️ **הוזזה `C-0867` (QA · `§ 0.23 ז׳` ④).** `arena` ⬜=0, נמסרה וחתומה (SEALS ⇒ `control-log.md`). גלגול: השאר מוצתות/חתומות ⇒ `msgs` (1 ⬜ — `T-193`, CONTENT).
 PREV_WORKSTREAM: "arena"        # `C-0867` (QA). `arena` נשארת ברוטציה (נמסרה, ⛔ אך לא נחסמת מחדש).
 WORKSTREAM_ENDING: ""           # ⛔ נוקה — טופל בטיק הזה (`C-0867`): שלוש החותמות נמדדו והמוקד הוזז.
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
