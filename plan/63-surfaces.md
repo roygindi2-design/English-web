@@ -58,7 +58,7 @@
 | `/dev/arcade/character` | `התחברות מחדש` · `חזרה למסך הבית` | `lib/core/arenaCharacter.ts` | `/login` | ✅ | `components/ArenaCharacterChoice` |
 | `/dev/arcade/end` | `סגור` · `בחירת רמה` · `הבא` … +2 | `components/ArenaBattle.tsx` | `/cards` · `/login` · `/world` | ✅ | `—` |
 | `/dev/arcade/home` | `התחברות מחדש` · `נסה שוב` · `התחל קרב` … +2 | ⛔ — | `/world` · `/login` | ✅ | `components/ArenaHome` |
-| `/dev/arcade/loading` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
+| `/dev/arcade/loading` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | `components/ArenaBattle.tsx` | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
 | `/dev/arcade` | `סגור` · `בחירת רמה` · `הבא` … +2 | `/dev/arcade/home` · `app/dev/arcade/layout.tsx` · `/dev/arcade/summary` … +4 | `/cards` · `/login` · `/world` | ✅ | `—` |
 | `/dev/arcade/schema-missing` | `סגור` · `התחברות מחדש` · `בחירת רמה` … +5 | ⛔ — | `/cards` · `/login` · `/world` | ✅ | `components/ArenaBattle` |
 | `/dev/arcade/summary` | `עוד קרב` · `חזרה לעולם` | ⛔ — | `/world` | ✅ | `—` |
