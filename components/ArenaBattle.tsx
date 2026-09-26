@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBar from '@/components/ActionBar';
-import ArenaResult, { type ArenaMissed } from '@/components/ArenaResult';
 import ArenaStage from '@/components/ArenaStage';
 import ArenaSummary from '@/components/ArenaSummary';
 import SpellCard from '@/components/SpellCard';
@@ -1290,33 +1289,18 @@ export default function ArenaBattle({
       const headwords = new Map<string, string>(
         battle.words.map((w) => [w.wordId, w.headword] as const),
       );
-      const missed: readonly ArenaMissed[] = outcome.missed.map((row) => ({
-        wordId: row.wordId,
-        headword: headwords.get(row.wordId) ?? row.wordId,
-        answer: row.answer,
-        chosen: row.chosen,
-      }));
       return (
-        <>
-          {/* T-180 · `37 § 10` — הסיכום המדוד של הקרב, מעל מסך הסיום הקיים.
-              ⛔ `<ArenaResult>` ⛔ אינו נמחק בפרוסה הזאת: הוא נושא את לוח הפריט שנפתח,
-              ⛔ ואין לו מחליף עדיין (§ 7 של תוכנית פרוסה C). ⛔ הסיכום ⛔ אינו מחשב כאן —
-              `summarize` הוא `lib/core` טהור. */}
-          <ArenaSummary
-            ending={ending}
-            summary={summarize(battle.casts)}
-            headwords={Object.fromEntries(headwords)}
-            replay={replayAnswered === 0 ? null : { fixed: replayFixed, total: replayAnswered }}
-            onBack={again}
-          />
-          <ArenaResult
-            enemyDefeated={outcome.enemyDefeated}
-            unlocked={outcome.unlocked}
-            items={outcome.unlocked === null ? [] : [outcome.unlocked]}
-            missed={missed}
-            onAgain={again}
-          />
-        </>
+        /* T-180 · `37 § 10` — הסיכום המדוד של הקרב. ⛔ הסיכום ⛔ אינו מחשב כאן —
+           `summarize` הוא `lib/core` טהור. 🏁 ⟦`T-517` · `D-302`⟧ **מסך סיום אחד**: עד היום
+           `<ArenaResult>` רונדר כאח מתחתיו — שני מסכי `100dvh` מוערמים, שני `h1`, ורצועה
+           קבועה של המסך השני שכיסתה את הכפתור של הראשון. */
+        <ArenaSummary
+          ending={ending}
+          summary={summarize(battle.casts)}
+          headwords={Object.fromEntries(headwords)}
+          replay={replayAnswered === 0 ? null : { fixed: replayFixed, total: replayAnswered }}
+          onAgain={again}
+        />
       );
     }
     // 👻 ⟦`C-0781` · `T-453`⟧ אותה רצועה קבועה, ⇒ אותו תיקון של `T-421`: `data-arena-failure`

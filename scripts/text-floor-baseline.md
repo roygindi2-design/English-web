@@ -40,6 +40,4 @@
 ⚠️ **המפתח ⛔ אינו מספר שורה.** מספר שורה זז עם כל עריכה מעליו. המפתח הוא הביטוי
 `text-[<n>px]` או שם ה-`font-size` המדויק.
 
-- components/ArenaSummary.tsx · A · text-[11.5px] · F-162 · T-236
-- components/ArenaSummary.tsx · A · text-[11px] · F-162 · T-236
 - components/WorldRing.tsx · A · text-[11.5px] · F-162 · T-236

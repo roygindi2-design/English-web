@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import ActionBar from '@/components/ActionBar';
 import EnWord from '@/components/EnWord';
 import { replayTallyHe } from '@/lib/core/arenaReplay';
 import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type ArenaSummary as ArenaSummaryData } from '@/lib/core/arenaSummary';
@@ -23,7 +25,9 @@ import { firstMetHe, meanSecondsHe, wordsFromBossHe, type ArenaEnding, type Aren
  * (`:606-617`) — אותו שורש · ⓒ **הלוח הכחול `פגשת 4 מילים חדשות` (`:631-640`) — נבנה
  * ב-T-282 כקריאה בלבד**; ⛔ מה שעדיין אינו כאן הוא בקרת ה-`○` והשורה `הוסף לכרטיסיות`,
  * שתיהן חצי הכתיבה של `03-for-roy` פריט 105 · ⓓ ה-CTA `הוסף הכול וחזור לזירה` (`:643`) —
- * אותו פריט 105, ולכן ה-CTA נשלח כ-`חזרה לזירה` (מחרוזת ממשק, ⛔ לא תוכן לימודי).
+ * אותו פריט 105. ⟦`T-517` · `D-302`⟧ ה-CTA הוא `עוד קרב`, והיציאה המשנית `חזרה לעולם` —
+ * **המסך היחיד של סוף הקרב**, ⛔ ולא עוד מסך מעל `<ArenaResult>` (שני `h1`, שלוש פעולות
+ * ששתיים מהן היו שני שמות לאותו `again`).
  *
  * ⚠️ **רדיוס שורת הסטטיסטיקה ברנדר הוא 13** (`:618-620`) — ⛔ **אינו** אחד מחמשת ערכי
  * הסולם (6 · 8 · 12 · 16). הקרוב בסולם הוא `xl` = 12 ⇒ סטייה **מדודה של 1px**, אותה צורה
@@ -36,8 +40,8 @@ export interface ArenaSummaryProps {
   readonly summary: ArenaSummaryData;
   /** wordId → headword. האנגלית ⛔ לעולם אינה מגיעה ללומד מחוץ ל-`<EnWord>`. */
   readonly headwords: Readonly<Record<string, string>>;
-  /** «חזור לזירה». ⛔ אינה הכרעת ניווט — הקורא הוא שמחזיק את היעד. */
-  readonly onBack: () => void;
+  /** «עוד קרב» — ⛔ מנקה מצב מקומי ומושך סיבוב חדש. ⛔ אינו ניווט (`T-517`). */
+  readonly onAgain: () => void;
   /**
    * 🔁 `T-451` · `37 § 8` ק8 — כמה מילות «חזרה מהירה» תוקנו מתוך כמה שנענו.
    * ⛔ `null` ⇔ לא הייתה חזרה (אפס טעויות, או דילוג לפני תשובה ראשונה) ⇒ ⛔ אין שורה.
@@ -58,9 +62,10 @@ const CORRECT_HE = 'נכונות';
 const MEAN_HE = 'זמן תגובה ממוצע';
 const STREAK_HE = 'רצף מרבי';
 const SLOW_HE = 'מילים היו איטיות';
-// D-187 §ג׳.2 — צורת הפועל של שם יציאה היא `חזרה`, ⛔ לא `חזור`; זה היה היחיד
-// מ-13 אתרי היציאה בעץ שסטה.
-const BACK_HE = 'חזרה לזירה';
+// ⟦`T-517`⟧ שתי פעולות, ⛔ לא שלוש: `חזרה לזירה` ו-`עוד קרב` קראו שניהם ל-`again`.
+const AGAIN_HE = 'עוד קרב';
+/** T-253ⓐ · D-186 — היציאה חוזרת לטבעת, אותה תווית שצמתי הטבעת האחרים נושאים. */
+const BACK_TO_WORLD_HE = 'חזרה לעולם';
 const FOOTER_HE = 'הזירה לא שינתה דבר בהתקדמות הלמידה';
 
 /* ‏y=318 · 370 · 422 ⇒ פסיעה 52 על גובה 44 ⇒ מרווח 8px = `gap-2`.
@@ -74,13 +79,17 @@ const ROW_CLASS =
   'flex min-h-[44px] items-center justify-between rounded-xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-4';
 /* ‏x=24 ⇒ הגדר של `<main>` ב-`app/layout.tsx:57` (‏`px-6`), ⛔ ולא גדר שנייה כאן;
    ‏LW-48=327 ⇒ הרוחב נגזר, ⛔ ולא נכתב. ⟦T-348 · `F-253`⟧ */
+const PRIMARY_ACTION_CLASS =
+  'inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border-2 border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] px-5 text-[15.5px] font-black text-[color:var(--brand-on)] active:opacity-90 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out motion-safe:active:scale-[0.97]';
+const SECONDARY_ACTION_CLASS =
+  'inline-flex min-h-touch w-full items-center justify-center rounded-2xl border border-[color:var(--arena-card-edge)] bg-[color:var(--arena-card)] px-5 py-3 text-[15px] font-medium text-[color:var(--arena-ink)] active:opacity-90 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out motion-safe:active:scale-[0.97]';
 const PANEL_CLASS = 'flex min-h-[66px] flex-col justify-center gap-1 rounded-2xl px-4 py-3';
 
 export default function ArenaSummary({
   ending,
   summary,
   headwords,
-  onBack,
+  onAgain,
   replay = null,
 }: ArenaSummaryProps): React.JSX.Element {
   return (
@@ -102,7 +111,9 @@ export default function ArenaSummary({
        ‏`F-011`, ‏≤48px) **קפוא**, ונמדד אדום על 92 בטיק הזה.
        ⛔ **וכל טוקן `globals` הוחלף בזה של הזירה** — `--ink` מתחלף לפי `prefers-color-scheme`,
        ובסכימה בהירה הוא דיו כהה על כחול־ליל. */
-    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[max(0.5rem,env(safe-area-inset-bottom))]" data-surface="dark">
+    /* 🏁 **⟦`T-517` · `D-302`⟧ ריפוד תחתון שמשלם על הרצועה הקבועה** — אותו `9.5rem` ש-`T-430`
+       מדד על `<ArenaResult>` (רצועה של שני כפתורים בעמודה, `h=147`). */
+    <section data-arena-scope className="flex h-[100dvh] flex-col gap-6 overflow-hidden pt-12 pb-[calc(9.5rem+env(safe-area-inset-bottom))]" data-surface="dark">
       {/* ‏y=128 · 34 Black · GOLD_LIGHT (`:602`) + ‏y=160 · 12.5 Medium · INK_MUTED (`:603`).
           ⛔ אין שבח ואין נזיפה (R-016): ניצחון = עובדה על היריב; כל סיום אחר = **מספר**
           (`37 § 9` ח4) ועובדה אחת על איך נגמר. ⛔ מילת הפסד ⛔ אינה כאן. */}
@@ -161,7 +172,7 @@ export default function ArenaSummary({
           <p className="text-end text-[14px] font-bold text-[color:var(--arena-damage)]">
             {summary.slow.length} {SLOW_HE}
           </p>
-          <p className="text-end text-[11.5px] leading-relaxed text-[color:var(--arena-ink)]">
+          <p className="text-end text-[12px] leading-relaxed text-[color:var(--arena-ink)]">
             {summary.slow.map((c, i) => (
               <span key={c.wordId}>
                 {i > 0 && ' · '}
@@ -197,20 +208,29 @@ export default function ArenaSummary({
 
       </div>
 
-      {/* ‏y=654 · h=56 (`:641-643`) — ✅ מעל רצפת 44px של שכבה א׳. */}
-      <button
-        type="button"
-        data-arena-summary-back
-        data-primary-action="true"
-        className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border-2 border-[color:var(--brand-surface)] bg-[color:var(--brand-surface)] px-5 text-[15.5px] font-black text-[color:var(--brand-on)] active:opacity-90"
-        onClick={onBack}
-      >
-        {BACK_HE}
-      </button>
+      {/* ‏y=730 · Regular · INK_MUTED (`:645-646`) — **הוא** אינווריאנט `37 § 13.1` אמור
+          בקול, ולכן הוא נשלח מילה במילה. ⟦`T-517`⟧ 12px ⛔ ולא 11 — רצפת שכבה א׳. */}
+      <p className="text-center text-[12px] leading-relaxed text-[color:var(--arena-ink-dim)]">{FOOTER_HE}</p>
 
-      {/* ‏y=730 · 11 Regular · INK_MUTED (`:645-646`) — **הוא** אינווריאנט `37 § 13.1`
-          אמור בקול, ולכן הוא נשלח מילה במילה. */}
-      <p className="text-center text-[11px] leading-relaxed text-[color:var(--arena-ink-dim)]">{FOOTER_HE}</p>
+      {/* 🏁 ‏y=654 · h=56 (`:641-643`) — ✅ מעל רצפת 44px. ⟦`T-517`⟧ רצועה **אחת**, שתי פעולות:
+          ראשית `עוד קרב`, משנית `חזרה לעולם`. לחיצה מתכווצת ל-0.97 (160ms, ease-out) — משוב
+          שהממשק שמע, ⛔ ורק תחת `motion-safe`. */}
+      <ActionBar layout="stacked">
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            data-arena-again
+            data-primary-action="true"
+            className={PRIMARY_ACTION_CLASS}
+            onClick={onAgain}
+          >
+            {AGAIN_HE}
+          </button>
+          <Link data-arena-back href="/world" className={SECONDARY_ACTION_CLASS}>
+            {BACK_TO_WORLD_HE}
+          </Link>
+        </div>
+      </ActionBar>
     </section>
   );
 }

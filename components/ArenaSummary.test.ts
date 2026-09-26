@@ -57,9 +57,9 @@ describe('<ArenaSummary> — 37 § 10 · kol-B-07-results.png', () => {
     expect(CODE).toMatch(/data-arena-first-met/);
     expect(CODE).toMatch(/firstMetHe\(/);
     expect(CODE).toMatch(/summary\.firstMet\.length > 0 &&/);
-    // 12px, ⛔ not the render's 11.5 — Layer A floor (scripts/check-text-floor.mjs). A new
-    // 11.5 would be a new baseline violation.
-    expect((CODE.match(/text-\[11\.5px\]/g) ?? []).length).toBe(1);
+    // 12px, ⛔ not the render's 11.5 — Layer A floor (scripts/check-text-floor.mjs).
+    // ⟦T-517⟧ the slow panel and the footer line came up to the floor too ⇒ zero, ⛔ not one.
+    expect(CODE).not.toMatch(/text-\[11(?:\.5)?px\]/);
   });
 
   it('T-283 — שלושה סיומים, ⛔ לא בוליאני; ⛔ «הפסדת» ו⛔ «הקרב נגמר» אינם על המסך', () => {
@@ -111,5 +111,38 @@ describe('T-428 — הסקופ של הזירה, ⛔ וטוקנים שמתחלפ�
     const banned = /\b(?:text|bg|border)-(?:ink|ink-muted|brand-surface)\b(?![-\w])/;
     expect(banned.test('rounded-2xl bg-brand-surface px-5')).toBe(true);
     expect(banned.test('text-[color:var(--arena-ink)]')).toBe(false);
+  });
+});
+
+/**
+ * 🏁 **T-517 · `D-302` — קרב נגמר במסך אחד: כותרת אחת ושתי פעולות.**
+ * 🔬 נמדד `C-0861`: `ArenaBattle.tsx` רינדר `<ArenaSummary>` **ו**-`<ArenaResult>` כאחים —
+ * שני `100dvh`, שני `h1` («היריב נוצח» פעמיים), ו-`חזרה לזירה` · `עוד קרב` שניהם `again`.
+ * המדידה בפיקסלים יושבת ב-`verify-mobile.mjs` (`/dev/arcade/summary`).
+ */
+describe('T-517 — מסך סיום אחד', () => {
+  const BATTLE = withoutComments(readFileSync('components/ArenaBattle.tsx', 'utf8'));
+
+  it('`h1` אחד בדיוק', () => {
+    expect(CODE.match(/<h1\b/g)).toHaveLength(1);
+  });
+
+  it('שתי פעולות בדיוק — `עוד קרב` (again) ו-`חזרה לעולם` (/world) — ברצועה אחת', () => {
+    expect(CODE.match(/<ActionBar\b/g)).toHaveLength(1);
+    expect(CODE.match(/<button\b/g)).toHaveLength(1);
+    expect(CODE.match(/<Link\b/g)).toHaveLength(1);
+    expect(CODE).toContain("'עוד קרב'");
+    expect(CODE).toContain("'חזרה לעולם'");
+    expect(CODE).toMatch(/onClick=\{onAgain\}/);
+    expect(CODE).toMatch(/href="\/world"/);
+  });
+
+  it('⛔ `חזרה לזירה` ⛔ אינו על המסך', () => {
+    expect(CODE).not.toContain('חזרה לזירה');
+  });
+
+  it('⛔ `ArenaBattle` ⛔ אינו מרנדר מסך סיום שני', () => {
+    expect(BATTLE).not.toMatch(/<ArenaResult\b/);
+    expect(BATTLE.match(/<ArenaSummary\b/g)).toHaveLength(1);
   });
 });

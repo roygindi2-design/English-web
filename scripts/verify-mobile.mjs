@@ -3826,6 +3826,57 @@ try {
     }
   }
 
+  // ---- 2h. 🏁 T-517 · `D-302` — a battle ends on ONE screen: one heading, two actions ----
+  //
+  // 🔬 Measured in code `C-0861`: `ArenaBattle.tsx` returned `<ArenaSummary>` AND `<ArenaResult>`
+  // as siblings, both `h-[100dvh]` ⇒ two stacked end screens, two `h1` («היריב נוצח» twice), and
+  // the second screen's FIXED bar covering the first screen's `חזרה לזירה` from the first frame.
+  // ⇒ the fixture renders what `ArenaBattle` renders, and this measures the pixels.
+  {
+    for (const size of [
+      { width: 320, height: 568 },
+      { width: 375, height: 667 },
+      { width: 414, height: 896 },
+      { width: 393, height: 852 },
+    ]) {
+      const ctx = await browser.newContext({ viewport: size });
+      const page = await ctx.newPage();
+      const uncaught = watchUncaught(page);
+      await page.goto(`${BASE}/dev/arcade/summary`, { waitUntil: 'networkidle' });
+      const m = await page.evaluate(() => {
+        const actions = [...document.querySelectorAll('[data-action-bar] button, [data-action-bar] a')].map((el) => {
+          const r = el.getBoundingClientRect();
+          return { text: (el.textContent ?? '').trim(), h: Math.round(r.height), w: Math.round(r.width), bottom: r.bottom };
+        });
+        return {
+          h1: document.querySelectorAll('h1').length,
+          actions,
+          sections: document.querySelectorAll('section[data-arena-scope]').length,
+          oldBack: document.body.innerText.includes('חזרה לזירה'),
+          scroll: document.documentElement.scrollHeight,
+          clientH: document.documentElement.clientHeight,
+          innerH: window.innerHeight,
+        };
+      });
+      const at = `T-517 · /dev/arcade/summary @ ${size.width}×${size.height}`;
+      check(uncaught.length === 0, `${at} ⛔ no uncaught exception`, `threw: ${uncaught.join(' · ')}`);
+      check(m.sections === 1, `${at} · one end screen`, `${m.sections} arena sections`);
+      check(m.h1 === 1, `${at} · exactly one h1`, `h1 count ${m.h1}`);
+      check(
+        m.actions.length === 2 && m.actions[0]?.text === 'עוד קרב' && m.actions[1]?.text === 'חזרה לעולם',
+        `${at} · two actions: עוד קרב · חזרה לעולם`,
+        `actions: ${m.actions.map((a) => a.text).join(' · ')}`,
+      );
+      for (const a of m.actions) {
+        check(a.h >= 44 && a.w >= 44, `${at} · «${a.text}» ≥44px`, `${a.w}×${a.h}`);
+        check(a.bottom <= m.innerH, `${at} · «${a.text}» is on screen`, `bottom ${a.bottom} vs ${m.innerH}`);
+      }
+      check(!m.oldBack, `${at} · ⛔ «חזרה לזירה» is gone`, 'the old third action is still drawn');
+      check(m.scroll === m.clientH, `${at} · ⛔ the page does not scroll`, `scrollHeight ${m.scroll} vs clientHeight ${m.clientH}`);
+      await ctx.close();
+    }
+  }
+
   // 🧪 `T-421` (`C-0779`) · המשך של `T-416`ⓑ — **הטענה החיה ש-`T-416` ⛔ לא יכלה לכתוב.**
   // שומר-המקור ב-`ArenaBattle.test.ts` (‏`F-278`) מודד את ה**מחלקה**; זה מודד את ה**פיקסל**:
   // קטע שיחזור ל-`min-h-[100dvh]`+`pb-28` בניסוח שהשומר ⛔ אינו מכיר ייתפס כאן.

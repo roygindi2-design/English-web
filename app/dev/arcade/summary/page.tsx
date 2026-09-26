@@ -79,7 +79,7 @@ export default function DevArcadeSummaryPage() {
       ending={{ kind: 'victory', wordsFromBoss: 0 }}
       summary={summarize(FIXTURE)}
       headwords={HEADWORDS}
-      onBack={() => {}}
+      onAgain={() => {}}
     />
   );
 }

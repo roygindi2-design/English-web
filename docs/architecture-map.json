@@ -978,7 +978,6 @@
   ],
   "components/ArenaBattle.tsx": [
     "components/ActionBar.tsx",
-    "components/ArenaResult.tsx",
     "components/ArenaStage.tsx",
     "components/ArenaSummary.tsx",
     "components/CloseIcon.tsx",
@@ -1063,6 +1062,7 @@
     "lib/testSource.ts"
   ],
   "components/ArenaSummary.tsx": [
+    "components/ActionBar.tsx",
     "components/EnWord.tsx",
     "lib/core/arenaReplay.ts",
     "lib/core/arenaSummary.ts"
