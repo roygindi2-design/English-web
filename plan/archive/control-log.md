@@ -1,5 +1,7 @@
 # ארכיון יומן המחזורים של 00-control.md
 
+loop(QA): gate idle — rev-list origin/dev..origin/work/current = 0, nothing to merge.
+
 loop(QA): C-0815 gate merged 10 commits ⇒ origin/dev — verify ✅ · loop:health 23/23 · 0 findings. **Branch shippable.**
 
 loop(QA): gate idle — LOCK_HELD_BY=ops-agent since 2026-09-17T11:56:00Z (~60 min), rev-list=14
