@@ -264,6 +264,25 @@ describe('public/sw.js — navigation (T-519)', () => {
     expect(await got.value!.text()).toBe('me-live');
   });
 
+  it('/ is ⛔ never painted from the cache — the proxy sends a signed-in learner on from it', async () => {
+    // manifest `start_url` is `/`, and `proxy.ts` redirects a signed-in learner from
+    // `/` to `/studies` (`lib/core/entryRoute.ts` ENTRY_PATHS). A redirect is never
+    // stored, so a stored `/` would paint the signed-out landing on EVERY cold open.
+    const w = loadWorker(slowNetwork(3000, () => page('whatever the proxy decided')));
+    w.caches.seed('english-web-v4', '/', 'the signed-out landing');
+    const got = timed(w.navigate('/').response);
+    await vi.advanceTimersByTimeAsync(2999);
+    expect(got.value).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(await got.value!.text()).toBe('whatever the proxy decided');
+  });
+
+  it('/ with no network still falls back to the stored landing, as today', async () => {
+    const w = loadWorker(() => Promise.reject(new TypeError('offline')));
+    w.caches.seed('english-web-v4', '/', 'the signed-out landing');
+    expect(await (await w.navigate('/').response).text()).toBe('the signed-out landing');
+  });
+
   it('the fast path matches the exact URL — a stored /world/story?id=1 ⛔ does not answer ?id=2', async () => {
     const w = loadWorker(slowNetwork(3000, () => page('story-2')));
     w.caches.seed('english-web-v4', '/world/story?id=1', 'story-1');

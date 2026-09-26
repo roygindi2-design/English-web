@@ -14,6 +14,13 @@ const PRECACHE = ['/', OFFLINE_ROUTE, OFFLINE_FALLBACK];
 // Offline navigation to these paths gets the real Hebrew offline screen.
 const NEVER_CACHE = ['/signup', '/login', '/logout', '/onboarding'];
 
+// Routes the proxy answers per session: a signed-in learner opening `/` (the
+// manifest start_url) is redirected on (lib/core/entryRoute.ts ENTRY_PATHS).
+// Redirects are never stored, so a stored `/` is always the signed-out landing —
+// painting it early would strand a learner there on every cold open. Stored
+// copies still serve as the offline fallback.
+const SESSION_ROUTED = ['/'];
+
 function isPrivateRoute(pathname) {
   return NEVER_CACHE.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
@@ -82,7 +89,8 @@ function isSharedScreen(res) {
 // - nothing stored ⇒ network, then the real Hebrew offline screen — never a
 //   browser error. API responses are not handled here at all (see the listener).
 async function handleNavigation(request, event) {
-  if (isPrivateRoute(new URL(request.url).pathname)) {
+  const pathname = new URL(request.url).pathname;
+  if (isPrivateRoute(pathname)) {
     try {
       return await fetch(request);
     } catch {
@@ -98,7 +106,7 @@ async function handleNavigation(request, event) {
   // Exact URL only: /world/story?id=1 must never paint for ?id=2.
   const stored = await cache.match(request);
 
-  if (!stored || !isSharedScreen(stored)) {
+  if (!stored || !isSharedScreen(stored) || SESSION_ROUTED.includes(pathname)) {
     try {
       return await network;
     } catch {
