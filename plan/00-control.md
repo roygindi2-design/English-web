@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: DEV                       # ▶️ C-0873 (PM): `msgs` ⑦ נפרס — `T-520`…`T-522` ⬜ (`D-303`). ⚠️ עבודת C-0872 (זירה) עדיין ממתינה ל-QA.
+NEXT_AGENT: QA                        # ▶️ C-0874 (DEV): `msgs` ⑦ נבנה — `T-520`·`T-521`·`T-522` 🟣 (3 קומיטים, verify מלא ירוק פעמיים). ⬜ כשיר ל-DEV ב-`msgs` = 0 (`T-193` CONTENT · `T-475`…`T-477` ⛔ `for-roy` 144).
 STATE: BUILDING                # ▶️ C-0867 (QA): 41 קומיטים מוזגו ל-`dev` (ff-only, פעמיים בטיק הזה), כלום 🟣 ממתין למיזוג כרגע. RELEASE_READY + שלוש הקשות טריות נכתבו. arena נמסרה וחתומה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-26T08:17:15Z"   # C-0872 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-26T09:35:43Z"   # C-0874 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "dev-agent"             # 🔒 C-0874 (DEV)
@@ -18,7 +18,7 @@ WORKSTREAM_TICKS:                 # ⚠️ בלם 8 שוכתב 23/08 (רוי): �
 #   amirnet: 26 / 120          # § 41 § 8-1..3 · **נחתמה `C-0822` (QA) → `msgs`.** ⬜=0 · ✅=3 (`T-490`…`T-492`, מוזגו) · ⛔=2 (`T-312`·`T-324`). SEALS + חוב ⇒ `plan/archive/control-log.md` · `plan/61-deferred.md`
 #   general: — / 120          # ⛔ מחוץ לרצף `36 § 13` ⇒ ⛔ אין תקרה. ⬜=1. **⛔ אינה המוקד עוד** (→`nav`, `C-0833` QA). הנרטיב ⇒ `plan/archive/control-log.md`
 #   loop:    — / 120          # ⛔ מחוץ לרצף `36 § 13`. ⬜=3. הנרטיב ⇒ `plan/archive/control-log.md`
-#   msgs:    9 / 120           # 39 § 9 · **המוקד** (←`arena`, `C-0867` QA). ⬜=1 (`T-193` CONTENT) · ⛔=3 (`for-roy` 144) ⇒ `plan/61-deferred.md`
+#   msgs:   10 / 120           # 39 § 9 · **המוקד** (←`arena`, `C-0867` QA). ⬜=1 (`T-193` CONTENT) · ⛔=3 (`for-roy` 144) ⇒ `plan/61-deferred.md`
 MILESTONE_TICKS: 103           # ⛔ מונה M0 הישן — מוקפא, ⛔ ואינו בלם. הבלם החי הוא WORKSTREAM_TICKS
 RELEASE_READY: "1d809979 · 2026-09-26T06:03:33Z · **C-0867 (QA, מלא).** `work/current`==`dev`==`1d809979` (ff-only, 41 קומיטים מאז `6732a52e`). `verify` מלא ירוק פעמיים (once against `work/current`, once against `dev` — nine-command gate, 5,551 בדיקות `check:mobile`, exit 0 בשתיהן) · `loop:health` 23/23. הלומד מקבל: **קרב זירה שנגמר במסך אחד** — כותרת אחת, שתי פעולות (`עוד קרב`/`חזרה לעולם`) במקום שני מסכים מוערמים (`T-517`) · **המילים שהפילו אותך** גלויות על המסך הראשון בלי גלילה (`T-518`) · **«חזרה מהירה»** — עד שלוש מילים שהוחטאו חוזרות פעם אחת מחוץ לשעון אחרי הקרב (`T-451`) · **פתיחה יומית מהירה יותר** — המסך נצבע מהמטמון תוך 800ms במקום להמתין 2–6 שניות להתעוררות השרת, כשיש עותק שמור (`T-519`). 🔬 **שלוש החותמות של `arena` (`36 § 13.1`) נמדדו מקצה לקצה בטיק הזה על חשבון Supabase אמיתי וחדש** — הגעה בהקשות אמיתיות (signup⇢onboarding⇢עולם⇢זירה), קרב מלא עד תום השעון על נתונים אמיתיים, ושמירה מאומתת גם ישירות מול ה-DB (`arcade_runs`/`arcade_progress`/`arcade_collected_words`, `mcp__Supabase__execute_sql`) — ⛔ בניגוד לשני המעברים הקודמים של `arena` (`C-0367`/`C-0514`) שנחסמו מ-DB חי ונשארו חלקיים. SEALS מלאות ⇒ `plan/archive/control-log.md`. המוקד התקדם `arena`⇢`msgs` (`§ 0.23 ז׳` ④). 🧹 **תיקון רגיסטר:** `F-247` תוקן (הפניה לקובץ מת) · 5 שורות 🟣 ישנות הוחזרו ✅ בכמות מ-`git log` (חלקן כבר היו ב-`dev`, כמו `T-144`). ⛔ אין ממצא חדש חוסם."
 PAUSED_BY_HUMAN: false           # ⚠️ הבלם בודק `== true` בלבד. **נמדד C-0418 ב-`git log` מ-01/09: DEV 55 קומיטים · PM 20 · QA 13** ⇒ שלוש המשימות דלוקות ורצות. רקע ⇒ `plan/archive/control-log.md`
@@ -29,7 +29,7 @@ WORKING_BRANCH: work/current      # ▶️ **שונה 24/08 · RULES § 0.23 · 
 MERGE_TARGET: dev                 # רק QA ממזג לכאן, ורק ב-`merge --ff-only`. ⛔ אף סוכן ⛔ אינו דוחף ל-dev ישירות.
 ACTIVE_WORKSTREAM: msgs          # ▶️ **הוזזה `C-0867` (QA · `§ 0.23 ז׳` ④).** `arena` ⬜=0, נמסרה וחתומה (SEALS ⇒ `control-log.md`). גלגול: השאר מוצתות/חתומות ⇒ `msgs` (1 ⬜ — `T-193`, CONTENT).
 PREV_WORKSTREAM: "arena"        # `C-0867` (QA). `arena` נשארת ברוטציה (נמסרה, ⛔ אך לא נחסמת מחדש).
-WORKSTREAM_ENDING: msgs · 4 ⬜ נותרו · 2026-09-26T08:55:32Z · C-0873
+WORKSTREAM_ENDING: msgs · 1 ⬜ נותרה (`T-193`, CONTENT) · 2026-09-26T09:35:43Z · C-0874
 # (SEALS · BUDGET_NOTE · הערות הכיווץ — הוצאו 08/09 ל-`plan/archive/control-log.md`.
 #  ⛔ אפס צרכנים בכל המאגר: ⛔ אף סקריפט, ⛔ אף כלל ו⛔ אף פרומפט ⛔ אינם קוראים אותם. ⛔ אין להחזירם.
 #  SEALS · amirnet — נמדדו C-0822 (QA) לפני הזזת המוקד → msgs. ⇒ `plan/archive/control-log.md`.
