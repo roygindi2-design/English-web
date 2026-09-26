@@ -1,10 +1,10 @@
 <!--
-NEXT_AGENT: QA                        # ▶️ C-0885 (DEV): `T-525`·`T-524` 🟣 (`base` ①). QA חייבת מיזוג `T-520`…`T-525` + `T-377`; `/login` קר ×3 אחרי קידום (PROMOTER).
+NEXT_AGENT: QA                        # ▶️ C-0886 (DEV): arena free-hand `1bab6187` · C-0885: `T-525`·`T-524` 🟣 (`base` ①). QA חייבת מיזוג `T-520`…`T-525` + `T-377`; `/login` קר ×3 אחרי קידום (PROMOTER).
 STATE: BUILDING                # ▶️ C-0867 (QA): 41 קומיטים מוזגו ל-`dev` (ff-only, פעמיים בטיק הזה), כלום 🟣 ממתין למיזוג כרגע. RELEASE_READY + שלוש הקשות טריות נכתבו. arena נמסרה וחתומה.
 ACTIVE_MILESTONE: M0              # M0..M6
 ACTIVE_TASK_ID: []   # ▶️ C-0529 — ריק.
 CRITIC_ROUNDS_ON_TASK: 0          # ⛔ התור הישן הועבר ל-`plan/archive/control-log.md` (26/08) — הוא היה מת: QA הופך 🟣⇢✅ בכמות מ-`git log`.
-LAST_HANDOFF_AT: "2026-09-26T15:36:22Z"   # C-0885 (DEV) ⇒ QA.
+LAST_HANDOFF_AT: "2026-09-26T15:49:08Z"   # C-0886 (DEV) ⇒ QA.
 HUMAN_DECISION_REQUIRED: false    # ▶️ ⛔ אינו ממתין. **44 · 45 · 46 נסגרו כולם ב-23/08.** נותר **47** — שורה ב-`RULES § 0.1 ב׳` שהיא הקובץ של רוי, ו⛔ **אינה חוסמת את הקידום של היום**.
 # --- נעילה: מונעת שני סוכנים שכותבים לקובץ בו-זמנית ---
 LOCK_HELD_BY: "DEV"
