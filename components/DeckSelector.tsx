@@ -128,6 +128,15 @@ const COUNTS_LOADING_HE = 'טוען את מספרי החפיסות…';
 const RETRY_ACTION_HE = 'טעינה מחדש';
 const READ_FAILED_BODY_HE = 'חלק מהנתונים לא הגיעו מהשרת.';
 /**
+ * `F-336` — a learner with ⛔ no level yet. ⛔ Not a failure: the server answered, and
+ * the only way out is the level picker `<LevelMapScreen>` renders above this block.
+ * Wording follows the precedent `<StoryScreen>` already ships (`NO_LEVEL_HE`).
+ */
+const NO_LEVEL_BODY_HE = 'עוד לא בחרת רמה — החפיסות נפתחות אחרי שבוחרים.';
+const NO_LEVEL_ACTION_HE = 'לבחירת הרמה';
+/** The anchor `<LevelMapScreen>` puts on its `choose` branch. */
+const NO_LEVEL_HREF = '#level-choice';
+/**
  * ⚠️ **C-0321 — «נעול» עברה משורת ההערה ל-`sr-only` ליד שם האריח, ⛔ והיא ⛔ לא נמחקה.**
  *
  * D-096 קובעת שאריח מושבת **בלי מספר** אינו מצב חוקי, ו-`render_video_A.py:290,296` מצייר
@@ -205,11 +214,22 @@ type QueueResponse =
   | { readonly ok: true; readonly total: number }
   | { readonly ok: false; readonly code: string };
 
+/**
+ * One deck's read: a number · `null` (the read failed) · or `'no_level'` (`F-336` — the
+ * server answered `409`, the learner has ⛔ no level yet, and ⛔ nothing failed).
+ */
+type DeckRead = number | null | 'no_level';
+
 /** `T-385` — ⛔ `unknown` ⛔ אינו כאן עוד: הוא נקרא פעם אחת, במסך. */
 type DeckCounts = {
-  readonly due: number | null;
-  readonly sentences: number | null;
+  readonly due: DeckRead;
+  readonly sentences: DeckRead;
 };
+
+/** The number a tile can print — `'no_level'` has none, exactly like a failed read. */
+function countOf(read: DeckRead): number | null {
+  return typeof read === 'number' ? read : null;
+}
 
 /**
  * `T-385`ⓐ — מה שהמסך מוסר על חפיסת `unknown`. ‏`failed` נוסע כשדה ⛔ ואינו נגזר
@@ -275,13 +295,15 @@ type DeckEntry = {
   | { readonly enabled: false; readonly href: string | null }
 );
 
-/** `null` on every failure — including a server that answered `{ok:false}`. The screen does
- *  not act on WHY the number is missing (it shows «—» either way), so the code is not
- *  carried up where it would only invite an error screen the task forbids. */
-async function readTotal(path: string): Promise<number | null> {
+/** `null` on every failure — including a server that answered `{ok:false}` — with ⛔ one
+ *  exception, `F-336`: `no_level` is carried up as itself. It is ⛔ not a failure, a retry
+ *  ⛔ cannot fix it, and flattening it into `null` painted «חלק מהנתונים לא הגיעו מהשרת»
+ *  under the level picker on a brand-new account. Every other code still reads «—». */
+async function readTotal(path: string): Promise<DeckRead> {
   try {
     const body = await apiGet<QueueResponse>(path);
-    return body.ok ? body.total : null;
+    if (body.ok) return body.total;
+    return body.code === 'no_level' ? 'no_level' : null;
   } catch {
     return null;
   }
@@ -434,6 +456,9 @@ export default function DeckSelector({
    */
   const readFailed =
     (!loading && (counts.due === null || counts.sentences === null)) || unknown?.failed === true;
+  /** `F-336` — the server said «⛔ no level yet». ⛔ Never true together with a real failure
+   *  of the same deck: `'no_level'` and `null` are different values of one read. */
+  const noLevel = !loading && (counts.due === 'no_level' || counts.sentences === 'no_level');
 
   // ⛔ **The order is `36 § 5`'s order**, ⛔ not a preference: «סינון מילים» first, `חזרה`
   // second. `מנת היום` follows as the DECLARED deviation recorded in the UX plan (§ 4.2כ ד׳)
@@ -475,8 +500,8 @@ export default function DeckSelector({
       key: 'due',
       label: DUE_LABEL_HE,
       href: '/study',
-      count: counts.due,
-      note: DUE_NOTE_HE(noteFor(counts.due)),
+      count: countOf(counts.due),
+      note: DUE_NOTE_HE(noteFor(countOf(counts.due))),
       // `T-389` — ⛔ ורק אחרי ש-`loading` נפל: בזמן שהקריאה באוויר המספר הוא `null`
       // ו⛔ שום דבר ⛔ עוד לא נכשל (אותה הבחנה בדיוק שעושה `readFailed`).
       unmeasured: !loading && counts.due === null,
@@ -489,8 +514,8 @@ export default function DeckSelector({
       key: 'sentences',
       label: SENTENCES_LABEL_HE,
       href: '/study?deck=sentences',
-      count: counts.sentences,
-      note: SENTENCES_NOTE_HE(noteFor(counts.sentences)),
+      count: countOf(counts.sentences),
+      note: SENTENCES_NOTE_HE(noteFor(countOf(counts.sentences))),
       unmeasured: !loading && counts.sentences === null,
       awaiting: loading,
     }),
@@ -581,6 +606,24 @@ export default function DeckSelector({
     </div>
   );
 
+  /* `F-336` — ⛔ not `recoveryBlock`: there is nothing to re-read. The way out is the
+     picker above, and it carries the screen's one primary marker under the same rule as
+     retry (`primaryKey === null` ⇒ nothing else on this block is measured and live). */
+  const noLevelBlock = (
+    <div data-deck-no-level className="flex flex-col items-start gap-2">
+      <p className="text-base text-ink-muted">{NO_LEVEL_BODY_HE}</p>
+      <a
+        href={NO_LEVEL_HREF}
+        data-primary-action={primaryKey === null ? 'true' : undefined}
+        className={`flex min-h-touch items-center justify-center rounded-full px-5 py-3 text-lg font-semibold active:opacity-90 ${
+          primaryKey === null ? 'bg-brand-surface text-brand-on' : 'border border-border-strong text-ink'
+        }`}
+      >
+        {NO_LEVEL_ACTION_HE}
+      </a>
+    </div>
+  );
+
   return (
     <section className="flex flex-col gap-4">
       {/* `T-322` — ⛔ **one status region, mounted ALWAYS, ⛔ and that is the whole row.**
@@ -615,7 +658,9 @@ export default function DeckSelector({
       <div role="status" aria-atomic="true" className="sr-only" data-deck-status>
         {readFailed
           ? READ_FAILED_BODY_HE
-          : entries.some((entry) => entry.awaiting === true)
+          : noLevel
+            ? NO_LEVEL_BODY_HE
+            : entries.some((entry) => entry.awaiting === true)
             ? COUNTS_LOADING_HE
             : ''}
       </div>
@@ -625,11 +670,12 @@ export default function DeckSelector({
           scrolling at 320 · 375 · 414. ⛔ And the tiles keep their numbers below it: the
           block is an ADDITION, ⛔ never a replacement (`§ 4.2ו`). */}
       {readFailed && recoveryBlock}
+      {noLevel && !readFailed && noLevelBlock}
       {/* `T-295`ⓐ — ⛔ **`&& !readFailed` is the whole point of the row.** «אין מה לתרגל»
           is a claim about the BANK, and a read that never arrived measured nothing about
           the bank. Until today a total outage rendered exactly this block, and a learner
           was told their decks were empty on the strength of three 503s. */}
-      {dead && !readFailed && (
+      {dead && !readFailed && !noLevel && (
         // ⛔ אינו מחליף את שלושת האריחים: «מושבת עם המספר» הוא מידע (§ 4.2ו),
         // ומחיקתו הופכת מסך שנראה זהה בשני מצבים שונים. זו פעולה נוספת,
         // ⛔ לא החלפה.

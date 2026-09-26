@@ -9,11 +9,17 @@ import FilterBar from '@/components/FilterBar';
  * ⇒ הוא הדבר היחיד שמוחלף. ברירת המחדל היא **כשל** — זה המצב שרוב הקובץ מודד — ומצב
  * `zero` הוא חפיסה שנקראה והחזירה 0, שהיא מדידה ⛔ ולא כשל.
  */
-const api = vi.hoisted(() => ({ mode: 'fail' as 'fail' | 'zero' }));
+const api = vi.hoisted(() => ({ mode: 'fail' as 'fail' | 'zero' | 'no_level' }));
 
 vi.mock('@/lib/api/client', () => ({
-  apiGet: vi.fn(async () => {
+  apiGet: vi.fn(async (path: string) => {
     if (api.mode === 'fail') throw new Error('503');
+    // `F-336` — the server's own shape for a learner with ⛔ no level: `deck=sentences`
+    // answers `409 {ok:false, code:'no_level'}` (`app/api/study/queue/route.ts`), while
+    // `deck=due` reads `word_progress` and answers 0.
+    if (api.mode === 'no_level' && path.includes('deck=sentences')) {
+      return { ok: false, code: 'no_level' };
+    }
     return { ok: true, total: 0 };
   }),
 }));
@@ -307,5 +313,48 @@ describe('🎚️ T-515 — גודל סבב «סינון מילים»: 20 · 35 
     window.localStorage.setItem('kol.cards.levelRound', '9999');
     render(<DeckSelector unseen={RENDER_SUMMARY.unseen} />);
     await waitFor(() => expect(checkedLabels()).toEqual(['20']));
+  });
+});
+
+/**
+ * 🟡 **`F-336` — a learner with ⛔ no level is ⛔ not a server that failed.**
+ * 🔬 Measured by QA (`C-0858`) on a fresh account against live Supabase: `/cards` painted
+ * «חלק מהנתונים לא הגיעו מהשרת» plus «טעינה מחדש» directly under the level picker, because
+ * `readTotal` flattened `409 no_level` into the same `null` as a 503. A retry ⛔ cannot fix
+ * that state — only choosing a level can.
+ */
+describe('F-336 — `no_level` ⛔ אינו כשל קריאה', () => {
+  it('⛔ אין «חלק מהנתונים לא הגיעו», ⛔ אין «טעינה מחדש», ⛔ ואין «אין מה לתרגל»', async () => {
+    api.mode = 'no_level';
+    const { container } = render(<DeckSelector />);
+    await waitFor(() => expect(container.querySelector('[data-deck-no-level]')).not.toBeNull());
+    expect(container.querySelector('[data-deck-failed]')).toBeNull();
+    expect(container.querySelector('[data-deck-empty]')).toBeNull();
+    expect(screen.queryByText('חלק מהנתונים לא הגיעו מהשרת.', { selector: 'p' })).toBeNull();
+  });
+
+  it('ההודעה מפנה לבחירת הרמה, והיא הפעולה הראשית היחידה', async () => {
+    api.mode = 'no_level';
+    const { container } = render(<DeckSelector />);
+    await waitFor(() => expect(container.querySelector('[data-deck-no-level]')).not.toBeNull());
+    const primaries = container.querySelectorAll('[data-primary-action]');
+    expect(primaries).toHaveLength(1);
+    expect(primaries[0]?.getAttribute('href')).toBe('#level-choice');
+  });
+
+  it('אזור ה-status מכריז על הרמה החסרה, ⛔ ולא על כשל', async () => {
+    api.mode = 'no_level';
+    const { container } = render(<DeckSelector />);
+    await waitFor(() => expect(container.querySelector('[data-deck-no-level]')).not.toBeNull());
+    const status = container.querySelector('[data-deck-status]');
+    expect(status?.textContent).not.toContain('חלק מהנתונים');
+    expect(status?.textContent).toContain('רמה');
+  });
+
+  it('⛔ וכשל אמיתי עדיין כשל — `no_level` ⛔ אינו בולע 503', async () => {
+    api.mode = 'fail';
+    const { container } = render(<DeckSelector />);
+    await waitFor(() => expect(container.querySelector('[data-deck-failed]')).not.toBeNull());
+    expect(container.querySelector('[data-deck-no-level]')).toBeNull();
   });
 });

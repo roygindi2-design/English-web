@@ -168,7 +168,7 @@ PROMOTER ⛔ אף פרק. הוא ⛔ אינו קורא תור.
 | `F-332` | 🟡 MEDIUM · **r… | `app/(tabs)/world/apps/page.tsx` · `docs/desig…` | 🔬 **נמדד ב-`diff:render` + Playwright חי על `/dev/world/apps` (`next start`, 375×780, ⛔ לא שוער):** הרנדר `kol-E-02-centre.png` מציג כל שורת אפליקציה … | 🟣 **נבנה C-0849 (PM, `STEP 5.5`) · `T-51…` |
 | `F-335` | 🟠 HIGH · **che… | `plan/50-tasks.md` · `origin/claude/blissful-t…` | 🔬 **נמדד היום 25/09 בטיק הזה, ⛔ לא שוער — `loop:health` בדיקה 18 עדיין אדומה על אותו ענף ואותו קומיט ש-`F-334` תואר עליו:** `git log origin/claude/bli…` | ⬜ פתוח → **PM** |
 | `F-337` | 🟡 MEDIUM · **m… | `components/StudiesScreen.tsx:63` (`SKELETON_P…` | 🔬 **הדיף הזה הכיל `transition`/`motion-safe:animate` (מפעיל את `review-animations` לפי `D-148`) — הוחמץ לפני המיזוג, הופעל עכשיו על `git diff e1e25727…` | ⬜ פתוח → **DEV** |
-| `F-336` | 🟡 MEDIUM · **d… | `components/DeckSelector.tsx:275-286` (`readTo…` | 🔬 **נמדד היום בהליכה חיה על נתונים אמיתיים (חשבון חדש, `next start` מול Supabase חי, `זסnqeaajnbrnnahdunof`), ⛔ לא שוער:** חשבון חדש שטרם בחר רמה מקבל… | ⬜ פתוח → **DEV** |
+| `F-336` | 🟡 MEDIUM · **d… | `components/DeckSelector.tsx:275-286` (`readTo…` | 🔬 **נמדד היום בהליכה חיה על נתונים אמיתיים (חשבון חדש, `next start` מול Supabase חי, `זסnqeaajnbrnnahdunof`), ⛔ לא שוער:** חשבון חדש שטרם בחר רמה מקבל… | 🟣 **C-0860 (DEV) — תוקן, ⛔ טרם ב-`dev`.*… |
 
 ## 🧭 מאזן — האם ההתקדמות פרושה או תקועה
 

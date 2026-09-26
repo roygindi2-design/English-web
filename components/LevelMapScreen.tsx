@@ -237,7 +237,8 @@ export default function LevelMapScreen({
       {state.kind === 'choose' ? (
         // מצב בחירה — פעולה אחת, ⛔ ולא ברירת מחדל שקטה. כל שש הרמות פתוחות תמיד:
         // אין סף שליטה אמפירי, ולכן ⛔ אין נעילה ואין «עדיין לא» (D-037 · R-017).
-        <div className="flex flex-col gap-3">
+        // `F-336` — `id` is the target of `<DeckSelector>`'s «לבחירת הרמה» on this branch.
+        <div id="level-choice" className="flex flex-col gap-3">
           <p className="text-xl font-semibold">{CHOOSE_HE}</p>
           <p className="text-base text-ink-muted">{CHOOSE_HINT_HE}</p>
           <ul className="grid list-none grid-cols-3 gap-3 p-0">
@@ -313,7 +314,11 @@ export default function LevelMapScreen({
         {/* `T-413` · `F-277` — ⛔ `unfiltered` ו⛔ לא `unseen`: «עוד לא סוננו» היא שאלה
             על ה**סימנייה** — מה שהחפיסה עוד ⛔ לא הגישה — ⛔ ולא על הדירוג. `unseen` נשאר
             «טרם התחיל» ומשרת את טבעות ההתקדמות, ו⛔ אינו מה שהאריח מבטיח. */}
+        {/* `F-336` — `key` remounts the block when the learner leaves `choose`: its two
+            reads answered `no_level` ⇒ after a level is chosen they must be asked again,
+            ⛔ and a retry button for a state that was never a failure is not how. */}
         <DeckSelector
+          key={state.kind === 'choose' ? 'no-level' : 'level'}
           unseen={unfiltered}
           unknown={state.kind === 'ready' ? unknownDeck : undefined}
           onRetry={state.kind === 'ready' ? () => void loadUnknown() : undefined}

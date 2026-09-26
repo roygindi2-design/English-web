@@ -221,7 +221,8 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    */
   it('T-384ⓐ — אריח ללא מספר אומר «—», ⛔ ולא משפט כשל משלו', () => {
     const region = braceRegion(CODE, `{\n      ${SENTENCES_ENTRY}`);
-    expect(region).toContain('SENTENCES_NOTE_HE(noteFor(counts.sentences))');
+    // `F-336` — the read may now be `'no_level'`, which has ⛔ no number either ⇒ `countOf`.
+    expect(region).toContain('SENTENCES_NOTE_HE(noteFor(countOf(counts.sentences)))');
     // ⛔ `noteFor` ⛔ לא רוכך: «—» עדיין נוסע כשאין מספר, והוא עדיין ⛔ אינו `0`.
     expect(CODE).toMatch(/count === null \? UNKNOWN_COUNT_HE : String\(count\)/);
     expect(CODE).toContain("const UNKNOWN_COUNT_HE = '—'");
@@ -292,7 +293,9 @@ describe('<DeckSelector> — the deck selector (T-065 · § 4.2ו)', () => {
    * טענה על המאגר שנאמרה מתוך קריאה ש⛔ לא הגיעה.
    */
   it('T-295ⓐ — «אין מה לתרגל» ⛔ אינו מוצג כשהקריאה נכשלה', () => {
-    expect(CODE).toMatch(/\{dead && !readFailed && \(/);
+    // `F-336` — ⛔ nor when the learner has no level yet: that is ⛔ a claim about the bank
+    // either, it is a picker the learner has not used.
+    expect(CODE).toMatch(/\{dead && !readFailed && !noLevel && \(/);
   });
 
   /**
@@ -521,7 +524,8 @@ describe('T-322 — הכישלון מוכרז פעם אחת, בערוץ שאינ
     );
     expect(CODE).not.toMatch(/readFailed && <div role="status"/);
     // ⛔ ⟦`T-392`⟧ ושתי ההודעות יושבות **באזור הזה**, ⛔ ולא בשני אזורים.
-    expect(CODE).toMatch(/READ_FAILED_BODY_HE\s*:\s*entries\.some/);
+    // `F-336` — and the third message (`no_level`) sits in the same region too.
+    expect(CODE).toMatch(/READ_FAILED_BODY_HE\s*:\s*noLevel\s*\?\s*NO_LEVEL_BODY_HE\s*:\s*entries\.some/);
     expect(CODE).toContain('COUNTS_LOADING_HE');
   });
 
