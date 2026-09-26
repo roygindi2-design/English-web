@@ -463,7 +463,7 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           aria-hidden
           data-glow
           data-arena-floor-glow
-          className="pointer-events-none absolute bottom-[-2px] left-1/2 -z-10 h-11 w-[180px] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--brand)_32%,transparent),transparent)]"
+          className="pointer-events-none absolute bottom-[-2px] left-1/2 -z-10 h-11 w-[180px] -translate-x-1/2 bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--brand)_32%,transparent),transparent)]"
         />
         <div
           data-arena-idle="on"

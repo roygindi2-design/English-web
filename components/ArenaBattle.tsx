@@ -1388,6 +1388,7 @@ export default function ArenaBattle({
 
   return (
     <section
+      data-arena-battle-root
       data-arena-scope
       data-surface="dark"
       /* 🔴 **⟦NEW 15/09 · `C-0622` · `F-260`⟧ הקרב **נכנס למסך**, ⛔ ואינו נגלל.

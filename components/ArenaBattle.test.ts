@@ -533,7 +533,7 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * שנמדדו בשרשרת ההורים — ⛔ ולא מספר יפה.
    */
   it('F-260 · מסך הקרב בגובה קבוע, ⛔ ואינו נגלל', () => {
-    const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
+    const battle = CODE.slice(CODE.indexOf('data-arena-scope', CODE.indexOf('data-arena-battle-root')));
     // 🎬 **⟦17/09 · `T-423`ⓑ⟧ הגובה הוא `100dvh` **מלא**, ⛔ ולא `100dvh` פחות הכרום.**
     // ⛔ זו ⛔ אינה החלשה של `F-260` — היא אותה טענה אחרי ש**הכרום עצמו ירד**
     // (`arcade-tokens.css`, `body:has([data-arena-scope])`). ניכוי של 84px שכבר
@@ -559,7 +559,7 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * ⛔ **וזו ⛔ אינה החלפה של `F-260`** — הגובה כאן ⛔ לא נגע, ורק הציר האופקי זז.
    */
   it('T-423ⓐ · כפתור היציאה נמדד מול הריפוד החדש — `end-6`, ⛔ ולא `end-0`', () => {
-    const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
+    const battle = CODE.slice(CODE.indexOf('data-arena-scope', CODE.indexOf('data-arena-battle-root')));
     expect(battle, 'ה-X יושב 24px מהקצה, כמו לפני המלוא-רוחב').toMatch(
       /absolute end-6 top-0 z-10/,
     );
@@ -643,7 +643,7 @@ describe('C-0622 — הזירה: ההטלה, הפריסה והתנועה', () =>
    * **טענה ירוקה על כלום**.
    */
   it('T-423ⓑ · שבע רצועות בגובה מוצהר, והבמה בולעת את השארית — סכום 852', () => {
-    const battle = CODE.slice(CODE.indexOf('data-arena-scope'));
+    const battle = CODE.slice(CODE.indexOf('data-arena-scope', CODE.indexOf('data-arena-battle-root')));
 
     // ⛔ הרצועה, הגובה שלה, וה-Figma node שממנו הוא נקרא. ⛔ אף אחד מהם ⛔ לא נבחר.
     const BANDS = [
