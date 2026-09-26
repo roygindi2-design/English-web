@@ -1202,13 +1202,14 @@ export default function ArenaBattle({
     // `data-arena-scope` ⇒ דף **בהיר** עם כותרת המוצר, ⇒ בין שני מסכים כהים הלומד ראה
     // הבזק לבן. הסקופ מוריד את הכותרת ואת `pb-8` (`arcade-tokens.css`) ⇒ `100dvh` מלא, והרצועה
     // הקבועה יושבת **מעל** הבמה ⛔ ולא מתחתיה (אחרת נשאר פס בהיר), בדיוק כמו ב-`ArenaSummary`;
-    // `pt-12` הוא ריפוד הראש שלו — הכותרת לא קופצת במעבר.
+    // `pt-11` ⛔ ולא `pt-12` של הסיכום: השורה מיושרת למרכז מול ה-× (44px) ⇒ ה-`h1` יורד עוד
+    // 3.25px, ו-48+3.25 חצה את רצועת ה-48 של `check:mobile` (נמדד: 51px ב-390/430).
     return (
       <section
         data-arena-failure
         data-arena-scope
         data-surface="dark"
-        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-11 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {topBar(CLOCK_HE)}
         <p className="text-lg leading-relaxed text-ink">{message}</p>
         {screen.kind === 'too_small' && (
@@ -1332,13 +1333,14 @@ export default function ArenaBattle({
     // `data-arena-scope` ⇒ דף **בהיר** עם כותרת המוצר, ⇒ בין שני מסכים כהים הלומד ראה
     // הבזק לבן. הסקופ מוריד את הכותרת ואת `pb-8` (`arcade-tokens.css`) ⇒ `100dvh` מלא, והרצועה
     // הקבועה יושבת **מעל** הבמה ⛔ ולא מתחתיה (אחרת נשאר פס בהיר), בדיוק כמו ב-`ArenaSummary`;
-    // `pt-12` הוא ריפוד הראש שלו — הכותרת לא קופצת במעבר.
+    // `pt-11` ⛔ ולא `pt-12` של הסיכום: השורה מיושרת למרכז מול ה-× (44px) ⇒ ה-`h1` יורד עוד
+    // 3.25px, ו-48+3.25 חצה את רצועת ה-48 של `check:mobile` (נמדד: 51px ב-390/430).
     return (
       <section
         data-arena-failure
         data-arena-scope
         data-surface="dark"
-        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-11 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {topBar(outcome === null && sendError === '' ? SAVING_HE : FINISHED_HE)}
         {sendError !== '' && (
           <p role="status" className="text-base text-danger">
