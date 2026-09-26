@@ -1197,10 +1197,18 @@ export default function ArenaBattle({
     // ⇒ אותה מחלקה בדיוק של `T-430`/`F-284`. ⇒ ⓐ `data-arena-failure` מוריד את שמירת ה-`body`
     // (`arcade-tokens.css`), ⓑ הקטע מנכה את הרצועה בעצמו ⇒ התוכן נגמר **מעליה**.
     // ⛔ הטעינה ⛔ אינה נושאת רצועה ⇒ ⛔ לא נגעה (נמדד: 568/780/896, אפס גלילה).
+    // 🎨 ⟦`C-0863` · זירה — עיצוב חופשי⟧ **«שומר את הקרב…» יושב על הבמה הכהה**, כמו הקרב
+    // שלפניו והסיכום שאחריו. 🔬 נמדד חי ב-`/dev/arcade/end` (375×780): הקטע ⛔ לא נשא
+    // `data-arena-scope` ⇒ דף **בהיר** עם כותרת המוצר, ⇒ בין שני מסכים כהים הלומד ראה
+    // הבזק לבן. הסקופ מוריד את הכותרת ואת `pb-8` (`arcade-tokens.css`) ⇒ `100dvh` מלא, והרצועה
+    // הקבועה יושבת **מעל** הבמה ⛔ ולא מתחתיה (אחרת נשאר פס בהיר), בדיוק כמו ב-`ArenaSummary`;
+    // `pt-12` הוא ריפוד הראש שלו — הכותרת לא קופצת במעבר.
     return (
       <section
         data-arena-failure
-        className="flex h-[calc(100dvh-5.25rem-5rem-env(safe-area-inset-bottom))] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        data-arena-scope
+        data-surface="dark"
+        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {topBar(CLOCK_HE)}
         <p className="text-lg leading-relaxed text-ink">{message}</p>
         {screen.kind === 'too_small' && (
@@ -1319,10 +1327,18 @@ export default function ArenaBattle({
     }
     // 👻 ⟦`C-0781` · `T-453`⟧ אותה רצועה קבועה, ⇒ אותו תיקון של `T-421`: `data-arena-failure`
     // מוריד את שמירת ה-`body` והקטע מנכה את הרצועה בעצמו. נמדד חי ב-`/dev/arcade/end`.
+    // 🎨 ⟦`C-0863` · זירה — עיצוב חופשי⟧ **«שומר את הקרב…» יושב על הבמה הכהה**, כמו הקרב
+    // שלפניו והסיכום שאחריו. 🔬 נמדד חי ב-`/dev/arcade/end` (375×780): הקטע ⛔ לא נשא
+    // `data-arena-scope` ⇒ דף **בהיר** עם כותרת המוצר, ⇒ בין שני מסכים כהים הלומד ראה
+    // הבזק לבן. הסקופ מוריד את הכותרת ואת `pb-8` (`arcade-tokens.css`) ⇒ `100dvh` מלא, והרצועה
+    // הקבועה יושבת **מעל** הבמה ⛔ ולא מתחתיה (אחרת נשאר פס בהיר), בדיוק כמו ב-`ArenaSummary`;
+    // `pt-12` הוא ריפוד הראש שלו — הכותרת לא קופצת במעבר.
     return (
       <section
         data-arena-failure
-        className="flex h-[calc(100dvh-5.25rem-5rem-env(safe-area-inset-bottom))] flex-col gap-4 overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        data-arena-scope
+        data-surface="dark"
+        className="flex h-[100dvh] flex-col gap-4 overflow-hidden pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {topBar(outcome === null && sendError === '' ? SAVING_HE : FINISHED_HE)}
         {sendError !== '' && (
           <p role="status" className="text-base text-danger">
