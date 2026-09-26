@@ -2306,3 +2306,19 @@ body:has([data-arena-failure] [data-action-bar]) {
 @media (prefers-reduced-motion: reduce) {
   [data-arena-scope] [data-arena-element] { display: none; }
 }
+
+/* 🌫️ ⟦`C-0872` · זירה — עיצוב חופשי⟧ **קצה גלילה, ⛔ ולא חיתוך.** לשלושה ממסכי הזירה
+   יש אזור גמיש שנגלל **בתוך עצמו** מעל פעולות מעוגנות (`T-420` · `T-422` · בחירת הדמות),
+   ⇒ כרטיס שחוצה את קצה האזור נחתך בקו ישר, וזה נקרא כשבר פריסה ⛔ ולא כ«יש עוד למטה».
+   ⇒ מסכה של **16px** בקצה התחתון (`apple-design` § «Scroll edge effects, not hard
+   dividers») — ⛔ תנועה אין כאן, ⇒ ⛔ אין מה לכבות תחת `prefers-reduced-motion`.
+   ⚠️ **והריפוד באותו גודל הוא החצי השני, ⛔ ולא קישוט:** בסוף הגלילה התוכן האחרון עומד
+   **מעל** המסכה ⇒ ⛔ שום שורה ⛔ אינה נשארת דהויה לתמיד; ⛔ ואזור שאינו גולש מדהה ריפוד
+   ריק בלבד. ⛔ **16 ⛔ ולא 24:** ב-390×844 המילה המוחטאת הראשונה נגמרת ~4px מעל קצה
+   האזור (`C-0870`), ⇒ המסכה נוגעת רק בריפוד התחתון של השורה, ⛔ לא בטקסט שלה. */
+[data-arena-scroll-edge] {
+  --arena-scroll-fade: 1rem;
+  padding-bottom: var(--arena-scroll-fade);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--arena-scroll-fade)), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--arena-scroll-fade)), transparent);
+}

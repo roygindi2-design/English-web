@@ -391,6 +391,9 @@
     "app/arcade/arcade-tokens.css",
     "components/ArenaShell.tsx"
   ],
+  "app/arcade/scroll-edge.test.ts": [
+    "lib/testSource.ts"
+  ],
   "app/dev/amirnet/dashboard/dashboard-fixture.ts": [
     "lib/core/amirnetPractice.ts"
   ],

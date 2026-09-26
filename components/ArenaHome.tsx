@@ -448,7 +448,8 @@ export default function ArenaHome({ initialState, onStart, onDesign }: ArenaHome
           כל מה שביניהם — הדמות · הרמה · מסלול הבוס · הציוד · הקרב האחרון · הארון — הוא
           היחיד שנגלל, **בתוך עצמו**. ⇒ המסמך ⛔ אינו גולל ⛔ באף רוחב, ו`התחל קרב` על
           המסך תמיד — גם ב-320×568, שבו המסך היה כמעט שניים (+460px, `C-0703`). */}
-      <div data-arena-home-body className={`${BODY_CLASS} overflow-y-auto overscroll-contain`}>
+      {/* 🌫️ ⟦`C-0872`⟧ `data-arena-scroll-edge` — קצה תחתון דהוי במקום חיתוך (`arcade-tokens.css`). */}
+      <div data-arena-home-body data-arena-scroll-edge className={`${BODY_CLASS} overflow-y-auto overscroll-contain`}>
 
       {/* `:126-134` — הכן ושתי האליפסות תחתיו, והדמות ב-idle מעליהן.
           הנשימה: `bob = sin(t*1.5)*2.2` ⇒ משרעת **±2.2px** ומחזור **4.19s**
